@@ -6,12 +6,13 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useSessionStorage, useLocalStorage } from "usehooks-ts";
 import CategoryMetrics from "@/components/layout/CategoryMetrics";
-import { BlockspaceURLs } from "@/lib/urls";
+import { BlockspaceURLs, MasterURL } from "@/lib/urls";
 import useSWR from "swr";
 import { CategoryComparisonResponse } from "@/types/api/CategoryComparisonResponse";
 import EcosystemDropdown from "@/components/layout/EcosystemDropdown";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import ShowLoading from "@/components/layout/ShowLoading";
+import { MasterResponse } from "@/types/api/MasterResponse";
 
 const CategoryComparison = () => {
   const {
@@ -20,6 +21,13 @@ const CategoryComparison = () => {
     isLoading: usageLoading,
     isValidating: usageValidating,
   } = useSWR<CategoryComparisonResponse>(BlockspaceURLs["category-comparison"]);
+
+  const {
+    data: master,
+    error: masterError,
+    isLoading: masterLoading,
+    isValidating: masterValidating,
+  } = useSWR<MasterResponse>(MasterURL);
 
   const [showEthereumMainnet, setShowEthereumMainnet] = useSessionStorage(
     "blockspaceShowEthereumMainnet",
@@ -62,13 +70,14 @@ const CategoryComparison = () => {
         </div>
       </Container>
 
-      {usageData && (
+      {usageData && master && (
         <CategoryMetrics
           showEthereumMainnet={showEthereumMainnet}
           setShowEthereumMainnet={setShowEthereumMainnet}
           selectedTimespan={selectedTimespan}
           setSelectedTimespan={setSelectedTimespan}
           data={usageData.data}
+          master={master}
         />
       )}
       {usageData && (

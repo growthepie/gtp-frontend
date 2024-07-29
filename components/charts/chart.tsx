@@ -30,6 +30,7 @@ export const Chart = ({
   // data,
   chartType,
   backgroundColor = "transparent",
+  plotAreaBackgroundColor = "transparent",
   stack = false,
   types,
   timespan,
@@ -50,6 +51,7 @@ export const Chart = ({
   // data: { [chain: string]: number[][] };
   chartType: "area" | "line" | "column";
   backgroundColor?: string;
+  plotAreaBackgroundColor?: string;
   stack?: boolean;
   types: string[];
   timespan: string;
@@ -63,6 +65,7 @@ export const Chart = ({
     unixKey: string;
     dataKey: string;
     data: number[][];
+    pattern?: any;
     fillOpacity?: number;
     lineWidth?: number;
   }[];
@@ -196,8 +199,7 @@ export const Chart = ({
         let fillColor =
           allCats === true
             ? undefined
-            : AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] +
-            fillHexColorOpacity;
+            : AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] + fillHexColorOpacity;
 
         const normalAreaColor = {
           linearGradient: {
@@ -234,27 +236,23 @@ export const Chart = ({
               ],
         };
 
-        let blockspaceAreaColor =
-          s.custom?.tooltipLabel === "Unlabeled" && allCats === true
-            ? {
-              pattern: {
-                color: AllChainsByKeys[chainKey].colors["dark"][0] + "99",
-                path: {
-                  d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
-                  strokeWidth: 3,
-                },
-                width: 10,
-                height: 10,
-                opacity: 0.99,
-              },
-            }
-            : AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] +
-            fillHexColorOpacity;
+        // let blockspaceAreaColor =
+        //   s.custom?.tooltipLabel === "Unlabeled" && allCats === true
+        //     ? {
+        //       pattern: {
+        //         color: AllChainsByKeys[chainKey].colors["dark"][0],
+        //         path: {
+        //           d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
+        //           strokeWidth: 3,
+        //         },
+        //         width: 10,
+        //         height: 10,
+        //         opacity: 0.99,
+        //       },
+        //     }
+        //     : AllChainsByKeys[chainKey].colors[theme ?? "dark"][0];
 
-        const color =
-          allCats === true && series.length > 1
-            ? blockspaceAreaColor
-            : normalAreaColor;
+        const color = s.pattern ? { pattern: s.pattern, opacity: 0.33 } : normalAreaColor;
 
         // Remove series if no data
         if (!s.data || s.data.length === 0) {
@@ -326,7 +324,7 @@ export const Chart = ({
                 ...s.custom,
                 chainColor:
                   AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0],
-                fillHexColorOpacity: fillHexColorOpacity,
+                // fillHexColorOpacity: fillHexColorOpacity,
                 color: color,
               },
               data: s.data.map((d) => [
