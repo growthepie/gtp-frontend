@@ -45,10 +45,11 @@ export default function Header({
                 <Image
                   src="/logo_labels_full.svg"
                   alt="Forest"
-                  className="hidden dark:block"
+                  className="w-[288px] h-[63px] md:w-[206px] md:h-[45px]"
                   width={isMobile ? 288 : 206}
                   height={isMobile ? 63 : 45}
-                  sizes="100vw"
+                  sizes="33vw"
+                  loading="eager"
                 />
               </Link>
             </div>

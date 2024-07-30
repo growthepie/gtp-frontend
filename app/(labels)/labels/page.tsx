@@ -283,7 +283,7 @@ export default function LabelsPage() {
     gas_fees_usd_change: number[];
     daa: number[];
     daa_change: number[];
-  }>("labelsFilters", {
+  }>("labelsFiltersObj", {
     address: [],
     origin_key: [],
     name: [],
@@ -755,32 +755,14 @@ export default function LabelsPage() {
           </div>
         </div>
       </div>
-      {/* <LabelsContainer className="fixed 2xl:hidden inset-0 flex flex-col items-center justify-center bg-[#151a19] z-[999]">
-        <div className="text-forest-400 text-center font-semibold text-[20px]">
-          This page is not currently supported on small screens
-        </div>
-        <div className="text-forest-400 text-center">
-          Please view on a larger device or make your browser window wider.
-        </div>
-      </LabelsContainer> */}
-      {/* <div className="bg-black h-10 w-32 text-white fixed top-0 left-0 z-50">
-        {SparklineTimestampRange}
-      </div> */}
-      {/* <div className="bg-black h-10 w-32 text-white fixed top-0 left-0 z-50">
-        {JSON.stringify(sort)} -  {currentMetric}
-      </div> */}
-
       <LabelsTableContainer
         className="block"
-        // className="w-full h-screen"
-        // forcedMinWidth={1272 + 200}
         includeMargin={false}
         header={
           <>
             {filteredLabelsData && (
               <GridTableHeader
                 className="pb-[4px] text-[12px] gap-x-[20px] z-[2]"
-                // gridDefinitionColumns="pb-[4px] text-[12px] grid-cols-[15px,minmax(160px,1600px),150px,200px,105px,105px,175px,192px] gap-x-[20px] z-[2]"
                 style={{
                   gridTemplateColumns: gridTemplateColumns
                 }}
@@ -872,7 +854,6 @@ export default function LabelsPage() {
                     }}
                   />
                 </div>
-                {/* <div className="flex items-center justify-start">Category</div> */}
                 <div
                   className="flex items-center justify-start cursor-pointer"
                   onClick={() => {
@@ -1106,7 +1087,6 @@ export default function LabelsPage() {
                   >
                     <GridTableRow
                       className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[20px] mb-[3px]"
-                      // gridDefinitionColumns="grid-cols-[15px,minmax(160px,1600px),150px,200px,105px,105px,175px,192px] x-has-[span:hover]:grid-cols-[15px,minmax(390px,800px),150px,200px,105px,105px,175px,192px]"
                       style={{
                         gridTemplateColumns: gridTemplateColumns
                       }}
@@ -1336,12 +1316,6 @@ export default function LabelsPage() {
                           </div>
                         )}
                       </div>
-
-                      {/* <div className="flex h-full items-center gap-x-[3px]">
-                        <div>{master?.blockspace_categories.main_categories[subcategoryToCategoryMapping[filteredLabelsData[item.index].usage_category]]}</div>
-                        {filteredLabelsData[item.index].usage_category && <AddIcon />}
-                      </div> */}
-
                       <div className="flex h-full items-center gap-x-[3px] whitespace-nowrap">
                         <div className="flex h-full items-center gap-x-[3px] whitespace-nowrap max-w-[100%] hover:max-w-[300px] transition-all duration-300 z-10">
                           {filteredLabelsData[item.index].usage_category && (
@@ -1436,7 +1410,6 @@ export default function LabelsPage() {
                             />
                           )}
                         </div>
-                        {/* {filteredLabelsData[item.index].usage_category && <Badge size="sm" label={master?.blockspace_categories.sub_categories[filteredLabelsData[item.index].usage_category]} leftIcon={null} leftIconColor="#FFFFFF" rightIcon="heroicons-solid:plus-circle" />} */}
                       </div>
 
                       <div className="flex h-full items-center justify-end gap-x-[3px]">
@@ -1451,7 +1424,6 @@ export default function LabelsPage() {
                                 day: "numeric",
                               })}
                             </div>
-                            {/* <AddIcon /> */}
                           </div>
                         )}
                       </div>
@@ -1538,27 +1510,6 @@ export default function LabelsPage() {
                                   }}
                                 />
                               </div>
-                              {/* <div
-                                className="truncate transition-all duration-300"
-                                style={{ direction: 'ltr' }}
-                                onClick={() => {
-                                  navigator.clipboard.writeText(filteredLabelsData[item.index].deployer_address)
-                                }}
-                              >
-                                {filteredLabelsData[item.index].deployer_address.slice(0, filteredLabelsData[item.index].deployer_address.length - 6)}
-                              </div>
-                              <div className="transition-all duration-300">
-                                {filteredLabelsData[item.index].deployer_address.slice(-6)}
-                              </div>
-                              <div className="pl-[10px]">
-                                <Icon
-                                  icon={copiedAddress === filteredLabelsData[item.index].deployer_address ? "feather:check-circle" : "feather:copy"}
-                                  className="w-[14px] h-[14px] cursor-pointer"
-                                  onClick={() => {
-                                    handleCopyAddress(filteredLabelsData[item.index].deployer_address);
-                                  }}
-                                />
-                              </div> */}
                             </>
                           )}
                         </div>
@@ -1605,7 +1556,7 @@ export default function LabelsPage() {
       </LabelsTableContainer >
       {/* </div> */}
 
-      <Footer downloadCSV={downloadCSV} downloadJSON={downloadJSON} />
+      {/* <Footer downloadCSV={downloadCSV} downloadJSON={downloadJSON} /> */}
     </>
   );
 }
@@ -1832,20 +1783,20 @@ const WorldIcon = () => (
     xmlns="http://www.w3.org/2000/svg"
   >
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M7.52757 1.86364C4.12609 1.86364 1.36865 4.61098 1.36865 8C1.36865 11.389 4.12609 14.1364 7.52757 14.1364C10.9291 14.1364 13.6865 11.389 13.6865 8C13.6865 4.61098 10.9291 1.86364 7.52757 1.86364ZM0 8C0 3.85786 3.37021 0.5 7.52757 0.5C11.6849 0.5 15.0551 3.85786 15.0551 8C15.0551 12.1421 11.6849 15.5 7.52757 15.5C3.37021 15.5 0 12.1421 0 8Z"
       fill="#CDD8D3"
     />
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M0 8C0 7.62344 0.306383 7.31818 0.684325 7.31818H14.3708C14.7488 7.31818 15.0551 7.62344 15.0551 8C15.0551 8.37656 14.7488 8.68182 14.3708 8.68182H0.684325C0.306383 8.68182 0 8.37656 0 8Z"
       fill="#CDD8D3"
     />
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M5.47476 8C5.52166 10.0965 6.24532 12.1149 7.52757 13.7608C8.80982 12.1149 9.53349 10.0965 9.58039 8C9.53349 5.90352 8.80982 3.88512 7.52757 2.23918C6.24532 3.88512 5.52166 5.90352 5.47476 8ZM7.52757 1.18182L7.02231 0.721984C5.19874 2.71107 4.16242 5.2924 4.1061 7.9858C4.1059 7.99527 4.1059 8.00473 4.1061 8.0142C4.16242 10.7076 5.19874 13.2889 7.02231 15.278C7.15196 15.4194 7.33533 15.5 7.52757 15.5C7.71981 15.5 7.90319 15.4194 8.03284 15.278C9.85641 13.2889 10.8927 10.7076 10.949 8.0142C10.9492 8.00473 10.9492 7.99527 10.949 7.9858C10.8927 5.2924 9.85641 2.71107 8.03284 0.721984L7.52757 1.18182Z"
       fill="#CDD8D3"
     />
