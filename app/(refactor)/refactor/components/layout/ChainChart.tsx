@@ -3,16 +3,8 @@
 import HighchartsReact from "highcharts-react-official";
 import Highcharts from "highcharts";
 import highchartsAnnotations from "highcharts/modules/annotations";
-import Share from "@/components/Share";
 
-import {
-  useState,
-  useEffect,
-  useMemo,
-  useRef,
-  useCallback,
-  useLayoutEffect,
-} from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import {
   useLocalStorage,
   useWindowSize,
@@ -23,17 +15,9 @@ import fullScreen from "highcharts/modules/full-screen";
 import _merge from "lodash/merge";
 import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
-import Image from "next/image";
 import d3 from "d3";
 import Link from "next/link";
-import {
-  AllChains,
-  AllChainsByKeys,
-  Get_DefaultChainSelectionKeys,
-  Get_SupportedChainKeys,
-} from "@/lib/chains";
-import { debounce, forEach } from "lodash";
-import { Splide, SplideSlide, SplideTrack } from "@splidejs/react-splide";
+import { AllChainsByKeys, Get_SupportedChainKeys } from "@/lib/chains";
 import {
   navigationItems,
   navigationCategories,
@@ -45,7 +29,7 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import useSWR, { preload } from "swr";
 import ChartWatermark from "@/components/layout/ChartWatermark";
 import { ChainsData } from "@/types/api/ChainResponse";
-import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
+
 import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead";
 import {
   TopRowContainer,
@@ -60,6 +44,7 @@ import {
 } from "@/components/layout/Tooltip";
 import { useSWRConfig } from "swr";
 import { useChain } from "../../contexts/ChainsContext";
+import ShowLoading from "@/components/layout/ShowLoading";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -110,8 +95,6 @@ export default function ChainChart({
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [selectedTimespan, setSelectedTimespan] = useState("365d");
   const [selectedScale, setSelectedScale] = useState("log");
-  const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
-  const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
   const [compareTo, setCompareTo] = useState(false);
   // const [compChain, setCompChain] = useState<string | null>(null);
   // const [compChainIndex, setCompChainIndex] = useState<number>(-1);
@@ -120,7 +103,7 @@ export default function ChainChart({
   const [zoomMax, setZoomMax] = useState<number | null>(null);
 
   const { isSidebarOpen } = useUIContext();
-  const { width, height } = useWindowSize();
+
   const isMobile = useMediaQuery("(max-width: 767px)");
 
   const zoomedMargin = [49, 15, 0, 0];
@@ -303,27 +286,6 @@ export default function ChainChart({
     return Math.max(...maxUnixtimes);
   }, [data]);
 
-  function hexToRgba(hex, alpha) {
-    const hexWithoutHash = hex.replace("#", "");
-    const r = parseInt(hexWithoutHash.substring(0, 2), 16);
-    const g = parseInt(hexWithoutHash.substring(2, 4), 16);
-    const b = parseInt(hexWithoutHash.substring(4, 6), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-  }
-
-  function getDate(unix) {
-    const date = new Date(unix);
-    const formattedDate = date.toLocaleString("en-GB", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-    const dateParts = formattedDate.split(",");
-    const [month, day, year] = dateParts[0].split(" ");
-    const formattedDateStr = `${day} ${month} ${date.getFullYear()}`;
-    return formattedDateStr;
-  }
-
   const chartComponents = useRef<Highcharts.Chart[]>([]);
 
   const showGwei = useCallback((metric_id: string) => {
@@ -410,49 +372,9 @@ export default function ChainChart({
       const tickPositions: number[] = [];
       const xMinDate = new Date(xMin);
       const xMaxDate = new Date(xMax);
-      const xMinMonth = xMinDate.getUTCMonth();
-      const xMaxMonth = xMaxDate.getUTCMonth();
-
-      const xMinYear = xMinDate.getUTCFullYear();
-      const xMaxYear = xMaxDate.getUTCFullYear();
-
-      // // find first day of month greater than or equal to xMin
-      // if (xMinDate.getDate() !== 1) {
-      //   tickPositions.push(new Date(xMinYear, xMinMonth + 1, 1).getTime());
-      // } else {
-      //   tickPositions.push(xMinDate.getTime());
-      // }
-
-      // // find last day of month less than or equal to xMax
-      // if (xMaxDate.getDate() !== 1) {
-      //   tickPositions.push(new Date(xMaxYear, xMaxMonth, 1).getTime());
-      // } else {
-      //   tickPositions.push(xMaxDate.getTime());
-      // }
 
       tickPositions.push(xMinDate.getTime());
       tickPositions.push(xMaxDate.getTime());
-
-      return tickPositions;
-
-      if (selectedTimespan === "max") {
-        for (let year = xMinYear; year <= xMaxYear; year++) {
-          for (let month = 0; month < 12; month = month + 4) {
-            if (year === xMinYear && month < xMinMonth) continue;
-            if (year === xMaxYear && month > xMaxMonth) continue;
-            tickPositions.push(new Date(year, month, 1).getTime());
-          }
-        }
-        return tickPositions;
-      }
-
-      for (let year = xMinYear; year <= xMaxYear; year++) {
-        for (let month = 0; month < 12; month++) {
-          if (year === xMinYear && month < xMinMonth) continue;
-          if (year === xMaxYear && month > xMaxMonth) continue;
-          tickPositions.push(new Date(year, month, 1).getTime());
-        }
-      }
 
       return tickPositions;
     },
@@ -729,36 +651,6 @@ export default function ChainChart({
       },
       [isMobile],
     );
-
-  const seriesHover = useCallback<
-    | Highcharts.SeriesMouseOverCallbackFunction
-    | Highcharts.SeriesMouseOutCallbackFunction
-  >(
-    function (this: Highcharts.Series, event: Event) {
-      const {
-        chart: hoveredChart,
-        name: hoveredSeriesName,
-        index: hoveredSeriesIndex,
-      } = this;
-
-      if (chartComponents.current && chartComponents.current.length > 1) {
-        chartComponents.current.forEach((chart) => {
-          if (!chart || chart.index === hoveredChart.index) return;
-
-          // set series state
-          if (event.type === "mouseOver") {
-            if (chart.series[hoveredSeriesIndex]) {
-              chart.series[hoveredSeriesIndex].setState("hover");
-            }
-          } else {
-            chart.series[hoveredSeriesIndex].setState();
-          }
-        });
-      }
-    },
-
-    [chartComponents],
-  );
 
   const pointHover = useCallback<
     | Highcharts.PointMouseOverCallbackFunction
@@ -1358,17 +1250,6 @@ export default function ChainChart({
     });
   }, [data, enabledFundamentalsKeys, pointHover, showGwei, showUsd, theme]);
 
-  // const CompChains = useMemo(() => {
-  //   if (!master) return [];
-
-  //   return AllChains.filter(
-  //     (chain) =>
-  //       Get_SupportedChainKeys(master).includes(chain.key) &&
-  //       !["all_l2s", chainKey[0]].includes(chain.key) &&
-  //       Object.keys(master.chains).includes(chain.key),
-  //   );
-  // }, [chainKey, master]);
-
   const compChain = useMemo(() => {
     return chainKey.length > 1 ? chainKey[1] : null;
   }, [chainKey]);
@@ -1465,7 +1346,7 @@ export default function ChainChart({
   if (!master || !data) {
     return (
       <div className="flex justify-center items-center h-screen">
-        Loading...
+        <ShowLoading />
       </div>
     );
   }
@@ -2271,6 +2152,7 @@ export default function ChainChart({
                             <div className="absolute bottom-[43.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-40">
                               <ChartWatermark className="w-[102.936px] h-[24.536px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
                             </div>
+                            {/*Date Left Side*/}
                             <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/50 pointer-events-none">
                               <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
                               {zoomed && zoomMin !== null && (
@@ -2300,6 +2182,7 @@ export default function ChainChart({
                                 </div>
                               )}
                             </div>
+                            {/*Date Right Side*/}
                             <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute right-[9px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/50 pointer-events-none">
                               {zoomed && zoomMax !== null && (
                                 <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">

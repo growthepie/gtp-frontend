@@ -37,6 +37,7 @@ import { Icon } from "@iconify/react";
 import { useLocalStorage } from "usehooks-ts";
 import { set } from "lodash";
 import { cp } from "fs";
+import ShowLoading from "@/components/layout/ShowLoading";
 
 type ChainContextType = {
   data: ChainsData | undefined;
@@ -267,7 +268,11 @@ export const ChainsProvider = ({
   }, []);
 
   if (!chainData) {
-    return <div>Loading...</div>;
+    return (
+      <div>
+        <ShowLoading dataLoading={[chainLoading, masterLoading, feeLoading]} />
+      </div>
+    );
   }
 
   return (
