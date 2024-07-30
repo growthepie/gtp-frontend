@@ -88,7 +88,7 @@ const metricKeysLabels = {
 };
 
 export default function LabelsPage() {
-  const { isMobile } = useUIContext();
+  const { is2XL, isMobile } = useUIContext();
   const showGwei = true;
   const showCents = true;
 
@@ -514,10 +514,12 @@ export default function LabelsPage() {
   }, [filteredLabelsData, setLabelsNumberFiltered]);
 
   useEffect(() => {
+    if (!fullLabelsData)
+      return;
+
     const uniqueOwnerProjects =
       uniqBy(
-        data
-          .filter((label) => label.owner_project)
+        fullLabelsData.data.filter((label) => label.owner_project && label.owner_project !== "")
           .map((label) => ({
             owner_project: label.owner_project,
             owner_project_clear:
@@ -532,10 +534,9 @@ export default function LabelsPage() {
 
     setLabelsOwnerProjects(uniqueOwnerProjects);
 
-
     const uniqueDeployerAddresses = uniqBy(
-      data
-        .filter((label) => label.deployer_address)
+      fullLabelsData.data
+        .filter((label) => label.deployer_address && label.deployer_address !== "")
         .map((label) => label.deployer_address)
         .sort((a, b) => a.localeCompare(b)),
       (a) => a,
@@ -543,7 +544,7 @@ export default function LabelsPage() {
 
     setLabelsDeployerAddresses(uniqueDeployerAddresses);
 
-  }, [data, setLabelsDeployerAddresses, setLabelsOwnerProjects]);
+  }, [fullLabelsData, data, setLabelsDeployerAddresses, setLabelsOwnerProjects]);
 
   // The virtualizer
   const virtualizer = useWindowVirtualizer({
@@ -638,22 +639,27 @@ export default function LabelsPage() {
   const gridTemplateColumns = useMemo(() => {
 
     let cols = ["15px", "200px", "180px", "180px", "120px", "120px", "minmax(125px,1600px)", "187px"];
+    let colsLarge = ["15px", "400px", "180px", "180px", "120px", "120px", "minmax(125px,6000px)", "187px"];
 
 
     if (showDeploymentTx && showDeployerAddress) {
       cols = ["15px", "200px", "180px", "180px", "120px", "120px", "minmax(125px,1600px)", "120px", "115px", "187px"]
+      colsLarge = ["15px", "400px", "180px", "180px", "120px", "120px", "minmax(125px,6000px)", "120px", "115px", "187px"]
     }
     else if (showDeploymentTx) {
       cols = ["15px", "200px", "180px", "180px", "120px", "120px", "minmax(125px,1600px)", "120px", "187px"]
+      colsLarge = ["15px", "400px", "180px", "180px", "120px", "120px", "minmax(125px,6000px)", "120px", "187px"]
     }
 
     else if (showDeployerAddress) {
       cols = ["15px", "200px", "180px", "180px", "120px", "120px", "minmax(125px,1600px)", "120px", "187px"]
+      colsLarge = ["15px", "400px", "180px", "180px", "120px", "120px", "minmax(125px,6000px)", "120px", "187px"]
     }
 
+    if (is2XL) return colsLarge.join(" ");
 
     return cols.join(" ");
-  }, [showDeployerAddress, showDeploymentTx]);
+  }, [is2XL, showDeployerAddress, showDeploymentTx]);
 
 
   const downloadCSV = useCallback(() => {
@@ -1133,7 +1139,7 @@ export default function LabelsPage() {
                           <div className="transition-all duration-300">
                             {filteredLabelsData[item.index].address.slice(-6)}
                           </div>
-                          <div className="pl-[10px] hidden 3xl:flex">
+                          <div className="pl-[10px] hidden 2xl:flex">
                             <Icon
                               icon={copiedAddress === filteredLabelsData[item.index].address ? "feather:check-circle" : "feather:copy"}
                               className="w-[14px] h-[14px] cursor-pointer"
@@ -1143,22 +1149,20 @@ export default function LabelsPage() {
                             />
                           </div>
                         </span>
-
-
-                        {ownerProjectToProjectData[
-                          filteredLabelsData[item.index].owner_project
-                        ] && (
-                            <div className="flex w-full justify-between gap-x-[5px] max-w-0 @[390px]:max-w-[100px] group-hover:max-w-[100px] overflow-hidden transition-all duration-300">
-                              <div className="flex 3xl:hidden">
-                                <Icon
-                                  icon={copiedAddress === filteredLabelsData[item.index].address ? "feather:check-circle" : "feather:copy"}
-                                  className="w-[14px] h-[14px] cursor-pointer"
-                                  onClick={() => {
-                                    handleCopyAddress(filteredLabelsData[item.index].address);
-                                  }}
-                                />
-                              </div>
-                              <div className="flex items-center gap-x-[5px]">
+                        <div className="flex justify-between gap-x-[5px] max-w-0 @[390px]:max-w-[100px] group-hover:max-w-[100px] overflow-hidden transition-all duration-300">
+                          <div className="flex 2xl:hidden">
+                            <Icon
+                              icon={copiedAddress === filteredLabelsData[item.index].address ? "feather:check-circle" : "feather:copy"}
+                              className="w-[14px] h-[14px] cursor-pointer"
+                              onClick={() => {
+                                handleCopyAddress(filteredLabelsData[item.index].address);
+                              }}
+                            />
+                          </div>
+                          <div className="flex items-center gap-x-[5px]">
+                            {ownerProjectToProjectData[
+                              filteredLabelsData[item.index].owner_project
+                            ] && ownerProjectToProjectData[filteredLabelsData[item.index].owner_project][5] && (
                                 <div className="h-[15px] w-[15px]">
                                   {ownerProjectToProjectData[
                                     filteredLabelsData[item.index].owner_project
@@ -1182,6 +1186,10 @@ export default function LabelsPage() {
                                       </a>
                                     )}
                                 </div>
+                              )}
+                            {ownerProjectToProjectData[
+                              filteredLabelsData[item.index].owner_project
+                            ] && ownerProjectToProjectData[filteredLabelsData[item.index].owner_project][3] && (
                                 <div className="h-[15px] w-[15px]">
 
                                   {ownerProjectToProjectData[
@@ -1203,6 +1211,10 @@ export default function LabelsPage() {
                                       </a>
                                     )}
                                 </div>
+                              )}
+                            {ownerProjectToProjectData[
+                              filteredLabelsData[item.index].owner_project
+                            ] && ownerProjectToProjectData[filteredLabelsData[item.index].owner_project][4] && (
                                 <div className="h-[15px] w-[15px]">
 
                                   {ownerProjectToProjectData[
@@ -1224,10 +1236,11 @@ export default function LabelsPage() {
                                       </a>
                                     )}
                                 </div>
+                              )}
+                          </div>
 
-                              </div>
-                            </div>
-                          )}
+                        </div>
+
 
                       </div>
                       <div className="flex h-full items-center">

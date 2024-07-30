@@ -23,7 +23,7 @@ const description =
   "Labels for Ethereum Layer 2 solutions - growthepie. A comprehensive list of labels for Ethereum Layer 2 solutions.";
 const shortDescription = "Labels for Ethereum Layer 2s";
 const image = "https://www.growthepie.xyz/logo_full.png";
-const favicon = "https://www.growthepie.xyz/favicon.ico";
+const favicon = "/labels.ico";
 
 const og_images = [
   {
@@ -66,6 +66,9 @@ const meta: Metadata = {
   metadataBase: new URL(urls.production),
   title: title,
   description: description,
+  icons: {
+    icon: favicon,
+  },
   openGraph: openGraph,
   twitter: twitter,
   robots: {

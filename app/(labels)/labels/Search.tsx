@@ -843,36 +843,45 @@ export default function Search() {
                         />
                       ),
                     )
-                    : labelsOwnerProjects.map((ownerProjectRow) => (
-                      <Badge
-                        key={ownerProjectRow.owner_project}
-                        onClick={() =>
-                          handleFilter("owner_project", ownerProjectRow)
-                        }
-                        label={ownerProjectRow.owner_project_clear}
-                        leftIcon={"uil:layer-group"}
-                        leftIconColor="#CDD8D3"
-                        rightIcon={
-                          labelsFilters.owner_project.find(
-                            (f) =>
-                              f.owner_project ===
-                              ownerProjectRow.owner_project,
-                          )
-                            ? "heroicons-solid:x-circle"
-                            : "heroicons-solid:plus-circle"
-                        }
-                        rightIconColor={
-                          labelsFilters.owner_project.find(
-                            (f) =>
-                              f.owner_project ===
-                              ownerProjectRow.owner_project,
-                          )
-                            ? "#FE5468"
-                            : "#5A6462"
-                        }
-                        showLabel={true}
-                      />
-                    ))}
+                    : (
+                      <>
+                        {labelsOwnerProjects.slice(0, 100).map((ownerProjectRow) => (
+                          <Badge
+                            key={ownerProjectRow.owner_project}
+                            onClick={() =>
+                              handleFilter("owner_project", ownerProjectRow)
+                            }
+                            label={ownerProjectRow.owner_project_clear}
+                            leftIcon={"uil:layer-group"}
+                            leftIconColor="#CDD8D3"
+                            rightIcon={
+                              labelsFilters.owner_project.find(
+                                (f) =>
+                                  f.owner_project ===
+                                  ownerProjectRow.owner_project,
+                              )
+                                ? "heroicons-solid:x-circle"
+                                : "heroicons-solid:plus-circle"
+                            }
+                            rightIconColor={
+                              labelsFilters.owner_project.find(
+                                (f) =>
+                                  f.owner_project ===
+                                  ownerProjectRow.owner_project,
+                              )
+                                ? "#FE5468"
+                                : "#5A6462"
+                            }
+                            showLabel={true}
+                          />
+                        ))}
+                        {labelsOwnerProjects.length > 100 && (
+                          <div className="flex items-center justify-center w-full whitespace-nowrap">
+                            <div className="text-[10px] text-[#CDD8D3] font-medium cursor-pointer">{`+${labelsOwnerProjects.length - 10} more`}</div>
+                          </div>
+                        )}
+                      </>
+                    )}
                 </FilterSelectionContainer>
               </div>
               {showDeployerAddress && <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start">
@@ -887,70 +896,87 @@ export default function Search() {
                 </div>
                 <FilterSelectionContainer className="w-full md:flex-1">
                   {search.length > 0
-                    ? labelsAutocomplete.deployer_address && labelsAutocomplete.deployer_address.map(
-                      (deployerAddress) => (
-                        <Badge
-                          key={deployerAddress}
-                          truncateStyle="middle"
-                          className="!max-w-[120px]"
-                          onClick={() =>
-                            handleFilter("deployer_address", deployerAddress)
-                          }
-                          label={
-                            labelsAutocomplete.deployer_address.length > 0
-                              ? boldSearch(
+                    ? search.length >= 4 ?
+                      <>
+                        {labelsAutocomplete.deployer_address && labelsAutocomplete.deployer_address.map(
+                          (deployerAddress) => (
+                            <Badge
+                              key={deployerAddress}
+                              truncateStyle="middle"
+                              className="!max-w-[120px]"
+                              onClick={() =>
+                                handleFilter("deployer_address", deployerAddress)
+                              }
+                              label={
+                                labelsAutocomplete.deployer_address.length > 0
+                                  ? boldSearch(
+                                    deployerAddress,
+                                  )
+                                  : deployerAddress
+                              }
+                              leftIcon={"material-symbols:deployed-code-account-rounded"}
+                              leftIconColor="#CDD8D3"
+                              rightIcon={
+                                labelsFilters.deployer_address.includes(
+                                  deployerAddress,
+                                )
+                                  ? "heroicons-solid:x-circle"
+                                  : "heroicons-solid:plus-circle"
+                              }
+                              rightIconColor={
+                                labelsFilters.deployer_address.includes(
+                                  deployerAddress,
+                                )
+                                  ? "#FE5468"
+                                  : "#5A6462"
+                              }
+                              showLabel={true}
+                            />
+                          ))}
+                      </>
+                      : <div className="flex items-center justify-start w-full whitespace-nowrap h-[25px]">
+                        <div className="text-[10px] text-[#CDD8D3]/80 font-medium">Please enter at least 4 characters to search deployer addresses</div>
+                      </div>
+
+
+                    : (
+                      <>
+                        {labelsDeployerAddresses.slice(0, 100).map((deployerAddress) => (
+                          <Badge
+                            key={deployerAddress}
+                            truncateStyle="middle"
+                            className="!max-w-[120px]"
+                            onClick={() =>
+                              handleFilter("deployer_address", deployerAddress)
+                            }
+                            label={deployerAddress}
+                            leftIcon={"material-symbols:deployed-code-account-rounded"}
+                            leftIconColor="#CDD8D3"
+                            rightIcon={
+                              labelsFilters.deployer_address.includes(
                                 deployerAddress,
                               )
-                              : deployerAddress
-                          }
-                          leftIcon={"material-symbols:deployed-code-account-rounded"}
-                          leftIconColor="#CDD8D3"
-                          rightIcon={
-                            labelsFilters.deployer_address.includes(
-                              deployerAddress,
-                            )
-                              ? "heroicons-solid:x-circle"
-                              : "heroicons-solid:plus-circle"
-                          }
-                          rightIconColor={
-                            labelsFilters.deployer_address.includes(
-                              deployerAddress,
-                            )
-                              ? "#FE5468"
-                              : "#5A6462"
-                          }
-                          showLabel={true}
-                        />
-                      ),
-                    )
-                    : labelsDeployerAddresses.map((deployerAddress) => (
-                      <Badge
-                        key={deployerAddress}
-                        truncateStyle="middle"
-                        className="!max-w-[120px]"
-                        onClick={() =>
-                          handleFilter("deployer_address", deployerAddress)
-                        }
-                        label={deployerAddress}
-                        leftIcon={"material-symbols:deployed-code-account-rounded"}
-                        leftIconColor="#CDD8D3"
-                        rightIcon={
-                          labelsFilters.deployer_address.includes(
-                            deployerAddress,
-                          )
-                            ? "heroicons-solid:x-circle"
-                            : "heroicons-solid:plus-circle"
-                        }
-                        rightIconColor={
-                          labelsFilters.deployer_address.includes(
-                            deployerAddress,
-                          )
-                            ? "#FE5468"
-                            : "#5A6462"
-                        }
-                        showLabel={true}
-                      />
-                    ))}
+                                ? "heroicons-solid:x-circle"
+                                : "heroicons-solid:plus-circle"
+                            }
+                            rightIconColor={
+                              labelsFilters.deployer_address.includes(
+                                deployerAddress,
+                              )
+                                ? "#FE5468"
+                                : "#5A6462"
+                            }
+                            showLabel={true}
+                          />
+                        ))}
+                        {labelsDeployerAddresses.length > 100 && (
+                          <div className="flex items-center justify-center w-full whitespace-nowrap">
+                            <div className="text-[10px] text-[#CDD8D3] font-medium cursor-pointer">{`+${labelsDeployerAddresses.length - 10} more`}</div>
+                          </div>
+                        )}
+                      </>
+                    )}
+
                 </FilterSelectionContainer>
               </div>}
             </div>
