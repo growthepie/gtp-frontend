@@ -1556,7 +1556,7 @@ export default function LabelsPage() {
       </LabelsTableContainer >
       {/* </div> */}
 
-      {/* <Footer downloadCSV={downloadCSV} downloadJSON={downloadJSON} /> */}
+      <Footer downloadCSV={downloadCSV} downloadJSON={downloadJSON} />
     </>
   );
 }
