@@ -39,23 +39,25 @@ import HorizontalScrollContainer from "../HorizontalScrollContainer";
 
 export default function CategoryMetrics({
   data,
+  master,
   showEthereumMainnet,
   setShowEthereumMainnet,
   selectedTimespan,
   setSelectedTimespan,
 }: {
   data: CategoryComparisonResponseData;
+  master: MasterResponse;
   showEthereumMainnet: boolean;
   setShowEthereumMainnet: (show: boolean) => void;
   selectedTimespan: string;
   setSelectedTimespan: (timespan: string) => void;
 }) {
-  const {
-    data: master,
-    error: masterError,
-    isLoading: masterLoading,
-    isValidating: masterValidating,
-  } = useSWR<MasterResponse>(MasterURL);
+  // const {
+  //   data: master,
+  //   error: masterError,
+  //   isLoading: masterLoading,
+  //   isValidating: masterValidating,
+  // } = useSWR<MasterResponse>(MasterURL);
 
   const searchParams = useSearchParams();
 
@@ -89,7 +91,7 @@ export default function CategoryMetrics({
   const { isSidebarOpen } = useUIContext();
   const [selectedMode, setSelectedMode] = useState("gas_fees_");
   const [selectedCategory, setSelectedCategory] = useState(
-    queryCategory ?? "nft",
+    queryCategory ?? "cefi",
   );
   const [contractHover, setContractHover] = useState({});
 
@@ -125,7 +127,7 @@ export default function CategoryMetrics({
 
   const [labelFormMainCategoryKey, setLabelFormMainCategoryKey] = useState<
     string | null
-  >("nft");
+  >(Object.keys(master.blockspace_categories)[0]);
 
   const stackIndex = {
     op_stack: ["base", "optimism"],

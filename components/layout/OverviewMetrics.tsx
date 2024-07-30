@@ -71,7 +71,7 @@ export default function OverviewMetrics({
   const [isCategoryMenuExpanded, setIsCategoryMenuExpanded] = useState(true);
   const [allCats, setAllCats] = useState(forceSelectedChain ? true : false);
   const [selectedCategory, setSelectedCategory] = useState(
-    forceCategory ? forceCategory : "nft",
+    forceCategory ? forceCategory : Object.keys(master.blockspace_categories.main_categories)[0],
   );
 
   const [selectedValue, setSelectedValue] = useState("share");
@@ -301,8 +301,8 @@ export default function OverviewMetrics({
                           ? "gas_fees_usd_absolute"
                           : "gas_fees_eth_absolute"
                         : showUsd
-                        ? "gas_fees_share_usd"
-                        : "gas_fees_share_eth",
+                          ? "gas_fees_share_usd"
+                          : "gas_fees_share_eth",
                     );
                   }}
                 >
@@ -403,10 +403,10 @@ export default function OverviewMetrics({
                   (selectedChain
                     ? AllChainsByKeys[selectedChain].label
                     : chainEcosystemFilter === "all-chains"
-                    ? "All Chains"
-                    : chainEcosystemFilter === "op-stack"
-                    ? "OP Stack Chains"
-                    : "OP Superchain") +
+                      ? "All Chains"
+                      : chainEcosystemFilter === "op-stack"
+                        ? "OP Stack Chains"
+                        : "OP Superchain") +
                   (": " + categories[selectedCategory])
                 ) : (
                   <></>
@@ -446,9 +446,9 @@ export default function OverviewMetrics({
               <h1 className="font-bold text-sm pr-2 pl-2">
                 {!allCats
                   ? master &&
-                    master.blockspace_categories.main_categories[
-                      selectedCategory
-                    ]
+                  master.blockspace_categories.main_categories[
+                  selectedCategory
+                  ]
                   : "All"}
               </h1>
               {!allCats ? (
@@ -459,7 +459,7 @@ export default function OverviewMetrics({
                   <p className="text-xs px-[4px] py-[5px] mx-[5px]" key={key}>
                     {formatSubcategories(
                       master.blockspace_categories["mapping"][selectedCategory][
-                        key
+                      key
                       ],
                     )}
                   </p>
@@ -479,11 +479,10 @@ export default function OverviewMetrics({
               {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
               {/* toggle ETH */}
               <button
-                className={`px-[16px] py-[4px]  rounded-full ${
-                  selectedValue === "absolute"
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                }`}
+                className={`px-[16px] py-[4px]  rounded-full ${selectedValue === "absolute"
+                  ? "bg-forest-500 dark:bg-forest-1000"
+                  : "hover:bg-forest-500/10"
+                  }`}
                 onClick={() => {
                   setSelectedValue("absolute");
                   if (!selectedMode.includes("absolute")) {
@@ -502,11 +501,10 @@ export default function OverviewMetrics({
                 Absolute
               </button>
               <button
-                className={`px-[16px] py-[4px]  rounded-full ${
-                  selectedValue === "share"
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                }`}
+                className={`px-[16px] py-[4px]  rounded-full ${selectedValue === "share"
+                  ? "bg-forest-500 dark:bg-forest-1000"
+                  : "hover:bg-forest-500/10"
+                  }`}
                 onClick={() => {
                   setSelectedValue("share");
 
