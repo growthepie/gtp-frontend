@@ -742,7 +742,7 @@ export default function LabelsPage() {
 
   const numAddressChars = useMemo(() => {
     return Math.min(Math.floor((addressWidth - 24) / 7.2) - 6, 42 - 6);
-  }, [addressWidth]);
+  }, [addressWidth, showDeployerAddress, showDeploymentTx]);
 
 
 
