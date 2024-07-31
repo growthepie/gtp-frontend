@@ -10,6 +10,9 @@ import "../../globals.css";
 import { MasterProvider } from "@/contexts/Master";
 import Share from "@/components/Share";
 import { meta } from "gtp.branch.config";
+import { LabelsPageProvider } from "./LabelsContext";
+import Footer from "./Footer";
+import Header from "./Header";
 
 const jsonLd: Graph = {
   "@context": "https://schema.org",
@@ -96,23 +99,27 @@ export default function RootLayout({
         />
         <Providers forcedTheme="dark">
           <MasterProvider>
-            <main className="font-raleway relative flex-1 w-full mx-auto min-h-screen select-none">
-              <div className="background-container !fixed">
-                <div className="background-gradient-group">
-                  <div className="background-gradient-yellow"></div>
-                  <div className="background-gradient-green"></div>
+            <LabelsPageProvider>
+              <Header />
+              <main className="font-raleway relative flex-1 w-full mx-auto min-h-screen select-none">
+                <div className="background-container !fixed">
+                  <div className="background-gradient-group">
+                    <div className="background-gradient-yellow"></div>
+                    <div className="background-gradient-green"></div>
+                  </div>
                 </div>
-              </div>
 
-              {children}
-              {/* <div className="z-50 flex fixed bottom-[20px] w-full max-w-[1680px] justify-end pointer-events-none">
+                {children}
+                {/* <div className="z-50 flex fixed bottom-[20px] w-full max-w-[1680px] justify-end pointer-events-none">
                 <div className="pr-[20px] md:pr-[50px] pointer-events-auto">
                   <div className="relative flex gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#5A6462] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
                     <Share />
                   </div>
                 </div>
               </div> */}
-            </main>
+              </main>
+              <Footer />
+            </LabelsPageProvider>
           </MasterProvider>
           {/* <DeveloperTools /> */}
           <CookieConsent />

@@ -41,6 +41,8 @@ export interface ParsedDatum {
   owner_project: string | null;
   owner_project_clear: string | null;
   usage_category: string | null;
+  category?: string | null;
+  subcategory?: string | null;
   deployment_tx: string | null;
   deployer_address: string | null;
   deployment_date: string | null;

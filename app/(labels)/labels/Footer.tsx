@@ -6,14 +6,10 @@ import { useUIContext } from "@/contexts/UIContext";
 import Search from "./Search";
 import FloatingBar from "./FloatingBar";
 import LabelsContainer from "@/components/layout/LabelsContainer";
+import { useLabelsPage } from "./LabelsContext";
 
-export default function Footer({
-  downloadCSV,
-  downloadJSON,
-}: {
-  downloadCSV: () => void;
-  downloadJSON: () => void;
-}) {
+export default function Footer() {
+  const { downloadCSV, downloadJSON } = useLabelsPage();
   const { isMobile } = useUIContext();
   return (
     <div className="fixed z-50 flex flex-col justify-end top-0 left-0 right-0 bottom-0 overflow-hidden pointer-events-none">
@@ -31,10 +27,10 @@ export default function Footer({
           </div>
         </div>
       </div>
-      <LabelsContainer className={`absolute bottom-[105px] w-full block z-[60]`}>
+      <LabelsContainer className={`absolute bottom-[105px] block z-[60]`}>
         {isMobile && <FloatingBar downloadCSV={downloadCSV} downloadJSON={downloadJSON} />}
       </LabelsContainer>
-      <Container className={"w-full mx-auto bottom-0 pointer-events-auto"}>
+      <LabelsContainer className={"mx-auto bottom-0 pointer-events-auto"}>
         <Container className={`!px-0 flex items-center justify-start w-full pb-[20px] md:pb-[37px] z-[10]`}>
           <div className="flex justify-center md:justify-start px-[15px] w-full">
             <div className="flex flex-col md:flex-row gap-x-[15px] gap-y-[10px] items-center text-[10px] text-[#CDD8D3] dark:text-[#CDD8D3]">
@@ -59,7 +55,7 @@ export default function Footer({
             </div>
           </div>
         </Container>
-      </Container>
+      </LabelsContainer>
     </div>
   );
 }

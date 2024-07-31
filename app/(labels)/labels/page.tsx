@@ -45,6 +45,7 @@ import { uniqBy } from "lodash";
 import { useMaster } from "@/contexts/Master";
 import { useUIContext } from "@/contexts/UIContext";
 import SVGSparkline, { SVGSparklineProvider, useSVGSparkline } from "./SVGSparkline";
+import { useLabelsPage } from "./LabelsContext";
 
 const devMiddleware = (useSWRNext) => {
   return (key, fetcher, config) => {
@@ -88,6 +89,7 @@ const metricKeysLabels = {
 };
 
 export default function LabelsPage() {
+  const { setDownloadData, tableRef } = useLabelsPage();
   const { is2XL, isMobile } = useUIContext();
   const showGwei = true;
   const showCents = true;
@@ -638,22 +640,22 @@ export default function LabelsPage() {
 
   const gridTemplateColumns = useMemo(() => {
 
-    let cols = ["15px", "200px", "180px", "180px", "120px", "120px", "minmax(125px,1600px)", "187px"];
-    let colsLarge = ["15px", "400px", "180px", "180px", "120px", "120px", "minmax(125px,6000px)", "187px"];
+    let cols = ["15px", "200px", "180px", "180px", "120px", "120px", "125px", "187px"];
+    let colsLarge = ["15px", "400px", "180px", "180px", "120px", "120px", "125px", "187px"];
 
 
     if (showDeploymentTx && showDeployerAddress) {
-      cols = ["15px", "200px", "180px", "180px", "120px", "120px", "minmax(125px,1600px)", "120px", "115px", "187px"]
-      colsLarge = ["15px", "400px", "180px", "180px", "120px", "120px", "minmax(125px,6000px)", "120px", "115px", "187px"]
+      cols = ["15px", "200px", "180px", "180px", "120px", "120px", "125px", "120px", "115px", "187px"]
+      colsLarge = ["15px", "400px", "180px", "180px", "120px", "120px", "125px", "120px", "115px", "187px"]
     }
     else if (showDeploymentTx) {
-      cols = ["15px", "200px", "180px", "180px", "120px", "120px", "minmax(125px,1600px)", "120px", "187px"]
-      colsLarge = ["15px", "400px", "180px", "180px", "120px", "120px", "minmax(125px,6000px)", "120px", "187px"]
+      cols = ["15px", "200px", "180px", "180px", "120px", "120px", "125px", "120px", "187px"]
+      colsLarge = ["15px", "400px", "180px", "180px", "120px", "120px", "125px", "120px", "187px"]
     }
 
     else if (showDeployerAddress) {
-      cols = ["15px", "200px", "180px", "180px", "120px", "120px", "minmax(125px,1600px)", "120px", "187px"]
-      colsLarge = ["15px", "400px", "180px", "180px", "120px", "120px", "minmax(125px,6000px)", "120px", "187px"]
+      cols = ["15px", "200px", "180px", "180px", "120px", "120px", "125px", "120px", "187px"]
+      colsLarge = ["15px", "400px", "180px", "180px", "120px", "120px", "125px", "120px", "187px"]
     }
 
     if (is2XL) return colsLarge.join(" ");
@@ -662,72 +664,76 @@ export default function LabelsPage() {
   }, [is2XL, showDeployerAddress, showDeploymentTx]);
 
 
-  const downloadCSV = useCallback(() => {
-    // compile CSV from data w/ headers
-    const headers = [
-      "Contract Address",
-      "Chain ID",
-      "Owner Project",
-      "Contract Name",
-      "Category",
-      "Subcategory",
-      "Deployment Date",
-      "Transaction Count",
-      "Gas Fees",
-      "Active Addresses",
-      // "Origin Key",
+  // const downloadCSV = useCallback(() => {
+  //   // compile CSV from data w/ headers
+  //   const headers = [
+  //     "Contract Address",
+  //     "Chain ID",
+  //     "Owner Project",
+  //     "Contract Name",
+  //     "Category",
+  //     "Subcategory",
+  //     "Deployment Date",
+  //     "Transaction Count",
+  //     "Gas Fees",
+  //     "Active Addresses",
+  //     // "Origin Key",
 
-      "Deployment Tx",
-      "Deployer Address",
-    ];
+  //     "Deployment Tx",
+  //     "Deployer Address",
+  //   ];
 
-    const rows = filteredLabelsData.map((label) => {
-      return [
-        label.address,
-        label.chain_id,
-        label.owner_project,
-        label.name,
-        label.category,
-        label.subcategory,
-        label.deployment_date,
-        label.txcount,
-        label.gas_fees_usd,
-        label.daa,
-        // label.origin_key,
+  //   const rows = filteredLabelsData.map((label) => {
+  //     return [
+  //       label.address,
+  //       label.chain_id,
+  //       label.owner_project,
+  //       label.name,
+  //       label.category,
+  //       label.subcategory,
+  //       label.deployment_date,
+  //       label.txcount,
+  //       label.gas_fees_usd,
+  //       label.daa,
+  //       // label.origin_key,
 
-        label.deployment_tx,
-        label.deployer_address,
-      ];
-    });
+  //       label.deployment_tx,
+  //       label.deployer_address,
+  //     ];
+  //   });
 
-    const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
+  //   const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
 
-    const blob = new Blob([csv], { type: "text/csv" });
+  //   const blob = new Blob([csv], { type: "text/csv" });
 
-    const url = URL.createObjectURL(blob);
+  //   const url = URL.createObjectURL(blob);
 
-    const a = document.createElement
-      ("a");
-    a.href = url;
-    a.download = "labels.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-  }, [filteredLabelsData]);
+  //   const a = document.createElement
+  //     ("a");
+  //   a.href = url;
+  //   a.download = "labels.csv";
+  //   a.click();
+  //   URL.revokeObjectURL(url);
+  // }, [filteredLabelsData]);
 
 
-  const downloadJSON = useCallback(() => {
-    const json = JSON.stringify(filteredLabelsData, null, 2);
+  // const downloadJSON = useCallback(() => {
+  //   const json = JSON.stringify(filteredLabelsData, null, 2);
 
-    const blob = new Blob([json], { type: "application/json" });
+  //   const blob = new Blob([json], { type: "application/json" });
 
-    const url = URL.createObjectURL(blob);
+  //   const url = URL.createObjectURL(blob);
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "labels.json";
-    a.click();
-    URL.revokeObjectURL(url);
-  }, [filteredLabelsData]);
+  //   const a = document.createElement("a");
+  //   a.href = url;
+  //   a.download = "labels.json";
+  //   a.click();
+  //   URL.revokeObjectURL(url);
+  // }, [filteredLabelsData]);
+
+  useEffect(() => {
+    setDownloadData(filteredLabelsData);
+  }, [filteredLabelsData, setDownloadData]);
 
 
 
@@ -739,10 +745,10 @@ export default function LabelsPage() {
         dataValidating={[masterValidating, quickLabelsLoading]}
       />
 
-      {master && <Header downloadCSV={downloadCSV} downloadJSON={downloadJSON} />}
+      {/* {master && <Header downloadCSV={downloadCSV} downloadJSON={downloadJSON} />} */}
 
       {/* <div className="relative pb-[114px] pt-[140px]"> */}
-      <LabelsContainer className="pt-[110px] md:pt-[175px] w-full flex items-end sm:items-center justify-between md:justify-start gap-x-[10px] z-[21]">
+      <LabelsContainer className="pt-[110px] md:pt-[175px] flex items-end sm:items-center justify-between md:justify-start gap-x-[10px] z-[21]">
         <h1 className="text-[20px] md:text-[30px] pl-[15px] leading-[120%] font-bold z-[19]">
           Smart Contracts on Ethereum Layer 2s
         </h1>
@@ -762,7 +768,8 @@ export default function LabelsPage() {
         </div>
       </div>
       <LabelsTableContainer
-        className="block"
+        ref={tableRef}
+        className="block mx-auto"
         includeMargin={false}
         header={
           <>
@@ -1658,7 +1665,7 @@ export default function LabelsPage() {
       </LabelsTableContainer >
       {/* </div> */}
 
-      <Footer downloadCSV={downloadCSV} downloadJSON={downloadJSON} />
+      {/* <Footer downloadCSV={downloadCSV} downloadJSON={downloadJSON} /> */}
     </>
   );
 }

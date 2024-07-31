@@ -1,3 +1,4 @@
+"use client";
 import Image from "next/image";
 import Link from "next/link";
 import Sidebar from "@/components/layout/Sidebar";
@@ -12,18 +13,17 @@ import LabelsContainer from "@/components/layout/LabelsContainer";
 import Search from "./Search";
 import { useUIContext } from "@/contexts/UIContext";
 import FloatingBar from "./FloatingBar";
+import { useLabelsPage } from "./LabelsContext";
+import { useSessionStorage } from "usehooks-ts";
+import { useMemo } from "react";
 
-export default function Header({
-  downloadCSV,
-  downloadJSON,
-}: {
-  downloadCSV: () => void;
-  downloadJSON: () => void;
-}) {
-  const { isMobile } = useUIContext();
+export default function Header() {
+  const { downloadCSV, downloadJSON } = useLabelsPage();
+  const { is2XL, isMobile } = useUIContext();
+
   return (
     <div className="fixed flex flex-col w-full z-50 items-center">
-      <div className="absolute h-[90px] md:h-[170px] w-full overflow-clip">
+      <div className="absolute h-[150px] md:h-[170px] w-full overflow-clip">
         <div
           className="background-container !h-screen"
           style={{
@@ -37,7 +37,7 @@ export default function Header({
           </div>
         </div>
       </div>
-      <header className="flex justify-between space-x-0 xl:space-x-6 items-end w-full mx-auto px-[20px] pt-[20px] md:px-[60px] md:pt-[30px]">
+      <LabelsContainer className="flex justify-between space-x-0 xl:space-x-6 items-end w-full mx-auto px-[20px] pt-[20px] md:px-[60px] md:pt-[30px]">
         <div className="flex justify-start items-center w-full">
           <div className="flex space-x-0 xl:space-x-6 w-full h-full">
             <div className="flex justify-between items-start h-full relative w-full left-1 ">
@@ -55,7 +55,7 @@ export default function Header({
             </div>
           </div>
         </div>
-        <div className="items-center z-10 hidden md:flex md:space-x-[34px] h-full mt-[7px]">
+        <div className="items-center z-10 hidden md:flex md:space-x-[34px] h-full mt-[7px]" >
           {/* <EthUsdSwitch /> */}
 
           <div className="flex space-x-[22px] pr-2.5 items-center">
@@ -74,8 +74,8 @@ export default function Header({
             </a>
           </div>
         </LabelsContainer> */}
-      </header>
-      <LabelsContainer className={`absolute top-[76px] w-full`}>
+      </LabelsContainer>
+      <LabelsContainer className={`absolute top-[76px]`}>
         {!isMobile && <FloatingBar downloadCSV={downloadCSV} downloadJSON={downloadJSON} />}
         {/* <div className="flex p-[5px] items-center w-full rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000] gap-x-[15px]">
           <Link
