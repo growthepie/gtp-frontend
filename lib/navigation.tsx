@@ -68,7 +68,7 @@ export const navigationCategories = {
     group: "trackers",
   },
   gtpmetrics: {
-    label: "More In-Depth Metrics",
+    label: "More from growthepie",
     icon: "gtp:gtp-pie-monochrome",
     group: "trackers",
   },
@@ -638,6 +638,16 @@ export const navigationItems: NavigationItem[] = [
         excludeFromSitemap: true,
       },
       {
+        label: "labels.growthepie.xyz",
+        icon: "gtp:gtp-pie",
+        category: "gtpmetrics",
+        key: "labelsxyz",
+        rootKey: "labelsxyz",
+        urlKey: "labelsxyz",
+        excludeFromSitemap: true,
+        showNew: true,
+      },
+      {
         label: "OP RetroPGF 3",
         icon: "gtp:optimism-logo-monochrome",
         category: "public-goods-funding",
@@ -652,7 +662,7 @@ export const navigationItems: NavigationItem[] = [
         key: "octant",
         rootKey: "octant",
         urlKey: "octant",
-        showNew: true,
+        showNew: false,
       },
       {
         label: "Glo Dollar",
