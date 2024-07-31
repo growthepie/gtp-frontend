@@ -561,6 +561,8 @@ export default function SidebarMenuGroup({
                           ? `/${item.name.toLowerCase()}/${option.urlKey}`
                           : option.key
                       }
+                      rel={option.key?.includes("https://") ? "noopener" : ""}
+                      target={option.key?.includes("https://") ? "_blank" : ""}
                       onMouseOver={() => {
                         if (!option.key) return;
                         switch (item.name) {
