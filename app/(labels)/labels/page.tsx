@@ -1350,11 +1350,7 @@ export default function LabelsPage() {
                                         filteredLabelsData[item.index].owner_project
                                       ][3] && (
                                           <a
-                                            href={
-                                              ownerProjectToProjectData[
-                                              filteredLabelsData[item.index].owner_project
-                                              ][3]
-                                            }
+                                            href={`https://github.com/${ownerProjectToProjectData[filteredLabelsData[item.index].owner_project][3]}/`}
                                             target="_blank"
                                             className="group flex items-center gap-x-[5px] text-xs"
                                           >
