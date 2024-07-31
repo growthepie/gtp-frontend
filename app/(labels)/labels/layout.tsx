@@ -1,6 +1,6 @@
 import { Providers } from "../../providers";
 import CookieConsent from "@/components/layout/CookieConsent";
-import { Raleway, Inter, Roboto_Mono } from "next/font/google";
+import { Raleway, Inter, Roboto_Mono, Source_Code_Pro } from "next/font/google";
 import { Metadata } from "next";
 import { Graph } from "schema-dts";
 import Head from "../../(layout)/head";
@@ -77,6 +77,12 @@ const robotoMono = Roboto_Mono({
   display: "swap",
 });
 
+const sourceCodePro = Source_Code_Pro({
+  subsets: ["latin"],
+  variable: "--font-source-code-pro",
+  display: "swap",
+});
+
 export default function RootLayout({
   children,
 }: {
@@ -85,7 +91,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${raleway.variable} ${inter.variable} ${robotoMono.variable} scroll-smooth`}
+      className={`${raleway.variable} ${inter.variable} ${robotoMono.variable} ${sourceCodePro.variable} scroll-smooth`}
       suppressHydrationWarning
       style={{
         fontFeatureSettings: "'pnum' on, 'lnum' on",
