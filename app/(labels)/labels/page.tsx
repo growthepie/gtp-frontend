@@ -640,22 +640,22 @@ export default function LabelsPage() {
 
   const gridTemplateColumns = useMemo(() => {
 
-    let cols = ["15px", "200px", "180px", "180px", "120px", "120px", "125px", "187px"];
-    let colsLarge = ["15px", "400px", "180px", "180px", "120px", "120px", "125px", "187px"];
+    let cols = ["15px", "200px", "180px", "180px", "120px", "120px", "125px", "185px"];
+    let colsLarge = ["15px", "400px", "180px", "180px", "120px", "120px", "125px", "185px"];
 
 
     if (showDeploymentTx && showDeployerAddress) {
-      cols = ["15px", "200px", "180px", "180px", "120px", "120px", "125px", "120px", "115px", "187px"]
-      colsLarge = ["15px", "400px", "180px", "180px", "120px", "120px", "125px", "120px", "115px", "187px"]
+      cols = ["15px", "200px", "180px", "180px", "120px", "120px", "125px", "120px", "115px", "185px"]
+      colsLarge = ["15px", "400px", "180px", "180px", "120px", "120px", "125px", "120px", "115px", "185px"]
     }
     else if (showDeploymentTx) {
-      cols = ["15px", "200px", "180px", "180px", "120px", "120px", "125px", "120px", "187px"]
-      colsLarge = ["15px", "400px", "180px", "180px", "120px", "120px", "125px", "120px", "187px"]
+      cols = ["15px", "200px", "180px", "180px", "120px", "120px", "125px", "120px", "185px"]
+      colsLarge = ["15px", "400px", "180px", "180px", "120px", "120px", "125px", "120px", "185px"]
     }
 
     else if (showDeployerAddress) {
-      cols = ["15px", "200px", "180px", "180px", "120px", "120px", "125px", "120px", "187px"]
-      colsLarge = ["15px", "400px", "180px", "180px", "120px", "120px", "125px", "120px", "187px"]
+      cols = ["15px", "200px", "180px", "180px", "120px", "120px", "125px", "120px", "185px"]
+      colsLarge = ["15px", "400px", "180px", "180px", "120px", "120px", "125px", "120px", "185px"]
     }
 
     if (is2XL) return colsLarge.join(" ");
@@ -1059,7 +1059,7 @@ export default function LabelsPage() {
                       />
                     </div>
                     <div
-                      className="absolute -right-[20px] cursor-pointer text-[#CDD8D3] bg-[#5A6462] rounded-full pr-[1px] pl-[2px] py-[1px]"
+                      className="absolute -right-[18px] cursor-pointer text-[#CDD8D3] bg-[#5A6462] rounded-full pr-[1px] pl-[2px] py-[1px]"
                       onClick={handleNextMetric}
                     >
                       <Icon
@@ -1687,7 +1687,7 @@ const GridTableHeader = ({
 }: GridTableProps) => {
   return (
     <div
-      className={`select-none gap-x-[10px] pl-[10px] pr-[32px] pt-[30px] text-[11px] items-center font-semibold grid ${gridDefinitionColumns} ${className}`}
+      className={`select-none gap-x-[10px] pl-[10px] pr-[30px] pt-[30px] text-[11px] items-center font-semibold grid ${gridDefinitionColumns} ${className}`}
       style={style}
     >
       {children}
@@ -1705,7 +1705,7 @@ const GridTableRow = ({
 }: GridTableProps) => {
   return (
     <div
-      className={`select-text gap-x-[10px] pl-[10px] pr-[32px] py-[5px] text-xs items-center rounded-full border border-forest-900/20 dark:border-forest-500/20 grid ${gridDefinitionColumns} ${className}`}
+      className={`select-text gap-x-[10px] pl-[10px] pr-[30px] py-[5px] text-xs items-center rounded-full border border-forest-900/20 dark:border-forest-500/20 grid ${gridDefinitionColumns} ${className}`}
       style={style}
     >
       {children}
