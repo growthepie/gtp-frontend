@@ -7,7 +7,7 @@ import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead"
 import ChainSectionHeadAlt from "@/components/layout/SingleChains/ChainSectionHeadAlt";
 import Link from "next/link";
 import { useUIContext } from "@/contexts/UIContext";
-import ChainChart from "../../components/layout/ChainChart";
+import ChainChart from "../../components/layout/Chains/ChainChart";
 import {
   Tooltip,
   TooltipContent,

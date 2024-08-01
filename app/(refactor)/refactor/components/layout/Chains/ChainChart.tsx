@@ -43,8 +43,12 @@ import {
   TooltipTrigger,
 } from "@/components/layout/Tooltip";
 import { useSWRConfig } from "swr";
-import { useChain } from "../../contexts/ChainsContext";
 import ShowLoading from "@/components/layout/ShowLoading";
+import {
+  displayValuesHelper,
+  compChainsHelper,
+  getOptionsHelper,
+} from "./chainHelpers";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -110,45 +114,7 @@ export default function ChainChart({
   const defaultMargin = [49, 15, 0, 0];
 
   const CompChains = useMemo(() => {
-    if (!master) return [];
-
-    // const chainGroups = {};
-
-    const chainItemsByKey = navigationItems[3].options
-      .filter((option) => option.hide !== true)
-      .filter(
-        (option) =>
-          option.key && Get_SupportedChainKeys(master).includes(option.key),
-      )
-      .reduce((acc, option) => {
-        if (option.key) acc[option.key] = option;
-        return acc;
-      }, {});
-
-    // group master.chains by bucket
-    const chainsByBucket = Object.entries(master.chains).reduce(
-      (acc, [key, chainInfo]) => {
-        if (!acc[chainInfo.bucket]) {
-          acc[chainInfo.bucket] = [];
-        }
-
-        if (chainItemsByKey[key] && key !== chainKey[0])
-          acc[chainInfo.bucket].push(chainItemsByKey[key]);
-
-        return acc;
-      },
-      {},
-    );
-
-    // sort each bucket in alphabetical order
-    Object.keys(chainsByBucket).forEach((bucket) => {
-      chainsByBucket[bucket].sort((a, b) => a.label.localeCompare(b.label));
-    });
-
-    return Object.keys(chainsByBucket).reduce((acc: any[], bucket: string) => {
-      acc.push(...chainsByBucket[bucket]);
-      return acc;
-    }, []);
+    return compChainsHelper(master, chainKey);
   }, [master]);
 
   const { cache, mutate } = useSWRConfig();
@@ -465,62 +431,22 @@ export default function ChainChart({
     }[] = [];
 
     data.forEach((item, chainIndex) => {
+      if (!p[chainIndex]) {
+        p[chainIndex] = {}; // Ensure p[chainIndex] is an object
+      }
+
       Object.keys(item.metrics).forEach((key) => {
-        const units = Object.keys(master.metrics[key].units);
-        const unitKey =
-          units.find((unit) => unit !== "usd" && unit !== "eth") ||
-          (showUsd ? "usd" : "eth");
-
-        let prefix =
-          showGwei(key) && !showUsd
-            ? ""
-            : master.metrics[key].units[unitKey].prefix;
-        let suffix =
-          showGwei(key) && !showUsd
-            ? "Gwei"
-            : master.metrics[key].units[unitKey].suffix;
-        let valueIndex = showUsd ? 1 : 2;
-        let valueMultiplier = showGwei(key) && !showUsd ? 1000000000 : 1;
-
-        let valueFormat = Intl.NumberFormat("en-GB", {
-          notation: "compact",
-          maximumFractionDigits:
-            key === "txcosts" && showUsd
-              ? master.metrics[key].units[unitKey].decimals
-              : 2,
-          minimumFractionDigits:
-            key === "txcosts" && showUsd
-              ? master.metrics[key].units[unitKey].decimals
-              : 2,
-        });
-
-        let navItem = navigationItems[1].options.find((ni) => ni.key === key);
-
-        let dateIndex = item.metrics[key].daily.data.length - 1;
-
-        const latestUnix =
-          item.metrics[key].daily.data[item.metrics[key].daily.data.length - 1];
-
-        if (intervalShown) {
-          const intervalMaxIndex = item.metrics[key].daily.data.findIndex(
-            (d) => d[0] >= intervalShown?.max,
-          );
-          if (intervalMaxIndex !== -1) dateIndex = intervalMaxIndex;
-        }
-
-        let value = valueFormat.format(
-          item.metrics[key].daily.data[dateIndex][
-            master.metrics[key].units[unitKey].currency ? valueIndex : 1
-          ] * valueMultiplier,
+        p[chainIndex][key] = displayValuesHelper(
+          data,
+          master,
+          showUsd,
+          intervalShown,
+          key,
+          p,
+          item,
+          showGwei(key),
+          chainIndex,
         );
-
-        if (p.length < chainIndex + 1) p[chainIndex] = {};
-
-        p[chainIndex][key] = {
-          value,
-          prefix,
-          suffix,
-        };
       });
     });
     return p;
@@ -763,242 +689,20 @@ export default function ChainChart({
     };
   }, []);
 
-  const options: Highcharts.Options = {
-    accessibility: { enabled: false },
-    exporting: { enabled: false },
-    chart: {
-      type: "area",
-      animation: isAnimate,
-      height: 176,
-      backgroundColor: undefined,
-      margin: [1, 0, 40, 0],
-      spacingBottom: 0,
-      spacingTop: 40,
-      panning: { enabled: true },
-      panKey: "shift",
-      zooming: {
-        type: "x",
-        mouseWheel: {
-          enabled: false,
-        },
-        resetButton: {
-          theme: {
-            zIndex: -10,
-            fill: "transparent",
-            stroke: "transparent",
-            style: {
-              color: "transparent",
-              height: 0,
-              width: 0,
-            },
-            states: {
-              hover: {
-                fill: "transparent",
-                stroke: "transparent",
-                style: {
-                  color: "transparent",
-                  height: 0,
-                  width: 0,
-                },
-              },
-            },
-          },
-        },
-      },
-
-      style: {
-        //@ts-ignore
-        borderRadius: "0 0 15px 15px",
-      },
-    },
-
-    title: undefined,
-    yAxis: {
-      title: { text: undefined },
-      opposite: false,
-      showFirstLabel: false,
-
-      showLastLabel: true,
-      gridLineWidth: 1,
-      gridLineColor:
-        theme === "dark"
-          ? "rgba(215, 223, 222, 0.11)"
-          : "rgba(41, 51, 50, 0.11)",
-
-      type: "linear",
-      min: 0,
-      labels: {
-        align: "left",
-        y: -4,
-        x: 2,
-        style: {
-          color: "#CDD8D3",
-          gridLineColor:
-            theme === "dark"
-              ? "rgba(215, 223, 222, 0.33)"
-              : "rgba(41, 51, 50, 0.33)",
-          fontSize: "8px",
-        },
-      },
-      // gridLineColor:
-      //   theme === "dark"
-      //     ? "rgba(215, 223, 222, 0.33)"
-      //     : "rgba(41, 51, 50, 0.33)",
-    },
-    xAxis: {
-      events: {
-        afterSetExtremes: onXAxisSetExtremes,
-      },
-      type: "datetime",
-      lineWidth: 0,
-      crosshair: {
-        width: 0.5,
-        color: COLORS.PLOT_LINE,
-        snap: false,
-      },
-      // min: zoomed
-      //   ? zoomMin
-      //   : timespans[selectedTimespan].xMin - 1000 * 60 * 60 * 24 * 7,
-      // max: zoomed ? zoomMax : timespans[selectedTimespan].xMax,
-      tickPositions: getTickPositions(
-        timespans[selectedTimespan].xMin,
-        timespans[selectedTimespan].xMax,
-      ),
-      tickmarkPlacement: "on",
-      tickWidth: 1,
-      tickLength: 20,
-      ordinal: false,
-      minorTicks: false,
-      minorTickLength: 2,
-      minorTickWidth: 2,
-      minorGridLineWidth: 0,
-      minorTickInterval: 1000 * 60 * 60 * 24 * 7,
-      labels: {
-        style: { color: COLORS.LABEL },
-        enabled: false,
-        formatter: (item) => {
-          const date = new Date(item.value);
-          const isMonthStart = date.getDate() === 1;
-          const isYearStart = isMonthStart && date.getMonth() === 0;
-          if (isYearStart) {
-            return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
-          } else {
-            return `<span style="">${date.toLocaleDateString("en-GB", {
-              month: "short",
-            })}</span>`;
-          }
-        },
-      },
-      // minPadding: 0.04,
-      // maxPadding: 0.04,
-      gridLineWidth: 0,
-    },
-    legend: {
-      enabled: false,
-      useHTML: false,
-      symbolWidth: 0,
-    },
-    tooltip: {
-      hideDelay: 300,
-      stickOnContact: false,
-      useHTML: true,
-      shared: true,
-      outside: true,
-      formatter: tooltipFormatter,
-      positioner: tooltipPositioner,
-      split: false,
-      followPointer: true,
-      followTouchMove: true,
-      backgroundColor: (theme === "dark" ? "#2A3433" : "#EAECEB") + "EE",
-      borderRadius: 17,
-      borderWidth: 0,
-      padding: 0,
-      shadow: {
-        color: "black",
-        opacity: 0.015,
-        offsetX: 2,
-        offsetY: 2,
-      },
-      style: {
-        color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
-      },
-    },
-
-    plotOptions: {
-      line: {
-        lineWidth: 2,
-      },
-      area: {
-        lineWidth: 2,
-        // marker: {
-        //   radius: 12,
-        //   lineWidth: 4,
-        // },
-        fillOpacity: 1,
-        fillColor: {
-          linearGradient: {
-            x1: 0,
-            y1: 0,
-            x2: 0,
-            y2: 1,
-          },
-          stops: [
-            [
-              0,
-              AllChainsByKeys[data[0].chain_id].colors[theme ?? "dark"][0] +
-                "33",
-            ],
-            [
-              1,
-              AllChainsByKeys[data[0].chain_id].colors[theme ?? "dark"][1] +
-                "33",
-            ],
-          ],
-        },
-        shadow: {
-          color:
-            AllChainsByKeys[data[0].chain_id]?.colors[theme ?? "dark"][1] +
-            "33",
-          width: 10,
-        },
-        color: {
-          linearGradient: {
-            x1: 0,
-            y1: 0,
-            x2: 1,
-            y2: 0,
-          },
-          stops: [
-            [0, AllChainsByKeys[data[0].chain_id]?.colors[theme ?? "dark"][0]],
-            // [0.33, AllChainsByKeys[series.name].colors[1]],
-            [1, AllChainsByKeys[data[0].chain_id]?.colors[theme ?? "dark"][1]],
-          ],
-        },
-        // borderColor:
-        //   AllChainsByKeys[data[0].chain_id].colors[theme ?? "dark"][0],
-        // borderWidth: 1,
-      },
-      series: {
-        zIndex: 10,
-        animation: false,
-        marker: {
-          lineColor: "white",
-          radius: 0,
-          symbol: "circle",
-        },
-        states: {
-          inactive: {
-            enabled: true,
-            opacity: 0.6,
-          },
-        },
-      },
-    },
-
-    credits: {
-      enabled: false,
-    },
-  };
+  const options: Highcharts.Options = getOptionsHelper(
+    data,
+    isAnimate,
+    timespans,
+    selectedTimespan,
+    theme,
+    tooltipFormatter,
+    tooltipPositioner,
+    getTickPositions(
+      timespans[selectedTimespan].xMin,
+      timespans[selectedTimespan].xMax,
+    ),
+    onXAxisSetExtremes,
+  );
 
   const getNavIcon = useCallback(
     (key: string) => {
@@ -1050,8 +754,6 @@ export default function ChainChart({
     }
   }, [isAnimate, selectedTimespan, timespans, zoomed]);
 
-  const resituateChartDebounceRef = useRef(null);
-
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
   const resituateChart = useCallback(async () => {
@@ -1070,24 +772,6 @@ export default function ChainChart({
     }
   }, [isAnimate, resetXAxisExtremes]);
 
-  // useEffect(() => {
-  //   // if (resituateChartDebounceRef.current)
-  //   //   resituateChartDebounceRef.current.cancel();
-  //   // resituateChartDebounceRef.current = debounce(resituateChart, 50);
-  //   // // cancel the debounced function on component unmount
-  //   // return () => {
-  //   //   if (resituateChartDebounceRef.current)
-  //   //     resituateChartDebounceRef.current.cancel();
-  //   // };
-  // }, [
-  //   chartComponents,
-  //   selectedTimespan,
-  //   timespans,
-  //   resituateChart,
-  //   isSidebarOpen,
-  //   zoomed,
-  // ]);
-
   useEffect(() => {
     resetXAxisExtremes();
   }, [resetXAxisExtremes, selectedTimespan]);
@@ -1100,18 +784,9 @@ export default function ChainChart({
     return navigationItems[1].options.map((option) => option.key ?? "");
   }, []);
 
-  // const enabledCategoryKeys = useMemo<string[]>(() => {
-  //   return
-  // })
-
   const enabledChainKeys = navigationItems[3].options
     .filter((chain) => !chain.hide)
     .map((chain) => chain.key);
-
-  // const updateChartData = useCallback(
-  //   ,
-  //   [data, pointHover, showGwei, showUsd, theme],
-  // );
 
   useEffect(() => {
     enabledFundamentalsKeys.forEach(async (key, i) => {
