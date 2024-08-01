@@ -377,3 +377,187 @@ export function getOptionsHelper(
 
   return options;
 }
+
+export const pointHoverHelper = (
+  chartComponents: React.RefObject<Highcharts.Chart[]>,
+) => {
+  return function (this: Highcharts.Point, event: MouseEvent) {
+    const { series: hoveredSeries, index: hoveredPointIndex } = this;
+    const hoveredChart = hoveredSeries.chart;
+
+    if (chartComponents.current && chartComponents.current.length > 1) {
+      chartComponents.current.forEach((chart) => {
+        if (!chart || chart.index === hoveredChart.index) return;
+
+        let wasCrosshairDrawn = false;
+
+        const chartSeries = chart.series;
+        chartSeries.forEach((series, seriesIndex) => {
+          if (event.type === "mouseOver" || event.type === "mouseMove") {
+            if (event.target !== null) {
+              const pointerEvent =
+                event.target as unknown as Highcharts.PointerEventObject;
+              const point =
+                series.points.find((p) => p.x === pointerEvent.x) || null;
+
+              if (point !== null) {
+                const simulatedPointerEvent: any = {
+                  chartX: point.plotX ?? 0,
+                  chartY: point.plotY ?? 0,
+                };
+                point.setState("hover");
+                if (!wasCrosshairDrawn) {
+                  chart.xAxis[0].drawCrosshair(simulatedPointerEvent);
+                  wasCrosshairDrawn = true;
+                }
+              }
+              return;
+            }
+          }
+
+          if (chart && chart.xAxis[0]) {
+            if (seriesIndex === hoveredSeries.index) {
+              chart.xAxis[0].hideCrosshair();
+            }
+            series.points.forEach((point) => {
+              point.setState();
+            });
+          }
+        });
+      });
+    }
+  };
+};
+
+export const updateSeriesHelper = async (
+  chartComponents: React.RefObject<Highcharts.Chart[]>,
+  data: ChainsData[],
+  enabledFundamentalsKeys: string[],
+  pointHover:
+    | Highcharts.PointMouseOverCallbackFunction
+    | Highcharts.PointMouseOutCallbackFunction,
+  showGwei: (key: string) => boolean | undefined,
+  showUsd: boolean,
+  theme: string | undefined,
+) => {
+  enabledFundamentalsKeys.forEach(async (key, i) => {
+    if (chartComponents.current) {
+      if (chartComponents.current[i]) {
+        // Show loading
+        // chartComponents.current[i].showLoading();
+
+        // Get current series displayed on this chart
+        const currentSeries = chartComponents.current[i].series;
+
+        // ["ethereum", "bsc", "polygon"]
+        const seriesToAdd = data.map((item) => item.chain_id);
+
+        // Find the series to remove
+        const seriesToRemove = currentSeries.filter(
+          (s: Highcharts.Series) => !seriesToAdd.includes(s.name),
+        );
+
+        // Remove the series we don't need
+        chartComponents.current[i].series.forEach((s) => {
+          if (seriesToRemove.includes(s)) {
+            s.remove(false);
+          }
+        });
+
+        // Loop through the series we need to add/update
+        data.forEach((item) => {
+          const seriesName = item.chain_id;
+          const series = currentSeries.find((s) => s.name === seriesName);
+
+          const seriesData = item.metrics[key]?.daily.types.includes("eth")
+            ? showUsd
+              ? item.metrics[key].daily.data.map((d) => [
+                  d[0],
+                  d[item.metrics[key].daily.types.indexOf("usd")],
+                ])
+              : item.metrics[key].daily.data.map((d) => [
+                  d[0],
+                  showGwei(key)
+                    ? d[item.metrics[key].daily.types.indexOf("eth")] *
+                      1000000000
+                    : d[item.metrics[key].daily.types.indexOf("eth")],
+                ])
+            : item.metrics[key]?.daily.data.map((d) => [d[0], d[1]]);
+
+          const seriesTypes = item.metrics[key]?.daily.types;
+
+          if (series) {
+            series.update(
+              {
+                ...series.options,
+                custom: { types: seriesTypes, metric: key },
+              },
+              false,
+            );
+            series.setData(seriesData, false);
+          } else {
+            if (chartComponents.current) {
+              chartComponents.current[i].addSeries(
+                {
+                  name: seriesName,
+                  crisp: false,
+                  custom: {
+                    types: item.metrics[key]?.daily.types,
+                    metric: key,
+                  },
+                  data: seriesData,
+                  showInLegend: false,
+                  marker: {
+                    enabled: false,
+                  },
+                  point: {
+                    events: {
+                      mouseOver: pointHover,
+                      mouseOut: pointHover,
+                    },
+                  },
+                  type: "area",
+                  lineColor:
+                    AllChainsByKeys[item.chain_id].colors[theme ?? "dark"][0],
+                  fillColor: {
+                    linearGradient: {
+                      x1: 0,
+                      y1: 0,
+                      x2: 0,
+                      y2: 1,
+                    },
+                    stops: [
+                      [
+                        0,
+                        AllChainsByKeys[item.chain_id].colors[
+                          theme ?? "dark"
+                        ][0] + "33",
+                      ],
+                      [
+                        1,
+                        AllChainsByKeys[item.chain_id].colors[
+                          theme ?? "dark"
+                        ][1] + "33",
+                      ],
+                    ],
+                  },
+                  shadow: {
+                    color:
+                      AllChainsByKeys[item.chain_id]?.colors[
+                        theme ?? "dark"
+                      ][1] + "33",
+                    width: 10,
+                  },
+                },
+                false,
+              );
+            }
+          }
+        });
+
+        // Redraw the chart
+        chartComponents.current[i].redraw();
+      }
+    }
+  });
+};

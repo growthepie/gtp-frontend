@@ -48,6 +48,8 @@ import {
   displayValuesHelper,
   compChainsHelper,
   getOptionsHelper,
+  pointHoverHelper,
+  updateSeriesHelper,
 } from "./chainHelpers";
 
 const COLORS = {
@@ -578,64 +580,9 @@ export default function ChainChart({
       [isMobile],
     );
 
-  const pointHover = useCallback<
-    | Highcharts.PointMouseOverCallbackFunction
-    | Highcharts.PointMouseOutCallbackFunction
-  >(
-    function (this: Highcharts.Point, event: MouseEvent) {
-      const { series: hoveredSeries, index: hoveredPointIndex } = this;
-      const hoveredChart = hoveredSeries.chart;
-
-      if (chartComponents.current && chartComponents.current.length > 1) {
-        chartComponents.current.forEach((chart) => {
-          if (!chart || chart.index === hoveredChart.index) return;
-
-          let wasCrosshairDrawn = false;
-
-          const chartSeries = chart.series;
-          chartSeries.forEach((series, seriesIndex) => {
-            if (event.type === "mouseOver" || event.type === "mouseMove") {
-              // if (chart.series[hoveredSeries.index]) {
-
-              if (event.target !== null) {
-                const pointerEvent =
-                  event.target as unknown as Highcharts.PointerEventObject;
-                const point =
-                  series.points.find(
-                    (p) =>
-                      p.x ===
-                      (event.target as unknown as Highcharts.PointerEventObject)
-                        .x,
-                  ) || null;
-                if (point !== null) {
-                  const simulatedPointerEvent: any = {
-                    chartX: point.plotX ?? 0,
-                    chartY: point.plotY ?? 0,
-                  };
-                  point.setState("hover");
-                  if (!wasCrosshairDrawn) {
-                    chart.xAxis[0].drawCrosshair(simulatedPointerEvent);
-                    wasCrosshairDrawn = true;
-                  }
-                }
-                return;
-              }
-              // }
-            }
-            if (chart && chart.xAxis[0]) {
-              if (seriesIndex === hoveredSeries.index)
-                chart.xAxis[0].hideCrosshair();
-              series.points.forEach((point) => {
-                point.setState();
-              });
-            }
-          });
-        });
-      }
-    },
-
-    [chartComponents],
-  );
+  const pointHover = useCallback(pointHoverHelper(chartComponents), [
+    chartComponents,
+  ]);
 
   const [isVisible, setIsVisible] = useState(true);
   const resizeTimeout = useRef<null | ReturnType<typeof setTimeout>>(null);
@@ -789,145 +736,26 @@ export default function ChainChart({
     .map((chain) => chain.key);
 
   useEffect(() => {
-    enabledFundamentalsKeys.forEach(async (key, i) => {
-      if (chartComponents.current[i]) {
-        // show loading
-        // chartComponents.current[i].showLoading();
-
-        // get current series displayed on this chart
-        const currentSeries = chartComponents.current[i].series;
-
-        // ["ethereum", "bsc", "polygon"]
-        const seriesToAdd = data.map((item) => item.chain_id);
-
-        // find the series to remove
-        const seriesToRemove = currentSeries.filter(
-          (s: Highcharts.Series) => !seriesToAdd.includes(s.name),
-        );
-
-        // remove the series we don't need
-        chartComponents.current[i].series.forEach((s) => {
-          if (seriesToRemove.includes(s)) {
-            s.remove(false);
-          }
-        });
-
-        // loop through the series we need to add/update
-        data.forEach((item) => {
-          // calculate series name
-          const seriesName = item.chain_id;
-          // const id = [key, item.chain_name].join("_");
-
-          // find the series we need to update
-          const series = currentSeries.find((s) => s.name === seriesName);
-
-          // if series exists, update it
-          if (series) {
-            const seriesData = item.metrics[key]?.daily.types.includes("eth")
-              ? showUsd
-                ? item.metrics[key].daily.data.map((d) => [
-                    d[0],
-                    d[item.metrics[key].daily.types.indexOf("usd")],
-                  ])
-                : item.metrics[key].daily.data.map((d) => [
-                    d[0],
-                    showGwei(key)
-                      ? d[item.metrics[key].daily.types.indexOf("eth")] *
-                        1000000000
-                      : d[item.metrics[key].daily.types.indexOf("eth")],
-                  ])
-              : item.metrics[key]?.daily.data.map((d) => [d[0], d[1]]);
-
-            const seriesTypes = item.metrics[key]?.daily.types;
-            // update series
-            series.update(
-              {
-                ...series.options,
-                custom: { types: seriesTypes, metric: key },
-              },
-              false,
-            );
-            series.setData(seriesData, false);
-          } else {
-            // if series does not exist, add it
-            chartComponents.current[i].addSeries(
-              {
-                name: seriesName,
-                crisp: false,
-                custom: { types: item.metrics[key]?.daily.types, metric: key },
-                data: item.metrics[key]?.daily.types.includes("eth")
-                  ? showUsd
-                    ? item.metrics[key].daily.data.map((d) => [
-                        d[0],
-                        d[item.metrics[key].daily.types.indexOf("usd")],
-                      ])
-                    : item.metrics[key].daily.data.map((d) => [
-                        d[0],
-                        showGwei(key)
-                          ? d[item.metrics[key].daily.types.indexOf("eth")] *
-                            1000000000
-                          : d[item.metrics[key].daily.types.indexOf("eth")],
-                      ])
-                  : item.metrics[key]?.daily.data.map((d) => [d[0], d[1]]),
-                showInLegend: false,
-                marker: {
-                  enabled: false,
-                },
-                point: {
-                  events: {
-                    mouseOver: pointHover,
-                    mouseOut: pointHover,
-                  },
-                },
-                type: "area",
-                lineColor:
-                  AllChainsByKeys[item.chain_id].colors[theme ?? "dark"][0], // Set line color
-                fillColor: {
-                  linearGradient: {
-                    x1: 0,
-                    y1: 0,
-                    x2: 0,
-                    y2: 1,
-                  },
-                  stops: [
-                    [
-                      0,
-                      AllChainsByKeys[item.chain_id].colors[
-                        theme ?? "dark"
-                      ][0] + "33",
-                    ],
-                    [
-                      1,
-                      AllChainsByKeys[item.chain_id].colors[
-                        theme ?? "dark"
-                      ][1] + "33",
-                    ],
-                  ],
-                },
-                shadow: {
-                  color:
-                    AllChainsByKeys[item.chain_id]?.colors[theme ?? "dark"][1] +
-                    "33",
-                  width: 10,
-                },
-                // borderColor:
-                //   AllChainsByKeys[item.chain_id].colors[theme ?? "dark"][0],
-                // borderWidth: 1,
-              },
-              false,
-            );
-          }
-        });
-
-        // redraw the chart
-        chartComponents.current[i].redraw();
-      }
-    });
+    updateSeriesHelper(
+      chartComponents,
+      data,
+      enabledFundamentalsKeys,
+      pointHover,
+      showGwei,
+      showUsd,
+      theme,
+    );
   }, [data, enabledFundamentalsKeys, pointHover, showGwei, showUsd, theme]);
+  {
+    /*Handles updating of series data for adding comparison chains */
+  }
 
   const compChain = useMemo(() => {
     return chainKey.length > 1 ? chainKey[1] : null;
   }, [chainKey]);
+  {
+    /*Get comparison chain data*/
+  }
 
   const nextChainKey = useMemo(() => {
     if (!compChain) return CompChains[0].key;
@@ -1114,7 +942,9 @@ export default function ChainChart({
           <div
             className={`flex flex-col relative lg:absolute lg:top-[27px] bottom-auto lg:left-0 lg:right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300 ${
               compareTo
-                ? `max-h-[640px] lg:z-[25] border-transparent rounded-b-[30px] lg:border-forest-200 lg:dark:border-forest-500 lg:rounded-b-2xl lg:shadow-[0px_4px_46.2px_#00000066] lg:dark:shadow-[0px_4px_46.2px_#000000]`
+                ? `max-h-[${
+                    CompChains.length * 30 + 40
+                  }px] lg:z-[25] border-transparent rounded-b-[30px] lg:border-forest-200 lg:dark:border-forest-500 lg:rounded-b-2xl lg:shadow-[0px_4px_46.2px_#00000066] lg:dark:shadow-[0px_4px_46.2px_#000000]`
                 : "max-h-0 z-20 overflow-hidden border-transparent rounded-b-[22px]"
             } `}
           >
