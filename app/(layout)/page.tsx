@@ -28,7 +28,7 @@ export default async function Page() {
           className="font-bold leading-[1.2] text-[24px] sm:text-[32px] md:text-[36px] max-w-[900px]"
           as="h1"
         >
-          Mastering Ethereum Layer 2s
+          Watching Restaking Platforms
         </Heading>
         <Subheading className="text-xs sm:text-sm md:text-[20px] font-semibold leading-[1.2]">
           Your Gateway to Curated Analytics and Knowledge
@@ -44,11 +44,13 @@ export default async function Page() {
             id="layer-2-traction-title"
             className="text-[20px] md:text-[30px] leading-[1.2] font-semibold"
           >
-            Layer 2 Traction
+            Restaking Traction
           </Heading>
         </div>
         <Subheading className="text-base leading-normal md:leading-snug px-[5px] lg:px-[45px]">
-          <div>Aggregated daily metrics across all tracked Layer 2s.</div>
+          <div>
+            Aggregated daily metrics across all tracked Restaking platforms.
+          </div>
         </Subheading>
       </Container>
       <Container className="!px-0 fade-edge-div pb-[24px] -mb-[24px]">
@@ -65,12 +67,12 @@ export default async function Page() {
             className="w-[30px] h-[30px] md:w-9 md:h-9"
           />
           <Heading className="text-[20px] md:text-[30px] leading-[1.2] font-semibold">
-            Layer 2 User Base
+            Daily restaking engagement
           </Heading>
         </div>
         <Subheading className="text-base leading-normal md:leading-snug px-[5px] lg:px-[45px]">
-          Number of distinct addresses interacting with one or multiple Layer 2s
-          in a given week.
+          Number of distinct restakers interacting with one or multiple
+          restaking platforms
         </Subheading>
       </Container>
       <LandingUserBaseChart />

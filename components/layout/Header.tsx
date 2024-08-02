@@ -4,7 +4,7 @@ import Sidebar from "./Sidebar";
 import EthUsdSwitch from "./EthUsdSwitch";
 
 // import Notification from "@/components/Notification";
-// import HeaderLinks from "./HeaderLinks";
+import HeaderLinks from "./HeaderLinks";
 
 export default function Header() {
   return (
@@ -13,10 +13,10 @@ export default function Header() {
         <div className="flex space-x-0 xl:space-x-6 w-full">
           {/*Banner/Notification Area */}
 
-          <div className={`hidden md:flex pr-[15px] `}>
-            {/* <Notification /> */}
+          {/* <Notification /> */}
+          {/* <div className={`hidden md:flex pr-[15px] `}>
             Notifition
-          </div>
+          </div> */}
 
           <div className="flex justify-between items-start h-full md:hidden relative w-full">
             <Link href="/" className="">
@@ -50,9 +50,9 @@ export default function Header() {
       <div className="items-center z-10 hidden md:flex md:space-x-[34px] ">
         <EthUsdSwitch />
 
-        {/* <div className="flex space-x-[22px] items-center ">
+        <div className="flex space-x-[22px] items-center ">
           <HeaderLinks />
-        </div> */}
+        </div>
       </div>
       {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
       ["development", "preview"].includes(
