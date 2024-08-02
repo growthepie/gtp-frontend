@@ -9,7 +9,6 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { AllChains, AllChainsByKeys } from "@/lib/chains";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
 import LandingChart from "@/components/layout/LandingChart";
-import LandingMetricsTable from "@/components/layout/LandingMetricsTable";
 import LandingTopContracts from "@/components/layout/LandingTopContracts";
 import Swiper from "@/components/layout/SwiperItems";
 import { Icon } from "@iconify/react";

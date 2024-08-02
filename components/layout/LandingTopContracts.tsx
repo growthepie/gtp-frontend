@@ -136,10 +136,11 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
                   <button
                     key={timespan}
                     //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
-                    className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${selectedTimespan === timespan
-                      ? "bg-forest-500 dark:bg-forest-1000"
-                      : "hover:bg-forest-500/10"
-                      }`}
+                    className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
+                      selectedTimespan === timespan
+                        ? "bg-forest-500 dark:bg-forest-1000"
+                        : "hover:bg-forest-500/10"
+                    }`}
                     onClick={() => {
                       setSelectedTimespan(timespan);
                     }}
@@ -156,15 +157,16 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
                 key={i}
                 data={
                   landing.data.top_contracts[selectedTimespan].data[
-                  contractIndex
+                    contractIndex
                   ]
                 }
                 types={landing.data.top_contracts[selectedTimespan].types}
                 metric={metrics[selectedMetric].key}
-                changeSuffix={`in last ${selectedTimespan === "1d"
-                  ? "1 day"
-                  : `${parseInt(selectedTimespan)} days`
-                  }`}
+                changeSuffix={`in last ${
+                  selectedTimespan === "1d"
+                    ? "1 day"
+                    : `${parseInt(selectedTimespan)} days`
+                }`}
               />
             ))}
           </div>

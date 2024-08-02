@@ -1,9 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState, useRef } from "react";
-import Image from "next/image";
-import { useMediaQuery } from "@react-hook/media-query";
-import Heading from "@/components/layout/Heading";
-import Subheading from "@/components/layout/Subheading";
+import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import {
@@ -13,18 +9,15 @@ import {
 } from "@/lib/chains";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
 import LandingChart from "@/components/layout/LandingChart";
-import LandingMetricsTable from "@/components/layout/LandingMetricsTable";
-import LandingTopContracts from "@/components/layout/LandingTopContracts";
-import Swiper from "@/components/layout/SwiperItems";
+// import LandingMetricsTable from "@/components/layout/LandingMetricsTable";
 import { Icon } from "@iconify/react";
-import TopAnimation from "@/components/TopAnimation";
 import { LandingURL, MasterURL } from "@/lib/urls";
-import Link from "next/link";
-import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import Container from "@/components/layout/Container";
 import ShowLoading from "@/components/layout/ShowLoading";
 import HorizontalScrollContainer from "../HorizontalScrollContainer";
 import { isMobile } from "react-device-detect";
+import LandingMetricsTable from "../layout/LandingMetricsTable";
+import { MetricTable } from "../table/MetricTable";
 
 export default function LandingUserBaseChart() {
   // const isLargeScreen = useMediaQuery("(min-width: 1280px)");
@@ -51,6 +44,7 @@ export default function LandingUserBaseChart() {
   } = useSWR<MasterResponse>(MasterURL);
 
   const [data, setData] = useState<any>(null);
+  const [tableVisual, setTableVisual] = useState<any>(null);
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("weekly");
 
@@ -58,7 +52,33 @@ export default function LandingUserBaseChart() {
 
   useEffect(() => {
     if (landing) {
-      setData(landing.data.metrics.user_base[selectedTimeInterval]);
+      const dataSpecificInterval =
+        landing.data.metrics.user_base[selectedTimeInterval];
+      dataSpecificInterval.chains = dataSpecificInterval.chains;
+      const chainsFiltered = {
+        ...dataSpecificInterval,
+        chains: {
+          all_l2s: dataSpecificInterval.chains.all_l2s,
+          base: dataSpecificInterval.chains.base,
+          ethereum: dataSpecificInterval.chains.ethereum,
+          zora: dataSpecificInterval.chains.zora,
+        },
+      };
+
+      const chainToSearch = Object.keys(chainsFiltered.chains);
+      const FilteredSelectedChains = selectedChains.filter((chain) =>
+        chainToSearch.includes(chain),
+      );
+      const tableVisual = {
+        all_l2s: landing.data.metrics.table_visual.all_l2s,
+        base: landing.data.metrics.table_visual.base,
+        ethereum: landing.data.metrics.table_visual.ethereum,
+        zora: landing.data.metrics.table_visual.zora,
+      };
+      setTableVisual(tableVisual);
+
+      setSelectedChains(FilteredSelectedChains);
+      setData(chainsFiltered);
     }
   }, [landing, selectedTimeInterval]);
 
@@ -128,8 +148,18 @@ export default function LandingUserBaseChart() {
             />
           </Container>
           <HorizontalScrollContainer>
-            <LandingMetricsTable
+            {/* <MetricsTable
               data={{ chains: landing.data.metrics.table_visual }}
+              selectedChains={selectedChains}
+              setSelectedChains={setSelectedChains}
+              chains={chains as any}
+              metric={selectedTimeInterval}
+              master={master}
+              // interactable={selectedMetric !== "Total Users"}
+              interactable={false}
+            /> */}
+            <MetricTable
+              data={{ chains: tableVisual }}
               selectedChains={selectedChains}
               setSelectedChains={setSelectedChains}
               chains={chains}
