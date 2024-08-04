@@ -17,6 +17,8 @@ import {
   LabelsResponse,
   LabelsResponseHelper,
   ParsedDatum,
+  getOptimizedData,
+  DatumOptimized
 } from "@/types/api/LabelsResponse";
 import Header from "./Header";
 
@@ -309,10 +311,16 @@ export default function LabelsPage() {
 
   const [labelsDeployerAddresses, setLabelsDeployerAddresses] = useSessionStorage<string[]>("labelsDeployerAddresses", []);
 
-  const data = useMemo(() => {
+  const data = useMemo<DatumOptimized>(() => {
     if (!quickLabelsData && !fullLabelsData) return [];
 
-    return quickLabelsData ? quickLabelsData.data : fullLabelsData.data;
+    console.log("getOptimizedData", getOptimizedData(quickLabelsData?.response.data.data));
+
+    if (!fullLabelsData) {
+      return getOptimizedData(quickLabelsData.response.data.data);
+    }
+    return getOptimizedData(fullLabelsData.response.data.data);
+
   }, [quickLabelsData, fullLabelsData]);
 
   const dataTypes = useMemo(() => {
@@ -335,174 +343,338 @@ export default function LabelsPage() {
     return mapping;
   }, [master]);
 
-  const filteredLabelsData = useMemo<ParsedDatum[]>(() => {
-    let rows = [];
+  // const filteredLabelsData = useMemo<ParsedDatum[]>(() => {
+  //   let rows = [];
 
-    if ((!quickLabelsData && !fullLabelsData) || !master) return rows;
+  //   if ((!quickLabelsData && !fullLabelsData) || !master) return rows;
 
-    if (!fullLabelsData) {
-      rows = quickLabelsData.data;
-    } else {
-      rows = fullLabelsData.data;
-    }
+  //   if (!fullLabelsData) {
+  //     rows = quickLabelsData.data;
+  //   } else {
+  //     rows = fullLabelsData.data;
+  //   }
 
-    const numFilters = Object.values(labelsFilters).flat().length;
+  //   const numFilters = Object.values(labelsFilters).flat().length;
 
-    if (numFilters !== 0) {
+  //   if (numFilters !== 0) {
+  //     if (labelsFilters.origin_key.length > 0) {
+  //       rows = rows.filter((label) =>
+  //         labelsFilters.origin_key.includes(label.origin_key),
+  //       );
+  //     }
+
+  //     if (labelsFilters.address.length > 0) {
+  //       // check if the search address is anywhere in the address (case insensitive)
+  //       rows = rows.filter((label) => {
+  //         return labelsFilters.address.some((address) =>
+  //           label.address.toLowerCase().includes(address.toLowerCase()),
+  //         );
+  //       });
+  //     }
+
+  //     if (labelsFilters.name.length > 0) {
+  //       rows = rows.filter((label) => labelsFilters.name.includes(label.name));
+  //     }
+
+  //     let subcategoriesInCategoryFilters = [];
+  //     labelsFilters.category.forEach((category) => {
+  //       subcategoriesInCategoryFilters.push(
+  //         master.blockspace_categories.mapping[category],
+  //       );
+  //     });
+
+  //     subcategoriesInCategoryFilters = subcategoriesInCategoryFilters.flat();
+
+  //     let both = [
+  //       ...subcategoriesInCategoryFilters,
+  //       ...labelsFilters.subcategory,
+  //     ];
+
+  //     let isUnlabeledSelected = labelsFilters.category.includes("unlabeled");
+
+  //     let all_usage_categories = [...new Set(both)];
+
+  //     if (all_usage_categories.length > 0) {
+  //       if (isUnlabeledSelected) {
+  //         rows = rows.filter((label) =>
+  //           all_usage_categories.includes(label.usage_category) || label.usage_category === null,
+  //         );
+  //       } else {
+  //         rows = rows.filter((label) =>
+  //           all_usage_categories.includes(label.usage_category),
+  //         );
+  //       }
+  //     }
+
+  //     if (labelsFilters.owner_project.length > 0) {
+  //       rows = rows.filter((label) =>
+  //         labelsFilters.owner_project
+  //           .map((o) => o.owner_project)
+  //           .includes(label.owner_project),
+  //       );
+  //     }
+  //   }
+
+  //   if (labelsFilters.deployer_address && labelsFilters.deployer_address.length > 0) {
+  //     rows = rows.filter((label) =>
+  //       labelsFilters.deployer_address.includes(label.deployer_address),
+  //     );
+  //   }
+
+  //   // sort
+  //   if (["deployment_date"].includes(sort.metric)) {
+  //     rows.sort((a, b) => {
+  //       let aVal = a[sort.metric];
+  //       let bVal = b[sort.metric];
+
+  //       if (!aVal && !bVal) return 0;
+
+  //       if (!aVal) return 1;
+
+  //       if (!bVal) return -1;
+
+  //       let aDate = new Date(aVal);
+  //       let bDate = new Date(bVal);
+
+  //       if (sort.sortOrder === "asc") {
+  //         return aDate - bDate;
+  //       } else {
+  //         return bDate - aDate;
+  //       }
+  //     });
+  //   }
+
+  //   if (["txcount", "gas_fees_usd", "daa"].includes(sort.metric)) {
+  //     rows.sort((a, b) => {
+  //       let aMetric = a[sort.metric];
+  //       let bMetric = b[sort.metric];
+  //       if (sort.sortOrder === "asc") {
+  //         return aMetric - bMetric;
+  //       } else {
+  //         return bMetric - aMetric;
+  //       }
+  //     });
+  //   }
+
+  //   if (["category", "subcategory"].includes(sort.metric)) {
+  //     rows.sort((a, b) => {
+  //       let aUsageCategory = a["usage_category"];
+  //       let bUsageCategory = b["usage_category"];
+
+  //       let aMetric =
+  //         sort.metric === "category"
+  //           ? subcategoryToCategoryMapping[aUsageCategory]
+  //           : aUsageCategory;
+  //       let bMetric =
+  //         sort.metric === "category"
+  //           ? subcategoryToCategoryMapping[bUsageCategory]
+  //           : bUsageCategory;
+
+  //       if (!aMetric && !bMetric) return 0;
+
+  //       if (!aMetric) return 1;
+
+  //       if (!bMetric) return -1;
+
+  //       if (sort.sortOrder === "asc") {
+  //         return aMetric.localeCompare(bMetric);
+  //       } else {
+  //         return bMetric.localeCompare(aMetric);
+  //       }
+  //     });
+  //   }
+
+  //   if (
+  //     ["owner_project", "address", "name", "category", "subcategory", "deployment_tx", "deployer_address"].includes(
+  //       sort.metric,
+  //     )
+  //   ) {
+  //     rows.sort((a, b) => {
+  //       let aMetric = a[sort.metric];
+  //       let bMetric = b[sort.metric];
+
+  //       if (!aMetric && !bMetric) return 0;
+
+  //       if (!aMetric) return 1;
+
+  //       if (!bMetric) return -1;
+
+  //       if (sort.sortOrder === "asc") {
+  //         return aMetric.localeCompare(bMetric);
+  //       } else {
+  //         return bMetric.localeCompare(aMetric);
+  //       }
+  //     });
+  //   }
+
+  //   return rows;
+  // }, [
+  //   quickLabelsData,
+  //   fullLabelsData,
+  //   master,
+  //   labelsFilters,
+  //   sort.metric,
+  //   sort.sortOrder,
+  //   subcategoryToCategoryMapping,
+  // ]);
+
+  const filteredLabelsData = useMemo<DatumOptimized>(() => {
+    if (!data || !data.address) return [];
+
+    const indices = Array.from({ length: data.address.length }, (_, i) => i);
+
+    const applyFilters = (indices) => {
+      let filteredIndices = indices;
+
       if (labelsFilters.origin_key.length > 0) {
-        rows = rows.filter((label) =>
-          labelsFilters.origin_key.includes(label.origin_key),
+        filteredIndices = filteredIndices.filter(i =>
+          labelsFilters.origin_key.includes(data.origin_key[i])
         );
       }
 
       if (labelsFilters.address.length > 0) {
-        // check if the search address is anywhere in the address (case insensitive)
-        rows = rows.filter((label) => {
-          return labelsFilters.address.some((address) =>
-            label.address.toLowerCase().includes(address.toLowerCase()),
-          );
-        });
+        filteredIndices = filteredIndices.filter(i =>
+          labelsFilters.address.some(address =>
+            data.address[i].toLowerCase().includes(address.toLowerCase())
+          )
+        );
       }
 
       if (labelsFilters.name.length > 0) {
-        rows = rows.filter((label) => labelsFilters.name.includes(label.name));
+        filteredIndices = filteredIndices.filter(i =>
+          labelsFilters.name.includes(data.name[i])
+        );
       }
 
       let subcategoriesInCategoryFilters = [];
       labelsFilters.category.forEach((category) => {
         subcategoriesInCategoryFilters.push(
-          master.blockspace_categories.mapping[category],
+          master.blockspace_categories.mapping[category]
         );
       });
 
       subcategoriesInCategoryFilters = subcategoriesInCategoryFilters.flat();
 
-      let both = [
-        ...subcategoriesInCategoryFilters,
-        ...labelsFilters.subcategory,
-      ];
-
+      let all_usage_categories = [...new Set([...subcategoriesInCategoryFilters, ...labelsFilters.subcategory])];
       let isUnlabeledSelected = labelsFilters.category.includes("unlabeled");
-
-      let all_usage_categories = [...new Set(both)];
 
       if (all_usage_categories.length > 0) {
         if (isUnlabeledSelected) {
-          rows = rows.filter((label) =>
-            all_usage_categories.includes(label.usage_category) || label.usage_category === null,
+          filteredIndices = filteredIndices.filter(i =>
+            all_usage_categories.includes(data.usage_category[i]) || data.usage_category[i] === null
           );
         } else {
-          rows = rows.filter((label) =>
-            all_usage_categories.includes(label.usage_category),
+          filteredIndices = filteredIndices.filter(i =>
+            all_usage_categories.includes(data.usage_category[i])
           );
         }
       }
 
       if (labelsFilters.owner_project.length > 0) {
-        rows = rows.filter((label) =>
+        filteredIndices = filteredIndices.filter(i =>
           labelsFilters.owner_project
-            .map((o) => o.owner_project)
-            .includes(label.owner_project),
+            .map(o => o.owner_project)
+            .includes(data.owner_project[i])
         );
       }
-    }
 
-    if (labelsFilters.deployer_address && labelsFilters.deployer_address.length > 0) {
-      rows = rows.filter((label) =>
-        labelsFilters.deployer_address.includes(label.deployer_address),
-      );
-    }
+      if (labelsFilters.deployer_address && labelsFilters.deployer_address.length > 0) {
+        filteredIndices = filteredIndices.filter(i =>
+          labelsFilters.deployer_address.includes(data.deployer_address[i])
+        );
+      }
 
-    // sort
-    if (["deployment_date"].includes(sort.metric)) {
-      rows.sort((a, b) => {
-        let aVal = a[sort.metric];
-        let bVal = b[sort.metric];
+      return filteredIndices;
+    };
 
-        if (!aVal && !bVal) return 0;
+    const sortData = (indices) => {
+      const sortArray = (key, array, order = 'asc') => {
+        return array.sort((a, b) => {
+          const aValue = data[key][a];
+          const bValue = data[key][b];
 
-        if (!aVal) return 1;
+          if (aValue === null && bValue === null) return 0;
+          if (aValue === null) return 1;
+          if (bValue === null) return -1;
 
-        if (!bVal) return -1;
+          if (key === 'deployment_date') {
+            const aDate = new Date(aValue);
+            const bDate = new Date(bValue);
+            return order === 'asc' ? aDate - bDate : bDate - aDate;
+          }
 
-        let aDate = new Date(aVal);
-        let bDate = new Date(bVal);
+          if (typeof aValue === 'number') {
+            return order === 'asc' ? aValue - bValue : bValue - aValue;
+          }
 
-        if (sort.sortOrder === "asc") {
-          return aDate - bDate;
-        } else {
-          return bDate - aDate;
-        }
-      });
-    }
+          return order === 'asc'
+            ? aValue.localeCompare(bValue)
+            : bValue.localeCompare(aValue);
+        });
+      };
 
-    if (["txcount", "gas_fees_usd", "daa"].includes(sort.metric)) {
-      rows.sort((a, b) => {
-        let aMetric = a[sort.metric];
-        let bMetric = b[sort.metric];
-        if (sort.sortOrder === "asc") {
-          return aMetric - bMetric;
-        } else {
-          return bMetric - aMetric;
-        }
-      });
-    }
+      if (['deployment_date'].includes(sort.metric)) {
+        return sortArray(sort.metric, indices, sort.sortOrder);
+      }
 
-    if (["category", "subcategory"].includes(sort.metric)) {
-      rows.sort((a, b) => {
-        let aUsageCategory = a["usage_category"];
-        let bUsageCategory = b["usage_category"];
+      if (['txcount', 'gas_fees_usd', 'daa'].includes(sort.metric)) {
+        return sortArray(sort.metric, indices, sort.sortOrder);
+      }
 
-        let aMetric =
-          sort.metric === "category"
+      if (['category', 'subcategory'].includes(sort.metric)) {
+        return indices.sort((a, b) => {
+          const aUsageCategory = data.usage_category[a];
+          const bUsageCategory = data.usage_category[b];
+
+          const aMetric = sort.metric === 'category'
             ? subcategoryToCategoryMapping[aUsageCategory]
             : aUsageCategory;
-        let bMetric =
-          sort.metric === "category"
+          const bMetric = sort.metric === 'category'
             ? subcategoryToCategoryMapping[bUsageCategory]
             : bUsageCategory;
 
-        if (!aMetric && !bMetric) return 0;
+          if (!aMetric && !bMetric) return 0;
+          if (!aMetric) return 1;
+          if (!bMetric) return -1;
 
-        if (!aMetric) return 1;
+          return sort.sortOrder === 'asc'
+            ? aMetric.localeCompare(bMetric)
+            : bMetric.localeCompare(aMetric);
+        });
+      }
 
-        if (!bMetric) return -1;
+      if (['owner_project', 'address', 'name', 'deployment_tx', 'deployer_address'].includes(sort.metric)) {
+        return sortArray(sort.metric, indices, sort.sortOrder);
+      }
 
-        if (sort.sortOrder === "asc") {
-          return aMetric.localeCompare(bMetric);
-        } else {
-          return bMetric.localeCompare(aMetric);
-        }
-      });
-    }
+      return indices;
+    };
 
-    if (
-      ["owner_project", "address", "name", "category", "subcategory", "deployment_tx", "deployer_address"].includes(
-        sort.metric,
-      )
-    ) {
-      rows.sort((a, b) => {
-        let aMetric = a[sort.metric];
-        let bMetric = b[sort.metric];
+    let filteredIndices = applyFilters(indices);
+    let sortedIndices = sortData(filteredIndices);
 
-        if (!aMetric && !bMetric) return 0;
+    // return columnar data
+    return {
+      address: sortedIndices.map(i => data.address[i]),
+      origin_key: sortedIndices.map(i => data.origin_key[i]),
+      chain_id: sortedIndices.map(i => data.chain_id[i]),
+      name: sortedIndices.map(i => data.name[i]),
+      owner_project: sortedIndices.map(i => data.owner_project[i]),
+      owner_project_clear: sortedIndices.map(i => data.owner_project_clear[i]),
+      usage_category: sortedIndices.map(i => data.usage_category[i]),
+      deployment_tx: sortedIndices.map(i => data.deployment_tx[i]),
+      deployer_address: sortedIndices.map(i => data.deployer_address[i]),
+      deployment_date: sortedIndices.map(i => data.deployment_date[i]),
+      txcount: sortedIndices.map(i => data.txcount[i]),
+      txcount_change: sortedIndices.map(i => data.txcount_change[i]),
+      gas_fees_usd: sortedIndices.map(i => data.gas_fees_usd[i]),
+      gas_fees_usd_change: sortedIndices.map(i => data.gas_fees_usd_change[i]),
+      daa: sortedIndices.map(i => data.daa[i]),
+      daa_change: sortedIndices.map(i => data.daa_change[i]),
+    };
 
-        if (!aMetric) return 1;
-
-        if (!bMetric) return -1;
-
-        if (sort.sortOrder === "asc") {
-          return aMetric.localeCompare(bMetric);
-        } else {
-          return bMetric.localeCompare(aMetric);
-        }
-      });
-    }
-
-    return rows;
   }, [
-    quickLabelsData,
-    fullLabelsData,
+    data,
     master,
     labelsFilters,
     sort.metric,
@@ -511,8 +683,8 @@ export default function LabelsPage() {
   ]);
 
   useEffect(() => {
-    if (filteredLabelsData) {
-      setLabelsNumberFiltered(filteredLabelsData.length);
+    if (filteredLabelsData && filteredLabelsData.address) {
+      setLabelsNumberFiltered(filteredLabelsData.address.length);
     }
   }, [filteredLabelsData, setLabelsNumberFiltered]);
 
@@ -547,18 +719,29 @@ export default function LabelsPage() {
 
     setLabelsDeployerAddresses(uniqueDeployerAddresses);
 
-  }, [fullLabelsData, data, setLabelsDeployerAddresses, setLabelsOwnerProjects]);
+  }, [fullLabelsData, setLabelsDeployerAddresses, setLabelsOwnerProjects]);
 
   // The virtualizer
+  // const virtualizer = useWindowVirtualizer({
+  //   count: filteredLabelsData.length,
+  //   // getScrollElement: () => listRef.current,
+  //   estimateSize: () => 37,
+  //   // size: 37,
+  //   // scrollMargin: listRef.current?.offsetTop ?? 0,
+  //   overscan: 32,
+  //   getItemKey: (index) =>
+  //     `${filteredLabelsData[index].origin_key}_${filteredLabelsData[index].address}}`,
+  // });
+
   const virtualizer = useWindowVirtualizer({
-    count: filteredLabelsData.length,
+    count: filteredLabelsData && filteredLabelsData.address ? filteredLabelsData.address.length : 0,
     // getScrollElement: () => listRef.current,
     estimateSize: () => 37,
     // size: 37,
     // scrollMargin: listRef.current?.offsetTop ?? 0,
     overscan: 32,
     getItemKey: (index) =>
-      `${filteredLabelsData[index].origin_key}_${filteredLabelsData[index].address}}`,
+      `${filteredLabelsData.origin_key[index]}_${filteredLabelsData.address[index]}}`,
   });
 
   const items = virtualizer.getVirtualItems();
@@ -1084,16 +1267,17 @@ export default function LabelsPage() {
         }
       >
         <div ref={listRef}>
-          {filteredLabelsData && (
+          {filteredLabelsData && filteredLabelsData.address && (
             <div
               className="relative flex-flex-col gap-y-[3px]"
               style={{
                 paddingTop,
                 paddingBottom,
-                height: filteredLabelsData.length * 37,
+                height: filteredLabelsData.address.length * 37,
               }}
             >
               {virtualizer.getVirtualItems().map((item, index) => {
+
                 return (
                   <div
                     key={item.key}
@@ -1116,14 +1300,14 @@ export default function LabelsPage() {
                       <div className="flex h-full items-center">
                         <Icon
                           icon={`gtp:${AllChainsByKeys[
-                            filteredLabelsData[item.index].origin_key
+                            filteredLabelsData.origin_key[item.index]
                           ].urlKey
                             }-logo-monochrome`}
                           className="w-[15px] h-[15px]"
                           style={{
                             color:
                               AllChainsByKeys[
-                                filteredLabelsData[item.index].origin_key
+                                filteredLabelsData.origin_key[item.index]
                               ].colors["dark"][0],
                           }}
                         />
@@ -1147,11 +1331,11 @@ export default function LabelsPage() {
                             className={`flex transition-all duration-300 ${numAddressChars === 42 - 6 ? "" : "font-semibold bg-[linear-gradient(90deg,#CDD8D3_calc(100%-17px),transparent_100%)] bg-clip-text text-transparent backface-visibility-hidden"}  `}
                             style={{ direction: 'ltr', textOverflow: ". !important", }}
                             onClick={() => {
-                              navigator.clipboard.writeText(filteredLabelsData[item.index].address)
+                              navigator.clipboard.writeText(filteredLabelsData.address[item.index])
                             }}
                           >
 
-                            {filteredLabelsData[item.index].address.slice(0, numAddressChars)}
+                            {filteredLabelsData.address[item.index].slice(0, numAddressChars)}
 
                           </div>
                           <div className={`relative h-full flex items-center text-[#CDD8D333] ${numAddressChars === 42 - 6 && "!hidden"}`}>
@@ -1159,14 +1343,14 @@ export default function LabelsPage() {
 
                           </div>
                           <div className={`transition-all duration-300  ${numAddressChars === 42 - 6 ? "" : "font-semibold bg-[linear-gradient(-90deg,#CDD8D3_calc(100%-17px),transparent_100%)] bg-clip-text text-transparent backface-visibility-hidden"} `}>
-                            {filteredLabelsData[item.index].address.slice(-6)}
+                            {filteredLabelsData.address[item.index].slice(-6)}
                           </div>
                           <div className="pl-[10px] flex">
                             <Icon
-                              icon={copiedAddress === filteredLabelsData[item.index].address ? "feather:check-circle" : "feather:copy"}
+                              icon={copiedAddress === filteredLabelsData.address[item.index] ? "feather:check-circle" : "feather:copy"}
                               className="w-[14px] h-[14px] cursor-pointer"
                               onClick={() => {
-                                handleCopyAddress(filteredLabelsData[item.index].address);
+                                handleCopyAddress(filteredLabelsData.address[item.index]);
                               }}
                             />
                           </div>
@@ -1174,7 +1358,7 @@ export default function LabelsPage() {
                       </div>
                       <div className="flex h-full items-center justify-between w-full">
 
-                        {filteredLabelsData[item.index].owner_project ? (
+                        {filteredLabelsData.owner_project[item.index] ? (
                           <>
                             <div className="flex h-full items-center gap-x-[3px] max-w-full">
 
@@ -1186,8 +1370,8 @@ export default function LabelsPage() {
                                     className="max-w-[155px]"
                                     truncateStyle="end"
                                     label={
-                                      filteredLabelsData[item.index]
-                                        .owner_project_clear
+                                      filteredLabelsData.owner_project_clear[item.index]
+
                                     }
                                     leftIcon={null}
                                     leftIconColor="#FFFFFF"
@@ -1195,8 +1379,7 @@ export default function LabelsPage() {
                                       labelsFilters.owner_project.find(
                                         (f) =>
                                           f.owner_project ===
-                                          filteredLabelsData[item.index]
-                                            .owner_project,
+                                          filteredLabelsData.owner_project[item.index],
                                       )
                                         ? "heroicons-solid:x-circle"
                                         : "heroicons-solid:plus-circle"
@@ -1205,8 +1388,7 @@ export default function LabelsPage() {
                                       labelsFilters.owner_project.find(
                                         (f) =>
                                           f.owner_project ===
-                                          filteredLabelsData[item.index]
-                                            .owner_project,
+                                          filteredLabelsData.owner_project[item.index],
                                       )
                                         ? "#FE5468"
                                         : undefined
@@ -1214,47 +1396,43 @@ export default function LabelsPage() {
                                     onClick={() =>
                                       handleFilter("owner_project", {
                                         owner_project:
-                                          filteredLabelsData[item.index]
-                                            .owner_project,
+                                          filteredLabelsData.owner_project[item.index],
                                         owner_project_clear:
-                                          filteredLabelsData[item.index]
-                                            .owner_project_clear,
+                                          filteredLabelsData.owner_project[item.index],
                                       })
                                     }
                                   />
                                 </TooltipTrigger>
                                 {ownerProjectToProjectData[
-                                  filteredLabelsData[item.index].owner_project
+                                  filteredLabelsData.owner_project[item.index]
                                 ] &&
                                   (ownerProjectToProjectData[
-                                    filteredLabelsData[item.index].owner_project
+                                    filteredLabelsData.owner_project[item.index]
                                   ][2] ||
                                     ownerProjectToProjectData[
-                                    filteredLabelsData[item.index].owner_project
+                                    filteredLabelsData.owner_project[item.index]
                                     ][4] ||
                                     ownerProjectToProjectData[
-                                    filteredLabelsData[item.index].owner_project
+                                    filteredLabelsData.owner_project[item.index]
                                     ][5]) && (
                                     <TooltipContent className="relativeflex flex-col items-start justify-center gap-y-[5px] rounded-[10px] p-2.5 bg-[#151a19] border border-[#5A6462] z-[19] max-w-[300px]">
                                       <div className="absolute top-[calc(50%-4px)] -left-1 w-2 h-2 bg-[#151a19]  border-[#5A6462] border border-r-0 border-t-0 transform rotate-45"></div>
                                       {ownerProjectToProjectData[
-                                        filteredLabelsData[item.index].owner_project
+                                        filteredLabelsData.owner_project[item.index]
                                       ][2] && (
                                           <div className="flex items-center text-xs pb-1">{`${ownerProjectToProjectData[
-                                            filteredLabelsData[item.index]
-                                              .owner_project
+                                            filteredLabelsData.owner_project[item.index]
                                           ][2]
                                             }`}</div>
                                         )}
 
                                       {ownerProjectToProjectData[
-                                        filteredLabelsData[item.index].owner_project
+                                        filteredLabelsData.owner_project[item.index]
                                       ][5] && (
                                           <a
                                             href={
                                               ownerProjectToProjectData[
-                                              filteredLabelsData[item.index]
-                                                .owner_project
+                                              filteredLabelsData.owner_project[item.index]
                                               ][5]
                                             }
                                             target="_blank"
@@ -1269,22 +1447,20 @@ export default function LabelsPage() {
                                             <div className="group-hover:underline">
                                               {
                                                 ownerProjectToProjectData[
-                                                filteredLabelsData[item.index]
-                                                  .owner_project
+                                                filteredLabelsData.owner_project[item.index]
                                                 ][5]
                                               }
                                             </div>
                                           </a>
                                         )}
                                       {ownerProjectToProjectData[
-                                        filteredLabelsData[item.index].owner_project
+                                        filteredLabelsData.owner_project[item.index]
                                       ][4] && (
                                           <div className="flex items-center">
                                             <a
                                               href={
                                                 ownerProjectToProjectData[
-                                                filteredLabelsData[item.index]
-                                                  .owner_project
+                                                filteredLabelsData.owner_project[item.index]
                                                 ][4]
                                               }
                                               target="_blank"
@@ -1299,8 +1475,7 @@ export default function LabelsPage() {
                                               <div className="group-hover:underline">
                                                 {
                                                   ownerProjectToProjectData[
-                                                  filteredLabelsData[item.index]
-                                                    .owner_project
+                                                  filteredLabelsData.owner_project[item.index]
                                                   ][4]
                                                 }
                                               </div>
@@ -1315,17 +1490,17 @@ export default function LabelsPage() {
                             <div className="flex justify-between gap-x-[5px] xmax-w-0 @[390px]:max-w-[100px] xgroup-hover:max-w-[100px] overflow-hidden transition-all duration-300">
                               <div className="flex items-center gap-x-[5px]">
                                 {ownerProjectToProjectData[
-                                  filteredLabelsData[item.index].owner_project
-                                ] && ownerProjectToProjectData[filteredLabelsData[item.index].owner_project][5] && (
+                                  filteredLabelsData.owner_project[item.index]
+                                ] && ownerProjectToProjectData[filteredLabelsData.owner_project[item.index]][5] && (
                                     <div className="h-[15px] w-[15px]">
                                       {ownerProjectToProjectData[
-                                        filteredLabelsData[item.index].owner_project
+                                        filteredLabelsData.owner_project[item.index]
                                       ][5] && (
 
                                           <a
                                             href={
                                               ownerProjectToProjectData[
-                                              filteredLabelsData[item.index].owner_project
+                                              filteredLabelsData.owner_project[item.index]
                                               ][5]
                                             }
                                             target="_blank"
@@ -1342,15 +1517,15 @@ export default function LabelsPage() {
                                     </div>
                                   )}
                                 {ownerProjectToProjectData[
-                                  filteredLabelsData[item.index].owner_project
-                                ] && ownerProjectToProjectData[filteredLabelsData[item.index].owner_project][3] && (
+                                  filteredLabelsData.owner_project[item.index]
+                                ] && ownerProjectToProjectData[filteredLabelsData.owner_project[item.index]][3] && (
                                     <div className="h-[15px] w-[15px]">
 
                                       {ownerProjectToProjectData[
-                                        filteredLabelsData[item.index].owner_project
+                                        filteredLabelsData.owner_project[item.index]
                                       ][3] && (
                                           <a
-                                            href={`https://github.com/${ownerProjectToProjectData[filteredLabelsData[item.index].owner_project][3]}/`}
+                                            href={`https://github.com/${ownerProjectToProjectData[filteredLabelsData.owner_project[item.index]][3]}/`}
                                             target="_blank"
                                             className="group flex items-center gap-x-[5px] text-xs"
                                           >
@@ -1363,17 +1538,17 @@ export default function LabelsPage() {
                                     </div>
                                   )}
                                 {ownerProjectToProjectData[
-                                  filteredLabelsData[item.index].owner_project
-                                ] && ownerProjectToProjectData[filteredLabelsData[item.index].owner_project][4] && (
+                                  filteredLabelsData.owner_project[item.index]
+                                ] && ownerProjectToProjectData[filteredLabelsData.owner_project[item.index]][4] && (
                                     <div className="h-[15px] w-[15px]">
 
                                       {ownerProjectToProjectData[
-                                        filteredLabelsData[item.index].owner_project
+                                        filteredLabelsData.owner_project[item.index]
                                       ][4] && (
                                           <a
                                             href={
                                               ownerProjectToProjectData[
-                                              filteredLabelsData[item.index].owner_project
+                                              filteredLabelsData.owner_project[item.index]
                                               ][4]
                                             }
                                             target="_blank"
@@ -1399,19 +1574,19 @@ export default function LabelsPage() {
                       </div>
 
                       <div>
-                        {filteredLabelsData[item.index].name ? (
+                        {filteredLabelsData.name[item.index] ? (
                           <div className="flex h-full items-center gap-x-[3px]">
                             <div className="truncate">
-                              {filteredLabelsData[item.index].name}
+                              {filteredLabelsData.name[item.index]}
                             </div>
                             {labelsFilters.name.includes(
-                              filteredLabelsData[item.index].name,
+                              filteredLabelsData.name[item.index],
                             ) ? (
                               <RemoveIcon
                                 onClick={() =>
                                   handleFilter(
                                     "name",
-                                    filteredLabelsData[item.index].name,
+                                    filteredLabelsData.name[item.index],
                                   )
                                 }
                               />
@@ -1420,7 +1595,7 @@ export default function LabelsPage() {
                                 onClick={() =>
                                   handleFilter(
                                     "name",
-                                    filteredLabelsData[item.index].name,
+                                    filteredLabelsData.name[item.index],
                                   )
                                 }
                               />
@@ -1434,13 +1609,13 @@ export default function LabelsPage() {
                       </div>
                       <div className="flex h-full items-center gap-x-[3px] whitespace-nowrap">
                         <div className="flex h-full items-center gap-x-[3px] whitespace-nowrap max-w-[100%] hover:max-w-[300px] transition-all duration-300 z-10">
-                          {filteredLabelsData[item.index].usage_category && (
+                          {filteredLabelsData.usage_category[item.index] && (
                             <Badge
                               size="sm"
                               label={
                                 master?.blockspace_categories.main_categories[
                                 subcategoryToCategoryMapping[
-                                filteredLabelsData[item.index].usage_category
+                                filteredLabelsData.usage_category[item.index]
                                 ]
                                 ]
                               }
@@ -1464,7 +1639,7 @@ export default function LabelsPage() {
                               rightIcon={
                                 labelsFilters.category.includes(
                                   subcategoryToCategoryMapping[
-                                  filteredLabelsData[item.index].usage_category
+                                  filteredLabelsData.usage_category[item.index]
                                   ],
                                 )
                                   ? "heroicons-solid:x-circle"
@@ -1473,7 +1648,7 @@ export default function LabelsPage() {
                               rightIconColor={
                                 labelsFilters.category.includes(
                                   subcategoryToCategoryMapping[
-                                  filteredLabelsData[item.index].usage_category
+                                  filteredLabelsData.usage_category[item.index]
                                   ],
                                 )
                                   ? "#FE5468"
@@ -1483,7 +1658,7 @@ export default function LabelsPage() {
                                 handleFilter(
                                   "category",
                                   subcategoryToCategoryMapping[
-                                  filteredLabelsData[item.index].usage_category
+                                  filteredLabelsData.usage_category[item.index]
                                   ],
                                 )
                               }
@@ -1493,26 +1668,26 @@ export default function LabelsPage() {
                       </div>
                       <div className="flex h-full items-center gap-x-[3px]">
                         <div className="flex h-full items-center gap-x-[3px] whitespace-nowrap max-w-[100%] hover:max-w-[300px] transition-all duration-300 z-10">
-                          {filteredLabelsData[item.index].usage_category && (
+                          {filteredLabelsData.usage_category[item.index] && (
                             <Badge
                               size="sm"
                               label={
                                 master?.blockspace_categories.sub_categories[
-                                filteredLabelsData[item.index].usage_category
+                                filteredLabelsData.usage_category[item.index]
                                 ]
                               }
                               leftIcon={null}
                               leftIconColor="#FFFFFF"
                               rightIcon={
                                 labelsFilters.subcategory.includes(
-                                  filteredLabelsData[item.index].usage_category,
+                                  filteredLabelsData.usage_category[item.index],
                                 )
                                   ? "heroicons-solid:x-circle"
                                   : "heroicons-solid:plus-circle"
                               }
                               rightIconColor={
                                 labelsFilters.subcategory.includes(
-                                  filteredLabelsData[item.index].usage_category,
+                                  filteredLabelsData.usage_category[item.index],
                                 )
                                   ? "#FE5468"
                                   : undefined
@@ -1520,7 +1695,7 @@ export default function LabelsPage() {
                               onClick={() =>
                                 handleFilter(
                                   "subcategory",
-                                  filteredLabelsData[item.index].usage_category,
+                                  filteredLabelsData.usage_category[item.index],
                                 )
                               }
                             />
@@ -1529,11 +1704,11 @@ export default function LabelsPage() {
                       </div>
 
                       <div className="flex h-full items-center justify-end gap-x-[3px]">
-                        {filteredLabelsData[item.index].deployment_date && (
+                        {filteredLabelsData.deployment_date[item.index] && filteredLabelsData.deployment_date[item.index] !== -1 && (
                           <div className="flex items-center gap-x-[3px]">
                             <div>
                               {new Date(
-                                filteredLabelsData[item.index].deployment_date,
+                                filteredLabelsData.deployment_date[item.index] * 1000
                               ).toLocaleDateString("en-GB", {
                                 year: "numeric",
                                 month: "short",
@@ -1558,26 +1733,26 @@ export default function LabelsPage() {
                             selection?.addRange(range);
                           }}
                         >
-                          {filteredLabelsData[item.index].deployment_tx && (
+                          {filteredLabelsData.deployment_tx[item.index] && (
                             <>
                               <div
                                 className="truncate transition-all duration-300"
                                 style={{ direction: 'ltr' }}
                                 onClick={() => {
-                                  navigator.clipboard.writeText(filteredLabelsData[item.index].deployment_tx)
+                                  navigator.clipboard.writeText(filteredLabelsData.deployment_tx[item.index])
                                 }}
                               >
-                                {filteredLabelsData[item.index].deployment_tx.slice(0, filteredLabelsData[item.index].deployment_tx.length - 6)}
+                                {filteredLabelsData.deployment_tx[item.index].slice(0, filteredLabelsData.deployment_tx[item.index].length - 6)}
                               </div>
                               <div className="transition-all duration-300">
-                                {filteredLabelsData[item.index].deployment_tx.slice(-6)}
+                                {filteredLabelsData.deployment_tx[item.index].slice(-6)}
                               </div>
                               <div className="pl-[10px]">
                                 <Icon
-                                  icon={copiedAddress === filteredLabelsData[item.index].deployment_tx ? "feather:check-circle" : "feather:copy"}
+                                  icon={copiedAddress === filteredLabelsData.deployment_tx[item.index] ? "feather:check-circle" : "feather:copy"}
                                   className="w-[14px] h-[14px] cursor-pointer"
                                   onClick={() => {
-                                    handleCopyAddress(filteredLabelsData[item.index].deployment_tx);
+                                    handleCopyAddress(filteredLabelsData.deployment_tx[item.index]);
                                   }}
                                 />
                               </div>
@@ -1600,29 +1775,29 @@ export default function LabelsPage() {
                             selection?.addRange(range);
                           }}
                         >
-                          {filteredLabelsData[item.index].deployer_address && (
+                          {filteredLabelsData.deployer_address[item.index] && (
                             <>
                               <Badge
                                 size="sm"
                                 truncateStyle="middle"
                                 className="!max-w-[110px]"
-                                label={filteredLabelsData[item.index].deployer_address}
+                                label={filteredLabelsData.deployer_address[item.index]}
                                 leftIcon={"material-symbols:deployed-code-account-rounded"}
                                 leftIconColor="#CDD8D3"
                                 rightIcon={
-                                  labelsFilters.deployer_address.includes(filteredLabelsData[item.index].deployer_address) ? "heroicons-solid:x-circle" : "heroicons-solid:plus-circle"
+                                  labelsFilters.deployer_address.includes(filteredLabelsData.deployer_address[item.index]) ? "heroicons-solid:x-circle" : "heroicons-solid:plus-circle"
                                 }
                                 rightIconColor={
-                                  labelsFilters.deployer_address.includes(filteredLabelsData[item.index].deployer_address) ? "#FE5468" : undefined
+                                  labelsFilters.deployer_address.includes(filteredLabelsData.deployer_address[item.index]) ? "#FE5468" : undefined
                                 }
-                                onClick={(e) => { handleFilter("deployer_address", filteredLabelsData[item.index].deployer_address); e.stopPropagation(); }}
+                                onClick={(e) => { handleFilter("deployer_address", filteredLabelsData.deployer_address[item.index]); e.stopPropagation(); }}
                               />
                               <div className="pl-[10px]">
                                 <Icon
-                                  icon={copiedAddress === filteredLabelsData[item.index].deployer_address ? "feather:check-circle" : "feather:copy"}
+                                  icon={copiedAddress === filteredLabelsData.deployer_address[item.index] ? "feather:check-circle" : "feather:copy"}
                                   className="w-[14px] h-[14px] cursor-pointer"
                                   onClick={() => {
-                                    handleCopyAddress(filteredLabelsData[item.index].deployer_address);
+                                    handleCopyAddress(filteredLabelsData.deployer_address[item.index]);
                                   }}
                                 />
                               </div>
@@ -1633,30 +1808,28 @@ export default function LabelsPage() {
                       <div className="flex items-center justify-between pl-[20px]">
                         <div className="relative flex h-[20px] justify-between w-full">
                           <SVGSparklineProvider
-                            key={`${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address}`}
+                            key={`${filteredLabelsData.origin_key[item.index]}_${filteredLabelsData.address[item.index]}`}
                             isDBLoading={false}
                             minUnix={SparklineTimestampRange[0]}
                             maxUnix={SparklineTimestampRange[1]}
                             data={sparklineLabelsData && sparklineLabelsData.data[
-                              `${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address
+                              `${filteredLabelsData.origin_key[item.index]}_${filteredLabelsData.address[item.index]
                               }`
                             ] ? sparklineLabelsData.data[
-                              `${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address
+                              `${filteredLabelsData.origin_key[item.index]}_${filteredLabelsData.address[item.index]
                               }`
                             ].sparkline.map((d) => [d[sparklineLabelsData.data.types.indexOf("unix")], d[sparklineLabelsData.data.types.indexOf(currentMetric)]]) : []}
                             change={
-                              filteredLabelsData[item.index][
-                              `${currentMetric}_change`
-                              ]
+                              filteredLabelsData[`${currentMetric}_change`][item.index]
                             }
                             value={
-                              filteredLabelsData[item.index][currentMetric]
+                              filteredLabelsData[currentMetric][item.index]
                             }
                             valueType={
                               currentMetric
                             }
                           >
-                            <LabelsSVGSparkline chainKey={filteredLabelsData[item.index].origin_key} />
+                            <LabelsSVGSparkline chainKey={filteredLabelsData.origin_key[item.index]} />
                           </SVGSparklineProvider>
                         </div>
                       </div>

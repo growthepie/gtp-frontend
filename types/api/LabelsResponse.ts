@@ -55,7 +55,7 @@ export interface ParsedDatum {
 }
 
 export class LabelsResponseHelper {
-  private response: LabelsResponse;
+  public response: LabelsResponse;
   private typesIndexes: Record<Columns, number>;
   public data: ParsedDatum[];
   public types: Columns[];
@@ -147,3 +147,83 @@ export class LabelsResponseHelper {
     return new LabelsResponseHelper(response);
   }
 }
+
+// optimized data structure for fast access to data
+// using typed arrays and columnar data format
+export interface LabelsResponseOptimized {
+  data: DataOptimized;
+}
+
+export interface DataOptimized {
+  sort: Sort;
+  types: Columns[];
+  data: DatumOptimized;
+}
+
+export type DatumOptimized = {
+  address: string[];
+  origin_key: string[];
+  chain_id: (string | null)[];
+  name: (string | null)[];
+  owner_project: (string | null)[];
+  owner_project_clear: (string | null)[];
+  usage_category: (string | null)[];
+  deployment_tx: (string | null)[];
+  deployer_address: (string | null)[];
+  deployment_date: Int32Array;
+  txcount: Uint32Array;
+  txcount_change: Float32Array;
+  gas_fees_usd: Float32Array;
+  gas_fees_usd_change: Float32Array;
+  daa: Uint32Array;
+  daa_change: Float32Array;
+};
+
+export const getOptimizedData = (data: Datum[]): DatumOptimized => {
+  const address = data.map((datum) => datum[0] as string);
+  const origin_key = data.map((datum) => datum[1] as string);
+  const chain_id = data.map((datum) => datum[2] as string | null);
+  const name = data.map((datum) => datum[3] as string | null);
+  const owner_project = data.map((datum) => datum[4] as string | null);
+  const owner_project_clear = data.map((datum) => datum[5] as string | null);
+  const usage_category = data.map((datum) => datum[6] as string | null);
+  const deployment_tx = data.map((datum) => datum[7] as string | null);
+  const deployer_address = data.map((datum) => datum[8] as string | null);
+  // convert string date to unix timestamp
+  const deployment_date = new Int32Array(
+    data.map((datum) =>
+      datum[9] ? new Date(datum[9] as string).getTime() / 1000 : -1,
+    ),
+  );
+  const txcount = new Uint32Array(data.map((datum) => datum[10] as number));
+  const txcount_change = new Float32Array(
+    data.map((datum) => datum[11] as number),
+  );
+  const gas_fees_usd = new Float32Array(
+    data.map((datum) => datum[12] as number),
+  );
+  const gas_fees_usd_change = new Float32Array(
+    data.map((datum) => datum[13] as number),
+  );
+  const daa = new Uint32Array(data.map((datum) => datum[14] as number));
+  const daa_change = new Float32Array(data.map((datum) => datum[15] as number));
+
+  return {
+    address,
+    origin_key,
+    chain_id,
+    name,
+    owner_project,
+    owner_project_clear,
+    usage_category,
+    deployment_tx,
+    deployer_address,
+    deployment_date,
+    txcount,
+    txcount_change,
+    gas_fees_usd,
+    gas_fees_usd_change,
+    daa,
+    daa_change,
+  };
+};

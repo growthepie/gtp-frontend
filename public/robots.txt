@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Host
-Host: https://fees.growthepie.xyz
+Host: https://labels.growthepie.xyz
 
 # Sitemaps
-Sitemap: https://fees.growthepie.xyz/sitemap.xml
+Sitemap: https://labels.growthepie.xyz/sitemap.xml
