@@ -34,16 +34,13 @@ import { AddIcon, Badge, RemoveIcon } from "./Search";
 import { formatNumber } from "@/lib/chartUtils";
 import { CanvasSparklineProvider, useCanvasSparkline } from "./CanvasSparkline";
 import { Table } from "apache-arrow";
-// import wasmInit, { wasmMemory, readParquet } from "parquet-wasm";
 import { parseTable } from "arrow-js-ffi";
-// import { useProjectData } from "../useProjectData";
-// import { useDuckDB } from "../SparklineParquetContext";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/layout/Tooltip";
-import { uniqBy } from "lodash";
+import { uniq, uniqBy } from "lodash";
 import { useMaster } from "@/contexts/Master";
 import { useUIContext } from "@/contexts/UIContext";
 import SVGSparkline, { SVGSparklineProvider, useSVGSparkline } from "./SVGSparkline";
@@ -72,9 +69,8 @@ function labelsMiddleware(useSWRNext) {
   return (key, fetcher, config) => {
     /// Add logger to the original fetcher.
     const extendedFetcher = (...args) => {
-      return fetcher(...args).then((data) => {
-        const labelsHelper = LabelsResponseHelper.fromResponse(data);
-        return labelsHelper;
+      return fetcher(...args).then((data: LabelsResponse) => {
+        return getOptimizedData(data.data.data);
       });
     };
 
@@ -98,9 +94,6 @@ export default function LabelsPage() {
   const showCents = true;
 
   const { formatMetric } = useMaster();
-
-  //True is default descending false ascending
-  // const { theme } = useTheme();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
 
@@ -168,10 +161,6 @@ export default function LabelsPage() {
     use: apiRoot === "dev" && !IS_PRODUCTION ? [devMiddleware] : [],
   });
 
-  // const [ownerProjectToProjectData, setOwnerProjectToProjectData] = useState<{
-  //   [key]: any[];
-  // }>({});
-
   const ownerProjectToProjectData = useMemo(() => {
     if (!projectsData) return {};
 
@@ -182,17 +171,6 @@ export default function LabelsPage() {
 
     return ownerProjectToProjectData;
   }, [projectsData]);
-
-  // useEffect(() => {
-  //   if (!projectsData) {
-
-  //     let ownerProjectToProjectData = {};
-  //     projectsData.data.data.forEach((project) => {
-  //       ownerProjectToProjectData[project[0]] = project;
-  //     });
-  //     setOwnerProjectToProjectData(ownerProjectToProjectData);
-  //   }
-  // }, [projectsData]);
 
   const {
     data: fullLabelsData,
@@ -215,14 +193,14 @@ export default function LabelsPage() {
     error: sparklineLabelsError,
     isLoading: sparklineLabelsLoading,
     isValidating: sparklineLabelsValidating,
-  } = useSWR<any>(quickLabelsData ? LabelsURLS.sparkline : null);
-
-  // const {
-  //   db,
-  //   isLoading: isDBLoading,
-  //   error: dbError,
-  //   data: parquetSparklineData,
-  // } = useDuckDB();
+  } = useSWR<{
+    data: {
+      types: string[];
+      [key: string]: {
+        sparkline: number[][];
+      };
+    }
+  }>(quickLabelsData ? LabelsURLS.sparkline : null);
 
   const [currentMetric, setCurrentMetric] = useState(metricKeys[0]);
 
@@ -235,12 +213,7 @@ export default function LabelsPage() {
     const currentIndex = metricKeys.indexOf(currentMetric);
     const newIndex =
       currentIndex === 0 ? metricKeys.length - 1 : currentIndex - 1;
-    // if (sort.metric === currentMetric) {
-    //   setSort({
-    //     metric: metricKeys[newIndex],
-    //     sortOrder: sort.sortOrder,
-    //   });
-    // }
+
     setCurrentMetric(metricKeys[newIndex]);
   }, [currentMetric]);
 
@@ -248,12 +221,7 @@ export default function LabelsPage() {
     const currentIndex = metricKeys.indexOf(currentMetric);
     const newIndex =
       currentIndex === metricKeys.length - 1 ? 0 : currentIndex + 1;
-    // if (sort.metric === currentMetric) {
-    //   setSort({
-    //     metric: metricKeys[newIndex],
-    //     sortOrder: sort.sortOrder,
-    //   });
-    // }
+
     setCurrentMetric(metricKeys[newIndex]);
   }, [currentMetric]);
 
@@ -267,9 +235,6 @@ export default function LabelsPage() {
       }));
     }
   }, [currentMetric, sort, setSort]);
-
-  // const [metricIndex, setMetricIndex] = useState(0);
-  // const [metricChangeIndex, setMetricChangeIndex] = useState(0);
 
   const [labelsNumberFiltered, setLabelsNumberFiltered] =
     useSessionStorage<number>("labelsNumberFiltered", 0);
@@ -314,19 +279,13 @@ export default function LabelsPage() {
   const data = useMemo<DatumOptimized>(() => {
     if (!quickLabelsData && !fullLabelsData) return [];
 
-    console.log("getOptimizedData", getOptimizedData(quickLabelsData?.response.data.data));
-
     if (!fullLabelsData) {
-      return getOptimizedData(quickLabelsData.response.data.data);
+      console.log("getOptimizedData", quickLabelsData);
+      return quickLabelsData;
     }
-    return getOptimizedData(fullLabelsData.response.data.data);
+    console.log("getOptimizedData", fullLabelsData);
+    return fullLabelsData;
 
-  }, [quickLabelsData, fullLabelsData]);
-
-  const dataTypes = useMemo(() => {
-    if (!quickLabelsData && !fullLabelsData) return {};
-
-    return quickLabelsData ? quickLabelsData.types : fullLabelsData.types;
   }, [quickLabelsData, fullLabelsData]);
 
   const subcategoryToCategoryMapping = useMemo(() => {
@@ -342,181 +301,6 @@ export default function LabelsPage() {
 
     return mapping;
   }, [master]);
-
-  // const filteredLabelsData = useMemo<ParsedDatum[]>(() => {
-  //   let rows = [];
-
-  //   if ((!quickLabelsData && !fullLabelsData) || !master) return rows;
-
-  //   if (!fullLabelsData) {
-  //     rows = quickLabelsData.data;
-  //   } else {
-  //     rows = fullLabelsData.data;
-  //   }
-
-  //   const numFilters = Object.values(labelsFilters).flat().length;
-
-  //   if (numFilters !== 0) {
-  //     if (labelsFilters.origin_key.length > 0) {
-  //       rows = rows.filter((label) =>
-  //         labelsFilters.origin_key.includes(label.origin_key),
-  //       );
-  //     }
-
-  //     if (labelsFilters.address.length > 0) {
-  //       // check if the search address is anywhere in the address (case insensitive)
-  //       rows = rows.filter((label) => {
-  //         return labelsFilters.address.some((address) =>
-  //           label.address.toLowerCase().includes(address.toLowerCase()),
-  //         );
-  //       });
-  //     }
-
-  //     if (labelsFilters.name.length > 0) {
-  //       rows = rows.filter((label) => labelsFilters.name.includes(label.name));
-  //     }
-
-  //     let subcategoriesInCategoryFilters = [];
-  //     labelsFilters.category.forEach((category) => {
-  //       subcategoriesInCategoryFilters.push(
-  //         master.blockspace_categories.mapping[category],
-  //       );
-  //     });
-
-  //     subcategoriesInCategoryFilters = subcategoriesInCategoryFilters.flat();
-
-  //     let both = [
-  //       ...subcategoriesInCategoryFilters,
-  //       ...labelsFilters.subcategory,
-  //     ];
-
-  //     let isUnlabeledSelected = labelsFilters.category.includes("unlabeled");
-
-  //     let all_usage_categories = [...new Set(both)];
-
-  //     if (all_usage_categories.length > 0) {
-  //       if (isUnlabeledSelected) {
-  //         rows = rows.filter((label) =>
-  //           all_usage_categories.includes(label.usage_category) || label.usage_category === null,
-  //         );
-  //       } else {
-  //         rows = rows.filter((label) =>
-  //           all_usage_categories.includes(label.usage_category),
-  //         );
-  //       }
-  //     }
-
-  //     if (labelsFilters.owner_project.length > 0) {
-  //       rows = rows.filter((label) =>
-  //         labelsFilters.owner_project
-  //           .map((o) => o.owner_project)
-  //           .includes(label.owner_project),
-  //       );
-  //     }
-  //   }
-
-  //   if (labelsFilters.deployer_address && labelsFilters.deployer_address.length > 0) {
-  //     rows = rows.filter((label) =>
-  //       labelsFilters.deployer_address.includes(label.deployer_address),
-  //     );
-  //   }
-
-  //   // sort
-  //   if (["deployment_date"].includes(sort.metric)) {
-  //     rows.sort((a, b) => {
-  //       let aVal = a[sort.metric];
-  //       let bVal = b[sort.metric];
-
-  //       if (!aVal && !bVal) return 0;
-
-  //       if (!aVal) return 1;
-
-  //       if (!bVal) return -1;
-
-  //       let aDate = new Date(aVal);
-  //       let bDate = new Date(bVal);
-
-  //       if (sort.sortOrder === "asc") {
-  //         return aDate - bDate;
-  //       } else {
-  //         return bDate - aDate;
-  //       }
-  //     });
-  //   }
-
-  //   if (["txcount", "gas_fees_usd", "daa"].includes(sort.metric)) {
-  //     rows.sort((a, b) => {
-  //       let aMetric = a[sort.metric];
-  //       let bMetric = b[sort.metric];
-  //       if (sort.sortOrder === "asc") {
-  //         return aMetric - bMetric;
-  //       } else {
-  //         return bMetric - aMetric;
-  //       }
-  //     });
-  //   }
-
-  //   if (["category", "subcategory"].includes(sort.metric)) {
-  //     rows.sort((a, b) => {
-  //       let aUsageCategory = a["usage_category"];
-  //       let bUsageCategory = b["usage_category"];
-
-  //       let aMetric =
-  //         sort.metric === "category"
-  //           ? subcategoryToCategoryMapping[aUsageCategory]
-  //           : aUsageCategory;
-  //       let bMetric =
-  //         sort.metric === "category"
-  //           ? subcategoryToCategoryMapping[bUsageCategory]
-  //           : bUsageCategory;
-
-  //       if (!aMetric && !bMetric) return 0;
-
-  //       if (!aMetric) return 1;
-
-  //       if (!bMetric) return -1;
-
-  //       if (sort.sortOrder === "asc") {
-  //         return aMetric.localeCompare(bMetric);
-  //       } else {
-  //         return bMetric.localeCompare(aMetric);
-  //       }
-  //     });
-  //   }
-
-  //   if (
-  //     ["owner_project", "address", "name", "category", "subcategory", "deployment_tx", "deployer_address"].includes(
-  //       sort.metric,
-  //     )
-  //   ) {
-  //     rows.sort((a, b) => {
-  //       let aMetric = a[sort.metric];
-  //       let bMetric = b[sort.metric];
-
-  //       if (!aMetric && !bMetric) return 0;
-
-  //       if (!aMetric) return 1;
-
-  //       if (!bMetric) return -1;
-
-  //       if (sort.sortOrder === "asc") {
-  //         return aMetric.localeCompare(bMetric);
-  //       } else {
-  //         return bMetric.localeCompare(aMetric);
-  //       }
-  //     });
-  //   }
-
-  //   return rows;
-  // }, [
-  //   quickLabelsData,
-  //   fullLabelsData,
-  //   master,
-  //   labelsFilters,
-  //   sort.metric,
-  //   sort.sortOrder,
-  //   subcategoryToCategoryMapping,
-  // ]);
 
   const filteredLabelsData = useMemo<DatumOptimized>(() => {
     if (!data || !data.address) return [];
@@ -689,16 +473,16 @@ export default function LabelsPage() {
   }, [filteredLabelsData, setLabelsNumberFiltered]);
 
   useEffect(() => {
-    if (!fullLabelsData)
+    if (!data || !data.owner_project || !data.owner_project_clear || !data.deployer_address)
       return;
 
     const uniqueOwnerProjects =
       uniqBy(
-        fullLabelsData.data.filter((label) => label.owner_project && label.owner_project !== "")
-          .map((label) => ({
-            owner_project: label.owner_project,
+        data.owner_project.map((owner_project, index) => [owner_project, index]).filter(([owner_project, index]) => owner_project && owner_project !== "")
+          .map(([owner_project, index]) => ({
+            owner_project: owner_project,
             owner_project_clear:
-              label.owner_project_clear || label.owner_project,
+              data.owner_project_clear[index] || owner_project,
           }))
           .sort((a, b) =>
             a.owner_project_clear
@@ -709,29 +493,17 @@ export default function LabelsPage() {
 
     setLabelsOwnerProjects(uniqueOwnerProjects);
 
-    const uniqueDeployerAddresses = uniqBy(
-      fullLabelsData.data
-        .filter((label) => label.deployer_address && label.deployer_address !== "")
-        .map((label) => label.deployer_address)
+    const uniqueDeployerAddresses = uniq(
+      data.deployer_address
+        .filter((deployer_address) => deployer_address && deployer_address !== "")
+        .map((deployer_address) => deployer_address)
         .sort((a, b) => a.localeCompare(b)),
       (a) => a,
     );
 
     setLabelsDeployerAddresses(uniqueDeployerAddresses);
 
-  }, [fullLabelsData, setLabelsDeployerAddresses, setLabelsOwnerProjects]);
-
-  // The virtualizer
-  // const virtualizer = useWindowVirtualizer({
-  //   count: filteredLabelsData.length,
-  //   // getScrollElement: () => listRef.current,
-  //   estimateSize: () => 37,
-  //   // size: 37,
-  //   // scrollMargin: listRef.current?.offsetTop ?? 0,
-  //   overscan: 32,
-  //   getItemKey: (index) =>
-  //     `${filteredLabelsData[index].origin_key}_${filteredLabelsData[index].address}}`,
-  // });
+  }, [data, data.deployer_address, data.owner_project, data.owner_project_clear, setLabelsDeployerAddresses, setLabelsOwnerProjects]);
 
   const virtualizer = useWindowVirtualizer({
     count: filteredLabelsData && filteredLabelsData.address ? filteredLabelsData.address.length : 0,
@@ -782,11 +554,6 @@ export default function LabelsPage() {
   // find the min and max of the current metric
   const SparklineTimestampRange = useMemo(() => {
     if (!sparklineLabelsData) return [0, 0];
-
-    // parquetSparklineData[
-    //   `${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address
-    //   }`
-    // ]
 
     let min = Infinity;
     let max = -Infinity;
@@ -1857,8 +1624,6 @@ type GridTableProps = {
   style?: React.CSSProperties;
 };
 
-// grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px] lg:grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px]
-// class="select-none grid gap-x-[15px] px-[6px] pt-[30px] text-[11px] items-center font-bold"
 const GridTableHeader = ({
   children,
   gridDefinitionColumns,
@@ -1875,8 +1640,6 @@ const GridTableHeader = ({
   );
 };
 
-// grid grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px] lg:grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px]
-// class="gap-x-[15px] rounded-full border border-forest-900/20 dark:border-forest-500/20 px-[6px] py-[5px] text-xs items-center"
 const GridTableRow = ({
   children,
   gridDefinitionColumns,
