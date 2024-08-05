@@ -221,15 +221,13 @@ export default function LandingMetricsTable({
                     href={`/chains/${AllChainsByKeys[item.chain.key].urlKey}`}
                   >
                     <div
-                      className={`flex items-center  ${
-                        !interactable
-                          ? "cursor-pointer pointer-events-auto"
-                          : "cursor-default pointer-events-none"
-                      } h-[34px] rounded-full w-full border-[1px] whitespace-nowrap relative ${
-                        selectedChains.includes(item.chain.key)
+                      className={`group flex items-center  ${!interactable
+                        ? "cursor-pointer pointer-events-auto"
+                        : "cursor-default pointer-events-none"
+                        } h-[34px] rounded-full w-full border-[1px] whitespace-nowrap relative ${selectedChains.includes(item.chain.key)
                           ? "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/10"
                           : "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/5 transition-all duration-100"
-                      }`}
+                        }`}
                       // onClick={() => {
                       //   if (selectedChains.includes(item.chain.key)) {
                       //     setSelectedChains(
@@ -262,11 +260,10 @@ export default function LandingMetricsTable({
                                   )
                                     ? item.chain.colors[theme ?? "dark"][1]
                                     : "#5A6462",
-                                  width: `${
-                                    (lastValsByChainKey[item.chain.key] /
-                                      maxVal) *
+                                  width: `${(lastValsByChainKey[item.chain.key] /
+                                    maxVal) *
                                     100
-                                  }%`,
+                                    }%`,
                                 }}
                               ></div>
                             </div>
@@ -285,7 +282,7 @@ export default function LandingMetricsTable({
                             }}
                           />
                         </div>
-                        <div className="break-inside-avoid text-base pl-[59px] lg:pl-[64px] leading-tight">
+                        <div className="group-hover:underline break-inside-avoid text-base pl-[59px] lg:pl-[64px] leading-tight">
                           {data.chains[item.chain.key].chain_name}
                         </div>
                       </div>
@@ -312,7 +309,7 @@ export default function LandingMetricsTable({
                       </div>
                       <div className="w-[12%] capitalize text-sm">
                         {item.chain.chainType === "L2" &&
-                        data.chains[item.chain.key].rollup === "-" ? (
+                          data.chains[item.chain.key].rollup === "-" ? (
                           " - "
                         ) : (
                           <>
@@ -375,11 +372,10 @@ export default function LandingMetricsTable({
                               strokeWidth="2"
                               strokeLinecap="round"
                               strokeLinejoin="round"
-                              className={`w-6 h-6 ${
-                                selectedChains.includes(item.chain.key)
-                                  ? "opacity-0"
-                                  : "opacity-100"
-                              }`}
+                              className={`w-6 h-6 ${selectedChains.includes(item.chain.key)
+                                ? "opacity-0"
+                                : "opacity-100"
+                                }`}
                             >
                               <circle
                                 xmlns="http://www.w3.org/2000/svg"
@@ -390,19 +386,17 @@ export default function LandingMetricsTable({
                             </svg>
                           </div>
                           <div
-                            className={`p-1 rounded-full ${
-                              selectedChains.includes(item.chain.key)
-                                ? "bg-white dark:bg-forest-1000"
-                                : "bg-forest-50 dark:bg-[#1F2726]"
-                            }`}
+                            className={`p-1 rounded-full ${selectedChains.includes(item.chain.key)
+                              ? "bg-white dark:bg-forest-1000"
+                              : "bg-forest-50 dark:bg-[#1F2726]"
+                              }`}
                           >
                             <Icon
                               icon="feather:check-circle"
-                              className={`w-6 h-6 ${
-                                selectedChains.includes(item.chain.key)
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              }`}
+                              className={`w-6 h-6 ${selectedChains.includes(item.chain.key)
+                                ? "opacity-100"
+                                : "opacity-0"
+                                }`}
                             />
                           </div>
                         </div>
