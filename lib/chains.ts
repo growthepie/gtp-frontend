@@ -498,6 +498,28 @@ export const AllChains: Chain[] = [
     darkTextOnBackground: false,
   },
   {
+    label: "Redstone",
+    icon: "/icons/redstone.png",
+    key: "redstone",
+    urlKey: "redstone",
+    chainType: "L2",
+    ecosystem: ["all-chains"], // add ecosystems when unhiding from the UI
+    description: "",
+    border: {
+      light: ["border-[#FF6061]", "border-[#FF6061]"],
+      dark: ["border-[#FF6061]", "border-[#FF6061]"],
+    },
+    colors: {
+      light: ["#FF6061", "#FF6061"], // dark greenish
+      dark: ["#FF6061", "#FF6061"], // dark greenish
+    },
+    backgrounds: {
+      light: ["bg-[#FF6061]", "bg-[#FF6061]"],
+      dark: ["bg-[#FF6061]", "bg-[#FF6061]"],
+    },
+    darkTextOnBackground: false,
+  },
+  {
     label: "Multiple Chains",
     icon: null,
     key: "multiple",
