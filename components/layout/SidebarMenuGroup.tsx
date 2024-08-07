@@ -282,8 +282,8 @@ export default function SidebarMenuGroup({
                 >
                   <div
                     className={`transition-all duration-300 w-[50px] h-full rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${!sidebarOpen || isOpen
-                        ? "translate-x-[60px] ease-in-out opacity-0"
-                        : "delay-300 translate-x-0 ease-in-out opacity-100"
+                      ? "translate-x-[60px] ease-in-out opacity-0"
+                      : "delay-300 translate-x-0 ease-in-out opacity-100"
                       }`}
                   >
                     <div
@@ -338,10 +338,10 @@ export default function SidebarMenuGroup({
                         <TooltipTrigger className="px-0 md:pl-5 w-full">
                           <Link
                             className={`group flex items-center justify-items-center rounded-l-full md:rounded-r-none relative w-full whitespace-nowrap ${urlParts[1]
-                                .trim()
-                                .localeCompare(option.urlKey) === 0
-                                ? "bg-[#CDD8D3] dark:bg-forest-1000 hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
-                                : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
+                              .trim()
+                              .localeCompare(option.urlKey) === 0
+                              ? "bg-[#CDD8D3] dark:bg-forest-1000 hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
+                              : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
                               }`}
                             href={`/${item.name.toLowerCase()}/${option.urlKey
                               }`}
@@ -361,25 +361,25 @@ export default function SidebarMenuGroup({
                           >
                             <div
                               className={`absolute top-0 left-[4px] w-[64px] h-[28px] bg-gradient-to-r from-transparent to-forest-50 dark:to-[#1F2726] transition-opacity ease-in-out ${sidebarOpen
-                                  ? "opacity-0 duration-0"
-                                  : "opacity-100 duration-500"
+                                ? "opacity-0 duration-0"
+                                : "opacity-100 duration-500"
                                 }`}
                             ></div>
 
                             <div
                               className={`w-6 absolute left-[13px]  ${urlParts[1]
-                                  .trim()
-                                  .localeCompare(option.urlKey) === 0
-                                  ? "text-inherit"
-                                  : "text-[#5A6462] group-hover:text-inherit"
+                                .trim()
+                                .localeCompare(option.urlKey) === 0
+                                ? "text-inherit"
+                                : "text-[#5A6462] group-hover:text-inherit"
                                 }`}
                             >
                               {["Blockspace"].includes(item.name) && (
                                 <Icon
                                   icon={option.icon}
                                   className={`${item.name === "Fundamentals"
-                                      ? "h-4 w-4 mx-auto"
-                                      : "h-[15px] w-[15px] mx-auto"
+                                    ? "h-4 w-4 mx-auto"
+                                    : "h-[15px] w-[15px] mx-auto"
                                     } `}
                                 />
                               )}
@@ -395,8 +395,8 @@ export default function SidebarMenuGroup({
                                 >
                                   <div
                                     className={`transition-all duration-300 w-[50px] h-full rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${sidebarOpen && isOpen
-                                        ? "delay-300 translate-x-[0px] ease-in-out opacity-100"
-                                        : "translate-x-[60px] ease-in-out opacity-0"
+                                      ? "delay-300 translate-x-[0px] ease-in-out opacity-100"
+                                      : "translate-x-[60px] ease-in-out opacity-0"
                                       }`}
                                   >
                                     <div
@@ -413,10 +413,10 @@ export default function SidebarMenuGroup({
                         {!sidebarOpen && (
                           <TooltipContent
                             className={`text-forest-900 dark:text-forest-50 py-1 px-4 text-base break-inside-auto shadow-md z-50 pointer-events-none ml-[8px] mt-[36px] flex items-center justify-items-center rounded-full md:rounded-l-full relative ${urlParts[1]
-                                .trim()
-                                .localeCompare(option.urlKey) === 0
-                                ? "bg-[#CDD8D3] dark:bg-forest-1000"
-                                : "bg-[#F0F5F3] dark:bg-[#5A6462]"
+                              .trim()
+                              .localeCompare(option.urlKey) === 0
+                              ? "bg-[#CDD8D3] dark:bg-forest-1000"
+                              : "bg-[#F0F5F3] dark:bg-[#5A6462]"
                               }`}
                           >
                             {option.label}
@@ -481,8 +481,8 @@ export default function SidebarMenuGroup({
             >
               <div
                 className={`transition-all duration-300 w-[50px] h-full rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${!sidebarOpen || isOpen
-                    ? "translate-x-[60px] ease-in-out opacity-0"
-                    : "delay-300 translate-x-0 ease-in-out opacity-100"
+                  ? "translate-x-[60px] ease-in-out opacity-0"
+                  : "delay-300 translate-x-0 ease-in-out opacity-100"
                   }`}
               >
                 <div
@@ -553,14 +553,16 @@ export default function SidebarMenuGroup({
                   <TooltipTrigger className="px-0 md:pl-5 w-full">
                     <Link
                       className={`group flex items-center justify-items-center rounded-full md:rounded-r-none relative w-full ${urlParts[1].trim().localeCompare(option.urlKey) === 0
-                          ? "bg-[#CDD8D3] dark:bg-forest-1000 hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
-                          : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
+                        ? "bg-[#CDD8D3] dark:bg-forest-1000 hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
+                        : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
                         } ${option.key === "chain-overview" ? "mt-1" : "mt-0"}`}
                       href={
-                        option.key !== "feesxyz"
+                        !option.key?.includes("https://")
                           ? `/${item.name.toLowerCase()}/${option.urlKey}`
-                          : "https://fees.growthepie.xyz/"
+                          : option.key
                       }
+                      rel={option.key?.includes("https://") ? "noopener" : ""}
+                      target={option.key?.includes("https://") ? "_blank" : ""}
                       onMouseOver={() => {
                         if (!option.key) return;
                         switch (item.name) {
@@ -578,24 +580,24 @@ export default function SidebarMenuGroup({
                     >
                       <div
                         className={`absolute top-0 left-[4px] w-[64px] h-[28px] bg-gradient-to-r from-transparent to-forest-50 dark:to-[#1F2726] transition-opacity  ease-in-out ${sidebarOpen
-                            ? "opacity-0 duration-0"
-                            : "opacity-100 duration-500"
+                          ? "opacity-0 duration-0"
+                          : "opacity-100 duration-500"
                           }`}
                       ></div>
 
                       <div
                         className={`w-6 absolute left-[13px]  ${urlParts[1].trim().localeCompare(option.urlKey) === 0
-                            ? "text-inherit"
-                            : "text-[#5A6462] group-hover:text-inherit"
+                          ? "text-inherit"
+                          : "text-[#5A6462] group-hover:text-inherit"
                           }`}
                       >
                         {["Blockspace"].includes(item.name) && (
                           <Icon
                             icon={option.icon}
                             className={`${item.name === "Fundamentals" ||
-                                item.name === "Trackers"
-                                ? "h-4 w-4 mx-auto"
-                                : "h-[15px] w-[15px] mx-auto"
+                              item.name === "Trackers"
+                              ? "h-4 w-4 mx-auto"
+                              : "h-[15px] w-[15px] mx-auto"
                               } `}
                           />
                         )}
@@ -620,8 +622,8 @@ export default function SidebarMenuGroup({
                         >
                           <div
                             className={`transition-all duration-300 w-[50px] h-full rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${sidebarOpen && isOpen
-                                ? "delay-300 translate-x-[0px] ease-in-out opacity-100"
-                                : "translate-x-[60px] ease-in-out opacity-0"
+                              ? "delay-300 translate-x-[0px] ease-in-out opacity-100"
+                              : "translate-x-[60px] ease-in-out opacity-0"
                               }`}
                           >
                             <div
@@ -637,8 +639,8 @@ export default function SidebarMenuGroup({
                   {!sidebarOpen && (
                     <TooltipContent
                       className={`text-forest-900 dark:text-forest-50 py-1 px-4 text-base break-inside-auto shadow-md z-50 pointer-events-none ml-[8px] mt-[36px] flex items-center justify-items-center rounded-full md:rounded-l-full relative ${urlParts[1].trim().localeCompare(option.urlKey) === 0
-                          ? "bg-[#CDD8D3] dark:bg-forest-1000"
-                          : "bg-[#F0F5F3] dark:bg-[#5A6462]"
+                        ? "bg-[#CDD8D3] dark:bg-forest-1000"
+                        : "bg-[#F0F5F3] dark:bg-[#5A6462]"
                         }`}
                     >
                       {option.label}
