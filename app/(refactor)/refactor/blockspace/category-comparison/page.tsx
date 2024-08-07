@@ -1,18 +1,15 @@
 "use client";
-import { useMemo, useState } from "react";
 import Heading from "@/components/layout/Heading";
 import Container from "@/components/layout/Container";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
-import { useSessionStorage, useLocalStorage } from "usehooks-ts";
-import CategoryMetrics from "@/components/layout/CategoryMetrics";
-import { BlockspaceURLs, MasterURL } from "@/lib/urls";
+import { useSessionStorage } from "usehooks-ts";
+import CategoryMetrics from "../../components/layout/Blockspace/CategoryMetrics/CategoryMetrics";
+import { BlockspaceURLs } from "@/lib/urls";
 import useSWR from "swr";
 import { CategoryComparisonResponse } from "@/types/api/CategoryComparisonResponse";
 import EcosystemDropdown from "@/components/layout/EcosystemDropdown";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import ShowLoading from "@/components/layout/ShowLoading";
-import { MasterResponse } from "@/types/api/MasterResponse";
 
 const CategoryComparison = () => {
   const {
@@ -22,17 +19,6 @@ const CategoryComparison = () => {
     isValidating: usageValidating,
   } = useSWR<CategoryComparisonResponse>(BlockspaceURLs["category-comparison"]);
 
-  const {
-    data: master,
-    error: masterError,
-    isLoading: masterLoading,
-    isValidating: masterValidating,
-  } = useSWR<MasterResponse>(MasterURL);
-
-  const [showEthereumMainnet, setShowEthereumMainnet] = useSessionStorage(
-    "blockspaceShowEthereumMainnet",
-    false,
-  );
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
     "blockspaceTimespan",
     "max",
@@ -44,7 +30,10 @@ const CategoryComparison = () => {
         dataLoading={[usageLoading]}
         dataValidating={[usageValidating]}
       />
-      <Container className="flex flex-col w-full pt-[65px] md:pt-[30px]" isPageRoot>
+      <Container
+        className="flex flex-col w-full pt-[65px] md:pt-[30px]"
+        isPageRoot
+      >
         <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] relative">
           <div className="flex items-center gap-x-[8px]">
             <Image
@@ -70,14 +59,11 @@ const CategoryComparison = () => {
         </div>
       </Container>
 
-      {usageData && master && (
+      {usageData && (
         <CategoryMetrics
-          showEthereumMainnet={showEthereumMainnet}
-          setShowEthereumMainnet={setShowEthereumMainnet}
           selectedTimespan={selectedTimespan}
           setSelectedTimespan={setSelectedTimespan}
           data={usageData.data}
-          master={master}
         />
       )}
       {usageData && (

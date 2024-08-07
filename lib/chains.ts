@@ -138,7 +138,7 @@ export const AllChains: Chain[] = [
       light: ["bg-[#2FB9F4]", "bg-[#2FB9F4]"],
       dark: ["bg-[#2FB9F4]", "bg-[#2FB9F4]"],
     },
-    darkTextOnBackground: false,
+    darkTextOnBackground: true,
   },
   {
     label: "Arbitrum One",
@@ -495,7 +495,29 @@ export const AllChains: Chain[] = [
       light: ["bg-[#E81899]", "bg-[#E81899]"],
       dark: ["bg-[#E81899]", "bg-[#E81899]"],
     },
-    darkTextOnBackground: true,
+    darkTextOnBackground: false,
+  },
+  {
+    label: "Redstone",
+    icon: "/icons/redstone.png",
+    key: "redstone",
+    urlKey: "redstone",
+    chainType: "L2",
+    ecosystem: ["all-chains"], // add ecosystems when unhiding from the UI
+    description: "",
+    border: {
+      light: ["border-[#FF6061]", "border-[#FF6061]"],
+      dark: ["border-[#FF6061]", "border-[#FF6061]"],
+    },
+    colors: {
+      light: ["#FF6061", "#FF6061"], // dark greenish
+      dark: ["#FF6061", "#FF6061"], // dark greenish
+    },
+    backgrounds: {
+      light: ["bg-[#FF6061]", "bg-[#FF6061]"],
+      dark: ["bg-[#FF6061]", "bg-[#FF6061]"],
+    },
+    darkTextOnBackground: false,
   },
   {
     label: "Multiple Chains",

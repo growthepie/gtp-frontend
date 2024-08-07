@@ -3,16 +3,8 @@
 import HighchartsReact from "highcharts-react-official";
 import Highcharts from "highcharts";
 import highchartsAnnotations from "highcharts/modules/annotations";
-import Share from "@/components/Share";
 
-import {
-  useState,
-  useEffect,
-  useMemo,
-  useRef,
-  useCallback,
-  useLayoutEffect,
-} from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import {
   useLocalStorage,
   useWindowSize,
@@ -23,17 +15,9 @@ import fullScreen from "highcharts/modules/full-screen";
 import _merge from "lodash/merge";
 import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
-import Image from "next/image";
 import d3 from "d3";
 import Link from "next/link";
-import {
-  AllChains,
-  AllChainsByKeys,
-  Get_DefaultChainSelectionKeys,
-  Get_SupportedChainKeys,
-} from "@/lib/chains";
-import { debounce, forEach } from "lodash";
-import { Splide, SplideSlide, SplideTrack } from "@splidejs/react-splide";
+import { AllChainsByKeys, Get_SupportedChainKeys } from "@/lib/chains";
 import {
   navigationItems,
   navigationCategories,
@@ -45,7 +29,7 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import useSWR, { preload } from "swr";
 import ChartWatermark from "@/components/layout/ChartWatermark";
 import { ChainsData } from "@/types/api/ChainResponse";
-import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
+
 import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead";
 import {
   TopRowContainer,
@@ -59,6 +43,14 @@ import {
   TooltipTrigger,
 } from "@/components/layout/Tooltip";
 import { useSWRConfig } from "swr";
+import ShowLoading from "@/components/layout/ShowLoading";
+import {
+  displayValuesHelper,
+  compChainsHelper,
+  getOptionsHelper,
+  pointHoverHelper,
+  updateSeriesHelper,
+} from "./chainHelpers";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -84,6 +76,7 @@ export default function ChainChart({
 }) {
   // Keep track of the mounted state
   const isMounted = useIsMounted();
+  // const { compareChain, setCompareChain } = useChain();
 
   const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
 
@@ -108,8 +101,6 @@ export default function ChainChart({
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [selectedTimespan, setSelectedTimespan] = useState("365d");
   const [selectedScale, setSelectedScale] = useState("log");
-  const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
-  const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
   const [compareTo, setCompareTo] = useState(false);
   // const [compChain, setCompChain] = useState<string | null>(null);
   // const [compChainIndex, setCompChainIndex] = useState<number>(-1);
@@ -118,52 +109,14 @@ export default function ChainChart({
   const [zoomMax, setZoomMax] = useState<number | null>(null);
 
   const { isSidebarOpen } = useUIContext();
-  const { width, height } = useWindowSize();
+
   const isMobile = useMediaQuery("(max-width: 767px)");
 
   const zoomedMargin = [49, 15, 0, 0];
   const defaultMargin = [49, 15, 0, 0];
 
   const CompChains = useMemo(() => {
-    if (!master) return [];
-
-    // const chainGroups = {};
-
-    const chainItemsByKey = navigationItems[3].options
-      .filter((option) => option.hide !== true)
-      .filter(
-        (option) =>
-          option.key && Get_SupportedChainKeys(master).includes(option.key),
-      )
-      .reduce((acc, option) => {
-        if (option.key) acc[option.key] = option;
-        return acc;
-      }, {});
-
-    // group master.chains by bucket
-    const chainsByBucket = Object.entries(master.chains).reduce(
-      (acc, [key, chainInfo]) => {
-        if (!acc[chainInfo.bucket]) {
-          acc[chainInfo.bucket] = [];
-        }
-
-        if (chainItemsByKey[key] && key !== chainKey[0])
-          acc[chainInfo.bucket].push(chainItemsByKey[key]);
-
-        return acc;
-      },
-      {},
-    );
-
-    // sort each bucket in alphabetical order
-    Object.keys(chainsByBucket).forEach((bucket) => {
-      chainsByBucket[bucket].sort((a, b) => a.label.localeCompare(b.label));
-    });
-
-    return Object.keys(chainsByBucket).reduce((acc: any[], bucket: string) => {
-      acc.push(...chainsByBucket[bucket]);
-      return acc;
-    }, []);
+    return compChainsHelper(master, chainKey);
   }, [master]);
 
   const { cache, mutate } = useSWRConfig();
@@ -301,27 +254,6 @@ export default function ChainChart({
     return Math.max(...maxUnixtimes);
   }, [data]);
 
-  function hexToRgba(hex, alpha) {
-    const hexWithoutHash = hex.replace("#", "");
-    const r = parseInt(hexWithoutHash.substring(0, 2), 16);
-    const g = parseInt(hexWithoutHash.substring(2, 4), 16);
-    const b = parseInt(hexWithoutHash.substring(4, 6), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-  }
-
-  function getDate(unix) {
-    const date = new Date(unix);
-    const formattedDate = date.toLocaleString("en-GB", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-    const dateParts = formattedDate.split(",");
-    const [month, day, year] = dateParts[0].split(" ");
-    const formattedDateStr = `${day} ${month} ${date.getFullYear()}`;
-    return formattedDateStr;
-  }
-
   const chartComponents = useRef<Highcharts.Chart[]>([]);
 
   const showGwei = useCallback((metric_id: string) => {
@@ -408,49 +340,9 @@ export default function ChainChart({
       const tickPositions: number[] = [];
       const xMinDate = new Date(xMin);
       const xMaxDate = new Date(xMax);
-      const xMinMonth = xMinDate.getUTCMonth();
-      const xMaxMonth = xMaxDate.getUTCMonth();
-
-      const xMinYear = xMinDate.getUTCFullYear();
-      const xMaxYear = xMaxDate.getUTCFullYear();
-
-      // // find first day of month greater than or equal to xMin
-      // if (xMinDate.getDate() !== 1) {
-      //   tickPositions.push(new Date(xMinYear, xMinMonth + 1, 1).getTime());
-      // } else {
-      //   tickPositions.push(xMinDate.getTime());
-      // }
-
-      // // find last day of month less than or equal to xMax
-      // if (xMaxDate.getDate() !== 1) {
-      //   tickPositions.push(new Date(xMaxYear, xMaxMonth, 1).getTime());
-      // } else {
-      //   tickPositions.push(xMaxDate.getTime());
-      // }
 
       tickPositions.push(xMinDate.getTime());
       tickPositions.push(xMaxDate.getTime());
-
-      return tickPositions;
-
-      if (selectedTimespan === "max") {
-        for (let year = xMinYear; year <= xMaxYear; year++) {
-          for (let month = 0; month < 12; month = month + 4) {
-            if (year === xMinYear && month < xMinMonth) continue;
-            if (year === xMaxYear && month > xMaxMonth) continue;
-            tickPositions.push(new Date(year, month, 1).getTime());
-          }
-        }
-        return tickPositions;
-      }
-
-      for (let year = xMinYear; year <= xMaxYear; year++) {
-        for (let month = 0; month < 12; month++) {
-          if (year === xMinYear && month < xMinMonth) continue;
-          if (year === xMaxYear && month > xMaxMonth) continue;
-          tickPositions.push(new Date(year, month, 1).getTime());
-        }
-      }
 
       return tickPositions;
     },
@@ -541,62 +433,22 @@ export default function ChainChart({
     }[] = [];
 
     data.forEach((item, chainIndex) => {
+      if (!p[chainIndex]) {
+        p[chainIndex] = {}; // Ensure p[chainIndex] is an object
+      }
+
       Object.keys(item.metrics).forEach((key) => {
-        const units = Object.keys(master.metrics[key].units);
-        const unitKey =
-          units.find((unit) => unit !== "usd" && unit !== "eth") ||
-          (showUsd ? "usd" : "eth");
-
-        let prefix =
-          showGwei(key) && !showUsd
-            ? ""
-            : master.metrics[key].units[unitKey].prefix;
-        let suffix =
-          showGwei(key) && !showUsd
-            ? "Gwei"
-            : master.metrics[key].units[unitKey].suffix;
-        let valueIndex = showUsd ? 1 : 2;
-        let valueMultiplier = showGwei(key) && !showUsd ? 1000000000 : 1;
-
-        let valueFormat = Intl.NumberFormat("en-GB", {
-          notation: "compact",
-          maximumFractionDigits:
-            key === "txcosts" && showUsd
-              ? master.metrics[key].units[unitKey].decimals
-              : 2,
-          minimumFractionDigits:
-            key === "txcosts" && showUsd
-              ? master.metrics[key].units[unitKey].decimals
-              : 2,
-        });
-
-        let navItem = navigationItems[1].options.find((ni) => ni.key === key);
-
-        let dateIndex = item.metrics[key].daily.data.length - 1;
-
-        const latestUnix =
-          item.metrics[key].daily.data[item.metrics[key].daily.data.length - 1];
-
-        if (intervalShown) {
-          const intervalMaxIndex = item.metrics[key].daily.data.findIndex(
-            (d) => d[0] >= intervalShown?.max,
-          );
-          if (intervalMaxIndex !== -1) dateIndex = intervalMaxIndex;
-        }
-
-        let value = valueFormat.format(
-          item.metrics[key].daily.data[dateIndex][
-            master.metrics[key].units[unitKey].currency ? valueIndex : 1
-          ] * valueMultiplier,
+        p[chainIndex][key] = displayValuesHelper(
+          data,
+          master,
+          showUsd,
+          intervalShown,
+          key,
+          p,
+          item,
+          showGwei(key),
+          chainIndex,
         );
-
-        if (p.length < chainIndex + 1) p[chainIndex] = {};
-
-        p[chainIndex][key] = {
-          value,
-          prefix,
-          suffix,
-        };
       });
     });
     return p;
@@ -728,94 +580,9 @@ export default function ChainChart({
       [isMobile],
     );
 
-  const seriesHover = useCallback<
-    | Highcharts.SeriesMouseOverCallbackFunction
-    | Highcharts.SeriesMouseOutCallbackFunction
-  >(
-    function (this: Highcharts.Series, event: Event) {
-      const {
-        chart: hoveredChart,
-        name: hoveredSeriesName,
-        index: hoveredSeriesIndex,
-      } = this;
-
-      if (chartComponents.current && chartComponents.current.length > 1) {
-        chartComponents.current.forEach((chart) => {
-          if (!chart || chart.index === hoveredChart.index) return;
-
-          // set series state
-          if (event.type === "mouseOver") {
-            if (chart.series[hoveredSeriesIndex]) {
-              chart.series[hoveredSeriesIndex].setState("hover");
-            }
-          } else {
-            chart.series[hoveredSeriesIndex].setState();
-          }
-        });
-      }
-    },
-
-    [chartComponents],
-  );
-
-  const pointHover = useCallback<
-    | Highcharts.PointMouseOverCallbackFunction
-    | Highcharts.PointMouseOutCallbackFunction
-  >(
-    function (this: Highcharts.Point, event: MouseEvent) {
-      const { series: hoveredSeries, index: hoveredPointIndex } = this;
-      const hoveredChart = hoveredSeries.chart;
-
-      if (chartComponents.current && chartComponents.current.length > 1) {
-        chartComponents.current.forEach((chart) => {
-          if (!chart || chart.index === hoveredChart.index) return;
-
-          let wasCrosshairDrawn = false;
-
-          const chartSeries = chart.series;
-          chartSeries.forEach((series, seriesIndex) => {
-            if (event.type === "mouseOver" || event.type === "mouseMove") {
-              // if (chart.series[hoveredSeries.index]) {
-
-              if (event.target !== null) {
-                const pointerEvent =
-                  event.target as unknown as Highcharts.PointerEventObject;
-                const point =
-                  series.points.find(
-                    (p) =>
-                      p.x ===
-                      (event.target as unknown as Highcharts.PointerEventObject)
-                        .x,
-                  ) || null;
-                if (point !== null) {
-                  const simulatedPointerEvent: any = {
-                    chartX: point.plotX ?? 0,
-                    chartY: point.plotY ?? 0,
-                  };
-                  point.setState("hover");
-                  if (!wasCrosshairDrawn) {
-                    chart.xAxis[0].drawCrosshair(simulatedPointerEvent);
-                    wasCrosshairDrawn = true;
-                  }
-                }
-                return;
-              }
-              // }
-            }
-            if (chart && chart.xAxis[0]) {
-              if (seriesIndex === hoveredSeries.index)
-                chart.xAxis[0].hideCrosshair();
-              series.points.forEach((point) => {
-                point.setState();
-              });
-            }
-          });
-        });
-      }
-    },
-
-    [chartComponents],
-  );
+  const pointHover = useCallback(pointHoverHelper(chartComponents), [
+    chartComponents,
+  ]);
 
   const [isVisible, setIsVisible] = useState(true);
   const resizeTimeout = useRef<null | ReturnType<typeof setTimeout>>(null);
@@ -869,242 +636,20 @@ export default function ChainChart({
     };
   }, []);
 
-  const options: Highcharts.Options = {
-    accessibility: { enabled: false },
-    exporting: { enabled: false },
-    chart: {
-      type: "area",
-      animation: isAnimate,
-      height: 176,
-      backgroundColor: undefined,
-      margin: [1, 0, 40, 0],
-      spacingBottom: 0,
-      spacingTop: 40,
-      panning: { enabled: true },
-      panKey: "shift",
-      zooming: {
-        type: "x",
-        mouseWheel: {
-          enabled: false,
-        },
-        resetButton: {
-          theme: {
-            zIndex: -10,
-            fill: "transparent",
-            stroke: "transparent",
-            style: {
-              color: "transparent",
-              height: 0,
-              width: 0,
-            },
-            states: {
-              hover: {
-                fill: "transparent",
-                stroke: "transparent",
-                style: {
-                  color: "transparent",
-                  height: 0,
-                  width: 0,
-                },
-              },
-            },
-          },
-        },
-      },
-
-      style: {
-        //@ts-ignore
-        borderRadius: "0 0 15px 15px",
-      },
-    },
-
-    title: undefined,
-    yAxis: {
-      title: { text: undefined },
-      opposite: false,
-      showFirstLabel: false,
-
-      showLastLabel: true,
-      gridLineWidth: 1,
-      gridLineColor:
-        theme === "dark"
-          ? "rgba(215, 223, 222, 0.11)"
-          : "rgba(41, 51, 50, 0.11)",
-
-      type: "linear",
-      min: 0,
-      labels: {
-        align: "left",
-        y: -4,
-        x: 2,
-        style: {
-          color: "#CDD8D3",
-          gridLineColor:
-            theme === "dark"
-              ? "rgba(215, 223, 222, 0.33)"
-              : "rgba(41, 51, 50, 0.33)",
-          fontSize: "8px",
-        },
-      },
-      // gridLineColor:
-      //   theme === "dark"
-      //     ? "rgba(215, 223, 222, 0.33)"
-      //     : "rgba(41, 51, 50, 0.33)",
-    },
-    xAxis: {
-      events: {
-        afterSetExtremes: onXAxisSetExtremes,
-      },
-      type: "datetime",
-      lineWidth: 0,
-      crosshair: {
-        width: 0.5,
-        color: COLORS.PLOT_LINE,
-        snap: false,
-      },
-      // min: zoomed
-      //   ? zoomMin
-      //   : timespans[selectedTimespan].xMin - 1000 * 60 * 60 * 24 * 7,
-      // max: zoomed ? zoomMax : timespans[selectedTimespan].xMax,
-      tickPositions: getTickPositions(
-        timespans[selectedTimespan].xMin,
-        timespans[selectedTimespan].xMax,
-      ),
-      tickmarkPlacement: "on",
-      tickWidth: 1,
-      tickLength: 20,
-      ordinal: false,
-      minorTicks: false,
-      minorTickLength: 2,
-      minorTickWidth: 2,
-      minorGridLineWidth: 0,
-      minorTickInterval: 1000 * 60 * 60 * 24 * 7,
-      labels: {
-        style: { color: COLORS.LABEL },
-        enabled: false,
-        formatter: (item) => {
-          const date = new Date(item.value);
-          const isMonthStart = date.getDate() === 1;
-          const isYearStart = isMonthStart && date.getMonth() === 0;
-          if (isYearStart) {
-            return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
-          } else {
-            return `<span style="">${date.toLocaleDateString("en-GB", {
-              month: "short",
-            })}</span>`;
-          }
-        },
-      },
-      // minPadding: 0.04,
-      // maxPadding: 0.04,
-      gridLineWidth: 0,
-    },
-    legend: {
-      enabled: false,
-      useHTML: false,
-      symbolWidth: 0,
-    },
-    tooltip: {
-      hideDelay: 300,
-      stickOnContact: false,
-      useHTML: true,
-      shared: true,
-      outside: true,
-      formatter: tooltipFormatter,
-      positioner: tooltipPositioner,
-      split: false,
-      followPointer: true,
-      followTouchMove: true,
-      backgroundColor: (theme === "dark" ? "#2A3433" : "#EAECEB") + "EE",
-      borderRadius: 17,
-      borderWidth: 0,
-      padding: 0,
-      shadow: {
-        color: "black",
-        opacity: 0.015,
-        offsetX: 2,
-        offsetY: 2,
-      },
-      style: {
-        color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
-      },
-    },
-
-    plotOptions: {
-      line: {
-        lineWidth: 2,
-      },
-      area: {
-        lineWidth: 2,
-        // marker: {
-        //   radius: 12,
-        //   lineWidth: 4,
-        // },
-        fillOpacity: 1,
-        fillColor: {
-          linearGradient: {
-            x1: 0,
-            y1: 0,
-            x2: 0,
-            y2: 1,
-          },
-          stops: [
-            [
-              0,
-              AllChainsByKeys[data[0].chain_id].colors[theme ?? "dark"][0] +
-                "33",
-            ],
-            [
-              1,
-              AllChainsByKeys[data[0].chain_id].colors[theme ?? "dark"][1] +
-                "33",
-            ],
-          ],
-        },
-        shadow: {
-          color:
-            AllChainsByKeys[data[0].chain_id]?.colors[theme ?? "dark"][1] +
-            "33",
-          width: 10,
-        },
-        color: {
-          linearGradient: {
-            x1: 0,
-            y1: 0,
-            x2: 1,
-            y2: 0,
-          },
-          stops: [
-            [0, AllChainsByKeys[data[0].chain_id]?.colors[theme ?? "dark"][0]],
-            // [0.33, AllChainsByKeys[series.name].colors[1]],
-            [1, AllChainsByKeys[data[0].chain_id]?.colors[theme ?? "dark"][1]],
-          ],
-        },
-        // borderColor:
-        //   AllChainsByKeys[data[0].chain_id].colors[theme ?? "dark"][0],
-        // borderWidth: 1,
-      },
-      series: {
-        zIndex: 10,
-        animation: false,
-        marker: {
-          lineColor: "white",
-          radius: 0,
-          symbol: "circle",
-        },
-        states: {
-          inactive: {
-            enabled: true,
-            opacity: 0.6,
-          },
-        },
-      },
-    },
-
-    credits: {
-      enabled: false,
-    },
-  };
+  const options: Highcharts.Options = getOptionsHelper(
+    data,
+    isAnimate,
+    timespans,
+    selectedTimespan,
+    theme,
+    tooltipFormatter,
+    tooltipPositioner,
+    getTickPositions(
+      timespans[selectedTimespan].xMin,
+      timespans[selectedTimespan].xMax,
+    ),
+    onXAxisSetExtremes,
+  );
 
   const getNavIcon = useCallback(
     (key: string) => {
@@ -1156,8 +701,6 @@ export default function ChainChart({
     }
   }, [isAnimate, selectedTimespan, timespans, zoomed]);
 
-  const resituateChartDebounceRef = useRef(null);
-
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
   const resituateChart = useCallback(async () => {
@@ -1176,24 +719,6 @@ export default function ChainChart({
     }
   }, [isAnimate, resetXAxisExtremes]);
 
-  // useEffect(() => {
-  //   // if (resituateChartDebounceRef.current)
-  //   //   resituateChartDebounceRef.current.cancel();
-  //   // resituateChartDebounceRef.current = debounce(resituateChart, 50);
-  //   // // cancel the debounced function on component unmount
-  //   // return () => {
-  //   //   if (resituateChartDebounceRef.current)
-  //   //     resituateChartDebounceRef.current.cancel();
-  //   // };
-  // }, [
-  //   chartComponents,
-  //   selectedTimespan,
-  //   timespans,
-  //   resituateChart,
-  //   isSidebarOpen,
-  //   zoomed,
-  // ]);
-
   useEffect(() => {
     resetXAxisExtremes();
   }, [resetXAxisExtremes, selectedTimespan]);
@@ -1206,170 +731,31 @@ export default function ChainChart({
     return navigationItems[1].options.map((option) => option.key ?? "");
   }, []);
 
-  // const enabledCategoryKeys = useMemo<string[]>(() => {
-  //   return
-  // })
-
   const enabledChainKeys = navigationItems[3].options
     .filter((chain) => !chain.hide)
     .map((chain) => chain.key);
 
-  // const updateChartData = useCallback(
-  //   ,
-  //   [data, pointHover, showGwei, showUsd, theme],
-  // );
-
   useEffect(() => {
-    enabledFundamentalsKeys.forEach(async (key, i) => {
-      if (chartComponents.current[i]) {
-        // show loading
-        // chartComponents.current[i].showLoading();
-
-        // get current series displayed on this chart
-        const currentSeries = chartComponents.current[i].series;
-
-        // ["ethereum", "bsc", "polygon"]
-        const seriesToAdd = data.map((item) => item.chain_id);
-
-        // find the series to remove
-        const seriesToRemove = currentSeries.filter(
-          (s: Highcharts.Series) => !seriesToAdd.includes(s.name),
-        );
-
-        // remove the series we don't need
-        chartComponents.current[i].series.forEach((s) => {
-          if (seriesToRemove.includes(s)) {
-            s.remove(false);
-          }
-        });
-
-        // loop through the series we need to add/update
-        data.forEach((item) => {
-          // calculate series name
-          const seriesName = item.chain_id;
-          // const id = [key, item.chain_name].join("_");
-
-          // find the series we need to update
-          const series = currentSeries.find((s) => s.name === seriesName);
-
-          // if series exists, update it
-          if (series) {
-            const seriesData = item.metrics[key]?.daily.types.includes("eth")
-              ? showUsd
-                ? item.metrics[key].daily.data.map((d) => [
-                    d[0],
-                    d[item.metrics[key].daily.types.indexOf("usd")],
-                  ])
-                : item.metrics[key].daily.data.map((d) => [
-                    d[0],
-                    showGwei(key)
-                      ? d[item.metrics[key].daily.types.indexOf("eth")] *
-                        1000000000
-                      : d[item.metrics[key].daily.types.indexOf("eth")],
-                  ])
-              : item.metrics[key]?.daily.data.map((d) => [d[0], d[1]]);
-
-            const seriesTypes = item.metrics[key]?.daily.types;
-            // update series
-            series.update(
-              {
-                ...series.options,
-                custom: { types: seriesTypes, metric: key },
-              },
-              false,
-            );
-            series.setData(seriesData, false);
-          } else {
-            // if series does not exist, add it
-            chartComponents.current[i].addSeries(
-              {
-                name: seriesName,
-                crisp: false,
-                custom: { types: item.metrics[key]?.daily.types, metric: key },
-                data: item.metrics[key]?.daily.types.includes("eth")
-                  ? showUsd
-                    ? item.metrics[key].daily.data.map((d) => [
-                        d[0],
-                        d[item.metrics[key].daily.types.indexOf("usd")],
-                      ])
-                    : item.metrics[key].daily.data.map((d) => [
-                        d[0],
-                        showGwei(key)
-                          ? d[item.metrics[key].daily.types.indexOf("eth")] *
-                            1000000000
-                          : d[item.metrics[key].daily.types.indexOf("eth")],
-                      ])
-                  : item.metrics[key]?.daily.data.map((d) => [d[0], d[1]]),
-                showInLegend: false,
-                marker: {
-                  enabled: false,
-                },
-                point: {
-                  events: {
-                    mouseOver: pointHover,
-                    mouseOut: pointHover,
-                  },
-                },
-                type: "area",
-                lineColor:
-                  AllChainsByKeys[item.chain_id].colors[theme ?? "dark"][0], // Set line color
-                fillColor: {
-                  linearGradient: {
-                    x1: 0,
-                    y1: 0,
-                    x2: 0,
-                    y2: 1,
-                  },
-                  stops: [
-                    [
-                      0,
-                      AllChainsByKeys[item.chain_id].colors[
-                        theme ?? "dark"
-                      ][0] + "33",
-                    ],
-                    [
-                      1,
-                      AllChainsByKeys[item.chain_id].colors[
-                        theme ?? "dark"
-                      ][1] + "33",
-                    ],
-                  ],
-                },
-                shadow: {
-                  color:
-                    AllChainsByKeys[item.chain_id]?.colors[theme ?? "dark"][1] +
-                    "33",
-                  width: 10,
-                },
-                // borderColor:
-                //   AllChainsByKeys[item.chain_id].colors[theme ?? "dark"][0],
-                // borderWidth: 1,
-              },
-              false,
-            );
-          }
-        });
-
-        // redraw the chart
-        chartComponents.current[i].redraw();
-      }
-    });
+    updateSeriesHelper(
+      chartComponents,
+      data,
+      enabledFundamentalsKeys,
+      pointHover,
+      showGwei,
+      showUsd,
+      theme,
+    );
   }, [data, enabledFundamentalsKeys, pointHover, showGwei, showUsd, theme]);
-
-  // const CompChains = useMemo(() => {
-  //   if (!master) return [];
-
-  //   return AllChains.filter(
-  //     (chain) =>
-  //       Get_SupportedChainKeys(master).includes(chain.key) &&
-  //       !["all_l2s", chainKey[0]].includes(chain.key) &&
-  //       Object.keys(master.chains).includes(chain.key),
-  //   );
-  // }, [chainKey, master]);
+  {
+    /*Handles updating of series data for adding comparison chains */
+  }
 
   const compChain = useMemo(() => {
     return chainKey.length > 1 ? chainKey[1] : null;
   }, [chainKey]);
+  {
+    /*Get comparison chain data*/
+  }
 
   const nextChainKey = useMemo(() => {
     if (!compChain) return CompChains[0].key;
@@ -1401,6 +787,7 @@ export default function ChainChart({
 
   const handleNextCompChain = () => {
     setChainKey([chainKey[0], nextChainKey]);
+    //setCompareChain(nextChainKey);
   };
 
   const handlePrevCompChain = () => {
@@ -1462,12 +849,11 @@ export default function ChainChart({
   if (!master || !data) {
     return (
       <div className="flex justify-center items-center h-screen">
-        Loading...
+        <ShowLoading />
       </div>
     );
   }
 
-  console.log(master ? master : "");
   return (
     <div className="w-full flex-col relative " id="chains-content-container">
       <style>
@@ -2271,6 +1657,7 @@ export default function ChainChart({
                             <div className="absolute bottom-[43.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-40">
                               <ChartWatermark className="w-[102.936px] h-[24.536px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
                             </div>
+                            {/*Date Left Side*/}
                             <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/50 pointer-events-none">
                               <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
                               {zoomed && zoomMin !== null && (
@@ -2300,6 +1687,7 @@ export default function ChainChart({
                                 </div>
                               )}
                             </div>
+                            {/*Date Right Side*/}
                             <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute right-[9px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/50 pointer-events-none">
                               {zoomed && zoomMax !== null && (
                                 <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">

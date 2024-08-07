@@ -12,7 +12,7 @@ export const BASE_URLS = {
 
 export const BASE_URL =
   BASE_URLS[
-    process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL?.includes("dev")
+    process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL?.includes("dev-")
       ? "preview"
       : "production"
   ];

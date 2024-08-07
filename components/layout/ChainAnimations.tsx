@@ -5,6 +5,7 @@ import { useTheme } from "next-themes";
 import { useLocalStorage } from "usehooks-ts";
 import { useMemo, useState, useEffect, useRef } from "react";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import Link from "next/link";
 
 export default function ChainAnimations({
   chain,
@@ -144,38 +145,24 @@ export default function ChainAnimations({
     return (
       <div
         key={chain}
-        className={`relative flex flex-row items-center rounded-full text-xs font-medium hover:cursor-pointer z-0 ${
-          AllChainsByKeys[chain].darkTextOnBackground === true
-            ? "text-white dark:text-black"
-            : "text-white"
-        } ${
-          selectedChains[chain]
+        className={`relative flex flex-row items-center rounded-full text-xs font-medium z-0 select-none ${AllChainsByKeys[chain].darkTextOnBackground === true
+          ? "text-white dark:text-black"
+          : "text-white"
+          } ${selectedChains[chain]
             ? AllChainsByKeys[chain].backgrounds[theme ?? "dark"][1]
             : `${AllChainsByKeys[chain].backgrounds[theme ?? "dark"][1]} `
-        }
+          }
         ${isShaking ? "animate-shake " : ""}`}
         style={{
           width: width,
           // height: "45px",
           // bottom: `${index * 45}px`,
         }}
-        // style={{
-        //   zIndex: index,
-        //   ...style,
-        // }}
-        onClick={() => {
-          if (availableSelectedChains > 1 || !selectedChains[chain]) {
-            setSelectedChains((prevSelectedChains) => ({
-              ...prevSelectedChains,
-              [chain]: !prevSelectedChains[chain],
-            }));
-          } else {
-            setIsShaking(true);
-            setTimeout(() => {
-              setIsShaking(false);
-            }, 500);
-          }
-        }}
+      // style={{
+      //   zIndex: index,
+      //   ...style,
+      // }}
+
       >
         <div
           key={chain + " " + value}
@@ -195,12 +182,15 @@ export default function ChainAnimations({
               />
             </div>
             {width !== null && (
-              <div className="-mb-0.5 overflow-hidden text-ellipsis min-w-0 max-w-fit">
+              <Link
+                href={`/chains/${AllChainsByKeys[chain].urlKey}`}
+                className="overflow-hidden text-ellipsis min-w-0 max-w-fit hover:underline"
+              >
                 {width &&
-                230 > parseFloat(width.match(/(\d+(\.\d+)?)(?=px)/)?.[0] || "0")
+                  230 > parseFloat(width.match(/(\d+(\.\d+)?)(?=px)/)?.[0] || "0")
                   ? master.chains[chain].name_short
                   : AllChainsByKeys[chain]?.label}
-              </div>
+              </Link>
             )}
           </div>
 
@@ -221,34 +211,45 @@ export default function ChainAnimations({
                   <div>
                     {showUsd
                       ? (Math.round(value * 100) / 100).toLocaleString(
-                          "en-GB",
-                          {
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 0,
-                          },
-                        )
+                        "en-GB",
+                        {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 0,
+                        },
+                      )
                       : (Math.round(value * 100) / 100).toLocaleString(
-                          "en-GB",
-                          {
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 2,
-                          },
-                        )}
+                        "en-GB",
+                        {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 2,
+                        },
+                      )}
                   </div>
                 </div>
               )}
             </div>
             <div
               key={chain + "select"}
-              className={`relative flex left-[10px] w-[24px] h-[24px] bg-forest-700 rounded-full self-center items-center justify-center z-10 ${
-                !selectedChains[chain] ? "opacity-100" : ""
-              }`}
+              className={`relative flex left-[10px] w-[24px] h-[24px] bg-forest-700 rounded-full self-center items-center justify-center z-10 cursor-pointer ${!selectedChains[chain] ? "opacity-100" : ""
+                }`}
+              onClick={() => {
+                if (availableSelectedChains > 1 || !selectedChains[chain]) {
+                  setSelectedChains((prevSelectedChains) => ({
+                    ...prevSelectedChains,
+                    [chain]: !prevSelectedChains[chain],
+                  }));
+                } else {
+                  setIsShaking(true);
+                  setTimeout(() => {
+                    setIsShaking(false);
+                  }, 500);
+                }
+              }}
             >
               <Icon
                 icon="feather:check-circle"
-                className={`w-[24px] h-[24px] text-white ${
-                  !selectedChains[chain] ? "opacity-0" : "opacity-100"
-                }`}
+                className={`w-[24px] h-[24px] text-white ${!selectedChains[chain] ? "opacity-0" : "opacity-100"
+                  }`}
               />
             </div>
           </div>

@@ -44,6 +44,7 @@ import {
 import { MasterURL } from "@/lib/urls";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import { m } from "framer-motion";
 
 const monthly_agg_labels = {
   avg: "Average",
@@ -183,6 +184,8 @@ export default function ComparisonChart({
   embed_start_timestamp,
   embed_end_timestamp,
   embed_zoomed,
+  minDailyUnix,
+  maxDailyUnix,
 }: {
   data: any;
   timeIntervals: string[];
@@ -204,6 +207,8 @@ export default function ComparisonChart({
   embed_start_timestamp?: number;
   embed_end_timestamp?: number;
   embed_zoomed?: boolean;
+  minDailyUnix: number;
+  maxDailyUnix: number;
 }) {
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
@@ -451,7 +456,18 @@ export default function ComparisonChart({
 
   const tooltipFormatter = useCallback(
     function (this: any) {
-      const { x, points } = this;
+      const { x, points }: { x: number; points: any[] } = this;
+      points.sort((a: any, b: any) => {
+        if (reversePerformer) return a.y - b.y;
+
+        return b.y - a.y;
+      });
+
+      const firstTenPoints = points.slice(0, 10);
+      const afterTenPoints = points.slice(10);
+
+      const showOthers = afterTenPoints.length > 0 && metric_id !== "txcosts";
+
       const date = new Date(x);
       const dateString = date.toLocaleDateString("en-GB", {
         timeZone: "UTC",
@@ -464,15 +480,8 @@ export default function ComparisonChart({
         <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
-      // let pointsSum = 0;
-      // if (selectedScale !== "percentage")
       let pointsSum = points.reduce((acc: number, point: any) => {
         acc += point.y;
-        return acc;
-      }, 0);
-
-      let pointSumNonNegative = points.reduce((acc: number, point: any) => {
-        if (point.y > 0) acc += point.y;
         return acc;
       }, 0);
 
@@ -488,12 +497,23 @@ export default function ComparisonChart({
 
       if (!data || !master) return;
 
-      const tooltipPoints = points
-        .sort((a: any, b: any) => {
-          if (reversePerformer) return a.y - b.y;
+      const units = Object.keys(master.metrics[metric_id].units);
+      const unitKey =
+        units.find((unit) => unit !== "usd" && unit !== "eth") ||
+        (showUsd ? "usd" : "eth");
+      let prefix = master.metrics[metric_id].units[unitKey].prefix
+        ? master.metrics[metric_id].units[unitKey].prefix
+        : "";
+      let suffix = master.metrics[metric_id].units[unitKey].suffix
+        ? master.metrics[metric_id].units[unitKey].suffix
+        : "";
 
-          return b.y - a.y;
-        })
+      const decimals =
+        !showUsd && showGwei
+          ? 2
+          : master.metrics[metric_id].units[unitKey].decimals_tooltip;
+
+      let tooltipPoints = (showOthers ? firstTenPoints : points)
         .map((point: any) => {
           const { series, y, percentage } = point;
           const { name } = series;
@@ -521,21 +541,7 @@ export default function ComparisonChart({
                 "></div>
               </div>`;
 
-          const units = Object.keys(master.metrics[metric_id].units);
-          const unitKey =
-            units.find((unit) => unit !== "usd" && unit !== "eth") ||
-            (showUsd ? "usd" : "eth");
-          let prefix = master.metrics[metric_id].units[unitKey].prefix
-            ? master.metrics[metric_id].units[unitKey].prefix
-            : "";
-          let suffix = master.metrics[metric_id].units[unitKey].suffix
-            ? master.metrics[metric_id].units[unitKey].suffix
-            : "";
 
-          const decimals =
-            !showUsd && showGwei
-              ? 2
-              : master.metrics[metric_id].units[unitKey].decimals_tooltip;
 
           let value = y;
 
@@ -579,24 +585,98 @@ export default function ComparisonChart({
         })
         .join("");
 
-      let prefix = valuePrefix;
-      let suffix = "";
-      let value = pointsSum;
+
+      // let prefix = valuePrefix;
+      // let suffix = "";
       if (metric_id === "throughput") {
         suffix = " Mgas/s";
       }
 
+      // add "others" with the sum of the rest of the points
+      // const rest = afterTenPoints;
+
+      if (showOthers && afterTenPoints.length > 0) {
+
+        const restString = afterTenPoints.length > 1 ? `${parseFloat(afterTenPoints[0].y).toLocaleString("en-GB", { minimumFractionDigits: 0 })}…${parseFloat(afterTenPoints[afterTenPoints.length - 1].y).toLocaleString("en-GB", { minimumFractionDigits: 0 })}` :
+          parseFloat(afterTenPoints[0].y).toLocaleString("en-GB", { minimumFractionDigits: 0 });
+
+        const restSum = afterTenPoints.reduce((acc: number, point: any) => {
+          acc += point.y;
+          return acc;
+        }, 0);
+
+        const restPercentage = afterTenPoints.reduce((acc: number, point: any) => {
+          acc += point.percentage;
+          return acc;
+        }, 0);
+
+        if (selectedScale === "percentage")
+          tooltipPoints += `
+          <div class="flex w-full space-x-2 items-center font-medium mb-0.5 opacity-60">
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6"></div>
+            <div class="tooltip-point-name">${afterTenPoints.length > 1 ? `${afterTenPoints.length} Others` : "1 Other"}</div>
+            <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
+            restPercentage,
+            2,
+          )}%</div>
+          </div>
+          <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+
+            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
+            style="
+              width: ${(restPercentage / maxPercentage) * 100}%;
+              background-color: #E0E7E699
+            ;
+            "></div>
+          </div>`;
+
+        else
+          tooltipPoints += `
+          <div class="flex w-full space-x-2 items-center font-medium mb-0.5 opacity-60">
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6; "></div>
+            <div class="tooltip-point-name text-md">${afterTenPoints.length > 1 ? `${afterTenPoints.length} Others` : "1 Other"}</div>
+            <div class="flex-1 text-right justify-end font-inter flex">
+                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+            }">${prefix}</div>
+                ${metric_id === "fdv" || metric_id === "market_cap"
+              ? shortenNumber(restSum).toString()
+              : parseFloat(restSum).toLocaleString("en-GB", {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals,
+              })
+            }
+                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+            }">${suffix}</div>
+            </div>
+          </div>
+          <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+
+            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
+            style="
+              width: ${(restSum / maxPoint) * 100}%;
+              background-color: #E0E7E699
+            ;
+            "></div>
+          </div>`;
+      }
+
+
+      let value = pointsSum;
+
+
       const sumRow =
         selectedScale === "stacked"
           ? `
-        <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-70">
+        <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-100">
           <div class="w-4 h-1.5 rounded-r-full" style=""></div>
           <div class="tooltip-point-name text-md">Total</div>
           <div class="flex-1 text-right justify-end font-inter flex">
-
-              <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-          }">${prefix}</div>
-              ${parseFloat(value).toLocaleString("en-GB", {
+            <div class="opacity-70 mr-0.5 ${!prefix && "hidden"}">
+              ${prefix}
+            </div>
+          ${parseFloat(value).toLocaleString("en-GB", {
             minimumFractionDigits: valuePrefix ? 2 : 0,
             maximumFractionDigits: valuePrefix
               ? 2
@@ -604,8 +684,9 @@ export default function ComparisonChart({
                 ? 2
                 : 0,
           })}
-              <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-          }">${suffix}</div>
+            <div class="opacity-70 ml-0.5 ${!suffix && "hidden"}">
+              ${suffix}
+            </div>
           </div>
         </div>
         <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -615,17 +696,7 @@ export default function ComparisonChart({
 
       return tooltip + tooltipPoints + sumRow + tooltipEnd;
     },
-    [
-      selectedTimeInterval,
-      valuePrefix,
-      selectedScale,
-      reversePerformer,
-      theme,
-      showUsd,
-      filteredData,
-      metric_id,
-      showGwei,
-    ],
+    [selectedTimeInterval, data, master, metric_id, showUsd, showGwei, selectedScale, valuePrefix, reversePerformer, theme],
   );
 
   const tooltipPositioner =
@@ -682,66 +753,50 @@ export default function ComparisonChart({
   }, [embed_end_timestamp, filteredData]);
 
   const timespans = useMemo(() => {
-    // let maxDate = new Date();
-    // if (filteredData && filteredData[0].name !== "") {
-    //   maxDate = new Date(
-    //     filteredData.length > 0
-    //       ? filteredData[0].data[filteredData[0].data.length - 1][0]
-    //       : 0,
-    //   );
-    // }
+    const buffer = 1 * 24 * 60 * 60 * 1000 * 2;
+    const maxMinusBuffer = new Date(maxDailyUnix).valueOf() - buffer;
+    const maxPlusBuffer = new Date(maxDailyUnix).valueOf() + buffer;
+    const minMinusBuffer = new Date(minDailyUnix).valueOf() - buffer;
 
-    const buffer = 0.5 * 24 * 60 * 60 * 1000 * 2;
-    const maxPlusBuffer = maxDate.valueOf() + buffer;
-
-    //
-    const firstDayOfLastMonth = new Date(
-      maxDate.getFullYear(),
-      maxDate.getMonth() - 1,
-      1,
-    );
-    const monthMaxPlusBuffer = firstDayOfLastMonth.valueOf() + buffer;
+    // calculate how many days are 6 months ago from the max date
+    const sixMonthsAgo = new Date(maxDailyUnix);
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    const sixMonthsAgoPlusBuffer = sixMonthsAgo.valueOf() - buffer;
 
     return {
-      // "30d": {
-      //   label: "30 days",
-      //   value: 30,
-      //   xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
-      //   xMax: Date.now(),
-      // },
       "90d": {
         label: "90 days",
         shortLabel: "90d",
         value: 90,
-        xMin: maxPlusBuffer - (90 + 1) * 24 * 60 * 60 * 1000,
+        xMin: maxMinusBuffer - 90 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "180d": {
         label: "180 days",
         shortLabel: "180d",
         value: 180,
-        xMin: maxPlusBuffer - (180 + 1) * 24 * 60 * 60 * 1000,
+        xMin: maxMinusBuffer - 180 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "365d": {
         label: "1 year",
         shortLabel: "365d",
         value: 365,
-        xMin: maxPlusBuffer - (365 + 1) * 24 * 60 * 60 * 1000,
+        xMin: maxMinusBuffer - 365 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "6m": {
         label: "6 months",
         shortLabel: "6M",
         value: 6,
-        xMin: maxPlusBuffer - 6.5 * 31 * 24 * 60 * 60 * 1000,
+        xMin: sixMonthsAgoPlusBuffer,
         xMax: maxPlusBuffer,
       },
       "12m": {
         label: "1 year",
         shortLabel: "1Y",
         value: 12,
-        xMin: maxPlusBuffer - 12.5 * 31 * 24 * 60 * 60 * 1000,
+        xMin: maxMinusBuffer - 365 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       maxM: {
@@ -749,12 +804,7 @@ export default function ComparisonChart({
         shortLabel: "Max",
         value: 0,
         xMin:
-          filteredData[0].name === ""
-            ? Date.now() - (365 + 1) * 24 * 60 * 60 * 1000
-            : filteredData.reduce(
-              (min, d) => Math.min(min, d.data[0][0]),
-              Infinity,
-            ) - buffer,
+          minMinusBuffer,
 
         xMax: maxPlusBuffer,
       },
@@ -763,30 +813,16 @@ export default function ComparisonChart({
         shortLabel: "Max",
         value: 0,
         xMin:
-          filteredData[0].name === ""
-            ? Date.now() - (365 + 1) * 24 * 60 * 60 * 1000
-            : filteredData.reduce(
-              (min, d) => Math.min(min, d.data[0][0]),
-              Infinity,
-            ) - buffer,
+          minMinusBuffer,
 
         xMax: maxPlusBuffer,
       },
     };
-  }, [filteredData, maxDate]);
-
-  // useEffect(() => {
-  //   if (embedData.title !== navItem?.label + " - growthepie")
-  //     setEmbedData(prevEmbedData => ({
-  //       ...prevEmbedData,
-  //       title: navItem?.label + " - growthepie",
-  //       src: BASE_URL + "/embed/fundamentals/" + navItem?.urlKey + "?showUsd=" + showUsd + "&theme=" + theme,
-  //     }));
-  // }, []);
+  }, [minDailyUnix, maxDailyUnix]);
 
   useEffect(() => {
     const startTimestamp = zoomed ? zoomMin : undefined;
-    const endTimestamp = zoomed ? zoomMax : maxDate.valueOf();
+    const endTimestamp = zoomed ? zoomMax : maxDailyUnix.valueOf();
 
     const vars = {
       showUsd: showUsd ? "true" : "false",
@@ -821,23 +857,7 @@ export default function ComparisonChart({
       zoomed: zoomed,
       timeframe: zoomed ? "absolute" : embedData.timeframe,
     }));
-  }, [
-    embedData.timeframe,
-    maxDate,
-    navItem?.label,
-    navItem?.urlKey,
-    selectedScale,
-    selectedTimeInterval,
-    selectedTimespan,
-    showEthereumMainnet,
-    showGwei,
-    showUsd,
-    theme,
-    timespans,
-    zoomMax,
-    zoomMin,
-    zoomed,
-  ]);
+  }, [embedData.timeframe, filteredData, maxDailyUnix, navItem?.label, navItem?.urlKey, selectedScale, selectedTimeInterval, selectedTimespan, showEthereumMainnet, showGwei, showUsd, theme, timespans, zoomMax, zoomMin, zoomed]);
 
   useEffect(() => {
     Highcharts.setOptions({
@@ -1211,6 +1231,7 @@ export default function ComparisonChart({
     const dynamicOptions: Highcharts.Options = {
       chart: {
         height: height,
+        marginLeft: metric_id === "txcosts" ? 90 : 60,
         type: getSeriesType(filteredData[0].name),
         plotBorderColor: "transparent",
         panning: {
@@ -1789,8 +1810,60 @@ export default function ComparisonChart({
                   isSelected={selectedTimeInterval === interval}
                   onClick={() => {
                     if (selectedTimeInterval === interval) return;
+                    // ["90d", "180d", "365d", "max"].includes(timespan)
+                    // : ["6m", "12m", "maxM"].includes(timespan),
+                    if (interval === "daily") {
 
-                    setSelectedTimespan(selectedTimespansByTimeInterval[interval]);
+                      if ("12m" === selectedTimespan) {
+                        setSelectedTimespan("365d");
+                      } else if ("maxM" === selectedTimespan) {
+                        setSelectedTimespan("max");
+                      } else {
+                        // find closest timespan
+                        const closestTimespan = Object.keys(timespans).filter(
+                          (timespan) =>
+                            ["90d", "180d", "365d", "max"].includes(timespan),
+                        ).reduce(
+                          (prev, curr) =>
+                            Math.abs(
+                              timespans[curr].xMax - timespans[selectedTimespan].xMax,
+                            ) <
+                              Math.abs(
+                                timespans[prev].xMax - timespans[selectedTimespan].xMax,
+                              )
+                              ? curr
+                              : prev,
+                        );
+
+                        setSelectedTimespan(closestTimespan);
+                      }
+                    } else {
+                      if ("365d" === selectedTimespan) {
+                        setSelectedTimespan("12m");
+                      } else if ("max" === selectedTimespan) {
+                        setSelectedTimespan("maxM");
+                      } else {
+
+                        // find closest timespan
+                        const closestTimespan = Object.keys(timespans).filter(
+                          (timespan) =>
+                            ["6m", "12m", "maxM"].includes(timespan)
+                        ).reduce(
+                          (prev, curr) =>
+                            Math.abs(
+                              timespans[curr].xMax - timespans[selectedTimespan].xMax,
+                            ) <
+                              Math.abs(
+                                timespans[prev].xMax - timespans[selectedTimespan].xMax,
+                              )
+                              ? curr
+                              : prev,
+                        );
+
+                        setSelectedTimespan(closestTimespan);
+                      }
+                    }
+
 
 
                     setSelectedTimeInterval(interval);
@@ -2032,7 +2105,7 @@ export default function ComparisonChart({
               {/* toggle ETH */}
 
               <div className="flex justify-center items-center pl-0 md:pl-0 w-full md:w-auto">
-                <div className="flex justify-between md:justify-center items-center  space-x-[4px] md:space-x-1 mr-0 md:mr-2.5 w-full md:w-auto ">
+                <div className="flex justify-between md:justify-center items-center  gap-x-[4px] md:space-x-1 mr-0 md:mr-2.5 w-full md:w-auto ">
                   <button
                     className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${"absolute" === selectedScale
                       ? "bg-forest-500 dark:bg-forest-1000"
@@ -2109,7 +2182,7 @@ export default function ComparisonChart({
               {/* toggle ETH */}
 
               <div className="flex justify-center items-center pl-0 md:pl-0 w-full md:w-auto">
-                <div className="flex justify-between md:justify-center items-center  space-x-[4px] md:space-x-1 mr-0 md:mr-2.5 w-full md:w-auto ">
+                <div className="flex justify-between md:justify-center items-center gap-x-[4px] md:space-x-1 mr-0 md:mr-2.5 w-full md:w-auto ">
                   <button
                     className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"absolute" === selectedScale
                       ? "bg-forest-500 dark:bg-forest-1000"
@@ -2121,28 +2194,32 @@ export default function ComparisonChart({
                   >
                     Absolute
                   </button>
-                  <button
-                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"stacked" === selectedScale
-                      ? "bg-forest-500 dark:bg-forest-1000"
-                      : "hover:bg-forest-500/10"
-                      }`}
-                    onClick={() => {
-                      setSelectedScale("stacked");
-                    }}
-                  >
-                    Stacked
-                  </button>
-                  <button
-                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"percentage" === selectedScale
-                      ? "bg-forest-500 dark:bg-forest-1000"
-                      : "hover:bg-forest-500/10"
-                      }`}
-                    onClick={() => {
-                      setSelectedScale("percentage");
-                    }}
-                  >
-                    Percentage
-                  </button>
+                  {metric_id !== "txcosts" && (
+                    <>
+                      <button
+                        className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"stacked" === selectedScale
+                          ? "bg-forest-500 dark:bg-forest-1000"
+                          : "hover:bg-forest-500/10"
+                          }`}
+                        onClick={() => {
+                          setSelectedScale("stacked");
+                        }}
+                      >
+                        Stacked
+                      </button>
+                      <button
+                        className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"percentage" === selectedScale
+                          ? "bg-forest-500 dark:bg-forest-1000"
+                          : "hover:bg-forest-500/10"
+                          }`}
+                        onClick={() => {
+                          setSelectedScale("percentage");
+                        }}
+                      >
+                        Percentage
+                      </button>
+                    </>
+                  )}
                 </div>
                 <div className="flex">
                   <Tooltip placement="left" allowInteract>

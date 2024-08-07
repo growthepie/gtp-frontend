@@ -7,16 +7,98 @@ import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead"
 import ChainSectionHeadAlt from "@/components/layout/SingleChains/ChainSectionHeadAlt";
 import Link from "next/link";
 import { useUIContext } from "@/contexts/UIContext";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
+import ChainChart from "../../components/layout/Chains/ChainChart";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/layout/Tooltip";
 import UsageFeesAlt from "@/components/layout/SingleChains/UsageFeesAlt";
-
+import { useMaster } from "../../contexts/MasterContext";
 export default function ChainsPage() {
   const { isMobile } = useUIContext();
-  const { data, info, feesTable, sectionHead, ChainIcon } = useChain();
+
+  const {
+    data,
+    info,
+    feesTable,
+    sectionHead,
+    ChainIcon,
+    chainKey,
+    getGradientColor,
+  } = useChain();
+  const { data: master, formatMetric } = useMaster();
   const showUsd = true;
 
+  function ordinal_suffix_of(i) {
+    let j = i % 10,
+      k = i % 100;
+    if (j === 1 && k !== 11) {
+      return i + "st";
+    }
+    if (j === 2 && k !== 12) {
+      return i + "nd";
+    }
+    if (j === 3 && k !== 13) {
+      return i + "rd";
+    }
+    return i + "th";
+  }
+
+  function dataAvailToArray(x: string) {
+    let retObject: { icon: string; label: string }[] = [];
+    if (typeof x === "string") {
+      // Ensure x is a string
+      if (x.includes("calldata")) {
+        retObject.push({
+          icon: "calldata",
+          label: "Calldata",
+        });
+      }
+
+      if (x.includes("blobs")) {
+        retObject.push({
+          icon: "blobs",
+          label: "Blobs",
+        });
+      }
+
+      if (x.includes("MantleDA")) {
+        retObject.push({
+          icon: "customoffchain",
+          label: "MantleDA",
+        });
+      }
+
+      if (x.includes("DAC")) {
+        retObject.push({
+          icon: "committee",
+          label: "DAC (committee)",
+        });
+      }
+
+      if (x.includes("Celestia")) {
+        retObject.push({
+          icon: "celestiafp",
+          label: "Celestia",
+        });
+      }
+
+      if (x.includes("memo")) {
+        retObject.push({
+          icon: "memofp",
+          label: "Memo",
+        });
+      }
+    }
+    return retObject;
+  }
+
   return (
-    <Container className="flex w-full pt-[30px] md:pt-[30px]" isPageRoot>
+    <Container
+      className="flex w-full pt-[30px] md:pt-[30px] pb-[20px]"
+      isPageRoot
+    >
       {info && sectionHead && (
         <div className="flex flex-col w-full">
           <div
@@ -25,9 +107,7 @@ export default function ChainsPage() {
           >
             <div className="flex flex-col md:flex-row pb-[15px] md:pb-[15px] items-start">
               <div className="flex gap-x-[8px] items-center">
-                <div className="w-9 h-9  ">
-                  {ChainIcon}
-                </div>
+                <div className="w-9 h-9  ">{ChainIcon}</div>
                 <Heading
                   className="leading-snug text-[30px] md:text-[36px] break-inside-avoid "
                   as="h1"
@@ -58,29 +138,29 @@ export default function ChainsPage() {
                       items={
                         sectionHead.menu.hasBlockspaceOverview
                           ? [
-                            {
-                              label: "Fundamentals",
-                              icon: "gtp:gtp-fundamentals",
-                              href: "#fundamentals",
-                            },
-                            {
-                              label: "Blockspace",
-                              icon: "gtp:gtp-package",
-                              href: "#blockspace",
-                            },
-                          ]
+                              {
+                                label: "Fundamentals",
+                                icon: "gtp:gtp-fundamentals",
+                                href: "#fundamentals",
+                              },
+                              {
+                                label: "Blockspace",
+                                icon: "gtp:gtp-package",
+                                href: "#blockspace",
+                              },
+                            ]
                           : [
-                            {
-                              label: "Fundamentals",
-                              icon: "gtp:gtp-fundamentals",
-                              href: "#fundamentals",
-                            },
-                          ]
+                              {
+                                label: "Fundamentals",
+                                icon: "gtp:gtp-fundamentals",
+                                href: "#fundamentals",
+                              },
+                            ]
                       }
                     />
                     {sectionHead.menu.block_explorers &&
-                      Object.keys(sectionHead.menu.block_explorers)
-                        .length > 0 && (
+                      Object.keys(sectionHead.menu.block_explorers).length >
+                        0 && (
                         <ExpandingButtonMenu
                           className={`left-[5px] top-[50px] lg:top-[65px] right-[calc((100%/2)+5px)] lg:right-[120px]`}
                           button={{
@@ -93,9 +173,7 @@ export default function ChainsPage() {
                           ).map((explorerKey) => ({
                             label: explorerKey,
                             icon: "feather:external-link",
-                            href: sectionHead.menu.block_explorers[
-                              explorerKey
-                            ],
+                            href: sectionHead.menu.block_explorers[explorerKey],
                           }))}
                         />
                       )}
@@ -180,12 +258,13 @@ export default function ChainsPage() {
                           Launch Date
                         </div>
                         <div className="text-[10px] leading-[150%] whitespace-nowrap">
-                          {new Date(
-                            info.launch_date,
-                          ).toLocaleDateString("en-GB", {
-                            year: "numeric",
-                            month: "long",
-                          })}
+                          {new Date(info.launch_date).toLocaleDateString(
+                            "en-GB",
+                            {
+                              year: "numeric",
+                              month: "long",
+                            },
+                          )}
                         </div>
                       </div>
                       <div className="basis-auto">
@@ -193,104 +272,93 @@ export default function ChainsPage() {
                           Rankings
                         </div>
                         <div className="flex gap-x-[2px] pt-[2px] lg:pt-0">
-                          {/* {sectionHead.background.rankings && (
+                          {sectionHead.background.rankings && (
                             <>
-                              {Object.keys(rankChains).map((key, i) => {
-                                return (
-                                  <Tooltip
-                                    key={key + "rankings"}
-                                    placement="bottom"
-                                  >
-                                    <TooltipTrigger>
-                                      <div
-                                        className="w-[24px] h-[24px] rounded-full flex items-center justify-center z-0"
-                                        style={{
-                                          backgroundColor: sectionHead.background.rankings
-                                            ? chainData.ranking[key]
-                                              ? getGradientColor(
-                                                chainData.ranking[key]
-                                                  .color_scale * 100,
-                                              )
-                                              : "#5A6462"
-                                            : "#5A6462",
-                                        }}
-                                      >
-                                        <Icon
-                                          icon={`gtp:${String(key).replace(
-                                            "_",
-                                            "-",
-                                          )}`}
-                                          className="w-[15px] h-[15px] z-10 text-[#344240]"
-                                        />
-                                      </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <div className="flex flex-col items-center">
+                              {Object.keys(sectionHead.background.rankings).map(
+                                (key, i) => {
+                                  const currentRank =
+                                    sectionHead.background.rankings[key];
+                                  return (
+                                    <Tooltip
+                                      key={key + "rankings"}
+                                      placement="bottom"
+                                    >
+                                      <TooltipTrigger>
                                         <div
-                                          className="z-50 w-0 h-0 border-forest-100 dark:border-[#4B5553] border-b-[5px]"
+                                          className="w-[24px] h-[24px] rounded-full flex items-center justify-center z-0"
                                           style={{
-                                            borderLeft:
-                                              "5px solid transparent",
-                                            borderRight:
-                                              "5px solid transparent",
+                                            backgroundColor: currentRank.color,
                                           }}
-                                        ></div>
-
-                                        <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-md font-normal transition-all duration-300">
+                                        >
                                           <Icon
                                             icon={`gtp:${String(key).replace(
                                               "_",
                                               "-",
                                             )}`}
-                                            className="w-[24px] h-[24px] z-10"
+                                            className="w-[15px] h-[15px] z-10 text-[#344240]"
                                           />
-                                          <div className="flex flex-col gap-y-[5px] items-center">
-                                            <div className="flex items-center gap-x-[5px] text-[10px] whitespace-nowrap">
-                                              <div
-                                                className="flex w-2 h-2 rounded-md"
-                                                style={{
-                                                  backgroundColor: chainData
-                                                    ? chainData.ranking[key]
-                                                      ? getGradientColor(
-                                                        chainData.ranking[
-                                                          key
-                                                        ].color_scale * 100,
-                                                      )
-                                                      : "#5A6462"
-                                                    : "#5A6462",
-                                                }}
-                                              ></div>
-                                              {chainData.ranking[key] ? (
-                                                <div className="flex items-end gap-x-1">
-                                                  <div className="flex text-[14px] font-medium ordinal">
-                                                    {ordinal_suffix_of(
-                                                      chainData.ranking[key]
-                                                        .rank,
-                                                    )}
+                                        </div>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <div className="flex flex-col items-center">
+                                          <div
+                                            className="z-50 w-0 h-0 border-forest-100 dark:border-[#4B5553] border-b-[5px]"
+                                            style={{
+                                              borderLeft:
+                                                "5px solid transparent",
+                                              borderRight:
+                                                "5px solid transparent",
+                                            }}
+                                          ></div>
+
+                                          <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-md font-normal transition-all duration-300">
+                                            <Icon
+                                              icon={`gtp:${String(key).replace(
+                                                "_",
+                                                "-",
+                                              )}`}
+                                              className="w-[24px] h-[24px] z-10"
+                                            />
+                                            <div className="flex flex-col gap-y-[5px] items-center">
+                                              <div className="flex items-center gap-x-[5px] text-[10px] whitespace-nowrap">
+                                                <div
+                                                  className="flex w-2 h-2 rounded-md"
+                                                  style={{
+                                                    backgroundColor:
+                                                      currentRank.color,
+                                                  }}
+                                                ></div>
+                                                {currentRank ? (
+                                                  <div className="flex items-end gap-x-1">
+                                                    <div className="flex text-[14px] font-medium ordinal">
+                                                      {ordinal_suffix_of(
+                                                        currentRank.rank,
+                                                      )}
+                                                    </div>
+                                                    <div className="flex items-end opacity-60">
+                                                      {currentRank &&
+                                                        `out of ${sectionHead.background.rankings[key].out_of} chains`}
+                                                    </div>
                                                   </div>
-                                                  <div className="flex items-end opacity-60">
-                                                    {chainData.ranking[key] &&
-                                                      `out of ${chainData.ranking[key].out_of} chains`}
+                                                ) : (
+                                                  <div className="opacity-40">
+                                                    Not Available
                                                   </div>
-                                                </div>
-                                              ) : (
-                                                <div className="opacity-40">
-                                                  Not Available
-                                                </div>
-                                              )}
-                                            </div>
-                                            <div className="text-[12px] font-semibold capitalize">
-                                              {master.metrics[key].name}
+                                                )}
+                                              </div>
+                                              <div className="text-[12px] font-semibold capitalize">
+                                                {master.metrics[key].name}
+                                              </div>
                                             </div>
                                           </div>
                                         </div>
-                                      </div>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                );
-                              })}{" "}
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  );
+                                },
+                              )}{" "}
                             </>
-                          )} */}
+                          )}
                         </div>
                       </div>
                       <div className="relative flex flex-col items-start w-[108px] overflow-visible">
@@ -336,68 +404,65 @@ export default function ChainsPage() {
                           onClick={() => {
                             if (
                               !sectionHead.usage.hottest_contract.data[0][
-                              sectionHead.usage.hottest_contract.types.indexOf(
-                                "name",
-                              )
+                                sectionHead.usage.hottest_contract.types.indexOf(
+                                  "name",
+                                )
                               ]
                             ) {
                               navigator.clipboard.writeText(
                                 sectionHead.usage.hottest_contract.data[0][
-                                sectionHead.usage.hottest_contract.types.indexOf(
-                                  "address",
-                                )
+                                  sectionHead.usage.hottest_contract.types.indexOf(
+                                    "address",
+                                  )
                                 ],
                               );
                             }
                           }}
                         >
                           {sectionHead.usage.hottest_contract ? (
-                            sectionHead.usage.hottest_contract ? (
-                              sectionHead.usage.hottest_contract.data[0] ? (
-                                <>
-                                  <span
-                                    className={` truncate ${sectionHead.usage.hottest_contract.data[0][
+                            sectionHead.usage.hottest_contract.data[0] ? (
+                              <>
+                                <span
+                                  className={` truncate ${
+                                    sectionHead.usage.hottest_contract.data[0][
                                       sectionHead.usage.hottest_contract.types.indexOf(
                                         "project_name",
                                       )
                                     ]
                                       ? "max-w-[80px]"
                                       : "max-w-[140px]"
-                                      }`}
-                                  >
-                                    {sectionHead.usage.hottest_contract.data[0][
-                                      sectionHead.usage.hottest_contract.types.indexOf(
-                                        "name",
-                                      )
-                                    ] ||
-                                      sectionHead.usage.hottest_contract.data[0][
+                                  }`}
+                                >
+                                  {sectionHead.usage.hottest_contract.data[0][
+                                    sectionHead.usage.hottest_contract.types.indexOf(
+                                      "name",
+                                    )
+                                  ] ||
+                                    sectionHead.usage.hottest_contract.data[0][
                                       sectionHead.usage.hottest_contract.types.indexOf(
                                         "address",
                                       )
-                                      ]}
-                                  </span>
-                                  <span>
-                                    {sectionHead.usage.hottest_contract.data[0][
+                                    ]}
+                                </span>
+                                <span>
+                                  {sectionHead.usage.hottest_contract.data[0][
+                                    sectionHead.usage.hottest_contract.types.indexOf(
+                                      "project_name",
+                                    )
+                                  ]
+                                    ? "-"
+                                    : ""}{" "}
+                                </span>
+                                <span>
+                                  {
+                                    sectionHead.usage.hottest_contract.data[0][
                                       sectionHead.usage.hottest_contract.types.indexOf(
                                         "project_name",
                                       )
                                     ]
-                                      ? "-"
-                                      : ""}{" "}
-                                  </span>
-                                  <span>
-                                    {
-                                      sectionHead.usage.hottest_contract.data[0][
-                                      sectionHead.usage.hottest_contract.types.indexOf(
-                                        "project_name",
-                                      )
-                                      ]
-                                    }
-                                  </span>
-                                </>
-                              ) : (
-                                "N/A"
-                              )
+                                  }
+                                </span>
+                              </>
                             ) : (
                               "N/A"
                             )
@@ -449,9 +514,7 @@ export default function ChainsPage() {
                               Data Availability
                             </div>
                             <div className="text-[10px] leading-[150%] font-medium  ">
-                              {dataAvailToArray(
-                                info.da_layer,
-                              ).map((x) => (
+                              {dataAvailToArray(info.da_layer).map((x) => (
                                 <div
                                   className="flex items-center gap-x-1"
                                   key={x.label}
@@ -498,8 +561,7 @@ export default function ChainsPage() {
                             <div
                               className="flex items-center justify-center font-bold text-white dark:text-forest-1000 rounded-[2px] text-[10px] leading-[120%]"
                               style={{
-                                background: sectionHead.risk
-                                  .l2beat_stage
+                                background: sectionHead.risk.l2beat_stage
                                   ? sectionHead.risk.l2beat_stage.hex
                                     ? sectionHead.risk.l2beat_stage.hex
                                     : "#344240"
@@ -598,48 +660,19 @@ export default function ChainsPage() {
             </Heading>
           </div>
 
-          {/* {chainData && (
-              <ChainChart
-                chain={chain}
-                master={master}
-                chainData={chainData}
-                defaultChainKey={chainKey}
-              />
-            )} */}
+          {data && (
+            <ChainChart
+              chainData={data}
+              master={master}
+              chain={chainKey}
+              defaultChainKey={chainKey}
+            />
+          )}
         </div>
       )}
     </Container>
-
-    // <div>
-    //   {info ? (
-    //     <div>
-    //       <h1>{info.name}</h1>
-    //       <p>{info.symbol}</p>
-    //       <p>{info.description}</p>
-    //     </div>
-    //   ) : (
-    //     <p>info...</p>
-    //   )}
-    //   {data ? (
-    //     <div>
-    //       <h2>Chain Data</h2>
-    //       <textarea>{JSON.stringify(data, null, 2)}</textarea>
-    //     </div>
-    //   ) : (
-    //     <p>data...</p>
-    //   )}
-    //   {feesTable ? (
-    //     <div>
-    //       <h2>Fees Table</h2>
-    //       <textarea>{JSON.stringify(feesTable, null, 2)}</textarea>
-    //     </div>
-    //   ) : (
-    //     <p>fees...</p>
-    //   )}
-    // </div>
   );
 }
-
 
 type ExpandingButtonMenuProps = {
   button: {
@@ -670,25 +703,26 @@ const ExpandingButtonMenu = ({
     >
       <div
         className="!z-[15] group-hover/jump:!z-[25] transition-[z-index] delay-100 group-hover/jump:delay-0 w-full flex items-center h-[36px] gap-x-[8px] pl-[6px] pr-[10px] rounded-full dark:bg-[#263130] bg-forest-50"
-        onMouseEnter={() => {
-
-        }}
+        onMouseEnter={() => {}}
       >
         <div
-          className={`${button.showIconBackground &&
+          className={`${
+            button.showIconBackground &&
             "bg-white dark:bg-forest-1000 relative "
-            } rounded-full w-[25px] h-[25px] p-[5px]`}
+          } rounded-full w-[25px] h-[25px] p-[5px]`}
         >
           <Icon
             icon={button.icon}
-            className={`w-[15px] h-[15px] ${button.animateIcon &&
+            className={`w-[15px] h-[15px] ${
+              button.animateIcon &&
               "transition-transform duration-300 transform delay-0 group-hover/jump:delay-300 group-hover/jump:rotate-90"
-              }`}
+            }`}
           />
           <Icon
             icon={"gtp:circle-arrow"}
-            className={`w-[4px] h-[9px] absolute top-2 right-0 transition-transform delay-0 group-hover/jump:delay-300 duration-500 group-hover/jump:rotate-90 ${button.showIconBackground ? "block" : "hidden"
-              }`}
+            className={`w-[4px] h-[9px] absolute top-2 right-0 transition-transform delay-0 group-hover/jump:delay-300 duration-500 group-hover/jump:rotate-90 ${
+              button.showIconBackground ? "block" : "hidden"
+            }`}
             style={{
               transformOrigin: "-8px 4px",
             }}
@@ -706,7 +740,6 @@ const ExpandingButtonMenu = ({
             rel="noreferrer"
             target="_blank"
             onClick={(e) => {
-
               if (item.href.startsWith("#")) {
                 e.preventDefault();
                 document.querySelector(item.href)?.scrollIntoView({
@@ -726,77 +759,3 @@ const ExpandingButtonMenu = ({
     </div>
   );
 };
-
-
-const rankChains = {
-  daa: {
-    Title: "Daily Active Addresses",
-  },
-  fees: {
-    Title: "Fees Paid By Users",
-  },
-  stables_mcap: {
-    Title: "Stablecoin Market Cap",
-  },
-  profit: {
-    Title: "Onchain Profit",
-  },
-  txcosts: {
-    Title: "Transaction Costs",
-  },
-  fdv: {
-    Title: "Fully Diluted Valuation",
-  },
-  throughput: {
-    Title: "Throughput",
-  },
-};
-
-function dataAvailToArray(x: string) {
-  let retObject: { icon: string; label: string }[] = [];
-  if (typeof x === "string") {
-    // Ensure x is a string
-    if (x.includes("calldata")) {
-      retObject.push({
-        icon: "calldata",
-        label: "Calldata",
-      });
-    }
-
-    if (x.includes("blobs")) {
-      retObject.push({
-        icon: "blobs",
-        label: "Blobs",
-      });
-    }
-
-    if (x.includes("MantleDA")) {
-      retObject.push({
-        icon: "customoffchain",
-        label: "MantleDA",
-      });
-    }
-
-    if (x.includes("DAC")) {
-      retObject.push({
-        icon: "committee",
-        label: "DAC (committee)",
-      });
-    }
-
-    if (x.includes("Celestia")) {
-      retObject.push({
-        icon: "celestiafp",
-        label: "Celestia",
-      });
-    }
-
-    if (x.includes("memo")) {
-      retObject.push({
-        icon: "memofp",
-        label: "Memo",
-      });
-    }
-  }
-  return retObject;
-}
