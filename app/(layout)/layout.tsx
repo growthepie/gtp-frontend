@@ -14,6 +14,7 @@ import Details from "@/components/Details";
 import BottomBanner from "@/components/BottomBanner";
 import "../background.css";
 import DeveloperTools from "@/components/development/DeveloperTools";
+import Footer from "@/components/layout/Footer";
 
 const jsonLd: Graph = {
   "@context": "https://schema.org",
@@ -215,7 +216,8 @@ export default function RootLayout({
                   <main className="flex-1 w-full mx-auto z-10 pb-[165px] min-h-[calc(100vh-218px-56px)] md:min-h-[calc(100vh-207px-80px)]">
                     {children}
                   </main>
-                  <BottomBanner />
+                  {/* <BottomBanner /> */}
+                  <Footer />
                 </div>
               </div>
               <div className="z-50 flex fixed bottom-[20px] w-full max-w-[1680px] justify-end pointer-events-none">

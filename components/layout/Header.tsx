@@ -53,9 +53,9 @@ export default function Header() {
       <div className="items-center z-10 hidden md:flex md:space-x-[34px] ">
         <EthUsdSwitch />
 
-        <div className="flex space-x-[22px] items-center ">
+        {/* <div className="flex space-x-[22px] items-center ">
           <HeaderLinks />
-        </div>
+        </div> */}
       </div>
       {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
         ["development", "preview"].includes(
