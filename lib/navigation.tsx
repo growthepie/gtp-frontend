@@ -606,12 +606,22 @@ export const navigationItems: NavigationItem[] = [
       {
         label: "Taiko",
         page: {
-          description: "Taiko is",
+          description: "Taiko is.",
         },
         icon: "gtp:taiko-logo-monochrome",
         key: "taiko",
         rootKey: "chainsTaiko",
         urlKey: "taiko",
+      },
+      {
+        label: "Redstone",
+        page: {
+          description: "Redstone is.",
+        },
+        icon: "gtp:redstone-logo-monochrome",
+        key: "redstone",
+        rootKey: "chainsRedstone",
+        urlKey: "redstone",
       },
     ],
   },

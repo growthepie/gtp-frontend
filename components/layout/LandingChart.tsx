@@ -732,7 +732,9 @@ export default function LandingChart({
 
   const tooltipFormatter = useCallback(
     function (this: any) {
-      const { x, points } = this;
+      const { x, points }: { x: number; points: any[] } = this;
+      const firstTenPoints = points.sort((a: any, b: any) => b.y - a.y).slice(0, 10);
+      const afterTenPoints = points.sort((a: any, b: any) => b.y - a.y).slice(10);
       const date = new Date(x);
       const dateString = `
       <div>
@@ -783,8 +785,7 @@ export default function LandingChart({
         return acc;
       }, 0);
 
-      const tooltipPoints = points
-        .sort((a: any, b: any) => b.y - a.y)
+      let tooltipPoints = firstTenPoints
         .filter((point: any) => {
           const { series, y, percentage } = point;
           const { name } = series;
@@ -849,6 +850,75 @@ export default function LandingChart({
           </div>`;
         })
         .join("");
+
+      // add "others" with the sum of the rest of the points
+      const rest = afterTenPoints
+        .filter((point: any) => {
+          const { series, y, percentage } = point;
+          const { name } = series;
+          const supportedChainKeys = Get_SupportedChainKeys(master, [
+            "all_l2s",
+            "multiple",
+          ]);
+
+          return supportedChainKeys.includes(name);
+        })
+
+      if (rest.length === 0) return tooltip + tooltipPoints + tooltipEnd;
+
+      const restString = rest.length > 1 ? `${parseFloat(rest[0].y).toLocaleString("en-GB", { minimumFractionDigits: 0 })}…${parseFloat(rest[rest.length - 1].y).toLocaleString("en-GB", { minimumFractionDigits: 0 })}` :
+        parseFloat(rest[0].y).toLocaleString("en-GB", { minimumFractionDigits: 0 });
+
+      const restSum = rest.reduce((acc: number, point: any) => {
+        acc += point.y;
+        return acc;
+      }, 0);
+
+      const restPercentage = rest.reduce((acc: number, point: any) => {
+        acc += point.percentage;
+        return acc;
+      }, 0);
+
+      if (selectedScale === "percentage")
+        tooltipPoints += `
+          <div class="flex w-full space-x-2 items-center font-medium mb-0.5 opacity-60">
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6"></div>
+            <div class="tooltip-point-name">${rest.length > 1 ? `${rest.length} Others` : "1 Other"}</div>
+            <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
+          restPercentage,
+          2,
+        )}%</div>
+          </div>
+          <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+
+            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
+            style="
+              width: ${(restPercentage / maxPercentage) * 100}%;
+              background-color: #E0E7E699
+            ;
+            "></div>
+          </div>`;
+
+      else
+        tooltipPoints += `
+          <div class="flex w-full space-x-2 items-center font-medium mb-0.5 opacity-60">
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6"></div>
+            <div class="tooltip-point-name">${rest.length > 1 ? `${rest.length} Others` : "1 Other"}</div>
+            <div class="flex-1 text-right justify-end font-inter flex">
+              <div class="inline-block">${restSum.toLocaleString("en-GB", { minimumFractionDigits: 0, })}</div>
+            </div>
+          </div>
+          <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+
+            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
+            style="
+              width: ${(restSum / maxPoint) * 100}%;
+              background-color: #E0E7E699
+            ;
+            "></div>
+          </div>`;
 
       return tooltip + tooltipPoints + tooltipEnd;
     },
