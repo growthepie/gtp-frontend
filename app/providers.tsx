@@ -5,7 +5,7 @@ import { addCollection } from "@iconify/react";
 import GTPIcons from "@/icons/gtp.json";
 import { UIContextProvider } from "@/contexts/UIContext";
 import { useLocalStorage } from "usehooks-ts";
-import { IS_PRODUCTION } from "@/lib/helpers";
+import { IS_PRODUCTION } from "@/lib/helpers.mjs";
 
 // load icons
 addCollection(GTPIcons);

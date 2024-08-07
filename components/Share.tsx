@@ -3,7 +3,7 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import Icon from "@/components/layout/Icon";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { BASE_URL, IS_DEVELOPMENT, IS_PREVIEW } from "@/lib/helpers";
+import { BASE_URL, IS_DEVELOPMENT, IS_PREVIEW } from "@/lib/helpers.mjs";
 import { useMediaQuery } from "usehooks-ts";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./layout/Tooltip";
 import { EmbedData, useUIContext } from "@/contexts/UIContext";
@@ -285,10 +285,9 @@ export default function Share() {
               />
               <div
                 className={`absolute -right-[5px] -bottom-[5px] bg-forest-50 dark:bg-[#1F2726] z-[101] rounded-[40px] shadow-[0px_0px_30px_0px_#000000BF] py-[30px] px-[20px] 
-                  border-[5px] border-forest-500 dark:border-[#5A6462] transition-all duration-300 select-none ${
-                    topSelection === "social"
-                      ? "w-[calc(100vw-30px)] xs:w-[calc(100vw-46px)] md:w-[453px]"
-                      : "w-[calc(100vw-30px)] xs:w-[calc(100vw-46px)] md:w-[579px]"
+                  border-[5px] border-forest-500 dark:border-[#5A6462] transition-all duration-300 select-none ${topSelection === "social"
+                    ? "w-[calc(100vw-30px)] xs:w-[calc(100vw-46px)] md:w-[453px]"
+                    : "w-[calc(100vw-30px)] xs:w-[calc(100vw-46px)] md:w-[579px]"
                   }`}
               >
                 <div className="flex w-full h-[32px] justify-between items-center justify-self-start ">
@@ -320,11 +319,10 @@ export default function Share() {
                 </div>
                 <div className="flex gap-x-[5px] mt-[15px]">
                   <div
-                    className={`flex items-center justify-center border px-[16px] py-[2px] text-[14px] leading-[20px] rounded-full hover:cursor-pointer transition ${
-                      topSelection === "social"
+                    className={`flex items-center justify-center border px-[16px] py-[2px] text-[14px] leading-[20px] rounded-full hover:cursor-pointer transition ${topSelection === "social"
                         ? "bg-forest-200 border-forest-200 dark:bg-[#151A19] dark:border-[#151A19]"
                         : "border-forest-500 dark:border-[#5A6462] hover:bg-forest-500 hover:border-forest-500 dark:hover:bg-forest-900 dark:hover:border-forest-900"
-                    }`}
+                      }`}
                     onClick={() => {
                       setTopSelection("social");
                       track("clicked Social in Share window", {
@@ -337,11 +335,10 @@ export default function Share() {
                   </div>
                   {embedEnabled && (
                     <div
-                      className={`flex items-center justify-center border px-[16px] py-[2px] text-[14px] leading-[20px] rounded-full hover:cursor-pointer transition ${
-                        topSelection === "embed"
+                      className={`flex items-center justify-center border px-[16px] py-[2px] text-[14px] leading-[20px] rounded-full hover:cursor-pointer transition ${topSelection === "embed"
                           ? "bg-forest-200 border-forest-200 dark:bg-[#151A19] dark:border-[#151A19]"
                           : "border-forest-500 dark:border-[#5A6462] hover:bg-forest-500 hover:border-forest-500 dark:hover:bg-forest-900 dark:hover:border-forest-900"
-                      }`}
+                        }`}
                       onClick={() => {
                         setTopSelection("embed");
                         track("clicked Embed in Share window", {
@@ -404,15 +401,13 @@ export default function Share() {
 
                         <div className="ml-auto flex items-center">
                           <Icon
-                            className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-forest-500  ${
-                              copied ? "opacity-0" : "opacity-100"
-                            }`}
+                            className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-forest-500  ${copied ? "opacity-0" : "opacity-100"
+                              }`}
                             icon="feather:copy"
                           />
                           <Icon
-                            className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-forest-500  ${
-                              copied ? "opacity-100" : "opacity-0"
-                            }`}
+                            className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-forest-500  ${copied ? "opacity-100" : "opacity-0"
+                              }`}
                             icon="feather:check"
                           />
                         </div>
@@ -481,9 +476,8 @@ export default function Share() {
                       <Link
                         href={`${BASE_URL}/embed/test?url=${encodeURIComponent(
                           `${embedData.src}`,
-                        )}&width=${embedData.width}&height=${
-                          embedData.height
-                        }&title=${embedData.title}`}
+                        )}&width=${embedData.width}&height=${embedData.height
+                          }&title=${embedData.title}`}
                         target="_blank"
                         rel="noopener"
                         className="absolute -bottom-7 left-10 p-[5px] text-xs px-3 py-1 rounded-full border border-forest-500 dark:border-forest-800  hover:bg-forest-500 dark:hover:bg-[#5A6462] cursor-pointer"
@@ -590,7 +584,7 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                             }));
                             track(
                               "selected Timeframe in Share Embed window: " +
-                                newTimeframe,
+                              newTimeframe,
                               {
                                 location: isMobile ? `mobile` : `desktop`,
                                 page: window.location.pathname,
@@ -601,9 +595,8 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                           <div className="w-full flex justify-between text-[#2D3748]">
                             <div className="w-full text-center">Snapshot</div>
                             <div
-                              className={`w-full text-center ${
-                                embedData.zoomed && "opacity-50"
-                              }`}
+                              className={`w-full text-center ${embedData.zoomed && "opacity-50"
+                                }`}
                             >
                               Updating
                             </div>
@@ -614,7 +607,7 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                               style={{
                                 transform:
                                   embedData.timeframe === "absolute" ||
-                                  embedData.zoomed
+                                    embedData.zoomed
                                     ? "translateX(0%)"
                                     : "translateX(100%)",
                               }}
@@ -635,9 +628,8 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                           </div>
                           <div className="flex items-center w-full gap-x-[5px]">
                             <div
-                              className={`cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-forest-800 ${
-                                embedData.width <= 450 && "opacity-30"
-                              }`}
+                              className={`cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-forest-800 ${embedData.width <= 450 && "opacity-30"
+                                }`}
                             >
                               <div
                                 className="w-[24px] h-[24px]"
@@ -710,9 +702,8 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                           </div>
                           <div className="flex items-center w-full gap-x-[5px]">
                             <div
-                              className={`cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-forest-800 ${
-                                embedData.height <= 500 && "opacity-30"
-                              }`}
+                              className={`cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-forest-800 ${embedData.height <= 500 && "opacity-30"
+                                }`}
                             >
                               <div
                                 className="w-[24px] h-[24px]"
@@ -792,15 +783,13 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                           </div>
                           <div className="flex ml-auto relative w-[24px] h-[24px]">
                             <Icon
-                              className={`absolute  w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-forest-500 ${
-                                copied ? "opacity-0" : "opacity-100"
-                              }`}
+                              className={`absolute  w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-forest-500 ${copied ? "opacity-0" : "opacity-100"
+                                }`}
                               icon="feather:copy"
                             />
                             <Icon
-                              className={`absolute w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-forest-500 ${
-                                copied ? "opacity-100" : "opacity-0"
-                              }`}
+                              className={`absolute w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-forest-500 ${copied ? "opacity-100" : "opacity-0"
+                                }`}
                               icon="feather:check"
                             />
                           </div>

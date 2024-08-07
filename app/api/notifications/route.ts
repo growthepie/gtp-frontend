@@ -1,4 +1,4 @@
-import { IS_DEVELOPMENT, IS_PREVIEW } from "@/lib/helpers";
+import { IS_DEVELOPMENT, IS_PREVIEW } from "@/lib/helpers.mjs";
 import moment from "moment";
 
 const notificationTable = "tblA4NwUahsIldb6x";

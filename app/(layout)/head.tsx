@@ -1,4 +1,4 @@
-import { IS_PRODUCTION } from "@/lib/helpers";
+import { IS_PRODUCTION } from "@/lib/helpers.mjs";
 import { getCookie } from "cookies-next";
 import Script from "next/script";
 import { MasterURL } from "@/lib/urls";

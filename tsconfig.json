@@ -10,6 +10,7 @@
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
@@ -30,7 +31,21 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "app/(labels)/layout.tsx.old"
+    "app/(labels)/layout.tsx.old",
+    "tailwind.config.mjs",
+    "next.config.mjs",
+    "next.config.mjs",
+    "next-sitemap.config.mjs",
+    "postcss.config.mjs",
+    "lib/helpers.mjs",
+    "gtp.fees.config.mjs",
+    "gtp.labels.config.mjs",
+    "gtp.main.config.mjs"
   ],
-  "exclude": ["node_modules", "icons"]
+  "exclude": ["node_modules", "icons"],
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  }
 }

@@ -35,7 +35,7 @@ import { useTheme } from "next-themes";
 import { useMediaQuery } from "usehooks-ts";
 import { useUIContext } from "@/contexts/UIContext";
 import { track } from "@vercel/analytics/react";
-import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
+import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers.mjs";
 import UsageFees from "@/components/layout/SingleChains/UsageFees";
 import UsageFeesAlt from "@/components/layout/SingleChains/UsageFeesAlt";
 import {

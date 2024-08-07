@@ -17,19 +17,21 @@ type HorizontalScrollContainerProps = {
   header?: React.ReactNode;
   style?: React.CSSProperties;
 };
-export default function LabelsTableContainer(
+const LabelsTableContainer = React.forwardRef((
   {
+    className = "",
     children,
-    className,
-    paddingRight = 0,
-    paddingLeft = 0,
-    paddingTop = 0,
-    paddingBottom = 0,
+    includeMargin = false,
+    paddingRight,
+    paddingLeft,
+    paddingTop,
+    paddingBottom,
+    forcedMinWidth,
     header,
     style,
   }: HorizontalScrollContainerProps,
-  ref: React.Ref<HTMLDivElement>,
-) {
+  ref: React.Ref<HTMLDivElement>
+) => {
   const { width: windowWidth = 0, height: windowHeight = 0 } = useWindowSize();
   const [contentAreaRef, { width: contentAreaWidth }] =
     useElementSizeObserver<HTMLDivElement>();
@@ -71,6 +73,7 @@ export default function LabelsTableContainer(
 
   return (
     <div
+      ref={ref}
       className={`px-0 pb-[200px] md:pb-[150px] w-fit ${className}`}
       style={style}
     >
@@ -104,4 +107,8 @@ export default function LabelsTableContainer(
       </div>
     </div>
   );
-}
+});
+
+LabelsTableContainer.displayName = "LabelsTableContainer";
+
+export default LabelsTableContainer;

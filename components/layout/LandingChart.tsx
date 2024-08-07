@@ -34,7 +34,7 @@ import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import ChartWatermark from "./ChartWatermark";
-import { BASE_URL, IS_PREVIEW } from "@/lib/helpers";
+import { BASE_URL, IS_PREVIEW } from "@/lib/helpers.mjs";
 import EmbedContainer from "@/app/(embeds)/embed/EmbedContainer";
 import "../../app/highcharts.axis.css";
 import {

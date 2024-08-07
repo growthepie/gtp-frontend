@@ -34,7 +34,7 @@ import {
   TopRowChild,
   TopRowParent,
 } from "@/components/layout/TopRow";
-import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
+import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers.mjs";
 import HorizontalScrollContainer from "../HorizontalScrollContainer";
 
 export default function CategoryMetrics({

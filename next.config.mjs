@@ -80,6 +80,6 @@ const nextConfig = {
 //   auto: true,
 // };
 
-module.exports = nextConfig;
+export default nextConfig;
 
 // export default million.next(nextConfig, millionConfig);

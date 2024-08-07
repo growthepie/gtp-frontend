@@ -13,6 +13,7 @@ export type EmbedData = {
 type UIContextState = {
   isSidebarOpen: boolean;
   isMobile: boolean;
+  is2XL: boolean;
   isMobileSidebarOpen: boolean;
   toggleSidebar: () => void;
   toggleMobileSidebar: () => void;
@@ -24,6 +25,7 @@ type UIContextState = {
 const UIContext = createContext<UIContextState>({
   isSidebarOpen: false,
   isMobile: false,
+  is2XL: false,
   isMobileSidebarOpen: false,
   toggleSidebar: () => { },
   toggleMobileSidebar: () => { },
@@ -38,6 +40,7 @@ export const UIContextProvider = ({ children }) => {
   const [state, setState] = useState<UIContextState>({
     isSidebarOpen: false,
     isMobile: false,
+    is2XL: false,
     isMobileSidebarOpen: false,
     toggleSidebar: () => { },
     toggleMobileSidebar: () => { },
@@ -62,6 +65,7 @@ export const UIContextProvider = ({ children }) => {
     // This effect will run only in the browser, where window is defined.
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     const isMobileSize = window.innerWidth < 768;
+    const isExtraLarge = window.innerWidth >= 1536;
 
 
 
@@ -70,6 +74,7 @@ export const UIContextProvider = ({ children }) => {
       isSafariBrowser: isSafari,
       isSidebarOpen: window.innerWidth >= 1280,
       isMobile: isMobileSize,
+      is2XL: isExtraLarge,
       lastWindowWidth: window.innerWidth,
     }));
 
@@ -81,6 +86,7 @@ export const UIContextProvider = ({ children }) => {
         ...prevState,
         isSidebarOpen: !state.isSidebarOpen && currentWidth >= 1280 && !isExpanding ? false : currentWidth >= 1280,
         isMobile: window.innerWidth < 768,
+        is2XL: window.innerWidth >= 1536,
       }));
 
       prevWindowWidthRef.current = currentWidth;

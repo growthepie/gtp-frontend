@@ -1,4 +1,4 @@
-import { IS_PREVIEW } from "./helpers";
+import { IS_PREVIEW } from "./helpers.mjs";
 import { MasterURL } from "./urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import Icon from "@/components/layout/Icon";

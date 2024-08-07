@@ -25,6 +25,11 @@ export default function Search() {
 
   const { data: master } = useSWR<MasterResponse>(MasterURL);
 
+  const [showDeployerAddress, setShowDeployerAddress] = useSessionStorage(
+    "labels::showDeployerAddress",
+    false
+  );
+
   // const [labelsCategoriesFilter, setLabelsCategoriesFilter] = useSessionStorage<string[]>('labelsCategoriesFilter', []);
   // const [labelsSubcategoriesFilter, setLabelsSubcategoriesFilter] = useSessionStorage<string[]>('labelsSubcategoriesFilter', []);
   // const [labelsChainsFilter, setLabelsChainsFilter] = useSessionStorage<string[]>('labelsChainsFilter', []);
@@ -38,19 +43,21 @@ export default function Search() {
     owner_project: { owner_project: string; owner_project_clear: string }[];
     category: string[];
     subcategory: string[];
+    deployer_address: string[];
     txcount: number[];
     txcount_change: number[];
     gas_fees_usd: number[];
     gas_fees_usd_change: number[];
     daa: number[];
     daa_change: number[];
-  }>("labelsFilters", {
+  }>("labelsFiltersObj", {
     address: [],
     origin_key: [],
     name: [],
     owner_project: [],
     category: [],
     subcategory: [],
+    deployer_address: [],
     txcount: [],
     txcount_change: [],
     gas_fees_usd: [],
@@ -58,6 +65,15 @@ export default function Search() {
     daa: [],
     daa_change: [],
   });
+
+  useEffect(() => {
+    if (!labelsFilters.deployer_address) {
+      setLabelsFilters({
+        ...labelsFilters,
+        deployer_address: [],
+      });
+    }
+  }, [labelsFilters, setLabelsFilters]);
 
   const handleFilter = useCallback(
     (
@@ -92,12 +108,23 @@ export default function Search() {
     [labelsFilters, setLabelsFilters],
   );
 
+  useEffect(() => {
+    // empty the deployer address filter if it is not shown
+    if (!showDeployerAddress) {
+      setLabelsFilters((prev) => ({
+        ...prev,
+        deployer_address: [],
+      }));
+    }
+  }, [showDeployerAddress, setLabelsFilters]);
+
   const [search, setSearch] = useState<string>("");
 
   const [labelsAutocomplete, setLabelsAutocomplete] = useSessionStorage<{
     address: string[];
     origin_key: string[];
     name: string[];
+    deployer_address: string[];
     owner_project: { owner_project: string; owner_project_clear: string }[];
     category: string[];
     subcategory: string[];
@@ -105,6 +132,7 @@ export default function Search() {
     address: [],
     origin_key: [],
     name: [],
+    deployer_address: [],
     owner_project: [],
     category: [],
     subcategory: [],
@@ -130,6 +158,8 @@ export default function Search() {
   const [labelsOwnerProjects, setLabelsOwnerProjects] = useSessionStorage<
     { owner_project: string; owner_project_clear: string }[]
   >("labelsOwnerProjects", []);
+
+  const [labelsDeployerAddresses, setLabelsDeployerAddresses] = useSessionStorage<string[]>("labelsDeployerAddresses", []);
 
   const [labelsOwnerProjectClears, setLabelsOwnerProjectClears] =
     useSessionStorage<string[]>("labelsOwnerProjectClears", []);
@@ -205,7 +235,7 @@ export default function Search() {
           key={row.owner_project}
           onClick={(e) => { handleFilter("owner_project", row); e.stopPropagation(); }}
           label={row.owner_project_clear}
-          leftIcon="feather:tag"
+          leftIcon={"uil:layer-group"}
           leftIconColor="#CDD8D3"
           rightIcon="heroicons-solid:x-circle"
           rightIconColor="#FE5468"
@@ -229,6 +259,24 @@ export default function Search() {
       />
     ));
 
+
+
+    const deployerAddressFilters = labelsFilters.deployer_address?.map((deployerAddress) => (
+      <Badge
+        key={deployerAddress}
+        truncateStyle="middle"
+        className="!max-w-[115px]"
+        onClick={(e) => { handleFilter("deployer_address", deployerAddress); e.stopPropagation(); }}
+        label={deployerAddress}
+        leftIcon={"uil:layer-group"}
+        leftIconColor="#CDD8D3"
+        rightIcon="heroicons-solid:x-circle"
+        rightIconColor="#FE5468"
+        showLabel={true}
+        altColoring={isOpen}
+      />
+    )) || [];
+
     return [
       ...addressFilters,
       ...chainFilters,
@@ -236,6 +284,7 @@ export default function Search() {
       ...subcategoryFilters,
       ...ownerProjectFilters,
       ...nameFilters,
+      ...deployerAddressFilters,
     ];
   }, [
     handleFilter,
@@ -246,16 +295,18 @@ export default function Search() {
     labelsFilters.origin_key,
     labelsFilters.owner_project,
     labelsFilters.subcategory,
+    labelsFilters.deployer_address,
     master,
   ]);
 
   useEffect(() => {
-    if (!master || labelsOwnerProjects.length === 0) return;
+    if (!master || labelsOwnerProjects.length === 0 || labelsDeployerAddresses.length === 0) return;
 
     if (search.length === 0) {
       setLabelsAutocomplete({
         address: [],
         name: [],
+        deployer_address: [],
         owner_project: [],
         category: [],
         subcategory: [],
@@ -284,16 +335,20 @@ export default function Search() {
     const ownerProjectAutocomplete = labelsOwnerProjects.filter((row) =>
       row.owner_project.toLowerCase().includes(search.toLowerCase()),
     );
+    const deployerAddressAutocomplete = labelsDeployerAddresses.filter((deployerAddress) =>
+      deployerAddress.toLowerCase().includes(search.toLowerCase()),
+    );
 
     setLabelsAutocomplete({
       address: [],
       name: [],
+      deployer_address: deployerAddressAutocomplete,
       owner_project: ownerProjectAutocomplete,
       category: categoryAutocomplete,
       subcategory: subcategoryAutocomplete,
       origin_key: chainAutocomplete,
     });
-  }, [labelsOwnerProjects, master, search, setLabelsAutocomplete]);
+  }, [labelsDeployerAddresses, labelsOwnerProjects, master, search, setLabelsAutocomplete]);
 
   return (
     <div className="relative w-full">
@@ -372,6 +427,7 @@ export default function Search() {
                         owner_project: [],
                         category: [],
                         subcategory: [],
+                        deployer_address: [],
                         txcount: [],
                         txcount_change: [],
                         gas_fees_usd: [],
@@ -383,11 +439,11 @@ export default function Search() {
                   >
                     <svg width="27" height="26" viewBox="0 0 27 26" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <rect x="1" y="1" width="25" height="24" rx="12" stroke="url(#paint0_linear_8794_34411)" />
-                      <path fill-rule="evenodd" clip-rule="evenodd" d="M17.7435 17.2426C18.8688 16.1174 19.5009 14.5913 19.5009 13C19.5009 11.4087 18.8688 9.88258 17.7435 8.75736C16.6183 7.63214 15.0922 7 13.5009 7C11.9096 7 10.3835 7.63214 9.25827 8.75736C8.13305 9.88258 7.50091 11.4087 7.50091 13C7.50091 14.5913 8.13305 16.1174 9.25827 17.2426C10.3835 18.3679 11.9096 19 13.5009 19C15.0922 19 16.6183 18.3679 17.7435 17.2426V17.2426ZM12.4402 10.8787C12.2996 10.738 12.1088 10.659 11.9099 10.659C11.711 10.659 11.5202 10.738 11.3796 10.8787C11.2389 11.0193 11.1599 11.2101 11.1599 11.409C11.1599 11.6079 11.2389 11.7987 11.3796 11.9393L12.4402 13L11.3796 14.0607C11.2389 14.2013 11.1599 14.3921 11.1599 14.591C11.1599 14.7899 11.2389 14.9807 11.3796 15.1213C11.5202 15.262 11.711 15.341 11.9099 15.341C12.1088 15.341 12.2996 15.262 12.4402 15.1213L13.5009 14.0607L14.5616 15.1213C14.7022 15.262 14.893 15.341 15.0919 15.341C15.2908 15.341 15.4816 15.262 15.6222 15.1213C15.7629 14.9807 15.8419 14.7899 15.8419 14.591C15.8419 14.3921 15.7629 14.2013 15.6222 14.0607L14.5616 13L15.6222 11.9393C15.7629 11.7987 15.8419 11.6079 15.8419 11.409C15.8419 11.2101 15.7629 11.0193 15.6222 10.8787C15.4816 10.738 15.2908 10.659 15.0919 10.659C14.893 10.659 14.7022 10.738 14.5616 10.8787L13.5009 11.9393L12.4402 10.8787Z" fill="#CDD8D3" />
+                      <path fillRule="evenodd" clipRule="evenodd" d="M17.7435 17.2426C18.8688 16.1174 19.5009 14.5913 19.5009 13C19.5009 11.4087 18.8688 9.88258 17.7435 8.75736C16.6183 7.63214 15.0922 7 13.5009 7C11.9096 7 10.3835 7.63214 9.25827 8.75736C8.13305 9.88258 7.50091 11.4087 7.50091 13C7.50091 14.5913 8.13305 16.1174 9.25827 17.2426C10.3835 18.3679 11.9096 19 13.5009 19C15.0922 19 16.6183 18.3679 17.7435 17.2426V17.2426ZM12.4402 10.8787C12.2996 10.738 12.1088 10.659 11.9099 10.659C11.711 10.659 11.5202 10.738 11.3796 10.8787C11.2389 11.0193 11.1599 11.2101 11.1599 11.409C11.1599 11.6079 11.2389 11.7987 11.3796 11.9393L12.4402 13L11.3796 14.0607C11.2389 14.2013 11.1599 14.3921 11.1599 14.591C11.1599 14.7899 11.2389 14.9807 11.3796 15.1213C11.5202 15.262 11.711 15.341 11.9099 15.341C12.1088 15.341 12.2996 15.262 12.4402 15.1213L13.5009 14.0607L14.5616 15.1213C14.7022 15.262 14.893 15.341 15.0919 15.341C15.2908 15.341 15.4816 15.262 15.6222 15.1213C15.7629 14.9807 15.8419 14.7899 15.8419 14.591C15.8419 14.3921 15.7629 14.2013 15.6222 14.0607L14.5616 13L15.6222 11.9393C15.7629 11.7987 15.8419 11.6079 15.8419 11.409C15.8419 11.2101 15.7629 11.0193 15.6222 10.8787C15.4816 10.738 15.2908 10.659 15.0919 10.659C14.893 10.659 14.7022 10.738 14.5616 10.8787L13.5009 11.9393L12.4402 10.8787Z" fill="#CDD8D3" />
                       <defs>
                         <linearGradient id="paint0_linear_8794_34411" x1="13.5" y1="1" x2="29.4518" y2="24.361" gradientUnits="userSpaceOnUse">
-                          <stop stop-color="#FE5468" />
-                          <stop offset="1" stop-color="#FFDF27" />
+                          <stop stopColor="#FE5468" />
+                          <stop offset="1" stopColor="#FFDF27" />
                         </linearGradient>
                       </defs>
                     </svg>
@@ -446,11 +502,11 @@ export default function Search() {
                     >
                       <svg width="27" height="26" viewBox="0 0 27 26" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <rect x="1" y="1" width="25" height="24" rx="12" stroke="url(#paint0_linear_8794_34411)" />
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M17.7435 17.2426C18.8688 16.1174 19.5009 14.5913 19.5009 13C19.5009 11.4087 18.8688 9.88258 17.7435 8.75736C16.6183 7.63214 15.0922 7 13.5009 7C11.9096 7 10.3835 7.63214 9.25827 8.75736C8.13305 9.88258 7.50091 11.4087 7.50091 13C7.50091 14.5913 8.13305 16.1174 9.25827 17.2426C10.3835 18.3679 11.9096 19 13.5009 19C15.0922 19 16.6183 18.3679 17.7435 17.2426V17.2426ZM12.4402 10.8787C12.2996 10.738 12.1088 10.659 11.9099 10.659C11.711 10.659 11.5202 10.738 11.3796 10.8787C11.2389 11.0193 11.1599 11.2101 11.1599 11.409C11.1599 11.6079 11.2389 11.7987 11.3796 11.9393L12.4402 13L11.3796 14.0607C11.2389 14.2013 11.1599 14.3921 11.1599 14.591C11.1599 14.7899 11.2389 14.9807 11.3796 15.1213C11.5202 15.262 11.711 15.341 11.9099 15.341C12.1088 15.341 12.2996 15.262 12.4402 15.1213L13.5009 14.0607L14.5616 15.1213C14.7022 15.262 14.893 15.341 15.0919 15.341C15.2908 15.341 15.4816 15.262 15.6222 15.1213C15.7629 14.9807 15.8419 14.7899 15.8419 14.591C15.8419 14.3921 15.7629 14.2013 15.6222 14.0607L14.5616 13L15.6222 11.9393C15.7629 11.7987 15.8419 11.6079 15.8419 11.409C15.8419 11.2101 15.7629 11.0193 15.6222 10.8787C15.4816 10.738 15.2908 10.659 15.0919 10.659C14.893 10.659 14.7022 10.738 14.5616 10.8787L13.5009 11.9393L12.4402 10.8787Z" fill="#CDD8D3" />
+                        <path fillRule="evenodd" clipRule="evenodd" d="M17.7435 17.2426C18.8688 16.1174 19.5009 14.5913 19.5009 13C19.5009 11.4087 18.8688 9.88258 17.7435 8.75736C16.6183 7.63214 15.0922 7 13.5009 7C11.9096 7 10.3835 7.63214 9.25827 8.75736C8.13305 9.88258 7.50091 11.4087 7.50091 13C7.50091 14.5913 8.13305 16.1174 9.25827 17.2426C10.3835 18.3679 11.9096 19 13.5009 19C15.0922 19 16.6183 18.3679 17.7435 17.2426V17.2426ZM12.4402 10.8787C12.2996 10.738 12.1088 10.659 11.9099 10.659C11.711 10.659 11.5202 10.738 11.3796 10.8787C11.2389 11.0193 11.1599 11.2101 11.1599 11.409C11.1599 11.6079 11.2389 11.7987 11.3796 11.9393L12.4402 13L11.3796 14.0607C11.2389 14.2013 11.1599 14.3921 11.1599 14.591C11.1599 14.7899 11.2389 14.9807 11.3796 15.1213C11.5202 15.262 11.711 15.341 11.9099 15.341C12.1088 15.341 12.2996 15.262 12.4402 15.1213L13.5009 14.0607L14.5616 15.1213C14.7022 15.262 14.893 15.341 15.0919 15.341C15.2908 15.341 15.4816 15.262 15.6222 15.1213C15.7629 14.9807 15.8419 14.7899 15.8419 14.591C15.8419 14.3921 15.7629 14.2013 15.6222 14.0607L14.5616 13L15.6222 11.9393C15.7629 11.7987 15.8419 11.6079 15.8419 11.409C15.8419 11.2101 15.7629 11.0193 15.6222 10.8787C15.4816 10.738 15.2908 10.659 15.0919 10.659C14.893 10.659 14.7022 10.738 14.5616 10.8787L13.5009 11.9393L12.4402 10.8787Z" fill="#CDD8D3" />
                         <defs>
                           <linearGradient id="paint0_linear_8794_34411" x1="13.5" y1="1" x2="29.4518" y2="24.361" gradientUnits="userSpaceOnUse">
-                            <stop stop-color="#FE5468" />
-                            <stop offset="1" stop-color="#FFDF27" />
+                            <stop stopColor="#FE5468" />
+                            <stop offset="1" stopColor="#FFDF27" />
                           </linearGradient>
                         </defs>
                       </svg>
@@ -740,7 +796,7 @@ export default function Search() {
               <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start">
                 <div className="flex gap-x-[10px] items-start">
                   <div className="w-[15px] h-[15px] mt-1">
-                    <Icon icon="feather:tag" className="w-[15px] h-[15px]" />
+                    <Icon icon="uil:layer-group" className="w-[15px] h-[15px]" />
                   </div>
                   <div className="text-white leading-[150%] whitespace-nowrap mt-1">
                     Owner Project
@@ -763,7 +819,7 @@ export default function Search() {
                               )
                               : ownerProjectRow.owner_project_clear
                           }
-                          leftIcon="feather:tag"
+                          leftIcon={"uil:layer-group"}
                           leftIconColor="#CDD8D3"
                           rightIcon={
                             labelsFilters.owner_project.find(
@@ -787,38 +843,142 @@ export default function Search() {
                         />
                       ),
                     )
-                    : labelsOwnerProjects.map((ownerProjectRow) => (
-                      <Badge
-                        key={ownerProjectRow.owner_project}
-                        onClick={() =>
-                          handleFilter("owner_project", ownerProjectRow)
-                        }
-                        label={ownerProjectRow.owner_project_clear}
-                        leftIcon="feather:tag"
-                        leftIconColor="#CDD8D3"
-                        rightIcon={
-                          labelsFilters.owner_project.find(
-                            (f) =>
-                              f.owner_project ===
-                              ownerProjectRow.owner_project,
-                          )
-                            ? "heroicons-solid:x-circle"
-                            : "heroicons-solid:plus-circle"
-                        }
-                        rightIconColor={
-                          labelsFilters.owner_project.find(
-                            (f) =>
-                              f.owner_project ===
-                              ownerProjectRow.owner_project,
-                          )
-                            ? "#FE5468"
-                            : "#5A6462"
-                        }
-                        showLabel={true}
-                      />
-                    ))}
+                    : (
+                      <>
+                        {labelsOwnerProjects.slice(0, 100).map((ownerProjectRow) => (
+                          <Badge
+                            key={ownerProjectRow.owner_project}
+                            onClick={() =>
+                              handleFilter("owner_project", ownerProjectRow)
+                            }
+                            label={ownerProjectRow.owner_project_clear}
+                            leftIcon={"uil:layer-group"}
+                            leftIconColor="#CDD8D3"
+                            rightIcon={
+                              labelsFilters.owner_project.find(
+                                (f) =>
+                                  f.owner_project ===
+                                  ownerProjectRow.owner_project,
+                              )
+                                ? "heroicons-solid:x-circle"
+                                : "heroicons-solid:plus-circle"
+                            }
+                            rightIconColor={
+                              labelsFilters.owner_project.find(
+                                (f) =>
+                                  f.owner_project ===
+                                  ownerProjectRow.owner_project,
+                              )
+                                ? "#FE5468"
+                                : "#5A6462"
+                            }
+                            showLabel={true}
+                          />
+                        ))}
+                        {labelsOwnerProjects.length > 100 && (
+                          <div className="flex items-center justify-center w-full whitespace-nowrap">
+                            <div className="text-[10px] text-[#CDD8D3] font-medium cursor-pointer">{`+${labelsOwnerProjects.length - 10} more`}</div>
+                          </div>
+                        )}
+                      </>
+                    )}
                 </FilterSelectionContainer>
               </div>
+              {showDeployerAddress && <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start">
+                <div className="flex gap-x-[10px] items-start">
+                  <div className="w-[15px] h-[15px] mt-1">
+                    <Icon icon="material-symbols:deployed-code-account-rounded" className="w-[15px] h-[15px]" />
+                  </div>
+                  <div className="text-white leading-[150%] whitespace-nowrap mt-1">
+                    Deployer Address
+                  </div>
+                  <div className="w-[6px] h-[6px] bg-[#344240] rounded-full mt-2.5" />
+                </div>
+                <FilterSelectionContainer className="w-full md:flex-1">
+                  {search.length > 0
+                    ? search.length >= 4 ?
+                      <>
+                        {labelsAutocomplete.deployer_address && labelsAutocomplete.deployer_address.map(
+                          (deployerAddress) => (
+                            <Badge
+                              key={deployerAddress}
+                              truncateStyle="middle"
+                              className="!max-w-[120px]"
+                              onClick={() =>
+                                handleFilter("deployer_address", deployerAddress)
+                              }
+                              label={
+                                labelsAutocomplete.deployer_address.length > 0
+                                  ? boldSearch(
+                                    deployerAddress,
+                                  )
+                                  : deployerAddress
+                              }
+                              leftIcon={"material-symbols:deployed-code-account-rounded"}
+                              leftIconColor="#CDD8D3"
+                              rightIcon={
+                                labelsFilters.deployer_address.includes(
+                                  deployerAddress,
+                                )
+                                  ? "heroicons-solid:x-circle"
+                                  : "heroicons-solid:plus-circle"
+                              }
+                              rightIconColor={
+                                labelsFilters.deployer_address.includes(
+                                  deployerAddress,
+                                )
+                                  ? "#FE5468"
+                                  : "#5A6462"
+                              }
+                              showLabel={true}
+                            />
+                          ))}
+                      </>
+                      : <div className="flex items-center justify-start w-full whitespace-nowrap h-[25px]">
+                        <div className="text-[10px] text-[#CDD8D3]/80 font-medium">Please enter at least 4 characters to search deployer addresses</div>
+                      </div>
+
+
+                    : (
+                      <>
+                        {labelsDeployerAddresses.slice(0, 100).map((deployerAddress) => (
+                          <Badge
+                            key={deployerAddress}
+                            truncateStyle="middle"
+                            className="!max-w-[120px]"
+                            onClick={() =>
+                              handleFilter("deployer_address", deployerAddress)
+                            }
+                            label={deployerAddress}
+                            leftIcon={"material-symbols:deployed-code-account-rounded"}
+                            leftIconColor="#CDD8D3"
+                            rightIcon={
+                              labelsFilters.deployer_address.includes(
+                                deployerAddress,
+                              )
+                                ? "heroicons-solid:x-circle"
+                                : "heroicons-solid:plus-circle"
+                            }
+                            rightIconColor={
+                              labelsFilters.deployer_address.includes(
+                                deployerAddress,
+                              )
+                                ? "#FE5468"
+                                : "#5A6462"
+                            }
+                            showLabel={true}
+                          />
+                        ))}
+                        {labelsDeployerAddresses.length > 100 && (
+                          <div className="flex items-center justify-center w-full whitespace-nowrap">
+                            <div className="text-[10px] text-[#CDD8D3] font-medium cursor-pointer">{`+${labelsDeployerAddresses.length - 10} more`}</div>
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                </FilterSelectionContainer>
+              </div>}
             </div>
           </div>
         </div>
@@ -898,7 +1058,7 @@ const SearchIcon = () => (
 type BadgeProps = {
   onClick: (e: React.MouseEvent<HTMLDivElement>) => void;
   label: string | React.ReactNode;
-  leftIcon?: string;
+  leftIcon?: string | React.ReactNode;
   leftIconColor?: string;
   rightIcon: string;
   rightIconColor?: string;
@@ -907,6 +1067,7 @@ type BadgeProps = {
   className?: string;
   showLabel?: boolean;
   altColoring?: boolean;
+  truncateStyle?: "start" | "end" | "middle";
 };
 export const Badge = ({
   onClick,
@@ -920,23 +1081,70 @@ export const Badge = ({
   className,
   showLabel = true,
   altColoring = false,
+  truncateStyle = "end",
 }: BadgeProps) => {
+
+  let labelSection = label;
+
+  if (typeof label === "string") {
+    labelSection = (
+      <div className="flex items-center text-[#CDD8D3] text-[10px] truncate">
+        {label}
+      </div>
+    );
+
+    if (truncateStyle === "start") {
+      labelSection = (
+        <div className="flex items-center text-[#CDD8D3] text-[10px] truncate" style={{
+          direction: "rtl",
+        }}>
+          {label}
+        </div>
+      );
+    }
+
+    if (truncateStyle === "middle") {
+      labelSection = (
+        <div className="flex items-center text-[#CDD8D3] text-[10px] truncate">
+          <div className="truncate">
+            {label.slice(0, Math.floor(label.length / 2))}
+          </div>
+          <div className="">
+            {label.slice(-4)}
+          </div>
+        </div>
+      );
+    }
+  }
+
   if (size === "sm")
     return (
       <div
-        className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} text-[10px] rounded-full pl-[5px] pr-[2px] py-[3px] gap-x-[4px] cursor-pointer max-w-full ${className}`}
+        className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} text-[10px] h-[20px] rounded-full pl-[5px] pr-[2px] py-[3px] gap-x-[4px] cursor-pointer max-w-full ${className}`}
         onClick={onClick}
       >
-        {leftIcon ? (
+        {leftIcon ? typeof leftIcon === "string" ? (
+          <div className="flex items-center justify-center w-[12px] h-[12px]">
+            <Icon
+              icon={leftIcon}
+              className="text-[#CDD8D3] w-[12px] h-[12px]"
+              style={{
+                color: leftIconColor,
+              }}
+            />
+          </div>
+        ) : (
           <div className="flex items-center justify-center w-[12px] h-[12px]">
             {leftIcon}
           </div>
         ) : (
           <div className="w-[0px] h-[12px]" />
         )}
-        <div className="text-[#CDD8D3] leading-[120%] text-[10px] truncate">
-          {label}
-        </div>
+        {showLabel && (
+          <div className="flex items-center text-[#CDD8D3] pr-0.5 truncate">
+            {labelSection}
+          </div>
+        )}
         <div
           className={`flex items-center justify-center ${rightIconSize == "sm" ? "pr-[3px]" : "w-[14px] h-[14px]"
             }`}
@@ -954,11 +1162,11 @@ export const Badge = ({
 
   return (
     <div
-      className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} text-[10px] rounded-full pl-[2px] pr-[5px] gap-x-[5px] cursor-pointer ${className}`}
+      className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} h-[25px] text-[10px] rounded-full pl-[2px] pr-[5px] gap-x-[5px] cursor-pointer max-w-full ${className}`}
       onClick={onClick}
     >
-      {leftIcon ? (
-        <div className="flex items-center justify-center w-[25px] h-[25px]">
+      {leftIcon ? typeof leftIcon === "string" ? (
+        <div className="flex items-center justify-center pl-[5px] h-[15px]">
           <Icon
             icon={leftIcon}
             className="text-[#CDD8D3] w-[15px] h-[15px]"
@@ -968,11 +1176,15 @@ export const Badge = ({
           />
         </div>
       ) : (
+        <div className="flex items-center justify-center pl-[5px] h-[15px]">
+          {leftIcon}
+        </div>
+      ) : (
         <div className="w-[3px] h-[25px]" />
       )}
       {showLabel && (
-        <div className="text-[#CDD8D3] leading-[150%] pr-0.5 truncate">
-          {label}
+        <div className="flex items-center text-[#CDD8D3] pr-0.5 truncate">
+          {labelSection}
         </div>
       )}
       <div className="flex items-center justify-center w-[15px] h-[15px]">
@@ -1043,7 +1255,7 @@ export const FilterSelectionContainer = ({
   className,
 }: FilterSelectionContainerProps) => (
   <DraggableContainer
-    className={`flex gap-x-[10px] items-center justify-start h-full ${className} overflow-x-hidden`}
+    className={`touch-none flex gap-x-[10px] items-center justify-start h-full ${className} overflow-x-hidden`}
     direction="horizontal"
   >
     {children}
@@ -1060,7 +1272,7 @@ export const DraggableContainer = ({
   className,
   direction,
 }: DraggableContainerProps) => {
-  const { containerRef, showLeftGradient, showRightGradient } =
+  const { containerRef, showLeftGradient, showRightGradient, updateGradients } =
     useDragScroll("horizontal");
 
   const [maskGradient, setMaskGradient] = useState<string>("");
@@ -1082,6 +1294,10 @@ export const DraggableContainer = ({
       setMaskGradient("");
     }
   }, [showLeftGradient, showRightGradient]);
+
+  useEffect(() => {
+    updateGradients();
+  }, [children]);
 
   return (
     <div

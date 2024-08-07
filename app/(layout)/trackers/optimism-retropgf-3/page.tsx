@@ -44,7 +44,7 @@ import Container from "@/components/layout/Container";
 import { useUIContext } from "@/contexts/UIContext";
 // import { TreeMapChart } from "@/components/charts/treemapChart";
 import { useResizeObserver } from "usehooks-ts";
-import { BASE_URL } from "@/lib/helpers";
+import { BASE_URL } from "@/lib/helpers.mjs";
 import { a } from "react-spring";
 import { RecoveredListData } from "./recoveredListData";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";

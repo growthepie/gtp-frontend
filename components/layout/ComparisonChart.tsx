@@ -31,7 +31,7 @@ import { useMediaQuery } from "usehooks-ts";
 import Container from "./Container";
 import ChartWatermark from "./ChartWatermark";
 import { navigationItems, navigationCategories } from "@/lib/navigation";
-import { BASE_URL, IS_PREVIEW } from "@/lib/helpers";
+import { BASE_URL, IS_PREVIEW } from "@/lib/helpers.mjs";
 import { useWindowSize } from "usehooks-ts";
 import EmbedContainer from "@/app/(embeds)/embed/EmbedContainer";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";

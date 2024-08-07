@@ -15,7 +15,7 @@ import {
 } from "@/components/layout/Tooltip";
 import { GloHolderURL } from "@/lib/urls";
 import useSWR from "swr";
-import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
+import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers.mjs";
 import { HolderResponse, TableDataBreakdown } from "@/types/api/Holders";
 import { useTransition, animated } from "@react-spring/web";
 import ShowLoading from "@/components/layout/ShowLoading";

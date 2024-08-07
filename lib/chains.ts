@@ -1,5 +1,5 @@
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { IS_DEVELOPMENT, IS_PREVIEW } from "./helpers";
+import { IS_DEVELOPMENT, IS_PREVIEW } from "./helpers.mjs";
 
 export type Chain = {
   label: string;

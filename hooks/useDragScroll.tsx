@@ -11,34 +11,29 @@ const useDragScroll = (direction: 'horizontal' | 'vertical' = 'horizontal') => {
   const [velocity, setVelocity] = useState({ x: 0, y: 0 });
   const [lastMoveTime, setLastMoveTime] = useState(Date.now());
 
-
   const isMouseDownInside = useRef(false);
   const velocityHistory = useRef<{ x: number; y: number; time: number }[]>([]);
   const rafId = useRef<number | null>(null);
 
-  const handleMouseDown = useCallback((event: MouseEvent) => {
-    if (containerRef.current && containerRef.current.contains(event.target as Node)) {
+  const handleStart = useCallback((clientX: number, clientY: number) => {
+    if (containerRef.current) {
       isMouseDownInside.current = true;
       setIsDragging(true);
       setIsDragged(false);
-      setStartPos({ x: event.clientX, y: event.clientY });
+      setStartPos({ x: clientX, y: clientY });
       setVelocity({ x: 0, y: 0 });
       velocityHistory.current = [];
 
       rafId.current && cancelAnimationFrame(rafId.current);
 
-      if (containerRef.current) {
-        setScrollPos({
-          left: containerRef.current.scrollLeft,
-          top: containerRef.current.scrollTop,
-        });
-      }
-
-      event.preventDefault(); // Prevent text selection
+      setScrollPos({
+        left: containerRef.current.scrollLeft,
+        top: containerRef.current.scrollTop,
+      });
     }
   }, []);
 
-  const handleMouseMove = useCallback((event: MouseEvent) => {
+  const handleMove = useCallback((clientX: number, clientY: number) => {
     if (!isDragging) return;
 
     const currentTime = Date.now();
@@ -48,11 +43,11 @@ const useDragScroll = (direction: 'horizontal' | 'vertical' = 'horizontal') => {
 
     if (containerRef.current) {
       if (direction === 'horizontal') {
-        const dx = event.clientX - startPos.x;
+        const dx = clientX - startPos.x;
         containerRef.current.scrollLeft = scrollPos.left - dx;
         velocityHistory.current.push({ x: -dx / timeDelta, y: 0, time: currentTime });
       } else {
-        const dy = event.clientY - startPos.y;
+        const dy = clientY - startPos.y;
         containerRef.current.scrollTop = scrollPos.top - dy;
         velocityHistory.current.push({ x: 0, y: -dy / timeDelta, time: currentTime });
       }
@@ -61,18 +56,7 @@ const useDragScroll = (direction: 'horizontal' | 'vertical' = 'horizontal') => {
     setLastMoveTime(currentTime);
   }, [isDragging, lastMoveTime, direction, startPos.x, startPos.y, scrollPos.left, scrollPos.top]);
 
-  const calculateAverageVelocity = () => {
-    const now = Date.now();
-    velocityHistory.current = velocityHistory.current.filter(item => now - item.time < 100); // Only consider the last 100ms
-    const total = velocityHistory.current.reduce((acc, item) => ({
-      x: acc.x + item.x,
-      y: acc.y + item.y
-    }), { x: 0, y: 0 });
-    const count = velocityHistory.current.length;
-    return count > 0 ? { x: total.x / count, y: total.y / count } : { x: 0, y: 0 };
-  };
-
-  const handleMouseUp = useCallback(() => {
+  const handleEnd = useCallback(() => {
     if (!isMouseDownInside.current) return;
 
     isMouseDownInside.current = false;
@@ -83,12 +67,12 @@ const useDragScroll = (direction: 'horizontal' | 'vertical' = 'horizontal') => {
 
     if (avgVelocity.x !== 0 || avgVelocity.y !== 0) {
       const startTime = Date.now();
-      const decay = 0.96; // Decay factor for the velocity
+      const decay = 0.96;
 
       const animate = () => {
         const currentTime = Date.now();
         const elapsed = currentTime - startTime;
-        const factor = Math.pow(decay, elapsed / 16); // Adjust based on 60fps (16ms per frame)
+        const factor = Math.pow(decay, elapsed / 16);
 
         if (containerRef.current) {
           if (direction === 'horizontal') {
@@ -105,16 +89,45 @@ const useDragScroll = (direction: 'horizontal' | 'vertical' = 'horizontal') => {
 
       animate();
     }
-  }, [direction, velocity.x, velocity.y]);
+  }, [direction]);
+
+  const handleMouseDown = useCallback((event: MouseEvent) => {
+    if (containerRef.current && containerRef.current.contains(event.target as Node)) {
+      handleStart(event.clientX, event.clientY);
+      event.preventDefault();
+    }
+  }, [handleStart]);
+
+  const handleMouseMove = useCallback((event: MouseEvent) => {
+    handleMove(event.clientX, event.clientY);
+  }, [handleMove]);
+
+  const handleMouseUp = useCallback(() => {
+    handleEnd();
+  }, [handleEnd]);
+
+  const handleTouchStart = useCallback((event: TouchEvent) => {
+    if (containerRef.current && containerRef.current.contains(event.target as Node)) {
+      const touch = event.touches[0];
+      handleStart(touch.clientX, touch.clientY);
+    }
+  }, [handleStart]);
+
+  const handleTouchMove = useCallback((event: TouchEvent) => {
+    const touch = event.touches[0];
+    handleMove(touch.clientX, touch.clientY);
+  }, [handleMove]);
+
+  const handleTouchEnd = useCallback(() => {
+    handleEnd();
+  }, [handleEnd]);
 
   const handleWheel = useCallback((event: WheelEvent) => {
-    event.preventDefault();
     if (!containerRef.current) return;
 
     if (direction === 'horizontal') {
+      event.preventDefault();
       containerRef.current.scrollLeft += event.deltaY;
-    } else {
-      containerRef.current.scrollTop += event.deltaY;
     }
   }, [direction]);
 
@@ -132,18 +145,29 @@ const useDragScroll = (direction: 'horizontal' | 'vertical' = 'horizontal') => {
     }
   }, [direction]);
 
+  const calculateAverageVelocity = () => {
+    const now = Date.now();
+    velocityHistory.current = velocityHistory.current.filter(item => now - item.time < 100);
+    const total = velocityHistory.current.reduce((acc, item) => ({
+      x: acc.x + item.x,
+      y: acc.y + item.y
+    }), { x: 0, y: 0 });
+    const count = velocityHistory.current.length;
+    return count > 0 ? { x: total.x / count, y: total.y / count } : { x: 0, y: 0 };
+  };
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const handleGlobalMouseMove = (event: MouseEvent) => handleMouseMove(event);
-    const handleGlobalMouseUp = () => handleMouseUp();
-
     container.style.cursor = isDragging ? 'grabbing' : 'grab';
 
     container.addEventListener('mousedown', handleMouseDown);
-    window.addEventListener('mousemove', handleGlobalMouseMove);
-    window.addEventListener('mouseup', handleGlobalMouseUp);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    container.addEventListener('touchstart', handleTouchStart);
+    window.addEventListener('touchmove', handleTouchMove);
+    window.addEventListener('touchend', handleTouchEnd);
     window.addEventListener('resize', updateGradients);
     window.addEventListener('keydown', updateGradients);
     window.addEventListener('keyup', updateGradients);
@@ -152,36 +176,20 @@ const useDragScroll = (direction: 'horizontal' | 'vertical' = 'horizontal') => {
 
     return () => {
       container.removeEventListener('mousedown', handleMouseDown);
-      window.removeEventListener('mousemove', handleGlobalMouseMove);
-      window.removeEventListener('mouseup', handleGlobalMouseUp);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      container.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
       window.removeEventListener('resize', updateGradients);
       window.removeEventListener('keydown', updateGradients);
       window.removeEventListener('keyup', updateGradients);
       container.removeEventListener('scroll', updateGradients);
       container.removeEventListener('wheel', handleWheel);
     };
-  }, [handleMouseDown, handleMouseMove, handleMouseUp, updateGradients, isDragging, handleWheel]);
+  }, [handleMouseDown, handleMouseMove, handleMouseUp, handleTouchStart, handleTouchMove, handleTouchEnd, updateGradients, isDragging, handleWheel]);
 
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const handleClick = (event: MouseEvent) => {
-      if (isDragged) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-      }
-    };
-
-    container.addEventListener('click', handleClick, true);
-    updateGradients();
-
-    return () => {
-      container.removeEventListener('click', handleClick, true);
-    };
-  }, [isDragged, updateGradients]);
-
-  return { containerRef, showLeftGradient, showRightGradient };
+  return { containerRef, showLeftGradient, showRightGradient, updateGradients };
 };
 
 export default useDragScroll;

@@ -1,4 +1,4 @@
-import { BASE_URL } from "@/lib/helpers";
+import { BASE_URL } from "@/lib/helpers.mjs";
 
 export default function Page() {
   return (
