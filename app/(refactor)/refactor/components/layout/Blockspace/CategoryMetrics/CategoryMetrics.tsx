@@ -398,7 +398,7 @@ export default function CategoryMetrics({
     selectedChartType,
   ]);
 
-  const result = useMemo(() => {
+  useEffect(() => {
     let updatedChainValues: [string, number][] | null = null;
     setChainValues(null);
 
@@ -446,6 +446,9 @@ export default function CategoryMetrics({
     selectedTimespan,
     selectedType,
   ]);
+  {
+    /*Gathers values for chain rows*/
+  }
 
   const formatSubcategories = useCallback(
     (str: string) => {

@@ -45,6 +45,55 @@ export default function ChainsPage() {
     return i + "th";
   }
 
+  function dataAvailToArray(x: string) {
+    let retObject: { icon: string; label: string }[] = [];
+    if (typeof x === "string") {
+      // Ensure x is a string
+      if (x.includes("calldata")) {
+        retObject.push({
+          icon: "calldata",
+          label: "Calldata",
+        });
+      }
+
+      if (x.includes("blobs")) {
+        retObject.push({
+          icon: "blobs",
+          label: "Blobs",
+        });
+      }
+
+      if (x.includes("MantleDA")) {
+        retObject.push({
+          icon: "customoffchain",
+          label: "MantleDA",
+        });
+      }
+
+      if (x.includes("DAC")) {
+        retObject.push({
+          icon: "committee",
+          label: "DAC (committee)",
+        });
+      }
+
+      if (x.includes("Celestia")) {
+        retObject.push({
+          icon: "celestiafp",
+          label: "Celestia",
+        });
+      }
+
+      if (x.includes("memo")) {
+        retObject.push({
+          icon: "memofp",
+          label: "Memo",
+        });
+      }
+    }
+    return retObject;
+  }
+
   return (
     <Container
       className="flex w-full pt-[30px] md:pt-[30px] pb-[20px]"
@@ -371,56 +420,49 @@ export default function ChainsPage() {
                           }}
                         >
                           {sectionHead.usage.hottest_contract ? (
-                            sectionHead.usage.hottest_contract ? (
-                              sectionHead.usage.hottest_contract.data[0] ? (
-                                <>
-                                  <span
-                                    className={` truncate ${
-                                      sectionHead.usage.hottest_contract
-                                        .data[0][
-                                        sectionHead.usage.hottest_contract.types.indexOf(
-                                          "project_name",
-                                        )
-                                      ]
-                                        ? "max-w-[80px]"
-                                        : "max-w-[140px]"
-                                    }`}
-                                  >
-                                    {sectionHead.usage.hottest_contract.data[0][
-                                      sectionHead.usage.hottest_contract.types.indexOf(
-                                        "name",
-                                      )
-                                    ] ||
-                                      sectionHead.usage.hottest_contract
-                                        .data[0][
-                                        sectionHead.usage.hottest_contract.types.indexOf(
-                                          "address",
-                                        )
-                                      ]}
-                                  </span>
-                                  <span>
-                                    {sectionHead.usage.hottest_contract.data[0][
+                            sectionHead.usage.hottest_contract.data[0] ? (
+                              <>
+                                <span
+                                  className={` truncate ${
+                                    sectionHead.usage.hottest_contract.data[0][
                                       sectionHead.usage.hottest_contract.types.indexOf(
                                         "project_name",
                                       )
                                     ]
-                                      ? "-"
-                                      : ""}{" "}
-                                  </span>
-                                  <span>
-                                    {
-                                      sectionHead.usage.hottest_contract
-                                        .data[0][
-                                        sectionHead.usage.hottest_contract.types.indexOf(
-                                          "project_name",
-                                        )
-                                      ]
-                                    }
-                                  </span>
-                                </>
-                              ) : (
-                                "N/A"
-                              )
+                                      ? "max-w-[80px]"
+                                      : "max-w-[140px]"
+                                  }`}
+                                >
+                                  {sectionHead.usage.hottest_contract.data[0][
+                                    sectionHead.usage.hottest_contract.types.indexOf(
+                                      "name",
+                                    )
+                                  ] ||
+                                    sectionHead.usage.hottest_contract.data[0][
+                                      sectionHead.usage.hottest_contract.types.indexOf(
+                                        "address",
+                                      )
+                                    ]}
+                                </span>
+                                <span>
+                                  {sectionHead.usage.hottest_contract.data[0][
+                                    sectionHead.usage.hottest_contract.types.indexOf(
+                                      "project_name",
+                                    )
+                                  ]
+                                    ? "-"
+                                    : ""}{" "}
+                                </span>
+                                <span>
+                                  {
+                                    sectionHead.usage.hottest_contract.data[0][
+                                      sectionHead.usage.hottest_contract.types.indexOf(
+                                        "project_name",
+                                      )
+                                    ]
+                                  }
+                                </span>
+                              </>
                             ) : (
                               "N/A"
                             )
@@ -629,34 +671,6 @@ export default function ChainsPage() {
         </div>
       )}
     </Container>
-
-    // <div>
-    //   {info ? (
-    //     <div>
-    //       <h1>{info.name}</h1>
-    //       <p>{info.symbol}</p>
-    //       <p>{info.description}</p>
-    //     </div>
-    //   ) : (
-    //     <p>info...</p>
-    //   )}
-    //   {data ? (
-    //     <div>
-    //       <h2>Chain Data</h2>
-    //       <textarea>{JSON.stringify(data, null, 2)}</textarea>
-    //     </div>
-    //   ) : (
-    //     <p>data...</p>
-    //   )}
-    //   {feesTable ? (
-    //     <div>
-    //       <h2>Fees Table</h2>
-    //       <textarea>{JSON.stringify(feesTable, null, 2)}</textarea>
-    //     </div>
-    //   ) : (
-    //     <p>fees...</p>
-    //   )}
-    // </div>
   );
 }
 
@@ -745,76 +759,3 @@ const ExpandingButtonMenu = ({
     </div>
   );
 };
-
-const rankChains = {
-  daa: {
-    Title: "Daily Active Addresses",
-  },
-  fees: {
-    Title: "Fees Paid By Users",
-  },
-  stables_mcap: {
-    Title: "Stablecoin Market Cap",
-  },
-  profit: {
-    Title: "Onchain Profit",
-  },
-  txcosts: {
-    Title: "Transaction Costs",
-  },
-  fdv: {
-    Title: "Fully Diluted Valuation",
-  },
-  throughput: {
-    Title: "Throughput",
-  },
-};
-
-function dataAvailToArray(x: string) {
-  let retObject: { icon: string; label: string }[] = [];
-  if (typeof x === "string") {
-    // Ensure x is a string
-    if (x.includes("calldata")) {
-      retObject.push({
-        icon: "calldata",
-        label: "Calldata",
-      });
-    }
-
-    if (x.includes("blobs")) {
-      retObject.push({
-        icon: "blobs",
-        label: "Blobs",
-      });
-    }
-
-    if (x.includes("MantleDA")) {
-      retObject.push({
-        icon: "customoffchain",
-        label: "MantleDA",
-      });
-    }
-
-    if (x.includes("DAC")) {
-      retObject.push({
-        icon: "committee",
-        label: "DAC (committee)",
-      });
-    }
-
-    if (x.includes("Celestia")) {
-      retObject.push({
-        icon: "celestiafp",
-        label: "Celestia",
-      });
-    }
-
-    if (x.includes("memo")) {
-      retObject.push({
-        icon: "memofp",
-        label: "Memo",
-      });
-    }
-  }
-  return retObject;
-}
