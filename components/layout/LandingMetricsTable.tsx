@@ -1,3 +1,4 @@
+// TODO: Para eliminar a futuro
 import {
   AllChainsByKeys,
   EnabledChainsByKeys,
@@ -69,7 +70,7 @@ export default function LandingMetricsTable({
       })
       .reduce((acc, chain) => {
         acc[chain] =
-          data.chains[chain].users > 0 ? data.chains[chain].users : -1;
+          data.chains[chain]?.users > 0 ? data.chains[chain].users : -1;
         return acc;
       }, {});
   }, [data]);
@@ -273,6 +274,7 @@ export default function LandingMetricsTable({
                           )}
                         </div>
                       </div>
+                      {/* Name */}
                       <div className="relative h-full flex w-[25%] items-center">
                         <div className="absolute top-0 bottom-0 flex items-center left-[21px]">
                           <Icon
@@ -289,6 +291,7 @@ export default function LandingMetricsTable({
                           {data.chains[item.chain.key].chain_name}
                         </div>
                       </div>
+                      {/* Age */}
                       <div className="w-[12%] text-right flex text-sm justify-start items-end leading-[1.4] gap-x-1 pr-10">
                         <div className="ml-auto">
                           {monthsSinceLaunch[item.chain.key][0] || ""}
@@ -305,11 +308,13 @@ export default function LandingMetricsTable({
                           {monthsSinceLaunch[item.chain.key][1] ? "mo." : ""}
                         </div>
                       </div>
+                      {/* Purpose */}
                       <div className="w-[23%] capitalize text-sm">
                         {data.chains[item.chain.key].purpose && (
                           <>{data.chains[item.chain.key].purpose}</>
                         )}
                       </div>
+                      {/* Technology  */}
                       <div className="w-[12%] capitalize text-sm">
                         {item.chain.chainType === "L2" &&
                         data.chains[item.chain.key].rollup === "-" ? (
@@ -325,7 +330,7 @@ export default function LandingMetricsTable({
                           </>
                         )}
                       </div>
-
+                      {/* Weekly activity */}
                       <div className="w-[13%] flex justify-end items-center text-sm relative">
                         {/* <div className="flex flex-1 align-middle items-center"> */}
                         <div className="flex w-full justify-end items-center pr-[60px] lg:pr-8 ">
@@ -347,6 +352,7 @@ export default function LandingMetricsTable({
                           </div>
                         </div>
                       </div>
+                      {/* Multi Chain activities */}
                       <div className="w-[15%] text-right pr-14 text-sm">
                         {d3.format(
                           data.chains[item.chain.key].cross_chain_activity >
