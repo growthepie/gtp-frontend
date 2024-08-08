@@ -1,14 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import Sidebar from "./Sidebar";
-import Icon from "./Icon";
 import EthUsdSwitch from "./EthUsdSwitch";
 
-import Banner from "@/components/Banner";
-import SupportUsBanner from "./SupportUsBanner";
 // import Notification from "@/components/Notification";
 import HeaderLinks from "./HeaderLinks";
-import { track } from "@vercel/analytics";
 
 export default function Header() {
   return (
@@ -17,10 +13,10 @@ export default function Header() {
         <div className="flex space-x-0 xl:space-x-6 w-full">
           {/*Banner/Notification Area */}
 
-          <div className={`hidden md:flex pr-[15px] `}>
-            {/* <Notification /> */}
+          {/* <Notification /> */}
+          {/* <div className={`hidden md:flex pr-[15px] `}>
             Notifition
-          </div>
+          </div> */}
 
           <div className="flex justify-between items-start h-full md:hidden relative w-full">
             <Link href="/" className="">

@@ -46,7 +46,7 @@ export default function LandingUserBaseChart() {
   const [data, setData] = useState<any>(null);
   const [tableVisual, setTableVisual] = useState<any>(null);
 
-  const [selectedTimeInterval, setSelectedTimeInterval] = useState("weekly");
+  const [selectedTimeInterval, _setSelectedTimeInterval] = useState("weekly");
 
   const [selectedMetric, setSelectedMetric] = useState("Total Users");
 

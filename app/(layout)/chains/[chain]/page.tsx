@@ -1,30 +1,17 @@
 "use client";
 import Link from "next/link";
-import useSWR, { preload } from "swr";
-import { useSWRConfig } from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { AllChains, AllChainsByKeys, AllChainsByUrlKey } from "@/lib/chains";
+import { AllChains, AllChainsByKeys } from "@/lib/chains";
 import ChainChart from "@/components/layout/SingleChains/ChainChart";
 import Heading from "@/components/layout/Heading";
-import Subheading from "@/components/layout/Subheading";
 import { Icon } from "@iconify/react";
-import { ChainResponse } from "@/types/api/ChainResponse";
-import {
-  BlockspaceURLs,
-  ChainBlockspaceURLs,
-  ChainURLs,
-  MasterURL,
-} from "@/lib/urls";
+import { ChainBlockspaceURLs, ChainURLs, MasterURL } from "@/lib/urls";
 import Container from "@/components/layout/Container";
 import ShowLoading from "@/components/layout/ShowLoading";
 import Image from "next/image";
 import OverviewMetrics from "@/components/layout/OverviewMetrics";
-import {
-  ChainData,
-  ChainOverviewResponse,
-  Chains,
-} from "@/types/api/ChainOverviewResponse";
-import { getFundamentalsByKey } from "@/lib/navigation";
+import { ChainData } from "@/types/api/ChainOverviewResponse";
 import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead";
 import ChainSectionHeadAlt from "@/components/layout/SingleChains/ChainSectionHeadAlt";
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
@@ -33,10 +20,7 @@ import { notFound } from "next/navigation";
 import { ChainsData } from "@/types/api/ChainResponse";
 import { useTheme } from "next-themes";
 import { useMediaQuery } from "usehooks-ts";
-import { useUIContext } from "@/contexts/UIContext";
 import { track } from "@vercel/analytics/react";
-import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
-import UsageFees from "@/components/layout/SingleChains/UsageFees";
 import UsageFeesAlt from "@/components/layout/SingleChains/UsageFeesAlt";
 import {
   Tooltip,
@@ -57,11 +41,11 @@ const Chain = ({ params }: { params: any }) => {
       : "",
   );
 
-  const [openChainList, setOpenChainList] = useState<boolean>(false);
+  // const [openChainList, setOpenChainList] = useState<boolean>(false);
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const isMobile = useMediaQuery("(max-width: 1024px)");
-  const { isSidebarOpen } = useUIContext();
+  // const { isSidebarOpen } = useUIContext();
 
   const rankChains = {
     daa: {
@@ -422,6 +406,7 @@ const Chain = ({ params }: { params: any }) => {
         });
       }
     }
+    console.log(retObject);
     return retObject;
   }
 
