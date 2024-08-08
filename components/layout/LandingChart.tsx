@@ -627,7 +627,9 @@ export default function LandingChart({
   const [totalUsersIncrease, setTotalUsersIncrease] = useState(0);
 
   const isMobile = useMediaQuery("(max-width: 767px)");
-
+  {
+    /* TODO: ELIMINAR ESTOS COMENTARIOS */
+  }
   // const getTickPositions = useCallback(
   //   (xMin: any, xMax: any): number[] => {
   //     const tickPositions: number[] = [];
@@ -705,6 +707,9 @@ export default function LandingChart({
   );
 
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
+  {
+    /* TODO: ELIMINAR ESTOS COMENTARIOS */
+  }
   // daysShown based on minX and maxX on chart X axis
   // const daysShown = useMemo(a() => {
   //   if (!chartComponent.current) return parseInt(selectedTimespan);
@@ -1791,7 +1796,8 @@ export default function LandingChart({
         className={`h-[225px] lg:h-[81px] 2xl:h-[60px] ${isMobile ? "mb-[30px]" : "mb-0"
           }`}
       >
-        <div className="flex flex-col lg:hidden justify-center pb-[15px] gap-y-[5px]">
+        {/* TODO: ELIMINAR ESTOS COMENTARIOS */}
+        {/* <div className="flex flex-col lg:hidden justify-center pb-[15px] gap-y-[5px]">
           <MobileMetricCard
             icon="feather:users"
             metric_name="Active Addresses"
@@ -1816,9 +1822,10 @@ export default function LandingChart({
               is_multiple
             />
           </div>
-        </div>
-        <TopRowContainer className="!flex-col !rounded-[15px] !py-[3px] !px-[3px] !text-xs  2xl:!gap-y-0 2xl:!text-base 2xl:!flex 2xl:!flex-row 2xl:!rounded-full">
-          <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 2xl:!mx-0 !gap-x-[4px] 2xl:!gap-x-[5px]">
+        </div> */}
+        <TopRowContainer>
+          <TopRowParent>
+
             <TopRowChild
               isSelected={showTotalUsers}
               className={"!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
@@ -1828,7 +1835,8 @@ export default function LandingChart({
                 setSelectedMetric("Total Users");
               }}
             >
-              Active Addresses
+              Active Stakers
+
             </TopRowChild>
             <TopRowChild
               isSelected={"absolute" === selectedScale && !showTotalUsers}
@@ -1839,7 +1847,8 @@ export default function LandingChart({
                 setSelectedMetric("Users per Chain");
               }}
             >
-              Active Addresses per Chain
+              Active Stakers per Platform
+
             </TopRowChild>
 
             <TopRowChild
@@ -1950,7 +1959,7 @@ export default function LandingChart({
       <div className="h-[32px] lg:h-[80px] flex flex-col justify-start ">
         <div className="flex justify-between items-center rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative">
           {/* toggle ETH */}
-          <div className="flex z-10">
+          {/* <div className="flex z-10">
             <Switch
               checked={showEthereumMainnet}
               onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
@@ -1961,13 +1970,14 @@ export default function LandingChart({
             <div className="ml-2 hidden md:block xl:hidden leading-[1.75]">
               Show ETH
             </div>
-          </div>
+          </div> */}
           <div className="flex justify-end items-center absolute top-[56px] lg:-top-[15px] right-[-1px] rounded-full z-10">
             <div className="flex justify-center items-center">
               <div className="flex items-center justify-center gap-x-[20px] pr-[10px]">
                 <MetricCard
                   icon="feather:users"
-                  metric_name="Active Addresses"
+                  metric_name="Active Stakers"
+
                   metric_value={latest_total}
                   metric_comparison={latest_total_comparison}
                   theme={theme || "dark"}
@@ -1981,7 +1991,7 @@ export default function LandingChart({
                 />
                 <MetricCard
                   icon="feather:layers"
-                  metric_name="Layer 2 Dominance"
+                  metric_name="Restaking vs. POS"
                   metric_value={(Math.round(l2_dominance * 100) / 100).toFixed(
                     2,
                   )}

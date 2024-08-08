@@ -5,11 +5,11 @@ import ReactMarkdown from "react-markdown";
 import { useLocalStorage } from "usehooks-ts";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { BASE_URL } from "@/lib/helpers";
+// import { BASE_URL } from "@/lib/helpers";
 import { useTheme } from "next-themes";
 import { track } from "@vercel/analytics";
 import useSWR from "swr";
-import type { Notification } from "@/app/api/notifications/route";
+// import type { Notification } from "@/app/api/notifications/route";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
 const currentDateTime = new Date().getTime();
@@ -26,7 +26,8 @@ const Notification = () => {
   >("seenNotifications", []);
 
   const { data, isLoading, isValidating, error } = useSWR(
-    BASE_URL + "/api/notifications",
+    // BASE_URL + "/api/notifications",
+    "",
     {
       refreshInterval: 1000 * 60 * 5,
     },
@@ -69,9 +70,12 @@ const Notification = () => {
       return false;
     }
     return filteredData.some(
-      (notification) =>
-        !seenNotifications.map((n) => n.id).includes(notification.id),
+      (notification) => !seenNotifications?.includes(notification.id),
     );
+    // return filteredData.some(
+    //   (notification) =>
+    //     !seenNotifications?.map((n: any) => n.id).includes(notification.id),
+    // );
   }, [filteredData, seenNotifications]);
 
   const [hideText, setHideText] = useState(false);
@@ -119,7 +123,7 @@ const Notification = () => {
     }
     return (
       <>
-        {filteredData.map((item, i) => {
+        {/* {filteredData?.map((item, i) => {
           return (
             <div
               key={item.id + item.url}
@@ -167,7 +171,7 @@ const Notification = () => {
               </div>
             </div>
           );
-        })}
+        })} */}
       </>
     );
   }, [filteredData]);
@@ -300,7 +304,7 @@ const Notification = () => {
                             filteredData[currentIndex] &&
                             filteredData[currentIndex]["backgroundColor"]
                               ? filteredData[currentIndex]["backgroundColor"]
-                              : undefined,
+                              : null,
                         }}
                       ></div>
                     )}
@@ -426,7 +430,7 @@ const Notification = () => {
                 </div>
               ) : (
                 <div className="flex flex-col w-[100%] pl-[0px] py-[8px] gap-y-[5px] ">
-                  {filteredData.map((item, index) => (
+                  {/* {filteredData?.map((item, index) => (
                     <div key={item.id}>
                       {item.url ? (
                         <Link
@@ -470,7 +474,7 @@ const Notification = () => {
                         </div>
                       )}
                     </div>
-                  ))}
+                  ))} */}
                 </div>
               )}
             </div>

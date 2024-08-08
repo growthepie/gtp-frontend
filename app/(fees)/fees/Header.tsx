@@ -1,13 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import Sidebar from "@/components/layout/Sidebar";
-import Icon from "@/components/layout/Icon";
+
 import EthUsdSwitch from "@/components/layout/EthUsdSwitch";
 
-import Banner from "@/components/Banner";
-import Notification from "@/components/Notification";
-import HeaderLinks from "@/components/layout/HeaderLinks";
-import { track } from "@vercel/analytics";
+// import HeaderLinks from "@/components/layout/HeaderLinks";
 
 export default function Header() {
   return (
@@ -16,11 +12,7 @@ export default function Header() {
         <div className="flex space-x-0 xl:space-x-6 w-full h-full ">
           {/*Banner/Notification Area */}
 
-          {/* <div className={`hidden md:flex  `}>
-            <Notification />
-          </div> */}
-
-          <div className="flex justify-between items-start h-full relative w-full">
+          <div className="flex justify-between items-start h-full relative w-full left-1 ">
             <Link href="/" className="flex gap-x-1">
               {/* <div className="h-[45px] w-[206px]"> */}
               <Image
@@ -90,10 +82,11 @@ export default function Header() {
       </div>
       <div className="items-center z-0 hidden md:flex md:space-x-[34px] h-full mt-[7px]">
         <EthUsdSwitch />
-
+        {/* TODO: REVISAR ANTES DE ELIMINAR */}
+        {/* <div className="flex space-x-[22px] pr-2.5 items-center">
         <div className="flex space-x-[22px] pr-0 items-center">
           <HeaderLinks />
-        </div>
+        </div> */}
       </div>
       {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
       ["development", "preview"].includes(
@@ -103,6 +96,7 @@ export default function Header() {
       ) : (
         <>{/* <SupportUsBanner /> */}</>
       )}
+      {/* TODO: ELIMINAR*/}
       {/* Donation Banner smaller than XL screen */}
       {/* <Link
         href="https://explorer.gitcoin.co/#/round/42161/0x59d79b22595b17af659ce9b03907615f53742c57/0x59d79b22595b17af659ce9b03907615f53742c57-16"

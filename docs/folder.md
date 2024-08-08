@@ -1,0 +1,1 @@
+- Las imagenes se guardan en /public

@@ -198,16 +198,11 @@ const insertOrUpdateProjects = async (projects) => {
 
   const placeholders = projects.map(
     (project, index) =>
-      `($${index * 22 + 1}, $${index * 22 + 2}, $${index * 22 + 3}, $${
-        index * 22 + 4
-      }, $${index * 22 + 5}, $${index * 22 + 6}, $${index * 22 + 7}, $${
-        index * 22 + 8
-      }, $${index * 22 + 9}, $${index * 22 + 10}, $${index * 22 + 11}, $${
-        index * 22 + 12
-      }, $${index * 22 + 13}, $${index * 22 + 14}, $${index * 22 + 15}, $${
-        index * 22 + 16
-      }, $${index * 22 + 17}, $${index * 22 + 18}, $${index * 22 + 19}, $${
-        index * 22 + 20
+      `($${index * 22 + 1}, $${index * 22 + 2}, $${index * 22 + 3}, $${index * 22 + 4
+      }, $${index * 22 + 5}, $${index * 22 + 6}, $${index * 22 + 7}, $${index * 22 + 8
+      }, $${index * 22 + 9}, $${index * 22 + 10}, $${index * 22 + 11}, $${index * 22 + 12
+      }, $${index * 22 + 13}, $${index * 22 + 14}, $${index * 22 + 15}, $${index * 22 + 16
+      }, $${index * 22 + 17}, $${index * 22 + 18}, $${index * 22 + 19}, $${index * 22 + 20
       }, $${index * 22 + 21}, $${index * 22 + 22})`,
   );
 
@@ -308,7 +303,7 @@ const processAllProjects = async () => {
   let skip = 0;
 
   while (hasNextPage) {
-    const projectsResp = await fetchProjects(skip);
+    const projectsResp = await fetchProjects(skip) as any;
     if (projectsResp.retroPGF.projects.edges.length > 0) {
       const projects = projectsResp.retroPGF.projects.edges.map(
         (edge) => edge.node,

@@ -1,13 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import Sidebar from "@/components/layout/Sidebar";
-import Icon from "@/components/layout/Icon";
 import EthUsdSwitch from "@/components/layout/EthUsdSwitch";
 
-import Banner from "@/components/Banner";
-import Notification from "@/components/Notification";
-import HeaderLinks from "@/components/layout/HeaderLinks";
-import { track } from "@vercel/analytics";
+// import HeaderLinks from "@/components/layout/HeaderLinks";
 import LabelsContainer from "@/components/layout/LabelsContainer";
 import Search from "./Search";
 import { useUIContext } from "@/contexts/UIContext";
@@ -23,12 +18,12 @@ export default function Header({
   const { isMobile } = useUIContext();
   return (
     <div className="fixed flex flex-col w-full z-50 items-center">
-      <div className="absolute h-[90px] md:h-[170px] w-full overflow-clip">
+      <div className="absolute h-[170px] w-full overflow-clip">
         <div
           className="background-container !h-screen"
           style={{
             backgroundPosition: "top",
-            maskImage: isMobile ? `linear-gradient(to bottom, white 0, white 90px, transparent 110px` : `linear-gradient(to bottom, white 0, white 150px, transparent 170px`,
+            maskImage: `linear-gradient(to bottom, white 0, white 150px, transparent 170px`,
           }}
         >
           <div className="background-gradient-group">
@@ -57,22 +52,23 @@ export default function Header({
         <div className="items-center z-10 hidden md:flex md:space-x-[34px] h-full mt-[7px]">
           {/* <EthUsdSwitch /> */}
 
-          <div className="flex space-x-[22px] pr-2.5 items-center">
+          {/* <div className="flex space-x-[22px] pr-2.5 items-center">
             <HeaderLinks />
-          </div>
+          </div> */}
         </div>
         {/* <LabelsContainer className="invisible pt-[102px] pointer-events-auto">
-          <div className="flex px-[5px] items-center w-full h-[54px] rounded-full bg-[#344240] shadow-[0px_0px_50px_0px_#000000]">
-            <a
-              className="flex items-center w-[162px] h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-2 gap"
-              href="https://www.growthepie.xyz/"
-              target="_blank"
-            >
-              <Icon icon="gtp:house" className="h-6 w-6" />
-              <div className="font-bold">Main platform</div>
-            </a>
-          </div>
-        </LabelsContainer> */}
+        <div className="flex px-[5px] items-center w-full h-[54px] rounded-full bg-[#344240] shadow-[0px_0px_50px_0px_#000000]">
+          <a
+            className="flex items-center w-[162px] h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-2 gap"
+            href="https://www.growthepie.xyz/"
+            target="_blank"
+          >
+            <Icon icon="gtp:house" className="h-6 w-6" />
+            <div className="font-bold">Main platform</div>
+          </a>
+        </div>
+      </LabelsContainer> */}
+
       </header>
       <LabelsContainer className={`absolute top-[76px] w-full`}>
         {!isMobile && <FloatingBar downloadCSV={downloadCSV} downloadJSON={downloadJSON} />}
@@ -88,7 +84,19 @@ export default function Header({
           </Link>
           <Search />
           <div
+            className="flex items-center bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
+            // href="https://www.growthepie.xyz/"
+            // target="_blank"
+          >
+            <div className="w-6 h-6">
+              <NotificationIcon />
+            </div>
+          </div>
+          <div
             className="flex items-center bg-[#1F2726] gap-x-[10px] rounded-full py-[10px] pl-[10px] pr-[0px] lg:pl-[15px] lg:pr-[15px] gap font-medium transition-all duration-300"
+            // href="https://www.growthepie.xyz/"
+            // target="_blank"
+
           >
             <div className="w-6 h-6">
               <SettingsIcon />
@@ -99,6 +107,8 @@ export default function Header({
           </div>
           <div
             className="flex items-center bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
+            // href="https://www.growthepie.xyz/"
+            // target="_blank"
           >
             <div className="w-6 h-6">
               <DownloadIcon />
