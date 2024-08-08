@@ -34,6 +34,7 @@ export const ChainURLs = {
   blast: "https://api.growthepie.xyz/v1/chains/blast.json",
   mode: "https://api.growthepie.xyz/v1/chains/mode.json",
   taiko: "https://api.growthepie.xyz/v1/chains/taiko.json",
+  redstone: "https://api.growthepie.xyz/v1/chains/redstone.json",
 };
 
 export const BlockspaceURLs = {
@@ -65,13 +66,14 @@ export const ChainBlockspaceURLs = {
   blast: "https://api.growthepie.xyz/v1/chains/blockspace/blast.json",
   mode: "https://api.growthepie.xyz/v1/chains/blockspace/mode.json",
   taiko: "https://api.growthepie.xyz/v1/chains/blockspace/taiko.json",
+  redstone: "https://api.growthepie.xyz/v1/chains/blockspace/redstone.json",
 };
 
 export const EconomicsURL = "https://api.growthepie.xyz/v1/economics.json";
 
 export const LandingURL = "https://api.growthepie.xyz/v1/landing_page.json";
 
-export const MasterURL = "https://api.growthepie.xyz/v1/master.json";
+export const MasterURL = "https://api.growthepie.xyz/v1/master.json?fees=true";
 
 export const ContractsURL = "https://api.growthepie.xyz/v1/contracts.json";
 
@@ -81,4 +83,16 @@ export const LabelsURLS = {
   quick: "https://api.growthepie.xyz/v1/labels/quick.json",
   full: "https://api.growthepie.xyz/v1/labels/full.json",
   sparkline: "https://api.growthepie.xyz/v1/labels/sparkline.json",
+  projects: "https://api.growthepie.xyz/v1/labels/projects.json",
+};
+export const LabelsParquetURLS = {
+  quick: "https://api.growthepie.xyz/v1/labels/quick.parquet",
+  full: "https://api.growthepie.xyz/v1/labels/full.parquet",
+  sparkline: "https://api.growthepie.xyz/v1/labels/sparkline.parquet",
+  projects: "https://api.growthepie.xyz/v1/labels/projects.parquet",
+};
+
+export const FeesURLs = {
+  table: "https://api.growthepie.xyz/v1/fees/table.json",
+  linechart: "https://api.growthepie.xyz/v1/fees/linechart.json",
 };

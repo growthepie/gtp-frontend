@@ -11,7 +11,7 @@ import {
   useSessionStorage,
   useLocalStorage,
 } from "usehooks-ts";
-import { LabelsURLS, MasterURL } from "@/lib/urls";
+import { LabelsParquetURLS, LabelsURLS, MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import {
   LabelsResponse,
@@ -21,7 +21,7 @@ import {
 import Header from "./Header";
 
 import Footer from "./Footer";
-import LabelsHorizontalScrollContainer from "@/components/LabelsHorizontalScrollContainer";
+import LabelsTableContainer from "@/components/LabelsTableContainer";
 
 import { IS_PRODUCTION } from "@/lib/helpers";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
@@ -31,6 +31,20 @@ import CanvasSparkline from "./CanvasSparkline";
 import { AddIcon, Badge, RemoveIcon } from "./Search";
 import { formatNumber } from "@/lib/chartUtils";
 import { CanvasSparklineProvider, useCanvasSparkline } from "./CanvasSparkline";
+import { Table } from "apache-arrow";
+// import wasmInit, { wasmMemory, readParquet } from "parquet-wasm";
+import { parseTable } from "arrow-js-ffi";
+// import { useProjectData } from "../useProjectData";
+// import { useDuckDB } from "../SparklineParquetContext";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/layout/Tooltip";
+import { uniqBy } from "lodash";
+import { useMaster } from "@/contexts/MasterContext";
+import { useUIContext } from "@/contexts/UIContext";
+import SVGSparkline, { SVGSparklineProvider, useSVGSparkline } from "./SVGSparkline";
 
 const devMiddleware = (useSWRNext) => {
   return (key, fetcher, config) => {
@@ -74,8 +88,11 @@ const metricKeysLabels = {
 };
 
 export default function LabelsPage() {
+  const { isMobile } = useUIContext();
   const showGwei = true;
   const showCents = true;
+
+  const { formatMetric } = useMaster();
 
   //True is default descending false ascending
   // const { theme } = useTheme();
@@ -123,6 +140,41 @@ export default function LabelsPage() {
   });
 
   const {
+    data: projectsData,
+    error: projectsError,
+    isLoading: projectsLoading,
+    isValidating: projectsValidating,
+  } = useSWR<any>(LabelsURLS.projects, fallbackFetcher, {
+    use: apiRoot === "dev" && !IS_PRODUCTION ? [devMiddleware] : [],
+  });
+
+  // const [ownerProjectToProjectData, setOwnerProjectToProjectData] = useState<{
+  //   [key]: any[];
+  // }>({});
+
+  const ownerProjectToProjectData = useMemo(() => {
+    if (!projectsData) return {};
+
+    let ownerProjectToProjectData = {};
+    projectsData.data.data.forEach((project) => {
+      ownerProjectToProjectData[project[0]] = project;
+    });
+
+    return ownerProjectToProjectData;
+  }, [projectsData]);
+
+  // useEffect(() => {
+  //   if (!projectsData) {
+
+  //     let ownerProjectToProjectData = {};
+  //     projectsData.data.data.forEach((project) => {
+  //       ownerProjectToProjectData[project[0]] = project;
+  //     });
+  //     setOwnerProjectToProjectData(ownerProjectToProjectData);
+  //   }
+  // }, [projectsData]);
+
+  const {
     data: fullLabelsData,
     error: fullLabelsError,
     isLoading: fullLabelsLoading,
@@ -147,10 +199,16 @@ export default function LabelsPage() {
 
   const [currentMetric, setCurrentMetric] = useState(metricKeys[0]);
 
+  const [sort, setSort] = useState({
+    metric: "txcount",
+    sortOrder: "desc",
+  });
+
   const handlePreviousMetric = useCallback(() => {
     const currentIndex = metricKeys.indexOf(currentMetric);
     const newIndex =
       currentIndex === 0 ? metricKeys.length - 1 : currentIndex - 1;
+
     setCurrentMetric(metricKeys[newIndex]);
   }, [currentMetric]);
 
@@ -160,6 +218,7 @@ export default function LabelsPage() {
       currentIndex === metricKeys.length - 1 ? 0 : currentIndex + 1;
     setCurrentMetric(metricKeys[newIndex]);
   }, [currentMetric]);
+
 
   // const [metricIndex, setMetricIndex] = useState(0);
   // const [metricChangeIndex, setMetricChangeIndex] = useState(0);
@@ -171,7 +230,7 @@ export default function LabelsPage() {
     address: string[];
     origin_key: string[];
     name: string[];
-    owner_project: string[];
+    owner_project: { owner_project: string; owner_project_clear: string }[];
     category: string[];
     subcategory: string[];
     txcount: number[];
@@ -243,8 +302,97 @@ export default function LabelsPage() {
 
     if (numFilters === 0) return rows;
 
-    return rows;
-  }, [quickLabelsData, fullLabelsData, master, labelsFilters]);
+
+      let subcategoriesInCategoryFilters = [];
+      labelsFilters.category.forEach((category) => {
+        subcategoriesInCategoryFilters.push(
+          master.blockspace_categories.mapping[category],
+        );
+      });
+
+      subcategoriesInCategoryFilters = subcategoriesInCategoryFilters.flat();
+
+      let both = [
+        ...subcategoriesInCategoryFilters,
+        ...labelsFilters.subcategory,
+      ];
+
+      let isUnlabeledSelected = labelsFilters.category.includes("unlabeled");
+
+      let all_usage_categories = [...new Set(both)];
+
+      if (all_usage_categories.length > 0) {
+        if (isUnlabeledSelected) {
+          rows = rows.filter((label) =>
+            all_usage_categories.includes(label.usage_category) || label.usage_category === null,
+          );
+        } else {
+          rows = rows.filter((label) =>
+            all_usage_categories.includes(label.usage_category),
+          );
+        }
+      }
+
+      if (labelsFilters.owner_project.length > 0) {
+        rows = rows.filter((label) =>
+          labelsFilters.owner_project
+            .map((o) => o.owner_project)
+            .includes(label.owner_project),
+        );
+      }
+    }
+
+    // sort
+    if (["deployment_date"].includes(sort.metric)) {
+      rows.sort((a, b) => {
+        let aVal = a[sort.metric];
+        let bVal = b[sort.metric];
+
+        if (!aVal && !bVal) return 0;
+
+        if (!aVal) return 1;
+
+        if (!bVal) return -1;
+
+        let aDate = new Date(aVal);
+        let bDate = new Date(bVal);
+
+        if (sort.sortOrder === "asc") {
+          return aDate - bDate;
+        } else {
+          return bDate - aDate;
+        }
+      });
+    }
+
+    if (["txcount", "gas_fees_usd", "daa"].includes(sort.metric)) {
+      rows.sort((a, b) => {
+        let aMetric = a[sort.metric];
+        let bMetric = b[sort.metric];
+        if (sort.sortOrder === "asc") {
+          return aMetric - bMetric;
+        } else {
+          return bMetric - aMetric;
+        }
+      });
+    }
+
+    if (["category", "subcategory"].includes(sort.metric)) {
+      rows.sort((a, b) => {
+        let aUsageCategory = a["usage_category"];
+        let bUsageCategory = b["usage_category"];
+
+        let aMetric =
+          sort.metric === "category"
+            ? subcategoryToCategoryMapping[aUsageCategory]
+            : aUsageCategory;
+        let bMetric =
+          sort.metric === "category"
+            ? subcategoryToCategoryMapping[bUsageCategory]
+            : bUsageCategory;
+
+        if (!aMetric && !bMetric) return 0;
+
 
   useEffect(() => {
     if (filteredLabelsData) {
@@ -261,17 +409,21 @@ export default function LabelsPage() {
           .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())),
       ),
     ];
+
     setLabelsOwnerProjects(uniqueOwnerProjects);
+
+    // setLabelsOwnerProjectClears(uniqueOwnerProjects.map((u) => u[1]));
   }, [data, setLabelsOwnerProjects]);
 
   // The virtualizer
   const virtualizer = useWindowVirtualizer({
-    count: filteredLabelsData ? filteredLabelsData.length : 0,
+    count: filteredLabelsData.length,
     // getScrollElement: () => listRef.current,
     estimateSize: () => 37,
     // size: 37,
     scrollMargin: listRef.current?.offsetTop ?? 0,
     overscan: 5,
+
     getItemKey: (index) =>
       `${filteredLabelsData[index].origin_key}_${filteredLabelsData[index].address}}`,
   });
@@ -284,6 +436,7 @@ export default function LabelsPage() {
           Math.max(0, items[0].start - virtualizer.options.scrollMargin),
           Math.max(0, virtualizer.getTotalSize() - items[items.length - 1].end),
         ]
+
       : [0, 0];
 
   const handleFilter = useCallback(
@@ -325,8 +478,190 @@ export default function LabelsPage() {
               <div className="background-gradient-yellow"></div>
               <div className="background-gradient-green"></div>
             </div>
+
           </div>
         </div>
+      </div>
+      {/* <LabelsContainer className="fixed 2xl:hidden inset-0 flex flex-col items-center justify-center bg-[#151a19] z-[999]">
+        <div className="text-forest-400 text-center font-semibold text-[20px]">
+          This page is not currently supported on small screens
+        </div>
+        <div className="text-forest-400 text-center">
+          Please view on a larger device or make your browser window wider.
+        </div>
+      </LabelsContainer> */}
+      {/* <div className="bg-black h-10 w-32 text-white fixed top-0 left-0 z-50">
+        {SparklineTimestampRange}
+      </div> */}
+      {/* <div className="bg-black h-10 w-32 text-white fixed top-0 left-0 z-50">
+        {JSON.stringify(sort)} -  {currentMetric}
+      </div> */}
+
+      <LabelsTableContainer
+        className="block"
+        // className="w-full h-screen"
+        // forcedMinWidth={1272 + 200}
+        includeMargin={false}
+        header={
+          <>
+            {filteredLabelsData && (
+              <GridTableHeader
+                className="pb-[4px] text-[12px] gap-x-[20px] z-[2]"
+                // gridDefinitionColumns="pb-[4px] text-[12px] grid-cols-[15px,minmax(160px,1600px),150px,200px,105px,105px,175px,192px] gap-x-[20px] z-[2]"
+                style={{
+                  gridTemplateColumns: gridTemplateColumns
+                }}
+              >
+                <div className="flex items-center justify-center"></div>
+                <div
+                  className="flex items-center justify-start cursor-pointer"
+                  onClick={() => {
+                    setSort({
+                      metric: "address",
+                      sortOrder:
+                        sort.metric === "address"
+                          ? sort.sortOrder === "asc"
+                            ? "desc"
+                            : "asc"
+                          : "desc",
+                    });
+                  }}
+                >
+                  Contract Address
+                  <Icon
+                    icon={
+                      sort.metric === "address" && sort.sortOrder === "asc"
+                        ? "feather:arrow-up"
+                        : "feather:arrow-down"
+                    }
+                    className="w-[12px] h-[12px]"
+                    style={{
+                      opacity: sort.metric === "address" ? 1 : 0.2,
+                    }}
+                  />
+                </div>
+                <div
+                  className="flex items-center justify-start cursor-pointer"
+                  onClick={() => {
+                    setSort({
+                      metric: "owner_project",
+                      sortOrder:
+                        sort.metric === "owner_project"
+                          ? sort.sortOrder === "asc"
+                            ? "desc"
+                            : "asc"
+                          : "desc",
+                    });
+                  }}
+                >
+                  <Badge
+                    size="sm"
+                    label="Owner Project"
+                    leftIcon={null}
+                    leftIconColor="#FFFFFF"
+                    rightIconColor={
+                      sort.metric === "owner_project" ? "#FFFFFF" : undefined
+                    }
+                    rightIcon={
+                      sort.metric === "owner_project" &&
+                        sort.sortOrder === "asc"
+                        ? "feather:arrow-up"
+                        : "feather:arrow-down"
+                    }
+                    rightIconSize="sm"
+                    className="border border-[#5A6462]"
+                  />
+                </div>
+                <div
+                  className="flex items-center justify-start cursor-pointer"
+                  onClick={() => {
+                    setSort({
+                      metric: "name",
+                      sortOrder:
+                        sort.metric === "name"
+                          ? sort.sortOrder === "asc"
+                            ? "desc"
+                            : "asc"
+                          : "desc",
+                    });
+                  }}
+                >
+                  Contract Name
+                  <Icon
+                    icon={
+                      sort.metric === "name" && sort.sortOrder === "asc"
+                        ? "feather:arrow-up"
+                        : "feather:arrow-down"
+                    }
+                    className="w-[12px] h-[12px]"
+                    style={{
+                      opacity: sort.metric === "name" ? 1 : 0.2,
+                    }}
+                  />
+                </div>
+                {/* <div className="flex items-center justify-start">Category</div> */}
+                <div
+                  className="flex items-center justify-start cursor-pointer"
+                  onClick={() => {
+                    setSort({
+                      metric: "category",
+                      sortOrder:
+                        sort.metric === "category"
+                          ? sort.sortOrder === "asc"
+                            ? "desc"
+                            : "asc"
+                          : "desc",
+                    });
+                  }}
+                >
+                  <Badge
+                    size="sm"
+                    label="Category"
+                    leftIcon={null}
+                    leftIconColor="#FFFFFF"
+                    rightIconColor={
+                      sort.metric === "category" ? "#FFFFFF" : undefined
+                    }
+                    rightIcon={
+                      sort.metric === "category" && sort.sortOrder === "asc"
+                        ? "feather:arrow-up"
+                        : "feather:arrow-down"
+                    }
+                    rightIconSize="sm"
+                    className="border border-[#5A6462]"
+                  />
+                </div>
+                <div
+                  className="flex items-center justify-start cursor-pointer"
+                  onClick={() => {
+                    setSort({
+                      metric: "subcategory",
+                      sortOrder:
+                        sort.metric === "subcategory"
+                          ? sort.sortOrder === "asc"
+                            ? "desc"
+                            : "asc"
+                          : "desc",
+                    });
+                  }}
+                >
+                  <Badge
+                    size="sm"
+                    label="Subcategory"
+                    leftIcon={null}
+                    leftIconColor="#FFFFFF"
+                    rightIconColor={
+                      sort.metric === "subcategory" ? "#FFFFFF" : undefined
+                    }
+                    rightIcon={
+                      sort.metric === "subcategory" && sort.sortOrder === "asc"
+                        ? "feather:arrow-up"
+                        : "feather:arrow-down"
+                    }
+                    rightIconSize="sm"
+                    className="border border-[#5A6462]"
+                  />
+                </div>
 
         <LabelsHorizontalScrollContainer
           className="w-full pt-[20px] transition-none"
@@ -410,6 +745,7 @@ export default function LabelsPage() {
                 {virtualizer.getVirtualItems().map((item) => (
                   <div
                     key={item.index}
+
                     style={{
                       position: "absolute",
                       top: 0,
@@ -429,6 +765,7 @@ export default function LabelsPage() {
                               filteredLabelsData[item.index].origin_key
                             ].urlKey
                           }-logo-monochrome`}
+
                           className="w-[15px] h-[15px]"
                           style={{
                             color:
@@ -445,19 +782,23 @@ export default function LabelsPage() {
                           </div>
                         </div>
                       </span>
+
                       <div className="flex h-full items-center">
                         {filteredLabelsData[item.index].owner_project ? (
                           <div className="flex h-full items-center gap-x-[3px] max-w-full">
+
                             <Badge
                               size="sm"
                               label={
                                 filteredLabelsData[item.index].owner_project
+
                               }
                               leftIcon={null}
                               leftIconColor="#FFFFFF"
                               rightIcon={
                                 labelsFilters.owner_project.includes(
                                   filteredLabelsData[item.index].owner_project,
+
                                 )
                                   ? "heroicons-solid:x-circle"
                                   : "heroicons-solid:plus-circle"
@@ -465,6 +806,7 @@ export default function LabelsPage() {
                               rightIconColor={
                                 labelsFilters.owner_project.includes(
                                   filteredLabelsData[item.index].owner_project,
+
                                 )
                                   ? "#FE5468"
                                   : undefined
@@ -474,8 +816,10 @@ export default function LabelsPage() {
                                   "owner_project",
                                   filteredLabelsData[item.index].owner_project,
                                 )
+
                               }
                             />
+
                           </div>
                         ) : (
                           <div className="flex h-full items-center gap-x-[3px] text-[#5A6462] text-[10px]">
@@ -483,6 +827,7 @@ export default function LabelsPage() {
                           </div>
                         )}
                       </div>
+
                       <div>
                         {filteredLabelsData[item.index].name ? (
                           <div className="flex h-full items-center gap-x-[3px]">
@@ -585,12 +930,14 @@ export default function LabelsPage() {
                       </div>
                       <div className="flex h-full items-center gap-x-[3px] whitespace-nowrap">
                         <div className="flex h-full items-center gap-x-[3px] whitespace-nowrap">
+
                           {filteredLabelsData[item.index].usage_category && (
                             <Badge
                               size="sm"
                               label={
                                 master?.blockspace_categories.sub_categories[
                                   filteredLabelsData[item.index].usage_category
+
                                 ]
                               }
                               leftIcon={null}
@@ -694,6 +1041,7 @@ export default function LabelsPage() {
                             change={
                               filteredLabelsData[item.index][
                                 `${currentMetric}_change`
+
                               ]
                             }
                             value={
@@ -723,13 +1071,14 @@ export default function LabelsPage() {
         </LabelsHorizontalScrollContainer>
       </div>
 
-      <Footer />
+      <Footer downloadCSV={downloadCSV} downloadJSON={downloadJSON} />
     </>
   );
 }
 
 type GridTableProps = {
   gridDefinitionColumns: string;
+  className?: string;
   children: React.ReactNode;
   style?: React.CSSProperties;
 };
@@ -743,6 +1092,7 @@ const GridTableHeader = ({
   return (
     <div
       className={`select-none gap-x-[10px] pl-[10px] pr-[20px] pt-[30px] text-[11px] items-center font-semibold grid ${gridDefinitionColumns}`}
+
     >
       {children}
     </div>
@@ -767,7 +1117,94 @@ const GridTableRow = ({
 };
 
 const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
-  const { data, change, value, hoverValue } = useCanvasSparkline();
+  const { data, change, value, valueType, hoverDataPoint, setHoverDataPoint, isDBLoading } = useCanvasSparkline();
+  const { formatMetric } = useMaster();
+
+  return (
+    <>
+      {isDBLoading ?
+        <div className="relative flex items-center justify-center text-[#5A6462] text-[10px] w-[100px] h-full">
+          Loading Chart
+        </div> :
+        <CanvasSparkline chainKey={chainKey} />
+      }
+      {hoverDataPoint ? (
+        <div
+          className="flex flex-col justify-center items-end"
+          style={{
+            fontFeatureSettings: "'pnum' on, 'lnum' on",
+          }}
+        >
+          <div className="min-w-[55px] text-right" >
+            {hoverDataPoint[1] && formatMetric(hoverDataPoint[1], valueType)}
+          </div>
+          <div className={`text-[9px] text-right leading-[1] text-forest-400`}>{new Date(hoverDataPoint[0]).toLocaleDateString("en-GB",
+            {
+              month: "short",
+              day: "numeric",
+              year: "numeric"
+            }
+          )}</div>
+        </div>
+      ) : (
+        <div
+          className="flex flex-col justify-center items-end"
+          style={{
+            fontFeatureSettings: "'pnum' on, 'lnum' on",
+          }}
+        >
+          <div className="min-w-[55px] text-right">
+            {formatMetric(value, valueType)}
+          </div>
+          {(change === null || parseFloat((change * 100).toFixed(0)) === "0") && (
+            <div
+              className={`text-[9px] text-right leading-[1] text-[#CDD8D399] font-normal`}
+            >
+              {change === null && "—"}
+              {change !== null && "0.0%"}
+            </div>
+          )}
+          {(change !== null && parseFloat((change * 100).toFixed(1)) > 0) && (
+            <div
+              className={`text-[9px] text-right leading-[1] text-[#1DF7EF] font-normal`}
+            >
+              {change > 0 && "+"}
+              {(change * 100).toLocaleString("en-GB", {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1,
+              })}%
+            </div>
+          )}
+          {(change !== null && parseFloat((change * 100).toFixed(1)) < 0) && (
+            <div
+              className={`text-[9px] text-right leading-[1] text-[#FE5468] font-semibold`}
+            >
+              {change > 0 && "+"}
+              {(change * 100).toLocaleString("en-GB", {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1,
+              })}%
+            </div>
+          )}
+          {/* <div
+            className={`text-[9px] text-right leading-[1] ${change > 0
+              ? "text-[#1DF7EF] font-normal"
+              : "text-[#FE5468] font-semibold "
+              }`}
+          >
+            {change > 0 && "+"}
+            {formatNumber(change * 100, true, false)}%
+          </div> */}
+        </div>
+      )}
+    </>
+  );
+};
+
+const LabelsSVGSparkline = ({ chainKey }: { chainKey: string }) => {
+  const { data, change, value, valueType, hoverDataPoint, setHoverDataPoint, isDBLoading } = useSVGSparkline();
+  const { formatMetric } = useMaster();
+
   return (
     <>
       <CanvasSparkline chainKey={chainKey} />

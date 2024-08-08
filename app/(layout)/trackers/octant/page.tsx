@@ -17,6 +17,9 @@ import {
   TooltipContent,
 } from "@/components/layout/Tooltip";
 import Address from "@/components/layout/Address";
+import moment from "moment";
+import Container from "@/components/layout/Container";
+import { TopRowChild, TopRowContainer, TopRowParent } from "@/components/layout/TopRow";
 
 type EpochsByProject = {
   [project: string]: EpochData[];
@@ -34,8 +37,8 @@ export default function Page() {
 
   useEffect(() => {
     async function fetchData() {
-      const response = await fetch("/api/trackers/octant");
-      const data = await response.json();
+      const response = await fetch("/api/trackers/octant/rounds");
+      const data: EpochData[] = await response.json();
       setEpochs(data);
 
       // const byProject: EpochsByProject = {};
@@ -83,7 +86,7 @@ export default function Page() {
         .sort((a, b) =>
           a.decisionWindow && b.decisionWindow
             ? new Date(a.decisionWindow).getTime() -
-              new Date(b.decisionWindow).getTime()
+            new Date(b.decisionWindow).getTime()
             : 0,
         )
         .forEach((epoch) => {
@@ -125,6 +128,24 @@ export default function Page() {
   //   return currentEpochs[0];
   // }, [epochs]);
 
+  const epochsByProjectName = useMemo<EpochsByProject | null>(() => {
+    if (!epochs) return null;
+
+    const byProjectName: EpochsByProject = {};
+
+    epochs.forEach((epoch) => {
+      epoch.projects.forEach((project) => {
+        const lowerProjectName = project.name.toLowerCase();
+        if (!byProjectName[lowerProjectName]) {
+          byProjectName[lowerProjectName] = [];
+        }
+        byProjectName[lowerProjectName].push(epoch);
+      });
+    });
+
+    return byProjectName;
+  }, [epochs]);
+
   const epochsByProject = useMemo<EpochsByProject | null>(() => {
     if (!epochs) return null;
 
@@ -142,20 +163,23 @@ export default function Page() {
     return byProject;
   }, [epochs]);
 
-  const allTimeTotalsByProject = useMemo(() => {
-    if (!epochsByProject || !latestAllocationEpoch) return null;
+  const allTimeTotalsByProjectName = useMemo(() => {
+    if (!epochsByProjectName || !latestAllocationEpoch) return null;
 
     const totals: { [project: string]: number } = {};
 
-    Object.keys(epochsByProject).forEach((projectAddress) => {
-      const projectEpochs = epochsByProject[projectAddress];
+    Object.keys(epochsByProjectName).forEach((projectName) => {
+      console.log("projectName", projectName);
 
-      totals[projectAddress] = projectEpochs.reduce((acc, epoch) => {
+      const projectEpochs = epochsByProjectName[projectName];
+      console.log("projectEpochs", projectEpochs);
+
+      totals[projectName] = projectEpochs.reduce((acc, epoch) => {
         if (!epoch.projects || epoch.epoch > latestAllocationEpoch.epoch)
           return acc;
 
         const project = epoch.projects.find(
-          (p) => p.address === projectAddress,
+          (p) => p.name.toLowerCase() === projectName,
         );
 
         if (!project) return acc;
@@ -165,9 +189,9 @@ export default function Page() {
     });
 
     return totals;
-  }, [epochsByProject, latestAllocationEpoch]);
+  }, [epochsByProjectName, latestAllocationEpoch]);
 
-  const [sortKey, setSortKey] = useState<string | null>("totalAllocated");
+  const [sortKey, setSortKey] = useState<string | null>("rewardsMatched");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   const onRowSort = useCallback(
@@ -175,14 +199,14 @@ export default function Page() {
       if (
         !sortKey ||
         !currentEpoch ||
-        !epochsByProject ||
-        !allTimeTotalsByProject
+        !epochsByProjectName ||
+        !allTimeTotalsByProjectName
       )
         return 0;
 
       if (sortKey === "epochs") {
-        const aEpochs = epochsByProject[a].map((e) => e.epoch).join();
-        const bEpochs = epochsByProject[b].map((e) => e.epoch).join();
+        const aEpochs = epochsByProjectName[a].map((e) => e.epoch).join();
+        const bEpochs = epochsByProjectName[b].map((e) => e.epoch).join();
 
         if (aEpochs < bEpochs) {
           return sortDirection === "asc" ? -1 : 1;
@@ -195,10 +219,10 @@ export default function Page() {
       }
 
       if (sortKey === "allTimeTotal") {
-        if (allTimeTotalsByProject[a] < allTimeTotalsByProject[b]) {
+        if (allTimeTotalsByProjectName[a] < allTimeTotalsByProjectName[b]) {
           return sortDirection === "asc" ? -1 : 1;
         }
-        if (allTimeTotalsByProject[a] > allTimeTotalsByProject[b]) {
+        if (allTimeTotalsByProjectName[a] > allTimeTotalsByProjectName[b]) {
           return sortDirection === "asc" ? 1 : -1;
         }
 
@@ -208,18 +232,18 @@ export default function Page() {
       if (!data) return 0;
 
       const aCurrentEpochProject = currentEpoch.projects.find(
-        (p) => p.address === a,
+        (p) => p.name.toLowerCase() === a,
       );
-      const aLastPresentEpochProject = epochsByProject[a][
-        epochsByProject[a].length - 1
-      ].projects.find((p) => p.address === a);
+      const aLastPresentEpochProject = epochsByProjectName[a][
+        epochsByProjectName[a].length - 1
+      ].projects.find((p) => p.name.toLowerCase() === a);
 
       const bCurrentEpochProject = currentEpoch.projects.find(
-        (p) => p.address === b,
+        (p) => p.name.toLowerCase() === b,
       );
-      const bLastPresentEpochProject = epochsByProject[b][
-        epochsByProject[b].length - 1
-      ].projects.find((p) => p.address === b);
+      const bLastPresentEpochProject = epochsByProjectName[b][
+        epochsByProjectName[b].length - 1
+      ].projects.find((p) => p.name.toLowerCase() === b);
 
       if (["name", "address"].includes(sortKey)) {
         const aProject = aCurrentEpochProject
@@ -272,17 +296,25 @@ export default function Page() {
     [
       sortKey,
       currentEpoch,
-      epochsByProject,
+      epochsByProjectName,
       data,
       sortDirection,
-      allTimeTotalsByProject,
+      allTimeTotalsByProjectName,
     ],
   );
 
+  const TwentyPercentOfTotalMatched = useMemo(() => {
+    if (!data) return 0;
+
+    return (0.2 * Object.values(data.projects).map((p: any) => p.rewardsMatched).reduce((acc, curr) => {
+      return acc + curr;
+    })) / 10 ** 18;
+  }, [data]);
+
   const sortedProjects = useMemo(() => {
-    if (!epochsByProject) return [];
-    return Object.keys(epochsByProject).sort(onRowSort);
-  }, [epochsByProject, onRowSort]);
+    if (!epochsByProjectName) return [];
+    return Object.keys(epochsByProjectName).sort(onRowSort);
+  }, [epochsByProjectName, onRowSort]);
 
   const headers: {
     key: string;
@@ -323,13 +355,11 @@ export default function Page() {
             <div className="w-[10px] pt-0.5">
               <Icon
                 icon="formkit:arrowdown"
-                className={`w-[10px] h-[10px] transition duration-100 transform ${
-                  sortKey !== "name" && "opacity-20"
-                } ${
-                  sortKey === "name" && sortDirection === "desc"
+                className={`w-[10px] h-[10px] transition duration-100 transform ${sortKey !== "name" && "opacity-20"
+                  } ${sortKey === "name" && sortDirection === "asc"
                     ? "rotate-180"
                     : ""
-                }`}
+                  }`}
               />
             </div>
           </div>
@@ -347,13 +377,11 @@ export default function Page() {
             <div className="w-[10px] pt-0.5">
               <Icon
                 icon="formkit:arrowdown"
-                className={`w-[10px] h-[10px] transition duration-100 transform ${
-                  sortKey !== "address" && "opacity-20"
-                } ${
-                  sortKey === "address" && sortDirection === "desc"
+                className={`w-[10px] h-[10px] transition duration-100 transform ${sortKey !== "address" && "opacity-20"
+                  } ${sortKey === "address" && sortDirection === "asc"
                     ? "rotate-180"
                     : ""
-                }`}
+                  }`}
               />
             </div>
           </div>
@@ -371,13 +399,11 @@ export default function Page() {
             <div className="w-[10px] pt-0.5">
               <Icon
                 icon="formkit:arrowdown"
-                className={`w-[10px] h-[10px] transition duration-100 transform ${
-                  sortKey !== "epochs" && "opacity-20"
-                } ${
-                  sortKey === "epochs" && sortDirection === "desc"
+                className={`w-[10px] h-[10px] transition duration-100 transform ${sortKey !== "epochs" && "opacity-20"
+                  } ${sortKey === "epochs" && sortDirection === "asc"
                     ? "rotate-180"
                     : ""
-                }`}
+                  }`}
               />
             </div>
           </div>
@@ -396,13 +422,11 @@ export default function Page() {
             <div className="w-[10px] pt-0.5">
               <Icon
                 icon="formkit:arrowdown"
-                className={`w-[10px] h-[10px] transition duration-100 transform ${
-                  sortKey !== "donors" && "opacity-20"
-                } ${
-                  sortKey === "donors" && sortDirection === "desc"
+                className={`w-[10px] h-[10px] transition duration-100 transform ${sortKey !== "donors" && "opacity-20"
+                  } ${sortKey === "donors" && sortDirection === "asc"
                     ? "rotate-180"
                     : ""
-                }`}
+                  }`}
               />
             </div>
           </div>
@@ -421,13 +445,11 @@ export default function Page() {
             <div className="w-[10px] pt-0.5 leading-tight">
               <Icon
                 icon="formkit:arrowdown"
-                className={`w-[10px] h-[10px] transition duration-100 transform ${
-                  sortKey !== "totalAllocated" && "opacity-20"
-                } ${
-                  sortKey === "totalAllocated" && sortDirection === "desc"
+                className={`w-[10px] h-[10px] transition duration-100 transform ${sortKey !== "totalAllocated" && "opacity-20"
+                  } ${sortKey === "totalAllocated" && sortDirection === "desc"
                     ? "rotate-180"
                     : ""
-                }`}
+                  }`}
               />
             </div>
           </div>
@@ -437,17 +459,21 @@ export default function Page() {
       {
         key: "rewardsThreshold",
         cell: () => (
-          <div className="relative">
-            <div className="relative -left-[8px] -bottom-[6px] text-forest-900/50 dark:text-forest-500/50 font-normal text-[0.7rem] whitespace-nowrap overflow-visible">
-              {currentEpoch &&
-                Math.abs(currentEpoch.rewardsThreshold / 10 ** 18).toFixed(
-                  4,
-                )}{" "}
-              <span className="text-[0.6rem] text-forest-900/20 dark:text-forest-500/30">
-                ETH
-              </span>
-            </div>
-            <div className="absolute h-2 w-1 border-t border-l border-forest-900/20 dark:border-forest-500/20 -left-[15px] -bottom-[6px]"></div>
+          <div className={`relative ${currentEpoch && currentEpoch.epoch >= 4 && "hidden"}`}>
+            {currentEpoch && currentEpoch.epoch < 4 && (
+              <>
+                <div className="relative -left-[8px] -bottom-[6px] text-forest-900/50 dark:text-forest-500/50 font-normal text-[0.7rem] whitespace-nowrap overflow-visible">
+                  {currentEpoch &&
+                    (currentEpoch.epoch >= 4 ? TwentyPercentOfTotalMatched.toFixed(4) : Math.abs(currentEpoch.rewardsThreshold / 10 ** 18).toFixed(
+                      4,
+                    ))}{" "}
+                  <span className="text-[0.6rem] text-forest-900/20 dark:text-forest-500/30">
+                    ETH
+                  </span>
+                </div>
+                <div className="absolute h-2 w-1 border-t border-l border-forest-900/20 dark:border-forest-500/20 -left-[15px] -bottom-[6px]"></div>
+              </>
+            )}
           </div>
         ),
       },
@@ -463,19 +489,18 @@ export default function Page() {
             <div className="w-[10px] pt-0.5">
               <Icon
                 icon="formkit:arrowdown"
-                className={`w-[10px] h-[10px] transition duration-100 transform ${
-                  sortKey !== "rewardsMatched" && "opacity-20"
-                } ${
-                  sortKey === "rewardsMatched" && sortDirection === "desc"
+                className={`w-[10px] h-[10px] transition duration-100 transform ${sortKey !== "rewardsMatched" && "opacity-20"
+                  } ${sortKey === "rewardsMatched" && sortDirection === "asc"
                     ? "rotate-180"
                     : ""
-                }`}
+                  }`}
               />
             </div>
           </div>
         ),
         sortKey: "rewardsMatched",
       },
+
       {
         key: "rewardsTotal",
         containerClassName: "flex justify-end text-right",
@@ -487,14 +512,12 @@ export default function Page() {
             <div>Epoch {currentEpoch?.epoch} Total</div>
             <div className="w-[10px] pt-0.5">
               <Icon
-                icon="formkit:arrowup"
-                className={`w-[10px] h-[10px] transition duration-100 transform ${
-                  sortKey !== "rewardsTotal" && "opacity-20"
-                } ${
-                  sortKey === "rewardsTotal" && sortDirection === "asc"
+                icon="formkit:arrowdown"
+                className={`w-[10px] h-[10px] transition duration-100 transform ${sortKey !== "rewardsTotal" && "opacity-20"
+                  } ${sortKey === "rewardsTotal" && sortDirection === "asc"
                     ? "rotate-180"
                     : ""
-                }`}
+                  }`}
               />
             </div>
           </div>
@@ -512,22 +535,25 @@ export default function Page() {
             <div>All Time Total</div>
             <div className="w-[10px] pt-0.5">
               <Icon
-                icon="formkit:arrowup"
-                className={`w-[10px] h-[10px] transition duration-100 transform ${
-                  sortKey !== "allTimeTotal" && "opacity-20"
-                } ${
-                  sortKey === "allTimeTotal" && sortDirection === "asc"
+                icon="formkit:arrowdown"
+                className={`w-[10px] h-[10px] transition duration-100 transform ${sortKey !== "allTimeTotal" && "opacity-20"
+                  } ${sortKey === "allTimeTotal" && sortDirection === "asc"
                     ? "rotate-180"
                     : ""
-                }`}
+                  }`}
               />
             </div>
           </div>
         ),
         sortKey: "allTimeTotal",
       },
-    ];
-  }, [data, sortDirection, sortKey, currentEpoch]);
+    ].filter((header) => header !== undefined) as {
+      key: string;
+      containerClassName?: string;
+      cell: () => React.ReactNode;
+      sortKey?: string;
+    }[];
+  }, [data, currentEpoch, sortKey, sortDirection, TwentyPercentOfTotalMatched]);
 
   // Countdown Timer for Decision Window
   const createTmer = useMemo(() => {
@@ -541,6 +567,8 @@ export default function Page() {
     return decisionWindowNumber - now;
   }, [currentEpoch]);
 
+
+
   // CountdownTimer that updates every 100ms
   const CountdownTimer = () => {
     const [timer, setTimer] = useState(createTmer);
@@ -553,55 +581,269 @@ export default function Page() {
       return () => clearInterval(interval);
     }, []);
 
+    // X days, X hours, X minutes, X seconds
+    const timerReadable = useMemo(() => {
+      if (timer === Infinity) return "";
+      const days = Math.floor(timer / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((timer / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((timer / (1000 * 60)) % 60);
+      const seconds = Math.floor((timer / 1000) % 60);
+
+      return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    }, [timer]);
+
+
+    const [currentEpochDecisionWindow, setCurrentEpochDecisionWindow] =
+      useState<Date | null>(null);
+
+    const [currentEpochDecisionWindowText, setCurrentEpochDecisionWindowText] = useState<string | null>(null);
+
+    useEffect(() => {
+      const toTs = new Date(currentEpoch?.toTimestamp || 0);
+      // subtract 14 days from the end of the epoch
+      const decisionWindowStart = toTs;
+      const decisionWindowEnd = new Date(toTs.getTime() + 14 * 24 * 60 * 60 * 1000);
+      const now = new Date();
+
+      // if we're within 14 days of the end of the epoch, set the decision window text to the countdown timer
+      if (now > decisionWindowStart && now < decisionWindowEnd) {
+        setCurrentEpochDecisionWindowText(`Ends in ${timerReadable}`);
+      }
+      else if (now < decisionWindowStart) {
+        setCurrentEpochDecisionWindowText(`Starts ${decisionWindowStart.toLocaleString("en-GB", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+        })}`);
+      }
+      else if (now > decisionWindowEnd) {
+        setCurrentEpochDecisionWindowText(`Ended ${decisionWindowEnd.toLocaleString("en-GB", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+        })}`);
+      }
+
+
+      setCurrentEpochDecisionWindow(decisionWindowStart);
+
+    }, [timer, timerReadable]);
+
     if (!currentEpoch || !currentEpoch.decisionWindow) return null;
 
     if (timer === Infinity) return null;
 
+
+
     return (
-      <div className="flex flex-row gap-x-2 items-center justify-start text-xs">
-        <div className="font-medium">Epoch {currentEpoch?.epoch}</div>
-        <div>—</div>
-        <div className="flex items-center gap-x-2">
-          {timer > 0 ? (
-            <div className="flex items-center gap-x-2">
-              <div className="w-4 h-4">
+      <>
+        <TopRowContainer className="!p-0">
+          {/* <TopRowParent className="!justify-stretch"> */}
+          <div className="flex flex-col relative h-full lg:h-[54px] w-full">
+            <div
+              className={`relative flex rounded-[15px] lg:rounded-full h-full w-full lg:z-30 p-[3px] lg:p-[5px]  dark:bg-forest-50`}
+            >
+              <div
+                className="rounded-[15px] lg:rounded-[40px] w-[32px] h-[28px] lg:w-[54px] lg:h-[44px] bg-forest-50  dark:bg-[#1F2726]  flex items-center justify-center z-[15] hover:cursor-pointer"
+                onClick={() => {
+                  if (!epochs) return;
+                  const currentEpochIndex = epochs.findIndex(
+                    (epoch) => epoch.epoch === currentEpoch.epoch,
+                  );
+
+                  if (currentEpochIndex === 0)
+                    setCurrentEpoch(epochs[epochs.length - 1]);
+                  else {
+                    setCurrentEpoch(epochs[currentEpochIndex - 1]);
+                  }
+                }}
+              >
+                <Icon icon="feather:arrow-left" className="w-6 h-6" />
+              </div>
+              <div className="flex lg:flex-col items-end justify-center lg:items-center gap-x-[5px] w-full py-1 leading-[1]">
+                <div className="text-forest-1000 text-[20px] lg:text-[16px]">
+                  Epoch
+                </div>
+                <div className="text-forest-1000 text-[20px] lg:text-[24px] font-semibold">
+                  {currentEpoch.epoch}
+                </div>
+              </div>
+              <div
+                className="rounded-[15px] lg:rounded-[40px] w-[32px] h-[28px] lg:w-[54px] lg:h-[44px] bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[15] hover:cursor-pointer"
+                onClick={() => {
+                  if (!epochs) return;
+                  const currentEpochIndex = epochs.findIndex(
+                    (epoch) => epoch.epoch === currentEpoch.epoch,
+                  );
+
+                  if (currentEpochIndex === epochs.length - 1)
+                    setCurrentEpoch(epochs[0]);
+                  else {
+                    setCurrentEpoch(epochs[currentEpochIndex + 1]);
+                  }
+                }}
+              >
+                <Icon icon="feather:arrow-right" className="w-6 h-6" />
+              </div>
+            </div >
+          </div >
+          <div className="flex items-center justify-center lg:justify-end gap-x-2 text-forest-300 w-full py-[5px] px-[20px] lg:py-0">
+            {timer > 0 ? (
+              <div className="flex flex-col items-center lg:items-end gap-y-1">
+                <div className="text-forest-300 text-xs">
+                  {"Decision Window"}
+                </div>
+                <div className="flex items-center gap-x-2 text-forest-500 text-xs font-semibold">
+                  <div className="w-4 h-4">
+                    <Icon
+                      icon="fluent:hourglass-one-quarter-24-regular"
+                      className="w-4 h-4"
+                    />
+                  </div>
+                  <div>
+                    {currentEpochDecisionWindowText}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center lg:items-end gap-y-1">
+                <div className="text-forest-300 text-xs">
+                  {timer > 60 * 60 * 24 * 14 ? "Next Epoch" : "Decision Window"}
+                </div>
+                <div className="flex items-center justify-center lg:justify-end gap-x-2 text-forest-500 text-xs font-semibold">
+                  <div className="w-4 h-4">
+                    <Icon icon="feather:check" className="w-4 h-4" />
+                  </div>
+                  <div>{currentEpochDecisionWindowText}</div>
+                </div>
+              </div>
+            )}
+          </div>
+          {/* </TopRowParent> */}
+        </TopRowContainer >
+        {/* <div className="flex flex-col gap-2 pt-2 pb-5 text-xs font-medium">
+          <div className="flex flex-row rounded-lg border border-forest-900/20 dark:border-forest-500/20 px-2 py-1  items-center justify-between gap-x-[15px]">
+            <div className="flex gap-[5px] items-center whitespace-nowrap">
+              <div className="w-5 h-5">
                 <Icon
-                  icon="fluent:hourglass-one-quarter-24-regular"
-                  className="w-4 h-4"
+                  icon="ic:baseline-account-balance-wallet"
+                  className="w-5 h-5"
                 />
               </div>
-              <div>
-                {Math.floor(timer / (1000 * 60 * 60))
-                  .toString()
-                  .padStart(2, "0")}
-                :
-                {Math.floor((timer / (1000 * 60)) % 60)
-                  .toString()
-                  .padStart(2, "0")}
-                :
-                {Math.floor((timer / 1000) % 60)
-                  .toString()
-                  .padStart(2, "0")}
+              <h3 className="text-sm font-semibold">Golem Staking</h3>
+            </div>
+            <p className="">100,000 ETH staked</p>
+          </div>
+
+          <div className="flex flex-row rounded-lg border border-forest-900/20 dark:border-forest-500/20 px-2 py-1 items-center justify-between gap-x-[15px]">
+            <div className="flex gap-[5px] items-center whitespace-nowrap">
+              <div className="w-5 h-5">
+                <Icon
+                  icon="ic:baseline-currency-exchange"
+                  className="w-5 h-5"
+                />
+              </div>
+              <h3 className="text-sm font-semibold">Reward Distribution</h3>
+            </div>
+            <div className="relative pl-8 flex flex-col items-center text-xs w-full gap-y-1 pt-1">
+              <div className="relative w-full h-4 border-0 border-forest-900/20 dark:border-forest-500/20 bg-forest-900/0 dark:bg-forest-1000/0 rounded-sm">
+                <div className="absolute w-[5%] h-full bg-forest-900/10 dark:bg-forest-500/10 rounded-l-sm"></div>
+                <div className="absolute inset-0 flex justify-between px-0.5 py-0 text-[11px] font-medium leading-4">
+                  <div className="absolute -left-[20px] font-medium font-inter text-[12px]">
+                    5%
+                  </div>
+                  <div className="absolute right-0 ">Community Fund</div>
+                </div>
+              </div>
+              <div className="relative w-full h-4 border-0 border-forest-900/20 dark:border-forest-500/20 bg-forest-900/0 dark:bg-forest-1000/0 rounded-sm">
+                <div className="absolute ml-[0%] w-[25%] h-full bg-forest-900/10 dark:bg-forest-500/10 rounded-none"></div>
+                <div className="absolute ml-[0%] -inset-0 flex justify-between px-0.5 py-0 text-[11px] font-medium leading-4">
+                  <div className="absolute -left-7 font-medium font-inter text-[12px]">
+                    25%
+                  </div>
+                  <div className="absolute right-0 ">Golem Operations</div>
+                </div>
+              </div>
+              <div className="relative w-full h-4 border-0 border-forest-900/20 dark:border-forest-500/20 bg-forest-900/0 dark:bg-forest-1000/0 rounded-sm">
+                <div className="absolute ml-[0%] w-[70%] h-full bg-forest-900/10 dark:bg-forest-500/10 rounded-r-sm"></div>
+                <div className="absolute ml-[0%] -inset-0 flex justify-between px-0.5 py-0 text-[11px] font-medium leading-4">
+                  <div className="absolute -left-7 font-medium font-inter text-[12px]">
+                    70%
+                  </div>
+                  <div className="absolute right-0 ">Users & Public Goods</div>
+                </div>
               </div>
             </div>
-          ) : (
-            <div className="flex gap-x-2">
-              <div className="w-4 h-4">
-                <Icon icon="feather:check" className="w-4 h-4" />
+          </div>
+
+          <div className="flex flex-row rounded-lg border border-forest-900/20 dark:border-forest-500/20 px-2 py-1 items-center justify-between gap-x-[15px]">
+            <div className="flex gap-[5px] items-center whitespace-nowrap">
+              <div className="w-5 h-5">
+                <Icon icon="ic:baseline-how-to-reg" className="w-5 h-5" />
               </div>
-              <div>Decision Window Closed</div>
+              <h3 className="text-sm font-semibold">User Participation</h3>
             </div>
-          )}
-        </div>
-      </div>
+            <div className="">Lock GLM tokens</div>
+            <div className="">Claim or donate rewards</div>
+          </div>
+
+          <div className="flex flex-row rounded-lg border border-forest-900/20 dark:border-forest-500/20 px-2 py-1 items-center justify-between gap-x-[15px]">
+            <div className="flex gap-[5px] items-center whitespace-nowrap">
+              <div className="w-5 h-5">
+                <Icon icon="ic:baseline-calendar-today" className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm font-semibold text-forest-900 dark:text-forest-500">
+                Epochs & Governance
+              </h3>
+            </div>
+            <div className="">90-day epochs</div>
+            <div className="">Community-led funding</div>
+          </div>
+        </div> */}
+        < div className="flex flex-row gap-x-2 items-center justify-start text-xs" >
+          {/* <div className="font-medium">Epoch {currentEpoch?.epoch}</div>
+          <div>—</div>
+          <div className="flex items-center gap-x-2">
+
+            {timer > 0 ? (
+              <div className="flex items-center gap-x-2">
+                <div className="w-4 h-4">
+                  <Icon
+                    icon="fluent:hourglass-one-quarter-24-regular"
+                    className="w-4 h-4"
+                  />
+                </div>
+                <div>
+                  {timerReadable}
+                </div>
+              </div>
+            ) : (
+              <div className="flex gap-x-2">
+                <div className="w-4 h-4">
+                  <Icon icon="feather:check" className="w-4 h-4" />
+                </div>
+                <div>Decision Window Closed</div>
+              </div>
+            )}
+          </div> */}
+        </div >
+      </>
     );
   };
 
   return (
-    <HorizontalScrollContainer>
-      <CountdownTimer />
+    <>
+      <Container>
+        <CountdownTimer />
+      </Container>
+      <HorizontalScrollContainer className="min-h-[300px]">
 
-      {/* <div>sortedProjects: {sortedProjects.length}</div>
+
+        {/* <div>sortedProjects: {sortedProjects.length}</div>
       <div>
         epochsByProject:{" "}
         {epochsByProject && Object.keys(epochsByProject).length}
@@ -643,90 +885,91 @@ export default function Page() {
         </div>
       )} */}
 
-      <div
-        className="min-w-[900px] flex flex-col gap-y-[5px] transition-all duration-300"
-        style={{ maxHeight: !data ? "calc(100vh - 550px)" : "5000px" }}
-      >
-        <div className="select-none grid grid-cols-[32px,16px,minmax(240px,800px),0px,130px,80px,120px,40px,110px,105px,120px] lg:grid-cols-[32px,16px,minmax(240px,800px),150px,130px,80px,120px,40px,110px,105px,120px] gap-x-[15px] px-[6px] pt-[30px] text-[11px] items-center font-bold">
-          {headers.map((header) => (
-            <div key={header.key} className={`${header.containerClassName}`}>
-              {header.cell()}
-            </div>
-          ))}
-        </div>
-        {currentEpoch && epochsByProject && epochs && allTimeTotalsByProject ? (
-          sortedProjects.map((address, index) => (
-            <OctantTableRow
-              key={index}
-              currentEpoch={currentEpoch}
-              projectAddress={address}
-              projectIndex={index}
-              epochsByProject={epochsByProject}
-              allTimeTotalsByProject={allTimeTotalsByProject}
-              epochs={epochs}
-              setCurrentEpoch={setCurrentEpoch}
-            />
-          ))
-        ) : (
-          <div className="rounded-[30px] border border-forest-900/20 dark:border-forest-500/20  w-full max-w-[calc(100vw-100px)] h-[calc(100vh-450px)] flex items-center justify-center">
-            <ShowLoading
-              dataLoading={[true]}
-              dataValidating={[false]}
-              fullScreen={false}
-              section={true}
-            />
+        <div
+          className="min-w-[900px] flex flex-col gap-y-[5px] transition-all duration-300 min-h-[570px]"
+          style={{ maxHeight: !data ? "calc(100vh - 550px)" : "5000px" }}
+        >
+          <div className={`select-none grid ${currentEpoch && (currentEpoch.epoch < 4 ? "grid-cols-[32px,16px,minmax(240px,800px),0px,150px,80px,120px,40px,110px,105px,120px] lg:grid-cols-[32px,16px,minmax(240px,800px),150px,150px,80px,120px,40px,110px,105px,120px]" : "grid-cols-[32px,16px,minmax(240px,800px),0px,130px,80px,120px,40px,110px,105px,120px] lg:grid-cols-[32px,16px,minmax(240px,800px),150px,130px,80px,120px,40px,110px,105px,120px]")} gap-x-[15px] px-[6px] pt-[30px] text-[11px] items-center font-bold`}>
+            {headers.map((header) => (
+              <div key={header.key} className={`${header.containerClassName}`}>
+                {header.cell()}
+              </div>
+            ))}
           </div>
-        )}
-      </div>
-    </HorizontalScrollContainer>
+          {currentEpoch && epochsByProjectName && epochs && allTimeTotalsByProjectName ? (
+            sortedProjects.map((projectName, index) => (
+              <OctantTableRow
+                key={index}
+                currentEpoch={currentEpoch}
+                projectName={projectName}
+                projectIndex={index}
+                epochsByProjectName={epochsByProjectName}
+                allTimeTotalsByProjectName={allTimeTotalsByProjectName}
+                epochs={epochs}
+                setCurrentEpoch={setCurrentEpoch}
+              />
+            ))
+          ) : (
+            <div className="rounded-[30px] border border-forest-900/20 dark:border-forest-500/20 w-full max-w-[calc(100vw-100px)] h-[calc(100vh-450px)] flex items-center justify-center min-h-[500px]">
+              <ShowLoading
+                dataLoading={[true]}
+                dataValidating={[false]}
+                fullScreen={false}
+                section={true}
+              />
+            </div>
+          )}
+        </div>
+      </HorizontalScrollContainer>
+    </>
   );
 }
 
 const EpochTile = ({
-  address,
+  name,
   epochNumber,
   epochState,
   epoch,
   currentEpoch,
   setCurrentEpoch,
 }: {
-  address: string;
+  name: string;
   epochNumber: number;
   epochState: EpochState;
   epoch: EpochData;
   currentEpoch: EpochData;
   setCurrentEpoch?: (epoch: EpochData) => void;
 }) => {
-  const project = epoch.projects.find((p) => p.address === address);
+  const project = epoch.projects.find((p) => p.name.toLowerCase() === name.toLowerCase());
 
   if (!project) return <div className="w-2 h-2 bg-orange-500"></div>;
 
+  // if (epochState === "PENDING" || epochState === "ACTIVE")
+  //   return null;
+
   return (
     <>
-      {epochState === "PENDING" && (
+      {/* {epochState === "PENDING" && (
         <div className="flex items-center justify-center w-6 h-6 border border-dashed border-gray-500 rounded-sm text-gray-500">
           <div>{epochNumber}</div>
-          {/* <Icon icon="fluent:hourglass-top" className="w-4 h-4" /> */}
         </div>
       )}
       {epochState === "ACTIVE" && (
         <div className="flex items-center justify-center w-6 h-6 bg-gray-500/40 rounded-sm text-gray-100">
           <div>{epochNumber}</div>
-          {/* <Icon icon="fluent:checkmark" className="w-4 h-4" /> */}
         </div>
-      )}
+      )} */}
 
       {["FINALIZED", "REWARD_ALLOCATION"].includes(epochState) && (
         <div
-          className={`flex items-center justify-center w-6 h-6 opacity-80 ${
-            currentEpoch.epoch === epoch.epoch
-              ? project && project.thresholdReached
-                ? "bg-green-500 text-green-50"
-                : "bg-red-500 text-red-50"
-              : project && project.thresholdReached
+          className={`flex items-center justify-center w-6 h-6 opacity-80 ${currentEpoch.epoch === epoch.epoch
+            ? project && project.thresholdReached
+              ? "bg-green-500 text-green-50"
+              : "bg-red-500 text-red-50"
+            : project && project.thresholdReached
               ? "bg-green-500/10 text-green-500/50"
               : "bg-red-500/10 text-red-500/50"
-          } rounded-sm cursor-pointer`}
+            } rounded-sm cursor-pointer`}
           onClick={() => setCurrentEpoch && setCurrentEpoch(epoch)}
         >
           <div>{epochNumber}</div>
@@ -751,41 +994,45 @@ const EpochTile = ({
 
 type TableRowProps = {
   currentEpoch: EpochData;
-  projectAddress: string;
+  projectName: string;
   projectIndex: number;
-  epochsByProject: EpochsByProject;
-  allTimeTotalsByProject: { [project: string]: number };
+  epochsByProjectName: EpochsByProject;
+  allTimeTotalsByProjectName: { [project: string]: number };
   epochs: EpochData[];
   setCurrentEpoch?: (epoch: EpochData) => void;
 };
 
 const OctantTableRow = ({
   currentEpoch,
-  projectAddress,
+  projectName,
   projectIndex,
-  epochsByProject,
-  allTimeTotalsByProject,
+  epochsByProjectName,
+  allTimeTotalsByProjectName,
   epochs,
   setCurrentEpoch,
 }: TableRowProps) => {
   // const project = data.projects[projectIndex];
   const currentEpochProject = currentEpoch.projects.find(
-    (p) => p.address === projectAddress,
+    (p) => p.name.toLowerCase() === projectName,
   );
-  const lastPresentEpochProject = epochsByProject[projectAddress][
-    epochsByProject[projectAddress].length - 1
-  ].projects.find((p) => p.address === projectAddress);
+  const lastPresentEpochProject = epochsByProjectName[projectName][
+    epochsByProjectName[projectName].length - 1
+  ].projects.find((p) => p.name.toLowerCase() === projectName);
+
+  console.log("projectName:", projectName, "projectIndex:", projectIndex, "currentEpochProject:", currentEpochProject, " lastPresentEpochProject:", lastPresentEpochProject);
 
   const project = currentEpochProject
     ? currentEpochProject
     : lastPresentEpochProject;
+
+  console.log("project", project);
 
   //console.log("project", project);
 
   if (!project) return null;
 
   return (
-    <div className="grid grid-cols-[32px,16px,minmax(240px,800px),0px,130px,80px,120px,40px,110px,105px,120px] lg:grid-cols-[32px,16px,minmax(240px,800px),150px,130px,80px,120px,40px,110px,105px,120px] gap-x-[15px] rounded-full border border-forest-900/20 dark:border-forest-500/20 px-[6px] py-[5px] text-xs items-center">
+    <div className={`grid ${currentEpoch && (currentEpoch.epoch < 4 ? "grid-cols-[32px,16px,minmax(240px,800px),0px,150px,80px,120px,40px,110px,105px,120px] lg:grid-cols-[32px,16px,minmax(240px,800px),150px,150px,80px,120px,40px,110px,105px,120px]" : "grid-cols-[32px,16px,minmax(240px,800px),0px,130px,80px,120px,40px,110px,105px,120px] lg:grid-cols-[32px,16px,minmax(240px,800px),150px,130px,80px,120px,40px,110px,105px,120px]")} gap-x-[15px] rounded-full border border-forest-900/20 dark:border-forest-500/20 px-[6px] py-[5px] text-xs items-center`}>
       <div className="w-8 h-8 border border-forest-900/20 dark:border-forest-500/20 rounded-full overflow-hidden">
         <Image
           src={`https://ipfs.io/ipfs/${project.profileImageMedium}`}
@@ -818,7 +1065,7 @@ const OctantTableRow = ({
 
         <div className="border-[1.5px] rounded-[3px] border-forest-900/60 dark:border-forest-500/60 p-0.5 hover:bg-forest-900/10 dark:hover:bg-forest-500/10  text-forest-900/60 dark:text-forest-500/60">
           <Link
-            href={`https://octant.app/project/3/${project.address}`}
+            href={`https://octant.app/project/${currentEpoch.epoch}/${project.address}`}
             rel="noopener noreferrer"
             target="_blank"
           >
@@ -846,9 +1093,9 @@ const OctantTableRow = ({
       </div>
       <div>
         <div className="flex gap-x-1.5 font-inter font-bold text-white/60 text-xs select-none">
-          {epochsByProject[project.address] &&
+          {epochsByProjectName[project.name.toLowerCase()] &&
             epochs.map((epoch, index) => {
-              const isInEpoch = epochsByProject[project.address].find(
+              const isInEpoch = epochsByProjectName[project.name.toLowerCase()].find(
                 (e) => e.epoch === epoch.epoch,
               );
 
@@ -857,7 +1104,7 @@ const OctantTableRow = ({
               return (
                 <EpochTile
                   key={index}
-                  address={project.address}
+                  name={project.name}
                   epochNumber={epoch.epoch}
                   epochState={epoch.state}
                   epoch={epoch}
@@ -869,10 +1116,10 @@ const OctantTableRow = ({
         </div>
       </div>
       <div className="flex justify-end item-center gap-x-2">
-        {currentEpochProject && (
+        {["REWARD_ALLOCATION", "FINALIZED"].includes(currentEpoch.state) && currentEpochProject && (
           <Tooltip placement="left" allowInteract>
             <TooltipTrigger className="flex justify-end item-center gap-x-2">
-              <div className="flex items-center text-[0.9rem] font-medium leading-[1.2] font-inter">
+              <div className="flex h-[26px] items-center text-[0.9rem] font-medium leading-[1] font-inter">
                 {project.donors}
               </div>
               <div className="w-[26px] h-[26px] flex items-center justify-center">
@@ -925,7 +1172,7 @@ const OctantTableRow = ({
         )}
       </div>
       <div className="flex justify-end">
-        {currentEpochProject && (
+        {["REWARD_ALLOCATION", "FINALIZED"].includes(currentEpoch.state) && currentEpochProject && (
           <div className="relative flex items-center gap-x-2 pr-0.5">
             <div className="text-[0.8rem] font-medium leading-[1.2] font-inter">
               {(project.totalAllocated / 10 ** 18).toFixed(4)}{" "}
@@ -942,25 +1189,23 @@ const OctantTableRow = ({
             <div className="w-4 h-4">
               <Icon
                 icon="feather:check-square"
-                className={`w-4 h-4  fill-current ${
-                  project.thresholdReached
-                    ? "text-green-500 dark:text-green-500"
-                    : "text-forest-900/80 dark:text-forest-600/80"
-                }`}
+                className={`w-4 h-4  fill-current ${project.thresholdReached
+                  ? "text-green-500 dark:text-green-500"
+                  : "text-forest-900/80 dark:text-forest-600/80"
+                  }`}
               />
             </div>
-            <div className="z-10 absolute -bottom-[6px] left-0 right-0 text-xs font-normal text-right h-[2px]">
+            <div className={`z-10 absolute -bottom-[6px] left-0 right-0 text-xs font-normal text-right h-[2px] ${currentEpoch && currentEpoch.epoch >= 4 && "hidden"}`}>
               <div
-                className="z-10 absolute"
+                className={`z-10 absolute`}
                 style={{
                   height: "2px",
-                  width: `${
-                    project.totalAllocated / currentEpoch.rewardsThreshold < 1
-                      ? 100
-                      : (project.totalAllocated /
-                          currentEpoch.rewardsThreshold) *
-                        100
-                  }%`,
+                  width: `${project.totalAllocated / currentEpoch.rewardsThreshold < 1
+                    ? 100
+                    : (project.totalAllocated /
+                      currentEpoch.rewardsThreshold) *
+                    100
+                    }%`,
                 }}
               >
                 {project.totalAllocated / currentEpoch.rewardsThreshold > 1 ? (
@@ -969,9 +1214,8 @@ const OctantTableRow = ({
                       className="bg-forest-900/80 dark:bg-[#b0bbb6]"
                       style={{
                         height: "2px",
-                        width: `${
-                          project.percentageThresholdOfTotalAllocated * 100.0
-                        }%`,
+                        width: `${project.percentageThresholdOfTotalAllocated * 100.0
+                          }%`,
                         // right with bases on bottom and right
                       }}
                     ></div>
@@ -992,9 +1236,8 @@ const OctantTableRow = ({
                     className=" bg-red-500 dark:bg-red-500"
                     style={{
                       height: "2px",
-                      width: `${
-                        (1 / project.percentageThresholdOfTotalAllocated) * 100
-                      }%`,
+                      width: `${(1 / project.percentageThresholdOfTotalAllocated) * 100
+                        }%`,
                     }}
                   ></div>
                 )}
@@ -1011,13 +1254,13 @@ const OctantTableRow = ({
         )}
       </div>
 
-      <div className="relative flex justify-start item-center gap-x-2">
+      <div className={`relative flex justify-start item-center gap-x-2`}>
         {currentEpochProject && (
           <>
-            <div className="relative -left-[12px] -bottom-[2px] flex items-center text-forest-900/80 dark:text-forest-500/80 font-medium text-[0.6rem]">
+            <div className={`relative -left-[12px] -bottom-[2px] flex items-center text-forest-900/80 dark:text-forest-500/80 font-medium text-[0.6rem] ${currentEpoch && currentEpoch.epoch >= 4 && "hidden"}`}>
               {(project.rewards.allocated / currentEpoch.rewardsThreshold) *
                 100 >
-              100 ? (
+                100 ? (
                 <div className="text-forest-500/60 dark:text-forest-500/60">
                   +
                   {(
@@ -1035,23 +1278,22 @@ const OctantTableRow = ({
                     ((project.rewards.allocated -
                       currentEpoch.rewardsThreshold) /
                       currentEpoch.rewardsThreshold) *
-                      100,
+                    100,
                   ).toFixed(0)}
                   %
                 </div>
               )}
             </div>
-            <div className="absolute h-[10px] w-1 border-l border-forest-900/20 dark:border-forest-500/20 -left-[15px] -bottom-[13px]"></div>
+            <div className={`absolute h-[10px] w-1 border-l border-forest-900/20 dark:border-forest-500/20 -left-[15px] -bottom-[13px] ${currentEpoch && currentEpoch.epoch >= 4 && "hidden"}`}></div>
           </>
         )}
       </div>
 
       <div className="flex justify-end pr-[25px]">
-        {currentEpochProject && (
+        {["REWARD_ALLOCATION", "FINALIZED"].includes(currentEpoch.state) && currentEpochProject && (
           <div
-            className={`text-[0.8rem] font-medium leading-[1.2] font-inter ${
-              currentEpochProject.rewards.matched <= 0 && "opacity-30"
-            }`}
+            className={`text-[0.8rem] font-medium leading-[1.2] font-inter ${currentEpochProject.rewards.matched <= 0 && "opacity-30"
+              }`}
           >
             {(currentEpochProject.rewards.matched / 10 ** 18).toFixed(4)}{" "}
             <span className="opacity-60 text-[0.55rem]">ETH</span>
@@ -1059,11 +1301,10 @@ const OctantTableRow = ({
         )}
       </div>
       <div className="flex justify-end pr-[25px]">
-        {currentEpochProject && (
+        {["REWARD_ALLOCATION", "FINALIZED"].includes(currentEpoch.state) && currentEpochProject && (
           <div
-            className={`text-[0.8rem] font-medium leading-[1.2] font-inter ${
-              currentEpochProject.rewards.total <= 0 && "opacity-30"
-            }`}
+            className={`text-[0.8rem] font-medium leading-[1.2] font-inter ${currentEpochProject.rewards.total <= 0 && "opacity-30"
+              }`}
           >
             {(currentEpochProject.rewards.total / 10 ** 18).toFixed(4)}{" "}
             <span className="opacity-60 text-[0.55rem]">ETH</span>
@@ -1072,11 +1313,10 @@ const OctantTableRow = ({
       </div>
       <div className="flex justify-end pr-[25px]">
         <div
-          className={`text-[0.9rem] font-bold leading-[1.2] font-inter ${
-            allTimeTotalsByProject[projectAddress] <= 0 && "opacity-30"
-          }`}
+          className={`text-[0.9rem] font-bold leading-[1.2] font-inter ${allTimeTotalsByProjectName[projectName] <= 0 && "opacity-30"
+            }`}
         >
-          {(allTimeTotalsByProject[projectAddress] / 10 ** 18).toFixed(4)}{" "}
+          {(allTimeTotalsByProjectName[projectName] / 10 ** 18).toFixed(4)}{" "}
           <span className="opacity-60 text-[0.55rem] font-semibold">ETH</span>
         </div>
       </div>

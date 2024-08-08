@@ -1,17 +1,35 @@
-import { AllChainsByKeys } from '@/lib/chains';
-import { formatNumber, tooltipFormatter, tooltipPositioner } from '@/lib/chartUtils';
-import Highcharts from 'highcharts/highstock';
-import ReactJson from 'react-json-view';
+import { AllChainsByKeys } from "@/lib/chains";
 import {
-  HighchartsProvider, HighchartsChart, Chart, XAxis, YAxis, Title, Subtitle, Legend, LineSeries, Tooltip, PlotBand, PlotLine, withHighcharts, AreaSeries
-} from 'react-jsx-highcharts';
+  formatNumber,
+  tooltipFormatter,
+  tooltipPositioner,
+} from "@/lib/chartUtils";
+import Highcharts from "highcharts/highstock";
+import ReactJson from "react-json-view";
+import {
+  HighchartsProvider,
+  HighchartsChart,
+  Chart,
+  XAxis,
+  YAxis,
+  Title,
+  Subtitle,
+  Legend,
+  LineSeries,
+  Tooltip,
+  PlotBand,
+  PlotLine,
+  withHighcharts,
+  AreaSeries,
+} from "react-jsx-highcharts";
 import useSWR from "swr";
-import { useTheme } from 'next-themes';
-import { use, useCallback, useMemo } from 'react';
-import { useLocalStorage, useSessionStorage } from 'usehooks-ts';
-import { useUIContext } from '@/contexts/UIContext';
+import { useTheme } from "next-themes";
+import { use, useCallback, useMemo } from "react";
+import { useLocalStorage, useSessionStorage } from "usehooks-ts";
+import { useUIContext } from "@/contexts/UIContext";
 import d3 from "d3";
-import { FeesLineChart } from '@/types/api/Fees/LineChart';
+import { FeesLineChart } from "@/types/api/Fees/LineChart";
+import { MasterResponse } from "@/types/api/MasterResponse";
 import "../../highcharts.axis.css";
 
 const COLORS = {
@@ -22,7 +40,6 @@ const COLORS = {
   TOOLTIP_BG: "#1b2135",
   ANNOTATION_BG: "rgb(215, 223, 222)",
 };
-
 
 const plotOptions: Highcharts.PlotOptions = {
   column: {
@@ -60,9 +77,18 @@ type FeesChartProps = {
   showGwei: boolean;
   showCents: boolean;
   chartWidth: number;
+  master: MasterResponse;
 };
 
-export default function FeesChart({ selectedMetric, selectedTimeframe, selectedChains, showGwei, showCents, chartWidth }: FeesChartProps) {
+export default function FeesChart({
+  selectedMetric,
+  selectedTimeframe,
+  selectedChains,
+  showGwei,
+  showCents,
+  chartWidth,
+  master,
+}: FeesChartProps) {
   const { theme } = useTheme();
   const { isMobile } = useUIContext();
   // const seriesKey = "txcosts_avg";
@@ -70,14 +96,14 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
-  const {
-    data,
-    error,
-    isLoading,
-    isValidating,
-  } = useSWR<FeesLineChart>("https://api.growthepie.xyz/v1/fees/linechart.json");
+  const { data, error, isLoading, isValidating } = useSWR<FeesLineChart>(
+    "https://api.growthepie.xyz/v1/fees/linechart.json",
+  );
 
-  const reversePerformer = true;
+  const reversePerformer = useMemo(() => {
+    if (master.fee_metrics[selectedMetric].invert_normalization) return false;
+    return true;
+  }, [selectedMetric]);
 
   const valuePrefix = useMemo(() => {
     if (showUsd) return "$";
@@ -112,24 +138,45 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
 
   const formatNumber = useCallback(
     (value: number | string, isAxis = false) => {
-      let prefix = valuePrefix;
-      let suffix = "";
-      let multiplier = 1
-
-
-
-
-      if (!showUsd) {
-        if (showGwei) {
-          prefix = "";
-          suffix = " gwei";
-          multiplier = 1e9;
-        }
+      let unitKey = "";
+      if (master.fee_metrics[selectedMetric].currency) {
+        unitKey = showUsd ? "usd" : "eth";
       } else {
-        if (showCents) {
-          prefix = "";
-          suffix = " cents"
-          multiplier = 100;
+        unitKey = "value";
+      }
+
+      let prefix = master.fee_metrics[selectedMetric].units[unitKey].prefix
+        ? " " + master.fee_metrics[selectedMetric].units[unitKey].prefix
+        : "";
+      let suffix = master.fee_metrics[selectedMetric].units[unitKey].suffix
+        ? " " + master.fee_metrics[selectedMetric].units[unitKey].suffix
+        : "";
+      let multiplier = 1;
+
+      let decimals =
+        unitKey === "eth" && showGwei
+          ? 2
+          : master.fee_metrics[selectedMetric].units[unitKey]
+          ? master.fee_metrics[selectedMetric].units[unitKey].decimals
+          : 2;
+
+      if (master.fee_metrics[selectedMetric].currency && showUsd && showCents) {
+        decimals = master.fee_metrics[selectedMetric].units["usd"].decimals - 2;
+      }
+
+      if (master.fee_metrics[selectedMetric].currency) {
+        if (!showUsd) {
+          if (showGwei) {
+            prefix = "";
+            suffix = " gwei";
+            multiplier = 1e9;
+          }
+        } else {
+          if (showCents) {
+            prefix = "";
+            suffix = " cents";
+            multiplier = 100;
+          }
         }
       }
 
@@ -155,13 +202,14 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
                 prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
           } else {
             number = prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+            if (val < 1) number = prefix + val.toFixed(2) + suffix;
           }
         }
       }
 
       return number;
     },
-    [valuePrefix, showUsd, showGwei, showCents],
+    [master.fee_metrics, selectedMetric, showUsd, showGwei, showCents],
   );
 
   const tooltipFormatter = useCallback(
@@ -178,15 +226,17 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
       // if so, add the time to the tooltip
       const timeDiff = points[0].series.xData[1] - points[0].series.xData[0];
       if (timeDiff < 1000 * 60 * 60 * 24) {
-        dateString += " " + date.toLocaleTimeString("en-GB", {
-
-          hour: "numeric",
-          minute: "2-digit",
-        });
+        dateString +=
+          " " +
+          date.toLocaleTimeString("en-GB", {
+            hour: "numeric",
+            minute: "2-digit",
+          });
       }
 
       const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway">
-        <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
+        <div class="w-full font-bold text-[13px] md:text-[16px] ml-6 mb-1">${master.fee_metrics[selectedMetric].name}</div>
+        <div class="w-full font-semibold text-[9px] md:text-[12px] ml-6 mb-2">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
       // let pointsSum = 0;
@@ -220,17 +270,21 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
         .map((point: any) => {
           const { series, y, percentage } = point;
           const { name } = series;
+          if (!data) return;
+
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-              }"></div>
-                <div class="tooltip-point-name">${AllChainsByKeys[name].label
-              }</div>
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+                  AllChainsByKeys[name].colors[theme ?? "dark"][0]
+                }"></div>
+                <div class="tooltip-point-name">${
+                  AllChainsByKeys[name].label
+                }</div>
                 <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-                percentage,
-                2,
-              )}%</div>
+                  percentage,
+                  2,
+                )}%</div>
               </div>
               
               <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -239,51 +293,89 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
                 <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
                 style="
                   width: ${(percentage / maxPercentage) * 100}%;
-                  background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]};
+                  background-color: ${
+                    AllChainsByKeys[name].colors[theme ?? "dark"][0]
+                  };
                 "></div>
               </div>`;
+          let valueIndex = 1;
+          if (master.fee_metrics[selectedMetric].currency === true) {
+            valueIndex = showUsd ? 2 : 1;
+          }
+          const typeString =
+            data.chain_data[name][selectedMetric][selectedTimeframe].types[
+              valueIndex
+            ];
+          const unitKey = typeString.replace("value_", "");
 
-          let prefix = valuePrefix;
-          let suffix = "";
+          let decimals = master.fee_metrics[selectedMetric].currency
+            ? showGwei && !showUsd
+              ? 2
+              : master.fee_metrics[selectedMetric].units[unitKey].decimals
+            : master.fee_metrics[selectedMetric].units[unitKey].decimals;
+
+          if (
+            master.fee_metrics[selectedMetric].currency &&
+            showUsd &&
+            showCents
+          ) {
+            decimals =
+              master.fee_metrics[selectedMetric].units["usd"].decimals - 2;
+          }
+
+          let prefix = master.fee_metrics[selectedMetric].units[unitKey].prefix;
+          let suffix = master.fee_metrics[selectedMetric].units[unitKey].suffix;
           let value = y;
           let displayValue = y;
 
-          if (!showUsd) {
-            if (showGwei) {
-              prefix = "";
-              suffix = " gwei";
-              displayValue = y * 1e9;
+          if (master.fee_metrics[selectedMetric].currency) {
+            if (!showUsd) {
+              if (showGwei) {
+                prefix = "";
+                suffix = " gwei";
+                displayValue = y * 1e9;
+              }
+            } else {
+              if (showCents) {
+                prefix = "";
+                suffix = " cents";
+                displayValue = y * 100;
+                if (displayValue < 0.1) {
+                  displayValue = 0.1;
+                  prefix = "< " + prefix;
+                }
+              } else if (displayValue < 0.001) {
+                displayValue = 0.001;
+                prefix = "< " + prefix;
+              }
             }
           } else {
-            if (showCents) {
-              prefix = "";
-              suffix = " cents";
-              displayValue = y * 100;
-            }
+            displayValue = y;
           }
 
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+              AllChainsByKeys[name].colors[theme ?? "dark"][0]
             }"></div>
-            <div class="tooltip-point-name text-md">${AllChainsByKeys[name].label
+            <div class="tooltip-point-name text-md">${
+              AllChainsByKeys[name].label
             }</div>
             <div class="flex-1 text-right justify-end font-inter flex">
-                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-            }">${prefix}</div>
-                ${selectedMetric === "fdv" || selectedMetric === "market_cap"
-              ? shortenNumber(displayValue).toString()
-              : parseFloat(displayValue).toLocaleString("en-GB", {
-                minimumFractionDigits: valuePrefix ? 2 : 0,
-                maximumFractionDigits: valuePrefix
-                  ? selectedMetric === "txcosts"
-                    ? 3
-                    : 2
-                  : 0,
-              })
-            }
-                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
+                <div class="opacity-70 mr-0.5 ${
+                  !prefix && "hidden"
+                }">${prefix}</div>
+                ${
+                  selectedMetric === "fdv" || selectedMetric === "market_cap"
+                    ? shortenNumber(displayValue).toString()
+                    : parseFloat(displayValue).toLocaleString("en-GB", {
+                        minimumFractionDigits: decimals,
+                        maximumFractionDigits: decimals,
+                      })
+                }
+                <div class="opacity-70 ml-0.5 ${
+                  !suffix && "hidden"
+                }">${suffix}</div>
             </div>
           </div>
           <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -292,7 +384,9 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
             <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
             style="
               width: ${(Math.max(0, value) / maxPoint) * 100}%;
-              background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]};
+              background-color: ${
+                AllChainsByKeys[name].colors[theme ?? "dark"][0]
+              };
             "></div>
           </div>`;
         })
@@ -310,13 +404,16 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
           <div class="tooltip-point-name text-md">Total</div>
           <div class="flex-1 text-right justify-end font-inter flex">
 
-              <div class="opacity-70 mr-0.5 ${!prefix && "hidden"}">${prefix}</div>
+              <div class="opacity-70 mr-0.5 ${
+                !prefix && "hidden"
+              }">${prefix}</div>
               ${parseFloat(value).toLocaleString("en-GB", {
-            minimumFractionDigits: valuePrefix ? 2 : 0,
-            maximumFractionDigits: valuePrefix ? 2 : 0,
-          })}
-              <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-          }">${suffix}</div>
+                minimumFractionDigits: valuePrefix ? 2 : 0,
+                maximumFractionDigits: valuePrefix ? 2 : 0,
+              })}
+              <div class="opacity-70 ml-0.5 ${
+                !suffix && "hidden"
+              }">${suffix}</div>
           </div>
         </div>
         <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -326,7 +423,15 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
 
       return tooltip + tooltipPoints + sumRow + tooltipEnd;
     },
-    [valuePrefix, reversePerformer, theme, showUsd, selectedMetric, showGwei, showCents],
+    [
+      valuePrefix,
+      reversePerformer,
+      theme,
+      showUsd,
+      selectedMetric,
+      showGwei,
+      showCents,
+    ],
   );
 
   const tooltipPositioner =
@@ -354,18 +459,18 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
           if (pointX - tooltipWidth / 2 < plotLeft) {
             return {
               x: plotLeft,
-              y: -250,
+              y: (15 * selectedChains.length - 7) * -1,
             };
           }
           if (pointX + tooltipWidth / 2 > plotLeft + plotWidth) {
             return {
               x: plotLeft + plotWidth - tooltipWidth,
-              y: -250,
+              y: (15 * selectedChains.length - 7) * -1,
             };
           }
           return {
             x: pointX - tooltipWidth / 2,
-            y: -250,
+            y: (15 * selectedChains.length - 7) * -1,
           };
         }
 
@@ -374,14 +479,15 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
           y: tooltipY - 250,
         };
       },
-      [isMobile],
+      [isMobile, selectedChains],
     );
 
   const dataIndex = useMemo(() => {
     if (!data) return;
 
     // array of strings of the types of data available for the selected series
-    const types = data.chain_data["optimism"][selectedMetric][selectedTimeframe].types;
+    const types =
+      data.chain_data["optimism"][selectedMetric][selectedTimeframe].types;
 
     if (types.includes("value_usd")) {
       return showUsd ? types.indexOf("value_usd") : types.indexOf("value_eth");
@@ -389,7 +495,6 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
       return 1;
     }
   }, [data, selectedMetric, selectedTimeframe, showUsd]);
-
 
   const positioner = useCallback(function (this, width, height, point) {
     const chart = this.chart;
@@ -402,7 +507,7 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
     let x = 0;
     let y = 0;
 
-    x = pointX + (pointX < plotWidth / 2 ? 30 : -260)
+    x = pointX + (pointX < plotWidth / 2 ? 30 : -260);
 
     if (point.plotY + height > plotHeight) {
       y = plotTop + plotHeight - height;
@@ -413,44 +518,50 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
     return { x: x, y: y };
   }, []);
 
-
   const zIndexByChainKey = useMemo(() => {
-    if (!data) return Object.keys(selectedChains).reduce((acc, chainKey) => {
-      acc[chainKey] = 0;
-      return acc;
-    }, {});
+    if (!data)
+      return Object.keys(selectedChains).reduce((acc, chainKey) => {
+        acc[chainKey] = 0;
+        return acc;
+      }, {});
 
     // get the latest value for each chain
-    const latestValues = Object.keys(data.chain_data).reduce((acc, chainKey) => {
-      const chainData = data.chain_data[chainKey][selectedMetric][selectedTimeframe].data;
-      if (chainData.length > 0) {
-        acc[chainKey] = chainData[chainData.length - 1][dataIndex];
-      }
-      return acc;
-    }, {});
+    const latestValues = Object.keys(data.chain_data).reduce(
+      (acc, chainKey) => {
+        const chainData =
+          data.chain_data[chainKey][selectedMetric][selectedTimeframe].data;
+        if (chainData.length > 0) {
+          acc[chainKey] = chainData[chainData.length - 1][dataIndex];
+        }
+        return acc;
+      },
+      {},
+    );
 
     // sort the chains by their latest value
-    const sortedChains = Object.keys(latestValues).sort((a, b) => latestValues[b] - latestValues[a]);
+    const sortedChains = Object.keys(latestValues).sort(
+      (a, b) => latestValues[b] - latestValues[a],
+    );
 
     return sortedChains.reduce((acc, chainKey, index) => {
       acc[chainKey] = index + 1;
       return acc;
     }, {});
-
-
-
   }, [data, selectedTimeframe, selectedChains, selectedMetric, dataIndex]);
 
   return (
     <HighchartsProvider Highcharts={Highcharts}>
-      <HighchartsChart plotOptions={plotOptions} containerProps={{ style: { height: "100%", width: "100%" } }} >
+      <HighchartsChart
+        plotOptions={plotOptions}
+        containerProps={{ style: { height: "100%", width: "100%" } }}
+      >
         <Chart
           backgroundColor={"transparent"}
-          type='line'
+          type="line"
           panning={{
             enabled: true,
           }}
-          panKey='shift'
+          panKey="shift"
           zooming={{
             type: undefined,
           }}
@@ -464,10 +575,9 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
           marginLeft={0}
           marginRight={0}
           marginTop={0}
-        // paddingTop={0}
-        // paddingBottom={0}
-        // spacing={[0, 0, 0, 0]}
-
+          // paddingTop={0}
+          // paddingBottom={0}
+          // spacing={[0, 0, 0, 0]}
         />
         <Tooltip
           useHTML={true}
@@ -490,9 +600,8 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
             offsetY: 2,
           }}
           style={{
-            color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41, 51, 50)"
+            color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41, 51, 50)",
           }}
-
           formatter={tooltipFormatter}
           // ensure tooltip is always above the chart
           positioner={tooltipPositioner}
@@ -531,7 +640,7 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
             color: COLORS.PLOT_LINE,
             snap: false,
           }}
-          tickmarkPlacement='on'
+          tickmarkPlacement="on"
           tickWidth={1}
           tickLength={20}
           ordinal={false}
@@ -542,7 +651,6 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
           minorTickInterval={1000 * 60 * 60 * 24 * 7}
         >
           {/* <XAxis.Title>Time</XAxis.Title> */}
-
         </XAxis>
         <YAxis
           opposite={false}
@@ -550,10 +658,7 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
           // showLastLabel={true}
           type="linear"
           gridLineWidth={1}
-          gridLineColor={theme === "dark"
-            ? "#5A64624D"
-            : "#5A64624D"
-          }
+          gridLineColor={theme === "dark" ? "#5A64624D" : "#5A64624D"}
           showFirstLabel={false}
           showLastLabel={false}
           labels={{
@@ -564,68 +669,79 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
               fontSize: "10px",
               color: "#CDD8D34D",
             },
-            formatter: function (t: Highcharts.AxisLabelsFormatterContextObject) {
+            formatter: function (
+              t: Highcharts.AxisLabelsFormatterContextObject,
+            ) {
               return formatNumber(t.value, true);
             },
           }}
           min={0}
-
         >
-          {data && Object.keys(data.chain_data).filter((chainKey) => selectedChains.includes(chainKey)).map((chainKey) => {
-            if (data.chain_data[chainKey][selectedMetric][selectedTimeframe])
-              return (
-                <LineSeries
-                  key={`${chainKey}-${selectedMetric}-${selectedTimeframe}`}
-                  zIndex={zIndexByChainKey[chainKey] ?? 0}
-                  name={chainKey}
-                  data={data.chain_data[chainKey][selectedMetric][selectedTimeframe].data.map((d: any) => [d[0], d[dataIndex]])}
-                  color={AllChainsByKeys[chainKey].colors["dark"][0]}
-                  fillColor={"transparent"}
-                  fillOpacity={1}
-                  borderColor={AllChainsByKeys[chainKey].colors["dark"][0]}
-                  borderWidth={1}
-                  lineWidth={2}
-                  clip={true}
-                  shadow={{
-                    color:
-                      AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
-                      "66",
-                    width: 6,
-                  }}
-                  states={{
-                    hover: {
-                      enabled: true,
-                      halo: {
-                        size: 5,
-                        opacity: 1,
-                        attributes: {
-                          fill:
-                            AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0] +
-                            "99",
-                          stroke:
-                            AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0] +
-                            "66",
-                          strokeWidth: 0,
+          {data &&
+            Object.keys(data.chain_data)
+              .filter((chainKey) => selectedChains.includes(chainKey))
+              .map((chainKey) => {
+                if (
+                  data.chain_data[chainKey][selectedMetric][selectedTimeframe]
+                )
+                  return (
+                    <LineSeries
+                      key={`${chainKey}-${selectedMetric}-${selectedTimeframe}`}
+                      zIndex={zIndexByChainKey[chainKey] ?? 0}
+                      name={chainKey}
+                      data={data.chain_data[chainKey][selectedMetric][
+                        selectedTimeframe
+                      ].data.map((d: any) => [d[0], d[dataIndex]])}
+                      color={AllChainsByKeys[chainKey].colors["dark"][0]}
+                      fillColor={"transparent"}
+                      fillOpacity={1}
+                      borderColor={AllChainsByKeys[chainKey].colors["dark"][0]}
+                      borderWidth={1}
+                      lineWidth={2}
+                      clip={true}
+                      shadow={{
+                        color:
+                          AllChainsByKeys[chainKey]?.colors[
+                            theme ?? "dark"
+                          ][1] + "66",
+                        width: 6,
+                      }}
+                      states={{
+                        hover: {
+                          enabled: true,
+                          halo: {
+                            size: 5,
+                            opacity: 1,
+                            attributes: {
+                              fill:
+                                AllChainsByKeys[chainKey]?.colors[
+                                  theme ?? "dark"
+                                ][0] + "99",
+                              stroke:
+                                AllChainsByKeys[chainKey]?.colors[
+                                  theme ?? "dark"
+                                ][0] + "66",
+                              strokeWidth: 0,
+                            },
+                          },
+                          brightness: 0.3,
                         },
-                      },
-                      brightness: 0.3,
-                    },
-                    inactive: {
-                      enabled: true,
-                      opacity: 0.6,
-                    },
-                  }}
-                // marker={{
-                //   lineColor: "white",
-                //   radius: 0,
-                //   symbol: "circle",
-                // }}
-                />)
-          })}
+                        inactive: {
+                          enabled: true,
+                          opacity: 0.6,
+                        },
+                      }}
+                      // marker={{
+                      //   lineColor: "white",
+                      //   radius: 0,
+                      //   symbol: "circle",
+                      // }}
+                    />
+                  );
+              })}
         </YAxis>
       </HighchartsChart>
       {chartWidth}
     </HighchartsProvider>
   );
-
 }

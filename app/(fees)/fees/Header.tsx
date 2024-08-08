@@ -7,7 +7,7 @@ import EthUsdSwitch from "@/components/layout/EthUsdSwitch";
 
 export default function Header() {
   return (
-    <header className="flex justify-between space-x-0 xl:space-x-6 items-end max-w-[1600px] w-full mx-auto px-[20px] pt-[20px] md:px-[40px] md:pt-[50px] ">
+    <header className="flex justify-between space-x-0 xl:space-x-6 items-end mx-auto px-[20px] pt-[20px] md:px-[50px] md:pt-[50px] ">
       <div className="flex justify-start items-center w-full  ">
         <div className="flex space-x-0 xl:space-x-6 w-full h-full ">
           {/*Banner/Notification Area */}
@@ -80,10 +80,11 @@ export default function Header() {
           </div>
         </div>
       </div>
-      <div className="items-center z-10 hidden md:flex md:space-x-[34px] h-full mt-[7px]">
+      <div className="items-center z-0 hidden md:flex md:space-x-[34px] h-full mt-[7px]">
         <EthUsdSwitch />
-
+        {/* TODO: REVISAR ANTES DE ELIMINAR */}
         {/* <div className="flex space-x-[22px] pr-2.5 items-center">
+        <div className="flex space-x-[22px] pr-0 items-center">
           <HeaderLinks />
         </div> */}
       </div>
@@ -95,6 +96,7 @@ export default function Header() {
       ) : (
         <>{/* <SupportUsBanner /> */}</>
       )}
+      {/* TODO: ELIMINAR*/}
       {/* Donation Banner smaller than XL screen */}
       {/* <Link
         href="https://explorer.gitcoin.co/#/round/42161/0x59d79b22595b17af659ce9b03907615f53742c57/0x59d79b22595b17af659ce9b03907615f53742c57-16"

@@ -88,7 +88,10 @@ addCollection({
 
 export default function ContributorsPage() {
   return (
-    <Container className="mx-auto pt-[65px] md:pt-[30px] flex flex-col" isPageRoot>
+    <Container
+      className="mx-auto pt-[65px] md:pt-[30px] flex flex-col"
+      isPageRoot
+    >
       <Heading className="text-[48px] mb-[30px] leading-snug" as="h1">
         Contributors
       </Heading>
@@ -137,10 +140,13 @@ export default function ContributorsPage() {
         </Heading>
       </div>
       <div className="px-[30px] mb-[15px] py-[10px]">
-        <div>In addition to own raw data aggregation, we also source some data from:</div>
+        <div>
+          In addition to own raw data aggregation, we also source some data
+          from:
+        </div>
       </div>
       <div className="mb-[90px]">
-        <div className="grid grid-cols-2 lg:grid-cols-4 items-center justify-items-center gap-x-[45px] gap-y-[30px] mx-5">
+        <div className="grid grid-cols-2 lg:grid-cols-3 items-center justify-items-center gap-x-[45px] gap-y-[30px] mx-5">
           {Datasources.map((s) => (
             <Link
               key={s.name}
@@ -175,7 +181,7 @@ export default function ContributorsPage() {
         {Contributors.map((c) => (
           <div
             key={c.name}
-            className="basis-1/4 flex flex-col items-stretch p-3 bg-forest-50 dark:bg-forest-900 rounded-xl"
+            className="basis-1/4 flex flex-col items-stretch p-[15px] bg-forest-50 dark:bg-forest-900 rounded-xl"
           >
             <div className="relative w-full aspect-square">
               <Image
@@ -199,7 +205,7 @@ export default function ContributorsPage() {
                     rel="noopener noreferrer"
                     href={c.linkedin}
                   >
-                    <Icon icon="feather:linkedin" className="w-5 h-5" />
+                    <Icon icon="feather:linkedin" className="w-[24px] h-[24px]" />
                   </Link>
                 )}
                 {c.twitter && (
@@ -208,7 +214,7 @@ export default function ContributorsPage() {
                     rel="noopener noreferrer"
                     href={c.twitter}
                   >
-                    <Icon icon="feather:twitter" className="w-5 h-5" />
+                    <Icon icon="ri:twitter-x-fill" className="w-[24px] h-[24px]" />
                   </Link>
                 )}
               </div>

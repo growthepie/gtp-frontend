@@ -1,0 +1,2858 @@
+{
+  "swagger": "2.0",
+  "basePath": "/",
+  "paths": {
+    "/allocations/allocate": {
+      "post": {
+        "responses": {
+          "201": {
+            "description": "User allocated successfully"
+          }
+        },
+        "description": "Allocates user's funds to projects",
+        "operationId": "post_allocation",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserAllocationRequest"
+            }
+          }
+        ],
+        "tags": ["allocations"]
+      }
+    },
+    "/allocations/donors/{epoch}": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Donors"
+            }
+          }
+        },
+        "description": "Returns donors addresses",
+        "operationId": "get_donors",
+        "parameters": [
+          {
+            "name": "epoch",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Epoch number"
+          },
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["allocations"]
+      }
+    },
+    "/allocations/epoch/{epoch}": {
+      "parameters": [
+        {
+          "description": "Epoch number",
+          "name": "epoch",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/AllocationsModel"
+            }
+          }
+        },
+        "description": "Returns all latest allocations in a particular epoch",
+        "operationId": "get_epoch_allocations",
+        "parameters": [
+          {
+            "in": "query",
+            "description": "Include zero allocations to projects. Defaults to false.",
+            "name": "includeZeroAllocations",
+            "type": "string"
+          },
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["allocations"]
+      }
+    },
+    "/allocations/leverage/{user_address}": {
+      "parameters": [
+        {
+          "description": "User ethereum address in hexadecimal format (case-insensitive, prefixed with 0x)",
+          "name": "user_address",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/UserLeverage"
+            }
+          }
+        },
+        "description": "Simulates an allocation and get the expected leverage",
+        "operationId": "post_allocation_leverage",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/LeveragePayload"
+            }
+          },
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["allocations"]
+      }
+    },
+    "/allocations/project/{project_address}/epoch/{epoch}": {
+      "parameters": [
+        {
+          "description": "Project ethereum address in hexadecimal format (case-insensitive, prefixed with 0x)",
+          "name": "project_address",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "description": "Epoch number",
+          "name": "epoch",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ProjectDonors"
+            }
+          }
+        },
+        "description": "Returns list of donors for given project in particular epoch",
+        "operationId": "get_project_donors",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["allocations"]
+      }
+    },
+    "/allocations/user/{user_address}/epoch/{epoch}": {
+      "parameters": [
+        {
+          "description": "User ethereum address in hexadecimal format (case-insensitive, prefixed with 0x)",
+          "name": "user_address",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "description": "Epoch number",
+          "name": "epoch",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/UserAllocations"
+            }
+          }
+        },
+        "description": "Returns user's latest allocation in a particular epoch",
+        "operationId": "get_user_allocations",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["allocations"]
+      }
+    },
+    "/allocations/users/{user_address}/allocation_nonce": {
+      "parameters": [
+        {
+          "name": "user_address",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/AllocationNonce"
+            }
+          }
+        },
+        "description": "Return current value of allocation nonce. It is needed to sign allocations.",
+        "operationId": "get_allocation_nonce",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["allocations"]
+      }
+    },
+    "/delegation/check/{addresses}": {
+      "parameters": [
+        {
+          "description": "Ethereum addresses in hexadecimal format (case-insensitive, prefixed with 0x), separated by comma. At most 10 addresses at the same time",
+          "name": "addresses",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ScoreDelegationCheckResult"
+            }
+          }
+        },
+        "description": "Allows wallet to check if its accounts are delegating to each other. Implementation of this feature relies on a fact that Ethereum has \u003E 250mil addresses, so blind enumeration is hard. We intend to replace it with proper zk-based delegation as soon as possible",
+        "operationId": "get_uq_score_delegation_check",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["delegation"]
+      }
+    },
+    "/delegation/delegate": {
+      "post": {
+        "responses": {
+          "201": {
+            "description": "Score successfully delegated"
+          }
+        },
+        "description": "Delegates UQ score from secondary address to primary address",
+        "operationId": "post_uq_score_delegation",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Delegation"
+            }
+          }
+        ],
+        "tags": ["delegation"]
+      }
+    },
+    "/delegation/recalculate": {
+      "put": {
+        "responses": {
+          "204": {
+            "description": "Score successfully recalculated"
+          }
+        },
+        "description": "Recalculates UQ score from secondary address to primary address",
+        "operationId": "put_uq_score_recalculation",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Delegation"
+            }
+          }
+        ],
+        "tags": ["delegation"]
+      }
+    },
+    "/deposits/total_effective/estimated": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/TotalEffective"
+            }
+          }
+        },
+        "description": "Returns value of estimated total effective deposits for current epoch.",
+        "operationId": "get_estimated_total_effective_deposit",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["deposits"]
+      }
+    },
+    "/deposits/users/{user_address}/estimated_effective_deposit": {
+      "parameters": [
+        {
+          "description": "User ethereum address in hexadecimal form (case-insensitive, prefixed with 0x)",
+          "name": "user_address",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/EffectiveDeposit"
+            }
+          }
+        },
+        "description": "Returns user's estimated effective deposit for the current epoch.",
+        "operationId": "get_user_estimated_effective_deposit",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["deposits"]
+      }
+    },
+    "/deposits/users/{user_address}/{epoch}": {
+      "parameters": [
+        {
+          "description": "Epoch number",
+          "name": "epoch",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        },
+        {
+          "description": "User ethereum address in hexadecimal form (case-insensitive, prefixed with 0x)",
+          "name": "user_address",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/EffectiveDeposit"
+            }
+          }
+        },
+        "description": "Returns user's effective deposit for a finialized or pending epoch.",
+        "operationId": "get_user_effective_deposit",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["deposits"]
+      }
+    },
+    "/deposits/{epoch}/locked_ratio": {
+      "parameters": [
+        {
+          "description": "Epoch number",
+          "name": "epoch",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/LockedRatio"
+            }
+          }
+        },
+        "description": "Returns locked ratio of total effective deposits made by the end of an epoch. Latest data and data for any given point in time from the past is available in the Subgraph.",
+        "operationId": "get_locked_ratio",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["deposits"]
+      }
+    },
+    "/deposits/{epoch}/total_effective": {
+      "parameters": [
+        {
+          "description": "Epoch number",
+          "name": "epoch",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/TotalEffective"
+            }
+          }
+        },
+        "description": "Returns value of total effective deposits made by the end of an epoch. Latest data and data for any given point in time from the past is available in the Subgraph.",
+        "operationId": "get_total_effective_deposit",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["deposits"]
+      }
+    },
+    "/epochs/current": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/CurrentEpoch"
+            }
+          }
+        },
+        "description": "Returns current epoch number",
+        "operationId": "get_current_epoch",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["epochs"]
+      }
+    },
+    "/epochs/indexed": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/IndexedEpoch"
+            }
+          }
+        },
+        "description": "Returns last indexed epoch number",
+        "operationId": "get_indexed_epoch",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["epochs"]
+      }
+    },
+    "/epochs/info/{epoch}": {
+      "parameters": [
+        {
+          "description": "Epoch number",
+          "name": "epoch",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "get": {
+        "responses": {
+          "400": {
+            "description": "Epoch snapshot does not exist yet."
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/EpochStats"
+            }
+          }
+        },
+        "description": "Returns statistics on a given epoch. Returns data only for historic and currently pending epochs.",
+        "operationId": "get_epoch_stats",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["epochs"]
+      }
+    },
+    "/favicon.ico": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "operationId": "get_favicon",
+        "tags": ["default"]
+      }
+    },
+    "/glm/claim": {
+      "post": {
+        "responses": {
+          "400": {
+            "description": "GLMs have been already claimed"
+          },
+          "403": {
+            "description": "Claiming GLMs is disabled"
+          },
+          "404": {
+            "description": "User address not found in db - user is not eligible to claim GLMs"
+          },
+          "201": {
+            "description": "GLMs claimed successfully"
+          }
+        },
+        "description": "Claim GLMs from epoch 0. Only eligible accounts are able to claim.",
+        "operationId": "post_claim",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ClaimGLMRequest"
+            }
+          }
+        ],
+        "tags": ["glm"]
+      }
+    },
+    "/glm/claim/{user_address}/check": {
+      "parameters": [
+        {
+          "name": "user_address",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "400": {
+            "description": "GLMs have been already claimed"
+          },
+          "403": {
+            "description": "Claiming GLMs is disabled"
+          },
+          "404": {
+            "description": "User address not found in db - user is not eligible to claim GLMs"
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/CheckClaim"
+            }
+          }
+        },
+        "description": "Check if account is eligible are able to claim GLMs from epoch 0. Return number of GLMs in wei",
+        "operationId": "get_check_claim",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["glm"]
+      }
+    },
+    "/history/{user_address}": {
+      "parameters": [
+        {
+          "description": "User ethereum address in hexadecimal format (case-insensitive, prefixed with 0x)",
+          "name": "user_address",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/UserHistory"
+            }
+          }
+        },
+        "operationId": "get_history",
+        "parameters": [
+          {
+            "in": "query",
+            "description": "History page size",
+            "name": "limit",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "description": "History page cursor",
+            "name": "cursor",
+            "type": "string"
+          },
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["history"]
+      }
+    },
+    "/info/chain-info": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ChainInfo"
+            }
+          }
+        },
+        "description": "Info about the blockchain network and smart contracts",
+        "operationId": "get_chain_info",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["info"]
+      }
+    },
+    "/info/healthcheck": {
+      "get": {
+        "responses": {
+          "500": {
+            "description": "At least one service is down"
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Healthcheck"
+            }
+          }
+        },
+        "description": "Application healthcheck endpoint",
+        "operationId": "get_healthcheck",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["info"]
+      }
+    },
+    "/info/sync-status": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/SyncStatus"
+            }
+          }
+        },
+        "description": "Returns synchronization status for indexer and database",
+        "operationId": "get_indexed_epoch",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["info"]
+      }
+    },
+    "/info/version": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/AppVersion"
+            }
+          }
+        },
+        "description": "Application deployment information",
+        "operationId": "get_version",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["info"]
+      }
+    },
+    "/info/websockets-api": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "description": "The documentation for websockets can be found under this path",
+        "operationId": "get_websockets_docs",
+        "tags": ["info"]
+      }
+    },
+    "/info/websockets-api.yaml": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "operationId": "get_websockets_docs_yaml",
+        "tags": ["info"]
+      }
+    },
+    "/multisig-signatures/pending/approve": {
+      "patch": {
+        "responses": {
+          "204": {
+            "description": "Success"
+          }
+        },
+        "description": "Approve pending multisig messages.",
+        "operationId": "patch_multisig_approve_pending",
+        "tags": ["multisig-signatures"]
+      }
+    },
+    "/multisig-signatures/pending/{user_address}/type/{op_type}": {
+      "parameters": [
+        {
+          "name": "user_address",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "name": "op_type",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "post": {
+        "responses": {
+          "201": {
+            "description": "Success"
+          }
+        },
+        "operationId": "post_multisig_pending_signature",
+        "parameters": [
+          {
+            "name": "x-real-ip",
+            "in": "header",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "tags": ["multisig-signatures"]
+      },
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/PendingSignature"
+            }
+          }
+        },
+        "description": "Retrieve last pending multisig signature for a specific user and type.",
+        "operationId": "get_multisig_pending_signature",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["multisig-signatures"]
+      }
+    },
+    "/projects/epoch/{epoch}": {
+      "parameters": [
+        {
+          "description": "Epoch number",
+          "name": "epoch",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ProjectsMetadata"
+            }
+          }
+        },
+        "description": "Returns projects metadata for a given epoch: addresses and CID",
+        "operationId": "get_projects_metadata",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["projects"]
+      }
+    },
+    "/rewards/budget/{user_address}/epoch/{epoch}": {
+      "parameters": [
+        {
+          "description": "User ethereum address in hexadecimal format (case-insensitive, prefixed with 0x)",
+          "name": "user_address",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "description": "Epoch number",
+          "name": "epoch",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/UserBudget"
+            }
+          }
+        },
+        "description": "Returns user's rewards budget available to allocate for given epoch",
+        "operationId": "get_user_budget",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["rewards"]
+      }
+    },
+    "/rewards/budget/{user_address}/upcoming": {
+      "parameters": [
+        {
+          "description": "User ethereum address in hexadecimal format (case-insensitive, prefixed with 0x)",
+          "name": "user_address",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/UpcomingBudgetResponse"
+            }
+          }
+        },
+        "description": "Returns upcoming user budget based on if allocation happened now.",
+        "operationId": "get_upcoming_user_budget",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["rewards"]
+      }
+    },
+    "/rewards/budgets/epoch/{epoch}": {
+      "parameters": [
+        {
+          "description": "Epoch number",
+          "name": "epoch",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "get": {
+        "responses": {
+          "404": {
+            "description": "User userAddress does not have a budget for epoch epochNumber"
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/EpochBudgets"
+            }
+          }
+        },
+        "description": "Returns all users rewards budgets for the epoch.",
+        "operationId": "get_epoch_budgets",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["rewards"]
+      }
+    },
+    "/rewards/estimated_budget": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/UserBudget"
+            }
+          }
+        },
+        "description": "Returns estimated rewards budget available when GLM locked by given number of full epochs",
+        "operationId": "post_estimated_user_budget",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/EstimatedBudget"
+            }
+          },
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["rewards"]
+      }
+    },
+    "/rewards/estimated_budget/by_days": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/UserBudget"
+            }
+          }
+        },
+        "description": "Returns estimated rewards budget available when GLM locked by given period of time",
+        "operationId": "post_estimated_user_budget_by_days",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/EstimatedBudgetByDays"
+            }
+          },
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["rewards"]
+      }
+    },
+    "/rewards/leverage/{epoch}": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Leverage"
+            }
+          }
+        },
+        "description": "Returns leverage in given epoch",
+        "operationId": "get_leverage",
+        "parameters": [
+          {
+            "name": "epoch",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Epoch number"
+          },
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["rewards"]
+      }
+    },
+    "/rewards/merkle_tree/{epoch}": {
+      "parameters": [
+        {
+          "description": "Epoch number",
+          "name": "epoch",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "get": {
+        "responses": {
+          "400": {
+            "description": "Invalid epoch number given"
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/EpochRewardsMerkleTree"
+            }
+          }
+        },
+        "description": "Returns merkle tree leaves with rewards for a given epoch",
+        "operationId": "get_rewards_merkle_tree",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["rewards"]
+      }
+    },
+    "/rewards/projects/epoch/{epoch}": {
+      "parameters": [
+        {
+          "description": "Epoch number",
+          "name": "epoch",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "get": {
+        "responses": {
+          "400": {
+            "description": "Invalid epoch number given. The epoch must be finalized"
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ProjectRewards"
+            }
+          }
+        },
+        "description": "Returns projects with matched rewards for a given epoch",
+        "operationId": "get_finalized_projects_rewards",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["rewards"]
+      }
+    },
+    "/rewards/projects/estimated": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ProjectRewards"
+            }
+          }
+        },
+        "description": "Returns project rewards with estimated matched rewards for the pending epoch",
+        "operationId": "get_estimated_project_rewards",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["rewards"]
+      }
+    },
+    "/rewards/threshold/{epoch}": {
+      "parameters": [
+        {
+          "description": "Epoch number",
+          "name": "epoch",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "get": {
+        "responses": {
+          "400": {
+            "description": "Returns when called for an epoch that is not finalized or pending"
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Threshold"
+            }
+          }
+        },
+        "description": "Returns allocation threshold for the projects to be eligible for rewards",
+        "operationId": "get_threshold",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["rewards"]
+      }
+    },
+    "/rewards/unused/{epoch}": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/UnusedRewards"
+            }
+          }
+        },
+        "description": "Returns unallocated value and the number of users who didn't use their rewards in an epoch",
+        "operationId": "get_unused_rewards",
+        "parameters": [
+          {
+            "name": "epoch",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Epoch number"
+          },
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["rewards"]
+      }
+    },
+    "/snapshots/finalized": {
+      "post": {
+        "responses": {
+          "201": {
+            "description": "Snapshot created successfully"
+          },
+          "200": {
+            "description": "Snapshot could not be created due to an existing snapshot for previous epoch"
+          }
+        },
+        "description": "Take a database snapshot of the recently completed allocations.         This endpoint should be executed at the end of the decision window",
+        "operationId": "post_finalized_epoch_snapshot",
+        "tags": ["snapshots"]
+      }
+    },
+    "/snapshots/finalized/simulate": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/FinalizedSnapshotModel"
+            }
+          }
+        },
+        "description": "Simulates the finalized snapshot",
+        "operationId": "get_simulate_finalized_snapshot",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["snapshots"]
+      }
+    },
+    "/snapshots/pending": {
+      "post": {
+        "responses": {
+          "201": {
+            "description": "Snapshot created successfully"
+          },
+          "200": {
+            "description": "Snapshot could not be created due to an existing snapshot for previous epoch"
+          }
+        },
+        "description": "Take a database snapshot of the recently completed epoch.         This endpoint should be executed at the beginning of an epoch to activate         a decision window.",
+        "operationId": "post_pending_epoch_snapshot",
+        "tags": ["snapshots"]
+      }
+    },
+    "/snapshots/pending/simulate": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/PendingSnapshotModel"
+            }
+          }
+        },
+        "description": "Simulates the pending snapshot",
+        "operationId": "get_simulate_pending_snapshot",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["snapshots"]
+      }
+    },
+    "/snapshots/status/{epoch}": {
+      "parameters": [
+        {
+          "name": "epoch",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "get": {
+        "responses": {
+          "400": {
+            "description": "Invalid epoch number given. Most likely the epoch has not started yet. Consult the error message."
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/EpochStatus"
+            }
+          }
+        },
+        "description": "Returns given epoch's status, whether it's a current, pending or a finalized epoch. In case all fields are returning False and not an error, it is likely that there's a pending epoch that has not been snapshotted yet.",
+        "operationId": "get_epoch_status",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["snapshots"]
+      }
+    },
+    "/user/patrons/{epoch}": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Patrons"
+            }
+          }
+        },
+        "description": "Returns a list of users who toggled patron mode and has a positive budget in given epoch",
+        "operationId": "get_patrons",
+        "parameters": [
+          {
+            "name": "epoch",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Epoch number"
+          },
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["user"]
+      }
+    },
+    "/user/{user_address}/antisybil-status": {
+      "parameters": [
+        {
+          "description": "User ethereum address in hexadecimal format (case-insensitive, prefixed with 0x)",
+          "name": "user_address",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/UserAntisybilStatus"
+            }
+          }
+        },
+        "description": "Returns user's antisybil status.",
+        "operationId": "get_antisybil_status",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["user"]
+      },
+      "put": {
+        "responses": {
+          "504": {
+            "description": "Could not refresh antisybil status. Upstream is unavailable."
+          },
+          "204": {
+            "description": "Refresh succesful"
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/UserAntisybilStatus"
+            }
+          }
+        },
+        "description": "Refresh cached antisybil status",
+        "operationId": "put_antisybil_status",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["user"]
+      }
+    },
+    "/user/{user_address}/patron-mode": {
+      "parameters": [
+        {
+          "description": "User ethereum address in hexadecimal format (case-insensitive, prefixed with 0x)",
+          "name": "user_address",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/PatronModeStatus"
+            }
+          }
+        },
+        "description": "Returns true if given user has enabled patron mode, false in the other case.",
+        "operationId": "get_patron_mode",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["user"]
+      },
+      "patch": {
+        "responses": {
+          "400": {
+            "description": "Could not update patron mode status."
+          },
+          "204": {
+            "description": "User's patron mode status updated."
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/PatronModeStatus"
+            }
+          }
+        },
+        "description": "Toggle patron mode status",
+        "operationId": "patch_patron_mode",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/PatronModeRequest"
+            }
+          },
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["user"]
+      }
+    },
+    "/user/{user_address}/tos": {
+      "parameters": [
+        {
+          "description": "User ethereum address in hexadecimal format (case-insensitive, prefixed with 0x)",
+          "name": "user_address",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "post": {
+        "responses": {
+          "400": {
+            "description": "Could not update user consent status."
+          },
+          "201": {
+            "description": "User's consent to Terms of Service status updated."
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/TermsOfServiceConsentStatus"
+            }
+          }
+        },
+        "description": "Returns true if given user has already accepted Terms of Service, false in the other case.",
+        "operationId": "post_terms_of_service",
+        "parameters": [
+          {
+            "name": "x-real-ip",
+            "in": "header",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "signature": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["user"]
+      },
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/TermsOfServiceConsentStatus"
+            }
+          }
+        },
+        "description": "Returns true if given user has already accepted Terms of Service, false in the other case.",
+        "operationId": "get_terms_of_service",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["user"]
+      }
+    },
+    "/user/{user_address}/uq/{epoch}": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/UQScore"
+            }
+          }
+        },
+        "description": "Returns user's uniqueness quotient score for given epoch",
+        "operationId": "get_uq_score",
+        "parameters": [
+          {
+            "name": "user_address",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "User ethereum address in hexadecimal format (case-insensitive, prefixed with 0x)"
+          },
+          {
+            "name": "epoch",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Epoch number"
+          },
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["user"]
+      }
+    },
+    "/validators/active/summary": {
+      "get": {
+        "responses": {
+          "500": {
+            "description": "External validators API returned an error"
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ActiveValidatorsSummary"
+            }
+          }
+        },
+        "description": "Return the number of all active Octant validators and the sum of their effective balances in gwei.",
+        "operationId": "get_active_validators_summary",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["validators"]
+      }
+    },
+    "/withdrawals/{address}": {
+      "parameters": [
+        {
+          "description": "User or project address",
+          "name": "address",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/WithdrawableRewards"
+            }
+          }
+        },
+        "description": "Returns a list containing amount and merkle proofs for all not claimed epochs",
+        "operationId": "get_withdrawals",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": ["withdrawals"]
+      }
+    }
+  },
+  "info": {
+    "title": "Octant API",
+    "version": "1.0.0",
+    "description": "Octant REST API documentation"
+  },
+  "produces": ["application/json"],
+  "consumes": ["application/json"],
+  "tags": [
+    {
+      "name": "default",
+      "description": "Default namespace"
+    },
+    {
+      "name": "info",
+      "description": "Information about Octant's backend API"
+    },
+    {
+      "name": "history",
+      "description": "User operations overview"
+    },
+    {
+      "name": "snapshots",
+      "description": "Database snapshots"
+    },
+    {
+      "name": "rewards",
+      "description": "Octant rewards"
+    },
+    {
+      "name": "deposits",
+      "description": "Octant deposits"
+    },
+    {
+      "name": "withdrawals",
+      "description": "Octant withdrawals"
+    },
+    {
+      "name": "allocations",
+      "description": "Octant allocations"
+    },
+    {
+      "name": "glm",
+      "description": "Operations related to GLM smart contract"
+    },
+    {
+      "name": "epochs",
+      "description": "Octant epochs"
+    },
+    {
+      "name": "user",
+      "description": "Octant user settings"
+    },
+    {
+      "name": "validators",
+      "description": "Information about Octant validators"
+    },
+    {
+      "name": "multisig-signatures",
+      "description": "Information about multisig signatures stored in Octant."
+    },
+    {
+      "name": "projects",
+      "description": "Octant projects"
+    },
+    {
+      "name": "delegation",
+      "description": "UQ score delegation"
+    }
+  ],
+  "definitions": {
+    "SyncStatus": {
+      "required": [
+        "blockchainEpoch",
+        "blockchainHeight",
+        "finalizedSnapshot",
+        "indexedEpoch",
+        "indexedHeight",
+        "pendingSnapshot"
+      ],
+      "properties": {
+        "blockchainEpoch": {
+          "type": "integer",
+          "description": "Current Epoch number per blockchain state"
+        },
+        "indexedEpoch": {
+          "type": "integer",
+          "description": "Current Epoch number according to indexer"
+        },
+        "blockchainHeight": {
+          "type": "integer",
+          "description": "Current block/slot number per blockchain"
+        },
+        "indexedHeight": {
+          "type": "integer",
+          "description": "Current block/slot number according to indexer"
+        },
+        "pendingSnapshot": {
+          "type": "string",
+          "description": "State of pending epoch snapshot (not_applicable, error, in_progress, done)"
+        },
+        "finalizedSnapshot": {
+          "type": "string",
+          "description": "State of finalized epoch snapshot (not_applicable, error, too_early, in_progress, done)"
+        }
+      },
+      "type": "object"
+    },
+    "ChainInfo": {
+      "properties": {
+        "chainName": {
+          "type": "string",
+          "description": "The chain name."
+        },
+        "chainId": {
+          "type": "string",
+          "description": "The chain id."
+        },
+        "smartContracts": {
+          "type": "array",
+          "description": "The smart contracts used by Octant in given network.",
+          "items": {
+            "$ref": "#/definitions/SmartContract"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "SmartContract": {
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The smart contract name."
+        },
+        "address": {
+          "type": "string",
+          "description": "The smart contract address."
+        }
+      },
+      "type": "object"
+    },
+    "AppVersion": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "deployment identifier"
+        },
+        "env": {
+          "type": "string",
+          "description": "deployment environment"
+        },
+        "chain": {
+          "type": "string",
+          "description": "blockchain name"
+        }
+      },
+      "type": "object"
+    },
+    "Healthcheck": {
+      "properties": {
+        "blockchain": {
+          "type": "string",
+          "description": "UP if blockchain RPC is responsive, DOWN otherwise"
+        },
+        "db": {
+          "type": "string",
+          "description": "UP if db is responsive, DOWN otherwise"
+        },
+        "subgraph": {
+          "type": "string",
+          "description": "UP if subgraph is responsive, DOWN otherwise"
+        }
+      },
+      "type": "object"
+    },
+    "UserHistory": {
+      "properties": {
+        "history": {
+          "type": "array",
+          "description": "History of user actions",
+          "items": {
+            "$ref": "#/definitions/HistoryItem"
+          }
+        },
+        "nextCursor": {
+          "type": "string",
+          "description": "Next page cursor"
+        }
+      },
+      "type": "object"
+    },
+    "HistoryItem": {
+      "required": ["eventData", "timestamp", "type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Type of action (lock, unlock, allocation, withdrawal, patron_mode_donation)"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp in seconds when the action occurred (since Unix epoch)"
+        },
+        "eventData": {
+          "description": "History event data",
+          "allOf": [
+            {
+              "$ref": "#/definitions/HistoryItemData"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "HistoryItemData": {
+      "required": ["amount"],
+      "properties": {
+        "amount": {
+          "type": "string",
+          "description": "Amount involved in the action, BigNumber (wei)"
+        },
+        "transactionHash": {
+          "type": "string",
+          "description": "Hash of the transaction corresponding to the history item. Field available for locks, unlocks and withdrawals."
+        },
+        "epoch": {
+          "type": "integer",
+          "description": "Epoch in which action occured. Field available only for patron_mode_donation items. "
+        },
+        "isManuallyEdited": {
+          "type": "boolean",
+          "description": "Whether has the allocation been manually edited by the user. Field available only for allocation items."
+        },
+        "leverage": {
+          "type": "string",
+          "description": "Leverage of the allocated funds. Field available only for allocation items."
+        },
+        "allocations": {
+          "type": "array",
+          "description": "Project allocation items. Field available only for allocation items.",
+          "items": {
+            "$ref": "#/definitions/ProjectAllocationItem"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "ProjectAllocationItem": {
+      "required": ["amount", "projectAddress"],
+      "properties": {
+        "projectAddress": {
+          "type": "string",
+          "description": "Allocation project address."
+        },
+        "amount": {
+          "type": "string",
+          "description": "Amount donated to a project, BigNumber (wei)"
+        }
+      },
+      "type": "object"
+    },
+    "EpochStatus": {
+      "required": ["isCurrent", "isFinalized", "isPending"],
+      "properties": {
+        "isCurrent": {
+          "type": "boolean",
+          "description": "Returns True if the given epoch is the current epoch"
+        },
+        "isPending": {
+          "type": "boolean",
+          "description": "Returns True if the given epoch is the pending epoch"
+        },
+        "isFinalized": {
+          "type": "boolean",
+          "description": "Returns True if the given epoch is a finalized epoch"
+        }
+      },
+      "type": "object"
+    },
+    "FinalizedSnapshotModel": {
+      "properties": {
+        "patronsRewards": {
+          "type": "string"
+        },
+        "matchedRewards": {
+          "type": "string"
+        },
+        "projectsRewards": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ProjectRewardModel"
+          }
+        },
+        "userRewards": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserRewardModel"
+          }
+        },
+        "totalWithdrawals": {
+          "type": "string"
+        },
+        "leftover": {
+          "type": "string"
+        },
+        "merkleRoot": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ProjectRewardModel": {
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        },
+        "matched": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "UserRewardModel": {
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "PendingSnapshotModel": {
+      "properties": {
+        "rewards": {
+          "$ref": "#/definitions/OctantRewardsModel"
+        },
+        "userDeposits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserDepositsModel"
+          }
+        },
+        "userBudgets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserBudgetsInfoModel"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "OctantRewardsModel": {
+      "properties": {
+        "stakingProceeds": {
+          "type": "string"
+        },
+        "lockedRatio": {
+          "type": "string"
+        },
+        "totalEffectiveDeposit": {
+          "type": "string"
+        },
+        "totalRewards": {
+          "type": "string"
+        },
+        "vanillaIndividualRewards": {
+          "type": "string"
+        },
+        "operationalCost": {
+          "type": "string"
+        },
+        "communityFund": {
+          "type": "string"
+        },
+        "ppf": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "UserDepositsModel": {
+      "properties": {
+        "userAddress": {
+          "type": "string"
+        },
+        "effectiveDeposit": {
+          "type": "string"
+        },
+        "deposit": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "UserBudgetsInfoModel": {
+      "properties": {
+        "userAddress": {
+          "type": "string"
+        },
+        "budget": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "UserBudget": {
+      "required": ["budget"],
+      "properties": {
+        "budget": {
+          "type": "string",
+          "description": "User budget for given epoch, BigNumber (wei)"
+        }
+      },
+      "type": "object"
+    },
+    "EpochBudgets": {
+      "required": ["budgets"],
+      "properties": {
+        "budgets": {
+          "type": "array",
+          "description": "Users budgets for given epoch, BigNumber (wei)",
+          "items": {
+            "$ref": "#/definitions/EpochBudgetItem"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "EpochBudgetItem": {
+      "required": ["address", "amount"],
+      "properties": {
+        "address": {
+          "type": "string",
+          "description": "User address"
+        },
+        "amount": {
+          "type": "string",
+          "description": "User budget for given epoch, BigNumber (wei)"
+        }
+      },
+      "type": "object"
+    },
+    "EstimatedBudget": {
+      "required": ["glmAmount", "numberOfEpochs"],
+      "properties": {
+        "numberOfEpochs": {
+          "type": "integer",
+          "description": "Number of epochs when GLM are locked"
+        },
+        "glmAmount": {
+          "type": "string",
+          "description": "Amount of estimated GLM locked in WEI"
+        }
+      },
+      "type": "object"
+    },
+    "EstimatedBudgetByDays": {
+      "required": ["days", "glmAmount"],
+      "properties": {
+        "days": {
+          "type": "integer",
+          "description": "Number of days when GLM are locked"
+        },
+        "glmAmount": {
+          "type": "string",
+          "description": "Amount of estimated GLM locked in WEI"
+        }
+      },
+      "type": "object"
+    },
+    "Threshold": {
+      "required": ["threshold"],
+      "properties": {
+        "threshold": {
+          "type": "string",
+          "description": "Threshold, that projects have to pass to be eligible for receiving rewards"
+        }
+      },
+      "type": "object"
+    },
+    "ProjectRewards": {
+      "required": ["rewards"],
+      "properties": {
+        "rewards": {
+          "type": "array",
+          "description": "Project rewards",
+          "items": {
+            "$ref": "#/definitions/Project"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "Project": {
+      "required": ["address", "value"],
+      "properties": {
+        "address": {
+          "type": "string",
+          "description": "Project address"
+        },
+        "value": {
+          "type": "string",
+          "description": "Matched rewards funds for the project, wei"
+        }
+      },
+      "type": "object"
+    },
+    "UnusedRewards": {
+      "required": ["addresses", "value"],
+      "properties": {
+        "addresses": {
+          "type": "array",
+          "description": "Users that neither allocated rewards nor toggled patron mode",
+          "items": {
+            "type": "string"
+          }
+        },
+        "value": {
+          "type": "string",
+          "description": "Total unused rewards sum in an epoch (WEI)"
+        }
+      },
+      "type": "object"
+    },
+    "Leverage": {
+      "required": ["leverage"],
+      "properties": {
+        "leverage": {
+          "type": "number",
+          "description": "Leverage of the allocated funds"
+        }
+      },
+      "type": "object"
+    },
+    "EpochRewardsMerkleTree": {
+      "required": ["epoch", "leafEncoding", "leaves", "rewardsSum", "root"],
+      "properties": {
+        "epoch": {
+          "type": "integer",
+          "description": "Epoch number"
+        },
+        "rewardsSum": {
+          "type": "string",
+          "description": "Sum of assigned rewards for epoch"
+        },
+        "root": {
+          "type": "string",
+          "description": "Merkle Tree root for epoch"
+        },
+        "leaves": {
+          "type": "array",
+          "description": "List of Merkle Tree leaves",
+          "items": {
+            "$ref": "#/definitions/EpochRewardsMerkleTreeLeaf"
+          }
+        },
+        "leafEncoding": {
+          "type": "array",
+          "description": "Merkle tree leaf encoding",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "EpochRewardsMerkleTreeLeaf": {
+      "required": ["address", "amount"],
+      "properties": {
+        "address": {
+          "type": "string",
+          "description": "User account or project address"
+        },
+        "amount": {
+          "type": "string",
+          "description": "Assigned reward"
+        }
+      },
+      "type": "object"
+    },
+    "UpcomingBudgetResponse": {
+      "required": ["upcomingBudget"],
+      "properties": {
+        "upcomingBudget": {
+          "type": "string",
+          "description": "Calculated upcoming user budget."
+        }
+      },
+      "type": "object"
+    },
+    "TotalEffective": {
+      "required": ["totalEffective"],
+      "properties": {
+        "totalEffective": {
+          "type": "string",
+          "description": "total effective deposit in given epoch"
+        }
+      },
+      "type": "object"
+    },
+    "LockedRatio": {
+      "required": ["lockedRatio"],
+      "properties": {
+        "lockedRatio": {
+          "type": "string",
+          "description": "GLM locked ratio in given epoch"
+        }
+      },
+      "type": "object"
+    },
+    "EffectiveDeposit": {
+      "required": ["effectiveDeposit"],
+      "properties": {
+        "effectiveDeposit": {
+          "type": "string",
+          "description": "Effective GLM deposit, in wei"
+        }
+      },
+      "type": "object"
+    },
+    "WithdrawableRewards": {
+      "required": ["amount", "epoch", "proof", "status"],
+      "properties": {
+        "epoch": {
+          "type": "integer",
+          "description": "Epoch number"
+        },
+        "amount": {
+          "type": "string",
+          "description": "User withdrawable rewards in a particular epoch"
+        },
+        "proof": {
+          "type": "array",
+          "description": "List of merkle proofs needed to withdraw funds from smart contract",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "type": "string",
+          "description": "User withdrawable rewards status (pending, available)"
+        }
+      },
+      "type": "object"
+    },
+    "UserAllocationRequest": {
+      "required": ["signature", "userAddress"],
+      "properties": {
+        "payload": {
+          "$ref": "#/definitions/AllocationPayload"
+        },
+        "userAddress": {
+          "type": "string",
+          "description": "Wallet address of the user. EOA or EIP-1271"
+        },
+        "signature": {
+          "type": "string",
+          "description": "EIP-712 signature of the allocation payload as a hexadecimal string"
+        },
+        "isManuallyEdited": {
+          "type": "boolean",
+          "description": "Whether allocation was manually edited by user."
+        }
+      },
+      "type": "object"
+    },
+    "AllocationPayload": {
+      "required": ["nonce"],
+      "properties": {
+        "allocations": {
+          "type": "array",
+          "description": "User allocation payload",
+          "items": {
+            "$ref": "#/definitions/UserAllocationPayloadItem"
+          }
+        },
+        "nonce": {
+          "type": "integer",
+          "description": "Allocation signature nonce"
+        }
+      },
+      "type": "object"
+    },
+    "UserAllocationPayloadItem": {
+      "required": ["amount", "proposalAddress"],
+      "properties": {
+        "proposalAddress": {
+          "type": "string",
+          "description": "Project address"
+        },
+        "amount": {
+          "type": "string",
+          "description": "Funds allocated by user for the project in WEI"
+        }
+      },
+      "type": "object"
+    },
+    "LeveragePayload": {
+      "properties": {
+        "allocations": {
+          "type": "array",
+          "description": "User allocation payload",
+          "items": {
+            "$ref": "#/definitions/UserAllocationPayloadItem"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "UserLeverage": {
+      "required": ["leverage", "matched", "threshold"],
+      "properties": {
+        "leverage": {
+          "type": "string",
+          "description": "Leverage of the allocated funds"
+        },
+        "threshold": {
+          "type": "string",
+          "description": "Simulated threshold, above which projects get funded."
+        },
+        "matched": {
+          "type": "array",
+          "description": "List of matched rewards for each project",
+          "items": {
+            "$ref": "#/definitions/Project"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "AllocationsModel": {
+      "properties": {
+        "allocations": {
+          "type": "array",
+          "items": {
+            "description": "Allocation",
+            "allOf": [
+              {
+                "$ref": "#/definitions/EpochAllocation"
+              }
+            ]
+          }
+        }
+      },
+      "type": "object"
+    },
+    "EpochAllocation": {
+      "required": ["amount", "donor", "project"],
+      "properties": {
+        "donor": {
+          "type": "string",
+          "description": "Donor address"
+        },
+        "amount": {
+          "type": "string",
+          "description": "Funds allocated by donor for the project in WEI"
+        },
+        "project": {
+          "type": "string",
+          "description": "Project address"
+        }
+      },
+      "type": "object"
+    },
+    "UserAllocations": {
+      "properties": {
+        "allocations": {
+          "type": "array",
+          "description": "User allocation item",
+          "items": {
+            "$ref": "#/definitions/UserAllocationItem"
+          }
+        },
+        "isManuallyEdited": {
+          "type": "boolean",
+          "description": "Whether allocation was manually edited by user."
+        }
+      },
+      "type": "object"
+    },
+    "UserAllocationItem": {
+      "required": ["address", "amount"],
+      "properties": {
+        "address": {
+          "type": "string",
+          "description": "Project address"
+        },
+        "amount": {
+          "type": "string",
+          "description": "Funds allocated by user for the project in WEI"
+        }
+      },
+      "type": "object"
+    },
+    "ProjectDonors": {
+      "required": ["address", "amount"],
+      "properties": {
+        "address": {
+          "type": "string",
+          "description": "Donor address"
+        },
+        "amount": {
+          "type": "string",
+          "description": "Funds allocated by donor for the project in WEI"
+        }
+      },
+      "type": "object"
+    },
+    "AllocationNonce": {
+      "required": ["allocationNonce"],
+      "properties": {
+        "allocationNonce": {
+          "type": "integer",
+          "description": "Current value of nonce used to sign allocations message. Note: this has nothing to do with Ethereum account nonce!"
+        }
+      },
+      "type": "object"
+    },
+    "Donors": {
+      "required": ["donors"],
+      "properties": {
+        "donors": {
+          "type": "array",
+          "description": "Donors address",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "ClaimGLMRequest": {
+      "required": ["signature"],
+      "properties": {
+        "signature": {
+          "type": "string",
+          "description": "EIP-712 signature of a payload with the following message: {\"msg\": \"Claim \u003CAMOUNT-TO-CLAIM-IN-ETHER\u003E GLMs\"} as a hexadecimal string"
+        }
+      },
+      "type": "object"
+    },
+    "CheckClaim": {
+      "required": ["address", "claimable"],
+      "properties": {
+        "address": {
+          "type": "string",
+          "description": "Address of the user"
+        },
+        "claimable": {
+          "type": "string",
+          "description": "Amount of GLMs that can be claimed, in WEI"
+        }
+      },
+      "type": "object"
+    },
+    "CurrentEpoch": {
+      "required": ["currentEpoch"],
+      "properties": {
+        "currentEpoch": {
+          "type": "integer",
+          "description": "Current epoch number"
+        }
+      },
+      "type": "object"
+    },
+    "IndexedEpoch": {
+      "required": ["currentEpoch", "indexedEpoch"],
+      "properties": {
+        "currentEpoch": {
+          "type": "integer",
+          "description": "Current epoch number"
+        },
+        "indexedEpoch": {
+          "type": "integer",
+          "description": "Indexed epoch number"
+        }
+      },
+      "type": "object"
+    },
+    "EpochStats": {
+      "required": [
+        "operationalCost",
+        "stakingProceeds",
+        "totalEffectiveDeposit",
+        "totalRewards",
+        "vanillaIndividualRewards"
+      ],
+      "properties": {
+        "stakingProceeds": {
+          "type": "string",
+          "description": "ETH proceeds from staking for the given epoch."
+        },
+        "totalEffectiveDeposit": {
+          "type": "string",
+          "description": "Effectively locked GLMs for the given epoch"
+        },
+        "totalRewards": {
+          "type": "string",
+          "description": "Total rewards for the given epoch."
+        },
+        "vanillaIndividualRewards": {
+          "type": "string",
+          "description": "Total rewards budget allocated to users rewards"
+        },
+        "operationalCost": {
+          "type": "string",
+          "description": "The amount needed to cover the Octant's costs"
+        },
+        "totalWithdrawals": {
+          "type": "string",
+          "description": "Rewards users decided to withdraw for the given epoch."
+        },
+        "patronsRewards": {
+          "type": "string",
+          "description": "Matching fund budget coming from patrons."
+        },
+        "matchedRewards": {
+          "type": "string",
+          "description": "Total matched rewards for the given epoch.\n            Includes matchedRewards from Golem Foundation and patronRewards."
+        },
+        "leftover": {
+          "type": "string",
+          "description": "The amount that will be used to increase staking and for other Octant related operations. Includes donations to projects that didn't reach the threshold."
+        },
+        "ppf": {
+          "type": "string",
+          "description": "PPF for the given epoch. It's calculated based on substracting Vanillia Individual Rewards from Individual Rewards Equilibrium."
+        },
+        "communityFund": {
+          "type": "string",
+          "description": "Community fund for the given epoch. It's calculated from staking proceeds directly."
+        }
+      },
+      "type": "object"
+    },
+    "TermsOfServiceConsentStatus": {
+      "required": ["accepted"],
+      "properties": {
+        "accepted": {
+          "type": "boolean",
+          "description": "Flag indicating whether user has already accepted Terms of Service"
+        }
+      },
+      "type": "object"
+    },
+    "PatronModeRequest": {
+      "required": ["signature"],
+      "properties": {
+        "signature": {
+          "type": "string",
+          "description": "signature of the patron mode status message as a hexadecimal string"
+        }
+      },
+      "type": "object"
+    },
+    "PatronModeStatus": {
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "description": "Flag indicating whether user has enabled patron mode"
+        }
+      },
+      "type": "object"
+    },
+    "UserAntisybilStatus": {
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "Unknown or Known"
+        },
+        "expires_at": {
+          "type": "string",
+          "description": "Expiry date, unix timestamp"
+        },
+        "score": {
+          "type": "string",
+          "description": "Score, parses as a float"
+        }
+      },
+      "type": "object"
+    },
+    "Patrons": {
+      "required": ["patrons"],
+      "properties": {
+        "patrons": {
+          "type": "array",
+          "description": "Patrons address",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "UQScore": {
+      "required": ["uniquenessQuotient"],
+      "properties": {
+        "uniquenessQuotient": {
+          "type": "string",
+          "description": "Uniqueness quotient score"
+        }
+      },
+      "type": "object"
+    },
+    "ActiveValidatorsSummary": {
+      "required": ["activeValidatorsNumber", "ethEffectiveBalance"],
+      "properties": {
+        "activeValidatorsNumber": {
+          "type": "integer",
+          "description": "The amount of active Octant validators."
+        },
+        "ethEffectiveBalance": {
+          "type": "string",
+          "description": "The sum of effective balances of all active Octant validators in gwei."
+        }
+      },
+      "type": "object"
+    },
+    "PendingSignature": {
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "The message to be signed."
+        },
+        "hash": {
+          "type": "string",
+          "description": "The hash of the message."
+        }
+      },
+      "type": "object"
+    },
+    "ProjectsMetadata": {
+      "required": ["projectsAddresses", "projectsCid"],
+      "properties": {
+        "projectsAddresses": {
+          "type": "array",
+          "description": "Projects addresses",
+          "items": {
+            "type": "string"
+          }
+        },
+        "projectsCid": {
+          "type": "string",
+          "description": "Projects CID"
+        }
+      },
+      "type": "object"
+    },
+    "Delegation": {
+      "required": [
+        "primaryAddr",
+        "primaryAddrSignature",
+        "secondaryAddr",
+        "secondaryAddrSignature"
+      ],
+      "properties": {
+        "primaryAddr": {
+          "type": "string",
+          "description": "User primary ethereum address in hexadecimal form (case-insensitive, prefixed with 0x)"
+        },
+        "secondaryAddr": {
+          "type": "string",
+          "description": "User secondary ethereum address in hexadecimal form (case-insensitive, prefixed with 0x)"
+        },
+        "primaryAddrSignature": {
+          "type": "string",
+          "description": "Primary address signature of the message: Delegation of UQ score from {secondary_addr} to {primary_addr}"
+        },
+        "secondaryAddrSignature": {
+          "type": "string",
+          "description": "Secondary address signature of the message: Delegation of UQ score from {secondary_addr} to {primary_addr}"
+        }
+      },
+      "type": "object"
+    },
+    "ScoreDelegationCheckResult": {
+      "properties": {
+        "primary": {
+          "type": "string",
+          "description": "Address that receives delegated score"
+        },
+        "secondary": {
+          "type": "string",
+          "description": "Address that donates delegated score"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "responses": {
+    "ParseError": {
+      "description": "When a mask can't be parsed"
+    },
+    "MaskError": {
+      "description": "When any error occurs on mask"
+    }
+  }
+}

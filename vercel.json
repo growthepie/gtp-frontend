@@ -2,10 +2,5 @@
   "git": {
     "deploymentEnabled": false
   },
-  "crons": [
-    {
-      "path": "/api/optimism-retropgf-3/crons",
-      "schedule": "*/5 * * * *"
-    }
-  ]
+  "crons": []
 }

@@ -15,6 +15,7 @@ import { Chains } from "@/types/api/ChainOverviewResponse";
 import { animated, useSpring } from "@react-spring/web";
 import { AllChainsByKeys } from "@/lib/chains";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import { fill } from "lodash";
 
 export default function OverviewChart({
   data,
@@ -61,16 +62,21 @@ export default function OverviewChart({
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   const { theme } = useTheme();
-  const categoryKeyToFillOpacity = {
-    nft: 1 - 0,
-    token_transfers: 1 - 0.196,
-    defi: 1 - 0.33,
-    social: 1 - 0.463,
-    cefi: 1 - 0.596,
-    utility: 1 - 0.733,
-    cross_chain: 1 - 0.867,
-    unlabeled: 1 - 0.92,
-  };
+  // const categoryKeyToFillOpacity = {
+  //   nft: 1 - 0,
+  //   token_transfers: 1 - 0.196,
+  //   defi: 1 - 0.33,
+  //   social: 1 - 0.463,
+  //   cefi: 1 - 0.596,
+  //   utility: 1 - 0.733,
+  //   cross_chain: 1 - 0.867,
+  //   unlabeled: 1 - 0.92,
+  // };
+
+  const getFillOpacity = (index: number) => {
+    let x = (categoriesAllCatChartListOrder.length - 1) - index;
+    return (0.02 * Math.pow(x, 2) - 0.28 * x + 1.27);
+  }
 
   const chartStack = useMemo(() => {
     let ecosystemData: any[][] = [];
@@ -136,7 +142,7 @@ export default function OverviewChart({
             for (let j = 0; j < numArrays; j++) {
               txTotal +=
                 unixDataList[j][
-                  selectedMode.includes("txcount") ? txIndex : gasIndex
+                selectedMode.includes("txcount") ? txIndex : gasIndex
                 ];
             }
 
@@ -148,10 +154,10 @@ export default function OverviewChart({
                 allTotal +=
                   checkIndex !== -1
                     ? data[standardChainKey].daily[selectedCategory].data[
-                        data[standardChainKey].daily[
-                          selectedCategory
-                        ].data.findIndex((item) => item[0] === findUnix)
-                      ][selectedMode.includes("txcount") ? txIndex : gasIndex]
+                    data[standardChainKey].daily[
+                      selectedCategory
+                    ].data.findIndex((item) => item[0] === findUnix)
+                    ][selectedMode.includes("txcount") ? txIndex : gasIndex]
                     : 0;
               }
             }
@@ -168,7 +174,7 @@ export default function OverviewChart({
     });
 
     return chartData;
-  }, [data, selectedCategory, selectedMode]);
+  }, [data, selectedCategory, selectedMode, standardChainKey]);
 
   const chartAvg = useMemo(() => {
     let typeIndex = data[standardChainKey].daily["types"].indexOf(selectedMode);
@@ -188,7 +194,7 @@ export default function OverviewChart({
           selectedCategory
         ].data
           ? data[selectedChain].overview[selectedTimespan][selectedCategory]
-              .data[overviewIndex]
+            .data[overviewIndex]
           : [];
       } else {
         for (
@@ -205,8 +211,8 @@ export default function OverviewChart({
           ) {
             sum +=
               data[selectedChain].daily[selectedCategory].data[
-                data[selectedChain].daily[selectedCategory].data.length -
-                  (i + 1)
+              data[selectedChain].daily[selectedCategory].data.length -
+              (i + 1)
               ][typeIndex];
           }
         }
@@ -216,8 +222,8 @@ export default function OverviewChart({
             ? data[selectedChain].daily[selectedCategory].data.length
             : timespans[selectedTimespan].value >=
               data[selectedChain].daily[selectedCategory].data.length
-            ? data[selectedChain].daily[selectedCategory].data.length
-            : timespans[selectedTimespan].value);
+              ? data[selectedChain].daily[selectedCategory].data.length
+              : timespans[selectedTimespan].value);
       }
     } else {
       if (chainEcosystemFilter === "all-chains") {
@@ -232,13 +238,13 @@ export default function OverviewChart({
         ) {
           if (
             data[standardChainKey].daily[selectedCategory].data.length -
-              (i + 1) >=
+            (i + 1) >=
             0
           ) {
             sum +=
               data[standardChainKey].daily[selectedCategory].data[
-                data[standardChainKey].daily[selectedCategory].data.length -
-                  (i + 1)
+              data[standardChainKey].daily[selectedCategory].data.length -
+              (i + 1)
               ][typeIndex];
           }
         }
@@ -249,8 +255,8 @@ export default function OverviewChart({
             ? data[standardChainKey].daily[selectedCategory].data.length
             : timespans[selectedTimespan].value >=
               data[standardChainKey].daily[selectedCategory].data.length
-            ? data[standardChainKey].daily[selectedCategory].data.length
-            : timespans[selectedTimespan].value);
+              ? data[standardChainKey].daily[selectedCategory].data.length
+              : timespans[selectedTimespan].value);
       } else {
         let sum = 0;
         for (
@@ -270,8 +276,8 @@ export default function OverviewChart({
             (selectedTimespan === "max"
               ? chartStack.length
               : timespans[selectedTimespan].value >= chartStack.length
-              ? chartStack.length
-              : timespans[selectedTimespan].value);
+                ? chartStack.length
+                : timespans[selectedTimespan].value);
         }
       }
     }
@@ -293,8 +299,8 @@ export default function OverviewChart({
     const selectedData = selectedChain
       ? data[selectedChain].daily[selectedCategory].data
       : chainEcosystemFilter === "all-chains"
-      ? data[standardChainKey].daily[selectedCategory].data
-      : chartStack;
+        ? data[standardChainKey].daily[selectedCategory].data
+        : chartStack;
 
     //Determine array length based on selection
     const length =
@@ -361,13 +367,24 @@ export default function OverviewChart({
             let dataRet = data[selectedChain]?.daily[categoryCheck]?.data || [];
             return dataRet.length > 0;
           })
-          .map((categoryCheck) => ({
+          .map((categoryCheck, i) => ({
             id: [selectedChain, categoryCheck, selectedMode].join("::"),
             name: selectedChain,
             unixKey: "unix",
             dataKey: dataKey,
             data: data[selectedChain]?.daily[categoryCheck]?.data || [],
-            fillOpacity: categoryKeyToFillOpacity[categoryCheck],
+            // fillOpacity: categoryKeyToFillOpacity[categoryCheck],
+            fillOpacity: categoryCheck === "unlabeled" ? undefined : getFillOpacity(i),
+            pattern: categoryCheck === "unlabeled" ? {
+              color: AllChainsByKeys[standardChainKey].colors["dark"][0],
+              path: {
+                d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
+                strokeWidth: 3,
+              },
+              width: 10,
+              height: 10,
+              opacity: 0.33,
+            } : undefined,
             lineWidth: 0,
             custom: {
               tooltipLabel: categories[categoryCheck],
@@ -381,6 +398,7 @@ export default function OverviewChart({
             unixKey: "unix",
             dataKey: dataKey,
             data: data[selectedChain].daily[selectedCategory].data,
+            fillOpacity: 0.25,
             custom: {
               tooltipLabel: categories[selectedCategory],
             },
@@ -416,29 +434,18 @@ export default function OverviewChart({
             : chartStack,
       },
     ];
-  }, [
-    selectedMode,
-    selectedChain,
-    selectedCategory,
-    chainEcosystemFilter,
-    data,
-    chartStack,
-    allCats,
-    categoriesList,
-    categoriesAllCatChartListOrder,
-    categories,
-  ]);
+  }, [selectedMode, selectedChain, selectedCategory, chainEcosystemFilter, data, chartStack, allCats, categoriesList, standardChainKey, categories]);
 
   const avgHeight = useSpring({
     y:
       chartAvg && chartMax
         ? -1 *
-          ((forceSelectedChain ? 200 : 163) * (chartAvg / chartMax) +
-            (chartAvg / chartMax > 0.45
-              ? chartAvg / chartMax > 0.5
-                ? 7
-                : 10
-              : 14))
+        ((forceSelectedChain ? 200 : 163) * (chartAvg / chartMax) +
+          (chartAvg / chartMax > 0.45
+            ? chartAvg / chartMax > 0.5
+              ? 7
+              : 10
+            : 14))
         : 0,
     config: { mass: 1, tension: 70, friction: 20 },
   });
@@ -469,13 +476,14 @@ export default function OverviewChart({
 
   return (
     <>
-      <div className="flex items-center w-full ">
+      <div className="flex items-center w-full bg-blend-lighten">
         <Chart
           types={
             selectedChain === null
               ? data[standardChainKey].daily.types
               : data[selectedChain].daily.types
           }
+          plotAreaBackgroundColor="black"
           chartType="area"
           stack
           timespan={selectedTimespan}
@@ -493,9 +501,8 @@ export default function OverviewChart({
         />
         {chartAvg && (
           <div
-            className={` items-end relative top-[2px] min-w-[50px] lg:min-w-[70px] ${
-              allCats ? "hidden" : "flex"
-            } ${forceSelectedChain ? "h-[230px]" : "h-[180px]"}`}
+            className={` items-end relative top-[2px] min-w-[50px] lg:min-w-[70px] ${allCats ? "hidden" : "flex"
+              } ${forceSelectedChain ? "h-[230px]" : "h-[180px]"}`}
           >
             <animated.div
               className="flex h-[28px] relative items-center justify-center rounded-full w-full px-2.5 lg:text-base text-sm font-medium"

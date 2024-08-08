@@ -1,8 +1,15 @@
 import { DurationData, DailyData } from "@/types/api/EconomicsResponse";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+} from "react";
 import Highcharts from "highcharts/highstock";
 import addHighchartsMore from "highcharts/highcharts-more";
 import { useLocalStorage } from "usehooks-ts";
+import { AxisTickPositionerCallbackFunction } from "highcharts";
 import {
   HighchartsProvider,
   HighchartsChart,
@@ -21,6 +28,7 @@ import {
   PlotLine,
   withHighcharts,
   AreaSeries,
+  ColumnSeries,
 } from "react-jsx-highcharts";
 import { useUIContext } from "@/contexts/UIContext";
 import { AllChainsByKeys } from "@/lib/chains";
@@ -38,38 +46,180 @@ type AreaData = {
   profitData: any[][]; // Replace 'any' with the specific type if known
 };
 
-export default function BreakdownCharts({
+function BreakdownCharts({
   data,
   dailyData,
   chain,
   timespans,
   selectedTimespan,
+  isOpen,
 }: {
   data: DurationData;
   dailyData: DailyData;
   chain: string;
   timespans: Object;
   selectedTimespan: string;
+  isOpen?: boolean;
 }) {
   addHighchartsMore(Highcharts);
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const reversePerformer = true;
+  const [profitChart, setProfitChart] = useState<any>(null);
+  const [mainChart, setMainChart] = useState<any>(null);
+  const chartRef = useRef<HTMLDivElement>(null);
+  const profitChartRef = useRef<HTMLDivElement>(null);
+  const reversePerformer = false;
   const selectedScale: string = "absolute";
   const { isMobile } = useUIContext();
-
+  const [isVisible, setIsVisible] = useState(isOpen);
   const valuePrefix = useMemo(() => {
     if (showUsd) return "$";
     // eth symbol
     return "Ξ";
   }, [showUsd]);
 
-  const data1 = [1, 2, 3, 4, 5];
-  const data2 = [2, 3, 2, 5, 6];
+  useEffect(() => {
+    if (isOpen) {
+      setIsVisible(true);
+    } else {
+      const timeoutId = setTimeout(() => {
+        setIsVisible(false);
+      }, 300); // Match this duration with your CSS transition duration
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    const handleMouseEnter = (event) => {
+      const e = mainChart.pointer.normalize(event);
+      const xAxisValue = mainChart.xAxis[0].toValue(e.chartX);
+      const series = profitChart.series[0];
+
+      // Find the index of the closest point to the xAxisValue
+      let closestIndex = -1;
+      let minDistance = Infinity;
+
+      series.points.forEach((point, index) => {
+        const currentX = point.x;
+        const distance = Math.abs(currentX - xAxisValue);
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestIndex = index;
+        }
+      });
+
+      // Retrieve the point using the closestIndex
+      const point = series.points[closestIndex];
+
+      if (mainChart.xAxis[0].crosshair) {
+        profitChart.xAxis[0].drawCrosshair(event, point);
+      }
+      if (point && point.graphic) {
+        point.setState("hover"); // Highlight the point
+      }
+      profitChart.tooltip.hide();
+    };
+
+    const handleMouseLeave = () => {
+      profitChart.tooltip.hide();
+      // Add your custom logic here
+    };
+
+    const chartContainer = chartRef.current;
+    if (chartContainer && mainChart && profitChart) {
+      chartContainer.addEventListener("mouseenter", handleMouseEnter);
+      chartContainer.addEventListener("mousemove", handleMouseEnter);
+      chartContainer.addEventListener("mouseleave", handleMouseLeave);
+    }
+
+    // Clean up event listeners on component unmount
+    return () => {
+      if (chartContainer) {
+        chartContainer.removeEventListener("mouseenter", handleMouseEnter);
+        chartContainer.removeEventListener("mousemove", handleMouseEnter);
+        chartContainer.removeEventListener("mouseleave", handleMouseLeave);
+      }
+    };
+  }, [mainChart, profitChart]);
+
+  useEffect(() => {
+    const handleMouseEnter = (event) => {
+      const e = profitChart.pointer.normalize(event);
+      const xAxisValue = profitChart.xAxis[0].toValue(e.chartX);
+      const series1 = mainChart.series[0];
+      const series2 = mainChart.series[1]; // Assuming mainChart has two series
+
+      // Find the index of the closest point to the xAxisValue for series1
+      let closestIndex1 = -1;
+      let minDistance1 = Infinity;
+
+      series1.points.forEach((point, index) => {
+        const currentX = point.x;
+        const distance = Math.abs(currentX - xAxisValue);
+
+        if (distance < minDistance1) {
+          minDistance1 = distance;
+          closestIndex1 = index;
+        }
+      });
+
+      // Retrieve the point using the closestIndex for series1
+      const point1 = series1.points[closestIndex1];
+
+      // Find the index of the closest point to the xAxisValue for series2
+      let closestIndex2 = -1;
+      let minDistance2 = Infinity;
+
+      series2.points.forEach((point, index) => {
+        const currentX = point.x;
+        const distance = Math.abs(currentX - xAxisValue);
+
+        if (distance < minDistance2) {
+          minDistance2 = distance;
+          closestIndex2 = index;
+        }
+      });
+
+      // Retrieve the point using the closestIndex for series2
+      const point2 = series2.points[closestIndex2];
+
+      // Show crosshair for mainChart
+      if (mainChart.xAxis[0].crosshair) {
+        mainChart.xAxis[0].drawCrosshair(event, point1);
+        mainChart.xAxis[0].drawCrosshair(event, point2); // Draw crosshair for both series
+      }
+
+      // Refresh tooltips for both series
+      mainChart.tooltip.refresh([point1, point2]);
+    };
+
+    const handleMouseLeave = () => {
+      profitChart.tooltip.hide();
+      // Add your custom logic here
+    };
+
+    const chartContainer = profitChartRef.current;
+    if (chartContainer && mainChart && profitChart) {
+      chartContainer.addEventListener("mouseenter", handleMouseEnter);
+      chartContainer.addEventListener("mousemove", handleMouseEnter);
+      chartContainer.addEventListener("mouseleave", handleMouseLeave);
+    }
+
+    // Clean up event listeners on component unmount
+    return () => {
+      if (chartContainer) {
+        chartContainer.removeEventListener("mouseenter", handleMouseEnter);
+        chartContainer.removeEventListener("mousemove", handleMouseEnter);
+        chartContainer.removeEventListener("mouseleave", handleMouseLeave);
+      }
+    };
+  }, [mainChart, profitChart]);
 
   const tooltipFormatter = useCallback(
     function (this: any) {
       const { x, points } = this;
+
       const date = new Date(x);
       let dateString = date.toLocaleDateString("en-GB", {
         month: "short",
@@ -116,14 +266,23 @@ export default function BreakdownCharts({
       }, 0);
 
       const tooltipPoints = points
-        .sort((a: any, b: any) => {
-          if (reversePerformer) return a.y - b.y;
 
-          return b.y - a.y;
-        })
-        .map((point: any) => {
+        .map((point: any, index) => {
           const { series, y, percentage } = point;
           const { name } = series;
+          const lastIndex = index === 1 && name !== "Profit";
+          let profitY = 0;
+          if (name === "Revenue" || name === "Costs") {
+            const profitObj = dailyData.profit.data.find(
+              (xValue) => xValue[0] === x,
+            );
+            if (profitObj) {
+              profitY =
+                profitObj[
+                  dailyData.profit.types.indexOf(showUsd ? "usd" : "eth")
+                ];
+            }
+          }
 
           if (selectedScale === "percentage")
             return `
@@ -131,9 +290,9 @@ export default function BreakdownCharts({
                     <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${"#24E5DF"}"></div>
                     <div class="tooltip-point-name">${name}</div>
                     <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-              percentage,
-              2,
-            )}%</div>
+                      percentage,
+                      2,
+                    )}%</div>
                   </div>
                   
                   <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -142,8 +301,9 @@ export default function BreakdownCharts({
                     <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
                     style="
                       width: ${(percentage / maxPercentage) * 100}%;
-                      background-color: ${AllChainsByKeys["all_l2s"].colors["dark"][0]
-              };
+                      background-color: ${
+                        AllChainsByKeys["all_l2s"].colors["dark"][0]
+                      };
                     "></div>
                   </div>`;
 
@@ -152,25 +312,78 @@ export default function BreakdownCharts({
           let value = y;
           let displayValue = y;
 
-          return `
+          if (name === "Revenue" || name === "Costs") {
+            return `
               <div class="flex w-full justify-between space-x-2 items-center font-medium mb-0.5">
                 <div class="flex gap-x-1 items-center">
-                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${series.color
-            }"></div>
+                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+                    series.color
+                  }"></div>
                   <div class="tooltip-point-name text-md">${name}</div>
                 </div>
                 <div class="flex-1 justify-end text-right font-inter flex">
-                    <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-            }">${prefix}</div>
+                    <div class="opacity-70 mr-0.5 ${
+                      !prefix && "hidden"
+                    }">${prefix}</div>
                     ${parseFloat(displayValue).toLocaleString("en-GB", {
-              minimumFractionDigits: valuePrefix ? 2 : 0,
-              maximumFractionDigits: valuePrefix ? 2 : 0,
-            })}
-                    <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
+                      minimumFractionDigits: valuePrefix ? 2 : 0,
+                      maximumFractionDigits: valuePrefix ? 2 : 0,
+                    })}
+                    <div class="opacity-70 ml-0.5 ${
+                      !suffix && "hidden"
+                    }">${suffix}</div>
                 </div>
               </div>
+              ${
+                lastIndex
+                  ? `<div class="flex w-full justify-between space-x-2 items-center font-medium mb-0.5">
+                <div class="flex gap-x-1 items-center">
+                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+                    profitY >= 0 ? "#EEFF97" : "#FFDF27"
+                  }"></div>
+                  <div class="tooltip-point-name text-md">${"Profit"}</div>
+                </div>
+                <div class="flex-1 justify-end text-right font-inter flex">
+                    <div class="opacity-70 mr-0.5 ${
+                      !prefix && "hidden"
+                    }">${prefix}</div>
+                    ${parseFloat(String(profitY)).toLocaleString("en-GB", {
+                      minimumFractionDigits: valuePrefix ? 2 : 0,
+                      maximumFractionDigits: valuePrefix ? 2 : 0,
+                    })}
+                    <div class="opacity-70 ml-0.5 ${
+                      !suffix && "hidden"
+                    }">${suffix}</div>
+                </div>
+              </div>`
+                  : ""
+              }
               `;
+          } else {
+            return `
+            <div class="flex w-full justify-between space-x-2 items-center font-medium mb-0.5">
+              <div class="flex gap-x-1 items-center">
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+                  series.color
+                }"></div>
+                <div class="tooltip-point-name text-md">${name}</div>
+              </div>
+              <div class="flex-1 justify-end text-right font-inter flex">
+                  <div class="opacity-70 mr-0.5 ${
+                    !prefix && "hidden"
+                  }">${prefix}</div>
+                  ${parseFloat(displayValue).toLocaleString("en-GB", {
+                    minimumFractionDigits: valuePrefix ? 2 : 0,
+                    maximumFractionDigits: valuePrefix ? 2 : 0,
+                  })}
+                  <div class="opacity-70 ml-0.5 ${
+                    !suffix && "hidden"
+                  }">${suffix}</div>
+              </div>
+            </div>
+            
+            `;
+          }
         })
         .join("");
 
@@ -186,14 +399,16 @@ export default function BreakdownCharts({
               <div class="tooltip-point-name text-md">Total</div>
               <div class="flex-1 text-right justify-end font-inter flex">
     
-                  <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-          }">${prefix}</div>
+                  <div class="opacity-70 mr-0.5 ${
+                    !prefix && "hidden"
+                  }">${prefix}</div>
                   ${parseFloat(value).toLocaleString("en-GB", {
-            minimumFractionDigits: valuePrefix ? 2 : 0,
-            maximumFractionDigits: valuePrefix ? 2 : 0,
-          })}
-                  <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-          }">${suffix}</div>
+                    minimumFractionDigits: valuePrefix ? 2 : 0,
+                    maximumFractionDigits: valuePrefix ? 2 : 0,
+                  })}
+                  <div class="opacity-70 ml-0.5 ${
+                    !suffix && "hidden"
+                  }">${suffix}</div>
               </div>
             </div>
             <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -205,6 +420,15 @@ export default function BreakdownCharts({
     },
     [valuePrefix, reversePerformer],
   );
+
+  const tooltipManager = useMemo(() => {
+    if (!mainChart || !profitChart) return;
+    if (isOpen === false) {
+      mainChart.tooltip.hide();
+      profitChart.tooltip.hide();
+    }
+    return;
+  }, [isOpen]);
 
   const tooltipPositioner =
     useCallback<Highcharts.TooltipPositionerCallbackFunction>(
@@ -268,341 +492,456 @@ export default function BreakdownCharts({
     );
   }
 
-  const ProfitArea = useMemo(() => {
-    const largerData =
-      dailyData.revenue.data.length > dailyData.costs.data.length
-        ? "revenue"
-        : "costs";
-    const smallerData = largerData === "revenue" ? "costs" : "revenue";
-    let activateLesser = false;
-    let lesserIndex = 0;
-    let retArray: Array<[string | number, number, number]> = [];
-    let isProfitableArray: Array<[string | number, boolean]> = [];
-
-    dailyData[largerData].data.forEach((data, i) => {
-      if (
-        dailyData[largerData].data[i][0] ===
-        dailyData[smallerData].data[lesserIndex][0]
-      ) {
-        activateLesser = true;
-      }
-
-      if (
-        activateLesser &&
-        lesserIndex < dailyData[smallerData].data.length - 1
-      ) {
-        if (
-          dailyData[largerData].data[i][0] ===
-          dailyData[smallerData].data[lesserIndex][0]
-        ) {
-          const timestamp = dailyData[largerData].data[i][0];
-          const smallerValue =
-            dailyData[largerData].data[i][
-              dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
-            ] >
-              dailyData[smallerData].data[lesserIndex][
-              dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
-              ]
-              ? dailyData[smallerData].data[lesserIndex][
-              dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
-              ]
-              : dailyData[largerData].data[i][
-              dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
-              ];
-
-          const largerValue =
-            dailyData[largerData].data[i][
-              dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
-            ] >
-              dailyData[smallerData].data[lesserIndex][
-              dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
-              ]
-              ? dailyData[largerData].data[i][
-              dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
-              ]
-              : dailyData[smallerData].data[lesserIndex][
-              dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
-              ];
-
-          retArray.push([timestamp, smallerValue, largerValue]);
-
-          const profitable =
-            largerData === "revenue"
-              ? dailyData[largerData].data[i][1] >
-              dailyData[smallerData].data[lesserIndex][1]
-              : dailyData[largerData].data[i][1] <
-              dailyData[smallerData].data[lesserIndex][1];
-
-          isProfitableArray.push([timestamp, profitable]);
-        }
-        lesserIndex++;
-      }
-    });
-
-    return { seriesData: retArray, profitData: isProfitableArray } as AreaData;
-  }, [dailyData, data]);
-
-  const zones = useMemo(() => {
-    if (!ProfitArea) return;
-    const zonesArray: { value: number; fillColor: string }[] = [];
-
-    if (ProfitArea.profitData.length > 0) {
-      let startTimestamp = ProfitArea.profitData[0][0];
-      let startColor = ProfitArea.profitData[0][1] ? "#0000FF" : "#FF0000"; // Blue if true, red if false
-
-      for (let i = 1; i < ProfitArea.profitData.length; i++) {
-        const [timestamp, isProfitable] = ProfitArea.profitData[i];
-
-        if (isProfitable !== ProfitArea.profitData[i - 1][1]) {
-          // End of streak, push current zone
-          zonesArray.push({
-            value: startTimestamp,
-            fillColor: startColor,
-          });
-
-          // Start new streak
-          startTimestamp = timestamp;
-          startColor = isProfitable ? "#0000FF" : "#FF0000";
-        }
-      }
-
-      // Push the last streak
-      zonesArray.push({
-        value: startTimestamp,
-        fillColor: startColor,
-      });
-    }
-
-    return zonesArray;
-  }, [ProfitArea]);
-
   return (
-    <div className="w-full h-full min-h-[240px] max-h-[240px] ">
-      <HighchartsProvider Highcharts={Highcharts}>
-        <HighchartsChart
-          containerProps={{
-            style: { height: "100%", width: "100%" },
-          }}
-          plotOptions={{
-            line: {
-              lineWidth: 2,
-              step: "center",
-            },
-            area: {
-              lineWidth: 2,
-              step: "center",
-              // marker: {
-              //   radius: 12,
-              //   lineWidth: 4,
-              // },
-              fillOpacity: 1,
-              fillColor: {
-                linearGradient: {
-                  x1: 0,
-                  y1: 0,
-                  x2: 0,
-                  y2: 1,
+    <div
+      className={`${isVisible ? "block" : "hidden"} `}
+      onMouseLeave={() => {
+        if (mainChart) mainChart.tooltip.hide();
+        if (profitChart) profitChart.tooltip.hide();
+      }}
+    >
+      <div
+        className="w-full h-full min-h-[210px] max-h-[210px] relative "
+        ref={chartRef}
+      >
+        <div className="absolute bottom-2.5 left-[50px] w-[48px] h-[16px] bg-[#344240AA] bg-opacity-50 z-10 rounded-full flex items-center  gap-x-[2px] px-[3px]">
+          <div className="w-[5px] h-[5px] bg-[#1DF7EF] rounded-full"></div>
+          <div className="text-[8px]">Revenue</div>
+        </div>
+        <div className="absolute bottom-2.5 left-[102px] w-[32px] h-[16px] bg-[#344240AA] bg-opacity-50 z-10 rounded-full flex items-center  gap-x-[2px] px-[3px]">
+          <div className="w-[5px] h-[5px] bg-[#FE5468] rounded-full" />
+          <div className="text-[8px]">Cost</div>
+        </div>
+        <HighchartsProvider Highcharts={Highcharts}>
+          <HighchartsChart
+            containerProps={{
+              style: { height: "100%", width: "100%" },
+            }}
+            syncId="shareTooltip"
+            plotOptions={{
+              line: {
+                lineWidth: 1.5,
+              },
+              area: {
+                lineWidth: 1.5,
+
+                // marker: {
+                //   radius: 12,
+                //   lineWidth: 4,
+                // },
+
+                // shadow: {
+                //   color:
+                //     AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1] + "33",
+                //   width: 10,
+                // },
+
+                // borderColor: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
+                // borderWidth: 1,
+              },
+              series: {
+                zIndex: 10,
+                animation: false,
+
+                marker: {
+                  lineColor: "white",
+                  radius: 0,
+                  symbol: "circle",
                 },
-                stops: [
-                  [0, AllChainsByKeys["all_l2s"].colors["dark"][0] + "33"],
-                  [1, AllChainsByKeys["all_l2s"].colors["dark"][1] + "33"],
-                ],
-              },
-              // shadow: {
-              //   color:
-              //     AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1] + "33",
-              //   width: 10,
-              // },
-              color: {
-                linearGradient: {
-                  x1: 0,
-                  y1: 0,
-                  x2: 1,
-                  y2: 0,
-                },
-                stops: [
-                  [0, AllChainsByKeys["all_l2s"]?.colors["dark"][0]],
-                  // [0.33, AllChainsByKeys[series.name].colors[1]],
-                  [1, AllChainsByKeys["all_l2s"]?.colors["dark"][1]],
-                ],
-              },
-              // borderColor: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
-              // borderWidth: 1,
-            },
-            series: {
-              zIndex: 10,
-              animation: false,
-              step: "center",
-              marker: {
-                lineColor: "white",
-                radius: 0,
-                symbol: "circle",
-              },
-            },
-          }}
-        >
-          <Chart
-            backgroundColor={"transparent"}
-            type="line"
-            panning={{
-              enabled: true,
-            }}
-            panKey="shift"
-            zooming={{
-              type: undefined,
-            }}
-            style={{
-              borderRadius: 15,
-            }}
-            animation={{
-              duration: 50,
-            }}
-            marginBottom={1}
-            marginLeft={0}
-            marginRight={0}
-            marginTop={0}
-          />
-          <Tooltip
-            useHTML={true}
-            shared={true}
-            split={false}
-            followPointer={true}
-            followTouchMove={true}
-            backgroundColor={"#2A3433EE"}
-            padding={0}
-            hideDelay={300}
-            stickOnContact={true}
-            shape="rect"
-            borderRadius={17}
-            borderWidth={0}
-            outside={true}
-            shadow={{
-              color: "black",
-              opacity: 0.015,
-              offsetX: 2,
-              offsetY: 2,
-            }}
-            style={{
-              color: "rgb(215, 223, 222)",
-            }}
-            formatter={tooltipFormatter}
-            // ensure tooltip is always above the chart
-            positioner={tooltipPositioner}
-            valuePrefix={"$"}
-            valueSuffix={""}
-          />
-          <XAxis
-            title={undefined}
-            type="datetime"
-            labels={{
-              useHTML: true,
-              style: {
-                color: COLORS.LABEL,
-                fontSize: "10px",
-                fontFamily: "var(--font-raleway), sans-serif",
-                zIndex: 1000,
-              },
-              enabled: true,
-            }}
-            crosshair={{
-              width: 0.5,
-              color: COLORS.PLOT_LINE,
-              snap: false,
-            }}
-            tickmarkPlacement="on"
-            tickWidth={1}
-            tickLength={20}
-            ordinal={false}
-            minorTicks={true}
-            minorTickLength={2}
-            minorTickWidth={2}
-            minorGridLineWidth={0}
-            minorTickInterval={1000 * 60 * 60 * 24 * 1}
-            min={
-              timespans[selectedTimespan].xMin
-                ? timespans[selectedTimespan].xMin
-                : undefined
-            }
-          >
-            <XAxis.Title>X Axis</XAxis.Title>
-          </XAxis>
-          <YAxis
-            opposite={false}
-            // showFirstLabel={true}
-            // showLastLabel={true}
-            type="linear"
-            gridLineWidth={1}
-            gridLineColor={"#5A64624F"}
-            showFirstLabel={false}
-            showLastLabel={false}
-            labels={{
-              align: "left",
-              y: 11,
-              x: 3,
-              style: {
-                fontSize: "10px",
-                color: "#CDD8D34D",
-              },
-              formatter: function () {
-                const value = this.value as number | bigint;
-                return (
-                  valuePrefix +
-                  Intl.NumberFormat("en-GB", {
-                    notation: "compact",
-                    maximumFractionDigits: 2,
-                    minimumFractionDigits: 2,
-                  }).format(value)
-                );
               },
             }}
           >
-            <YAxis.Title>Y Axis</YAxis.Title>
-            <LineSeries
-              name="Revenue"
-              color={AllChainsByKeys[chain].colors["dark"][0]}
-              data={dailyData.revenue.data.map((d: any) => [
-                d[0],
-                d[dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")],
-              ])}
-              lineWidth={2}
-            />
+            <Chart
+              backgroundColor={"transparent"}
+              type="line"
+              panning={{
+                enabled: true,
+              }}
+              panKey="shift"
+              zooming={{
+                type: undefined,
+              }}
+              style={{
+                borderRadius: 15,
+              }}
+              animation={{
+                duration: 50,
+              }}
+              marginBottom={5}
+              marginLeft={45}
+              marginRight={45}
+              marginTop={15}
+              height={209}
+              onRender={(chartData) => {
+                const chart = chartData.target as any; // Cast chartData.target to any
 
-            {/* Second line */}
-            <LineSeries
-              name="Costs"
-              color={"#FE546899"}
-              data={dailyData.costs.data.map((d: any) => [
-                d[0],
-                d[dailyData.costs.types.indexOf(showUsd ? "usd" : "eth")],
-              ])}
-              lineWidth={1}
-            />
+                if (!chart || !chart.series || chart.series.length === 0)
+                  return;
 
-            {/* Area between the lines */}
-            <AreaRangeSeries
-              name="Profit"
-              color={"#ECF87F"}
-              lineWidth={0}
-              lineColor={"transparent"}
-              enableMouseTracking={false}
-              showInLegend={false}
-              data={ProfitArea.seriesData}
-              fillOpacity={0.5}
-              zones={zones}
-            // zones={[
-            //   {
-            //     value: 1693094400000,
-            //     fillColor: "#0000FF",
-            //   },
-            //   {
-            //     value: 1701043200000,
-            //     fillColor: "#FF0000",
-            //   },
-            // ]}
+                setMainChart(chart);
+              }}
             />
-          </YAxis>
-        </HighchartsChart>
-      </HighchartsProvider>
+            <Tooltip
+              useHTML={true}
+              shared={true}
+              split={false}
+              followPointer={true}
+              followTouchMove={true}
+              backgroundColor={"#2A3433EE"}
+              padding={0}
+              hideDelay={300}
+              stickOnContact={true}
+              shape="rect"
+              borderRadius={17}
+              borderWidth={0}
+              outside={true}
+              shadow={{
+                color: "black",
+                opacity: 0.015,
+                offsetX: 2,
+                offsetY: 2,
+              }}
+              style={{
+                color: "rgb(215, 223, 222)",
+              }}
+              formatter={tooltipFormatter}
+              // ensure tooltip is always above the chart
+              positioner={tooltipPositioner}
+              valuePrefix={"$"}
+              valueSuffix={""}
+            />
+            <XAxis
+              title={undefined}
+              type="datetime"
+              labels={{
+                useHTML: true,
+                style: {
+                  color: COLORS.LABEL,
+                  fontSize: "10px",
+                  fontFamily: "var(--font-raleway), sans-serif",
+                  zIndex: 1000,
+                },
+                enabled: true,
+              }}
+              crosshair={{
+                width: 0.5,
+                color: COLORS.PLOT_LINE,
+                snap: false,
+              }}
+              tickmarkPlacement="on"
+              tickWidth={1}
+              tickLength={20}
+              ordinal={false}
+              minorTicks={false}
+              minorTickLength={2}
+              minorTickWidth={2}
+              minorGridLineWidth={0}
+              minorTickInterval={1000 * 60 * 60 * 24 * 1}
+              min={
+                timespans[selectedTimespan].xMin
+                  ? timespans[selectedTimespan].xMin
+                  : undefined
+              }
+            >
+              <XAxis.Title>X Axis</XAxis.Title>
+            </XAxis>
+            <YAxis
+              opposite={false}
+              // showFirstLabel={true}
+              // showLastLabel={true}
+              type="linear"
+              gridLineWidth={1}
+              gridLineColor={"#CDD8D3AA"}
+              gridLineDashStyle={"Dot"}
+              gridZIndex={10}
+              min={0}
+              showFirstLabel={true}
+              showLastLabel={true}
+              tickAmount={5}
+              labels={{
+                align: "right",
+                y: 2,
+                x: -3,
+                style: {
+                  fontSize: "10px",
+                  fontWeight: "600",
+                  color: "#CDD8D3",
+                  textAlign: "right",
+                  width: 45,
+                },
+                formatter: function () {
+                  const value = this.value as number | bigint;
+                  return (
+                    valuePrefix +
+                    Intl.NumberFormat("en-GB", {
+                      notation: "compact",
+                      maximumFractionDigits: 1,
+                      minimumFractionDigits: 0,
+                    }).format(value)
+                  );
+                },
+              }}
+            >
+              <AreaSeries
+                name="Revenue"
+                color={"#1DF7EF"}
+                data={dailyData.revenue.data.map((d: any) => [
+                  d[0],
+                  d[dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")],
+                ])}
+                lineWidth={1.5}
+                fillColor={{
+                  linearGradient: {
+                    x1: 0,
+                    y1: 0,
+                    x2: 0,
+                    y2: 1,
+                  },
+                  stops: [
+                    [0, "#1DF7EF66"],
+                    [1, "#1DF7EF33"],
+                  ],
+                }}
+              />
+
+              {/* Second line */}
+              <AreaSeries
+                name="Costs"
+                color={"#FE5468"}
+                data={dailyData.costs.data.map((d: any) => [
+                  d[0],
+                  d[dailyData.costs.types.indexOf(showUsd ? "usd" : "eth")],
+                ])}
+                lineWidth={1.5}
+                fillColor={{
+                  linearGradient: {
+                    x1: 0,
+                    y1: 0,
+                    x2: 0,
+                    y2: 1,
+                  },
+                  stops: [
+                    [0, "#FE5468CC"],
+                    [1, "#FE546855"],
+                  ],
+                }}
+              />
+
+              {/* Area between the lines */}
+            </YAxis>
+          </HighchartsChart>
+        </HighchartsProvider>
+      </div>
+      <div
+        className="h-[175px] w-full flex justify-center items-center relative "
+        ref={profitChartRef}
+      >
+        <div className="absolute top-2.5 left-[50px] w-[36px] h-[16px] bg-[#344240AA] bg-opacity-50 z-10 rounded-full flex items-center  gap-x-[2px] px-[3px]">
+          <div className="w-[5px] h-[5px] bg-[#EEFF97] rounded-full"></div>
+          <div className="text-[8px]">Profit</div>
+        </div>
+        <div className="absolute bottom-[36px] left-[50px] w-[36px] h-[16px] bg-[#344240AA] bg-opacity-50 z-10 rounded-full flex items-center  gap-x-[2px] px-[3px]">
+          <div className="w-[5px] h-[5px] bg-[#FFDF27] rounded-full" />
+          <div className="text-[8px]">Loss</div>
+        </div>
+        <HighchartsProvider Highcharts={Highcharts}>
+          {" "}
+          <HighchartsChart
+            containerProps={{
+              style: { height: "100%", width: "100%" },
+            }}
+            syncId="shareTooltip"
+            plotOptions={{
+              line: {
+                lineWidth: 1.5,
+              },
+              area: {
+                lineWidth: 1.5,
+              },
+              column: {
+                borderRadius: 1,
+                borderWidth: 0,
+              },
+
+              series: {
+                zIndex: 10,
+                animation: false,
+
+                marker: {
+                  lineColor: "white",
+                  radius: 0,
+                  symbol: "circle",
+                },
+              },
+            }}
+          >
+            <Chart
+              backgroundColor={"transparent"}
+              type="column"
+              panning={{
+                enabled: true,
+              }}
+              panKey="shift"
+              zooming={{
+                type: undefined,
+              }}
+              style={{
+                borderRadius: 15,
+              }}
+              animation={{
+                duration: 50,
+              }}
+              marginBottom={30}
+              marginLeft={45}
+              marginRight={45}
+              marginTop={0}
+              onRender={(chartData) => {
+                const chart = chartData.target as any; // Cast chartData.target to any
+
+                if (!chart || !chart.series || chart.series.length === 0)
+                  return;
+
+                setProfitChart(chart);
+              }}
+            />
+            <Tooltip
+              useHTML={true}
+              enabled={false}
+              shared={true}
+              split={false}
+              followPointer={true}
+              followTouchMove={true}
+              backgroundColor={"#2A3433EE"}
+              padding={0}
+              hideDelay={300}
+              stickOnContact={true}
+              shape="rect"
+              borderRadius={17}
+              borderWidth={0}
+              outside={true}
+              shadow={{
+                color: "black",
+                opacity: 0.015,
+                offsetX: 2,
+                offsetY: 2,
+              }}
+              style={{
+                color: "rgb(215, 223, 222)",
+              }}
+              formatter={tooltipFormatter}
+              // ensure tooltip is always above the chart
+              positioner={tooltipPositioner}
+              valuePrefix={"$"}
+              valueSuffix={""}
+            />
+            <XAxis
+              title={undefined}
+              type="datetime"
+              labels={{
+                useHTML: true,
+                style: {
+                  color: COLORS.LABEL,
+                  fontSize: "10px",
+                  fontFamily: "var(--font-raleway), sans-serif",
+                  zIndex: 1000,
+                },
+                enabled: true,
+              }}
+              crosshair={{
+                width: 0.5,
+                color: COLORS.PLOT_LINE,
+                snap: false,
+              }}
+              tickAmount={0}
+              tickWidth={1}
+              tickLength={10}
+              ordinal={false}
+              gridLineWidth={0}
+              minorTicks={false}
+              minorTickLength={2}
+              minorTickWidth={2}
+              minorGridLineWidth={0}
+              minorTickInterval={1000 * 60 * 60 * 24 * 1}
+              min={
+                timespans[selectedTimespan].xMin
+                  ? timespans[selectedTimespan].xMin
+                  : undefined
+              }
+            >
+              <XAxis.Title></XAxis.Title>
+            </XAxis>
+            <YAxis
+              opposite={false}
+              // showFirstLabel={true}
+              // showLastLabel={true}
+              type="linear"
+              gridLineWidth={1}
+              gridLineColor={"#CDD8D3AA"}
+              gridLineDashStyle={"Dot"}
+              gridZIndex={10}
+              showFirstLabel={true}
+              showLastLabel={false}
+              tickAmount={4}
+              softMin={-100}
+              softMax={100}
+              labels={{
+                align: "right",
+                y: 2,
+                x: -3,
+                style: {
+                  fontSize: "10px",
+                  fontWeight: "600",
+                  color: "#CDD8D3",
+                  textAlign: "right",
+                  width: 45,
+                },
+                formatter: function () {
+                  const value = this.value as number | bigint;
+                  return (
+                    valuePrefix +
+                    Intl.NumberFormat("en-GB", {
+                      notation: "compact",
+                      maximumFractionDigits: 1,
+                      minimumFractionDigits: 0,
+                    }).format(value)
+                  );
+                },
+              }}
+            >
+              {" "}
+              <ColumnSeries
+                name="Profit"
+                color={"#FFDF27"}
+                zones={[
+                  {
+                    value: 0, // Values up to 0 (exclusive)
+                    color: "#FFDF27", // Color for negative values
+                  },
+                  {
+                    color: "#EEFF97", // Color for positive values
+                  },
+                ]}
+                data={dailyData.profit.data.map((d: any) => [
+                  d[0],
+                  d[dailyData.profit.types.indexOf(showUsd ? "usd" : "eth")],
+                ])}
+              />
+            </YAxis>
+          </HighchartsChart>
+        </HighchartsProvider>
+      </div>
     </div>
   );
 }
+
+export default React.memo(BreakdownCharts, (prevProps, nextProps) => {
+  // Custom comparison function to prevent unnecessary re-renders
+  return (
+    prevProps.data === nextProps.data &&
+    prevProps.dailyData === nextProps.dailyData &&
+    prevProps.chain === nextProps.chain &&
+    prevProps.timespans === nextProps.timespans &&
+    prevProps.selectedTimespan === nextProps.selectedTimespan &&
+    prevProps.isOpen === nextProps.isOpen
+  );
+});

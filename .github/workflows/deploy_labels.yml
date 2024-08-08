@@ -1,0 +1,11 @@
+name: Deploy on labels push
+on:
+  push:
+    branches:
+      - labels
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger rebuild on vercel
+        run: curl -X POST ${{ secrets.LABELS_DEPLOY_HOOK }}

@@ -6,6 +6,7 @@ import { useRowContext } from "./RowContext";
 import RowChildren from "./RowChildren";
 import { RowParentInterface } from "./ContextInterface";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../../Tooltip";
+import Link from "next/link";
 
 export default function RowParent({ chainKey, index }) {
   const { theme } = useTheme();
@@ -58,6 +59,26 @@ export default function RowParent({ chainKey, index }) {
     },
   };
 
+  const lightenHexColor = (color: string, percent: number) => {
+    const num = parseInt(color.replace("#", ""), 16),
+      amt = Math.round(2.55 * percent),
+      R = (num >> 16) + amt,
+      B = ((num >> 8) & 0x00ff) + amt,
+      G = (num & 0x0000ff) + amt;
+
+    return (
+      "#" +
+      (
+        0x1000000 +
+        (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
+        (B < 255 ? (B < 1 ? 0 : B) : 255) * 0x100 +
+        (G < 255 ? (G < 1 ? 0 : G) : 255)
+      )
+        .toString(16)
+        .slice(1)
+    );
+  }
+
   return (
     <div key={index} className="w-full h-full relative">
       {DisabledStates[selectedMode] &&
@@ -68,16 +89,27 @@ export default function RowParent({ chainKey, index }) {
               // AllChainsByKeys[chainKey].darkTextOnBackground === true
               //   ? "text-white dark:text-black"
               //   : "text-white"
-              } ${AllChainsByKeys[chainKey].backgrounds[theme ?? "dark"][1]}`}
+              } `}
+            style={{
+              backgroundColor: lightenHexColor(AllChainsByKeys[chainKey].colors[theme ?? "dark"][1], 50),
+              boxShadow: `0px 0px 0px 2px ${AllChainsByKeys[chainKey].colors[theme ?? "dark"][1]} inset`,
+              // borderWidth: "2px",
+              // boxSizing: "border-box",
+            }}
           >
             <div className="flex items-center h-[45px] pl-[20px] w-[155px] min-w-[155px] z-10">
-              <div className="flex justify-center items-center w-[30px] h-[15px]">
+              <div className="flex justify-center items-center w-[30px] h-full">
                 <Icon
                   icon={`gtp:${chainKey}-logo-monochrome`}
                   className="w-[15px] h-[15px]"
                 />
               </div>
-              <div className="">{AllChainsByKeys[chainKey].label}</div>
+              <Link
+                href={`/chains/${AllChainsByKeys[chainKey].urlKey}/`}
+                className="hover:underline"
+              >
+                {AllChainsByKeys[chainKey].label}
+              </Link>
             </div>
             {/* Additional content */}
 
@@ -102,7 +134,10 @@ export default function RowParent({ chainKey, index }) {
         </>
       ) : (
         <div
-          className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium text-white dark:text-black ${""
+          className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${AllChainsByKeys[chainKey].darkTextOnBackground === true
+            ? "text-white dark:text-black"
+            : "text-white"
+            } ${""
             // AllChainsByKeys[chainKey].darkTextOnBackground === true
             //   ? "text-white dark:text-black"
             //   : "text-white"
@@ -110,21 +145,21 @@ export default function RowParent({ chainKey, index }) {
         >
           <div
             className={`flex items-center h-[45px] pl-[20px] w-[155px] min-w-[155px] ${forceSelectedChain
-                ? isCategoryHovered("all_chain")
-                  ? isCategoryHovered("all_chain") && allCats
-                    ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[
-                    theme ?? "dark"
-                    ][1]
-                    }`
-                    : `rounded-l-full py-[24px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[
-                    theme ?? "dark"
-                    ][1]
-                    }`
-                  : allCats
-                    ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme ?? "dark"][1]
-                    }`
-                    : "z-1"
-                : ""
+              ? isCategoryHovered("all_chain")
+                ? isCategoryHovered("all_chain") && allCats
+                  ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[
+                  theme ?? "dark"
+                  ][1]
+                  }`
+                  : `rounded-l-full py-[24px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[
+                  theme ?? "dark"
+                  ][1]
+                  }`
+                : allCats
+                  ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme ?? "dark"][1]
+                  }`
+                  : "z-1"
+              : ""
               }  ${forceSelectedChain
                 ? "hover:cursor-pointer"
                 : "hover:cursor-default"
@@ -149,13 +184,18 @@ export default function RowParent({ chainKey, index }) {
               }
             }}
           >
-            <div className="flex justify-center items-center w-[30px] h-[15px]">
+            <div className="flex justify-center items-center w-[30px]  h-full">
               <Icon
                 icon={`gtp:${chainKey.replace("_", "-")}-logo-monochrome`}
                 className="w-[15px] h-[15px]"
               />
             </div>
-            <div className="">{AllChainsByKeys[chainKey].label}</div>
+            <Link
+              href={`/chains/${AllChainsByKeys[chainKey].urlKey}/`}
+              className="hover:underline"
+            >
+              {AllChainsByKeys[chainKey].label}
+            </Link>
           </div>
           <div className="flex w-full pr-[2px] py-[2px] relative">
             {/*Children */}

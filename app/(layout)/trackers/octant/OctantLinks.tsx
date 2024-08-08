@@ -6,7 +6,7 @@ import { track } from "@vercel/analytics/react";
 
 export const OctantLinks = () => {
   return (
-    <div className="hidden lg:flex flex-row-reverse gap-x-[10px] text-sm items-start">
+    <div className="hidden lg:flex flex-row-reverse gap-x-[10px] text-sm items-start select-none">
       <div className="peer group relative">
         <div
           className={`relative !z-[21] flex items-center gap-x-[8px] font-semibold border border-forest-50 dark:border-forest-900 bg-forest-50 dark:bg-forest-900 transition-all duration-300 rounded-full px-[16px] py-[7px] w-[91px] group-hover:w-[220px] delay-0`}
@@ -138,7 +138,7 @@ export const OctantLinks = () => {
 
 export const OctantLinksMobile = () => {
   return (
-    <div className="flex lg:hidden flex-row-reverse gap-x-[10px] justify-between text-sm pt-[15px] lg:pt-[15px]">
+    <div className="flex lg:hidden flex-row-reverse gap-x-[10px] justify-between text-sm pt-[15px] lg:pt-[15px] select-none">
       <div className="peer group relative">
         <div
           className={`relative !z-[21] flex items-center gap-x-[8px] font-semibold border border-forest-50 dark:border-forest-900 bg-forest-50 dark:bg-forest-900 transition-all duration-300 rounded-full px-[16px] py-[7px] w-[91px] group-hover:w-[220px] delay-0`}

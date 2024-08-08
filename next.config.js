@@ -28,28 +28,38 @@ const nextConfig = {
           ],
           destination: "/fees",
         },
+        {
+          source: "/",
+          has: [
+            {
+              type: "host",
+              value: "labels.growthepie.xyz",
+            },
+          ],
+          destination: "/labels",
+        },
+        {
+          source: "/",
+          has: [
+            {
+              type: "host",
+              value: "dev.labels.growthepie.xyz",
+            },
+          ],
+          destination: "/labels",
+        },
       ],
     };
   },
-  async redirects() {
-    return [
-      {
-        source: "/optimism-retropgf-3",
-        destination: "/trackers/optimism-retropgf-3",
-        permanent: true,
-      },
-      {
-        source: "/fees",
-        destination: "https://fees.growthepie.xyz",
-        permanent: true,
-      },
-      {
-        source: "/blockspace/chain-overview",
-        destination: "/blockspace/chain-overview/nft",
-        permanent: true,
-      },
-    ];
-  },
+  // async redirects() {
+  //   return [
+  //     {
+  //       source: "/optimism-retropgf-3",
+  //       destination: "/trackers/optimism-retropgf-3",
+  //       permanent: true,
+  //     },
+  //   ];
+  // },
   images: {
     dangerouslyAllowSVG: true,
     // domains: ["ipfs.io", "content.optimism.io"],

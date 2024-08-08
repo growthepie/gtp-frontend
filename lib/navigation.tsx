@@ -65,7 +65,7 @@ export const navigationCategories = {
     group: "trackers",
   },
   gtpmetrics: {
-    label: "More In-Depth Metrics",
+    label: "More from growthepie",
     icon: "gtp:gtp-pie-monochrome",
     group: "trackers",
   },
@@ -663,6 +663,7 @@ export const navigationItems: NavigationItem[] = [
   //     },
   //   ],
   // },
+
 
   // // put navigation items that we want to hide in production here
   // ...(IS_PREVIEW

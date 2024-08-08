@@ -8,24 +8,41 @@ const useDragScroll = (direction: 'horizontal' | 'vertical' = 'horizontal') => {
   const [isDragged, setIsDragged] = useState(false);
   const [showLeftGradient, setShowLeftGradient] = useState(false);
   const [showRightGradient, setShowRightGradient] = useState(false);
+  const [velocity, setVelocity] = useState({ x: 0, y: 0 });
+  const [lastMoveTime, setLastMoveTime] = useState(Date.now());
+
+
+  const isMouseDownInside = useRef(false);
+  const velocityHistory = useRef<{ x: number; y: number; time: number }[]>([]);
+  const rafId = useRef<number | null>(null);
 
   const handleMouseDown = useCallback((event: MouseEvent) => {
-    setIsDragging(true);
-    setIsDragged(false);
-    setStartPos({ x: event.clientX, y: event.clientY });
+    if (containerRef.current && containerRef.current.contains(event.target as Node)) {
+      isMouseDownInside.current = true;
+      setIsDragging(true);
+      setIsDragged(false);
+      setStartPos({ x: event.clientX, y: event.clientY });
+      setVelocity({ x: 0, y: 0 });
+      velocityHistory.current = [];
 
-    if (containerRef.current) {
-      setScrollPos({
-        left: containerRef.current.scrollLeft,
-        top: containerRef.current.scrollTop,
-      });
+      rafId.current && cancelAnimationFrame(rafId.current);
+
+      if (containerRef.current) {
+        setScrollPos({
+          left: containerRef.current.scrollLeft,
+          top: containerRef.current.scrollTop,
+        });
+      }
+
+      event.preventDefault(); // Prevent text selection
     }
-
-    event.preventDefault(); // Prevent text selection
   }, []);
 
   const handleMouseMove = useCallback((event: MouseEvent) => {
     if (!isDragging) return;
+
+    const currentTime = Date.now();
+    const timeDelta = currentTime - lastMoveTime;
 
     setIsDragged(true);
 
@@ -33,16 +50,62 @@ const useDragScroll = (direction: 'horizontal' | 'vertical' = 'horizontal') => {
       if (direction === 'horizontal') {
         const dx = event.clientX - startPos.x;
         containerRef.current.scrollLeft = scrollPos.left - dx;
+        velocityHistory.current.push({ x: -dx / timeDelta, y: 0, time: currentTime });
       } else {
         const dy = event.clientY - startPos.y;
         containerRef.current.scrollTop = scrollPos.top - dy;
+        velocityHistory.current.push({ x: 0, y: -dy / timeDelta, time: currentTime });
       }
     }
-  }, [isDragging, direction, scrollPos, startPos]);
+
+    setLastMoveTime(currentTime);
+  }, [isDragging, lastMoveTime, direction, startPos.x, startPos.y, scrollPos.left, scrollPos.top]);
+
+  const calculateAverageVelocity = () => {
+    const now = Date.now();
+    velocityHistory.current = velocityHistory.current.filter(item => now - item.time < 100); // Only consider the last 100ms
+    const total = velocityHistory.current.reduce((acc, item) => ({
+      x: acc.x + item.x,
+      y: acc.y + item.y
+    }), { x: 0, y: 0 });
+    const count = velocityHistory.current.length;
+    return count > 0 ? { x: total.x / count, y: total.y / count } : { x: 0, y: 0 };
+  };
 
   const handleMouseUp = useCallback(() => {
+    if (!isMouseDownInside.current) return;
+
+    isMouseDownInside.current = false;
     setIsDragging(false);
-  }, []);
+
+    const avgVelocity = calculateAverageVelocity();
+    setVelocity(avgVelocity);
+
+    if (avgVelocity.x !== 0 || avgVelocity.y !== 0) {
+      const startTime = Date.now();
+      const decay = 0.96; // Decay factor for the velocity
+
+      const animate = () => {
+        const currentTime = Date.now();
+        const elapsed = currentTime - startTime;
+        const factor = Math.pow(decay, elapsed / 16); // Adjust based on 60fps (16ms per frame)
+
+        if (containerRef.current) {
+          if (direction === 'horizontal') {
+            containerRef.current.scrollLeft += avgVelocity.x * factor;
+          } else {
+            containerRef.current.scrollTop += avgVelocity.y * factor;
+          }
+
+          if (Math.abs(avgVelocity.x * factor) > 0.5 || Math.abs(avgVelocity.y * factor) > 0.5) {
+            rafId.current = requestAnimationFrame(animate);
+          }
+        }
+      };
+
+      animate();
+    }
+  }, [direction, velocity.x, velocity.y]);
 
   const handleWheel = useCallback((event: WheelEvent) => {
     event.preventDefault();
