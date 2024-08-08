@@ -33,44 +33,44 @@ export default function SidebarMenuGroup({
 }: SidebarProps) {
   const { data: master } = useSWR<MasterResponse>(MasterURL);
 
-  const ChainGroups = useMemo(() => {
-    if (!master) return {};
+  // const ChainGroups = useMemo(() => {
+  //   if (!master) return {};
 
-    // const chainGroups = {};
+  //   // const chainGroups = {};
 
-    const chainItemsByKey = navigationItems[3].options
-      .filter((option) => option.hide !== true)
-      .filter(
-        (option) =>
-          option.key && Get_SupportedChainKeys(master).includes(option.key),
-      )
-      .reduce((acc, option) => {
-        if (option.key) acc[option.key] = option;
-        return acc;
-      }, {});
+  //   // const chainItemsByKey = navigationItems[2].options
+  //   //   .filter((option) => option.hide !== true)
+  //   //   .filter(
+  //   //     (option) =>
+  //   //       option.key && Get_SupportedChainKeys(master).includes(option.key),
+  //   //   )
+  //   //   .reduce((acc, option) => {
+  //   //     if (option.key) acc[option.key] = option;
+  //   //     return acc;
+  //   //   }, {});
 
-    // group master.chains by bucket
-    const chainsByBucket = Object.entries(master.chains).reduce(
-      (acc, [chainKey, chainInfo]) => {
-        if (!acc[chainInfo.bucket]) {
-          acc[chainInfo.bucket] = [];
-        }
+  //   // group master.chains by bucket
+  //   const chainsByBucket = Object.entries(master.chains).reduce(
+  //     (acc, [chainKey, chainInfo]) => {
+  //       if (!acc[chainInfo.bucket]) {
+  //         acc[chainInfo.bucket] = [];
+  //       }
 
-        if (chainItemsByKey[chainKey])
-          acc[chainInfo.bucket].push(chainItemsByKey[chainKey]);
+  //       // if (chainItemsByKey[chainKey])
+  //       //   acc[chainInfo.bucket].push(chainItemsByKey[chainKey]);
 
-        return acc;
-      },
-      {},
-    );
+  //       return acc;
+  //     },
+  //     {},
+  //   );
 
-    // sort each bucket in alphabetical order
-    Object.keys(chainsByBucket).forEach((bucket) => {
-      chainsByBucket[bucket].sort((a, b) => a.label.localeCompare(b.label));
-    });
+  //   // sort each bucket in alphabetical order
+  //   Object.keys(chainsByBucket).forEach((bucket) => {
+  //     chainsByBucket[bucket].sort((a, b) => a.label.localeCompare(b.label));
+  //   });
 
-    return chainsByBucket;
-  }, [master]);
+  //   return chainsByBucket;
+  // }, [master]);
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -305,7 +305,8 @@ export default function SidebarMenuGroup({
           )}
         </Tooltip>
 
-        <div
+        {/* TODO: Revisar porque contiene la agrupacion del item menu */}
+        {/* <div
           className={`flex flex-col overflow-hidden mb-[17px] w-full`}
           style={{
             transition: `all ${item.options.length * 0.01 + 0.1}s ease-in-out`,
@@ -438,7 +439,7 @@ export default function SidebarMenuGroup({
                 </div>
               );
             })}
-        </div>
+        </div> */}
       </div>
     );
   }

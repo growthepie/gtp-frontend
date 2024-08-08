@@ -622,47 +622,47 @@ export const navigationItems: NavigationItem[] = [
   //   options: [],
   //   href: "https://docs.growthepie.xyz/",
   // },
-  {
-    name: "Trackers",
-    label: "Trackers",
-    icon: "gtp:tracker",
-    options: [
-      {
-        label: "fees.growthepie.xyz",
-        icon: "gtp:gtp-pie",
-        category: "gtpmetrics",
-        key: "feesxyz",
-        rootKey: "feesxyz",
-        urlKey: "feesxyz",
-        excludeFromSitemap: true,
-      },
-      {
-        label: "OP RetroPGF 3",
-        icon: "gtp:optimism-logo-monochrome",
-        category: "public-goods-funding",
-        key: "rpgf3",
-        rootKey: "rpgf3",
-        urlKey: "optimism-retropgf-3",
-      },
-      {
-        label: "Octant",
-        icon: "",
-        category: "public-goods-funding",
-        key: "octant",
-        rootKey: "octant",
-        urlKey: "octant",
-      },
-      {
-        label: "Glo Dollar",
-        icon: "",
-        category: "public-goods-funding",
-        key: "glodollar",
-        rootKey: "glodollar",
-        urlKey: "glodollar",
-        showNew: true,
-      },
-    ],
-  },
+  // {
+  //   name: "Trackers",
+  //   label: "Trackers",
+  //   icon: "gtp:tracker",
+  //   options: [
+  //     {
+  //       label: "fees.growthepie.xyz",
+  //       icon: "gtp:gtp-pie",
+  //       category: "gtpmetrics",
+  //       key: "feesxyz",
+  //       rootKey: "feesxyz",
+  //       urlKey: "feesxyz",
+  //       excludeFromSitemap: true,
+  //     },
+  //     {
+  //       label: "OP RetroPGF 3",
+  //       icon: "gtp:optimism-logo-monochrome",
+  //       category: "public-goods-funding",
+  //       key: "rpgf3",
+  //       rootKey: "rpgf3",
+  //       urlKey: "optimism-retropgf-3",
+  //     },
+  //     {
+  //       label: "Octant",
+  //       icon: "",
+  //       category: "public-goods-funding",
+  //       key: "octant",
+  //       rootKey: "octant",
+  //       urlKey: "octant",
+  //     },
+  //     {
+  //       label: "Glo Dollar",
+  //       icon: "",
+  //       category: "public-goods-funding",
+  //       key: "glodollar",
+  //       rootKey: "glodollar",
+  //       urlKey: "glodollar",
+  //       showNew: true,
+  //     },
+  //   ],
+  // },
 
   // // put navigation items that we want to hide in production here
   // ...(IS_PREVIEW
@@ -679,9 +679,10 @@ export const navigationItems: NavigationItem[] = [
   // : []),
 ];
 
+// TODO: Cambiarlo a Donación
 export const contributorsItem: NavigationItem = {
   name: "Contributors",
-  label: "Contributors",
+  label: "Donate",
   icon: "gtp:compass",
   options: [],
   href: "/contributors",
@@ -704,11 +705,11 @@ export const getFundamentalsByKey = (() => {
 
   return fundamentalsByKey;
 })();
-
-export const apiDocsItem: NavigationItem = {
-  name: "API Documentation",
-  label: "API Documentation",
-  icon: "gtp:file-text",
-  options: [],
-  href: "https://docs.growthepie.xyz/api",
-};
+// TODO: Eliminar
+// export const apiDocsItem: NavigationItem = {
+//   name: "API Documentation",
+//   label: "API Documentation",
+//   icon: "gtp:file-text",
+//   options: [],
+//   href: "https://docs.growthepie.xyz/api",
+// };

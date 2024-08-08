@@ -55,6 +55,7 @@ export default async function Page() {
       </Container>
       <Container className="!px-0 fade-edge-div pb-[24px] -mb-[24px]">
         <SwiperContainer ariaId={"layer-2-traction-title"} />
+        {/* TODO: ELIMINAR ESTOS COMENTARIOS */}
         {/* <div className="h-[145px] md:h-[183px] w-full">
           <ShowLoading section />
         </div> */}
@@ -76,6 +77,7 @@ export default async function Page() {
         </Subheading>
       </Container>
       <LandingUserBaseChart />
+      {/* TODO: ELIMINAR ESTOS COMENTARIOS */}
       {/**Blockspace */}
       {/* <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
         <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
@@ -111,7 +113,7 @@ export default async function Page() {
                 id="layer-2-traction-title"
                 className="text-[20px] md:text-[30px] leading-[1.2] font-semibold"
               >
-                About growthepie
+                About Restake Watch
               </Heading>
             </div>
             <div className="block md:hidden relative mt-[0px] lg:mt-[15px] mb-[30px] lg:-mb-[30px] h-[190px]">
@@ -125,28 +127,28 @@ export default async function Page() {
             </div>
             <div className="text-base md:text-sm lg:text-base">
               <p className="mb-2">
-                This website is based on the open-source website of
-                www.growthepie.xyz, and we thank them dearly for inspiring the
-                Growthepie concept.
+                This website is based on the open-source websites of
+                growthepie.xyz and l2beat.com, and we thank them dearly for
+                inspiring the Restake Watch concept. Restake Watch is a public
+                goods organization, soon to be a company, dedicated to providing
+                transparency to the restaking ecosystem.
               </p>
               <p className="mb-2">
                 We aim to serve as an impartial and autonomous watchdog, always
                 acting in the best interest of users and the broader ecosystem.
-                Our mission is to remain genuinely neutral and grounded in
-                reality and facts. We aim to serve as an impartial and
-                autonomous watchdog, always acting in the best interest of users
-                and the broader ecosystem.
+                Our commitment is to remain genuinely neutral and grounded in
+                reality and facts.
               </p>
               <p>
-                Our commitment is to remain genuinely neutral and grounded in
-                reality and facts. We receive generous funding from the Ethereum
-                Foundation Ecosystem Support Grants. Additionally, we are
-                actively seeking further funding and donoations to enhance our
-                monitoring capabilities and continue advancing the ecosystem.
+                We receive generous funding from the Ethereum Foundation
+                Ecosystem Support Grants. Additionally, we are actively seeking
+                further funding and donoations to enhance our monitoring
+                capabilities and continue advancing the ecosystem.
               </p>
             </div>
           </div>
-          <div className="hidden md:flex md:flex-1 relative mt-[5px] lg:mt-[15px] -mb-[10px] lg:-mb-[30px]">
+          {/* TODO: ELIMINAR ESTOS COMENTARIOS */}
+          {/* <div className="hidden md:flex md:flex-1 relative mt-[5px] lg:mt-[15px] -mb-[10px] lg:-mb-[30px]">
             <Image
               src="/GTP-Data-Kraken.png"
               fill={true}
@@ -154,9 +156,9 @@ export default async function Page() {
               className="object-contain"
               sizes="25vw"
             />
-          </div>
+          </div> */}
         </div>
-
+        {/* TODO: ELIMINAR ESTOS COMENTARIOS */}
         {/**Preguntas frecuentes */}
         {/* <div className="flex mt-[25px] md:mt-[60px] mb-[25px] md:mb-[30px] ml-1.5 md:ml-0 space-x-2 items-center">
           <Icon

@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import {
   navigationItems,
   contributorsItem,
-  apiDocsItem,
+  // apiDocsItem,
   // rpgfItem,
 } from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
@@ -108,18 +108,20 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
               </div>
               <div className="z-[999] mt-[30px] h-[calc(100vh-100px)] w-full flex flex-col justify-between overflow-hidden relative pointer-events-auto">
                 <div className="flex-1 w-full overflow-x-hidden relative overflow-y-auto scrollbar-thin scrollbar-thumb-forest-1000/50 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
-                  {navigationItems.map((item) => (
+                  {/* TODO: VERIFICAR ANTES DE ELIMINAR. TIENE UN GROUP QUE PUEDE SERVIR PARA MAS ADELANTE EN LOS GRUPOS DE ITEM MENU */}
+                  {/* {navigationItems.map((item) => (
                     <SidebarMenuGroup
                       key={item.name + "_item"}
                       item={item}
                       sidebarOpen={isMobileSidebarOpen}
                     />
-                  ))}
-                  <SidebarMenuGroup
+                  ))} */}
+                  {/* // TODO: Eliminar */}
+                  {/* <SidebarMenuGroup
                     key={apiDocsItem.name + "_item"}
                     item={apiDocsItem}
                     sidebarOpen={isMobileSidebarOpen}
-                  />
+                  /> */}
                   <SidebarMenuGroup
                     key={contributorsItem.name + "_item"}
                     item={contributorsItem}
@@ -183,18 +185,24 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
       }}
     >
       <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-forest-800/30 scrollbar-track-forest-800/10">
-        {navigationItems.map((item) => (
+        {/* {navigationItems.map((item) => (
           <SidebarMenuGroup
             key={item.name + "_item"}
             item={item}
             sidebarOpen={isSidebarOpen}
           />
-        ))}
+        ))} */}
         <SidebarMenuGroup
+          key={navigationItems[2].name + "_item"}
+          item={navigationItems[2]}
+          sidebarOpen={isSidebarOpen}
+        />
+        {/* // TODO: Eliminar */}
+        {/* <SidebarMenuGroup
           key={apiDocsItem.name + "_item"}
           item={apiDocsItem}
           sidebarOpen={isSidebarOpen}
-        />
+        /> */}
         <SidebarMenuGroup
           key={contributorsItem.name + "_item"}
           item={contributorsItem}

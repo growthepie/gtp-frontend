@@ -627,7 +627,9 @@ export default function LandingChart({
   const [totalUsersIncrease, setTotalUsersIncrease] = useState(0);
 
   const isMobile = useMediaQuery("(max-width: 767px)");
-
+  {
+    /* TODO: ELIMINAR ESTOS COMENTARIOS */
+  }
   // const getTickPositions = useCallback(
   //   (xMin: any, xMax: any): number[] => {
   //     const tickPositions: number[] = [];
@@ -705,6 +707,9 @@ export default function LandingChart({
   );
 
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
+  {
+    /* TODO: ELIMINAR ESTOS COMENTARIOS */
+  }
   // daysShown based on minX and maxX on chart X axis
   // const daysShown = useMemo(a() => {
   //   if (!chartComponent.current) return parseInt(selectedTimespan);
@@ -1728,7 +1733,8 @@ export default function LandingChart({
           isMobile ? "mb-[30px]" : "mb-0"
         }`}
       >
-        <div className="flex flex-col lg:hidden justify-center pb-[15px] gap-y-[5px]">
+        {/* TODO: ELIMINAR ESTOS COMENTARIOS */}
+        {/* <div className="flex flex-col lg:hidden justify-center pb-[15px] gap-y-[5px]">
           <MobileMetricCard
             icon="feather:users"
             metric_name="Total Users"
@@ -1753,7 +1759,7 @@ export default function LandingChart({
               is_multiple
             />
           </div>
-        </div>
+        </div> */}
         <TopRowContainer>
           <TopRowParent>
             <TopRowChild
