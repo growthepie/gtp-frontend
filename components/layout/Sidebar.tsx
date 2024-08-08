@@ -260,16 +260,16 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
       }}
     >
       <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-forest-800/30 scrollbar-track-forest-800/10">
-        {navigationItems.map((item) => (
+        {/* {navigationItems.map((item) => (
           <SidebarMenuGroup
             key={item.name + "_item"}
             item={item}
             sidebarOpen={isSidebarOpen}
           />
-        ))}
+        ))} */}
         <SidebarMenuGroup
-          key={apiDocsItem.name + "_item"}
-          item={apiDocsItem}
+          key={navigationItems[6].name + "_item"}
+          item={navigationItems[6]}
           sidebarOpen={isSidebarOpen}
         />
         <SidebarMenuGroup

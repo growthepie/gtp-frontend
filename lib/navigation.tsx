@@ -675,7 +675,7 @@ export const navigationItems: NavigationItem[] = [
     label: "Blog",
     icon: "gtp:blog",
     options: [],
-    href: "https://mirror.xyz/blog.growthepie.eth",
+    href: "/",
   },
 
   //   ]
@@ -684,10 +684,10 @@ export const navigationItems: NavigationItem[] = [
 
 export const contributorsItem: NavigationItem = {
   name: "Contributors",
-  label: "Contributors",
+  label: "Donate",
   icon: "gtp:compass",
   options: [],
-  href: "/contributors",
+  href: "/",
 };
 
 export const getFundamentalsByKey = (() => {
