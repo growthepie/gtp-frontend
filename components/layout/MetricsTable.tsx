@@ -542,7 +542,7 @@ const MetricsTable = ({
               >
                 <div
                   key={item.chain.key}
-                  className={`flex items-center justify-between p-1.5 pl-4 py-[4px] lg:pr-2 lg:py-[10.5px] lg:pl-2 rounded-full w-full font-[400] border-[1px] whitespace-nowrap text-xs lg:text-[0.95rem] group relative
+                  className={`flex items-center justify-between p-1.5 pl-4 py-[4px] lg:pr-2 lg:py-[10.5px] lg:pl-2 rounded-full w-full font-[400] border-[1px] whitespace-nowrap text-xs lg:text-[0.95rem] cursor-pointer group relative
               ${item.chain.key === "ethereum"
                       ? showEthereumMainnet
                         ? "border-black/[16%] dark:border-[#5A6462] hover:border hover:p-1.5 p-[7px] py-[4px] lg:p-[13px] lg:py-[8px] hover:lg:p-3 hover:lg:py-[7px]"
@@ -551,25 +551,7 @@ const MetricsTable = ({
                         ? "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/10"
                         : "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/5 transition-all duration-100"
                     } `}
-
-                // onClick={() => {
-                //   if (item.chain.key === "ethereum") {
-                //     if (showEthereumMainnet) {
-                //       setShowEthereumMainnet(false);
-                //     } else {
-                //       setShowEthereumMainnet(true);
-                //     }
-                //   } else {
-                //     setChainSelectToggle("normal");
-                //     if (selectedChains.includes(item.chain.key)) {
-                //       setSelectedChains(
-                //         selectedChains.filter((c) => c !== item.chain.key),
-                //       );
-                //     } else {
-                //       setSelectedChains([...selectedChains, item.chain.key]);
-                //     }
-                //   }
-                // }}
+                  onClick={() => handleChainClick(item.chain.key)}
                 >
                   <div className="w-full h-full absolute left-0 bottom-0 rounded-full overflow-clip pointer-events-none">
                     <div className="relative w-full h-full">
@@ -635,11 +617,13 @@ const MetricsTable = ({
                             </div>
                           )}
                         </div>
-                        <Link href={`/chains/${item.chain.urlKey}`}
+                        <Link
+                          href={`/chains/${item.chain.urlKey}`}
                           className={`font-medium leading-snug text-ellipsis overflow-hidden hover:underline ${isSidebarOpen
                             ? "text-[10px] 2xl:text-xs"
                             : "text-xs"
                             }`}
+                          onClick={(e) => e.stopPropagation()}
                         >
                           {item.chain.label}
                         </Link>

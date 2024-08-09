@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   const fundamentals = navigationItems[1];
   const blockspace = navigationItems[2];
   const chains = navigationItems[3];
-  const trackers = navigationItems[5];
+  const trackers = navigationItems[4];
 
   const master = await fetch(MasterURL);
   const masterData: MasterResponse = await master.json();

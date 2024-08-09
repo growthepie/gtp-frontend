@@ -626,13 +626,13 @@ export const navigationItems: NavigationItem[] = [
     ],
   },
 
-  {
-    name: "Knowledge",
-    label: "Knowledge",
-    icon: "gtp:book-open",
-    options: [],
-    href: "https://docs.growthepie.xyz/",
-  },
+  // {
+  //   name: "Knowledge",
+  //   label: "Knowledge",
+  //   icon: "gtp:book-open",
+  //   options: [],
+  //   href: "https://docs.growthepie.xyz/",
+  // },
   {
     name: "Trackers",
     label: "Trackers",
@@ -688,13 +688,13 @@ export const navigationItems: NavigationItem[] = [
   // // put navigation items that we want to hide in production here
   // ...(IS_PREVIEW
   //   ? [
-  {
-    name: "Blog",
-    label: "Blog",
-    icon: "gtp:blog",
-    options: [],
-    href: "https://mirror.xyz/blog.growthepie.eth",
-  },
+  // {
+  //   name: "Blog",
+  //   label: "Blog",
+  //   icon: "gtp:blog",
+  //   options: [],
+  //   href: "https://mirror.xyz/blog.growthepie.eth",
+  // },
 
   //   ]
   // : []),
