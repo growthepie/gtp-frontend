@@ -1469,10 +1469,10 @@ export default function ChainChart({
       >
         <div className="flex flex-col relative h-full lg:h-[54px] w-full lg:w-[271px] -my-[1px]">
           <div
-            className={`relative flex rounded-full h-full w-full lg:z-30 p-[5px] cursor-pointer ${compChain
-              ? AllChainsByKeys[compChain].backgrounds[theme ?? "dark"][0]
-              : "bg-white dark:bg-[#151A19]"
-              } ${isMobile ? "w-full" : "w-[271px]"} `}
+            className={`relative flex rounded-full h-full w-full lg:z-30 p-[5px] cursor-pointer ${isMobile ? "w-full" : "w-[271px]"}`}
+            style={{
+              backgroundColor: compChain ? AllChainsByKeys[compChain].colors[theme ?? "dark"][0] : "#151A19",
+            }}
           >
             <div
               className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[15] hover:cursor-pointer"
