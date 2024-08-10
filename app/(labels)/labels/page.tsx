@@ -745,6 +745,17 @@ export default function LabelsPage() {
   }, [addressWidth, showDeployerAddress, showDeploymentTx]);
 
 
+  const getProjectTwitterLink = useCallback((ownerProject: string) => {
+    const twitter = ownerProjectToProjectData[
+      ownerProject
+    ][4];
+
+    // if includes "https://" or "http://" then return the link
+    if (twitterLink.includes("https://") || twitter.includes("http://"))
+      return twitter;
+
+    return `https://x.com/${twitter}`;
+  }, [ownerProjectToProjectData]);
 
 
   return (
@@ -1282,10 +1293,7 @@ export default function LabelsPage() {
                                           <div className="flex items-center">
                                             <a
                                               href={
-                                                ownerProjectToProjectData[
-                                                filteredLabelsData[item.index]
-                                                  .owner_project
-                                                ][4]
+                                                getProjectTwitterLink(filteredLabelsData[item.index])
                                               }
                                               target="_blank"
                                               className="group flex items-center gap-x-[5px] text-xs"
@@ -1372,9 +1380,7 @@ export default function LabelsPage() {
                                       ][4] && (
                                           <a
                                             href={
-                                              ownerProjectToProjectData[
-                                              filteredLabelsData[item.index].owner_project
-                                              ][4]
+                                              getProjectTwitterLink(filteredLabelsData[item.index].owner_project)
                                             }
                                             target="_blank"
                                             className="group flex items-center gap-x-[5px] text-xs"
