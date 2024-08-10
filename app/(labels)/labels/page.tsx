@@ -746,6 +746,7 @@ export default function LabelsPage() {
 
 
   const getProjectTwitterLink = useCallback((ownerProject: string) => {
+    if (!ownerProjectToProjectData[ownerProject]) return "";
     const twitter = ownerProjectToProjectData[
       ownerProject
     ][4];
