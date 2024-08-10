@@ -100,7 +100,7 @@ const EmbedContainer = ({
           <div className="relative w-[calc(115.7px/4*3)] h-[22px] md:w-[115.7px] md:h-[32px] pl-[8px] pr-[2.5px] pb-[4px] md:pl-[4px] md:pr-[5px] md:pb-[8px]">
             <div className="relative w-full h-full">
               <Image
-                src="/logo_full.png"
+                src="/logo-restake.svg"
                 alt="Forest"
                 className="hidden dark:block"
                 fill={true}

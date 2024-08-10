@@ -1,0 +1,501 @@
+{
+    "stakerData": [
+        {
+            "Staker Address": "0x06c8fcdb705473e146c82acebb77b70e1c879eb0",
+            "ETH Restaked": 0.038234,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 8.2e-05,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 0.038234
+        },
+        {
+            "Staker Address": "0x0b1981a9fcc24a445de15141390d3e46da0e425c",
+            "ETH Restaked": 25.094177,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Lido",
+            "Market Share": 0.053542,
+            "Largest Strategy": "Lido",
+            "Largest Strategy ETH": 25.094177
+        },
+        {
+            "Staker Address": "0x118bc0089928452d97c8b4f8f9c8a12afadba217",
+            "ETH Restaked": 0.1317,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.000281,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 0.1317
+        },
+        {
+            "Staker Address": "0x125b367c16c5858f11e12948404f7a1371a0fda3",
+            "ETH Restaked": 0.0,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "UNKNOWN",
+            "Market Share": 0.0,
+            "Largest Strategy": "UNKNOWN",
+            "Largest Strategy ETH": 0.0
+        },
+        {
+            "Staker Address": "0x12799e9d0f3ae4cd3ca348b4b907344c37331f6e",
+            "ETH Restaked": 8.630135,
+            "Number of Strategies": 3,
+            "Most Used Strategy": "Rocket_Pool",
+            "Market Share": 0.018414,
+            "Largest Strategy": "Lido",
+            "Largest Strategy ETH": 4.137741
+        },
+        {
+            "Staker Address": "0x1e56bff5ea6643985008521650df481132aad5ad",
+            "ETH Restaked": 0.065014,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.000139,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 0.065014
+        },
+        {
+            "Staker Address": "0x1f33c0edbe591a2194978069c40bddf8c2059a5e",
+            "ETH Restaked": 0.956355,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.002041,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 0.956355
+        },
+        {
+            "Staker Address": "0x2be13db9427aef1aa22e1b26e0982f3f343900c3",
+            "ETH Restaked": 0.09563,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.000204,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 0.09563
+        },
+        {
+            "Staker Address": "0x2d3b4052c41bc91e8c6ae1c2182b9dc8b4283475",
+            "ETH Restaked": 5.05,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Rocket_Pool",
+            "Market Share": 0.010775,
+            "Largest Strategy": "Rocket_Pool",
+            "Largest Strategy ETH": 5.05
+        },
+        {
+            "Staker Address": "0x31e5729fecf66c769809ceff9e8bee1942e570fb",
+            "ETH Restaked": 0.047821,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.000102,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 0.047821
+        },
+        {
+            "Staker Address": "0x39dddab5242cb6d73041e4e805c6ad5f5cd4b552",
+            "ETH Restaked": 1.238035,
+            "Number of Strategies": 4,
+            "Most Used Strategy": "Lido",
+            "Market Share": 0.002642,
+            "Largest Strategy": "Rocket_Pool",
+            "Largest Strategy ETH": 0.970121
+        },
+        {
+            "Staker Address": "0x3f1869d9ce5b602de7a8ca429e974a3ce2c39a24",
+            "ETH Restaked": 0.094423,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.000201,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 0.094423
+        },
+        {
+            "Staker Address": "0x4963d2e8b952ae2c40bc59c0708978c64fe5c6a8",
+            "ETH Restaked": 1.337718,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.002854,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 1.337718
+        },
+        {
+            "Staker Address": "0x4db30e63450017d6517008a101c8aefa2eb99c4d",
+            "ETH Restaked": 0.11474,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.000245,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 0.11474
+        },
+        {
+            "Staker Address": "0x509a90777cb13ef85cbdf9700d0dd0a80d1b2ae2",
+            "ETH Restaked": 0.965753,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.002061,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 0.965753
+        },
+        {
+            "Staker Address": "0x55ed31a7bcb5277b3e31984ef03b3315a5f332cc",
+            "ETH Restaked": 3.560062,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Lido",
+            "Market Share": 0.007596,
+            "Largest Strategy": "Lido",
+            "Largest Strategy ETH": 3.560062
+        },
+        {
+            "Staker Address": "0x571d491aa641ee48eb677e770c6f081bfcce83b1",
+            "ETH Restaked": 1.09461,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.002335,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 1.09461
+        },
+        {
+            "Staker Address": "0x57f96b7c8afc74522eda98d8c06b8461f3e39330",
+            "ETH Restaked": 2.222404,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.004742,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 2.222404
+        },
+        {
+            "Staker Address": "0x5982f71038b2696c6c438eb5c5d018ec64846a4e",
+            "ETH Restaked": 0.2,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.000427,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 0.2
+        },
+        {
+            "Staker Address": "0x5e01e2b1c5ed9987160762261d1961ade06d4012",
+            "ETH Restaked": 0.159074,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.000339,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 0.159074
+        },
+        {
+            "Staker Address": "0x64515efb8b394845b5e58c2f8ee8904264130fa3",
+            "ETH Restaked": 0.146234,
+            "Number of Strategies": 2,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.000312,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 0.110819
+        },
+        {
+            "Staker Address": "0x6627284814ea6f3dbeef29407b6ef0da72105851",
+            "ETH Restaked": 1.419109,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.003028,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 1.419109
+        },
+        {
+            "Staker Address": "0x67b41b6dbd7fe09ea93d01b252f22a485d910d23",
+            "ETH Restaked": 0.108878,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.000232,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 0.108878
+        },
+        {
+            "Staker Address": "0x69ca86c7da4f24354327d3dbb2edd8530842c18d",
+            "ETH Restaked": 0.095526,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.000204,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 0.095526
+        },
+        {
+            "Staker Address": "0x6fbe6eab3053fef0da871807346b0b40e989840f",
+            "ETH Restaked": 191.439824,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Mantle",
+            "Market Share": 0.408463,
+            "Largest Strategy": "Mantle",
+            "Largest Strategy ETH": 191.439824
+        },
+        {
+            "Staker Address": "0x6fbe7a00220a5fab8584db7a8ce4566c605fd7a4",
+            "ETH Restaked": 40.411056,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Lido",
+            "Market Share": 0.086223,
+            "Largest Strategy": "Lido",
+            "Largest Strategy ETH": 40.411056
+        },
+        {
+            "Staker Address": "0x70d8c06125145281710dd73de382b7c1938200ea",
+            "ETH Restaked": 0.0,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "UNKNOWN",
+            "Market Share": 0.0,
+            "Largest Strategy": "UNKNOWN",
+            "Largest Strategy ETH": 0.0
+        },
+        {
+            "Staker Address": "0x78524beeac12368e600457478738c233f436e9f6",
+            "ETH Restaked": 100.243526,
+            "Number of Strategies": 2,
+            "Most Used Strategy": "Lido",
+            "Market Share": 0.213883,
+            "Largest Strategy": "Lido",
+            "Largest Strategy ETH": 50.243526
+        },
+        {
+            "Staker Address": "0x7be31d6b7abe539894c0250a3d711ee392233197",
+            "ETH Restaked": 0.0,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "UNKNOWN",
+            "Market Share": 0.0,
+            "Largest Strategy": "UNKNOWN",
+            "Largest Strategy ETH": 0.0
+        },
+        {
+            "Staker Address": "0x8da700c0ef54282f2ca2de5ccb4773ba94d8301b",
+            "ETH Restaked": 9.332832,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Rocket_Pool",
+            "Market Share": 0.019913,
+            "Largest Strategy": "Rocket_Pool",
+            "Largest Strategy ETH": 9.332832
+        },
+        {
+            "Staker Address": "0x8f8e33f4755af73af3f82c7214f895d51ffffde0",
+            "ETH Restaked": 0.480417,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.001025,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 0.480417
+        },
+        {
+            "Staker Address": "0x927c6f9f8fc102aeecb4f6bd5374bb89e25ed9bb",
+            "ETH Restaked": 0.22992,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.000491,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 0.22992
+        },
+        {
+            "Staker Address": "0x92e76d046eaaccfeef0a24f15977365ee747216d",
+            "ETH Restaked": 1.190665,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.00254,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 1.190665
+        },
+        {
+            "Staker Address": "0x955d790417412ea7796676a16984c3a4ea5f830e",
+            "ETH Restaked": 0.0,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "UNKNOWN",
+            "Market Share": 0.0,
+            "Largest Strategy": "UNKNOWN",
+            "Largest Strategy ETH": 0.0
+        },
+        {
+            "Staker Address": "0x96be9ba8ebf1f8a22cd5226bca86639bb2228526",
+            "ETH Restaked": 1.00086,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.002135,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 1.00086
+        },
+        {
+            "Staker Address": "0x96e189e2e77624536118dde30597edecfe3167f5",
+            "ETH Restaked": 6.504009,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Lido",
+            "Market Share": 0.013877,
+            "Largest Strategy": "Lido",
+            "Largest Strategy ETH": 6.504009
+        },
+        {
+            "Staker Address": "0x998e312c40e994a805d1abfeed4722b851f848dc",
+            "ETH Restaked": 0.19201,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Coinbase",
+            "Market Share": 0.00041,
+            "Largest Strategy": "Coinbase",
+            "Largest Strategy ETH": 0.19201
+        },
+        {
+            "Staker Address": "0x999b98242f5384e225a02afcebb5cfc817559e65",
+            "ETH Restaked": 1.25737,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.002683,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 1.25737
+        },
+        {
+            "Staker Address": "0xa74034c7f7f4388e024f63b33626213181d6b984",
+            "ETH Restaked": 0.0,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "UNKNOWN",
+            "Market Share": 0.0,
+            "Largest Strategy": "UNKNOWN",
+            "Largest Strategy ETH": 0.0
+        },
+        {
+            "Staker Address": "0xab10de2044fa219998db26775391d597f646f0a2",
+            "ETH Restaked": 2.321616,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.004953,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 2.321616
+        },
+        {
+            "Staker Address": "0xb7aed180edb63c1eb8cef3245644719e5448eaea",
+            "ETH Restaked": 0.139237,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Rocket_Pool",
+            "Market Share": 0.000297,
+            "Largest Strategy": "Rocket_Pool",
+            "Largest Strategy ETH": 0.139237
+        },
+        {
+            "Staker Address": "0xbb43dcafa77fb5d1888a087ce6a30c287981c391",
+            "ETH Restaked": 0.0,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "UNKNOWN",
+            "Market Share": 0.0,
+            "Largest Strategy": "UNKNOWN",
+            "Largest Strategy ETH": 0.0
+        },
+        {
+            "Staker Address": "0xbc809d59be9aaf65ad35fafbf3f34af04a063f75",
+            "ETH Restaked": 0.114743,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.000245,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 0.114743
+        },
+        {
+            "Staker Address": "0xbd584812c7aaeb901e8424725065cb0716b9264f",
+            "ETH Restaked": 0.064983,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.000139,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 0.064983
+        },
+        {
+            "Staker Address": "0xc128c52e7b7307b37c77ab46da9c4925cf0c747b",
+            "ETH Restaked": 0.103138,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.00022,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 0.103138
+        },
+        {
+            "Staker Address": "0xce1eb3e71d13e881c499851794b9966e63e78e46",
+            "ETH Restaked": 6.384496,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.013622,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 6.384496
+        },
+        {
+            "Staker Address": "0xd2c2e84501c63b7b9897df063288d67060119c99",
+            "ETH Restaked": 18.192491,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Rocket_Pool",
+            "Market Share": 0.038816,
+            "Largest Strategy": "Rocket_Pool",
+            "Largest Strategy ETH": 18.192491
+        },
+        {
+            "Staker Address": "0xd8cda9267282d8167c0bcc0a4346d3b87be78249",
+            "ETH Restaked": 1.93057,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.004119,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 1.93057
+        },
+        {
+            "Staker Address": "0xdc417be74f7edd8c7587049f227a360ed0876cb6",
+            "ETH Restaked": 2.142657,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.004572,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 2.142657
+        },
+        {
+            "Staker Address": "0xdef9def839169a6d76b3a466c4646f325f8baed2",
+            "ETH Restaked": 30.003097,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Rocket_Pool",
+            "Market Share": 0.064016,
+            "Largest Strategy": "Rocket_Pool",
+            "Largest Strategy ETH": 30.003097
+        },
+        {
+            "Staker Address": "0xe3a70ded3f36ee45a571455c1c8e91bc4d577b42",
+            "ETH Restaked": 0.160085,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.000342,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 0.160085
+        },
+        {
+            "Staker Address": "0xe6ebe89046a34c095c7082ae98bbee2dff762a9f",
+            "ETH Restaked": 0.52,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.001109,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 0.52
+        },
+        {
+            "Staker Address": "0xf0496682ba31f8029211d12ee0d600bd8fcb057f",
+            "ETH Restaked": 0.100329,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.000214,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 0.100329
+        },
+        {
+            "Staker Address": "0xf4f003f180c1c344afb6d78b0c1fac211f8c8ec9",
+            "ETH Restaked": 0.219768,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Swell",
+            "Market Share": 0.000469,
+            "Largest Strategy": "Swell",
+            "Largest Strategy ETH": 0.219768
+        },
+        {
+            "Staker Address": "0xf9a09e86469d2fea9aaf5003fd3c27a3cacdcf9a",
+            "ETH Restaked": 1.137995,
+            "Number of Strategies": 1,
+            "Most Used Strategy": "Lido",
+            "Market Share": 0.002428,
+            "Largest Strategy": "Lido",
+            "Largest Strategy ETH": 1.137995
+        }
+    ],
+    "totalCount": 55,
+    "lastUpdated": "2024-08-15T14:48:34.907138"
+}

@@ -1,0 +1,38 @@
+{
+    "strategyData": [
+        {
+            "Strategy Name": "Coinbase",
+            "Address": "0x54945180db7943c0ed0fee7edab2bd24620256bc",
+            "ETH": 0.485,
+            "Number of Unique Stakers": 1,
+            "Market Share": 0.017787,
+            "Average ETH per Staker": 0.485
+        },
+        {
+            "Strategy Name": "Lido",
+            "Address": "0x93c4b944d05dfe6df7645a86cd2206016c51564d",
+            "ETH": 25.148892,
+            "Number of Unique Stakers": 4,
+            "Market Share": 0.922306,
+            "Average ETH per Staker": 6.287223
+        },
+        {
+            "Strategy Name": "Rocket_Pool",
+            "Address": "0x1bee69b7dfffa4e2d53c2a2df135c388ad25dcd2",
+            "ETH": 0.016,
+            "Number of Unique Stakers": 1,
+            "Market Share": 0.000587,
+            "Average ETH per Staker": 0.016
+        },
+        {
+            "Strategy Name": "Swell",
+            "Address": "0x0fe4f44bee93503346a3ac9ee5a26b130a5796d6",
+            "ETH": 1.617505,
+            "Number of Unique Stakers": 8,
+            "Market Share": 0.05932,
+            "Average ETH per Staker": 0.202188
+        }
+    ],
+    "totalCount": 4,
+    "lastUpdated": "2024-08-15T14:48:34.907358"
+}
