@@ -87,11 +87,7 @@ export default function RowParent({ chainKey, index }) {
         DisabledStates[selectedMode][chainKey] ? (
         <>
           <div
-            className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium text-white dark:text-black ${""
-              // AllChainsByKeys[chainKey].darkTextOnBackground === true
-              //   ? "text-white dark:text-black"
-              //   : "text-white"
-              } `}
+            className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium text-white dark:text-black`}
             style={{
               backgroundColor: lightenHexColor(AllChainsByKeys[chainKey].colors[theme ?? "dark"][1], 50),
               boxShadow: `0px 0px 0px 2px ${AllChainsByKeys[chainKey].colors[theme ?? "dark"][1]} inset`,
@@ -139,33 +135,34 @@ export default function RowParent({ chainKey, index }) {
           className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${AllChainsByKeys[chainKey].darkTextOnBackground === true
             ? "text-white dark:text-black"
             : "text-white"
-            } ${""
-            // AllChainsByKeys[chainKey].darkTextOnBackground === true
-            //   ? "text-white dark:text-black"
-            //   : "text-white"
-            } ${AllChainsByKeys[chainKey].backgrounds[theme ?? "dark"][1]}`}
+            }`}
+
+          style={{
+            backgroundColor: AllChainsByKeys[chainKey].colors[theme ?? "dark"][1],
+          }}
         >
           <div
             className={`flex items-center h-[45px] pl-[20px] w-[155px] min-w-[155px] ${forceSelectedChain
               ? isCategoryHovered("all_chain")
                 ? isCategoryHovered("all_chain") && allCats
-                  ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[
-                  theme ?? "dark"
-                  ][1]
-                  }`
-                  : `rounded-l-full py-[24px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[
-                  theme ?? "dark"
-                  ][1]
-                  }`
+                  ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg`
+                  : `rounded-l-full py-[24px] -my-[5px] z-[2] shadow-lg`
                 : allCats
-                  ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme ?? "dark"][1]
-                  }`
+                  ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg`
                   : "z-1"
               : ""
               }  ${forceSelectedChain
                 ? "hover:cursor-pointer"
                 : "hover:cursor-default"
               } `}
+            style={{
+              backgroundColor: forceSelectedChain
+                ? isCategoryHovered("all_chain")
+                  ? isCategoryHovered("all_chain") && allCats
+                    ? AllChainsByKeys[chainKey].colors[theme ?? "dark"][1] : AllChainsByKeys[chainKey].colors[theme ?? "dark"][1]
+                  : allCats ? AllChainsByKeys[chainKey].colors[theme ?? "dark"][1] : ""
+                : ""
+            }}
             onMouseEnter={() => {
               // setIsCategoryHovered((prev) => ({
               //   ...prev,

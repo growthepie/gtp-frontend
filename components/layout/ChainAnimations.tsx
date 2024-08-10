@@ -146,16 +146,15 @@ export default function ChainAnimations({
     return (
       <div
         key={chain}
-        className={`relative flex flex-row items-center rounded-full text-xs font-medium z-0 select-none ${AllChainsByKeys[chain].darkTextOnBackground === true
-          ? "text-white dark:text-black"
-          : "text-white"
-          } ${selectedChains[chain]
-            ? AllChainsByKeys[chain].backgrounds[theme ?? "dark"][1]
-            : `${AllChainsByKeys[chain].backgrounds[theme ?? "dark"][1]} `
-          }
-        ${isShaking ? "animate-shake " : ""}`}
+        className={
+          `relative flex flex-row items-center rounded-full text-xs font-medium z-0 select-none ${AllChainsByKeys[chain].darkTextOnBackground === true
+            ? "text-white dark:text-black"
+            : "text-white"
+          } ${isShaking ? "animate-shake " : ""}`
+        }
         style={{
           width: width,
+          backgroundColor: AllChainsByKeys[chain].colors[theme ?? "dark"][1],
           // height: "45px",
           // bottom: `${index * 45}px`,
         }}

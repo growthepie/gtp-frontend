@@ -9,15 +9,7 @@ export type Chain = {
   chainType: string | null;
   ecosystem: string[];
   description: string;
-  border: {
-    light: string[];
-    dark: string[];
-  };
   colors: {
-    light: string[];
-    dark: string[];
-  };
-  backgrounds: {
     light: string[];
     dark: string[];
   };
