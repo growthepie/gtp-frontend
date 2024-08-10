@@ -752,7 +752,7 @@ export default function LabelsPage() {
     ][4];
 
     // if includes "https://" or "http://" then return the link
-    if (twitterLink.includes("https://") || twitter.includes("http://"))
+    if (twitter.includes("https://") || twitter.includes("http://"))
       return twitter;
 
     return `https://x.com/${twitter}`;
