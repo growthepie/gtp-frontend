@@ -1,7 +1,6 @@
 import { Metadata } from "next";
 import { MasterURL } from "@/lib/urls";
-import { AllChainsByUrlKey } from "@/lib/chains";
-import { MasterResponse } from "@/types/api/MasterResponse";
+import { ChainInfo, MasterResponse } from "@/types/api/MasterResponse";
 import { notFound } from "next/navigation";
 import { track } from "@vercel/analytics/server";
 
@@ -10,6 +9,16 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  // fetch data from API
+  const res: MasterResponse = await fetch(MasterURL, {
+    cache: "no-store",
+  }).then((r) => r.json());
+
+  const AllChainsByUrlKey = Object.keys(res.chains).reduce((acc, key) => {
+    acc[key.replace(/_/g, "-")] = { ...res.chains[key], key: key };
+    return acc;
+  }, {} as { [key: string]: ChainInfo & { key: string } });
+
   if (!params.chain || !Object.keys(AllChainsByUrlKey).includes(params.chain)) {
     track("404 Error", {
       location: "404 Error",
@@ -21,10 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const key = AllChainsByUrlKey[params.chain].key;
   const replaceKey = key.replace(/_/g, "-");
 
-  // fetch data from API
-  const res: MasterResponse = await fetch(MasterURL, {
-    cache: "no-store",
-  }).then((r) => r.json());
+
 
   if (res && key && res.chains[key]) {
     const currentDate = new Date();

@@ -13,11 +13,23 @@ export interface Chains {
 
 export interface ChainInfo {
   name: string;
+  chain_type: string;
+  ecosystem: string[];
   deployment: "PROD" | "DEV";
   name_short: string;
   description: string;
   symbol: string;
   bucket: string;
+  colors: {
+    light: [string, string];
+    dark: [string, string];
+    darkTextOnBackground: boolean;
+  };
+  logo: {
+    body: string;
+    width?: number;
+    height?: number;
+  };
   da_layer: string;
   technology: string;
   purpose: string;

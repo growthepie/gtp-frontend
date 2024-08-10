@@ -2,9 +2,9 @@ import { useTheme } from "next-themes";
 import { useMemo, useCallback, CSSProperties } from "react";
 import { Icon } from "@iconify/react";
 import { useLocalStorage } from "usehooks-ts";
-import { AllChainsByKeys } from "@/lib/chains";
 import { useRowContext } from "./RowContext";
 import { RowChildrenInterface } from "./ContextInterface";
+import { useMaster } from "@/contexts/MasterContext";
 
 export default function RowChildren({
   chainKey,
@@ -15,6 +15,8 @@ export default function RowChildren({
 }) {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { theme } = useTheme();
+
+  const { AllChainsByKeys } = useMaster();
 
   const {
     data,

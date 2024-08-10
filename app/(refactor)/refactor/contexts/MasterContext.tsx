@@ -1,28 +1,59 @@
 "use client";
+import { Chain } from "@/lib/chains";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { createContext, useContext, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import useSWR from "swr";
-import ShowLoading from "@/components/layout/ShowLoading";
 
 type MasterContextType = {
-  data: MasterResponse;
-  formatMetric: (value: number, unit: string, unitType?: string) => string;
+  data: MasterResponse | undefined;
+  AllChains: Chain[];
+  AllChainsByKeys: { [key: string]: Chain };
+  EnabledChainsByKeys: { [key: string]: Chain };
+  formatMetric: (value: number, unit: string) => string;
 };
 
 const MasterContext = createContext<MasterContextType | null>({
-  data: {} as MasterResponse,
+  data: undefined,
+  AllChains: [],
+  AllChainsByKeys: {},
+  EnabledChainsByKeys: {},
   formatMetric: () => "MasterProvider: formatMetric not found",
 });
 
 export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
-  const { data, isLoading, error } = useSWR<MasterResponse>(MasterURL);
+  const { data, isLoading } = useSWR<MasterResponse>(MasterURL);
+  const [AllChains, setAllChains] = useState<Chain[]>([]);
+  const [AllChainsByKeys, setAllChainsByKeys] = useState<{ [key: string]: Chain }>({});
+  const [EnabledChainsByKeys, setEnabledChainsByKeys] = useState<{ [key: string]: Chain }>({});
 
-  const formatMetric = (
-    value: number,
-    metric: string,
-    unitType: string = "value",
-  ) => {
+  useEffect(() => {
+    if (data) {
+      const allChains = Get_AllChainsByKeys(data);
+      // set session storage
+      sessionStorage.setItem("AllChainsByKeys", JSON.stringify(allChains));
+      setAllChains(Object.values(allChains));
+      setAllChainsByKeys(allChains);
+
+      const enabledChainsByKeys = Object.values(allChains).reduce(
+        (acc, chain) => {
+          if (chain.chainType === "L2") {
+            if (chain.ecosystem.includes("all-chains")) {
+              acc[chain.key] = chain;
+            }
+          } else {
+            acc[chain.key] = chain;
+          }
+          return acc;
+        },
+        {},
+      );
+
+      setEnabledChainsByKeys(enabledChainsByKeys);
+    }
+  }, [data]);
+
+  const formatMetric = useCallback((value: number, metric: string, unitType: string = "value") => {
     if (metric === "gas_fees_usd") {
       metric = "fees";
       unitType = "usd";
@@ -44,33 +75,19 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
       return `MasterProvider: unitType not found: ${unitType}`;
     }
 
-    const {
-      currency,
-      prefix,
-      suffix,
-      decimals,
-      decimals_tooltip,
-      agg,
-      agg_tooltip,
-    } = unit;
+    const { currency, prefix, suffix, decimals, decimals_tooltip, agg, agg_tooltip } = unit;
 
     return `${prefix || ""}${value.toLocaleString("en-GB", {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
     })}${suffix || ""}`;
-  };
-
-  if (error) return <div>Failed to load</div>;
-  if (!data)
-    return (
-      <div>
-        <ShowLoading dataLoading={[isLoading]} />
-      </div>
-    );
+  }, [data]);
 
   return (
-    <MasterContext.Provider value={{ data, formatMetric }}>
-      {children}
+    <MasterContext.Provider
+      value={{ data, AllChains, AllChainsByKeys, EnabledChainsByKeys, formatMetric }}
+    >
+      {data && !isLoading && AllChains.length > 0 ? children : null}
     </MasterContext.Provider>
   );
 };
@@ -79,8 +96,73 @@ export const useMaster = () => {
   const ctx = useContext(MasterContext);
 
   if (!ctx) {
-    throw new Error("useMaster must be used within a MasterProvider");
+    throw new Error(
+      "useMaster must be used within a MasterProvider",
+    );
   }
 
   return ctx;
 };
+
+
+
+
+
+export const Get_AllChainsByKeys = (master: MasterResponse) => {
+  console.log("master", master);
+
+  let chains: { [key: string]: any } = {};
+  Object.keys(master.chains).forEach((key) => {
+    console.log("key", key, master.chains[key]);
+    let chain = master.chains[key];
+    chains[key] = {
+      label: chain.name,
+      icon: chain.logo?.body ? chain.logo.body : null,
+      key: key,
+      urlKey: key.replace(/_/g, "-"),
+      chainType: getChainTypeFromMasterChainType(key, chain.chain_type),
+      ecosystem: chain.ecosystem,
+      description: chain.description,
+      border: {
+        light: [
+          `border-[${chain.colors.light[0]}]`,
+          `border-[${chain.colors.light[1]}]`,
+        ],
+        dark: [
+          `border-[${chain.colors.dark[0]}]`,
+          `border-[${chain.colors.dark[1]}]`,
+        ],
+      },
+      colors: {
+        light: [`${chain.colors.light[0]}`, `${chain.colors.light[1]}`],
+        dark: [`${chain.colors.dark[0]}`, `${chain.colors.dark[1]}`],
+      },
+      backgrounds: {
+        light: [
+          `bg-[${chain.colors.light[0]}]`,
+          `bg-[${chain.colors.light[1]}]`,
+        ],
+        dark: [`bg-[${chain.colors.dark[0]}]`, `bg-[${chain.colors.dark[1]}]`],
+      },
+      darkTextOnBackground: chain.colors.darkTextOnBackground,
+    };
+  });
+
+  return chains;
+};
+
+const getChainTypeFromMasterChainType = (
+  chainKey: string,
+  masterChainType: string,
+) => {
+  if (chainKey === "all_l2s") {
+    return "all-l2s";
+  }
+
+  if (masterChainType === "-") {
+    return null;
+  }
+
+  return masterChainType;
+};
+

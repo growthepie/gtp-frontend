@@ -19,7 +19,6 @@ import { debounce, merge } from "lodash";
 // import { theme as customTheme } from "tailwind.config.js";
 import { useTheme } from "next-themes";
 import { Switch } from "../Switch";
-import { AllChainsByKeys } from "@/lib/chains";
 import d3 from "d3";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
@@ -45,6 +44,7 @@ import { MasterURL } from "@/lib/urls";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { m } from "framer-motion";
+import { useMaster } from "@/contexts/MasterContext";
 
 const monthly_agg_labels = {
   avg: "Average",
@@ -214,6 +214,9 @@ export default function ComparisonChart({
 
   // const [darkMode, setDarkMode] = useLocalStorage("darkMode", true);
   const { theme } = useTheme();
+
+  const { AllChainsByKeys } = useMaster();
+
   const { isSidebarOpen, setEmbedData, embedData } = useUIContext();
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);

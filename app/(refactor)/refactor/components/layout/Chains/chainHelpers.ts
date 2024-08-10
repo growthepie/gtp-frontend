@@ -1,7 +1,11 @@
 import { ChainsData } from "@/types/api/ChainResponse";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { navigationItems } from "@/lib/navigation";
-import { AllChainsByKeys, Get_SupportedChainKeys } from "@/lib/chains";
+import {
+  Get_AllChainsByKeysFromSessionStorage,
+  Get_AllChainsNavigationItems,
+  Get_SupportedChainKeys,
+} from "@/lib/chains";
 import HighchartsReact from "highcharts-react-official";
 import Highcharts from "highcharts";
 
@@ -93,8 +97,8 @@ export function compChainsHelper(master: MasterResponse, chainKey: string[]) {
 
   // const chainGroups = {};
 
-  const chainItemsByKey = navigationItems[3].options
-    .filter((option) => option.hide !== true)
+  const chainItemsByKey = Get_AllChainsNavigationItems(master)
+    .options.filter((option) => option.hide !== true)
     .filter(
       (option) =>
         option.key && Get_SupportedChainKeys(master).includes(option.key),
@@ -141,6 +145,7 @@ export function getOptionsHelper(
   passTickPositions,
   onXAxisSetExtremes,
 ): Highcharts.Options {
+  const AllChainsByKeys = Get_AllChainsByKeysFromSessionStorage();
   const options: Highcharts.Options = {
     accessibility: { enabled: false },
     exporting: { enabled: false },
@@ -440,6 +445,7 @@ export const updateSeriesHelper = async (
   showUsd: boolean,
   theme: string | undefined,
 ) => {
+  const AllChainsByKeys = Get_AllChainsByKeysFromSessionStorage();
   enabledFundamentalsKeys.forEach(async (key, i) => {
     if (chartComponents.current) {
       if (chartComponents.current[i]) {

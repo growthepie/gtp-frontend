@@ -21,8 +21,8 @@ import { useTheme } from "next-themes";
 import { debounce, merge } from "lodash";
 import { Switch } from "../Switch";
 import {
-  AllChainsByKeys,
-  EnabledChainsByKeys,
+  // AllChainsByKeys,
+  // EnabledChainsByKeys,
   Get_SupportedChainKeys,
 } from "@/lib/chains";
 import d3 from "d3";
@@ -42,6 +42,7 @@ import {
   TopRowChild,
   TopRowParent,
 } from "@/components/layout/TopRow";
+import { useMaster } from "@/contexts/MasterContext";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -231,6 +232,7 @@ export default function LandingChart({
     // onTimeIntervalChange: (interval: string) => void;
     // showTimeIntervals: boolean;
   }) {
+  const { AllChainsByKeys, EnabledChainsByKeys } = useMaster();
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
   const [isDragging, setIsDragging] = useState(false);
@@ -968,7 +970,11 @@ export default function LandingChart({
   const filteredData = useMemo(() => {
     if (!data) return null;
 
+    console.log(data);
+
     const l2s = data.filter((d) => "all_l2s" === d.name)[0];
+
+    console.log(l2s);
 
     setTotalUsersIncrease(
       (l2s.data[l2s.data.length - 1][1] - l2s.data[l2s.data.length - 2][1]) /

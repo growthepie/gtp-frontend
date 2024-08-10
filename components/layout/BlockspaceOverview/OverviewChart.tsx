@@ -13,9 +13,9 @@ import { Icon } from "@iconify/react";
 import { useTheme } from "next-themes";
 import { Chains } from "@/types/api/ChainOverviewResponse";
 import { animated, useSpring } from "@react-spring/web";
-import { AllChainsByKeys } from "@/lib/chains";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { fill } from "lodash";
+import { useMaster } from "@/contexts/MasterContext";
 
 export default function OverviewChart({
   data,
@@ -54,6 +54,7 @@ export default function OverviewChart({
   setHoveredChartSeriesId: (series: string) => void;
   chartComponent: React.MutableRefObject<Highcharts.Chart | null | undefined>;
 }) {
+  const { AllChainsByKeys } = useMaster();
   const standardChainKey = forceSelectedChain ? forceSelectedChain : "all_l2s";
   const [chainEcosystemFilter, setChainEcosystemFilter] = useSessionStorage(
     "chainEcosystemFilter",

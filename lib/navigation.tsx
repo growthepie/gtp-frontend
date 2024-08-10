@@ -386,245 +386,245 @@ export const navigationItems: NavigationItem[] = [
     ],
     // href: "",
   },
-  {
-    name: "Chains",
-    label: "Single Chain",
-    key: "chains",
-    icon: "gtp:link",
-    options: [
-      {
-        label: "Ethereum",
-        page: {
-          description:
-            "Ethereum serves as the base layer (Layer 1 or L1) for various Layer 2 (L2) scaling solutions, which aim to improve transaction throughput and reduce costs. As the foundational layer, Ethereum anchors these L2 networks, ensuring they inherit its robust security and trustlessness.",
-        },
-        icon: "gtp:ethereum-logo-monochrome",
-        key: "ethereum",
-        rootKey: "chainsEthereum",
-        urlKey: "ethereum",
-      },
-      {
-        label: "Base",
-        page: {
-          description:
-            "Base is an fully EVM compatible optimistic rollup built on the OP Stack. It is incubated inside of Coinbase. Public mainnet launch was on August 9th 2023.",
-        },
-        icon: "gtp:base-logo-monochrome",
-        key: "base",
-        rootKey: "chainsBase",
-        urlKey: "base",
-      },
-      {
-        label: "OP Mainnet",
-        page: {
-          description:
-            "OP Mainnet (formerly Optimism) uses an optimistic rollup approach, where transactions are assumed to be valid unless proven otherwise, and only invalid transactions are rolled back. OP Mainnet launched in August 2021, making it one of the first rollups. It is fully compatible with the Ethereum Virtual Machine (EVM), making it easy for developers to migrate their applications to the OP Mainnet network.",
-        },
-        icon: "gtp:optimism-logo-monochrome",
-        key: "optimism",
-        rootKey: "chainsOptimism",
-        urlKey: "optimism",
-      },
-      {
-        label: "Public Goods Network",
-        page: {
-          description:
-            "Public Goods Network is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in July 2023.",
-        },
-        icon: "gtp:public-goods-network-logo-monochrome",
-        key: "gitcoin_pgn",
-        rootKey: "chainsOptimism",
-        urlKey: "public-goods-network",
-      },
-      {
-        label: "Zora",
-        page: {
-          description:
-            "Zora is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in June 2023.",
-        },
-        icon: "gtp:zora-logo-monochrome",
-        key: "zora",
-        rootKey: "chainsOptimism",
-        urlKey: "zora",
-      },
-      {
-        label: "Arbitrum One",
-        page: {
-          description:
-            "Arbitrum One is developed by Offchain Labs and its mainnet launched in September 2021. It uses an optimistic rollup approach and is fully compatible with the Ethereum Virtual Machine (EVM), making it developer-friendly.",
-        },
-        icon: "gtp:arbitrum-logo-monochrome",
-        key: "arbitrum",
-        rootKey: "chainsArbitrum",
-        urlKey: "arbitrum",
-      },
+  // {
+  //   name: "Chains",
+  //   label: "Single Chain",
+  //   key: "chains",
+  //   icon: "gtp:link",
+  //   options: [
+  //     {
+  //       label: "Ethereum",
+  //       page: {
+  //         description:
+  //           "Ethereum serves as the base layer (Layer 1 or L1) for various Layer 2 (L2) scaling solutions, which aim to improve transaction throughput and reduce costs. As the foundational layer, Ethereum anchors these L2 networks, ensuring they inherit its robust security and trustlessness.",
+  //       },
+  //       icon: "gtp:ethereum-logo-monochrome",
+  //       key: "ethereum",
+  //       rootKey: "chainsEthereum",
+  //       urlKey: "ethereum",
+  //     },
+  //     {
+  //       label: "Base",
+  //       page: {
+  //         description:
+  //           "Base is an fully EVM compatible optimistic rollup built on the OP Stack. It is incubated inside of Coinbase. Public mainnet launch was on August 9th 2023.",
+  //       },
+  //       icon: "gtp:base-logo-monochrome",
+  //       key: "base",
+  //       rootKey: "chainsBase",
+  //       urlKey: "base",
+  //     },
+  //     {
+  //       label: "OP Mainnet",
+  //       page: {
+  //         description:
+  //           "OP Mainnet (formerly Optimism) uses an optimistic rollup approach, where transactions are assumed to be valid unless proven otherwise, and only invalid transactions are rolled back. OP Mainnet launched in August 2021, making it one of the first rollups. It is fully compatible with the Ethereum Virtual Machine (EVM), making it easy for developers to migrate their applications to the OP Mainnet network.",
+  //       },
+  //       icon: "gtp:optimism-logo-monochrome",
+  //       key: "optimism",
+  //       rootKey: "chainsOptimism",
+  //       urlKey: "optimism",
+  //     },
+  //     {
+  //       label: "Public Goods Network",
+  //       page: {
+  //         description:
+  //           "Public Goods Network is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in July 2023.",
+  //       },
+  //       icon: "gtp:public-goods-network-logo-monochrome",
+  //       key: "gitcoin_pgn",
+  //       rootKey: "chainsOptimism",
+  //       urlKey: "public-goods-network",
+  //     },
+  //     {
+  //       label: "Zora",
+  //       page: {
+  //         description:
+  //           "Zora is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in June 2023.",
+  //       },
+  //       icon: "gtp:zora-logo-monochrome",
+  //       key: "zora",
+  //       rootKey: "chainsOptimism",
+  //       urlKey: "zora",
+  //     },
+  //     {
+  //       label: "Arbitrum One",
+  //       page: {
+  //         description:
+  //           "Arbitrum One is developed by Offchain Labs and its mainnet launched in September 2021. It uses an optimistic rollup approach and is fully compatible with the Ethereum Virtual Machine (EVM), making it developer-friendly.",
+  //       },
+  //       icon: "gtp:arbitrum-logo-monochrome",
+  //       key: "arbitrum",
+  //       rootKey: "chainsArbitrum",
+  //       urlKey: "arbitrum",
+  //     },
 
-      {
-        label: "Polygon zkEVM",
-        page: {
-          description:
-            "Polygon zkEVM uses zero-knowledge proofs to enable faster and cheaper transactions. It allows users to build and run EVM-compatible smart contracts, achieving up to 100x lower gas fees and up to 2,000x faster transaction speeds than the Ethereum mainnet. It's fully compatible with the Ethereum Virtual Machine, making it easy for developers to migrate their applications to the Polygon network. It launched in March 2023.",
-        },
-        icon: "gtp:polygon-zkevm-logo-monochrome",
-        key: "polygon_zkevm",
-        rootKey: "chainsPolygon",
-        urlKey: "polygon-zkevm",
-      },
+  //     {
+  //       label: "Polygon zkEVM",
+  //       page: {
+  //         description:
+  //           "Polygon zkEVM uses zero-knowledge proofs to enable faster and cheaper transactions. It allows users to build and run EVM-compatible smart contracts, achieving up to 100x lower gas fees and up to 2,000x faster transaction speeds than the Ethereum mainnet. It's fully compatible with the Ethereum Virtual Machine, making it easy for developers to migrate their applications to the Polygon network. It launched in March 2023.",
+  //       },
+  //       icon: "gtp:polygon-zkevm-logo-monochrome",
+  //       key: "polygon_zkevm",
+  //       rootKey: "chainsPolygon",
+  //       urlKey: "polygon-zkevm",
+  //     },
 
-      {
-        label: "ZKsync Era",
-        page: {
-          description:
-            "ZKsync Era is a Layer 2 protocol that scales Ethereum with cutting-edge ZK tech. Their mission isn't to merely increase Ethereum's throughput, but to fully preserve its foundational values – freedom, self-sovereignty, decentralization – at scale.",
-        },
-        icon: "gtp:zksync-era-logo-monochrome",
-        key: "zksync_era",
-        rootKey: "chainsOptimism",
-        urlKey: "zksync-era",
-      },
-      {
-        label: "Linea",
-        page: {
-          description:
-            "Linea is a developer-friendly ZK Rollup, marked as the next stage of ConsenSys zkEVM, which aims to enhance the Ethereum network by facilitating a new wave of decentralized applications. Public launch was in July 2023.",
-        },
-        icon: "gtp:linea-logo-monochrome",
-        key: "linea",
-        rootKey: "chainsLinea",
-        urlKey: "linea",
-      },
-      {
-        label: "Scroll",
-        page: {
-          description:
-            "Scroll is a general purpose zkEVM rollup. Public launch was in October 2023.",
-        },
-        icon: "gtp:scroll-logo-monochrome",
-        key: "scroll",
-        rootKey: "chainsScroll",
-        urlKey: "scroll",
-      },
-      {
-        label: "Loopring",
-        page: {
-          description: "",
-        },
-        icon: "gtp:loopring-logo-monochrome",
-        key: "loopring",
-        rootKey: "chainsLoopring",
-        urlKey: "loopring",
-      },
-      {
-        label: "Starknet",
-        page: {
-          description:
-            "Starknet is a ZK Rollup developed by Starkware. The rollup was launched on mainnet in November 2021.",
-        },
-        icon: "gtp:starknet-logo-monochrome",
-        key: "starknet",
-        rootKey: "chainsStarknet",
-        urlKey: "starknet",
-        // hide: true, // remove when unhiding from the UI
-      },
-      {
-        label: "Immutable X",
-        page: {
-          description:
-            "Immutable X is an optimized game-specific ZK Rollup. It is designed to mint, transfer, and trade tokens and NFTs at higher volumes and zero gas fees. It is not EVM compatible but its easy-to-use APIs and SDKs aim to make development for game devs as easy as possible. It launched in April 2021.",
-        },
-        icon: "gtp:immutable-x-logo-monochrome",
-        key: "imx",
-        rootKey: "chainsImmutableX",
-        urlKey: "immutable-x",
-      },
-      {
-        label: "Mantle",
-        page: {
-          description:
-            "Mantle is an OVM based EVM-compatible rollup. Public launch was in July 2023.",
-        },
-        icon: "gtp:mantle-logo-monochrome",
-        key: "mantle",
-        rootKey: "chainsMantle",
-        urlKey: "mantle",
-      },
-      {
-        label: "rhino.fi",
-        page: {
-          description:
-            "rhino.fi is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in July 2023.",
-        },
-        icon: "gtp:rhino-logo-monochrome",
-        key: "rhino",
-        rootKey: "chainsRhino",
-        urlKey: "rhino-fi",
-      },
-      {
-        label: "Metis",
-        page: {
-          description:
-            "Metis is a Layer 2 protocol that was launched November 2021.",
-        },
-        icon: "gtp:metis-logo-monochrome",
-        key: "metis",
-        rootKey: "chainsMetis",
-        urlKey: "metis",
-      },
-      {
-        label: "Manta Pacific",
-        page: {
-          description:
-            "Manta Pacific is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in September 2023.",
-        },
-        icon: "gtp:manta-logo-monochrome",
-        key: "manta",
-        rootKey: "chainsManta",
-        urlKey: "manta",
-      },
-      {
-        label: "Blast",
-        page: {
-          description:
-            "Blast is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in February 2024.",
-        },
-        icon: "gtp:blast-logo-monochrome",
-        key: "blast",
-        rootKey: "chainsBlast",
-        urlKey: "blast",
-      },
-      {
-        label: "Mode",
-        page: {
-          description:
-            "Mode is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in February 2024.",
-        },
-        icon: "gtp:mode-logo-monochrome",
-        key: "mode",
-        rootKey: "chainsMode",
-        urlKey: "mode",
-      },
-      {
-        label: "Taiko",
-        page: {
-          description: "Taiko is.",
-        },
-        icon: "gtp:taiko-logo-monochrome",
-        key: "taiko",
-        rootKey: "chainsTaiko",
-        urlKey: "taiko",
-      },
-      {
-        label: "Redstone",
-        page: {
-          description: "Redstone is.",
-        },
-        icon: "gtp:redstone-logo-monochrome",
-        key: "redstone",
-        rootKey: "chainsRedstone",
-        urlKey: "redstone",
-      },
-    ],
-  },
+  //     {
+  //       label: "ZKsync Era",
+  //       page: {
+  //         description:
+  //           "ZKsync Era is a Layer 2 protocol that scales Ethereum with cutting-edge ZK tech. Their mission isn't to merely increase Ethereum's throughput, but to fully preserve its foundational values – freedom, self-sovereignty, decentralization – at scale.",
+  //       },
+  //       icon: "gtp:zksync-era-logo-monochrome",
+  //       key: "zksync_era",
+  //       rootKey: "chainsOptimism",
+  //       urlKey: "zksync-era",
+  //     },
+  //     {
+  //       label: "Linea",
+  //       page: {
+  //         description:
+  //           "Linea is a developer-friendly ZK Rollup, marked as the next stage of ConsenSys zkEVM, which aims to enhance the Ethereum network by facilitating a new wave of decentralized applications. Public launch was in July 2023.",
+  //       },
+  //       icon: "gtp:linea-logo-monochrome",
+  //       key: "linea",
+  //       rootKey: "chainsLinea",
+  //       urlKey: "linea",
+  //     },
+  //     {
+  //       label: "Scroll",
+  //       page: {
+  //         description:
+  //           "Scroll is a general purpose zkEVM rollup. Public launch was in October 2023.",
+  //       },
+  //       icon: "gtp:scroll-logo-monochrome",
+  //       key: "scroll",
+  //       rootKey: "chainsScroll",
+  //       urlKey: "scroll",
+  //     },
+  //     {
+  //       label: "Loopring",
+  //       page: {
+  //         description: "",
+  //       },
+  //       icon: "gtp:loopring-logo-monochrome",
+  //       key: "loopring",
+  //       rootKey: "chainsLoopring",
+  //       urlKey: "loopring",
+  //     },
+  //     {
+  //       label: "Starknet",
+  //       page: {
+  //         description:
+  //           "Starknet is a ZK Rollup developed by Starkware. The rollup was launched on mainnet in November 2021.",
+  //       },
+  //       icon: "gtp:starknet-logo-monochrome",
+  //       key: "starknet",
+  //       rootKey: "chainsStarknet",
+  //       urlKey: "starknet",
+  //       // hide: true, // remove when unhiding from the UI
+  //     },
+  //     {
+  //       label: "Immutable X",
+  //       page: {
+  //         description:
+  //           "Immutable X is an optimized game-specific ZK Rollup. It is designed to mint, transfer, and trade tokens and NFTs at higher volumes and zero gas fees. It is not EVM compatible but its easy-to-use APIs and SDKs aim to make development for game devs as easy as possible. It launched in April 2021.",
+  //       },
+  //       icon: "gtp:immutable-x-logo-monochrome",
+  //       key: "imx",
+  //       rootKey: "chainsImmutableX",
+  //       urlKey: "immutable-x",
+  //     },
+  //     {
+  //       label: "Mantle",
+  //       page: {
+  //         description:
+  //           "Mantle is an OVM based EVM-compatible rollup. Public launch was in July 2023.",
+  //       },
+  //       icon: "gtp:mantle-logo-monochrome",
+  //       key: "mantle",
+  //       rootKey: "chainsMantle",
+  //       urlKey: "mantle",
+  //     },
+  //     {
+  //       label: "rhino.fi",
+  //       page: {
+  //         description:
+  //           "rhino.fi is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in July 2023.",
+  //       },
+  //       icon: "gtp:rhino-logo-monochrome",
+  //       key: "rhino",
+  //       rootKey: "chainsRhino",
+  //       urlKey: "rhino-fi",
+  //     },
+  //     {
+  //       label: "Metis",
+  //       page: {
+  //         description:
+  //           "Metis is a Layer 2 protocol that was launched November 2021.",
+  //       },
+  //       icon: "gtp:metis-logo-monochrome",
+  //       key: "metis",
+  //       rootKey: "chainsMetis",
+  //       urlKey: "metis",
+  //     },
+  //     {
+  //       label: "Manta Pacific",
+  //       page: {
+  //         description:
+  //           "Manta Pacific is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in September 2023.",
+  //       },
+  //       icon: "gtp:manta-logo-monochrome",
+  //       key: "manta",
+  //       rootKey: "chainsManta",
+  //       urlKey: "manta",
+  //     },
+  //     {
+  //       label: "Blast",
+  //       page: {
+  //         description:
+  //           "Blast is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in February 2024.",
+  //       },
+  //       icon: "gtp:blast-logo-monochrome",
+  //       key: "blast",
+  //       rootKey: "chainsBlast",
+  //       urlKey: "blast",
+  //     },
+  //     {
+  //       label: "Mode",
+  //       page: {
+  //         description:
+  //           "Mode is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in February 2024.",
+  //       },
+  //       icon: "gtp:mode-logo-monochrome",
+  //       key: "mode",
+  //       rootKey: "chainsMode",
+  //       urlKey: "mode",
+  //     },
+  //     {
+  //       label: "Taiko",
+  //       page: {
+  //         description: "Taiko is.",
+  //       },
+  //       icon: "gtp:taiko-logo-monochrome",
+  //       key: "taiko",
+  //       rootKey: "chainsTaiko",
+  //       urlKey: "taiko",
+  //     },
+  //     {
+  //       label: "Redstone",
+  //       page: {
+  //         description: "Redstone is.",
+  //       },
+  //       icon: "gtp:redstone-logo-monochrome",
+  //       key: "redstone",
+  //       rootKey: "chainsRedstone",
+  //       urlKey: "redstone",
+  //     },
+  //   ],
+  // },
 
   // {
   //   name: "Knowledge",

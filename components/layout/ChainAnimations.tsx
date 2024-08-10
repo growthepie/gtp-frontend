@@ -1,11 +1,11 @@
 import { animated, useSpring } from "@react-spring/web";
 import { Icon } from "@iconify/react";
-import { AllChainsByKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
 import { useLocalStorage } from "usehooks-ts";
 import { useMemo, useState, useEffect, useRef } from "react";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import Link from "next/link";
+import { useMaster } from "@/contexts/MasterContext";
 
 export default function ChainAnimations({
   chain,
@@ -31,6 +31,7 @@ export default function ChainAnimations({
   master: MasterResponse;
 }) {
   const { theme } = useTheme();
+  const { AllChainsByKeys } = useMaster();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [isShaking, setIsShaking] = useState(false);
 

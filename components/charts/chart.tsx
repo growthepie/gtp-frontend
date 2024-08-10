@@ -23,8 +23,8 @@ import {
 } from "@/lib/chartUtils";
 import ChartWatermark from "../layout/ChartWatermark";
 import { Icon } from "@iconify/react";
-import { AllChainsByKeys } from "@/lib/chains";
 import { debounce } from "lodash";
+import { useMaster } from "@/contexts/MasterContext";
 
 export const Chart = ({
   // data,
@@ -82,6 +82,7 @@ export const Chart = ({
   chartRef?: React.MutableRefObject<Highcharts.Chart | null | undefined>;
   forceEIP?: boolean;
 }) => {
+  const { AllChainsByKeys } = useMaster();
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 

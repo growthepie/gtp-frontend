@@ -4,13 +4,14 @@ import Icon from "@/components/layout/Icon";
 import useSWR from "swr";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { AllChainsByKeys, Get_SupportedChainKeys } from "@/lib/chains";
 import { useSessionStorage } from "usehooks-ts";
 import useDragScroll from "@/hooks/useDragScroll";
 import { update } from "lodash";
 import { useUIContext } from "@/contexts/UIContext";
+import { useMaster } from "@/contexts/MasterContext";
 
 export default function Search() {
+  const { AllChainsByKeys } = useMaster();
   const { isMobile } = useUIContext();
 
   const [isOpen, setIsOpen] = useState<boolean>(false);

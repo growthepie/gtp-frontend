@@ -6,6 +6,7 @@ import GTPIcons from "@/icons/gtp.json";
 import { UIContextProvider } from "@/contexts/UIContext";
 import { useLocalStorage } from "usehooks-ts";
 import { IS_PRODUCTION } from "@/lib/helpers";
+import { MasterProvider } from "@/contexts/MasterContext";
 
 // load icons
 addCollection(GTPIcons);
@@ -50,7 +51,9 @@ export function Providers({ children, forcedTheme }: ProvidersProps) {
           // refreshInterval: 1000 * 60 * 60, // 1 hour
         }}
       >
-        <UIContextProvider>{children}</UIContextProvider>
+        <MasterProvider>
+          <UIContextProvider>{children}</UIContextProvider>
+        </MasterProvider>
       </SWRConfig>
     </ThemeProvider>
   );

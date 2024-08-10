@@ -1,15 +1,17 @@
 import { useTheme } from "next-themes";
 import { useMemo, useCallback } from "react";
 import { Icon } from "@iconify/react";
-import { AllChainsByKeys } from "@/lib/chains";
 import { useRowContext } from "./RowContext";
 import RowChildren from "./RowChildren";
 import { RowParentInterface } from "./ContextInterface";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../../Tooltip";
 import Link from "next/link";
+import { useMaster } from "@/contexts/MasterContext";
 
 export default function RowParent({ chainKey, index }) {
   const { theme } = useTheme();
+
+  const { AllChainsByKeys } = useMaster();
 
   const {
     data,

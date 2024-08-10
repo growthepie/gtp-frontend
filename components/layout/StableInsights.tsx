@@ -42,13 +42,13 @@ import {
   GradientColorStopObject,
 } from "highcharts/highstock";
 import { baseOptions } from "@/lib/chartUtils";
-import { AllChainsByKeys } from "@/lib/chains";
 import { useUIContext } from "@/contexts/UIContext";
 import { useLocalStorage } from "usehooks-ts";
 import { tooltipFormatter, tooltipPositioner } from "@/lib/chartUtils";
 import { Scrollbars } from "react-custom-scrollbars-2";
 import VerticalScrollContainer from "../VerticalScrollContainer";
 import "@/app/highcharts.axis.css";
+import { useMaster } from "@/contexts/MasterContext";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -70,6 +70,7 @@ type TopHolderData = {
 };
 
 export default function StableInsights({ }: {}) {
+  const { AllChainsByKeys } = useMaster();
   const [clicked, setClicked] = useState(true);
   const [sortOrder, setSortOrder] = useState(true);
   const [sortMetric, setSortMetric] = useState("balance");
