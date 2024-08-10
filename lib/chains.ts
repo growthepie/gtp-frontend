@@ -62,7 +62,10 @@ export const Get_AllChainsByKeysFromSessionStorage = () => {
 
 export const Get_AllChainsNavigationItems = (master: MasterResponse) => {
   const chains = master.chains;
-  const chainKeys = Object.keys(chains);
+  // filter out all_l2s and multiple chains
+  const chainKeys = Get_SupportedChainKeys(master).filter(
+    (key) => !["all_l2s", "multiple"].includes(key),
+  );
 
   return {
     name: "Chains",

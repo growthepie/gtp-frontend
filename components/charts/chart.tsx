@@ -384,7 +384,7 @@ export const Chart = ({
       });
       chartComponent.current?.redraw();
     }
-  }, [yScale, stack, series, chartType, types, theme, allCats]);
+  }, [yScale, stack, series, allCats, AllChainsByKeys, theme, chartType, types]);
 
   useEffect(() => {
     drawChartSeries();

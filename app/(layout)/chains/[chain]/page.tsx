@@ -11,7 +11,7 @@ import { ChainResponse } from "@/types/api/ChainResponse";
 import {
   BlockspaceURLs,
   ChainBlockspaceURLs,
-  ChainURLs,
+  ChainsBaseURL,
   MasterURL,
 } from "@/lib/urls";
 import Container from "@/components/layout/Container";
@@ -124,7 +124,7 @@ const Chain = ({ params }: { params: any }) => {
     try {
       // Fetch the data
       const response = await fetch(
-        ChainURLs[chainKey].replace("/v1/", `/${apiRoot}/`),
+        `${ChainsBaseURL}${chainKey}.json`.replace("/v1/", `/${apiRoot}/`),
       );
       if (!response.ok) {
         throw new Error("Network response was not ok");

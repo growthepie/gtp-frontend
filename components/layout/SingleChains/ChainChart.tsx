@@ -38,7 +38,7 @@ import {
   getFundamentalsByKey,
 } from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
-import { ChainURLs, MasterURL } from "@/lib/urls";
+import { ChainsBaseURL, MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import useSWR, { preload } from "swr";
 import ChartWatermark from "@/components/layout/ChartWatermark";
@@ -175,7 +175,7 @@ export default function ChainChart({
     try {
       const fetchPromises = chainKey.map(async (key) => {
         // check if the chain is in the cache
-        const cachedData = cache.get(ChainURLs[key]);
+        const cachedData = cache.get(`${ChainsBaseURL}${key}.json`);
 
         if (cachedData) {
           return cachedData.data;
@@ -183,12 +183,12 @@ export default function ChainChart({
 
         // if not, fetch the data
         const response = await fetch(
-          ChainURLs[key].replace("/v1/", `/${apiRoot}/`),
+          `${ChainsBaseURL}${key}.json`.replace("/v1/", `/${apiRoot}/`),
         );
         const responseData = await response.json();
 
         // store the data in the cache
-        mutate(ChainURLs[key], responseData, false);
+        mutate(`${ChainsBaseURL}${key}.json`, responseData, false);
 
         return responseData;
       });
@@ -1478,7 +1478,7 @@ export default function ChainChart({
               className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[15] hover:cursor-pointer"
               onClick={handlePrevCompChain}
               onMouseOver={() => {
-                preload(ChainURLs[prevChainKey], fetcher);
+                preload(`${ChainsBaseURL}${prevChainKey}.json`, fetcher);
               }}
             >
               <Icon icon="feather:arrow-left" className="w-6 h-6" />
@@ -1526,7 +1526,7 @@ export default function ChainChart({
               className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[15] hover:cursor-pointer"
               onClick={handleNextCompChain}
               onMouseOver={() => {
-                preload(ChainURLs[nextChainKey], fetcher);
+                preload(`${ChainsBaseURL}${nextChainKey}.json`, fetcher);
               }}
             >
               <Icon icon="feather:arrow-right" className="w-6 h-6" />
@@ -1589,7 +1589,7 @@ export default function ChainChart({
                   }}
                   key={index}
                   onMouseOver={() => {
-                    preload(ChainURLs[chain.key], fetcher);
+                    preload(`${ChainsBaseURL}${chain.key}.json`, fetcher);
                   }}
                 >
                   <Icon

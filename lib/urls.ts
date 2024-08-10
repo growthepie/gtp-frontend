@@ -13,29 +13,7 @@ export const MetricsURLs = {
   throughput: "https://api.growthepie.xyz/v1/metrics/throughput.json",
 };
 
-export const ChainURLs = {
-  ethereum: "https://api.growthepie.xyz/v1/chains/ethereum.json",
-  arbitrum: "https://api.growthepie.xyz/v1/chains/arbitrum.json",
-  polygon_zkevm: "https://api.growthepie.xyz/v1/chains/polygon_zkevm.json",
-  optimism: "https://api.growthepie.xyz/v1/chains/optimism.json",
-  imx: "https://api.growthepie.xyz/v1/chains/imx.json",
-  zksync_era: "https://api.growthepie.xyz/v1/chains/zksync_era.json",
-  base: "https://api.growthepie.xyz/v1/chains/base.json",
-  gitcoin_pgn: "https://api.growthepie.xyz/v1/chains/gitcoin_pgn.json",
-  zora: "https://api.growthepie.xyz/v1/chains/zora.json",
-  linea: "https://api.growthepie.xyz/v1/chains/linea.json",
-  scroll: "https://api.growthepie.xyz/v1/chains/scroll.json",
-  mantle: "https://api.growthepie.xyz/v1/chains/mantle.json",
-  starknet: "https://api.growthepie.xyz/v1/chains/starknet.json",
-  loopring: "https://api.growthepie.xyz/v1/chains/loopring.json",
-  rhino: "https://api.growthepie.xyz/v1/chains/rhino.json",
-  metis: "https://api.growthepie.xyz/v1/chains/metis.json",
-  manta: "https://api.growthepie.xyz/v1/chains/manta.json",
-  blast: "https://api.growthepie.xyz/v1/chains/blast.json",
-  mode: "https://api.growthepie.xyz/v1/chains/mode.json",
-  taiko: "https://api.growthepie.xyz/v1/chains/taiko.json",
-  redstone: "https://api.growthepie.xyz/v1/chains/redstone.json",
-};
+export const ChainsBaseURL = "https://api.growthepie.xyz/v1/chains/";
 
 export const BlockspaceURLs = {
   "chain-overview": "https://api.growthepie.xyz/v1/blockspace/overview.json",
@@ -73,7 +51,7 @@ export const EconomicsURL = "https://api.growthepie.xyz/v1/economics.json";
 
 export const LandingURL = "https://api.growthepie.xyz/v1/landing_page.json";
 
-export const MasterURL = "https://api.growthepie.xyz/v1/master.json?fees=true";
+export const MasterURL = "https://api.growthepie.xyz/v1/master.json";
 
 export const ContractsURL = "https://api.growthepie.xyz/v1/contracts.json";
 
