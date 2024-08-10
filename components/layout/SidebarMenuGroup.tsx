@@ -557,10 +557,12 @@ export default function SidebarMenuGroup({
                         : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
                         } ${option.key === "chain-overview" ? "mt-1" : "mt-0"}`}
                       href={
-                        option.key !== "feesxyz"
+                        !option.key?.includes("https://")
                           ? `/${item.name.toLowerCase()}/${option.urlKey}`
-                          : "https://fees.growthepie.xyz/"
+                          : option.key
                       }
+                      rel={option.key?.includes("https://") ? "noopener" : ""}
+                      target={option.key?.includes("https://") ? "_blank" : ""}
                       onMouseOver={() => {
                         if (!option.key) return;
                         switch (item.name) {

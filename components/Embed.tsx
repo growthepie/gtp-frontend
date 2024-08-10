@@ -19,10 +19,10 @@ const pathToEmbed = (pathname: string) => {
 
 const showEmbed = (pathname: string | null) => {
   if (!pathname) return false;
-  
-  if(BASE_URL.includes("fees.")){
+
+  if (BASE_URL.includes("fees.")) {
     if (pathname === "/") return false;
-  }else{
+  } else {
     if (pathname === "/") return true;
     if (pathname.includes("fundamentals/")) return true;
   }

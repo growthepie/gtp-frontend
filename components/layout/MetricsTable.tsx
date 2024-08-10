@@ -619,7 +619,7 @@ const MetricsTable = ({
                         </div>
                         <Link
                           href={`/chains/${item.chain.urlKey}`}
-                          className={`font-medium leading-snug text-ellipsis overflow-hidden hover:underline ${isSidebarOpen
+                          className={`font-medium leading-snug text-ellipsis overflow-hidden hover:underline max-w-fit ${isSidebarOpen
                             ? "text-[10px] 2xl:text-xs"
                             : "text-xs"
                             }`}
