@@ -180,7 +180,7 @@ export default function OverviewChart({
             for (let j = 0; j < numArrays; j++) {
               txTotal +=
                 unixDataList[j][
-                  selectedMode.includes("txcount") ? txIndex : gasIndex
+                selectedMode.includes("txcount") ? txIndex : gasIndex
                 ];
             }
 
@@ -192,10 +192,10 @@ export default function OverviewChart({
                 allTotal +=
                   checkIndex !== -1
                     ? data[standardChainKey].daily[selectedCategory].data[
-                        data[standardChainKey].daily[
-                          selectedCategory
-                        ].data.findIndex((item) => item[0] === findUnix)
-                      ][selectedMode.includes("txcount") ? txIndex : gasIndex]
+                    data[standardChainKey].daily[
+                      selectedCategory
+                    ].data.findIndex((item) => item[0] === findUnix)
+                    ][selectedMode.includes("txcount") ? txIndex : gasIndex]
                     : 0;
               }
             }
@@ -232,7 +232,7 @@ export default function OverviewChart({
           selectedCategory
         ].data
           ? data[selectedChain].overview[selectedTimespan][selectedCategory]
-              .data[overviewIndex]
+            .data[overviewIndex]
           : [];
       } else {
         for (
@@ -249,8 +249,8 @@ export default function OverviewChart({
           ) {
             sum +=
               data[selectedChain].daily[selectedCategory].data[
-                data[selectedChain].daily[selectedCategory].data.length -
-                  (i + 1)
+              data[selectedChain].daily[selectedCategory].data.length -
+              (i + 1)
               ][typeIndex];
           }
         }
@@ -260,8 +260,8 @@ export default function OverviewChart({
             ? data[selectedChain].daily[selectedCategory].data.length
             : timespans[selectedTimespan].value >=
               data[selectedChain].daily[selectedCategory].data.length
-            ? data[selectedChain].daily[selectedCategory].data.length
-            : timespans[selectedTimespan].value);
+              ? data[selectedChain].daily[selectedCategory].data.length
+              : timespans[selectedTimespan].value);
       }
     } else {
       if (chainEcosystemFilter === "all-chains") {
@@ -276,13 +276,13 @@ export default function OverviewChart({
         ) {
           if (
             data[standardChainKey].daily[selectedCategory].data.length -
-              (i + 1) >=
+            (i + 1) >=
             0
           ) {
             sum +=
               data[standardChainKey].daily[selectedCategory].data[
-                data[standardChainKey].daily[selectedCategory].data.length -
-                  (i + 1)
+              data[standardChainKey].daily[selectedCategory].data.length -
+              (i + 1)
               ][typeIndex];
           }
         }
@@ -293,8 +293,8 @@ export default function OverviewChart({
             ? data[standardChainKey].daily[selectedCategory].data.length
             : timespans[selectedTimespan].value >=
               data[standardChainKey].daily[selectedCategory].data.length
-            ? data[standardChainKey].daily[selectedCategory].data.length
-            : timespans[selectedTimespan].value);
+              ? data[standardChainKey].daily[selectedCategory].data.length
+              : timespans[selectedTimespan].value);
       } else {
         let sum = 0;
         for (
@@ -314,8 +314,8 @@ export default function OverviewChart({
             (selectedTimespan === "max"
               ? chartStack.length
               : timespans[selectedTimespan].value >= chartStack.length
-              ? chartStack.length
-              : timespans[selectedTimespan].value);
+                ? chartStack.length
+                : timespans[selectedTimespan].value);
         }
       }
     }
@@ -337,8 +337,8 @@ export default function OverviewChart({
     const selectedData = selectedChain
       ? data[selectedChain].daily[selectedCategory].data
       : chainEcosystemFilter === "all-chains"
-      ? data[standardChainKey].daily[selectedCategory].data
-      : chartStack;
+        ? data[standardChainKey].daily[selectedCategory].data
+        : chartStack;
 
     //Determine array length based on selection
     const length =
@@ -393,13 +393,6 @@ export default function OverviewChart({
   const chartSeries = useMemo(() => {
     const dataKey = selectedMode;
     if (selectedChain) {
-      //   id: [selectedChain, selectedCategory, selectedMode].join("_"),
-      //   name: selectedChain,
-      //   unixKey: "unix",
-      //   dataKey: dataKey,
-      //   data: data[selectedChain].daily[selectedCategory].data.length,
-      // });
-      console.log(categories[selectedCategory] + " " + selectedCategory);
 
       if (allCats) {
         return categoriesList
@@ -419,15 +412,15 @@ export default function OverviewChart({
             pattern:
               categoryCheck === "unlabeled"
                 ? {
-                    color: AllChainsByKeys[standardChainKey].colors["dark"][0],
-                    path: {
-                      d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
-                      strokeWidth: 3,
-                    },
-                    width: 10,
-                    height: 10,
-                    opacity: 0.33,
-                  }
+                  color: AllChainsByKeys[standardChainKey].colors["dark"][0],
+                  path: {
+                    d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
+                    strokeWidth: 3,
+                  },
+                  width: 10,
+                  height: 10,
+                  opacity: 0.33,
+                }
                 : undefined,
             lineWidth: 0,
             custom: {
@@ -497,12 +490,12 @@ export default function OverviewChart({
     y:
       chartAvg && chartMax
         ? -1 *
-          ((forceSelectedChain ? 200 : 163) * (chartAvg / chartMax) +
-            (chartAvg / chartMax > 0.45
-              ? chartAvg / chartMax > 0.5
-                ? 7
-                : 10
-              : 14))
+        ((forceSelectedChain ? 200 : 163) * (chartAvg / chartMax) +
+          (chartAvg / chartMax > 0.45
+            ? chartAvg / chartMax > 0.5
+              ? 7
+              : 10
+            : 14))
         : 0,
     config: { mass: 1, tension: 70, friction: 20 },
   });
@@ -634,12 +627,11 @@ export default function OverviewChart({
           const { series, y, percentage } = point;
           const { name } = series;
           const fillOpacity = series.options.fillOpacity;
-          console.log(fillOpacity);
 
           const showPercentage = selectedValue === "share";
           const color =
             AllChainsByKeys[selectedChain ? selectedChain : "all_l2s"].colors[
-              theme ?? "dark"
+            theme ?? "dark"
             ][0];
 
           let prefix = showPercentage ? "" : valuePrefix;
@@ -660,10 +652,10 @@ export default function OverviewChart({
         </div>
         <div class="tooltip-point-name">${name}</div>
         <div class="flex-1 text-right font-inter">${Intl.NumberFormat("en-GB", {
-          notation: "compact",
-          maximumFractionDigits: 2,
-          minimumFractionDigits: 2,
-        }).format(showPercentage ? 100 * Number(value) : value)}</div>
+            notation: "compact",
+            maximumFractionDigits: 2,
+            minimumFractionDigits: 2,
+          }).format(showPercentage ? 100 * Number(value) : value)}</div>
       </div>
       <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
         <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white dark:bg-forest-1000" style="
@@ -804,7 +796,7 @@ export default function OverviewChart({
                   return function () {
                     if (
                       timespans[selectedTimespan].xMax -
-                        timespans[selectedTimespan].xMin <=
+                      timespans[selectedTimespan].xMin <=
                       40 * 24 * 3600 * 1000
                     ) {
                       let isBeginningOfWeek =
@@ -877,10 +869,8 @@ export default function OverviewChart({
               }}
             >
               {chartSeries.map((series, index) => {
-                console.log(series);
                 const isUnlabelled = series.custom.tooltipLabel === "Unlabeled";
                 const pattern = series.pattern;
-                console.log(pattern);
                 return (
                   series && (
                     <AreaSeries

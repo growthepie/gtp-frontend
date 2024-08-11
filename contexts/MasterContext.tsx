@@ -1,8 +1,9 @@
 "use client";
-import { Chain, Get_AllChainsNavigationItems } from "@/lib/chains";
+import { Chain, Get_AllChainsByKeys, Get_AllChainsNavigationItems } from "@/lib/chains";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { ImportChainIcons } from "@/lib/chainIcons";
 import useSWR from "swr";
 
 type MasterContextType = {
@@ -69,6 +70,9 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
 
       const chainsNavigationItems = Get_AllChainsNavigationItems(data);
       setChainsNavigationItems(chainsNavigationItems);
+
+      // import chain icons into iconify
+      ImportChainIcons(data);
     }
   }, [data]);
 
@@ -122,66 +126,3 @@ export const useMaster = () => {
 
   return ctx;
 };
-
-
-
-
-
-export const Get_AllChainsByKeys = (master: MasterResponse) => {
-  console.log("master", master);
-
-  let chains: { [key: string]: any } = {};
-  Object.keys(master.chains).forEach((key) => {
-    console.log("key", key, master.chains[key]);
-    let chain = master.chains[key];
-    chains[key] = {
-      label: chain.name,
-      icon: chain.logo?.body ? chain.logo.body : null,
-      key: key,
-      urlKey: key.replace(/_/g, "-"),
-      chainType: getChainTypeFromMasterChainType(key, chain.chain_type),
-      ecosystem: chain.ecosystem,
-      description: chain.description,
-      border: {
-        light: [
-          `border-[${chain.colors.light[0]}]`,
-          `border-[${chain.colors.light[1]}]`,
-        ],
-        dark: [
-          `border-[${chain.colors.dark[0]}]`,
-          `border-[${chain.colors.dark[1]}]`,
-        ],
-      },
-      colors: {
-        light: [`${chain.colors.light[0]}`, `${chain.colors.light[1]}`],
-        dark: [`${chain.colors.dark[0]}`, `${chain.colors.dark[1]}`],
-      },
-      backgrounds: {
-        light: [
-          `bg-[${chain.colors.light[0]}]`,
-          `bg-[${chain.colors.light[1]}]`,
-        ],
-        dark: [`bg-[${chain.colors.dark[0]}]`, `bg-[${chain.colors.dark[1]}]`],
-      },
-      darkTextOnBackground: chain.colors.darkTextOnBackground,
-    };
-  });
-
-  return chains;
-};
-
-const getChainTypeFromMasterChainType = (
-  chainKey: string,
-  masterChainType: string,
-) => {
-  if (chainKey === "all_l2s") {
-    return "all-l2s";
-  }
-
-  if (masterChainType === "-") {
-    return null;
-  }
-
-  return masterChainType;
-};
-

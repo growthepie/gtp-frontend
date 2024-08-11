@@ -171,7 +171,6 @@ const Chain = ({ params }: { params: any }) => {
             Object.values(metricData.data.chains).reduce(
               (acc: number, chain: ChainData) => {
                 if (!chain["daily"].data[0][0]) return acc;
-                console.log(chain["daily"].data[0][0]);
                 return Math.min(
                   acc,
                   chain["daily"].data[0][0],
