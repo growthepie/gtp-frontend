@@ -1,7 +1,14 @@
-import { useMemo, useCallback, useState, useEffect } from "react";
+import {
+  useMemo,
+  useCallback,
+  useState,
+  useEffect,
+  useRef,
+  MutableRefObject,
+} from "react";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 
-import { charts, color } from "highcharts";
+import { chart, charts, color } from "highcharts";
 import { Icon } from "@iconify/react";
 import { useTheme } from "next-themes";
 import { Chains } from "@/types/api/ChainOverviewResponse";
@@ -59,7 +66,6 @@ export default function OverviewChart({
   forceHoveredChartSeriesId,
   setHoveredChartSeriesId,
   hoveredChartSeriesId,
-  chartComponent,
 }: {
   data: Chains;
   master: MasterResponse | undefined;
@@ -77,9 +83,10 @@ export default function OverviewChart({
   hoveredChartSeriesId: string;
   forceHoveredChartSeriesId: string;
   setHoveredChartSeriesId: (series: string) => void;
-  chartComponent: React.MutableRefObject<Highcharts.Chart | null | undefined>;
 }) {
   const standardChainKey = forceSelectedChain ? forceSelectedChain : "all_l2s";
+  const chartComponent: MutableRefObject<Highcharts.Chart | null | undefined> =
+    useRef<Highcharts.Chart | null | undefined>(null);
   const [chainEcosystemFilter, setChainEcosystemFilter] = useSessionStorage(
     "chainEcosystemFilter",
     "all-chains",
@@ -398,7 +405,6 @@ export default function OverviewChart({
       //   dataKey: dataKey,
       //   data: data[selectedChain].daily[selectedCategory].data.length,
       // });
-      console.log(categories[selectedCategory] + " " + selectedCategory);
 
       if (allCats) {
         return categoriesList
@@ -483,6 +489,7 @@ export default function OverviewChart({
     selectedMode,
     selectedChain,
     selectedCategory,
+    selectedTimespan,
     chainEcosystemFilter,
     data,
     chartStack,
@@ -601,7 +608,7 @@ export default function OverviewChart({
           });
       }
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-36 md:w-40 text-xs font-raleway">
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway">
         <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2 ">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
@@ -628,12 +635,14 @@ export default function OverviewChart({
       }, 0);
 
       const tooltipPoints = points
+        .sort((a: any, b: any) => {
+          return b.y - a.y;
+        })
 
         .map((point: any, index: number) => {
           const { series, y, percentage } = point;
           const { name } = series;
           const fillOpacity = series.options.fillOpacity;
-          console.log(fillOpacity);
 
           const showPercentage = selectedValue === "share";
           const color =
@@ -658,11 +667,15 @@ export default function OverviewChart({
         
         </div>
         <div class="tooltip-point-name">${name}</div>
-        <div class="flex-1 text-right font-inter">${Intl.NumberFormat("en-GB", {
-          notation: "compact",
-          maximumFractionDigits: 2,
-          minimumFractionDigits: 2,
-        }).format(showPercentage ? 100 * Number(value) : value)}</div>
+        <div class="flex flex-1 justify-end text-right font-inter">
+        <div>${prefix}</div>
+          <div>${Intl.NumberFormat("en-GB", {
+            notation: "compact",
+            maximumFractionDigits: 2,
+            minimumFractionDigits: 2,
+          }).format(showPercentage ? 100 * Number(value) : value)}</div>
+          <div>${suffix}</div>
+          </div>
       </div>
       <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
         <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white dark:bg-forest-1000" style="
@@ -682,8 +695,38 @@ export default function OverviewChart({
 
       return tooltip + tooltipPoints + tooltipEnd;
     },
-    [valuePrefix, reversePerformer, showUsd],
+    [valuePrefix, reversePerformer, showUsd, selectedValue],
   );
+
+  useEffect(() => {
+    if (allCats === true && chartComponent.current && chartSeries.length > 1) {
+      if (
+        !forceHoveredChartSeriesId ||
+        forceHoveredChartSeriesId.includes("all_chain")
+      ) {
+        chartComponent.current.series.forEach((s: Highcharts.Series) => {
+          s.setState("normal");
+          if (s.options.custom) {
+            s.options["fillColor"] = s.options.custom.fillColor;
+          }
+        });
+      } else {
+        chartComponent.current.series.forEach((s: Highcharts.Series) => {
+          if (s.options.id === forceHoveredChartSeriesId) {
+            s.setState("hover");
+            if (s.options.custom) {
+              s.options["fillColor"] = s.options.custom.chainColor;
+            }
+          } else {
+            s.setState("inactive");
+            if (s.options.custom) {
+              s.options["fillColor"] = s.options.custom.fillColor;
+            }
+          }
+        });
+      }
+    }
+  }, [forceHoveredChartSeriesId, chartSeries, allCats]);
 
   return (
     <>
@@ -738,12 +781,18 @@ export default function OverviewChart({
               style={{ borderRadius: 15 }}
               animation={{ duration: 50 }}
               // margin={[0, 15, 0, 0]} // Use the array form for margin
-              margin={[30, 21, 30, 50]}
-              spacingBottom={0}
+              margin={[30, 10, 50, 50]}
+              spacingBottom={30}
               spacingTop={40}
               spacingLeft={10}
               spacingRight={10}
               height={249}
+              onRender={(chart) => {
+                if (chart && chart.target) {
+                  chartComponent.current =
+                    chart.target as unknown as Highcharts.Chart;
+                }
+              }}
             />
             <Tooltip
               useHTML={true}
@@ -783,22 +832,40 @@ export default function OverviewChart({
                 color: COLORS.PLOT_LINE,
                 snap: false,
               }}
-              tickAmount={0}
               tickWidth={1}
-              tickLength={10}
+              tickLength={25}
+              tickColor={"#CDD8D34C"}
               ordinal={false}
               gridLineWidth={0}
               minorTicks={false}
-              minorTickLength={2}
-              minorTickWidth={2}
-              minorGridLineWidth={0}
-              minorTickInterval={1000 * 60 * 60 * 24 * 1}
+              minTickInterval={
+                timespans[selectedTimespan].xMax -
+                  timespans[selectedTimespan].xMin <=
+                40 * 24 * 3600 * 1000
+                  ? 24 * 3600 * 1000
+                  : 30 * 24 * 3600 * 1000
+              }
               min={
                 timespans[selectedTimespan].xMin
                   ? timespans[selectedTimespan].xMin
                   : undefined
               }
               labels={{
+                y: 40,
+                align: undefined,
+                rotation: 0,
+                allowOverlap: false,
+
+                reserveSpace: true,
+                overflow: "justify",
+                useHTML: true,
+                style: {
+                  textAlign: "bottom",
+                  color: "#CDD8D3",
+                  fontSize: "12px",
+                  marginTop: "10px",
+                },
+
                 formatter: (function () {
                   return function () {
                     if (
@@ -819,13 +886,12 @@ export default function OverviewChart({
                     } else {
                       // if Jan 1st, show year
                       if (new Date(this.value).getUTCMonth() === 0) {
-                        return new Date(this.value).toLocaleDateString(
-                          "en-GB",
-                          {
-                            timeZone: "UTC",
-                            year: "numeric",
-                          },
-                        );
+                        return `<span style="font-size: 14px; font-weight: 600;">
+                  ${new Date(this.value).toLocaleDateString("en-GB", {
+                    timeZone: "UTC",
+                    year: "numeric",
+                  })}
+                </span>`;
                       }
                       return new Date(this.value).toLocaleDateString("en-GB", {
                         timeZone: "UTC",
@@ -851,7 +917,6 @@ export default function OverviewChart({
               tickAmount={3}
               labels={{
                 align: "right",
-
                 y: 2,
                 x: -4,
                 style: {
@@ -876,10 +941,9 @@ export default function OverviewChart({
               }}
             >
               {chartSeries.map((series, index) => {
-                console.log(series);
                 const isUnlabelled = series.custom.tooltipLabel === "Unlabeled";
                 const pattern = series.pattern;
-                console.log(pattern);
+
                 return (
                   series && (
                     <AreaSeries
@@ -888,12 +952,12 @@ export default function OverviewChart({
                       color={
                         AllChainsByKeys[series.name].colors[theme ?? "dark"][0]
                       }
+                      lineWidth={allCats ? 0 : 2}
                       data={series.data.map((d: any) => [
                         d[types.indexOf("unix")],
                         d[types.indexOf(series.dataKey)],
                       ])}
-                      opacity={allCats ? series.fillOpacity : 1}
-                      fillOpacity={allCats ? series.fillOpacity : 1}
+                      fillOpacity={!isUnlabelled ? series.fillOpacity : 0.05}
                     />
                   )
                 );
