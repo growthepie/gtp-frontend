@@ -1,7 +1,6 @@
 "use client";
 import FeesContainer from "@/components/layout/FeesContainer";
 import Icon from "@/components/layout/Icon";
-import { AllChainsByKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import useSWR from "swr";
@@ -18,6 +17,7 @@ import { useWindowSize } from "usehooks-ts";
 import Link from "next/link";
 import { FeesTableResponse } from "@/types/api/Fees/Table";
 import ShowLoading from "@/components/layout/ShowLoading";
+import { useMaster } from "@/contexts/MasterContext";
 
 interface HoveredItems {
   hoveredChain: string | null;
@@ -83,6 +83,8 @@ const getGradientColor = (percentage) => {
 };
 
 export default function FeesPage() {
+  const { AllChainsByKeys } = useMaster();
+
   const {
     data: master,
     error: masterError,
@@ -1088,8 +1090,8 @@ export default function FeesPage() {
             {!master.fee_metrics[metric].currency && (
               <div
                 className={`text-[8px] text-forest-900 ${master.fee_metrics[metric].units[unitKey].suffix
-                    ? "pr-[5px] pl-0.5"
-                    : "pr-[0px] pl-0"
+                  ? "pr-[5px] pl-0.5"
+                  : "pr-[0px] pl-0"
                   }`}
               >
                 {master.fee_metrics[metric].units[unitKey].suffix
@@ -1100,8 +1102,8 @@ export default function FeesPage() {
             {master.fee_metrics[metric].suffix && (
               <div
                 className={`text-[8px] text-forest-900 ${master.fee_metrics[metric].units[unitKey].suffix
-                    ? "pr-[5px] pl-0.5"
-                    : "pr-[0px] pl-0"
+                  ? "pr-[5px] pl-0.5"
+                  : "pr-[0px] pl-0"
                   }`}
               >
                 {master.fee_metrics[metric].units[unitKey].suffix
@@ -1168,8 +1170,8 @@ export default function FeesPage() {
           {!master.fee_metrics[metric].currency && (
             <div
               className={`text-[8px] text-forest-400 ${master.fee_metrics[metric].units[unitKey].suffix
-                  ? "pr-[5px] pl-0.5"
-                  : "pr-[0px] pl-0"
+                ? "pr-[5px] pl-0.5"
+                : "pr-[0px] pl-0"
                 }`}
             >
               {master.fee_metrics[metric].units[unitKey].suffix
@@ -1180,8 +1182,8 @@ export default function FeesPage() {
           {master.fee_metrics[metric].suffix && (
             <div
               className={`text-[8px] text-forest-400 ${master.fee_metrics[metric].units[unitKey].suffix
-                  ? "pr-[5px] pl-0.5"
-                  : "pr-[0px] pl-0"
+                ? "pr-[5px] pl-0.5"
+                : "pr-[0px] pl-0"
                 }`}
             >
               {master.fee_metrics[metric].units[unitKey].suffix
@@ -1315,8 +1317,8 @@ export default function FeesPage() {
             </a>
             <div
               className={`flex items-center relative h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-[15px] py-[10px] gap transition-all z-[11] duration-300 hover:cursor-pointer ${hoverSettings
-                  ? "w-[336px] justify-start"
-                  : "w-[128px] justify-start"
+                ? "w-[336px] justify-start"
+                : "w-[128px] justify-start"
                 }`}
               onMouseEnter={() => {
                 setHoverSettings(true);
@@ -1348,8 +1350,8 @@ export default function FeesPage() {
 
             <div
               className={`absolute top-6 min-h-0 bg-[#151A19] right-[5px] rounded-b-2xl z-[10] transition-all duration-300 overflow-hidden ${hoverSettings
-                  ? `shadow-[0px_4px_46.2px_0px_#000000]`
-                  : "shadow-transparent"
+                ? `shadow-[0px_4px_46.2px_0px_#000000]`
+                : "shadow-transparent"
                 }`}
               style={{
                 width: hoverSettings ? "336px" : 0,
@@ -1625,8 +1627,8 @@ export default function FeesPage() {
                             : "formkit:arrowdown"
                         }
                         className={` dark:text-white text-black w-[10px] h-[10px] ${selectedQualitative === "chain"
-                            ? "opacity-100"
-                            : "opacity-20"
+                          ? "opacity-100"
+                          : "opacity-20"
                           }`}
                       />{" "}
                     </div>
@@ -1649,8 +1651,8 @@ export default function FeesPage() {
                       Data Availability
                       <div
                         className={`flex items-center ${availabilityFilter && dataAvailByFilter
-                            ? "max-w-[200px]"
-                            : "max-w-0"
+                          ? "max-w-[200px]"
+                          : "max-w-0"
                           } overflow-hidden transition-all duration-500`}
                       >
                         :{" "}
@@ -1821,9 +1823,9 @@ export default function FeesPage() {
                                               : "formkit:arrowdown"
                                           }
                                           className={`dark:text-white text-black w-[10px] h-[10px] ${!selectedQualitative &&
-                                              selectedQuantitative === metric
-                                              ? "opacity-100"
-                                              : "opacity-20"
+                                            selectedQuantitative === metric
+                                            ? "opacity-100"
+                                            : "opacity-20"
                                             }`}
                                         />
                                       </div>
@@ -1841,8 +1843,8 @@ export default function FeesPage() {
                     <div className="relative flex space-x-[1px] items-end -bottom-2">
                       <div
                         className={`absolute right-[5px] w-[29px] h-[12px] text-[8px] transition-all duration-100 ${selectedBarIndex >= 18 && selectedBarIndex <= 22
-                            ? "-top-[22px]"
-                            : "-top-2"
+                          ? "-top-[22px]"
+                          : "-top-2"
                           }`}
                       >
                         hourly
@@ -1870,10 +1872,10 @@ export default function FeesPage() {
                         >
                           <div
                             className={`w-[5px] transition-all duration-0  ${selectedBarIndex === index
-                                ? "h-[16px]"
-                                : hoverBarIndex === index
-                                  ? "h-[14px]"
-                                  : "h-[8px]"
+                              ? "h-[16px]"
+                              : hoverBarIndex === index
+                                ? "h-[14px]"
+                                : "h-[8px]"
                               }`}
                           ></div>
                         </div>
@@ -1903,10 +1905,10 @@ export default function FeesPage() {
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             className={`w-[18px] h-[18px] ${selectedChainOutcomes === 0
-                                ? "opacity-0"
-                                : selectedChainOutcomes === 1
-                                  ? "opacity-40"
-                                  : "opacity-0"
+                              ? "opacity-0"
+                              : selectedChainOutcomes === 1
+                                ? "opacity-40"
+                                : "opacity-0"
                               }`}
                           >
                             <circle
@@ -1920,10 +1922,10 @@ export default function FeesPage() {
                         <Icon
                           icon={"feather:check-circle"}
                           className={` dark:text-white text-black w-[13px] h-[13px]  cursor-pointer ${selectedChainOutcomes === 0
-                              ? "opacity-100"
-                              : selectedChainOutcomes === 2
-                                ? "opacity-40"
-                                : "opacity-0"
+                            ? "opacity-100"
+                            : selectedChainOutcomes === 2
+                              ? "opacity-40"
+                              : "opacity-0"
                             }`}
                         />
                       </div>
@@ -2023,19 +2025,19 @@ export default function FeesPage() {
                                   <Icon
                                     icon={`gtp:${avail.icon}`}
                                     className={`h-[12px] md:w-[12px] ${dataAvailByFilter &&
-                                        selectedAvailability === avail.label &&
-                                        selectedChains[item.chain[1]]
-                                        ? "text-forest-200"
-                                        : "text-[#CDD8D3]/60"
+                                      selectedAvailability === avail.label &&
+                                      selectedChains[item.chain[1]]
+                                      ? "text-forest-200"
+                                      : "text-[#CDD8D3]/60"
                                       }
                                   `}
                                   />
                                   <div
                                     className={`flex items-center text-[8px] font-semibold leading-tight ${dataAvailByFilter &&
-                                        selectedAvailability === avail.label &&
-                                        selectedChains[item.chain[1]]
-                                        ? "text-forest-200"
-                                        : "text-[#CDD8D3]/60"
+                                      selectedAvailability === avail.label &&
+                                      selectedChains[item.chain[1]]
+                                      ? "text-forest-200"
+                                      : "text-[#CDD8D3]/60"
                                       }`}
                                   >
                                     {avail.label}
@@ -2182,10 +2184,10 @@ export default function FeesPage() {
                             >
                               <div
                                 className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${selectedBarIndex === index
-                                    ? "scale-[160%]"
-                                    : hoverBarIndex === index
-                                      ? "scale-[120%] opacity-90"
-                                      : "scale-100 opacity-50"
+                                  ? "scale-[160%]"
+                                  : hoverBarIndex === index
+                                    ? "scale-[120%] opacity-90"
+                                    : "scale-100 opacity-50"
                                   }`}
                                 style={{
                                   backgroundColor: getCircleColor(
@@ -2200,8 +2202,8 @@ export default function FeesPage() {
                         <div className="absolute right-[0px]">
                           <div
                             className={`relative flex items-center justify-end w-[22px] h-[22px] rounded-full cursor-pointer ${selectedChains[item.chain[1]]
-                                ? " bg-white dark:bg-forest-1000 dark:hover:forest-800"
-                                : " bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
+                              ? " bg-white dark:bg-forest-1000 dark:hover:forest-800"
+                              : " bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
                               }`}
                             onClick={() => {
                               if (selectedQualitative === "availability") {
@@ -2308,8 +2310,8 @@ export default function FeesPage() {
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 className={`w-[22px] h-[22px]  ${!selectedChains[item.chain[1]]
-                                    ? "opacity-100"
-                                    : "opacity-0"
+                                  ? "opacity-100"
+                                  : "opacity-0"
                                   }`}
                               >
                                 <circle
@@ -2322,15 +2324,15 @@ export default function FeesPage() {
                             </div>
                             <div
                               className={`p-0.5 rounded-full ${!selectedChains[item.chain[1]]
-                                  ? "bg-forest-50 dark:bg-[#1F2726]"
-                                  : "bg-white dark:bg-[#1F2726]"
+                                ? "bg-forest-50 dark:bg-[#1F2726]"
+                                : "bg-white dark:bg-[#1F2726]"
                                 }`}
                             >
                               <Icon
                                 icon="feather:check-circle"
                                 className={`w-[17.6px] h-[17.6px] ${!selectedChains[item.chain[1]]
-                                    ? "opacity-0"
-                                    : "opacity-100"
+                                  ? "opacity-0"
+                                  : "opacity-100"
                                   }`}
                                 style={{
                                   color: selectedChains[item.chain[1]]
@@ -2499,10 +2501,10 @@ export default function FeesPage() {
                         >
                           <div
                             className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${selectedBarIndex === index
-                                ? "scale-[160%]"
-                                : hoverBarIndex === index
-                                  ? "scale-[120%] opacity-90"
-                                  : "scale-100 opacity-50"
+                              ? "scale-[160%]"
+                              : hoverBarIndex === index
+                                ? "scale-[120%] opacity-90"
+                                : "scale-100 opacity-50"
                               }`}
                             style={{
                               backgroundColor: getCircleColor(

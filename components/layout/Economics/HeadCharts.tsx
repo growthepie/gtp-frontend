@@ -37,13 +37,8 @@ import {
   getFundamentalsByKey,
 } from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
-import {
-  AllChains,
-  AllChainsByKeys,
-  Get_DefaultChainSelectionKeys,
-  Get_SupportedChainKeys,
-} from "@/lib/chains";
 import { B } from "million/dist/shared/million.485bbee4";
+import { useMaster } from "@/contexts/MasterContext";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -59,6 +54,7 @@ export default function EconHeadCharts({
 }: {
   da_charts: FeesBreakdown;
 }) {
+  const { AllChains, AllChainsByKeys } = useMaster();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [chartWidth, setChartWidth] = useState<number | null>(null);
   const { isMobile } = useUIContext();
@@ -191,72 +187,65 @@ export default function EconHeadCharts({
             <div class="tooltip-point-name text-md">${nameString}</div>
             <div class="flex-1 text-right font-inter w-full flex">
               <div class="flex justify-end text-right w-full">
-                  <div class="opacity-70 mr-0.5 ${
-                    !prefix && "hidden"
-                  }">${prefix}</div>
+                  <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+            }">${prefix}</div>
                   <div style={{
                             fontFeatureSettings: "'pnum' on, 'lnum' on",
-                          }}>${
-                            isFees
-                              ? parseFloat(displayValue).toLocaleString(
-                                  "en-GB",
-                                  {
-                                    minimumFractionDigits:
-                                      calculateDecimalPlaces(
-                                        Number(displayValue),
-                                      ),
-                                    maximumFractionDigits:
-                                      calculateDecimalPlaces(
-                                        Number(displayValue),
-                                      ),
-                                  },
-                                )
-                              : formatBytes(displayValue)
-                          }
+                          }}>${isFees
+              ? parseFloat(displayValue).toLocaleString(
+                "en-GB",
+                {
+                  minimumFractionDigits:
+                    calculateDecimalPlaces(
+                      Number(displayValue),
+                    ),
+                  maximumFractionDigits:
+                    calculateDecimalPlaces(
+                      Number(displayValue),
+                    ),
+                },
+              )
+              : formatBytes(displayValue)
+            }
                   </div>
                 </div>
-                <div class="opacity-70 ml-0.5 ${
-                  !suffix && "hidden"
-                }">${suffix}</div>
+                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+            }">${suffix}</div>
             </div>
           </div>
-          ${
-            index === 1
+          ${index === 1
               ? ` <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${"#344240"}"></div>
             <div class="tooltip-point-name text-md">${"Cost / GB"}</div>
             <div class="flex-1 text-right font-inter w-full flex">
               <div class="flex justify-end text-right w-full">
-                  <div class="opacity-70 mr-0.5 ${
-                    !prefix && "hidden"
-                  }">${prefix}</div>
+                  <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+              }">${prefix}</div>
                   <div style={{
                             fontFeatureSettings: "'pnum' on, 'lnum' on",
-                          }}>${
-                            isFees
-                              ? parseFloat(
-                                  String(
-                                    calculateCostPerGB(Number(y), blob_value),
-                                  ),
-                                ).toLocaleString("en-GB", {
-                                  minimumFractionDigits: calculateDecimalPlaces(
-                                    Number(displayValue),
-                                  ),
-                                  maximumFractionDigits: calculateDecimalPlaces(
-                                    Number(displayValue),
-                                  ),
-                                })
-                              : formatBytes(displayValue)
-                          }
+                          }}>${isFees
+                ? parseFloat(
+                  String(
+                    calculateCostPerGB(Number(y), blob_value),
+                  ),
+                ).toLocaleString("en-GB", {
+                  minimumFractionDigits: calculateDecimalPlaces(
+                    Number(displayValue),
+                  ),
+                  maximumFractionDigits: calculateDecimalPlaces(
+                    Number(displayValue),
+                  ),
+                })
+                : formatBytes(displayValue)
+              }
                   </div>
                 </div>
-                <div class="opacity-70 ml-0.5 ${
-                  !suffix && "hidden"
-                }">${suffix}</div>
+                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+              }">${suffix}</div>
             </div>
           </div>`
               : ``
-          }`;
+            }`;
         })
         .join("");
 
@@ -400,12 +389,12 @@ export default function EconHeadCharts({
         }}
         aria-labelledby={"economics-traction-title"}
         hasTrack={false}
-        // onDrag={(e) => {
-        //   setIsDragging(true);
-        // }}
-        // onDragged={(e) => {
-        //   setIsDragging(false);
-        // }}
+      // onDrag={(e) => {
+      //   setIsDragging(true);
+      // }}
+      // onDragged={(e) => {
+      //   setIsDragging(false);
+      // }}
       >
         <SplideTrack>
           {Object.keys(da_charts).map((key, i) => {
@@ -455,10 +444,10 @@ export default function EconHeadCharts({
                         {valuePrefix}
                         {calculateCostPerGB(
                           da_charts[key].total_blob_fees.daily.data[
-                            feesLength - 1
+                          feesLength - 1
                           ][dataIndex],
                           da_charts[key].total_blob_size.daily.data[
-                            sizeLength - 1
+                          sizeLength - 1
                           ][1],
                         )}
                         {" / GB "}
@@ -472,7 +461,7 @@ export default function EconHeadCharts({
                         <div>
                           {formatBytes(
                             da_charts[key].total_blob_size.daily.data[
-                              sizeLength - 1
+                            sizeLength - 1
                             ][1],
                           )}
                         </div>
@@ -480,7 +469,7 @@ export default function EconHeadCharts({
                           {valuePrefix}
                           {simplerFormatter(
                             da_charts[key].total_blob_fees.daily.data[
-                              feesLength - 1
+                            feesLength - 1
                             ][dataIndex],
                           )}
                         </div>
@@ -698,7 +687,7 @@ export default function EconHeadCharts({
 
                               const lastPoint: Highcharts.Point =
                                 chart.series[index].points[
-                                  chart.series[index].points.length - 1
+                                chart.series[index].points.length - 1
                                 ];
 
                               // check if i exists as a key in lastPointLines
@@ -739,8 +728,8 @@ export default function EconHeadCharts({
                                     : chart.plotTop - 5,
                                   stroke: isSafariBrowser
                                     ? AllChainsByKeys["all_l2s"].colors[
-                                        "dark"
-                                      ][1]
+                                    "dark"
+                                    ][1]
                                     : "url('#gradient0')",
                                   "stroke-dasharray": "2",
                                   "stroke-width": 1,
@@ -839,8 +828,8 @@ export default function EconHeadCharts({
                           min={da_charts[key].total_blob_size.daily.data[0][0]}
                           max={
                             da_charts[key].total_blob_size.daily.data[
-                              da_charts[key].total_blob_size.daily.data.length -
-                                1
+                            da_charts[key].total_blob_size.daily.data.length -
+                            1
                             ][0]
                           }
                         >
@@ -985,7 +974,7 @@ export default function EconHeadCharts({
                     <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
                       {new Date(
                         da_charts[key][largerAxis].daily.data[
-                          da_charts[key][largerAxis].daily.data.length - 1
+                        da_charts[key][largerAxis].daily.data.length - 1
                         ][0],
                       ).toLocaleDateString("en-GB", {
                         timeZone: "UTC",

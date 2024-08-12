@@ -19,7 +19,7 @@ import Container from "./Container";
 import { CategoryComparisonResponseData } from "@/types/api/CategoryComparisonResponse";
 import { animated, useSpring, useTransition } from "@react-spring/web";
 import { Chart } from "../charts/chart";
-import { AllChainsByKeys, Get_SupportedChainKeys } from "@/lib/chains";
+import { Get_SupportedChainKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
 import { LandingURL, MasterURL } from "@/lib/urls";
 import useSWR from "swr";
@@ -36,6 +36,7 @@ import {
 } from "@/components/layout/TopRow";
 import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
 import HorizontalScrollContainer from "../HorizontalScrollContainer";
+import { useMaster } from "@/contexts/MasterContext";
 
 export default function CategoryMetrics({
   data,
@@ -52,6 +53,8 @@ export default function CategoryMetrics({
   selectedTimespan: string;
   setSelectedTimespan: (timespan: string) => void;
 }) {
+  const { AllChainsByKeys } = useMaster();
+
   // const {
   //   data: master,
   //   error: masterError,

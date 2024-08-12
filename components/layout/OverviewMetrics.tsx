@@ -12,7 +12,6 @@ import {
 import { Icon } from "@iconify/react";
 import { useTheme } from "next-themes";
 import { Chains } from "@/types/api/ChainOverviewResponse";
-import { AllChainsByKeys } from "@/lib/chains";
 import { color } from "highcharts";
 import { useHover, useMediaQuery } from "usehooks-ts";
 import { Chart } from "../charts/chart";
@@ -34,6 +33,7 @@ import {
   TopRowParent,
 } from "@/components/layout/TopRow";
 import HorizontalScrollContainer from "../HorizontalScrollContainer";
+import { useMaster } from "@/contexts/MasterContext";
 
 // object which contains the allowed modes for chains with mode exceptions
 const AllowedModes: {
@@ -64,6 +64,7 @@ export default function OverviewMetrics({
   forceCategory?: string;
 }) {
   const { theme } = useTheme();
+  const { AllChainsByKeys } = useMaster();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [selectedMode, setSelectedMode] = useState(
     forceSelectedChain === "imx" ? "txcount_share" : "gas_fees_share_usd",

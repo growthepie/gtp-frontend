@@ -5,13 +5,14 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { MasterURL } from "../../../lib/urls";
 import { MasterResponse } from "../../../types/api/MasterResponse";
-import { AllChainsByKeys } from "../../../lib/chains";
 import { ContractsURL } from "../../../lib/urls";
 import { ContractsResponse } from "../../../types/api/ContractsResponse";
 import debounce from "lodash/debounce";
 import Image from "next/image";
+import { useMaster } from "@/contexts/MasterContext";
 
 export default function AddressSearch() {
+  const { AllChainsByKeys } = useMaster();
   const {
     data: master,
     error: masterError,

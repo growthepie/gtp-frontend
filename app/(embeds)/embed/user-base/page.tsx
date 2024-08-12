@@ -12,13 +12,13 @@ import { useEffect, useMemo, useState, useRef, useLayoutEffect } from "react";
 import { useMediaQuery } from "@react-hook/media-query";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { AllChains, AllChainsByKeys } from "@/lib/chains";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
 import { LandingURL, MasterURL } from "@/lib/urls";
 import LandingChart from "@/components/layout/LandingChart";
 import EmbedContainer from "../EmbedContainer";
 import { useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
+import { useMaster } from "@/contexts/MasterContext";
 
 // export async function generateMetadata(): Promise<Metadata> {
 //   return {
@@ -29,6 +29,7 @@ import { useTheme } from "next-themes";
 // }
 
 export default function Page() {
+  const { AllChainsByKeys, AllChains } = useMaster();
   const searchParams = useSearchParams();
   const queryTheme = searchParams ? searchParams.get("theme") : null;
   const queryTimespan = searchParams ? searchParams.get("timespan") : null;

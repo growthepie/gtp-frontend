@@ -1,6 +1,6 @@
 import * as d3 from "d3";
-import { AllChainsByKeys } from "./chains";
 import Highcharts from "highcharts";
+import { Chain, Get_AllChainsByKeysFromSessionStorage } from "./chains";
 
 export const ChartColors = {
   GRID: "rgb(215, 223, 222)",
@@ -27,6 +27,8 @@ export const tooltipFormatter = (
   const percentageFormatter = function (
     this: Highcharts.TooltipFormatterContextObject,
   ) {
+    // get AllChainsByKeys from session storage
+    const AllChainsByKeys = Get_AllChainsByKeysFromSessionStorage();
     // shared tooltip
     const { points } = this;
 
@@ -147,6 +149,8 @@ export const tooltipFormatter = (
   const normalFormatter = function (
     this: Highcharts.TooltipFormatterContextObject,
   ) {
+    // get AllChainsByKeys from session storage
+    const AllChainsByKeys = Get_AllChainsByKeysFromSessionStorage();
     // shared tooltip
     const { points } = this;
     if (!points || points.length < 1) {

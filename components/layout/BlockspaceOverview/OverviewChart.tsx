@@ -13,7 +13,6 @@ import { Icon } from "@iconify/react";
 import { useTheme } from "next-themes";
 import { Chains } from "@/types/api/ChainOverviewResponse";
 import { animated, useSpring } from "@react-spring/web";
-import { AllChainsByKeys } from "@/lib/chains";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import {
   HighchartsProvider,
@@ -39,6 +38,7 @@ import {
 import { useUIContext } from "@/contexts/UIContext";
 import Highcharts from "highcharts/highstock";
 import { fill } from "lodash";
+import { useMaster } from "@/contexts/MasterContext";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -84,6 +84,7 @@ export default function OverviewChart({
   forceHoveredChartSeriesId: string;
   setHoveredChartSeriesId: (series: string) => void;
 }) {
+  const { AllChainsByKeys } = useMaster();
   const standardChainKey = forceSelectedChain ? forceSelectedChain : "all_l2s";
   const chartComponent: MutableRefObject<Highcharts.Chart | null | undefined> =
     useRef<Highcharts.Chart | null | undefined>(null);

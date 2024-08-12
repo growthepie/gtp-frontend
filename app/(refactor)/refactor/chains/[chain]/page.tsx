@@ -94,6 +94,8 @@ export default function ChainsPage() {
     return retObject;
   }
 
+  if (!master) return null;
+
   return (
     <Container
       className="flex w-full pt-[30px] md:pt-[30px] pb-[20px]"
@@ -138,29 +140,29 @@ export default function ChainsPage() {
                       items={
                         sectionHead.menu.hasBlockspaceOverview
                           ? [
-                              {
-                                label: "Fundamentals",
-                                icon: "gtp:gtp-fundamentals",
-                                href: "#fundamentals",
-                              },
-                              {
-                                label: "Blockspace",
-                                icon: "gtp:gtp-package",
-                                href: "#blockspace",
-                              },
-                            ]
+                            {
+                              label: "Fundamentals",
+                              icon: "gtp:gtp-fundamentals",
+                              href: "#fundamentals",
+                            },
+                            {
+                              label: "Blockspace",
+                              icon: "gtp:gtp-package",
+                              href: "#blockspace",
+                            },
+                          ]
                           : [
-                              {
-                                label: "Fundamentals",
-                                icon: "gtp:gtp-fundamentals",
-                                href: "#fundamentals",
-                              },
-                            ]
+                            {
+                              label: "Fundamentals",
+                              icon: "gtp:gtp-fundamentals",
+                              href: "#fundamentals",
+                            },
+                          ]
                       }
                     />
                     {sectionHead.menu.block_explorers &&
                       Object.keys(sectionHead.menu.block_explorers).length >
-                        0 && (
+                      0 && (
                         <ExpandingButtonMenu
                           className={`left-[5px] top-[50px] lg:top-[65px] right-[calc((100%/2)+5px)] lg:right-[120px]`}
                           button={{
@@ -404,16 +406,16 @@ export default function ChainsPage() {
                           onClick={() => {
                             if (
                               !sectionHead.usage.hottest_contract.data[0][
-                                sectionHead.usage.hottest_contract.types.indexOf(
-                                  "name",
-                                )
+                              sectionHead.usage.hottest_contract.types.indexOf(
+                                "name",
+                              )
                               ]
                             ) {
                               navigator.clipboard.writeText(
                                 sectionHead.usage.hottest_contract.data[0][
-                                  sectionHead.usage.hottest_contract.types.indexOf(
-                                    "address",
-                                  )
+                                sectionHead.usage.hottest_contract.types.indexOf(
+                                  "address",
+                                )
                                 ],
                               );
                             }
@@ -423,15 +425,14 @@ export default function ChainsPage() {
                             sectionHead.usage.hottest_contract.data[0] ? (
                               <>
                                 <span
-                                  className={` truncate ${
-                                    sectionHead.usage.hottest_contract.data[0][
+                                  className={` truncate ${sectionHead.usage.hottest_contract.data[0][
                                       sectionHead.usage.hottest_contract.types.indexOf(
                                         "project_name",
                                       )
                                     ]
                                       ? "max-w-[80px]"
                                       : "max-w-[140px]"
-                                  }`}
+                                    }`}
                                 >
                                   {sectionHead.usage.hottest_contract.data[0][
                                     sectionHead.usage.hottest_contract.types.indexOf(
@@ -439,9 +440,9 @@ export default function ChainsPage() {
                                     )
                                   ] ||
                                     sectionHead.usage.hottest_contract.data[0][
-                                      sectionHead.usage.hottest_contract.types.indexOf(
-                                        "address",
-                                      )
+                                    sectionHead.usage.hottest_contract.types.indexOf(
+                                      "address",
+                                    )
                                     ]}
                                 </span>
                                 <span>
@@ -456,9 +457,9 @@ export default function ChainsPage() {
                                 <span>
                                   {
                                     sectionHead.usage.hottest_contract.data[0][
-                                      sectionHead.usage.hottest_contract.types.indexOf(
-                                        "project_name",
-                                      )
+                                    sectionHead.usage.hottest_contract.types.indexOf(
+                                      "project_name",
+                                    )
                                     ]
                                   }
                                 </span>
@@ -703,26 +704,23 @@ const ExpandingButtonMenu = ({
     >
       <div
         className="!z-[15] group-hover/jump:!z-[25] transition-[z-index] delay-100 group-hover/jump:delay-0 w-full flex items-center h-[36px] gap-x-[8px] pl-[6px] pr-[10px] rounded-full dark:bg-[#263130] bg-forest-50"
-        onMouseEnter={() => {}}
+        onMouseEnter={() => { }}
       >
         <div
-          className={`${
-            button.showIconBackground &&
+          className={`${button.showIconBackground &&
             "bg-white dark:bg-forest-1000 relative "
-          } rounded-full w-[25px] h-[25px] p-[5px]`}
+            } rounded-full w-[25px] h-[25px] p-[5px]`}
         >
           <Icon
             icon={button.icon}
-            className={`w-[15px] h-[15px] ${
-              button.animateIcon &&
+            className={`w-[15px] h-[15px] ${button.animateIcon &&
               "transition-transform duration-300 transform delay-0 group-hover/jump:delay-300 group-hover/jump:rotate-90"
-            }`}
+              }`}
           />
           <Icon
             icon={"gtp:circle-arrow"}
-            className={`w-[4px] h-[9px] absolute top-2 right-0 transition-transform delay-0 group-hover/jump:delay-300 duration-500 group-hover/jump:rotate-90 ${
-              button.showIconBackground ? "block" : "hidden"
-            }`}
+            className={`w-[4px] h-[9px] absolute top-2 right-0 transition-transform delay-0 group-hover/jump:delay-300 duration-500 group-hover/jump:rotate-90 ${button.showIconBackground ? "block" : "hidden"
+              }`}
             style={{
               transformOrigin: "-8px 4px",
             }}

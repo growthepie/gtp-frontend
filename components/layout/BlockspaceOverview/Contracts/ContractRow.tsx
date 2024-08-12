@@ -1,7 +1,6 @@
 import { useContractContext } from "./ContractContext";
 import { Icon } from "@iconify/react";
 import { useMemo, useEffect, useState, CSSProperties } from "react";
-import { AllChainsByKeys } from "@/lib/chains";
 import { useLocalStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { ContractRowInterface } from "./ContextInterface";
@@ -10,6 +9,7 @@ import ContractLabelModal from "../../ContractLabelModal";
 import { ContractInfo } from "./ContextInterface";
 
 import Link from "next/link";
+import { useMaster } from "@/contexts/MasterContext";
 
 export default function ContractRow({
   rowKey,
@@ -28,6 +28,7 @@ export default function ContractRow({
   setSortOrder: (order: boolean) => void;
   setSelectedContract: (contract: ContractInfo | null) => void;
 }) {
+  const { AllChainsByKeys } = useMaster();
   const [copyContract, setCopyContract] = useState(false);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [labelFormMainCategoryKey, setLabelFormMainCategoryKey] = useState<
@@ -111,7 +112,7 @@ export default function ContractRow({
                       style={{
                         background:
                           AllChainsByKeys[sortedContracts[rowKey].chain].colors[
-                            theme ?? "dark"
+                          theme ?? "dark"
                           ][1],
                         width: getWidth(sortedContracts[rowKey]),
                       }}
@@ -168,7 +169,7 @@ export default function ContractRow({
                       style={{
                         color:
                           AllChainsByKeys[selectedContract.chain].colors[
-                            theme ?? "dark"
+                          theme ?? "dark"
                           ][1],
                       }}
                     />
@@ -253,7 +254,7 @@ export default function ContractRow({
                               >
                                 {
                                   master.blockspace_categories.main_categories[
-                                    key
+                                  key
                                   ]
                                 }
                               </option>
@@ -337,7 +338,7 @@ export default function ContractRow({
                   style={{
                     background:
                       AllChainsByKeys[sortedContracts[rowKey].chain].colors[
-                        theme ?? "dark"
+                      theme ?? "dark"
                       ][1],
                     width: getWidth(sortedContracts[rowKey]),
                   }}
@@ -358,42 +359,39 @@ export default function ContractRow({
                   style={{
                     color:
                       AllChainsByKeys[sortedContracts[rowKey].chain].colors[
-                        theme ?? "dark"
+                      theme ?? "dark"
                       ][1],
                   }}
                 />
               </div>
               <div className="flex flex-grow">
                 <div
-                  className={`flex flex-none items-center space-x-2 w-0 ${
-                    copyContract ? " delay-1000" : ""
-                  } overflow-clip transition-all duration-200 ease-in-out ${
-                    sortedContracts[rowKey].name &&
-                    sortedContracts[rowKey].project_name
+                  className={`flex flex-none items-center space-x-2 w-0 ${copyContract ? " delay-1000" : ""
+                    } overflow-clip transition-all duration-200 ease-in-out ${sortedContracts[rowKey].name &&
+                      sortedContracts[rowKey].project_name
                       ? "group-hover:w-[48px]"
                       : "group-hover:w-[96px]"
-                  }`}
+                    }`}
                 >
                   {!(
                     sortedContracts[rowKey].name &&
                     sortedContracts[rowKey].project_name
                   ) && (
-                    <div
-                      className="rounded-full p-2 bg-forest-50 dark:bg-forest-1000 text-black dark:text-white cursor-pointer"
-                      onClick={() => {
-                        setSelectedContract(sortedContracts[rowKey]);
-                        setIsContractLabelModalOpen(true);
-                      }}
-                    >
-                      <Icon icon="gtp:add-tag" className="w-6 h-6" />
-                    </div>
-                  )}
+                      <div
+                        className="rounded-full p-2 bg-forest-50 dark:bg-forest-1000 text-black dark:text-white cursor-pointer"
+                        onClick={() => {
+                          setSelectedContract(sortedContracts[rowKey]);
+                          setIsContractLabelModalOpen(true);
+                        }}
+                      >
+                        <Icon icon="gtp:add-tag" className="w-6 h-6" />
+                      </div>
+                    )}
                   <div
-                    className={`rounded-full p-2 ${
-                      copyContract
+                    className={`rounded-full p-2 ${copyContract
                         ? "bg-forest-50/60 dark:bg-forest-1000/60"
                         : "bg-forest-50 dark:bg-forest-1000"
-                    } text-white cursor-pointer`}
+                      } text-white cursor-pointer`}
                     onClick={() => {
                       navigator.clipboard.writeText(
                         sortedContracts[rowKey].address,
@@ -416,14 +414,13 @@ export default function ContractRow({
                   className={`flex flex-col flex-grow h-full justify-start text-ellipsis overflow-hidden whitespace-nowrap `}
                 >
                   {sortedContracts[rowKey].name ||
-                  sortedContracts[rowKey].project_name ? (
+                    sortedContracts[rowKey].project_name ? (
                     <>
                       <div
-                        className={`min-w-full max-w-full text-base ${
-                          sortedContracts[rowKey].project_name
+                        className={`min-w-full max-w-full text-base ${sortedContracts[rowKey].project_name
                             ? "font-bold"
                             : "opacity-30 italic"
-                        }`}
+                          }`}
                       >
                         {sortedContracts[rowKey].project_name
                           ? sortedContracts[rowKey].project_name
@@ -431,11 +428,10 @@ export default function ContractRow({
                       </div>
 
                       <div
-                        className={`min-w-full max-w-full text-sm ${
-                          sortedContracts[rowKey].name
+                        className={`min-w-full max-w-full text-sm ${sortedContracts[rowKey].name
                             ? ""
                             : "opacity-30 italic"
-                        }`}
+                          }`}
                       >
                         {sortedContracts[rowKey].name
                           ? sortedContracts[rowKey].name
@@ -456,17 +452,17 @@ export default function ContractRow({
               <div className="flex w-[40%]">
                 {master &&
                   master.blockspace_categories.main_categories[
-                    sortedContracts[rowKey].main_category_key
+                  sortedContracts[rowKey].main_category_key
                   ]}
               </div>
               <div className="flex">
                 {master &&
-                master.blockspace_categories.sub_categories[
+                  master.blockspace_categories.sub_categories[
                   sortedContracts[rowKey].sub_category_key
-                ]
+                  ]
                   ? master.blockspace_categories.sub_categories[
-                      sortedContracts[rowKey].sub_category_key
-                    ]
+                  sortedContracts[rowKey].sub_category_key
+                  ]
                   : "Unlabeled"}
               </div>
             </div>
@@ -483,18 +479,18 @@ export default function ContractRow({
                   {selectedMode.includes("gas_fees_")
                     ? showUsd
                       ? Number(
-                          sortedContracts[rowKey].gas_fees_absolute_usd.toFixed(
-                            0,
-                          ),
-                        ).toLocaleString("en-GB")
+                        sortedContracts[rowKey].gas_fees_absolute_usd.toFixed(
+                          0,
+                        ),
+                      ).toLocaleString("en-GB")
                       : Number(
-                          sortedContracts[rowKey].gas_fees_absolute_eth.toFixed(
-                            2,
-                          ),
-                        ).toLocaleString("en-GB")
+                        sortedContracts[rowKey].gas_fees_absolute_eth.toFixed(
+                          2,
+                        ),
+                      ).toLocaleString("en-GB")
                     : Number(
-                        sortedContracts[rowKey].txcount_absolute.toFixed(0),
-                      ).toLocaleString("en-GB")}
+                      sortedContracts[rowKey].txcount_absolute.toFixed(0),
+                    ).toLocaleString("en-GB")}
                 </div>
               </div>
 

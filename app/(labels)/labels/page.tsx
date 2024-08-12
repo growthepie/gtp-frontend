@@ -2,7 +2,6 @@
 "use client";
 import LabelsContainer from "@/components/layout/LabelsContainer";
 import Icon from "@/components/layout/Icon";
-import { AllChainsByKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
@@ -88,11 +87,10 @@ const metricKeysLabels = {
 };
 
 export default function LabelsPage() {
+  const { AllChainsByKeys, formatMetric } = useMaster();
   const { isMobile } = useUIContext();
   const showGwei = true;
   const showCents = true;
-
-  const { formatMetric } = useMaster();
 
   //True is default descending false ascending
   // const { theme } = useTheme();

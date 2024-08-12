@@ -3,16 +3,20 @@ import { ISitemapField, getServerSideSitemap } from "next-sitemap";
 import { navigationItems } from "@/lib/navigation";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { Get_SupportedChainKeys } from "@/lib/chains";
+import {
+  Get_AllChainsNavigationItems,
+  Get_SupportedChainKeys,
+} from "@/lib/chains";
 
 export async function GET(request: Request) {
-  const fundamentals = navigationItems[1];
-  const blockspace = navigationItems[2];
-  const chains = navigationItems[3];
-  const trackers = navigationItems[4];
-
   const master = await fetch(MasterURL);
   const masterData: MasterResponse = await master.json();
+
+  const fundamentals = navigationItems[1];
+  const blockspace = navigationItems[2];
+  const trackers = navigationItems[3];
+
+  const chains = Get_AllChainsNavigationItems(masterData);
 
   const masterChainKeys = Object.keys(masterData.chains);
 

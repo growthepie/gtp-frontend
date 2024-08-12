@@ -2,9 +2,9 @@ import { useTheme } from "next-themes";
 import { useMemo, useCallback, CSSProperties } from "react";
 import { Icon } from "@iconify/react";
 import { useLocalStorage } from "usehooks-ts";
-import { AllChainsByKeys } from "@/lib/chains";
 import { useRowContext } from "./RowContext";
 import { RowChildrenInterface } from "./ContextInterface";
+import { useMaster } from "@/contexts/MasterContext";
 
 export default function RowChildren({
   chainKey,
@@ -15,6 +15,8 @@ export default function RowChildren({
 }) {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { theme } = useTheme();
+
+  const { AllChainsByKeys } = useMaster();
 
   const {
     data,
@@ -214,7 +216,7 @@ export default function RowChildren({
 
         style.zIndex = isCategoryHovered(categoryKey) ? 2 : 5;
 
-        style.backgroundColor = "";
+        style.backgroundColor = AllChainsByKeys[chainKey].colors[theme ?? "dark"][1];
       } else {
         if (selectedValue === "share") {
           style.width = categoryData
@@ -264,6 +266,7 @@ export default function RowChildren({
       return style;
     },
     [
+      AllChainsByKeys,
       selectedCategory,
       selectedMode,
       selectedChain,
@@ -327,16 +330,12 @@ export default function RowChildren({
         unhoverCategory(categoryKey);
       }}
       className={`flex flex-col h-[41px] justify-center items-center py-5 cursor-pointer relative transition-all duration-200 ease-in-out
-                        ${data[chainKey].overview[selectedTimespan][categoryKey]
-          ? (selectedCategory === categoryKey &&
-            (!allCats && (selectedChain === chainKey ||
-              selectedChain === null))) ||
-            isCategoryHovered(categoryKey)
-            ? isCategoryHovered(categoryKey) &&
-              selectedCategory !== categoryKey
-              ? `py-[23px] -my-[3px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme ?? "dark"][1]}`
-              : `py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme ?? "dark"][1]}`
-            : `z-[1]`
+        ${data[chainKey].overview[selectedTimespan][categoryKey] ? (selectedCategory === categoryKey && (!allCats && (selectedChain === chainKey || selectedChain === null))) || isCategoryHovered(categoryKey)
+          ? isCategoryHovered(categoryKey) &&
+            selectedCategory !== categoryKey
+            ? `py-[23px] -my-[3px] z-[2] shadow-lg`
+            : `py-[25px] -my-[5px] z-[2] shadow-lg`
+          : `z-[1]`
           : "py-[23px] -my-[3px] z-[2] shadow-lg"
         } 
                         ${categoryIndex === Object.keys(categories).length - 1
@@ -347,7 +346,16 @@ export default function RowChildren({
             : "rounded-r-full"
           : ""
         }`}
-      style={getBarSectionStyle(chainKey, categoryKey)}
+      style={
+
+        getBarSectionStyle(chainKey, categoryKey)
+        // background: data[chainKey].overview[selectedTimespan][categoryKey]
+        //   ? (selectedCategory === categoryKey && (!allCats && (selectedChain === chainKey || selectedChain === null))) || isCategoryHovered(categoryKey) ? isCategoryHovered(categoryKey) && selectedCategory !== categoryKey
+        //     ? AllChainsByKeys[chainKey].colors[theme ?? "dark"][1]
+        //     : AllChainsByKeys[chainKey].colors[theme ?? "dark"][1]
+        //     : undefined
+        //   : undefined,
+      }
     >
       <div
         className={`mix-blend-luminosity font-medium w-full absolute inset-0 flex items-center justify-center ${(selectedCategory === categoryKey &&

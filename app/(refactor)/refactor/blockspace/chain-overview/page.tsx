@@ -14,13 +14,15 @@ import { Icon } from "@iconify/react";
 import { navigationItems } from "@/lib/navigation";
 import Subheading from "@/components/layout/Subheading";
 import { useUIContext } from "@/contexts/UIContext";
-import { AllChainsByKeys, Get_SupportedChainKeys } from "@/lib/chains";
+import { Get_SupportedChainKeys } from "@/lib/chains";
 import { Chains } from "@/types/api/ChainOverviewResponse";
 import ShowLoading from "@/components/layout/ShowLoading";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import { useMaster } from "../../contexts/MasterContext";
 
 const ChainOverview = () => {
+  const { AllChainsByKeys } = useMaster();
   const {
     data: usageData,
     error: usageError,

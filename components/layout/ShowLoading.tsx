@@ -55,11 +55,13 @@ export default function ShowLoading({
 
   return (
     <div
-      className={`absolute inset-0 h-screen flex items-center justify-center bg-white dark:bg-forest-1000 z-[200] ${showLoading ? "opacity-100" : "opacity-0 pointer-events-none"
+      className={`absolute inset-0 h-full flex items-center justify-center bg-white dark:bg-forest-1000 z-[200] ${showLoading ? "opacity-100" : "opacity-0 pointer-events-none"
         } transition-opacity duration-300 z-[200]`}
       suppressHydrationWarning
     >
-      <LoadingAnimation />
+      <div className="fixed top-0 bottom-0 flex items-center justify-center z-[200]">
+        <LoadingAnimation />
+      </div>
     </div>
   );
 }

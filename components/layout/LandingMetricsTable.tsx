@@ -1,6 +1,6 @@
 import {
-  AllChainsByKeys,
-  EnabledChainsByKeys,
+  // AllChainsByKeys,
+  // EnabledChainsByKeys,
   Get_SupportedChainKeys,
 } from "@/lib/chains";
 import Image from "next/image";
@@ -18,6 +18,7 @@ import {
 } from "@/components/layout/Tooltip";
 import { useUIContext } from "@/contexts/UIContext";
 import Link from "next/link";
+import { useMaster } from "@/contexts/MasterContext";
 
 export default function LandingMetricsTable({
   data,
@@ -36,6 +37,8 @@ export default function LandingMetricsTable({
   master: any;
   interactable: boolean;
 }) {
+  const { AllChainsByKeys, EnabledChainsByKeys } = useMaster();
+
   const [maxVal, setMaxVal] = useState(0);
 
   const { theme } = useTheme();
