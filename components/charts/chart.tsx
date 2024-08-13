@@ -190,7 +190,14 @@ export const Chart = ({
       });
 
       // add new series
-      series.forEach((s, seriesIndex) => {
+      series.sort((a, b) => {
+        if (yScale === "percentage" || yScale === "percentageDecimal" || stack) {
+          // sort by the time of the first data point so that the series are stacked in the correct order
+          return b.data[0][0] - a.data[0][0];
+        }
+        // else keep the order of the series the same
+        return 0;
+      }).forEach((s, seriesIndex) => {
         const chainKey = s.name;
 
         const fillHexColorOpacity = s.fillOpacity
