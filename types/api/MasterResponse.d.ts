@@ -13,6 +13,7 @@ export interface Chains {
 
 export interface ChainInfo {
   name: string;
+  url_key: string;
   chain_type: string;
   ecosystem: string[];
   deployment: "PROD" | "DEV";

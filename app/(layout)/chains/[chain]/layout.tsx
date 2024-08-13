@@ -14,10 +14,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     cache: "no-store",
   }).then((r) => r.json());
 
-  const AllChainsByUrlKey = Object.keys(res.chains).reduce((acc, key) => {
-    acc[key.replace(/_/g, "-")] = { ...res.chains[key], key: key };
+  const AllChainsByUrlKey = Object.keys(res.chains).filter((key) => !["multiple", "all_l2s"].includes(key)).reduce((acc, key) => {
+    acc[res.chains[key].url_key] = { ...res.chains[key], key: key };
     return acc;
   }, {} as { [key: string]: ChainInfo & { key: string } });
+
 
   if (!params.chain || !Object.keys(AllChainsByUrlKey).includes(params.chain)) {
     track("404 Error", {
@@ -28,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const key = AllChainsByUrlKey[params.chain].key;
-  const replaceKey = key.replace(/_/g, "-");
+  const urlKey = AllChainsByUrlKey[params.chain].url_key;
 
 
 
@@ -44,7 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       openGraph: {
         images: [
           {
-            url: `https://api.growthepie.xyz/v1/og_images/chains/${replaceKey}.png?date=${dateString}`,
+            url: `https://api.growthepie.xyz/v1/og_images/chains/${urlKey}.png?date=${dateString}`,
             width: 1200,
             height: 627,
             alt: "growthepie.xyz",

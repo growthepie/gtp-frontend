@@ -12,6 +12,7 @@ import {
   BlockspaceURLs,
   ChainBlockspaceURLs,
   ChainsBaseURL,
+  FeesURLs,
   MasterURL,
 } from "@/lib/urls";
 import Container from "@/components/layout/Container";
@@ -113,7 +114,7 @@ const Chain = ({ params }: { params: any }) => {
     error: feeError,
     isLoading: feeLoading,
     isValidating: feeValidating,
-  } = useSWR("https://api.growthepie.xyz/v1/fees/table.json");
+  } = useSWR(FeesURLs.table);
 
   const { cache, mutate } = useSWRConfig();
 

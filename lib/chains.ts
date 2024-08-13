@@ -25,7 +25,7 @@ export const Get_AllChainsByKeys = (master: MasterResponse) => {
       label: chain.name,
       icon: chain.logo?.body ? chain.logo.body : null,
       key: key,
-      urlKey: key.replace(/_/g, "-"),
+      urlKey: chain.url_key ? chain.url_key : key.replace(/_/g, "-"),
       chainType: getChainTypeFromMasterChainType(key, chain.chain_type),
       ecosystem: chain.ecosystem,
       description: chain.description,
@@ -139,7 +139,7 @@ export const Get_AllChainsNavigationItems = (master: MasterResponse) => {
         label: chain.name,
         icon: `gtp-${key}-logo-monochrome`,
         key: key,
-        urlKey: key.replace(/_/g, "-"),
+        urlKey: chain.url_key ? chain.url_key : key.replace(/_/g, "-"),
         hide: false,
         excludeFromSitemap: false,
       };
