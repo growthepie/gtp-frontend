@@ -121,8 +121,6 @@ export default function OverviewChart({
   //   unlabeled: 1 - 0.92,
   // };
 
-
-
   const chartStack = useMemo(() => {
     let ecosystemData: any[][] = [];
 
@@ -187,7 +185,7 @@ export default function OverviewChart({
             for (let j = 0; j < numArrays; j++) {
               txTotal +=
                 unixDataList[j][
-                selectedMode.includes("txcount") ? txIndex : gasIndex
+                  selectedMode.includes("txcount") ? txIndex : gasIndex
                 ];
             }
 
@@ -199,10 +197,10 @@ export default function OverviewChart({
                 allTotal +=
                   checkIndex !== -1
                     ? data[standardChainKey].daily[selectedCategory].data[
-                    data[standardChainKey].daily[
-                      selectedCategory
-                    ].data.findIndex((item) => item[0] === findUnix)
-                    ][selectedMode.includes("txcount") ? txIndex : gasIndex]
+                        data[standardChainKey].daily[
+                          selectedCategory
+                        ].data.findIndex((item) => item[0] === findUnix)
+                      ][selectedMode.includes("txcount") ? txIndex : gasIndex]
                     : 0;
               }
             }
@@ -239,7 +237,7 @@ export default function OverviewChart({
           selectedCategory
         ].data
           ? data[selectedChain].overview[selectedTimespan][selectedCategory]
-            .data[overviewIndex]
+              .data[overviewIndex]
           : [];
       } else {
         for (
@@ -256,8 +254,8 @@ export default function OverviewChart({
           ) {
             sum +=
               data[selectedChain].daily[selectedCategory].data[
-              data[selectedChain].daily[selectedCategory].data.length -
-              (i + 1)
+                data[selectedChain].daily[selectedCategory].data.length -
+                  (i + 1)
               ][typeIndex];
           }
         }
@@ -267,8 +265,8 @@ export default function OverviewChart({
             ? data[selectedChain].daily[selectedCategory].data.length
             : timespans[selectedTimespan].value >=
               data[selectedChain].daily[selectedCategory].data.length
-              ? data[selectedChain].daily[selectedCategory].data.length
-              : timespans[selectedTimespan].value);
+            ? data[selectedChain].daily[selectedCategory].data.length
+            : timespans[selectedTimespan].value);
       }
     } else {
       if (chainEcosystemFilter === "all-chains") {
@@ -283,13 +281,13 @@ export default function OverviewChart({
         ) {
           if (
             data[standardChainKey].daily[selectedCategory].data.length -
-            (i + 1) >=
+              (i + 1) >=
             0
           ) {
             sum +=
               data[standardChainKey].daily[selectedCategory].data[
-              data[standardChainKey].daily[selectedCategory].data.length -
-              (i + 1)
+                data[standardChainKey].daily[selectedCategory].data.length -
+                  (i + 1)
               ][typeIndex];
           }
         }
@@ -300,8 +298,8 @@ export default function OverviewChart({
             ? data[standardChainKey].daily[selectedCategory].data.length
             : timespans[selectedTimespan].value >=
               data[standardChainKey].daily[selectedCategory].data.length
-              ? data[standardChainKey].daily[selectedCategory].data.length
-              : timespans[selectedTimespan].value);
+            ? data[standardChainKey].daily[selectedCategory].data.length
+            : timespans[selectedTimespan].value);
       } else {
         let sum = 0;
         for (
@@ -321,14 +319,24 @@ export default function OverviewChart({
             (selectedTimespan === "max"
               ? chartStack.length
               : timespans[selectedTimespan].value >= chartStack.length
-                ? chartStack.length
-                : timespans[selectedTimespan].value);
+              ? chartStack.length
+              : timespans[selectedTimespan].value);
         }
       }
     }
 
     return returnValue;
-  }, [data, standardChainKey, selectedMode, selectedChain, selectedTimespan, selectedCategory, timespans, chainEcosystemFilter, chartStack]);
+  }, [
+    data,
+    standardChainKey,
+    selectedMode,
+    selectedChain,
+    selectedTimespan,
+    selectedCategory,
+    timespans,
+    chainEcosystemFilter,
+    chartStack,
+  ]);
 
   const chartMax = useMemo(() => {
     let returnValue = 0;
@@ -338,8 +346,8 @@ export default function OverviewChart({
     const selectedData = selectedChain
       ? data[selectedChain].daily[selectedCategory].data
       : chainEcosystemFilter === "all-chains"
-        ? data[standardChainKey].daily[selectedCategory].data
-        : chartStack;
+      ? data[standardChainKey].daily[selectedCategory].data
+      : chartStack;
 
     //Determine array length based on selection
     const length =
@@ -373,7 +381,18 @@ export default function OverviewChart({
     }
 
     return returnValue;
-  }, [data, standardChainKey, selectedMode, selectedChain, selectedCategory, chainEcosystemFilter, chartStack, selectedTimespan, timespans, forceSelectedChain]);
+  }, [
+    data,
+    standardChainKey,
+    selectedMode,
+    selectedChain,
+    selectedCategory,
+    chainEcosystemFilter,
+    chartStack,
+    selectedTimespan,
+    timespans,
+    forceSelectedChain,
+  ]);
 
   const categoriesList = useMemo(() => {
     return Object.keys(data[standardChainKey].daily)
@@ -385,10 +404,13 @@ export default function OverviewChart({
     return categoriesList.reverse();
   }, [categoriesList]);
 
-  const getFillOpacity = useCallback((index: number) => {
-    let x = categoriesAllCatChartListOrder.length - 1 - index;
-    return 0.02 * Math.pow(x, 2) - 0.28 * x + 1.27;
-  }, [categoriesAllCatChartListOrder]);
+  const getFillOpacity = useCallback(
+    (index: number) => {
+      let x = categoriesAllCatChartListOrder.length - 1 - index;
+      return 0.02 * Math.pow(x, 2) - 0.28 * x + 1.27;
+    },
+    [categoriesAllCatChartListOrder],
+  );
 
   const chartSeries = useMemo(() => {
     const dataKey = selectedMode;
@@ -418,15 +440,15 @@ export default function OverviewChart({
             pattern:
               categoryCheck === "unlabeled"
                 ? {
-                  color: AllChainsByKeys[standardChainKey].colors["dark"][0],
-                  path: {
-                    d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
-                    strokeWidth: 3,
-                  },
-                  width: 10,
-                  height: 10,
-                  opacity: 0.33,
-                }
+                    color: AllChainsByKeys[standardChainKey].colors["dark"][0],
+                    path: {
+                      d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
+                      strokeWidth: 3,
+                    },
+                    width: 10,
+                    height: 10,
+                    opacity: 0.33,
+                  }
                 : undefined,
             lineWidth: 0,
             custom: {
@@ -445,15 +467,15 @@ export default function OverviewChart({
             pattern:
               selectedCategory === "unlabeled"
                 ? {
-                  color: AllChainsByKeys[standardChainKey].colors["dark"][0],
-                  path: {
-                    d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
-                    strokeWidth: 3,
-                  },
-                  width: 10,
-                  height: 10,
-                  opacity: 0.33,
-                }
+                    color: AllChainsByKeys[standardChainKey].colors["dark"][0],
+                    path: {
+                      d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
+                      strokeWidth: 3,
+                    },
+                    width: 10,
+                    height: 10,
+                    opacity: 0.33,
+                  }
                 : undefined,
             custom: {
               tooltipLabel: categories[selectedCategory],
@@ -491,18 +513,31 @@ export default function OverviewChart({
         custom: { tooltipLabel: "All L2s" },
       },
     ];
-  }, [selectedMode, selectedChain, selectedCategory, chainEcosystemFilter, data, chartStack, allCats, categoriesList, getFillOpacity, AllChainsByKeys, standardChainKey, categories]);
+  }, [
+    selectedMode,
+    selectedChain,
+    selectedCategory,
+    chainEcosystemFilter,
+    data,
+    chartStack,
+    allCats,
+    categoriesList,
+    getFillOpacity,
+    AllChainsByKeys,
+    standardChainKey,
+    categories,
+  ]);
 
   const avgHeight = useSpring({
     y:
       chartAvg && chartMax
         ? -1 *
-        ((forceSelectedChain ? 200 : 163) * (chartAvg / chartMax) +
-          (chartAvg / chartMax > 0.45
-            ? chartAvg / chartMax > 0.5
-              ? 7
-              : 10
-            : 14))
+          (199 * (chartAvg / chartMax) +
+            (chartAvg / chartMax > 0.45
+              ? chartAvg / chartMax > 0.5
+                ? 7
+                : 10
+              : 14))
         : 0,
     config: { mass: 1, tension: 70, friction: 20 },
   });
@@ -638,13 +673,14 @@ export default function OverviewChart({
           const { name } = series;
           const fillOpacity = series.options.fillOpacity;
 
+          const showPrice = selectedMode.includes("gas_fees");
           const showPercentage = selectedValue === "share";
           const color =
             AllChainsByKeys[selectedChain ? selectedChain : "all_l2s"].colors[
-            theme ?? "dark"
+              theme ?? "dark"
             ][0];
 
-          let prefix = showPercentage ? "" : valuePrefix;
+          let prefix = showPercentage || !showPrice ? "" : valuePrefix;
           let suffix = showPercentage ? "%" : "";
           let value = y;
           let displayValue = y;
@@ -724,243 +760,300 @@ export default function OverviewChart({
 
   return (
     <>
-      <div className="flex items-center w-full bg-blend-lighten h-[249px]">
-        <HighchartsProvider Highcharts={Highcharts}>
-          <HighchartsChart
-            containerProps={{
-              style: {
-                height: "100%",
-                width: "100%",
-                marginLeft: "auto",
-                marginRight: "auto",
-                overflow: "visible",
-              },
-            }}
-            plotOptions={{
-              area: {
-                lineWidth: 2,
-                // marker: {
-                //   radius: 12,
-                //   lineWidth: 4,
-                // },
-                fillOpacity: 1,
-                stacking: "normal",
-
-                // shadow: {
-                //   color:
-                //     AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1] + "33",
-                //   width: 10,
-                // },
-
-                // borderColor: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
-                // borderWidth: 1,
-              },
-              series: {
-                zIndex: 10,
-                animation: false,
-                marker: {
-                  lineColor: "white",
-                  radius: 0,
-                  symbol: "circle",
+      <div className="w-full h-[249px] flex items-center justify-start">
+        <div
+          className={`bg-blend-lighten h-full ${
+            !allCats && selectedValue === "share" ? "w-[95%]" : "w-full"
+          }`}
+        >
+          <HighchartsProvider Highcharts={Highcharts}>
+            <HighchartsChart
+              containerProps={{
+                style: {
+                  height: "100%",
+                  width: "100%",
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                  overflow: "visible",
                 },
-              },
-            }}
-          >
-            <Chart
-              backgroundColor={"transparent"}
-              type="area"
-              panning={{ enabled: true }}
-              panKey="shift"
-              zooming={{ type: undefined }}
-              style={{ borderRadius: 15 }}
-              animation={{ duration: 50 }}
-              // margin={[0, 15, 0, 0]} // Use the array form for margin
-              margin={[30, 10, 50, 50]}
-              spacingBottom={30}
-              spacingTop={40}
-              spacingLeft={10}
-              spacingRight={10}
-              height={249}
-              onRender={(chart) => {
-                if (chart && chart.target) {
-                  chartComponent.current =
-                    chart.target as unknown as Highcharts.Chart;
-                }
               }}
-            />
-            <Tooltip
-              useHTML={true}
-              shared={true}
-              split={false}
-              followPointer={true}
-              followTouchMove={true}
-              backgroundColor={"#2A3433EE"}
-              padding={0}
-              hideDelay={300}
-              stickOnContact={true}
-              shape="rect"
-              borderRadius={17}
-              borderWidth={0}
-              outside={true}
-              shadow={{
-                color: "black",
-                opacity: 0.015,
-                offsetX: 2,
-                offsetY: 2,
+              plotOptions={{
+                area: {
+                  lineWidth: 2,
+                  // marker: {
+                  //   radius: 12,
+                  //   lineWidth: 4,
+                  // },
+                  fillOpacity: 1,
+                  stacking: "normal",
+
+                  // shadow: {
+                  //   color:
+                  //     AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1] + "33",
+                  //   width: 10,
+                  // },
+
+                  // borderColor: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
+                  // borderWidth: 1,
+                },
+                series: {
+                  zIndex: 10,
+                  animation: false,
+                  marker: {
+                    lineColor: "white",
+                    radius: 0,
+                    symbol: "circle",
+                  },
+                },
               }}
-              style={{
-                color: "rgb(215, 223, 222)",
-              }}
-              //formatter={tooltipFormatter}
-              // ensure tooltip is always above the chart
-              positioner={tooltipPositioner}
-              valuePrefix={"$"}
-              valueSuffix={""}
-              formatter={tooltipFormatter}
-            />
-            <XAxis
-              title={undefined}
-              type="datetime"
-              crosshair={{
-                width: 0.5,
-                color: COLORS.PLOT_LINE,
-                snap: false,
-              }}
-              tickWidth={1}
-              tickLength={25}
-              tickColor={"#CDD8D34C"}
-              ordinal={false}
-              gridLineWidth={0}
-              minorTicks={false}
-              minTickInterval={
-                timespans[selectedTimespan].xMax -
-                  timespans[selectedTimespan].xMin <=
+            >
+              <Chart
+                backgroundColor={"transparent"}
+                type="area"
+                panning={{ enabled: true }}
+                panKey="shift"
+                zooming={{ type: undefined }}
+                style={{ borderRadius: 15 }}
+                animation={{ duration: 50 }}
+                // margin={[0, 15, 0, 0]} // Use the array form for margin
+                margin={[30, 10, 50, 50]}
+                spacingBottom={30}
+                spacingTop={40}
+                spacingLeft={10}
+                spacingRight={10}
+                height={249}
+                onRender={(chart) => {
+                  if (chart && chart.target) {
+                    chartComponent.current =
+                      chart.target as unknown as Highcharts.Chart;
+                  }
+                }}
+              />
+              <Tooltip
+                useHTML={true}
+                shared={true}
+                split={false}
+                followPointer={true}
+                followTouchMove={true}
+                backgroundColor={"#2A3433EE"}
+                padding={0}
+                hideDelay={300}
+                stickOnContact={true}
+                shape="rect"
+                borderRadius={17}
+                borderWidth={0}
+                outside={true}
+                shadow={{
+                  color: "black",
+                  opacity: 0.015,
+                  offsetX: 2,
+                  offsetY: 2,
+                }}
+                style={{
+                  color: "rgb(215, 223, 222)",
+                }}
+                //formatter={tooltipFormatter}
+                // ensure tooltip is always above the chart
+                positioner={tooltipPositioner}
+                valuePrefix={"$"}
+                valueSuffix={""}
+                formatter={tooltipFormatter}
+              />
+              <XAxis
+                title={undefined}
+                type="datetime"
+                crosshair={{
+                  width: 0.5,
+                  color: COLORS.PLOT_LINE,
+                  snap: false,
+                }}
+                tickWidth={1}
+                tickLength={25}
+                tickColor={"#CDD8D34C"}
+                ordinal={false}
+                gridLineWidth={0}
+                minorTicks={false}
+                minTickInterval={
+                  timespans[selectedTimespan].xMax -
+                    timespans[selectedTimespan].xMin <=
                   40 * 24 * 3600 * 1000
-                  ? 24 * 3600 * 1000
-                  : 30 * 24 * 3600 * 1000
-              }
-              min={
-                timespans[selectedTimespan].xMin
-                  ? timespans[selectedTimespan].xMin
-                  : undefined
-              }
-              labels={{
-                y: 40,
-                align: undefined,
-                rotation: 0,
-                allowOverlap: false,
+                    ? 24 * 3600 * 1000
+                    : 30 * 24 * 3600 * 1000
+                }
+                min={
+                  timespans[selectedTimespan].xMin
+                    ? timespans[selectedTimespan].xMin
+                    : undefined
+                }
+                labels={{
+                  y: 40,
+                  align: undefined,
+                  rotation: 0,
+                  allowOverlap: false,
 
-                reserveSpace: true,
-                overflow: "justify",
-                useHTML: true,
-                style: {
-                  textAlign: "bottom",
-                  color: "#CDD8D3",
-                  fontSize: "12px",
-                  marginTop: "10px",
-                },
+                  reserveSpace: true,
+                  overflow: "justify",
+                  useHTML: true,
+                  style: {
+                    textAlign: "bottom",
+                    color: "#CDD8D3",
+                    fontSize: "12px",
+                    marginTop: "10px",
+                  },
 
-                formatter: (function () {
-                  return function () {
-                    if (
-                      timespans[selectedTimespan].xMax -
-                      timespans[selectedTimespan].xMin <=
-                      40 * 24 * 3600 * 1000
-                    ) {
-                      let isBeginningOfWeek =
-                        new Date(this.value).getUTCDay() === 1;
-                      let showMonth =
-                        this.isFirst || new Date(this.value).getUTCDate() === 1;
-                      return new Date(this.value).toLocaleDateString("en-GB", {
-                        timeZone: "UTC",
-                        month: "short",
-                        day: "numeric",
-                        year: this.isFirst ? "numeric" : undefined,
-                      });
-                    } else {
-                      // if Jan 1st, show year
-                      if (new Date(this.value).getUTCMonth() === 0) {
-                        return `<span style="font-size: 14px; font-weight: 600;">
+                  formatter: (function () {
+                    return function () {
+                      if (
+                        timespans[selectedTimespan].xMax -
+                          timespans[selectedTimespan].xMin <=
+                        40 * 24 * 3600 * 1000
+                      ) {
+                        let isBeginningOfWeek =
+                          new Date(this.value).getUTCDay() === 1;
+                        let showMonth =
+                          this.isFirst ||
+                          new Date(this.value).getUTCDate() === 1;
+                        return new Date(this.value).toLocaleDateString(
+                          "en-GB",
+                          {
+                            timeZone: "UTC",
+                            month: "short",
+                            day: "numeric",
+                            year: this.isFirst ? "numeric" : undefined,
+                          },
+                        );
+                      } else {
+                        // if Jan 1st, show year
+                        if (new Date(this.value).getUTCMonth() === 0) {
+                          return `<span style="font-size: 14px; font-weight: 600;">
                   ${new Date(this.value).toLocaleDateString("en-GB", {
-                          timeZone: "UTC",
-                          year: "numeric",
-                        })}
+                    timeZone: "UTC",
+                    year: "numeric",
+                  })}
                 </span>`;
+                        }
+                        return new Date(this.value).toLocaleDateString(
+                          "en-GB",
+                          {
+                            timeZone: "UTC",
+                            month: "short",
+                            year: "numeric",
+                          },
+                        );
                       }
-                      return new Date(this.value).toLocaleDateString("en-GB", {
-                        timeZone: "UTC",
-                        month: "short",
-                        year: "numeric",
-                      });
-                    }
-                  };
-                })(),
-              }}
-            >
-              <XAxis.Title></XAxis.Title>
-            </XAxis>
-            <YAxis
-              opposite={false}
-              // showFirstLabel={true}
-              // showLastLabel={true}
+                    };
+                  })(),
+                }}
+              >
+                <XAxis.Title></XAxis.Title>
+              </XAxis>
+              <YAxis
+                opposite={false}
+                // showFirstLabel={true}
+                // showLastLabel={true}
 
-              type="linear"
-              max={selectedValue === "share" ? 1 : undefined}
-              min={selectedValue === "share" ? 0 : undefined}
-              gridLineWidth={1}
-              gridLineColor={"#5A64624F"}
-              tickAmount={3}
-              labels={{
-                align: "right",
-                y: 2,
-                x: -4,
-                style: {
-                  color: "#CDD8D3",
-                  fontSize: "12px",
-                },
-                formatter: function () {
-                  const value = this.value as number | bigint;
-                  const isPercentage = selectedValue === "share";
-                  const prefix = isPercentage ? "" : valuePrefix;
-                  const suffix = isPercentage ? "%" : "";
+                type="linear"
+                max={selectedValue === "share" ? 1 : undefined}
+                min={selectedValue === "share" ? 0 : undefined}
+                gridLineWidth={1}
+                gridLineColor={"#5A64624F"}
+                tickAmount={3}
+                labels={{
+                  align: "right",
+                  y: 2,
+                  x: -4,
+                  style: {
+                    color: "#CDD8D3",
+                    fontSize: "12px",
+                  },
+                  formatter: function () {
+                    const value = this.value as number | bigint;
+                    const isPercentage = selectedValue === "share";
+                    const prefix = isPercentage ? "" : valuePrefix;
+                    const suffix = isPercentage ? "%" : "";
+                    return (
+                      prefix +
+                      Intl.NumberFormat("en-GB", {
+                        notation: "compact",
+                        maximumFractionDigits: 1,
+                        minimumFractionDigits: 0,
+                      }).format(isPercentage ? 100 * Number(value) : value) +
+                      suffix
+                    );
+                  },
+                }}
+              >
+                <PlotLine
+                  color={
+                    AllChainsByKeys[selectedChain ? selectedChain : "all_l2s"]
+                      .colors[theme ?? "dark"][0]
+                  }
+                  value={!allCats && chartAvg ? chartAvg : undefined}
+                  width={1}
+                  dashStyle={"Dash"}
+                />
+                {chartSeries.map((series, index) => {
+                  const isUnlabelled =
+                    series.custom.tooltipLabel === "Unlabeled";
+                  const pattern = series.pattern;
+
                   return (
-                    prefix +
-                    Intl.NumberFormat("en-GB", {
-                      notation: "compact",
-                      maximumFractionDigits: 1,
-                      minimumFractionDigits: 0,
-                    }).format(isPercentage ? 100 * Number(value) : value) +
-                    suffix
+                    series && (
+                      <AreaSeries
+                        key={index} // Add a key to each element in the list
+                        name={series.custom.tooltipLabel}
+                        color={
+                          AllChainsByKeys[series.name].colors[
+                            theme ?? "dark"
+                          ][0]
+                        }
+                        lineWidth={allCats ? 0 : 2}
+                        data={series.data.map((d: any) => [
+                          d[types.indexOf("unix")],
+                          d[types.indexOf(series.dataKey)],
+                        ])}
+                        fillOpacity={!isUnlabelled ? series.fillOpacity : 0.05}
+                        fillColor={
+                          !isUnlabelled
+                            ? undefined
+                            : {
+                                pattern: pattern,
+                              }
+                        }
+                      />
+                    )
                   );
-                },
+                })}
+              </YAxis>
+            </HighchartsChart>
+          </HighchartsProvider>
+        </div>
+        {chartAvg && (
+          <div
+            className={` items-end relative top-[2px] min-w-[50px] h-[249px] mb-[35px] lg:min-w-[70px] ${
+              allCats ? "hidden" : "flex"
+            }`}
+          >
+            <animated.div
+              className="flex h-[28px] relative items-center justify-center rounded-full w-full px-2.5 lg:text-base text-sm font-medium"
+              style={{
+                backgroundColor:
+                  AllChainsByKeys[selectedChain ? selectedChain : "all_l2s"]
+                    ?.colors[theme ?? "dark"][0],
+                color: selectedChain
+                  ? selectedChain === "arbitrum" || "linea"
+                    ? "black"
+                    : "white"
+                  : "black",
+                ...avgHeight,
               }}
             >
-              {chartSeries.map((series, index) => {
-                const isUnlabelled = series.custom.tooltipLabel === "Unlabeled";
-                const pattern = series.pattern;
-
-                return (
-                  series && (
-                    <AreaSeries
-                      key={index} // Add a key to each element in the list
-                      name={series.custom.tooltipLabel}
-                      color={AllChainsByKeys[series.name].colors[theme ?? "dark"][0]}
-                      lineWidth={allCats ? 0 : 2}
-                      data={series.data.map((d: any) => [
-                        d[types.indexOf("unix")],
-                        d[types.indexOf(series.dataKey)],
-                      ])}
-                      fillOpacity={!isUnlabelled ? series.fillOpacity : 0.05}
-                      fillColor={!isUnlabelled ? undefined : {
-                        pattern: pattern,
-                      }}
-                    />
-                  )
-                );
-              })}
-            </YAxis>
-          </HighchartsChart>
-        </HighchartsProvider>
+              {selectedMode.includes("share")
+                ? (chartAvg * 100).toFixed(2) + "%"
+                : (showUsd ? "$ " : "Ξ ") + formatNumber(chartAvg)}
+            </animated.div>
+          </div>
+        )}
       </div>
     </>
   );
