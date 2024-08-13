@@ -21,7 +21,7 @@ import { animated, useSpring, useTransition } from "@react-spring/web";
 import { Chart } from "../charts/chart";
 import { Get_SupportedChainKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
-import { LandingURL, MasterURL } from "@/lib/urls";
+import { LabelsURLS, LandingURL, MasterURL } from "@/lib/urls";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import ChainAnimations from "./ChainAnimations";
@@ -37,6 +37,8 @@ import {
 import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
 import HorizontalScrollContainer from "../HorizontalScrollContainer";
 import { useMaster } from "@/contexts/MasterContext";
+import { GridTableChainIcon, GridTableHeader, GridTableHeaderCell, GridTableRow } from "@/components/layout/GridTable";
+import { LabelsProjectsResponse } from "@/types/Labels/ProjectsResponse";
 
 export default function CategoryMetrics({
   data,
@@ -54,6 +56,26 @@ export default function CategoryMetrics({
   setSelectedTimespan: (timespan: string) => void;
 }) {
   const { AllChainsByKeys } = useMaster();
+
+  const { data: projectsData } = useSWR<LabelsProjectsResponse>(LabelsURLS.projects);
+
+  const ownerProjectDisplayNameToProjectData = useMemo(() => {
+    if (!projectsData) return {};
+
+    let displayNameIndex = projectsData.data.types.indexOf("display_name");
+
+    if (displayNameIndex === -1) return {};
+
+    let d = {};
+
+    projectsData.data.data.forEach((project) => {
+      if (project[displayNameIndex] !== null)
+        d[project[displayNameIndex]] = project;
+    });
+
+    return d;
+  }, [projectsData]);
+
 
   // const {
   //   data: master,
@@ -1233,129 +1255,171 @@ export default function CategoryMetrics({
               ></div>
             </div>
             <div className="flex flex-col mt-[30px] w-[99%] mx-auto min-w-[880px] ">
-              <div className="flex exl:text-[14px] text-[12px] font-bold mb-[10px]">
-                <div className="flex gap-x-[15px] w-[33%] ">
-                  <button
-                    className="flex gap-x-1 pl-4"
-                    onClick={() => {
-                      if (contractCategory !== "chain") {
-                        setSortOrder(true);
-                      } else {
-                        setSortOrder(!sortOrder);
-                      }
-                      setContractCategory("chain");
-                    }}
-                  >
-                    Chain
-                    <Icon
-                      icon={
-                        contractCategory === "chain"
-                          ? sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
-                          : "formkit:arrowdown"
-                      }
-                      className={` dark:text-white text-black ${contractCategory === "chain"
-                        ? "opacity-100"
-                        : "opacity-20"
-                        }`}
-                    />
-                  </button>
+              <GridTableHeader gridDefinitionColumns="grid-cols-[20px,225px,280px,95px,minmax(135px,800px),115px]" className="pb-[4px] text-[12px] gap-x-[15px] z-[2]">
+                <div></div>
+                {/* <button
+                  className="flex gap-x-1"
+                  onClick={() => {
+                    if (contractCategory !== "chain") {
+                      setSortOrder(true);
+                    } else {
+                      setSortOrder(!sortOrder);
+                    }
+                    setContractCategory("chain");
+                  }}
+                >
+                  Chain
+                  <Icon
+                    icon={
+                      contractCategory === "chain"
+                        ? sortOrder
+                          ? "formkit:arrowdown"
+                          : "formkit:arrowup"
+                        : "formkit:arrowdown"
+                    }
+                    className={` dark:text-white text-black ${contractCategory === "chain"
+                      ? "opacity-100"
+                      : "opacity-20"
+                      }`}
+                  />
+                </button> */}
+                <GridTableHeaderCell
+                  metric="owner_project"
+                  sort={{ sortOrder: sortOrder ? "asc" : "desc", metric: contractCategory }}
+                  setSort={(sort: { metric: string; sortOrder: string; }) => {
+                    setSortOrder(!sortOrder);
+                    setContractCategory(sort.metric);
+                  }}>
+                  Owner Project
+                </GridTableHeaderCell>
+                <GridTableHeaderCell
+                  metric="contract"
+                  sort={{ sortOrder: sortOrder ? "asc" : "desc", metric: contractCategory }}
+                  setSort={(sort: { metric: string; sortOrder: string; }) => {
+                    setSortOrder(!sortOrder);
+                    setContractCategory(sort.metric);
+                  }}>
+                  Contract
+                </GridTableHeaderCell>
+                <GridTableHeaderCell
+                  metric="category"
+                  sort={{ sortOrder: sortOrder ? "asc" : "desc", metric: contractCategory }}
+                  setSort={(sort: { metric: string; sortOrder: string; }) => {
+                    setSortOrder(!sortOrder);
+                    setContractCategory(sort.metric);
+                  }}>
+                  Category
+                </GridTableHeaderCell>
+                <GridTableHeaderCell
+                  metric="subcategory"
+                  sort={{ sortOrder: sortOrder ? "asc" : "desc", metric: contractCategory }}
+                  setSort={(sort: { metric: string; sortOrder: string; }) => {
+                    setSortOrder(!sortOrder);
+                    setContractCategory(sort.metric);
+                  }}>
+                  Subcategory
+                </GridTableHeaderCell>
+                <GridTableHeaderCell
+                  justify="end"
+                  metric="gas_fees"
+                  sort={{ sortOrder: sortOrder ? "asc" : "desc", metric: contractCategory }}
+                  setSort={(sort: { metric: string; sortOrder: string; }) => {
+                    setSortOrder(!sortOrder);
+                    setContractCategory(sort.metric);
+                  }}>
+                  Gas Fees
+                </GridTableHeaderCell>
 
-                  <button
-                    className="flex gap-x-1"
-                    onClick={() => {
-                      if (contractCategory !== "contract") {
-                        setSortOrder(true);
-                      } else {
-                        setSortOrder(!sortOrder);
-                      }
-                      setContractCategory("contract");
-                    }}
-                  >
-                    Contract
-                    <Icon
-                      icon={
-                        contractCategory === "contract"
-                          ? sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
-                          : "formkit:arrowdown"
-                      }
-                      className={` dark:text-white text-black ${contractCategory === "contract"
-                        ? "opacity-100"
-                        : "opacity-20"
-                        }`}
-                    />
-                  </button>
-                </div>
-                <div className="flex w-[30%]  ">
-                  <button className="flex gap-x-1 w-[53%] ">Category </button>
-                  <button
-                    className="flex gap-x-1"
-                    onClick={() => {
-                      if (contractCategory !== "subcategory") {
-                        setSortOrder(true);
-                      } else {
-                        setSortOrder(!sortOrder);
-                      }
-                      setContractCategory("subcategory");
-                    }}
-                  >
-                    Subcategory{" "}
-                    <Icon
-                      icon={
-                        contractCategory === "subcategory"
-                          ? sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
-                          : "formkit:arrowdown"
-                      }
-                      className={` dark:text-white text-black ${contractCategory === "subcategory"
-                        ? "opacity-100"
-                        : "opacity-20"
-                        }`}
-                    />
-                  </button>
-                </div>
-                <div className="flex w-[37%]  ">
-                  <button
-                    className="flex gap-x-1 w-[51.5%] justify-end "
-                    onClick={() => {
-                      if (contractCategory !== "value") {
-                        setSortOrder(true);
-                      } else {
-                        setSortOrder(!sortOrder);
-                      }
-                      setContractCategory("value");
-                    }}
-                  >
-                    {selectedMode === "gas_fees_"
-                      ? "Gas Fees "
-                      : "Transaction Count "}
-                    <p className="font-normal">
-                      ({timespans[selectedTimespan].label})
-                    </p>
-                    <Icon
-                      icon={
-                        contractCategory === "value"
-                          ? sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
-                          : "formkit:arrowdown"
-                      }
-                      className={` dark:text-white text-black ${contractCategory === "value"
-                        ? "opacity-100"
-                        : "opacity-20"
-                        }`}
-                    />
-                  </button>
 
-                  <div className="flex gap-x-1 w-[48.5%] justify-center">
-                    <div>Block Explorer </div>
+                {/* <button
+                  className="flex gap-x-1"
+                  onClick={() => {
+                    if (contractCategory !== "contract") {
+                      setSortOrder(true);
+                    } else {
+                      setSortOrder(!sortOrder);
+                    }
+                    setContractCategory("contract");
+                  }}
+                >
+                  Contract
+                  <Icon
+                    icon={
+                      contractCategory === "contract"
+                        ? sortOrder
+                          ? "formkit:arrowdown"
+                          : "formkit:arrowup"
+                        : "formkit:arrowdown"
+                    }
+                    className={` dark:text-white text-black ${contractCategory === "contract"
+                      ? "opacity-100"
+                      : "opacity-20"
+                      }`}
+                  />
+                </button>
+                <button className="flex gap-x-1">Category </button>
+                <button
+                  className="flex gap-x-1"
+                  onClick={() => {
+                    if (contractCategory !== "subcategory") {
+                      setSortOrder(true);
+                    } else {
+                      setSortOrder(!sortOrder);
+                    }
+                    setContractCategory("subcategory");
+                  }}
+                >
+                  Subcategory{" "}
+                  <Icon
+                    icon={
+                      contractCategory === "subcategory"
+                        ? sortOrder
+                          ? "formkit:arrowdown"
+                          : "formkit:arrowup"
+                        : "formkit:arrowdown"
+                    }
+                    className={` dark:text-white text-black ${contractCategory === "subcategory"
+                      ? "opacity-100"
+                      : "opacity-20"
+                      }`}
+                  />
+                </button>
+                <button
+                  className="flex gap-x-1 justify-end relative "
+                  onClick={() => {
+                    if (contractCategory !== "value") {
+                      setSortOrder(true);
+                    } else {
+                      setSortOrder(!sortOrder);
+                    }
+                    setContractCategory("value");
+                  }}
+                >
+                  {selectedMode === "gas_fees_"
+                    ? "Gas Fees "
+                    : "Transaction Count "}
+                  <div className="absolute font-normal -top-[15px] right-2">
+                    ({timespans[selectedTimespan].label})
                   </div>
-                </div>
-              </div>
+                  <Icon
+                    icon={
+                      contractCategory === "value"
+                        ? sortOrder
+                          ? "formkit:arrowdown"
+                          : "formkit:arrowup"
+                        : "formkit:arrowdown"
+                    }
+                    className={` dark:text-white text-black ${contractCategory === "value"
+                      ? "opacity-100"
+                      : "opacity-20"
+                      }`}
+                  />
+                </button> */}
+
+                {/* <div className="flex gap-x-1 w-[48.5%] justify-center">
+                  <div>Block Explorer </div>
+                </div> */}
+              </GridTableHeader>
               <div>
                 {(!sortOrder
                   ? Object.keys(sortedContracts)
@@ -1554,9 +1618,7 @@ export default function CategoryMetrics({
                                         </option>
                                         {labelFormMainCategoryKey &&
                                           master &&
-                                          master.blockspace_categories[
-                                            "mapping"
-                                          ][labelFormMainCategoryKey].map(
+                                          master.blockspace_categories.mapping[labelFormMainCategoryKey]?.map(
                                             (key) => (
                                               <option
                                                 key={key}
@@ -1617,229 +1679,309 @@ export default function CategoryMetrics({
                       );
                     }
 
+                    if (!master) return null;
+
                     return (
-                      <div key={key + "" + sortOrder}>
-                        <div className="flex rounded-full border-forest-200 dark:border-forest-500 border h-[60px] mt-[7.5px] group hover:bg-forest-300 hover:dark:bg-forest-800 relative">
-                          <div className="absolute top-0 left-0 right-0 bottom-[-1px] pointer-events-none">
-                            <div className="w-full h-full rounded-full overflow-clip">
-                              <div className="relative w-full h-full">
-                                <div
-                                  className={`absolute left-[1px] right-[1px] bottom-[0px] h-[2px] rounded-none font-semibold transition-width duration-300 z-20`}
-                                  style={{
-                                    background:
-                                      AllChainsByKeys[
-                                        sortedContracts[key].chain
-                                      ].colors[theme ?? "dark"][1],
-                                    width: getWidth(sortedContracts[key]),
-                                  }}
-                                ></div>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex w-[100%] items-center ml-4 mr-8">
-                            <div className="flex items-center h-10 !w-[34%] relative">
-                              <div className="absolute right-0 top-0 bottom-0 w-0 group-hover:w-4 bg-gradient-to-r from-transparent to-forest-300 dark:to-forest-800 z-10"></div>
-                              <div className="flex-none mr-[36px]">
+                      <GridTableRow key={key + "" + sortOrder} gridDefinitionColumns="grid-cols-[20px,225px,280px,95px,minmax(135px,800px),115px] relative" className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] mb-[3px]">
+                        <GridTableChainIcon origin_key={sortedContracts[key].chain} />
+                        <div className="flex justify-between">
+
+                          <div>{sortedContracts[key].project_name}</div>
+                          {ownerProjectDisplayNameToProjectData[
+                            sortedContracts[key].project_name
+                          ] && (
+                              <div className="flex gap-x-[5px] ">
+                                {/* <div className="flex 3xl:hidden">
                                 <Icon
-                                  icon={`gtp:${sortedContracts[
-                                    key
-                                  ].chain.replace("_", "-")}-logo-monochrome`}
-                                  className="w-[29px] h-[29px]"
-                                  style={{
-                                    color:
-                                      AllChainsByKeys[
-                                        sortedContracts[key].chain
-                                      ].colors[theme ?? "dark"][1],
+                                  icon={copiedAddress === sortedContracts[key].project_name.address ? "feather:check-circle" : "feather:copy"}
+                                  className="w-[14px] h-[14px] cursor-pointer"
+                                  onClick={() => {
+                                    handleCopyAddress(filteredLabelsData[item.index].address);
                                   }}
                                 />
-                                {/* </div> */}
-                              </div>
-                              <div className="flex flex-grow">
-                                <div
-                                  className={`flex flex-none items-center space-x-2 w-0 ${copyContract ? " delay-1000" : ""
-                                    } overflow-clip transition-all duration-200 ease-in-out ${sortedContracts[key].name &&
+                              </div> */}
+                                <div className="flex items-center gap-x-[5px]">
+                                  <div className="h-[15px] w-[15px]">
+                                    {ownerProjectDisplayNameToProjectData[
                                       sortedContracts[key].project_name
-                                      ? "group-hover:w-[48px]"
-                                      : "group-hover:w-[96px]"
-                                    }`}
-                                >
-                                  {!(
-                                    sortedContracts[key].name &&
-                                    sortedContracts[key].project_name
-                                  ) && (
-                                      <div
-                                        className="rounded-full p-2 bg-forest-50 dark:bg-forest-1000 text-black dark:text-white cursor-pointer"
-                                        onClick={() => {
-                                          setSelectedContract(
-                                            sortedContracts[key],
-                                          );
-                                          setIsContractLabelModalOpen(true);
-                                        }}
-                                      >
-                                        <Icon
-                                          icon="gtp:add-tag"
-                                          className="w-6 h-6"
-                                        />
-                                        {/* <Icon
-                                      icon="feather:plus"
-                                      className="absolute right-0 top-2 stroke-2 stroke-forest-900"
-                                    /> */}
-                                      </div>
-                                    )}
-                                  <div
-                                    className={`rounded-full p-2 ${copyContract
-                                      ? "bg-forest-50/60 dark:bg-forest-1000/60"
-                                      : "bg-forest-50 dark:bg-forest-1000"
-                                      } text-white cursor-pointer`}
-                                    onClick={() => {
-                                      navigator.clipboard.writeText(
-                                        sortedContracts[key].address,
-                                      );
-                                      setCopyContract(true);
-                                      setTimeout(() => {
-                                        setCopyContract(false);
-                                      }, 1000);
-                                    }}
-                                  >
-                                    {!copyContract && (
-                                      <Icon
-                                        icon="feather:copy"
-                                        className="w-5 h-5"
-                                      />
-                                    )}
-                                    {copyContract && (
-                                      <Icon
-                                        icon="feather:check"
-                                        className="w-5 h-5"
-                                      />
-                                    )}
-                                  </div>
-                                </div>
-                                <div
-                                  className={`flex flex-col flex-grow h-full justify-start text-ellipsis overflow-hidden whitespace-nowrap `}
-                                >
-                                  {sortedContracts[key].name ||
-                                    sortedContracts[key].project_name ? (
-                                    <>
-                                      <div
-                                        className={`min-w-full max-w-full text-base ${sortedContracts[key].project_name
-                                          ? "font-bold"
-                                          : "opacity-30 italic"
-                                          }`}
-                                      >
-                                        {sortedContracts[key].project_name
-                                          ? sortedContracts[key].project_name
-                                          : "Project Label Missing"}
-                                      </div>
+                                    ][5] && (
 
-                                      <div
-                                        className={`min-w-full max-w-full text-sm ${sortedContracts[key].name
-                                          ? ""
-                                          : "opacity-30 italic"
-                                          }`}
-                                      >
-                                        {sortedContracts[key].name
-                                          ? sortedContracts[key].name
-                                          : "Contract Label Missing"}
-                                      </div>
-                                    </>
-                                  ) : (
-                                    <div className="min-w-full max-w-full text-base opacity-30 italic">
-                                      {sortedContracts[key].address.substring(
-                                        0,
-                                        6,
-                                      ) +
-                                        "..." +
-                                        sortedContracts[key].address.substring(
-                                          36,
-                                          42,
-                                        )}
+                                        <a
+                                          href={
+                                            ownerProjectDisplayNameToProjectData[
+                                            sortedContracts[key].project_name
+                                            ][5]
+                                          }
+                                          target="_blank"
+                                          className="group flex items-center gap-x-[5px] text-xs"
+                                        >
+
+                                          <Icon
+                                            icon="ri:global-line"
+                                            className="w-[15px] h-[15px]"
+                                          />
+
+                                        </a>
+                                      )}
+                                  </div>
+                                  <div className="h-[15px] w-[15px]">
+
+                                    {ownerProjectDisplayNameToProjectData[
+                                      sortedContracts[key].project_name
+                                    ][3] && (
+                                        <a
+                                          href={
+                                            ownerProjectDisplayNameToProjectData[
+                                            sortedContracts[key].project_name
+                                            ][3]
+                                          }
+                                          target="_blank"
+                                          className="group flex items-center gap-x-[5px] text-xs"
+                                        >
+                                          <Icon
+                                            icon="ri:github-fill"
+                                            className="w-[15px] h-[15px]"
+                                          />
+                                        </a>
+                                      )}
+                                  </div>
+                                  <div className="h-[15px] w-[15px]">
+
+                                    {ownerProjectDisplayNameToProjectData[
+                                      sortedContracts[key].project_name
+                                    ][4] && (
+                                        <a
+                                          href={
+                                            ownerProjectDisplayNameToProjectData[
+                                            sortedContracts[key].project_name
+                                            ][4]
+                                          }
+                                          target="_blank"
+                                          className="group flex items-center gap-x-[5px] text-xs"
+                                        >
+                                          <Icon
+                                            icon="ri:twitter-x-fill"
+                                            className="w-[15px] h-[15px]"
+                                          />
+                                        </a>
+                                      )}
+                                  </div>
+
+                                </div>
+                              </div>
+                            )}
+
+
+                        </div>
+                        {sortedContracts[key].name ?
+                          (
+                            <div className="truncate">{sortedContracts[key].name}</div>
+                          ) : (<div className="truncate font-mono">{sortedContracts[key].address}</div>)}
+                        <div>{master.blockspace_categories.main_categories[sortedContracts[key].main_category_key]}</div>
+                        <div>{master.blockspace_categories.sub_categories[sortedContracts[key].sub_category_key]}</div>
+                        <div className="flex items-center justify-end">
+                          {selectedMode.includes("gas_fees_") ? (
+                            showUsd ? (
+                              `$${Number(sortedContracts[key].gas_fees_absolute_usd.toFixed(0)).toLocaleString("en-GB")}`
+                            ) : (
+                              `${Number(sortedContracts[key].gas_fees_absolute_eth.toFixed(0)).toLocaleString("en-GB")} Ξ`
+                            )
+                          ) : (
+                            Number(sortedContracts[key].txcount_absolute).toLocaleString("en-GB")
+                          )}
+                        </div>
+
+                        {/* <div className="flex w-[100%] items-center ml-4 mr-8">
+                          <div className="flex items-center h-10 !w-[34%] relative">
+                            <div className="absolute right-0 top-0 bottom-0 w-0 group-hover:w-4 bg-gradient-to-r from-transparent to-forest-300 dark:to-forest-800 z-10"></div>
+                            <div className="flex-none mr-[36px]">
+                              <Icon
+                                icon={`gtp:${sortedContracts[
+                                  key
+                                ].chain.replace("_", "-")}-logo-monochrome`}
+                                className="w-[29px] h-[29px]"
+                                style={{
+                                  color:
+                                    AllChainsByKeys[
+                                      sortedContracts[key].chain
+                                    ].colors[theme ?? "dark"][1],
+                                }}
+                              />
+                            </div>
+                            <div className="flex flex-grow">
+                              <div
+                                className={`flex flex-none items-center space-x-2 w-0 ${copyContract ? " delay-1000" : ""
+                                  } overflow-clip transition-all duration-200 ease-in-out ${sortedContracts[key].name &&
+                                    sortedContracts[key].project_name
+                                    ? "group-hover:w-[48px]"
+                                    : "group-hover:w-[96px]"
+                                  }`}
+                              >
+                                {!(
+                                  sortedContracts[key].name &&
+                                  sortedContracts[key].project_name
+                                ) && (
+                                    <div
+                                      className="rounded-full p-2 bg-forest-50 dark:bg-forest-1000 text-black dark:text-white cursor-pointer"
+                                      onClick={() => {
+                                        setSelectedContract(
+                                          sortedContracts[key],
+                                        );
+                                        setIsContractLabelModalOpen(true);
+                                      }}
+                                    >
+                                      <Icon
+                                        icon="gtp:add-tag"
+                                        className="w-6 h-6"
+                                      />
+
                                     </div>
+                                  )}
+                                <div
+                                  className={`rounded-full p-2 ${copyContract
+                                    ? "bg-forest-50/60 dark:bg-forest-1000/60"
+                                    : "bg-forest-50 dark:bg-forest-1000"
+                                    } text-white cursor-pointer`}
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(
+                                      sortedContracts[key].address,
+                                    );
+                                    setCopyContract(true);
+                                    setTimeout(() => {
+                                      setCopyContract(false);
+                                    }, 1000);
+                                  }}
+                                >
+                                  {!copyContract && (
+                                    <Icon
+                                      icon="feather:copy"
+                                      className="w-5 h-5"
+                                    />
+                                  )}
+                                  {copyContract && (
+                                    <Icon
+                                      icon="feather:check"
+                                      className="w-5 h-5"
+                                    />
                                   )}
                                 </div>
                               </div>
-                            </div>
-                            <div className="flex items-center text-[14px] !w-[43%] justify-start h-full z-10">
-                              <div className="flex w-[40%]">
-                                {master &&
-                                  master.blockspace_categories.main_categories[
-                                  sortedContracts[key].main_category_key
-                                  ]}
-                              </div>
-                              <div className="flex ">
-                                {" "}
-                                {master &&
-                                  master.blockspace_categories.sub_categories[
-                                  sortedContracts[key].sub_category_key
-                                  ]
-                                  ? master.blockspace_categories.sub_categories[
-                                  sortedContracts[key].sub_category_key
-                                  ]
-                                  : "Unlabeled"}
-                              </div>
-                            </div>
-                            <div className="flex items-center !w-[23%]  mr-4">
-                              <div className="flex flex-col w-[38%] items-end ">
-                                <div className="flex gap-x-1 w-[110px] justify-end  ">
-                                  <div className="flex">
-                                    {" "}
-                                    {selectedMode.includes("gas_fees_")
-                                      ? showUsd
-                                        ? `$`
-                                        : `Ξ`
-                                      : ""}
+                              <div
+                                className={`flex flex-col flex-grow h-full justify-start text-ellipsis overflow-hidden whitespace-nowrap `}
+                              >
+                                {sortedContracts[key].name ||
+                                  sortedContracts[key].project_name ? (
+                                  <>
+                                    <div
+                                      className={`min-w-full max-w-full text-base ${sortedContracts[key].project_name
+                                        ? "font-bold"
+                                        : "opacity-30 italic"
+                                        }`}
+                                    >
+                                      {sortedContracts[key].project_name
+                                        ? sortedContracts[key].project_name
+                                        : "Project Label Missing"}
+                                    </div>
+
+                                    <div
+                                      className={`min-w-full max-w-full text-sm ${sortedContracts[key].name
+                                        ? ""
+                                        : "opacity-30 italic"
+                                        }`}
+                                    >
+                                      {sortedContracts[key].name
+                                        ? sortedContracts[key].name
+                                        : "Contract Label Missing"}
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div className="min-w-full max-w-full text-base opacity-30 italic">
+                                    {sortedContracts[key].address.substring(
+                                      0,
+                                      6,
+                                    ) +
+                                      "..." +
+                                      sortedContracts[key].address.substring(
+                                        36,
+                                        42,
+                                      )}
                                   </div>
-                                  {selectedMode.includes("gas_fees_")
-                                    ? showUsd
-                                      ? Number(
-                                        sortedContracts[
-                                          key
-                                        ].gas_fees_absolute_usd.toFixed(0),
-                                      ).toLocaleString("en-GB")
-                                      : Number(
-                                        sortedContracts[
-                                          key
-                                        ].gas_fees_absolute_eth.toFixed(2),
-                                      ).toLocaleString("en-GB")
-                                    : Number(
-                                      sortedContracts[
-                                        key
-                                      ].txcount_absolute.toFixed(0),
-                                    ).toLocaleString("en-GB")}
-                                </div>
-
-                                {/* <div className="h-[3px] w-[110px] bg-forest-100 dark:bg-forest-900 flex justify-end">
-                                  <div
-                                    className={`h-full bg-forest-900 dark:bg-forest-50`}
-                                    style={{
-                                      width: getWidth(sortedContracts[key]),
-                                    }}
-                                  ></div>
-                                </div> */}
-                              </div>
-
-                              <div className="flex items-center w-[57%] justify-end ">
-                                {master && (
-                                  <Link
-                                    href={
-                                      master.chains[sortedContracts[key].chain]
-                                        .block_explorer +
-                                      "address/" +
-                                      sortedContracts[key].address
-                                    }
-                                    target="_blank"
-                                  >
-                                    <Icon
-                                      icon="material-symbols:link"
-                                      className="w-[30px] h-[30px]"
-                                    />
-                                  </Link>
                                 )}
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </div>
+                          <div className="flex items-center text-[14px] !w-[43%] justify-start h-full z-10">
+                            <div className="flex w-[40%]">
+                              {master &&
+                                master.blockspace_categories.main_categories[
+                                sortedContracts[key].main_category_key
+                                ]}
+                            </div>
+                            <div className="flex ">
+                              {" "}
+                              {master &&
+                                master.blockspace_categories.sub_categories[
+                                sortedContracts[key].sub_category_key
+                                ]
+                                ? master.blockspace_categories.sub_categories[
+                                sortedContracts[key].sub_category_key
+                                ]
+                                : "Unlabeled"}
+                            </div>
+                          </div>
+                          <div className="flex items-center !w-[23%]  mr-4">
+                            <div className="flex flex-col w-[38%] items-end ">
+                              <div className="flex gap-x-1 w-[110px] justify-end  ">
+                                <div className="flex">
+                                  {" "}
+                                  {selectedMode.includes("gas_fees_")
+                                    ? showUsd
+                                      ? `$`
+                                      : `Ξ`
+                                    : ""}
+                                </div>
+                                {selectedMode.includes("gas_fees_")
+                                  ? showUsd
+                                    ? Number(
+                                      sortedContracts[
+                                        key
+                                      ].gas_fees_absolute_usd.toFixed(0),
+                                    ).toLocaleString("en-GB")
+                                    : Number(
+                                      sortedContracts[
+                                        key
+                                      ].gas_fees_absolute_eth.toFixed(2),
+                                    ).toLocaleString("en-GB")
+                                  : Number(
+                                    sortedContracts[
+                                      key
+                                    ].txcount_absolute.toFixed(0),
+                                  ).toLocaleString("en-GB")}
+                              </div>
+
+                            </div>
+
+                            <div className="flex items-center w-[57%] justify-end ">
+                              {master && (
+                                <Link
+                                  href={
+                                    master.chains[sortedContracts[key].chain]
+                                      .block_explorer +
+                                    "address/" +
+                                    sortedContracts[key].address
+                                  }
+                                  target="_blank"
+                                >
+                                  <Icon
+                                    icon="material-symbols:link"
+                                    className="w-[30px] h-[30px]"
+                                  />
+                                </Link>
+                              )}
+                            </div>
+                          </div>
+                        </div> */}
+                      </GridTableRow>
                     );
                   })}
                 <div className="w-full flex justify-center mb-2">
