@@ -40,6 +40,7 @@ import Highcharts from "highcharts/highstock";
 import highchartsPatternFill from "highcharts/modules/pattern-fill";
 import { fill } from "lodash";
 import { useMaster } from "@/contexts/MasterContext";
+import { fullBrowserVersion } from "react-device-detect";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -527,18 +528,11 @@ export default function OverviewChart({
   ]);
 
   const avgHeight = useSpring({
-    y:
-      chartAvg && chartMax
-        ? -1 *
-        (199 * (chartAvg / chartMax) +
-          (chartAvg / chartMax > 0.45
-            ? chartAvg / chartMax > 0.5
-              ? 7
-              : 10
-            : 14))
-        : 0,
+    y: chartAvg && chartMax ? `${chartAvg * -169}px` : "0%",
     config: { mass: 1, tension: 70, friction: 20 },
   });
+
+  console.log(chartAvg);
 
   const tooltipPositioner =
     useCallback<Highcharts.TooltipPositionerCallbackFunction>(
@@ -723,8 +717,14 @@ export default function OverviewChart({
 
       return tooltip + tooltipPoints + tooltipEnd;
     },
-    [valuePrefix, reversePerformer, showUsd, selectedValue],
+    [valuePrefix, reversePerformer, showUsd, selectedValue, selectedChain],
   );
+
+  const decimalPercentageToHex = (percentage: number) => {
+    const hex = Math.round(percentage * 255).toString(16);
+
+    return hex.length === 1 ? "0" + hex : hex;
+  };
 
   useEffect(() => {
     if (allCats === true && chartComponent.current && chartSeries.length > 1) {
@@ -1005,29 +1005,103 @@ export default function OverviewChart({
                   const isUnlabelled =
                     series.custom.tooltipLabel === "Unlabeled";
                   const pattern = series.pattern;
-
+                  const fillHexColorOpacity = series.fillOpacity
+                    ? decimalPercentageToHex(series.fillOpacity)
+                    : "40";
+                  let fillColor =
+                    allCats === true
+                      ? undefined
+                      : AllChainsByKeys[standardChainKey].colors[
+                      theme ?? "dark"
+                      ][0] + fillHexColorOpacity;
                   return (
                     series && (
                       <AreaSeries
                         key={index} // Add a key to each element in the list
                         name={series.custom.tooltipLabel}
                         color={
-                          AllChainsByKeys[series.name].colors[
-                          theme ?? "dark"
-                          ][0]
+                          !selectedChain
+                            ? {
+                              linearGradient: {
+                                x1: 0,
+                                x2: 0,
+                                y1: 0,
+                                y2: 1,
+                              },
+                              stops:
+                                theme === "dark"
+                                  ? [
+                                    [
+                                      0,
+                                      AllChainsByKeys[
+                                        selectedChain
+                                          ? selectedChain
+                                          : "all_l2s"
+                                      ]?.colors[theme ?? "dark"][0] + "F9",
+                                    ],
+                                    [
+                                      1,
+                                      AllChainsByKeys[
+                                        selectedChain
+                                          ? selectedChain
+                                          : "all_l2s"
+                                      ]?.colors[theme ?? "dark"][1] + "F9",
+                                    ],
+                                  ]
+                                  : [],
+                            }
+                            : AllChainsByKeys[series.name].colors[
+                            theme ?? "dark"
+                            ][0]
                         }
                         lineWidth={allCats ? 0 : 2}
                         data={series.data.map((d: any) => [
                           d[types.indexOf("unix")],
                           d[types.indexOf(series.dataKey)],
                         ])}
-                        fillOpacity={!isUnlabelled ? series.fillOpacity : 0.05}
-                        fillColor={
+                        fillOpacity={
                           !isUnlabelled
-                            ? undefined
-                            : {
-                              pattern: pattern,
+                            ? series.fillOpacity
+                            : allCats
+                              ? 0.05
+                              : series.fillOpacity
+                        }
+                        fillColor={
+                          !isUnlabelled && !selectedChain
+                            ? {
+                              linearGradient: {
+                                x1: 0,
+                                x2: 0,
+                                y1: 0,
+                                y2: 1,
+                              },
+                              stops:
+                                theme === "dark"
+                                  ? [
+                                    [
+                                      0,
+                                      AllChainsByKeys[
+                                        selectedChain
+                                          ? selectedChain
+                                          : "all_l2s"
+                                      ]?.colors[theme ?? "dark"][0] + "33",
+                                    ],
+                                    [
+                                      1,
+                                      AllChainsByKeys[
+                                        selectedChain
+                                          ? selectedChain
+                                          : "all_l2s"
+                                      ]?.colors[theme ?? "dark"][1] + "33",
+                                    ],
+                                  ]
+                                  : [],
                             }
+                            : isUnlabelled && allCats
+                              ? {
+                                pattern: pattern,
+                              }
+                              : undefined
                         }
                       />
                     )
@@ -1039,7 +1113,7 @@ export default function OverviewChart({
         </div>
         {chartAvg && (
           <div
-            className={` items-end relative top-[2px] min-w-[50px] h-[249px] mb-[35px] lg:min-w-[70px] ${allCats ? "hidden" : "flex"
+            className={` items-end relative top-[2px] min-w-[50px] h-[169px]  lg:min-w-[70px] ${allCats ? "hidden" : "flex"
               }`}
           >
             <animated.div
