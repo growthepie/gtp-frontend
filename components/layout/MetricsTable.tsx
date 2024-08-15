@@ -56,7 +56,8 @@ const MetricsTable = ({
   );
 
   const chainSelectToggleState = useMemo(() => {
-    if (intersection(selectedChains, chainKeys).length === 1) return "none";
+    if (intersection(selectedChains, chainKeys).length === 1 && showEthereumMainnet) return "none";
+    if (intersection(selectedChains, chainKeys).length === 0 && !showEthereumMainnet) return "none";
 
     if (intersection(selectedChains, chainKeys).length === chainKeys.length)
       return "all";
