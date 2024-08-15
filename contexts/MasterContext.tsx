@@ -38,11 +38,13 @@ const MasterContext = createContext<MasterContextType | null>({
 });
 
 export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
-  const { data, isLoading } = useSWR<MasterResponse>(MasterURL);
+  const { data, isLoading, isValidating } = useSWR<MasterResponse>(MasterURL);
   const [AllChains, setAllChains] = useState<Chain[]>([]);
   const [AllChainsByKeys, setAllChainsByKeys] = useState<{ [key: string]: Chain }>({});
   const [EnabledChainsByKeys, setEnabledChainsByKeys] = useState<{ [key: string]: Chain }>({});
   const [ChainsNavigationItems, setChainsNavigationItems] = useState<any>({});
+
+  console.log("MasterProvider: data", data);
 
   useEffect(() => {
     if (data) {

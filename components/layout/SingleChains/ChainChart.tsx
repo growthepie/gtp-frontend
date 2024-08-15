@@ -58,6 +58,7 @@ import {
 } from "@/components/layout/Tooltip";
 import { useSWRConfig } from "swr";
 import { useMaster } from "@/contexts/MasterContext";
+import { apiFetch } from "@/lib/apiRoot";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -68,7 +69,7 @@ const COLORS = {
   ANNOTATION_BG: "rgb(215, 223, 222)",
 };
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = (url: string) => apiFetch(url).then((r) => r.json());
 
 export default function ChainChart({
   chainData,

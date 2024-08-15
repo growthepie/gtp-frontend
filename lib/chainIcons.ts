@@ -15,7 +15,13 @@ export const ImportChainIcons = (master: MasterResponse) => {
     if (!chainInfo.logo) return;
 
     // add icon with key as chainKey
-    chainIcons.icons[`${chainKey.replace("_", "-")}-logo-monochrome`] = {
+    chainIcons.icons[`${chainKey.replace(/_/g, "-")}-logo`] = {
+      body: chainInfo.logo.body,
+      width: chainInfo.logo.width || 15,
+      height: chainInfo.logo.height || 15,
+    };
+    // add icon with url_key as chainKey
+    chainIcons.icons[`${chainInfo.url_key}-logo-monochrome`] = {
       body: chainInfo.logo.body,
       width: chainInfo.logo.width || 15,
       height: chainInfo.logo.height || 15,

@@ -7,6 +7,8 @@ import { UIContextProvider } from "@/contexts/UIContext";
 import { useLocalStorage } from "usehooks-ts";
 import { IS_PRODUCTION } from "@/lib/helpers";
 import { MasterProvider } from "@/contexts/MasterContext";
+import { apiFetch, ApiRoot } from "@/lib/apiRoot";
+import { useEffect } from "react";
 
 // load icons
 addCollection(GTPIcons);
@@ -35,7 +37,12 @@ const devMiddleware = (useSWRNext) => {
 };
 
 export function Providers({ children, forcedTheme }: ProvidersProps) {
-  const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
+  const [apiRoot, setApiRoot] = useLocalStorage<ApiRoot>("apiRoot", "v1");
+
+  useEffect(() => {
+    // Set the cookie whenever apiRoot changes
+    document.cookie = `apiRoot=${apiRoot};path=/;max-age=31536000`;
+  }, [apiRoot]);
 
   return (
     <ThemeProvider
@@ -46,8 +53,13 @@ export function Providers({ children, forcedTheme }: ProvidersProps) {
     >
       <SWRConfig
         value={{
-          fetcher: (url) => fetch(url).then((r) => r.json()),
-          use: apiRoot === "dev" && !IS_PRODUCTION ? [devMiddleware] : [],
+          fetcher: async (url) => {
+            console.log("providers::swr::url", url);
+            const data = apiFetch(url).then((r) => r.json());
+            console.log("providers::swr::data", data);
+            return data;
+          }
+          // use: apiRoot === "dev" && !IS_PRODUCTION ? [devMiddleware] : [],
           // refreshInterval: 1000 * 60 * 60, // 1 hour
         }}
       >

@@ -3,6 +3,7 @@ import { MasterURL } from "@/lib/urls";
 import { ChainInfo, MasterResponse } from "@/types/api/MasterResponse";
 import { notFound } from "next/navigation";
 import { track } from "@vercel/analytics/server";
+import { apiFetch } from "@/lib/apiRootServer";
 
 type Props = {
   params: { chain: string };
@@ -10,7 +11,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // fetch data from API
-  const res: MasterResponse = await fetch(MasterURL, {
+  const res: MasterResponse = await apiFetch(MasterURL, {
     cache: "no-store",
   }).then((r) => r.json());
 
