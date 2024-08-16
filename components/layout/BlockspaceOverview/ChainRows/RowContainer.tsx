@@ -36,14 +36,16 @@ export default function RowContainer() {
               className={`relative flex w-[138px] h-full justify-center items-center`}
             >
               <button
-                className={`flex flex-col flex-1 h-full justify-center items-center border-x border-transparent overflow-hidden  ${forceSelectedChain ? "cursor-pointer" : "cursor-default"
-                  }
-              ${forceSelectedChain
-                    ? allCats
-                      ? "bg-[#5A6462] "
-                      : "bg-inherit hover:bg-forest-800/50"
-                    : "bg-inherit"
-                  } `}
+                className={`flex flex-col flex-1 h-full justify-center items-center border-x border-transparent overflow-hidden  ${
+                  forceSelectedChain ? "cursor-pointer" : "cursor-default"
+                }
+              ${
+                forceSelectedChain
+                  ? allCats
+                    ? "bg-[#5A6462] "
+                    : "bg-inherit hover:bg-forest-800/50"
+                  : "bg-inherit"
+              } `}
                 onClick={() => {
                   if (forceSelectedChain) {
                     setAllCats(!allCats);
@@ -67,10 +69,11 @@ export default function RowContainer() {
                       key={category}
                       className={`relative flex h-full justify-center items-center 
                     ${category === "unlabeled" ? "flex-1" : "flex-1"}
-                    ${selectedCategory === category
-                          ? "borden-hidden rounded-[0px]"
-                          : "h-full"
-                        }`}
+                    ${
+                      selectedCategory === category
+                        ? "borden-hidden rounded-[0px]"
+                        : "h-full"
+                    }`}
                       onMouseEnter={() => {
                         hoverCategory(category);
                       }}
@@ -81,9 +84,10 @@ export default function RowContainer() {
                         backgroundColor:
                           selectedCategory === category && !allCats
                             ? "#5A6462"
-                            : `rgba(0, 0, 0, ${0.06 +
-                            (i / Object.keys(categories).length) * 0.94
-                            })`,
+                            : `rgba(0, 0, 0, ${
+                                0.06 +
+                                (i / Object.keys(categories).length) * 0.94
+                              })`,
                       }}
                     >
                       <button
@@ -91,17 +95,18 @@ export default function RowContainer() {
                         className={`flex flex-col w-full h-full justify-center items-center overflow-hidden border-l border-[
                     1px 
                   ] border-forest-50 dark:border-forest-800
-                    ${selectedCategory === category
-                            ? "bg-forest-800/[0.025]"
-                            : ""
-                          } 
+                    ${
+                      selectedCategory === category
+                        ? "bg-forest-800/[0.025]"
+                        : ""
+                    } 
                     ${isCategoryHovered(category) ? "bg-forest-800/50" : ""}`}
                         onClick={() => {
                           if (forceSelectedChain) {
                             // if no data, return
                             if (
                               !data[forceSelectedChain].overview[
-                              selectedTimespan
+                                selectedTimespan
                               ][category]["data"]
                             ) {
                               return;
@@ -125,10 +130,11 @@ export default function RowContainer() {
                         }}
                       >
                         <div
-                          className={`${selectedCategory === category
-                            ? "text-sm font-semibold"
-                            : "text-xs font-medium"
-                            }`}
+                          className={`${
+                            selectedCategory === category
+                              ? "text-sm font-semibold"
+                              : "text-xs font-medium"
+                          }`}
                         >
                           {categories[category]}
                         </div>

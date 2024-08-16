@@ -79,24 +79,34 @@ export default function RowParent({ chainKey, index }) {
         .toString(16)
         .slice(1)
     );
-  }
+  };
 
   return (
     <div key={index} className="w-full h-full relative">
       {DisabledStates[selectedMode] &&
-        DisabledStates[selectedMode][chainKey] ? (
+      DisabledStates[selectedMode][chainKey] ? (
         <>
           <div
-            className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium text-white dark:text-black`}
+            className={`flex flex-row flex-grow h-full pl-[2px] items-center rounded-full text-xs font-medium text-white dark:text-[#CDD8D3]`}
             style={{
-              backgroundColor: lightenHexColor(AllChainsByKeys[chainKey].colors[theme ?? "dark"][1], 50),
-              boxShadow: `0px 0px 0px 2px ${AllChainsByKeys[chainKey].colors[theme ?? "dark"][1]} inset`,
+              backgroundColor: lightenHexColor(
+                AllChainsByKeys[chainKey].colors[theme ?? "dark"][1],
+                50,
+              ),
+              boxShadow: `0px 0px 0px 2px ${
+                AllChainsByKeys[chainKey].colors[theme ?? "dark"][1]
+              } inset`,
               // borderWidth: "2px",
               // boxSizing: "border-box",
             }}
           >
-            <div className="flex items-center h-[45px] pl-[20px] w-[155px] min-w-[155px] z-10">
-              <div className="flex justify-center items-center w-[30px] h-full">
+            <div className="flex items-center h-[31px] w-[155px] gap-x-[15px] pl-[3px] min-w-[155px] z-10 rounded-full bg-[#1F2726]">
+              <div
+                className="flex justify-center items-center w-[30px] h-full z-20 "
+                style={{
+                  color: AllChainsByKeys[chainKey].colors["dark"][0],
+                }}
+              >
                 <Icon
                   icon={`gtp:${chainKey}-logo-monochrome`}
                   className="w-[15px] h-[15px]"
@@ -111,7 +121,7 @@ export default function RowParent({ chainKey, index }) {
             </div>
             {/* Additional content */}
 
-            <div className="flex flex-col w-full h-[41px] justify-center items-center px-4 py-5 z-10">
+            <div className="flex flex-col w-full justify-center items-center px-4 h-[35px] z-10">
               <div className="flex flex-row w-full justify-center items-center text-sm">
                 {DisabledStates[selectedMode][chainKey].text}
                 <Tooltip placement="right" allowInteract>
@@ -132,36 +142,42 @@ export default function RowParent({ chainKey, index }) {
         </>
       ) : (
         <div
-          className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${AllChainsByKeys[chainKey].darkTextOnBackground === true
-            ? "text-white dark:text-black"
-            : "text-white"
-            }`}
-
+          className={`flex flex-row flex-grow h-full pl-[2px] items-center rounded-full text-xs font-medium ${
+            AllChainsByKeys[chainKey].darkTextOnBackground === true
+              ? "text-white dark:text-black"
+              : "text-white"
+          }`}
           style={{
-            backgroundColor: AllChainsByKeys[chainKey].colors[theme ?? "dark"][1],
+            backgroundColor:
+              AllChainsByKeys[chainKey].colors[theme ?? "dark"][1],
           }}
         >
           <div
-            className={`flex items-center h-[45px] pl-[20px] w-[155px] min-w-[155px] ${forceSelectedChain
-              ? isCategoryHovered("all_chain")
-                ? isCategoryHovered("all_chain") && allCats
-                  ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg`
-                  : `rounded-l-full py-[24px] -my-[5px] z-[2] shadow-lg`
-                : allCats
+            className={`flex items-center h-[31px] pl-[3px] w-[155px] gap-x-[15px] min-w-[155px] rounded-full bg-[#1F2726] text-[#CDD8D3] ${
+              forceSelectedChain
+                ? isCategoryHovered("all_chain")
+                  ? isCategoryHovered("all_chain") && allCats
+                    ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg`
+                    : `rounded-l-full py-[24px] -my-[5px] z-[2] shadow-lg`
+                  : allCats
                   ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg`
                   : "z-1"
-              : ""
-              }  ${forceSelectedChain
+                : ""
+            }  ${
+              forceSelectedChain
                 ? "hover:cursor-pointer"
                 : "hover:cursor-default"
-              } `}
+            } `}
             style={{
               backgroundColor: forceSelectedChain
                 ? isCategoryHovered("all_chain")
                   ? isCategoryHovered("all_chain") && allCats
-                    ? AllChainsByKeys[chainKey].colors[theme ?? "dark"][1] : AllChainsByKeys[chainKey].colors[theme ?? "dark"][1]
-                  : allCats ? AllChainsByKeys[chainKey].colors[theme ?? "dark"][1] : ""
-                : ""
+                    ? AllChainsByKeys[chainKey].colors[theme ?? "dark"][1]
+                    : AllChainsByKeys[chainKey].colors[theme ?? "dark"][1]
+                  : allCats
+                  ? AllChainsByKeys[chainKey].colors[theme ?? "dark"][1]
+                  : ""
+                : "",
             }}
             onMouseEnter={() => {
               // setIsCategoryHovered((prev) => ({
@@ -183,7 +199,12 @@ export default function RowParent({ chainKey, index }) {
               }
             }}
           >
-            <div className="flex justify-center items-center w-[30px]  h-full">
+            <div
+              className="flex justify-center items-center w-[30px]  h-full"
+              style={{
+                color: AllChainsByKeys[chainKey].colors["dark"][0],
+              }}
+            >
               <Icon
                 icon={`gtp:${chainKey.replace("_", "-")}-logo-monochrome`}
                 className="w-[15px] h-[15px]"
@@ -196,7 +217,7 @@ export default function RowParent({ chainKey, index }) {
               {AllChainsByKeys[chainKey].label}
             </Link>
           </div>
-          <div className="flex w-full pr-[2px] py-[2px] relative">
+          <div className="flex w-full items-center max-h-[35px] pr-[2px] py-[2px] relative">
             {/*Children */}
             {Object.keys(categories).map((categoryKey, i) => {
               const rawChainCategories = Object.keys(
