@@ -137,7 +137,6 @@ const MetricTable = ({
       .filter((row) => {
         const name = row.chain.key;
         const supportedChainKeys = Get_SupportedChainKeys(master);
-        console.log("row:", row);
         return supportedChainKeys.includes(name);
       })
       .map((data) => ({
@@ -172,7 +171,7 @@ const MetricTable = ({
       {/* <TableCaption>A list of your recent invoices.</TableCaption> */}
       <TableHeader>{<HeaderRowsTable />}</TableHeader>
       <TableBody>
-        {transitions((_style, item, _t, _index) => {
+        {transitions((_style, item, _t, index) => {
           return (
             <TableRow key={item.chain.key}>
               {Object.keys(data.chains).length ? (
@@ -183,9 +182,10 @@ const MetricTable = ({
                   data,
                   monthsSinceLaunch,
                   lastValsByChainKey,
+                  index,
                 })
               ) : (
-                <TableCell>{/* Purpose */}</TableCell>
+                <TableCell>Sin datos</TableCell>
               )}
             </TableRow>
           );
@@ -276,7 +276,9 @@ const RowItem = (rowData: any): JSX.Element => {
     data,
     monthsSinceLaunch,
     lastValsByChainKey,
+    index,
   } = rowData;
+  const chains = getDataChain();
   return (
     <>
       {/* Name */}
@@ -286,7 +288,7 @@ const RowItem = (rowData: any): JSX.Element => {
           href={`/chains/${AllChainsByKeys[item.chain.key].urlKey}`}
           className="flex gap-2 items-center"
         >
-          <Icon
+          {/* <Icon
             icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
             className="h-[24px] w-[24px]"
             style={{
@@ -294,8 +296,10 @@ const RowItem = (rowData: any): JSX.Element => {
                 ? item.chain.colors[theme ?? "dark"][1]
                 : "#5A6462",
             }}
-          />
-          {data.chains[item.chain.key].chain_name}
+          /> */}
+          {/* {data.chains[item.chain.key].chain_name} */}
+          <img src={chains[index].icon} alt={`${chains[index].name}`} />
+          {chains[index].name}
         </Link>
       </TableCell>
       {/* Stage */}
@@ -361,6 +365,17 @@ const RowItem = (rowData: any): JSX.Element => {
       </TableCell>
     </>
   );
+};
+
+const getDataChain = () => {
+  return [
+    {
+      icon: "/icons/exchange/eigen-layer-icon.png",
+      name: "Eigen Layer",
+    },
+    { icon: "/icons/exchange/symbiotic.svg", name: "Symbiotic" },
+    { icon: "/icons/exchange/karak.svg", name: "Karak" },
+  ];
 };
 
 export { MetricTable };

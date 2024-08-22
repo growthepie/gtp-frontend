@@ -60,7 +60,6 @@ export default async function Page() {
           <ShowLoading section />
         </div> */}
       </Container>
-
       <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
         <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
           <Icon
@@ -76,6 +75,7 @@ export default async function Page() {
           restaking platforms
         </Subheading>
       </Container>
+      Dorime
       <LandingUserBaseChart />
       {/* TODO: ELIMINAR ESTOS COMENTARIOS */}
       {/**Blockspace */}
@@ -96,7 +96,6 @@ export default async function Page() {
           <div>Top 6 gas-consuming contracts across all tracked Layer 2s.</div>
         </Subheading>
       </Container> */}
-
       {/**Top contracts */}
       {/* <Container className="">
         <LandingTopContracts />
