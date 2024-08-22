@@ -1,3 +1,4 @@
+
 import { Metadata } from "next";
 import { MasterURL } from "@/lib/urls";
 import { ChainInfo, MasterResponse } from "@/types/api/MasterResponse";
@@ -20,13 +21,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }, {} as { [key: string]: ChainInfo & { key: string } });
 
 
-  if (!params.chain || !Object.keys(AllChainsByUrlKey).includes(params.chain)) {
-    track("404 Error", {
-      location: "404 Error",
-      page: "/chains/" + params.chain,
-    });
-    return notFound();
-  }
+  // if (!params.chain || !Object.keys(AllChainsByUrlKey).includes(params.chain)) {
+  //   track("404 Error", {
+  //     location: "404 Error",
+  //     page: "/chains/" + params.chain,
+  //   });
+  //   return notFound();
+  // }
 
   const key = AllChainsByUrlKey[params.chain].key;
   const urlKey = AllChainsByUrlKey[params.chain].url_key;

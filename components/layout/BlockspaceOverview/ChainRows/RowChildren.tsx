@@ -16,6 +16,8 @@ export default function RowChildren({
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { theme } = useTheme();
 
+  console.log(i);
+
   const { AllChainsByKeys } = useMaster();
 
   const {
@@ -319,26 +321,128 @@ export default function RowChildren({
     }
   }
 
+  const childBlockStyle = useCallback(
+    (
+      chainKey: string,
+      categoryKey: string, // dataIndex: number,
+    ) => {
+      const style: CSSProperties = {
+        backgroundColor: "white",
+        // width: "0px",
+        borderRadius: "0px",
+      };
+
+      const categoriesKey = Object.keys(categories).indexOf(categoryKey);
+
+      const dataKeys = Object.keys(data[chainKey].overview[selectedTimespan]);
+      const dataKeysIntersectCategoriesKeys = Object.keys(categories).filter(
+        (key) => dataKeys.includes(key),
+      );
+      const dataIndex = dataKeysIntersectCategoriesKeys.indexOf(categoryKey);
+      const dataTypes = data[chainKey].overview.types;
+      const categoryData =
+        data[chainKey].overview[selectedTimespan][categoryKey]["data"];
+
+      const isLastCategory = categoryKey === "unlabeled";
+      const isFirstCategory = categoryKey === "nft_fi";
+
+      style.backgroundColor = `rgba(0, 0, 0, ${
+        1 - (1 - 0.1 * (dataIndex + 1))
+      })`;
+
+      if (isLastCategory)
+        style.borderRadius = "10000px 99999px 99999px 10000px";
+
+      if (categoryData) {
+        if (isLastCategory && selectedCategory !== categoryKey) {
+          style.background =
+            "linear-gradient(-45deg, rgba(0, 0, 0, .88) 25%, rgba(0, 0, 0, .99) 25%, rgba(0, 0, 0, .99) 50%, rgba(0, 0, 0, .88) 50%, rgba(0, 0, 0, .88) 75%, rgba(0, 0, 0, .99) 75%, rgba(0, 0, 0, .99))";
+          // style.background = undefined;
+          //   "linear-gradient(to right, #e5405e 0%, #ffdb3a 45%, #3fffa2 100%)";
+          // style.backgroundPosition = "75% 0%";
+          // style.backgroundRepeat = "repeat";
+          style.animation = "unlabeled-gradient 20s linear infinite";
+          style.backgroundSize = "10px 10px";
+        }
+        if (selectedValue === "share") {
+          style.width = categoryData
+            ? categoryData[dataTypes.indexOf(selectedMode)] *
+                relativePercentageByChain[chainKey] +
+              8 +
+              "%"
+            : "0px";
+          // if()
+        } else {
+          style.width = categoryData
+            ? (categoryData[dataTypes.indexOf(selectedMode)] /
+                sumChainValue[chainKey]) *
+                relativePercentageByChain[chainKey] +
+              8 +
+              "%"
+            : "0px";
+          // if()
+        }
+      } else {
+        style.width = 10;
+      }
+      style.opacity = 1;
+
+      return style;
+    },
+    [],
+  );
+
+  const subChildStyle = useCallback(
+    (
+      chainKey: string,
+      categoryKey: string, // dataIndex: number,
+    ) => {
+      const style: CSSProperties = {
+        backgroundColor: "transparent",
+        // width: "0px",
+        borderRadius: "0px",
+      };
+
+      if (
+        !data[chainKey].overview[selectedTimespan][categoryKey]["data"] &&
+        !(selectedCategory === categoryKey || isCategoryHovered(categoryKey))
+      ) {
+        style.backgroundColor = "rgba(255, 255, 255, 0.8)";
+        style.borderRadius = "50px";
+      }
+      if (selectedCategory === categoryKey || isCategoryHovered(categoryKey)) {
+        style.backgroundColor = "#1F2726";
+        style.color = "#CDD8D3";
+        style.transform =
+          selectedCategory === categoryKey
+            ? "scaleX(1.12) scaleY(1.22)"
+            : "scaleX(1.05) scaleY(1.05)";
+        style.transformOrigin = "center center";
+
+        style.borderRadius = "999px";
+        style.border = `3px solid ${AllChainsByKeys[chainKey].colors["dark"][0]} `;
+        if (!data[chainKey].overview[selectedTimespan][categoryKey]["data"]) {
+          style.minWidth = "55px";
+          if (categoryKey === "cefi") {
+            style.left = "1px";
+          }
+        }
+      }
+
+      return style;
+    },
+    [selectedCategory, isCategoryHovered],
+  );
+
   return (
     <div
-      key={categoryKey}
-      onClick={() => {
-        if (selectedCategory === categoryKey) {
-          if (!data[chainKey].overview[selectedTimespan][categoryKey]["data"]) {
-            return;
-          }
-          if (selectedChain === chainKey && !forceSelectedChain) {
-            // setSelectedCategory(categoryKey);
-            setSelectedChain(null);
-          } else {
-            // setSelectedCategory(categoryKey);
-            setSelectedChain(chainKey);
-          }
-        } else {
-          setSelectedCategory(categoryKey);
-          if (forceSelectedChain) setAllCats(false);
-          if (!forceSelectedChain) setSelectedChain(null);
-        }
+      className="flex flex-col h-[31px] relative w-full cursor-pointer justify-center items-center transition-all"
+      style={{
+        ...childBlockStyle(chainKey, categoryKey),
+        zIndex:
+          selectedCategory === categoryKey || isCategoryHovered(categoryKey)
+            ? 20
+            : 10, // Higher z-index for the selected div
       }}
       onMouseEnter={() => {
         hoverCategory(categoryKey);
@@ -346,41 +450,9 @@ export default function RowChildren({
       onMouseLeave={() => {
         unhoverCategory(categoryKey);
       }}
-      className={`flex flex-col h-[31px] justify-center items-center cursor-pointer relative transition-all duration-200 ease-in-out
-        ${
-          data[chainKey].overview[selectedTimespan][categoryKey]
-            ? (selectedCategory === categoryKey &&
-                !allCats &&
-                (selectedChain === chainKey || selectedChain === null)) ||
-              isCategoryHovered(categoryKey)
-              ? isCategoryHovered(categoryKey) &&
-                selectedCategory !== categoryKey
-                ? `py-[18px] -my-[3px] z-[2] shadow-lg`
-                : `py-[20px] -my-[5px] z-[2] shadow-lg`
-              : `z-[1]`
-            : "py-[18px] -my-[3px] z-[2] shadow-lg"
-        } 
-                        ${
-                          categoryIndex === Object.keys(categories).length - 1
-                            ? selectedCategory === categoryKey &&
-                              (selectedChain === chainKey ||
-                                selectedChain === null)
-                              ? ""
-                              : "rounded-r-full"
-                            : ""
-                        }`}
-      style={
-        getBarSectionStyle(chainKey, categoryKey)
-        // background: data[chainKey].overview[selectedTimespan][categoryKey]
-        //   ? (selectedCategory === categoryKey && (!allCats && (selectedChain === chainKey || selectedChain === null))) || isCategoryHovered(categoryKey) ? isCategoryHovered(categoryKey) && selectedCategory !== categoryKey
-        //     ? AllChainsByKeys[chainKey].colors[theme ?? "dark"][1]
-        //     : AllChainsByKeys[chainKey].colors[theme ?? "dark"][1]
-        //     : undefined
-        //   : undefined,
-      }
     >
       <div
-        className={`font-medium w-full absolute  inset-0 flex items-center justify-center ${
+        className={`w-full h-full flex justify-center items-center absolute cursor-pointer z-[40] opacity-100 transition-all ${
           (selectedCategory === categoryKey &&
             (selectedChain === chainKey || selectedChain === null)) ||
           isCategoryHovered(categoryKey)
@@ -407,7 +479,16 @@ export default function RowChildren({
             : "border-none rounded-inherit text-inherit "
         }`}
         style={{
-          borderColor: AllChainsByKeys[chainKey].colors["dark"][0],
+          ...subChildStyle(chainKey, categoryKey),
+          zIndex:
+            selectedCategory === categoryKey
+              ? 30
+              : isCategoryHovered(categoryKey)
+              ? 40
+              : 20, // Higher z-index for the child div of the selected element
+        }}
+        onClick={() => {
+          setSelectedCategory(categoryKey);
         }}
       >
         {data[chainKey].overview[selectedTimespan][categoryKey]["data"] ? (
@@ -435,12 +516,12 @@ export default function RowChildren({
         ) : (
           <div
             className={`text-white/80 
-                            ${
-                              isCategoryHovered(categoryKey) ||
-                              selectedCategory === categoryKey
-                                ? "opacity-100 py-8"
-                                : "opacity-0"
-                            } transition-opacity duration-300 ease-in-out`}
+                          ${
+                            isCategoryHovered(categoryKey) ||
+                            selectedCategory === categoryKey
+                              ? "opacity-100 py-8"
+                              : "opacity-0"
+                          } transition-opacity duration-300 ease-in-out`}
           >
             {selectedValue === "absolute"
               ? selectedMode.includes("txcount")
