@@ -75,7 +75,6 @@ export default async function Page() {
           restaking platforms
         </Subheading>
       </Container>
-      Dorime
       <LandingUserBaseChart />
       {/* TODO: ELIMINAR ESTOS COMENTARIOS */}
       {/**Blockspace */}
