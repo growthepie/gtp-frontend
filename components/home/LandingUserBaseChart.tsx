@@ -148,16 +148,6 @@ export default function LandingUserBaseChart() {
             />
           </Container>
           <HorizontalScrollContainer>
-            {/* <MetricsTable
-              data={{ chains: landing.data.metrics.table_visual }}
-              selectedChains={selectedChains}
-              setSelectedChains={setSelectedChains}
-              chains={chains as any}
-              metric={selectedTimeInterval}
-              master={master}
-              // interactable={selectedMetric !== "Total Users"}
-              interactable={false}
-            /> */}
             <MetricTable
               data={{ chains: tableVisual }}
               selectedChains={selectedChains}

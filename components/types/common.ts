@@ -1,3 +1,4 @@
+import { DropdownMenuCheckboxItemProps } from '@radix-ui/react-dropdown-menu';
 import Colors from 'tailwindcss/colors';
 
 export const AllColors = Object.keys(Colors).reduce((acc, color) => {
@@ -39,6 +40,8 @@ export type Size = '2xs' | 'xs' | 'sm' | 'md' | 'lg';
 export type Padding = '2xs' | 'xs' | 'sm' | 'md' | 'lg';
 
 export type Margin = '2xs' | 'xs' | 'sm' | 'md' | 'lg';
+
+export type Checked = DropdownMenuCheckboxItemProps["checked"];
 
 export const PaddingClasses = {
 	'2xs': 'p-1',

@@ -13,7 +13,8 @@ const nextConfig = {
           has: [
             {
               type: "host",
-              value: "fees.growthepie.xyz",
+              // value: "fees.growthepie.xyz",
+              value: "/fees"
             },
           ],
           destination: "/fees",

@@ -10,6 +10,17 @@ import ContractLabelModal from "../../ContractLabelModal";
 import { ContractInfo } from "./ContextInterface";
 
 import Link from "next/link";
+import { TableCell, TableRow } from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/DropDownMenu";
+import { Button } from "@/components/ui/Button";
+import { Checked } from "@/components/types/common";
 
 export default function ContractRow({
   rowKey,
@@ -346,7 +357,7 @@ export default function ContractRow({
             </div>
           </div>
           <div className="flex w-[100%] items-center ml-4 mr-8">
-            <div className="flex items-center h-10 !w-[34%] relative">
+            <div className="flex items-center h-10 !w-[40%] relative">
               <div className="absolute right-0 top-0 bottom-0 w-0 group-hover:w-4 bg-gradient-to-r from-transparent to-forest-300 dark:to-forest-800 z-10"></div>
               <div className="flex-none mr-[36px]">
                 <Icon
@@ -452,7 +463,7 @@ export default function ContractRow({
                 </div>
               </div>
             </div>
-            <div className="flex items-center text-[14px] !w-[43%] justify-start h-full z-10">
+            <div className="flex items-center text-[14px] !w-[15%] justify-start h-full z-10">
               <div className="flex w-[40%]">
                 {master &&
                   master.blockspace_categories.main_categories[
@@ -470,7 +481,7 @@ export default function ContractRow({
                   : "Unlabeled"}
               </div>
             </div>
-            <div className="flex items-center !w-[23%]  mr-4">
+            <div className="flex items-center !w-[20%]  mr-4">
               <div className="flex flex-col w-[38%] items-end ">
                 <div className="flex gap-x-1 w-[110px] justify-end  ">
                   <div className="flex">
@@ -523,3 +534,220 @@ export default function ContractRow({
     </>
   );
 }
+
+export function ContractRowItem({
+  rowKey,
+  i,
+  selectedContract,
+  sortedContracts,
+  sortOrder,
+  setSortOrder,
+  setSelectedContract,
+}: {
+  rowKey: string;
+  i: number;
+  selectedContract: ContractInfo | null;
+  sortedContracts: Object;
+  sortOrder: boolean;
+  setSortOrder: (order: boolean) => void;
+  setSelectedContract: (contract: ContractInfo | null) => void;
+}) {
+  const [copyContract, setCopyContract] = useState(false);
+  const [isFormSubmitting, setIsFormSubmitting] = useState(false);
+  const [labelFormMainCategoryKey, setLabelFormMainCategoryKey] = useState<
+    string | null
+  >("nft");
+  const [isContractLabelModalOpen, setIsContractLabelModalOpen] =
+    useState(false);
+
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const { theme } = useTheme();
+
+  const {
+    data,
+    master,
+    selectedMode,
+    selectedCategory,
+    selectedTimespan,
+    selectedValue,
+    setSelectedCategory,
+    formatSubcategories,
+  } = useContractContext() as ContractRowInterface;
+
+  const largestContractValue = useMemo(() => {
+    let retValue = 0;
+    for (const contract of Object.values(sortedContracts)) {
+      const value = selectedMode.includes("gas_fees_")
+        ? showUsd
+          ? contract.gas_fees_absolute_usd
+          : contract.gas_fees_absolute_eth
+        : contract.txcount_absolute;
+
+      retValue = Math.max(retValue, value);
+    }
+
+    return retValue;
+  }, [selectedMode, sortedContracts, showUsd]);
+
+  function getWidth(x) {
+    let retValue = "0%";
+
+    if (selectedMode.includes("gas_fees")) {
+      if (showUsd) {
+        retValue =
+          String(
+            (
+              (x.gas_fees_absolute_usd.toFixed(2) / largestContractValue) *
+              100
+            ).toFixed(1),
+          ) + "%";
+      } else {
+        retValue =
+          String(
+            (
+              (x.gas_fees_absolute_eth.toFixed(2) / largestContractValue) *
+              100
+            ).toFixed(1),
+          ) + "%";
+      }
+    } else {
+      retValue =
+        String(((x.txcount_absolute / largestContractValue) * 100).toFixed(1)) +
+        "%";
+    }
+
+    return retValue;
+  }
+
+  return (
+    <TableRow key={rowKey}>
+      {/* Operator Address */}
+      <TableCell className="flex items-center">
+        <span className="flex gap-8">
+          <Icon
+            icon={`gtp:${sortedContracts[rowKey].chain.replace(
+              "_",
+              "-",
+            )}-logo-monochrome`}
+            className="w-[29px] h-[29px]"
+            style={{
+              color:
+                AllChainsByKeys[sortedContracts[rowKey].chain].colors[
+                  theme ?? "dark"
+                ][1],
+            }}
+          />
+          0x0000000000000000000000000000000000000066
+        </span>
+        <div
+          className={`rounded-full p-2 ${
+            copyContract
+              ? "bg-forest-50/60 dark:bg-forest-1000/60"
+              : "bg-forest-50 dark:bg-forest-1000"
+          } text-white cursor-pointer`}
+          onClick={() => {
+            navigator.clipboard.writeText(sortedContracts[rowKey].address);
+            setCopyContract(true);
+            setTimeout(() => {
+              setCopyContract(false);
+            }, 1000);
+          }}
+        >
+          {!copyContract && <Icon icon="feather:copy" className="w-5 h-5" />}
+          {copyContract && <Icon icon="feather:check" className="w-5 h-5" />}
+        </div>
+      </TableCell>
+
+      {/* Operator Name */}
+      <TableCell>
+        {sortedContracts[rowKey].name ||
+        sortedContracts[rowKey].project_name ? (
+          <>
+            <div
+              className={`flex items-center min-w-full max-w-full text-base ${
+                sortedContracts[rowKey].project_name
+                  ? "font-bold"
+                  : "opacity-30 italic"
+              }`}
+            >
+              {sortedContracts[rowKey].project_name
+                ? sortedContracts[rowKey].project_name
+                : "Project Label Missing"}
+              <div
+                className={`rounded-full p-2 ${
+                  copyContract
+                    ? "bg-forest-50/60 dark:bg-forest-1000/60"
+                    : "bg-forest-50 dark:bg-forest-1000"
+                } text-white cursor-pointer`}
+                onClick={() => {
+                  navigator.clipboard.writeText(
+                    sortedContracts[rowKey].address,
+                  );
+                  setCopyContract(true);
+                  setTimeout(() => {
+                    setCopyContract(false);
+                  }, 1000);
+                }}
+              >
+                <Icon icon="feather:plus" className="w-5 h-5" />
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="min-w-full max-w-full text-base opacity-30 italic">
+            {sortedContracts[rowKey].address.substring(0, 6) +
+              "..." +
+              sortedContracts[rowKey].address.substring(36, 42)}
+          </div>
+        )}
+      </TableCell>
+
+      {/* Category */}
+      <TableCell className="flex items-center">
+        <CheckboxDropdownMenu />
+      </TableCell>
+
+      {/* Subcategory */}
+      <TableCell className="">
+        <CheckboxDropdownMenu />
+      </TableCell>
+
+      {/* Date Deployed */}
+      <TableCell className="">15 Mar 2024</TableCell>
+
+      <TableCell className=""></TableCell>
+    </TableRow>
+  );
+}
+
+const CheckboxDropdownMenu = () => {
+  const [showStatusBar, setShowStatusBar] = useState<Checked>(true);
+  const [showPanel, setShowPanel] = useState<Checked>(false);
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline">
+          Open
+          <Icon icon="feather:plus" className="w-5 h-5" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56 bg-[black]">
+        <DropdownMenuLabel>Category</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuCheckboxItem
+          checked={showStatusBar}
+          onCheckedChange={setShowStatusBar}
+        >
+          Status Bar
+        </DropdownMenuCheckboxItem>
+        <DropdownMenuCheckboxItem
+          checked={showPanel}
+          onCheckedChange={setShowPanel}
+        >
+          Panel
+        </DropdownMenuCheckboxItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};

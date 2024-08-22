@@ -267,6 +267,11 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
             sidebarOpen={isSidebarOpen}
           />
         ))} */}
+        {/* <SidebarMenuGroup
+          key={navigationItems[7].name + "_item"}
+          item={navigationItems[7]}
+          sidebarOpen={isSidebarOpen}
+        /> */}
         <SidebarMenuGroup
           key={navigationItems[6].name + "_item"}
           item={navigationItems[6]}

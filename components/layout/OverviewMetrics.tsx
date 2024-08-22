@@ -1,25 +1,10 @@
-"use client";
-import Image from "next/image";
-import {
-  useMemo,
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useContext,
-  CSSProperties,
-} from "react";
-import { Icon } from "@iconify/react";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { useTheme } from "next-themes";
 import { Chains } from "@/types/api/ChainOverviewResponse";
 import { AllChainsByKeys } from "@/lib/chains";
-import { color } from "highcharts";
-import { useHover, useMediaQuery } from "usehooks-ts";
-import { Chart } from "../charts/chart";
+import { useMediaQuery } from "usehooks-ts";
 import Container from "./Container";
-import Colors from "tailwindcss/colors";
 
-import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 
@@ -282,9 +267,6 @@ export default function OverviewMetrics({
     }
   }, [selectedMode, showUsd]);
 
-  // console.log(hoveredChartSeriesId);
-  // console.log(hoveredCategories);
-
   return (
     <>
       {invalidTimespan !== selectedTimespan && (
@@ -528,7 +510,7 @@ export default function OverviewMetrics({
           {/*Contracts Header */}
           <Container>
             <div className="w-[97%] mx-auto mt-[30px] flex flex-col">
-              <h1 className="text-lg font-bold">Most Active Contracts</h1>
+              <h1 className="text-lg font-bold">Awebo Most Active Contracts</h1>
               <p className="text-sm mt-[15px]">
                 See the most active contracts within the selected timeframe (
                 {timespans[selectedTimespan].label}) and for your selected
@@ -561,13 +543,6 @@ export default function OverviewMetrics({
               <ContractContainer />
             </ContractProvider>
           </HorizontalScrollContainer>
-          {/* <ContractLabelModal
-        isOpen={isContractLabelModalOpen}
-        onClose={() => {
-          setIsContractLabelModalOpen(false);
-        }}
-        contract={selectedContract}
-      /> */}
         </div>
       )}
     </>

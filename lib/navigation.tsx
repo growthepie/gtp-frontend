@@ -626,12 +626,12 @@ export const navigationItems: NavigationItem[] = [
     href: "https://docs.growthepie.xyz/",
   },
   {
-    name: "Trackers",
-    label: "Trackers",
+    name: "Tracker",
+    label: "Tracker",
     icon: "gtp:tracker",
     options: [
       {
-        label: "fees.growthepie.xyz",
+        label: "Fees",
         icon: "gtp:gtp-pie",
         category: "gtpmetrics",
         key: "feesxyz",
@@ -639,32 +639,44 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "feesxyz",
         excludeFromSitemap: true,
       },
-      {
-        label: "OP RetroPGF 3",
-        icon: "gtp:optimism-logo-monochrome",
-        category: "public-goods-funding",
-        key: "rpgf3",
-        rootKey: "rpgf3",
-        urlKey: "optimism-retropgf-3",
-      },
-      {
-        label: "Octant",
-        icon: "",
-        category: "public-goods-funding",
-        key: "octant",
-        rootKey: "octant",
-        urlKey: "octant",
-      },
-      {
-        label: "Glo Dollar",
-        icon: "",
-        category: "public-goods-funding",
-        key: "glodollar",
-        rootKey: "glodollar",
-        urlKey: "glodollar",
-        showNew: true,
-      },
     ],
+    href: "/fees",
+    // options: [
+    //   {
+    //     label: "fees.growthepie.xyz",
+    //     icon: "gtp:gtp-pie",
+    //     category: "gtpmetrics",
+    //     key: "feesxyz",
+    //     rootKey: "feesxyz",
+    //     urlKey: "feesxyz",
+    //     excludeFromSitemap: true,
+    //   },
+    //   {
+    //     label: "OP RetroPGF 3",
+    //     icon: "gtp:optimism-logo-monochrome",
+    //     category: "public-goods-funding",
+    //     key: "rpgf3",
+    //     rootKey: "rpgf3",
+    //     urlKey: "optimism-retropgf-3",
+    //   },
+    //   {
+    //     label: "Octant",
+    //     icon: "",
+    //     category: "public-goods-funding",
+    //     key: "octant",
+    //     rootKey: "octant",
+    //     urlKey: "octant",
+    //   },
+    //   {
+    //     label: "Glo Dollar",
+    //     icon: "",
+    //     category: "public-goods-funding",
+    //     key: "glodollar",
+    //     rootKey: "glodollar",
+    //     urlKey: "glodollar",
+    //     showNew: true,
+    //   },
+    // ],
   },
 
   // // put navigation items that we want to hide in production here
@@ -687,7 +699,7 @@ export const contributorsItem: NavigationItem = {
   label: "Donate",
   icon: "gtp:compass",
   options: [],
-  href: "/",
+  href: "/fees",
 };
 
 export const getFundamentalsByKey = (() => {

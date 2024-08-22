@@ -23,7 +23,7 @@ export default function SidebarContainer() {
               >
                 <div className="h-[45.07px] w-[192.87px] absolute left-3">
                   <Image
-                    src="/logo_full.png"
+                    src="/logo-restake.svg"
                     alt="Forest"
                     className="mb-6 -ml-[9px] z-10 crisp-edges hidden dark:block"
                     fill={true}
@@ -43,8 +43,9 @@ export default function SidebarContainer() {
               <div>
                 <Icon
                   icon="feather:log-out"
-                  className={`w-[13px] h-[13px]  cursor-pointer mt-4 transition-transform ${isSidebarOpen ? "rotate-180" : ""
-                    }`}
+                  className={`w-[13px] h-[13px]  cursor-pointer mt-4 transition-transform ${
+                    isSidebarOpen ? "rotate-180" : ""
+                  }`}
                   onClick={() => {
                     track("clicked Sidebar Close", {
                       location: "desktop sidebar",
@@ -62,7 +63,7 @@ export default function SidebarContainer() {
               <Link href="/" className="relative h-[24px] w-[22.29px] block">
                 <div className="h-[24px] w-[22.29px] absolute left-3">
                   <Image
-                    src="/logo_full.png"
+                    src="/logo-restake.svg"
                     alt="Forest"
                     className="mb-6 -ml-[9px] z-10 w-[102.704px] h-[24px] object-cover object-left"
                     width={102.704}

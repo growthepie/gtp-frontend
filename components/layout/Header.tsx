@@ -22,7 +22,7 @@ export default function Header() {
             <Link href="/" className="">
               <div className="h-[36px] w-[154.05px] relative ">
                 <Image
-                  src="/logo_full.png"
+                  src="/logo-restake.png"
                   alt="Forest"
                   className="hidden dark:block"
                   fill={true}
