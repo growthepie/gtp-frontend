@@ -122,7 +122,7 @@ export default function CategoryMetrics({
   const { isSidebarOpen } = useUIContext();
   const [selectedMode, setSelectedMode] = useState("gas_fees_");
   const [selectedCategory, setSelectedCategory] = useState(
-    queryCategory ?? "cefi",
+    queryCategory ?? "defi",
   );
   const [contractHover, setContractHover] = useState({});
 
