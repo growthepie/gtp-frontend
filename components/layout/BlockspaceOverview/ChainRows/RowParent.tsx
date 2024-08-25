@@ -139,7 +139,7 @@ export default function RowParent({ chainKey, index }) {
                 />
               </div>
               <div className="flex flex-col ">
-                <div className="text-[14px] font-bold -mb-[2px] ">Value</div>
+                <div className="text-[14px] font-bold -mb-[2px] ">{"N/A"}</div>
                 <Link
                   href={`/chains/${AllChainsByKeys[chainKey].urlKey}/`}
                   className="hover:underline text-[10px]"
