@@ -811,7 +811,10 @@ export default function CategoryMetrics({
         return filteredContracts[a]?.chain.localeCompare(
           filteredContracts[b]?.chain,
         );
-      } else if (contractCategory === "value" || contractCategory === "share") {
+      } else if (
+        contractCategory === "gas_fees" ||
+        contractCategory === "txcount"
+      ) {
         return sortFunction(a, b); // Using the previously defined sortFunction
       }
     });
@@ -1351,7 +1354,7 @@ export default function CategoryMetrics({
                 </GridTableHeaderCell>
                 <GridTableHeaderCell
                   justify="end"
-                  metric="gas_fees"
+                  metric={selectedMode === "gas_fees_" ? "gas_fees" : "txcount"}
                   sort={{
                     sortOrder: sortOrder ? "asc" : "desc",
                     metric: contractCategory,
@@ -1361,7 +1364,9 @@ export default function CategoryMetrics({
                     setContractCategory(sort.metric);
                   }}
                 >
-                  Gas Fees
+                  {selectedMode === "gas_fees_"
+                    ? "Gas Fees"
+                    : "Transaction Count"}
                 </GridTableHeaderCell>
 
                 {/* <button

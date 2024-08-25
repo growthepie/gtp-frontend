@@ -7,11 +7,13 @@ import { RowParentInterface } from "./ContextInterface";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../../Tooltip";
 import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
+import { useLocalStorage } from "usehooks-ts";
 
 export default function RowParent({ chainKey, index }) {
   const { theme } = useTheme();
 
   const { AllChainsByKeys } = useMaster();
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   const {
     data,
@@ -26,6 +28,20 @@ export default function RowParent({ chainKey, index }) {
     unhoverCategory,
     hoverCategory,
   } = useRowContext() as RowParentInterface;
+
+  const displayMode = useMemo(() => {
+    let retVal = "";
+    if (selectedMode.includes("gas_fees")) {
+      if (showUsd) {
+        retVal = "gas_fees_usd_absolute";
+      } else {
+        retVal = "gas_fees_eth_absolute";
+      }
+    } else {
+      retVal = "txcount_absolute";
+    }
+    return retVal;
+  }, [selectedChain, selectedMode]);
 
   const DisabledStates: {
     [mode: string]: {
@@ -80,6 +96,16 @@ export default function RowParent({ chainKey, index }) {
         .slice(1)
     );
   };
+
+  console.log(
+    data[chainKey].totals[selectedTimespan].data[
+      data[chainKey].totals.types.indexOf(displayMode)
+    ],
+  );
+
+  console.log(displayMode);
+  console.log(data[chainKey].totals.types);
+  console.log(data[chainKey].totals.types.indexOf(displayMode));
 
   return (
     <div key={index} className="w-full h-full relative">
@@ -214,7 +240,22 @@ export default function RowParent({ chainKey, index }) {
               />
             </div>
             <div className="flex flex-col ">
-              <div className="text-[14px] font-bold -mb-[2px] ">Value</div>
+              <div className="text-[14px] font-bold -mb-[2px] ">
+                {(selectedMode.includes("gas_fees")
+                  ? showUsd
+                    ? "$"
+                    : "Ξ"
+                  : "") +
+                  Intl.NumberFormat(undefined, {
+                    notation: "compact",
+                    maximumFractionDigits: 2,
+                    minimumFractionDigits: 2,
+                  }).format(
+                    data[chainKey].totals[selectedTimespan].data[
+                      data[chainKey].totals.types.indexOf(displayMode)
+                    ],
+                  )}
+              </div>
               <Link
                 href={`/chains/${AllChainsByKeys[chainKey].urlKey}/`}
                 className="hover:underline text-[10px]"
