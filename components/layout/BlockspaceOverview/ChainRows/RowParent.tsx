@@ -112,12 +112,15 @@ export default function RowParent({ chainKey, index }) {
                   className="w-[15px] h-[15px]"
                 />
               </div>
-              <Link
-                href={`/chains/${AllChainsByKeys[chainKey].urlKey}/`}
-                className="hover:underline"
-              >
-                {AllChainsByKeys[chainKey].label}
-              </Link>
+              <div className="flex flex-col ">
+                <div className="text-[14px] font-bold -mb-[2px] ">Value</div>
+                <Link
+                  href={`/chains/${AllChainsByKeys[chainKey].urlKey}/`}
+                  className="hover:underline text-[10px]"
+                >
+                  {AllChainsByKeys[chainKey].label}
+                </Link>
+              </div>
             </div>
             {/* Additional content */}
 
@@ -142,7 +145,7 @@ export default function RowParent({ chainKey, index }) {
         </>
       ) : (
         <div
-          className={`flex flex-row flex-grow h-full pl-[2px] items-center rounded-full text-xs font-medium ${
+          className={`flex flex-row relative  flex-grow h-full pl-[149px] items-center rounded-full text-xs font-medium ${
             AllChainsByKeys[chainKey].darkTextOnBackground === true
               ? "text-white dark:text-black"
               : "text-white"
@@ -153,7 +156,7 @@ export default function RowParent({ chainKey, index }) {
           }}
         >
           <div
-            className={`flex items-center h-[31px] pl-[3px] w-[155px] gap-x-[15px] min-w-[155px] rounded-full bg-[#1F2726] text-[#CDD8D3] ${
+            className={`flex items-center h-[31px] pl-[3px] left-[2px] absolute w-[155px] gap-x-[15px] min-w-[155px] rounded-full bg-[#1F2726] text-[#CDD8D3] ${
               forceSelectedChain
                 ? isCategoryHovered("all_chain")
                   ? isCategoryHovered("all_chain") && allCats
@@ -210,12 +213,15 @@ export default function RowParent({ chainKey, index }) {
                 className="w-[15px] h-[15px]"
               />
             </div>
-            <Link
-              href={`/chains/${AllChainsByKeys[chainKey].urlKey}/`}
-              className="hover:underline"
-            >
-              {AllChainsByKeys[chainKey].label}
-            </Link>
+            <div className="flex flex-col ">
+              <div className="text-[14px] font-bold -mb-[2px] ">Value</div>
+              <Link
+                href={`/chains/${AllChainsByKeys[chainKey].urlKey}/`}
+                className="hover:underline text-[10px]"
+              >
+                {AllChainsByKeys[chainKey].label}
+              </Link>
+            </div>
           </div>
           <div className="flex w-full items-center max-h-[35px] pr-[2px]  py-[2px] relative">
             {/*Children */}

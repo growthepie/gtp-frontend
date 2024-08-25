@@ -128,12 +128,12 @@ export default function RowChildren({
       const categoryData =
         data[chainKey].overview[selectedTimespan][categoryKey]["data"];
 
-      const isLastCategory = categoryKey === "unlabeled";
-      const isFirstCategory = categoryKey === "nft_fi";
-
       const allCategoryKeys = Object.keys(
         master.blockspace_categories.main_categories,
       );
+
+      const isLastCategory = categoryKey === "unlabeled";
+      const isFirstCategory = categoryKey === allCategoryKeys[0];
 
       const isNextCategoryHovered = isCategoryHovered(
         allCategoryKeys[allCategoryKeys.indexOf(categoryKey) + 1],
@@ -217,6 +217,17 @@ export default function RowChildren({
         borderRadius: "0px",
       };
 
+      const allCategoryKeys = Object.keys(
+        master.blockspace_categories.main_categories,
+      );
+      const dataTypes = data[chainKey].overview.types;
+
+      const isLastCategory = categoryKey === "unlabeled";
+      const isFirstCategory = categoryKey === allCategoryKeys[0];
+
+      const categoryData =
+        data[chainKey].overview[selectedTimespan][categoryKey]["data"];
+
       if (
         !data[chainKey].overview[selectedTimespan][categoryKey]["data"] &&
         !(selectedCategory === categoryKey || isCategoryHovered(categoryKey))
@@ -234,6 +245,16 @@ export default function RowChildren({
               ? "scaleX(1.15) scaleY(1.20)"
               : "scaleX(1.05) scaleY(1.05)";
           style.transformOrigin = "center center";
+
+          if (isFirstCategory) {
+            style.transformOrigin = "left center";
+            style.right = "10px";
+          }
+
+          if (isLastCategory) {
+            style.transformOrigin = "right center";
+            style.left = "3px";
+          }
 
           style.borderRadius = "999px";
           style.boxShadow = "9999px 9999px 9999px 9999px #1F2726 inset";
