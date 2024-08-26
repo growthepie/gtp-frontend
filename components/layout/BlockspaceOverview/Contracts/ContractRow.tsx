@@ -399,7 +399,7 @@ export default function ContractRow({
                         ][5]
                       }
                       target="_blank"
-                      className="group flex items-center gap-x-[5px] text-xs"
+                      className="group flex items-center  gap-x-[5px] text-xs"
                     >
                       <Icon
                         icon="feather:monitor"
@@ -463,7 +463,7 @@ export default function ContractRow({
           <div className="flex items-center gap-x-[5px]">
             <div className="h-[15px] w-[15px]">
               <div
-                className="group flex items-center gap-x-[5px] text-xs"
+                className="group flex items-center cursor-pointer gap-x-[5px] text-xs"
                 onClick={() => {
                   navigator.clipboard.writeText(
                     sortedContracts[rowKey].address,

@@ -24,7 +24,7 @@ export default function ContractContainer() {
     null,
   );
   const [showMore, setShowMore] = useState(false);
-  const [contractCategory, setContractCategory] = useState("value");
+  const [contractCategory, setContractCategory] = useState("gas_fees");
 
   const {
     data,

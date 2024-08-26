@@ -142,6 +142,7 @@ export default function CategoryMetrics({
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [showMore, setShowMore] = useState(false);
   const [copyContract, setCopyContract] = useState(false);
+  const [copyID, setCopyID] = useState<string | null>("");
   const isMobile = useMediaQuery("(max-width: 1023px)");
   const [chainEcosystemFilter, setChainEcosystemFilter] = useSessionStorage(
     "chainEcosystemFilter",
@@ -1829,20 +1830,22 @@ export default function CategoryMetrics({
                           <div className="flex items-center gap-x-[5px]">
                             <div className="h-[15px] w-[15px]">
                               <div
-                                className="group flex items-center gap-x-[5px] text-xs"
+                                className="group flex cursor-pointer items-center gap-x-[5px] text-xs"
                                 onClick={() => {
                                   navigator.clipboard.writeText(
                                     sortedContracts[key].address,
                                   );
                                   setCopyContract(true);
+                                  setCopyID(key);
                                   setTimeout(() => {
                                     setCopyContract(false);
+                                    setCopyID(null);
                                   }, 1000);
                                 }}
                               >
                                 <Icon
                                   icon={
-                                    copyContract
+                                    copyContract && key === copyID
                                       ? "feather:check"
                                       : "feather:copy"
                                   }
