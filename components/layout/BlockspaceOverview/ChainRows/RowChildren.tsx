@@ -247,12 +247,30 @@ export default function RowChildren({
           style.transformOrigin = "center center";
 
           if (isFirstCategory) {
-            style.transformOrigin = "left center";
-            style.right = "10px";
+            if (categoryData) {
+              style.transformOrigin = "left center";
+              style.right = "10px";
+            } else {
+              style.left = "-5px";
+            }
           }
 
           if (isLastCategory) {
-            style.transformOrigin = "right center";
+            if (categoryData) {
+              style.transformOrigin = "right center";
+              style.left = "3px";
+            } else {
+              style.right = "1px";
+            }
+          }
+
+          if (
+            categoryKey === allCategoryKeys[1] &&
+            !categoryData &&
+            !data[chainKey].overview[selectedTimespan][allCategoryKeys[0]][
+              "data"
+            ]
+          ) {
             style.left = "3px";
           }
 

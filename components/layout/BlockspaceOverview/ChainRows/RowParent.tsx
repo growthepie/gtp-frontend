@@ -97,16 +97,6 @@ export default function RowParent({ chainKey, index }) {
     );
   };
 
-  console.log(
-    data[chainKey].totals[selectedTimespan].data[
-      data[chainKey].totals.types.indexOf(displayMode)
-    ],
-  );
-
-  console.log(displayMode);
-  console.log(data[chainKey].totals.types);
-  console.log(data[chainKey].totals.types.indexOf(displayMode));
-
   return (
     <div key={index} className="w-full h-full relative">
       {DisabledStates[selectedMode] &&

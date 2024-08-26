@@ -7,9 +7,18 @@ import { ContractRowInterface } from "./ContextInterface";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../Tooltip";
 import ContractLabelModal from "../../ContractLabelModal";
 import { ContractInfo } from "./ContextInterface";
-
+import { LabelsProjectsResponse } from "@/types/Labels/ProjectsResponse";
+import useSWR from "swr";
 import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
+import { LabelsURLS, LandingURL, MasterURL } from "@/lib/urls";
+
+import {
+  GridTableChainIcon,
+  GridTableHeader,
+  GridTableHeaderCell,
+  GridTableRow,
+} from "@/components/layout/GridTable";
 
 export default function ContractRow({
   rowKey,
@@ -98,12 +107,33 @@ export default function ContractRow({
     return retValue;
   }
 
+  const { data: projectsData } = useSWR<LabelsProjectsResponse>(
+    LabelsURLS.projects,
+  );
+
+  const ownerProjectDisplayNameToProjectData = useMemo(() => {
+    if (!projectsData) return {};
+
+    let displayNameIndex = projectsData.data.types.indexOf("display_name");
+
+    if (displayNameIndex === -1) return {};
+
+    let d = {};
+
+    projectsData.data.data.forEach((project) => {
+      if (project[displayNameIndex] !== null)
+        d[project[displayNameIndex]] = project;
+    });
+
+    return d;
+  }, [projectsData]);
+
   return (
     <>
       {selectedContract &&
         selectedContract.address === sortedContracts[rowKey].address && (
           <div key={rowKey + "" + sortOrder}>
-            <div className="flex rounded-[27px] bg-forest-50 dark:bg-[#1F2726] border-forest-200 dark:border-forest-500 border mt-[7.5px] group relative z-[100]">
+            <div className="flex rounded-[27px]  mt-[7.5px] group relative z-[100]">
               <div className="absolute top-0 left-0 right-0 bottom-[-1px] pointer-events-none">
                 <div className="w-full h-full rounded-[27px] overflow-clip">
                   <div className="relative w-full h-full">
@@ -112,7 +142,7 @@ export default function ContractRow({
                       style={{
                         background:
                           AllChainsByKeys[sortedContracts[rowKey].chain].colors[
-                          theme ?? "dark"
+                            theme ?? "dark"
                           ][1],
                         width: getWidth(sortedContracts[rowKey]),
                       }}
@@ -169,7 +199,7 @@ export default function ContractRow({
                       style={{
                         color:
                           AllChainsByKeys[selectedContract.chain].colors[
-                          theme ?? "dark"
+                            theme ?? "dark"
                           ][1],
                       }}
                     />
@@ -254,7 +284,7 @@ export default function ContractRow({
                               >
                                 {
                                   master.blockspace_categories.main_categories[
-                                  key
+                                    key
                                   ]
                                 }
                               </option>
@@ -328,194 +358,171 @@ export default function ContractRow({
           </div>
         )}
 
-      <div key={rowKey + "" + sortOrder}>
-        <div className="flex rounded-full border-forest-200 dark:border-forest-500 border h-[60px] mt-[7.5px] group hover:bg-forest-300 hover:dark:bg-forest-800 relative">
-          <div className="absolute top-0 left-0 right-0 bottom-[-1px] pointer-events-none">
-            <div className="w-full h-full rounded-full overflow-clip">
-              <div className="relative w-full h-full">
-                <div
-                  className={`absolute left-[1px] right-[1px] bottom-[0px] h-[2px] rounded-none font-semibold transition-width duration-300 z-20`}
-                  style={{
-                    background:
-                      AllChainsByKeys[sortedContracts[rowKey].chain].colors[
-                      theme ?? "dark"
-                      ][1],
-                    width: getWidth(sortedContracts[rowKey]),
-                  }}
-                ></div>
+      <GridTableRow
+        key={rowKey + "" + sortOrder}
+        gridDefinitionColumns="grid-cols-[20px,225px,280px,95px,minmax(135px,800px),115px] relative"
+        className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] mb-[3px]"
+      >
+        <GridTableChainIcon origin_key={sortedContracts[rowKey].chain} />
+        <div className="flex justify-between">
+          <div>
+            {sortedContracts[rowKey].project_name ? (
+              sortedContracts[rowKey].project_name
+            ) : (
+              <div className="flex h-full items-center gap-x-[3px] text-[#5A6462] text-[10px]">
+                Not Available
               </div>
-            </div>
+            )}
           </div>
-          <div className="flex w-[100%] items-center ml-4 mr-8">
-            <div className="flex items-center h-10 !w-[34%] relative">
-              <div className="absolute right-0 top-0 bottom-0 w-0 group-hover:w-4 bg-gradient-to-r from-transparent to-forest-300 dark:to-forest-800 z-10"></div>
-              <div className="flex-none mr-[36px]">
-                <Icon
-                  icon={`gtp:${sortedContracts[rowKey].chain.replace(
-                    "_",
-                    "-",
-                  )}-logo-monochrome`}
-                  className="w-[29px] h-[29px]"
-                  style={{
-                    color:
-                      AllChainsByKeys[sortedContracts[rowKey].chain].colors[
-                      theme ?? "dark"
-                      ][1],
-                  }}
-                />
-              </div>
-              <div className="flex flex-grow">
-                <div
-                  className={`flex flex-none items-center space-x-2 w-0 ${copyContract ? " delay-1000" : ""
-                    } overflow-clip transition-all duration-200 ease-in-out ${sortedContracts[rowKey].name &&
-                      sortedContracts[rowKey].project_name
-                      ? "group-hover:w-[48px]"
-                      : "group-hover:w-[96px]"
-                    }`}
-                >
-                  {!(
-                    sortedContracts[rowKey].name &&
+          {ownerProjectDisplayNameToProjectData[
+            sortedContracts[rowKey].project_name
+          ] && (
+            <div className="flex gap-x-[5px] ">
+              {/* <div className="flex 3xl:hidden">
+                                <Icon
+                                  icon={copiedAddress === sortedContracts[key].project_name.address ? "feather:check-circle" : "feather:copy"}
+                                  className="w-[14px] h-[14px] cursor-pointer"
+                                  onClick={() => {
+                                    handleCopyAddress(filteredLabelsData[item.index].address);
+                                  }}
+                                />
+                              </div> */}
+              <div className="flex items-center gap-x-[5px]">
+                <div className="h-[15px] w-[15px]">
+                  {ownerProjectDisplayNameToProjectData[
                     sortedContracts[rowKey].project_name
-                  ) && (
-                      <div
-                        className="rounded-full p-2 bg-forest-50 dark:bg-forest-1000 text-black dark:text-white cursor-pointer"
-                        onClick={() => {
-                          setSelectedContract(sortedContracts[rowKey]);
-                          setIsContractLabelModalOpen(true);
-                        }}
-                      >
-                        <Icon icon="gtp:add-tag" className="w-6 h-6" />
-                      </div>
-                    )}
-                  <div
-                    className={`rounded-full p-2 ${copyContract
-                        ? "bg-forest-50/60 dark:bg-forest-1000/60"
-                        : "bg-forest-50 dark:bg-forest-1000"
-                      } text-white cursor-pointer`}
-                    onClick={() => {
-                      navigator.clipboard.writeText(
-                        sortedContracts[rowKey].address,
-                      );
-                      setCopyContract(true);
-                      setTimeout(() => {
-                        setCopyContract(false);
-                      }, 1000);
-                    }}
-                  >
-                    {!copyContract && (
-                      <Icon icon="feather:copy" className="w-5 h-5" />
-                    )}
-                    {copyContract && (
-                      <Icon icon="feather:check" className="w-5 h-5" />
-                    )}
-                  </div>
+                  ][5] && (
+                    <a
+                      href={
+                        ownerProjectDisplayNameToProjectData[
+                          sortedContracts[rowKey].project_name
+                        ][5]
+                      }
+                      target="_blank"
+                      className="group flex items-center gap-x-[5px] text-xs"
+                    >
+                      <Icon
+                        icon="feather:monitor"
+                        className="w-[15px] h-[15px]"
+                      />
+                    </a>
+                  )}
                 </div>
-                <div
-                  className={`flex flex-col flex-grow h-full justify-start text-ellipsis overflow-hidden whitespace-nowrap `}
-                >
-                  {sortedContracts[rowKey].name ||
-                    sortedContracts[rowKey].project_name ? (
-                    <>
-                      <div
-                        className={`min-w-full max-w-full text-base ${sortedContracts[rowKey].project_name
-                            ? "font-bold"
-                            : "opacity-30 italic"
-                          }`}
-                      >
-                        {sortedContracts[rowKey].project_name
-                          ? sortedContracts[rowKey].project_name
-                          : "Project Label Missing"}
-                      </div>
-
-                      <div
-                        className={`min-w-full max-w-full text-sm ${sortedContracts[rowKey].name
-                            ? ""
-                            : "opacity-30 italic"
-                          }`}
-                      >
-                        {sortedContracts[rowKey].name
-                          ? sortedContracts[rowKey].name
-                          : "Contract Label Missing"}
-                      </div>
-                    </>
-                  ) : (
-                    <div className="min-w-full max-w-full text-base opacity-30 italic">
-                      {sortedContracts[rowKey].address.substring(0, 6) +
-                        "..." +
-                        sortedContracts[rowKey].address.substring(36, 42)}
-                    </div>
+                <div className="h-[15px] w-[15px]">
+                  {ownerProjectDisplayNameToProjectData[
+                    sortedContracts[rowKey].project_name
+                  ][4] && (
+                    <a
+                      href={
+                        ownerProjectDisplayNameToProjectData[
+                          sortedContracts[rowKey].project_name
+                        ][4]
+                      }
+                      target="_blank"
+                      className="group flex items-center gap-x-[5px] text-xs"
+                    >
+                      <Icon
+                        icon="ri:twitter-x-fill"
+                        className="w-[15px] h-[15px]"
+                      />
+                    </a>
+                  )}
+                </div>
+                <div className="h-[15px] w-[15px]">
+                  {ownerProjectDisplayNameToProjectData[
+                    sortedContracts[rowKey].project_name
+                  ][3] && (
+                    <a
+                      href={
+                        ownerProjectDisplayNameToProjectData[
+                          sortedContracts[rowKey].project_name
+                        ][3]
+                      }
+                      target="_blank"
+                      className="group flex items-center gap-x-[5px] text-xs"
+                    >
+                      <Icon
+                        icon="ri:github-fill"
+                        className="w-[15px] h-[15px]"
+                      />
+                    </a>
                   )}
                 </div>
               </div>
             </div>
-            <div className="flex items-center text-[14px] !w-[43%] justify-start h-full z-10">
-              <div className="flex w-[40%]">
-                {master &&
-                  master.blockspace_categories.main_categories[
-                  sortedContracts[rowKey].main_category_key
-                  ]}
-              </div>
-              <div className="flex">
-                {master &&
-                  master.blockspace_categories.sub_categories[
-                  sortedContracts[rowKey].sub_category_key
-                  ]
-                  ? master.blockspace_categories.sub_categories[
-                  sortedContracts[rowKey].sub_category_key
-                  ]
-                  : "Unlabeled"}
+          )}
+        </div>
+        <div className="flex justify-between gap-x-[10px]">
+          {sortedContracts[rowKey].name ? (
+            <div className="truncate">{sortedContracts[rowKey].name}</div>
+          ) : (
+            <div className="truncate font-mono">
+              {sortedContracts[rowKey].address}
+            </div>
+          )}
+          <div className="flex items-center gap-x-[5px]">
+            <div className="h-[15px] w-[15px]">
+              <div
+                className="group flex items-center gap-x-[5px] text-xs"
+                onClick={() => {
+                  navigator.clipboard.writeText(
+                    sortedContracts[rowKey].address,
+                  );
+                  setCopyContract(true);
+                  setTimeout(() => {
+                    setCopyContract(false);
+                  }, 1000);
+                }}
+              >
+                <Icon
+                  icon={copyContract ? "feather:check" : "feather:copy"}
+                  className="w-[15px] h-[15px]"
+                />
               </div>
             </div>
-            <div className="flex items-center !w-[23%]  mr-4">
-              <div className="flex flex-col w-[38%] items-end ">
-                <div className="flex gap-x-1 w-[110px] justify-end  ">
-                  <div className="flex">
-                    {selectedMode.includes("gas_fees_")
-                      ? showUsd
-                        ? `$`
-                        : `Ξ`
-                      : ""}
-                  </div>
-                  {selectedMode.includes("gas_fees_")
-                    ? showUsd
-                      ? Number(
-                        sortedContracts[rowKey].gas_fees_absolute_usd.toFixed(
-                          0,
-                        ),
-                      ).toLocaleString("en-GB")
-                      : Number(
-                        sortedContracts[rowKey].gas_fees_absolute_eth.toFixed(
-                          2,
-                        ),
-                      ).toLocaleString("en-GB")
-                    : Number(
-                      sortedContracts[rowKey].txcount_absolute.toFixed(0),
-                    ).toLocaleString("en-GB")}
-                </div>
-              </div>
-
-              <div className="flex items-center w-[57%] justify-end ">
-                {master && (
-                  <Link
-                    href={
-                      master.chains[sortedContracts[rowKey].chain]
-                        .block_explorer +
-                      "address/" +
-                      sortedContracts[rowKey].address
-                    }
-                    target="_blank"
-                  >
-                    <Icon
-                      icon="material-symbols:link"
-                      className="w-[30px] h-[30px]"
-                    />
-                  </Link>
-                )}
-              </div>
-            </div>
+            <Link
+              href={`${
+                master.chains[sortedContracts[rowKey].chain].block_explorer
+              }address/${sortedContracts[rowKey].address}`}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <Icon
+                icon="gtp:gtp-block-explorer-alt"
+                className="w-[15px] h-[15px]"
+              />
+            </Link>
           </div>
         </div>
-      </div>
+
+        <div>
+          {
+            master.blockspace_categories.main_categories[
+              sortedContracts[rowKey].main_category_key
+            ]
+          }
+        </div>
+        <div>
+          {
+            master.blockspace_categories.sub_categories[
+              sortedContracts[rowKey].sub_category_key
+            ]
+          }
+        </div>
+        <div className="flex items-center justify-end">
+          {selectedMode.includes("gas_fees_")
+            ? showUsd
+              ? `$${Number(
+                  sortedContracts[rowKey].gas_fees_absolute_usd.toFixed(0),
+                ).toLocaleString("en-GB")}`
+              : `${Number(
+                  sortedContracts[rowKey].gas_fees_absolute_eth.toFixed(0),
+                ).toLocaleString("en-GB")} Ξ`
+            : Number(sortedContracts[rowKey].txcount_absolute).toLocaleString(
+                "en-GB",
+              )}
+        </div>
+      </GridTableRow>
     </>
   );
 }
