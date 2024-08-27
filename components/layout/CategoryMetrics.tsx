@@ -933,17 +933,25 @@ export default function CategoryMetrics({
   };
 
   let height = 0;
-  const rowHeight = 52;
+
   const transitions = useTransition(
     sortedChainValues
       ?.filter(([item]) => !(item === "imx" && selectedMode === "gas_fees_"))
-      .map(([item, value], index) => ({
-        item,
-        value,
-        index,
-        y: (height += rowHeight) - rowHeight,
-        height: rowHeight,
-      })) || [],
+      .map(([item, value], index) => {
+        const isPrevSelected =
+          index > 0 ? selectedChains[sortedChainValues[index - 1][0]] : true;
+        const isCurrentSelected = selectedChains[item];
+        const addHeight = isPrevSelected && !isCurrentSelected;
+
+        const rowHeight = 39 + (addHeight ? 18 : 0);
+        return {
+          item,
+          value,
+          index,
+          y: (height += rowHeight) - rowHeight,
+          height: rowHeight,
+        };
+      }) || [],
     {
       key: (item: any) => item.item, // Use item as the key
       from: { opacity: 0, height: 0 },
@@ -951,12 +959,12 @@ export default function CategoryMetrics({
       enter: ({ y, height, item }) => ({
         y: y,
         height: height,
-        opacity: selectedChains[item] ? 1.0 : 0.3,
+        opacity: 1.0,
       }),
       update: ({ y, height, item }) => ({
         y: y,
         height: height,
-        opacity: selectedChains[item] ? 1.0 : 0.3,
+        opacity: 1.0,
       }),
       config: { mass: 5, tension: 500, friction: 100 },
     },
