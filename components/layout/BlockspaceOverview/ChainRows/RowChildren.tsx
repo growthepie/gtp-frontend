@@ -184,13 +184,6 @@ export default function RowChildren({
 
       style.opacity = 1;
 
-      if (
-        selectedCategory === categoryKey &&
-        (isNextCategoryHovered || isLastCategoryHovered)
-      ) {
-        style.opacity = 0.75;
-      }
-
       return style;
     },
     [
@@ -212,7 +205,7 @@ export default function RowChildren({
       categoryKey: string, // dataIndex: number,
     ) => {
       const style: CSSProperties = {
-        backgroundColor: "transparent",
+        backgroundColor: "inherit",
         // width: "0px",
         borderRadius: "0px",
       };
@@ -236,9 +229,17 @@ export default function RowChildren({
         style.borderRadius = "50px";
       }
 
-      if (selectedCategory === categoryKey || isCategoryHovered(categoryKey)) {
-        if (!selectedChain || selectedChain === chainKey) {
+      if (
+        (selectedCategory === categoryKey && !allCats) ||
+        isCategoryHovered(categoryKey)
+      ) {
+        if (selectedCategory === categoryKey) {
+          style.backgroundColor = "#151A19";
+        } else {
           style.backgroundColor = "#1F2726";
+        }
+
+        if (!selectedChain || selectedChain === chainKey) {
           style.color = "#CDD8D3";
           style.transform =
             selectedCategory === categoryKey
@@ -275,8 +276,11 @@ export default function RowChildren({
           }
 
           style.borderRadius = "999px";
-          style.boxShadow = "9999px 9999px 9999px 9999px #1F2726 inset";
-          style.border = `2px solid ${AllChainsByKeys[chainKey].colors["dark"][0]} `;
+
+          style.border = `2px solid ${
+            AllChainsByKeys[chainKey].colors["dark"][0] +
+            (isCategoryHovered(categoryKey) ? "EE" : "FF")
+          } `;
           if (!data[chainKey].overview[selectedTimespan][categoryKey]["data"]) {
             style.minWidth = "55px";
           }
@@ -286,6 +290,7 @@ export default function RowChildren({
       return style;
     },
     [
+      allCats,
       AllChainsByKeys,
       selectedCategory,
       selectedMode,
@@ -318,13 +323,14 @@ export default function RowChildren({
       <div
         className={`w-full h-full flex justify-center items-center absolute cursor-pointer z-[40] opacity-100 transition-all ${
           (selectedCategory === categoryKey &&
-            (selectedChain === chainKey || selectedChain === null)) ||
+            (selectedChain === chainKey || selectedChain === null) &&
+            !allCats) ||
           isCategoryHovered(categoryKey)
             ? `${
                 isCategoryHovered(categoryKey) &&
                 selectedCategory !== categoryKey
                   ? "text-xs"
-                  : "text-[13px] font-bold"
+                  : "text-[13px] font-semibold"
               } ${
                 AllChainsByKeys[chainKey].darkTextOnBackground === true
                   ? "text-black"
@@ -366,6 +372,12 @@ export default function RowChildren({
             if (forceSelectedChain) setAllCats(false);
             if (!forceSelectedChain) setSelectedChain(null);
           }
+        }}
+        onMouseEnter={() => {
+          hoverCategory(categoryKey);
+        }}
+        onMouseLeave={() => {
+          unhoverCategory(categoryKey);
         }}
       >
         {data[chainKey].overview[selectedTimespan][categoryKey]["data"] ? (

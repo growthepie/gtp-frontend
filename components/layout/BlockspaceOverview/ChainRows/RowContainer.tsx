@@ -28,7 +28,7 @@ export default function RowContainer() {
       >
         <div
           className={
-            "relative h-[50px] border-x-[1px] border-t-[1px] rounded-t-[15px] text-forest-50 dark:text-forest-50 border-forest-400 dark:border-forest-800 bg-forest-900 dark:bg-forest-1000 mt-6 overflow-hidden"
+            "relative h-[38px] border-x-[1px] border-t-[1px] rounded-t-[15px] text-forest-50 dark:text-forest-50 border-forest-400 dark:border-forest-800 bg-[#1F2726] mt-6 overflow-hidden"
           }
         >
           <div className="flex w-full h-full text-[12px]">
@@ -58,7 +58,7 @@ export default function RowContainer() {
                   unhoverCategory("all_chain");
                 }}
               >
-                {forceSelectedChain && "All"}
+                {"All Categories"}
               </button>
             </div>
             <div className="flex flex-1">
@@ -84,10 +84,7 @@ export default function RowContainer() {
                         backgroundColor:
                           selectedCategory === category && !allCats
                             ? "#5A6462"
-                            : `rgba(0, 0, 0, ${
-                                0.06 +
-                                (i / Object.keys(categories).length) * 0.94
-                              })`,
+                            : `#1F2726`,
                       }}
                     >
                       <button
@@ -96,11 +93,16 @@ export default function RowContainer() {
                     1px 
                   ] border-forest-50 dark:border-forest-800
                     ${
-                      selectedCategory === category
-                        ? "bg-forest-800/[0.025]"
+                      selectedCategory === category && !allCats
+                        ? "bg-[#151A19]"
                         : ""
                     } 
-                    ${isCategoryHovered(category) ? "bg-forest-800/50" : ""}`}
+                    ${
+                      isCategoryHovered(category) &&
+                      !(selectedCategory === category)
+                        ? "bg-[#5A6462]"
+                        : ""
+                    }`}
                         onClick={() => {
                           if (forceSelectedChain) {
                             // if no data, return

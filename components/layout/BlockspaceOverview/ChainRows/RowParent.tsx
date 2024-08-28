@@ -116,7 +116,7 @@ export default function RowParent({ chainKey, index }) {
               // boxSizing: "border-box",
             }}
           >
-            <div className="flex items-center h-[31px] w-[155px] gap-x-[15px] pl-[3px] min-w-[155px] z-10 rounded-full bg-[#1F2726]">
+            <div className="flex items-center h-[31px] w-[155px] gap-x-[10px] pl-[3px] min-w-[155px] z-10 rounded-full bg-[#1F2726]">
               <div
                 className="flex justify-center items-center w-[30px] h-full z-20 "
                 style={{
@@ -172,32 +172,21 @@ export default function RowParent({ chainKey, index }) {
           }}
         >
           <div
-            className={`flex items-center h-[31px] pl-[3px] left-[2px] absolute w-[155px] gap-x-[15px] min-w-[155px] rounded-full bg-[#1F2726] text-[#CDD8D3] ${
+            className={`flex items-center h-[31px] pl-[3px] left-[2px] absolute w-[155px] gap-x-[10px] min-w-[155px] rounded-full bg-[#1F2726] text-[#CDD8D3] ${
               forceSelectedChain
                 ? isCategoryHovered("all_chain")
                   ? isCategoryHovered("all_chain") && allCats
-                    ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg`
-                    : `rounded-l-full py-[24px] -my-[5px] z-[2] shadow-lg`
+                    ? `rounded-l-full shadow-lg z-[60] scale-x-[1.15] scale-y-[1.20] border-[2px]`
+                    : `rounded-l-full shadow-lg z-[60] scale-x-[1.05] scale-y-[1.05] border-[2px]`
                   : allCats
-                  ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg`
-                  : "z-1"
+                  ? `rounded-l-full shadow-lg z-[60] scale-x-[1.15] scale-y-[1.20] border-[2px]`
+                  : "z-[60]"
                 : ""
             }  ${
               forceSelectedChain
                 ? "hover:cursor-pointer"
                 : "hover:cursor-default"
             } `}
-            style={{
-              backgroundColor: forceSelectedChain
-                ? isCategoryHovered("all_chain")
-                  ? isCategoryHovered("all_chain") && allCats
-                    ? AllChainsByKeys[chainKey].colors[theme ?? "dark"][1]
-                    : AllChainsByKeys[chainKey].colors[theme ?? "dark"][1]
-                  : allCats
-                  ? AllChainsByKeys[chainKey].colors[theme ?? "dark"][1]
-                  : ""
-                : "",
-            }}
             onMouseEnter={() => {
               // setIsCategoryHovered((prev) => ({
               //   ...prev,
@@ -217,6 +206,9 @@ export default function RowParent({ chainKey, index }) {
                 setAllCats(!allCats);
               }
             }}
+            style={{
+              borderColor: AllChainsByKeys[chainKey].colors["dark"][0],
+            }}
           >
             <div
               className="flex justify-center items-center w-[30px]  h-full"
@@ -229,8 +221,8 @@ export default function RowParent({ chainKey, index }) {
                 className="w-[15px] h-[15px]"
               />
             </div>
-            <div className="flex flex-col ">
-              <div className="text-[14px] font-bold -mb-[2px] ">
+            <div className="flex flex-col  pt-[1px]">
+              <div className="text-[14px] font-semibold ">
                 {(selectedMode.includes("gas_fees")
                   ? showUsd
                     ? "$"
@@ -248,7 +240,7 @@ export default function RowParent({ chainKey, index }) {
               </div>
               <Link
                 href={`/chains/${AllChainsByKeys[chainKey].urlKey}/`}
-                className="hover:underline text-[10px]"
+                className="hover:underline text-[10px]  -mt-1"
               >
                 {AllChainsByKeys[chainKey].label}
               </Link>
