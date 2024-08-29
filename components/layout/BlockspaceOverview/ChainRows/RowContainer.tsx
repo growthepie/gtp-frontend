@@ -33,7 +33,7 @@ export default function RowContainer() {
         >
           <div className="flex w-full h-full text-[12px]">
             <div
-              className={`relative flex w-[138px] h-full justify-center items-center`}
+              className={`relative flex w-[117px] h-full justify-center items-center`}
             >
               <button
                 className={`flex flex-col flex-1 h-full justify-center items-center border-x border-transparent overflow-hidden  ${
@@ -134,7 +134,7 @@ export default function RowContainer() {
                         <div
                           className={`${
                             selectedCategory === category
-                              ? "text-sm font-semibold"
+                              ? "text-xs font-medium"
                               : "text-xs font-medium"
                           }`}
                         >

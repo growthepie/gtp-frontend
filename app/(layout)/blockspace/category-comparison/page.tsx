@@ -44,7 +44,10 @@ const CategoryComparison = () => {
         dataLoading={[usageLoading]}
         dataValidating={[usageValidating]}
       />
-      <Container className="flex flex-col w-full pt-[65px] md:pt-[30px]" isPageRoot>
+      <Container
+        className="flex flex-col w-full pt-[65px] md:pt-[30px]"
+        isPageRoot
+      >
         <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] relative">
           <div className="flex items-center gap-x-[8px]">
             <Image
@@ -64,7 +67,7 @@ const CategoryComparison = () => {
           <EcosystemDropdown />
         </div>
         <div className="flex items-center w-[99%] mx-auto  mb-[30px]">
-          <div className="text-[16px]">
+          <div className="text-[14px]">
             How are certain blockspace categories used on different chains?
           </div>
         </div>

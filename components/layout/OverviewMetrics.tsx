@@ -399,7 +399,7 @@ export default function OverviewMetrics({
           </div>
           {/*Chart Head*/}
           <Container>
-            <div className="mt-[20px] lg:mt-[50px] mb-[30px] ">
+            <div className=" ">
               <h2 className="text-[20px] font-bold">
                 {!forceSelectedChain ? (
                   (selectedChain
@@ -420,7 +420,7 @@ export default function OverviewMetrics({
           {selectedTimespan === "1d" ? (
             <></>
           ) : (
-            <Container className="mb-2">
+            <Container className="mb-1">
               <OverviewChart
                 data={data}
                 master={master}
@@ -442,7 +442,7 @@ export default function OverviewMetrics({
             </Container>
           )}
           {/*Chart Footer*/}
-          <Container className="w-[98%] ml-4">
+          <Container className="w-[100%] ml-[22px]">
             <div className={`flex flex-wrap items-center w-[100%] gap-y-2 `}>
               <h1 className="font-bold text-sm pr-2 pl-2">
                 {!allCats
@@ -475,7 +475,7 @@ export default function OverviewMetrics({
           {/*Selected Mode Absolute/Share of chain usage*/}
           <Container>
             {" "}
-            <div className="flex flex-row w-[100%] mx-auto justify-center md:items-center items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
+            <div className="flex flex-row w-[100%] mx-auto justify-center md:items-center items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-[8px] gap-x-1 text-md py-[4px]">
               {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
               {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
               {/* toggle ETH */}
@@ -528,7 +528,7 @@ export default function OverviewMetrics({
           </Container>
           {/*Contracts Header */}
           <Container>
-            <div className="w-[97%] mx-auto mt-[30px] flex flex-col">
+            <div className="w-[100%] mx-auto mt-[30px] flex flex-col">
               <h1 className="text-lg font-bold">Most Active Contracts</h1>
               <p className="text-sm mt-[15px]">
                 See the most active contracts within the selected timeframe (
@@ -538,7 +538,7 @@ export default function OverviewMetrics({
             </div>
           </Container>
           {/*Contracts Label and Rows */}
-          <HorizontalScrollContainer paddingBottom={20}>
+          <HorizontalScrollContainer>
             <ContractProvider
               value={{
                 data,

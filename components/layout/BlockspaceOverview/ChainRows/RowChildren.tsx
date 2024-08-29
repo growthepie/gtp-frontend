@@ -223,7 +223,11 @@ export default function RowChildren({
 
       if (
         !data[chainKey].overview[selectedTimespan][categoryKey]["data"] &&
-        !(selectedCategory === categoryKey || isCategoryHovered(categoryKey))
+        !(
+          selectedCategory === categoryKey ||
+          isCategoryHovered(categoryKey) ||
+          (selectedChain && selectedChain !== chainKey)
+        )
       ) {
         style.backgroundColor = "rgba(255, 255, 255, 0.8)";
         style.borderRadius = "50px";
@@ -234,12 +238,28 @@ export default function RowChildren({
         isCategoryHovered(categoryKey)
       ) {
         if (selectedCategory === categoryKey) {
-          style.backgroundColor = "#151A19";
+          if (!selectedChain || selectedChain === chainKey) {
+            style.backgroundColor = "#151A19";
+          } else {
+            if (!isCategoryHovered(categoryKey)) {
+              style.backgroundColor = "inherit";
+              if (!categoryData) {
+                style.backgroundColor = "rgba(255, 255, 255, 0.8)";
+                style.borderRadius = "50px";
+              }
+            } else {
+              style.backgroundColor = "#1F2726";
+            }
+          }
         } else {
           style.backgroundColor = "#1F2726";
         }
 
-        if (!selectedChain || selectedChain === chainKey) {
+        if (
+          !selectedChain ||
+          selectedChain === chainKey ||
+          isCategoryHovered(categoryKey)
+        ) {
           style.color = "#CDD8D3";
           style.transform =
             selectedCategory === categoryKey
@@ -350,7 +370,7 @@ export default function RowChildren({
             selectedCategory === categoryKey
               ? 30
               : isCategoryHovered(categoryKey)
-              ? 40
+              ? 60
               : 20, // Higher z-index for the child div of the selected element
         }}
         onClick={() => {
@@ -408,7 +428,11 @@ export default function RowChildren({
                           ${
                             isCategoryHovered(categoryKey) ||
                             selectedCategory === categoryKey
-                              ? "opacity-100 py-8"
+                              ? !selectedChain ||
+                                selectedChain === chainKey ||
+                                isCategoryHovered(categoryKey)
+                                ? "opacity-100 py-8"
+                                : "opacity-0"
                               : "opacity-0"
                           } transition-opacity duration-300 ease-in-out`}
           >

@@ -129,6 +129,8 @@ export default function ContractContainer() {
     return result;
   }, [data, selectedCategory, selectedTimespan, allCats]);
 
+  console.log(selectedChain);
+
   useEffect(() => {
     if (!contracts) {
       return;
@@ -145,7 +147,11 @@ export default function ContractContainer() {
             chainEcosystemFilter,
           );
 
-        return isCategoryMatched && filterChains;
+        const needsChainMatch = selectedChain
+          ? selectedChain === contract.chain
+          : true;
+
+        return isCategoryMatched && filterChains && needsChainMatch;
       })
       .reduce((filtered, [key, contract]) => {
         filtered[key] = contract;
@@ -215,7 +221,7 @@ export default function ContractContainer() {
     contractCategory,
     contracts,
     selectedCategory,
-
+    selectedChain,
     selectedMode,
     showUsd,
     chainEcosystemFilter,
@@ -233,10 +239,13 @@ export default function ContractContainer() {
           onClick={() => setSelectedContract(null)}
         ></div>
       </div>
-      <div className="flex flex-col mt-[30px] w-[99%] mx-auto min-w-[880px] ">
+      <div className="flex flex-col w-[100%] mx-auto min-w-[880px] mb-[15px]">
         <GridTableHeader
           gridDefinitionColumns="grid-cols-[20px,225px,280px,95px,minmax(135px,800px),115px]"
           className="pb-[4px] text-[12px] gap-x-[15px] z-[2]"
+          style={{
+            paddingTop: "15px",
+          }}
         >
           <div></div>
           {/* <button

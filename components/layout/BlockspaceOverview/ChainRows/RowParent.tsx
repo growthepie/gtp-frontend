@@ -116,7 +116,7 @@ export default function RowParent({ chainKey, index }) {
               // boxSizing: "border-box",
             }}
           >
-            <div className="flex items-center h-[31px] w-[155px] gap-x-[10px] pl-[3px] min-w-[155px] z-10 rounded-full bg-[#1F2726]">
+            <div className="flex items-center h-[31px] w-[140px] gap-x-[10px] min-w-[140px] z-10 rounded-full bg-[#1F2726]">
               <div
                 className="flex justify-center items-center w-[30px] h-full z-20 "
                 style={{
@@ -161,7 +161,7 @@ export default function RowParent({ chainKey, index }) {
         </>
       ) : (
         <div
-          className={`flex flex-row relative  flex-grow h-full pl-[149px] items-center rounded-full text-xs font-medium ${
+          className={`flex flex-row relative  flex-grow h-full pl-[134px] items-center rounded-full text-xs font-medium ${
             AllChainsByKeys[chainKey].darkTextOnBackground === true
               ? "text-white dark:text-black"
               : "text-white"
@@ -172,7 +172,7 @@ export default function RowParent({ chainKey, index }) {
           }}
         >
           <div
-            className={`flex items-center h-[31px] pl-[3px] left-[2px] absolute w-[155px] gap-x-[10px] min-w-[155px] rounded-full bg-[#1F2726] text-[#CDD8D3] ${
+            className={`flex items-center h-[31px] left-[2px] absolute w-[140px] gap-x-[10px] min-w-[140px] rounded-full bg-[#1F2726] text-[#CDD8D3] ${
               forceSelectedChain
                 ? isCategoryHovered("all_chain")
                   ? isCategoryHovered("all_chain") && allCats
@@ -181,7 +181,7 @@ export default function RowParent({ chainKey, index }) {
                   : allCats
                   ? `rounded-l-full shadow-lg z-[60] scale-x-[1.15] scale-y-[1.20] border-[2px]`
                   : "z-[60]"
-                : ""
+                : "z-[20]"
             }  ${
               forceSelectedChain
                 ? "hover:cursor-pointer"
