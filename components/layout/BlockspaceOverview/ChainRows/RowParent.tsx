@@ -246,7 +246,7 @@ export default function RowParent({ chainKey, index }) {
               </Link>
             </div>
           </div>
-          <div className="flex w-full items-center max-h-[35px] pr-[2px]  py-[2px] relative">
+          <div className="flex w-full max-w-full object-contain items-center max-h-[35px] pr-[2px]  py-[2px] relative">
             {/*Children */}
             {Object.keys(categories).map((categoryKey, i) => {
               const rawChainCategories = Object.keys(

@@ -129,8 +129,6 @@ export default function ContractContainer() {
     return result;
   }, [data, selectedCategory, selectedTimespan, allCats]);
 
-  console.log(selectedChain);
-
   useEffect(() => {
     if (!contracts) {
       return;

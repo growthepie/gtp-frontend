@@ -70,6 +70,16 @@ export default function RowChildren({
     return chainValues;
   }, [data, selectedTimespan, selectedMode]);
 
+  const isPrevCategoryHovered = useMemo(() => {
+    if (categoryIndex === 0) return false;
+
+    const allCategoryKeys = Object.keys(
+      master.blockspace_categories.main_categories,
+    );
+
+    return isCategoryHovered(allCategoryKeys[categoryIndex - 1]);
+  }, [master, isCategoryHovered, categoryIndex, selectedCategory]);
+
   const relativePercentageByChain = useMemo(() => {
     return Object.keys(data).reduce((acc, chainKey) => {
       return {
@@ -261,16 +271,14 @@ export default function RowChildren({
           isCategoryHovered(categoryKey)
         ) {
           style.color = "#CDD8D3";
-          style.transform =
-            selectedCategory === categoryKey
-              ? "scaleX(1.15) scaleY(1.20)"
-              : "scaleX(1.05) scaleY(1.05)";
+          style.width = "117%";
+          style.height = "38px";
           style.transformOrigin = "center center";
 
           if (isFirstCategory) {
             if (categoryData) {
               style.transformOrigin = "left center";
-              style.right = "10px";
+              style.left = "0px";
             } else {
               style.left = "-5px";
             }
@@ -279,7 +287,7 @@ export default function RowChildren({
           if (isLastCategory) {
             if (categoryData) {
               style.transformOrigin = "right center";
-              style.left = "3px";
+              style.right = "-3px";
             } else {
               style.right = "1px";
             }
@@ -325,12 +333,14 @@ export default function RowChildren({
 
   return (
     <div
-      className="flex flex-col h-[31px] relative w-full cursor-pointer justify-center items-center transition-all"
+      className="flex flex-col h-[31px] relative w-full  cursor-pointer justify-center items-center transition-all "
       style={{
         ...childBlockStyle(chainKey, categoryKey),
         zIndex:
-          selectedCategory === categoryKey || isCategoryHovered(categoryKey)
+          selectedCategory === categoryKey
             ? 20
+            : isCategoryHovered(categoryKey)
+            ? 25
             : 10, // Higher z-index for the selected div
       }}
       onMouseEnter={() => {
@@ -341,7 +351,7 @@ export default function RowChildren({
       }}
     >
       <div
-        className={`w-full h-full flex justify-center items-center absolute cursor-pointer z-[40] opacity-100 transition-all ${
+        className={`w-full h-full flex justify-center items-center absolute cursor-pointer opacity-100 transition-all ${
           (selectedCategory === categoryKey &&
             (selectedChain === chainKey || selectedChain === null) &&
             !allCats) ||
@@ -349,8 +359,8 @@ export default function RowChildren({
             ? `${
                 isCategoryHovered(categoryKey) &&
                 selectedCategory !== categoryKey
-                  ? "text-xs"
-                  : "text-[13px] font-semibold"
+                  ? "text-[14px] font-semibold"
+                  : "text-[14px] font-bold"
               } ${
                 AllChainsByKeys[chainKey].darkTextOnBackground === true
                   ? "text-black"
@@ -368,7 +378,7 @@ export default function RowChildren({
           ...subChildStyle(chainKey, categoryKey),
           zIndex:
             selectedCategory === categoryKey
-              ? 30
+              ? 40
               : isCategoryHovered(categoryKey)
               ? 60
               : 20, // Higher z-index for the child div of the selected element
