@@ -172,7 +172,7 @@ export default function RowParent({ chainKey, index }) {
           }}
         >
           <div
-            className={`flex items-center h-[31px]  absolute w-[140px] gap-x-[10px] transition-all m-w-[140px]  rounded-full  text-[#CDD8D3] ${
+            className={`flex items-center h-[31px]  absolute w-[140px] gap-x-[10px] transition-all min-w-[140px]  rounded-full  text-[#CDD8D3] ${
               forceSelectedChain
                 ? isCategoryHovered("all_chain")
                   ? isCategoryHovered("all_chain") && allCats
@@ -181,7 +181,7 @@ export default function RowParent({ chainKey, index }) {
                   : allCats
                   ? `rounded-l-full shadow-lg z-[60] w-[154px] h-[41px] border-[2px] left-[0px] bg-[#151A19]`
                   : "z-[20] left-[2px] bg-[#1F2726]"
-                : "z-[20] bg-[#1F2726]"
+                : "z-[20] left-[2px] bg-[#1F2726]"
             }  ${
               forceSelectedChain
                 ? "hover:cursor-pointer"
