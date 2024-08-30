@@ -172,16 +172,16 @@ export default function RowParent({ chainKey, index }) {
           }}
         >
           <div
-            className={`flex items-center h-[31px] left-[2px] absolute w-[140px] gap-x-[10px] min-w-[140px] rounded-full bg-[#1F2726] text-[#CDD8D3] ${
+            className={`flex items-center h-[31px]  absolute w-[140px] gap-x-[10px] transition-all m-w-[140px]  rounded-full  text-[#CDD8D3] ${
               forceSelectedChain
                 ? isCategoryHovered("all_chain")
                   ? isCategoryHovered("all_chain") && allCats
-                    ? `rounded-l-full shadow-lg z-[60] scale-x-[1.15] scale-y-[1.20] border-[2px]`
-                    : `rounded-l-full shadow-lg z-[60] scale-x-[1.05] scale-y-[1.05] border-[2px]`
+                    ? `rounded-l-full shadow-lg z-[60] w-[154px] h-[39px] border-[2px] left-[0px] bg-[#1F2726]`
+                    : `rounded-l-full shadow-lg z-[60] w-[147px] h-[41px] border-[2px] left-[0px] bg-[#1F2726]`
                   : allCats
-                  ? `rounded-l-full shadow-lg z-[60] scale-x-[1.15] scale-y-[1.20] border-[2px]`
-                  : "z-[60]"
-                : "z-[20]"
+                  ? `rounded-l-full shadow-lg z-[60] w-[154px] h-[41px] border-[2px] left-[0px] bg-[#151A19]`
+                  : "z-[20] left-[2px] bg-[#1F2726]"
+                : "z-[20] bg-[#1F2726]"
             }  ${
               forceSelectedChain
                 ? "hover:cursor-pointer"
@@ -222,7 +222,7 @@ export default function RowParent({ chainKey, index }) {
               />
             </div>
             <div className="flex flex-col  pt-[1px]">
-              <div className="text-[14px] font-semibold ">
+              <div className="text-[14px] font-bold ">
                 {(selectedMode.includes("gas_fees")
                   ? showUsd
                     ? "$"

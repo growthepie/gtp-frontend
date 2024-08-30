@@ -20,6 +20,7 @@ import ShowLoading from "@/components/layout/ShowLoading";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { useMaster } from "@/contexts/MasterContext";
+import { filter } from "lodash";
 
 const ChainOverview = () => {
   const { AllChainsByKeys } = useMaster();
@@ -84,7 +85,7 @@ const ChainOverview = () => {
             : isMaster
             ? chainEcosystemFilter === "all-chains"
               ? true
-              : master?.chains[chain].bucket.includes(chainEcosystemFilter)
+              : AllChainsByKeys[chain].ecosystem.includes(chainEcosystemFilter)
             : false;
 
         return passEcosystem && isSupported;
@@ -102,6 +103,8 @@ const ChainOverview = () => {
 
     return filteredChains;
   }, [chainEcosystemFilter, master, usageData?.data.chains]);
+
+  console.log(chainFilter);
 
   return (
     <>

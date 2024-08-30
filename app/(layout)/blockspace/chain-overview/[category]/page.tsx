@@ -94,10 +94,10 @@ const ChainOverview = ({ params }: { params: any }) => {
           chain === "all_l2s"
             ? true
             : isMaster
-              ? chainEcosystemFilter === "all-chains"
-                ? true
-                : master?.chains[chain].bucket.includes(chainEcosystemFilter)
-              : false;
+            ? chainEcosystemFilter === "all-chains"
+              ? true
+              : AllChainsByKeys[chain].ecosystem.includes(chainEcosystemFilter)
+            : false;
 
         return passEcosystem && isSupported;
       })
@@ -158,7 +158,7 @@ const ChainOverview = ({ params }: { params: any }) => {
               data={chainFilter}
               master={master}
               forceCategory={forceCategory}
-            // data={!chainEcosystemFilter || chainEcosystemFilter=== "all-chains" ? usageData.data.chains : )}
+              // data={!chainEcosystemFilter || chainEcosystemFilter=== "all-chains" ? usageData.data.chains : )}
             />
           )}
         </>
