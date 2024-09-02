@@ -168,6 +168,9 @@ export default function CategoryMetrics({
 
   const { theme } = useTheme();
 
+  const [updatePlaceholderOpacity, setUpdatePlaceholderOpacity] =
+    useState<boolean>(false);
+
   const [selectedChains, setSelectedChains] = useState<{
     [key: string]: boolean;
   }>(
@@ -354,8 +357,6 @@ export default function CategoryMetrics({
 
     return result;
   }, [chainValues, selectedChains, chainEcosystemFilter]);
-
-  console.log(sortedChainValuesWithPlaceholder);
 
   const timespans = useMemo(() => {
     return {
@@ -1004,7 +1005,7 @@ export default function CategoryMetrics({
       .map(([item, value], index) => {
         const isPlaceholder = item === "placeholder";
 
-        const rowHeight = !isPlaceholder ? 39 : 18;
+        const rowHeight = !isPlaceholder ? 39 : 20;
 
         return {
           item,
@@ -1032,48 +1033,12 @@ export default function CategoryMetrics({
     },
   );
 
-  const categoryTransitions = useTransition(
-    Object.keys(categories).map((category, i) => ({
-      category,
-      i,
-    })),
-    {
-      from: { width: "140px" }, // Initial width for closed categories
-      enter: ({ category }) => ({
-        width:
-          openSub && selectedCategory === category
-            ? Object.keys(data[category].subcategories).length > 8
-              ? "700px"
-              : Object.keys(data[category].subcategories).length > 5
-              ? "550px"
-              : "550px"
-            : "190px",
-      }),
-      update: ({ category }) => ({
-        width: !exitAnimation
-          ? openSub && selectedCategory === category
-            ? Object.keys(data[category].subcategories).length > 8
-              ? "700px"
-              : Object.keys(data[category].subcategories).length > 5
-              ? "550px"
-              : "550px"
-            : "190px"
-          : "190px",
-      }),
-      leave: { width: "190px" },
-
-      keys: ({ category }) => category,
-      config: { mass: 1, tension: 70, friction: 20 },
-    },
-  );
-
-  const categoryAnimation = useSpring({
-    height: openSub ? categorySizes[selectedCategory].height : "67px",
-    config: { mass: 1, tension: 70, friction: 20 },
-    onRest: () => {
-      setAnimationFinished(true);
-    },
-  });
+  useEffect(() => {
+    if (!sortedChainValuesWithPlaceholder || !sortedChainValues) return;
+    if (sortedChainValuesWithPlaceholder.length > sortedChainValues.length) {
+      setUpdatePlaceholderOpacity(true);
+    }
+  }, [sortedChainValues, sortedChainValuesWithPlaceholder]);
 
   return (
     <>
@@ -1204,7 +1169,13 @@ export default function CategoryMetrics({
                               master={master}
                             />
                           ) : (
-                            <div className="flex items-center ">
+                            <div
+                              className={`flex items-center transition-opacity duration-[1500ms] ${
+                                updatePlaceholderOpacity
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              }`}
+                            >
                               <div className="flex-grow border-t border-[#5A6462]"></div>
                               <span className="mx-4 text-[12px] font-semibold text-[#CDD8D3]">
                                 Not showing in chart
