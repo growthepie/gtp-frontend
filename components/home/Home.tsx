@@ -6,7 +6,6 @@ import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { AllChains, AllChainsByKeys } from "@/lib/chains";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
 import LandingChart from "@/components/layout/LandingChart";
 import LandingMetricsTable from "@/components/layout/LandingMetricsTable";
@@ -19,6 +18,7 @@ import Link from "next/link";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import Container from "@/components/layout/Container";
 import ShowLoading from "@/components/layout/ShowLoading";
+import { useMaster } from "@/contexts/MasterContext";
 
 export default function Home() {
   // const isLargeScreen = useMediaQuery("(min-width: 1280px)");
@@ -28,6 +28,8 @@ export default function Home() {
   // useEffect(() => {
   //   setIsSidebarOpen(isLargeScreen);
   // }, [isLargeScreen]);
+
+  const { AllChains, AllChainsByKeys } = useMaster();
 
   const {
     data: landing,

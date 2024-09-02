@@ -17,7 +17,7 @@ const ChainsList: { [key: string]: Chains } = {
     name: "All Chains",
     icon: "/all-chains.svg",
   },
-  "OP Chains": {
+  "op-stack": {
     name: "OP Chains",
     icon: "/Optimism-logo.svg",
   },

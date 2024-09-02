@@ -29,7 +29,7 @@ import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import d3 from "d3";
-import { AllChainsByKeys } from "@/lib/chains";
+
 import { debounce, forEach } from "lodash";
 import {
   Tooltip,
@@ -48,6 +48,7 @@ import { BlockspaceURLs, LandingURL, MasterURL } from "@/lib/urls";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import GTPIcons from "@/icons/gtp.json";
+import { useMaster } from "@/contexts/MasterContext";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -81,6 +82,7 @@ const keyToColor = {
 };
 
 export default function Treemap({ d }: { d?: any }) {
+  const { AllChainsByKeys } = useMaster();
   const {
     data: master,
     error: masterError,

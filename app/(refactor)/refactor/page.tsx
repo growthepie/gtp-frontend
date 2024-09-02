@@ -9,7 +9,6 @@ export default function Page() {
   return (
     <div>
       <h1>Page</h1>
-      <div>123: {formatMetric(123, "fees", "usd")}</div>
     </div>
   );
 }

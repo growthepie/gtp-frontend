@@ -3,7 +3,6 @@ import Link from "next/link";
 import useSWR, { preload } from "swr";
 import { useSWRConfig } from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { AllChains, AllChainsByKeys, AllChainsByUrlKey } from "@/lib/chains";
 import ChainChart from "@/components/layout/SingleChains/ChainChart";
 import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
@@ -12,7 +11,8 @@ import { ChainResponse } from "@/types/api/ChainResponse";
 import {
   BlockspaceURLs,
   ChainBlockspaceURLs,
-  ChainURLs,
+  ChainsBaseURL,
+  FeesURLs,
   MasterURL,
 } from "@/lib/urls";
 import Container from "@/components/layout/Container";
@@ -43,6 +43,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/layout/Tooltip";
+import { useMaster } from "@/contexts/MasterContext";
 
 const Chain = ({ params }: { params: any }) => {
   const { chain } = params;
@@ -50,6 +51,8 @@ const Chain = ({ params }: { params: any }) => {
   const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
 
   const { theme } = useTheme();
+
+  const { AllChains, AllChainsByKeys } = useMaster();
 
   const [chainKey, setChainKey] = useState<string>(
     AllChains.find((c) => c.urlKey === chain)?.key
@@ -111,7 +114,7 @@ const Chain = ({ params }: { params: any }) => {
     error: feeError,
     isLoading: feeLoading,
     isValidating: feeValidating,
-  } = useSWR("https://api.growthepie.xyz/v1/fees/table.json");
+  } = useSWR(FeesURLs.table);
 
   const { cache, mutate } = useSWRConfig();
 
@@ -122,7 +125,7 @@ const Chain = ({ params }: { params: any }) => {
     try {
       // Fetch the data
       const response = await fetch(
-        ChainURLs[chainKey].replace("/v1/", `/${apiRoot}/`),
+        `${ChainsBaseURL}${chainKey}.json`.replace("/v1/", `/${apiRoot}/`),
       );
       if (!response.ok) {
         throw new Error("Network response was not ok");

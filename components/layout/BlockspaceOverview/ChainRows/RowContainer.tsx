@@ -28,22 +28,24 @@ export default function RowContainer() {
       >
         <div
           className={
-            "relative h-[50px] border-x-[1px] border-t-[1px] rounded-t-[15px] text-forest-50 dark:text-forest-50 border-forest-400 dark:border-forest-800 bg-forest-900 dark:bg-forest-1000 mt-6 overflow-hidden"
+            "relative h-[38px] border-x-[1px] border-t-[1px] rounded-t-[15px] text-forest-50 dark:text-forest-50 border-forest-400 dark:border-forest-800 bg-[#1F2726] mt-6 overflow-hidden"
           }
         >
           <div className="flex w-full h-full text-[12px]">
             <div
-              className={`relative flex w-[138px] h-full justify-center items-center`}
+              className={`relative flex w-[117px] h-full justify-center items-center`}
             >
               <button
-                className={`flex flex-col flex-1 h-full justify-center items-center border-x border-transparent overflow-hidden  ${forceSelectedChain ? "cursor-pointer" : "cursor-default"
-                  }
-              ${forceSelectedChain
-                    ? allCats
-                      ? "bg-[#5A6462] "
-                      : "bg-inherit hover:bg-forest-800/50"
-                    : "bg-inherit"
-                  } `}
+                className={`flex flex-col flex-1 h-full justify-center items-center border-x border-transparent overflow-hidden  ${
+                  forceSelectedChain ? "cursor-pointer" : "cursor-default"
+                }
+              ${
+                forceSelectedChain
+                  ? allCats
+                    ? "bg-[#5A6462] "
+                    : "bg-inherit hover:bg-forest-800/50"
+                  : "bg-inherit"
+              } `}
                 onClick={() => {
                   if (forceSelectedChain) {
                     setAllCats(!allCats);
@@ -56,7 +58,7 @@ export default function RowContainer() {
                   unhoverCategory("all_chain");
                 }}
               >
-                {forceSelectedChain && "All"}
+                {"All Categories"}
               </button>
             </div>
             <div className="flex flex-1">
@@ -67,10 +69,11 @@ export default function RowContainer() {
                       key={category}
                       className={`relative flex h-full justify-center items-center 
                     ${category === "unlabeled" ? "flex-1" : "flex-1"}
-                    ${selectedCategory === category
-                          ? "borden-hidden rounded-[0px]"
-                          : "h-full"
-                        }`}
+                    ${
+                      selectedCategory === category
+                        ? "borden-hidden rounded-[0px]"
+                        : "h-full"
+                    }`}
                       onMouseEnter={() => {
                         hoverCategory(category);
                       }}
@@ -81,9 +84,7 @@ export default function RowContainer() {
                         backgroundColor:
                           selectedCategory === category && !allCats
                             ? "#5A6462"
-                            : `rgba(0, 0, 0, ${0.06 +
-                            (i / Object.keys(categories).length) * 0.94
-                            })`,
+                            : `#1F2726`,
                       }}
                     >
                       <button
@@ -91,17 +92,23 @@ export default function RowContainer() {
                         className={`flex flex-col w-full h-full justify-center items-center overflow-hidden border-l border-[
                     1px 
                   ] border-forest-50 dark:border-forest-800
-                    ${selectedCategory === category
-                            ? "bg-forest-800/[0.025]"
-                            : ""
-                          } 
-                    ${isCategoryHovered(category) ? "bg-forest-800/50" : ""}`}
+                    ${
+                      selectedCategory === category && !allCats
+                        ? "bg-[#151A19]"
+                        : ""
+                    } 
+                    ${
+                      isCategoryHovered(category) &&
+                      !(selectedCategory === category)
+                        ? "bg-[#5A6462]"
+                        : ""
+                    }`}
                         onClick={() => {
                           if (forceSelectedChain) {
                             // if no data, return
                             if (
                               !data[forceSelectedChain].overview[
-                              selectedTimespan
+                                selectedTimespan
                               ][category]["data"]
                             ) {
                               return;
@@ -125,10 +132,11 @@ export default function RowContainer() {
                         }}
                       >
                         <div
-                          className={`${selectedCategory === category
-                            ? "text-sm font-semibold"
-                            : "text-xs font-medium"
-                            }`}
+                          className={`${
+                            selectedCategory === category
+                              ? "text-xs font-medium"
+                              : "text-xs font-medium"
+                          }`}
                         >
                           {categories[category]}
                         </div>
@@ -143,7 +151,7 @@ export default function RowContainer() {
       {/* <colorful rows> */}
       {/* {selectedScale === "gasfees" ? ( */}
 
-      <div className="flex flex-col space-y-[10px] min-w-[880px] md:min-w-[910px] mb-8">
+      <div className="flex flex-col space-y-[5px] min-w-[880px] md:min-w-[910px] mb-8">
         {
           //chain name is key
           Object.keys(data)

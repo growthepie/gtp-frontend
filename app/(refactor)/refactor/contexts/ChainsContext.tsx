@@ -2,7 +2,7 @@
 import {
   BlockspaceURLs,
   ChainBlockspaceURLs,
-  ChainURLs,
+  ChainsBaseURL,
   MasterURL,
 } from "@/lib/urls";
 import {
@@ -66,7 +66,7 @@ const ChainContext = createContext<ChainContextType | null>({
   chainKey: "",
   feesTable: undefined,
   compareChain: undefined,
-  setCompareChain: () => {},
+  setCompareChain: () => { },
   getGradientColor: () => "",
   sectionHead: undefined,
   ChainIcon: <></>,
@@ -108,7 +108,7 @@ export const ChainsProvider = ({
   const { data: masterData, isLoading: masterLoading } =
     useSWR<MasterResponse>(MasterURL);
   const { data: chainData, isLoading: chainLoading } = useSWR<ChainResponse>(
-    ChainURLs[chainKey],
+    `${ChainsBaseURL}${chainKey}.json`,
   );
   const { data: feeData, isLoading: feeLoading } = useSWR<FeesTableResponse>(
     "https://api.growthepie.xyz/v1/fees/table.json",
@@ -202,20 +202,20 @@ export const ChainsProvider = ({
   const getGradientColor = useCallback((percentage, weighted = false) => {
     const colors = !weighted
       ? [
-          { percent: 0, color: "#1DF7EF" },
-          { percent: 20, color: "#76EDA0" },
-          { percent: 50, color: "#FFDF27" },
-          { percent: 70, color: "#FF9B47" },
-          { percent: 100, color: "#FE5468" },
-        ]
+        { percent: 0, color: "#1DF7EF" },
+        { percent: 20, color: "#76EDA0" },
+        { percent: 50, color: "#FFDF27" },
+        { percent: 70, color: "#FF9B47" },
+        { percent: 100, color: "#FE5468" },
+      ]
       : [
-          { percent: 0, color: "#1DF7EF" },
-          { percent: 2, color: "#76EDA0" },
-          { percent: 10, color: "#FFDF27" },
-          { percent: 40, color: "#FF9B47" },
-          { percent: 80, color: "#FE5468" },
-          { percent: 100, color: "#FE5468" }, // Repeat the final color to ensure upper bound
-        ];
+        { percent: 0, color: "#1DF7EF" },
+        { percent: 2, color: "#76EDA0" },
+        { percent: 10, color: "#FFDF27" },
+        { percent: 40, color: "#FF9B47" },
+        { percent: 80, color: "#FE5468" },
+        { percent: 100, color: "#FE5468" }, // Repeat the final color to ensure upper bound
+      ];
 
     let lowerBound = colors[0];
     let upperBound = colors[colors.length - 1];
@@ -243,23 +243,23 @@ export const ChainsProvider = ({
 
     const r = Math.floor(
       parseInt(lowerBound.color.substring(1, 3), 16) +
-        percentDiff *
-          (parseInt(upperBound.color.substring(1, 3), 16) -
-            parseInt(lowerBound.color.substring(1, 3), 16)),
+      percentDiff *
+      (parseInt(upperBound.color.substring(1, 3), 16) -
+        parseInt(lowerBound.color.substring(1, 3), 16)),
     );
 
     const g = Math.floor(
       parseInt(lowerBound.color.substring(3, 5), 16) +
-        percentDiff *
-          (parseInt(upperBound.color.substring(3, 5), 16) -
-            parseInt(lowerBound.color.substring(3, 5), 16)),
+      percentDiff *
+      (parseInt(upperBound.color.substring(3, 5), 16) -
+        parseInt(lowerBound.color.substring(3, 5), 16)),
     );
 
     const b = Math.floor(
       parseInt(lowerBound.color.substring(5, 7), 16) +
-        percentDiff *
-          (parseInt(upperBound.color.substring(5, 7), 16) -
-            parseInt(lowerBound.color.substring(5, 7), 16)),
+      percentDiff *
+      (parseInt(upperBound.color.substring(5, 7), 16) -
+        parseInt(lowerBound.color.substring(5, 7), 16)),
     );
 
     return `#${r.toString(16).padStart(2, "0")}${g

@@ -5,14 +5,14 @@ import Link from "next/link";
 import useSWR, { preload } from "swr";
 import { usePathname } from "next/navigation";
 import { Tooltip, TooltipTrigger, TooltipContent } from "./Tooltip";
-import { MasterURL, BlockspaceURLs, ChainURLs, MetricsURLs } from "@/lib/urls";
+import { MasterURL, BlockspaceURLs, ChainsBaseURL, MetricsURLs } from "@/lib/urls";
 import { NavigationItem, navigationItems } from "@/lib/navigation";
 import { IS_PREVIEW } from "@/lib/helpers";
 import { navigationCategories } from "@/lib/navigation";
 import rpgf from "@/icons/svg/rpgf.svg";
 import Image from "next/image";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { Get_SupportedChainKeys } from "@/lib/chains";
+import { Get_AllChainsNavigationItems, Get_SupportedChainKeys } from "@/lib/chains";
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
@@ -38,7 +38,7 @@ export default function SidebarMenuGroup({
 
     // const chainGroups = {};
 
-    const chainItemsByKey = navigationItems[3].options
+    const chainItemsByKey = Get_AllChainsNavigationItems(master).options
       .filter((option) => option.hide !== true)
       .filter(
         (option) =>
@@ -351,7 +351,7 @@ export default function SidebarMenuGroup({
                                   preload(BlockspaceURLs[option.key], fetcher);
                                   break;
                                 case "Chains":
-                                  preload(ChainURLs[option.key], fetcher);
+                                  preload(`${ChainsBaseURL}${option.key}.json`, fetcher);
                                   break;
                                 case "Fundamentals":
                                   preload(MetricsURLs[option.urlKey], fetcher);
@@ -570,7 +570,7 @@ export default function SidebarMenuGroup({
                             preload(BlockspaceURLs[option.key], fetcher);
                             break;
                           case "Chains":
-                            preload(ChainURLs[option.key], fetcher);
+                            preload(`${ChainsBaseURL}${option.key}.json`, fetcher);
                             break;
                           case "Fundamentals":
                             preload(MetricsURLs[option.urlKey], fetcher);

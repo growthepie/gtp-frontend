@@ -10,7 +10,6 @@ import useSWR from "swr";
 import MetricsTable from "@/components/layout/MetricsTable";
 import { MetricsURLs } from "@/lib/urls";
 import {
-  AllChains,
   Get_DefaultChainSelectionKeys,
   Get_SupportedChainKeys,
 } from "@/lib/chains";
@@ -23,6 +22,7 @@ import ShowLoading from "@/components/layout/ShowLoading";
 import Image from "next/image";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import { useMaster } from "@/contexts/MasterContext";
 
 const Fundamentals = ({ params }: { params: any }) => {
   const {
@@ -55,6 +55,7 @@ const Fundamentals = ({ params }: { params: any }) => {
 };
 
 const FundamentalsContent = ({ params }: { params: any }) => {
+  const { AllChains } = useMaster();
   const master = params.master;
   const metricData = params.metricData;
   const [errorCode, setErrorCode] = useState<number | null>(null);

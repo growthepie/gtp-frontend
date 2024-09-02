@@ -2,7 +2,6 @@
 "use client";
 import LabelsContainer from "@/components/layout/LabelsContainer";
 import Icon from "@/components/layout/Icon";
-import { AllChainsByKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
@@ -17,7 +16,7 @@ import {
   LabelsResponse,
   LabelsResponseHelper,
   ParsedDatum,
-} from "@/types/api/LabelsResponse";
+} from "@/types/Labels/LabelsResponse";
 import Header from "./Header";
 
 import Footer from "./Footer";
@@ -45,6 +44,7 @@ import { uniqBy } from "lodash";
 import { useMaster } from "@/contexts/MasterContext";
 import { useUIContext } from "@/contexts/UIContext";
 import SVGSparkline, { SVGSparklineProvider, useSVGSparkline } from "./SVGSparkline";
+import { GridTableChainIcon, GridTableHeader, GridTableRow } from "@/components/layout/GridTable";
 
 const devMiddleware = (useSWRNext) => {
   return (key, fetcher, config) => {
@@ -88,11 +88,10 @@ const metricKeysLabels = {
 };
 
 export default function LabelsPage() {
+  const { AllChainsByKeys, formatMetric } = useMaster();
   const { isMobile } = useUIContext();
   const showGwei = true;
   const showCents = true;
-
-  const { formatMetric } = useMaster();
 
   //True is default descending false ascending
   // const { theme } = useTheme();
@@ -1089,21 +1088,7 @@ export default function LabelsPage() {
                         gridTemplateColumns: gridTemplateColumns
                       }}
                     >
-                      <div className="flex h-full items-center">
-                        <Icon
-                          icon={`gtp:${AllChainsByKeys[
-                            filteredLabelsData[item.index].origin_key
-                          ].urlKey
-                            }-logo-monochrome`}
-                          className="w-[15px] h-[15px]"
-                          style={{
-                            color:
-                              AllChainsByKeys[
-                                filteredLabelsData[item.index].origin_key
-                              ].colors["dark"][0],
-                          }}
-                        />
-                      </div>
+                      <GridTableChainIcon origin_key={filteredLabelsData[item.index].origin_key} />
                       <div className="@container flex h-full items-center hover:bg-transparent">
                         <span
                           className="@container flex-1 flex h-full items-center hover:bg-transparent pr-[10px]"
@@ -1564,48 +1549,48 @@ export default function LabelsPage() {
   );
 }
 
-type GridTableProps = {
-  gridDefinitionColumns: string;
-  className?: string;
-  children: React.ReactNode;
-  style?: React.CSSProperties;
-};
+// type GridTableProps = {
+//   gridDefinitionColumns: string;
+//   className?: string;
+//   children: React.ReactNode;
+//   style?: React.CSSProperties;
+// };
 
-// grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px] lg:grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px]
-// class="select-none grid gap-x-[15px] px-[6px] pt-[30px] text-[11px] items-center font-bold"
-const GridTableHeader = ({
-  children,
-  gridDefinitionColumns,
-  className,
-  style,
-}: GridTableProps) => {
-  return (
-    <div
-      className={`select-none gap-x-[10px] pl-[10px] pr-[32px] pt-[30px] text-[11px] items-center font-semibold grid ${gridDefinitionColumns} ${className}`}
-      style={style}
-    >
-      {children}
-    </div>
-  );
-};
+// // grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px] lg:grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px]
+// // class="select-none grid gap-x-[15px] px-[6px] pt-[30px] text-[11px] items-center font-bold"
+// const GridTableHeader = ({
+//   children,
+//   gridDefinitionColumns,
+//   className,
+//   style,
+// }: GridTableProps) => {
+//   return (
+//     <div
+//       className={`select-none gap-x-[10px] pl-[10px] pr-[32px] pt-[30px] text-[11px] items-center font-semibold grid ${gridDefinitionColumns} ${className}`}
+//       style={style}
+//     >
+//       {children}
+//     </div>
+//   );
+// };
 
-// grid grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px] lg:grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px]
-// class="gap-x-[15px] rounded-full border border-forest-900/20 dark:border-forest-500/20 px-[6px] py-[5px] text-xs items-center"
-const GridTableRow = ({
-  children,
-  gridDefinitionColumns,
-  className,
-  style,
-}: GridTableProps) => {
-  return (
-    <div
-      className={`select-text gap-x-[10px] pl-[10px] pr-[32px] py-[5px] text-xs items-center rounded-full border border-forest-900/20 dark:border-forest-500/20 grid ${gridDefinitionColumns} ${className}`}
-      style={style}
-    >
-      {children}
-    </div>
-  );
-};
+// // grid grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px] lg:grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px]
+// // class="gap-x-[15px] rounded-full border border-forest-900/20 dark:border-forest-500/20 px-[6px] py-[5px] text-xs items-center"
+// const GridTableRow = ({
+//   children,
+//   gridDefinitionColumns,
+//   className,
+//   style,
+// }: GridTableProps) => {
+//   return (
+//     <div
+//       className={`select-text gap-x-[10px] pl-[10px] pr-[32px] py-[5px] text-xs items-center rounded-full border border-forest-900/20 dark:border-forest-500/20 grid ${gridDefinitionColumns} ${className}`}
+//       style={style}
+//     >
+//       {children}
+//     </div>
+//   );
+// };
 
 const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
   const { data, change, value, valueType, hoverDataPoint, setHoverDataPoint, isDBLoading } = useCanvasSparkline();

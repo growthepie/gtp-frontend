@@ -15,7 +15,7 @@ import Container from "@/components/layout/Container";
 import { CategoryComparisonResponseData } from "@/types/api/CategoryComparisonResponse";
 import { animated, useTransition } from "@react-spring/web";
 import { Chart } from "@/components/charts/chart";
-import { AllChainsByKeys, Get_SupportedChainKeys } from "@/lib/chains";
+import { Get_SupportedChainKeys } from "@/lib/chains";
 import CategoryContracts from "./CategoryContracts";
 import { MasterURL } from "@/lib/urls";
 import useSWR from "swr";
@@ -30,6 +30,7 @@ import {
 } from "@/components/layout/TopRow";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import { useCategory } from "../../../../contexts/CategoryCompContext";
+import { useMaster } from "@/contexts/MasterContext";
 
 export default function CategoryMetrics({
   data,
@@ -40,6 +41,7 @@ export default function CategoryMetrics({
   selectedTimespan: string;
   setSelectedTimespan: (timespan: string) => void;
 }) {
+  const { AllChainsByKeys } = useMaster();
   const {
     data: master,
     error: masterError,
@@ -155,10 +157,10 @@ export default function CategoryMetrics({
           item === "all_l2s"
             ? true
             : isMaster
-            ? chainEcosystemFilter === "all-chains"
-              ? true
-              : master?.chains[item].bucket.includes(chainEcosystemFilter)
-            : false;
+              ? chainEcosystemFilter === "all-chains"
+                ? true
+                : master?.chains[item].bucket.includes(chainEcosystemFilter)
+              : false;
 
         return item !== "types" && isSupported && passEcosystem;
       })
@@ -167,8 +169,8 @@ export default function CategoryMetrics({
         selectedChains[itemA] === selectedChains[itemB]
           ? 0
           : selectedChains[itemA]
-          ? -1
-          : 1,
+            ? -1
+            : 1,
       );
   }, [chainValues, selectedChains, chainEcosystemFilter]);
 
@@ -269,10 +271,10 @@ export default function CategoryMetrics({
         currChain === "all_l2s"
           ? true
           : isMaster
-          ? chainEcosystemFilter === "all-chains"
-            ? true
-            : master?.chains[currChain].bucket.includes(chainEcosystemFilter)
-          : false;
+            ? chainEcosystemFilter === "all-chains"
+              ? true
+              : master?.chains[currChain].bucket.includes(chainEcosystemFilter)
+            : false;
       if (
         isSupported &&
         passEcosystem &&
@@ -407,7 +409,7 @@ export default function CategoryMetrics({
         (subcategory) => {
           const subcategoryData =
             data[selectedCategory].subcategories[
-              selectedSubcategories[selectedCategory][subcategory]
+            selectedSubcategories[selectedCategory][subcategory]
             ];
           const subcategoryChains =
             subcategoryData.aggregated[selectedTimespan].data;
@@ -608,15 +610,14 @@ export default function CategoryMetrics({
                   </TopRowChild>
                 ))}
                 <div
-                  className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[63px] right-[22px] md:right-[65px] md:top-[68px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${
-                    !isMobile
-                      ? ["max", "180d"].includes(selectedTimespan)
-                        ? "translate-y-[calc(-100%+3px)]"
-                        : "translate-y-0 "
-                      : ["max", "180d"].includes(selectedTimespan)
+                  className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[63px] right-[22px] md:right-[65px] md:top-[68px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${!isMobile
+                    ? ["max", "180d"].includes(selectedTimespan)
+                      ? "translate-y-[calc(-100%+3px)]"
+                      : "translate-y-0 "
+                    : ["max", "180d"].includes(selectedTimespan)
                       ? "translate-y-[calc(40%+3px)]"
                       : "-translate-y-[calc(40%+3px)]"
-                  }`}
+                    }`}
                 >
                   <div className="font-medium bg-forest-100 dark:bg-forest-1000 rounded-b-2xl rounded-t-none lg:rounded-b-none lg:rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
                     7-day rolling average
@@ -691,7 +692,7 @@ export default function CategoryMetrics({
                       stack={selectedChartType !== "absolute"}
                       types={
                         selectedCategory === null ||
-                        selectedCategory === "Chains"
+                          selectedCategory === "Chains"
                           ? data.native_transfers[dailyKey].types
                           : data[selectedCategory][dailyKey].types
                       }
@@ -756,11 +757,10 @@ export default function CategoryMetrics({
               {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
               {/* toggle ETH */}
               <button
-                className={`px-[16px] py-[4px]  rounded-full ${
-                  selectedChartType === "absolute"
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                }`}
+                className={`px-[16px] py-[4px]  rounded-full ${selectedChartType === "absolute"
+                  ? "bg-forest-500 dark:bg-forest-1000"
+                  : "hover:bg-forest-500/10"
+                  }`}
                 onClick={() => {
                   setSelectedChartType("absolute");
                 }}
@@ -768,11 +768,10 @@ export default function CategoryMetrics({
                 Absolute
               </button>
               <button
-                className={`px-[16px] py-[4px]  rounded-full ${
-                  selectedChartType === "stacked"
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                }`}
+                className={`px-[16px] py-[4px]  rounded-full ${selectedChartType === "stacked"
+                  ? "bg-forest-500 dark:bg-forest-1000"
+                  : "hover:bg-forest-500/10"
+                  }`}
                 onClick={() => {
                   setSelectedChartType("stacked");
                 }}
@@ -780,11 +779,10 @@ export default function CategoryMetrics({
                 Stacked
               </button>
               <button
-                className={`px-[16px] py-[4px]  rounded-full ${
-                  selectedChartType === "percentage"
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                }`}
+                className={`px-[16px] py-[4px]  rounded-full ${selectedChartType === "percentage"
+                  ? "bg-forest-500 dark:bg-forest-1000"
+                  : "hover:bg-forest-500/10"
+                  }`}
                 onClick={() => {
                   setSelectedChartType("percentage");
                 }}

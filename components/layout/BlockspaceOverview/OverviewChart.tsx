@@ -1,21 +1,55 @@
+"use client";
 import {
   useMemo,
-  useState,
+  useCallback,
   useEffect,
   useRef,
-  useCallback,
-  CSSProperties,
+  MutableRefObject,
 } from "react";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
-import { Chart } from "../../charts/chart";
-import { color } from "highcharts";
+
+import { chart, charts, color } from "highcharts";
 import { Icon } from "@iconify/react";
 import { useTheme } from "next-themes";
 import { Chains } from "@/types/api/ChainOverviewResponse";
 import { animated, useSpring } from "@react-spring/web";
-import { AllChainsByKeys } from "@/lib/chains";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import {
+  HighchartsProvider,
+  HighchartsChart,
+  Chart,
+  XAxis,
+  YAxis,
+  Title,
+  Subtitle,
+  Legend,
+  LineSeries,
+  SplineSeries,
+  AreaSplineSeries,
+  Tooltip,
+  AreaRangeSeries,
+  PlotBand,
+  PlotLine,
+  withHighcharts,
+  AreaSeries,
+  ColumnSeries,
+} from "react-jsx-highcharts";
+
+import { useUIContext } from "@/contexts/UIContext";
+import Highcharts from "highcharts/highstock";
+import highchartsPatternFill from "highcharts/modules/pattern-fill";
 import { fill } from "lodash";
+import { useMaster } from "@/contexts/MasterContext";
+import { fullBrowserVersion } from "react-device-detect";
+
+const COLORS = {
+  GRID: "rgb(215, 223, 222)",
+  PLOT_LINE: "rgb(215, 223, 222)",
+  LABEL: "rgb(215, 223, 222)",
+  LABEL_HOVER: "#6c7696",
+  TOOLTIP_BG: "#1b2135",
+  ANNOTATION_BG: "rgb(215, 223, 222)",
+};
 
 export default function OverviewChart({
   data,
@@ -34,7 +68,6 @@ export default function OverviewChart({
   forceHoveredChartSeriesId,
   setHoveredChartSeriesId,
   hoveredChartSeriesId,
-  chartComponent,
 }: {
   data: Chains;
   master: MasterResponse | undefined;
@@ -52,16 +85,30 @@ export default function OverviewChart({
   hoveredChartSeriesId: string;
   forceHoveredChartSeriesId: string;
   setHoveredChartSeriesId: (series: string) => void;
-  chartComponent: React.MutableRefObject<Highcharts.Chart | null | undefined>;
 }) {
+  const { AllChainsByKeys } = useMaster();
   const standardChainKey = forceSelectedChain ? forceSelectedChain : "all_l2s";
+  const chartComponent: MutableRefObject<Highcharts.Chart | null | undefined> =
+    useRef<Highcharts.Chart | null | undefined>(null);
   const [chainEcosystemFilter, setChainEcosystemFilter] = useSessionStorage(
     "chainEcosystemFilter",
     "all-chains",
   );
+  const reversePerformer = false;
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-
+  const { isMobile } = useUIContext();
   const { theme } = useTheme();
+  const types =
+    selectedChain === null
+      ? data[standardChainKey].daily.types
+      : data[selectedChain].daily.types;
+
+  const valuePrefix = useMemo(() => {
+    if (showUsd) return "$";
+    // eth symbol
+    return "Ξ";
+  }, [showUsd]);
+
   // const categoryKeyToFillOpacity = {
   //   nft: 1 - 0,
   //   token_transfers: 1 - 0.196,
@@ -72,11 +119,6 @@ export default function OverviewChart({
   //   cross_chain: 1 - 0.867,
   //   unlabeled: 1 - 0.92,
   // };
-
-  const getFillOpacity = (index: number) => {
-    let x = (categoriesAllCatChartListOrder.length - 1) - index;
-    return (0.02 * Math.pow(x, 2) - 0.28 * x + 1.27);
-  }
 
   const chartStack = useMemo(() => {
     let ecosystemData: any[][] = [];
@@ -142,7 +184,7 @@ export default function OverviewChart({
             for (let j = 0; j < numArrays; j++) {
               txTotal +=
                 unixDataList[j][
-                selectedMode.includes("txcount") ? txIndex : gasIndex
+                  selectedMode.includes("txcount") ? txIndex : gasIndex
                 ];
             }
 
@@ -154,10 +196,10 @@ export default function OverviewChart({
                 allTotal +=
                   checkIndex !== -1
                     ? data[standardChainKey].daily[selectedCategory].data[
-                    data[standardChainKey].daily[
-                      selectedCategory
-                    ].data.findIndex((item) => item[0] === findUnix)
-                    ][selectedMode.includes("txcount") ? txIndex : gasIndex]
+                        data[standardChainKey].daily[
+                          selectedCategory
+                        ].data.findIndex((item) => item[0] === findUnix)
+                      ][selectedMode.includes("txcount") ? txIndex : gasIndex]
                     : 0;
               }
             }
@@ -194,7 +236,7 @@ export default function OverviewChart({
           selectedCategory
         ].data
           ? data[selectedChain].overview[selectedTimespan][selectedCategory]
-            .data[overviewIndex]
+              .data[overviewIndex]
           : [];
       } else {
         for (
@@ -211,8 +253,8 @@ export default function OverviewChart({
           ) {
             sum +=
               data[selectedChain].daily[selectedCategory].data[
-              data[selectedChain].daily[selectedCategory].data.length -
-              (i + 1)
+                data[selectedChain].daily[selectedCategory].data.length -
+                  (i + 1)
               ][typeIndex];
           }
         }
@@ -222,8 +264,8 @@ export default function OverviewChart({
             ? data[selectedChain].daily[selectedCategory].data.length
             : timespans[selectedTimespan].value >=
               data[selectedChain].daily[selectedCategory].data.length
-              ? data[selectedChain].daily[selectedCategory].data.length
-              : timespans[selectedTimespan].value);
+            ? data[selectedChain].daily[selectedCategory].data.length
+            : timespans[selectedTimespan].value);
       }
     } else {
       if (chainEcosystemFilter === "all-chains") {
@@ -238,13 +280,13 @@ export default function OverviewChart({
         ) {
           if (
             data[standardChainKey].daily[selectedCategory].data.length -
-            (i + 1) >=
+              (i + 1) >=
             0
           ) {
             sum +=
               data[standardChainKey].daily[selectedCategory].data[
-              data[standardChainKey].daily[selectedCategory].data.length -
-              (i + 1)
+                data[standardChainKey].daily[selectedCategory].data.length -
+                  (i + 1)
               ][typeIndex];
           }
         }
@@ -255,8 +297,8 @@ export default function OverviewChart({
             ? data[standardChainKey].daily[selectedCategory].data.length
             : timespans[selectedTimespan].value >=
               data[standardChainKey].daily[selectedCategory].data.length
-              ? data[standardChainKey].daily[selectedCategory].data.length
-              : timespans[selectedTimespan].value);
+            ? data[standardChainKey].daily[selectedCategory].data.length
+            : timespans[selectedTimespan].value);
       } else {
         let sum = 0;
         for (
@@ -276,19 +318,23 @@ export default function OverviewChart({
             (selectedTimespan === "max"
               ? chartStack.length
               : timespans[selectedTimespan].value >= chartStack.length
-                ? chartStack.length
-                : timespans[selectedTimespan].value);
+              ? chartStack.length
+              : timespans[selectedTimespan].value);
         }
       }
     }
 
     return returnValue;
   }, [
-    selectedTimespan,
+    data,
+    standardChainKey,
     selectedMode,
-    selectedCategory,
     selectedChain,
+    selectedTimespan,
+    selectedCategory,
+    timespans,
     chainEcosystemFilter,
+    chartStack,
   ]);
 
   const chartMax = useMemo(() => {
@@ -299,8 +345,8 @@ export default function OverviewChart({
     const selectedData = selectedChain
       ? data[selectedChain].daily[selectedCategory].data
       : chainEcosystemFilter === "all-chains"
-        ? data[standardChainKey].daily[selectedCategory].data
-        : chartStack;
+      ? data[standardChainKey].daily[selectedCategory].data
+      : chartStack;
 
     //Determine array length based on selection
     const length =
@@ -335,11 +381,16 @@ export default function OverviewChart({
 
     return returnValue;
   }, [
-    selectedTimespan,
-    selectedCategory,
+    data,
+    standardChainKey,
     selectedMode,
     selectedChain,
+    selectedCategory,
     chainEcosystemFilter,
+    chartStack,
+    selectedTimespan,
+    timespans,
+    forceSelectedChain,
   ]);
 
   const categoriesList = useMemo(() => {
@@ -352,6 +403,14 @@ export default function OverviewChart({
     return categoriesList.reverse();
   }, [categoriesList]);
 
+  const getFillOpacity = useCallback(
+    (index: number) => {
+      let x = categoriesAllCatChartListOrder.length - 1 - index;
+      return 0.02 * Math.pow(x, 2) - 0.28 * x + 1.27;
+    },
+    [categoriesAllCatChartListOrder],
+  );
+
   const chartSeries = useMemo(() => {
     const dataKey = selectedMode;
     if (selectedChain) {
@@ -361,6 +420,7 @@ export default function OverviewChart({
       //   dataKey: dataKey,
       //   data: data[selectedChain].daily[selectedCategory].data.length,
       // });
+
       if (allCats) {
         return categoriesList
           .filter((categoryCheck) => {
@@ -374,17 +434,21 @@ export default function OverviewChart({
             dataKey: dataKey,
             data: data[selectedChain]?.daily[categoryCheck]?.data || [],
             // fillOpacity: categoryKeyToFillOpacity[categoryCheck],
-            fillOpacity: categoryCheck === "unlabeled" ? undefined : getFillOpacity(i),
-            pattern: categoryCheck === "unlabeled" ? {
-              color: AllChainsByKeys[standardChainKey].colors["dark"][0],
-              path: {
-                d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
-                strokeWidth: 3,
-              },
-              width: 10,
-              height: 10,
-              opacity: 0.33,
-            } : undefined,
+            fillOpacity:
+              categoryCheck === "unlabeled" ? undefined : getFillOpacity(i),
+            pattern:
+              categoryCheck === "unlabeled"
+                ? {
+                    color: AllChainsByKeys[standardChainKey].colors["dark"][0],
+                    path: {
+                      d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
+                      strokeWidth: 3,
+                    },
+                    width: 10,
+                    height: 10,
+                    opacity: 0.33,
+                  }
+                : undefined,
             lineWidth: 0,
             custom: {
               tooltipLabel: categories[categoryCheck],
@@ -399,6 +463,19 @@ export default function OverviewChart({
             dataKey: dataKey,
             data: data[selectedChain].daily[selectedCategory].data,
             fillOpacity: 0.25,
+            pattern:
+              selectedCategory === "unlabeled"
+                ? {
+                    color: AllChainsByKeys[standardChainKey].colors["dark"][0],
+                    path: {
+                      d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
+                      strokeWidth: 3,
+                    },
+                    width: 10,
+                    height: 10,
+                    opacity: 0.33,
+                  }
+                : undefined,
             custom: {
               tooltipLabel: categories[selectedCategory],
             },
@@ -432,23 +509,57 @@ export default function OverviewChart({
           chainEcosystemFilter === "all-chains"
             ? data.all_l2s.daily[selectedCategory].data
             : chartStack,
+        custom: { tooltipLabel: "All L2s" },
       },
     ];
-  }, [selectedMode, selectedChain, selectedCategory, chainEcosystemFilter, data, chartStack, allCats, categoriesList, standardChainKey, categories]);
+  }, [
+    selectedMode,
+    selectedChain,
+    selectedCategory,
+    chainEcosystemFilter,
+    data,
+    chartStack,
+    allCats,
+    categoriesList,
+    getFillOpacity,
+    AllChainsByKeys,
+    standardChainKey,
+    categories,
+  ]);
 
   const avgHeight = useSpring({
-    y:
-      chartAvg && chartMax
-        ? -1 *
-        ((forceSelectedChain ? 200 : 163) * (chartAvg / chartMax) +
-          (chartAvg / chartMax > 0.45
-            ? chartAvg / chartMax > 0.5
-              ? 7
-              : 10
-            : 14))
-        : 0,
+    y: chartAvg && chartMax ? `${chartAvg * -169}px` : "0%",
     config: { mass: 1, tension: 70, friction: 20 },
   });
+
+  const tooltipPositioner =
+    useCallback<Highcharts.TooltipPositionerCallbackFunction>(
+      function (this, width, height, point) {
+        const chart = this.chart;
+        const { plotLeft, plotTop, plotWidth, plotHeight } = chart;
+        const tooltipWidth = width;
+        const tooltipHeight = height;
+
+        const distance = 40;
+        const pointX = point.plotX + plotLeft;
+        const pointY = point.plotY + plotTop;
+        let tooltipX =
+          pointX - distance - tooltipWidth < plotLeft
+            ? pointX + distance
+            : pointX - tooltipWidth - distance;
+
+        const tooltipY =
+          pointY - tooltipHeight / 2 < plotTop
+            ? pointY + distance
+            : pointY - tooltipHeight / 2;
+
+        return {
+          x: tooltipX,
+          y: tooltipY,
+        };
+      },
+      [isMobile],
+    );
 
   function formatNumber(number: number): string {
     if (number === 0) {
@@ -474,35 +585,518 @@ export default function OverviewChart({
     }
   }
 
+  const tooltipFormatter = useCallback(
+    function (this: any) {
+      const { x, points } = this;
+      const date = new Date(x);
+      let dateString = date.toLocaleDateString("en-GB", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+      const chartTitle = this.series.chart.title.textStr;
+
+      // check if data steps are less than 1 day
+      // if so, add the time to the tooltip
+      const timeDiff = points[0].series.xData[1] - points[0].series.xData[0];
+      if (timeDiff < 1000 * 60 * 60 * 24) {
+        dateString +=
+          " " +
+          date.toLocaleTimeString("en-GB", {
+            hour: "numeric",
+            minute: "2-digit",
+          });
+      }
+
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway">
+        <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2 ">${dateString}</div>`;
+      const tooltipEnd = `</div>`;
+
+      // let pointsSum = 0;
+      // if (selectedScale !== "percentage")
+      let pointsSum = points.reduce((acc: number, point: any) => {
+        acc += point.y;
+        return acc;
+      }, 0);
+
+      let pointSumNonNegative = points.reduce((acc: number, point: any) => {
+        if (point.y > 0) acc += point.y;
+        return acc;
+      }, 0);
+
+      const maxPoint = points.reduce((max: number, point: any) => {
+        if (point.y > max) max = point.y;
+        return max;
+      }, 0);
+
+      const maxPercentage = points.reduce((max: number, point: any) => {
+        if (point.percentage > max) max = point.percentage;
+        return max;
+      }, 0);
+
+      const tooltipPoints = points
+        .sort((a: any, b: any) => {
+          return b.y - a.y;
+        })
+
+        .map((point: any, index: number) => {
+          const { series, y, percentage } = point;
+          const { name } = series;
+          const fillOpacity = series.options.fillOpacity;
+
+          const showPrice = selectedMode.includes("gas_fees");
+          const showPercentage = selectedValue === "share";
+          const color =
+            AllChainsByKeys[selectedChain ? selectedChain : "all_l2s"].colors[
+              theme ?? "dark"
+            ][0];
+
+          let prefix = showPercentage || !showPrice ? "" : valuePrefix;
+          let suffix = showPercentage ? "%" : "";
+          let value = y;
+          let displayValue = y;
+
+          return `
+          <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+        <div class="relative w-4 h-1.5 rounded-r-full bg-white dark:bg-forest-1000">
+
+          <div class="absolute w-4 h-1.5 rounded-r-full" style="
+            background-color: ${color};
+            opacity: ${fillOpacity};
+          ">
+          </div>
+        
+        </div>
+        <div class="tooltip-point-name">${name}</div>
+        <div class="flex flex-1 justify-end text-right font-inter">
+        <div>${prefix}</div>
+          <div>${Intl.NumberFormat("en-GB", {
+            notation: "compact",
+            maximumFractionDigits: 2,
+            minimumFractionDigits: 2,
+          }).format(showPercentage ? 100 * Number(value) : value)}</div>
+          <div>${suffix}</div>
+          </div>
+      </div>
+      <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+        <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white dark:bg-forest-1000" style="
+          width: ${(percentage / maxPercentage) * 100}%;
+        ">
+        </div>
+
+        <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" style="
+          width: ${(percentage / maxPercentage) * 100}%;
+          background-color: ${color};
+          opacity: ${fillOpacity};
+        ">
+        </div>
+      </div>`;
+        })
+        .join("");
+
+      return tooltip + tooltipPoints + tooltipEnd;
+    },
+    [valuePrefix, reversePerformer, showUsd, selectedValue, selectedChain],
+  );
+
+  const decimalPercentageToHex = (percentage: number) => {
+    const hex = Math.round(percentage * 255).toString(16);
+
+    return hex.length === 1 ? "0" + hex : hex;
+  };
+
+  useEffect(() => {
+    if (allCats === true && chartComponent.current && chartSeries.length > 1) {
+      if (
+        !forceHoveredChartSeriesId ||
+        forceHoveredChartSeriesId.includes("all_chain")
+      ) {
+        chartComponent.current.series.forEach((s: Highcharts.Series) => {
+          s.setState("normal");
+          if (s.options.custom) {
+            s.options["fillColor"] = s.options.custom.fillColor;
+          }
+        });
+      } else {
+        chartComponent.current.series.forEach((s: Highcharts.Series) => {
+          if (s.options.id === forceHoveredChartSeriesId) {
+            s.setState("hover");
+            if (s.options.custom) {
+              s.options["fillColor"] = s.options.custom.chainColor;
+            }
+          } else {
+            s.setState("inactive");
+            if (s.options.custom) {
+              s.options["fillColor"] = s.options.custom.fillColor;
+            }
+          }
+        });
+      }
+    }
+  }, [forceHoveredChartSeriesId, chartSeries, allCats]);
+
+  useEffect(() => {
+    // set numeric symbols for highcharts
+    Highcharts.setOptions({
+      lang: {
+        numericSymbols: ["K", " M", "B", "T", "P", "E"],
+      },
+    });
+    // apply highcharts pattern fill module
+    highchartsPatternFill(Highcharts);
+  }, []);
+
   return (
     <>
-      <div className="flex items-center w-full bg-blend-lighten">
-        <Chart
-          types={
-            selectedChain === null
-              ? data[standardChainKey].daily.types
-              : data[selectedChain].daily.types
-          }
-          plotAreaBackgroundColor="black"
-          chartType="area"
-          stack
-          timespan={selectedTimespan}
-          series={chartSeries}
-          yScale={selectedValue === "share" ? "percentageDecimal" : "linear"}
-          chartHeight={forceSelectedChain ? "259px" : "196px"}
-          chartWidth="100%"
-          maxY={chartMax}
-          chartAvg={!allCats ? chartAvg || undefined : undefined}
-          forceHoveredChartSeriesId={forceHoveredChartSeriesId}
-          setHoveredChartSeriesId={setHoveredChartSeriesId}
-          hoveredChartSeriesId={hoveredChartSeriesId}
-          allCats={allCats}
-          chartRef={chartComponent}
-        />
+      <div className="w-full h-[249px] flex items-center">
+        <div
+          className={`bg-blend-lighten h-full ${
+            !allCats && selectedValue === "share" ? "w-[96%]" : "w-full"
+          }`}
+        >
+          <HighchartsProvider Highcharts={Highcharts}>
+            <HighchartsChart
+              containerProps={{
+                style: {
+                  height: "100%",
+                  width: "100%",
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                  overflow: "visible",
+                },
+              }}
+              plotOptions={{
+                area: {
+                  lineWidth: 2,
+                  // marker: {
+                  //   radius: 12,
+                  //   lineWidth: 4,
+                  // },
+                  fillOpacity: 1,
+                  stacking: "normal",
+
+                  // shadow: {
+                  //   color:
+                  //     AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1] + "33",
+                  //   width: 10,
+                  // },
+
+                  // borderColor: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
+                  // borderWidth: 1,
+                },
+                series: {
+                  zIndex: 10,
+                  animation: false,
+                  marker: {
+                    lineColor: "white",
+                    radius: 0,
+                    symbol: "circle",
+                  },
+                },
+              }}
+            >
+              <Chart
+                backgroundColor={"transparent"}
+                type="area"
+                panning={{ enabled: true }}
+                panKey="shift"
+                zooming={{ type: undefined }}
+                style={{ borderRadius: 15 }}
+                animation={{ duration: 50 }}
+                // margin={[0, 15, 0, 0]} // Use the array form for margin
+                margin={[30, 10, 50, 50]}
+                spacingBottom={30}
+                spacingTop={40}
+                spacingLeft={10}
+                spacingRight={10}
+                height={249}
+                onRender={(chart) => {
+                  if (chart && chart.target) {
+                    chartComponent.current =
+                      chart.target as unknown as Highcharts.Chart;
+                  }
+                }}
+              />
+              <Tooltip
+                useHTML={true}
+                shared={true}
+                split={false}
+                followPointer={true}
+                followTouchMove={true}
+                backgroundColor={"#2A3433EE"}
+                padding={0}
+                hideDelay={300}
+                stickOnContact={true}
+                shape="rect"
+                borderRadius={17}
+                borderWidth={0}
+                outside={true}
+                shadow={{
+                  color: "black",
+                  opacity: 0.015,
+                  offsetX: 2,
+                  offsetY: 2,
+                }}
+                style={{
+                  color: "rgb(215, 223, 222)",
+                }}
+                //formatter={tooltipFormatter}
+                // ensure tooltip is always above the chart
+                positioner={tooltipPositioner}
+                valuePrefix={"$"}
+                valueSuffix={""}
+                formatter={tooltipFormatter}
+              />
+              <XAxis
+                title={undefined}
+                type="datetime"
+                crosshair={{
+                  width: 0.5,
+                  color: COLORS.PLOT_LINE,
+                  snap: false,
+                }}
+                zoomEnabled={false}
+                tickWidth={1}
+                tickLength={25}
+                tickColor={"#CDD8D34C"}
+                ordinal={false}
+                gridLineWidth={0}
+                minorTicks={false}
+                minTickInterval={
+                  timespans[selectedTimespan].xMax -
+                    timespans[selectedTimespan].xMin <=
+                  40 * 24 * 3600 * 1000
+                    ? 24 * 3600 * 1000
+                    : 30 * 24 * 3600 * 1000
+                }
+                min={
+                  timespans[selectedTimespan].xMin
+                    ? timespans[selectedTimespan].xMin
+                    : undefined
+                }
+                labels={{
+                  y: 40,
+                  align: undefined,
+                  rotation: 0,
+                  allowOverlap: false,
+
+                  reserveSpace: true,
+                  overflow: "justify",
+                  useHTML: true,
+                  style: {
+                    textAlign: "bottom",
+                    color: "#CDD8D3",
+                    fontSize: "12px",
+                    marginTop: "10px",
+                  },
+
+                  formatter: (function () {
+                    return function () {
+                      if (
+                        timespans[selectedTimespan].xMax -
+                          timespans[selectedTimespan].xMin <=
+                        40 * 24 * 3600 * 1000
+                      ) {
+                        let isBeginningOfWeek =
+                          new Date(this.value).getUTCDay() === 1;
+                        let showMonth =
+                          this.isFirst ||
+                          new Date(this.value).getUTCDate() === 1;
+                        return new Date(this.value).toLocaleDateString(
+                          "en-GB",
+                          {
+                            timeZone: "UTC",
+                            month: "short",
+                            day: "numeric",
+                            year: this.isFirst ? "numeric" : undefined,
+                          },
+                        );
+                      } else {
+                        // if Jan 1st, show year
+                        if (new Date(this.value).getUTCMonth() === 0) {
+                          return `<span style="font-size: 14px; font-weight: 600;">
+                  ${new Date(this.value).toLocaleDateString("en-GB", {
+                    timeZone: "UTC",
+                    year: "numeric",
+                  })}
+                </span>`;
+                        }
+                        return new Date(this.value).toLocaleDateString(
+                          "en-GB",
+                          {
+                            timeZone: "UTC",
+                            month: "short",
+                            year: "numeric",
+                          },
+                        );
+                      }
+                    };
+                  })(),
+                }}
+              >
+                <XAxis.Title></XAxis.Title>
+              </XAxis>
+              <YAxis
+                opposite={false}
+                // showFirstLabel={true}
+                // showLastLabel={true}
+
+                type="linear"
+                max={selectedValue === "share" ? 1 : undefined}
+                min={selectedValue === "share" ? 0 : undefined}
+                gridLineWidth={1}
+                gridLineColor={"#5A64624F"}
+                zoomEnabled={false}
+                tickAmount={3}
+                labels={{
+                  align: "right",
+                  y: 2,
+                  x: -4,
+                  style: {
+                    color: "#CDD8D3",
+                    fontSize: "12px",
+                  },
+                  formatter: function () {
+                    const value = this.value as number | bigint;
+                    const isPercentage = selectedValue === "share";
+                    const prefix = isPercentage ? "" : valuePrefix;
+                    const suffix = isPercentage ? "%" : "";
+                    return (
+                      prefix +
+                      Intl.NumberFormat("en-GB", {
+                        notation: "compact",
+                        maximumFractionDigits: 1,
+                        minimumFractionDigits: 0,
+                      }).format(isPercentage ? 100 * Number(value) : value) +
+                      suffix
+                    );
+                  },
+                }}
+              >
+                <PlotLine
+                  color={
+                    AllChainsByKeys[selectedChain ? selectedChain : "all_l2s"]
+                      .colors[theme ?? "dark"][0]
+                  }
+                  value={!allCats && chartAvg ? chartAvg : undefined}
+                  width={1}
+                  dashStyle={"Dash"}
+                />
+                {chartSeries.map((series, index) => {
+                  const isUnlabelled =
+                    series.custom.tooltipLabel === "Unlabeled";
+                  const pattern = series.pattern;
+                  const fillHexColorOpacity = series.fillOpacity
+                    ? decimalPercentageToHex(series.fillOpacity)
+                    : "40";
+                  let fillColor =
+                    allCats === true
+                      ? undefined
+                      : AllChainsByKeys[standardChainKey].colors[
+                          theme ?? "dark"
+                        ][0] + fillHexColorOpacity;
+                  return (
+                    series && (
+                      <AreaSeries
+                        key={index} // Add a key to each element in the list
+                        name={series.custom.tooltipLabel}
+                        color={
+                          !selectedChain
+                            ? {
+                                linearGradient: {
+                                  x1: 0,
+                                  x2: 0,
+                                  y1: 0,
+                                  y2: 1,
+                                },
+                                stops:
+                                  theme === "dark"
+                                    ? [
+                                        [
+                                          0,
+                                          AllChainsByKeys[
+                                            selectedChain
+                                              ? selectedChain
+                                              : "all_l2s"
+                                          ]?.colors[theme ?? "dark"][0] + "F9",
+                                        ],
+                                        [
+                                          1,
+                                          AllChainsByKeys[
+                                            selectedChain
+                                              ? selectedChain
+                                              : "all_l2s"
+                                          ]?.colors[theme ?? "dark"][1] + "F9",
+                                        ],
+                                      ]
+                                    : [],
+                              }
+                            : AllChainsByKeys[series.name].colors[
+                                theme ?? "dark"
+                              ][0]
+                        }
+                        lineWidth={allCats ? 0 : 2}
+                        data={series.data.map((d: any) => [
+                          d[types.indexOf("unix")],
+                          d[types.indexOf(series.dataKey)],
+                        ])}
+                        fillOpacity={
+                          !isUnlabelled
+                            ? series.fillOpacity
+                            : allCats
+                            ? 0.05
+                            : series.fillOpacity
+                        }
+                        fillColor={
+                          !isUnlabelled && !selectedChain
+                            ? {
+                                linearGradient: {
+                                  x1: 0,
+                                  x2: 0,
+                                  y1: 0,
+                                  y2: 1,
+                                },
+                                stops:
+                                  theme === "dark"
+                                    ? [
+                                        [
+                                          0,
+                                          AllChainsByKeys[
+                                            selectedChain
+                                              ? selectedChain
+                                              : "all_l2s"
+                                          ]?.colors[theme ?? "dark"][0] + "33",
+                                        ],
+                                        [
+                                          1,
+                                          AllChainsByKeys[
+                                            selectedChain
+                                              ? selectedChain
+                                              : "all_l2s"
+                                          ]?.colors[theme ?? "dark"][1] + "33",
+                                        ],
+                                      ]
+                                    : [],
+                              }
+                            : isUnlabelled && allCats
+                            ? {
+                                pattern: pattern,
+                              }
+                            : undefined
+                        }
+                      />
+                    )
+                  );
+                })}
+              </YAxis>
+            </HighchartsChart>
+          </HighchartsProvider>
+        </div>
         {chartAvg && (
           <div
-            className={` items-end relative top-[2px] min-w-[50px] lg:min-w-[70px] ${allCats ? "hidden" : "flex"
-              } ${forceSelectedChain ? "h-[230px]" : "h-[180px]"}`}
+            className={` items-end relative top-[2px] min-w-[50px] h-[169px]  lg:min-w-[70px] ${
+              allCats ? "hidden" : "flex"
+            }`}
           >
             <animated.div
               className="flex h-[28px] relative items-center justify-center rounded-full w-full px-2.5 lg:text-base text-sm font-medium"

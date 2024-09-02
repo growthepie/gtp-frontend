@@ -19,7 +19,6 @@ import { debounce, merge } from "lodash";
 // import { theme as customTheme } from "tailwind.config.js";
 import { useTheme } from "next-themes";
 import { Switch } from "../Switch";
-import { AllChainsByKeys } from "@/lib/chains";
 import d3 from "d3";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
@@ -45,6 +44,7 @@ import { MasterURL } from "@/lib/urls";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { m } from "framer-motion";
+import { useMaster } from "@/contexts/MasterContext";
 
 const monthly_agg_labels = {
   avg: "Average",
@@ -214,6 +214,9 @@ export default function ComparisonChart({
 
   // const [darkMode, setDarkMode] = useLocalStorage("darkMode", true);
   const { theme } = useTheme();
+
+  const { AllChainsByKeys } = useMaster();
+
   const { isSidebarOpen, setEmbedData, embedData } = useUIContext();
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
@@ -347,41 +350,42 @@ export default function ComparisonChart({
 
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
 
-  const filteredData = useMemo<any[]>(() => {
-    if (!data)
-      return [
-        {
-          name: "",
-          data: [],
-          types: [],
-        },
-      ];
+  const filteredData = useMemo<{ name: string; data: any[]; types: string[] }[]>(
+    () => {
+      if (!data)
+        return [
+          {
+            name: "",
+            data: [],
+            types: [],
+          },
+        ];
 
-    const d: any[] = showEthereumMainnet
-      ? data
-      : data.filter((d) => d.name !== "ethereum");
+      const d: any[] = showEthereumMainnet
+        ? data
+        : data.filter((d) => d.name !== "ethereum");
 
-    if (d.length === 0)
-      return [
-        {
-          name: "",
-          data: [],
-          types: [],
-        },
-      ];
+      if (d.length === 0)
+        return [
+          {
+            name: "",
+            data: [],
+            types: [],
+          },
+        ];
 
-    return d.sort((a, b) => {
-      // always show ethereum on the bottom
-      if (a.name === "ethereum") return 1;
-      if (b.name === "ethereum") return -1;
+      return d.sort((a, b) => {
+        // always show ethereum on the bottom
+        if (a.name === "ethereum") return 1;
+        if (b.name === "ethereum") return -1;
 
-      const aData = a.data[a.data.length - 1][1];
-      const bData = b.data[b.data.length - 1][1];
-      if (reversePerformer) return aData - bData;
+        const aData = a.data[a.data.length - 1][1];
+        const bData = b.data[b.data.length - 1][1];
+        if (reversePerformer) return aData - bData;
 
-      return bData - aData;
-    });
-  }, [data, reversePerformer, showEthereumMainnet]);
+        return bData - aData;
+      });
+    }, [data, reversePerformer, showEthereumMainnet]);
 
   function shortenNumber(number) {
     let numberStr = Math.floor(number).toString();
@@ -1207,7 +1211,7 @@ export default function ComparisonChart({
         color,
       };
     },
-    [getSeriesType, selectedTimeInterval, theme, showUsd, showGwei],
+    [getSeriesType, selectedTimeInterval, AllChainsByKeys, theme, showUsd, showGwei],
   );
 
   const [containerRef, { width, height }] = useElementSizeObserver();
@@ -1391,7 +1395,14 @@ export default function ComparisonChart({
       },
       //@ts-ignore
       series: [
-        ...filteredData.map((series: any, i: number) => {
+        ...filteredData.sort((a, b) => {
+          if (selectedScale === "stacked" || selectedScale === "percentage") {
+            // sort by the time of the first data point so that the series are stacked in the correct order
+            return b.data[0][0] - a.data[0][0];
+          }
+          // else keep the order of the series the same
+          return 0;
+        }).map((series: any, i: number) => {
           const zIndex = showEthereumMainnet
             ? series.name === "ethereum"
               ? 0
@@ -1422,6 +1433,7 @@ export default function ComparisonChart({
             name: series.name,
             // always show ethereum on the bottom
             zIndex: zIndex,
+            index: i,
             step: undefined,
             data: getSeriesData(series.name, series.types, series.data).data,
             zoneAxis: getSeriesData(series.name, series.types, series.data)
@@ -1596,7 +1608,7 @@ export default function ComparisonChart({
             },
             showInNavigator: false,
           };
-        }),
+        })
       ],
       navigator: {
         enabled: false,
@@ -1615,33 +1627,7 @@ export default function ComparisonChart({
     };
 
     return merge({}, baseOptions, dynamicOptions);
-  }, [
-    filteredData,
-    isMobile,
-    getSeriesType,
-    scaleToPlotOptions,
-    selectedScale,
-    theme,
-    // getTickPositions,
-    timespans,
-    onXAxisSetExtremes,
-    zoomed,
-    zoomMin,
-    selectedTimespan,
-    zoomMax,
-    tooltipFormatter,
-    tooltipPositioner,
-    showUsd,
-    formatNumber,
-    showEthereumMainnet,
-    dataGrouping,
-    showGwei,
-    metric_id,
-    getSeriesData,
-    getChartHeight,
-    selectedTimeInterval,
-    is_embed,
-  ]);
+  }, [filteredData, height, metric_id, getSeriesType, is_embed, scaleToPlotOptions, selectedScale, theme, onXAxisSetExtremes, zoomed, zoomMin, timespans, selectedTimespan, zoomMax, tooltipFormatter, tooltipPositioner, showUsd, formatNumber, isMobile, showEthereumMainnet, selectedTimeInterval, getSeriesData, dataGrouping, AllChainsByKeys]);
 
   // useEffect(() => {
   //   if (chartComponent.current) {

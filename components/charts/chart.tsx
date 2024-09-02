@@ -23,8 +23,8 @@ import {
 } from "@/lib/chartUtils";
 import ChartWatermark from "../layout/ChartWatermark";
 import { Icon } from "@iconify/react";
-import { AllChainsByKeys } from "@/lib/chains";
 import { debounce } from "lodash";
+import { useMaster } from "@/contexts/MasterContext";
 
 export const Chart = ({
   // data,
@@ -82,6 +82,7 @@ export const Chart = ({
   chartRef?: React.MutableRefObject<Highcharts.Chart | null | undefined>;
   forceEIP?: boolean;
 }) => {
+  const { AllChainsByKeys } = useMaster();
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
@@ -189,7 +190,14 @@ export const Chart = ({
       });
 
       // add new series
-      series.forEach((s, seriesIndex) => {
+      series.sort((a, b) => {
+        if (yScale === "percentage" || yScale === "percentageDecimal" || stack) {
+          // sort by the time of the first data point so that the series are stacked in the correct order
+          return b.data[0][0] - a.data[0][0];
+        }
+        // else keep the order of the series the same
+        return 0;
+      }).forEach((s, seriesIndex) => {
         const chainKey = s.name;
 
         const fillHexColorOpacity = s.fillOpacity
@@ -383,7 +391,7 @@ export const Chart = ({
       });
       chartComponent.current?.redraw();
     }
-  }, [yScale, stack, series, chartType, types, theme, allCats]);
+  }, [yScale, stack, series, allCats, AllChainsByKeys, theme, chartType, types]);
 
   useEffect(() => {
     drawChartSeries();

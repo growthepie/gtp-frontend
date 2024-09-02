@@ -1,6 +1,4 @@
 import {
-  AllChains,
-  AllChainsByKeys,
   Get_SupportedChainKeys,
 } from "@/lib/chains";
 import Image from "next/image";
@@ -17,6 +15,7 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import VerticalScrollContainer from "../VerticalScrollContainer";
 import HorizontalScrollContainer from "../HorizontalScrollContainer";
 import Link from "next/link";
+import { useMaster } from "@/contexts/MasterContext";
 
 const MetricsTable = ({
   data,
@@ -39,6 +38,7 @@ const MetricsTable = ({
   setShowEthereumMainnet: (show: boolean) => void;
   timeIntervalKey: string;
 }) => {
+  const { AllChains, AllChainsByKeys } = useMaster();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   const [maxVal, setMaxVal] = useState<number | null>(null);
@@ -56,7 +56,8 @@ const MetricsTable = ({
   );
 
   const chainSelectToggleState = useMemo(() => {
-    if (intersection(selectedChains, chainKeys).length === 1) return "none";
+    if (intersection(selectedChains, chainKeys).length === 1 && showEthereumMainnet) return "none";
+    if (intersection(selectedChains, chainKeys).length === 0 && !showEthereumMainnet) return "none";
 
     if (intersection(selectedChains, chainKeys).length === chainKeys.length)
       return "all";

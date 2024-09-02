@@ -14,16 +14,19 @@ import { Icon } from "@iconify/react";
 import { navigationItems } from "@/lib/navigation";
 import Subheading from "@/components/layout/Subheading";
 import { useUIContext } from "@/contexts/UIContext";
-import { AllChainsByKeys, Get_SupportedChainKeys } from "@/lib/chains";
+import { Get_SupportedChainKeys } from "@/lib/chains";
 import { Chains } from "@/types/api/ChainOverviewResponse";
 import ShowLoading from "@/components/layout/ShowLoading";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { useRouter } from "next/router";
 import { notFound } from "next/navigation";
+import { useMaster } from "@/contexts/MasterContext";
 
 const ChainOverview = ({ params }: { params: any }) => {
   const forceCategory = params.category;
+
+  const { AllChainsByKeys } = useMaster();
 
   const {
     data: usageData,
@@ -93,7 +96,7 @@ const ChainOverview = ({ params }: { params: any }) => {
             : isMaster
             ? chainEcosystemFilter === "all-chains"
               ? true
-              : master?.chains[chain].bucket.includes(chainEcosystemFilter)
+              : AllChainsByKeys[chain].ecosystem.includes(chainEcosystemFilter)
             : false;
 
         return passEcosystem && isSupported;

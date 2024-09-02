@@ -1,5 +1,5 @@
 "use client";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import SidebarMenuGroup from "./SidebarMenuGroup";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -19,6 +19,7 @@ import Backgrounds from "./Backgrounds";
 import rpgf from "@/icons/svg/rpgf.svg";
 import { useTheme } from "next-themes";
 import { track } from "@vercel/analytics";
+import { useMaster } from "@/contexts/MasterContext";
 
 type SidebarProps = {
   className?: string;
@@ -30,9 +31,23 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
   const { isSidebarOpen, isMobileSidebarOpen, toggleMobileSidebar } =
     useUIContext();
 
+  const { ChainsNavigationItems } = useMaster();
+
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { theme, setTheme } = useTheme();
+
+  // pop ChainNavigationItems into navigationItems
+  const navigationItemsWithChains = useMemo(() => {
+    if (ChainsNavigationItems) {
+      const newNavigationItems = [...navigationItems];
+      newNavigationItems.splice(3, 0, ChainsNavigationItems);
+      return newNavigationItems;
+    }
+    return navigationItems;
+  }, [ChainsNavigationItems]);
+
+
   // detect if we are changing routes on mobile
   useEffect(() => {
     if (isMobile && isMobileSidebarOpen) {
@@ -117,7 +132,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
               </div>
               <div className="z-[999] mt-[30px] h-[calc(100vh-100px)] w-full flex flex-col justify-between overflow-hidden relative pointer-events-auto">
                 <div className="flex-1 w-full overflow-x-hidden relative overflow-y-auto scrollbar-thin scrollbar-thumb-forest-1000/50 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
-                  {navigationItems.map((item) => (
+                  {navigationItemsWithChains.map((item) => (
                     <SidebarMenuGroup
                       key={item.name + "_item"}
                       item={item}
@@ -175,7 +190,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
       }}
     >
       <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-forest-800/30 scrollbar-track-forest-800/10">
-        {navigationItems.map((item) => (
+        {navigationItemsWithChains.map((item) => (
           <SidebarMenuGroup
             key={item.name + "_item"}
             item={item}

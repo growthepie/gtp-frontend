@@ -5,7 +5,6 @@ import { ChainData, MetricsResponse } from "@/types/api/MetricsResponse";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import useSWR from "swr";
 import { MetricsURLs } from "@/lib/urls";
-import { AllChains, AllChainsByKeys } from "@/lib/chains";
 import { navigationItems } from "@/lib/navigation";
 import { format } from "date-fns";
 import ComparisonChart from "@/components/layout/ComparisonChart";
@@ -17,6 +16,7 @@ import { useTheme } from "next-themes";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { MasterURL } from "@/lib/urls";
+import { useMaster } from "@/contexts/MasterContext";
 
 const Chain = ({ params }: { params: any }) => {
   const searchParams = useSearchParams();
@@ -50,6 +50,7 @@ const Chain = ({ params }: { params: any }) => {
 
   const [showUsd, setShowUsd] = useState(true);
   const [errorCode, setErrorCode] = useState<number | null>(null);
+  const { AllChains } = useMaster();
   const {
     data: master,
     error: masterError,
@@ -170,7 +171,6 @@ const Chain = ({ params }: { params: any }) => {
             Object.values(metricData.data.chains).reduce(
               (acc: number, chain: ChainData) => {
                 if (!chain["daily"].data[0][0]) return acc;
-                console.log(chain["daily"].data[0][0]);
                 return Math.min(
                   acc,
                   chain["daily"].data[0][0],

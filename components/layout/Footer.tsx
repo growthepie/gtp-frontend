@@ -109,8 +109,8 @@ export default function Footer() {
                 Individual links contain affiliate links, like the “Bridge” button, which provide us with some additional income through a revenue-share program. For more, please check the following links:
               </div>
             </div>
-            <div className="flex flex-col md:flex-row gap-y-[15px] w-[230.87px] md:w-[362px] justify-between text-xs leading-[1.5]">
-              <Link href="/privacy-policy" className="underline" onClick={() => {
+            <div className="flex justify-between flex-col md:items-end lg:flex-row gap-y-[15px] md:w-full lg:justify-between text-xs leading-[1.5]">
+              <Link href="/privacy-policy" className="block underline" onClick={() => {
                 track("clicked Privacy Policy Footer link", {
                   location: "desktop footer",
                   page: window.location.pathname,
@@ -118,7 +118,7 @@ export default function Footer() {
               }}>
                 Privacy Policy
               </Link>
-              <Link href="/imprint" className="underline" onClick={() => {
+              <Link href="/imprint" className="block underline" onClick={() => {
                 track("clicked Imprint Footer link", {
                   location: "desktop footer",
                   page: window.location.pathname,
@@ -126,7 +126,7 @@ export default function Footer() {
               }}>
                 Imprint
               </Link>
-              <div className="flex">
+              <div className="block whitespace-nowrap">
                 © {new Date().getFullYear()} growthepie 🥧📏
               </div>
             </div>
