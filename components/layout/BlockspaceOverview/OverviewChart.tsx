@@ -553,25 +553,6 @@ export default function OverviewChart({
             ? pointY + distance
             : pointY - tooltipHeight / 2;
 
-        if (isMobile) {
-          if (pointX - tooltipWidth / 2 < plotLeft) {
-            return {
-              x: plotLeft,
-              y: -250,
-            };
-          }
-          if (pointX + tooltipWidth / 2 > plotLeft + plotWidth) {
-            return {
-              x: plotLeft + plotWidth - tooltipWidth,
-              y: -250,
-            };
-          }
-          return {
-            x: pointX - tooltipWidth / 2,
-            y: -250,
-          };
-        }
-
         return {
           x: tooltipX,
           y: tooltipY,

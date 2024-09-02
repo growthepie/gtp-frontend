@@ -1189,7 +1189,7 @@ export default function CategoryMetrics({
                       ))}
                   </div>
                 </div>
-                <div className="w-full lg:w-[56%] relative bottom-2 mt-6 mb-[30px] h-[320px] lg:mt-0 lg:h-auto">
+                <div className="w-full lg:w-[56%] relative bottom-2 mt-1 mb-[30px] h-[320px] lg:mt-0 lg:h-auto">
                   {chartSeries && (
                     <Chart
                       chartType={
@@ -1236,7 +1236,7 @@ export default function CategoryMetrics({
               </div>
               <div>
                 {" "}
-                <div className="flex flex-wrap items-center w-[98%] mx-auto gap-y-2 invisible lg:visible ">
+                <div className="items-center w-[98%] mx-auto gap-y-2 hidden lg:flex lg:flex-row ">
                   <div className="font-bold text-sm pr-2 pl-2">
                     {formatSubcategories(selectedCategory)}:{" "}
                   </div>
