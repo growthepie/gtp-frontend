@@ -34,7 +34,6 @@ export default function ChainAnimations({
   const { AllChainsByKeys } = useMaster();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [isShaking, setIsShaking] = useState(false);
-
   const [width, setWidth] = useState(() => {
     if (sortedValues && value) {
       const largestValue = Math.max(
@@ -140,39 +139,11 @@ export default function ChainAnimations({
     }
   }, [value, sortedValues]);
 
-  const showSeperatingLine = useMemo(() => {
-    const isUnselected = !selectedChains[chain];
-    const isPrevSelected =
-      index > 0 ? selectedChains[sortedValues[index - 1][0]] : true;
-
-    if (isUnselected && isPrevSelected) {
-      return true;
-    } else {
-      return false;
-    }
-  }, [sortedValues, selectedChains, selectedValue, selectedCategory, master]);
-
-  if (chain === "mode") {
-    console.log("chain", chain);
-    console.log("index", index);
-    console.log("sortedValues", sortedValues);
-    console.log(selectedChains[sortedValues[index - 1][0]]);
-  }
-
   if (chain === "imx" && selectedMode === "gas_fees_") {
     return null;
   } else {
     return (
       <>
-        {showSeperatingLine && (
-          <div className="flex items-center ">
-            <div className="flex-grow border-t border-[#5A6462]"></div>
-            <span className="mx-4 text-[12px] font-semibold text-[#CDD8D3]">
-              Not showing in chart
-            </span>
-            <div className="flex-grow border-t border-[#5A6462]"></div>
-          </div>
-        )}
         <div
           key={chain}
           className={`relative flex flex-row items-center rounded-full justify-between text-xs  transition-opacity font-medium z-0 select-none pl-[2px]  pr-[2px] h-[34px] ${
@@ -220,7 +191,7 @@ export default function ChainAnimations({
             </div>
 
             <div className="flex flex-col text-[#CDD8D3]">
-              <div className="text-[14px] font-bold -mb-[2px] ">
+              <div className="text-[14px] font-bold -mb-[4px] mt-[1px] ">
                 {" "}
                 {selectedValue === "share" ? (
                   <div>{Math.round(value * 100)}%</div>
@@ -262,14 +233,15 @@ export default function ChainAnimations({
               </Link>
             </div>
           </div>
-          <div className="flex items-center absolute right-2 justify-center h-[17px] w-[17px] bg-[#1F2726] rounded-full">
+          <div className="flex items-center justify-center absolute right-2 h-[17px] w-[17px] bg-[#1F2726] rounded-full">
             <Icon
               icon={`feather:${
                 !selectedChains[chain] ? "circle" : "check-circle"
               }`}
-              className={`w-[15px] h-[15px] `}
+              className="w-[15px] h-[15px] align-middle"
               style={{
                 color: AllChainsByKeys[chain].colors[theme ?? "dark"][0],
+                lineHeight: 1, // Ensure the line height doesn't cause vertical misalignment
               }}
             />
           </div>

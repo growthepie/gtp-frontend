@@ -770,7 +770,7 @@ export default function OverviewChart({
       <div className="w-full h-[249px] flex items-center">
         <div
           className={`bg-blend-lighten h-full ${
-            !allCats && selectedValue === "share" ? "w-full" : "w-full"
+            !allCats && selectedValue === "share" ? "w-[96%]" : "w-full"
           }`}
         >
           <HighchartsProvider Highcharts={Highcharts}>

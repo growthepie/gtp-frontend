@@ -307,6 +307,56 @@ export default function CategoryMetrics({
       );
   }, [chainValues, selectedChains, chainEcosystemFilter]);
 
+  const sortedChainValuesWithPlaceholder = useMemo(() => {
+    if (!chainValues || !selectedChains) return null;
+
+    let sortedValues = chainValues
+      .filter(([item]) => {
+        const supportedChainKeys = Get_SupportedChainKeys(master);
+        const isSupported =
+          item === "all_l2s" ? true : supportedChainKeys.includes(item);
+        const isMaster = master?.chains[item] ? true : false;
+        const passEcosystem =
+          item === "all_l2s"
+            ? true
+            : isMaster
+            ? chainEcosystemFilter === "all-chains"
+              ? true
+              : master?.chains[item].bucket.includes(chainEcosystemFilter)
+            : false;
+
+        return item !== "types" && isSupported && passEcosystem;
+      })
+      .sort((a, b) => b[1] - a[1])
+      .sort(([itemA], [itemB]) =>
+        selectedChains[itemA] === selectedChains[itemB]
+          ? 0
+          : selectedChains[itemA]
+          ? -1
+          : 1,
+      );
+
+    // Insert the placeholder array
+    const result: [string, number, number][] = [];
+
+    for (let i = 0; i < sortedValues.length; i++) {
+      const current = sortedValues[i] as [string, number];
+      const next = sortedValues[i + 1] as [string, number] | undefined;
+
+      // Push the current item with its true index
+      result.push([current[0], current[1], i]);
+
+      // Check the condition and add the placeholder with a null index if needed
+      if (selectedChains[current[0]] && next && !selectedChains[next[0]]) {
+        result.push(["placeholder", 0, 0]);
+      }
+    }
+
+    return result;
+  }, [chainValues, selectedChains, chainEcosystemFilter]);
+
+  console.log(sortedChainValuesWithPlaceholder);
+
   const timespans = useMemo(() => {
     return {
       "7d": {
@@ -932,18 +982,30 @@ export default function CategoryMetrics({
     }
   };
 
+  const isAllChainsSelected = useMemo(() => {
+    if (!sortedChainValues) return true;
+
+    let retVal = true;
+
+    sortedChainValues.forEach((arrayVals) => {
+      if (!selectedChains[arrayVals[0]]) {
+        retVal = false;
+      }
+    });
+
+    return retVal;
+  }, [sortedChainValues, selectedChains]);
+
   let height = 0;
 
   const transitions = useTransition(
-    sortedChainValues
+    sortedChainValuesWithPlaceholder
       ?.filter(([item]) => !(item === "imx" && selectedMode === "gas_fees_"))
       .map(([item, value], index) => {
-        const isPrevSelected =
-          index > 0 ? selectedChains[sortedChainValues[index - 1][0]] : true;
-        const isCurrentSelected = selectedChains[item];
-        const addHeight = isPrevSelected && !isCurrentSelected;
+        const isPlaceholder = item === "placeholder";
 
-        const rowHeight = 39 + (addHeight ? 18 : 0);
+        const rowHeight = !isPlaceholder ? 39 : 18;
+
         return {
           item,
           value,
@@ -1118,27 +1180,38 @@ export default function CategoryMetrics({
                     }}
                   >
                     {sortedChainValues &&
+                      sortedChainValuesWithPlaceholder &&
                       master &&
                       transitions((style, item) => (
                         <animated.div
                           className="absolute w-full"
                           key={item.item}
-                          style={{
-                            ...style,
-                          }}
+                          style={style}
                         >
-                          <ChainAnimations
-                            chain={item.item}
-                            value={item.value}
-                            index={item.index}
-                            sortedValues={sortedChainValues}
-                            selectedValue={selectedValue}
-                            selectedMode={selectedMode}
-                            selectedChains={selectedChains}
-                            setSelectedChains={setSelectedChains}
-                            selectedCategory={selectedCategory}
-                            master={master}
-                          />
+                          {item.item !== "placeholder" ? (
+                            <ChainAnimations
+                              chain={item.item}
+                              value={item.value}
+                              index={
+                                sortedChainValuesWithPlaceholder[item.index][2]
+                              }
+                              sortedValues={sortedChainValues}
+                              selectedValue={selectedValue}
+                              selectedMode={selectedMode}
+                              selectedChains={selectedChains}
+                              setSelectedChains={setSelectedChains}
+                              selectedCategory={selectedCategory}
+                              master={master}
+                            />
+                          ) : (
+                            <div className="flex items-center ">
+                              <div className="flex-grow border-t border-[#5A6462]"></div>
+                              <span className="mx-4 text-[12px] font-semibold text-[#CDD8D3]">
+                                Not showing in chart
+                              </span>
+                              <div className="flex-grow border-t border-[#5A6462]"></div>
+                            </div>
+                          )}
                         </animated.div>
                       ))}
                   </div>
