@@ -176,10 +176,10 @@ export default function RowParent({ chainKey, index }) {
               forceSelectedChain
                 ? isCategoryHovered("all_chain")
                   ? isCategoryHovered("all_chain") && allCats
-                    ? `rounded-l-full shadow-lg z-[60] w-[154px] h-[39px] border-[2px] left-[0px] bg-[#1F2726]`
-                    : `rounded-l-full shadow-lg z-[60] w-[147px] h-[41px] border-[2px] left-[0px] bg-[#1F2726]`
+                    ? `rounded-l-full shadow-lg z-[30] w-[154px] h-[39px] border-[2px] left-[0px] bg-[#1F2726]`
+                    : `rounded-l-full shadow-lg z-[30] w-[147px] h-[41px] border-[2px] left-[0px] bg-[#1F2726]`
                   : allCats
-                  ? `rounded-l-full shadow-lg z-[60] w-[154px] h-[41px] border-[2px] left-[0px] bg-[#151A19]`
+                  ? `rounded-l-full shadow-lg z-[30] w-[154px] h-[41px] border-[2px] left-[0px] bg-[#151A19]`
                   : "z-[20] left-[2px] bg-[#1F2726]"
                 : "z-[20] left-[2px] bg-[#1F2726]"
             }  ${

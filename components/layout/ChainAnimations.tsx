@@ -146,7 +146,7 @@ export default function ChainAnimations({
       <>
         <div
           key={chain}
-          className={`relative flex flex-row items-center rounded-full justify-between text-xs  transition-opacity font-medium z-0 select-none pl-[2px]  pr-[2px] h-[34px] ${
+          className={`relative cursor-pointer flex flex-row items-center rounded-full justify-between text-xs  transition-opacity font-medium z-0 select-none pl-[2px]  pr-[2px] h-[34px] ${
             AllChainsByKeys[chain].darkTextOnBackground === true
               ? "text-white dark:text-black"
               : "text-white"

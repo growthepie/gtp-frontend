@@ -295,7 +295,7 @@ export default function CategoryMetrics({
             : isMaster
             ? chainEcosystemFilter === "all-chains"
               ? true
-              : master?.chains[item].bucket.includes(chainEcosystemFilter)
+              : AllChainsByKeys[item].ecosystem.includes(chainEcosystemFilter)
             : false;
 
         return item !== "types" && isSupported && passEcosystem;
@@ -325,7 +325,7 @@ export default function CategoryMetrics({
             : isMaster
             ? chainEcosystemFilter === "all-chains"
               ? true
-              : master?.chains[item].bucket.includes(chainEcosystemFilter)
+              : AllChainsByKeys[item].ecosystem.includes(chainEcosystemFilter)
             : false;
 
         return item !== "types" && isSupported && passEcosystem;
@@ -504,7 +504,9 @@ export default function CategoryMetrics({
           : isMaster
           ? chainEcosystemFilter === "all-chains"
             ? true
-            : master?.chains[currChain].bucket.includes(chainEcosystemFilter)
+            : AllChainsByKeys[currChain].ecosystem.includes(
+                chainEcosystemFilter,
+              )
           : false;
       if (
         isSupported &&

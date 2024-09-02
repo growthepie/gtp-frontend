@@ -396,6 +396,9 @@ export default function RowChildren({
             } else {
               // setSelectedCategory(categoryKey);
               setSelectedChain(chainKey);
+              if (allCats) {
+                setAllCats(false);
+              }
             }
           } else {
             setSelectedCategory(categoryKey);

@@ -874,6 +874,7 @@ export default function OverviewChart({
                   color: COLORS.PLOT_LINE,
                   snap: false,
                 }}
+                zoomEnabled={false}
                 tickWidth={1}
                 tickLength={25}
                 tickColor={"#CDD8D34C"}
@@ -964,6 +965,7 @@ export default function OverviewChart({
                 min={selectedValue === "share" ? 0 : undefined}
                 gridLineWidth={1}
                 gridLineColor={"#5A64624F"}
+                zoomEnabled={false}
                 tickAmount={3}
                 labels={{
                   align: "right",
