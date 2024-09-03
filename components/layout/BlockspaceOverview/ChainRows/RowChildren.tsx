@@ -271,7 +271,7 @@ export default function RowChildren({
           isCategoryHovered(categoryKey)
         ) {
           style.color = "#CDD8D3";
-          style.width = "117%";
+          style.width = "calc(100% + 12px)";
           style.height = "38px";
           style.transformOrigin = "center center";
 
