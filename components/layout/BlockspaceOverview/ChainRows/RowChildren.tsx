@@ -13,6 +13,7 @@ export default function RowChildren({
   i,
   categoryIndex,
   chainCategories,
+  parentRef,
 }) {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { theme } = useTheme();
@@ -160,6 +161,10 @@ export default function RowChildren({
         style.borderRadius = "10000px 99999px 99999px 10000px";
 
       if (categoryData) {
+        const widthPercentage =
+          categoryData[dataTypes.indexOf(selectedMode)] /
+          sumChainValue[chainKey];
+
         if (isLastCategory && selectedCategory !== categoryKey) {
           style.background =
             "linear-gradient(-45deg, rgba(0, 0, 0, .88) 25%, rgba(0, 0, 0, .99) 25%, rgba(0, 0, 0, .99) 50%, rgba(0, 0, 0, .88) 50%, rgba(0, 0, 0, .88) 75%, rgba(0, 0, 0, .99) 75%, rgba(0, 0, 0, .99))";
@@ -171,21 +176,12 @@ export default function RowChildren({
           style.backgroundSize = "10px 10px";
         }
         if (selectedValue === "share") {
-          style.width = categoryData
-            ? categoryData[dataTypes.indexOf(selectedMode)] *
-                relativePercentageByChain[chainKey] +
-              8 +
-              "%"
-            : "0px";
+          style.width = `calc(${widthPercentage * 100}%)`;
+          style.minWidth = "35px";
           // if()
         } else {
-          style.width = categoryData
-            ? (categoryData[dataTypes.indexOf(selectedMode)] /
-                sumChainValue[chainKey]) *
-                relativePercentageByChain[chainKey] +
-              8 +
-              "%"
-            : "0px";
+          style.width = `calc(${widthPercentage * 100}%)`;
+          style.minWidth = "35px";
           // if()
         }
       } else {
@@ -271,6 +267,7 @@ export default function RowChildren({
           isCategoryHovered(categoryKey)
         ) {
           style.color = "#CDD8D3";
+          style.minWidth = "55px";
           style.width = "calc(100% + 12px)";
           style.height = "38px";
           style.transformOrigin = "center center";

@@ -164,7 +164,7 @@ export default function RowContainer() {
             .concat(
               <div
                 key="legend"
-                className="relative pl-[155px] w-full flex justify-between h-[15px] -top-[10px] text-[10px]"
+                className="relative pl-[140px] w-full flex justify-between h-[15px] -top-[10px] text-[10px]"
               >
                 {[0, 20, 40, 60, 80, 100].map((x, i) => (
                   <div key={x} className="relative">

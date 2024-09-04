@@ -1,5 +1,5 @@
 import { useTheme } from "next-themes";
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useRef } from "react";
 import { Icon } from "@iconify/react";
 import { useRowContext } from "./RowContext";
 import RowChildren from "./RowChildren";
@@ -14,6 +14,8 @@ export default function RowParent({ chainKey, index }) {
 
   const { AllChainsByKeys } = useMaster();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+
+  const parentRef = useRef<HTMLDivElement>(null);
 
   const {
     data,
@@ -246,7 +248,10 @@ export default function RowParent({ chainKey, index }) {
               </Link>
             </div>
           </div>
-          <div className="flex w-full max-w-full object-contain items-center max-h-[35px] pr-[2px]  py-[2px] relative">
+          <div
+            className="flex w-full max-w-full object-contain items-center max-h-[35px] pr-[2px]  py-[2px] relative"
+            ref={parentRef}
+          >
             {/*Children */}
             {Object.keys(categories).map((categoryKey, i) => {
               const rawChainCategories = Object.keys(
@@ -263,6 +268,7 @@ export default function RowParent({ chainKey, index }) {
                 <RowChildren
                   key={`${chainKey}-${categoryKey}`}
                   chainKey={chainKey}
+                  parentRef={parentRef.current}
                   categoryKey={categoryKey}
                   i={i}
                   categoryIndex={categoryIndex}
