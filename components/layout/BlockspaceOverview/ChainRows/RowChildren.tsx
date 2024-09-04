@@ -177,11 +177,11 @@ export default function RowChildren({
         }
         if (selectedValue === "share") {
           style.width = `calc(${widthPercentage * 100}%)`;
-          style.minWidth = "35px";
+          style.minWidth = "30px";
           // if()
         } else {
           style.width = `calc(${widthPercentage * 100}%)`;
-          style.minWidth = "35px";
+          style.minWidth = "30px";
           // if()
         }
       } else {
@@ -268,7 +268,7 @@ export default function RowChildren({
         ) {
           style.color = "#CDD8D3";
           style.minWidth = "55px";
-          style.width = "calc(100% + 12px)";
+          style.width = "calc(100% + 14px)";
           style.height = "38px";
           style.transformOrigin = "center center";
 
@@ -365,11 +365,11 @@ export default function RowChildren({
               }`
             : AllChainsByKeys[chainKey].darkTextOnBackground === true
             ? i > 4
-              ? "text-white/60 text-xs"
-              : "text-black text-xs"
+              ? "text-white/60 text-[10px]"
+              : "text-black text-[10px]"
             : i > 4
-            ? "text-white/60 text-xs"
-            : "text-white/80 text-xs"
+            ? "text-white/60 text-[10px]"
+            : "text-white/80 text-[10px]"
         } `}
         style={{
           ...subChildStyle(chainKey, categoryKey),
