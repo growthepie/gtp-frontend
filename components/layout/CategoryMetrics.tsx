@@ -135,7 +135,7 @@ export default function CategoryMetrics({
 
   const [maxDisplayedContracts, setMaxDisplayedContracts] = useState(10);
 
-  const [contractCategory, setContractCategory] = useState("value");
+  const [contractCategory, setContractCategory] = useState("gas_fees");
   const [sortOrder, setSortOrder] = useState(true);
   const [chainValues, setChainValues] = useState<any[][] | null>(null);
 
