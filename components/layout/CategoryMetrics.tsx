@@ -1323,7 +1323,7 @@ export default function CategoryMetrics({
                 onClick={() => setSelectedContract(null)}
               ></div>
             </div>
-            <div className="flex flex-col mt-[30px] w-[99%] mx-auto min-w-[880px] ">
+            <div className="flex flex-col w-[99%] mx-auto min-w-[880px] ">
               <GridTableHeader
                 gridDefinitionColumns="grid-cols-[20px,225px,280px,95px,minmax(135px,800px),115px]"
                 className="pb-[4px] text-[12px] gap-x-[15px] z-[2]"
