@@ -687,7 +687,7 @@ export const navigationItems: NavigationItem[] = [
     label: "Blog",
     icon: "gtp:blog",
     options: [],
-    href: "/",
+    href: "https://hackmd.io/@espejelomar/BkgcuG4MR",
   },
 
   //   ]

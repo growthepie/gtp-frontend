@@ -285,7 +285,8 @@ const RowItem = (rowData: any): JSX.Element => {
       <TableCell className="font-medium">
         <Link
           key={item?.chain.key}
-          href={`/chains/${AllChainsByKeys[item.chain.key].urlKey}`}
+          // href={`/chains/${AllChainsByKeys[item.chain.key].urlKey}`}
+          href={`/chains/${chains[index].url}`}
           className="flex gap-2 items-center"
         >
           {/* <Icon
@@ -303,7 +304,7 @@ const RowItem = (rowData: any): JSX.Element => {
         </Link>
       </TableCell>
       {/* Stage */}
-      <TableCell className="inline-flex text-right">
+      <TableCell>
         <span>Soon</span>
         {/* <div className="ml-auto">
           {monthsSinceLaunch[item.chain.key][0] || ""}
@@ -372,9 +373,10 @@ const getDataChain = () => {
     {
       icon: "/icons/exchange/eigen-layer-icon.png",
       name: "Eigen Layer",
+      url: "base",
     },
-    { icon: "/icons/exchange/symbiotic.svg", name: "Symbiotic" },
-    { icon: "/icons/exchange/karak.svg", name: "Karak" },
+    { icon: "/icons/exchange/symbiotic.svg", name: "Symbiotic", url: "" },
+    { icon: "/icons/exchange/karak.svg", name: "Karak", url: "" },
   ];
 };
 

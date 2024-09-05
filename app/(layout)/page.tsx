@@ -101,7 +101,7 @@ export default async function Page() {
       </Container> */}
       <Container>
         <div className="flex gap-x-0 md:gap-x-12 w-full ml-0 mt-[30px] md:mt-[60px]">
-          <div className="flex flex-col md:w-1/2 lg:w-2/3 ">
+          <div className="flex flex-col md:w-1/2 lg:w-full">
             <div className="flex items-center mb-[15px] md:mb-[15px] gap-x-[8px] py-[10px] md:py-0 ">
               <Icon
                 icon="gtp:gtp-about"

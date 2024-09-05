@@ -59,11 +59,11 @@ export const columns: ColumnDef<Chains>[] = [
             onClick={() => console.log("Copiado")}
             aria-label={"Copy completed"}
           >
-            <Icon
+            {/* <Icon
               icon="feather:plus"
               className="w-5 h-5"
               aria-hidden="true"
-            ></Icon>
+            ></Icon> */}
           </Button>
         </div>
       );
