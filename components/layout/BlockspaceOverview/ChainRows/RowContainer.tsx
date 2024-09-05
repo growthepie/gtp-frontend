@@ -42,9 +42,9 @@ export default function RowContainer() {
               ${
                 forceSelectedChain
                   ? allCats
-                    ? "bg-[#5A6462] "
-                    : "bg-inherit hover:bg-forest-800/50"
-                  : "bg-inherit"
+                    ? "bg-[#151A19] "
+                    : "bg-inherit hover:bg-[#5A6462]"
+                  : "bg-inherit hover:bg-[#5A6462]"
               } `}
                 onClick={() => {
                   if (forceSelectedChain) {
@@ -99,7 +99,7 @@ export default function RowContainer() {
                     } 
                     ${
                       isCategoryHovered(category) &&
-                      !(selectedCategory === category)
+                      (!(selectedCategory === category) || allCats)
                         ? "bg-[#5A6462]"
                         : ""
                     }`}

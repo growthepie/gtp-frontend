@@ -177,11 +177,11 @@ export default function RowChildren({
         }
         if (selectedValue === "share") {
           style.width = `calc(${widthPercentage * 100}%)`;
-          style.minWidth = "35px";
+          style.minWidth = "20px";
           // if()
         } else {
           style.width = `calc(${widthPercentage * 100}%)`;
-          style.minWidth = "35px";
+          style.minWidth = "20px";
           // if()
         }
       } else {
@@ -204,6 +204,17 @@ export default function RowChildren({
       selectedTimespan,
     ],
   );
+
+  const shareValue = useMemo(() => {
+    const dataTypes = data[chainKey].overview.types;
+    const categoryData =
+      data[chainKey].overview[selectedTimespan][categoryKey]["data"];
+    if (!categoryData) return 0;
+    else
+      return (
+        categoryData[dataTypes.indexOf(selectedMode)] / sumChainValue[chainKey]
+      );
+  }, [data, chainKey, categoryKey, selectedMode, sumChainValue]);
 
   const subChildStyle = useCallback(
     (
@@ -236,7 +247,11 @@ export default function RowChildren({
         )
       ) {
         style.backgroundColor = "rgba(255, 255, 255, 0.8)";
-        style.borderRadius = "50px";
+        if (isLastCategory) {
+          style.borderRadius = "50px 999px 999px 50px";
+        } else {
+          style.borderRadius = "50px";
+        }
       }
 
       if (
@@ -277,16 +292,17 @@ export default function RowChildren({
               style.transformOrigin = "left center";
               style.left = "0px";
             } else {
-              style.left = "-5px";
+              style.left = "0px";
             }
           }
 
           if (isLastCategory) {
             if (categoryData) {
               style.transformOrigin = "right center";
-              style.right = "-3px";
+              style.right = "-5px";
             } else {
               style.right = "1px";
+              style.borderRadius = "";
             }
           }
 
@@ -420,16 +436,25 @@ export default function RowChildren({
                 : "Ξ "
               : ""}
             {selectedValue === "share"
-              ? (
-                  data[chainKey].overview[selectedTimespan][categoryKey][
-                    "data"
-                  ][data[chainKey].overview.types.indexOf(selectedMode)] * 100.0
-                ).toFixed(2)
-              : formatNumber(
+              ? shareValue > 0.05 ||
+                selectedCategory === categoryKey ||
+                isCategoryHovered(categoryKey)
+                ? (
+                    data[chainKey].overview[selectedTimespan][categoryKey][
+                      "data"
+                    ][data[chainKey].overview.types.indexOf(selectedMode)] *
+                    100.0
+                  ).toFixed(2)
+                : ""
+              : shareValue > 0.05 ||
+                selectedCategory === categoryKey ||
+                isCategoryHovered(categoryKey)
+              ? formatNumber(
                   data[chainKey].overview[selectedTimespan][categoryKey][
                     "data"
                   ][data[chainKey].overview.types.indexOf(selectedMode)],
-                )}
+                )
+              : ""}
             {selectedValue === "share" ? "%" : ""}{" "}
           </>
         ) : (
