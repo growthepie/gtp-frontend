@@ -177,11 +177,11 @@ export default function RowChildren({
         }
         if (selectedValue === "share") {
           style.width = `calc(${widthPercentage * 100}%)`;
-          style.minWidth = "30px";
+          style.minWidth = "35px";
           // if()
         } else {
           style.width = `calc(${widthPercentage * 100}%)`;
-          style.minWidth = "30px";
+          style.minWidth = "35px";
           // if()
         }
       } else {
