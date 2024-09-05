@@ -394,10 +394,12 @@ export default function OverviewChart({
   ]);
 
   const categoriesList = useMemo(() => {
-    return Object.keys(data[standardChainKey].daily)
+    return Object.keys(master?.blockspace_categories.main_categories || {})
       .filter((category) => category !== "types")
       .reverse();
-  }, [data, standardChainKey]);
+  }, [master]);
+
+  console.log("categoriesList", categoriesList);
 
   const categoriesAllCatChartListOrder = useMemo(() => {
     return categoriesList.reverse();
