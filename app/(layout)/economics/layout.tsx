@@ -22,10 +22,12 @@ export default async function Layout({
             width={36}
           />
           <Heading className="text-[36px] leading-snug " as="h1">
-            {"Economics"}
+            {"Onchain Economics"}
           </Heading>
         </div>
-        <div className="text-[14px]">The page is bla bla in lorem ipsum dolor ......</div>
+        <div className="text-[14px]">
+          Aggregated metrics across all chains listed in the table below.
+        </div>
       </Container>
       <div>{children}</div>
     </>

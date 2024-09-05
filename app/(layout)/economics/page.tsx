@@ -46,21 +46,9 @@ export default function Economics() {
     econData.data;
 
   return (
-    <div className="mt-[60px] flex flex-col gap-y-[60px] h-full">
+    <div className="mt-[15px] flex flex-col gap-y-[60px] h-full">
       {/*Data Availability Fee Markets */}
       <Container className="flex flex-col gap-y-[15px]">
-        <div className="flex items-center gap-x-[8px]">
-          <Image
-            src="/GTP-Data.svg"
-            alt="GTP Chain"
-            className="object-contain w-[36px] h-[36px]"
-            height={36}
-            width={36}
-          />
-          <Heading className="text-[30px] leading-snug " as="h2">
-            Data Availability Fee Markets
-          </Heading>
-        </div>
         <EconHeadCharts da_charts={da_charts} />
       </Container>
       <ChainBreakdown data={chain_breakdown} master={master} />
