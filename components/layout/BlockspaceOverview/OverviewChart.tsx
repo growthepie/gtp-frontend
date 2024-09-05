@@ -733,7 +733,7 @@ export default function OverviewChart({
         });
       }
     }
-  }, [forceHoveredChartSeriesId, chartSeries, allCats]);
+  }, [forceHoveredChartSeriesId, chartSeries, allCats, hoveredCategories]);
 
   useEffect(() => {
     // set numeric symbols for highcharts
@@ -995,11 +995,13 @@ export default function OverviewChart({
                       : AllChainsByKeys[standardChainKey].colors[
                           theme ?? "dark"
                         ][0] + fillHexColorOpacity;
+
                   return (
                     series && (
                       <AreaSeries
                         key={index} // Add a key to each element in the list
                         name={series.custom.tooltipLabel}
+                        id={series.id}
                         color={
                           !selectedChain
                             ? {
