@@ -18,7 +18,11 @@ import {
 } from "react-jsx-highcharts";
 import { Splide, SplideSlide, SplideTrack } from "@splidejs/react-splide";
 import "@splidejs/splide/css";
-import { FeesBreakdown } from "@/types/api/EconomicsResponse";
+import {
+  FeesBreakdown,
+  l2_data,
+  l2_metrics,
+} from "@/types/api/EconomicsResponse";
 import { useLocalStorage } from "usehooks-ts";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
@@ -49,10 +53,20 @@ const COLORS = {
   ANNOTATION_BG: "rgb(215, 223, 222)",
 };
 
+const METRIC_COLORS = {
+  profit: "#E3FA6C",
+  fees: "#1DF7EF",
+  rent_paid: "#178577",
+  costs: {
+    settlement: "#98323E",
+    da: "#FE5468",
+  },
+};
+
 export default function EconHeadCharts({
-  da_charts,
+  chart_data,
 }: {
-  da_charts: FeesBreakdown;
+  chart_data: l2_data;
 }) {
   const { AllChains, AllChainsByKeys } = useMaster();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
@@ -162,15 +176,9 @@ export default function EconHeadCharts({
           const { name } = series;
           let blob_value;
           let blob_index;
-          if (index === 1) {
-            blob_index = da_charts[
-              chartTitle
-            ].total_blob_size.daily.data.findIndex((xVal) => xVal[0] === x);
-            blob_value =
-              da_charts[chartTitle].total_blob_size.daily.data[blob_index][1];
-          }
+
           const isFees = name.includes("Fees");
-          const nameString = isFees ? "Fees" : "Blob Size";
+          const nameString = name;
 
           const color = series.color.stops[0][1];
 
@@ -187,65 +195,72 @@ export default function EconHeadCharts({
             <div class="tooltip-point-name text-md">${nameString}</div>
             <div class="flex-1 text-right font-inter w-full flex">
               <div class="flex justify-end text-right w-full">
-                  <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-            }">${prefix}</div>
+                  <div class="opacity-70 mr-0.5 ${
+                    !prefix && "hidden"
+                  }">${prefix}</div>
                   <div style={{
                             fontFeatureSettings: "'pnum' on, 'lnum' on",
-                          }}>${isFees
-              ? parseFloat(displayValue).toLocaleString(
-                "en-GB",
-                {
-                  minimumFractionDigits:
-                    calculateDecimalPlaces(
-                      Number(displayValue),
-                    ),
-                  maximumFractionDigits:
-                    calculateDecimalPlaces(
-                      Number(displayValue),
-                    ),
-                },
-              )
-              : formatBytes(displayValue)
-            }
+                          }}>${
+                            isFees
+                              ? parseFloat(displayValue).toLocaleString(
+                                  "en-GB",
+                                  {
+                                    minimumFractionDigits:
+                                      calculateDecimalPlaces(
+                                        Number(displayValue),
+                                      ),
+                                    maximumFractionDigits:
+                                      calculateDecimalPlaces(
+                                        Number(displayValue),
+                                      ),
+                                  },
+                                )
+                              : formatBytes(displayValue)
+                          }
                   </div>
                 </div>
-                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
+                <div class="opacity-70 ml-0.5 ${
+                  !suffix && "hidden"
+                }">${suffix}</div>
             </div>
           </div>
-          ${index === 1
+          ${
+            index === 1
               ? ` <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${"#344240"}"></div>
             <div class="tooltip-point-name text-md">${"Cost / GB"}</div>
             <div class="flex-1 text-right font-inter w-full flex">
               <div class="flex justify-end text-right w-full">
-                  <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-              }">${prefix}</div>
+                  <div class="opacity-70 mr-0.5 ${
+                    !prefix && "hidden"
+                  }">${prefix}</div>
                   <div style={{
                             fontFeatureSettings: "'pnum' on, 'lnum' on",
-                          }}>${isFees
-                ? parseFloat(
-                  String(
-                    calculateCostPerGB(Number(y), blob_value),
-                  ),
-                ).toLocaleString("en-GB", {
-                  minimumFractionDigits: calculateDecimalPlaces(
-                    Number(displayValue),
-                  ),
-                  maximumFractionDigits: calculateDecimalPlaces(
-                    Number(displayValue),
-                  ),
-                })
-                : formatBytes(displayValue)
-              }
+                          }}>${
+                            isFees
+                              ? parseFloat(
+                                  String(
+                                    calculateCostPerGB(Number(y), blob_value),
+                                  ),
+                                ).toLocaleString("en-GB", {
+                                  minimumFractionDigits: calculateDecimalPlaces(
+                                    Number(displayValue),
+                                  ),
+                                  maximumFractionDigits: calculateDecimalPlaces(
+                                    Number(displayValue),
+                                  ),
+                                })
+                              : formatBytes(displayValue)
+                          }
                   </div>
                 </div>
-                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-              }">${suffix}</div>
+                <div class="opacity-70 ml-0.5 ${
+                  !suffix && "hidden"
+                }">${suffix}</div>
             </div>
           </div>`
               : ``
-            }`;
+          }`;
         })
         .join("");
 
@@ -345,7 +360,7 @@ export default function EconHeadCharts({
 
       return number;
     },
-    [da_charts, showUsd],
+    [showUsd],
   );
 
   function simplerFormatter(value: number) {
@@ -365,152 +380,44 @@ export default function EconHeadCharts({
           width: "100%",
           breakpoints: {
             640: {
-              perPage: 1,
+              perPage: 2,
             },
             900: {
-              perPage: isSidebarOpen ? 1 : 2,
+              perPage: isSidebarOpen ? 2 : 3,
             },
             1100: {
-              perPage: 2,
+              perPage: 3,
             },
             1250: {
-              perPage: 2,
+              perPage: 3,
             },
             1450: {
-              perPage: 2,
+              perPage: 3,
             },
             1600: {
-              perPage: 2,
+              perPage: 3,
             },
             6000: {
-              perPage: 2,
+              perPage: 3,
             },
           },
         }}
         aria-labelledby={"economics-traction-title"}
         hasTrack={false}
-      // onDrag={(e) => {
-      //   setIsDragging(true);
-      // }}
-      // onDragged={(e) => {
-      //   setIsDragging(false);
-      // }}
+        // onDrag={(e) => {
+        //   setIsDragging(true);
+        // }}
+        // onDragged={(e) => {
+        //   setIsDragging(false);
+        // }}
       >
         <SplideTrack>
-          {Object.keys(da_charts).map((key, i) => {
-            let dataIndex = da_charts[key].total_blob_fees.daily.types.indexOf(
-              showUsd ? "usd" : "eth",
-            );
-            const sizeLength = da_charts[key].total_blob_size.daily.data.length;
-            const feesLength = da_charts[key].total_blob_fees.daily.data.length;
-            const largerAxis =
-              sizeLength > feesLength ? "total_blob_size" : "total_blob_fees";
+          {Object.keys(chart_data.metrics).map((key, i) => {
+            const isMultipleSeries = key === "costs";
 
             return (
-              <SplideSlide key={key + i + "Splide"}>
-                <div
-                  className="relative flex flex-col w-full overflow-hidden h-[170px] bg-[#1F2726] rounded-2xl "
-                  key={key}
-                >
-                  <div className="absolute top-[5px] w-[calc(100% - 38px)] left-[19px] right-[21px] flex justify-between pl-[15px] pr-[2px] text-[16px] font-[650] ">
-                    <div className="flex items-center gap-x-2 justify-center">
-                      <Icon
-                        icon={
-                          key.includes("ethereum")
-                            ? "gtp:blobs"
-                            : "gtp:celestiafp"
-                        }
-                        className="w-[15px] h-[15px]"
-                      />
-                      <div>
-                        {key.charAt(0).toUpperCase() +
-                          key.slice(1) +
-                          " Blob Usage"}
-                      </div>
-                      <div className="rounded-full w-[15px] h-[15px] bg-[#344240] flex items-center justify-center text-[10px] z-10">
-                        <Icon
-                          icon="feather:arrow-right"
-                          className="w-[11px] h-[11px]"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex justify-between gap-x-[15px] items-center h-[36px] bg-[#344240CC]  rounded-[10px] pl-[15px] pr-[15px] mr-[8px]  ">
-                      <div
-                        className="text-[14px] font-semibold "
-                        style={{
-                          fontFeatureSettings: "'pnum' on, 'lnum' on",
-                        }}
-                      >
-                        {valuePrefix}
-                        {calculateCostPerGB(
-                          da_charts[key].total_blob_fees.daily.data[
-                          feesLength - 1
-                          ][dataIndex],
-                          da_charts[key].total_blob_size.daily.data[
-                          sizeLength - 1
-                          ][1],
-                        )}
-                        {" / GB "}
-                      </div>
-                      <div
-                        className="text-[10px] font-normal flex flex-col gap-y-[1px] text-right"
-                        style={{
-                          fontFeatureSettings: "'pnum' on, 'lnum' on",
-                        }}
-                      >
-                        <div>
-                          {formatBytes(
-                            da_charts[key].total_blob_size.daily.data[
-                            sizeLength - 1
-                            ][1],
-                          )}
-                        </div>
-                        <div className="text-right">
-                          {valuePrefix}
-                          {simplerFormatter(
-                            da_charts[key].total_blob_fees.daily.data[
-                            feesLength - 1
-                            ][dataIndex],
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div
-                    className="absolute  w-[18px] left-0 h-full flex items-center justify-center "
-                    style={{
-                      background: "#436964",
-                    }}
-                  >
-                    <div
-                      className="text-[12px] font-semibold w-full rotate-180"
-                      style={{
-                        writingMode: "vertical-lr",
-                        textOrientation: "sideways",
-                      }}
-                    >
-                      {da_charts[key].total_blob_size.metric_name + " in GB"}
-                    </div>
-                  </div>
-                  <div
-                    className="absolute w-[18px] right-0 h-full flex items-center justify-center px-[2px]"
-                    style={{
-                      background: "#178577",
-                    }}
-                  >
-                    <div
-                      className="text-[12px] font-semibold w-full  rotate-0"
-                      style={{
-                        writingMode: "vertical-lr",
-                        textOrientation: "sideways",
-                      }}
-                    >
-                      {da_charts[key].total_blob_fees.metric_name}
-                    </div>
-                  </div>
-                  <hr className="absolute left-[18px] w-[calc(100%-36px)] border-t-[1.5px] top-[50px] border-[#5A64624F] my-4" />
-                  <hr className="absolute left-[18px] w-[calc(100%-36px)] border-t-[1.5px] top-[85px] border-[#5A64624F] my-4" />
-                  <hr className="absolute left-[18px] w-[calc(100%-36px)] border-t-[1.5px] top-[119px] border-[#5A64624F] my-4" />
+              <SplideSlide key={"Splide" + key}>
+                <div className="relative flex flex-col w-full overflow-hidden h-[170px] bg-[#1F2726] rounded-2xl ">
                   <div className="relative w-full h-full flex justify-center items-end overflow-visible">
                     <HighchartsProvider Highcharts={Highcharts}>
                       <HighchartsChart
@@ -536,9 +443,9 @@ export default function EconHeadCharts({
                                 y2: 0,
                               },
                               stops: [
-                                [0, "#178577"],
+                                [0, METRIC_COLORS[key]],
                                 // [0.33, AllChainsByKeys[series.name].colors[1]],
-                                [1, "#178577"],
+                                [1, METRIC_COLORS[key]],
                               ],
                             },
                           },
@@ -557,8 +464,8 @@ export default function EconHeadCharts({
                                 y2: 1,
                               },
                               stops: [
-                                [0, "#436964" + "99"],
-                                [1, "#436964" + "99"],
+                                [0, METRIC_COLORS[key] + "99"],
+                                [1, METRIC_COLORS[key] + "99"],
                               ],
                             },
                             // shadow: {
@@ -574,9 +481,9 @@ export default function EconHeadCharts({
                                 y2: 0,
                               },
                               stops: [
-                                [0, "#436964"],
+                                [0, METRIC_COLORS[key]],
                                 // [0.33, AllChainsByKeys[series.name].colors[1]],
-                                [1, "#436964"],
+                                [1, METRIC_COLORS[key]],
                               ],
                             },
                             // borderColor: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
@@ -596,12 +503,12 @@ export default function EconHeadCharts({
                         <Title
                           style={{ display: "none" }} // This hides the title
                         >
-                          {key}
+                          {"Test"}
                         </Title>
                         <Chart
                           backgroundColor={"transparent"}
                           type="area"
-                          title={key}
+                          title={"test"}
                           panning={{ enabled: true }}
                           panKey="shift"
                           zooming={{ type: undefined }}
@@ -632,128 +539,119 @@ export default function EconHeadCharts({
                             }
 
                             chart.series.forEach((object, index) => {
-                              const dictionaryKey = `${chart.series[index].name}_${key}`;
-                              const isFees = chart.series[index].name
-                                .toLowerCase()
-                                .includes("fees");
-
-                              // check if gradient exists
-                              if (!document.getElementById("gradient0")) {
-                                // add def containing linear gradient with stop colors for the circle
-
-                                chart.renderer.definition({
-                                  attributes: {
-                                    id: "gradient0",
-                                    x1: "0%",
-                                    y1: "0%",
-                                    x2: "0%",
-                                    y2: "95%",
-                                  },
-                                  children: [
-                                    {
-                                      tagName: "stop",
-                                      // offset: "0%",
-
-                                      attributes: {
-                                        id: "stop1",
-                                        offset: "0%",
-                                      },
-                                    },
-                                    {
-                                      tagName: "stop",
-                                      // offset: "100%",
-                                      attributes: {
-                                        id: "stop2",
-                                        offset: "100%",
-                                      },
-                                    },
-                                  ],
-                                  tagName: "linearGradient",
-                                  textContent: "",
-                                });
-                                const stop1 = document.getElementById("stop1");
-                                const stop2 = document.getElementById("stop2");
-                                stop1?.setAttribute(
-                                  "stop-color",
-                                  chart.series[index].color.stops[0][1],
-                                );
-                                stop1?.setAttribute("stop-opacity", "1");
-                                stop2?.setAttribute(
-                                  "stop-color",
-                                  chart.series[index].color.stops[1][1],
-                                );
-                                stop2?.setAttribute("stop-opacity", "0.33");
-                              }
-
-                              const lastPoint: Highcharts.Point =
-                                chart.series[index].points[
-                                chart.series[index].points.length - 1
-                                ];
-
-                              // check if i exists as a key in lastPointLines
-                              if (!lastPointLines[dictionaryKey]) {
-                                lastPointLines[dictionaryKey] = [];
-                              }
-
-                              if (
-                                lastPointLines[dictionaryKey] &&
-                                lastPointLines[dictionaryKey].length > 0
-                              ) {
-                                lastPointLines[dictionaryKey].forEach(
-                                  (line) => {
-                                    line.destroy();
-                                  },
-                                );
-                                lastPointLines[dictionaryKey] = [];
-                              }
-
-                              // calculate the fraction that 15px is in relation to the pixel width of the chart
-                              const fraction = 21 / chart.chartWidth;
-
-                              // create a bordered line from the last point to the top of the chart's container
-                              lastPointLines[dictionaryKey][
-                                lastPointLines[dictionaryKey].length
-                              ] = chart.renderer
-                                .createElement("line")
-                                .attr({
-                                  x1:
-                                    chart.chartWidth * (1 - fraction) + 0.00005,
-                                  y1: lastPoint.plotY
-                                    ? lastPoint.plotY + chart.plotTop
-                                    : 0,
-                                  x2:
-                                    chart.chartWidth * (1 - fraction) - 0.00005,
-                                  y2: !isFees
-                                    ? chart.plotTop - 10
-                                    : chart.plotTop - 5,
-                                  stroke: isSafariBrowser
-                                    ? AllChainsByKeys["all_l2s"].colors[
-                                    "dark"
-                                    ][1]
-                                    : "url('#gradient0')",
-                                  "stroke-dasharray": "2",
-                                  "stroke-width": 1,
-                                  rendering: "crispEdges",
-                                })
-                                .add();
-
-                              lastPointLines[dictionaryKey][
-                                lastPointLines[dictionaryKey].length
-                              ] = chart.renderer
-                                .circle(
-                                  chart.chartWidth * (1 - fraction),
-                                  !isFees
-                                    ? chart.plotTop / 3 + 5
-                                    : chart.plotTop / 3 + 21,
-                                  3,
-                                )
-                                .attr({
-                                  fill: chart.series[index].color.stops[0][1],
-                                  r: 4.5,
-                                  zIndex: 9999,
-                                  rendering: "crispEdges",
-                                })
-                                .add();
+                              // const dictionaryKey = `${chart.series[index].name}_${key}`;
+                              // const isFees = chart.series[index].name
+                              //   .toLowerCase()
+                              //   .includes("fees");
+                              // // check if gradient exists
+                              // if (!document.getElementById("gradient0")) {
+                              //   // add def containing linear gradient with stop colors for the circle
+                              //   chart.renderer.definition({
+                              //     attributes: {
+                              //       id: "gradient0",
+                              //       x1: "0%",
+                              //       y1: "0%",
+                              //       x2: "0%",
+                              //       y2: "95%",
+                              //     },
+                              //     children: [
+                              //       {
+                              //         tagName: "stop",
+                              //         // offset: "0%",
+                              //         attributes: {
+                              //           id: "stop1",
+                              //           offset: "0%",
+                              //         },
+                              //       },
+                              //       {
+                              //         tagName: "stop",
+                              //         // offset: "100%",
+                              //         attributes: {
+                              //           id: "stop2",
+                              //           offset: "100%",
+                              //         },
+                              //       },
+                              //     ],
+                              //     tagName: "linearGradient",
+                              //     textContent: "",
+                              //   });
+                              //   const stop1 = document.getElementById("stop1");
+                              //   const stop2 = document.getElementById("stop2");
+                              //   stop1?.setAttribute(
+                              //     "stop-color",
+                              //     chart.series[index].color.stops[0][1],
+                              //   );
+                              //   stop1?.setAttribute("stop-opacity", "1");
+                              //   stop2?.setAttribute(
+                              //     "stop-color",
+                              //     chart.series[index].color.stops[1][1],
+                              //   );
+                              //   stop2?.setAttribute("stop-opacity", "0.33");
+                              // }
+                              // const lastPoint: Highcharts.Point =
+                              //   chart.series[index].points[
+                              //   chart.series[index].points.length - 1
+                              //   ];
+                              // // check if i exists as a key in lastPointLines
+                              // if (!lastPointLines[dictionaryKey]) {
+                              //   lastPointLines[dictionaryKey] = [];
+                              // }
+                              // if (
+                              //   lastPointLines[dictionaryKey] &&
+                              //   lastPointLines[dictionaryKey].length > 0
+                              // ) {
+                              //   lastPointLines[dictionaryKey].forEach(
+                              //     (line) => {
+                              //       line.destroy();
+                              //     },
+                              //   );
+                              //   lastPointLines[dictionaryKey] = [];
+                              // }
+                              // // calculate the fraction that 15px is in relation to the pixel width of the chart
+                              // const fraction = 21 / chart.chartWidth;
+                              // // create a bordered line from the last point to the top of the chart's container
+                              // lastPointLines[dictionaryKey][
+                              //   lastPointLines[dictionaryKey].length
+                              // ] = chart.renderer
+                              //   .createElement("line")
+                              //   .attr({
+                              //     x1:
+                              //       chart.chartWidth * (1 - fraction) + 0.00005,
+                              //     y1: lastPoint.plotY
+                              //       ? lastPoint.plotY + chart.plotTop
+                              //       : 0,
+                              //     x2:
+                              //       chart.chartWidth * (1 - fraction) - 0.00005,
+                              //     y2: !isFees
+                              //       ? chart.plotTop - 10
+                              //       : chart.plotTop - 5,
+                              //     stroke: isSafariBrowser
+                              //       ? AllChainsByKeys["all_l2s"].colors[
+                              //       "dark"
+                              //       ][1]
+                              //       : "url('#gradient0')",
+                              //     "stroke-dasharray": "2",
+                              //     "stroke-width": 1,
+                              //     rendering: "crispEdges",
+                              //   })
+                              //   .add();
+                              // lastPointLines[dictionaryKey][
+                              //   lastPointLines[dictionaryKey].length
+                              // ] = chart.renderer
+                              //   .circle(
+                              //     chart.chartWidth * (1 - fraction),
+                              //     !isFees
+                              //       ? chart.plotTop / 3 + 5
+                              //       : chart.plotTop / 3 + 21,
+                              //     3,
+                              //   )
+                              //   .attr({
+                              //     fill: chart.series[index].color.stops[0][1],
+                              //     r: 4.5,
+                              //     zIndex: 9999,
+                              //     rendering: "crispEdges",
+                              //   })
+                              //   .add();
                             });
                           }}
                         />
@@ -798,18 +696,22 @@ export default function EconHeadCharts({
                               zIndex: 1000,
                             },
                             enabled: true,
-                            // formatter: (item) => {
-                            //   const date = new Date(item.value);
-                            //   const isMonthStart = date.getDate() === 1;
-                            //   const isYearStart = isMonthStart && date.getMonth() === 0;
-                            //   if (isYearStart) {
-                            //     return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
-                            //   } else {
-                            //     return `<span style="">${date.toLocaleDateString("en-GB", {
-                            //       month: "short",
-                            //     })}</span>`;
-                            //   }
-                            // },
+                            formatter: (item) => {
+                              const date = new Date(item.value);
+                              const isMonthStart = date.getDate() === 1;
+                              const isYearStart =
+                                isMonthStart && date.getMonth() === 0;
+                              if (isYearStart) {
+                                return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
+                              } else {
+                                return `<span style="">${date.toLocaleDateString(
+                                  "en-GB",
+                                  {
+                                    month: "short",
+                                  },
+                                )}</span>`;
+                              }
+                            },
                           }}
                           crosshair={{
                             width: 0.5,
@@ -825,12 +727,17 @@ export default function EconHeadCharts({
                           minorTickWidth={2}
                           minorGridLineWidth={0}
                           minorTickInterval={1000 * 60 * 60 * 24 * 1}
-                          min={da_charts[key].total_blob_size.daily.data[0][0]}
+                          min={
+                            !isMultipleSeries
+                              ? chart_data.metrics[key].daily.data[0][0]
+                              : 0
+                          }
                           max={
-                            da_charts[key].total_blob_size.daily.data[
-                            da_charts[key].total_blob_size.daily.data.length -
-                            1
-                            ][0]
+                            !isMultipleSeries
+                              ? chart_data.metrics[key].daily.data[
+                                  chart_data.metrics[key].daily.data.length - 1
+                                ][0]
+                              : 1000
                           }
                         >
                           <XAxis.Title>X Axis</XAxis.Title>
@@ -869,33 +776,7 @@ export default function EconHeadCharts({
                             },
                           }}
                           min={0}
-                        >
-                          <AreaSeries
-                            name={da_charts[key].total_blob_size.metric_name}
-                            showInLegend={false}
-                            data={da_charts[key].total_blob_size.daily.data.map(
-                              (d: any) => [d[0], d[1]],
-                            )}
-                            states={{
-                              hover: {
-                                enabled: true,
-                                halo: {
-                                  size: 5,
-                                  opacity: 1,
-                                  attributes: {
-                                    fill: "#436964" + "99",
-                                    stroke: "#436964" + "66",
-                                  },
-                                },
-                                brightness: 0.3,
-                              },
-                              inactive: {
-                                enabled: true,
-                                opacity: 0.6,
-                              },
-                            }}
-                          ></AreaSeries>
-                        </YAxis>
+                        ></YAxis>
                         <YAxis
                           opposite={true}
                           // showFirstLabel={true}
@@ -926,64 +807,45 @@ export default function EconHeadCharts({
                           }}
                           min={0}
                         >
-                          <LineSeries
-                            name={da_charts[key].total_blob_fees.metric_name}
-                            showInLegend={false}
-                            data={da_charts[key].total_blob_fees.daily.data.map(
-                              (d: any) => [d[0], d[dataIndex]],
-                            )}
-                            states={{
-                              hover: {
-                                enabled: true,
-                                halo: {
-                                  size: 5,
-                                  opacity: 1,
-                                  attributes: {
-                                    fill: "#178577" + "99",
-                                    stroke: "#178577" + "66",
+                          {!isMultipleSeries ? (
+                            <AreaSeries
+                              name={chart_data.metrics[key].metric_name}
+                              showInLegend={false}
+                              data={chart_data.metrics[key].daily.data.map(
+                                (d: any) => [
+                                  d[0],
+                                  d[
+                                    chart_data.metrics[key].daily.types.indexOf(
+                                      showUsd ? "usd" : "eth",
+                                    )
+                                  ],
+                                ],
+                              )}
+                              states={{
+                                hover: {
+                                  enabled: true,
+                                  halo: {
+                                    size: 5,
+                                    opacity: 1,
+                                    attributes: {
+                                      fill: METRIC_COLORS[key] + "99",
+                                      stroke: METRIC_COLORS[key] + "66",
+                                    },
                                   },
+                                  brightness: 0.3,
                                 },
-                                brightness: 0.3,
-                              },
-                              inactive: {
-                                enabled: true,
-                                opacity: 0.6,
-                              },
-                            }}
-                          ></LineSeries>
+                                inactive: {
+                                  enabled: true,
+                                  opacity: 0.6,
+                                },
+                              }}
+                            ></AreaSeries>
+                          ) : (
+                            <div></div>
+                          )}
                         </YAxis>
                       </HighchartsChart>
                     </HighchartsProvider>
-                  </div>
-
-                  <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute left-[34px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/50 pointer-events-none">
-                    <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
-
-                    <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
-                      {new Date(
-                        da_charts[key][largerAxis].daily.data[0][0],
-                      ).toLocaleDateString("en-GB", {
-                        timeZone: "UTC",
-                        month: "short",
-                        // day: "numeric",
-                        year: "numeric",
-                      })}
-                    </div>
-                  </div>
-                  <div className="opacity-100 transition-opacity duration-[900ms]  group-hover/chart:opacity-0 absolute right-[34px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/50 pointer-events-none">
-                    <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
-                      {new Date(
-                        da_charts[key][largerAxis].daily.data[
-                        da_charts[key][largerAxis].daily.data.length - 1
-                        ][0],
-                      ).toLocaleDateString("en-GB", {
-                        timeZone: "UTC",
-                        month: "short",
-                        // day: "numeric",
-                        year: "numeric",
-                      })}
-                    </div>
-                    <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
                   </div>
                 </div>
               </SplideSlide>
