@@ -7,33 +7,17 @@ import {
   XAxis,
   YAxis,
   Title,
-  Subtitle,
-  Legend,
-  LineSeries,
   Tooltip,
   PlotBand,
-  PlotLine,
-  withHighcharts,
   AreaSeries,
 } from "react-jsx-highcharts";
 import { Splide, SplideSlide, SplideTrack } from "@splidejs/react-splide";
 import "@splidejs/splide/css";
-import {
-  FeesBreakdown,
-  l2_data,
-  l2_metrics,
-} from "@/types/api/EconomicsResponse";
+import { l2_data } from "@/types/api/EconomicsResponse";
 import { useLocalStorage } from "usehooks-ts";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
-import {
-  useMemo,
-  useState,
-  useEffect,
-  useRef,
-  ReactNode,
-  useCallback,
-} from "react";
+import { useMemo, useState, useCallback } from "react";
 import d3 from "d3";
 import {
   navigationItems,
@@ -41,8 +25,9 @@ import {
   getFundamentalsByKey,
 } from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
-import { B } from "million/dist/shared/million.485bbee4";
 import { useMaster } from "@/contexts/MasterContext";
+import ChartWatermark from "@/components/layout/ChartWatermark";
+import { unix } from "moment";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -177,7 +162,7 @@ export default function EconHeadCharts({
           let blob_value;
           let blob_index;
 
-          const isFees = name.includes("Fees");
+          const isFees = true;
           const nameString = name;
 
           const color = series.color.stops[0][1];
@@ -414,21 +399,75 @@ export default function EconHeadCharts({
         <SplideTrack>
           {Object.keys(chart_data.metrics).map((key, i) => {
             const isMultipleSeries = key === "costs";
+            const lastIndex = !isMultipleSeries
+              ? chart_data.metrics[key].daily.data.length - 1
+              : 0;
+            const unixIndex = !isMultipleSeries
+              ? chart_data.metrics[key].daily.types.indexOf("unix")
+              : 0;
+            const dataIndex = !isMultipleSeries
+              ? chart_data.metrics[key].daily.types.indexOf(
+                  showUsd ? "usd" : "eth",
+                )
+              : 0;
 
             return (
               <SplideSlide key={"Splide" + key}>
-                <div className="relative flex flex-col w-full overflow-hidden h-[170px] bg-[#1F2726] rounded-2xl ">
+                <div className="relative flex flex-col w-full overflow-hidden h-[197px] bg-[#1F2726] rounded-2xl  ">
+                  <div className="absolute text-[16px] font-bold top-[15px] left-[21px]">
+                    {chart_data.metrics[key].metric_name}
+                  </div>
+                  <div className="absolute text-[16px] font-bold top-[15px] right-[26px]">
+                    {/*chart_data.metrics[key].metric_name*/}
+                  </div>
+                  <hr className="absolute w-full border-t-[2px] top-[41px] border-[#5A64624F] my-4" />
+                  <hr className="absolute w-full border-t-[2px] top-[81px] border-[#5A64624F] my-4" />
+                  <hr className="absolute w-full border-t-[2px] top-[122px] border-[#5A64624F] my-4" />
+                  <div className="absolute bottom-[46.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-20">
+                    <ChartWatermark className="w-[128.54px] h-[25.69px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
+                  </div>
+
+                  <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/70 pointer-events-none">
+                    <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
+                    <div className="text-[#CDD8D3] text-[9px] font-medium leading-[150%]">
+                      {!isMultipleSeries &&
+                        new Date(
+                          chart_data.metrics[key].daily.data[0][unixIndex],
+                        ).toLocaleDateString("en-GB", {
+                          timeZone: "UTC",
+                          month: "short",
+                          // day: "numeric",
+                          year: "numeric",
+                        })}
+                    </div>
+                  </div>
+                  <div className=" duration-[900ms] group-hover/chart:opacity-0 absolute right-[15px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/70 pointer-events-none">
+                    <div className="text-[#CDD8D3] text-[9px] font-medium leading-[150%]">
+                      {!isMultipleSeries &&
+                        new Date(
+                          chart_data.metrics[key].daily.data[lastIndex][
+                            unixIndex
+                          ],
+                        ).toLocaleDateString("en-GB", {
+                          timeZone: "UTC",
+                          month: "short",
+                          // day: "numeric",
+                          year: "numeric",
+                        })}
+                    </div>
+                    <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
+                  </div>
                   <div className="relative w-full h-full flex justify-center items-end overflow-visible">
                     <HighchartsProvider Highcharts={Highcharts}>
                       <HighchartsChart
                         containerProps={{
                           style: {
                             height: "100%",
-                            width: "calc(100% - 36px)",
+                            width: "100%",
                             marginLeft: "auto",
                             marginRight: "auto",
                             position: "absolute",
-                            left: "18px",
+
                             overflow: "visible",
                           },
                         }}
@@ -515,7 +554,7 @@ export default function EconHeadCharts({
                           style={{ borderRadius: 15 }}
                           animation={{ duration: 50 }}
                           // margin={[0, 15, 0, 0]} // Use the array form for margin
-                          margin={[30, 21, 0, 21]}
+                          margin={[20, 21, 15, 0]}
                           spacingBottom={0}
                           spacingTop={40}
                           spacingLeft={10}
@@ -719,13 +758,10 @@ export default function EconHeadCharts({
                             snap: false,
                           }}
                           tickmarkPlacement="on"
-                          tickWidth={1}
+                          tickWidth={0}
                           tickLength={20}
                           ordinal={false}
                           minorTicks={false}
-                          minorTickLength={2}
-                          minorTickWidth={2}
-                          minorGridLineWidth={0}
                           minorTickInterval={1000 * 60 * 60 * 24 * 1}
                           min={
                             !isMultipleSeries
@@ -749,55 +785,23 @@ export default function EconHeadCharts({
                           // showLastLabel={true}
                           type="linear"
                           gridLineWidth={0}
-                          minPadding={50}
                           gridLineColor={"#5A64624F"}
                           showFirstLabel={false}
                           showLastLabel={false}
                           tickAmount={5}
                           labels={{
                             align: "left",
-                            y: -1,
-                            x: -19,
-                            overflow: "allow",
+                            y: -5,
+                            x: 2,
+                            distance: 50,
 
                             style: {
-                              fontSize: "8px",
-                              color: "#CDD8D3BB",
+                              backgroundColor: "#1F2726",
                               whiteSpace: "nowrap",
-                            },
-                            formatter: function (
-                              t: Highcharts.AxisLabelsFormatterContextObject,
-                            ) {
-                              const value =
-                                typeof t.value === "string"
-                                  ? parseFloat(t.value)
-                                  : t.value;
-                              return formatBytes(value);
-                            },
-                          }}
-                          min={0}
-                        ></YAxis>
-                        <YAxis
-                          opposite={true}
-                          // showFirstLabel={true}
-                          // showLastLabel={true}
-                          type="linear"
-                          gridLineWidth={0}
-                          minPadding={50}
-                          gridLineColor={"#5A64624F"}
-                          showFirstLabel={false}
-                          showLastLabel={false}
-                          tickAmount={5}
-                          labels={{
-                            align: "right",
-                            y: -1,
-                            x: 19,
-                            overflow: "allow",
-
-                            style: {
-                              fontSize: "8px",
-                              color: "#CDD8D3BB",
-                              whiteSpace: "nowrap",
+                              fontWeight: "semibold",
+                              fontSize: "9px",
+                              fontFamily: "var(--font-raleway), sans-serif",
+                              color: "#CDD8D3",
                             },
                             formatter: function (
                               t: Highcharts.AxisLabelsFormatterContextObject,
