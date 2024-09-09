@@ -190,14 +190,9 @@ export default function EconHeadCharts({
                               ? parseFloat(displayValue).toLocaleString(
                                   "en-GB",
                                   {
-                                    minimumFractionDigits:
-                                      calculateDecimalPlaces(
-                                        Number(displayValue),
-                                      ),
-                                    maximumFractionDigits:
-                                      calculateDecimalPlaces(
-                                        Number(displayValue),
-                                      ),
+                                    minimumFractionDigits: 2,
+
+                                    maximumFractionDigits: 2,
                                   },
                                 )
                               : formatBytes(displayValue)
@@ -209,43 +204,7 @@ export default function EconHeadCharts({
                 }">${suffix}</div>
             </div>
           </div>
-          ${
-            index === 1
-              ? ` <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${"#344240"}"></div>
-            <div class="tooltip-point-name text-md">${"Cost / GB"}</div>
-            <div class="flex-1 text-right font-inter w-full flex">
-              <div class="flex justify-end text-right w-full">
-                  <div class="opacity-70 mr-0.5 ${
-                    !prefix && "hidden"
-                  }">${prefix}</div>
-                  <div style={{
-                            fontFeatureSettings: "'pnum' on, 'lnum' on",
-                          }}>${
-                            isFees
-                              ? parseFloat(
-                                  String(
-                                    calculateCostPerGB(Number(y), blob_value),
-                                  ),
-                                ).toLocaleString("en-GB", {
-                                  minimumFractionDigits: calculateDecimalPlaces(
-                                    Number(displayValue),
-                                  ),
-                                  maximumFractionDigits: calculateDecimalPlaces(
-                                    Number(displayValue),
-                                  ),
-                                })
-                              : formatBytes(displayValue)
-                          }
-                  </div>
-                </div>
-                <div class="opacity-70 ml-0.5 ${
-                  !suffix && "hidden"
-                }">${suffix}</div>
-            </div>
-          </div>`
-              : ``
-          }`;
+         `;
         })
         .join("");
 
@@ -348,12 +307,52 @@ export default function EconHeadCharts({
     [showUsd],
   );
 
-  function simplerFormatter(value: number) {
-    return Intl.NumberFormat("en-GB", {
-      notation: "compact",
-      maximumFractionDigits: calculateDecimalPlaces(value),
-      minimumFractionDigits: calculateDecimalPlaces(value),
-    }).format(value);
+  function getMultiLastIndexKey(data, unixIndex) {
+    let lastIndexKey;
+    let smallestUnixTimestamp;
+
+    Object.keys(data).map((key, i) => {
+      if (
+        i === 0 ||
+        data[key].daily.data[data[key].daily.data.length - 1][unixIndex] <
+          smallestUnixTimestamp
+      ) {
+        smallestUnixTimestamp =
+          data[key].daily.data[data[key].daily.data.length - 1][unixIndex];
+        lastIndexKey = key;
+      }
+    });
+
+    return lastIndexKey;
+  }
+
+  function getMultiFirstIndexKey(data, unixIndex) {
+    let firstIndexKey;
+    let largestUnixTimestamp;
+
+    Object.keys(data).map((key, i) => {
+      if (
+        i === 0 ||
+        data[key].daily.data[0][unixIndex] < largestUnixTimestamp
+      ) {
+        largestUnixTimestamp = data[key].daily.data[0][unixIndex];
+        firstIndexKey = key;
+      }
+    });
+
+    return firstIndexKey;
+  }
+
+  function getSumDisplayValue(data) {
+    let sum = 0;
+    Object.keys(data).map((key) => {
+      sum +=
+        data[key].daily.data[data[key].daily.data.length - 1][
+          data[key].daily.types.indexOf(showUsd ? "usd" : "eth")
+        ];
+    });
+
+    return sum;
   }
 
   return (
@@ -397,464 +396,619 @@ export default function EconHeadCharts({
         // }}
       >
         <SplideTrack>
-          {Object.keys(chart_data.metrics).map((key, i) => {
-            const isMultipleSeries = key === "costs";
-            const lastIndex = !isMultipleSeries
-              ? chart_data.metrics[key].daily.data.length - 1
-              : 0;
-            const unixIndex = !isMultipleSeries
-              ? chart_data.metrics[key].daily.types.indexOf("unix")
-              : 0;
-            const dataIndex = !isMultipleSeries
-              ? chart_data.metrics[key].daily.types.indexOf(
-                  showUsd ? "usd" : "eth",
-                )
-              : 0;
+          {Object.keys(chart_data.metrics)
+            .filter((key) => {
+              return key !== "rent_paid";
+            })
+            .map((key, i) => {
+              const isMultipleSeries = key === "costs";
+              const lastIndex = !isMultipleSeries
+                ? chart_data.metrics[key].daily.data.length - 1
+                : 0;
+              const unixIndex = !isMultipleSeries
+                ? chart_data.metrics[key].daily.types.indexOf("unix")
+                : 0;
+              const dataIndex = !isMultipleSeries
+                ? chart_data.metrics[key].daily.types.indexOf(
+                    showUsd ? "usd" : "eth",
+                  )
+                : 0;
 
-            return (
-              <SplideSlide key={"Splide" + key}>
-                <div className="relative flex flex-col w-full overflow-hidden h-[197px] bg-[#1F2726] rounded-2xl  ">
-                  <div className="absolute text-[16px] font-bold top-[15px] left-[21px]">
-                    {chart_data.metrics[key].metric_name}
-                  </div>
-                  <div className="absolute text-[16px] font-bold top-[15px] right-[26px]">
-                    {/*chart_data.metrics[key].metric_name*/}
-                  </div>
-                  <hr className="absolute w-full border-t-[2px] top-[41px] border-[#5A64624F] my-4" />
-                  <hr className="absolute w-full border-t-[2px] top-[81px] border-[#5A64624F] my-4" />
-                  <hr className="absolute w-full border-t-[2px] top-[122px] border-[#5A64624F] my-4" />
-                  <div className="absolute bottom-[46.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-20">
-                    <ChartWatermark className="w-[128.54px] h-[25.69px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
-                  </div>
+              const lastMultiIndex = isMultipleSeries
+                ? getMultiLastIndexKey(chart_data.metrics[key], unixIndex)
+                : 0;
 
-                  <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/70 pointer-events-none">
-                    <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
-                    <div className="text-[#CDD8D3] text-[9px] font-medium leading-[150%]">
-                      {!isMultipleSeries &&
-                        new Date(
-                          chart_data.metrics[key].daily.data[0][unixIndex],
-                        ).toLocaleDateString("en-GB", {
-                          timeZone: "UTC",
-                          month: "short",
-                          // day: "numeric",
-                          year: "numeric",
-                        })}
+              const firstMultiIndex = isMultipleSeries
+                ? getMultiFirstIndexKey(chart_data.metrics[key], unixIndex)
+                : 0;
+
+              const sumDisplayValue = isMultipleSeries
+                ? getSumDisplayValue(chart_data.metrics[key])
+                : 0;
+
+              return (
+                <SplideSlide key={"Splide" + key}>
+                  <div className="relative flex flex-col w-full overflow-hidden h-[197px] bg-[#1F2726] rounded-2xl  ">
+                    <div className="absolute text-[16px] font-bold top-[15px] left-[15px]">
+                      {isMultipleSeries
+                        ? "Costs"
+                        : chart_data.metrics[key].metric_name}
                     </div>
-                  </div>
-                  <div className=" duration-[900ms] group-hover/chart:opacity-0 absolute right-[15px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/70 pointer-events-none">
-                    <div className="text-[#CDD8D3] text-[9px] font-medium leading-[150%]">
-                      {!isMultipleSeries &&
-                        new Date(
-                          chart_data.metrics[key].daily.data[lastIndex][
-                            unixIndex
-                          ],
-                        ).toLocaleDateString("en-GB", {
-                          timeZone: "UTC",
-                          month: "short",
-                          // day: "numeric",
-                          year: "numeric",
-                        })}
+                    <div className="absolute text-[18px] top-[14px] right-[30px]">
+                      {!isMultipleSeries
+                        ? valuePrefix +
+                          " " +
+                          Intl.NumberFormat("en-GB", {
+                            notation: "standard",
+                            maximumFractionDigits: 2,
+                            minimumFractionDigits: 2,
+                          }).format(
+                            chart_data.metrics[key].daily.data[lastIndex][
+                              dataIndex
+                            ],
+                          )
+                        : valuePrefix +
+                          " " +
+                          Intl.NumberFormat("en-GB", {
+                            notation: "standard",
+                            maximumFractionDigits: 2,
+                            minimumFractionDigits: 2,
+                          }).format(sumDisplayValue)}
                     </div>
-                    <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
-                  </div>
-                  <div className="relative w-full h-full flex justify-center items-end overflow-visible">
-                    <HighchartsProvider Highcharts={Highcharts}>
-                      <HighchartsChart
-                        containerProps={{
-                          style: {
-                            height: "100%",
-                            width: "100%",
-                            marginLeft: "auto",
-                            marginRight: "auto",
-                            position: "absolute",
+                    <hr className="absolute w-full border-t-[2px] top-[51px] border-[#5A64624F] my-4" />
+                    <hr className="absolute w-full border-t-[2px] top-[89px] border-[#5A64624F] my-4" />
+                    <hr className="absolute w-full border-t-[2px] top-[126px] border-[#5A64624F] my-4" />
+                    <div className="absolute bottom-[46.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-20">
+                      <ChartWatermark className="w-[128.54px] h-[25.69px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
+                    </div>
 
-                            overflow: "visible",
-                          },
-                        }}
-                        plotOptions={{
-                          line: {
-                            lineWidth: 2,
-                            color: {
-                              linearGradient: {
-                                x1: 0,
-                                y1: 0,
-                                x2: 1,
-                                y2: 0,
-                              },
-                              stops: [
-                                [0, METRIC_COLORS[key]],
-                                // [0.33, AllChainsByKeys[series.name].colors[1]],
-                                [1, METRIC_COLORS[key]],
+                    <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/70 pointer-events-none">
+                      <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
+                      <div className="text-[#CDD8D3] text-[9px] font-medium leading-[150%]">
+                        {!isMultipleSeries
+                          ? new Date(
+                              chart_data.metrics[key].daily.data[0][unixIndex],
+                            ).toLocaleDateString("en-GB", {
+                              timeZone: "UTC",
+                              month: "short",
+                              // day: "numeric",
+                              year: "numeric",
+                            })
+                          : new Date(
+                              chart_data.metrics[key][
+                                lastMultiIndex
+                              ].daily.data[0][unixIndex],
+                            ).toLocaleDateString("en-GB", {
+                              timeZone: "UTC",
+                              month: "short",
+                              // day: "numeric",
+                              year: "numeric",
+                            })}
+                      </div>
+                    </div>
+                    <div className=" duration-[900ms] group-hover/chart:opacity-0 absolute right-[15px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/70 pointer-events-none">
+                      <div className="text-[#CDD8D3] text-[9px] font-medium leading-[150%]">
+                        {!isMultipleSeries
+                          ? new Date(
+                              chart_data.metrics[key].daily.data[lastIndex][
+                                unixIndex
                               ],
-                            },
-                          },
-                          area: {
-                            lineWidth: 2,
-                            // marker: {
-                            //   radius: 12,
-                            //   lineWidth: 4,
-                            // },
-                            fillOpacity: 1,
-                            fillColor: {
-                              linearGradient: {
-                                x1: 0,
-                                y1: 0,
-                                x2: 0,
-                                y2: 1,
-                              },
-                              stops: [
-                                [0, METRIC_COLORS[key] + "99"],
-                                [1, METRIC_COLORS[key] + "99"],
-                              ],
-                            },
-                            // shadow: {
-                            //   color:
-                            //     AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1] + "33",
-                            //   width: 10,
-                            // },
-                            color: {
-                              linearGradient: {
-                                x1: 0,
-                                y1: 0,
-                                x2: 1,
-                                y2: 0,
-                              },
-                              stops: [
-                                [0, METRIC_COLORS[key]],
-                                // [0.33, AllChainsByKeys[series.name].colors[1]],
-                                [1, METRIC_COLORS[key]],
-                              ],
-                            },
-                            // borderColor: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
-                            // borderWidth: 1,
-                          },
-                          series: {
-                            zIndex: 10,
-                            animation: false,
-                            marker: {
-                              lineColor: "white",
-                              radius: 0,
-                              symbol: "circle",
-                            },
-                          },
-                        }}
-                      >
-                        <Title
-                          style={{ display: "none" }} // This hides the title
-                        >
-                          {"Test"}
-                        </Title>
-                        <Chart
-                          backgroundColor={"transparent"}
-                          type="area"
-                          title={"test"}
-                          panning={{ enabled: true }}
-                          panKey="shift"
-                          zooming={{ type: undefined }}
-                          style={{ borderRadius: 15 }}
-                          animation={{ duration: 50 }}
-                          // margin={[0, 15, 0, 0]} // Use the array form for margin
-                          margin={[20, 21, 15, 0]}
-                          spacingBottom={0}
-                          spacingTop={40}
-                          spacingLeft={10}
-                          spacingRight={10}
-                          onRender={(chartData) => {
-                            const chart = chartData.target as any; // Cast chartData.target to any
-
-                            if (
-                              !chart ||
-                              !chart.series ||
-                              chart.series.length === 0
-                            )
-                              return;
-
-                            //Set width for y axis label
-                            if (
-                              chartWidth === null ||
-                              chartWidth !== chart.plotWidth
-                            ) {
-                              setChartWidth(chart.plotWidth);
-                            }
-
-                            chart.series.forEach((object, index) => {
-                              // const dictionaryKey = `${chart.series[index].name}_${key}`;
-                              // const isFees = chart.series[index].name
-                              //   .toLowerCase()
-                              //   .includes("fees");
-                              // // check if gradient exists
-                              // if (!document.getElementById("gradient0")) {
-                              //   // add def containing linear gradient with stop colors for the circle
-                              //   chart.renderer.definition({
-                              //     attributes: {
-                              //       id: "gradient0",
-                              //       x1: "0%",
-                              //       y1: "0%",
-                              //       x2: "0%",
-                              //       y2: "95%",
-                              //     },
-                              //     children: [
-                              //       {
-                              //         tagName: "stop",
-                              //         // offset: "0%",
-                              //         attributes: {
-                              //           id: "stop1",
-                              //           offset: "0%",
-                              //         },
-                              //       },
-                              //       {
-                              //         tagName: "stop",
-                              //         // offset: "100%",
-                              //         attributes: {
-                              //           id: "stop2",
-                              //           offset: "100%",
-                              //         },
-                              //       },
-                              //     ],
-                              //     tagName: "linearGradient",
-                              //     textContent: "",
-                              //   });
-                              //   const stop1 = document.getElementById("stop1");
-                              //   const stop2 = document.getElementById("stop2");
-                              //   stop1?.setAttribute(
-                              //     "stop-color",
-                              //     chart.series[index].color.stops[0][1],
-                              //   );
-                              //   stop1?.setAttribute("stop-opacity", "1");
-                              //   stop2?.setAttribute(
-                              //     "stop-color",
-                              //     chart.series[index].color.stops[1][1],
-                              //   );
-                              //   stop2?.setAttribute("stop-opacity", "0.33");
-                              // }
-                              // const lastPoint: Highcharts.Point =
-                              //   chart.series[index].points[
-                              //   chart.series[index].points.length - 1
-                              //   ];
-                              // // check if i exists as a key in lastPointLines
-                              // if (!lastPointLines[dictionaryKey]) {
-                              //   lastPointLines[dictionaryKey] = [];
-                              // }
-                              // if (
-                              //   lastPointLines[dictionaryKey] &&
-                              //   lastPointLines[dictionaryKey].length > 0
-                              // ) {
-                              //   lastPointLines[dictionaryKey].forEach(
-                              //     (line) => {
-                              //       line.destroy();
-                              //     },
-                              //   );
-                              //   lastPointLines[dictionaryKey] = [];
-                              // }
-                              // // calculate the fraction that 15px is in relation to the pixel width of the chart
-                              // const fraction = 21 / chart.chartWidth;
-                              // // create a bordered line from the last point to the top of the chart's container
-                              // lastPointLines[dictionaryKey][
-                              //   lastPointLines[dictionaryKey].length
-                              // ] = chart.renderer
-                              //   .createElement("line")
-                              //   .attr({
-                              //     x1:
-                              //       chart.chartWidth * (1 - fraction) + 0.00005,
-                              //     y1: lastPoint.plotY
-                              //       ? lastPoint.plotY + chart.plotTop
-                              //       : 0,
-                              //     x2:
-                              //       chart.chartWidth * (1 - fraction) - 0.00005,
-                              //     y2: !isFees
-                              //       ? chart.plotTop - 10
-                              //       : chart.plotTop - 5,
-                              //     stroke: isSafariBrowser
-                              //       ? AllChainsByKeys["all_l2s"].colors[
-                              //       "dark"
-                              //       ][1]
-                              //       : "url('#gradient0')",
-                              //     "stroke-dasharray": "2",
-                              //     "stroke-width": 1,
-                              //     rendering: "crispEdges",
-                              //   })
-                              //   .add();
-                              // lastPointLines[dictionaryKey][
-                              //   lastPointLines[dictionaryKey].length
-                              // ] = chart.renderer
-                              //   .circle(
-                              //     chart.chartWidth * (1 - fraction),
-                              //     !isFees
-                              //       ? chart.plotTop / 3 + 5
-                              //       : chart.plotTop / 3 + 21,
-                              //     3,
-                              //   )
-                              //   .attr({
-                              //     fill: chart.series[index].color.stops[0][1],
-                              //     r: 4.5,
-                              //     zIndex: 9999,
-                              //     rendering: "crispEdges",
-                              //   })
-                              //   .add();
-                            });
-                          }}
-                        />
-                        <Tooltip
-                          useHTML={true}
-                          shared={true}
-                          split={false}
-                          followPointer={true}
-                          followTouchMove={true}
-                          backgroundColor={"#2A3433EE"}
-                          padding={0}
-                          hideDelay={300}
-                          stickOnContact={true}
-                          shape="rect"
-                          borderRadius={17}
-                          borderWidth={0}
-                          outside={true}
-                          shadow={{
-                            color: "black",
-                            opacity: 0.015,
-                            offsetX: 2,
-                            offsetY: 2,
-                          }}
-                          style={{
-                            color: "rgb(215, 223, 222)",
-                          }}
-                          formatter={tooltipFormatter}
-                          // ensure tooltip is always above the chart
-                          positioner={tooltipPositioner}
-                          valuePrefix={showUsd ? "$" : ""}
-                          valueSuffix={showUsd ? "" : " Gwei"}
-                        />
-                        <XAxis
-                          title={undefined}
-                          type="datetime"
-                          labels={{
-                            useHTML: true,
+                            ).toLocaleDateString("en-GB", {
+                              timeZone: "UTC",
+                              month: "short",
+                              // day: "numeric",
+                              year: "numeric",
+                            })
+                          : new Date(
+                              chart_data.metrics[key][
+                                lastMultiIndex
+                              ].daily.data[
+                                chart_data.metrics[key][lastMultiIndex].daily
+                                  .data.length - 1
+                              ][unixIndex],
+                            ).toLocaleDateString("en-GB", {
+                              timeZone: "UTC",
+                              month: "short",
+                              // day: "numeric",
+                              year: "numeric",
+                            })}
+                      </div>
+                      <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
+                    </div>
+                    <div className="relative w-full h-full flex justify-center items-end overflow-visible">
+                      <HighchartsProvider Highcharts={Highcharts}>
+                        <HighchartsChart
+                          containerProps={{
                             style: {
-                              color: COLORS.LABEL,
-                              fontSize: "10px",
-                              fontFamily: "var(--font-raleway), sans-serif",
-                              zIndex: 1000,
-                            },
-                            enabled: true,
-                            formatter: (item) => {
-                              const date = new Date(item.value);
-                              const isMonthStart = date.getDate() === 1;
-                              const isYearStart =
-                                isMonthStart && date.getMonth() === 0;
-                              if (isYearStart) {
-                                return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
-                              } else {
-                                return `<span style="">${date.toLocaleDateString(
-                                  "en-GB",
-                                  {
-                                    month: "short",
-                                  },
-                                )}</span>`;
-                              }
-                            },
-                          }}
-                          crosshair={{
-                            width: 0.5,
-                            color: COLORS.PLOT_LINE,
-                            snap: false,
-                          }}
-                          tickmarkPlacement="on"
-                          tickWidth={0}
-                          tickLength={20}
-                          ordinal={false}
-                          minorTicks={false}
-                          minorTickInterval={1000 * 60 * 60 * 24 * 1}
-                          min={
-                            !isMultipleSeries
-                              ? chart_data.metrics[key].daily.data[0][0]
-                              : 0
-                          }
-                          max={
-                            !isMultipleSeries
-                              ? chart_data.metrics[key].daily.data[
-                                  chart_data.metrics[key].daily.data.length - 1
-                                ][0]
-                              : 1000
-                          }
-                        >
-                          <XAxis.Title>X Axis</XAxis.Title>
-                        </XAxis>
+                              height: "100%",
+                              width: "100%",
+                              marginLeft: "auto",
+                              marginRight: "auto",
+                              position: "absolute",
 
-                        <YAxis
-                          opposite={false}
-                          // showFirstLabel={true}
-                          // showLastLabel={true}
-                          type="linear"
-                          gridLineWidth={0}
-                          gridLineColor={"#5A64624F"}
-                          showFirstLabel={false}
-                          showLastLabel={false}
-                          tickAmount={5}
-                          labels={{
-                            align: "left",
-                            y: -5,
-                            x: 2,
-                            distance: 50,
-
-                            style: {
-                              backgroundColor: "#1F2726",
-                              whiteSpace: "nowrap",
-                              fontWeight: "semibold",
-                              fontSize: "9px",
-                              fontFamily: "var(--font-raleway), sans-serif",
-                              color: "#CDD8D3",
-                            },
-                            formatter: function (
-                              t: Highcharts.AxisLabelsFormatterContextObject,
-                            ) {
-                              return formatNumber(key, t.value);
+                              overflow: "visible",
                             },
                           }}
-                          min={0}
-                        >
-                          {!isMultipleSeries ? (
-                            <AreaSeries
-                              name={chart_data.metrics[key].metric_name}
-                              showInLegend={false}
-                              data={chart_data.metrics[key].daily.data.map(
-                                (d: any) => [
-                                  d[0],
-                                  d[
-                                    chart_data.metrics[key].daily.types.indexOf(
-                                      showUsd ? "usd" : "eth",
-                                    )
-                                  ],
+                          plotOptions={{
+                            line: {
+                              lineWidth: 2,
+                              color: {
+                                linearGradient: {
+                                  x1: 0,
+                                  y1: 0,
+                                  x2: 1,
+                                  y2: 0,
+                                },
+                                stops: [
+                                  [0, METRIC_COLORS[key]],
+                                  // [0.33, AllChainsByKeys[series.name].colors[1]],
+                                  [1, METRIC_COLORS[key]],
                                 ],
-                              )}
-                              states={{
-                                hover: {
-                                  enabled: true,
-                                  halo: {
-                                    size: 5,
-                                    opacity: 1,
+                              },
+                            },
+                            area: {
+                              stacking: "normal",
+                              lineWidth: 2,
+                              // marker: {
+                              //   radius: 12,
+                              //   lineWidth: 4,
+                              // },
+                              fillOpacity: 1,
+                              fillColor: {
+                                linearGradient: {
+                                  x1: 0,
+                                  y1: 0,
+                                  x2: 0,
+                                  y2: 1,
+                                },
+                                stops: [
+                                  [0, METRIC_COLORS[key] + "99"],
+                                  [1, METRIC_COLORS[key] + "99"],
+                                ],
+                              },
+                              // shadow: {
+                              //   color:
+                              //     AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1] + "33",
+                              //   width: 10,
+                              // },
+                              color: {
+                                linearGradient: {
+                                  x1: 0,
+                                  y1: 0,
+                                  x2: 1,
+                                  y2: 0,
+                                },
+                                stops: [
+                                  [0, METRIC_COLORS[key]],
+                                  // [0.33, AllChainsByKeys[series.name].colors[1]],
+                                  [1, METRIC_COLORS[key]],
+                                ],
+                              },
+                              // borderColor: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
+                              // borderWidth: 1,
+                            },
+                            series: {
+                              zIndex: 10,
+                              animation: false,
+                              marker: {
+                                lineColor: "white",
+                                radius: 0,
+                                symbol: "circle",
+                              },
+                            },
+                          }}
+                        >
+                          <Title
+                            style={{ display: "none" }} // This hides the title
+                          >
+                            {"Test"}
+                          </Title>
+                          <Chart
+                            backgroundColor={"transparent"}
+                            type="area"
+                            title={"test"}
+                            panning={{ enabled: true }}
+                            panKey="shift"
+                            zooming={{ type: undefined }}
+                            style={{ borderRadius: 15 }}
+                            animation={{ duration: 50 }}
+                            // margin={[0, 15, 0, 0]} // Use the array form for margin
+                            margin={[33, 21, 15, 0]}
+                            spacingBottom={0}
+                            spacingTop={40}
+                            spacingLeft={10}
+                            spacingRight={10}
+                            onRender={(chartData) => {
+                              const chart = chartData.target as any; // Cast chartData.target to any
+
+                              if (
+                                !chart ||
+                                !chart.series ||
+                                chart.series.length === 0
+                              )
+                                return;
+
+                              //Set width for y axis label
+                              if (
+                                chartWidth === null ||
+                                chartWidth !== chart.plotWidth
+                              ) {
+                                setChartWidth(chart.plotWidth);
+                              }
+
+                              chart.series.forEach((object, index) => {
+                                const dictionaryKey = `${chart.series[index].name}_${key}`;
+
+                                // check if gradient exists
+                                if (!document.getElementById("gradient0")) {
+                                  // add def containing linear gradient with stop colors for the circle
+                                  chart.renderer.definition({
                                     attributes: {
-                                      fill: METRIC_COLORS[key] + "99",
-                                      stroke: METRIC_COLORS[key] + "66",
+                                      id: "gradient0",
+                                      x1: "0%",
+                                      y1: "0%",
+                                      x2: "0%",
+                                      y2: "95%",
                                     },
+                                    children: [
+                                      {
+                                        tagName: "stop",
+                                        // offset: "0%",
+                                        attributes: {
+                                          id: "stop1",
+                                          offset: "0%",
+                                        },
+                                      },
+                                      {
+                                        tagName: "stop",
+                                        // offset: "100%",
+                                        attributes: {
+                                          id: "stop2",
+                                          offset: "100%",
+                                        },
+                                      },
+                                    ],
+                                    tagName: "linearGradient",
+                                    textContent: "",
+                                  });
+                                  const stop1 =
+                                    document.getElementById("stop1");
+                                  const stop2 =
+                                    document.getElementById("stop2");
+                                  stop1?.setAttribute("stop-color", "#CDD8D3");
+                                  stop1?.setAttribute("stop-opacity", "1");
+                                  stop2?.setAttribute("stop-color", "#CDD8D3");
+                                  stop2?.setAttribute("stop-opacity", "0.33");
+                                }
+                                const lastPoint: Highcharts.Point =
+                                  chart.series[index].points[
+                                    chart.series[index].points.length - 1
+                                  ];
+                                // check if i exists as a key in lastPointLines
+                                if (!lastPointLines[dictionaryKey]) {
+                                  lastPointLines[dictionaryKey] = [];
+                                }
+                                if (
+                                  lastPointLines[dictionaryKey] &&
+                                  lastPointLines[dictionaryKey].length > 0
+                                ) {
+                                  lastPointLines[dictionaryKey].forEach(
+                                    (line) => {
+                                      line.destroy();
+                                    },
+                                  );
+                                  lastPointLines[dictionaryKey] = [];
+                                }
+                                // calculate the fraction that 15px is in relation to the pixel width of the chart
+                                const fraction = 21 / chart.chartWidth;
+                                // create a bordered line from the last point to the top of the chart's container
+                                lastPointLines[dictionaryKey][
+                                  lastPointLines[dictionaryKey].length
+                                ] = chart.renderer
+                                  .createElement("line")
+                                  .attr({
+                                    x1:
+                                      chart.chartWidth * (1 - fraction) +
+                                      0.00005,
+                                    y1: lastPoint.plotY
+                                      ? lastPoint.plotY + chart.plotTop
+                                      : 0,
+                                    x2:
+                                      chart.chartWidth * (1 - fraction) -
+                                      0.00005,
+                                    y2: chart.plotTop - 5,
+
+                                    stroke: isSafariBrowser
+                                      ? "#CDD8D3"
+                                      : "url('#gradient0')",
+                                    "stroke-dasharray":
+                                      key === "costs" ? null : "2",
+                                    "stroke-width": 1,
+                                    rendering: "crispEdges",
+                                  })
+                                  .add();
+                                lastPointLines[dictionaryKey][
+                                  lastPointLines[dictionaryKey].length
+                                ] = chart.renderer
+                                  .circle(
+                                    chart.chartWidth * (1 - fraction),
+                                    chart.plotTop / 3 + 17,
+
+                                    3,
+                                  )
+                                  .attr({
+                                    fill: "#CDD8D3",
+                                    r: 4.5,
+                                    zIndex: 9999,
+                                    rendering: "crispEdges",
+                                  })
+                                  .add();
+                              });
+                            }}
+                          />
+                          <Tooltip
+                            useHTML={true}
+                            shared={true}
+                            split={false}
+                            followPointer={true}
+                            followTouchMove={true}
+                            backgroundColor={"#2A3433EE"}
+                            padding={0}
+                            hideDelay={300}
+                            stickOnContact={true}
+                            shape="rect"
+                            borderRadius={17}
+                            borderWidth={0}
+                            outside={true}
+                            shadow={{
+                              color: "black",
+                              opacity: 0.015,
+                              offsetX: 2,
+                              offsetY: 2,
+                            }}
+                            style={{
+                              color: "rgb(215, 223, 222)",
+                            }}
+                            formatter={tooltipFormatter}
+                            // ensure tooltip is always above the chart
+                            positioner={tooltipPositioner}
+                            valuePrefix={showUsd ? "$" : ""}
+                            valueSuffix={showUsd ? "" : " Gwei"}
+                          />
+                          <XAxis
+                            title={undefined}
+                            type="datetime"
+                            labels={{
+                              useHTML: true,
+                              style: {
+                                color: COLORS.LABEL,
+                                fontSize: "10px",
+                                fontFamily: "var(--font-raleway), sans-serif",
+                                zIndex: 1000,
+                              },
+                              enabled: true,
+                              formatter: (item) => {
+                                const date = new Date(item.value);
+                                const isMonthStart = date.getDate() === 1;
+                                const isYearStart =
+                                  isMonthStart && date.getMonth() === 0;
+                                if (isYearStart) {
+                                  return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
+                                } else {
+                                  return `<span style="">${date.toLocaleDateString(
+                                    "en-GB",
+                                    {
+                                      month: "short",
+                                    },
+                                  )}</span>`;
+                                }
+                              },
+                            }}
+                            crosshair={{
+                              width: 0.5,
+                              color: COLORS.PLOT_LINE,
+                              snap: false,
+                            }}
+                            tickmarkPlacement="on"
+                            tickWidth={0}
+                            tickLength={20}
+                            ordinal={false}
+                            minorTicks={false}
+                            minorTickInterval={1000 * 60 * 60 * 24 * 1}
+                            min={
+                              !isMultipleSeries
+                                ? chart_data.metrics[key].daily.data[0][0]
+                                : chart_data.metrics[key][firstMultiIndex].daily
+                                    .data[0][0]
+                            }
+                            max={
+                              !isMultipleSeries
+                                ? chart_data.metrics[key].daily.data[
+                                    chart_data.metrics[key].daily.data.length -
+                                      1
+                                  ][0]
+                                : chart_data.metrics[key][lastMultiIndex].daily
+                                    .data[
+                                    chart_data.metrics[key][lastMultiIndex]
+                                      .daily.data.length - 1
+                                  ][0]
+                            }
+                          >
+                            <XAxis.Title>X Axis</XAxis.Title>
+                          </XAxis>
+
+                          <YAxis
+                            opposite={false}
+                            // showFirstLabel={true}
+                            // showLastLabel={true}
+                            type="linear"
+                            gridLineWidth={0}
+                            gridLineColor={"#5A64624F"}
+                            showFirstLabel={false}
+                            showLastLabel={false}
+                            tickAmount={5}
+                            labels={{
+                              align: "left",
+                              y: -5,
+                              x: 2,
+                              distance: 50,
+
+                              style: {
+                                backgroundColor: "#1F2726",
+                                whiteSpace: "nowrap",
+                                fontWeight: "semibold",
+                                fontSize: "9px",
+                                fontFamily: "var(--font-raleway), sans-serif",
+                                color: "#CDD8D3",
+                              },
+                              formatter: function (
+                                t: Highcharts.AxisLabelsFormatterContextObject,
+                              ) {
+                                return formatNumber(key, t.value);
+                              },
+                            }}
+                            min={0}
+                          >
+                            {!isMultipleSeries ? (
+                              <AreaSeries
+                                name={chart_data.metrics[key].metric_name}
+                                showInLegend={false}
+                                data={chart_data.metrics[key].daily.data.map(
+                                  (d: any) => [
+                                    d[0],
+                                    d[
+                                      chart_data.metrics[
+                                        key
+                                      ].daily.types.indexOf(
+                                        showUsd ? "usd" : "eth",
+                                      )
+                                    ],
+                                  ],
+                                )}
+                                states={{
+                                  hover: {
+                                    enabled: true,
+                                    halo: {
+                                      size: 5,
+                                      opacity: 1,
+                                      attributes: {
+                                        fill: METRIC_COLORS[key] + "99",
+                                        stroke: METRIC_COLORS[key] + "66",
+                                      },
+                                    },
+                                    brightness: 0.3,
                                   },
-                                  brightness: 0.3,
-                                },
-                                inactive: {
-                                  enabled: true,
-                                  opacity: 0.6,
-                                },
-                              }}
-                            ></AreaSeries>
-                          ) : (
-                            <div></div>
-                          )}
-                        </YAxis>
-                      </HighchartsChart>
-                    </HighchartsProvider>
+                                  inactive: {
+                                    enabled: true,
+                                    opacity: 0.6,
+                                  },
+                                }}
+                              ></AreaSeries>
+                            ) : (
+                              <>
+                                {Object.keys(chart_data.metrics[key])
+                                  .reverse()
+                                  .map((costKey, j) => {
+                                    return (
+                                      <AreaSeries
+                                        key={costKey}
+                                        name={
+                                          chart_data.metrics[key][costKey]
+                                            .metric_name
+                                        }
+                                        index={j}
+                                        showInLegend={false}
+                                        data={chart_data.metrics[key][
+                                          costKey
+                                        ].daily.data.map((d: any) => [
+                                          d[0],
+                                          d[
+                                            chart_data.metrics[key][
+                                              costKey
+                                            ].daily.types.indexOf(
+                                              showUsd ? "usd" : "eth",
+                                            )
+                                          ],
+                                        ])}
+                                        color={{
+                                          linearGradient: {
+                                            x1: 0,
+                                            y1: 0,
+                                            x2: 1,
+                                            y2: 0,
+                                          },
+                                          stops: [
+                                            [0, METRIC_COLORS[key][costKey]], // Use the unique color for each series
+                                            [1, METRIC_COLORS[key][costKey]],
+                                          ],
+                                        }}
+                                        fillColor={{
+                                          linearGradient: {
+                                            x1: 0,
+                                            y1: 0,
+                                            x2: 0,
+                                            y2: 1,
+                                          },
+                                          stops: [
+                                            [
+                                              0,
+                                              METRIC_COLORS[key][costKey] +
+                                                "66",
+                                            ],
+                                            [
+                                              1,
+                                              METRIC_COLORS[key][costKey] +
+                                                "99",
+                                            ],
+                                          ],
+                                        }}
+                                        lineColor={{
+                                          linearGradient: {
+                                            x1: 0,
+                                            y1: 0,
+                                            x2: 1,
+                                            y2: 0,
+                                          },
+                                          stops: [
+                                            [0, METRIC_COLORS[key][costKey]], // Use the unique color for each series
+                                            [1, METRIC_COLORS[key][costKey]],
+                                          ],
+                                        }}
+                                        states={{
+                                          hover: {
+                                            enabled: true,
+                                            halo: {
+                                              size: 5,
+                                              opacity: 1,
+                                              attributes: {
+                                                fill:
+                                                  METRIC_COLORS[key][costKey] +
+                                                  "99",
+                                                stroke:
+                                                  METRIC_COLORS[key][costKey] +
+                                                  "66",
+                                              },
+                                            },
+                                            brightness: 0.3,
+                                          },
+                                          inactive: {
+                                            enabled: true,
+                                            opacity: 0.6,
+                                          },
+                                        }}
+                                      ></AreaSeries>
+                                    );
+                                  })}
+                              </>
+                            )}
+                          </YAxis>
+                        </HighchartsChart>
+                      </HighchartsProvider>
+                    </div>
                   </div>
-                </div>
-              </SplideSlide>
-            );
-          })}
+                </SplideSlide>
+              );
+            })}
         </SplideTrack>
         <div className="splide__arrows relative  bottom-[78px]  md:-mt-0">
           <button className="splide__arrow splide__arrow--prev rounded-full text-forest-400 bg-white dark:bg-forest-700 -ml-2 md:-ml-14 !w-5 md:!w-8 !h-5 md:!h-8">
