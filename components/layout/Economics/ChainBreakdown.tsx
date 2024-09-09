@@ -661,11 +661,10 @@ export default function ChainBreakdown({
                         <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
                           <div className="flex flex-col gap-y-[5px] items-center">
                             <div className="flex items-center gap-x-[5px] text-[10px] ">
-                              The chains onchain expenses. L1 Costs are gas fees
-                              paid to Ethereum for Settlement and DA (if
-                              applicable). Blob costs are paid to either
-                              Ethereum or an alternative DA layer for storing
-                              Blobs.
+                              The chains onchain expenses. Settlement costs are
+                              gas fees paid to Ethereum for posting proofs and
+                              states. DA (Data Availability) costs are fees paid
+                              for data storage.
                             </div>
                           </div>
                         </div>
