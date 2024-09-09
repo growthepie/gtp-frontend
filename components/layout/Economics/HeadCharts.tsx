@@ -171,8 +171,6 @@ export default function EconHeadCharts({
           let suffix = "";
           let value = y;
           let displayValue = y;
-          const decimals =
-            displayValue < 0.001 ? (displayValue < 0.00001 ? 6 : 5) : 2;
 
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
@@ -458,7 +456,7 @@ export default function EconHeadCharts({
                     <hr className="absolute w-full border-t-[2px] top-[51px] border-[#5A64624F] my-4" />
                     <hr className="absolute w-full border-t-[2px] top-[89px] border-[#5A64624F] my-4" />
                     <hr className="absolute w-full border-t-[2px] top-[126px] border-[#5A64624F] my-4" />
-                    <div className="absolute bottom-[46.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-20">
+                    <div className="absolute bottom-[41.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-20">
                       <ChartWatermark className="w-[128.54px] h-[25.69px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
                     </div>
 
@@ -839,8 +837,6 @@ export default function EconHeadCharts({
 
                           <YAxis
                             opposite={false}
-                            // showFirstLabel={true}
-                            // showLastLabel={true}
                             type="linear"
                             gridLineWidth={0}
                             gridLineColor={"#5A64624F"}

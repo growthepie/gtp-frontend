@@ -58,6 +58,7 @@ export default function ChainBreakdown({
   const { isSidebarOpen } = useUIContext();
   const isMobile = useMediaQuery("(max-width: 1024px)");
   const triggerShrink = useMediaQuery("(max-width: 1120px)");
+  const [isMonthly, setIsMonthly] = useState(false);
 
   const [openChain, setOpenChain] = useState(() => {
     const initialState = Object.keys(data).reduce((acc, key) => {
@@ -174,11 +175,11 @@ export default function ChainBreakdown({
         xMin: Date.now() - 90 * 24 * 60 * 60 * 1000,
         xMax: Date.now(),
       },
-      "180d": {
-        shortLabel: "180d",
-        label: "180 days",
-        value: 180,
-        xMin: Date.now() - 180 * 24 * 60 * 60 * 1000,
+      "365d": {
+        shortLabel: "365d",
+        label: "365 days",
+        value: 365,
+        xMin: Date.now() - 365 * 24 * 60 * 60 * 1000,
         xMax: Date.now(),
       },
 
@@ -451,7 +452,22 @@ export default function ChainBreakdown({
             </div>
             <TopRowContainer className="-py-[3px]">
               <TopRowParent>
-                <div></div>
+                <TopRowChild
+                  isSelected={!isMonthly}
+                  onClick={() => {
+                    setIsMonthly(false);
+                  }}
+                >
+                  {"Daily"}
+                </TopRowChild>
+                <TopRowChild
+                  isSelected={isMonthly}
+                  onClick={() => {
+                    setIsMonthly(true);
+                  }}
+                >
+                  {"Monthly"}
+                </TopRowChild>
               </TopRowParent>
               <TopRowParent className="-py-[10px]">
                 {Object.keys(timespans).map((key) => {
