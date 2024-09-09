@@ -37,7 +37,7 @@ interface DAvailability {
   label: string;
 }
 //prettier-ignore
-type MetricSort = "revenue" | "profit" | "chain" | "costs" | "l1_costs" | "blobs" | "profit_margin" | "size";
+type MetricSort = "revenue" | "profit" | "chain" | "costs" | "settlement" | "da" | "profit_margin" | "size";
 
 export default function ChainBreakdown({
   data,
@@ -678,9 +678,9 @@ export default function ChainBreakdown({
                     <div
                       className=" group-hover:text-forest-50/80 "
                       onClick={() => {
-                        if (metricSort !== "l1_costs") {
+                        if (metricSort !== "settlement") {
                           setSortOrder(true);
-                          setMetricSort("l1_costs");
+                          setMetricSort("settlement");
                         } else {
                           setSortOrder(!sortOrder);
                         }
@@ -691,14 +691,14 @@ export default function ChainBreakdown({
                     <div>
                       <Icon
                         icon={
-                          metricSort !== "l1_costs"
+                          metricSort !== "settlement"
                             ? "formkit:arrowdown"
                             : sortOrder
                             ? "formkit:arrowdown"
                             : "formkit:arrowup"
                         }
                         className={` w-[10px] h-[10px] ${
-                          metricSort === "l1_costs"
+                          metricSort === "settlement"
                             ? "text-forest-50 opacity-100"
                             : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
                         } `}
@@ -708,9 +708,9 @@ export default function ChainBreakdown({
                   <div
                     className="flex justify-center group items-center rounded-r-full border-[2px] border-l-[0px] border-[#FE5468] w-[47px] px-[5px] cursor-pointer "
                     onClick={() => {
-                      if (metricSort !== "blobs") {
+                      if (metricSort !== "da") {
                         setSortOrder(true);
-                        setMetricSort("blobs");
+                        setMetricSort("da");
                       } else {
                         setSortOrder(!sortOrder);
                       }
@@ -720,14 +720,14 @@ export default function ChainBreakdown({
                     <div>
                       <Icon
                         icon={
-                          metricSort !== "blobs"
+                          metricSort !== "da"
                             ? "formkit:arrowdown"
                             : sortOrder
                             ? "formkit:arrowdown"
                             : "formkit:arrowup"
                         }
                         className={` w-[10px] h-[10px] ${
-                          metricSort === "blobs"
+                          metricSort === "da"
                             ? "text-forest-50 opacity-100"
                             : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
                         } `}
@@ -1073,7 +1073,7 @@ export default function ChainBreakdown({
                                   minimumFractionDigits: 1,
                                 }).format(
                                   (data[item.key][selectedTimespan].costs
-                                    .l1_costs[dataIndex] /
+                                    .settlement[dataIndex] /
                                     data[item.key][selectedTimespan].costs
                                       .total[dataIndex]) *
                                     100,
@@ -1092,7 +1092,7 @@ export default function ChainBreakdown({
                                 maximumFractionDigits: 1,
                                 minimumFractionDigits: 1,
                               }).format(
-                                (data[item.key][selectedTimespan].costs.blobs[
+                                (data[item.key][selectedTimespan].costs.da[
                                   dataIndex
                                 ] /
                                   data[item.key][selectedTimespan].costs.total[
@@ -1110,7 +1110,7 @@ export default function ChainBreakdown({
                                 width: `${
                                   100 *
                                   (data[item.key][selectedTimespan].costs
-                                    .l1_costs[dataIndex] /
+                                    .settlement[dataIndex] /
                                     data[item.key][selectedTimespan].costs
                                       .total[dataIndex])
                                 }%`,
@@ -1121,7 +1121,7 @@ export default function ChainBreakdown({
                               style={{
                                 width: `${
                                   120 *
-                                  (data[item.key][selectedTimespan].costs.blobs[
+                                  (data[item.key][selectedTimespan].costs.da[
                                     dataIndex
                                   ] /
                                     data[item.key][selectedTimespan].costs
@@ -1506,6 +1506,7 @@ export default function ChainBreakdown({
                           timespans={timespans}
                           selectedTimespan={selectedTimespan}
                           isOpen={openChain[item.key]}
+                          isMonthly={isMonthly}
                         />
                       </div>
                     </div>

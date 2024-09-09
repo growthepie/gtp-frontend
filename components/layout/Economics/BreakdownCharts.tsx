@@ -53,6 +53,7 @@ function BreakdownCharts({
   timespans,
   selectedTimespan,
   isOpen,
+  isMonthly,
 }: {
   data: DurationData;
   dailyData: DailyData;
@@ -60,6 +61,7 @@ function BreakdownCharts({
   timespans: Object;
   selectedTimespan: string;
   isOpen?: boolean;
+  isMonthly?: boolean;
 }) {
   addHighchartsMore(Highcharts);
 
@@ -526,6 +528,10 @@ function BreakdownCharts({
               },
               area: {
                 lineWidth: 1.5,
+                dataGrouping: {
+                  enabled: true,
+                  units: isMonthly ? [["month", [1]]] : [["day", [1]]],
+                },
 
                 // marker: {
                 //   radius: 12,
@@ -695,6 +701,10 @@ function BreakdownCharts({
                   d[0],
                   d[dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")],
                 ])}
+                dataGrouping={{
+                  enabled: true,
+                  units: isMonthly ? [["month", [1]]] : [["day", [1]]],
+                }}
                 lineWidth={1.5}
                 fillColor={{
                   linearGradient: {
@@ -718,6 +728,10 @@ function BreakdownCharts({
                   d[0],
                   d[dailyData.costs.types.indexOf(showUsd ? "usd" : "eth")],
                 ])}
+                dataGrouping={{
+                  enabled: true,
+                  units: isMonthly ? [["month", [1]]] : [["day", [1]]],
+                }}
                 lineWidth={1.5}
                 fillColor={{
                   linearGradient: {
@@ -922,6 +936,10 @@ function BreakdownCharts({
               <ColumnSeries
                 name="Profit"
                 color={"#FFDF27"}
+                dataGrouping={{
+                  enabled: true,
+                  units: isMonthly ? [["month", [1]]] : [["day", [1]]],
+                }}
                 zones={[
                   {
                     value: 0, // Values up to 0 (exclusive)
