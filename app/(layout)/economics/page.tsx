@@ -7,6 +7,7 @@ import {
   EconomicsResponse,
   ChainBreakdownResponse,
   FeesBreakdown,
+  l2_data,
 } from "@/types/api/EconomicsResponse";
 import EconHeadCharts from "@/components/layout/Economics/HeadCharts";
 import ChainBreakdown from "@/components/layout/Economics/ChainBreakdown";
@@ -41,27 +42,15 @@ export default function Economics() {
 
   const {
     chain_breakdown,
-    da_charts,
-  }: { chain_breakdown: ChainBreakdownResponse; da_charts: FeesBreakdown } =
+    all_l2s,
+  }: { chain_breakdown: ChainBreakdownResponse; all_l2s: l2_data } =
     econData.data;
 
   return (
-    <div className="mt-[60px] flex flex-col gap-y-[60px] h-full">
+    <div className="mt-[15px] flex flex-col gap-y-[60px] h-full">
       {/*Data Availability Fee Markets */}
       <Container className="flex flex-col gap-y-[15px]">
-        <div className="flex items-center gap-x-[8px]">
-          <Image
-            src="/GTP-Data.svg"
-            alt="GTP Chain"
-            className="object-contain w-[36px] h-[36px]"
-            height={36}
-            width={36}
-          />
-          <Heading className="text-[30px] leading-snug " as="h2">
-            Data Availability Fee Markets
-          </Heading>
-        </div>
-        <EconHeadCharts da_charts={da_charts} />
+        <EconHeadCharts chart_data={all_l2s} />
       </Container>
       <ChainBreakdown data={chain_breakdown} master={master} />
     </div>

@@ -2,6 +2,7 @@ export interface EconomicsResponse {
   data: {
     chain_breakdown: ChainBreakdownResponse;
     da_charts: FeesBreakdown;
+    all_l2s: l2_data;
     // Other properties if exist
   };
 }
@@ -28,6 +29,27 @@ export interface DurationData {
   size: Profit;
 }
 
+export interface l2_data {
+  chain_id: string;
+  chain_name: string;
+  metrics: {
+    profit: l2_metrics;
+    fees: l2_metrics;
+    rent_paid: l2_metrics;
+    costs: {
+      settlement: l2_metrics;
+      da: l2_metrics;
+    };
+  };
+}
+
+export interface l2_metrics {
+  metric_name: string;
+  source: string[];
+  avg: string;
+  daily: Daily;
+}
+
 export interface DailyData {
   costs: Daily;
   profit: Daily;
@@ -39,6 +61,8 @@ export interface Costs {
   l1_costs: number[];
   total: number[];
   types: string[];
+  settlement: number[];
+  da: number[];
 }
 
 export interface Profit {
