@@ -460,7 +460,7 @@ export default function EconHeadCharts({
                       <ChartWatermark className="w-[128.54px] h-[25.69px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
                     </div>
 
-                    <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/70 pointer-events-none">
+                    <div className="opacity-100 transition-opacity duration-[900ms] z-20 group-hover/chart:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/70 pointer-events-none">
                       <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
                       <div className="text-[#CDD8D3] text-[9px] font-medium leading-[150%]">
                         {!isMultipleSeries
@@ -484,7 +484,7 @@ export default function EconHeadCharts({
                             })}
                       </div>
                     </div>
-                    <div className=" duration-[900ms] group-hover/chart:opacity-0 absolute right-[15px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/70 pointer-events-none">
+                    <div className=" duration-[900ms] group-hover/chart:opacity-0 z-20 absolute right-[15px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/70 pointer-events-none">
                       <div className="text-[#CDD8D3] text-[9px] font-medium leading-[150%]">
                         {!isMultipleSeries
                           ? new Date(
@@ -869,6 +869,7 @@ export default function EconHeadCharts({
                               <AreaSeries
                                 name={chart_data.metrics[key].metric_name}
                                 showInLegend={false}
+                                lineWidth={1.5}
                                 data={chart_data.metrics[key].daily.data.map(
                                   (d: any) => [
                                     d[0],
@@ -913,6 +914,7 @@ export default function EconHeadCharts({
                                             .metric_name
                                         }
                                         index={j}
+                                        lineWidth={1.5}
                                         showInLegend={false}
                                         data={chart_data.metrics[key][
                                           costKey

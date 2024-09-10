@@ -176,8 +176,8 @@ export default function ChainBreakdown({
         xMax: Date.now(),
       },
       "365d": {
-        shortLabel: "365d",
-        label: "365 days",
+        shortLabel: "1y",
+        label: "1 year",
         value: 365,
         xMin: Date.now() - 365 * 24 * 60 * 60 * 1000,
         xMax: Date.now(),
@@ -451,11 +451,17 @@ export default function ChainBreakdown({
               </div>
             </div>
             <TopRowContainer className="-py-[3px]">
-              <TopRowParent>
+              <TopRowParent className="-py-[10px]">
                 <TopRowChild
                   isSelected={!isMonthly}
                   onClick={() => {
                     setIsMonthly(false);
+                  }}
+                  style={{
+                    paddingTop: "10.5px",
+                    paddingBottom: "10.5px",
+                    paddingLeft: "16px",
+                    paddingRight: "16px",
                   }}
                 >
                   {"Daily"}
@@ -464,6 +470,12 @@ export default function ChainBreakdown({
                   isSelected={isMonthly}
                   onClick={() => {
                     setIsMonthly(true);
+                  }}
+                  style={{
+                    paddingTop: "10.5px",
+                    paddingBottom: "10.5px",
+                    paddingLeft: "16px",
+                    paddingRight: "16px",
                   }}
                 >
                   {"Monthly"}
@@ -552,7 +564,7 @@ export default function ChainBreakdown({
                     }
                   }}
                 >
-                  <div>Data Availability: </div>
+                  <div>Data Availability{DAIndex !== 0 ? ":" : ""}</div>
                   <div>{allChainsDA[DAIndex]}</div>
 
                   <Icon
@@ -568,7 +580,7 @@ export default function ChainBreakdown({
                   />
                 </div>
               </div>
-              <div className="flex items-center justify-start ">
+              <div className="flex items-center justify-end pr-[5px] ">
                 {" "}
                 <div
                   className="flex items-center group gap-x-[1px] cursor-pointer"
@@ -620,7 +632,7 @@ export default function ChainBreakdown({
                   </Tooltip>
                 </div>
               </div>
-              <div className="flex items-center justify-center gap-x-[5px] ">
+              <div className="flex items-center justify-end pr-[5px] gap-x-[5px]">
                 {" "}
                 <div className="flex items-center group gap-x-[1px]">
                   <div
@@ -735,7 +747,7 @@ export default function ChainBreakdown({
                   </div>
                 </div>
               </div>
-              <div className="flex items-center justify-start gap-x-[5px] pl-[2px]">
+              <div className="flex items-center justify-center gap-x-[5px] pl-[30.5px]">
                 {" "}
                 <div
                   className="flex items-center group cursor-pointer"
@@ -786,7 +798,7 @@ export default function ChainBreakdown({
                 </div>
               </div>
               <div
-                className="flex items-center justify-start gap-x-[5px] pl-[2px] cursor-pointer"
+                className="flex items-center justify-end pr-[5px]  gap-x-[5px] pl-[2px] cursor-pointer"
                 onClick={() => {
                   if (metricSort !== "profit_margin") {
                     setSortOrder(true);
