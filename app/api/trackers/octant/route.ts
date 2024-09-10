@@ -79,6 +79,7 @@ export type EpochState =
 
 export type EpochProject = {
   name: string;
+  project_key: string;
   address: string;
   profileImageMedium: string;
   website: {
@@ -354,7 +355,7 @@ const getAllEpochs = async () => {
           return {
             address,
             name: metadata.name,
-
+            project_key: metadata.name,
             profileImageMedium: metadata.profileImageMedium,
             website: metadata.website,
 
