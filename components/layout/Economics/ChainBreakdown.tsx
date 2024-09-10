@@ -47,7 +47,7 @@ export default function ChainBreakdown({
   master: MasterResponse;
 }) {
   const { AllChainsByKeys } = useMaster();
-  const [selectedTimespan, setSelectedTimespan] = useState("90d");
+  const [selectedTimespan, setSelectedTimespan] = useState("365d");
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [DAIndex, setDAIndex] = useState(0);
   const [metricSort, setMetricSort] = useState<MetricSort>("revenue");

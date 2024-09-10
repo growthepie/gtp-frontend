@@ -365,16 +365,16 @@ export default function EconHeadCharts({
               perPage: 2,
             },
             900: {
-              perPage: isSidebarOpen ? 2 : 3,
+              perPage: 2,
             },
             1100: {
-              perPage: 3,
+              perPage: 2,
             },
             1250: {
-              perPage: 3,
+              perPage: 2,
             },
             1450: {
-              perPage: 3,
+              perPage: 2,
             },
             1600: {
               perPage: 3,
@@ -1006,7 +1006,7 @@ export default function EconHeadCharts({
               );
             })}
         </SplideTrack>
-        <div className="splide__arrows relative  bottom-[78px]  md:-mt-0">
+        <div className="splide__arrows relative  bottom-[93px]  md:-mt-0">
           <button className="splide__arrow splide__arrow--prev rounded-full text-forest-400 bg-white dark:bg-forest-700 -ml-2 md:-ml-14 !w-5 md:!w-8 !h-5 md:!h-8">
             <Icon
               icon="feather:chevron-right"
