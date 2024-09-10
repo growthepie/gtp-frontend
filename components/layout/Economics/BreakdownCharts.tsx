@@ -662,8 +662,8 @@ function BreakdownCharts({
               // showLastLabel={true}
               type="linear"
               gridLineWidth={1}
-              gridLineColor={"#CDD8D3AA"}
-              gridLineDashStyle={"Dot"}
+              gridLineColor={"#5A6462"}
+              gridLineDashStyle={"ShortDot"}
               gridZIndex={10}
               min={0}
               showFirstLabel={true}
@@ -900,8 +900,8 @@ function BreakdownCharts({
               zoomEnabled={false}
               type="linear"
               gridLineWidth={1}
-              gridLineColor={"#CDD8D3AA"}
-              gridLineDashStyle={"Dot"}
+              gridLineColor={"#5A6462"}
+              gridLineDashStyle={"ShortDot"}
               gridZIndex={10}
               showFirstLabel={true}
               showLastLabel={false}

@@ -541,7 +541,7 @@ export default function ChainBreakdown({
                   </div>
                 </div>
                 <div
-                  className="flex items-center bg-[#344240] gap-x-1 text-[8px] rounded-full px-[5px] py-[2px] cursor-pointer"
+                  className="flex items-center bg-[#344240] gap-x-1 text-[10px] rounded-full px-[5px] py-[2px] cursor-pointer"
                   onClick={() => {
                     setEnableDASort(true);
                     if (DAIndex === allChainsDA.length - 1) {
@@ -970,16 +970,16 @@ export default function ChainBreakdown({
                         </div>
 
                         <div
-                          className="flex items-center bg-[#344240] gap-x-1 h-[18px] text-[14px] rounded-full px-[5px] py-[3px]"
+                          className="flex items-center bg-[#344240] gap-x-1 h-[18px] text-[10px] rounded-full px-[6px] py-[3px]"
                           key={localDataAvail.label}
                         >
-                          <div>{localDataAvail.label}</div>
                           <div className="flex items-center gap-x-1">
                             <Icon
                               icon={`gtp:${localDataAvail.icon}`}
                               className="w-[12px] h-[12px]"
                             />
                           </div>
+                          <div>{localDataAvail.label}</div>
                         </div>
                       </div>
                       <div
