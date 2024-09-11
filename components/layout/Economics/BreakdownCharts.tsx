@@ -228,6 +228,8 @@ function BreakdownCharts({
     return dailyData.revenue.data[dailyData.revenue.data.length - 1][0];
   }, [selectedTimespan, dailyData]);
 
+  console.log(dailyData);
+
   const tooltipFormatter = useCallback(
     function (this: any) {
       const { x, points } = this;
@@ -430,7 +432,7 @@ function BreakdownCharts({
 
       return tooltip + tooltipPoints + sumRow + tooltipEnd;
     },
-    [valuePrefix, reversePerformer],
+    [valuePrefix, reversePerformer, dailyData, isMonthly],
   );
 
   const tooltipManager = useMemo(() => {
