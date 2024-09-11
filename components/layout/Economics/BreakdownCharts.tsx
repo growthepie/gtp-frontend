@@ -195,6 +195,7 @@ function BreakdownCharts({
       if (mainChart.xAxis[0].crosshair) {
         mainChart.xAxis[0].drawCrosshair(event, point1);
         mainChart.xAxis[0].drawCrosshair(event, point2); // Draw crosshair for both series
+        profitChart.xAxis[0].drawCrosshair(event, point1);
       }
 
       // Refresh tooltips for both series
@@ -617,9 +618,6 @@ function BreakdownCharts({
                   type: "xy",
                 },
               }}
-              style={{
-                borderRadius: 15,
-              }}
               animation={{
                 duration: 50,
               }}
@@ -849,7 +847,6 @@ function BreakdownCharts({
                 lineWidth: 1.5,
               },
               column: {
-                grouping: true,
                 stacking: "normal",
                 borderColor: "transparent",
                 groupPadding: 0,
@@ -903,8 +900,6 @@ function BreakdownCharts({
                   return;
 
                 setProfitChart(chart);
-
-                console.log(chart);
               }}
             />
             <Tooltip
@@ -981,10 +976,9 @@ function BreakdownCharts({
               }}
               zoomEnabled={false}
               tickAmount={0}
-              tickWidth={1}
-              tickLength={10}
+              tickLength={20}
+              tickWidth={0}
               ordinal={false}
-              gridLineWidth={0}
               minorTicks={false}
               minorTickLength={2}
               minorTickWidth={2}

@@ -128,7 +128,7 @@ export default function EconHeadCharts({
           });
       }
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-48 md:w-48 text-xs font-raleway">
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-52 text-xs font-raleway">
         <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2 ">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 

@@ -16,7 +16,7 @@ import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { sortByDataAvailability } from "./SortHelpers";
 import { useTransition, animated } from "@react-spring/web";
-import { set } from "lodash";
+import { set, times } from "lodash";
 import { useUIContext } from "@/contexts/UIContext";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import {
@@ -430,6 +430,14 @@ export default function ChainBreakdown({
 
     return retHeight;
   }, [openChain, data, selectedTimespan]);
+
+  useEffect(() => {
+    const isValidMonthlyTimespan =
+      timespans[selectedTimespan].value > 30 || selectedTimespan === "max";
+    if (isMonthly && !isValidMonthlyTimespan) {
+      setSelectedTimespan("90d");
+    }
+  }, [selectedTimespan, isMonthly]);
 
   return (
     <div className="h-full">
@@ -1512,7 +1520,9 @@ export default function ChainBreakdown({
                       <div className="w-[97.5%] bg-forest-950 rounded-b-2xl border-dotted border-[1.25px] border-t-0 border-forest-50/30">
                         <BreakdownCharts
                           data={data[item.key][selectedTimespan]}
-                          dailyData={data[item.key]["daily"]}
+                          dailyData={
+                            data[item.key][isMonthly ? "monthly" : "daily"]
+                          }
                           chain={item.key}
                           timespans={timespans}
                           selectedTimespan={selectedTimespan}
