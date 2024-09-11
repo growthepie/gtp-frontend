@@ -18,6 +18,7 @@ export interface ChainBreakdownData {
   "90d": DurationData;
   "180d": DurationData;
   daily: DailyData;
+  monthly: DailyData;
   max: DurationData;
 }
 
