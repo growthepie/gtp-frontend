@@ -148,49 +148,75 @@ export default function ChainBreakdown({
 
   //Handles opening of each chain section
   const timespans = useMemo(() => {
-    return {
-      "1d": {
-        shortLabel: "1d",
-        label: "1 day",
-        value: 1,
-      },
-      "7d": {
-        shortLabel: "7d",
-        label: "7 days",
-        value: 7,
-        xMin: Date.now() - 7 * 24 * 60 * 60 * 1000,
-        xMax: Date.now(),
-      },
-      "30d": {
-        shortLabel: "30d",
-        label: "30 days",
-        value: 30,
-        xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
-        xMax: Date.now(),
-      },
-      "90d": {
-        shortLabel: "90d",
-        label: "90 days",
-        value: 90,
-        xMin: Date.now() - 90 * 24 * 60 * 60 * 1000,
-        xMax: Date.now(),
-      },
-      "365d": {
-        shortLabel: "1y",
-        label: "1 year",
-        value: 365,
-        xMin: Date.now() - 365 * 24 * 60 * 60 * 1000,
-        xMax: Date.now(),
-      },
+    if (!isMonthly) {
+      return {
+        "1d": {
+          shortLabel: "1d",
+          label: "1 day",
+          value: 1,
+        },
+        "7d": {
+          shortLabel: "7d",
+          label: "7 days",
+          value: 7,
+          xMin: Date.now() - 7 * 24 * 60 * 60 * 1000,
+          xMax: Date.now(),
+        },
+        "30d": {
+          shortLabel: "30d",
+          label: "30 days",
+          value: 30,
+          xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
+          xMax: Date.now(),
+        },
+        "90d": {
+          shortLabel: "90d",
+          label: "90 days",
+          value: 90,
+          xMin: Date.now() - 90 * 24 * 60 * 60 * 1000,
+          xMax: Date.now(),
+        },
+        "365d": {
+          shortLabel: "1y",
+          label: "1 year",
+          value: 365,
+          xMin: Date.now() - 365 * 24 * 60 * 60 * 1000,
+          xMax: Date.now(),
+        },
 
-      max: {
-        shortLabel: "Max",
-        label: "Max",
-        value: 0,
-        xMax: Date.now(),
-      },
-    };
-  }, []);
+        max: {
+          shortLabel: "Max",
+          label: "Max",
+          value: 0,
+          xMax: Date.now(),
+        },
+      };
+    } else {
+      return {
+        "180d": {
+          shortLabel: "6m",
+          label: "6 months",
+          value: 90,
+          xMin: Date.now() - 180 * 24 * 60 * 60 * 1000,
+          xMax: Date.now(),
+        },
+        "365d": {
+          shortLabel: "1y",
+          label: "1 year",
+          value: 365,
+          xMin: Date.now() - 365 * 24 * 60 * 60 * 1000,
+          xMax: Date.now(),
+        },
+
+        max: {
+          shortLabel: "Max",
+          label: "Max",
+          value: 0,
+          xMax: Date.now(),
+        },
+      };
+    }
+  }, [isMonthly]);
 
   const totalRevenue = useMemo(() => {
     let retValue = 0;
@@ -431,14 +457,6 @@ export default function ChainBreakdown({
     return retHeight;
   }, [openChain, data, selectedTimespan]);
 
-  useEffect(() => {
-    const isValidMonthlyTimespan =
-      timespans[selectedTimespan].value > 30 || selectedTimespan === "max";
-    if (isMonthly && !isValidMonthlyTimespan) {
-      setSelectedTimespan("90d");
-    }
-  }, [selectedTimespan, isMonthly]);
-
   return (
     <div className="h-full">
       {sortedChainData && (
@@ -463,6 +481,11 @@ export default function ChainBreakdown({
                 <TopRowChild
                   isSelected={!isMonthly}
                   onClick={() => {
+                    const isTransferrableTimespan =
+                      selectedTimespan === "max" || selectedTimespan === "365d";
+                    if (!isTransferrableTimespan) {
+                      setSelectedTimespan("max");
+                    }
                     setIsMonthly(false);
                   }}
                   style={{
@@ -477,6 +500,11 @@ export default function ChainBreakdown({
                 <TopRowChild
                   isSelected={isMonthly}
                   onClick={() => {
+                    const isTransferrableTimespan =
+                      selectedTimespan === "max" || selectedTimespan === "365d";
+                    if (!isTransferrableTimespan) {
+                      setSelectedTimespan("max");
+                    }
                     setIsMonthly(true);
                   }}
                   style={{
