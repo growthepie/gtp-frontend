@@ -9,7 +9,7 @@ import { BASE_URL } from "@/lib/helpers";
 import { useTheme } from "next-themes";
 import { track } from "@vercel/analytics";
 import useSWR from "swr";
-import type { Notification } from "@/app/api/notifications/route";
+import type { NotificationType } from "@/app/api/notifications/route";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
 const currentDateTime = new Date().getTime();
@@ -22,7 +22,7 @@ const Notification = () => {
   const { theme } = useTheme();
   const currentPath = usePathname();
   const [seenNotifications, setSeenNotifications] = useLocalStorage<
-    Notification[]
+    NotificationType[]
   >("seenNotifications", []);
 
   const { data, isLoading, isValidating, error } = useSWR(
