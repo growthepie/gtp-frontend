@@ -688,7 +688,7 @@ function BreakdownCharts({
               zoomEnabled={false}
               tickWidth={0}
               tickLength={20}
-              ordinal={false}
+              ordinal={true}
               minorTicks={false}
               minorTickLength={2}
               minorTickWidth={2}
@@ -980,7 +980,7 @@ function BreakdownCharts({
               tickAmount={0}
               tickLength={20}
               tickWidth={0}
-              ordinal={false}
+              ordinal={true}
               minorTicks={false}
               minorTickLength={2}
               minorTickWidth={2}
