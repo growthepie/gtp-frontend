@@ -228,8 +228,6 @@ function BreakdownCharts({
     return dailyData.revenue.data[dailyData.revenue.data.length - 1][0];
   }, [selectedTimespan, dailyData]);
 
-  console.log(dailyData);
-
   const tooltipFormatter = useCallback(
     function (this: any) {
       const { x, points } = this;
