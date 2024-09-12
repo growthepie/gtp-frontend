@@ -7,8 +7,6 @@ import Link from "next/link";
 import Icon from "@/components/layout/Icon";
 import {
   EpochData,
-  EpochProject,
-  EpochState,
 } from "@/app/api/trackers/octant/route";
 import ShowLoading from "@/components/layout/ShowLoading";
 import {
@@ -25,7 +23,7 @@ import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead"
 import { track } from "@vercel/analytics/react";
 import { useMediaQuery } from "usehooks-ts";
 import ChainSectionHeadAlt from "@/components/layout/SingleChains/ChainSectionHeadAlt";
-import { GridTableHeader, GridTableHeaderCell, GridTableRow } from "@/components/layout/GridTable";
+import { GridTableHeader, GridTableHeaderCell, GridTableRow, GridTableContainer } from "@/components/layout/GridTable";
 import { set } from "lodash";
 import UsersEpoch1 from "./octantv2_epoch_1.json";
 import UsersEpoch2 from "./octantv2_epoch_2.json";
@@ -46,6 +44,8 @@ import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { MasterURL } from "@/lib/urls";
 import useSWR from "swr";
+import { CircleChart } from "@/components/layout/CircleChart";
+import Highcharts from "highcharts";
 
 type EpochsByProject = {
   [project: string]: EpochData[];
@@ -297,22 +297,57 @@ export default function Page() {
   }, [CommunityUsersData, , communityTableSort, communitySearch, communityUserSelection]);
 
 
+  type ProjectMetadataType = {
+    [project_key: string]: {
+      name: string
+      introDescription: string
+      profileImageSmall: string
+      profileImageMedium: string
+      profileImageLarge: string
+      websiteLabel: string
+      websiteUrl: string
+      address: string
+      cid: string
+      id: string
+      epoch: number
+      project_key: string
+    }
+  };
+
+  const ProjectsMetadata = useMemo<ProjectMetadataType>(() => {
+    // combine all the projects metadata, use the latest epoch if there are duplicates
+    let data: ProjectMetadataType = {};
+
+    Object.values(ProjectsMetadata1).forEach((project) => {
+      data[project.project_key] = project;
+    });
+
+    Object.values(ProjectsMetadata2).forEach((project) => {
+      data[project.project_key] = project;
+    });
+
+    Object.values(ProjectsMetadata3).forEach((project) => {
+      data[project.project_key] = project;
+    });
+
+    Object.values(ProjectsMetadata4).forEach((project) => {
+      data[project.project_key] = project;
+    });
+
+    Object.values(ProjectsMetadata5).forEach((project) => {
+      data[project.project_key] = project;
+    });
+
+    return data;
+  }, []);
+
+
   const [fundingSearch, setFundingSearch] = useState("");
 
   const [fundingTableSort, setFundingTableSort] = useState({
-    metric: "budget_amount",
+    metric: "total",
     sortOrder: "desc",
   });
-
-  // const [fundingRowsOpen, setFundingRowsOpen] = useState<string[]>([]);
-
-  // const handleFundingRowToggle = (user: string) => {
-  //   if (communityRowsOpen.includes(user)) {
-  //     setCommunityRowsOpen(communityRowsOpen.filter((u) => u !== user));
-  //   } else {
-  //     setCommunityRowsOpen([...communityRowsOpen, user]);
-  //   }
-  // };
 
   type Funding = {
     address: string
@@ -370,13 +405,14 @@ export default function Page() {
 
   const FundingDataFiltered = useMemo<Funding>(() => {
     let data = [...FundingData];
+
     // sort the data
     data.sort((a, b) => {
-      if (a[communityTableSort.metric] < b[communityTableSort.metric]) {
-        return communityTableSort.sortOrder === "asc" ? -1 : 1;
+      if (a[fundingTableSort.metric] < b[fundingTableSort.metric]) {
+        return fundingTableSort.sortOrder === "asc" ? -1 : 1;
       }
-      if (a[communityTableSort.metric] > b[communityTableSort.metric]) {
-        return communityTableSort.sortOrder === "asc" ? 1 : -1;
+      if (a[fundingTableSort.metric] > b[fundingTableSort.metric]) {
+        return fundingTableSort.sortOrder === "asc" ? 1 : -1;
       }
       return 0;
     });
@@ -384,57 +420,14 @@ export default function Page() {
     // filter the data
     data = data.filter((project) => {
       if (fundingSearch === "") return true;
-      return project.project_key.toLowerCase().includes(fundingSearch.toLowerCase());
+      return project.address.toLowerCase().includes(fundingSearch.toLowerCase()) || ProjectsMetadata[project.project_key].name.toLowerCase().includes(fundingSearch.toLowerCase());
 
     });
 
     return data;
-  }, [FundingData, communityTableSort.metric, communityTableSort.sortOrder, fundingSearch]);
+  }, [FundingData, fundingTableSort.metric, fundingTableSort.sortOrder, fundingSearch, ProjectsMetadata]);
 
 
-  type ProjectMetadataType = {
-    [project_key: string]: {
-      name: string
-      introDescription: string
-      profileImageSmall: string
-      profileImageMedium: string
-      profileImageLarge: string
-      websiteLabel: string
-      websiteUrl: string
-      address: string
-      cid: string
-      id: string
-      epoch: number
-      project_key: string
-    }
-  };
-
-  const ProjectsMetadata = useMemo<ProjectMetadataType>(() => {
-    // combine all the projects metadata, use the latest epoch if there are duplicates
-    let data: ProjectMetadataType = {};
-
-    Object.values(ProjectsMetadata1).forEach((project) => {
-      data[project.project_key] = project;
-    });
-
-    Object.values(ProjectsMetadata2).forEach((project) => {
-      data[project.project_key] = project;
-    });
-
-    Object.values(ProjectsMetadata3).forEach((project) => {
-      data[project.project_key] = project;
-    });
-
-    Object.values(ProjectsMetadata4).forEach((project) => {
-      data[project.project_key] = project;
-    });
-
-    Object.values(ProjectsMetadata5).forEach((project) => {
-      data[project.project_key] = project;
-    });
-
-    return data;
-  }, []);
 
   // const {
   //   data: epochs,
@@ -455,8 +448,6 @@ export default function Page() {
     fetchData();
   }, []);
 
-  const [latestAllocationEpoch, setLatestAllocationEpoch] =
-    useState<EpochData | null>(null);
   const [currentEpoch, setCurrentEpoch] = useState<EpochData | null>(null);
 
   const data = useMemo<EpochData | null>(() => {
@@ -496,13 +487,11 @@ export default function Page() {
         });
 
       setCurrentEpoch(latestEpoch);
-      setLatestAllocationEpoch(latestEpoch);
 
       return latestEpoch;
     }
 
     setCurrentEpoch(currentEpochs[0]);
-    setLatestAllocationEpoch(currentEpochs[0]);
 
     return currentEpochs[0];
   }, [epochs]);
@@ -511,48 +500,8 @@ export default function Page() {
     if (!epochs) return;
 
     setCurrentEpoch(epochs[fundingEpoch - 1]);
-    // setLatestAllocationEpoch(epochs[fundingEpoch]);
-
 
   }, [epochs, fundingEpoch]);
-
-  console.log("epochs", epochs);
-
-  // const currentEpoch = useMemo<EpochData | null>(() => {
-  //   if (!epochs) return null;
-
-  //   const now = Date.now();
-
-  //   // console.log(epochs.map((epoch) => epoch.epoch));
-
-  //   const currentEpochs = epochs.filter((epoch) => {
-  //     // console.log(epoch.epoch, epoch.decisionWindow);
-  //     if (!epoch.decisionWindow) return false;
-  //     const decisionWindowNumber = new Date(epoch.decisionWindow).getTime();
-
-  //     return now < decisionWindowNumber;
-  //   });
-
-  //   return currentEpochs[0];
-  // }, [epochs]);
-
-  const epochsByProjectName = useMemo<EpochsByProject | null>(() => {
-    if (!epochs) return null;
-
-    const byProjectName: EpochsByProject = {};
-
-    epochs.forEach((epoch) => {
-      epoch.projects.forEach((project) => {
-        const lowerProjectName = project.name.toLowerCase();
-        if (!byProjectName[lowerProjectName]) {
-          byProjectName[lowerProjectName] = [];
-        }
-        byProjectName[lowerProjectName].push(epoch);
-      });
-    });
-
-    return byProjectName;
-  }, [epochs]);
 
   const epochsByProjectKey = useMemo<EpochsByProject | null>(() => {
     if (!epochs) return null;
@@ -572,22 +521,6 @@ export default function Page() {
     return byProjectKey;
   }, [epochs]);
 
-  const epochsByProject = useMemo<EpochsByProject | null>(() => {
-    if (!epochs) return null;
-
-    const byProject: EpochsByProject = {};
-
-    epochs.forEach((epoch) => {
-      epoch.projects.forEach((project) => {
-        if (!byProject[project.address]) {
-          byProject[project.address] = [];
-        }
-        byProject[project.address].push(epoch);
-      });
-    });
-
-    return byProject;
-  }, [epochs]);
 
   const allTimeTotalsByProjectKey = useMemo(() => {
     [...Funding1, ...Funding2, ...Funding3, ...Funding4].reduce((acc, curr) => {
@@ -715,261 +648,6 @@ export default function Page() {
       return acc + curr;
     })) / 10 ** 18;
   }, [data]);
-
-  console.log("epochsByProjectKey", epochsByProjectKey);
-
-  const sortedProjects = useMemo(() => {
-    if (!epochsByProjectKey) return [];
-    if (fundingEpoch === 0)
-      return Object.keys(epochsByProjectKey).sort(onRowSort);
-
-    // filter out projects that are not present in the current epoch
-    const filtered = Object.keys(epochsByProjectKey).filter((project) => {
-      return epochsByProjectKey[project].find((epoch) => epoch.epoch === fundingEpoch);
-    });
-
-    return filtered.sort(onRowSort);
-
-  }, [fundingEpoch, epochsByProjectKey, onRowSort]);
-
-  const headers: {
-    key: string;
-    containerClassName?: string;
-    cell: () => React.ReactNode;
-    sortKey?: string;
-  }[] = useMemo(() => {
-    if (!data) return [];
-
-    const handleSort = (key: string) => {
-      if (sortKey === key) {
-        setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-      } else {
-        setSortKey(key);
-        setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-      }
-    };
-
-    return [
-      {
-        key: "icon",
-
-        cell: () => <div></div>,
-      },
-      {
-        key: "rank",
-        cell: () => <div></div>,
-        sortKey: "rank",
-      },
-      {
-        key: "name",
-        cell: () => (
-          <div
-            className="flex relative cursor-pointer"
-            onClick={() => handleSort("name")}
-          >
-            Project
-            <div className="w-[10px] pt-0.5">
-              <Icon
-                icon="formkit:arrowdown"
-                className={`w-[10px] h-[10px] transition duration-100 transform ${sortKey !== "name" && "opacity-20"
-                  } ${sortKey === "name" && sortDirection === "asc"
-                    ? "rotate-180"
-                    : ""
-                  }`}
-              />
-            </div>
-          </div>
-        ),
-        sortKey: "name",
-      },
-      {
-        key: "address",
-        cell: () => (
-          <div
-            className="hidden lg:flex relative cursor-pointer"
-            onClick={() => handleSort("address")}
-          >
-            Address
-            <div className="w-[10px] pt-0.5">
-              <Icon
-                icon="formkit:arrowdown"
-                className={`w-[10px] h-[10px] transition duration-100 transform ${sortKey !== "address" && "opacity-20"
-                  } ${sortKey === "address" && sortDirection === "asc"
-                    ? "rotate-180"
-                    : ""
-                  }`}
-              />
-            </div>
-          </div>
-        ),
-        sortKey: "address",
-      },
-      {
-        key: "epochs",
-        cell: () => (
-          <div
-            className="flex relative cursor-pointer"
-            onClick={() => handleSort("epochs")}
-          >
-            Epoch History
-            <div className="w-[10px] pt-0.5">
-              <Icon
-                icon="formkit:arrowdown"
-                className={`w-[10px] h-[10px] transition duration-100 transform ${sortKey !== "epochs" && "opacity-20"
-                  } ${sortKey === "epochs" && sortDirection === "asc"
-                    ? "rotate-180"
-                    : ""
-                  }`}
-              />
-            </div>
-          </div>
-        ),
-        sortKey: "epochs",
-      },
-      {
-        key: "donors",
-        containerClassName: "flex justify-end text-right pr-6",
-        cell: () => (
-          <div
-            className="relative flex justify-end text-right cursor-pointer"
-            onClick={() => handleSort("donors")}
-          >
-            <div>Donors</div>
-            <div className="w-[10px] pt-0.5">
-              <Icon
-                icon="formkit:arrowdown"
-                className={`w-[10px] h-[10px] transition duration-100 transform ${sortKey !== "donors" && "opacity-20"
-                  } ${sortKey === "donors" && sortDirection === "asc"
-                    ? "rotate-180"
-                    : ""
-                  }`}
-              />
-            </div>
-          </div>
-        ),
-        sortKey: "donors",
-      },
-      {
-        key: "totalAllocated",
-        containerClassName: "flex justify-end text-right pr-4",
-        cell: () => (
-          <div
-            className="relative flex justify-end text-right cursor-pointer"
-            onClick={() => handleSort("totalAllocated")}
-          >
-            <div>Donated</div>
-            <div className="w-[10px] pt-0.5 leading-tight">
-              <Icon
-                icon="formkit:arrowdown"
-                className={`w-[10px] h-[10px] transition duration-100 transform ${sortKey !== "totalAllocated" && "opacity-20"
-                  } ${sortKey === "totalAllocated" && sortDirection === "desc"
-                    ? "rotate-180"
-                    : ""
-                  }`}
-              />
-            </div>
-          </div>
-        ),
-        sortKey: "totalAllocated",
-      },
-      {
-        key: "rewardsThreshold",
-        cell: () => (
-          <div className={`relative ${currentEpoch && currentEpoch.epoch >= 4 && "hidden"}`}>
-            {currentEpoch && currentEpoch.epoch < 4 && (
-              <>
-                <div className="relative -left-[8px] -bottom-[6px] text-forest-900/50 dark:text-forest-500/50 font-normal text-[0.7rem] whitespace-nowrap overflow-visible">
-                  {currentEpoch &&
-                    (currentEpoch.epoch >= 4 ? TwentyPercentOfTotalMatched.toFixed(4) : Math.abs(currentEpoch.rewardsThreshold / 10 ** 18).toFixed(
-                      4,
-                    ))}{" "}
-                  <span className="text-[0.6rem] text-forest-900/20 dark:text-forest-500/30">
-                    ETH
-                  </span>
-                </div>
-                <div className="absolute h-2 w-1 border-t border-l border-forest-900/20 dark:border-forest-500/20 -left-[15px] -bottom-[6px]"></div>
-              </>
-            )}
-          </div>
-        ),
-      },
-      {
-        key: "rewardsMatched",
-        containerClassName: "flex justify-end text-right",
-        cell: () => (
-          <div
-            className="relative pr-[15px] flex justify-end text-right cursor-pointer"
-            onClick={() => handleSort("rewardsMatched")}
-          >
-            <div>Octant Match</div>
-            <div className="w-[10px] pt-0.5">
-              <Icon
-                icon="formkit:arrowdown"
-                className={`w-[10px] h-[10px] transition duration-100 transform ${sortKey !== "rewardsMatched" && "opacity-20"
-                  } ${sortKey === "rewardsMatched" && sortDirection === "asc"
-                    ? "rotate-180"
-                    : ""
-                  }`}
-              />
-            </div>
-          </div>
-        ),
-        sortKey: "rewardsMatched",
-      },
-
-      {
-        key: "rewardsTotal",
-        containerClassName: "flex justify-end text-right",
-        cell: () => (
-          <div
-            className="relative pr-[15px] flex justify-end text-right cursor-pointer"
-            onClick={() => handleSort("rewardsTotal")}
-          >
-            <div>Epoch {currentEpoch?.epoch} Total</div>
-            <div className="w-[10px] pt-0.5">
-              <Icon
-                icon="formkit:arrowdown"
-                className={`w-[10px] h-[10px] transition duration-100 transform ${sortKey !== "rewardsTotal" && "opacity-20"
-                  } ${sortKey === "rewardsTotal" && sortDirection === "asc"
-                    ? "rotate-180"
-                    : ""
-                  }`}
-              />
-            </div>
-          </div>
-        ),
-        sortKey: "rewardsTotal",
-      },
-      {
-        key: "allTimeTotal",
-        containerClassName: "flex justify-end text-right",
-        cell: () => (
-          <div
-            className="relative pr-[15px] flex justify-end text-right cursor-pointer"
-            onClick={() => handleSort("allTimeTotal")}
-          >
-            <div>All Time Total</div>
-            <div className="w-[10px] pt-0.5">
-              <Icon
-                icon="formkit:arrowdown"
-                className={`w-[10px] h-[10px] transition duration-100 transform ${sortKey !== "allTimeTotal" && "opacity-20"
-                  } ${sortKey === "allTimeTotal" && sortDirection === "asc"
-                    ? "rotate-180"
-                    : ""
-                  }`}
-              />
-            </div>
-          </div>
-        ),
-        sortKey: "allTimeTotal",
-      },
-    ].filter((header) => header !== undefined) as {
-      key: string;
-      containerClassName?: string;
-      cell: () => React.ReactNode;
-      sortKey?: string;
-    }[];
-  }, [data, currentEpoch, sortKey, sortDirection, TwentyPercentOfTotalMatched]);
 
   // Countdown Timer for Decision Window
   const createTmer = useMemo(() => {
@@ -1103,6 +781,24 @@ export default function Page() {
       </div>
     );
   };
+
+
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+
+  const copyAddressTimeout = useRef<number | null>(null);
+
+  const handleCopyAddress = useCallback((address: string) => {
+    navigator.clipboard.writeText(address);
+    setCopiedAddress(address);
+
+    if (copyAddressTimeout.current) {
+      clearTimeout(copyAddressTimeout.current);
+    }
+
+    copyAddressTimeout.current = window.setTimeout(() => {
+      setCopiedAddress(null);
+    }, 2000);
+  }, []);
 
   return (
     <>
@@ -1482,7 +1178,6 @@ export default function Page() {
         >
           <TopRowParent>
             <TopRowChild
-              // key={timespan}
               isSelected={communityUserSelection === "All"}
               onClick={() => {
                 handleCommunityUserSelection("All");
@@ -1499,7 +1194,6 @@ export default function Page() {
               </span>
             </TopRowChild>
             <TopRowChild
-              // key={timespan}
               isSelected={communityUserSelection === "Donating"}
               onClick={() => {
                 handleCommunityUserSelection("Donating");
@@ -1527,15 +1221,12 @@ export default function Page() {
               <div
                 className="rounded-[40px] w-[54px] h-[34px] bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[15] hover:cursor-pointer"
                 onClick={handlePrevCommunityEpoch}
-
               >
                 <Icon icon="feather:arrow-left" className="w-6 h-6" />
               </div>
               <div
                 className="flex flex-1 flex-col items-center justify-self-center  gap-y-[1px]"
-
               >
-
                 <div
                   className={`flex gap-x-[5px] justify-center items-center w-[123px] h-full`}
                 >
@@ -1552,332 +1243,326 @@ export default function Page() {
                 <Icon icon="feather:arrow-right" className="w-6 h-6" />
               </div>
             </div>
-            {/* <div
-                className={`flex flex-col relative lg:absolute lg:top-[27px] bottom-auto lg:left-0 lg:right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300`}
-              >
-                <div className="pb-[20px] lg:pb-[10px]">
-                  <div className="h-[10px] lg:h-[28px]"></div>
-                  <div
-                    className="flex pl-[21px] pr-[19px] lg:pr-[15px] py-[5px] gap-x-[10px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
-                  // onClick={() => {
-                  //   setCompareTo(false);
-                  //   delay(300).then(() => setChainKey([chainKey[0]]));
-                  // }}
-                  >
-                    <Icon
-                      icon="feather:arrow-right-circle"
-                      className="w-6 h-6"
-                    // visibility={compChain === null ? "visible" : "hidden"}
-                    />
-                    <div className="flex w-[22px] h-[22px] items-center justify-center">
-                      <Icon
-                        icon="feather:x"
-                        className={`transition-all duration-300 ${""
-                          // compChain === null
-                          // ? "w-[22px] h-[22px]"
-                          // : "w-[15px] h-[15px]"
-                          }`}
-                        style={{
-                          // color: compChain === null ? "" : "#5A6462",
-                        }}
-                      />
-                    </div>
-                    <div className="">None</div>
-                  </div>
-                  {CompChains.sort((chain1, chain2) => {
-                    const nameA = master.chains[chain1.key].name.toLowerCase();
-                    const nameB = master.chains[chain2.key].name.toLowerCase();
-
-                    if (nameA < nameB) {
-                      return -1;
-                    }
-                    if (nameA > nameB) {
-                      return 1;
-                    }
-                    return 0;
-                  }).map((chain, index) => (
-                    <div
-                      className="flex pl-[21px] pr-[15px] py-[5px] gap-x-[10px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
-                      onClick={() => {
-                        setCompareTo(false);
-                        delay(400).then(() =>
-                          setChainKey([chainKey[0], chain.key]),
-                        );
-                      }}
-                      key={index}
-                      onMouseOver={() => {
-                        preload(`${ChainsBaseURL}${chain.key}.json`, fetcher);
-                      }}
-                    >
-                      <Icon
-                        icon="feather:arrow-right-circle"
-                        className="w-6 h-6"
-                        visibility={compChain === chain.key ? "visible" : "hidden"}
-                      />
-                      <div className="flex w-[22px] h-[22px] items-center justify-center">
-                        <Icon
-                          icon={`gtp:${chain.urlKey}-logo-monochrome`}
-                          className={`transition-all duration-300 ${compChain === chain.key
-                            ? "w-[22px] h-[22px]"
-                            : "w-[15px] h-[15px]"
-                            }`}
-                          style={{
-                            color:
-                              compChain === chain.key
-                                ? AllChainsByKeys[chain.key].colors[
-                                theme ?? "dark"
-                                ][0]
-                                : "#5A6462",
-                          }}
-                        />
-                      </div>
-                      <div>{master.chains[chain.key].name}</div>
-                    </div>
-                  ))}
-                </div>
-              </div> */}
-            {/* {compareTo && (
-                <div
-                  className={`hidden lg:block lg:fixed inset-0 z-20`}
-                  onClick={() => {
-                    setCompareTo(false);
-                  }}
-                />
-              )} */}
           </div>
         </TopRowContainer>
       </Container>
-      <Container>
-        <div className="flex items-center w-full bg-[#1F2726] gap-x-[10px] rounded-[22px] pr-[10px] min-h-[44px] z-[1]">
-          <div className={`relative flex justify-center items-center pl-[10px]`}>
-            <SearchIcon />
-          </div>
-          <input
-            // ref={inputRef}
-            className={`flex-1 pl-[11px] h-full bg-transparent placeholder-[#CDD8D3] border-none outline-none overflow-x-clip`}
-            placeholder="Search Wallets"
-            value={communitySearch}
-            onChange={(e) => {
+      <Container className="@container">
 
-              setCommunitySearch(e.target.value);
-            }}
-            onKeyUp={(e) => {
-              // if enter is pressed, add the search term to the address filters
-              if (e.key === "Enter" && communitySearch.length > 0) {
-                // handleFilter("address", search);
-                // setSearch("");
-                // e.preventDefault();
-              }
-            }}
-          />
-          {communitySearch.length > 0 && (
-            <div className="cursor-pointer" onClick={() => setCommunitySearch("")}>
-              <svg width="27" height="26" viewBox="0 0 27 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="1" y="1" width="25" height="24" rx="12" stroke="url(#paint0_linear_8794_34411)" />
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M17.7435 17.2426C18.8688 16.1174 19.5009 14.5913 19.5009 13C19.5009 11.4087 18.8688 9.88258 17.7435 8.75736C16.6183 7.63214 15.0922 7 13.5009 7C11.9096 7 10.3835 7.63214 9.25827 8.75736C8.13305 9.88258 7.50091 11.4087 7.50091 13C7.50091 14.5913 8.13305 16.1174 9.25827 17.2426C10.3835 18.3679 11.9096 19 13.5009 19C15.0922 19 16.6183 18.3679 17.7435 17.2426V17.2426ZM12.4402 10.8787C12.2996 10.738 12.1088 10.659 11.9099 10.659C11.711 10.659 11.5202 10.738 11.3796 10.8787C11.2389 11.0193 11.1599 11.2101 11.1599 11.409C11.1599 11.6079 11.2389 11.7987 11.3796 11.9393L12.4402 13L11.3796 14.0607C11.2389 14.2013 11.1599 14.3921 11.1599 14.591C11.1599 14.7899 11.2389 14.9807 11.3796 15.1213C11.5202 15.262 11.711 15.341 11.9099 15.341C12.1088 15.341 12.2996 15.262 12.4402 15.1213L13.5009 14.0607L14.5616 15.1213C14.7022 15.262 14.893 15.341 15.0919 15.341C15.2908 15.341 15.4816 15.262 15.6222 15.1213C15.7629 14.9807 15.8419 14.7899 15.8419 14.591C15.8419 14.3921 15.7629 14.2013 15.6222 14.0607L14.5616 13L15.6222 11.9393C15.7629 11.7987 15.8419 11.6079 15.8419 11.409C15.8419 11.2101 15.7629 11.0193 15.6222 10.8787C15.4816 10.738 15.2908 10.659 15.0919 10.659C14.893 10.659 14.7022 10.738 14.5616 10.8787L13.5009 11.9393L12.4402 10.8787Z" fill="#CDD8D3" />
-                <defs>
-                  <linearGradient id="paint0_linear_8794_34411" x1="13.5" y1="1" x2="29.4518" y2="24.361" gradientUnits="userSpaceOnUse">
-                    <stop stop-color="#FE5468" />
-                    <stop offset="1" stop-color="#FFDF27" />
-                  </linearGradient>
-                </defs>
-              </svg>
+        <div className="flex flex-col @[1231px]:flex-row @[1231px]:flex-wrap">
+          <div className="w-full @[1231px]:w-1/2">
+            <div className="flex items-center w-full bg-[#1F2726] gap-x-[10px] rounded-[22px] pr-[10px] min-h-[44px] z-[1]">
+              <div className={`relative flex justify-center items-center pl-[10px]`}>
+                <SearchIcon />
+              </div>
+              <input
+                // ref={inputRef}
+                className={`flex-1 pl-[11px] h-full bg-transparent placeholder-[#CDD8D3] border-none outline-none overflow-x-clip`}
+                placeholder="Search Wallets"
+                value={communitySearch}
+                onChange={(e) => {
+
+                  setCommunitySearch(e.target.value);
+                }}
+                onKeyUp={(e) => {
+                  // if enter is pressed, add the search term to the address filters
+                  if (e.key === "Enter" && communitySearch.length > 0) {
+                    // handleFilter("address", search);
+                    // setSearch("");
+                    // e.preventDefault();
+                  }
+                }}
+              />
+              {communitySearch.length > 0 && (
+                <div className="cursor-pointer" onClick={() => setCommunitySearch("")}>
+                  <svg width="27" height="26" viewBox="0 0 27 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="1" y="1" width="25" height="24" rx="12" stroke="url(#paint0_linear_8794_34411)" />
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M17.7435 17.2426C18.8688 16.1174 19.5009 14.5913 19.5009 13C19.5009 11.4087 18.8688 9.88258 17.7435 8.75736C16.6183 7.63214 15.0922 7 13.5009 7C11.9096 7 10.3835 7.63214 9.25827 8.75736C8.13305 9.88258 7.50091 11.4087 7.50091 13C7.50091 14.5913 8.13305 16.1174 9.25827 17.2426C10.3835 18.3679 11.9096 19 13.5009 19C15.0922 19 16.6183 18.3679 17.7435 17.2426V17.2426ZM12.4402 10.8787C12.2996 10.738 12.1088 10.659 11.9099 10.659C11.711 10.659 11.5202 10.738 11.3796 10.8787C11.2389 11.0193 11.1599 11.2101 11.1599 11.409C11.1599 11.6079 11.2389 11.7987 11.3796 11.9393L12.4402 13L11.3796 14.0607C11.2389 14.2013 11.1599 14.3921 11.1599 14.591C11.1599 14.7899 11.2389 14.9807 11.3796 15.1213C11.5202 15.262 11.711 15.341 11.9099 15.341C12.1088 15.341 12.2996 15.262 12.4402 15.1213L13.5009 14.0607L14.5616 15.1213C14.7022 15.262 14.893 15.341 15.0919 15.341C15.2908 15.341 15.4816 15.262 15.6222 15.1213C15.7629 14.9807 15.8419 14.7899 15.8419 14.591C15.8419 14.3921 15.7629 14.2013 15.6222 14.0607L14.5616 13L15.6222 11.9393C15.7629 11.7987 15.8419 11.6079 15.8419 11.409C15.8419 11.2101 15.7629 11.0193 15.6222 10.8787C15.4816 10.738 15.2908 10.659 15.0919 10.659C14.893 10.659 14.7022 10.738 14.5616 10.8787L13.5009 11.9393L12.4402 10.8787Z" fill="#CDD8D3" />
+                    <defs>
+                      <linearGradient id="paint0_linear_8794_34411" x1="13.5" y1="1" x2="29.4518" y2="24.361" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#FE5468" />
+                        <stop offset="1" stop-color="#FFDF27" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-
-        <GridTableHeader gridDefinitionColumns="grid-cols-[20px,minmax(225px,1600px),218px,118px,118px]"
-          className="text-[12px] gap-x-[15px] z-[2] !pl-[5px] !pr-[36px] !pt-[15px] !pb-[10px]">
-          <div></div>
-          <GridTableHeaderCell
-            metric="user"
-            sort={communityTableSort}
-            setSort={setCommunityTableSort}
-          >
-            Address
-          </GridTableHeaderCell>
-          <GridTableHeaderCell
-            justify="end"
-            metric="min"
-            sort={communityTableSort}
-            setSort={setCommunityTableSort}
-          >
-            Amount Locked
-          </GridTableHeaderCell>
-          <GridTableHeaderCell
-            justify="end"
-            metric="budget_amount"
-            sort={communityTableSort}
-            setSort={setCommunityTableSort}
-          >
-            Rewards Earned
-          </GridTableHeaderCell>
-          <GridTableHeaderCell
-            justify="end"
-            metric="allocation_amount"
-            sort={communityTableSort}
-            setSort={setCommunityTableSort}
-          >
-            Amount Donated
-          </GridTableHeaderCell>
-          {/* <GridTableHeaderCell
-              justify="end"
-              metric="project_count"
-              sort={communityTableSort}
-              setSort={setCommunityTableSort}
-            >
-              # Donations
-            </GridTableHeaderCell> */}
-        </GridTableHeader>
-        <VerticalScrollContainer height={250} className="">
-          {CommunityUsersFiltered && CommunityUsersFiltered.length > 0 && (
-            CommunityUsersFiltered.map((user, index) => (
-              <div key={index} className="pb-[3px]">
-                <GridTableRow
-
-                  gridDefinitionColumns="grid-cols-[20px,minmax(225px,1600px),218px,118px,118px]"
-                  className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] !pl-[5px] !pr-[15px]"
-                >
-                  <div className="flex items-center justify-center">
-                    <div
-                      className="relative flex items-center justify-center rounded-full w-[16px] h-[16px] bg-[#151A19] cursor-pointer"
-                      onClick={(e) => {
-                        handleCommunityRowToggle(user.user);
-                        e.stopPropagation();
-                      }}
+            <GridTableHeader gridDefinitionColumns="grid-cols-[20px,minmax(125px,1600px),118px,72px,69px]"
+              className="text-[12px] gap-x-[15px] z-[2] !pl-[5px] !pr-[36px] !pt-[15px] !pb-[10px]">
+              <div></div>
+              <GridTableHeaderCell
+                metric="user"
+                sort={communityTableSort}
+                setSort={setCommunityTableSort}
+              >
+                Address
+              </GridTableHeaderCell>
+              <GridTableHeaderCell
+                justify="end"
+                metric="min"
+                sort={communityTableSort}
+                setSort={setCommunityTableSort}
+              >
+                Amount Locked
+              </GridTableHeaderCell>
+              <GridTableHeaderCell
+                justify="end"
+                metric="budget_amount"
+                sort={communityTableSort}
+                setSort={setCommunityTableSort}
+              >
+                Rewards
+              </GridTableHeaderCell>
+              <GridTableHeaderCell
+                justify="end"
+                metric="allocation_amount"
+                sort={communityTableSort}
+                setSort={setCommunityTableSort}
+              >
+                Donated
+              </GridTableHeaderCell>
+            </GridTableHeader>
+            <VerticalScrollContainer height={250} className="">
+              {CommunityUsersFiltered && CommunityUsersFiltered.length > 0 && (
+                CommunityUsersFiltered.map((user, index) => (
+                  <div key={index} className="pb-[3px]">
+                    <GridTableRow
+                      gridDefinitionColumns="grid-cols-[20px,minmax(125px,1600px),118px,72px,69px]"
+                      className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] !pl-[5px] !pr-[15px]"
                     >
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <g clip-path="url(#clip0_12402_20562)">
-                          <circle cx="8.29395" cy="8" r="7" stroke="#5A6462" />
-                          <path d="M3.67414 6.32422L4.77814 7.86022L4.84214 7.98822L4.91414 7.86022L6.01014 6.32422H6.79414L5.25014 8.42022L6.80214 10.5002H6.01814L4.91414 8.97222L4.84214 8.85222L4.77814 8.97222L3.67414 10.5002H2.89014L4.44214 8.42022L2.89814 6.32422H3.67414Z" fill="#5A6462" />
-                          <path d="M7.6557 11.6362C7.72503 11.6416 7.79437 11.6469 7.8637 11.6522C7.93303 11.6629 7.98637 11.6682 8.0237 11.6682C8.10903 11.6682 8.1837 11.6389 8.2477 11.5802C8.3117 11.5216 8.38103 11.4069 8.4557 11.2362C8.5357 11.0709 8.63703 10.8256 8.7597 10.5002L6.9917 6.32422H7.7357L9.1437 9.78822L10.4157 6.32422H11.1117L9.0797 11.5962C9.0317 11.7189 8.9597 11.8336 8.8637 11.9402C8.77303 12.0522 8.6557 12.1402 8.5117 12.2042C8.3677 12.2682 8.19437 12.3002 7.9917 12.3002C7.9437 12.3002 7.89303 12.2976 7.8397 12.2922C7.7917 12.2869 7.73037 12.2762 7.6557 12.2602V11.6362Z" fill="#5A6462" />
-                          <path d="M11.4951 10.0442L14.1271 6.83622H11.5671V6.32422H14.9191V6.78022L12.3031 9.98822H14.9271V10.5002H11.4951V10.0442Z" fill="#5A6462" />
-                        </g>
-                        <defs>
-                          <clipPath id="clip0_12402_20562">
-                            <rect width="15" height="15" fill="white" transform="translate(0.793945 0.5)" />
-                          </clipPath>
-                        </defs>
-                      </svg>
-
-                      <Icon
-                        icon={"gtp:circle-arrow"}
-                        className={`w-[4px] h-[9px] absolute top-[4px] -right-[4px] `}
-                        style={{
-                          transform: `rotate(${communityRowsOpen.includes(user.user) ? "90deg" : "0deg"
-                            })`,
-                          transformOrigin: "-7px 4px",
-                          transition: "transform 0.5s",
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="text-[#CDD8D3]">{user.user}</div>
-                  </div>
-                  <div className="flex items-center justify-end">
-                    {communityEpoch != 0 && user.min > 0 ? (
-                      <div className="text-[#CDD8D3]">{user.min.toLocaleString("en-GB", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })} GLM</div>
-                    ) : (
-                      <div className="text-[#CDD8D3]">-</div>
-                    )}
-
-                  </div>
-                  <div className="flex items-center justify-end">
-                    {user.budget_amount > 0 ? (
-                      <div className="text-[#CDD8D3]">{user.budget_amount.toLocaleString("en-GB", {
-                        minimumFractionDigits: user.budget_amount < 0.01 ? 6 : 2,
-                        maximumFractionDigits: user.budget_amount < 0.01 ? 6 : 2,
-                      })} ETH</div>
-                    ) : (
-                      <div className="text-[#CDD8D3]">-</div>
-                    )}
-
-                  </div>
-                  <div className="flex items-center justify-end">
-                    {user.allocation_amount > 0 ? (
-                      <div className="text-[#CDD8D3]">{user.allocation_amount.toLocaleString("en-GB", {
-                        minimumFractionDigits: user.allocation_amount < 0.01 ? 6 : 2,
-                        maximumFractionDigits: user.allocation_amount < 0.01 ? 6 : 2,
-                      })} ETH</div>
-                    ) : (
-                      <div className="text-[#CDD8D3]">-</div>
-                    )}
-                  </div>
-                  {/* <div className="flex items-center justify-end">
-                    {user.project_count > 0 ? (
-                      <div className="text-[#CDD8D3]">{user.project_count}</div>
-                    ) : (
-                      <div className="text-[#CDD8D3]">-</div>
-                    )}
-                  </div> */}
-
-                </GridTableRow>
-
-                <div className="pl-[13px] pr-[15px]">
-                  <div className={`flex flex-col bg-[#1F2726] rounded-b-[15px] border-[#CDD8D3]/30 border-dotted border-x border-b transition-all duration-300 ${communityRowsOpen.includes(user.user) ? "min-h-[80px] max-h-[300px] opacity-100" : "max-h-0 min-h-0 opacity-0"} overflow-hidden`}>
-                    <div className="flex flex-col p-[15px] gap-y-[6px] text-[12px]">
-                      <div className="flex items-center justify-between">
-                        <div>Active Since: <span className="font-semibold">Epoch {UserActiveSinceEpochData[user.user]}</span></div>
-                        <div className="flex gap-x-[5px] items-center">
-                          <div>
-                            Donated <span className="font-semibold">{user.allocation_amount.toLocaleString("en-GB", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })} ETH</span>
-                          </div>
-                          <div className="flex flex-col w-[133px]">
-                            <div className="flex justify-between text-[10px]">
-                              <div>{(user.allocation_amount / user.budget_amount * 100).toFixed(2)}%</div>
-                              <div>{((user.budget_amount - user.allocation_amount) / user.budget_amount * 100).toFixed(2)}%</div>
-                            </div>
-                            <div className="flex w-full h-[4px]">
-                              <div className="h-full rounded-l-full" style={{ background: "linear-gradient(0deg,#1DF7EF 0%,#10808C 100%)", width: `${(user.allocation_amount / user.budget_amount) * 100}%` }}></div>
-                              <div className="h-full rounded-r-full" style={{ background: "linear-gradient(-3deg,#FFDF27 0%,#FE5468 100%)", width: `${((user.budget_amount - user.allocation_amount) / user.budget_amount) * 100}%` }}></div>
-                            </div>
-                          </div>
-                          <div>
-                            <span className="font-semibold">{(user.budget_amount - user.allocation_amount).toLocaleString("en-GB", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })} ETH</span>{" "}
-                            Kept
-                          </div>
+                      <div className="flex items-center justify-center">
+                        <div
+                          className="relative flex items-center justify-center rounded-full w-[16px] h-[16px] bg-[#151A19] cursor-pointer"
+                          onClick={(e) => {
+                            handleCommunityRowToggle(user.user);
+                            e.stopPropagation();
+                          }}
+                        >
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <g clip-path="url(#clip0_12402_20562)">
+                              <circle cx="8.29395" cy="8" r="7" stroke="#5A6462" />
+                              <path d="M3.67414 6.32422L4.77814 7.86022L4.84214 7.98822L4.91414 7.86022L6.01014 6.32422H6.79414L5.25014 8.42022L6.80214 10.5002H6.01814L4.91414 8.97222L4.84214 8.85222L4.77814 8.97222L3.67414 10.5002H2.89014L4.44214 8.42022L2.89814 6.32422H3.67414Z" fill="#5A6462" />
+                              <path d="M7.6557 11.6362C7.72503 11.6416 7.79437 11.6469 7.8637 11.6522C7.93303 11.6629 7.98637 11.6682 8.0237 11.6682C8.10903 11.6682 8.1837 11.6389 8.2477 11.5802C8.3117 11.5216 8.38103 11.4069 8.4557 11.2362C8.5357 11.0709 8.63703 10.8256 8.7597 10.5002L6.9917 6.32422H7.7357L9.1437 9.78822L10.4157 6.32422H11.1117L9.0797 11.5962C9.0317 11.7189 8.9597 11.8336 8.8637 11.9402C8.77303 12.0522 8.6557 12.1402 8.5117 12.2042C8.3677 12.2682 8.19437 12.3002 7.9917 12.3002C7.9437 12.3002 7.89303 12.2976 7.8397 12.2922C7.7917 12.2869 7.73037 12.2762 7.6557 12.2602V11.6362Z" fill="#5A6462" />
+                              <path d="M11.4951 10.0442L14.1271 6.83622H11.5671V6.32422H14.9191V6.78022L12.3031 9.98822H14.9271V10.5002H11.4951V10.0442Z" fill="#5A6462" />
+                            </g>
+                            <defs>
+                              <clipPath id="clip0_12402_20562">
+                                <rect width="15" height="15" fill="white" transform="translate(0.793945 0.5)" />
+                              </clipPath>
+                            </defs>
+                          </svg>
+                          <Icon
+                            icon={"gtp:circle-arrow"}
+                            className={`w-[4px] h-[9px] absolute top-[4px] -right-[4px] `}
+                            style={{
+                              transform: `rotate(${communityRowsOpen.includes(user.user) ? "90deg" : "0deg"
+                                })`,
+                              transformOrigin: "-7px 4px",
+                              transition: "transform 0.5s",
+                            }}
+                          />
                         </div>
                       </div>
-                      {user.project_list.length > 0 ? (
-
-                        <div className="flex flex-col gap-y-[5px]">
-                          <div>Wallet donated to <span className="font-semibold">{user.project_list.length}</span> projects:</div>
-                          <div className="flex flex-wrap gap-x-[5px] gap-y-[5px]">
-                            {user.project_list.map((project_key, index) => (
-                              <div key={index} className="flex items-center gap-x-[5px] bg-[#344240] rounded-[15px] pl-[0px] pr-[6px] py-[0px] text-[10px]">
-                                <div className="w-6 h-6 border border-forest-900/20 dark:border-forest-500/20 rounded-full overflow-hidden">
-                                  <Image
-                                    src={`https://ipfs.io/ipfs/${ProjectsMetadata[project_key].profileImageMedium}`}
-                                    alt={ProjectsMetadata[project_key].name}
-                                    width={24}
-                                    height={24}
-                                    className="rounded-full"
-                                  />
-                                </div>
-                                {project_key}</div>
-                            ))}
+                      <div className="@container flex h-full items-center hover:bg-transparent">
+                        <span
+                          className="@container flex-1 flex h-full items-center hover:bg-transparent pr-[10px]"
+                          style={{
+                            fontFeatureSettings: "'pnum' on, 'lnum' on",
+                          }}
+                          onDoubleClick={(e) => {
+                            e.preventDefault(); // Prevent default double-click behavior
+                            const selection = window.getSelection();
+                            const range = document.createRange();
+                            range.selectNodeContents(e.currentTarget);
+                            selection?.removeAllRanges();
+                            selection?.addRange(range);
+                          }}
+                        >
+                          <div
+                            className="truncate transition-all duration-300"
+                            style={{ direction: 'ltr' }}
+                            onClick={() => {
+                              navigator.clipboard.writeText(user.user)
+                            }}
+                          >
+                            {user.user.slice(0, user.user.length - 6)}
                           </div>
+                          <div className="transition-all duration-300">
+                            {user.user.slice(-6)}
+                          </div>
+                          <div className="pl-[10px] hidden 3xl:flex">
+                            <Icon
+                              icon={copiedAddress === user.user ? "feather:check-circle" : "feather:copy"}
+                              className="w-[14px] h-[14px] cursor-pointer"
+                              onClick={() => {
+                                handleCopyAddress(user.user);
+                              }}
+                            />
+                          </div>
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-end">
+                        {communityEpoch != 0 && user.min > 0 ? (
+                          <div className="text-[#CDD8D3]">{user.min.toLocaleString("en-GB", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })} GLM</div>
+                        ) : (
+                          <div className="text-[#CDD8D3]">-</div>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-end">
+                        {user.budget_amount > 0 ? (
+                          <div className="text-[#CDD8D3]">{user.budget_amount.toLocaleString("en-GB", {
+                            minimumFractionDigits: user.budget_amount < 0.01 ? 4 : 2,
+                            maximumFractionDigits: user.budget_amount < 0.01 ? 4 : 2,
+                          })} ETH</div>
+                        ) : (
+                          <div className="text-[#CDD8D3]">-</div>
+                        )}
+
+                      </div>
+                      <div className="flex items-center justify-end">
+                        {user.allocation_amount > 0 ? (
+                          <div className="text-[#CDD8D3]">{user.allocation_amount.toLocaleString("en-GB", {
+                            minimumFractionDigits: user.allocation_amount < 0.01 ? 4 : 2,
+                            maximumFractionDigits: user.allocation_amount < 0.01 ? 4 : 2,
+                          })} ETH</div>
+                        ) : (
+                          <div className="text-[#CDD8D3]">-</div>
+                        )}
+                      </div>
+                    </GridTableRow>
+                    <div className="pl-[13px] pr-[15px]">
+                      <div className={`flex flex-col bg-[#1F2726] rounded-b-[15px] border-[#CDD8D3]/30 border-dotted border-x border-b transition-all duration-300 ${communityRowsOpen.includes(user.user) ? "min-h-[80px] max-h-[300px] opacity-100" : "max-h-0 min-h-0 opacity-0"} overflow-hidden`}>
+                        <div className="flex flex-col p-[15px] gap-y-[6px] text-[12px]">
+                          <div className="flex items-center justify-between">
+                            <div>Active Since: <span className="font-semibold">Epoch {UserActiveSinceEpochData[user.user]}</span></div>
+                            <div className="flex gap-x-[5px] items-center">
+                              <div>
+                                Donated <span className="font-semibold">{user.allocation_amount.toLocaleString("en-GB", {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })} ETH</span>
+                              </div>
+                              <div className="flex flex-col w-[133px]">
+                                <div className="flex justify-between text-[10px]">
+                                  <div>{(user.allocation_amount / user.budget_amount * 100).toFixed(2)}%</div>
+                                  <div>{((user.budget_amount - user.allocation_amount) / user.budget_amount * 100).toFixed(2)}%</div>
+                                </div>
+                                <div className="flex w-full h-[4px]">
+                                  <div className="h-full rounded-l-full" style={{ background: "linear-gradient(0deg,#1DF7EF 0%,#10808C 100%)", width: `${(user.allocation_amount / user.budget_amount) * 100}%` }}></div>
+                                  <div className="h-full rounded-r-full" style={{ background: "linear-gradient(-3deg,#FFDF27 0%,#FE5468 100%)", width: `${((user.budget_amount - user.allocation_amount) / user.budget_amount) * 100}%` }}></div>
+                                </div>
+                              </div>
+                              <div>
+                                <span className="font-semibold">{(user.budget_amount - user.allocation_amount).toLocaleString("en-GB", {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })} ETH</span>{" "}
+                                Kept
+                              </div>
+                            </div>
+                          </div>
+                          {user.project_list.length > 0 ? (
+
+                            <div className="flex flex-col gap-y-[5px]">
+                              <div>Wallet donated to <span className="font-semibold">{user.project_list.length}</span> projects:</div>
+                              <div className="flex flex-wrap gap-x-[5px] gap-y-[5px]">
+                                {user.project_list.map((project_key, index) => (
+                                  <div key={index} className="flex items-center gap-x-[5px] bg-[#344240] rounded-[15px] pl-[0px] pr-[6px] py-[0px] text-[10px]">
+                                    <div className="w-6 h-6 border border-forest-900/20 dark:border-forest-500/20 rounded-full overflow-hidden">
+                                      <Image
+                                        src={`https://ipfs.io/ipfs/${ProjectsMetadata[project_key].profileImageMedium}`}
+                                        alt={ProjectsMetadata[project_key].name}
+                                        width={24}
+                                        height={24}
+                                        className="rounded-full"
+                                      />
+                                    </div>
+                                    {project_key}</div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <div>No donations made to any projects.</div>
+                          )}
                         </div>
-                      ) : (
-                        <div>No donations made to any projects.</div>
-                      )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            ))
-          )}
-        </VerticalScrollContainer>
+                ))
+              )}
+            </VerticalScrollContainer>
+          </div>
+          <div className="flex flex-col @[600px]:flex-row h-auto @[1231px]:h-[340px] w-full @[1231px]:w-1/2 justify-between items-center">
+            <div>
+              <CircleChart
+                title="ALLOCATIONS"
+                data={[
+                  {
+                    label: "kept by wallets",
+                    value: CommunityUsersFiltered.reduce((acc, user) => acc + user.budget_amount - user.allocation_amount, 0),
+                  },
+                  {
+                    label: "allocated to projects",
+                    value: CommunityUsersFiltered.reduce((acc, user) => acc + user.allocation_amount, 0),
+                  }
+                ]}
+                valuePrefix="Ξ"
+                colors={[
+                  {
+                    linearGradient: {
+                      x1: 0,
+                      y1: 0,
+                      x2: 1,
+                      y2: 1,
+                    },
+                    stops: [
+                      [0, "#1DF7EF"],
+                      [0.5, "#10808C"],
+                    ]
+                  },
+                  {
+                    linearGradient: {
+                      x1: 0,
+                      y1: 0,
+                      x2: 1,
+                      y2: 1,
+                    },
+                    stops: [
+                      [0, "#FFDF27"],
+                      [1, "#FE5468"],
+                    ]
+                  },
+                ]}
+              />
+            </div>
+            <div>
+              <CircleChart
+                title={["DONATIONS TO", "# OF PROJECTS"]}
+                data={[
+                  {
+                    label: "1",
+                    value: CommunityUsersFiltered.filter((user) => user.project_list.length === 1).length,
+                  },
+                  {
+                    label: "2 to 5",
+                    value: CommunityUsersFiltered.filter((user) => user.project_list.length > 1 && user.project_list.length <= 5).length,
+                  },
+                  {
+                    label: "> 5",
+                    value: CommunityUsersFiltered.filter((user) => user.project_list.length > 5).length,
+                  },
+                  {
+                    label: "None",
+                    value: CommunityUsersFiltered.filter((user) => user.project_list.length === 0).length,
+                  },
+                ]}
+              />
+            </div>
+          </div>
+        </div>
         <div
           className="flex gap-x-[8px] items-center pb-[15px] scroll-mt-8 pt-[60px]"
           ref={JumpToSections.ProjectFunding.ref}
@@ -1903,7 +1588,6 @@ export default function Page() {
                 </clipPath>
               </defs>
             </svg>
-
           </div>
           <Heading
             className="leading-[120%] text-[20px] md:text-[30px] break-inside-avoid "
@@ -1918,7 +1602,8 @@ export default function Page() {
         >
           <TopRowParent className="flex flex-col px-[15px] py-[5px] leading-[120%]">
             <div className="text-[9px]">Next Epoch starts in</div>
-            <div className="font-bold text-[16px]">X days</div>
+            {/* time until 10-13-2024 16:00 UTC */}
+            <div className="font-bold text-[16px]">{moment("2024-10-13T16:00:00Z").diff(moment(), "days")} days</div>
           </TopRowParent>
           <div className="flex flex-col relative h-full lg:h-[44px] w-full lg:w-[271px] -my-[1px]">
             <div
@@ -1931,7 +1616,6 @@ export default function Page() {
               <div
                 className="rounded-[40px] w-[54px] h-[34px] bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[15] hover:cursor-pointer"
                 onClick={handlePrevFundingEpoch}
-
               >
                 <Icon icon="feather:arrow-left" className="w-6 h-6" />
               </div>
@@ -1939,7 +1623,6 @@ export default function Page() {
                 className="flex flex-1 flex-col items-center justify-self-center  gap-y-[1px]"
 
               >
-
                 <div
                   className={`flex gap-x-[5px] justify-center items-center w-[123px] h-full`}
                 >
@@ -1956,124 +1639,69 @@ export default function Page() {
                 <Icon icon="feather:arrow-right" className="w-6 h-6" />
               </div>
             </div>
-            {/* <div
-                className={`flex flex-col relative lg:absolute lg:top-[27px] bottom-auto lg:left-0 lg:right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300`}
-              >
-                <div className="pb-[20px] lg:pb-[10px]">
-                  <div className="h-[10px] lg:h-[28px]"></div>
-                  <div
-                    className="flex pl-[21px] pr-[19px] lg:pr-[15px] py-[5px] gap-x-[10px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
-                  // onClick={() => {
-                  //   setCompareTo(false);
-                  //   delay(300).then(() => setChainKey([chainKey[0]]));
-                  // }}
-                  >
-                    <Icon
-                      icon="feather:arrow-right-circle"
-                      className="w-6 h-6"
-                    // visibility={compChain === null ? "visible" : "hidden"}
-                    />
-                    <div className="flex w-[22px] h-[22px] items-center justify-center">
-                      <Icon
-                        icon="feather:x"
-                        className={`transition-all duration-300 ${""
-                          // compChain === null
-                          // ? "w-[22px] h-[22px]"
-                          // : "w-[15px] h-[15px]"
-                          }`}
-                        style={{
-                          // color: compChain === null ? "" : "#5A6462",
-                        }}
-                      />
-                    </div>
-                    <div className="">None</div>
-                  </div>
-                  {CompChains.sort((chain1, chain2) => {
-                    const nameA = master.chains[chain1.key].name.toLowerCase();
-                    const nameB = master.chains[chain2.key].name.toLowerCase();
-
-                    if (nameA < nameB) {
-                      return -1;
-                    }
-                    if (nameA > nameB) {
-                      return 1;
-                    }
-                    return 0;
-                  }).map((chain, index) => (
-                    <div
-                      className="flex pl-[21px] pr-[15px] py-[5px] gap-x-[10px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
-                      onClick={() => {
-                        setCompareTo(false);
-                        delay(400).then(() =>
-                          setChainKey([chainKey[0], chain.key]),
-                        );
-                      }}
-                      key={index}
-                      onMouseOver={() => {
-                        preload(`${ChainsBaseURL}${chain.key}.json`, fetcher);
-                      }}
-                    >
-                      <Icon
-                        icon="feather:arrow-right-circle"
-                        className="w-6 h-6"
-                        visibility={compChain === chain.key ? "visible" : "hidden"}
-                      />
-                      <div className="flex w-[22px] h-[22px] items-center justify-center">
-                        <Icon
-                          icon={`gtp:${chain.urlKey}-logo-monochrome`}
-                          className={`transition-all duration-300 ${compChain === chain.key
-                            ? "w-[22px] h-[22px]"
-                            : "w-[15px] h-[15px]"
-                            }`}
-                          style={{
-                            color:
-                              compChain === chain.key
-                                ? AllChainsByKeys[chain.key].colors[
-                                theme ?? "dark"
-                                ][0]
-                                : "#5A6462",
-                          }}
-                        />
-                      </div>
-                      <div>{master.chains[chain.key].name}</div>
-                    </div>
-                  ))}
-                </div>
-              </div> */}
-            {/* {compareTo && (
-                <div
-                  className={`hidden lg:block lg:fixed inset-0 z-20`}
-                  onClick={() => {
-                    setCompareTo(false);
-                  }}
-                />
-              )} */}
           </div>
         </TopRowContainer>
+        <div className="flex items-center w-full bg-[#1F2726] gap-x-[10px] rounded-[22px] pr-[10px] min-h-[44px] z-[1]">
+          <div className={`relative flex justify-center items-center pl-[10px]`}>
+            <SearchIcon />
+          </div>
+          <input
+            // ref={inputRef}
+            className={`flex-1 pl-[11px] h-full bg-transparent placeholder-[#CDD8D3] border-none outline-none overflow-x-clip`}
+            placeholder="Search Wallets"
+            value={fundingSearch}
+            onChange={(e) => {
 
+              setFundingSearch(e.target.value);
+            }}
+            onKeyUp={(e) => {
+              // if enter is pressed, add the search term to the address filters
+              if (e.key === "Enter" && fundingSearch.length > 0) {
+                // handleFilter("address", search);
+                // setSearch("");
+                // e.preventDefault();
+              }
+            }}
+          />
+          {fundingSearch.length > 0 && (
+            <div className="cursor-pointer" onClick={() => setFundingSearch("")}>
+              <svg width="27" height="26" viewBox="0 0 27 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="1" y="1" width="25" height="24" rx="12" stroke="url(#paint0_linear_8794_34411)" />
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M17.7435 17.2426C18.8688 16.1174 19.5009 14.5913 19.5009 13C19.5009 11.4087 18.8688 9.88258 17.7435 8.75736C16.6183 7.63214 15.0922 7 13.5009 7C11.9096 7 10.3835 7.63214 9.25827 8.75736C8.13305 9.88258 7.50091 11.4087 7.50091 13C7.50091 14.5913 8.13305 16.1174 9.25827 17.2426C10.3835 18.3679 11.9096 19 13.5009 19C15.0922 19 16.6183 18.3679 17.7435 17.2426V17.2426ZM12.4402 10.8787C12.2996 10.738 12.1088 10.659 11.9099 10.659C11.711 10.659 11.5202 10.738 11.3796 10.8787C11.2389 11.0193 11.1599 11.2101 11.1599 11.409C11.1599 11.6079 11.2389 11.7987 11.3796 11.9393L12.4402 13L11.3796 14.0607C11.2389 14.2013 11.1599 14.3921 11.1599 14.591C11.1599 14.7899 11.2389 14.9807 11.3796 15.1213C11.5202 15.262 11.711 15.341 11.9099 15.341C12.1088 15.341 12.2996 15.262 12.4402 15.1213L13.5009 14.0607L14.5616 15.1213C14.7022 15.262 14.893 15.341 15.0919 15.341C15.2908 15.341 15.4816 15.262 15.6222 15.1213C15.7629 14.9807 15.8419 14.7899 15.8419 14.591C15.8419 14.3921 15.7629 14.2013 15.6222 14.0607L14.5616 13L15.6222 11.9393C15.7629 11.7987 15.8419 11.6079 15.8419 11.409C15.8419 11.2101 15.7629 11.0193 15.6222 10.8787C15.4816 10.738 15.2908 10.659 15.0919 10.659C14.893 10.659 14.7022 10.738 14.5616 10.8787L13.5009 11.9393L12.4402 10.8787Z" fill="#CDD8D3" />
+                <defs>
+                  <linearGradient id="paint0_linear_8794_34411" x1="13.5" y1="1" x2="29.4518" y2="24.361" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#FE5468" />
+                    <stop offset="1" stop-color="#FFDF27" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          )}
+        </div>
 
 
 
       </Container>
-      <Container>
+
+      <HorizontalScrollContainer className="@container">
 
         <GridTableHeader
-          gridDefinitionColumns="grid-cols-[20px,minmax(225px,1600px),218px,118px,118px,118px,118px,118px]"
-          className="text-[12px] gap-x-[15px] z-[2] !pl-[5px] !pr-[36px] !pt-[15px] !pb-[10px]"
+          gridDefinitionColumns="grid-cols-[20px,225px,minmax(125px,1600px),95px,126px,101px,89px,101px]"
+          className="w-full text-[12px] gap-x-[15px] z-[2] !pl-[5px] !pr-[36px] !pt-[15px] !pb-[10px]"
         >
           <div></div>
           <GridTableHeaderCell
-            metric="address"
+            metric="project_key"
             sort={fundingTableSort}
-            setSort={setCommunityTableSort}
+            setSort={setFundingTableSort}
           >
             Owner Project
           </GridTableHeaderCell>
           <GridTableHeaderCell
-            justify="end"
+            // justify="end"
             metric="address"
             sort={fundingTableSort}
-            setSort={setCommunityTableSort}
+            setSort={setFundingTableSort}
           >
             Wallet Address
           </GridTableHeaderCell>
@@ -2081,7 +1709,7 @@ export default function Page() {
             justify="end"
             metric="donor"
             sort={fundingTableSort}
-            setSort={setCommunityTableSort}
+            setSort={setFundingTableSort}
           >
             Donors
           </GridTableHeaderCell>
@@ -2089,7 +1717,7 @@ export default function Page() {
             justify="end"
             metric="allocated"
             sort={fundingTableSort}
-            setSort={setCommunityTableSort}
+            setSort={setFundingTableSort}
           >
             Wallet Donations
           </GridTableHeaderCell>
@@ -2097,7 +1725,7 @@ export default function Page() {
             justify="end"
             metric="matched"
             sort={fundingTableSort}
-            setSort={setCommunityTableSort}
+            setSort={setFundingTableSort}
           >
             Octant Match
           </GridTableHeaderCell>
@@ -2105,7 +1733,7 @@ export default function Page() {
             justify="end"
             metric="total"
             sort={fundingTableSort}
-            setSort={setCommunityTableSort}
+            setSort={setFundingTableSort}
           >
             Epoch Total
           </GridTableHeaderCell>
@@ -2113,239 +1741,37 @@ export default function Page() {
             justify="end"
             metric="total"
             sort={fundingTableSort}
-            setSort={setCommunityTableSort}
+            setSort={setFundingTableSort}
           >
             All Time Total
           </GridTableHeaderCell>
-          {/* <GridTableHeaderCell
-              justify="end"
-              metric="project_count"
-              sort={communityTableSort}
-              setSort={setCommunityTableSort}
-            >
-              # Donations
-            </GridTableHeaderCell> */}
         </GridTableHeader>
-        {/* <VerticalScrollContainer height={250} className=""> */}
-        {master && FundingDataFiltered && (
-          FundingDataFiltered.map((row, index) => (
-            <OctantTableRow
-              key={index}
-              // currentEpoch={currentEpoch}
-              FundingDataFilteredRow={row}
-              fundingEpoch={fundingEpoch}
-              project_key={row.project_key}
-              projectIndex={index}
-              // epochsByProjectKey={epochsByProjectKey}
-              // allTimeTotalsByProjectKey={allTimeTotalsByProjectKey}
-              // epochs={epochs}
-              setCurrentEpoch={setCurrentEpoch}
-              ProjectsMetadata={ProjectsMetadata}
-              master={master}
-            />
-          ))
-        )}
-        {/* {CommunityUsersFiltered && CommunityUsersFiltered.length > 0 && (
-
-            CommunityUsersFiltered.map((user, index) => (
-              <div key={index} className="pb-[3px]">
-                <GridTableRow
-                  gridDefinitionColumns="grid-cols-[20px,minmax(225px,1600px),218px,118px,118px,118px,118px,118px]"
-                  className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] !pl-[5px] !pr-[15px]"
-                >
-                  <div className="flex items-center justify-center">
-                    <div
-                      className="relative flex items-center justify-center rounded-full w-[16px] h-[16px] bg-[#151A19] cursor-pointer"
-                      onClick={(e) => {
-                        handleCommunityRowToggle(user.user);
-                        e.stopPropagation();
-                      }}
-                    >
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <g clip-path="url(#clip0_12402_20562)">
-                          <circle cx="8.29395" cy="8" r="7" stroke="#5A6462" />
-                          <path d="M3.67414 6.32422L4.77814 7.86022L4.84214 7.98822L4.91414 7.86022L6.01014 6.32422H6.79414L5.25014 8.42022L6.80214 10.5002H6.01814L4.91414 8.97222L4.84214 8.85222L4.77814 8.97222L3.67414 10.5002H2.89014L4.44214 8.42022L2.89814 6.32422H3.67414Z" fill="#5A6462" />
-                          <path d="M7.6557 11.6362C7.72503 11.6416 7.79437 11.6469 7.8637 11.6522C7.93303 11.6629 7.98637 11.6682 8.0237 11.6682C8.10903 11.6682 8.1837 11.6389 8.2477 11.5802C8.3117 11.5216 8.38103 11.4069 8.4557 11.2362C8.5357 11.0709 8.63703 10.8256 8.7597 10.5002L6.9917 6.32422H7.7357L9.1437 9.78822L10.4157 6.32422H11.1117L9.0797 11.5962C9.0317 11.7189 8.9597 11.8336 8.8637 11.9402C8.77303 12.0522 8.6557 12.1402 8.5117 12.2042C8.3677 12.2682 8.19437 12.3002 7.9917 12.3002C7.9437 12.3002 7.89303 12.2976 7.8397 12.2922C7.7917 12.2869 7.73037 12.2762 7.6557 12.2602V11.6362Z" fill="#5A6462" />
-                          <path d="M11.4951 10.0442L14.1271 6.83622H11.5671V6.32422H14.9191V6.78022L12.3031 9.98822H14.9271V10.5002H11.4951V10.0442Z" fill="#5A6462" />
-                        </g>
-                        <defs>
-                          <clipPath id="clip0_12402_20562">
-                            <rect width="15" height="15" fill="white" transform="translate(0.793945 0.5)" />
-                          </clipPath>
-                        </defs>
-                      </svg>
-
-                      <Icon
-                        icon={"gtp:circle-arrow"}
-                        className={`w-[4px] h-[9px] absolute top-[4px] -right-[4px] `}
-                        style={{
-                          transform: `rotate(${communityRowsOpen.includes(user.user) ? "90deg" : "0deg"
-                            })`,
-                          transformOrigin: "-7px 4px",
-                          transition: "transform 0.5s",
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="text-[#CDD8D3]">{user.user}</div>
-                  </div>
-                  <div className="flex items-center justify-end">
-                    {communityEpoch != 0 && user.min > 0 ? (
-                      <div className="text-[#CDD8D3]">{user.min.toLocaleString("en-GB", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })} GLM</div>
-                    ) : (
-                      <div className="text-[#CDD8D3]">-</div>
-                    )}
-
-                  </div>
-                  <div className="flex items-center justify-end">
-                    {user.budget_amount > 0 ? (
-                      <div className="text-[#CDD8D3]">{user.budget_amount.toLocaleString("en-GB", {
-                        minimumFractionDigits: user.budget_amount < 0.01 ? 6 : 2,
-                        maximumFractionDigits: user.budget_amount < 0.01 ? 6 : 2,
-                      })} ETH</div>
-                    ) : (
-                      <div className="text-[#CDD8D3]">-</div>
-                    )}
-
-                  </div>
-                  <div className="flex items-center justify-end">
-                    {user.allocation_amount > 0 ? (
-                      <div className="text-[#CDD8D3]">{user.allocation_amount.toLocaleString("en-GB", {
-                        minimumFractionDigits: user.allocation_amount < 0.01 ? 6 : 2,
-                        maximumFractionDigits: user.allocation_amount < 0.01 ? 6 : 2,
-                      })} ETH</div>
-                    ) : (
-                      <div className="text-[#CDD8D3]">-</div>
-                    )}
-                  </div>
-
-
-                </GridTableRow>
-
-                <div className="pl-[13px] pr-[15px]">
-                  <div className={`flex flex-col bg-[#1F2726] rounded-b-[15px] border-[#CDD8D3]/30 border-dotted border-x border-b transition-all duration-300 ${communityRowsOpen.includes(user.user) ? "min-h-[80px] max-h-[300px] opacity-100" : "max-h-0 min-h-0 opacity-0"} overflow-hidden`}>
-                    <div className="flex flex-col p-[15px] gap-y-[6px] text-[12px]">
-                      <div className="flex items-center justify-between">
-                        <div>Active Since: <span className="font-semibold">Epoch {UserActiveSinceEpochData[user.user]}</span></div>
-                        <div className="flex gap-x-[5px] items-center">
-                          <div>
-                            Donated <span className="font-semibold">{user.allocation_amount.toLocaleString("en-GB", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })} ETH</span>
-                          </div>
-                          <div className="flex flex-col w-[133px]">
-                            <div className="flex justify-between text-[10px]">
-                              <div>{(user.allocation_amount / user.budget_amount * 100).toFixed(2)}%</div>
-                              <div>{((user.budget_amount - user.allocation_amount) / user.budget_amount * 100).toFixed(2)}%</div>
-                            </div>
-                            <div className="flex w-full h-[4px]">
-                              <div className="h-full rounded-l-full" style={{ background: "linear-gradient(0deg,#1DF7EF 0%,#10808C 100%)", width: `${(user.allocation_amount / user.budget_amount) * 100}%` }}></div>
-                              <div className="h-full rounded-r-full" style={{ background: "linear-gradient(-3deg,#FFDF27 0%,#FE5468 100%)", width: `${((user.budget_amount - user.allocation_amount) / user.budget_amount) * 100}%` }}></div>
-                            </div>
-                          </div>
-                          <div>
-                            <span className="font-semibold">{(user.budget_amount - user.allocation_amount).toLocaleString("en-GB", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })} ETH</span>{" "}
-                            Kept
-                          </div>
-                        </div>
-                      </div>
-                      {user.project_list.length > 0 ? (
-
-                        <div className="flex flex-col gap-y-[5px]">
-                          <div>Wallet donated to <span className="font-semibold">{user.project_list.length}</span> projects:</div>
-                          <div className="flex flex-wrap gap-x-[5px] gap-y-[5px]">
-                            {user.project_list.map((project_key, index) => (
-                              <div key={index} className="flex items-center gap-x-[5px] bg-[#344240] rounded-[15px] pl-[0px] pr-[6px] py-[0px] text-[10px]">
-                                <div className="w-6 h-6 border border-forest-900/20 dark:border-forest-500/20 rounded-full overflow-hidden">
-                                  <Image
-                                    src={`https://ipfs.io/ipfs/${ProjectsMetadata[project_key].profileImageMedium}`}
-                                    alt={ProjectsMetadata[project_key].name}
-                                    width={24}
-                                    height={24}
-                                    className="rounded-full"
-                                  />
-                                </div>
-                                {project_key}</div>
-                            ))}
-                          </div>
-                        </div>
-                      ) : (
-                        <div>No donations made to any projects.</div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
+        <VerticalScrollContainer height={600} className="">
+          {master && FundingDataFiltered && (
+            FundingDataFiltered.map((row, index) => (
+              <OctantTableRow
+                key={index}
+                FundingDataFilteredRow={row}
+                fundingEpoch={fundingEpoch}
+                project_key={row.project_key}
+                projectIndex={index}
+                setCurrentEpoch={setCurrentEpoch}
+                ProjectsMetadata={ProjectsMetadata}
+                master={master}
+              />
             ))
-          )} */}
-        {/* </VerticalScrollContainer > */}
-      </Container >
-
-
-
-      {/* <div>sortedProjects: {sortedProjects.length}</div>
-      <div>
-        epochsByProject:{" "}
-        {epochsByProject && Object.keys(epochsByProject).length}
-      </div>
-      {epochs && currentEpoch && (
-        <div className="flex">
-          <button
-            className="rounded-md bg-forest-900/10 dark:bg-forest-500/10 text-forest-900/80 dark:text-forest-500/80"
-            onClick={() => {
-              const index = epochs.findIndex(
-                (e) => e.epoch === currentEpoch.epoch,
-              );
-              setCurrentEpoch(epochs[index - 1]);
-            }}
-            disabled={currentEpoch && currentEpoch.epoch === 1}
-          >
-            Prev
-          </button>
-          <div className="flex gap-x-2">
-            <div className="text-forest-900/80 dark:text-forest-500/80">
-              {currentEpoch && currentEpoch.epoch}
-            </div>
-            <div className="text-forest-900/80 dark:text-forest-500/80">
-              {epochs && epochs.length}
-            </div>
-          </div>
-          <button
-            className="rounded-md bg-forest-900/10 dark:bg-forest-500/10 text-forest-900/80 dark:text-forest-500/80"
-            onClick={() => {
-              const index = epochs.findIndex(
-                (e) => e.epoch === currentEpoch.epoch,
-              );
-              setCurrentEpoch(epochs[index + 1]);
-            }}
-            disabled={currentEpoch && currentEpoch.epoch === epochs.length}
-          >
-            Next
-          </button>
-        </div>
-      )} */}
-
+          )}
+        </VerticalScrollContainer>
+      </HorizontalScrollContainer>
     </>
   );
 }
 
 
 type TableRowProps = {
-  // currentEpoch: EpochData;
   FundingDataFilteredRow: any;
   project_key: string;
   projectIndex: number;
-  // epochsByProjectKey: EpochsByProject;
-  // allTimeTotalsByProjectKey: { [project: string]: number };
-  // epochs: EpochData[];
   setCurrentEpoch?: (epoch: EpochData) => void;
   ProjectsMetadata: any;
   master: MasterResponse;
@@ -2353,46 +1779,19 @@ type TableRowProps = {
 };
 
 const OctantTableRow = ({
-  // currentEpoch,
   FundingDataFilteredRow,
   project_key,
   projectIndex,
-  // epochsByProjectKey,
-  // allTimeTotalsByProjectKey,
-  // epochs,
   setCurrentEpoch,
   ProjectsMetadata,
   master,
   fundingEpoch,
 }: TableRowProps) => {
-  // const project = data.projects[projectIndex];
-  // const currentEpoch = fundingEpoch === 0 ? epochs[epochs.length - 1] : epochs[fundingEpoch - 1];
-  // const currentEpochProject = currentEpoch.projects.find(
-  //   (p) => p.project_key.toLowerCase() === project_key,
-  // );
-  // const lastPresentEpochProject = epochsByProjectKey[project_key][
-  //   epochsByProjectKey[project_key].length - 1
-  // ].projects.find((p) => p.project_key.toLowerCase() === project_key);
-
-  // console.log("project_key:", project_key, "projectIndex:", projectIndex, "currentEpochProject:", currentEpochProject, " lastPresentEpochProject:", lastPresentEpochProject);
-
-  // const project = currentEpochProject
-  //   ? currentEpochProject
-  //   : lastPresentEpochProject;
-
-  // console.log("project", project);
-
-  //console.log("project", project);
-
-
-
-  // if (!project) return null;
-
   return (
     <GridTableRow
 
-      gridDefinitionColumns="grid-cols-[20px,minmax(225px,1600px),218px,118px,118px,118px,118px,118px]"
-      className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] !pl-[5px] !pr-[15px] pb-[3px]"
+      gridDefinitionColumns="grid-cols-[20px,225px,minmax(125px,1600px),95px,126px,101px,89px,101px]"
+      className="group w-full text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] !pl-[5px] !pr-[15px] mb-[3px]"
     >
       <div className="w-[26px] h-[18px] px-[4px]">
         <Image
@@ -2403,9 +1802,6 @@ const OctantTableRow = ({
           className="rounded-full"
         />
       </div>
-      {/* <div className="text-[0.6rem] text-forest-900/80 dark:text-forest-500/80 font-light text-center">
-        {projectIndex + 1}
-      </div> */}
       <div className="flex justify-between">
         <div>
           {ProjectsMetadata[project_key].name ? (
@@ -2417,16 +1813,7 @@ const OctantTableRow = ({
           )}
         </div>
         {ProjectsMetadata[project_key] && (
-          <div className="flex gap-x-[5px] ">
-            {/* <div className="flex 3xl:hidden">
-              <Icon
-                icon={copiedAddress === sortedContracts[key].project_name.address ? "feather:check-circle" : "feather:copy"}
-                className="w-[14px] h-[14px] cursor-pointer"
-                onClick={() => {
-                  handleCopyAddress(filteredLabelsData[item.index].address);
-                }}
-              />
-            </div> */}
+          <div className="flex gap-x-[5px]">
             <div className="flex items-center gap-x-[5px]">
               <div className="h-[15px] w-[15px]">
                 {ProjectsMetadata[project_key].websiteUrl && (
@@ -2444,106 +1831,45 @@ const OctantTableRow = ({
                   </a>
                 )}
               </div>
-              {/* <div className="h-[15px] w-[15px]">
-                {ownerProjectDisplayNameToProjectData[
-                  sortedContracts[key].project_name
-                ][4] && (
-                  <a
-                    href={
-                      ownerProjectDisplayNameToProjectData[
-                        sortedContracts[key].project_name
-                      ][4]
-                    }
-                    target="_blank"
-                    className="group flex items-center gap-x-[5px] text-xs"
-                  >
-                    <Icon
-                      icon="ri:twitter-x-fill"
-                      className="w-[15px] h-[15px]"
-                    />
-                  </a>
-                )}
-              </div>
-              <div className="h-[15px] w-[15px]">
-                {ownerProjectDisplayNameToProjectData[
-                  sortedContracts[key].project_name
-                ][3] && (
-                  <a
-                    href={
-                      ownerProjectDisplayNameToProjectData[
-                        sortedContracts[key].project_name
-                      ][3]
-                    }
-                    target="_blank"
-                    className="group flex items-center gap-x-[5px] text-xs"
-                  >
-                    <Icon
-                      icon="ri:github-fill"
-                      className="w-[15px] h-[15px]"
-                    />
-                  </a>
-                )}
-              </div> */}
             </div>
           </div>
         )}
       </div>
 
-
-      <div className="flex justify-start items-center overflow-hidden">
-        {/* <Link
-          rel="noopener noreferrer"
-          target="_blank"
-          href={`https://etherscan.io/address/${project.address}`}
-          className={`rounded-full px-1 py-0 border border-forest-900/20 dark:border-forest-500/20 font-mono text-[10px] text-forest-900/50 dark:text-forest-500/50 hover:bg-forest-900/10 dark:hover:bg-forest-500/10`}
+      <div className="@container flex h-full items-center hover:bg-transparent">
+        <span
+          className="@container flex-1 flex h-full items-center hover:bg-transparent pr-[10px]"
+          style={{
+            fontFeatureSettings: "'pnum' on, 'lnum' on",
+          }}
+          onDoubleClick={(e) => {
+            e.preventDefault(); // Prevent default double-click behavior
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(e.currentTarget);
+            selection?.removeAllRanges();
+            selection?.addRange(range);
+          }}
         >
-          <>{project.address.slice(0, 5) + "..." + project.address.slice(-8)}</>
-        </Link> */}
-        {/* <Address address={project.address} shortenAddress={true} /> */}
-        <div className="flex gap-x-[5px]">
-          <div>
-            {FundingDataFilteredRow.address}
-          </div>
-          <Link
-            href={`${master.chains["ethereum"]
-              .block_explorer
-              }address/${FundingDataFilteredRow.address}`}
-            rel="noopener noreferrer"
-            target="_blank"
+          <div
+            className="truncate transition-all duration-300"
+            style={{ direction: 'ltr' }}
+            onClick={() => {
+              navigator.clipboard.writeText(FundingDataFilteredRow.address)
+            }}
           >
-            <Icon
-              icon="gtp:gtp-block-explorer-alt"
-              className="w-[15px] h-[15px]"
-            />
-          </Link>
-        </div>
-      </div>
-      {/* <div>
-        <div className="flex gap-x-1.5 font-inter font-bold text-white/60 text-xs select-none">
-          {epochsByProjectName[project.name.toLowerCase()] &&
-            epochs.map((epoch, index) => {
-              const isInEpoch = epochsByProjectName[project.name.toLowerCase()].find(
-                (e) => e.epoch === epoch.epoch,
-              );
+            {FundingDataFilteredRow.address.slice(0, FundingDataFilteredRow.address.length - 6)}
+          </div>
+          <div className="transition-all duration-300">
+            {FundingDataFilteredRow.address.slice(-6)}
+          </div>
+          <div className="pl-[10px] hidden 3xl:flex">
 
-              if (!isInEpoch)
-                return <div key={index} className="w-6 h-6"></div>;
-              return (
-                <EpochTile
-                  key={index}
-                  name={project.name}
-                  epochNumber={epoch.epoch}
-                  epochState={epoch.state}
-                  epoch={epoch}
-                  currentEpoch={currentEpoch}
-                  setCurrentEpoch={setCurrentEpoch}
-                />
-              );
-            })}
-        </div>
-      </div> */}
+          </div>
+        </span>
+      </div>
+
       <div className="flex justify-end item-center gap-x-2">
-        {/* {["REWARD_ALLOCATION", "FINALIZED"].includes(currentEpoch.state) && currentEpochProject && ( */}
         <div className="flex justify-end item-center gap-x-2">
           <div className="flex items-center leading-[1] font-inter">
             {FundingDataFilteredRow.donor}
@@ -2576,151 +1902,38 @@ const OctantTableRow = ({
         {/* {["REWARD_ALLOCATION", "FINALIZED"].includes(currentEpoch.state) && currentEpochProject && ( */}
         <div className="relative flex items-center gap-x-2 pr-0.5">
           <div className="leading-[1.2] font-inter">
-            {(FundingDataFilteredRow.allocated).toFixed(4)}{" "}
+            {(FundingDataFilteredRow.allocated).toFixed(2)}{" "}
             <span className="opacity-60 text-[0.55rem]">ETH</span>
           </div>
-          {/* <div className="text-center absolute -bottom-[16px] left-0 right-0 text-forest-900/80 dark:text-forest-500/80 font-light text-[0.6rem] opacity-60">
-              from{" "}
-              <span className="font-semibold">
-                {project.allocations &&
-                  new Set(project.allocations.map((a) => a.donor)).size}
-              </span>{" "}
-              donors
-            </div> */}
-          {/* <div className="w-4 h-4">
-              <Icon
-                icon="feather:check-square"
-                className={`w-4 h-4  fill-current ${project.thresholdReached
-                  ? "text-green-500 dark:text-green-500"
-                  : "text-forest-900/80 dark:text-forest-600/80"
-                  }`}
-              />
-            </div> */}
-          {/* <div className={`z-10 absolute -bottom-[6px] left-0 right-0 text-xs font-normal text-right h-[2px] ${currentEpoch && currentEpoch.epoch >= 4 && "hidden"}`}>
-              <div
-                className={`z-10 absolute`}
-                style={{
-                  height: "2px",
-                  width: `${project.totalAllocated / currentEpoch.rewardsThreshold < 1
-                    ? 100
-                    : (project.totalAllocated /
-                      currentEpoch.rewardsThreshold) *
-                    100
-                    }%`,
-                }}
-              >
-                {project.totalAllocated / currentEpoch.rewardsThreshold > 1 ? (
-                  <div className="flex w-full">
-                    <div
-                      className="bg-forest-900/80 dark:bg-[#b0bbb6]"
-                      style={{
-                        height: "2px",
-                        width: `${project.percentageThresholdOfTotalAllocated * 100.0
-                          }%`,
-                        // right with bases on bottom and right
-                      }}
-                    ></div>
-                    <div className="h-[2px] flex-1">
-                      <div
-                        className="w-full"
-                        style={{
-                          height: "2px",
-                          background:
-                            "linear-gradient(to right, #b0bbb6ff, #b0bbb611, transparent)",
-                          // right with bases on bottom and right
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                ) : (
-                  <div
-                    className=" bg-red-500 dark:bg-red-500"
-                    style={{
-                      height: "2px",
-                      width: `${(1 / project.percentageThresholdOfTotalAllocated) * 100
-                        }%`,
-                    }}
-                  ></div>
-                )}
-              </div>
-              <div
-                className="z-0 absolute bg-forest-900/30 dark:bg-forest-100/30"
-                style={{
-                  height: "2px",
-                  width: `100%`,
-                }}
-              />
-            </div> */}
         </div>
-        {/* )} */}
       </div>
-
-      {/* <div className={`relative flex justify-start item-center gap-x-2`}>
-        {currentEpochProject && (
-          <>
-            <div className={`relative -left-[12px] -bottom-[2px] flex items-center text-forest-900/80 dark:text-forest-500/80 font-medium text-[0.6rem] ${currentEpoch && currentEpoch.epoch >= 4 && "hidden"}`}>
-              {(project.rewards.allocated / currentEpoch.rewardsThreshold) *
-                100 >
-                100 ? (
-                <div className="text-forest-500/60 dark:text-forest-500/60">
-                  +
-                  {(
-                    ((project.rewards.allocated -
-                      currentEpoch.rewardsThreshold) /
-                      currentEpoch.rewardsThreshold) *
-                    100
-                  ).toFixed(0)}
-                  %
-                </div>
-              ) : (
-                <div className="text-red-500/80">
-                  -
-                  {Math.abs(
-                    ((project.rewards.allocated -
-                      currentEpoch.rewardsThreshold) /
-                      currentEpoch.rewardsThreshold) *
-                    100,
-                  ).toFixed(0)}
-                  %
-                </div>
-              )}
-            </div>
-            <div className={`absolute h-[10px] w-1 border-l border-forest-900/20 dark:border-forest-500/20 -left-[15px] -bottom-[13px] ${currentEpoch && currentEpoch.epoch >= 4 && "hidden"}`}></div>
-          </>
-        )}
-      </div> */}
-
-      <div className="flex justify-end pr-[25px]">
-        {/* {["REWARD_ALLOCATION", "FINALIZED"].includes(currentEpoch.state) && currentEpochProject && ( */}
+      <div className="flex justify-end">
         <div
           className={`leading-[1.2] font-inter ${FundingDataFilteredRow.matched <= 0 && "opacity-30"
             }`}
         >
-          {(FundingDataFilteredRow.matched).toFixed(4)}{" "}
+          {(FundingDataFilteredRow.matched).toFixed(2)}{" "}
           <span className="opacity-60 text-[0.55rem]">ETH</span>
         </div>
-        {/* )} */}
       </div>
-      <div className="flex justify-end pr-[25px]">
-        {/* {["REWARD_ALLOCATION", "FINALIZED"].includes(currentEpoch.state) && currentEpochProject && ( */}
+      <div className="flex justify-end">
         <div
           className={`leading-[1.2] font-inter ${FundingDataFilteredRow.total <= 0 && "opacity-30"
             }`}
         >
-          {(FundingDataFilteredRow.total).toFixed(4)}{" "}
+          {(FundingDataFilteredRow.total).toFixed(2)}{" "}
           <span className="opacity-60 text-[0.55rem]">ETH</span>
         </div>
-        {/* )} */}
       </div>
-      {/* <div className="flex justify-end pr-[25px]">
+      <div className="flex justify-end">
         <div
-          className={`text-[0.9rem] font-bold leading-[1.2] font-inter ${allTimeTotalsByProjectKey[project_key] <= 0 && "opacity-30"
+          className={`leading-[1.2] font-inter ${FundingDataFilteredRow.total <= 0 && "opacity-30"
             }`}
         >
-          {(allTimeTotalsByProjectKey[project_key] / 10 ** 18).toFixed(4)}{" "}
-          <span className="opacity-60 text-[0.55rem] font-semibold">ETH</span>
+          {(FundingDataFilteredRow.total).toFixed(2)}{" "}
+          <span className="opacity-60 text-[0.55rem]">ETH</span>
         </div>
-      </div> */}
+      </div>
     </GridTableRow>
   );
 

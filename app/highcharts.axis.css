@@ -14,7 +14,8 @@
   text-anchor: end !important;
 }
 */
-
+.highcharts-title,
+.highcharts-label span,
 .highcharts-axis-labels span,
 .highcharts-axis-labels text {
   @apply !font-raleway;
