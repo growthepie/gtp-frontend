@@ -26,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Page() {
   return (
     <>
-      <Container className="flex flex-col flex-1 w-full mt-[65px] md:mt-[70px] gap-y-[10px]">
+      <Container className="flex flex-col flex-1 w-full mt-[65px] md:mt-[30px] gap-y-[10px]">
         <Heading
           className="font-bold leading-[1.2] text-[24px] sm:text-[32px] md:text-[36px] max-w-[900px]"
           as="h1"

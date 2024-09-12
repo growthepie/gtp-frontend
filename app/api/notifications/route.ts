@@ -18,11 +18,12 @@ export type NotificationType = {
   startTimestamp: number;
   endTimestamp: number;
   branch: string;
+  status: string;
 };
 
 const BranchesToInclude =
   IS_PREVIEW || IS_DEVELOPMENT
-    ? ["Preview", "Development", "All"]
+    ? ["Preview", "Development", "Production", "All"]
     : ["Production", "All"];
 
 const url = `https://api.airtable.com/v0/${baseId}/${notificationTable}`;
@@ -71,6 +72,7 @@ async function fetchData() {
             )
             .valueOf() || 0,
         branch: record?.fields?.["Branch"] || "",
+        status: record?.fields?.["Status"] || "Enabled",
       }))
       .filter(
         (notification: NotificationType) =>
@@ -78,7 +80,8 @@ async function fetchData() {
           notification.displayPages &&
           notification.body &&
           notification.startTimestamp &&
-          notification.endTimestamp,
+          notification.endTimestamp &&
+          notification.status === "Enabled",
       );
   } catch (error) {
     console.error("Error fetching notifications:", error);

@@ -12,7 +12,10 @@ export const BASE_URLS = {
 
 export const BASE_URL =
   BASE_URLS[
-    process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL?.includes("dev-")
+    // IS_DEVELOPMENT added Sep 9 2024 - so notifications show up on local dev
+    IS_DEVELOPMENT
+      ? "development"
+      : process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL?.includes("dev-")
       ? "preview"
       : "production"
   ];
