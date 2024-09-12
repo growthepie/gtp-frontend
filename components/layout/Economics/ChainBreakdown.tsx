@@ -37,7 +37,7 @@ interface DAvailability {
   label: string;
 }
 //prettier-ignore
-type MetricSort = "revenue" | "profit" | "chain" | "costs" | "settlement" | "da" | "profit_margin" | "size";
+type MetricSort = "revenue" | "profit" | "chain" | "costs" | "costs_l1" | "costs_blobs" | "profit_margin" | "size";
 
 export default function ChainBreakdown({
   data,
@@ -299,6 +299,7 @@ export default function ChainBreakdown({
       </div>
     );
   }
+  console.log(data ? data : "");
 
   const sortedChainData = useMemo(() => {
     let retData: string[];
@@ -720,32 +721,32 @@ export default function ChainBreakdown({
                     </TooltipContent>
                   </Tooltip>
                 </div>
-                <div className="flex items-center  gap-x-[1.5px] text-[8px] w-[114px] h-[16px] cursor-pointer">
+                <div className="flex items-center  gap-x-[1.5px] text-[8px] w-[98px] h-[16px] cursor-pointer">
                   <div className="flex justify-center group items-center rounded-l-full border-[2px] border-r-[0px] border-[#D03434] w-[66px] px-[5px]  ">
                     <div
                       className=" group-hover:text-forest-50/80 "
                       onClick={() => {
-                        if (metricSort !== "settlement") {
+                        if (metricSort !== "costs_l1") {
                           setSortOrder(true);
-                          setMetricSort("settlement");
+                          setMetricSort("costs_l1");
                         } else {
                           setSortOrder(!sortOrder);
                         }
                       }}
                     >
-                      Settlement
+                      L1 Costs
                     </div>
                     <div>
                       <Icon
                         icon={
-                          metricSort !== "settlement"
+                          metricSort !== "costs_l1"
                             ? "formkit:arrowdown"
                             : sortOrder
                             ? "formkit:arrowdown"
                             : "formkit:arrowup"
                         }
                         className={` w-[10px] h-[10px] ${
-                          metricSort === "settlement"
+                          metricSort === "costs_l1"
                             ? "text-forest-50 opacity-100"
                             : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
                         } `}
@@ -755,26 +756,26 @@ export default function ChainBreakdown({
                   <div
                     className="flex justify-center group items-center rounded-r-full border-[2px] border-l-[0px] border-[#FE5468] w-[47px] px-[5px] cursor-pointer "
                     onClick={() => {
-                      if (metricSort !== "da") {
+                      if (metricSort !== "costs_blobs") {
                         setSortOrder(true);
-                        setMetricSort("da");
+                        setMetricSort("costs_blobs");
                       } else {
                         setSortOrder(!sortOrder);
                       }
                     }}
                   >
-                    <div className=" group-hover:text-forest-50/80 ">DA</div>
+                    <div className=" group-hover:text-forest-50/80 ">Blobs</div>
                     <div>
                       <Icon
                         icon={
-                          metricSort !== "da"
+                          metricSort !== "costs_blobs"
                             ? "formkit:arrowdown"
                             : sortOrder
                             ? "formkit:arrowdown"
                             : "formkit:arrowup"
                         }
                         className={` w-[10px] h-[10px] ${
-                          metricSort === "da"
+                          metricSort === "costs_blobs"
                             ? "text-forest-50 opacity-100"
                             : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
                         } `}
@@ -1120,7 +1121,7 @@ export default function ChainBreakdown({
                                   minimumFractionDigits: 1,
                                 }).format(
                                   (data[item.key][selectedTimespan].costs
-                                    .settlement[dataIndex] /
+                                    .costs_l1[dataIndex] /
                                     data[item.key][selectedTimespan].costs
                                       .total[dataIndex]) *
                                     100,
@@ -1139,9 +1140,8 @@ export default function ChainBreakdown({
                                 maximumFractionDigits: 1,
                                 minimumFractionDigits: 1,
                               }).format(
-                                (data[item.key][selectedTimespan].costs.da[
-                                  dataIndex
-                                ] /
+                                (data[item.key][selectedTimespan].costs
+                                  .costs_blobs[dataIndex] /
                                   data[item.key][selectedTimespan].costs.total[
                                     dataIndex
                                   ]) *
@@ -1157,7 +1157,7 @@ export default function ChainBreakdown({
                                 width: `${
                                   100 *
                                   (data[item.key][selectedTimespan].costs
-                                    .settlement[dataIndex] /
+                                    .costs_l1[dataIndex] /
                                     data[item.key][selectedTimespan].costs
                                       .total[dataIndex])
                                 }%`,
@@ -1168,9 +1168,8 @@ export default function ChainBreakdown({
                               style={{
                                 width: `${
                                   120 *
-                                  (data[item.key][selectedTimespan].costs.da[
-                                    dataIndex
-                                  ] /
+                                  (data[item.key][selectedTimespan].costs
+                                    .costs_blobs[dataIndex] /
                                     data[item.key][selectedTimespan].costs
                                       .total[dataIndex])
                                 }px`,

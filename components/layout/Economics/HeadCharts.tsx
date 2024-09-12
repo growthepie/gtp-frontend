@@ -43,8 +43,8 @@ const METRIC_COLORS = {
   fees: "#1DF7EF",
   rent_paid: "#178577",
   costs: {
-    settlement: "#98323E",
-    da: "#FE5468",
+    costs_l1: "#98323E",
+    costs_blobs: "#FE5468",
   },
 };
 
@@ -906,6 +906,7 @@ export default function EconHeadCharts({
                                 {Object.keys(chart_data.metrics[key])
                                   .reverse()
                                   .map((costKey, j) => {
+                                    console.log(costKey);
                                     return (
                                       <AreaSeries
                                         key={costKey}
