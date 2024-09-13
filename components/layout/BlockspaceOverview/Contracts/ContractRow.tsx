@@ -142,7 +142,7 @@ export default function ContractRow({
                       style={{
                         background:
                           AllChainsByKeys[sortedContracts[rowKey].chain].colors[
-                            theme ?? "dark"
+                          theme ?? "dark"
                           ][1],
                         width: getWidth(sortedContracts[rowKey]),
                       }}
@@ -199,7 +199,7 @@ export default function ContractRow({
                       style={{
                         color:
                           AllChainsByKeys[selectedContract.chain].colors[
-                            theme ?? "dark"
+                          theme ?? "dark"
                           ][1],
                       }}
                     />
@@ -284,7 +284,7 @@ export default function ContractRow({
                               >
                                 {
                                   master.blockspace_categories.main_categories[
-                                    key
+                                  key
                                   ]
                                 }
                               </option>
@@ -377,8 +377,8 @@ export default function ContractRow({
           {ownerProjectDisplayNameToProjectData[
             sortedContracts[rowKey].project_name
           ] && (
-            <div className="flex gap-x-[5px] ">
-              {/* <div className="flex 3xl:hidden">
+              <div className="flex gap-x-[5px] ">
+                {/* <div className="flex 3xl:hidden">
                                 <Icon
                                   icon={copiedAddress === sortedContracts[key].project_name.address ? "feather:check-circle" : "feather:copy"}
                                   className="w-[14px] h-[14px] cursor-pointer"
@@ -387,70 +387,71 @@ export default function ContractRow({
                                   }}
                                 />
                               </div> */}
-              <div className="flex items-center gap-x-[5px]">
-                <div className="h-[15px] w-[15px]">
-                  {ownerProjectDisplayNameToProjectData[
-                    sortedContracts[rowKey].project_name
-                  ][5] && (
-                    <a
-                      href={
-                        ownerProjectDisplayNameToProjectData[
-                          sortedContracts[rowKey].project_name
-                        ][5]
-                      }
-                      target="_blank"
-                      className="group flex items-center  gap-x-[5px] text-xs"
-                    >
-                      <Icon
-                        icon="feather:monitor"
-                        className="w-[15px] h-[15px]"
-                      />
-                    </a>
-                  )}
-                </div>
-                <div className="h-[15px] w-[15px]">
-                  {ownerProjectDisplayNameToProjectData[
-                    sortedContracts[rowKey].project_name
-                  ][4] && (
-                    <a
-                      href={
-                        ownerProjectDisplayNameToProjectData[
-                          sortedContracts[rowKey].project_name
-                        ][4]
-                      }
-                      target="_blank"
-                      className="group flex items-center gap-x-[5px] text-xs"
-                    >
-                      <Icon
-                        icon="ri:twitter-x-fill"
-                        className="w-[15px] h-[15px]"
-                      />
-                    </a>
-                  )}
-                </div>
-                <div className="h-[15px] w-[15px]">
-                  {ownerProjectDisplayNameToProjectData[
-                    sortedContracts[rowKey].project_name
-                  ][3] && (
-                    <a
-                      href={
-                        ownerProjectDisplayNameToProjectData[
-                          sortedContracts[rowKey].project_name
-                        ][3]
-                      }
-                      target="_blank"
-                      className="group flex items-center gap-x-[5px] text-xs"
-                    >
-                      <Icon
-                        icon="ri:github-fill"
-                        className="w-[15px] h-[15px]"
-                      />
-                    </a>
-                  )}
+                <div className="flex items-center gap-x-[5px]">
+                  <div className="h-[15px] w-[15px]">
+                    {ownerProjectDisplayNameToProjectData[
+                      sortedContracts[rowKey].project_name
+                    ][5] && (
+                        <a
+                          href={
+                            ownerProjectDisplayNameToProjectData[
+                            sortedContracts[rowKey].project_name
+                            ][5]
+                          }
+                          target="_blank"
+                          className="group flex items-center  gap-x-[5px] text-xs"
+                        >
+                          <Icon
+                            icon="feather:monitor"
+                            className="w-[15px] h-[15px]"
+                          />
+                        </a>
+                      )}
+                  </div>
+                  <div className="h-[15px] w-[15px]">
+                    {ownerProjectDisplayNameToProjectData[
+                      sortedContracts[rowKey].project_name
+                    ][4] && (
+                        <a
+                          href={
+                            `https://x.com/${ownerProjectDisplayNameToProjectData[
+                            sortedContracts[rowKey].project_name
+                            ][4]}`
+
+                          }
+                          target="_blank"
+                          className="group flex items-center gap-x-[5px] text-xs"
+                        >
+                          <Icon
+                            icon="ri:twitter-x-fill"
+                            className="w-[15px] h-[15px]"
+                          />
+                        </a>
+                      )}
+                  </div>
+                  <div className="h-[15px] w-[15px]">
+                    {ownerProjectDisplayNameToProjectData[
+                      sortedContracts[rowKey].project_name
+                    ][3] && (
+                        <a
+                          href={
+                            `https://github.com/${ownerProjectDisplayNameToProjectData[
+                            sortedContracts[rowKey].project_name
+                            ][3]}`
+                          }
+                          target="_blank"
+                          className="group flex items-center gap-x-[5px] text-xs"
+                        >
+                          <Icon
+                            icon="ri:github-fill"
+                            className="w-[15px] h-[15px]"
+                          />
+                        </a>
+                      )}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
         <div className="flex justify-between gap-x-[10px]">
           {sortedContracts[rowKey].name ? (
@@ -481,9 +482,8 @@ export default function ContractRow({
               </div>
             </div>
             <Link
-              href={`${
-                master.chains[sortedContracts[rowKey].chain].block_explorer
-              }address/${sortedContracts[rowKey].address}`}
+              href={`${master.chains[sortedContracts[rowKey].chain].block_explorer
+                }address/${sortedContracts[rowKey].address}`}
               rel="noopener noreferrer"
               target="_blank"
             >
@@ -498,14 +498,14 @@ export default function ContractRow({
         <div>
           {
             master.blockspace_categories.main_categories[
-              sortedContracts[rowKey].main_category_key
+            sortedContracts[rowKey].main_category_key
             ]
           }
         </div>
         <div>
           {
             master.blockspace_categories.sub_categories[
-              sortedContracts[rowKey].sub_category_key
+            sortedContracts[rowKey].sub_category_key
             ]
           }
         </div>
@@ -513,14 +513,14 @@ export default function ContractRow({
           {selectedMode.includes("gas_fees_")
             ? showUsd
               ? `$${Number(
-                  sortedContracts[rowKey].gas_fees_absolute_usd.toFixed(0),
-                ).toLocaleString("en-GB")}`
+                sortedContracts[rowKey].gas_fees_absolute_usd.toFixed(0),
+              ).toLocaleString("en-GB")}`
               : `${Number(
-                  sortedContracts[rowKey].gas_fees_absolute_eth.toFixed(0),
-                ).toLocaleString("en-GB")} Ξ`
+                sortedContracts[rowKey].gas_fees_absolute_eth.toFixed(0),
+              ).toLocaleString("en-GB")} Ξ`
             : Number(sortedContracts[rowKey].txcount_absolute).toLocaleString(
-                "en-GB",
-              )}
+              "en-GB",
+            )}
         </div>
       </GridTableRow>
     </>
