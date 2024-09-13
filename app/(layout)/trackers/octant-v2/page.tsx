@@ -25,17 +25,17 @@ import { useMediaQuery } from "usehooks-ts";
 import ChainSectionHeadAlt from "@/components/layout/SingleChains/ChainSectionHeadAlt";
 import { GridTableHeader, GridTableHeaderCell, GridTableRow, GridTableContainer } from "@/components/layout/GridTable";
 import { set } from "lodash";
-import UsersEpoch1 from "./octantv2_epoch_1.json";
-import UsersEpoch2 from "./octantv2_epoch_2.json";
-import UsersEpoch3 from "./octantv2_epoch_3.json";
-import UsersEpoch4 from "./octantv2_epoch_4.json";
-import UsersEpoch5 from "./octantv2_epoch_5.json";
+import UsersEpoch1 from "./octant_epoch_1.json";
+import UsersEpoch2 from "./octant_epoch_2.json";
+import UsersEpoch3 from "./octant_epoch_3.json";
+import UsersEpoch4 from "./octant_epoch_4.json";
+import UsersEpoch5 from "./octant_epoch_5.json";
 
-import ProjectsMetadata1 from "./octantv2_projects_metadata_1.json";
-import ProjectsMetadata2 from "./octantv2_projects_metadata_2.json";
-import ProjectsMetadata3 from "./octantv2_projects_metadata_3.json";
-import ProjectsMetadata4 from "./octantv2_projects_metadata_4.json";
-import ProjectsMetadata5 from "./octantv2_projects_metadata_5.json";
+import ProjectsMetadata1 from "./octant_projects_metadata_1.json";
+import ProjectsMetadata2 from "./octant_projects_metadata_2.json";
+import ProjectsMetadata3 from "./octant_projects_metadata_3.json";
+import ProjectsMetadata4 from "./octant_projects_metadata_4.json";
+import ProjectsMetadata5 from "./octant_projects_metadata_5.json";
 import Funding1 from "./octant_funding_1_donor_count.json";
 import Funding2 from "./octant_funding_2_donor_count.json";
 import Funding3 from "./octant_funding_3_donor_count.json";
@@ -47,10 +47,160 @@ import useSWR from "swr";
 import { CircleChart } from "@/components/layout/CircleChart";
 import Highcharts from "highcharts";
 
+type ProjectMetadataType = {
+  [project_key: string]: {
+    name: string
+    introDescription: string
+    profileImageSmall: string
+    profileImageMedium: string
+    profileImageLarge: string
+    websiteLabel: string
+    websiteUrl: string
+    address: string
+    cid: string
+    id: string
+    epoch: number
+    project_key: string
+  }
+};
+
+type CommunityUsers = {
+  user: string
+  locked: number
+  min: number
+  max: number
+  budget_amount: number
+  allocation_amount: number
+  project_count: number
+  project_list: string[]
+  // lastLocked?: number
+}[];
+
+type Funding = {
+  address: string
+  allocated: number
+  matched: number
+  id: string
+  epoch: number
+  total: number
+  project_key: string
+  donor: number
+}[];
+
 type EpochsByProject = {
   [project: string]: EpochData[];
 };
 
+function formatNumber(number: number, decimals?: number): string {
+  if (number === 0) {
+    return "0";
+  } else if (Math.abs(number) >= 1e9) {
+    if (Math.abs(number) >= 1e12) {
+      return (number / 1e12).toFixed(2) + "T";
+    } else if (Math.abs(number) >= 1e9) {
+      return (number / 1e9).toFixed(2) + "B";
+    }
+  } else if (Math.abs(number) >= 1e6) {
+    return (number / 1e6).toFixed(2) + "M";
+  } else if (Math.abs(number) >= 1e3) {
+    const rounded = (number / 1e3).toFixed(2);
+    return `${rounded}${Math.abs(number) >= 10000 ? "K" : "K"}`;
+  } else if (Math.abs(number) >= 100) {
+    return number.toFixed(decimals ? decimals : 2);
+  } else if (Math.abs(number) >= 10) {
+    return number.toFixed(decimals ? decimals : 2);
+  } else {
+    return number.toFixed(decimals ? decimals : 2);
+  }
+
+  // Default return if none of the conditions are met
+  return "";
+}
+
+// export default function Page() {
+//   const {
+//     data: master,
+//     error: masterError,
+//     isLoading: masterLoading,
+//     isValidating: masterValidating,
+//   } = useSWR<MasterResponse>(MasterURL);
+
+//   const {
+//     data: ProjectsMetaDataJSONs,
+//     error: ProjectsMetaDataError,
+//     isLoading: ProjectsMetaDataLoading,
+//     isValidating: ProjectsMetaDataValidating,
+//   } = useSWR<{ [key: string]: ProjectMetadataType }>('https://api.growthepie.xyz/api/trackers/octant/', () => {
+//     const data: { [key: string]: ProjectMetadataType } = {};
+//     ProjectsMetaDataFiles.forEach(async (file, index) => {
+//       const response = await fetch(`/api/trackers/octant/${file}`);
+//       const projectsMetadata = await response.json();
+//       data[index.toString()] = projectsMetadata;
+//     });
+//     return data;
+//   });
+
+//   const {
+//     data: FundingJSONs,
+//     error: FundingError,
+//     isLoading: FundingLoading,
+//     isValidating: FundingValidating,
+//   } = useSWR<{ [key: string]: Funding }>('https://api.growthepie.xyz/api/trackers/octant/', () => {
+//     const data: { [key: string]: Funding } = {};
+//     UserEpochFiles.forEach(async (file, index) => {
+//       const response = await fetch(`/api/trackers/octant/${file}`);
+//       const funding = await response.json();
+//       data[index.toString()] = funding;
+//     });
+//     // add all_time_total to each project
+//     const allTimeTotalsByProjectKey = {};
+
+//     Object.values(data).forEach((funding) => {
+//       funding.forEach((project) => {
+//         if (!allTimeTotalsByProjectKey[project.project_key]) {
+//           allTimeTotalsByProjectKey[project.project_key] = 0;
+//         }
+//         allTimeTotalsByProjectKey[project.project_key] += project.total;
+//       });
+//     });
+
+//     Object.values(data).forEach((funding) => {
+//       funding.forEach((project) => {
+//         project.all_time_total = allTimeTotalsByProjectKey[project.project_key];
+//       });
+//     });
+
+//     return data;
+//   });
+
+//   const {
+//     data: EpochJSONs,
+//     error: EpochError,
+//     isLoading: EpochLoading,
+//     isValidating: EpochValidating,
+//   } = useSWR<{ [key: string]: CommunityUsers }>('https://api.growthepie.xyz/api/trackers/octant/', () => {
+//     const data: { [key: string]: CommunityUsers } = {};
+//     UserEpochFiles.forEach(async (file, index) => {
+//       const response = await fetch(`/api/trackers/octant/${file}`);
+//       const epoch = await response.json();
+//       data[index.toString()] = epoch;
+//     });
+//     return data;
+//   });
+//   const LockStatus = { 'now': { 'total_locked_glm': 155780864.5972997, 'num_users_locked_glm': 1065 }, 'week_ago': { 'total_locked_glm': 155748269.49235776, 'num_users_locked_glm': 1037 }, 'changes': { 'total_locked_glm_diff': 32595.104941934347, 'num_users_locked_glm_diff': 28, 'total_locked_glm_change': 0.0002092806876646146, 'num_users_locked_glm_change': 0.02700096432015429 } };
+
+
+//   if (!master || !ProjectsMetaDataJSONs || !FundingJSONs || !EpochJSONs) return <ShowLoading />;
+
+//   return (
+//     <OctantV2
+//       master={master}
+//       ProjectsMetaDataJSONs={ProjectsMetaDataJSONs}
+//       FundingJSONs={FundingJSONs}
+//       EpochJSONs={EpochJSONs}
+//     />
+//   );
+// };
 export default function Page() {
 
   const {
@@ -60,7 +210,7 @@ export default function Page() {
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
-  const LockStatus = { 'now': { 'total_locked_glm': 155763604.70812038, 'num_users_locked_glm': 1048 }, 'week_ago': { 'total_locked_glm': 155710758.2732818, 'num_users_locked_glm': 991 }, 'changes': { 'total_locked_glm_diff': 52846.434838563204, 'num_users_locked_glm_diff': 57, 'total_locked_glm_change': 0.0003393884624581592, 'num_users_locked_glm_change': 0.05751765893037336 } };
+  const LockStatus = { 'now': { 'total_locked_glm': 155780864.5972997, 'num_users_locked_glm': 1065 }, 'week_ago': { 'total_locked_glm': 155748269.49235776, 'num_users_locked_glm': 1037 }, 'changes': { 'total_locked_glm_diff': 32595.104941934347, 'num_users_locked_glm_diff': 28, 'total_locked_glm_change': 0.0002092806876646146, 'num_users_locked_glm_change': 0.02700096432015429 } };
 
   const Epochs = [
     {
@@ -83,10 +233,10 @@ export default function Page() {
       epoch: 4,
       label: "Epoch 4",
     },
-    {
-      epoch: 5,
-      label: "Epoch 5",
-    },
+    // {
+    //   epoch: 5,
+    //   label: "Epoch 5",
+    // },
   ];
 
 
@@ -102,7 +252,7 @@ export default function Page() {
   };
 
   const handleNextCommunityEpoch = () => {
-    if (communityEpoch === 5)
+    if (communityEpoch === 4)
       setCommunityEpoch(0);
     else
       setCommunityEpoch(communityEpoch + 1);
@@ -116,7 +266,7 @@ export default function Page() {
   };
 
   const handleNextFundingEpoch = () => {
-    if (fundingEpoch === 5)
+    if (fundingEpoch === 4)
       setFundingEpoch(0);
     else
       setFundingEpoch(fundingEpoch + 1);
@@ -154,18 +304,6 @@ export default function Page() {
       setCommunityRowsOpen([...communityRowsOpen, user]);
     }
   };
-
-  type CommunityUsers = {
-    user: string
-    locked: number
-    min: number
-    max: number
-    budget_amount: number
-    allocation_amount: number
-    project_count: number
-    project_list: string[]
-    // lastLocked?: number
-  }[];
 
   const UserActiveSinceEpochData = useMemo(() => {
     const epochData = {
@@ -297,22 +435,7 @@ export default function Page() {
   }, [CommunityUsersData, , communityTableSort, communitySearch, communityUserSelection]);
 
 
-  type ProjectMetadataType = {
-    [project_key: string]: {
-      name: string
-      introDescription: string
-      profileImageSmall: string
-      profileImageMedium: string
-      profileImageLarge: string
-      websiteLabel: string
-      websiteUrl: string
-      address: string
-      cid: string
-      id: string
-      epoch: number
-      project_key: string
-    }
-  };
+
 
   const ProjectsMetadata = useMemo<ProjectMetadataType>(() => {
     // combine all the projects metadata, use the latest epoch if there are duplicates
@@ -341,6 +464,12 @@ export default function Page() {
     return data;
   }, []);
 
+  const allTimeTotalsByProjectKey = useMemo(() => {
+    return [...Funding1, ...Funding2, ...Funding3, ...Funding4].reduce((acc, curr) => {
+      acc[curr.project_key] = (acc[curr.project_key] || 0) + curr.total;
+      return acc;
+    }, {});
+  }, []);
 
   const [fundingSearch, setFundingSearch] = useState("");
 
@@ -349,28 +478,21 @@ export default function Page() {
     sortOrder: "desc",
   });
 
-  type Funding = {
-    address: string
-    allocated: number
-    matched: number
-    id: string
-    epoch: number
-    total: number
-    project_key: string
-    donor: number
-  }[];
+
 
 
   const FundingData = useMemo<Funding>(() => {
     let data: Funding = [];
     if (fundingEpoch === 0) {
       // sum locked, budget_amount, allocation_amount across all epochs for each project
-      [...Funding1, ...Funding2, ...Funding3, ...Funding4].forEach((project) => {
+      data = [...Funding1] as Funding;
+
+      [...Funding2, ...Funding3, ...Funding4].forEach((project) => {
         let existingProject = data.find((p) => p.project_key === project.project_key);
         if (existingProject) {
-          existingProject.allocated += project.allocated;
-          existingProject.matched += project.matched;
           existingProject.total += project.total;
+          existingProject.matched += project.matched;
+          existingProject.allocated += project.allocated;
           existingProject.donor += project.donor;
         }
         else {
@@ -408,6 +530,17 @@ export default function Page() {
 
     // sort the data
     data.sort((a, b) => {
+
+      if (fundingTableSort.metric === "all_time_total") {
+        if (allTimeTotalsByProjectKey[a.project_key] < allTimeTotalsByProjectKey[b.project_key]) {
+          return fundingTableSort.sortOrder === "asc" ? -1 : 1;
+        }
+        if (allTimeTotalsByProjectKey[a.project_key] > allTimeTotalsByProjectKey[b.project_key]) {
+          return fundingTableSort.sortOrder === "asc" ? 1 : -1;
+        }
+        return 0;
+      }
+
       if (a[fundingTableSort.metric] < b[fundingTableSort.metric]) {
         return fundingTableSort.sortOrder === "asc" ? -1 : 1;
       }
@@ -425,8 +558,23 @@ export default function Page() {
     });
 
     return data;
-  }, [FundingData, fundingTableSort.metric, fundingTableSort.sortOrder, fundingSearch, ProjectsMetadata]);
+  }, [FundingData, fundingTableSort.metric, fundingTableSort.sortOrder, allTimeTotalsByProjectKey, fundingSearch, ProjectsMetadata]);
 
+
+  const TotalsAcrossEpochsByProjectKey = useMemo(() => {
+    const data: { [project_key: string]: { total: number, matched: number, allocated: number } } = {};
+
+    [...Funding1, ...Funding2, ...Funding3, ...Funding4].forEach((project) => {
+      if (!data[project.project_key]) {
+        data[project.project_key] = { total: 0, matched: 0, allocated: 0 };
+      }
+      data[project.project_key].total += project.total;
+      data[project.project_key].matched += project.matched;
+      data[project.project_key].allocated += project.allocated;
+    });
+
+    return data;
+  }, []);
 
 
   // const {
@@ -520,14 +668,6 @@ export default function Page() {
 
     return byProjectKey;
   }, [epochs]);
-
-
-  const allTimeTotalsByProjectKey = useMemo(() => {
-    [...Funding1, ...Funding2, ...Funding3, ...Funding4].reduce((acc, curr) => {
-      acc[curr.project_key] = (acc[curr.project_key] || 0) + curr.total;
-      return acc;
-    }, {});
-  }, []);
 
   const [sortKey, setSortKey] = useState<string | null>("rewardsMatched");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
@@ -1403,10 +1543,12 @@ export default function Page() {
                       </div>
                       <div className="flex items-center justify-end">
                         {communityEpoch != 0 && user.min > 0 ? (
-                          <div className="text-[#CDD8D3]">{user.min.toLocaleString("en-GB", {
+                          <div className="text-[#CDD8D3]">{formatNumber(user.min, 2)} {" "}
+                            {/* {user.min.toLocaleString("en-GB", {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
-                          })} GLM</div>
+                          })} */}
+                            GLM</div>
                         ) : (
                           <div className="text-[#CDD8D3]">-</div>
                         )}
@@ -1495,7 +1637,7 @@ export default function Page() {
               )}
             </VerticalScrollContainer>
           </div>
-          <div className="flex flex-col @[600px]:flex-row h-auto @[1231px]:h-[340px] w-full @[1231px]:w-1/2 justify-between items-center">
+          <div className="flex flex-col @[600px]:flex-row h-auto @[1231px]:h-[340px] w-full @[1231px]:w-1/2 justify-evenly items-center">
             <div>
               <CircleChart
                 title="ALLOCATIONS"
@@ -1648,7 +1790,7 @@ export default function Page() {
           <input
             // ref={inputRef}
             className={`flex-1 pl-[11px] h-full bg-transparent placeholder-[#CDD8D3] border-none outline-none overflow-x-clip`}
-            placeholder="Search Wallets"
+            placeholder="Find Project"
             value={fundingSearch}
             onChange={(e) => {
 
@@ -1684,9 +1826,8 @@ export default function Page() {
       </Container>
 
       <HorizontalScrollContainer className="@container">
-
         <GridTableHeader
-          gridDefinitionColumns="grid-cols-[20px,225px,minmax(125px,1600px),95px,126px,101px,89px,101px]"
+          gridDefinitionColumns="grid-cols-[20px,225px,minmax(125px,1600px),95px,126px,101px,89px]"
           className="w-full text-[12px] gap-x-[15px] z-[2] !pl-[5px] !pr-[36px] !pt-[15px] !pb-[10px]"
         >
           <div></div>
@@ -1737,17 +1878,17 @@ export default function Page() {
           >
             Epoch Total
           </GridTableHeaderCell>
-          <GridTableHeaderCell
+          {/* <GridTableHeaderCell
             justify="end"
-            metric="total"
+            metric="all_time_total"
             sort={fundingTableSort}
             setSort={setFundingTableSort}
           >
             All Time Total
-          </GridTableHeaderCell>
+          </GridTableHeaderCell> */}
         </GridTableHeader>
         <VerticalScrollContainer height={600} className="">
-          {master && FundingDataFiltered && (
+          {master && FundingDataFiltered && allTimeTotalsByProjectKey && (
             FundingDataFiltered.map((row, index) => (
               <OctantTableRow
                 key={index}
@@ -1758,6 +1899,7 @@ export default function Page() {
                 setCurrentEpoch={setCurrentEpoch}
                 ProjectsMetadata={ProjectsMetadata}
                 master={master}
+                allTimeTotalsByProjectKey={allTimeTotalsByProjectKey}
               />
             ))
           )}
@@ -1776,6 +1918,7 @@ type TableRowProps = {
   ProjectsMetadata: any;
   master: MasterResponse;
   fundingEpoch: number;
+  allTimeTotalsByProjectKey: any;
 };
 
 const OctantTableRow = ({
@@ -1786,11 +1929,12 @@ const OctantTableRow = ({
   ProjectsMetadata,
   master,
   fundingEpoch,
+  allTimeTotalsByProjectKey
 }: TableRowProps) => {
   return (
     <GridTableRow
 
-      gridDefinitionColumns="grid-cols-[20px,225px,minmax(125px,1600px),95px,126px,101px,89px,101px]"
+      gridDefinitionColumns="grid-cols-[20px,225px,minmax(125px,1600px),95px,126px,101px,89px]"
       className="group w-full text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] !pl-[5px] !pr-[15px] mb-[3px]"
     >
       <div className="w-[26px] h-[18px] px-[4px]">
@@ -1881,7 +2025,7 @@ const OctantTableRow = ({
                 className="w-[15px] h-[15px] text-forest-900/30 dark:text-forest-500/30 fill-current"
               />
             )}
-            {FundingDataFilteredRow.donordonors >= 50 && FundingDataFilteredRow.donor < 100 && (
+            {FundingDataFilteredRow.donor >= 50 && FundingDataFilteredRow.donor < 100 && (
               <Icon
                 icon={"fluent:people-20-filled"}
                 className="w-[15px] h-[15px] text-forest-900/30 dark:text-forest-500/30 fill-current"
@@ -1925,15 +2069,15 @@ const OctantTableRow = ({
           <span className="opacity-60 text-[0.55rem]">ETH</span>
         </div>
       </div>
-      <div className="flex justify-end">
+      {/* <div className="flex justify-end">
         <div
           className={`leading-[1.2] font-inter ${FundingDataFilteredRow.total <= 0 && "opacity-30"
             }`}
         >
-          {(FundingDataFilteredRow.total).toFixed(2)}{" "}
+          {(allTimeTotalsByProjectKey[project_key]).toFixed(2)}{" "}
           <span className="opacity-60 text-[0.55rem]">ETH</span>
         </div>
-      </div>
+      </div> */}
     </GridTableRow>
   );
 
