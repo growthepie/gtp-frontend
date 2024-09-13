@@ -39,12 +39,11 @@ const COLORS = {
 };
 
 const METRIC_COLORS = {
-  profit: "#E3FA6C",
-  fees: "#1DF7EF",
-  rent_paid: "#178577",
+  profit: ["#EEFF97", "#A1B926"],
+  fees: ["#1DF7EF", "#10808C"],
   costs: {
-    costs_l1: "#98323E",
-    costs_blobs: "#FE5468",
+    costs_l1: ["#FE5468", "#98323E"],
+    costs_blobs: ["#D41027", "#FE5468"],
   },
 };
 
@@ -538,9 +537,9 @@ export default function EconHeadCharts({
                                   y2: 0,
                                 },
                                 stops: [
-                                  [0, METRIC_COLORS[key]],
+                                  [0, METRIC_COLORS[key][1]],
                                   // [0.33, AllChainsByKeys[series.name].colors[1]],
-                                  [1, METRIC_COLORS[key]],
+                                  [1, METRIC_COLORS[key][0]],
                                 ],
                               },
                             },
@@ -551,7 +550,7 @@ export default function EconHeadCharts({
                               //   radius: 12,
                               //   lineWidth: 4,
                               // },
-                              fillOpacity: 1,
+
                               fillColor: {
                                 linearGradient: {
                                   x1: 0,
@@ -560,8 +559,9 @@ export default function EconHeadCharts({
                                   y2: 1,
                                 },
                                 stops: [
-                                  [0, METRIC_COLORS[key] + "99"],
-                                  [1, METRIC_COLORS[key] + "99"],
+                                  [0, METRIC_COLORS[key][1] + "DD"],
+                                  [0.5, METRIC_COLORS[key][1] + "DD"],
+                                  [1, METRIC_COLORS[key][0] + "DD"],
                                 ],
                               },
                               // shadow: {
@@ -577,9 +577,9 @@ export default function EconHeadCharts({
                                   y2: 0,
                                 },
                                 stops: [
-                                  [0, METRIC_COLORS[key]],
+                                  [0, METRIC_COLORS[key][0]],
                                   // [0.33, AllChainsByKeys[series.name].colors[1]],
-                                  [1, METRIC_COLORS[key]],
+                                  [1, METRIC_COLORS[key][0]],
                                 ],
                               },
                               // borderColor: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
@@ -887,10 +887,10 @@ export default function EconHeadCharts({
                                     enabled: true,
                                     halo: {
                                       size: 5,
-                                      opacity: 1,
+                                      opacity: 0.5,
                                       attributes: {
-                                        fill: METRIC_COLORS[key] + "99",
-                                        stroke: METRIC_COLORS[key] + "66",
+                                        fill: METRIC_COLORS[key][0],
+                                        stroke: undefined,
                                       },
                                     },
                                     brightness: 0.3,
@@ -903,9 +903,8 @@ export default function EconHeadCharts({
                               ></AreaSeries>
                             ) : (
                               <>
-                                {Object.keys(chart_data.metrics[key])
-                                  .reverse()
-                                  .map((costKey, j) => {
+                                {Object.keys(chart_data.metrics[key]).map(
+                                  (costKey, j) => {
                                     console.log(costKey);
                                     return (
                                       <AreaSeries
@@ -937,8 +936,8 @@ export default function EconHeadCharts({
                                             y2: 0,
                                           },
                                           stops: [
-                                            [0, METRIC_COLORS[key][costKey]], // Use the unique color for each series
-                                            [1, METRIC_COLORS[key][costKey]],
+                                            [0, METRIC_COLORS[key][costKey][0]], // Use the unique color for each series
+                                            [1, METRIC_COLORS[key][costKey][0]],
                                           ],
                                         }}
                                         fillColor={{
@@ -951,13 +950,18 @@ export default function EconHeadCharts({
                                           stops: [
                                             [
                                               0,
-                                              METRIC_COLORS[key][costKey] +
-                                                "66",
+                                              METRIC_COLORS[key][costKey][1] +
+                                                "DD",
+                                            ],
+                                            [
+                                              0.6,
+                                              METRIC_COLORS[key][costKey][1] +
+                                                "DD",
                                             ],
                                             [
                                               1,
-                                              METRIC_COLORS[key][costKey] +
-                                                "99",
+                                              METRIC_COLORS[key][costKey][0] +
+                                                "DD",
                                             ],
                                           ],
                                         }}
@@ -969,8 +973,13 @@ export default function EconHeadCharts({
                                             y2: 0,
                                           },
                                           stops: [
-                                            [0, METRIC_COLORS[key][costKey]], // Use the unique color for each series
-                                            [1, METRIC_COLORS[key][costKey]],
+                                            [
+                                              0,
+                                              METRIC_COLORS[key][costKey][
+                                                costKey === "costs_l1" ? 0 : 1
+                                              ],
+                                            ], // Use the unique color for each series
+                                            [1, METRIC_COLORS[key][costKey][1]],
                                           ],
                                         }}
                                         states={{
@@ -978,14 +987,12 @@ export default function EconHeadCharts({
                                             enabled: true,
                                             halo: {
                                               size: 5,
-                                              opacity: 1,
+                                              opacity: 0.5,
                                               attributes: {
-                                                fill:
-                                                  METRIC_COLORS[key][costKey] +
-                                                  "99",
-                                                stroke:
-                                                  METRIC_COLORS[key][costKey] +
-                                                  "66",
+                                                fill: METRIC_COLORS[key][
+                                                  costKey
+                                                ][0],
+                                                stroke: undefined,
                                               },
                                             },
                                             brightness: 0.3,
@@ -997,7 +1004,8 @@ export default function EconHeadCharts({
                                         }}
                                       ></AreaSeries>
                                     );
-                                  })}
+                                  },
+                                )}
                               </>
                             )}
                           </YAxis>
