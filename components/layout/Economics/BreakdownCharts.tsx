@@ -222,7 +222,14 @@ function BreakdownCharts({
         chartContainer.removeEventListener("mouseleave", handleMouseLeave);
       }
     };
-  }, [mainChart, profitChart, profitChartRef, chartRef]);
+  }, [
+    mainChart,
+    profitChart,
+    profitChartRef,
+    chartRef,
+    timespans,
+    selectedTimespan,
+  ]);
 
   const newestUnixTimestamp = useMemo(() => {
     return dailyData.revenue.data[dailyData.revenue.data.length - 1][0];
@@ -430,7 +437,14 @@ function BreakdownCharts({
 
       return tooltip + tooltipPoints + sumRow + tooltipEnd;
     },
-    [valuePrefix, reversePerformer, dailyData, isMonthly],
+    [
+      valuePrefix,
+      reversePerformer,
+      dailyData,
+      isMonthly,
+      selectedTimespan,
+      timespans,
+    ],
   );
 
   const tooltipManager = useMemo(() => {
@@ -507,7 +521,10 @@ function BreakdownCharts({
   const profitMinMaxValues = useMemo(() => {
     // Get the minimum timestamp for the selected timespan
     const minTimestamp =
-      selectedTimespan !== "max" ? timespans[selectedTimespan].xMin : 0;
+      selectedTimespan !== "max"
+        ? newestUnixTimestamp -
+          1000 * 60 * 60 * 24 * timespans[selectedTimespan].value
+        : 0;
 
     // Filter and extract the data points for either "usd" or "eth" based on dailyData.profit and selected timespan
     const values = dailyData.profit.data
@@ -516,9 +533,8 @@ function BreakdownCharts({
         (d: any) => d[dailyData.profit.types.indexOf(showUsd ? "usd" : "eth")],
       );
 
-    // Calculate the max and min values
-    const max = Math.max(...values);
-    const min = Math.min(...values);
+    // Calculate the absolute max value
+    const maxAbsValue = Math.max(...values.map(Math.abs));
 
     // Define a function to round values up to a "clean" number for chart presentation
     const roundToNiceNumber = (value: number) => {
@@ -527,18 +543,18 @@ function BreakdownCharts({
       return Math.ceil(Math.abs(value) / factor) * factor * Math.sign(value);
     };
 
-    // Round the max and min values
-    const roundedMax = roundToNiceNumber(max);
-    const roundedMin = roundToNiceNumber(min);
+    // Round the absolute max value
+    const roundedMaxAbsValue = roundToNiceNumber(maxAbsValue);
 
-    // Ensure the rounded values are not less extreme than the actual values
-    const finalMax = Math.max(roundedMax, max);
+    // Set the final max as the positive rounded value and the final min as the negative rounded value
+    const finalMax = roundedMaxAbsValue;
+    const finalMin = -roundedMaxAbsValue;
 
     return {
-      min: -finalMax,
+      min: finalMin,
       max: finalMax,
     };
-  }, [dailyData, showUsd, selectedTimespan, timespans]);
+  }, [data, showUsd, selectedTimespan, timespans]);
 
   return (
     <div
@@ -778,8 +794,9 @@ function BreakdownCharts({
                     y2: 1,
                   },
                   stops: [
-                    [0, "#1DF7EF99"],
-                    [1, "#1DF7EF99"],
+                    [0, "#10808CDD"],
+                    [0.5, "#10808CDD"],
+                    [1, "#1DF7EFDD"],
                   ],
                 }}
               />
@@ -805,8 +822,9 @@ function BreakdownCharts({
                     y2: 1,
                   },
                   stops: [
-                    [0, "#FE546899"],
-                    [1, "#FE546899"],
+                    [0, "#98323EDD"],
+                    [0.5, "#98323EDD"],
+                    [1, "#FE5468DD"],
                   ],
                 }}
               />
@@ -1049,14 +1067,37 @@ function BreakdownCharts({
               {" "}
               <ColumnSeries
                 name="Profit"
-                color={"#FFDF27"}
                 zones={[
                   {
                     value: 0, // Values up to 0 (exclusive)
-                    color: "#FFDF27", // Color for negative values
+                    color: {
+                      linearGradient: {
+                        x1: 0,
+                        y1: 0,
+                        x2: 0,
+                        y2: 1,
+                      },
+                      stops: [
+                        [0, "#FFE761DD"],
+
+                        [1, "#C7AE24DD"],
+                      ],
+                    },
                   },
                   {
-                    color: "#EEFF97", // Color for positive values
+                    color: {
+                      linearGradient: {
+                        x1: 0,
+                        y1: 0,
+                        x2: 0,
+                        y2: 1,
+                      },
+                      stops: [
+                        [0, "#EEFF97DD"],
+                        [0.5, "#EEFF97DD"],
+                        [1, "#A1B926DD"],
+                      ],
+                    },
                   },
                 ]}
                 data={dailyData.profit.data.map((d: any) => [
@@ -1080,6 +1121,7 @@ export default React.memo(BreakdownCharts, (prevProps, nextProps) => {
     prevProps.chain === nextProps.chain &&
     prevProps.timespans === nextProps.timespans &&
     prevProps.selectedTimespan === nextProps.selectedTimespan &&
-    prevProps.isOpen === nextProps.isOpen
+    prevProps.isOpen === nextProps.isOpen &&
+    prevProps.isMonthly === nextProps.isMonthly
   );
 });
