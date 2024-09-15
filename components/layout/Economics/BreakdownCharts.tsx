@@ -614,14 +614,6 @@ function BreakdownCharts({
                 type: "x",
               }}
               panKey="shift"
-
-              // zooming={{
-              //   type: "x",
-              //   mouseWheel: {
-              //     enabled: false,
-              //     type: "xy",
-              //   },
-              // }}
               zooming={{
                 mouseWheel: {
                   enabled: false,
@@ -767,32 +759,7 @@ function BreakdownCharts({
                 },
               }}
             >
-              <AreaSeries
-                name="Revenue"
-                color={"#1DF7EF"}
-                data={dailyData.revenue.data.map((d: any) => [
-                  d[0],
-                  d[dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")],
-                ])}
-                dataGrouping={{
-                  enabled: true,
-                  units: isMonthly ? [["month", [1]]] : [["day", [1]]],
-                }}
-                lineWidth={1.5}
-                fillColor={{
-                  linearGradient: {
-                    x1: 0,
-                    y1: 0,
-                    x2: 0,
-                    y2: 1,
-                  },
-                  stops: [
-                    [0, "#10808CDD"],
-                    [0.5, "#10808CDD"],
-                    [1, "#1DF7EFDD"],
-                  ],
-                }}
-              />
+
 
               {/* Second line */}
               <AreaSeries
@@ -815,13 +782,56 @@ function BreakdownCharts({
                     y2: 1,
                   },
                   stops: [
-                    [0, "#98323EDD"],
-                    [0.5, "#98323EDD"],
-                    [1, "#FE5468DD"],
+                    [0.33, "#98323E"],
+                    [1, "#FE5468"],
+                    // [0, "#98323EDD"],
+                    // [0.5, "#98323EDD"],
+                    // [1, "#FE5468DD"],
                   ],
                 }}
               />
+              {/* 
 
+                position: absolute;
+              width: 1182px;
+              height: 207px;
+              left: 0px;
+              top: 42px;
+
+              background: linear-gradient(180deg, #10808C 0%, #1DF7EF 100%);
+              opacity: 0.5;
+              border-radius: 3px;
+
+              */}
+              <AreaSeries
+                name="Revenue"
+                color={"#1DF7EF"}
+                data={dailyData.revenue.data.map((d: any) => [
+                  d[0],
+                  d[dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")],
+                ])}
+                dataGrouping={{
+                  enabled: true,
+                  units: isMonthly ? [["month", [1]]] : [["day", [1]]],
+                }}
+                lineWidth={1.5}
+                fillColor={{
+                  linearGradient: {
+                    x1: 0,
+                    y1: 0,
+                    x2: 0,
+                    y2: 1,
+                  },
+                  /* 50% in hex: 80 */
+                  stops: [
+                    [0.33, "#10808C80"],
+                    [1, "#1DF7EF80"],
+                    // [0, "#10808CDD"],
+                    // [0.5, "#10808CDD"],
+                    // [1, "#1DF7EFDD"],
+                  ],
+                }}
+              />
               {/* Area between the lines */}
             </YAxis>
           </HighchartsChart>
@@ -884,13 +894,6 @@ function BreakdownCharts({
                 type: "x",
               }}
               panKey="shift"
-              // zooming={{
-              //   type: "x",
-              //   mouseWheel: {
-              //     enabled: false,
-              //     type: "xy",
-              //   },
-              // }}
               zooming={{
                 mouseWheel: {
                   enabled: false,
@@ -1065,6 +1068,7 @@ function BreakdownCharts({
               {" "}
               <ColumnSeries
                 name="Profit"
+                borderRadius="8%"
                 zones={[
                   {
                     value: 0, // Values up to 0 (exclusive)
@@ -1077,7 +1081,6 @@ function BreakdownCharts({
                       },
                       stops: [
                         [0, "#FFE761DD"],
-
                         [1, "#C7AE24DD"],
                       ],
                     },
