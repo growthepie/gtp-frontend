@@ -610,7 +610,7 @@ function BreakdownCharts({
               backgroundColor={"transparent"}
               type="line"
               panning={{
-                enabled: true,
+                enabled: false,
                 type: "x",
               }}
               panKey="shift"
@@ -685,21 +685,19 @@ function BreakdownCharts({
               }}
               tickmarkPlacement="on"
               zoomEnabled={false}
+              // startOnTick={true}
+              // endOnTick={true}
               tickWidth={0}
               tickLength={20}
-              ordinal={true}
+              // ordinal={true}
               minorTicks={false}
               minorTickLength={2}
               minorTickWidth={2}
               minorGridLineWidth={0}
               minorTickInterval={1000 * 60 * 60 * 24 * 1}
-              min={
-                timespans[selectedTimespan].xMin
-                  ? newestUnixTimestamp -
-                  1000 * 60 * 60 * 24 * timespans[selectedTimespan].value
-                  : undefined
-              }
-              panningEnabled={true}
+              min={timespans[selectedTimespan].xMin}
+              max={timespans[selectedTimespan].xMax}
+            // panningEnabled={true}
             >
               <XAxis.Title>X Axis</XAxis.Title>
             </XAxis>
@@ -760,7 +758,36 @@ function BreakdownCharts({
               }}
             >
 
+              <AreaSeries
+                name="Revenue"
+                color={"#1DF7EF"}
+                data={dailyData.revenue.data.map((d: any) => [
+                  d[0],
+                  d[dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")],
+                ])}
+                dataGrouping={{
+                  enabled: true,
+                  units: isMonthly ? [["month", [1]]] : [["day", [1]]],
+                }}
+                lineWidth={1.5}
+                fillColor={{
+                  linearGradient: {
+                    x1: 0,
+                    y1: 0,
+                    x2: 0,
+                    y2: 1,
+                  },
 
+                  stops: [
+                    /* 50% in hex: 80 */
+                    // [0.33, "#10808C80"],
+                    // [1, "#1DF7EF80"],
+                    [0, "#10808CDD"],
+                    [0.5, "#10808CDD"],
+                    [1, "#1DF7EFDD"],
+                  ],
+                }}
+              />
               {/* Second line */}
               <AreaSeries
                 name="Costs"
@@ -782,11 +809,12 @@ function BreakdownCharts({
                     y2: 1,
                   },
                   stops: [
-                    [0.33, "#98323E"],
-                    [1, "#FE5468"],
-                    // [0, "#98323EDD"],
-                    // [0.5, "#98323EDD"],
-                    // [1, "#FE5468DD"],
+                    /* 50% in hex: 80 */
+                    // [0.33, "#98323E80"],
+                    // [1, "#FE546880"],
+                    [0, "#98323EDD"],
+                    [0.5, "#98323EDD"],
+                    [1, "#FE5468DD"],
                   ],
                 }}
               />
@@ -803,35 +831,7 @@ function BreakdownCharts({
               border-radius: 3px;
 
               */}
-              <AreaSeries
-                name="Revenue"
-                color={"#1DF7EF"}
-                data={dailyData.revenue.data.map((d: any) => [
-                  d[0],
-                  d[dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")],
-                ])}
-                dataGrouping={{
-                  enabled: true,
-                  units: isMonthly ? [["month", [1]]] : [["day", [1]]],
-                }}
-                lineWidth={1.5}
-                fillColor={{
-                  linearGradient: {
-                    x1: 0,
-                    y1: 0,
-                    x2: 0,
-                    y2: 1,
-                  },
-                  /* 50% in hex: 80 */
-                  stops: [
-                    [0.33, "#10808C80"],
-                    [1, "#1DF7EF80"],
-                    // [0, "#10808CDD"],
-                    // [0.5, "#10808CDD"],
-                    // [1, "#1DF7EFDD"],
-                  ],
-                }}
-              />
+
               {/* Area between the lines */}
             </YAxis>
           </HighchartsChart>
@@ -890,7 +890,7 @@ function BreakdownCharts({
               backgroundColor={"transparent"}
               type="column"
               panning={{
-                enabled: true,
+                enabled: false,
                 type: "x",
               }}
               panKey="shift"
@@ -955,38 +955,123 @@ function BreakdownCharts({
               title={undefined}
               type="datetime"
               labels={{
+                align: undefined,
+                rotation: 0,
+                // allowOverlap: false,
+                // staggerLines: 1,
+                // reserveSpace: true,
+                overflow: "justify",
                 useHTML: true,
+                distance: -14,
                 style: {
                   color: COLORS.LABEL,
                   fontSize: "10px",
+                  fontWeight: "550",
+                  fontVariant: "small-caps",
+                  textTransform: "lowercase",
                   fontFamily: "var(--font-raleway), sans-serif",
+                  // fontVariant: "all-small-caps",
                   zIndex: 1000,
                 },
                 enabled: true,
 
-                formatter: function () {
-                  // Convert Unix timestamp to milliseconds
-                  const date = new Date(this.value);
-                  // Format the date as needed (e.g., "dd MMM yyyy")
-                  const dateString = date
-                    .toLocaleDateString("en-GB", {
-                      day: !(
-                        timespans[selectedTimespan].value >= 90 ||
-                        selectedTimespan === "max"
-                      )
-                        ? "2-digit"
-                        : undefined,
-                      month: "short",
-                      year:
-                        timespans[selectedTimespan].value >= 90 ||
-                          selectedTimespan === "max"
-                          ? "numeric"
-                          : undefined,
-                    })
-                    .toUpperCase();
+                //   formatter: function () {
+                //     // Convert Unix timestamp to milliseconds
+                //     const date = new Date(this.value);
+                //     // Format the date as needed (e.g., "dd MMM yyyy")
+                //     const dateString = date
+                //       .toLocaleDateString("en-GB", {
+                //         day: !(
+                //           timespans[selectedTimespan].value >= 90 ||
+                //           selectedTimespan === "max"
+                //         )
+                //           ? "2-digit"
+                //           : undefined,
+                //         month: "short",
+                //         year:
+                //           timespans[selectedTimespan].value >= 90 ||
+                //             selectedTimespan === "max"
+                //             ? "numeric"
+                //             : undefined,
+                //       });
 
-                  return `<span class="font-bold">${dateString}</span>`;
-                },
+                //     const monthString = date.toLocaleDateString("en-GB", {
+                //       month: "long",
+                //     });
+
+                //     const dateNumString = date.toLocaleDateString("en-GB", {
+                //       day: !(
+                //         timespans[selectedTimespan].value >= 90 ||
+                //         selectedTimespan === "max"
+                //       )
+                //         ? "2-digit"
+                //         : undefined,
+                //       year:
+                //         timespans[selectedTimespan].value >= 90 ||
+                //           selectedTimespan === "max"
+                //           ? "numeric"
+                //           : undefined,
+                //     });
+
+
+                //     return `<span class="font-semibold"><span style="font-variant:all-small-caps">${monthString}</span> ${dateNumString}</span>`;
+                //   },
+                // }}
+                formatter: (function () {
+                  return function () {
+                    let str = "";
+                    if (
+                      timespans[selectedTimespan].xMax -
+                      timespans[selectedTimespan].xMin <=
+                      90 * 24 * 3600 * 1000
+                    ) {
+                      let isBeginningOfWeek =
+                        new Date(this.value).getUTCDay() === 1;
+                      let showMonth =
+                        this.isFirst ||
+                        new Date(this.value).getUTCDate() === 1;
+                      str = new Date(this.value).toLocaleDateString(
+                        "en-GB",
+                        {
+                          timeZone: "UTC",
+                          month: "short",
+                          day: "numeric",
+                          year: this.isFirst ? "numeric" : undefined,
+                        },
+                      );
+                    } else {
+                      // if Jan 1st, show year
+                      if (new Date(this.value).getUTCMonth() === 0) {
+                        //             str = `<span style="font-size: 14px; font-weight: 600;margin-top:-3px;">
+                        //   ${new Date(this.value).toLocaleDateString("en-GB", {
+                        //               timeZone: "UTC",
+                        //               year: "numeric",
+                        //             })}
+                        // </div>`;
+                        str = `
+                          ${new Date(this.value).toLocaleDateString("en-GB", {
+                          timeZone: "UTC",
+                          year: "numeric",
+                        })}
+                        `;
+                      }
+                      str = new Date(this.value).toLocaleDateString(
+                        "en-GB",
+                        {
+                          timeZone: "UTC",
+                          month: "short",
+                          year: "numeric",
+                        },
+                      );
+                    }
+                    return str;
+                    // let align = "center";
+                    // if (this.isFirst) align = "left";
+                    // if (this.isLast) align = "right";
+
+                    // return `<span style="text-align:${align};">${str}</div>`;
+                  };
+                })(),
               }}
               crosshair={{
                 width: 0.5,
@@ -994,22 +1079,22 @@ function BreakdownCharts({
                 snap: false,
               }}
               zoomEnabled={false}
+              lineWidth={0}
+              offset={24}
+              // startOnTick={true}
+              // endOnTick={true}
               tickAmount={0}
-              tickLength={20}
-              tickWidth={0}
-              ordinal={true}
+              tickLength={5}
+              tickWidth={1}
+              // ordinal={true}
               minorTicks={false}
               minorTickLength={2}
               minorTickWidth={2}
               minorGridLineWidth={0}
               minorTickInterval={1000 * 60 * 60 * 24 * 1}
-              min={
-                timespans[selectedTimespan].xMin
-                  ? newestUnixTimestamp -
-                  1000 * 60 * 60 * 24 * timespans[selectedTimespan].value
-                  : undefined
-              }
-              panningEnabled={true}
+              min={timespans[selectedTimespan].xMin}
+              max={timespans[selectedTimespan].xMax}
+            // panningEnabled={true}
             >
               <XAxis.Title></XAxis.Title>
             </XAxis>
@@ -1028,6 +1113,7 @@ function BreakdownCharts({
               tickAmount={3}
               min={profitMinMaxValues.min}
               max={profitMinMaxValues.max}
+
               labels={{
                 align: "right",
                 y: 2,
