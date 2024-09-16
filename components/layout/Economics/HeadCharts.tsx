@@ -47,6 +47,11 @@ const METRIC_COLORS = {
   },
 };
 
+const urls = {
+  profit: "/fundamentals/profit",
+  fees: "/fundamentals/fees-paid-by-users",
+};
+
 export default function EconHeadCharts({
   chart_data,
 }: {
@@ -399,6 +404,8 @@ export default function EconHeadCharts({
             })
             .map((key, i) => {
               const isMultipleSeries = key === "costs";
+              const link = key !== "costs" ? urls[key] : undefined;
+
               const lastIndex = !isMultipleSeries
                 ? chart_data.metrics[key].daily.data.length - 1
                 : 0;
@@ -426,10 +433,30 @@ export default function EconHeadCharts({
               return (
                 <SplideSlide key={"Splide" + key}>
                   <div className="relative flex flex-col w-full overflow-hidden h-[197px] bg-[#1F2726] rounded-2xl  ">
-                    <div className="absolute text-[16px] font-bold top-[15px] left-[15px]">
-                      {isMultipleSeries
-                        ? "Costs"
-                        : chart_data.metrics[key].metric_name}
+                    <div
+                      className={`absolute items-center text-[16px] font-bold top-[15px] left-[15px] flex gap-x-[10px]  z-10 ${
+                        link ? "cursor-pointer" : ""
+                      }`}
+                      onClick={() => {
+                        if (link) window.location.href = link;
+                      }}
+                    >
+                      <div className="z-10">
+                        {isMultipleSeries
+                          ? "Costs"
+                          : chart_data.metrics[key].metric_name}
+                      </div>
+
+                      <div
+                        className={`rounded-full w-[15px] h-[15px] bg-[#344240] flex items-center justify-center text-[10px] z-10 ${
+                          !link ? "hidden" : "block"
+                        }`}
+                      >
+                        <Icon
+                          icon="feather:arrow-right"
+                          className="w-[11px] h-[11px]"
+                        />
+                      </div>
                     </div>
                     <div className="absolute text-[18px] top-[14px] right-[30px]">
                       {!isMultipleSeries

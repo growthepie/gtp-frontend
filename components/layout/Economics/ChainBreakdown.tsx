@@ -287,7 +287,7 @@ export default function ChainBreakdown({
 
   function formatNumber(x: number) {
     return (
-      <div className="flex gap-x-0.5 ">
+      <div className="flex ">
         <span>{showUsd ? "$" : "Ξ"}</span>
         <span>
           {Intl.NumberFormat("en-GB", {
@@ -299,7 +299,6 @@ export default function ChainBreakdown({
       </div>
     );
   }
-  console.log(data ? data : "");
 
   const sortedChainData = useMemo(() => {
     let retData: string[];
@@ -898,7 +897,7 @@ export default function ChainBreakdown({
                 }}
               >
                 <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
-                  {"Blob Sizes"}
+                  {"Blob Data"}
                 </div>
                 <div>
                   <Icon
@@ -1005,7 +1004,9 @@ export default function ChainBreakdown({
                             className={`w-[4px] h-[9px] absolute top-[9px] right-0 `}
                             style={{
                               transform: `rotate(${
-                                openChain[item.key] ? "90deg" : "0deg"
+                                openChain[item.key] && selectedTimespan !== "1d"
+                                  ? "90deg"
+                                  : "0deg"
                               })`,
                               transformOrigin: "-9px 4px",
                               transition: "transform 0.5s",
@@ -1040,7 +1041,7 @@ export default function ChainBreakdown({
                       >
                         <div className="w-[65px] flex justify-end">
                           <div
-                            className="text-[14px] font-semibold "
+                            className="text-[12px] font-semibold "
                             style={{
                               fontFeatureSettings: "'pnum' on, 'lnum' on",
                             }}
@@ -1097,7 +1098,7 @@ export default function ChainBreakdown({
                         )}`}
                       >
                         <div
-                          className="w-[65px] flex justify-end items-end h-full font-semibold text-[14px]"
+                          className="w-[65px] flex justify-end items-end h-full font-semibold text-[12px]"
                           style={{
                             fontFeatureSettings: "'pnum' on, 'lnum' on",
                           }}
@@ -1525,7 +1526,7 @@ export default function ChainBreakdown({
                           }`}
                         />
                         <div
-                          className="text-[14px] font-semibold"
+                          className="text-[12px] font-semibold"
                           style={{
                             fontFeatureSettings: "'pnum' on, 'lnum' on",
                           }}
