@@ -1290,11 +1290,11 @@ export default function ChainBreakdown({
                             ] >
                           0
                             ? "flex-row"
-                            : "flex-row-reverse pl-[15px]"
+                            : "flex-row-reverse pl-[16px]"
                         } ${columnBorder("margin", item.key)}`}
                       >
                         <div
-                          className={`min-w-[62px] max-w-[62px] text-[12px] font-semibold gap-x-[1px]  flex items-center ${
+                          className={`min-w-[61px] max-w-[61px] text-[12px] font-semibold flex items-center ${
                             data[item.key][selectedTimespan].profit.total[
                               dataIndex
                             ] > 0
