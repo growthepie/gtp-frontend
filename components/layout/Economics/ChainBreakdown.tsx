@@ -32,6 +32,8 @@ import {
   TooltipTrigger,
 } from "@/components/layout/Tooltip";
 import { useMaster } from "@/contexts/MasterContext";
+
+const regularMetrics = ["profit", "revenue", "costs", "size", "profit_margin"];
 interface DAvailability {
   icon: string;
   label: string;
@@ -146,8 +148,32 @@ export default function ChainBreakdown({
     }
   };
 
+  const dataTimestampExtremes = useMemo(() => {
+    let xMin = Infinity;
+    let xMax = -Infinity;
+
+    Object.keys(data).forEach((chain) => {
+      regularMetrics.forEach((metric) => {
+        if (!data[chain].daily[metric]) return;
+        const min = data[chain].daily[metric].data[0][0];
+        const max =
+          data[chain].daily[metric].data[
+            data[chain].daily[metric].data.length - 1
+          ][0];
+
+        xMin = Math.min(min, xMin);
+        xMax = Math.max(max, xMax);
+      });
+    });
+
+    return { xMin, xMax };
+  }, [data]);
+
   //Handles opening of each chain section
   const timespans = useMemo(() => {
+    let xMin = dataTimestampExtremes.xMin;
+    let xMax = dataTimestampExtremes.xMax;
+
     if (!isMonthly) {
       return {
         "1d": {
@@ -159,36 +185,37 @@ export default function ChainBreakdown({
           shortLabel: "7d",
           label: "7 days",
           value: 7,
-          xMin: Date.now() - 7 * 24 * 60 * 60 * 1000,
-          xMax: Date.now(),
+          xMin: xMax - 7 * 24 * 60 * 60 * 1000,
+          xMax: xMax,
         },
         "30d": {
           shortLabel: "30d",
           label: "30 days",
           value: 30,
-          xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
-          xMax: Date.now(),
+          xMin: xMax - 30 * 24 * 60 * 60 * 1000,
+          xMax: xMax,
         },
         "90d": {
           shortLabel: "90d",
           label: "90 days",
           value: 90,
-          xMin: Date.now() - 90 * 24 * 60 * 60 * 1000,
-          xMax: Date.now(),
+          xMin: xMax - 90 * 24 * 60 * 60 * 1000,
+          xMax: xMax,
         },
         "365d": {
           shortLabel: "1y",
           label: "1 year",
           value: 365,
-          xMin: Date.now() - 365 * 24 * 60 * 60 * 1000,
-          xMax: Date.now(),
+          xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+          xMax: xMax,
         },
 
         max: {
           shortLabel: "Max",
           label: "Max",
           value: 0,
-          xMax: Date.now(),
+          xMin: xMin,
+          xMax: xMax,
         },
       };
     } else {
@@ -197,26 +224,27 @@ export default function ChainBreakdown({
           shortLabel: "6m",
           label: "6 months",
           value: 90,
-          xMin: Date.now() - 180 * 24 * 60 * 60 * 1000,
-          xMax: Date.now(),
+          xMin: xMax - 180 * 24 * 60 * 60 * 1000,
+          xMax: xMax,
         },
         "365d": {
           shortLabel: "1y",
           label: "1 year",
           value: 365,
-          xMin: Date.now() - 365 * 24 * 60 * 60 * 1000,
-          xMax: Date.now(),
+          xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+          xMax: xMax,
         },
 
         max: {
           shortLabel: "Max",
           label: "Max",
           value: 0,
-          xMax: Date.now(),
+          xMin: xMin,
+          xMax: xMax,
         },
       };
     }
-  }, [isMonthly]);
+  }, [dataTimestampExtremes.xMax, dataTimestampExtremes.xMin, isMonthly]);
 
   const totalRevenue = useMemo(() => {
     let retValue = 0;
@@ -303,13 +331,6 @@ export default function ChainBreakdown({
   const sortedChainData = useMemo(() => {
     let retData: string[];
     if (metricSort !== "chain") {
-      const regularMetrics = [
-        "profit",
-        "revenue",
-        "costs",
-        "size",
-        "profit_margin",
-      ];
       if (regularMetrics.includes(metricSort)) {
         retData = Object.keys(data).sort((a, b) => {
           const dataIndex =
@@ -459,6 +480,8 @@ export default function ChainBreakdown({
 
   return (
     <div className="h-full">
+      {/* <div>xMax {new Date(timespans[selectedTimespan].xMax).toDateString()}</div>
+      <div>xMin {new Date(timespans[selectedTimespan].xMin).toDateString()}</div> */}
       {sortedChainData && (
         <div className="flex flex-col gap-y-[15px]">
           <Container className="flex flex-col gap-y-[15px]">

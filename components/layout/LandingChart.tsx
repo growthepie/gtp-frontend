@@ -239,8 +239,18 @@ export default function LandingChart({
   const { isSidebarOpen, setEmbedData, embedData } = useUIContext();
 
   const loadHighchartsWrappers = () => {
+    // on hover, show the /cursors/zoom.svg cursor
+    Highcharts.wrap(Highcharts.Pointer.prototype, "reset", function (p) {
+      this.chart.container.style.cursor = "url(/cursors/zoom.svg) 14.5 14.5, auto";
+      p.call(this);
+    });
+
+
     // on drag start
     Highcharts.wrap(Highcharts.Pointer.prototype, "dragStart", function (p, e) {
+      // invisible cursor
+      this.chart.container.style.cursor = "none";
+
       // place vertical dotted line on click
       if (this.chart.series.length > 0) {
         const x = e.chartX;
@@ -379,6 +389,8 @@ export default function LandingChart({
     });
 
     Highcharts.wrap(Highcharts.Pointer.prototype, "drag", function (p, e) {
+      // invisible cursor
+      this.chart.container.style.cursor = "none";
       setIsDragging(true);
 
       // update vertical dotted line on drag
@@ -516,6 +528,8 @@ export default function LandingChart({
     });
 
     Highcharts.wrap(Highcharts.Pointer.prototype, "drop", function (p, e) {
+      // set cursor back to default
+      this.chart.container.style.cursor = "url(/cursors/zoom.svg) 14.5 14.5, auto";
       setIsDragging(false);
 
       const elements = [
@@ -560,7 +574,7 @@ export default function LandingChart({
     highchartsRoundedCorners(Highcharts);
     highchartsAnnotations(Highcharts);
 
-    // loadHighchartsWrappers();
+    loadHighchartsWrappers();
 
     // update x-axis label sizes if it is a 4 digit number
     Highcharts.wrap(
@@ -1889,7 +1903,7 @@ export default function LandingChart({
             ) : (
               <>
                 <button
-                  className={`rounded-full flex items-center justify-center space-x-3 px-4 py-1.5 xl:py-4 text-md w-full xl:w-auto xl:px-4 xl:text-md font-medium border-[1px] border-forest-800`}
+                  className={`rounded-full flex items-center justify-center space-x-3 px-4 py-1.5 2xl:py-4 text-md w-full 2xl:w-auto 2xl:px-4 2xl:text-md font-medium border-[1px] border-forest-800`}
                   onClick={() => {
                     // chartComponent?.current?.xAxis[0].setExtremes(
                     //   timespans[selectedTimespan].xMin,
@@ -1900,12 +1914,12 @@ export default function LandingChart({
                 >
                   <Icon
                     icon="feather:zoom-out"
-                    className="h-4 w-4 xl:w-6 xl:h-6"
+                    className="h-4 w-4 2xl:w-6 2xl:h-6"
                   />
                   <div>Reset Zoom</div>
                 </button>
                 <button
-                  className={`rounded-full text-md w-full xl:w-auto px-4 py-1.5 xl:py-4 xl:px-4 font-medium bg-forest-100 dark:bg-forest-1000`}
+                  className={`rounded-full text-md w-full 2xl:w-auto px-4 py-1.5 2xl:py-4 2xl:px-4 font-medium bg-forest-100 dark:bg-forest-1000`}
                 >
                   {intervalShown?.label}
                 </button>
@@ -1921,6 +1935,7 @@ export default function LandingChart({
         >
           {highchartsLoaded ? (
             <HighchartsReact
+              // containerProps={{ style: { cursor: "url('cursors/zoom.svg') 14.5 14.5, pointer" } }}
               highcharts={Highcharts}
               options={options}
               constructorType={"stockChart"}

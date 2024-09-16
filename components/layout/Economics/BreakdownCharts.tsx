@@ -623,7 +623,7 @@ function BreakdownCharts({
               backgroundColor={"transparent"}
               type="line"
               panning={{
-                enabled: true,
+                enabled: false,
                 type: "x",
               }}
               panKey="shift"
@@ -707,9 +707,11 @@ function BreakdownCharts({
               }}
               tickmarkPlacement="on"
               zoomEnabled={false}
+              // startOnTick={true}
+              // endOnTick={true}
               tickWidth={0}
               tickLength={20}
-              ordinal={true}
+              // ordinal={true}
               minorTicks={false}
               minorTickLength={2}
               minorTickWidth={2}
@@ -802,14 +804,17 @@ function BreakdownCharts({
                     x2: 0,
                     y2: 1,
                   },
+
                   stops: [
+                    /* 50% in hex: 80 */
+                    // [0.33, "#10808C80"],
+                    // [1, "#1DF7EF80"],
                     [0, "#10808CDD"],
                     [0.5, "#10808CDD"],
                     [1, "#1DF7EFDD"],
                   ],
                 }}
               />
-
               {/* Second line */}
               <AreaSeries
                 name="Costs"
@@ -831,12 +836,28 @@ function BreakdownCharts({
                     y2: 1,
                   },
                   stops: [
+                    /* 50% in hex: 80 */
+                    // [0.33, "#98323E80"],
+                    // [1, "#FE546880"],
                     [0, "#98323EDD"],
                     [0.5, "#98323EDD"],
                     [1, "#FE5468DD"],
                   ],
                 }}
               />
+              {/* 
+
+                position: absolute;
+              width: 1182px;
+              height: 207px;
+              left: 0px;
+              top: 42px;
+
+              background: linear-gradient(180deg, #10808C 0%, #1DF7EF 100%);
+              opacity: 0.5;
+              border-radius: 3px;
+
+              */}
 
               {/* Area between the lines */}
             </YAxis>
@@ -896,17 +917,10 @@ function BreakdownCharts({
               backgroundColor={"transparent"}
               type="column"
               panning={{
-                enabled: true,
+                enabled: false,
                 type: "x",
               }}
               panKey="shift"
-              // zooming={{
-              //   type: "x",
-              //   mouseWheel: {
-              //     enabled: false,
-              //     type: "xy",
-              //   },
-              // }}
               zooming={{
                 mouseWheel: {
                   enabled: false,
@@ -969,11 +983,22 @@ function BreakdownCharts({
               title={undefined}
               type="datetime"
               labels={{
+                align: undefined,
+                rotation: 0,
+                // allowOverlap: false,
+                // staggerLines: 1,
+                // reserveSpace: true,
+                overflow: "justify",
                 useHTML: true,
+                distance: -14,
                 style: {
                   color: COLORS.LABEL,
                   fontSize: "10px",
+                  fontWeight: "550",
+                  fontVariant: "small-caps",
+                  textTransform: "lowercase",
                   fontFamily: "var(--font-raleway), sans-serif",
+                  // fontVariant: "all-small-caps",
                   zIndex: 1000,
                 },
                 enabled: true,
@@ -1008,10 +1033,14 @@ function BreakdownCharts({
                 snap: false,
               }}
               zoomEnabled={false}
+              lineWidth={0}
+              offset={24}
+              // startOnTick={true}
+              // endOnTick={true}
               tickAmount={0}
-              tickLength={20}
-              tickWidth={0}
-              ordinal={true}
+              tickLength={5}
+              tickWidth={1}
+              // ordinal={true}
               minorTicks={false}
               minorTickLength={2}
               minorTickWidth={2}
@@ -1086,6 +1115,7 @@ function BreakdownCharts({
               {" "}
               <ColumnSeries
                 name="Profit"
+                borderRadius="8%"
                 zones={[
                   {
                     value: 0, // Values up to 0 (exclusive)
@@ -1098,7 +1128,6 @@ function BreakdownCharts({
                       },
                       stops: [
                         [0, "#FFE761DD"],
-
                         [1, "#C7AE24DD"],
                       ],
                     },
