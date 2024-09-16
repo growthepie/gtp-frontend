@@ -313,6 +313,23 @@ export default function ChainBreakdown({
   }, [data, master]);
   //Get an array of potential data availabilities for this page
 
+  const maxRevenue = useMemo(() => {
+    let retValue = 0;
+    //Loop through for each chain
+    Object.keys(data).forEach((key) => {
+      const dataIndex = data[key][selectedTimespan].revenue.types.indexOf(
+        showUsd ? "usd" : "eth",
+      );
+
+      retValue =
+        data[key][selectedTimespan].revenue.total[dataIndex] > retValue
+          ? data[key][selectedTimespan].revenue.total[dataIndex]
+          : retValue;
+    });
+
+    return retValue;
+  }, [selectedTimespan, data, showUsd]);
+
   function formatNumber(x: number) {
     return (
       <div className="flex ">
@@ -1057,12 +1074,12 @@ export default function ChainBreakdown({
                         </div>
                       </div>
                       <div
-                        className={`relative flex items-end pb-[6px] justify-start gap-x-[5px] h-full px-[5px] bg-[#34424044] ${columnBorder(
+                        className={`relative flex items-end pb-[6px] justify-start gap-x-[5px] h-full px-[10px] bg-[#34424044] ${columnBorder(
                           "revenue",
                           item.key,
                         )}`}
                       >
-                        <div className="w-[65px] flex justify-end">
+                        <div className="w-[60px] flex justify-end">
                           <div
                             className="text-[12px] font-semibold "
                             style={{
@@ -1077,29 +1094,20 @@ export default function ChainBreakdown({
                           </div>
                         </div>
                         <div
-                          className={` w-[90px] flex justify-start items-end h-full ${
-                            isSidebarOpen ? "2xl:w-[120px]" : "xl:w-[120px]"
+                          className={` w-[120px] flex justify-start items-end h-full ${
+                            isSidebarOpen ? "2xl:w-[125px]" : "xl:w-[125px]"
                           }`}
                         >
                           <div
-                            className={`w-[96px] flex items-end justify-center rounded-full h-[4px] bg-[#1DF7EF]`}
+                            className={`w-[120px] flex items-end justify-center rounded-full h-[4px] bg-[#1DF7EF]`}
                             style={{
-                              width:
-                                data[item.key][selectedTimespan].revenue.total[
-                                  dataIndex
-                                ] /
-                                  totalRevenue >
-                                0.01
-                                  ? (312 *
-                                      data[item.key][selectedTimespan].revenue
-                                        .total[dataIndex]) /
-                                    totalRevenue
-                                  : `${
-                                      (2200 *
-                                        data[item.key][selectedTimespan].revenue
-                                          .total[dataIndex]) /
-                                      totalRevenue
-                                    }%`,
+                              width: `${
+                                (100 *
+                                  data[item.key][selectedTimespan].revenue
+                                    .total[dataIndex]) /
+                                maxRevenue
+                              }%`,
+
                               minWidth:
                                 data[item.key][selectedTimespan].revenue.total[
                                   dataIndex
