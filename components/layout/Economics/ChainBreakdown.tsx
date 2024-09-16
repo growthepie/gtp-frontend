@@ -1017,7 +1017,7 @@ export default function ChainBreakdown({
                       }}
                     >
                       <div
-                        className={`flex items-center gap-x-[5px] pl-[10px] h-full ${columnBorder(
+                        className={`flex items-center gap-x-[10px] pl-[5px] h-full ${columnBorder(
                           "chain",
                           item.key,
                         )} `}
@@ -1217,7 +1217,7 @@ export default function ChainBreakdown({
                             dataIndex
                           ] > 0
                             ? "flex-row"
-                            : "flex-row-reverse pl-[15px]"
+                            : "flex-row-reverse pl-[16px]"
                         } ${columnBorder("profit", item.key)}`}
                       >
                         <div
@@ -1226,7 +1226,7 @@ export default function ChainBreakdown({
                               dataIndex
                             ] > 0
                               ? "justify-end"
-                              : "flex-start"
+                              : "justify-start"
                           }`}
                         >
                           <div
@@ -1290,7 +1290,7 @@ export default function ChainBreakdown({
                             ] >
                           0
                             ? "flex-row"
-                            : "flex-row-reverse pl-[10px]"
+                            : "flex-row-reverse pl-[15px]"
                         } ${columnBorder("margin", item.key)}`}
                       >
                         <div
@@ -1299,7 +1299,7 @@ export default function ChainBreakdown({
                               dataIndex
                             ] > 0
                               ? "justify-end"
-                              : "flex-start"
+                              : "justify-start"
                           }`}
                         >
                           <div

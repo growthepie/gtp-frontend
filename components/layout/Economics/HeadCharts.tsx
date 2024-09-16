@@ -432,7 +432,7 @@ export default function EconHeadCharts({
 
               return (
                 <SplideSlide key={"Splide" + key}>
-                  <div className="relative flex flex-col w-full overflow-hidden h-[197px] bg-[#1F2726] rounded-2xl  ">
+                  <div className="relative flex flex-col w-full overflow-hidden h-[197px] bg-[#1F2726] rounded-2xl  group ">
                     <div
                       className={`absolute items-center text-[16px] font-bold top-[15px] left-[15px] flex gap-x-[10px]  z-10 ${
                         link ? "cursor-pointer" : ""
@@ -486,7 +486,7 @@ export default function EconHeadCharts({
                       <ChartWatermark className="w-[128.54px] h-[25.69px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
                     </div>
 
-                    <div className="opacity-100 transition-opacity duration-[900ms] z-20 group-hover/chart:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/70 pointer-events-none">
+                    <div className="opacity-100 transition-opacity duration-[900ms] z-20 group-hover:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/70 pointer-events-none">
                       <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
                       <div className="text-[#CDD8D3] text-[9px] font-medium leading-[150%]">
                         {!isMultipleSeries
@@ -510,7 +510,7 @@ export default function EconHeadCharts({
                             })}
                       </div>
                     </div>
-                    <div className=" duration-[900ms] group-hover/chart:opacity-0 z-20 absolute right-[15px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/70 pointer-events-none">
+                    <div className=" duration-[900ms] group-hover:opacity-0 z-20 absolute right-[15px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/70 pointer-events-none">
                       <div className="text-[#CDD8D3] text-[9px] font-medium leading-[150%]">
                         {!isMultipleSeries
                           ? new Date(
