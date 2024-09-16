@@ -298,7 +298,7 @@ function BreakdownCharts({
             if (profitObj) {
               profitY =
                 profitObj[
-                  dailyData.profit.types.indexOf(showUsd ? "usd" : "eth")
+                dailyData.profit.types.indexOf(showUsd ? "usd" : "eth")
                 ];
             }
           }
@@ -309,9 +309,9 @@ function BreakdownCharts({
                     <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${"#24E5DF"}"></div>
                     <div class="tooltip-point-name">${name}</div>
                     <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-                      percentage,
-                      2,
-                    )}%</div>
+              percentage,
+              2,
+            )}%</div>
                   </div>
                   
                   <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -320,9 +320,8 @@ function BreakdownCharts({
                     <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
                     style="
                       width: ${(percentage / maxPercentage) * 100}%;
-                      background-color: ${
-                        AllChainsByKeys["all_l2s"].colors["dark"][0]
-                      };
+                      background-color: ${AllChainsByKeys["all_l2s"].colors["dark"][0]
+              };
                     "></div>
                   </div>`;
 
@@ -335,69 +334,59 @@ function BreakdownCharts({
             return `
               <div class="flex w-full justify-between space-x-2 items-center font-medium mb-0.5">
                 <div class="flex gap-x-1 items-center">
-                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-                    series.color
-                  }"></div>
+                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${series.color
+              }"></div>
                   <div class="tooltip-point-name text-md">${name}</div>
                 </div>
                 <div class="flex-1 justify-end text-right font-inter flex">
-                    <div class="opacity-70 mr-0.5 ${
-                      !prefix && "hidden"
-                    }">${prefix}</div>
+                    <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+              }">${prefix}</div>
                     ${parseFloat(displayValue).toLocaleString("en-GB", {
-                      minimumFractionDigits: valuePrefix ? 2 : 0,
-                      maximumFractionDigits: valuePrefix ? 2 : 0,
-                    })}
-                    <div class="opacity-70 ml-0.5 ${
-                      !suffix && "hidden"
-                    }">${suffix}</div>
+                minimumFractionDigits: valuePrefix ? 2 : 0,
+                maximumFractionDigits: valuePrefix ? 2 : 0,
+              })}
+                    <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+              }">${suffix}</div>
                 </div>
               </div>
-              ${
-                lastIndex
-                  ? `<div class="flex w-full justify-between space-x-2 items-center font-medium mb-0.5">
+              ${lastIndex
+                ? `<div class="flex w-full justify-between space-x-2 items-center font-medium mb-0.5">
                 <div class="flex gap-x-1 items-center">
-                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-                    profitY >= 0 ? "#EEFF97" : "#FFDF27"
-                  }"></div>
+                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${profitY >= 0 ? "#EEFF97" : "#FFDF27"
+                }"></div>
                   <div class="tooltip-point-name text-md">${"Profit"}</div>
                 </div>
                 <div class="flex-1 justify-end text-right font-inter flex">
-                    <div class="opacity-70 mr-0.5 ${
-                      !prefix && "hidden"
-                    }">${prefix}</div>
+                    <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+                }">${prefix}</div>
                     ${parseFloat(String(profitY)).toLocaleString("en-GB", {
-                      minimumFractionDigits: valuePrefix ? 2 : 0,
-                      maximumFractionDigits: valuePrefix ? 2 : 0,
-                    })}
-                    <div class="opacity-70 ml-0.5 ${
-                      !suffix && "hidden"
-                    }">${suffix}</div>
+                  minimumFractionDigits: valuePrefix ? 2 : 0,
+                  maximumFractionDigits: valuePrefix ? 2 : 0,
+                })}
+                    <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+                }">${suffix}</div>
                 </div>
               </div>`
-                  : ""
+                : ""
               }
               `;
           } else {
             return `
             <div class="flex w-full justify-between space-x-2 items-center font-medium mb-0.5">
               <div class="flex gap-x-1 items-center">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-                  series.color
-                }"></div>
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${series.color
+              }"></div>
                 <div class="tooltip-point-name text-md">${name}</div>
               </div>
               <div class="flex-1 justify-end text-right font-inter flex">
-                  <div class="opacity-70 mr-0.5 ${
-                    !prefix && "hidden"
-                  }">${prefix}</div>
+                  <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+              }">${prefix}</div>
                   ${parseFloat(displayValue).toLocaleString("en-GB", {
-                    minimumFractionDigits: valuePrefix ? 2 : 0,
-                    maximumFractionDigits: valuePrefix ? 2 : 0,
-                  })}
-                  <div class="opacity-70 ml-0.5 ${
-                    !suffix && "hidden"
-                  }">${suffix}</div>
+                minimumFractionDigits: valuePrefix ? 2 : 0,
+                maximumFractionDigits: valuePrefix ? 2 : 0,
+              })}
+                  <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+              }">${suffix}</div>
               </div>
             </div>
             
@@ -418,16 +407,14 @@ function BreakdownCharts({
               <div class="tooltip-point-name text-md">Total</div>
               <div class="flex-1 text-right justify-end font-inter flex">
     
-                  <div class="opacity-70 mr-0.5 ${
-                    !prefix && "hidden"
-                  }">${prefix}</div>
+                  <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+          }">${prefix}</div>
                   ${parseFloat(value).toLocaleString("en-GB", {
-                    minimumFractionDigits: valuePrefix ? 2 : 0,
-                    maximumFractionDigits: valuePrefix ? 2 : 0,
-                  })}
-                  <div class="opacity-70 ml-0.5 ${
-                    !suffix && "hidden"
-                  }">${suffix}</div>
+            minimumFractionDigits: valuePrefix ? 2 : 0,
+            maximumFractionDigits: valuePrefix ? 2 : 0,
+          })}
+                  <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+          }">${suffix}</div>
               </div>
             </div>
             <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -523,7 +510,7 @@ function BreakdownCharts({
     const minTimestamp =
       selectedTimespan !== "max"
         ? newestUnixTimestamp -
-          1000 * 60 * 60 * 24 * timespans[selectedTimespan].value
+        1000 * 60 * 60 * 24 * timespans[selectedTimespan].value
         : 0;
 
     // Filter and extract the data points for either "usd" or "eth" based on dailyData.profit and selected timespan
@@ -717,16 +704,18 @@ function BreakdownCharts({
               minorTickWidth={2}
               minorGridLineWidth={0}
               minorTickInterval={1000 * 60 * 60 * 24 * 1}
-              min={
-                timespans[selectedTimespan].xMin
-                  ? newestUnixTimestamp -
-                    1000 *
-                      60 *
-                      60 *
-                      24 *
-                      (timespans[selectedTimespan].value - 1)
-                  : undefined
-              }
+              // min={
+              //   timespans[selectedTimespan].xMin
+              //     ? newestUnixTimestamp -
+              //       1000 *
+              //         60 *
+              //         60 *
+              //         24 *
+              //         (timespans[selectedTimespan].value - 1)
+              //     : undefined
+              // }
+              min={timespans[selectedTimespan].xMin + 1000 * 60 * 60 * 24 * 1} // don't include the last day
+              max={timespans[selectedTimespan].xMax}
               panningEnabled={true}
             ></XAxis>
             <YAxis
@@ -1018,7 +1007,7 @@ function BreakdownCharts({
                       month: "short",
                       year:
                         timespans[selectedTimespan].value >= 90 ||
-                        selectedTimespan === "max"
+                          selectedTimespan === "max"
                           ? "numeric"
                           : undefined,
                     })
@@ -1046,16 +1035,18 @@ function BreakdownCharts({
               minorTickWidth={2}
               minorGridLineWidth={0}
               minorTickInterval={1000 * 60 * 60 * 24 * 1}
-              min={
-                timespans[selectedTimespan].xMin
-                  ? newestUnixTimestamp -
-                    1000 *
-                      60 *
-                      60 *
-                      24 *
-                      (timespans[selectedTimespan].value - 1)
-                  : undefined
-              }
+              // min={
+              //   timespans[selectedTimespan].xMin
+              //     ? newestUnixTimestamp -
+              //       1000 *
+              //         60 *
+              //         60 *
+              //         24 *
+              //         (timespans[selectedTimespan].value - 1)
+              //     : undefined
+              // }
+              min={timespans[selectedTimespan].xMin + 1000 * 60 * 60 * 24 * 1} // don't include the last day
+              max={timespans[selectedTimespan].xMax}
               panningEnabled={true}
             >
               <XAxis.Title></XAxis.Title>
@@ -1116,6 +1107,7 @@ function BreakdownCharts({
               <ColumnSeries
                 name="Profit"
                 borderRadius="8%"
+                pointPlacement="on"
                 zones={[
                   {
                     value: 0, // Values up to 0 (exclusive)
