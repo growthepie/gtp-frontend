@@ -334,7 +334,7 @@ export default function ChainBreakdown({
       </div>
     );
   }
-  console.log(data ? data : "");
+  // console.log(data ? data : "");
 
   const sortedChainData = useMemo(() => {
     let retData: string[];
@@ -489,8 +489,8 @@ export default function ChainBreakdown({
 
   return (
     <div className="h-full">
-      <div>xMax {new Date(timespans[selectedTimespan].xMax).toDateString()}</div>
-      <div>xMin {new Date(timespans[selectedTimespan].xMin).toDateString()}</div>
+      {/* <div>xMax {new Date(timespans[selectedTimespan].xMax).toDateString()}</div>
+      <div>xMin {new Date(timespans[selectedTimespan].xMin).toDateString()}</div> */}
       {sortedChainData && (
         <div className="flex flex-col gap-y-[15px]">
           <Container className="flex flex-col gap-y-[15px]">
