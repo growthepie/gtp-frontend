@@ -83,10 +83,10 @@ const ChainOverview = () => {
           chain === "all_l2s"
             ? true
             : isMaster
-            ? chainEcosystemFilter === "all-chains"
-              ? true
-              : AllChainsByKeys[chain].ecosystem.includes(chainEcosystemFilter)
-            : false;
+              ? chainEcosystemFilter === "all-chains"
+                ? true
+                : AllChainsByKeys[chain].ecosystem.includes(chainEcosystemFilter)
+              : false;
 
         return passEcosystem && isSupported;
       })
@@ -104,7 +104,7 @@ const ChainOverview = () => {
     return filteredChains;
   }, [chainEcosystemFilter, master, usageData?.data.chains]);
 
-  console.log(chainFilter);
+  // console.log(chainFilter);
 
   return (
     <>
@@ -151,7 +151,7 @@ const ChainOverview = () => {
               setSelectedTimespan={setSelectedTimespan}
               data={chainFilter}
               master={master}
-              // data={!chainEcosystemFilter || chainEcosystemFilter=== "all-chains" ? usageData.data.chains : )}
+            // data={!chainEcosystemFilter || chainEcosystemFilter=== "all-chains" ? usageData.data.chains : )}
             />
           )}
         </>

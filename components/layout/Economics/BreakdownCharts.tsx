@@ -642,7 +642,7 @@ function BreakdownCharts({
 
                 setMainChart(chart);
 
-                console.log(chart);
+                // console.log(chart);
               }}
             />
             <Tooltip
@@ -935,7 +935,7 @@ function BreakdownCharts({
                   return;
 
                 setProfitChart(chart);
-                console.log(chart);
+                // console.log(chart);
               }}
             />
             <Tooltip
