@@ -31,28 +31,34 @@ export default function Economics() {
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
-  if (!econData || !master) {
-    return (
+  // if (!econData || !master) {
+  //   return (
+  //     <ShowLoading
+  //       dataLoading={[econLoading, masterLoading]}
+  //       dataValidating={[econValidating, masterValidating]}
+  //     />
+  //   );
+  // }
+
+  // const {
+  //   chain_breakdown,
+  //   all_l2s,
+  // }: { chain_breakdown: ChainBreakdownResponse; all_l2s: l2_data } =
+  //   econData.data;
+
+  return (
+    <>
       <ShowLoading
         dataLoading={[econLoading, masterLoading]}
         dataValidating={[econValidating, masterValidating]}
       />
-    );
-  }
-
-  const {
-    chain_breakdown,
-    all_l2s,
-  }: { chain_breakdown: ChainBreakdownResponse; all_l2s: l2_data } =
-    econData.data;
-
-  return (
-    <div className="mt-[15px] flex flex-col gap-y-[60px] h-full">
+      {/* <div className="mt-[15px] flex flex-col gap-y-[60px] h-full"> */}
       {/*Data Availability Fee Markets */}
-      <Container className="flex flex-col gap-y-[15px]">
-        <EconHeadCharts chart_data={all_l2s} />
+      <Container className="pb-[60px]">
+        {econData && <EconHeadCharts chart_data={econData.data.all_l2s} />}
       </Container>
-      <ChainBreakdown data={chain_breakdown} master={master} />
-    </div>
+      {econData && master && <ChainBreakdown data={econData.data.chain_breakdown} master={master} />}
+      {/* </div> */}
+    </>
   );
 }

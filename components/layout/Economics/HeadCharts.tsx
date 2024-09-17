@@ -355,7 +355,7 @@ export default function EconHeadCharts({
   }
 
   return (
-    <div className="wrapper h-[145px] md:h-[183px] w-full">
+    <div className="wrapper h-[197px] w-full">
       <Splide
         options={{
           gap: "15px",
@@ -364,24 +364,31 @@ export default function EconHeadCharts({
           breakpoints: {
             640: {
               perPage: 1,
+              drag: true,
             },
             900: {
               perPage: isSidebarOpen ? 1 : 2,
+              drag: true,
             },
             1100: {
               perPage: 2,
+              drag: true,
             },
             1250: {
               perPage: isSidebarOpen ? 2 : 3,
+              drag: isSidebarOpen ? true : false,
             },
             1450: {
               perPage: 3,
+              drag: false,
             },
             1600: {
               perPage: 3,
+              drag: false,
             },
             6000: {
               perPage: 3,
+              drag: false,
             },
           },
         }}
