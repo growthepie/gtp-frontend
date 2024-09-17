@@ -258,8 +258,8 @@ function BreakdownCharts({
           });
       }
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-36 md:w-40 text-xs font-raleway">
-            <div class="w-full font-bold text-[13px] md:text-[1rem] ml-8 mb-2 ">${dateString}</div>`;
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-40 text-xs font-raleway">
+            <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2 ">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
       // let pointsSum = 0;
@@ -305,7 +305,7 @@ function BreakdownCharts({
 
           if (selectedScale === "percentage")
             return `
-                  <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+                  <div class="flex w-full gap-x-2 items-center font-medium mb-0.5">
                     <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${"#24E5DF"}"></div>
                     <div class="tooltip-point-name">${name}</div>
                     <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
@@ -332,10 +332,10 @@ function BreakdownCharts({
 
           if (name === "Revenue" || name === "Costs") {
             return `
-              <div class="flex w-full justify-between space-x-2 items-center font-medium mb-0.5">
-                <div class="flex gap-x-1 items-center">
-                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${series.color
-              }"></div>
+              <div class="flex w-full justify-between gap-x-2 items-center font-medium mb-0.5">
+                  <div class="flex items-center gap-x-2">
+                    <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${series.color}">
+                    </div>
                   <div class="tooltip-point-name text-md">${name}</div>
                 </div>
                 <div class="flex-1 justify-end text-right font-inter flex">
@@ -350,10 +350,10 @@ function BreakdownCharts({
                 </div>
               </div>
               ${lastIndex
-                ? `<div class="flex w-full justify-between space-x-2 items-center font-medium mb-0.5">
-                <div class="flex gap-x-1 items-center">
-                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${profitY >= 0 ? "#EEFF97" : "#FFDF27"
-                }"></div>
+                ? `<div class="flex w-full justify-between gap-x-2 items-center font-medium mb-0.5">
+                <div class="flex items-center gap-x-2">
+                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${profitY >= 0 ? "#EEFF97" : "#FFDF27"}">
+                  </div>
                   <div class="tooltip-point-name text-md">${"Profit"}</div>
                 </div>
                 <div class="flex-1 justify-end text-right font-inter flex">
@@ -372,7 +372,7 @@ function BreakdownCharts({
               `;
           } else {
             return `
-            <div class="flex w-full justify-between space-x-2 items-center font-medium mb-0.5">
+            <div class="flex w-full justify-between gap-x-2 items-center font-medium mb-0.5">
               <div class="flex gap-x-1 items-center">
                 <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${series.color
               }"></div>
@@ -402,7 +402,7 @@ function BreakdownCharts({
       const sumRow =
         selectedScale === "stacked"
           ? `
-            <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-70">
+            <div class="flex w-full gap-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-70">
               <div class="w-4 h-1.5 rounded-r-full" style=""></div>
               <div class="tooltip-point-name text-md">Total</div>
               <div class="flex-1 text-right justify-end font-inter flex">
@@ -468,18 +468,18 @@ function BreakdownCharts({
           if (pointX - tooltipWidth / 2 < plotLeft) {
             return {
               x: plotLeft,
-              y: -250,
+              y: -20,
             };
           }
           if (pointX + tooltipWidth / 2 > plotLeft + plotWidth) {
             return {
               x: plotLeft + plotWidth - tooltipWidth,
-              y: -250,
+              y: -20,
             };
           }
           return {
             x: pointX - tooltipWidth / 2,
-            y: -250,
+            y: -20,
           };
         }
 

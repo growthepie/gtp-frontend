@@ -249,18 +249,18 @@ export default function EconHeadCharts({
           if (pointX - tooltipWidth / 2 < plotLeft) {
             return {
               x: plotLeft,
-              y: -250,
+              y: -20,
             };
           }
           if (pointX + tooltipWidth / 2 > plotLeft + plotWidth) {
             return {
               x: plotLeft + plotWidth - tooltipWidth,
-              y: -250,
+              y: -20,
             };
           }
           return {
             x: pointX - tooltipWidth / 2,
-            y: -250,
+            y: -20,
           };
         }
 
