@@ -159,7 +159,7 @@ export default function ChainBreakdown({
         const min = data[chain].daily[metric].data[0][0];
         const max =
           data[chain].daily[metric].data[
-          data[chain].daily[metric].data.length - 1
+            data[chain].daily[metric].data.length - 1
           ][0];
 
         xMin = Math.min(min, xMin);
@@ -355,8 +355,8 @@ export default function ChainBreakdown({
             metricSort === "profit_margin" || metricSort === "size"
               ? 0
               : data[a][selectedTimespan].revenue.types.indexOf(
-                showUsd ? "usd" : "eth",
-              );
+                  showUsd ? "usd" : "eth",
+                );
           const aComp = data[a][selectedTimespan][metricSort].total[dataIndex];
 
           const bComp = data[b][selectedTimespan][metricSort].total[dataIndex];
@@ -476,8 +476,8 @@ export default function ChainBreakdown({
           (metric === "chain"
             ? " border-l-[1px] rounded-l-full"
             : metric === "size"
-              ? " border-r-[1px] rounded-r-full"
-              : "")
+            ? " border-r-[1px] rounded-r-full"
+            : "")
         );
       }
       //"border-[#CDD8D3] bg-forest-950 border-r-[#5A6462]"
@@ -591,10 +591,11 @@ export default function ChainBreakdown({
             className="w-full flex flex-col "
           >
             <div
-              className={`grid  pr-0.5 grid-cols-[auto_200px_200px_170px_145px_110px] mb-[15px]  ${isSidebarOpen
-                ? " 2xl:grid-cols-[auto_200px_200px_170px_145px_110px] grid-cols-[auto_170px_180px_170px_145px_110px] "
-                : "xl:grid-cols-[auto_200px_200px_170px_145px_110px] grid-cols-[auto_170px_180px_170px_145px_110px] "
-                } min-w-[1125px]`}
+              className={`grid  pr-0.5 grid-cols-[auto_200px_200px_170px_145px_110px] mb-[15px]  ${
+                isSidebarOpen
+                  ? " 2xl:grid-cols-[auto_200px_200px_170px_145px_110px] grid-cols-[auto_170px_180px_170px_145px_110px] "
+                  : "xl:grid-cols-[auto_200px_200px_170px_145px_110px] grid-cols-[auto_170px_180px_170px_145px_110px] "
+              } min-w-[1125px]`}
             >
               <div className="pl-[44px] flex grow gap-x-[5px] items-center justify-start ">
                 <div
@@ -617,13 +618,14 @@ export default function ChainBreakdown({
                         metricSort !== "chain"
                           ? "formkit:arrowdown"
                           : sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
+                          ? "formkit:arrowdown"
+                          : "formkit:arrowup"
                       }
-                      className={` w-[10px] h-[10px] ${metricSort === "chain"
-                        ? "text-forest-50 opacity-100"
-                        : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
-                        } `}
+                      className={` w-[10px] h-[10px] ${
+                        metricSort === "chain"
+                          ? "text-forest-50 opacity-100"
+                          : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                      } `}
                     />
                   </div>
                 </div>
@@ -644,8 +646,9 @@ export default function ChainBreakdown({
 
                   <Icon
                     icon={"feather:x-circle"}
-                    className={` dark:text-white text-black w-[10px] -ml-0.5 h-[10px] relative bottom-[0.5px] cursor-pointer ${DAIndex !== 0 ? "block" : "hidden"
-                      }`}
+                    className={` dark:text-white text-black w-[10px] -ml-0.5 h-[10px] relative bottom-[0.5px] cursor-pointer ${
+                      DAIndex !== 0 ? "block" : "hidden"
+                    }`}
                     onClick={(e) => {
                       setDAIndex(0);
                       setEnableDASort(false);
@@ -677,13 +680,14 @@ export default function ChainBreakdown({
                         metricSort !== "revenue"
                           ? "formkit:arrowdown"
                           : sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
+                          ? "formkit:arrowdown"
+                          : "formkit:arrowup"
                       }
-                      className={` w-[10px] h-[10px] ${metricSort === "revenue"
-                        ? "text-forest-50 opacity-100"
-                        : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
-                        } `}
+                      className={` w-[10px] h-[10px] ${
+                        metricSort === "revenue"
+                          ? "text-forest-50 opacity-100"
+                          : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                      } `}
                     />
                   </div>
                   <Tooltip key={"revenue"} placement="right">
@@ -727,13 +731,14 @@ export default function ChainBreakdown({
                         metricSort !== "costs"
                           ? "formkit:arrowdown"
                           : sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
+                          ? "formkit:arrowdown"
+                          : "formkit:arrowup"
                       }
-                      className={` w-[10px] h-[10px] ${metricSort === "costs"
-                        ? "text-forest-50 opacity-100"
-                        : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
-                        } `}
+                      className={` w-[10px] h-[10px] ${
+                        metricSort === "costs"
+                          ? "text-forest-50 opacity-100"
+                          : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                      } `}
                     />
                   </div>
                   <Tooltip key={"costs"} placement="right">
@@ -778,13 +783,14 @@ export default function ChainBreakdown({
                           metricSort !== "costs_l1"
                             ? "formkit:arrowdown"
                             : sortOrder
-                              ? "formkit:arrowdown"
-                              : "formkit:arrowup"
+                            ? "formkit:arrowdown"
+                            : "formkit:arrowup"
                         }
-                        className={` w-[10px] h-[10px] ${metricSort === "costs_l1"
-                          ? "text-forest-50 opacity-100"
-                          : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
-                          } `}
+                        className={` w-[10px] h-[10px] ${
+                          metricSort === "costs_l1"
+                            ? "text-forest-50 opacity-100"
+                            : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                        } `}
                       />
                     </div>
                   </div>
@@ -806,13 +812,14 @@ export default function ChainBreakdown({
                           metricSort !== "costs_blobs"
                             ? "formkit:arrowdown"
                             : sortOrder
-                              ? "formkit:arrowdown"
-                              : "formkit:arrowup"
+                            ? "formkit:arrowdown"
+                            : "formkit:arrowup"
                         }
-                        className={` w-[10px] h-[10px] ${metricSort === "costs_blobs"
-                          ? "text-forest-50 opacity-100"
-                          : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
-                          } `}
+                        className={` w-[10px] h-[10px] ${
+                          metricSort === "costs_blobs"
+                            ? "text-forest-50 opacity-100"
+                            : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                        } `}
                       />
                     </div>
                   </div>
@@ -840,13 +847,14 @@ export default function ChainBreakdown({
                         metricSort !== "profit"
                           ? "formkit:arrowdown"
                           : sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
+                          ? "formkit:arrowdown"
+                          : "formkit:arrowup"
                       }
-                      className={` w-[10px] h-[10px] ${metricSort === "profit"
-                        ? "text-forest-50 opacity-100"
-                        : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
-                        } `}
+                      className={` w-[10px] h-[10px] ${
+                        metricSort === "profit"
+                          ? "text-forest-50 opacity-100"
+                          : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                      } `}
                     />
                   </div>
                   <Tooltip key={"profit"} placement="right">
@@ -889,13 +897,14 @@ export default function ChainBreakdown({
                         metricSort !== "profit_margin"
                           ? "formkit:arrowdown"
                           : sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
+                          ? "formkit:arrowdown"
+                          : "formkit:arrowup"
                       }
-                      className={` w-[10px] h-[10px] ${metricSort === "profit_margin"
-                        ? "text-forest-50 opacity-100"
-                        : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
-                        } `}
+                      className={` w-[10px] h-[10px] ${
+                        metricSort === "profit_margin"
+                          ? "text-forest-50 opacity-100"
+                          : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                      } `}
                     />
                   </div>
                   <Tooltip key={"profit"} placement="right">
@@ -937,13 +946,14 @@ export default function ChainBreakdown({
                       metricSort !== "size"
                         ? "formkit:arrowdown"
                         : sortOrder
-                          ? "formkit:arrowdown"
-                          : "formkit:arrowup"
+                        ? "formkit:arrowdown"
+                        : "formkit:arrowup"
                     }
-                    className={` w-[10px] h-[10px] ${metricSort === "size"
-                      ? "text-forest-50 opacity-100"
-                      : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
-                      } `}
+                    className={` w-[10px] h-[10px] ${
+                      metricSort === "size"
+                        ? "text-forest-50 opacity-100"
+                        : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                    } `}
                   />
                 </div>
                 <Tooltip key={"margin"} placement="right">
@@ -981,24 +991,27 @@ export default function ChainBreakdown({
 
                 return (
                   <animated.div
-                    className={`absolute w-full flex flex-col pr-0.5  ${enableDASort
-                      ? allChainsDA[DAIndex] === localDataAvail.label
-                        ? "opacity-100"
-                        : "opacity-50"
-                      : "opacity-100"
-                      }`}
+                    className={`absolute w-full flex flex-col pr-0.5  ${
+                      enableDASort
+                        ? allChainsDA[DAIndex] === localDataAvail.label
+                          ? "opacity-100"
+                          : "opacity-50"
+                        : "opacity-100"
+                    }`}
                     key={item.key + " chainGridParent"}
                     style={{ ...style }}
                   >
                     <div
                       className={`grid  relative rounded-full w-full  min-h-[34px] text-[14px] items-center z-20 cursor-pointer pr-0.5 grid-cols-[auto_200px_200px_170px_145px_110px] min-w-[1000px] 
-                        ${isBouncing && bounceChain === item.key
-                          ? "horizontal-bounce"
-                          : ""
-                        } ${isSidebarOpen
+                        ${
+                          isBouncing && bounceChain === item.key
+                            ? "horizontal-bounce"
+                            : ""
+                        } ${
+                        isSidebarOpen
                           ? " 2xl:grid-cols-[auto_200px_200px_170px_145px_110px] grid-cols-[auto_170px_180px_170px_145px_110px] "
                           : "xl:grid-cols-[auto_200px_200px_170px_145px_110px] grid-cols-[auto_170px_180px_170px_145px_110px] "
-                        }`}
+                      }`}
                       onClick={(e) => {
                         handleClick(e, item.key);
                         e.stopPropagation();
@@ -1018,8 +1031,9 @@ export default function ChainBreakdown({
                           }}
                         >
                           <Icon
-                            icon={`gtp:${AllChainsByKeys[item.key].urlKey
-                              }-logo-monochrome`}
+                            icon={`gtp:${
+                              AllChainsByKeys[item.key].urlKey
+                            }-logo-monochrome`}
                             className={`w-[15px] h-[15px] flex items-center justify-center text-[10px]`}
                             style={{
                               color:
@@ -1030,10 +1044,11 @@ export default function ChainBreakdown({
                             icon={"gtp:circle-arrow"}
                             className={`w-[4px] h-[9px] absolute top-[9px] right-0 `}
                             style={{
-                              transform: `rotate(${openChain[item.key] && selectedTimespan !== "1d"
-                                ? "90deg"
-                                : "0deg"
-                                })`,
+                              transform: `rotate(${
+                                openChain[item.key] && selectedTimespan !== "1d"
+                                  ? "90deg"
+                                  : "0deg"
+                              })`,
                               transformOrigin: "-9px 4px",
                               transition: "transform 0.5s",
                             }}
@@ -1043,7 +1058,9 @@ export default function ChainBreakdown({
                         <div>
                           <Link
                             className="hover:underline whitespace-nowrap"
-                            href={`https://www.growthepie.xyz/chains/${AllChainsByKeys[item.key].urlKey}`}
+                            href={`https://www.growthepie.xyz/chains/${
+                              AllChainsByKeys[item.key].urlKey
+                            }`}
                             onClick={(e) => {
                               e.stopPropagation();
                             }}
@@ -1082,30 +1099,32 @@ export default function ChainBreakdown({
                           >
                             {formatNumber(
                               data[item.key][selectedTimespan].revenue.total[
-                              dataIndex
+                                dataIndex
                               ],
                             )}
                           </div>
                         </div>
                         <div
-                          className={` w-[120px] flex justify-start items-end h-full ${isSidebarOpen ? "2xl:w-[125px]" : "xl:w-[125px]"
-                            }`}
+                          className={` w-[120px] flex justify-start items-end h-full ${
+                            isSidebarOpen ? "2xl:w-[125px]" : "xl:w-[125px]"
+                          }`}
                         >
                           <div
                             className={`w-[120px] flex items-end justify-center rounded-full h-[4px] bg-[#1DF7EF]`}
                             style={{
-                              width: `${(100 *
-                                data[item.key][selectedTimespan].revenue
-                                  .total[dataIndex]) /
+                              width: `${
+                                (100 *
+                                  data[item.key][selectedTimespan].revenue
+                                    .total[dataIndex]) /
                                 maxRevenue
-                                }%`,
+                              }%`,
 
                               minWidth:
                                 data[item.key][selectedTimespan].revenue.total[
                                   dataIndex
                                 ] /
                                   totalRevenue >
-                                  0.01
+                                0.01
                                   ? "22px"
                                   : `6px`,
                             }}
@@ -1128,7 +1147,7 @@ export default function ChainBreakdown({
                         >
                           {formatNumber(
                             data[item.key][selectedTimespan].costs.total[
-                            dataIndex
+                              dataIndex
                             ],
                           )}
                         </div>
@@ -1149,7 +1168,7 @@ export default function ChainBreakdown({
                                     .costs_l1[dataIndex] /
                                     data[item.key][selectedTimespan].costs
                                       .total[dataIndex]) *
-                                  100,
+                                    100,
                                 )}
                               </span>
                               <span>{"%"}</span>
@@ -1168,9 +1187,9 @@ export default function ChainBreakdown({
                                 (data[item.key][selectedTimespan].costs
                                   .costs_blobs[dataIndex] /
                                   data[item.key][selectedTimespan].costs.total[
-                                  dataIndex
+                                    dataIndex
                                   ]) *
-                                100,
+                                  100,
                               )}
                               {"%"}
                             </div>
@@ -1179,43 +1198,47 @@ export default function ChainBreakdown({
                             <div
                               className="bg-[#FD0F2C] flex items-center justify-start font-bold rounded-l-full pl-[5px] h-[4px] "
                               style={{
-                                width: `${100 *
+                                width: `${
+                                  100 *
                                   (data[item.key][selectedTimespan].costs
                                     .costs_l1[dataIndex] /
                                     data[item.key][selectedTimespan].costs
                                       .total[dataIndex])
-                                  }%`,
+                                }%`,
                               }}
                             ></div>
                             <div
                               className="bg-[#FE5468]  rounded-r-full flex items-center font-bold  justify-end  pr-[5px] h-[4px] "
                               style={{
-                                width: `${120 *
+                                width: `${
+                                  120 *
                                   (data[item.key][selectedTimespan].costs
                                     .costs_blobs[dataIndex] /
                                     data[item.key][selectedTimespan].costs
                                       .total[dataIndex])
-                                  }px`,
+                                }px`,
                               }}
                             ></div>
                           </div>
                         </div>
                       </div>
                       <div
-                        className={`flex items-center py-[6px] justify-center gap-x-[5px] px-[5px] bg-[#34424044]  h-full relative ${data[item.key][selectedTimespan].profit.total[
-                          dataIndex
-                        ] > 0
-                          ? "flex-row"
-                          : "flex-row-reverse pl-[16px]"
-                          } ${columnBorder("profit", item.key)}`}
-                      >
-                        <div
-                          className={`min-w-[70px] max-w-[70px]  flex  ${data[item.key][selectedTimespan].profit.total[
+                        className={`flex items-center py-[6px] justify-center gap-x-[5px] px-[5px] bg-[#34424044]  h-full relative ${
+                          data[item.key][selectedTimespan].profit.total[
                             dataIndex
                           ] > 0
-                            ? "justify-end"
-                            : "justify-start"
-                            }`}
+                            ? "flex-row"
+                            : "flex-row-reverse pl-[16px]"
+                        } ${columnBorder("profit", item.key)}`}
+                      >
+                        <div
+                          className={`min-w-[70px] max-w-[70px]  flex  ${
+                            data[item.key][selectedTimespan].profit.total[
+                              dataIndex
+                            ] > 0
+                              ? "justify-end"
+                              : "justify-start"
+                          }`}
                         >
                           <div
                             className="text-[12px] font-semibold "
@@ -1225,26 +1248,28 @@ export default function ChainBreakdown({
                           >
                             {formatNumber(
                               data[item.key][selectedTimespan].profit.total[
-                              dataIndex
+                                dataIndex
                               ],
                             )}
                           </div>
                         </div>
                         <div
-                          className={`relative flex items-center px-[3px]  h-full w-[70px]  border-dashed border-forest-50  ${data[item.key][selectedTimespan].profit.total[
-                            dataIndex
-                          ] > 0
-                            ? "border-l-[1px] justify-start "
-                            : "border-r-[1px] justify-end"
-                            }`}
-                        >
-                          <div
-                            className={`h-[4px] ${data[item.key][selectedTimespan].profit.total[
+                          className={`relative flex items-center px-[3px]  h-full w-[70px]  border-dashed border-forest-50  ${
+                            data[item.key][selectedTimespan].profit.total[
                               dataIndex
                             ] > 0
-                              ? "bg-[#EEFF97] rounded-r-2xl "
-                              : "bg-[#FFDF27] rounded-l-2xl"
-                              }`}
+                              ? "border-l-[1px] justify-start "
+                              : "border-r-[1px] justify-end"
+                          }`}
+                        >
+                          <div
+                            className={`h-[4px] ${
+                              data[item.key][selectedTimespan].profit.total[
+                                dataIndex
+                              ] > 0
+                                ? "bg-[#EEFF97] rounded-r-2xl "
+                                : "bg-[#FFDF27] rounded-l-2xl"
+                            }`}
                             style={{
                               width: `${(
                                 65 *
@@ -1264,27 +1289,29 @@ export default function ChainBreakdown({
                         </div>
                       </div>
                       <div
-                        className={`flex items-center py-[6px] justify-center gap-x-[5px] px-[5px]   h-full relative ${(data[item.key][selectedTimespan].revenue.total[
-                          dataIndex
-                        ] -
-                          data[item.key][selectedTimespan].costs.total[
-                          dataIndex
-                          ]) /
-                          data[item.key][selectedTimespan].revenue.total[
-                          dataIndex
-                          ] >
+                        className={`flex items-center py-[6px] justify-center gap-x-[5px] px-[5px]   h-full relative ${
+                          (data[item.key][selectedTimespan].revenue.total[
+                            dataIndex
+                          ] -
+                            data[item.key][selectedTimespan].costs.total[
+                              dataIndex
+                            ]) /
+                            data[item.key][selectedTimespan].revenue.total[
+                              dataIndex
+                            ] >
                           0
-                          ? "flex-row"
-                          : "flex-row-reverse pl-[16px]"
-                          } ${columnBorder("margin", item.key)}`}
+                            ? "flex-row"
+                            : "flex-row-reverse pl-[16px]"
+                        } ${columnBorder("margin", item.key)}`}
                       >
                         <div
-                          className={`min-w-[61px] max-w-[61px] text-[12px] font-semibold flex items-center ${data[item.key][selectedTimespan].profit.total[
-                            dataIndex
-                          ] > 0
-                            ? "justify-end"
-                            : "justify-start"
-                            }`}
+                          className={`min-w-[61px] max-w-[61px] text-[12px] font-semibold flex items-center ${
+                            data[item.key][selectedTimespan].profit.total[
+                              dataIndex
+                            ] > 0
+                              ? "justify-end"
+                              : "justify-start"
+                          }`}
                         >
                           <div
                             className=" "
@@ -1301,53 +1328,56 @@ export default function ChainBreakdown({
                                 dataIndex
                               ] -
                                 data[item.key][selectedTimespan].costs.total[
-                                dataIndex
+                                  dataIndex
                                 ]) /
                                 data[item.key][selectedTimespan].revenue.total[
-                                dataIndex
+                                  dataIndex
                                 ]) *
-                              100,
+                                100,
                             )}
                           </div>
                           <span>{"%"}</span>
                         </div>
                         <div
-                          className={`relative flex items-center px-[3px]  h-full w-[65px]  border-dashed border-forest-50  ${data[item.key][selectedTimespan].profit.total[
-                            dataIndex
-                          ] > 0
-                            ? "border-l-[1px] justify-start flex-row"
-                            : "border-r-[1px] justify-start flex-row-reverse"
-                            }`}
+                          className={`relative flex items-center px-[3px]  h-full w-[65px]  border-dashed border-forest-50  ${
+                            data[item.key][selectedTimespan].profit.total[
+                              dataIndex
+                            ] > 0
+                              ? "border-l-[1px] justify-start flex-row"
+                              : "border-r-[1px] justify-start flex-row-reverse"
+                          }`}
                         >
                           <div
-                            className={`absolute h-[4px] bg-[#5A6462] w-[50px] z-0 ${(data[item.key][selectedTimespan].revenue.total[
-                              dataIndex
-                            ] -
-                              data[item.key][selectedTimespan].costs.total[
-                              dataIndex
-                              ]) /
-                              data[item.key][selectedTimespan].revenue.total[
-                              dataIndex
-                              ] >
+                            className={`absolute h-[4px] bg-[#5A6462] w-[50px] z-0 ${
+                              (data[item.key][selectedTimespan].revenue.total[
+                                dataIndex
+                              ] -
+                                data[item.key][selectedTimespan].costs.total[
+                                  dataIndex
+                                ]) /
+                                data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] >
                               0
-                              ? "rounded-r-full"
-                              : "rounded-l-full"
-                              }`}
+                                ? "rounded-r-full"
+                                : "rounded-l-full"
+                            }`}
                           />
                           <div
-                            className={`h-[4px] z-10 ${(data[item.key][selectedTimespan].revenue.total[
-                              dataIndex
-                            ] -
-                              data[item.key][selectedTimespan].costs.total[
-                              dataIndex
-                              ]) /
-                              data[item.key][selectedTimespan].revenue.total[
-                              dataIndex
-                              ] >
+                            className={`h-[4px] z-10 ${
+                              (data[item.key][selectedTimespan].revenue.total[
+                                dataIndex
+                              ] -
+                                data[item.key][selectedTimespan].costs.total[
+                                  dataIndex
+                                ]) /
+                                data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] >
                               0
-                              ? "bg-[#45AA6F] rounded-r-2xl "
-                              : "bg-[#FF8F27] rounded-l-2xl"
-                              }`}
+                                ? "bg-[#45AA6F] rounded-r-2xl "
+                                : "bg-[#FF8F27] rounded-l-2xl"
+                            }`}
                             style={{
                               width: `${(
                                 (50 *
@@ -1357,7 +1387,7 @@ export default function ChainBreakdown({
                                       .total[dataIndex]) /
                                     data[item.key][selectedTimespan].revenue
                                       .total[dataIndex] >
-                                    0
+                                  0
                                     ? 1
                                     : -1) *
                                   (data[item.key][selectedTimespan].revenue
@@ -1365,7 +1395,7 @@ export default function ChainBreakdown({
                                     data[item.key][selectedTimespan].costs
                                       .total[dataIndex])) /
                                 data[item.key][selectedTimespan].revenue.total[
-                                dataIndex
+                                  dataIndex
                                 ]
                               ).toFixed(2)}px`,
                               minWidth: "1px",
@@ -1373,142 +1403,151 @@ export default function ChainBreakdown({
                             }}
                           ></div>
                           <div
-                            className={` items-center flex-row-reverse relative ${((data[item.key][selectedTimespan].revenue.total[
-                              dataIndex
-                            ] -
-                              data[item.key][selectedTimespan].costs.total[
-                              dataIndex
-                              ]) /
-                              data[item.key][selectedTimespan].revenue.total[
-                              dataIndex
-                              ] >
-                              0
-                              ? 1
-                              : -1) *
-                              ((data[item.key][selectedTimespan].revenue
-                                .total[dataIndex] -
-                                data[item.key][selectedTimespan].costs.total[
+                            className={` items-center flex-row-reverse relative ${
+                              ((data[item.key][selectedTimespan].revenue.total[
                                 dataIndex
+                              ] -
+                                data[item.key][selectedTimespan].costs.total[
+                                  dataIndex
                                 ]) /
-                                data[item.key][selectedTimespan].revenue
-                                  .total[dataIndex]) *
-                              100 >
+                                data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] >
+                              0
+                                ? 1
+                                : -1) *
+                                ((data[item.key][selectedTimespan].revenue
+                                  .total[dataIndex] -
+                                  data[item.key][selectedTimespan].costs.total[
+                                    dataIndex
+                                  ]) /
+                                  data[item.key][selectedTimespan].revenue
+                                    .total[dataIndex]) *
+                                100 >
                               100
-                              ? "flex"
-                              : "hidden"
-                              }`}
+                                ? "flex"
+                                : "hidden"
+                            }`}
                           >
                             <div
-                              className={`h-[4px] w-[4px] z-10 absolute right-[-18px] ${(data[item.key][selectedTimespan].revenue.total[
-                                dataIndex
-                              ] -
-                                data[item.key][selectedTimespan].costs.total[
-                                dataIndex
-                                ]) /
-                                data[item.key][selectedTimespan].revenue
-                                  .total[dataIndex] >
+                              className={`h-[4px] w-[4px] z-10 absolute right-[-18px] ${
+                                (data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] -
+                                  data[item.key][selectedTimespan].costs.total[
+                                    dataIndex
+                                  ]) /
+                                  data[item.key][selectedTimespan].revenue
+                                    .total[dataIndex] >
                                 0
-                                ? "hidden"
-                                : "bg-[#5A6462] block"
-                                }`}
+                                  ? "hidden"
+                                  : "bg-[#5A6462] block"
+                              }`}
                             ></div>
                             <div
-                              className={`h-[4px] w-[4px] z-10 absolute right-[-14px] ${(data[item.key][selectedTimespan].revenue.total[
-                                dataIndex
-                              ] -
-                                data[item.key][selectedTimespan].costs.total[
-                                dataIndex
-                                ]) /
-                                data[item.key][selectedTimespan].revenue
-                                  .total[dataIndex] >
+                              className={`h-[4px] w-[4px] z-10 absolute right-[-14px] ${
+                                (data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] -
+                                  data[item.key][selectedTimespan].costs.total[
+                                    dataIndex
+                                  ]) /
+                                  data[item.key][selectedTimespan].revenue
+                                    .total[dataIndex] >
                                 0
-                                ? "hidden"
-                                : "bg-[#FF8F27] block"
-                                }`}
+                                  ? "hidden"
+                                  : "bg-[#FF8F27] block"
+                              }`}
                             ></div>
                             <div
-                              className={`h-[4px] w-[3px] z-10 absolute right-[-11px] ${(data[item.key][selectedTimespan].revenue.total[
-                                dataIndex
-                              ] -
-                                data[item.key][selectedTimespan].costs.total[
-                                dataIndex
-                                ]) /
-                                data[item.key][selectedTimespan].revenue
-                                  .total[dataIndex] >
+                              className={`h-[4px] w-[3px] z-10 absolute right-[-11px] ${
+                                (data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] -
+                                  data[item.key][selectedTimespan].costs.total[
+                                    dataIndex
+                                  ]) /
+                                  data[item.key][selectedTimespan].revenue
+                                    .total[dataIndex] >
                                 0
-                                ? "hidden"
-                                : "bg-[#5A6462] block"
-                                }`}
+                                  ? "hidden"
+                                  : "bg-[#5A6462] block"
+                              }`}
                             ></div>
                             <div
-                              className={`h-[4px] w-[3px] z-10 absolute right-[-8px] ${(data[item.key][selectedTimespan].revenue.total[
-                                dataIndex
-                              ] -
-                                data[item.key][selectedTimespan].costs.total[
-                                dataIndex
-                                ]) /
-                                data[item.key][selectedTimespan].revenue
-                                  .total[dataIndex] >
+                              className={`h-[4px] w-[3px] z-10 absolute right-[-8px] ${
+                                (data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] -
+                                  data[item.key][selectedTimespan].costs.total[
+                                    dataIndex
+                                  ]) /
+                                  data[item.key][selectedTimespan].revenue
+                                    .total[dataIndex] >
                                 0
-                                ? "hidden"
-                                : "bg-[#FF8F27] block"
-                                }`}
+                                  ? "hidden"
+                                  : "bg-[#FF8F27] block"
+                              }`}
                             ></div>
                             <div
-                              className={`h-[4px] w-[2px] z-10 absolute right-[-5px] ${(data[item.key][selectedTimespan].revenue.total[
-                                dataIndex
-                              ] -
-                                data[item.key][selectedTimespan].costs.total[
-                                dataIndex
-                                ]) /
-                                data[item.key][selectedTimespan].revenue
-                                  .total[dataIndex] >
+                              className={`h-[4px] w-[2px] z-10 absolute right-[-5px] ${
+                                (data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] -
+                                  data[item.key][selectedTimespan].costs.total[
+                                    dataIndex
+                                  ]) /
+                                  data[item.key][selectedTimespan].revenue
+                                    .total[dataIndex] >
                                 0
-                                ? "hidden"
-                                : "bg-[#5A6462] block"
-                                }`}
+                                  ? "hidden"
+                                  : "bg-[#5A6462] block"
+                              }`}
                             ></div>
                             <div
-                              className={`h-[4px] w-[2px] z-10 absolute right-[-3px] ${(data[item.key][selectedTimespan].revenue.total[
-                                dataIndex
-                              ] -
-                                data[item.key][selectedTimespan].costs.total[
-                                dataIndex
-                                ]) /
-                                data[item.key][selectedTimespan].revenue
-                                  .total[dataIndex] >
+                              className={`h-[4px] w-[2px] z-10 absolute right-[-3px] ${
+                                (data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] -
+                                  data[item.key][selectedTimespan].costs.total[
+                                    dataIndex
+                                  ]) /
+                                  data[item.key][selectedTimespan].revenue
+                                    .total[dataIndex] >
                                 0
-                                ? "hidden"
-                                : "bg-[#FF8F27] block"
-                                }`}
+                                  ? "hidden"
+                                  : "bg-[#FF8F27] block"
+                              }`}
                             ></div>
                             <div
-                              className={`h-[4px] w-[1px] z-10 absolute right-[-2px] ${(data[item.key][selectedTimespan].revenue.total[
-                                dataIndex
-                              ] -
-                                data[item.key][selectedTimespan].costs.total[
-                                dataIndex
-                                ]) /
-                                data[item.key][selectedTimespan].revenue
-                                  .total[dataIndex] >
+                              className={`h-[4px] w-[1px] z-10 absolute right-[-2px] ${
+                                (data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] -
+                                  data[item.key][selectedTimespan].costs.total[
+                                    dataIndex
+                                  ]) /
+                                  data[item.key][selectedTimespan].revenue
+                                    .total[dataIndex] >
                                 0
-                                ? "hidden"
-                                : "bg-[#5A6462] block"
-                                }`}
+                                  ? "hidden"
+                                  : "bg-[#5A6462] block"
+                              }`}
                             ></div>
                             <div
-                              className={`h-[4px] w-[1px] z-10 absolute right-[-1px] ${(data[item.key][selectedTimespan].revenue.total[
-                                dataIndex
-                              ] -
-                                data[item.key][selectedTimespan].costs.total[
-                                dataIndex
-                                ]) /
-                                data[item.key][selectedTimespan].revenue
-                                  .total[dataIndex] >
+                              className={`h-[4px] w-[1px] z-10 absolute right-[-1px] ${
+                                (data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] -
+                                  data[item.key][selectedTimespan].costs.total[
+                                    dataIndex
+                                  ]) /
+                                  data[item.key][selectedTimespan].revenue
+                                    .total[dataIndex] >
                                 0
-                                ? "hidden"
-                                : "bg-[#FF8F27] block"
-                                }`}
+                                  ? "hidden"
+                                  : "bg-[#FF8F27] block"
+                              }`}
                             ></div>
                           </div>
                         </div>
@@ -1522,10 +1561,11 @@ export default function ChainBreakdown({
                       >
                         {/*border-[#5A6462] */}
                         <div
-                          className={`absolute left-0 -top-[0.5px] rounded-r-full  h-[34.33px] z-10   ${openChain[item.key]
-                            ? "border-[#5A6462]  border-y-[1px] "
-                            : ""
-                            }`}
+                          className={`absolute left-0 -top-[0.5px] rounded-r-full  h-[34.33px] z-10   ${
+                            openChain[item.key]
+                              ? "border-[#5A6462]  border-y-[1px] "
+                              : ""
+                          }`}
                         />
                         <div
                           className="text-[12px] font-semibold"
@@ -1542,10 +1582,11 @@ export default function ChainBreakdown({
 
                     {/*Chart Area \/ */}
                     <div
-                      className={`flex bottom-2 z-0 relative top-[0px] justify-center w-full transition-height duration-300 overflow-hidden ${openChain[item.key] && selectedTimespan !== "1d"
-                        ? "h-[387px]"
-                        : "h-[0px]"
-                        }`}
+                      className={`flex bottom-2 z-0 relative top-[0px] justify-center w-full transition-height duration-300 overflow-hidden ${
+                        openChain[item.key] && selectedTimespan !== "1d"
+                          ? "h-[387px]"
+                          : "h-[0px]"
+                      }`}
                     >
                       <div className="w-[97.5%] bg-forest-950 rounded-b-2xl border-dotted border-[1.25px] border-t-0 border-forest-50/30">
                         <BreakdownCharts
@@ -1566,7 +1607,6 @@ export default function ChainBreakdown({
               })}
             </div>
           </HorizontalScrollContainer>
-
         </div>
       )}
     </div>
