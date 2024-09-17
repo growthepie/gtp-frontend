@@ -258,8 +258,8 @@ function BreakdownCharts({
           });
       }
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-36 md:w-40 text-xs font-raleway">
-            <div class="w-full font-bold text-[13px] md:text-[1rem] ml-8 mb-2 ">${dateString}</div>`;
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-40 text-xs font-raleway">
+            <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2 ">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
       // let pointsSum = 0;
@@ -305,7 +305,7 @@ function BreakdownCharts({
 
           if (selectedScale === "percentage")
             return `
-                  <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+                  <div class="flex w-full gap-x-2 items-center font-medium mb-0.5">
                     <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${"#24E5DF"}"></div>
                     <div class="tooltip-point-name">${name}</div>
                     <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
@@ -333,11 +333,12 @@ function BreakdownCharts({
 
           if (name === "Revenue" || name === "Costs") {
             return `
-              <div class="flex w-full justify-between space-x-2 items-center font-medium mb-0.5">
-                <div class="flex gap-x-1 items-center">
-                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-                    series.color
-                  }"></div>
+              <div class="flex w-full justify-between gap-x-2 items-center font-medium mb-0.5">
+                  <div class="flex items-center gap-x-2">
+                    <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+                      series.color
+                    }">
+                    </div>
                   <div class="tooltip-point-name text-md">${name}</div>
                 </div>
                 <div class="flex-1 justify-end text-right font-inter flex">
@@ -355,11 +356,12 @@ function BreakdownCharts({
               </div>
               ${
                 lastIndex
-                  ? `<div class="flex w-full justify-between space-x-2 items-center font-medium mb-0.5">
-                <div class="flex gap-x-1 items-center">
+                  ? `<div class="flex w-full justify-between gap-x-2 items-center font-medium mb-0.5">
+                <div class="flex items-center gap-x-2">
                   <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
                     profitY >= 0 ? "#EEFF97" : "#FFDF27"
-                  }"></div>
+                  }">
+                  </div>
                   <div class="tooltip-point-name text-md">${"Profit"}</div>
                 </div>
                 <div class="flex-1 justify-end text-right font-inter flex">
@@ -380,7 +382,7 @@ function BreakdownCharts({
               `;
           } else {
             return `
-            <div class="flex w-full justify-between space-x-2 items-center font-medium mb-0.5">
+            <div class="flex w-full justify-between gap-x-2 items-center font-medium mb-0.5">
               <div class="flex gap-x-1 items-center">
                 <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
                   series.color
@@ -413,7 +415,7 @@ function BreakdownCharts({
       const sumRow =
         selectedScale === "stacked"
           ? `
-            <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-70">
+            <div class="flex w-full gap-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-70">
               <div class="w-4 h-1.5 rounded-r-full" style=""></div>
               <div class="tooltip-point-name text-md">Total</div>
               <div class="flex-1 text-right justify-end font-inter flex">
@@ -481,18 +483,18 @@ function BreakdownCharts({
           if (pointX - tooltipWidth / 2 < plotLeft) {
             return {
               x: plotLeft,
-              y: -250,
+              y: -20,
             };
           }
           if (pointX + tooltipWidth / 2 > plotLeft + plotWidth) {
             return {
               x: plotLeft + plotWidth - tooltipWidth,
-              y: -250,
+              y: -20,
             };
           }
           return {
             x: pointX - tooltipWidth / 2,
-            y: -250,
+            y: -20,
           };
         }
 
@@ -623,15 +625,20 @@ function BreakdownCharts({
               backgroundColor={"transparent"}
               type="line"
               panning={{
-                enabled: true,
+                enabled: false,
                 type: "x",
               }}
               panKey="shift"
+              // zooming={{
+              //   type: "x",
+              //   mouseWheel: {
+              //     enabled: false,
+              //     type: "xy",
+              //   },
+              // }}
               zooming={{
-                type: "x",
                 mouseWheel: {
                   enabled: false,
-                  type: "xy",
                 },
               }}
               animation={{
@@ -649,6 +656,8 @@ function BreakdownCharts({
                   return;
 
                 setMainChart(chart);
+
+                // console.log(chart);
               }}
             />
             <Tooltip
@@ -700,24 +709,30 @@ function BreakdownCharts({
               }}
               tickmarkPlacement="on"
               zoomEnabled={false}
+              // startOnTick={true}
+              // endOnTick={true}
               tickWidth={0}
               tickLength={20}
-              ordinal={true}
+              // ordinal={true}
               minorTicks={false}
               minorTickLength={2}
               minorTickWidth={2}
               minorGridLineWidth={0}
               minorTickInterval={1000 * 60 * 60 * 24 * 1}
-              min={
-                timespans[selectedTimespan].xMin
-                  ? newestUnixTimestamp -
-                    1000 * 60 * 60 * 24 * timespans[selectedTimespan].value
-                  : undefined
-              }
+              // min={
+              //   timespans[selectedTimespan].xMin
+              //     ? newestUnixTimestamp -
+              //       1000 *
+              //         60 *
+              //         60 *
+              //         24 *
+              //         (timespans[selectedTimespan].value - 1)
+              //     : undefined
+              // }
+              min={timespans[selectedTimespan].xMin + 1000 * 60 * 60 * 24 * 1} // don't include the last day
+              max={timespans[selectedTimespan].xMax}
               panningEnabled={true}
-            >
-              <XAxis.Title>X Axis</XAxis.Title>
-            </XAxis>
+            ></XAxis>
             <YAxis
               opposite={false}
               // showFirstLabel={true}
@@ -793,14 +808,17 @@ function BreakdownCharts({
                     x2: 0,
                     y2: 1,
                   },
+
                   stops: [
+                    /* 50% in hex: 80 */
+                    // [0.33, "#10808C80"],
+                    // [1, "#1DF7EF80"],
                     [0, "#10808CDD"],
                     [0.5, "#10808CDD"],
                     [1, "#1DF7EFDD"],
                   ],
                 }}
               />
-
               {/* Second line */}
               <AreaSeries
                 name="Costs"
@@ -822,12 +840,28 @@ function BreakdownCharts({
                     y2: 1,
                   },
                   stops: [
+                    /* 50% in hex: 80 */
+                    // [0.33, "#98323E80"],
+                    // [1, "#FE546880"],
                     [0, "#98323EDD"],
                     [0.5, "#98323EDD"],
                     [1, "#FE5468DD"],
                   ],
                 }}
               />
+              {/* 
+
+                position: absolute;
+              width: 1182px;
+              height: 207px;
+              left: 0px;
+              top: 42px;
+
+              background: linear-gradient(180deg, #10808C 0%, #1DF7EF 100%);
+              opacity: 0.5;
+              border-radius: 3px;
+
+              */}
 
               {/* Area between the lines */}
             </YAxis>
@@ -887,15 +921,13 @@ function BreakdownCharts({
               backgroundColor={"transparent"}
               type="column"
               panning={{
-                enabled: true,
+                enabled: false,
                 type: "x",
               }}
               panKey="shift"
               zooming={{
-                type: "x",
                 mouseWheel: {
                   enabled: false,
-                  type: "xy",
                 },
               }}
               style={{
@@ -918,6 +950,7 @@ function BreakdownCharts({
                   return;
 
                 setProfitChart(chart);
+                // console.log(chart);
               }}
             />
             <Tooltip
@@ -954,11 +987,22 @@ function BreakdownCharts({
               title={undefined}
               type="datetime"
               labels={{
+                align: undefined,
+                rotation: 0,
+                // allowOverlap: false,
+                // staggerLines: 1,
+                // reserveSpace: true,
+                overflow: "justify",
                 useHTML: true,
+                distance: -14,
                 style: {
                   color: COLORS.LABEL,
                   fontSize: "10px",
+                  fontWeight: "550",
+                  fontVariant: "small-caps",
+                  textTransform: "lowercase",
                   fontFamily: "var(--font-raleway), sans-serif",
+                  // fontVariant: "all-small-caps",
                   zIndex: 1000,
                 },
                 enabled: true,
@@ -993,21 +1037,31 @@ function BreakdownCharts({
                 snap: false,
               }}
               zoomEnabled={false}
+              lineWidth={0}
+              offset={24}
+              // startOnTick={true}
+              // endOnTick={true}
               tickAmount={0}
-              tickLength={20}
-              tickWidth={0}
-              ordinal={true}
+              tickLength={5}
+              tickWidth={1}
+              // ordinal={true}
               minorTicks={false}
               minorTickLength={2}
               minorTickWidth={2}
               minorGridLineWidth={0}
               minorTickInterval={1000 * 60 * 60 * 24 * 1}
-              min={
-                timespans[selectedTimespan].xMin
-                  ? newestUnixTimestamp -
-                    1000 * 60 * 60 * 24 * timespans[selectedTimespan].value
-                  : undefined
-              }
+              // min={
+              //   timespans[selectedTimespan].xMin
+              //     ? newestUnixTimestamp -
+              //       1000 *
+              //         60 *
+              //         60 *
+              //         24 *
+              //         (timespans[selectedTimespan].value - 1)
+              //     : undefined
+              // }
+              min={timespans[selectedTimespan].xMin + 1000 * 60 * 60 * 24 * 1} // don't include the last day
+              max={timespans[selectedTimespan].xMax}
               panningEnabled={true}
             >
               <XAxis.Title></XAxis.Title>
@@ -1067,6 +1121,8 @@ function BreakdownCharts({
               {" "}
               <ColumnSeries
                 name="Profit"
+                borderRadius="8%"
+                pointPlacement="on"
                 zones={[
                   {
                     value: 0, // Values up to 0 (exclusive)
@@ -1079,7 +1135,6 @@ function BreakdownCharts({
                       },
                       stops: [
                         [0, "#FFE761DD"],
-
                         [1, "#C7AE24DD"],
                       ],
                     },
