@@ -3,6 +3,7 @@ import { ThemeProvider } from "next-themes";
 import { SWRConfig } from "swr";
 import { addCollection } from "@iconify/react";
 import GTPIcons from "@/icons/gtp.json";
+import GTPIconsFigmaExport from "@/icons/gtp-figma-export.json";
 import { UIContextProvider } from "@/contexts/UIContext";
 import { useLocalStorage } from "usehooks-ts";
 import { IS_PRODUCTION } from "@/lib/helpers";
@@ -10,6 +11,7 @@ import { MasterProvider } from "./contexts/MasterContext";
 
 // load icons
 addCollection(GTPIcons);
+addCollection(GTPIconsFigmaExport);
 
 type ProvidersProps = {
   children: React.ReactNode;
