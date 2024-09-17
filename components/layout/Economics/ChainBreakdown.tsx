@@ -32,6 +32,7 @@ import {
   TooltipTrigger,
 } from "@/components/layout/Tooltip";
 import { useMaster } from "@/contexts/MasterContext";
+import Link from "next/link";
 
 const regularMetrics = ["profit", "revenue", "costs", "size", "profit_margin"];
 interface DAvailability {
@@ -1040,9 +1041,17 @@ export default function ChainBreakdown({
                         </div>
 
                         <div>
-                          {triggerShrink
-                            ? master.chains[item.key].name_short
-                            : AllChainsByKeys[item.key].label}
+                          <Link
+                            className="hover:underline whitespace-nowrap"
+                            href={`https://www.growthepie.xyz/chains/${AllChainsByKeys[item.key].urlKey}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                          >
+                            {triggerShrink
+                              ? master.chains[item.key].name_short
+                              : AllChainsByKeys[item.key].label}
+                          </Link>
                         </div>
 
                         <div
