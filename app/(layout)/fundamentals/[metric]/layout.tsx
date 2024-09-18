@@ -13,6 +13,7 @@ import { track } from "@vercel/analytics/server";
 import Link from "next/link";
 import Icon from "@/components/layout/Icon";
 import StableInsights from "@/components/layout/StableInsights";
+import { MetricItem, metricItems } from "@/lib/metrics";
 
 type Props = {
   params: { metric: string };
@@ -27,9 +28,7 @@ const unitsMap = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (
     !params.metric ||
-    navigationItems
-      .find((item) => item.label === "Fundamentals")
-      ?.options.find((item) => item.urlKey === params.metric) === undefined
+    metricItems.find((item) => item.urlKey === params.metric) === undefined
   ) {
     track("404 Error", {
       location: "404 Error",
@@ -38,9 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return notFound();
   }
 
-  const option = navigationItems
-    .find((item) => item.label === "Fundamentals")
-    ?.options.find((item) => item.urlKey === params.metric);
+  const option = metricItems.find((item) => item.urlKey === params.metric);
 
   if (option) {
     const currentDate = new Date();
@@ -79,9 +76,8 @@ export default async function Layout({
 }) {
   const url = MetricsURLs[params.metric];
 
-  const pageData = navigationItems[1]?.options.find(
-    (item) => item.urlKey === params.metric,
-  )?.page ?? {
+  const pageData = metricItems.find((item) => item.urlKey === params.metric)
+    ?.page ?? {
     title: "",
     description: "",
     icon: "",

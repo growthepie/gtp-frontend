@@ -1119,7 +1119,7 @@ export default function ChainChart({
         ? metricCategories[metricItem.category].icon
         : null;
     },
-    [navigationItems],
+    [metricItems],
   );
 
   const lastPointLines = useMemo<{

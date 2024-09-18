@@ -28,7 +28,7 @@ import {
 } from "@/components/layout/Tooltip";
 import Link from "next/link";
 import { Sources } from "@/lib/datasources";
-import { metricItems, MetricItem } from "@/lib/metrics";
+import { metricItems, MetricItem, metricCategories } from "@/lib/metrics";
 import { navigationItems, navigationCategories } from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
@@ -351,11 +351,11 @@ export default function ChainComponent({
 
       if (!navItem || !navItem.category) return null;
 
-      return navigationCategories[navItem.category]
-        ? navigationCategories[navItem.category].icon
+      return metricCategories[navItem.category]
+        ? metricCategories[navItem.category].icon
         : null;
     },
-    [navigationItems],
+    [metricItems],
   );
 
   const getNavLabel = useCallback(
@@ -363,11 +363,11 @@ export default function ChainComponent({
       const navItem = metricItems[metric_index];
       if (!navItem || !navItem.category) return null;
 
-      return navigationCategories[navItem.category]
-        ? navigationCategories[navItem.category].label
+      return metricCategories[navItem.category]
+        ? metricCategories[navItem.category].label
         : null;
     },
-    [navigationItems],
+    [metricItems],
   );
 
   const displayValues = useMemo(() => {

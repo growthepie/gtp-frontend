@@ -32,6 +32,7 @@ export type NavigationItem = {
     excludeFromSitemap?: boolean;
     hide?: boolean;
     showNew?: boolean;
+    url?: string;
   }[];
   href?: string;
 };
@@ -58,6 +59,16 @@ export const navigationCategories = {
     group: "fundamentals",
   },
 
+  "blockspace-categories": {
+    label: "Categories",
+    icon: "gtp:package",
+    group: "blockspace",
+  },
+  contracts: {
+    label: "Contracts",
+    icon: "gtp:package",
+    group: "contracts",
+  },
   developer: {
     label: "Developer",
     icon: "feather:code",
@@ -246,6 +257,7 @@ export const navigationItems: NavigationItem[] = [
         key: "economics-overview",
         rootKey: "economics",
         urlKey: "economics",
+        url: "/economics",
       },
       {
         label: "Fees Paid by Users",
@@ -261,6 +273,7 @@ export const navigationItems: NavigationItem[] = [
         key: "fees",
         rootKey: "metricsFeesPaidToEthereum",
         urlKey: "fees-paid-by-users",
+        url: "/fundamentals/fees-paid-by-users",
       },
       {
         label: "Rent Paid to L1",
@@ -276,6 +289,7 @@ export const navigationItems: NavigationItem[] = [
         key: "rent_paid",
         rootKey: "metricsRentPaid",
         urlKey: "rent-paid",
+        url: "/fundamentals/rent-paid",
       },
       {
         label: "Onchain Profit",
@@ -291,6 +305,7 @@ export const navigationItems: NavigationItem[] = [
         key: "profit",
         rootKey: "metricsEarnings",
         urlKey: "profit",
+        url: "/fundamentals/profit",
       },
       {
         label: "Fully Diluted Valuation",
@@ -328,6 +343,7 @@ export const navigationItems: NavigationItem[] = [
         key: "fdv",
         rootKey: "metricsFullyDilutedValuation",
         urlKey: "fully-diluted-valuation",
+        url: "/fundamentals/fully-diluted-valuation",
       },
       {
         label: "Market Cap",
@@ -367,6 +383,7 @@ export const navigationItems: NavigationItem[] = [
         key: "market_cap",
         rootKey: "marketCap",
         urlKey: "market-cap",
+        url: "/fundamentals/market-cap",
       },
     ],
   },
@@ -377,6 +394,7 @@ export const navigationItems: NavigationItem[] = [
     options: [
       {
         label: "Chain Overview",
+        category: "blockspace-categories",
         page: {
           title: "Chain Overview",
           description: `We measure the gas fees spent and the number of transactions sent to smart contracts. We then map these smart contracts to distinct categories. The chart below breaks down the total blockspace of a chain into these categories. Each category is made up of multiple subcategories, which are listed in the mapping table below the chart.
@@ -391,6 +409,7 @@ export const navigationItems: NavigationItem[] = [
       },
       {
         label: "Category Comparison",
+        category: "blockspace-categories",
         page: {
           title: "Category Comparison",
           description:
@@ -400,6 +419,21 @@ export const navigationItems: NavigationItem[] = [
         key: "category-comparison",
         rootKey: "categoryComparison",
         urlKey: "category-comparison",
+      },
+      {
+        label: "Contracts",
+        category: "contracts",
+        page: {
+          title: "Contracts",
+          description:
+            "The number of contracts created in the last 24 hours. Methodology and data is derived from L2Beat.com.",
+          icon: "gtp:contracts",
+        },
+        icon: "gtp:contracts",
+        key: "contracts",
+        rootKey: "contracts",
+        urlKey: "contracts",
+        url: "https://labels.growthepie.xyz/",
       },
     ],
     // href: "",
