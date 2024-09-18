@@ -32,11 +32,7 @@ import {
 } from "@/lib/chains";
 import { debounce, forEach } from "lodash";
 import { Splide, SplideSlide, SplideTrack } from "@splidejs/react-splide";
-import {
-  navigationItems,
-  navigationCategories,
-  getFundamentalsByKey,
-} from "@/lib/navigation";
+import { navigationItems } from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
 import { ChainsBaseURL, MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
@@ -58,6 +54,11 @@ import {
 } from "@/components/layout/Tooltip";
 import { useSWRConfig } from "swr";
 import { useMaster } from "@/contexts/MasterContext";
+import {
+  metricItems,
+  getFundamentalsByKey,
+  metricCategories,
+} from "@/lib/metrics";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -1107,14 +1108,15 @@ export default function ChainChart({
 
   const getNavIcon = useCallback(
     (key: string) => {
-      const navItem = navigationItems[1].options.find(
-        (item) => item.key === key,
-      );
+      // const navItem = navigationItems[1].options.find(
+      //   (item) => item.key === key,
+      // );
 
-      if (!navItem || !navItem.category) return null;
+      const metricItem = metricItems.find((item) => item.key === key);
+      if (!metricItem || !metricItem.category) return null;
 
-      return navigationCategories[navItem.category]
-        ? navigationCategories[navItem.category].icon
+      return metricCategories[metricItem.category]
+        ? metricCategories[metricItem.category].icon
         : null;
     },
     [navigationItems],
@@ -1202,7 +1204,8 @@ export default function ChainChart({
   }, [isSidebarOpen]);
 
   const enabledFundamentalsKeys = useMemo<string[]>(() => {
-    return navigationItems[1].options.map((option) => option.key ?? "");
+    // return navigationItems[1].options.map((option) => option.key ?? "");
+    return metricItems.map((item) => item.key ?? "");
   }, []);
 
   useEffect(() => {
@@ -1418,7 +1421,7 @@ export default function ChainChart({
     const missingData: { [key: string]: { key: string; message: string }[] } =
       {};
 
-    Object.keys(navigationCategories)
+    Object.keys(metricCategories)
       .filter((group) => {
         return (
           group !== "gtpmetrics" &&
@@ -1697,7 +1700,7 @@ export default function ChainChart({
       </TopRowContainer>
 
       <div className="flex flex-col gap-y-[15px]">
-        {Object.keys(navigationCategories)
+        {Object.keys(metricCategories)
           .filter((group) => {
             return (
               group !== "gtpmetrics" &&
@@ -1707,7 +1710,7 @@ export default function ChainChart({
           })
           .map((categoryKey) => (
             <ChainSectionHead
-              title={navigationCategories[categoryKey].label}
+              title={metricCategories[categoryKey].label}
               enableDropdown={true}
               defaultDropdown={true}
               key={categoryKey}

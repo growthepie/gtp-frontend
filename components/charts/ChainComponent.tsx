@@ -28,7 +28,7 @@ import {
 } from "@/components/layout/Tooltip";
 import Link from "next/link";
 import { Sources } from "@/lib/datasources";
-
+import { metricItems, MetricItem } from "@/lib/metrics";
 import { navigationItems, navigationCategories } from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
@@ -71,6 +71,7 @@ export default function ChainComponent({
   const { theme } = useTheme();
   const isMobile = useMediaQuery("(max-width: 767px)");
 
+  const metric_index = metricItems.findIndex((item) => item.key === category);
   const chartComponents = useRef<Highcharts.Chart[]>([]);
 
   const [zoomMargin, setZoomMargin] = useState([1, 15, 0, 0]);
@@ -146,10 +147,7 @@ export default function ChainComponent({
   }, [data.metrics]);
 
   const showGwei = useCallback((metric_id: string) => {
-    const item = navigationItems[1].options.find(
-      (item) => item.key === metric_id,
-    );
-
+    const item = metricItems.find((item) => item.key === metric_id);
     return item?.page?.showGwei;
   }, []);
 
@@ -231,7 +229,7 @@ export default function ChainComponent({
     Object.keys(data.metrics).forEach((key) => {
       maxUnixtimes.push(
         data.metrics[key].daily.data[
-        data.metrics[key].daily.data.length - 1
+          data.metrics[key].daily.data.length - 1
         ][0],
       );
     });
@@ -349,9 +347,7 @@ export default function ChainComponent({
 
   const getNavIcon = useCallback(
     (key: string) => {
-      const navItem = navigationItems[1].options.find(
-        (item) => item.key === key,
-      );
+      const navItem = metricItems[metric_index];
 
       if (!navItem || !navItem.category) return null;
 
@@ -364,10 +360,7 @@ export default function ChainComponent({
 
   const getNavLabel = useCallback(
     (key: string) => {
-      const navItem = navigationItems[1].options.find(
-        (item) => item.key === key,
-      );
-
+      const navItem = metricItems[metric_index];
       if (!navItem || !navItem.category) return null;
 
       return navigationCategories[navItem.category]
@@ -405,7 +398,7 @@ export default function ChainComponent({
         minimumFractionDigits: 2,
       });
 
-      let navItem = navigationItems[1].options.find((ni) => ni.key === key);
+      let navItem = metricItems[metric_index];
 
       if (master.metrics[key].units[unitKey].currency) {
         if (!showUsd) {
@@ -454,11 +447,11 @@ export default function ChainComponent({
       const dateString = `
       <div>
         ${date.toLocaleDateString("en-GB", {
-        timeZone: "UTC",
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })}
+          timeZone: "UTC",
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })}
       </div>
       `;
 
@@ -480,25 +473,28 @@ export default function ChainComponent({
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-1">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
-              }"></div>
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+                  AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
+                }"></div>
                 <!--
-                <div class="tooltip-point-name">${AllChainsByKeys[data.chain_id].label
-              }</div>
+                <div class="tooltip-point-name">${
+                  AllChainsByKeys[data.chain_id].label
+                }</div>
                 -->
                 <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-                percentage,
-                2,
-              )}%</div>
+                  percentage,
+                  2,
+                )}%</div>
               </div>
               <!-- <div class="flex ml-6 w-[calc(100% - 24rem)] relative mb-1">
                 <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
 
                 <div class="h-[2px] rounded-full absolute left-0 top-0" style="width: ${Highcharts.numberFormat(
-                percentage,
-                2,
-              )}%; background-color: ${AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
-              };"> </div>
+                  percentage,
+                  2,
+                )}%; background-color: ${
+              AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
+            };"> </div>
               </div> -->`;
 
           const units = Object.keys(master.metrics[series.name].units);
@@ -526,21 +522,25 @@ export default function ChainComponent({
 
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-1">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+              AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
             }"></div>
             <!--
-            <div class="tooltip-point-name text-md">${AllChainsByKeys[data.chain_id].label
+            <div class="tooltip-point-name text-md">${
+              AllChainsByKeys[data.chain_id].label
             }</div>
             -->
             <div class="flex-1 text-left justify-start font-inter flex">
-                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-            }">${prefix}</div>
+                <div class="opacity-70 mr-0.5 ${
+                  !prefix && "hidden"
+                }">${prefix}</div>
                 ${parseFloat(value).toLocaleString("en-GB", {
-              minimumFractionDigits: decimals,
-              maximumFractionDigits: decimals,
-            })}
-                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
+                  minimumFractionDigits: decimals,
+                  maximumFractionDigits: decimals,
+                })}
+                <div class="opacity-70 ml-0.5 ${
+                  !suffix && "hidden"
+                }">${suffix}</div>
             </div>
           </div>
           <!-- <div class="flex ml-4 w-[calc(100% - 1rem)] relative mb-1">
@@ -549,8 +549,9 @@ export default function ChainComponent({
             <div class="h-[2px] rounded-full absolute right-0 top-0" style="width: ${formatNumber(
               name,
               (y / pointsSum) * 100,
-            )}%; background-color: ${AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
-            }33;"></div>
+            )}%; background-color: ${
+            AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
+          }33;"></div>
           </div> -->`;
         })
         .join("");
@@ -996,12 +997,12 @@ export default function ChainComponent({
               [
                 0,
                 AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0] +
-                "33",
+                  "33",
               ],
               [
                 1,
                 AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1] +
-                "33",
+                  "33",
               ],
             ],
           },
@@ -1308,27 +1309,27 @@ export default function ChainComponent({
                   data: data.metrics[category].daily.types.includes("eth")
                     ? showUsd
                       ? data.metrics[category].daily.data.map((d) => [
-                        d[0],
-                        d[data.metrics[category].daily.types.indexOf("usd")],
-                      ])
+                          d[0],
+                          d[data.metrics[category].daily.types.indexOf("usd")],
+                        ])
                       : data.metrics[category].daily.data.map((d) => [
-                        d[0],
-                        showGwei(category)
-                          ? d[
-                          data.metrics[category].daily.types.indexOf(
-                            "eth",
-                          )
-                          ] * 1000000000
-                          : d[
-                          data.metrics[category].daily.types.indexOf(
-                            "eth",
-                          )
-                          ],
-                      ])
+                          d[0],
+                          showGwei(category)
+                            ? d[
+                                data.metrics[category].daily.types.indexOf(
+                                  "eth",
+                                )
+                              ] * 1000000000
+                            : d[
+                                data.metrics[category].daily.types.indexOf(
+                                  "eth",
+                                )
+                              ],
+                        ])
                     : data.metrics[category].daily.data.map((d) => [
-                      d[0],
-                      d[1],
-                    ]),
+                        d[0],
+                        d[1],
+                      ]),
                   showInLegend: false,
                   marker: {
                     enabled: false,
@@ -1366,11 +1367,11 @@ export default function ChainComponent({
                         attributes: {
                           fill:
                             AllChainsByKeys[data.chain_id]?.colors[
-                            theme ?? "dark"
+                              theme ?? "dark"
                             ][0] + "99",
                           stroke:
                             AllChainsByKeys[data.chain_id]?.colors[
-                            theme ?? "dark"
+                              theme ?? "dark"
                             ][0] + "66",
                         },
                       },
@@ -1396,10 +1397,7 @@ export default function ChainComponent({
         </div>
         <div className="absolute top-[14px] w-full flex justify-between items-center px-[23px]">
           <div className="text-[20px] leading-snug font-bold">
-            {
-              navigationItems[1].options.find((o) => o.key === category)?.page
-                ?.title
-            }
+            {metricItems[metric_index]?.page?.title}
           </div>
           <div className="text-[18px] leading-snug font-medium flex space-x-[2px]">
             <div>{displayValues[category].prefix}</div>
