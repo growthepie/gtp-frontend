@@ -96,7 +96,7 @@ export const navigationItems: NavigationItem[] = [
     name: "Fundamentals",
     label: "Fundamentals",
     key: "metrics",
-    icon: "gtp:fundamentals",
+    icon: "gtp:gtp-fundamentals",
     options: [
       {
         label: "Active Addresses",
@@ -390,7 +390,7 @@ export const navigationItems: NavigationItem[] = [
   {
     name: "Blockspace",
     label: "Blockspace",
-    icon: "gtp:package",
+    icon: "gtp:gtp-usage",
     options: [
       {
         label: "Chain Overview",
@@ -688,7 +688,7 @@ export const navigationItems: NavigationItem[] = [
   {
     name: "Trackers",
     label: "Trackers",
-    icon: "gtp:tracker",
+    icon: "gtp:gtp-tracker",
     options: [
       {
         label: "fees.growthepie.xyz",

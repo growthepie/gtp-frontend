@@ -209,7 +209,7 @@ export default function SidebarMenuGroup({
               </div>
               <div className="">
                 {sidebarOpen && (
-                  <div className="text-base font-bold mx-3 w-80 flex space-x-1">
+                  <div className="text-[20px] font-bold mx-3 w-80 flex space-x-1">
                     {item.name === "RPGF3 Tracker" ? (
                       <div className="flex space-x-1 relative">
                         <div className="text-[#FF0420]">RetroPGF 3</div>{" "}
@@ -280,7 +280,7 @@ export default function SidebarMenuGroup({
               </div>
               {sidebarOpen && (
                 <div className={`flex-1 flex items-start justify-between`}>
-                  <div className="text-base font-bold mx-3 py-0.5 whitespace-nowrap">
+                  <div className="text-[20px] font-bold mx-3 py-0.5 whitespace-nowrap">
                     {item.label}
                   </div>
                 </div>
@@ -465,9 +465,12 @@ export default function SidebarMenuGroup({
             onClick={handleToggle}
           >
             <div className="w-6 mx-0">
-              <div className="w-6 mx-auto">
+              <div className="w-6 mx-auto flex items-center">
                 {!item.name.includes("RPGF3 Tracker") ? (
-                  <Icon icon={item.icon} className="h-7 w-7 p-0.5 mx-auto" />
+                  <Icon
+                    icon={item.icon}
+                    className="h-[38px] w-[38px] p-0.5 mx-auto"
+                  />
                 ) : (
                   <Icon
                     icon={item.icon}
@@ -478,7 +481,7 @@ export default function SidebarMenuGroup({
             </div>
 
             <div
-              className={`absolute bottom-[10px] left-[23px] flex-1 flex items-center transition-all duration-300 origin-[-10px_4px]  ${
+              className={`absolute bottom-[15px] left-[24px] flex-1 flex items-center transition-all duration-300 origin-[-14px_4px]  ${
                 isOpen ? "rotate-90" : "rotate-0"
               }`}
             >
@@ -486,7 +489,7 @@ export default function SidebarMenuGroup({
             </div>
             {sidebarOpen && (
               <div className={`flex-1 flex items-start justify-between`}>
-                <div className="text-base font-bold mx-3 py-0.5 whitespace-nowrap">
+                <div className="text-[20px] font-bold mx-3 py-0.5 whitespace-nowrap">
                   {item.name === "RPGF3 Tracker" ? (
                     <>
                       <span className="text-[#FF0420]">RetroPGF 3</span>{" "}
@@ -530,7 +533,7 @@ export default function SidebarMenuGroup({
         className={`flex flex-col overflow-hidden mb-[17px] w-full whitespace-nowrap`}
         style={{
           transition: `all ${item.options.length * 0.01 + 0.1}s ease-in-out`,
-          maxHeight: isOpen ? item.options.length * 40 + 40 : 0,
+          maxHeight: isOpen ? item.options.length * 50 + 50 : 0,
           paddingTop: isOpen ? "10px" : "0",
         }}
       >
@@ -545,25 +548,17 @@ export default function SidebarMenuGroup({
                     (i > 0 &&
                       item.options.filter((o) => o.hide !== true)[i - 1]
                         .category != option.category)) && (
-                    <div className="px-0 md:pl-5 mt-[7px] mb-[2px] overflow-visible text-forest-800 ">
+                    <div
+                      className={`px-0 md:pl-5 mt-[7px] mb-[2px] overflow-visible text-[#5A6462] ${
+                        i === 0 ? "mt-[12px]" : "mt-[7px]"
+                      }`}
+                    >
                       <div
-                        className={`flex items-center justify-items-center rounded-full md:rounded-r-none relative `}
+                        className={`flex items-center justify-items-center rounded-full md:rounded-r-none relative  `}
                       >
-                        <div className={`w-6 absolute left-[13px]`}>
-                          {navigationCategories[option.category].icon && (
-                            <Icon
-                              icon={navigationCategories[option.category].icon}
-                              className={
-                                item.name === "Fundamentals" ||
-                                item.name === "Trackers"
-                                  ? "h-4 w-4 mx-auto"
-                                  : "h-[15px] w-[15px] mx-auto"
-                              }
-                            />
-                          )}
-                        </div>
+                        <div className={`h-full`}></div>
                         <div
-                          className={`text-[10px] w-48 font-medium break-inside-auto text-left ml-12 uppercase`}
+                          className={`text-[14px] font-bold break-inside-auto text-left ml-3 uppercase `}
                         >
                           {sidebarOpen ? (
                             navigationCategories[option.category].label
@@ -575,7 +570,11 @@ export default function SidebarMenuGroup({
                     </div>
                   )}
                 <Tooltip placement="top-start">
-                  <TooltipTrigger className="px-0 md:pl-5 w-full">
+                  <TooltipTrigger
+                    className={`px-0 md:pl-5 w-full ${
+                      !option.category ? "mt-[10px]" : "mt-0"
+                    }`}
+                  >
                     <Link
                       className={`group flex items-center justify-items-center rounded-full md:rounded-r-none relative w-full ${
                         urlParts[1].trim().localeCompare(option.urlKey) === 0
@@ -636,21 +635,24 @@ export default function SidebarMenuGroup({
                           />
                         )}
                       </div>
-                      {option.category ? (
+                      <div className="w-full flex items-center gap-x-[15px]">
                         <div
-                          className={`text-sm py-1 w-48 font-normal break-inside-auto transition-all duration-300 ease-in text-left ${
-                            sidebarOpen ? "ml-12" : "ml-4"
-                          }`}
-                        >
-                          {option.label}
-                        </div>
-                      ) : (
-                        <div
-                          className={`text-sm py-1 w-48 font-normal break-inside-auto text-left ml-12`}
-                        >
-                          {sidebarOpen ? option.label : <span>&nbsp;</span>}
-                        </div>
-                      )}
+                          className={`w-[26px] h-[26px] rounded-full bg-[#151A19] ml-2.5`}
+                        ></div>
+                        {option.category ? (
+                          <div
+                            className={`text-[14px] py-1 w-48 font-bold break-inside-auto transition-all duration-300 ease-in text-left `}
+                          >
+                            {option.label}
+                          </div>
+                        ) : (
+                          <div
+                            className={`text-[14px] py-1 w-48 font-bold break-inside-auto transition-all duration-300 ease-in text-left `}
+                          >
+                            {sidebarOpen ? option.label : <span>&nbsp;</span>}
+                          </div>
+                        )}
+                      </div>
                       {option.showNew && (
                         <div
                           className={`transition-all duration-300 absolute top-1 bottom-1 right-[4px] md:right-0 text-xs flex items-center justify-center font-bold overflow-hidden`}
