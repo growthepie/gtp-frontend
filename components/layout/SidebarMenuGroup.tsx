@@ -322,21 +322,22 @@ export default function SidebarMenuGroup({
           }}
         >
           {Object.keys(ChainGroups).length > 0 &&
-            Object.entries(ChainGroups).map(([bucket, chains]: any) => {
+            Object.entries(ChainGroups).map(([bucket, chains]: any, i) => {
               if (chains.length === 0) return null;
 
               return (
                 <div key={bucket}>
-                  <div className="px-0 md:px-5 mt-[7px] mb-[2px] overflow-visible text-forest-800">
-                    <div className="flex items-center justify-items-center rounded-full md:rounded-l-full relative">
-                      <div className={`w-6 absolute left-[13px]`}>
-                        <Icon
-                          icon="feather:clock"
-                          className={"h-[15px] w-[15px] mx-auto"}
-                        />
-                      </div>
+                  <div
+                    className={`px-0 md:pl-5 mt-[7px] mb-[2px] overflow-visible text-[#5A6462] ${
+                      i === 0 ? "mt-[12px]" : "mt-[7px]"
+                    }`}
+                  >
+                    <div
+                      className={`flex items-center justify-items-center rounded-full md:rounded-r-none relative  `}
+                    >
+                      <div className={`h-full`}></div>
                       <div
-                        className={`text-[10px] w-48 font-medium break-inside-auto text-left ml-12 uppercase`}
+                        className={`text-[14px] font-bold break-inside-auto text-left ml-3 uppercase `}
                       >
                         {sidebarOpen ? bucket : <span>&nbsp;</span>}
                       </div>
@@ -404,31 +405,55 @@ export default function SidebarMenuGroup({
                                 />
                               )}
                             </div>
-                            <div
-                              className={`text-sm py-1 w-48 font-normal break-inside-auto transition-all duration-300 ease-in text-left ${
-                                sidebarOpen ? "ml-12" : "ml-4"
-                              }`}
-                            >
-                              {option.label}
-                              {option.showNew && (
-                                <div
-                                  className={`transition-all duration-300 absolute top-1 bottom-1 right-[4px] md:right-0 text-xs flex items-center justify-center font-bold overflow-hidden`}
-                                >
+                            <div>
+                              <div className={`w-full`}>
+                                <div className="w-full flex items-center gap-x-[15px]">
                                   <div
-                                    className={`transition-all duration-300 w-[50px] h-full rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${
-                                      sidebarOpen && isOpen
-                                        ? "delay-300 translate-x-[0px] ease-in-out opacity-100"
-                                        : "translate-x-[60px] ease-in-out opacity-0"
-                                    }`}
+                                    className={`w-[26px] h-[26px] flex items-center justify-center rounded-full bg-[#151A19] ml-3`}
+                                  >
+                                    <Icon
+                                      icon={option.icon.replace("_", "-")}
+                                      className="h-[15px] w-[15px] text-[#5A6462] "
+                                    />
+                                  </div>
+                                  {option.category ? (
+                                    <div
+                                      className={`text-[14px] py-1 w-48 font-bold break-inside-auto transition-all duration-300 ease-in text-left `}
+                                    >
+                                      {option.label}
+                                    </div>
+                                  ) : (
+                                    <div
+                                      className={`text-[14px] py-1 w-48 font-bold break-inside-auto transition-all duration-300 ease-in text-left `}
+                                    >
+                                      {sidebarOpen ? (
+                                        option.label
+                                      ) : (
+                                        <span>&nbsp;</span>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                                {option.showNew && (
+                                  <div
+                                    className={`transition-all duration-300 absolute top-1 bottom-1 right-[4px] md:right-0 text-xs flex items-center justify-center font-bold overflow-hidden`}
                                   >
                                     <div
-                                      className={`transition-all duration-300 absolute inset-0 pr-[8px] rounded-full md:rounded-br-none md:rounded-tr-none text-xs flex items-center justify-end font-bold hard-shine-2 text-white dark:text-forest-900`}
+                                      className={`transition-all duration-300 w-[50px] h-full rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${
+                                        sidebarOpen && isOpen
+                                          ? "delay-300 translate-x-[0px] ease-in-out opacity-100"
+                                          : "translate-x-[60px] ease-in-out opacity-0"
+                                      }`}
                                     >
-                                      NEW!
+                                      <div
+                                        className={`transition-all duration-300 absolute inset-0 pr-[8px] rounded-full md:rounded-br-none md:rounded-tr-none text-xs flex items-center justify-end font-bold hard-shine-2 text-white dark:text-forest-900`}
+                                      >
+                                        NEW!
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                              )}
+                                )}
+                              </div>
                             </div>
                           </Link>
                         </TooltipTrigger>
@@ -616,29 +641,15 @@ export default function SidebarMenuGroup({
                         }`}
                       ></div>
 
-                      <div
-                        className={`w-6 absolute left-[13px]  ${
-                          urlParts[1].trim().localeCompare(option.urlKey) === 0
-                            ? "text-inherit"
-                            : "text-[#5A6462] group-hover:text-inherit"
-                        }`}
-                      >
-                        {["Blockspace"].includes(item.name) && (
-                          <Icon
-                            icon={option.icon}
-                            className={`${
-                              item.name === "Fundamentals" ||
-                              item.name === "Trackers"
-                                ? "h-4 w-4 mx-auto"
-                                : "h-[15px] w-[15px] mx-auto"
-                            } `}
-                          />
-                        )}
-                      </div>
                       <div className="w-full flex items-center gap-x-[15px]">
                         <div
-                          className={`w-[26px] h-[26px] rounded-full bg-[#151A19] ml-2.5`}
-                        ></div>
+                          className={`w-[26px] h-[26px] flex items-center justify-center rounded-full bg-[#151A19] ml-2.5`}
+                        >
+                          <Icon
+                            icon={option.icon}
+                            className="h-[15px] w-[15px] text-[#5A6462] "
+                          />
+                        </div>
                         {option.category ? (
                           <div
                             className={`text-[14px] py-1 w-48 font-bold break-inside-auto transition-all duration-300 ease-in text-left `}

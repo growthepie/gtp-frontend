@@ -132,7 +132,7 @@ export const Get_AllChainsNavigationItems = (master: MasterResponse) => {
     name: "Chains",
     label: "Single Chain",
     key: "chains",
-    icon: "gtp:link",
+    icon: "gtp:gtp-chain",
     options: chainKeys.map((key) => {
       const chain = chains[key];
       return {
