@@ -150,9 +150,8 @@ export default async function Layout({
         <div className="flex justify-between items-start w-full">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-y-[10px] md:gap-x-[15px] pb-[15px]">
             <div className="flex items-center">
-              <Image
-                src="/GTP-Fundamentals.svg"
-                alt="GTP Chain"
+              <Icon
+                icon={String(pageData.icon)}
                 className="object-contain w-[32px] h-[32px] mr-[8px]"
                 height={36}
                 width={36}
