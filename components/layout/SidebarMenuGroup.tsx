@@ -333,7 +333,9 @@ export default function SidebarMenuGroup({
                     }`}
                   >
                     <div
-                      className={`flex items-center justify-items-center rounded-full md:rounded-r-none relative  `}
+                      className={`flex items-center justify-items-center rounded-full md:rounded-r-none relative  ${
+                        sidebarOpen ? "block" : "hidden"
+                      }`}
                     >
                       <div className={`h-full`}></div>
                       <div
@@ -576,10 +578,12 @@ export default function SidebarMenuGroup({
                     <div
                       className={`px-0 md:pl-5 mt-[7px] mb-[2px] overflow-visible text-[#5A6462] ${
                         i === 0 ? "mt-[12px]" : "mt-[7px]"
-                      }`}
+                      } `}
                     >
                       <div
-                        className={`flex items-center justify-items-center rounded-full md:rounded-r-none relative  `}
+                        className={`flex items-center justify-items-center rounded-full md:rounded-r-none relative  ${
+                          sidebarOpen ? "block" : "hidden"
+                        }`}
                       >
                         <div className={`h-full`}></div>
                         <div
@@ -643,7 +647,7 @@ export default function SidebarMenuGroup({
 
                       <div className="w-full flex items-center gap-x-[15px]">
                         <div
-                          className={`w-[26px] h-[26px] flex items-center justify-center rounded-full bg-[#151A19] ml-2.5`}
+                          className={`w-[26px] h-[26px] min-w-[26px] min-h-[26px] flex items-center justify-center rounded-full bg-[#151A19] ml-2.5`}
                         >
                           <Icon
                             icon={option.icon}
@@ -654,7 +658,7 @@ export default function SidebarMenuGroup({
                           <div
                             className={`text-[14px] py-1 w-48 font-bold break-inside-auto transition-all duration-300 ease-in text-left `}
                           >
-                            {option.label}
+                            {sidebarOpen ? option.label : <span>&nbsp;</span>}
                           </div>
                         ) : (
                           <div
