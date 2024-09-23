@@ -139,7 +139,10 @@ export default function SidebarMenuGroup({
             <div className="flex items-center justify-items-center opacity-70">
               <div className="w-[24px] mx-0">
                 <div className="w-[24px] mx-auto grayscale">
-                  <Icon icon={item.icon} className="h-[24px] w-[24px] p-0.5 mx-auto" />
+                  <Icon
+                    icon={item.icon}
+                    className="h-[24px] w-[24px] p-0.5 mx-auto"
+                  />
                 </div>
               </div>
               <div className="">
@@ -198,7 +201,10 @@ export default function SidebarMenuGroup({
               <div className="w-[24px] mx-0">
                 <div className="w-[24px] mx-auto">
                   {!item.name.includes("RPGF3 Tracker") ? (
-                    <Icon icon={item.icon} className="h-[24px] w-[24px] p-0.5 mx-auto" />
+                    <Icon
+                      icon={item.icon}
+                      className="h-[24px] w-[24px] p-0.5 mx-auto"
+                    />
                   ) : (
                     <Icon
                       icon={item.icon}
@@ -272,19 +278,33 @@ export default function SidebarMenuGroup({
                 </div>
               </div>
               <div
-                className={`absolute bottom-[18px] left-[33px] flex-1 flex items-center transition-all duration-300 origin-[-15px_5px] ${isOpen ? "rotate-90" : "rotate-0"
-                  }`}
+                className={`absolute bottom-[14px] left-[33px] flex-1 flex items-center transition-all duration-300 origin-[-15px_5px] ${
+                  isOpen ? "rotate-90" : "rotate-0"
+                }`}
               >
                 {/* <Icon
                   icon={"gtp:chevron-right"}
                   className="w-[8px] h-[8px] mr-2"
                 /> */}
-                <svg width="4" height="10" viewBox="0 0 4 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M0.898315 1.07129L2.89832 5.07129L0.898315 9.07129" stroke="#CDD8D3" stroke-width="1.5" stroke-linejoin="round" />
+                <svg
+                  width="4"
+                  height="10"
+                  viewBox="0 0 4 10"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M0.898315 1.07129L2.89832 5.07129L0.898315 9.07129"
+                    stroke="#CDD8D3"
+                    stroke-width="1.5"
+                    stroke-linejoin="round"
+                  />
                 </svg>
               </div>
               {sidebarOpen && (
-                <div className={`flex-1 h-[44px] flex items-center justify-between`}>
+                <div
+                  className={`flex-1 h-[44px] flex items-center justify-between`}
+                >
                   <div className="text-[20px] font-semibold mx-3 whitespace-nowrap">
                     {item.label}
                   </div>
@@ -295,10 +315,11 @@ export default function SidebarMenuGroup({
                   className={`transition-all duration-300 absolute top-0.5 bottom-0.5 right-[4px] md:right-0 text-xs flex items-center justify-center font-bold overflow-hidden pointer-events-none`}
                 >
                   <div
-                    className={`transition-all duration-300 w-[50px] h-full rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${!sidebarOpen || isOpen
-                      ? "translate-x-[60px] ease-in-out opacity-0"
-                      : "delay-300 translate-x-0 ease-in-out opacity-100"
-                      }`}
+                    className={`transition-all duration-300 w-[50px] h-full rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${
+                      !sidebarOpen || isOpen
+                        ? "translate-x-[60px] ease-in-out opacity-0"
+                        : "delay-300 translate-x-0 ease-in-out opacity-100"
+                    }`}
                   >
                     <div
                       className={`transition-all duration-300 absolute inset-0 pr-[8px] rounded-full md:rounded-br-none md:rounded-tr-none text-xs flex items-center justify-end font-bold hard-shine-2 text-white dark:text-forest-900`}
@@ -332,12 +353,14 @@ export default function SidebarMenuGroup({
               return (
                 <div key={bucket}>
                   <div
-                    className={`px-0 md:pl-5 mb-[2px] overflow-visible text-[#5A6462] ${i === 0 ? "mt-[0px]" : "mt-[0px]"
-                      }`}
+                    className={`px-0 md:pl-5 mb-[2px] overflow-visible text-[#5A6462] ${
+                      i === 0 ? "mt-[0px]" : "mt-[0px]"
+                    }`}
                   >
                     <div
-                      className={`flex items-center justify-items-center rounded-full md:rounded-r-none relative  ${sidebarOpen ? "block" : "hidden"
-                        }`}
+                      className={`flex items-center justify-items-center rounded-full md:rounded-r-none relative  ${
+                        sidebarOpen ? "block" : "hidden"
+                      }`}
                     >
                       <div className={`h-full`}></div>
                       <div
@@ -355,12 +378,13 @@ export default function SidebarMenuGroup({
                       <Tooltip key={option.key} placement="top-start">
                         <TooltipTrigger className="px-0 md:pl-[26px] w-full">
                           <Link
-                            className={`group flex items-center justify-items-center rounded-l-full md:rounded-r-none relative w-full whitespace-nowrap ${urlParts[1]
-                              .trim()
-                              .localeCompare(option.urlKey) === 0
-                              ? "bg-[#CDD8D3] dark:bg-forest-1000 hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
-                              : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
-                              }`}
+                            className={`group flex items-center justify-items-center rounded-l-full md:rounded-r-none relative w-full whitespace-nowrap ${
+                              urlParts[1]
+                                .trim()
+                                .localeCompare(option.urlKey) === 0
+                                ? "bg-[#CDD8D3] dark:bg-forest-1000 hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
+                                : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
+                            }`}
                             href={
                               option.url
                                 ? option.url
@@ -384,27 +408,30 @@ export default function SidebarMenuGroup({
                             }}
                           >
                             <div
-                              className={`absolute top-0 left-[4px] w-[64px] h-[28px] bg-gradient-to-r from-transparent to-forest-50 dark:to-[#1F2726] transition-opacity ease-in-out ${sidebarOpen
-                                ? "opacity-0 duration-0"
-                                : "opacity-100 duration-500"
-                                }`}
+                              className={`absolute top-0 left-[4px] w-[64px] h-[28px] bg-gradient-to-r from-transparent to-forest-50 dark:to-[#1F2726] transition-opacity ease-in-out ${
+                                sidebarOpen
+                                  ? "opacity-0 duration-0"
+                                  : "opacity-100 duration-500"
+                              }`}
                             ></div>
 
                             <div
-                              className={`w-6 absolute left-[13px]  ${urlParts[1]
-                                .trim()
-                                .localeCompare(option.urlKey) === 0
-                                ? "text-inherit"
-                                : "text-[#5A6462] group-hover:text-inherit"
-                                }`}
+                              className={`w-6 absolute left-[13px]  ${
+                                urlParts[1]
+                                  .trim()
+                                  .localeCompare(option.urlKey) === 0
+                                  ? "text-inherit"
+                                  : "text-[#5A6462] group-hover:text-inherit"
+                              }`}
                             >
                               {["Blockspace"].includes(item.name) && (
                                 <Icon
                                   icon={option.icon}
-                                  className={`${item.name === "Fundamentals"
-                                    ? "h-4 w-4 mx-auto"
-                                    : "h-[15px] w-[15px] mx-auto"
-                                    } `}
+                                  className={`${
+                                    item.name === "Fundamentals"
+                                      ? "h-4 w-4 mx-auto"
+                                      : "h-[15px] w-[15px] mx-auto"
+                                  } `}
                                 />
                               )}
                             </div>
@@ -412,7 +439,7 @@ export default function SidebarMenuGroup({
                               <div className={`w-full`}>
                                 <div className="w-full flex items-center gap-x-[15px]">
                                   <div
-                                    className={`w-[26px] h-[26px] flex items-center justify-center rounded-full bg-[#151A19] ml-3`}
+                                    className={`w-[26px] h-[26px] flex items-center justify-center rounded-full bg-[#151A19] ml-[11px]`}
                                   >
                                     <Icon
                                       icon={option.icon.replace("_", "-")}
@@ -442,10 +469,11 @@ export default function SidebarMenuGroup({
                                     className={`transition-all duration-300 absolute top-1 bottom-1 right-[4px] md:right-0 text-xs flex items-center justify-center font-bold overflow-hidden`}
                                   >
                                     <div
-                                      className={`transition-all duration-300 w-[50px] h-full rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${sidebarOpen && isOpen
-                                        ? "delay-300 translate-x-[0px] ease-in-out opacity-100"
-                                        : "translate-x-[60px] ease-in-out opacity-0"
-                                        }`}
+                                      className={`transition-all duration-300 w-[50px] h-full rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${
+                                        sidebarOpen && isOpen
+                                          ? "delay-300 translate-x-[0px] ease-in-out opacity-100"
+                                          : "translate-x-[60px] ease-in-out opacity-0"
+                                      }`}
                                     >
                                       <div
                                         className={`transition-all duration-300 absolute inset-0 pr-[8px] rounded-full md:rounded-br-none md:rounded-tr-none text-xs flex items-center justify-end font-bold hard-shine-2 text-white dark:text-forest-900`}
@@ -461,12 +489,13 @@ export default function SidebarMenuGroup({
                         </TooltipTrigger>
                         {!sidebarOpen && (
                           <TooltipContent
-                            className={`text-forest-900 dark:text-forest-50 py-1 px-4 text-base break-inside-auto shadow-md z-50 pointer-events-none ml-[8px] mt-[36px] flex items-center justify-items-center rounded-full md:rounded-l-full relative ${urlParts[1]
-                              .trim()
-                              .localeCompare(option.urlKey) === 0
-                              ? "bg-[#CDD8D3] dark:bg-forest-1000"
-                              : "bg-[#F0F5F3] dark:bg-[#5A6462]"
-                              }`}
+                            className={`text-forest-900 dark:text-forest-50 py-1 px-4 text-base break-inside-auto shadow-md z-50 pointer-events-none ml-[8px] mt-[36px] flex items-center justify-items-center rounded-full md:rounded-l-full relative ${
+                              urlParts[1]
+                                .trim()
+                                .localeCompare(option.urlKey) === 0
+                                ? "bg-[#CDD8D3] dark:bg-forest-1000"
+                                : "bg-[#F0F5F3] dark:bg-[#5A6462]"
+                            }`}
                           >
                             {option.label}
                           </TooltipContent>
@@ -507,17 +536,30 @@ export default function SidebarMenuGroup({
             </div>
 
             <div
-              className={`absolute bottom-[18px] left-[33px] flex-1 flex items-center transition-all duration-300 origin-[-15px_5px]  ${isOpen ? "rotate-90" : "rotate-0"
-                }`}
+              className={`absolute bottom-[14px] left-[33px] flex-1 flex items-center transition-all duration-300 origin-[-15px_5px]  ${
+                isOpen ? "rotate-90" : "rotate-0"
+              }`}
             >
               {/* <Icon icon="gtp:chevron-right" className="w-[8px] h-[8px] mr-2" /> */}
-              <svg width="4" height="10" viewBox="0 0 4 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M0.898315 1.07129L2.89832 5.07129L0.898315 9.07129" stroke="#CDD8D3" stroke-width="1.5" stroke-linejoin="round" />
+              <svg
+                width="4"
+                height="10"
+                viewBox="0 0 4 10"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M0.898315 1.07129L2.89832 5.07129L0.898315 9.07129"
+                  stroke="#CDD8D3"
+                  stroke-width="1.5"
+                  stroke-linejoin="round"
+                />
               </svg>
-
             </div>
             {sidebarOpen && (
-              <div className={`flex-1 h-[44px] flex items-center justify-between`}>
+              <div
+                className={`flex-1 h-[44px] flex items-center justify-between`}
+              >
                 <div className="text-[20px] font-semibold mx-3 whitespace-nowrap">
                   {item.name === "RPGF3 Tracker" ? (
                     <>
@@ -536,10 +578,11 @@ export default function SidebarMenuGroup({
               className={`transition-all duration-300 absolute top-0.5 bottom-0.5 right-[4px] md:right-0 text-xs flex items-center justify-center font-bold overflow-hidden pointer-events-none`}
             >
               <div
-                className={`transition-all duration-300 w-[50px] h-full rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${!sidebarOpen || isOpen
-                  ? "translate-x-[60px] ease-in-out opacity-0"
-                  : "delay-300 translate-x-0 ease-in-out opacity-100"
-                  }`}
+                className={`transition-all duration-300 w-[50px] h-full rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${
+                  !sidebarOpen || isOpen
+                    ? "translate-x-[60px] ease-in-out opacity-0"
+                    : "delay-300 translate-x-0 ease-in-out opacity-100"
+                }`}
               >
                 <div
                   className={`transition-all duration-300 absolute inset-0 pr-[8px] rounded-full md:rounded-br-none md:rounded-tr-none text-xs flex items-center justify-end font-bold hard-shine-2 text-white dark:text-forest-900`}
@@ -577,12 +620,14 @@ export default function SidebarMenuGroup({
                       item.options.filter((o) => o.hide !== true)[i - 1]
                         .category != option.category)) && (
                     <div
-                      className={`px-0 md:pl-5 overflow-visible text-[#5A6462] ${i === 0 ? "mt-[0px]" : "mt-[0px]"
-                        } `}
+                      className={`px-0 md:pl-5 overflow-visible text-[#5A6462] ${
+                        i === 0 ? "mt-[0px]" : "mt-[0px]"
+                      } `}
                     >
                       <div
-                        className={`flex items-center justify-items-center rounded-full md:rounded-r-none relative  ${sidebarOpen ? "block" : "hidden"
-                          }`}
+                        className={`flex items-center justify-items-center rounded-full md:rounded-r-none relative  ${
+                          sidebarOpen ? "block" : "hidden"
+                        }`}
                       >
                         <div className={`h-full`}></div>
                         <div
@@ -592,7 +637,9 @@ export default function SidebarMenuGroup({
                           }}
                         >
                           {sidebarOpen ? (
-                            navigationCategories[option.category].label.toUpperCase()
+                            navigationCategories[
+                              option.category
+                            ].label.toUpperCase()
                           ) : (
                             <span>&nbsp;</span>
                           )}
@@ -602,14 +649,16 @@ export default function SidebarMenuGroup({
                   )}
                 <Tooltip placement="right">
                   <TooltipTrigger
-                    className={`px-0 md:pl-[26px] w-full ${!option.category ? "mt-[10px]" : "mt-0"
-                      }`}
+                    className={`px-0 md:pl-[26px] w-full ${
+                      !option.category ? "mt-[10px]" : "mt-0"
+                    }`}
                   >
                     <Link
-                      className={`group flex h-[36px] items-center justify-items-center rounded-full md:rounded-r-none relative w-full ${urlParts[1].trim().localeCompare(option.urlKey) === 0
-                        ? "bg-[#CDD8D3] dark:bg-forest-1000 hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
-                        : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
-                        } ${option.key === "chain-overview" ? "mt-1" : "mt-0"}`}
+                      className={`group flex h-[36px] items-center justify-items-center rounded-full md:rounded-r-none relative w-full ${
+                        urlParts[1].trim().localeCompare(option.urlKey) === 0
+                          ? "bg-[#CDD8D3] dark:bg-forest-1000 hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
+                          : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
+                      } ${option.key === "chain-overview" ? "mt-1" : "mt-0"}`}
                       href={
                         !option.key?.includes("https://")
                           ? option.url
@@ -638,15 +687,16 @@ export default function SidebarMenuGroup({
                       }}
                     >
                       <div
-                        className={`absolute top-0 left-[4px] w-[64px] h-[36px] bg-gradient-to-r from-transparent to-forest-50 dark:to-[#1F2726] transition-opacity  ease-in-out ${sidebarOpen
-                          ? "opacity-0 duration-0"
-                          : "opacity-100 duration-500"
-                          }`}
+                        className={`absolute top-0 left-[4px] w-[64px] h-[36px] bg-gradient-to-r from-transparent to-forest-50 dark:to-[#1F2726] transition-opacity  ease-in-out ${
+                          sidebarOpen
+                            ? "opacity-0 duration-0"
+                            : "opacity-100 duration-500"
+                        }`}
                       ></div>
 
                       <div className="w-full flex items-center gap-x-[15px]">
                         <div
-                          className={`w-[26px] h-[26px] min-w-[26px] min-h-[26px] flex items-center justify-center rounded-full bg-[#151A19] ml-2.5`}
+                          className={`w-[26px] h-[26px] min-w-[26px] min-h-[26px] flex items-center justify-center rounded-full bg-[#151A19] ml-[11px]`}
                         >
                           <Icon
                             icon={option.icon}
@@ -672,10 +722,11 @@ export default function SidebarMenuGroup({
                           className={`transition-all duration-300 absolute top-1 bottom-1 right-[4px] md:right-0 text-xs flex items-center justify-center font-bold overflow-hidden`}
                         >
                           <div
-                            className={`transition-all duration-300 w-[50px] h-full rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${sidebarOpen && isOpen
-                              ? "delay-300 translate-x-[0px] ease-in-out opacity-100"
-                              : "translate-x-[60px] ease-in-out opacity-0"
-                              }`}
+                            className={`transition-all duration-300 w-[50px] h-full rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${
+                              sidebarOpen && isOpen
+                                ? "delay-300 translate-x-[0px] ease-in-out opacity-100"
+                                : "translate-x-[60px] ease-in-out opacity-0"
+                            }`}
                           >
                             <div
                               className={`transition-all duration-300 absolute inset-0 pr-[8px] rounded-full md:rounded-br-none md:rounded-tr-none text-xs flex items-center justify-end font-bold hard-shine-2 text-white dark:text-forest-900`}

@@ -687,7 +687,7 @@ export const navigationItems: NavigationItem[] = [
   // },
   {
     name: "Trackers",
-    label: "Trackers",
+    label: "Public Goods",
     icon: "gtp:gtp-tracker",
     options: [
       {
