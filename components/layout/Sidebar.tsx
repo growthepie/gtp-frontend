@@ -72,14 +72,13 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
     return (
       <>
         <button
-          className={`z-[999] transition-colors duration-200 ${
-            isMobileSidebarOpen ? "hidden" : "block"
-          } ${
+          className={`z-[999] transition-colors duration-200 ${isMobileSidebarOpen ? "hidden" : "block"
+            } ${
             // if scroll position is 20px or more from top, add bg and shadow
             scrollHeight > 0
               ? "fixed bg-white dark:bg-forest-1000 shadow-md rounded-full border-2 border-forest-900 dark:border-forest-200 p-2 right-[6px] top-[18px]"
               : `fixed right-[16px] top-[28px] border-transparent`
-          }`}
+            }`}
           // style={{
           //   top: scrollHeight >= 15 ? "20px" : `calc(28px - ${scrollHeight}px)`,
           // }}
@@ -104,11 +103,10 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
         {isMobileSidebarOpen && (
           <div
             suppressHydrationWarning
-            className={`transition-opacity z-[999] ${
-              isMobileSidebarOpen
-                ? "opacity-100 pointer-events-none"
-                : "opacity-0 pointer-events-none"
-            }`}
+            className={`transition-opacity z-[999] ${isMobileSidebarOpen
+              ? "opacity-100 pointer-events-none"
+              : "opacity-0 pointer-events-none"
+              }`}
           >
             <div className="fixed inset-0 p-[20px] z-[999] flex flex-col justify-items-start select-none overflow-hidden">
               <div className="flex justify-between space-x-[20px] items-end w-full pointer-events-auto">
@@ -180,9 +178,8 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
 
   return (
     <motion.div
-      className={`flex-1 flex flex-col justify-items-start select-none overflow-y-hidden overflow-x-hidden  ${
-        isSidebarOpen ? "w-[18rem]" : ""
-      }`}
+      className={`flex-1 flex flex-col justify-items-start select-none overflow-y-hidden overflow-x-hidden  ${isSidebarOpen ? "w-[18rem]" : ""
+        }`}
       animate={{
         width: isSidebarOpen ? "18rem" : "5.5rem",
       }}
@@ -190,7 +187,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
         duration: 0.3,
       }}
     >
-      <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-forest-800/30 scrollbar-track-forest-800/10">
+      <div className="flex-1 flex flex-col gap-y-[10px] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-forest-800/30 scrollbar-track-forest-800/10">
         {navigationItemsWithChains.map((item) => (
           <SidebarMenuGroup
             key={item.name + "_item"}
