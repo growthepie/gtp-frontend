@@ -359,7 +359,7 @@ export default function SidebarMenuGroup({
                   >
                     <div
                       className={`flex items-center justify-items-center rounded-full md:rounded-r-none relative  ${
-                        sidebarOpen ? "block" : "hidden"
+                        sidebarOpen ? "visible" : "invisible"
                       }`}
                     >
                       <div className={`h-full`}></div>
@@ -626,7 +626,7 @@ export default function SidebarMenuGroup({
                     >
                       <div
                         className={`flex items-center justify-items-center rounded-full md:rounded-r-none relative  ${
-                          sidebarOpen ? "block" : "hidden"
+                          sidebarOpen ? "visible" : "invisible"
                         }`}
                       >
                         <div className={`h-full`}></div>
@@ -647,10 +647,10 @@ export default function SidebarMenuGroup({
                       </div>
                     </div>
                   )}
-                <Tooltip placement="right">
+                <Tooltip placement="top-start">
                   <TooltipTrigger
                     className={`px-0 md:pl-[26px] w-full ${
-                      !option.category ? "mt-[10px]" : "mt-0"
+                      !option.category ? "mt-[26px]" : "mt-0"
                     }`}
                   >
                     <Link
@@ -740,9 +740,28 @@ export default function SidebarMenuGroup({
                   </TooltipTrigger>
                   {!sidebarOpen && (
                     <TooltipContent
-                      className={`bg-forest-900 text-forest-50 dark:bg-forest-50 dark:text-forest-900 rounded-md p-2 text-xs ml-2 font-medium break-inside-auto shadow-md z-50 `}
+                      className={`text-forest-900 dark:text-forest-50 py-1 px-4 text-base break-inside-auto shadow-md z-50 pointer-events-none ml-[24px] mt-[42px] flex items-center justify-items-center rounded-full md:rounded-l-full relative ${
+                        urlParts[1].trim().localeCompare(option.urlKey) === 0
+                          ? "bg-[#CDD8D3] dark:bg-forest-1000"
+                          : "bg-[#F0F5F3] dark:bg-[#5A6462]"
+                      }`}
                     >
-                      {option.label}
+                      <div className="w-full flex items-center gap-x-[15px]">
+                        <div
+                          className={`w-[26px] h-[26px] min-w-[26px] min-h-[26px] flex items-center justify-center rounded-full bg-[#151A19] relative right-[4px]`}
+                        >
+                          <Icon
+                            icon={option.icon}
+                            className="h-[15px] w-[15px] text-[#5A6462] "
+                          />
+                        </div>
+
+                        <div
+                          className={`text-[14px] py-1  font-bold break-inside-auto transition-all duration-300 ease-in text-left relative right-[4px]`}
+                        >
+                          {option.label}
+                        </div>
+                      </div>
                     </TooltipContent>
                   )}
                 </Tooltip>
