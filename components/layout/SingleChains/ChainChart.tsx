@@ -668,7 +668,7 @@ export default function ChainChart({
                     AllChainsByKeys[name].colors[theme ?? "dark"][0]
                   }"></div>
                   <div class="flex-1 text-left justify-start font-inter flex">
-                      <div class="opacity-70 mr-0.5 ${
+                      <div class="opacity-70 ${
                         !prefix && "hidden"
                       }">${prefix}</div>
                       ${parseFloat(value).toLocaleString("en-GB", {
