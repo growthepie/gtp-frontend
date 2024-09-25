@@ -95,8 +95,9 @@ export default function ContractCard({
       className="hover:cursor-pointer"
       onClick={() => {
         if (data[types.indexOf("main_category_key")]) {
-          window.location.href = `/blockspace/category-comparison?category=${data[types.indexOf("main_category_key")]
-            }&subcategories=${data[types.indexOf("sub_category_key")]}`;
+          window.location.href = `/blockspace/category-comparison?category=${
+            data[types.indexOf("main_category_key")]
+          }&subcategories=${data[types.indexOf("sub_category_key")]}`;
         } else {
           navigator.clipboard.writeText(data[types.indexOf("address")]);
           handleCopy();
@@ -125,7 +126,7 @@ export default function ContractCard({
                     style={{
                       color:
                         AllChainsByKeys[data[types.indexOf("chain")]].colors[
-                        theme ?? "dark"
+                          theme ?? "dark"
                         ][0],
                     }}
                   />
@@ -139,7 +140,7 @@ export default function ContractCard({
           <div className="flex flex-col items-end space-x-3 space-y-1 justify-end absolute right-0 top-0">
             <>
               {metric.includes("gas_fees") && (
-                <div className="flex flex-row items-center space-x-1 text-sm">
+                <div className="flex flex-row items-center text-sm">
                   <div>{metric.includes("_usd") ? "$" : "Ξ"}</div>
                   <div>
                     {Intl.NumberFormat("en-GB", {
@@ -179,10 +180,11 @@ export default function ContractCard({
             {data[types.indexOf(`${metric}_change_percent`)] ? (
               <div className="flex space-x-1 text-[0.6rem] items-end justify-end ">
                 <div
-                  className={`flex flex-row space-x-1 text-xs font-semibold transition-colors duration-200 ${data[types.indexOf(`${metric}_change_percent`)] >= 0
-                    ? " text-green-500 dark:group-hover:text-green-400"
-                    : " text-red-500 dark:group-hover:text-red-400"
-                    }`}
+                  className={`flex flex-row space-x-1 text-xs font-semibold transition-colors duration-200 ${
+                    data[types.indexOf(`${metric}_change_percent`)] >= 0
+                      ? " text-green-500 dark:group-hover:text-green-400"
+                      : " text-red-500 dark:group-hover:text-red-400"
+                  }`}
                 >
                   {data[types.indexOf(`${metric}_change_percent`)] >= 0 ? (
                     <>
@@ -229,8 +231,9 @@ export default function ContractCard({
         </div>
         <div className="flex flex-row justify-between items-end  w-full">
           <div
-            className={`flex flex-row items-center space-x-1 text-xs md:text-sm ${data[types.indexOf("name")] ? "pt-0" : " pt-[22px]"
-              }`}
+            className={`flex flex-row items-center space-x-1 text-xs md:text-sm ${
+              data[types.indexOf("name")] ? "pt-0" : " pt-[22px]"
+            }`}
           >
             {master && (
               <div className="flex flex-row items-center space-x-1">
@@ -238,17 +241,17 @@ export default function ContractCard({
                   data[types.indexOf("main_category_key")]
                 ]
                   ? master.blockspace_categories.main_categories[
-                  data[types.indexOf("main_category_key")]
-                  ]
+                      data[types.indexOf("main_category_key")]
+                    ]
                   : copied
-                    ? "Address Copied to Clipboard"
-                    : "Category Not Assigned"}{" "}
+                  ? "Address Copied to Clipboard"
+                  : "Category Not Assigned"}{" "}
                 {!data[types.indexOf("main_category_key")] ? null : (
                   <span className="mx-1">&gt;</span>
                 )}
                 {
                   master.blockspace_categories.sub_categories[
-                  data[types.indexOf("sub_category_key")]
+                    data[types.indexOf("sub_category_key")]
                   ]
                 }
               </div>

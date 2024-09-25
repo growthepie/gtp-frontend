@@ -1865,7 +1865,7 @@ export default function ChainChart({
                                     />
                                   </div>
                                 </Link>
-                                <div className="relative text-[18px] leading-snug font-medium flex space-x-[2px] right-[40px]">
+                                <div className="relative text-[18px] leading-snug font-medium flex right-[40px]">
                                   <div>{displayValues[0][key].prefix}</div>
                                   <div>{displayValues[0][key].value}</div>
                                   <div className="text-base pl-0.5">
