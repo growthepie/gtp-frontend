@@ -865,9 +865,7 @@ export default function EconHeadCharts({
                                       .daily.data.length - 1
                                   ][0]
                             }
-                          >
-                            <XAxis.Title>X Axis</XAxis.Title>
-                          </XAxis>
+                          ></XAxis>
 
                           <YAxis
                             opposite={false}
