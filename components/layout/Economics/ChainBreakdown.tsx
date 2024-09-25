@@ -507,6 +507,8 @@ export default function ChainBreakdown({
     return retHeight;
   }, [openChain, data, selectedTimespan]);
 
+  console.log(allChainsDA);
+
   return (
     <div className="h-full">
       {/* <div>xMax {new Date(timespans[selectedTimespan].xMax).toDateString()}</div>
@@ -1085,6 +1087,24 @@ export default function ChainBreakdown({
                         <div
                           className="flex items-center bg-[#344240] gap-x-1 h-[18px] text-[10px] rounded-full px-[6px] py-[3px]"
                           key={localDataAvail.label}
+                          onClick={(e) => {
+                            if (
+                              DAIndex ===
+                              allChainsDA.indexOf(localDataAvail.label)
+                            ) {
+                              setEnableDASort(false);
+                              setDAIndex(0);
+                              e.stopPropagation();
+                              return;
+                            } else {
+                              setEnableDASort(true);
+                              //setDAIndex()
+                              setDAIndex(
+                                allChainsDA.indexOf(localDataAvail.label),
+                              );
+                              e.stopPropagation();
+                            }
+                          }}
                         >
                           <div className="flex items-center gap-x-1">
                             <Icon
@@ -1301,25 +1321,16 @@ export default function ChainBreakdown({
                       </div>
                       <div
                         className={`flex items-center py-[6px] justify-center gap-x-[5px] px-[5px]   h-full relative ${
-                          (data[item.key][selectedTimespan].revenue.total[
-                            dataIndex
-                          ] -
-                            data[item.key][selectedTimespan].costs.total[
-                              dataIndex
-                            ]) /
-                            data[item.key][selectedTimespan].revenue.total[
-                              dataIndex
-                            ] >
-                          0
+                          data[item.key][selectedTimespan].profit_margin
+                            .total[0] > 0
                             ? "flex-row"
                             : "flex-row-reverse pl-[16px]"
                         } ${columnBorder("margin", item.key)}`}
                       >
                         <div
                           className={`min-w-[61px] max-w-[61px] text-[12px] font-semibold flex items-center ${
-                            data[item.key][selectedTimespan].profit.total[
-                              dataIndex
-                            ] > 0
+                            data[item.key][selectedTimespan].profit_margin
+                              .total[0] > 0
                               ? "justify-end"
                               : "justify-start"
                           }`}
@@ -1336,16 +1347,15 @@ export default function ChainBreakdown({
                               minimumFractionDigits: 1,
                             }).format(
                               data[item.key][selectedTimespan].profit_margin
-                                .total[dataIndex] * 100,
+                                .total[0] * 100,
                             )}
                           </div>
                           <span>{"%"}</span>
                         </div>
                         <div
                           className={`relative flex items-center px-[3px]  h-full w-[65px]  border-dashed border-forest-50  ${
-                            data[item.key][selectedTimespan].profit.total[
-                              dataIndex
-                            ] > 0
+                            data[item.key][selectedTimespan].profit_margin
+                              .total[0] > 0
                               ? "border-l-[1px] justify-start flex-row"
                               : "border-r-[1px] justify-start flex-row-reverse"
                           }`}
@@ -1353,7 +1363,7 @@ export default function ChainBreakdown({
                           <div
                             className={`absolute h-[4px] bg-[#5A6462] w-[50px] z-0 ${
                               data[item.key][selectedTimespan].profit_margin
-                                .total[dataIndex] > 0
+                                .total[0] > 0
                                 ? "rounded-r-full"
                                 : "rounded-l-full"
                             }`}
@@ -1361,7 +1371,7 @@ export default function ChainBreakdown({
                           <div
                             className={`h-[4px] z-10 ${
                               data[item.key][selectedTimespan].profit_margin
-                                .total[dataIndex] > 0
+                                .total[0] > 0
                                 ? "bg-[#45AA6F] rounded-r-2xl "
                                 : "bg-[#FF8F27] rounded-l-2xl"
                             }`}
@@ -1369,11 +1379,11 @@ export default function ChainBreakdown({
                               width: `${(
                                 50 *
                                 (data[item.key][selectedTimespan].profit_margin
-                                  .total[dataIndex] > 0
+                                  .total[0] > 0
                                   ? 1
                                   : -1) *
                                 data[item.key][selectedTimespan].profit_margin
-                                  .total[dataIndex]
+                                  .total[0]
                               ).toFixed(2)}px`,
                               minWidth: "1px",
                               maxWidth: "50px",
@@ -1382,11 +1392,11 @@ export default function ChainBreakdown({
                           <div
                             className={` items-center flex-row-reverse relative ${
                               (data[item.key][selectedTimespan].profit_margin
-                                .total[dataIndex] > 0
+                                .total[0] > 0
                                 ? 1
                                 : -1) *
                                 data[item.key][selectedTimespan].profit_margin
-                                  .total[dataIndex] *
+                                  .total[0] *
                                 100 >
                               100
                                 ? "flex"
@@ -1396,7 +1406,7 @@ export default function ChainBreakdown({
                             <div
                               className={`h-[4px] w-[4px] z-10 absolute right-[-18px] ${
                                 data[item.key][selectedTimespan].profit_margin
-                                  .total[dataIndex] > 0
+                                  .total[0] > 0
                                   ? "hidden"
                                   : "bg-[#5A6462] block"
                               }`}
@@ -1404,7 +1414,7 @@ export default function ChainBreakdown({
                             <div
                               className={`h-[4px] w-[4px] z-10 absolute right-[-14px] ${
                                 data[item.key][selectedTimespan].profit_margin
-                                  .total[dataIndex] > 0
+                                  .total[0] > 0
                                   ? "hidden"
                                   : "bg-[#FF8F27] block"
                               }`}
@@ -1412,7 +1422,7 @@ export default function ChainBreakdown({
                             <div
                               className={`h-[4px] w-[3px] z-10 absolute right-[-11px] ${
                                 data[item.key][selectedTimespan].profit_margin
-                                  .total[dataIndex] > 0
+                                  .total[0] > 0
                                   ? "hidden"
                                   : "bg-[#5A6462] block"
                               }`}
@@ -1420,7 +1430,7 @@ export default function ChainBreakdown({
                             <div
                               className={`h-[4px] w-[3px] z-10 absolute right-[-8px] ${
                                 data[item.key][selectedTimespan].profit_margin
-                                  .total[dataIndex] > 0
+                                  .total[0] > 0
                                   ? "hidden"
                                   : "bg-[#FF8F27] block"
                               }`}
@@ -1428,7 +1438,7 @@ export default function ChainBreakdown({
                             <div
                               className={`h-[4px] w-[2px] z-10 absolute right-[-5px] ${
                                 data[item.key][selectedTimespan].profit_margin
-                                  .total[dataIndex] > 0
+                                  .total[0] > 0
                                   ? "hidden"
                                   : "bg-[#5A6462] block"
                               }`}
@@ -1436,7 +1446,7 @@ export default function ChainBreakdown({
                             <div
                               className={`h-[4px] w-[2px] z-10 absolute right-[-3px] ${
                                 data[item.key][selectedTimespan].profit_margin
-                                  .total[dataIndex] > 0
+                                  .total[0] > 0
                                   ? "hidden"
                                   : "bg-[#FF8F27] block"
                               }`}
@@ -1444,7 +1454,7 @@ export default function ChainBreakdown({
                             <div
                               className={`h-[4px] w-[1px] z-10 absolute right-[-2px] ${
                                 data[item.key][selectedTimespan].profit_margin
-                                  .total[dataIndex] > 0
+                                  .total[0] > 0
                                   ? "hidden"
                                   : "bg-[#5A6462] block"
                               }`}
@@ -1452,7 +1462,7 @@ export default function ChainBreakdown({
                             <div
                               className={`h-[4px] w-[1px] z-10 absolute right-[-1px] ${
                                 data[item.key][selectedTimespan].profit_margin
-                                  .total[dataIndex] > 0
+                                  .total[0] > 0
                                   ? "hidden"
                                   : "bg-[#FF8F27] block"
                               }`}
