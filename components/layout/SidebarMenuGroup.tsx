@@ -966,16 +966,26 @@ const Accordion = ({
     }
   }, [children]);
 
+  const target = link?.startsWith("http") ? "_blank" : undefined;
+
 
   return (
     <Link
       className="flex flex-col relative overflow-visible"
       href={link ? link : ""}
-      target={link && link.startsWith("http") ? "_blank" : ""}
-      rel={link && link.startsWith("http") ? "noopener noreferrer" : ""}
+      target={link && link.startsWith("http") ? "_blank" : undefined}
+      rel={link && link.startsWith("http") ? "noopener noreferrer" : undefined}
       style={{
         width: width || "100%",
       }}
+      onClick={(e) => {
+        // workaround for next/link bug
+        if (link && link.startsWith("http")) {
+          e.preventDefault();
+          window.open(link, "_blank");
+        };
+      }}
+      passHref
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -1006,8 +1016,8 @@ const Accordion = ({
             </div>
           </div>
         </TooltipTrigger>
-        {hideLabel && <TooltipContent className={`${hideLabel ? "z-50" : ""} pointer-events-none`}>
-          <div className="absolute" style={{ top: 5, left: 0 }}>
+        {/* {hideLabel && <TooltipContent className={`${hideLabel ? "z-50" : ""} pointer-events-none`}>
+          <div className="absolute pointer-events-none" style={{ top: 5, left: 0 }}>
             <div
               className={`flex items-center justify-between ${hideLabel ? "rounded-full" : "rounded-full"} ${isActive && "!bg-[#151A19]"}`}
               style={{
@@ -1031,7 +1041,7 @@ const Accordion = ({
               </div>
             </div>
           </div>
-        </TooltipContent>}
+        </TooltipContent>} */}
       </Tooltip>
       {children && (
         <div
