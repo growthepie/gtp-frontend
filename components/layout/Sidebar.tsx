@@ -2,7 +2,6 @@
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import SidebarMenuGroup from "./SidebarMenuGroup";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import {
   navigationItems,
   contributorsItem,
@@ -21,6 +20,8 @@ import { useTheme } from "next-themes";
 import { track } from "@vercel/analytics";
 import { useMaster } from "@/contexts/MasterContext";
 import Chain from "@/app/(layout)/chains/[chain]/page";
+import { GTPIconName } from "@/icons/gtp-icon-names";
+import GTPIcon from "./GTPIcon";
 
 type SidebarProps = {
   className?: string;
@@ -176,16 +177,17 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
       </>
     );
 
+  console.log("navigationItemsWithChains", navigationItemsWithChains);
+
   return (
-    <motion.div
-      className={`flex-1 flex flex-col justify-items-start select-none overflow-y-hidden overflow-x-hidden  ${isSidebarOpen ? "w-[18rem]" : ""
-        }`}
-      animate={{
-        width: isSidebarOpen ? "18rem" : "5.5rem",
-      }}
-      transition={{
-        duration: 0.3,
-      }}
+    <div
+      className={`flex-1 flex flex-col justify-items-start select-none overflow-y-hidden overflow-x-hidden  ${isSidebarOpen ? "w-[250px]" : "w-[72px]"} transition-all duration-300 `}
+    // animate={{
+    //   width: isSidebarOpen ? "229px" : "72px",
+    // }}
+    // transition={{
+    //   duration: 0.3,
+    // }}
     >
       <div className="flex-1 flex flex-col gap-y-[10px] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-forest-800/30 scrollbar-track-forest-800/10">
         {navigationItemsWithChains.map((item) => (
@@ -195,9 +197,10 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
             sidebarOpen={isSidebarOpen}
           />
         ))}
+
       </div>
       <div className="flex flex-col justify-end pt-6 pb-3 relative"></div>
-      <div className="mt-[80px"></div>
-    </motion.div>
+      {/* <div className="mt-[80px]"></div> */}
+    </div>
   );
 }

@@ -5,6 +5,7 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { ImportChainIcons } from "@/lib/chainIcons";
 import useSWR from "swr";
+import { GTPIconName } from "@/icons/gtp-icon-names";
 
 type MasterContextType = {
   data: MasterResponse | undefined;
@@ -15,10 +16,10 @@ type MasterContextType = {
     name: string;
     label: string;
     key: string;
-    icon: string;
+    icon: GTPIconName;
     options: {
       label: string;
-      icon: string;
+      icon: GTPIconName;
       key: string;
       urlKey: string;
       hide: boolean;

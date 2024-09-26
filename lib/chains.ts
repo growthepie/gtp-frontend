@@ -130,16 +130,21 @@ export const Get_AllChainsNavigationItems = (master: MasterResponse) => {
 
   return {
     name: "Chains",
-    label: "Single Chain",
+    label: "Chains",
     key: "chains",
-    icon: "gtp:gtp-chain",
+    icon: "gtp-chain",
     options: chainKeys.map((key) => {
       const chain = chains[key];
       return {
         label: chain.name,
-        icon: `gtp-${key}-logo-monochrome`,
+        icon: `${
+          chain.url_key ? chain.url_key : key.replace(/_/g, "-")
+        }-logo-monochrome`,
         key: key,
         urlKey: chain.url_key ? chain.url_key : key.replace(/_/g, "-"),
+        url: `/chains/${
+          chain.url_key ? chain.url_key : key.replace(/_/g, "-")
+        }`,
         hide: false,
         excludeFromSitemap: false,
       };
