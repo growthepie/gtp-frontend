@@ -15,7 +15,7 @@ type VerticalScrollContainerProps = {
   paddingBottom?: number;
   scrollbarPosition?: ScrollbarPosition; // New Prop
   scrollbarAbsolute?: boolean;
-  scrollbarWidth: string;
+  scrollbarWidth?: string | number;
 };
 
 export default function VerticalScrollContainer({
