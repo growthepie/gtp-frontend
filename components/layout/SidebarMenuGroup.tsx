@@ -1016,7 +1016,7 @@ const Accordion = ({
             </div>
           </div>
         </TooltipTrigger>
-        {/* {hideLabel && <TooltipContent className={`${hideLabel ? "z-50" : ""} pointer-events-none`}>
+        {hideLabel && <TooltipContent className={`${hideLabel ? "z-50" : ""} pointer-events-none`}>
           <div className="absolute pointer-events-none" style={{ top: 5, left: 0 }}>
             <div
               className={`flex items-center justify-between ${hideLabel ? "rounded-full" : "rounded-full"} ${isActive && "!bg-[#151A19]"}`}
@@ -1041,7 +1041,7 @@ const Accordion = ({
               </div>
             </div>
           </div>
-        </TooltipContent>} */}
+        </TooltipContent>}
       </Tooltip>
       {children && (
         <div
