@@ -1,5 +1,5 @@
 "use client";
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import SidebarMenuGroup from "./SidebarMenuGroup";
 import Link from "next/link";
 import {
@@ -22,6 +22,8 @@ import { useMaster } from "@/contexts/MasterContext";
 import Chain from "@/app/(layout)/chains/[chain]/page";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import GTPIcon from "./GTPIcon";
+import VerticalScrollContainer from "../VerticalScrollContainer";
+import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
 type SidebarProps = {
   className?: string;
@@ -68,6 +70,30 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
       return () => window.removeEventListener("scroll", handleScroll);
     }
   }, [isMobile]);
+
+  const [ref, { height }] = useElementSizeObserver<HTMLDivElement>();
+
+  const mobileRef = useRef<HTMLDivElement>(null);
+  const [mobileHeight, setMobileHeight] = useState(0);
+
+  const handleMobileHeight = () => {
+    if (mobileRef.current) {
+      setMobileHeight(mobileRef.current.getBoundingClientRect().height);
+    }
+  };
+
+  useEffect(() => {
+    // add height observer to mobile sidebar
+    handleMobileHeight();
+    window.addEventListener("resize", handleMobileHeight);
+    return () => window.removeEventListener("resize", handleMobileHeight);
+  }, []);
+
+  useEffect(() => {
+    if (isMobileSidebarOpen) {
+      handleMobileHeight();
+    }
+  }, [isMobileSidebarOpen]);
 
   if (isMobile)
     return (
@@ -130,8 +156,9 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                   </button>
                 </div>
               </div>
-              <div className="z-[999] mt-[30px] h-[calc(100vh-100px)] w-full flex flex-col justify-between overflow-hidden relative pointer-events-auto">
-                <div className="flex-1 w-full overflow-x-hidden relative overflow-y-auto scrollbar-thin scrollbar-thumb-forest-1000/50 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
+              <div ref={mobileRef} className="z-[999] mt-[30px] h-[calc(100vh-100px)] w-full flex flex-col justify-between overflow-hidden relative pointer-events-auto">
+                {/* <div className="flex-1 w-full overflow-x-hidden relative overflow-y-auto scrollbar-thin scrollbar-thumb-forest-1000/50 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller"> */}
+                <VerticalScrollContainer height={mobileHeight - 100} scrollbarPosition="right" scrollbarAbsolute={false} scrollbarWidth="6px">
                   {navigationItemsWithChains.map((item) => (
                     <SidebarMenuGroup
                       key={item.name + "_item"}
@@ -139,7 +166,8 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                       sidebarOpen={isMobileSidebarOpen}
                     />
                   ))}
-                </div>
+                </VerticalScrollContainer>
+                {/* </div> */}
 
                 <div className="flex flex-col justify-end pt-3 pb-6 relative mb-[17px] pointer-events-auto">
                   {/* <div className="text-[0.7rem] flex justify-evenly w-full gap-x-12 text-inherit leading-[1] px-2  mb-[17px]">
@@ -181,7 +209,8 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
 
   return (
     <div
-      className={`flex-1 flex flex-col justify-items-start select-none overflow-y-hidden overflow-x-hidden  ${isSidebarOpen ? "w-[230px]" : "w-[72px]"} transition-all duration-300 `}
+      ref={ref}
+      className={`flex-1 flex flex-col justify-items-start select-none overflow-y-hidden overflow-x-hidden -ml-[20px] ${isSidebarOpen ? "w-[250px]" : "w-[72px]"} transition-all duration-300 `}
     // animate={{
     //   width: isSidebarOpen ? "229px" : "72px",
     // }}
@@ -189,16 +218,20 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
     //   duration: 0.3,
     // }}
     >
-      <div className="flex-1 flex flex-col gap-y-[10px] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-forest-800/30 scrollbar-track-forest-800/10">
-        {navigationItemsWithChains.map((item) => (
-          <SidebarMenuGroup
-            key={item.name + "_item"}
-            item={item}
-            sidebarOpen={isSidebarOpen}
-          />
-        ))}
+      {/* <div className="flex-1 flex flex-col gap-y-[10px] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-forest-800/30 scrollbar-track-forest-800/10"> */}
+      <VerticalScrollContainer height={height - 36} scrollbarPosition="left" scrollbarAbsolute={true} scrollbarWidth="6px">
+        <div className="pl-[20px]">
+          {navigationItemsWithChains.map((item) => (
+            <SidebarMenuGroup
+              key={item.name + "_item"}
+              item={item}
+              sidebarOpen={isSidebarOpen}
+            />
+          ))}
+        </div>
+      </VerticalScrollContainer>
 
-      </div>
+      {/* </div> */}
       <div className="flex flex-col justify-end pt-6 pb-3 relative"></div>
       {/* <div className="mt-[80px]"></div> */}
     </div>
