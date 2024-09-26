@@ -1071,7 +1071,7 @@ export default function ChainBreakdown({
                         <div>
                           <Link
                             className="hover:underline whitespace-nowrap"
-                            href={`https://www.growthepie.xyz/chains/${
+                            href={`/chains/${
                               AllChainsByKeys[item.key].urlKey
                             }`}
                             onClick={(e) => {
