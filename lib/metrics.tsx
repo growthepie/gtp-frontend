@@ -243,7 +243,7 @@ export const metricItems: MetricItem[] = [
           </span>
           <Icon
             className="text-forest-900 dark:text-forest-500 text-base"
-            icon="gtp:gtp-metrics-marketcap"
+            icon="feather:x"
           />
 
           <span className="font-inter text-xs px-1.5 py-[1px] rounded border border-forest-900 dark:border-forest-500 font-medium">
