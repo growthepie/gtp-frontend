@@ -179,7 +179,7 @@ export default function SidebarMenuGroup({
                             iconHoverColor={AllChainsByKeys[option.key].colors["dark"][1]}
                             label={option.label} hideLabel={!sidebarOpen}
                             link={option.url} isActive={option.url ? pathname.localeCompare(option.url) === 0 : false}
-                            width={isMobile ? "100%" : "240px"}
+                            width={isMobile ? "100%" : "250px"}
                           />
                         </>
                       );
@@ -219,7 +219,7 @@ export default function SidebarMenuGroup({
                       size={"md"} background="none"
                       icon={option.icon as GTPIconName} iconBackground="dark"
                       label={option.label} hideLabel={!sidebarOpen} link={option.url} isActive={option.url ? pathname.localeCompare(option.url) === 0 : false}
-                      width={isMobile ? "100%" : "240px"}
+                      width={isMobile ? "100%" : "250px"}
                     />
                   </>
                 );

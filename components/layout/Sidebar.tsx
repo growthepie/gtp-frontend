@@ -210,7 +210,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
   return (
     <div
       ref={ref}
-      className={`flex-1 flex flex-col justify-items-start select-none overflow-y-hidden overflow-x-hidden -ml-[20px] ${isSidebarOpen ? "w-[250px]" : "w-[72px]"} transition-all duration-300 `}
+      className={`flex-1 flex flex-col justify-items-start select-none overflow-y-hidden overflow-x-hidden -ml-[20px] ${isSidebarOpen ? "w-[260px]" : "w-[92px]"} transition-all duration-300 `}
     // animate={{
     //   width: isSidebarOpen ? "229px" : "72px",
     // }}
