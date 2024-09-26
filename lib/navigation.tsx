@@ -692,7 +692,7 @@ export const navigationItems: NavigationItem[] = [
       },
       {
         label: "Octant",
-        icon: "octant",
+        icon: "octant-monochrome",
         category: "public-goods-funding",
         key: "octant",
         rootKey: "octant",
@@ -702,7 +702,7 @@ export const navigationItems: NavigationItem[] = [
       },
       {
         label: "Glo Dollar",
-        icon: "glo-dollar",
+        icon: "glo-dollar-monochrome",
         category: "public-goods-funding",
         key: "glodollar",
         rootKey: "glodollar",

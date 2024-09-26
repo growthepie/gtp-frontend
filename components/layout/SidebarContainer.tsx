@@ -13,7 +13,7 @@ export default function SidebarContainer() {
 
   return (
     <div className="bg-forest-1000 max-w-[253px]">
-      <div className="pt-[35px] pl-[20px] bg-[#1F2726] min-h-screen max-h-screen sticky top-0 left-0 hidden md:flex flex-col overflow-y-hidden overflow-x-visible gap-y-[36px] border-r-[2px] border-[#151A19]">
+      <div className="pt-[35px] pl-[20px] bg-[#1F2726] min-h-screen max-h-screen sticky top-0 left-0 hidden md:flex flex-col overflow-y-hidden overflow-x-hidden gap-y-[36px] border-r-[2px] border-[#151A19]">
         {isSidebarOpen ? (
           <div className="select-none h-[45.07px]">
             <div className="flex items-center justify-between h-[45.07px] gap-x-[15px] pr-[10px]">

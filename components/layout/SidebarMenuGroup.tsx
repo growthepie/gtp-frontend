@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, ReactNode, useMemo } from "react";
+import { useEffect, useState, ReactNode, useMemo, useRef } from "react";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 import useSWR, { preload } from "swr";
@@ -175,12 +175,11 @@ export default function SidebarMenuGroup({
                           <Accordion
                             key={option.key}
                             size={"sm"} background="none"
-                            icon={option.icon as GTPIconName} iconBackground="dark" iconColor={option.url && pathname.localeCompare(option.url) === 0 ? AllChainsByKeys[option.key].colors[
-                              "dark"
-                            ][1] : "#5A6462"}
+                            icon={option.icon as GTPIconName} iconBackground="dark" iconColor={option.url && pathname.localeCompare(option.url) === 0 ? AllChainsByKeys[option.key].colors["dark"][1] : "#5A6462"}
+                            iconHoverColor={AllChainsByKeys[option.key].colors["dark"][1]}
                             label={option.label} hideLabel={!sidebarOpen}
                             link={option.url} isActive={option.url ? pathname.localeCompare(option.url) === 0 : false}
-                            width={isMobile ? "100%" : "230px"}
+                            width={isMobile ? "100%" : "240px"}
                           />
                         </>
                       );
@@ -220,7 +219,7 @@ export default function SidebarMenuGroup({
                       size={"md"} background="none"
                       icon={option.icon as GTPIconName} iconBackground="dark"
                       label={option.label} hideLabel={!sidebarOpen} link={option.url} isActive={option.url ? pathname.localeCompare(option.url) === 0 : false}
-                      width={isMobile ? "100%" : "230px"}
+                      width={isMobile ? "100%" : "240px"}
                     />
                   </>
                 );
@@ -874,6 +873,7 @@ export default function SidebarMenuGroup({
 type AccordionProps = {
   icon: GTPIconName;
   iconColor?: string;
+  iconHoverColor?: string;
   label: string;
   link?: string;
   background: "none" | "medium" | "dark-border";
@@ -891,6 +891,7 @@ type AccordionProps = {
 const Accordion = ({
   icon,
   iconColor = "#5A6462",
+  iconHoverColor = undefined,
   label,
   link,
   background,
@@ -954,6 +955,17 @@ const Accordion = ({
     lg: "20px",
   };
 
+  const [isHovered, setIsHovered] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const [childrenHeight, setChildrenHeight] = useState(0);
+
+  useEffect(() => {
+    if (ref.current) {
+      setChildrenHeight(ref.current.clientHeight);
+    }
+  }, [children]);
+
 
   return (
     <Link
@@ -964,11 +976,13 @@ const Accordion = ({
       style={{
         width: width || "100%",
       }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <Tooltip placement="top-start">
         <TooltipTrigger>
           <div
-            className={`w-full flex items-center justify-between ${hideLabel ? "rounded-full" : "rounded-l-full"}  ${children ? "cursor-pointer" : ""} ${isActive && "!bg-[#151A19]"} ${link && !hideLabel && "hover:!bg-[#5A6462]"}`}
+            className={`w-full flex items-center justify-between ${hideLabel ? "rounded-full" : "rounded-full"}  ${children ? "cursor-pointer" : ""} ${isActive && "!bg-[#151A19]"} ${link && !hideLabel && "hover:!bg-[#5A6462]"}`}
             onClick={() => {
               onToggle && onToggle();
             }}
@@ -980,7 +994,7 @@ const Accordion = ({
               border: border[background],
             }}
           >
-            <DropdownIcon size={size} icon={icon} iconBackground={iconBackground} showArrow={children ? true : false} isOpen={isOpen} iconColor={iconColor} />
+            <DropdownIcon size={size} icon={icon} iconBackground={iconBackground} showArrow={children ? true : false} isOpen={isOpen} iconColor={isHovered && iconHoverColor ? iconHoverColor : iconColor} />
             <div
               className="flex-1 flex items-start justify-start font-semibold truncate transition-all duration-300"
               style={{
@@ -995,7 +1009,7 @@ const Accordion = ({
         {hideLabel && <TooltipContent className={`${hideLabel ? "z-50" : ""} pointer-events-none`}>
           <div className="absolute" style={{ top: 5, left: 0 }}>
             <div
-              className={`flex items-center justify-between ${hideLabel ? "rounded-full" : "rounded-l-full"} ${isActive && "!bg-[#151A19]"}`}
+              className={`flex items-center justify-between ${hideLabel ? "rounded-full" : "rounded-full"} ${isActive && "!bg-[#151A19]"}`}
               style={{
                 padding: padding[size],
                 gap: gap[size],
@@ -1005,7 +1019,7 @@ const Accordion = ({
                 width: hideLabel ? undefined : width
               }}
             >
-              <DropdownIcon size={size} icon={icon} iconBackground={iconBackground} showArrow={children ? true : false} isOpen={isOpen} iconColor={iconColor} />
+              <DropdownIcon size={size} icon={icon} iconBackground={iconBackground} showArrow={children ? true : false} isOpen={isOpen} iconColor={isHovered && iconHoverColor ? iconHoverColor : iconColor} />
               <div
                 className="flex-1 flex items-start justify-start font-semibold truncate transition-all duration-300"
                 style={{
@@ -1021,12 +1035,14 @@ const Accordion = ({
       </Tooltip>
       {children && (
         <div
-          className={`flex flex-col transition-all duration-300 overflow-hidden`}
+          className={`overflow-hidden transition-[max-height] duration-300`}
           style={{
-            maxHeight: isOpen ? maxHeight : "0",
+            maxHeight: isOpen ? childrenHeight : "0",
           }}
         >
-          {children}
+          <div ref={ref}>
+            {children}
+          </div>
         </div>
       )
       }
