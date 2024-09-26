@@ -668,7 +668,7 @@ export default function ChainChart({
                     AllChainsByKeys[name].colors[theme ?? "dark"][0]
                   }"></div>
                   <div class="flex-1 text-left justify-start font-inter flex">
-                      <div class="opacity-70 mr-0.5 ${
+                      <div class="opacity-70 ${
                         !prefix && "hidden"
                       }">${prefix}</div>
                       ${parseFloat(value).toLocaleString("en-GB", {
@@ -1865,7 +1865,7 @@ export default function ChainChart({
                                     />
                                   </div>
                                 </Link>
-                                <div className="relative text-[18px] leading-snug font-medium flex space-x-[2px] right-[40px]">
+                                <div className="relative text-[18px] leading-snug font-medium flex right-[40px]">
                                   <div>{displayValues[0][key].prefix}</div>
                                   <div>{displayValues[0][key].value}</div>
                                   <div className="text-base pl-0.5">

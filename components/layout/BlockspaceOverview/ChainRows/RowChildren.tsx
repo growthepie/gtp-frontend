@@ -432,8 +432,8 @@ export default function RowChildren({
               ? selectedMode.includes("txcount")
                 ? ""
                 : showUsd
-                ? "$ "
-                : "Ξ "
+                ? "$"
+                : "Ξ"
               : ""}
             {selectedValue === "share"
               ? shareValue > 0.05 ||
