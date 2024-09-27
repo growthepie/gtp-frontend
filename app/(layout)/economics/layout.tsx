@@ -50,6 +50,7 @@ export default async function Layout({
                 </div>
                 <ul className="list-disc list-inside pt-[5px] text-[14px] space-y-[5px]">
                   <li><span className="font-bold">Profit</span> is defined as the difference between Revenue and Costs.</li>
+                  <li><span className="font-bold">Revenue</span> is the total amount generated from transaction fees on the Layer 2 (L2) blockchain.</li>
                   <li><span className="font-bold">Costs</span> are divided into two main components:</li>
                   <li className="list-none">
                     <ul className="list-disc list-inside pl-[20px] text-[14px] -mt-[5px]">
