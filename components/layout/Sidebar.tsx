@@ -286,8 +286,6 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
       </>
     );
 
-  console.log("navigationItemsWithChains", navigationItemsWithChains);
-
   return (
     <div
       ref={ref}

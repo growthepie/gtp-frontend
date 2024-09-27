@@ -132,9 +132,6 @@ export const UIContextProvider = ({ children }) => {
     }));
   }, []);
 
-  console.log("dragChartId", state.dragChartId);
-
-
   return <UIContext.Provider value={contextValue}>{children}</UIContext.Provider>;
 };
 

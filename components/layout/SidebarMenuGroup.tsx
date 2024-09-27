@@ -93,7 +93,6 @@ export default function SidebarMenuGroup({
 
   const pathname = usePathname();
 
-  console.log("pathname", pathname);
 
   const urlParts = useMemo(() => {
     if (!pathname) {
@@ -113,23 +112,23 @@ export default function SidebarMenuGroup({
     }
   }, [pathname]);
 
-  console.log("urlParts", urlParts);
-
   useEffect(() => {
+    let openState = false;
+
     const optionURLs = item.options.map((o) => o.url);
+
     if (optionURLs.includes(pathname)) {
-      setIsOpen(true);
+      openState = true;
     } else {
-      setIsOpen(false);
+      if (pathname === "/" && item.name === "Fundamentals") {
+        openState = true;
+      } else {
+        openState = false;
+      }
     }
 
-    // if (urlParts[0].length === 0 && item.name === "Fundamentals") {
-    //   setIsOpen(true);
-    // } else {
-    //   setIsOpen(
-    //     urlParts[0].toLowerCase() == item.name.toLowerCase() ? true : false,
-    //   );
-    // }
+    setIsOpen(openState);
+
   }, [item.name, item.options, pathname, urlParts]);
 
   const handleToggle = () => {
@@ -150,84 +149,107 @@ export default function SidebarMenuGroup({
     onClose && onClose();
   };
 
-
   return (
-    <Accordion icon={item.icon as GTPIconName} iconBackground="none" size="lg" background="none" label={item.label} onToggle={handleToggle} isOpen={isOpen} hideLabel={!sidebarOpen}>
-      {item.label === "Chains" ?
+    <Accordion
+      icon={item.icon as GTPIconName}
+      iconBackground="none"
+      size="lg"
+      background="none"
+      label={item.label}
+      onToggle={handleToggle}
+      isOpen={isOpen}
+      hideLabel={!sidebarOpen}
+      className=""
+      accordionClassName="mb-[10px]"
+    >
+      {item.label === "Chains" ? (
+        <div className="pl-[9px] gap-y-[5px]">
+          {Object.keys(ChainGroups).length > 0 &&
+            Object.entries(ChainGroups).map(([bucket, chains]: any) => {
+              if (chains.length === 0) return <div key={bucket}></div>;
 
-        (
-          <div className="pl-[9px] gap-y-[5px]">
-            {Object.keys(ChainGroups).length > 0 &&
-              Object.entries(ChainGroups).map(([bucket, chains]: any, i) => {
-                if (chains.length === 0) return null;
-
-                return (
-                  <div key={bucket}>
-                    <div className="text-[14px] font-bold text-[#5A6462] px-[5px] py-[5px]" style={{
-                      fontVariant: "all-small-caps",
-                    }}>
-                      {sidebarOpen ? bucket.toUpperCase() : <span>&nbsp;</span>}
-                    </div>
-                    {chains.map((option, i) => {
-                      return (
-                        <>
-
-                          <Accordion
-                            key={option.key}
-                            size={"sm"} background="none"
-                            icon={option.icon as GTPIconName} iconBackground="dark" iconColor={option.url && pathname.localeCompare(option.url) === 0 ? AllChainsByKeys[option.key].colors["dark"][1] : "#5A6462"}
-                            iconHoverColor={AllChainsByKeys[option.key].colors["dark"][1]}
-                            label={option.label} hideLabel={!sidebarOpen}
-                            link={option.url} isActive={option.url ? pathname.localeCompare(option.url) === 0 : false}
-                            width={isMobile ? "100%" : "250px"}
-                          />
-                        </>
-                      );
-                    })}
+              return (
+                <div key={bucket} className="flex flex-col">
+                  <div
+                    className="text-[14px] font-bold text-[#5A6462] px-[5px] py-[5px]"
+                    style={{ fontVariant: "all-small-caps" }}
+                  >
+                    {sidebarOpen ? bucket.toUpperCase() : <span>&nbsp;</span>}
                   </div>
-                );
-              })}
-          </div>
-        ) : (
-          <div className="px-[3px] gap-y-[-5px]">
-            {item.options
-              .filter((o) => o.hide !== true)
-              .map((option, i) => {
-                let label = <></>;
-
-                if (option.category) {
-                  // check if this is the first item in the category
-                  if (i === 0 || option.category !== item.options[i - 1].category) {
-                    label = (
-                      <div className="text-[14px] font-bold text-[#5A6462] p-[5px]" style={{
-                        fontVariant: "all-small-caps",
-                      }}>
-                        {sidebarOpen ? navigationCategories[
-                          option.category
-                        ].label.toUpperCase() : <span>&nbsp;</span>}
-                      </div>
-                    );
-                  }
-                }
-
-
-                return (
-                  <>
-                    {label}
+                  {chains.map((option) => (
                     <Accordion
                       key={option.key}
-                      size={"md"} background="none"
-                      icon={option.icon as GTPIconName} iconBackground="dark"
-                      label={option.label} hideLabel={!sidebarOpen} link={option.url} isActive={option.url ? pathname.localeCompare(option.url) === 0 : false}
+                      size={"sm"}
+                      background="none"
+                      icon={option.icon as GTPIconName}
+                      iconBackground="dark"
+                      iconColor={
+                        option.url && pathname.localeCompare(option.url) === 0
+                          ? AllChainsByKeys[option.key].colors["dark"][1]
+                          : "#5A6462"
+                      }
+                      iconHoverColor={AllChainsByKeys[option.key].colors["dark"][1]}
+                      label={option.label}
+                      hideLabel={!sidebarOpen}
+                      link={option.url}
+                      isActive={option.url ? pathname.localeCompare(option.url) === 0 : false}
                       width={isMobile ? "100%" : "250px"}
                     />
-                  </>
-                );
-              })}
-          </div>
-        )}
+                  ))}
+                </div>
+              );
+            })}
+        </div>
+      ) : (
+        <div className="px-[3px] gap-y-[-5px]">
+          {item.options
+            .filter((o) => o.hide !== true)
+            .map((option, i) => {
+              let label = <></>;
+
+              if (option.category) {
+                // Check if this is the first item in the category
+                if (
+                  // Assuming `i` is defined correctly
+                  i === 0 ||
+                  option.category !== item.options[i - 1].category
+                ) {
+                  label = (
+                    <div
+                      className="text-[14px] font-bold text-[#5A6462] p-[5px]"
+                      style={{ fontVariant: "all-small-caps" }}
+                    >
+                      {sidebarOpen
+                        ? navigationCategories[option.category].label.toUpperCase()
+                        : <span>&nbsp;</span>}
+                    </div>
+                  );
+                }
+              }
+
+              return (
+                <div key={option.key} className="flex flex-col gap-y-[-5px]">
+                  {label}
+                  <Accordion
+                    key={option.key}
+                    size={"md"}
+                    background="none"
+                    icon={option.icon as GTPIconName}
+                    iconBackground="dark"
+                    label={option.label}
+                    hideLabel={!sidebarOpen}
+                    link={option.url}
+                    isActive={option.url ? pathname.localeCompare(option.url) === 0 : false}
+                    width={isMobile ? "100%" : "250px"}
+                  />
+                </div>
+              );
+            })}
+        </div>
+      )}
     </Accordion>
   );
+
 
   // // disable Blockspace menu item in production
   // if (item.name === "")
@@ -871,6 +893,8 @@ export default function SidebarMenuGroup({
 
 
 type AccordionProps = {
+  className?: string;
+  accordionClassName?: string;
   icon: GTPIconName;
   iconColor?: string;
   iconHoverColor?: string;
@@ -889,6 +913,8 @@ type AccordionProps = {
 };
 
 const Accordion = ({
+  className = "",
+  accordionClassName = "",
   icon,
   iconColor = "#5A6462",
   iconHoverColor = undefined,
@@ -970,51 +996,46 @@ const Accordion = ({
 
 
   return (
-    <Link
-      className="flex flex-col relative overflow-visible"
-      href={link ? link : ""}
-      target={link && link.startsWith("http") ? "_blank" : undefined}
-      rel={link && link.startsWith("http") ? "noopener noreferrer" : undefined}
-      style={{
-        width: width || "100%",
-      }}
-      onClick={(e) => {
-        // workaround for next/link bug
-        if (link && link.startsWith("http")) {
-          e.preventDefault();
-          window.open(link, "_blank");
-        };
-      }}
-      passHref
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+    <>
       <Tooltip placement="top-start">
         <TooltipTrigger>
-          <div
-            className={`w-full flex items-center justify-between ${hideLabel ? "rounded-full" : "rounded-full"}  ${children ? "cursor-pointer" : ""} ${isActive && "!bg-[#151A19]"} ${link && !hideLabel && "hover:!bg-[#5A6462]"}`}
-            onClick={() => {
-              onToggle && onToggle();
-            }}
+          <Link
+            className={`flex flex-col relative overflow-visible ${className}`}
+            href={link ? link : ""}
+            target={link && link.startsWith("http") ? "_blank" : undefined}
+            rel={link && link.startsWith("http") ? "noopener noreferrer" : undefined}
             style={{
-              padding: padding[size],
-              gap: gap[size],
-              height: height[size],
-              background: bg[background],
-              border: border[background],
+              width: width || "100%",
             }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
           >
-            <DropdownIcon size={size} icon={icon} iconBackground={iconBackground} showArrow={children ? true : false} isOpen={isOpen} iconColor={isHovered && iconHoverColor ? iconHoverColor : iconColor} />
             <div
-              className="flex-1 flex items-start justify-start font-semibold truncate transition-all duration-300"
+              className={`w-full flex items-center justify-between ${hideLabel ? "rounded-full" : "rounded-full"}  ${children ? "cursor-pointer" : ""} ${isActive && "!bg-[#151A19]"} ${link && !hideLabel && "hover:!bg-[#5A6462]"}`}
+              onClick={() => {
+                onToggle && onToggle();
+              }}
               style={{
-                fontSize: fontSize[size],
-                opacity: hideLabel ? 0 : 1,
+                padding: padding[size],
+                gap: gap[size],
+                height: height[size],
+                background: bg[background],
+                border: border[background],
               }}
             >
-              {label}
+              <DropdownIcon size={size} icon={icon} iconBackground={iconBackground} showArrow={children ? true : false} isOpen={isOpen} iconColor={isHovered && iconHoverColor ? iconHoverColor : iconColor} />
+              <div
+                className="flex-1 flex items-start justify-start font-semibold truncate transition-all duration-300"
+                style={{
+                  fontSize: fontSize[size],
+                  opacity: hideLabel ? 0 : 1,
+                }}
+              >
+                {label}
+              </div>
             </div>
-          </div>
+          </Link >
+
         </TooltipTrigger>
         {hideLabel && <TooltipContent className={`${hideLabel ? "z-50" : ""} pointer-events-none`}>
           <div className="absolute pointer-events-none" style={{ top: 5, left: 0 }}>
@@ -1045,7 +1066,7 @@ const Accordion = ({
       </Tooltip>
       {children && (
         <div
-          className={`overflow-hidden transition-[max-height] duration-300`}
+          className={`overflow-hidden transition-[max-height] duration-300 ${accordionClassName}`}
           style={{
             maxHeight: isOpen ? childrenHeight : "0",
           }}
@@ -1054,9 +1075,8 @@ const Accordion = ({
             {children}
           </div>
         </div>
-      )
-      }
-    </Link >
+      )}
+    </>
   );
 };
 
@@ -1108,7 +1128,7 @@ const DropdownIcon = ({ size, icon, iconColor, iconBackground, showArrow = false
             }}
           >
             <svg width="5" height="10" viewBox="0 0 5 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1.32446 1.07129L3.32446 5.07129L1.32446 9.07129" stroke="#CDD8D3" stroke-width="1.5" stroke-linejoin="round" />
+              <path d="M1.32446 1.07129L3.32446 5.07129L1.32446 9.07129" stroke="#CDD8D3" strokeWidth="1.5" strokeLinejoin="round" />
             </svg>
           </div>
         )}
