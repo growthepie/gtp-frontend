@@ -53,8 +53,8 @@ export default async function Layout({
                   <li><span className="font-bold">Costs</span> are divided into two main components:</li>
                   <li className="list-none">
                     <ul className="list-disc list-inside pl-[20px] text-[14px] -mt-[5px]">
-                      <li><span className="font-bold">L1 Cost <span className="align-super text-[0.8rem]">(1)</span></span> — refers to the transaction fees paid for settling operations on the Ethereum Layer 1 (L1) blockchain.</li>
-                      <li><span className="font-bold">Blob Cost <span className="align-super text-[0.8rem]">(2)</span></span> — represents fees for data availability and can be further broken down:</li>
+                      <li><span className="font-bold">L1 Costs <span className="align-super text-[0.8rem]">(1)</span></span> — refers to the transaction fees paid for settling operations on the Ethereum Layer 1 (L1) blockchain.</li>
+                      <li><span className="font-bold">Blob Costs <span className="align-super text-[0.8rem]">(2)</span></span> — represents fees for data availability and can be further broken down:</li>
                       <li className="list-none">
                         <ul className="list-disc list-inside pl-[20px] text-[14px] space-y-[0px]">
                           <li><span className="font-bold">Beacon Chain <span className="align-super text-[0.8rem]">(a)</span></span> — fees associated with storing data on the Beacon Chain.</li>
