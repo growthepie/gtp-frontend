@@ -158,7 +158,6 @@ export default async function Page() {
         </div>
         <div className="flex flex-col space-y-[15px] my-0 md:my-[30px]">
           <QuestionAnswer
-            className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
             question="What's growthepie?"
             answer={
               <>
@@ -175,7 +174,6 @@ export default async function Page() {
             }
           />
           <QuestionAnswer
-            className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
             question="What's up with the name?"
             answer={
               <>
@@ -192,7 +190,6 @@ export default async function Page() {
             }
           />
           <QuestionAnswer
-            className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
             question='What exactly does "Active on Multiple Chains" stand for?'
             answer={
               <>
@@ -215,7 +212,6 @@ export default async function Page() {
             }
           />
           <QuestionAnswer
-            className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
             question="Why have the numbers on the landing page not been updated for a few days?"
             answer={
               <>
@@ -228,7 +224,6 @@ export default async function Page() {
             }
           />
           <QuestionAnswer
-            className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
             question="L2Beat has way more Layer 2s listed why do you not cover all of them?"
             answer={
               <>
@@ -241,7 +236,6 @@ export default async function Page() {
             }
           />
           <QuestionAnswer
-            className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
             question="Are the dates on this website my regional timezone or UTC?"
             answer={
               <>
@@ -252,7 +246,6 @@ export default async function Page() {
             }
           />
           <QuestionAnswer
-            className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
             question="Interested in collaborating with us?"
             answer={
               <>
