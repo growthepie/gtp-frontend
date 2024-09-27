@@ -9,12 +9,16 @@ export default function QuestionAnswer({
   answer,
   note,
   className = "",
+  questionClassName = "",
+  answerClassName = "",
   startOpen = false,
 }: {
   question: string | React.ReactNode;
   answer: string | React.ReactNode;
   note?: string | React.ReactNode;
   className?: string;
+  questionClassName?: string;
+  answerClassName?: string;
   startOpen?: boolean;
 }) {
   const [open, setOpen] = useState(startOpen);
@@ -22,9 +26,9 @@ export default function QuestionAnswer({
   const [ref, { height }] = useElementSizeObserver<HTMLDivElement>();
 
   return (
-    <div className={`rounded-3xl bg-forest-50 dark:bg-forest-900 px-[30px] py-[23px] flex flex-col ${className}`}>
+    <div className={`rounded-[40px] bg-forest-50 dark:bg-forest-900 px-[30px] py-[23px] flex flex-col ${className}`}>
       <div
-        className="flex items-center cursor-pointer space-x-[10px] leading-[133%]"
+        className={`flex items-center cursor-pointer space-x-[10px] leading-[133%] ${questionClassName}`}
         onClick={() => setOpen(!open)}
       >
         <div className={`flex w-[24px] h-[24px] md:w-[24px] md:h-[24px] items-center justify-center  transform rotate-0 transition-transform duration-300 ${open ? "rotate-90" : "rotate-0"
@@ -42,10 +46,10 @@ export default function QuestionAnswer({
 
 
         </div>
-        <div className="font-semibold text-[16px] md:text-[24px]">{question}</div>
+        <div className={`font-semibold text-[16px] md:text-[24px]`}>{question}</div>
       </div>
       <div
-        className={`transition-height duration-300 overflow-hidden text-[16px]`}
+        className={`transition-height duration-300 overflow-hidden text-[16px] ${answerClassName}`}
         style={{
           height: open ? height : 0,
         }}
@@ -54,16 +58,19 @@ export default function QuestionAnswer({
           {answer}
         </div>
       </div>
-      {note && (
-        <div
-          className={`transition-height duration-300 overflow-hidden text-[16px]`}
-          style={{
-            maxHeight: open ? 300 : 0,
-          }}
-        >
-          <div className="pt-[10px]">{note}</div>
-        </div>
-      )}
-    </div>
+      {
+        note && (
+          <div
+            className={`transition-height duration-300 overflow-hidden text-[16px] ${answerClassName}`}
+            style={{
+              maxHeight: open ? 300 : 0,
+            }
+            }
+          >
+            <div className="pt-[10px]">{note}</div>
+          </div >
+        )
+      }
+    </div >
   );
 }
