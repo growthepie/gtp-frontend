@@ -69,7 +69,7 @@ export default function VerticalScrollContainer({
 
   // Thumb Drag Handlers
   const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
+    (e: MouseEvent | TouchEvent) => {
       if (
         !contentScrollAreaRef.current ||
         !grabberRef.current ||
@@ -81,8 +81,15 @@ export default function VerticalScrollContainer({
       isDraggingRef.current = true; // Indicate that dragging is happening
       e.preventDefault(); // Prevent text selection
 
+      let clientY: number;
+      if (e instanceof MouseEvent) {
+        clientY = e.clientY;
+      } else {
+        clientY = (e as TouchEvent).touches[0].clientY;
+      }
+
       const startPos = startPosRef.current;
-      const dy = e.clientY - startPos.y;
+      const dy = clientY - startPos.y;
       const scrollableHeight =
         contentScrollAreaRef.current.scrollHeight -
         contentScrollAreaRef.current.clientHeight;
@@ -98,7 +105,9 @@ export default function VerticalScrollContainer({
       );
 
       updateScrollableAreaScroll();
-      updateCursor(grabberRef.current);
+      if (grabberRef.current) {
+        updateCursor(grabberRef.current);
+      }
     },
     [
       contentScrollAreaRef,
@@ -112,31 +121,44 @@ export default function VerticalScrollContainer({
     if (!grabberRef.current) {
       return;
     }
-    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mousemove', handleMouseMove as any);
     document.removeEventListener('mouseup', handleMouseUp);
+    document.removeEventListener('touchmove', handleMouseMove as any);
+    document.removeEventListener('touchend', handleMouseUp);
     resetCursor(grabberRef.current);
     startPosRef.current = null;
   }, [handleMouseMove]);
 
   const handleMouseDown = useCallback(
-    (e: React.MouseEvent) => {
+    (e: React.MouseEvent | React.TouchEvent) => {
       e.preventDefault(); // Prevent text selection
       if (!contentScrollAreaRef.current || !grabberRef.current) {
         return;
       }
+
+      let clientY: number;
+      if ('touches' in e) {
+        clientY = e.touches[0].clientY;
+      } else {
+        clientY = e.clientY;
+      }
+
       startPosRef.current = {
         top: contentScrollAreaRef.current.scrollTop,
-        y: e.clientY,
+        y: clientY,
       };
-      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mousemove', handleMouseMove as any);
       document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('touchmove', handleMouseMove as any, { passive: false });
+      document.addEventListener('touchend', handleMouseUp);
+      updateCursor(grabberRef.current);
     },
     [handleMouseMove, handleMouseUp, contentScrollAreaRef, grabberRef]
   );
 
   // Track Drag Handlers
   const handleTrackMouseMove = useCallback(
-    (e: MouseEvent) => {
+    (e: MouseEvent | TouchEvent) => {
       if (
         !contentScrollAreaRef.current ||
         !scrollerRef.current ||
@@ -147,8 +169,15 @@ export default function VerticalScrollContainer({
       isDraggingRef.current = true; // Indicate that dragging is happening
       e.preventDefault(); // Prevent text selection
 
+      let clientY: number;
+      if (e instanceof MouseEvent) {
+        clientY = e.clientY;
+      } else {
+        clientY = (e as TouchEvent).touches[0].clientY;
+      }
+
       const { scrollTop: initialScrollTop, y: initialY } = trackStartPosRef.current;
-      const dy = e.clientY - initialY;
+      const dy = clientY - initialY;
       const scrollableHeight =
         contentScrollAreaRef.current.scrollHeight -
         contentScrollAreaRef.current.clientHeight;
@@ -170,46 +199,33 @@ export default function VerticalScrollContainer({
 
   const handleTrackMouseUp = useCallback(() => {
     if (grabberRef.current) {
-      document.removeEventListener('mousemove', handleTrackMouseMove);
+      document.removeEventListener('mousemove', handleTrackMouseMove as any);
       document.removeEventListener('mouseup', handleTrackMouseUp);
+      document.removeEventListener('touchmove', handleTrackMouseMove as any);
+      document.removeEventListener('touchend', handleTrackMouseUp);
       resetCursor(grabberRef.current);
       trackStartPosRef.current = null;
     }
   }, [handleTrackMouseMove]);
 
   const handleTrackMouseDown = useCallback(
-    (e: React.MouseEvent) => {
+    (e: React.MouseEvent | React.TouchEvent) => {
       e.preventDefault(); // Prevent text selection
       isDraggingRef.current = false; // Reset dragging flag
       if (!contentScrollAreaRef.current || !scrollerRef.current) {
         return;
       }
-      trackStartPosRef.current = {
-        scrollTop: contentScrollAreaRef.current.scrollTop,
-        y: e.clientY,
-      };
-      document.addEventListener('mousemove', handleTrackMouseMove);
-      document.addEventListener('mouseup', handleTrackMouseUp);
-      if (grabberRef.current) {
-        updateCursor(grabberRef.current);
-      }
-    },
-    [handleTrackMouseMove, handleTrackMouseUp, contentScrollAreaRef, scrollerRef]
-  );
 
-  const handleTrackClick = useCallback(
-    (e: React.MouseEvent) => {
-      if (isDraggingRef.current) {
-        // If dragging, do not handle click
-        isDraggingRef.current = false;
-        return;
+      let clientY: number;
+      if ('touches' in e) {
+        clientY = e.touches[0].clientY;
+      } else {
+        clientY = e.clientY;
       }
-      if (!contentScrollAreaRef.current || !scrollerRef.current) {
-        return;
-      }
+
       const scrollerArea = scrollerRef.current;
       const rect = scrollerArea.getBoundingClientRect();
-      const clickY = e.clientY - rect.top;
+      const clickY = clientY - rect.top;
 
       const grabberHeight = grabberRef.current
         ? grabberRef.current.offsetHeight
@@ -223,9 +239,25 @@ export default function VerticalScrollContainer({
       contentScrollAreaRef.current.scrollTop = scrollTop;
 
       updateScrollableAreaScroll();
+
+      // Set up for dragging
+      trackStartPosRef.current = {
+        scrollTop: contentScrollAreaRef.current.scrollTop,
+        y: clientY,
+      };
+      document.addEventListener('mousemove', handleTrackMouseMove as any);
+      document.addEventListener('mouseup', handleTrackMouseUp);
+      document.addEventListener('touchmove', handleTrackMouseMove as any, { passive: false });
+      document.addEventListener('touchend', handleTrackMouseUp);
+      if (grabberRef.current) {
+        updateCursor(grabberRef.current);
+      }
     },
-    [contentScrollAreaRef, scrollerRef, grabberRef, updateScrollableAreaScroll]
+    [handleTrackMouseMove, handleTrackMouseUp, contentScrollAreaRef, scrollerRef, grabberRef]
   );
+
+  // Remove the handleTrackClick as it's now integrated into handleTrackMouseDown
+  // If you prefer to keep separate behaviors for click and drag, you can adjust accordingly.
 
   // Update scroll percentage on scroll
   useEffect(() => {
@@ -317,7 +349,8 @@ export default function VerticalScrollContainer({
           <div
             className="h-full p-0.5 bg-black/30 rounded-full relative"
             onMouseDown={handleTrackMouseDown}
-            onClick={handleTrackClick}
+            onTouchStart={handleTrackMouseDown} // Added touch event
+            // Removed onClick to integrate behavior into onMouseDown/onTouchStart
             onWheel={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -335,6 +368,7 @@ export default function VerticalScrollContainer({
                   width: scrollbarWidth,
                 }}
                 onMouseDown={handleMouseDown}
+                onTouchStart={handleMouseDown} // Added touch event
                 ref={grabberRef}
               ></div>
             </div>
@@ -343,7 +377,7 @@ export default function VerticalScrollContainer({
       )}
 
       {/* Content */}
-      <div className="overflow-y-visible w-full order-2">
+      <div className={`overflow-y-visible w-full ${contentOrder}`}>
         <div
           className="relative overflow-y-scroll scrollbar-none max-w-full transition-all duration-300"
           ref={contentScrollAreaRef}
@@ -380,13 +414,14 @@ export default function VerticalScrollContainer({
       {/* Scrollbar */}
       {scrollbarPosition === 'right' && showScroller && (
         <div
-          className={`${scrollbarAbsolute ? "z-[30] absolute right-[5px]" : "pl-[10px]"} h-full flex flex-col justify-center ${scrollbarSideClasses} order-3`}
+          className={`${scrollbarAbsolute ? "z-[30] absolute right-[5px]" : "pr-[10px]"} h-full flex flex-col justify-center ${scrollbarSideClasses} order-3`}
           style={{ height: height }}
         >
           <div
             className="h-full p-0.5 bg-black/30 rounded-full relative"
             onMouseDown={handleTrackMouseDown}
-            onClick={handleTrackClick}
+            onTouchStart={handleTrackMouseDown} // Added touch event
+            // Removed onClick to integrate behavior into onMouseDown/onTouchStart
             onWheel={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -404,6 +439,7 @@ export default function VerticalScrollContainer({
                   width: scrollbarWidth
                 }}
                 onMouseDown={handleMouseDown}
+                onTouchStart={handleMouseDown} // Added touch event
                 ref={grabberRef}
               ></div>
             </div>
