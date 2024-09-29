@@ -1,3 +1,4 @@
+"use client";
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Highcharts from "highcharts/highstock";
 import { Chart, HighchartsChart, HighchartsProvider, PieSeries, Tooltip } from 'react-jsx-highcharts';

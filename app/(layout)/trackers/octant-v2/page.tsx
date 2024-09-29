@@ -14,7 +14,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/layout/Tooltip";
-import Address from "@/components/layout/Address";
+import Address, { AddressIcon } from "@/components/layout/Address";
 import moment from "moment";
 import Container from "@/components/layout/Container";
 import { TopRowChild, TopRowContainer, TopRowParent } from "@/components/layout/TopRow";
@@ -117,90 +117,6 @@ function formatNumber(number: number, decimals?: number): string {
   return "";
 }
 
-// export default function Page() {
-//   const {
-//     data: master,
-//     error: masterError,
-//     isLoading: masterLoading,
-//     isValidating: masterValidating,
-//   } = useSWR<MasterResponse>(MasterURL);
-
-//   const {
-//     data: ProjectsMetaDataJSONs,
-//     error: ProjectsMetaDataError,
-//     isLoading: ProjectsMetaDataLoading,
-//     isValidating: ProjectsMetaDataValidating,
-//   } = useSWR<{ [key: string]: ProjectMetadataType }>('https://api.growthepie.xyz/api/trackers/octant/', () => {
-//     const data: { [key: string]: ProjectMetadataType } = {};
-//     ProjectsMetaDataFiles.forEach(async (file, index) => {
-//       const response = await fetch(`/api/trackers/octant/${file}`);
-//       const projectsMetadata = await response.json();
-//       data[index.toString()] = projectsMetadata;
-//     });
-//     return data;
-//   });
-
-//   const {
-//     data: FundingJSONs,
-//     error: FundingError,
-//     isLoading: FundingLoading,
-//     isValidating: FundingValidating,
-//   } = useSWR<{ [key: string]: Funding }>('https://api.growthepie.xyz/api/trackers/octant/', () => {
-//     const data: { [key: string]: Funding } = {};
-//     UserEpochFiles.forEach(async (file, index) => {
-//       const response = await fetch(`/api/trackers/octant/${file}`);
-//       const funding = await response.json();
-//       data[index.toString()] = funding;
-//     });
-//     // add all_time_total to each project
-//     const allTimeTotalsByProjectKey = {};
-
-//     Object.values(data).forEach((funding) => {
-//       funding.forEach((project) => {
-//         if (!allTimeTotalsByProjectKey[project.project_key]) {
-//           allTimeTotalsByProjectKey[project.project_key] = 0;
-//         }
-//         allTimeTotalsByProjectKey[project.project_key] += project.total;
-//       });
-//     });
-
-//     Object.values(data).forEach((funding) => {
-//       funding.forEach((project) => {
-//         project.all_time_total = allTimeTotalsByProjectKey[project.project_key];
-//       });
-//     });
-
-//     return data;
-//   });
-
-//   const {
-//     data: EpochJSONs,
-//     error: EpochError,
-//     isLoading: EpochLoading,
-//     isValidating: EpochValidating,
-//   } = useSWR<{ [key: string]: CommunityUsers }>('https://api.growthepie.xyz/api/trackers/octant/', () => {
-//     const data: { [key: string]: CommunityUsers } = {};
-//     UserEpochFiles.forEach(async (file, index) => {
-//       const response = await fetch(`/api/trackers/octant/${file}`);
-//       const epoch = await response.json();
-//       data[index.toString()] = epoch;
-//     });
-//     return data;
-//   });
-//   const LockStatus = { 'now': { 'total_locked_glm': 155780864.5972997, 'num_users_locked_glm': 1065 }, 'week_ago': { 'total_locked_glm': 155748269.49235776, 'num_users_locked_glm': 1037 }, 'changes': { 'total_locked_glm_diff': 32595.104941934347, 'num_users_locked_glm_diff': 28, 'total_locked_glm_change': 0.0002092806876646146, 'num_users_locked_glm_change': 0.02700096432015429 } };
-
-
-//   if (!master || !ProjectsMetaDataJSONs || !FundingJSONs || !EpochJSONs) return <ShowLoading />;
-
-//   return (
-//     <OctantV2
-//       master={master}
-//       ProjectsMetaDataJSONs={ProjectsMetaDataJSONs}
-//       FundingJSONs={FundingJSONs}
-//       EpochJSONs={EpochJSONs}
-//     />
-//   );
-// };
 export default function Page() {
 
   const {
@@ -1478,7 +1394,7 @@ export default function Page() {
                             e.stopPropagation();
                           }}
                         >
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          {/* <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <g clip-path="url(#clip0_12402_20562)">
                               <circle cx="8.29395" cy="8" r="7" stroke="#5A6462" />
                               <path d="M3.67414 6.32422L4.77814 7.86022L4.84214 7.98822L4.91414 7.86022L6.01014 6.32422H6.79414L5.25014 8.42022L6.80214 10.5002H6.01814L4.91414 8.97222L4.84214 8.85222L4.77814 8.97222L3.67414 10.5002H2.89014L4.44214 8.42022L2.89814 6.32422H3.67414Z" fill="#5A6462" />
@@ -1490,7 +1406,8 @@ export default function Page() {
                                 <rect width="15" height="15" fill="white" transform="translate(0.793945 0.5)" />
                               </clipPath>
                             </defs>
-                          </svg>
+                          </svg> */}
+                          <AddressIcon address={user.user} className="rounded-full" />
                           <Icon
                             icon={"gtp:circle-arrow"}
                             className={`w-[4px] h-[9px] absolute top-[4px] -right-[4px] `}
