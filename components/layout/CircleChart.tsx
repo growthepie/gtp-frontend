@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import Highcharts from "highcharts/highstock";
 import { Chart, HighchartsChart, HighchartsProvider, PieSeries, Tooltip } from 'react-jsx-highcharts';
 import "@/app/highcharts.axis.css";
@@ -18,6 +18,16 @@ export type CircleChartProps = {
 
 export const CircleChart = ({ title, data, valuePrefix = "", colors, size = 250, strokeWidth = 15 }: CircleChartProps) => {
 
+
+  useEffect(() => {
+
+    // Set the colors for the chart
+    if (colors)
+      Highcharts.setOptions({
+        colors: colors,
+      });
+
+  }, []);
 
   useEffect(() => {
 
