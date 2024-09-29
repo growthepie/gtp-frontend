@@ -138,13 +138,14 @@ export const CircleChart = ({ title, data, valuePrefix = "", colors, size = 250,
           return b.y - a.y;
         })
         .map((point: any) => {
-          const { series, y, percentage, color } = point;
+          const { series, y, percentage } = point;
           // const { name } = series;
 
           let prefix = valuePrefix;
           let suffix = "";
           let value = y;
           let displayValue = y;
+          let color = colors ? colors[point.index] : point.color;
 
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
