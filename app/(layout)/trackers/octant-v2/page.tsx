@@ -1618,6 +1618,32 @@ export default function Page() {
                     value: CommunityUsersFiltered.filter((user) => user.project_list.length === 0).length,
                   },
                 ]}
+                colors={[
+                  {
+                    linearGradient: {
+                      x1: 0,
+                      y1: 0,
+                      x2: 1,
+                      y2: 1,
+                    },
+                    stops: [
+                      [0, "#1DF7EF"],
+                      [0.5, "#10808C"],
+                    ]
+                  },
+                  {
+                    linearGradient: {
+                      x1: 0,
+                      y1: 0,
+                      x2: 1,
+                      y2: 1,
+                    },
+                    stops: [
+                      [0, "#FFDF27"],
+                      [1, "#FE5468"],
+                    ]
+                  },
+                ]}
               />
             </div>
           </div>
