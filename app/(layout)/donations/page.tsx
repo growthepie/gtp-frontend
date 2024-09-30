@@ -5,6 +5,9 @@ import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import { useUIContext } from "@/contexts/UIContext";
 import Heading from "@/components/layout/Heading";
 import Icon from "@/components/layout/Icon";
+import { table } from "console";
+import { useMemo } from "react";
+import { json } from "stream/consumers";
 
 export default function Donations() {
   const { isSidebarOpen } = useUIContext();
@@ -50,20 +53,23 @@ export default function Donations() {
         </div>
         <HorizontalScrollContainer
           includeMargin={false}
+          forcedMinWidth={805}
           className="w-full flex flex-col "
         >
-          <div
-            className={`grid  pr-0.5 mb-[15px] text-[14px] font-bold ${
-              isSidebarOpen
-                ? " 2xl:grid-cols-[105px_294px_90px_170px_auto_90px] grid-cols-[105px_294px_90px_170px_auto_90px] "
-                : "xl:grid-cols-[105px_294px_90px_170px_auto_90px] grid-cols-[105px_294px_90px_170px_auto_90px] "
-            } min-w-[805px]`}
-          >
-            <div className="w-full flex justify-center">Time Left</div>
-            <div>Name</div>
-            <div>Share</div>
-            <div>Link</div>
-            <div>Donate Until</div>
+          <div className="relative w-full h-full px-[5px]">
+            <div
+              className={`grid pr-0.5 gap-x-[5px]  mb-[15px] text-[14px] font-bold ${
+                isSidebarOpen
+                  ? " 2xl:grid-cols-[115px_294px_90px_auto_90px] grid-cols-[115px_294px_90px_auto_90px] "
+                  : "xl:grid-cols-[115px_294px_90px_auto_90px] grid-cols-[115px_294px_90px_auto_90px] "
+              } min-w-[805px]`}
+            >
+              <div className="w-full flex justify-center">Time Left</div>
+              <div className="w-full justify-center">Name</div>
+              <div className="w-full ">Share</div>
+              <div className="w-full ">Link</div>
+              <div className="w-full ">Donate Until</div>
+            </div>
           </div>
           <div
             className={`relative flex flex-col justify-center -mt-[5px] z-0 transition-height duration-300 border-[1px] border-[#5A6462] rounded-full px-[5px]`}
@@ -71,11 +77,11 @@ export default function Donations() {
           >
             <div className="flex items-center ">
               <div
-                className={`grid  relative rounded-full w-full  min-h-[34px] text-[14px] items-center z-20 cursor-pointer pr-0.5
+                className={`grid gap-x-[5px] relative rounded-full w-full  min-h-[34px] text-[14px] items-center z-20 cursor-pointer pr-0.5
                          ${
                            isSidebarOpen
-                             ? " 2xl:grid-cols-[105px_294px_200px_170px_auto_110px] grid-cols-[105px_294px_90px_170px_auto_90px] "
-                             : "xl:grid-cols-[105px_294px_90px_170px_auto_90px] grid-cols-[105px_294px_90px_170px_auto_90px] "
+                             ? " 2xl:grid-cols-[115px_294px_90px_auto_90px] grid-cols-[115px_294px_90px_auto_90px] "
+                             : "xl:grid-cols-[115px_294px_90px_auto_90px] grid-cols-[115px_294px_90px_auto_90px] "
                          }  min-w-[805px]  `}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -84,10 +90,10 @@ export default function Donations() {
                 <div className="w-full bg-[#1F2726] rounded-full flex  justify-center text-[16px] font-bold">
                   Time Left
                 </div>
-                <div>Name</div>
-                <div>Share</div>
-                <div>Link</div>
-                <div>Donate Until</div>
+                <div className="w-full justify-center">Name</div>
+                <div className="w-full">Share</div>
+                <div className="w-full ">Link</div>
+                <div className="w-full ">Donate Until</div>
               </div>
             </div>
           </div>
