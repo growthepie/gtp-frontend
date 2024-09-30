@@ -67,7 +67,7 @@ export default async function Layout({
                 </ul>
               </div>
               <HorizontalScrollContainer className="rounded-[30px]" includeMargin={false} forcedMinWidth={700}>
-                <div className="aspect-w-[1245] aspect-h-[425] w-full min-w-[700px]">
+                <div className="aspect-w-[1245] aspect-h-[425] w-full min-w-[700px] max-w-[960px]">
                   {DesktopEconomicsExplanationSVG}
                 </div>
               </HorizontalScrollContainer>
