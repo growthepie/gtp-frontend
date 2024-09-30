@@ -432,7 +432,7 @@ const MetricsTable = ({
     >
       <div className="relative min-w-[570px] md:min-w-[600px] lg:min-w-full pr-[20px] md:pr-[50px] lg:pr-2 w-full">
         <div
-          className={`flex items-center justify-between py-1 pb-2 pl-4 pr-9 lg:pl-2 lg:pr-12 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm lg:mt-4`}
+          className={`flex items-center justify-between py-1 pb-2 pl-4 pr-9 lg:pl-2 lg:pr-[60px] rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm lg:mt-4`}
         >
           <div
             className={` ${
@@ -469,7 +469,7 @@ const MetricsTable = ({
               </div>
             ))}
             <div
-              className={`absolute top-0 lg:top-1 right-[26px] md:right-[56px] lg:right-[36px] cursor-pointer`}
+              className={`absolute top-0 lg:top-1 right-[26px] md:right-[56px] lg:right-[44px] cursor-pointer`}
               onClick={onChainSelectToggle}
             >
               <div
