@@ -310,8 +310,8 @@ const MetricsTable = ({
       })
       .map((data) => ({
         ...data,
-        y: (height += 39) - 34,
-        height: 34,
+        y: (height += isMobile ? 44 : 59) - (isMobile ? 44 : 59),
+        height: isMobile ? 44 : 59,
       })),
     {
       key: (d) => d.chain.key,
@@ -432,7 +432,7 @@ const MetricsTable = ({
     >
       <div className="relative min-w-[570px] md:min-w-[600px] lg:min-w-full pr-[20px] md:pr-[50px] lg:pr-2 w-full">
         <div
-          className={`flex items-center justify-between py-1 pb-2 pl-4 pr-9 lg:pl-2 lg:pr-[60px] rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm lg:mt-4`}
+          className={`flex items-center justify-between py-1 pb-2 pl-4 pr-9 lg:pl-2 lg:pr-12 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm lg:mt-4`}
         >
           <div
             className={` ${
@@ -469,7 +469,7 @@ const MetricsTable = ({
               </div>
             ))}
             <div
-              className={`absolute top-0 lg:top-1 right-[26px] md:right-[56px] lg:right-[44px] cursor-pointer`}
+              className={`absolute top-0 lg:top-1 right-[26px] md:right-[56px] lg:right-[36px] cursor-pointer`}
               onClick={onChainSelectToggle}
             >
               <div
@@ -556,7 +556,7 @@ const MetricsTable = ({
               >
                 <div
                   key={item.chain.key}
-                  className={`flex items-center justify-between  pl-[5px] lg:pr-2  lg:pl-2 rounded-full w-full font-[400] border-[1px] whitespace-nowrap text-xs lg:text-[0.95rem] cursor-pointer group relative
+                  className={`flex items-center justify-between p-1.5 pl-4 py-[4px] lg:pr-2 lg:py-[10.5px] lg:pl-2 rounded-full w-full font-[400] border-[1px] whitespace-nowrap text-xs lg:text-[0.95rem] cursor-pointer group relative
               ${
                 item.chain.key === "ethereum"
                   ? showEthereumMainnet
@@ -567,14 +567,13 @@ const MetricsTable = ({
                   : "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/5 transition-all duration-100"
               } `}
                   onClick={() => handleChainClick(item.chain.key)}
-                  style={{ height: 34 }}
                 >
                   <div className="w-full h-full absolute left-0 bottom-0 rounded-full overflow-clip pointer-events-none">
                     <div className="relative w-full h-full">
                       {item.chain.key !== "ethereum" && (
                         <>
                           <div
-                            className={`absolute left-[5px] right-[15px] lg:left-[8px] lg:right-[18px] bottom-[0px] h-[1px] lg:h-[2px] rounded-none font-semibold transition-width duration-300 `}
+                            className={`absolute left-[15px] right-[15px] lg:left-[18px] lg:right-[18px] bottom-[0px] h-[1px] lg:h-[2px] rounded-none font-semibold transition-width duration-300 `}
                             style={{
                               background: selectedChains.includes(
                                 item.chain.key,
@@ -605,7 +604,7 @@ const MetricsTable = ({
                     ></div> */}
                     <Icon
                       icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
-                      className="absolute left-[12px] lg:left-[17px] w-[15px] h-[15px]"
+                      className="absolute left-[12px] lg:left-[17px] w-[29px] h-[29px]"
                       style={{
                         color: selectedChains.includes(item.chain.key)
                           ? item.chain.colors[theme ?? "dark"][1]
@@ -621,22 +620,22 @@ const MetricsTable = ({
                     /> */}
                     <div className="flex-1 break-inside-avoid">
                       <div className="flex-1 flex flex-col">
-                        <div className="flex w-full items-baseline text-sm font-bold leading-snug -mb-[1px]">
+                        <div className="flex w-full items-baseline text-sm font-bold leading-snug">
                           {getDisplayValue(item).prefix && (
-                            <div className="text-[14px] font-normal mr-[1px] leading-snug">
+                            <div className="text-[13px] font-normal mr-[1px] leading-snug">
                               {getDisplayValue(item).prefix}
                             </div>
                           )}
                           {getDisplayValue(item).value}
                           {getDisplayValue(item).suffix && (
-                            <div className="text-[14px] font-normal ml-0.5 leading-snug">
+                            <div className="text-[13px] font-normal ml-0.5 leading-snug">
                               {getDisplayValue(item).suffix}
                             </div>
                           )}
                         </div>
                         <Link
                           href={`/chains/${item.chain.urlKey}`}
-                          className={`font-medium leading-snug text-ellipsis overflow-hidden hover:underline max-w-fit -mt-[1px] ${
+                          className={`font-medium leading-snug text-ellipsis overflow-hidden hover:underline max-w-fit ${
                             isSidebarOpen
                               ? "text-[10px] 2xl:text-xs"
                               : "text-xs"
