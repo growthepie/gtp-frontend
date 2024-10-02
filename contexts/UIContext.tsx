@@ -105,10 +105,18 @@ export const UIContextProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
+    // find content-panel
+    const contentPanel = document.getElementById("content-panel");
     if (state.isMobileSidebarOpen && state.isMobile) {
-      document.body.style.overflowY = "hidden";
+      // Prevent scrolling when mobile sidebar is open
+      if (contentPanel)
+        contentPanel.style.touchAction = "none";
+      document.body.style.touchAction = "none";
     } else {
-      document.body.style.overflowY = "auto";
+      //document.body.style.overflow = "auto";
+      if (contentPanel)
+        contentPanel.style.touchAction = "auto";
+      document.body.style.touchAction = "auto";
     }
   }, [state.isMobileSidebarOpen, state.isMobile]);
 
