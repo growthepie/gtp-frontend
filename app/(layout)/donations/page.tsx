@@ -373,6 +373,7 @@ export default function Donations() {
               <div
                 className={`relative flex flex-col mb-[5px] justify-center z-0 transition-height duration-300 border-[1px] border-[#5A6462] rounded-full px-[15px]`}
                 style={{ height: "34px" }}
+                key={impactRow.name}
               >
                 <div className="flex items-center ">
                   <div
@@ -430,6 +431,7 @@ export default function Donations() {
               <div
                 className={`relative flex flex-col mb-[5px] justify-center z-0 transition-height duration-300 border-[1px] border-[#5A6462] rounded-full px-[15px]`}
                 style={{ height: "34px" }}
+                key={updateRow.name}
               >
                 <div className="flex items-center ">
                   <div
