@@ -12,11 +12,11 @@ export default function SidebarContainer() {
   const { isSidebarOpen, toggleSidebar } = useUIContext();
 
   return (
-    <div className="md:pr-[2px] bg-white dark:bg-forest-1000 max-w-[288px]">
-      <div className="pt-[34px] pl-0 bg-forest-50 dark:bg-[#1F2726] min-h-screen max-h-screen sticky top-0 left-0 hidden md:flex flex-col overflow-y-hidden overflow-x-visible space-y-6 border-r-0 border-forest-500 dark:border-black/50">
+    <div className="bg-forest-1000 md:min-w-[94px] max-w-[253px]">
+      <div className="pt-[35px] pl-[20px] bg-[#1F2726] min-h-screen max-h-screen sticky top-0 left-0 hidden md:flex flex-col overflow-y-hidden overflow-x-hidden gap-y-[36px] border-r-[2px] border-[#151A19]">
         {isSidebarOpen ? (
-          <div className="select-none h-[45.07px] mb-[18px]">
-            <div className="flex items-center mx-5 justify-between h-[45.07px]">
+          <div className="select-none h-[45.07px]">
+            <div className="flex items-center justify-between h-[45.07px] gap-x-[15px] pr-[10px]">
               <Link
                 href="/"
                 className="relative h-[45.07px] w-[192.87px] block"
@@ -40,7 +40,7 @@ export default function SidebarContainer() {
                   />
                 </div>
               </Link>
-              <div>
+              <div className="flex items-end">
                 <Icon
                   icon="feather:log-out"
                   className={`w-[13px] h-[13px]  cursor-pointer mt-4 transition-transform ${isSidebarOpen ? "rotate-180" : ""
@@ -57,14 +57,14 @@ export default function SidebarContainer() {
             </div>
           </div>
         ) : (
-          <div className="select-none h-[45.07px] mt-1 mb-[14px]">
-            <div className="flex items-center ml-8 mr-2 justify-between h-[45.07px]">
-              <Link href="/" className="relative h-[24px] w-[22.29px] block">
-                <div className="h-[24px] w-[22.29px] absolute left-3">
+          <div className="select-none h-[45.07px]">
+            <div className="flex items-end justify-between h-[45.07px] gap-x-[15px] pr-[10px] pb-[6px]">
+              <Link href="/" className="flex-1 flex justify-end relative h-[24px]">
+                <div className="h-[24px] w-[22.29px]">
                   <Image
                     src="/logo_full.png"
                     alt="Forest"
-                    className="mb-6 -ml-[9px] z-10 w-[102.704px] h-[24px] object-cover object-left"
+                    className="z-10 w-[102.704px] h-[24px] object-cover object-left"
                     width={102.704}
                     height={24}
                     quality={100}

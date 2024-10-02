@@ -196,7 +196,7 @@ export default function ChainAnimations({
                 {selectedValue === "share" ? (
                   <div>{Math.round(value * 100)}%</div>
                 ) : (
-                  <div className="flex gap-x-0.5">
+                  <div className="flex">
                     <div
                       className={`${showUsd ? "static" : "relative top-[1px]"}`}
                     >

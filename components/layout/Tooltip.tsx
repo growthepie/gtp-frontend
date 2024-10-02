@@ -66,6 +66,21 @@ export function useTooltip({
 
   const interactions = useInteractions([hover, focus, dismiss, role]);
 
+  // Add scroll event listener to close the tooltip on scroll
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setOpen(false);
+    };
+
+    // Attach the scroll listener to the window. 
+    // If you have a specific scrollable container, attach it there instead.
+    window.addEventListener("scroll", handleScroll, true); // Use capture to catch all scroll events
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll, true);
+    };
+  }, [setOpen]);
+
   return React.useMemo(
     () => ({
       open,

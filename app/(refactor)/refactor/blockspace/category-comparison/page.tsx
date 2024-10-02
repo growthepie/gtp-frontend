@@ -69,7 +69,6 @@ const CategoryComparison = () => {
       {usageData && (
         <Container className="flex flex-col space-y-[15px] mt-[45px]">
           <QuestionAnswer
-            className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[63px] py-[23px] flex flex-col"
             question={`What should you know about the Category Comparison page?`}
             answer={`We measure the gas fees spent and the number of transactions sent to
             smart contracts. The smart contracts are mapped to distinct

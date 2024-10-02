@@ -9,6 +9,7 @@ import Icon from "@/components/layout/Icon";
 // import { useUIContext } from "@/contexts/UIContext";
 import { LandingURL } from "@/lib/urls";
 import { navigationItems } from "@/lib/navigation";
+import { metricItems } from "@/lib/metrics";
 
 import "@splidejs/splide/css";
 import { track } from "@vercel/analytics/react";
@@ -36,9 +37,9 @@ export default function SwiperItem({
   //   next: { revalidate: 3600 },
   // }).then((res) => res.json());
 
-  const urlKey = navigationItems[1].options.find(
-    (item) => item.key === metric_id,
-  )?.urlKey;
+  const urlKey =
+    metricItems[metricItems.findIndex((item) => item.key === metric_id)]
+      ?.urlKey;
 
   const { data: master, error: masterError } =
     useSWR<MasterResponse>(MasterURL);

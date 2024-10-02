@@ -25,7 +25,7 @@ import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import Link from "next/link";
 import { Sources } from "@/lib/datasources";
-import { useUIContext } from "@/contexts/UIContext";
+import { useUIContext, useHighchartsWrappers } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
 import Container from "./Container";
 import ChartWatermark from "./ChartWatermark";
@@ -229,6 +229,7 @@ export default function ComparisonChart({
     },
   );
 
+  useHighchartsWrappers();
 
 
 
@@ -1235,6 +1236,7 @@ export default function ComparisonChart({
     const dynamicOptions: Highcharts.Options = {
       chart: {
         height: height,
+        className: "zoom-chart",
         marginLeft: metric_id === "txcosts" ? 90 : 60,
         type: getSeriesType(filteredData[0].name),
         plotBorderColor: "transparent",

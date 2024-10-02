@@ -13,6 +13,7 @@ import { track } from "@vercel/analytics/server";
 import Link from "next/link";
 import Icon from "@/components/layout/Icon";
 import StableInsights from "@/components/layout/StableInsights";
+import { MetricItem, metricItems } from "@/lib/metrics";
 
 type Props = {
   params: { metric: string };
@@ -27,9 +28,7 @@ const unitsMap = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (
     !params.metric ||
-    navigationItems
-      .find((item) => item.label === "Fundamentals")
-      ?.options.find((item) => item.urlKey === params.metric) === undefined
+    metricItems.find((item) => item.urlKey === params.metric) === undefined
   ) {
     track("404 Error", {
       location: "404 Error",
@@ -38,9 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return notFound();
   }
 
-  const option = navigationItems
-    .find((item) => item.label === "Fundamentals")
-    ?.options.find((item) => item.urlKey === params.metric);
+  const option = metricItems.find((item) => item.urlKey === params.metric);
 
   if (option) {
     const currentDate = new Date();
@@ -79,9 +76,8 @@ export default async function Layout({
 }) {
   const url = MetricsURLs[params.metric];
 
-  const pageData = navigationItems[1]?.options.find(
-    (item) => item.urlKey === params.metric,
-  )?.page ?? {
+  const pageData = metricItems.find((item) => item.urlKey === params.metric)
+    ?.page ?? {
     title: "",
     description: "",
     icon: "",
@@ -154,9 +150,8 @@ export default async function Layout({
         <div className="flex justify-between items-start w-full">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-y-[10px] md:gap-x-[15px] pb-[15px]">
             <div className="flex items-center">
-              <Image
-                src="/GTP-Fundamentals.svg"
-                alt="GTP Chain"
+              <Icon
+                icon={String(pageData.icon)}
                 className="object-contain w-[32px] h-[32px] mr-[8px]"
                 height={36}
                 width={36}
@@ -174,9 +169,8 @@ export default async function Layout({
                 target="_blank"
               >
                 <div
-                  className={`flex items-center justify-center p-[1px] bg-[linear-gradient(144.58deg,#FE5468_20.78%,#FFDF27_104.18%)] rounded-full  ${
-                    params.metric === "transaction-costs" ? "flex" : "hidden"
-                  }`}
+                  className={`flex items-center justify-center p-[1px] bg-[linear-gradient(144.58deg,#FE5468_20.78%,#FFDF27_104.18%)] rounded-full  ${params.metric === "transaction-costs" ? "flex" : "hidden"
+                    }`}
                 >
                   <div className="flex items-center pl-[5px] py-[4px] w-[205px] gap-x-[8px] font-semibold bg-forest-50 dark:bg-forest-900 rounded-full transition-all duration-300">
                     <div className="w-[24px] h-[24px] bg-[#151A19] rounded-full flex items-center justify-center">
@@ -199,7 +193,7 @@ export default async function Layout({
           iconContainerClassName="items-center mb-[15px] md:mb-[32px] relative"
         >
           {typeof pageData.description === "string" &&
-          pageData.description.includes("L2Beat.com.") ? (
+            pageData.description.includes("L2Beat.com.") ? (
             <div>
               <p>
                 {pageData.description.replace("L2Beat.com.", "")}
@@ -237,7 +231,6 @@ export default async function Layout({
       {children}
       <Container className="flex flex-col space-y-[15px] mt-[30px]">
         <QuestionAnswer
-          className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[63px] py-[23px] flex flex-col"
           question={`What does ${pageData.title} tell you?`}
           answer={pageData.why}
           note={

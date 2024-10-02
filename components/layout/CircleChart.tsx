@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+"use client";
+import React, { useCallback, useEffect } from 'react';
 import Highcharts from "highcharts/highstock";
 import { Chart, HighchartsChart, HighchartsProvider, PieSeries, Tooltip } from 'react-jsx-highcharts';
 import "@/app/highcharts.axis.css";
@@ -11,12 +12,22 @@ export type CircleChartProps = {
   }[];
   size?: number;
   strokeWidth?: number;
-  colors?: (string | Highcharts.GradientColorObject | Highcharts.PatternObject)[];
+  colors: (string | Highcharts.GradientColorObject | Highcharts.PatternObject)[];
   valuePrefix?: string;
 };
 
 export const CircleChart = ({ title, data, valuePrefix = "", colors, size = 250, strokeWidth = 15 }: CircleChartProps) => {
 
+
+  useEffect(() => {
+
+    // Set the colors for the chart
+    if (colors)
+      Highcharts.setOptions({
+        colors: colors,
+      });
+
+  }, []);
 
   useEffect(() => {
 
@@ -144,6 +155,7 @@ export const CircleChart = ({ title, data, valuePrefix = "", colors, size = 250,
           let suffix = "";
           let value = y;
           let displayValue = y;
+          // let color = colors ? colors[point.index] : point.color;
 
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
