@@ -106,9 +106,10 @@ export const UIContextProvider = ({ children }) => {
 
   useEffect(() => {
     if (state.isMobileSidebarOpen && state.isMobile) {
-      document.body.style.overflowY = "hidden";
+      // Prevent scrolling when mobile sidebar is open
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflowY = "auto";
+      document.body.style.overflow = "auto";
     }
   }, [state.isMobileSidebarOpen, state.isMobile]);
 
