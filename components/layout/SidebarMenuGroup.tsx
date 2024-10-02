@@ -1010,6 +1010,9 @@ const Accordion = ({
   }, [children]);
 
   const target = link?.startsWith("http") ? "_blank" : undefined;
+  const { isMobile } = useUIContext();
+
+  const screenWidth = window.screen.width;
 
   return (
     <>
@@ -1025,7 +1028,7 @@ const Accordion = ({
                 : undefined
             }
             style={{
-              width: width || "250px",
+              width: width || (isMobile ? screenWidth : "250px"),
             }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
@@ -1068,17 +1071,21 @@ const Accordion = ({
               </div>
 
               <div
-                className={`transition-all duration-300 w-[65px]  absolute top-1 bottom-1 right-[4px] md:right-0 text-xs flex items-center justify-center font-bold overflow-hidden`}
+                className={`transition-all duration-300 absolute top-1 bottom-1  md:right-0 text-xs flex items-center justify-center font-bold overflow-hidden ${
+                  isMobile ? "right-[8px] w-[90px] " : "right-[4px] w-[65px]"
+                }`}
               >
                 <div
-                  className={`transition-all duration-300 w-[45px] h-[28px] rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${
+                  className={`transition-all duration-300  h-[28px] rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${
                     isNew || (!isOpen && newChild)
                       ? "delay-300 -translate-x-[10px] ease-in-out opacity-100"
                       : "translate-x-[60px] ease-in-out opacity-0"
-                  }`}
+                  } ${isMobile ? "w-[60px]" : "w-[45px]"}`}
                 >
                   <div
-                    className={`transition-all duration-300 absolute inset-0 pr-[4px] rounded-full md:rounded-br-none md:rounded-tr-none text-xs flex items-center justify-end font-bold hard-shine-2 text-white dark:text-forest-900`}
+                    className={`transition-all duration-300 absolute inset-0 rounded-full md:rounded-br-none md:rounded-tr-none text-xs flex items-center justify-end font-bold hard-shine-2 text-white dark:text-forest-900 ${
+                      isMobile ? "pr-[16px] " : "pr-[4px] "
+                    }`}
                   >
                     NEW!
                   </div>
