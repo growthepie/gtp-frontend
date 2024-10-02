@@ -93,7 +93,6 @@ export default function SidebarMenuGroup({
 
   const pathname = usePathname();
 
-
   const urlParts = useMemo(() => {
     if (!pathname) {
       return ["", ""];
@@ -128,7 +127,6 @@ export default function SidebarMenuGroup({
     }
 
     setIsOpen(openState);
-
   }, [item.name, item.options, pathname, urlParts]);
 
   const handleToggle = () => {
@@ -161,6 +159,8 @@ export default function SidebarMenuGroup({
       hideLabel={!sidebarOpen}
       className=""
       accordionClassName="mb-[10px]"
+      isNew={undefined}
+      newChild={item.newChild}
     >
       {item.label === "Chains" ? (
         <div className="pl-[9px] gap-y-[5px]">
@@ -188,12 +188,19 @@ export default function SidebarMenuGroup({
                           ? AllChainsByKeys[option.key].colors["dark"][1]
                           : "#5A6462"
                       }
-                      iconHoverColor={AllChainsByKeys[option.key].colors["dark"][1]}
+                      iconHoverColor={
+                        AllChainsByKeys[option.key].colors["dark"][1]
+                      }
                       label={option.label}
                       hideLabel={!sidebarOpen}
                       link={option.url}
-                      isActive={option.url ? pathname.localeCompare(option.url) === 0 : false}
+                      isActive={
+                        option.url
+                          ? pathname.localeCompare(option.url) === 0
+                          : false
+                      }
                       width={isMobile ? "100%" : "250px"}
+                      isNew={option.showNew}
                     />
                   ))}
                 </div>
@@ -201,7 +208,7 @@ export default function SidebarMenuGroup({
             })}
         </div>
       ) : (
-        <div className="px-[3px] gap-y-[-5px]">
+        <div className="px-[3px] gap-y-[-5px] w-full">
           {item.options
             .filter((o) => o.hide !== true)
             .map((option, i) => {
@@ -219,9 +226,13 @@ export default function SidebarMenuGroup({
                       className="text-[14px] font-bold text-[#5A6462] p-[5px]"
                       style={{ fontVariant: "all-small-caps" }}
                     >
-                      {sidebarOpen
-                        ? navigationCategories[option.category].label.toUpperCase()
-                        : <span>&nbsp;</span>}
+                      {sidebarOpen ? (
+                        navigationCategories[
+                          option.category
+                        ].label.toUpperCase()
+                      ) : (
+                        <span>&nbsp;</span>
+                      )}
                     </div>
                   );
                 }
@@ -239,8 +250,13 @@ export default function SidebarMenuGroup({
                     label={option.label}
                     hideLabel={!sidebarOpen}
                     link={option.url}
-                    isActive={option.url ? pathname.localeCompare(option.url) === 0 : false}
+                    isActive={
+                      option.url
+                        ? pathname.localeCompare(option.url) === 0
+                        : false
+                    }
                     width={isMobile ? "100%" : "250px"}
+                    isNew={option.showNew}
                   />
                 </div>
               );
@@ -249,7 +265,6 @@ export default function SidebarMenuGroup({
       )}
     </Accordion>
   );
-
 
   // // disable Blockspace menu item in production
   // if (item.name === "")
@@ -890,8 +905,6 @@ export default function SidebarMenuGroup({
   // );
 }
 
-
-
 type AccordionProps = {
   className?: string;
   accordionClassName?: string;
@@ -910,6 +923,8 @@ type AccordionProps = {
   isActive?: boolean;
   onToggle?: () => void;
   width?: string | undefined;
+  isNew: boolean | undefined;
+  newChild?: boolean | undefined;
 };
 
 const Accordion = ({
@@ -928,8 +943,10 @@ const Accordion = ({
   isOpen = false,
   hideLabel = false,
   isActive = false,
-  onToggle = () => { },
+  onToggle = () => {},
   width = undefined,
+  isNew,
+  newChild,
 }: AccordionProps) => {
   // const [isOpen, setIsOpen] = useState(open);
 
@@ -937,13 +954,13 @@ const Accordion = ({
     sm: "26px",
     md: "26px",
     lg: "38px",
-  }
+  };
 
   const iconSize = {
     sm: "15px",
     md: "15px",
     lg: "24px",
-  }
+  };
 
   const height = {
     sm: "26px",
@@ -993,25 +1010,35 @@ const Accordion = ({
   }, [children]);
 
   const target = link?.startsWith("http") ? "_blank" : undefined;
+  const { isMobile } = useUIContext();
 
+  const screenWidth = window.screen.width;
 
   return (
     <>
       <Tooltip placement="top-start">
         <TooltipTrigger>
           <Link
-            className={`flex flex-col relative overflow-visible ${className}`}
+            className={`flex flex-col relative overflow-visible w-full  ${className}`}
             href={link ? link : ""}
             target={link && link.startsWith("http") ? "_blank" : undefined}
-            rel={link && link.startsWith("http") ? "noopener noreferrer" : undefined}
+            rel={
+              link && link.startsWith("http")
+                ? "noopener noreferrer"
+                : undefined
+            }
             style={{
-              width: width || "100%",
+              width: width || (isMobile ? screenWidth : "250px"),
             }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
             <div
-              className={`w-full flex items-center justify-between ${hideLabel ? "rounded-full" : "rounded-full"}  ${children ? "cursor-pointer" : ""} ${isActive && "!bg-[#151A19]"} ${link && !hideLabel && "hover:!bg-[#5A6462]"}`}
+              className={`w-full flex items-center justify-between ${
+                hideLabel ? "rounded-full" : "rounded-full"
+              }  ${children ? "cursor-pointer" : ""} ${
+                isActive && "!bg-[#151A19]"
+              } ${link && !hideLabel && "hover:!bg-[#5A6462]"}`}
               onClick={() => {
                 onToggle && onToggle();
               }}
@@ -1023,9 +1050,18 @@ const Accordion = ({
                 border: border[background],
               }}
             >
-              <DropdownIcon size={size} icon={icon} iconBackground={iconBackground} showArrow={children ? true : false} isOpen={isOpen} iconColor={isHovered && iconHoverColor ? iconHoverColor : iconColor} />
+              <DropdownIcon
+                size={size}
+                icon={icon}
+                iconBackground={iconBackground}
+                showArrow={children ? true : false}
+                isOpen={isOpen}
+                iconColor={
+                  isHovered && iconHoverColor ? iconHoverColor : iconColor
+                }
+              />
               <div
-                className="flex-1 flex items-start justify-start font-semibold truncate transition-all duration-300"
+                className="flex-1 flex items-start justify-start font-semibold truncate transition-all duration-300 "
                 style={{
                   fontSize: fontSize[size],
                   opacity: hideLabel ? 0 : 1,
@@ -1033,36 +1069,75 @@ const Accordion = ({
               >
                 {label}
               </div>
-            </div>
-          </Link >
 
-        </TooltipTrigger>
-        {hideLabel && <TooltipContent className={`${hideLabel ? "z-50" : ""} pointer-events-none`}>
-          <div className="absolute pointer-events-none" style={{ top: 5, left: 0 }}>
-            <div
-              className={`flex items-center justify-between ${hideLabel ? "rounded-full" : "rounded-full"} ${isActive && "!bg-[#151A19]"}`}
-              style={{
-                padding: padding[size],
-                gap: gap[size],
-                height: height[size],
-                background: "#5A6462",
-                border: border[background],
-                width: hideLabel ? undefined : width
-              }}
-            >
-              <DropdownIcon size={size} icon={icon} iconBackground={iconBackground} showArrow={children ? true : false} isOpen={isOpen} iconColor={isHovered && iconHoverColor ? iconHoverColor : iconColor} />
               <div
-                className="flex-1 flex items-start justify-start font-semibold truncate transition-all duration-300"
-                style={{
-                  fontSize: fontSize[size],
-                  // opacity: hideLabel ? 0 : 1,
-                }}
+                className={`transition-all duration-300 absolute top-1 bottom-1  md:right-0 text-xs flex items-center justify-center font-bold overflow-hidden ${
+                  isMobile ? "right-[8px] w-[90px] " : "right-[4px] w-[65px]"
+                }`}
               >
-                {label}
+                <div
+                  className={`transition-all duration-300  h-[28px] rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${
+                    isNew || (!isOpen && newChild)
+                      ? "delay-300 -translate-x-[10px] ease-in-out opacity-100"
+                      : "translate-x-[60px] ease-in-out opacity-0"
+                  } ${isMobile ? "w-[60px]" : "w-[45px]"}`}
+                >
+                  <div
+                    className={`transition-all duration-300 absolute inset-0 rounded-full md:rounded-br-none md:rounded-tr-none text-xs flex items-center justify-end font-bold hard-shine-2 text-white dark:text-forest-900 ${
+                      isMobile ? "pr-[16px] " : "pr-[4px] "
+                    }`}
+                  >
+                    NEW!
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </TooltipContent>}
+          </Link>
+        </TooltipTrigger>
+        {hideLabel && (
+          <TooltipContent
+            className={`${hideLabel ? "z-50" : ""} pointer-events-none`}
+          >
+            <div
+              className="absolute pointer-events-none"
+              style={{ top: 5, left: 0 }}
+            >
+              <div
+                className={`flex items-center justify-between ${
+                  hideLabel ? "rounded-full" : "rounded-full"
+                } ${isActive && "!bg-[#151A19]"}`}
+                style={{
+                  padding: padding[size],
+                  gap: gap[size],
+                  height: height[size],
+                  background: "#5A6462",
+                  border: border[background],
+                  width: hideLabel ? undefined : width,
+                }}
+              >
+                <DropdownIcon
+                  size={size}
+                  icon={icon}
+                  iconBackground={iconBackground}
+                  showArrow={children ? true : false}
+                  isOpen={isOpen}
+                  iconColor={
+                    isHovered && iconHoverColor ? iconHoverColor : iconColor
+                  }
+                />
+                <div
+                  className="flex-1 flex items-start justify-start font-semibold truncate transition-all duration-300"
+                  style={{
+                    fontSize: fontSize[size],
+                    // opacity: hideLabel ? 0 : 1,
+                  }}
+                >
+                  {label}
+                </div>
+              </div>
+            </div>
+          </TooltipContent>
+        )}
       </Tooltip>
       {children && (
         <div
@@ -1071,9 +1146,7 @@ const Accordion = ({
             maxHeight: isOpen ? childrenHeight : "0",
           }}
         >
-          <div ref={ref}>
-            {children}
-          </div>
+          <div ref={ref}>{children}</div>
         </div>
       )}
     </>
@@ -1089,20 +1162,25 @@ type DropdownIconProps = {
   isOpen?: boolean;
 };
 
-const DropdownIcon = ({ size, icon, iconColor, iconBackground, showArrow = false, isOpen = false }: DropdownIconProps) => {
-
+const DropdownIcon = ({
+  size,
+  icon,
+  iconColor,
+  iconBackground,
+  showArrow = false,
+  isOpen = false,
+}: DropdownIconProps) => {
   const iconBgSize = {
     sm: "26px",
     md: "26px",
     lg: "38px",
-  }
+  };
 
   const iconSize = {
     sm: "15px",
     md: "15px",
     lg: "24px",
-  }
-
+  };
 
   const iconBg = {
     none: "transparent",
@@ -1110,14 +1188,24 @@ const DropdownIcon = ({ size, icon, iconColor, iconBackground, showArrow = false
   };
 
   return (
-    <div className="flex items-center justify-center rounded-full" style={{ width: iconBgSize[size], height: iconBgSize[size], background: iconBg[iconBackground] }}>
+    <div
+      className="flex items-center justify-center rounded-full"
+      style={{
+        width: iconBgSize[size],
+        height: iconBgSize[size],
+        background: iconBg[iconBackground],
+      }}
+    >
       <div className="relative flex h-full px-[5px] items-center justify-center">
-        <GTPIcon icon={icon} style={{
-          width: iconSize[size],
-          height: iconSize[size],
-          fontSize: iconSize[size],
-          color: iconColor,
-        }} />
+        <GTPIcon
+          icon={icon}
+          style={{
+            width: iconSize[size],
+            height: iconSize[size],
+            fontSize: iconSize[size],
+            color: iconColor,
+          }}
+        />
 
         {showArrow && (
           <div
@@ -1127,8 +1215,19 @@ const DropdownIcon = ({ size, icon, iconColor, iconBackground, showArrow = false
               transformOrigin: `calc(-${iconSize[size]}/2) 50%`,
             }}
           >
-            <svg width="5" height="10" viewBox="0 0 5 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1.32446 1.07129L3.32446 5.07129L1.32446 9.07129" stroke="#CDD8D3" strokeWidth="1.5" strokeLinejoin="round" />
+            <svg
+              width="5"
+              height="10"
+              viewBox="0 0 5 10"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M1.32446 1.07129L3.32446 5.07129L1.32446 9.07129"
+                stroke="#CDD8D3"
+                strokeWidth="1.5"
+                strokeLinejoin="round"
+              />
             </svg>
           </div>
         )}

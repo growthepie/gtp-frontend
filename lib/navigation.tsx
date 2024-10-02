@@ -7,6 +7,7 @@ import { GTPIconName } from "@/icons/gtp-icon-names";
 export type NavigationItem = {
   name: string;
   label: string;
+  newChild?: boolean;
   page?: {
     title: string;
     description: string;
@@ -215,6 +216,7 @@ export const navigationItems: NavigationItem[] = [
     name: "Economics",
     label: "Economics",
     icon: "gtp-metrics-economics",
+    newChild: true,
     options: [
       {
         label: "Overview",
@@ -228,6 +230,7 @@ export const navigationItems: NavigationItem[] = [
         rootKey: "economics",
         urlKey: "economics",
         url: "/economics",
+        showNew: true,
       },
       {
         label: "Revenue",
