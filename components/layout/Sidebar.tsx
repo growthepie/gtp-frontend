@@ -129,7 +129,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
         {/* Mobile Sidebar */}
         <div
           suppressHydrationWarning
-          className={`fixed top-0 right-0 z-[998] flex justify-end transform transition-transform duration-300 ease-in-out ${isMobileSidebarOpen ? "translate-x-0" : "translate-x-full"
+          className={`fixed top-0 right-0 z-[998] flex justify-end transform transition-transform duration-300 ease-in-out will-change-transform ${isMobileSidebarOpen ? "translate-x-0" : "translate-x-full"
             }`}
           aria-hidden={!isMobileSidebarOpen}
         >
@@ -340,7 +340,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
   return (
     <div
       ref={ref}
-      className={`flex-1 flex flex-col justify-items-start select-none overflow-y-hidden overflow-x-hidden -ml-[20px] ${isSidebarOpen ? "w-[260px]" : "w-[92px]"} transition-all duration-300`}
+      className={`flex-1 flex flex-col justify-items-start select-none overflow-y-hidden overflow-x-hidden -ml-[20px] will-change-[width] ${isSidebarOpen ? "w-[260px]" : "w-[92px]"} transition-all duration-300`}
     // animate={{
     //   width: isSidebarOpen ? "229px" : "72px",
     // }}
