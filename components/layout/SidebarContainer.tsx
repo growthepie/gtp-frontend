@@ -18,7 +18,7 @@ export default function SidebarContainer() {
           <div className="flex items-center justify-start h-[45.07px] gap-x-[15px] pr-[10px]">
             <Link
               href="/"
-              className={`${isSidebarOpen ? "relative h-[45.07px] w-[192.87px] block" : "relative h-[45.07px] w-[72px] overflow-clip"} transition-all duration-300`}
+              className={`${isSidebarOpen ? "relative h-[45.07px] w-[192.87px] block" : "relative h-[45.07px] w-[62px] overflow-clip"} transition-all duration-300`}
             >
               <div className={`h-[45.07px] w-[192.87px] relative ${isSidebarOpen ? "scale-100  translate-x-[0px] translate-y-[0px]" : "scale-[0.5325] -translate-x-[0px] translate-y-[2px]"} transition-all duration-300`} style={{ transformOrigin: "21px 27px" }}>
                 <svg className="absolute" viewBox="0 0 194 46" fill="none" xmlns="http://www.w3.org/2000/svg">
