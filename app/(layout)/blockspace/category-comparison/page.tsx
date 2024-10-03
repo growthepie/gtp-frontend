@@ -13,6 +13,7 @@ import EcosystemDropdown from "@/components/layout/EcosystemDropdown";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import ShowLoading from "@/components/layout/ShowLoading";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import { Icon } from "@iconify/react";
 
 const CategoryComparison = () => {
   const {
@@ -50,10 +51,9 @@ const CategoryComparison = () => {
       >
         <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] relative">
           <div className="flex items-center gap-x-[8px]">
-            <Image
-              src="/GTP-Package.svg"
-              alt="GTP Chain"
-              className="object-contain w-[32px] h-[32px] "
+            <Icon
+              icon={"gtp:gtp-compare"}
+              className="object-contain w-[32px] h-[32px]"
               height={36}
               width={36}
             />

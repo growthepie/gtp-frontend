@@ -83,10 +83,10 @@ const ChainOverview = () => {
           chain === "all_l2s"
             ? true
             : isMaster
-              ? chainEcosystemFilter === "all-chains"
-                ? true
-                : AllChainsByKeys[chain].ecosystem.includes(chainEcosystemFilter)
-              : false;
+            ? chainEcosystemFilter === "all-chains"
+              ? true
+              : AllChainsByKeys[chain].ecosystem.includes(chainEcosystemFilter)
+            : false;
 
         return passEcosystem && isSupported;
       })
@@ -120,9 +120,8 @@ const ChainOverview = () => {
           >
             <div className="flex items-center w-[99.8%] justify-between md:text-[36px] relative">
               <div className="flex gap-x-[8px] items-center">
-                <Image
-                  src="/GTP-Package.svg"
-                  alt="GTP Chain"
+                <Icon
+                  icon={"gtp:gtp-chain"}
                   className="object-contain w-[32px] h-[32px]"
                   height={36}
                   width={36}
@@ -151,7 +150,7 @@ const ChainOverview = () => {
               setSelectedTimespan={setSelectedTimespan}
               data={chainFilter}
               master={master}
-            // data={!chainEcosystemFilter || chainEcosystemFilter=== "all-chains" ? usageData.data.chains : )}
+              // data={!chainEcosystemFilter || chainEcosystemFilter=== "all-chains" ? usageData.data.chains : )}
             />
           )}
         </>
