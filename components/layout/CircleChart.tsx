@@ -9,35 +9,36 @@ export type CircleChartProps = {
   data: {
     label: string;
     value: number;
+    className?: string;
   }[];
   size?: number;
   strokeWidth?: number;
-  colors: (string | Highcharts.GradientColorObject | Highcharts.PatternObject)[];
+  // colors: (string | Highcharts.GradientColorObject | Highcharts.PatternObject)[];
   valuePrefix?: string;
 };
 
-export const CircleChart = ({ title, data, valuePrefix = "", colors, size = 250, strokeWidth = 15 }: CircleChartProps) => {
+export const CircleChart = ({ title, data, valuePrefix = "", size = 250, strokeWidth = 15 }: CircleChartProps) => {
 
 
-  useEffect(() => {
+  // useEffect(() => {
 
-    // Set the colors for the chart
-    if (colors)
-      Highcharts.setOptions({
-        colors: colors,
-      });
+  //   // Set the colors for the chart
+  //   if (colors)
+  //     Highcharts.setOptions({
+  //       colors: colors,
+  //     });
 
-  }, []);
+  // }, []);
 
-  useEffect(() => {
+  // useEffect(() => {
 
-    // Set the colors for the chart
-    if (colors)
-      Highcharts.setOptions({
-        colors: colors,
-      });
+  //   // Set the colors for the chart
+  //   if (colors)
+  //     Highcharts.setOptions({
+  //       colors: colors,
+  //     });
 
-  }, [colors]);
+  // }, [colors]);
 
   const titleRef = React.useRef<Highcharts.SVGElement | null>(null);
 
@@ -157,9 +158,18 @@ export const CircleChart = ({ title, data, valuePrefix = "", colors, size = 250,
           let displayValue = y;
           // let color = colors ? colors[point.index] : point.color;
 
+          console.log("point", point);
+
+          const svgLegend = `
+          <svg width="16" height="6">
+            <rect width="16" height="6" class="${point.className}" />
+          </svg>
+          `;
+
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${color.stops[0][1]}"></div>
+            <div class="w-4 h-1.5 rounded-r-full">${svgLegend}</div>
+            
             <div class="tooltip-point-name text-md">${point.name}</div>
             <div class="flex-1 text-right font-inter flex">
                 <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
@@ -213,7 +223,7 @@ export const CircleChart = ({ title, data, valuePrefix = "", colors, size = 250,
                 overflow: "justify",
                 enabled: true,
                 connectorWidth: 0,
-                distance: -size / 8,
+                distance: -size / 7,
                 style: {
                   fontSize: "9px",
                   fontWeight: "semibold",
@@ -303,6 +313,7 @@ export const CircleChart = ({ title, data, valuePrefix = "", colors, size = 250,
         ))} */}
           <PieSeries
             name={""}
+            size={size}
             showInLegend={false}
             innerSize={((1 - ((strokeWidth + 3) / size)) * 100) + "%"}
             borderWidth={2}
@@ -310,9 +321,11 @@ export const CircleChart = ({ title, data, valuePrefix = "", colors, size = 250,
             startAngle={180 + angleOffset}
             endAngle={180 - angleOffset}
 
+
             data={sortedData.map((d) => ({
               name: d.label,
               y: d.value,
+              className: d.className,
               // sliced: true,
               // color: d.color,
               // gradientForSides: true,
