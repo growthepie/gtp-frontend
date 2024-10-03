@@ -112,11 +112,13 @@ export const UIContextProvider = ({ children }) => {
       if (contentPanel)
         contentPanel.style.touchAction = "none";
       document.body.style.touchAction = "none";
+      document.body.style.overflow = "hidden";
     } else {
       //document.body.style.overflow = "auto";
       if (contentPanel)
         contentPanel.style.touchAction = "auto";
       document.body.style.touchAction = "auto";
+      document.body.style.overflow = "auto";
     }
   }, [state.isMobileSidebarOpen, state.isMobile]);
 

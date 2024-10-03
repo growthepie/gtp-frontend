@@ -85,8 +85,6 @@ export default function SidebarMenuGroup({
     return chainsByBucket;
   }, [master]);
 
-  const { isMobile } = useUIContext();
-
   const { AllChainsByKeys } = useMaster();
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -159,8 +157,23 @@ export default function SidebarMenuGroup({
       hideLabel={!sidebarOpen}
       className=""
       accordionClassName="mb-[10px]"
-      isNew={undefined}
-      newChild={item.newChild}
+      rightContent={item.newChild &&
+        (
+          <div className="transition-all duration-300 absolute top-[8px] bottom-[8px] right-[0px] md:right-[20px] text-xs flex items-center justify-center font-bold overflow-hidden pointer-events-none">
+            <div
+              className={`transition-all duration-300 w-[50px] h-full rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${!sidebarOpen || isOpen
+                ? "translate-x-[60px] ease-in-out opacity-0"
+                : "delay-300 translate-x-0 ease-in-out opacity-100"
+                }`}
+            >
+              <div
+                className="transition-all duration-300 absolute inset-0 pr-[8px] rounded-full md:rounded-br-none md:rounded-tr-none text-xs flex items-center justify-end font-bold hard-shine-2 text-forest-900"
+              >
+                NEW!
+              </div>
+            </div>
+          </div>
+        )}
     >
       {item.label === "Chains" ? (
         <div className="pl-[9px] gap-y-[5px]">
@@ -169,7 +182,7 @@ export default function SidebarMenuGroup({
               if (chains.length === 0) return <div key={bucket}></div>;
 
               return (
-                <div key={bucket} className="flex flex-col">
+                <div key={bucket} className="flex flex-col w-full">
                   <div
                     className="text-[14px] font-bold text-[#5A6462] px-[5px] py-[5px]"
                     style={{ fontVariant: "all-small-caps" }}
@@ -199,8 +212,23 @@ export default function SidebarMenuGroup({
                           ? pathname.localeCompare(option.url) === 0
                           : false
                       }
-                      width={isMobile ? "100%" : "250px"}
-                      isNew={option.showNew}
+                      rightContent={option.showNew &&
+                        (
+                          <div className="transition-all duration-300 absolute top-1 bottom-1 right-[2px] md:right-[16px] text-xs flex items-center justify-center font-bold overflow-hidden">
+                            <div
+                              className={`transition-all duration-300 w-[50px] h-full rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${sidebarOpen && isOpen
+                                ? "delay-300 translate-x-[0px] ease-in-out opacity-100"
+                                : "translate-x-[60px] ease-in-out opacity-0"
+                                }`}
+                            >
+                              <div
+                                className="transition-all duration-300 absolute inset-0 pr-[8px] rounded-full md:rounded-br-none md:rounded-tr-none text-xs flex items-center justify-end font-bold hard-shine-2 text-forest-900"
+                              >
+                                NEW!
+                              </div>
+                            </div>
+                          </div>
+                        )}
                     />
                   ))}
                 </div>
@@ -239,7 +267,7 @@ export default function SidebarMenuGroup({
               }
 
               return (
-                <div key={option.key} className="flex flex-col gap-y-[-5px]">
+                <div key={option.key} className="flex flex-col gap-y-[-5px] w-full">
                   {label}
                   <Accordion
                     key={option.key}
@@ -255,8 +283,23 @@ export default function SidebarMenuGroup({
                         ? pathname.localeCompare(option.url) === 0
                         : false
                     }
-                    width={isMobile ? "100%" : "250px"}
-                    isNew={option.showNew}
+                    rightContent={option.showNew &&
+                      (
+                        <div className="transition-all duration-300 absolute top-1 bottom-1 right-[2px] md:right-[16px] text-xs flex items-center justify-center font-bold overflow-hidden">
+                          <div
+                            className={`transition-all duration-300 w-[50px] h-full rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${sidebarOpen && isOpen
+                              ? "delay-300 translate-x-[0px] ease-in-out opacity-100"
+                              : "translate-x-[60px] ease-in-out opacity-0"
+                              }`}
+                          >
+                            <div
+                              className="transition-all duration-300 absolute inset-0 pr-[8px] rounded-full md:rounded-br-none md:rounded-tr-none text-xs flex items-center justify-end font-bold hard-shine-2 text-forest-900"
+                            >
+                              NEW!
+                            </div>
+                          </div>
+                        </div>
+                      )}
                   />
                 </div>
               );
@@ -923,11 +966,10 @@ type AccordionProps = {
   isActive?: boolean;
   onToggle?: () => void;
   width?: string | undefined;
-  isNew: boolean | undefined;
-  newChild?: boolean | undefined;
+  rightContent?: ReactNode;
 };
 
-const Accordion = ({
+export const Accordion = ({
   className = "",
   accordionClassName = "",
   icon,
@@ -943,10 +985,9 @@ const Accordion = ({
   isOpen = false,
   hideLabel = false,
   isActive = false,
-  onToggle = () => {},
+  onToggle = () => { },
   width = undefined,
-  isNew,
-  newChild,
+  rightContent,
 }: AccordionProps) => {
   // const [isOpen, setIsOpen] = useState(open);
 
@@ -1009,17 +1050,12 @@ const Accordion = ({
     }
   }, [children]);
 
-  const target = link?.startsWith("http") ? "_blank" : undefined;
-  const { isMobile } = useUIContext();
-
-  const screenWidth = window.screen.width;
-
   return (
     <>
       <Tooltip placement="top-start">
-        <TooltipTrigger>
+        <TooltipTrigger className="w-full">
           <Link
-            className={`flex flex-col relative overflow-visible w-full  ${className}`}
+            className={`relative flex flex-col overflow-visible w-full ${className}`}
             href={link ? link : ""}
             target={link && link.startsWith("http") ? "_blank" : undefined}
             rel={
@@ -1028,17 +1064,15 @@ const Accordion = ({
                 : undefined
             }
             style={{
-              width: width || (isMobile ? screenWidth : "250px"),
+              width: width,
             }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
             <div
-              className={`w-full flex items-center justify-between ${
-                hideLabel ? "rounded-full" : "rounded-full"
-              }  ${children ? "cursor-pointer" : ""} ${
-                isActive && "!bg-[#151A19]"
-              } ${link && !hideLabel && "hover:!bg-[#5A6462]"}`}
+              className={`w-full flex items-center justify-between ${hideLabel ? "rounded-full" : "rounded-full"
+                }  ${children ? "cursor-pointer" : ""} ${isActive && "!bg-[#151A19]"
+                } ${link && !hideLabel && "hover:!bg-[#5A6462]"}`}
               onClick={() => {
                 onToggle && onToggle();
               }}
@@ -1069,31 +1103,10 @@ const Accordion = ({
               >
                 {label}
               </div>
-
-              <div
-                className={`transition-all duration-300 absolute top-1 bottom-1  md:right-0 text-xs flex items-center justify-center font-bold overflow-hidden ${
-                  isMobile ? "right-[8px] w-[90px] " : "right-[4px] w-[65px]"
-                }`}
-              >
-                <div
-                  className={`transition-all duration-300  h-[28px] rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${
-                    isNew || (!isOpen && newChild)
-                      ? "delay-300 -translate-x-[10px] ease-in-out opacity-100"
-                      : "translate-x-[60px] ease-in-out opacity-0"
-                  } ${isMobile ? "w-[60px]" : "w-[45px]"}`}
-                >
-                  <div
-                    className={`transition-all duration-300 absolute inset-0 rounded-full md:rounded-br-none md:rounded-tr-none text-xs flex items-center justify-end font-bold hard-shine-2 text-white dark:text-forest-900 ${
-                      isMobile ? "pr-[16px] " : "pr-[4px] "
-                    }`}
-                  >
-                    NEW!
-                  </div>
-                </div>
-              </div>
             </div>
+            {rightContent}
           </Link>
-        </TooltipTrigger>
+        </TooltipTrigger >
         {hideLabel && (
           <TooltipContent
             className={`${hideLabel ? "z-50" : ""} pointer-events-none`}
@@ -1103,9 +1116,8 @@ const Accordion = ({
               style={{ top: 5, left: 0 }}
             >
               <div
-                className={`flex items-center justify-between ${
-                  hideLabel ? "rounded-full" : "rounded-full"
-                } ${isActive && "!bg-[#151A19]"}`}
+                className={`flex items-center justify-between ${hideLabel ? "rounded-full" : "rounded-full"
+                  } ${isActive && "!bg-[#151A19]"}`}
                 style={{
                   padding: padding[size],
                   gap: gap[size],
@@ -1138,7 +1150,7 @@ const Accordion = ({
             </div>
           </TooltipContent>
         )}
-      </Tooltip>
+      </Tooltip >
       {children && (
         <div
           className={`overflow-hidden transition-[max-height] duration-300 ${accordionClassName}`}
@@ -1146,7 +1158,7 @@ const Accordion = ({
             maxHeight: isOpen ? childrenHeight : "0",
           }}
         >
-          <div ref={ref}>{children}</div>
+          <div className="w-full" ref={ref}>{children}</div>
         </div>
       )}
     </>
@@ -1162,7 +1174,7 @@ type DropdownIconProps = {
   isOpen?: boolean;
 };
 
-const DropdownIcon = ({
+export const DropdownIcon = ({
   size,
   icon,
   iconColor,

@@ -350,7 +350,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
     >
       {/* <div className="flex-1 flex flex-col gap-y-[10px] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-forest-800/30 scrollbar-track-forest-800/10"> */}
       <VerticalScrollContainer height={height - 36} scrollbarPosition="left" scrollbarAbsolute={true} scrollbarWidth="6px">
-        <div className="pl-[20px]">
+        <div className="pl-[20px] w-[270px]">
           {navigationItemsWithChains.map((item) => (
             <SidebarMenuGroup
               key={item.name + "_item"}
