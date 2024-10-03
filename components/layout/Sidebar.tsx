@@ -161,40 +161,40 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                   <path d="M1.28711 31.9385C2.63811 35.7585 5.94411 40.2455 6.64711 40.9015C9.07511 43.1885 16.8981 45.0715 23.0591 45.0715V38.6325C12.3791 38.6325 4.04111 35.1735 1.28711 31.9385Z" fill="url(#paint8_radial_6615_30338)" />
                   <defs>
                     <radialGradient id="paint0_radial_6615_30338" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(20.6405 4.73381) rotate(117.912) scale(13.0099 10.041)">
-                      <stop stop-color="#1DF7EF" />
-                      <stop offset="1" stop-color="#10808C" />
+                      <stop stopColor="#1DF7EF" />
+                      <stop offset="1" stopColor="#10808C" />
                     </radialGradient>
                     <radialGradient id="paint1_radial_6615_30338" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(23.975 7.10799) rotate(115.692) scale(12.6028 9.18639)">
-                      <stop stop-color="#1DF7EF" />
-                      <stop offset="1" stop-color="#10808C" />
+                      <stop stopColor="#1DF7EF" />
+                      <stop offset="1" stopColor="#10808C" />
                     </radialGradient>
                     <radialGradient id="paint2_radial_6615_30338" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(27.8502 11.6183) rotate(127.548) scale(7.72106 6.96057)">
-                      <stop stop-color="#1DF7EF" />
-                      <stop offset="1" stop-color="#10808C" />
+                      <stop stopColor="#1DF7EF" />
+                      <stop offset="1" stopColor="#10808C" />
                     </radialGradient>
                     <radialGradient id="paint3_radial_6615_30338" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(27.5243 18.175) rotate(125.634) scale(9.96278 8.80191)">
-                      <stop stop-color="#1DF7EF" />
-                      <stop offset="1" stop-color="#10808C" />
+                      <stop stopColor="#1DF7EF" />
+                      <stop offset="1" stopColor="#10808C" />
                     </radialGradient>
                     <radialGradient id="paint4_radial_6615_30338" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(20.8038 20.416) rotate(112.642) scale(7.26953 4.81909)">
-                      <stop stop-color="#1DF7EF" />
-                      <stop offset="1" stop-color="#10808C" />
+                      <stop stopColor="#1DF7EF" />
+                      <stop offset="1" stopColor="#10808C" />
                     </radialGradient>
                     <radialGradient id="paint5_radial_6615_30338" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(16.662 17.0089) rotate(119.008) scale(4.56987 3.61603)">
-                      <stop stop-color="#1DF7EF" />
-                      <stop offset="1" stop-color="#10808C" />
+                      <stop stopColor="#1DF7EF" />
+                      <stop offset="1" stopColor="#10808C" />
                     </radialGradient>
                     <radialGradient id="paint6_radial_6615_30338" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(34.5664 25.7694) rotate(159.689) scale(33.0552 20.0765)">
-                      <stop stop-color="#FFDF27" />
-                      <stop offset="0.9999" stop-color="#FE5468" />
+                      <stop stopColor="#FFDF27" />
+                      <stop offset="0.9999" stopColor="#FE5468" />
                     </radialGradient>
                     <radialGradient id="paint7_radial_6615_30338" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(38.2601 35.8002) rotate(140.592) scale(15.9797 14.6242)">
-                      <stop stop-color="#1DF7EF" />
-                      <stop offset="0.9999" stop-color="#10808C" />
+                      <stop stopColor="#1DF7EF" />
+                      <stop offset="0.9999" stopColor="#10808C" />
                     </radialGradient>
                     <radialGradient id="paint8_radial_6615_30338" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(18.9676 36.0178) rotate(148.427) scale(18.9214 15.7481)">
-                      <stop stop-color="#1DF7EF" />
-                      <stop offset="0.9999" stop-color="#10808C" />
+                      <stop stopColor="#1DF7EF" />
+                      <stop offset="0.9999" stopColor="#10808C" />
                     </radialGradient>
                   </defs>
                 </svg>
@@ -284,7 +284,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                   onClick={toggleMobileSidebar}
                 >
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M6.21967 6.21918C6.51256 5.92629 6.98744 5.92629 7.28033 6.21918L12 10.9389L16.7197 6.21918C17.0126 5.92629 17.4874 5.92629 17.7803 6.21918C18.0732 6.51207 18.0732 6.98695 17.7803 7.27984L13.0607 11.9995L17.7803 16.7192C18.0732 17.0121 18.0732 17.4869 17.7803 17.7798C17.4874 18.0727 17.0126 18.0727 16.7197 17.7798L12 13.0602L7.28033 17.7798C6.98744 18.0727 6.51256 18.0727 6.21967 17.7798C5.92678 17.4869 5.92678 17.0121 6.21967 16.7192L10.9393 11.9995L6.21967 7.27984C5.92678 6.98695 5.92678 6.51207 6.21967 6.21918Z" fill="#CDD8D3" />
+                    <path fillRule="evenodd" clipRule="evenodd" d="M6.21967 6.21918C6.51256 5.92629 6.98744 5.92629 7.28033 6.21918L12 10.9389L16.7197 6.21918C17.0126 5.92629 17.4874 5.92629 17.7803 6.21918C18.0732 6.51207 18.0732 6.98695 17.7803 7.27984L13.0607 11.9995L17.7803 16.7192C18.0732 17.0121 18.0732 17.4869 17.7803 17.7798C17.4874 18.0727 17.0126 18.0727 16.7197 17.7798L12 13.0602L7.28033 17.7798C6.98744 18.0727 6.51256 18.0727 6.21967 17.7798C5.92678 17.4869 5.92678 17.0121 6.21967 16.7192L10.9393 11.9995L6.21967 7.27984C5.92678 6.98695 5.92678 6.51207 6.21967 6.21918Z" fill="#CDD8D3" />
                   </svg>
 
                 </button>
