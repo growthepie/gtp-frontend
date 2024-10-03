@@ -6,14 +6,14 @@ import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
 import { useTransition, animated } from "@react-spring/web";
 import { useUIContext } from "@/contexts/UIContext";
-import { navigationItems } from "@/lib/navigation";
-import { CorporateContactJsonLd } from "next-seo";
+
 import { intersection } from "lodash";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import VerticalScrollContainer from "../VerticalScrollContainer";
 import HorizontalScrollContainer from "../HorizontalScrollContainer";
 import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
+import { metricItems } from "@/lib/metrics";
 
 const MetricsTable = ({
   data,
@@ -137,9 +137,7 @@ const MetricsTable = ({
   const { theme } = useTheme();
 
   const [showGwei, reversePerformer] = useMemo(() => {
-    const item = navigationItems[1].options.find(
-      (item) => item.key === metric_id,
-    );
+    const item = metricItems.find((item) => item.key === metric_id);
 
     return [item?.page?.showGwei, item?.page?.reversePerformer];
   }, [metric_id]);
@@ -390,9 +388,7 @@ const MetricsTable = ({
 
       if (types.includes("eth")) {
         if (!showUsd) {
-          let navItem = navigationItems[1].options.find(
-            (item) => item.key === metric_id,
-          );
+          let navItem = metricItems.find((item) => item.key === metric_id);
 
           if (navItem && navItem.page?.showGwei) {
             prefix = "";
