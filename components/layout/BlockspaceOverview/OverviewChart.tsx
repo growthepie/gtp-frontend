@@ -184,7 +184,7 @@ export default function OverviewChart({
             for (let j = 0; j < numArrays; j++) {
               txTotal +=
                 unixDataList[j][
-                selectedMode.includes("txcount") ? txIndex : gasIndex
+                  selectedMode.includes("txcount") ? txIndex : gasIndex
                 ];
             }
 
@@ -196,10 +196,10 @@ export default function OverviewChart({
                 allTotal +=
                   checkIndex !== -1
                     ? data[standardChainKey].daily[selectedCategory].data[
-                    data[standardChainKey].daily[
-                      selectedCategory
-                    ].data.findIndex((item) => item[0] === findUnix)
-                    ][selectedMode.includes("txcount") ? txIndex : gasIndex]
+                        data[standardChainKey].daily[
+                          selectedCategory
+                        ].data.findIndex((item) => item[0] === findUnix)
+                      ][selectedMode.includes("txcount") ? txIndex : gasIndex]
                     : 0;
               }
             }
@@ -236,7 +236,7 @@ export default function OverviewChart({
           selectedCategory
         ].data
           ? data[selectedChain].overview[selectedTimespan][selectedCategory]
-            .data[overviewIndex]
+              .data[overviewIndex]
           : [];
       } else {
         for (
@@ -253,8 +253,8 @@ export default function OverviewChart({
           ) {
             sum +=
               data[selectedChain].daily[selectedCategory].data[
-              data[selectedChain].daily[selectedCategory].data.length -
-              (i + 1)
+                data[selectedChain].daily[selectedCategory].data.length -
+                  (i + 1)
               ][typeIndex];
           }
         }
@@ -264,8 +264,8 @@ export default function OverviewChart({
             ? data[selectedChain].daily[selectedCategory].data.length
             : timespans[selectedTimespan].value >=
               data[selectedChain].daily[selectedCategory].data.length
-              ? data[selectedChain].daily[selectedCategory].data.length
-              : timespans[selectedTimespan].value);
+            ? data[selectedChain].daily[selectedCategory].data.length
+            : timespans[selectedTimespan].value);
       }
     } else {
       if (chainEcosystemFilter === "all-chains") {
@@ -280,13 +280,13 @@ export default function OverviewChart({
         ) {
           if (
             data[standardChainKey].daily[selectedCategory].data.length -
-            (i + 1) >=
+              (i + 1) >=
             0
           ) {
             sum +=
               data[standardChainKey].daily[selectedCategory].data[
-              data[standardChainKey].daily[selectedCategory].data.length -
-              (i + 1)
+                data[standardChainKey].daily[selectedCategory].data.length -
+                  (i + 1)
               ][typeIndex];
           }
         }
@@ -297,8 +297,8 @@ export default function OverviewChart({
             ? data[standardChainKey].daily[selectedCategory].data.length
             : timespans[selectedTimespan].value >=
               data[standardChainKey].daily[selectedCategory].data.length
-              ? data[standardChainKey].daily[selectedCategory].data.length
-              : timespans[selectedTimespan].value);
+            ? data[standardChainKey].daily[selectedCategory].data.length
+            : timespans[selectedTimespan].value);
       } else {
         let sum = 0;
         for (
@@ -318,8 +318,8 @@ export default function OverviewChart({
             (selectedTimespan === "max"
               ? chartStack.length
               : timespans[selectedTimespan].value >= chartStack.length
-                ? chartStack.length
-                : timespans[selectedTimespan].value);
+              ? chartStack.length
+              : timespans[selectedTimespan].value);
         }
       }
     }
@@ -345,8 +345,8 @@ export default function OverviewChart({
     const selectedData = selectedChain
       ? data[selectedChain].daily[selectedCategory].data
       : chainEcosystemFilter === "all-chains"
-        ? data[standardChainKey].daily[selectedCategory].data
-        : chartStack;
+      ? data[standardChainKey].daily[selectedCategory].data
+      : chartStack;
 
     //Determine array length based on selection
     const length =
@@ -441,15 +441,15 @@ export default function OverviewChart({
             pattern:
               categoryCheck === "unlabeled"
                 ? {
-                  color: AllChainsByKeys[standardChainKey].colors["dark"][0],
-                  path: {
-                    d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
-                    strokeWidth: 3,
-                  },
-                  width: 10,
-                  height: 10,
-                  opacity: 0.33,
-                }
+                    color: AllChainsByKeys[standardChainKey].colors["dark"][0],
+                    path: {
+                      d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
+                      strokeWidth: 3,
+                    },
+                    width: 10,
+                    height: 10,
+                    opacity: 0.33,
+                  }
                 : undefined,
             lineWidth: 0,
             custom: {
@@ -468,15 +468,15 @@ export default function OverviewChart({
             pattern:
               selectedCategory === "unlabeled"
                 ? {
-                  color: AllChainsByKeys[standardChainKey].colors["dark"][0],
-                  path: {
-                    d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
-                    strokeWidth: 3,
-                  },
-                  width: 10,
-                  height: 10,
-                  opacity: 0.33,
-                }
+                    color: AllChainsByKeys[standardChainKey].colors["dark"][0],
+                    path: {
+                      d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
+                      strokeWidth: 3,
+                    },
+                    width: 10,
+                    height: 10,
+                    opacity: 0.33,
+                  }
                 : undefined,
             custom: {
               tooltipLabel: categories[selectedCategory],
@@ -650,10 +650,13 @@ export default function OverviewChart({
           const showPercentage = selectedValue === "share";
           const color =
             AllChainsByKeys[selectedChain ? selectedChain : "all_l2s"].colors[
-            theme ?? "dark"
+              theme ?? "dark"
             ][0];
 
-          let prefix = showPercentage || !showPrice ? "" : valuePrefix;
+          let prefix =
+            showPercentage || !showPrice || selectedMode.includes("txcount")
+              ? ""
+              : valuePrefix;
           let suffix = showPercentage ? "%" : "";
           let value = y;
           let displayValue = y;
@@ -720,53 +723,63 @@ export default function OverviewChart({
           }
         });
       } else {
-        chartComponent.current.series.forEach((s: Highcharts.Series, i: number) => {
-          if (s.options.id === forceHoveredChartSeriesId) {
-            s.setState("hover");
-            if (s.name === "unlabeled") {
-              s.options["pattern"] = {
-                color: AllChainsByKeys[standardChainKey].colors["dark"][0],
-                path: {
-                  d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
-                  strokeWidth: 3,
-                },
-                width: 10,
-                height: 10,
-                opacity: 1,
+        chartComponent.current.series.forEach(
+          (s: Highcharts.Series, i: number) => {
+            if (s.options.id === forceHoveredChartSeriesId) {
+              s.setState("hover");
+              if (s.name === "unlabeled") {
+                s.options["pattern"] = {
+                  color: AllChainsByKeys[standardChainKey].colors["dark"][0],
+                  path: {
+                    d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
+                    strokeWidth: 3,
+                  },
+                  width: 10,
+                  height: 10,
+                  opacity: 1,
+                };
+                s.options["fillOpacity"] = undefined;
+              } else {
+                s.options["fillOpacity"] = 1;
               }
-              s.options["fillOpacity"] = undefined;
-            } else {
-              s.options["fillOpacity"] = 1;
-            }
-            if (s.options.custom) {
-              // s.options["fillColor"] = s.options.custom.chainColor;
-            }
-          } else {
-            s.setState("inactive");
-            if (s.name === "unlabeled") {
-              s.options["pattern"] = {
-                color: AllChainsByKeys[standardChainKey].colors["dark"][0],
-                path: {
-                  d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
-                  strokeWidth: 3,
-                },
-                width: 10,
-                height: 10,
-                opacity: 0.33,
+              if (s.options.custom) {
+                // s.options["fillColor"] = s.options.custom.chainColor;
               }
-              s.options["fillOpacity"] = undefined;
             } else {
-              s.options["fillOpacity"] = getFillOpacity(i);
-            }
+              s.setState("inactive");
+              if (s.name === "unlabeled") {
+                s.options["pattern"] = {
+                  color: AllChainsByKeys[standardChainKey].colors["dark"][0],
+                  path: {
+                    d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
+                    strokeWidth: 3,
+                  },
+                  width: 10,
+                  height: 10,
+                  opacity: 0.33,
+                };
+                s.options["fillOpacity"] = undefined;
+              } else {
+                s.options["fillOpacity"] = getFillOpacity(i);
+              }
 
-            if (s.options.custom) {
-              // s.options["fillColor"] = s.options.custom.fillColor;
+              if (s.options.custom) {
+                // s.options["fillColor"] = s.options.custom.fillColor;
+              }
             }
-          }
-        });
+          },
+        );
       }
     }
-  }, [forceHoveredChartSeriesId, chartSeries, allCats, hoveredCategories, AllChainsByKeys, standardChainKey, getFillOpacity]);
+  }, [
+    forceHoveredChartSeriesId,
+    chartSeries,
+    allCats,
+    hoveredCategories,
+    AllChainsByKeys,
+    standardChainKey,
+    getFillOpacity,
+  ]);
 
   useEffect(() => {
     // set numeric symbols for highcharts
@@ -779,12 +792,14 @@ export default function OverviewChart({
     highchartsPatternFill(Highcharts);
   }, []);
 
+  console.log(selectedMode);
   return (
     <>
       <div className="w-full h-[249px] flex items-center">
         <div
-          className={`bg-blend-lighten h-full ${!allCats && selectedValue === "share" ? "w-[96%]" : "w-full"
-            }`}
+          className={`bg-blend-lighten h-full ${
+            !allCats && selectedValue === "share" ? "w-[96%]" : "w-full"
+          }`}
         >
           <HighchartsProvider Highcharts={Highcharts}>
             <HighchartsChart
@@ -897,7 +912,7 @@ export default function OverviewChart({
                 minTickInterval={
                   timespans[selectedTimespan].xMax -
                     timespans[selectedTimespan].xMin <=
-                    40 * 24 * 3600 * 1000
+                  40 * 24 * 3600 * 1000
                     ? 24 * 3600 * 1000
                     : 30 * 24 * 3600 * 1000
                 }
@@ -926,7 +941,7 @@ export default function OverviewChart({
                     return function () {
                       if (
                         timespans[selectedTimespan].xMax -
-                        timespans[selectedTimespan].xMin <=
+                          timespans[selectedTimespan].xMin <=
                         40 * 24 * 3600 * 1000
                       ) {
                         let isBeginningOfWeek =
@@ -948,9 +963,9 @@ export default function OverviewChart({
                         if (new Date(this.value).getUTCMonth() === 0) {
                           return `<span style="font-size: 14px; font-weight: 600;">
                   ${new Date(this.value).toLocaleDateString("en-GB", {
-                            timeZone: "UTC",
-                            year: "numeric",
-                          })}
+                    timeZone: "UTC",
+                    year: "numeric",
+                  })}
                 </span>`;
                         }
                         return new Date(this.value).toLocaleDateString(
@@ -991,7 +1006,10 @@ export default function OverviewChart({
                   formatter: function () {
                     const value = this.value as number | bigint;
                     const isPercentage = selectedValue === "share";
-                    const prefix = isPercentage ? "" : valuePrefix;
+                    const prefix =
+                      isPercentage || selectedMode.includes("txcount")
+                        ? ""
+                        : valuePrefix;
                     const suffix = isPercentage ? "%" : "";
                     return (
                       prefix +
@@ -1025,8 +1043,8 @@ export default function OverviewChart({
                     allCats === true
                       ? undefined
                       : AllChainsByKeys[standardChainKey].colors[
-                      theme ?? "dark"
-                      ][0] + fillHexColorOpacity;
+                          theme ?? "dark"
+                        ][0] + fillHexColorOpacity;
 
                   return (
                     series && (
@@ -1037,37 +1055,37 @@ export default function OverviewChart({
                         color={
                           !selectedChain
                             ? {
-                              linearGradient: {
-                                x1: 0,
-                                x2: 0,
-                                y1: 0,
-                                y2: 1,
-                              },
-                              stops:
-                                theme === "dark"
-                                  ? [
-                                    [
-                                      0,
-                                      AllChainsByKeys[
-                                        selectedChain
-                                          ? selectedChain
-                                          : "all_l2s"
-                                      ]?.colors[theme ?? "dark"][0] + "F9",
-                                    ],
-                                    [
-                                      1,
-                                      AllChainsByKeys[
-                                        selectedChain
-                                          ? selectedChain
-                                          : "all_l2s"
-                                      ]?.colors[theme ?? "dark"][1] + "F9",
-                                    ],
-                                  ]
-                                  : [],
-                            }
+                                linearGradient: {
+                                  x1: 0,
+                                  x2: 0,
+                                  y1: 0,
+                                  y2: 1,
+                                },
+                                stops:
+                                  theme === "dark"
+                                    ? [
+                                        [
+                                          0,
+                                          AllChainsByKeys[
+                                            selectedChain
+                                              ? selectedChain
+                                              : "all_l2s"
+                                          ]?.colors[theme ?? "dark"][0] + "F9",
+                                        ],
+                                        [
+                                          1,
+                                          AllChainsByKeys[
+                                            selectedChain
+                                              ? selectedChain
+                                              : "all_l2s"
+                                          ]?.colors[theme ?? "dark"][1] + "F9",
+                                        ],
+                                      ]
+                                    : [],
+                              }
                             : AllChainsByKeys[series.name].colors[
-                            theme ?? "dark"
-                            ][0]
+                                theme ?? "dark"
+                              ][0]
                         }
                         lineWidth={allCats ? 0 : 2}
                         data={series.data.map((d: any) => [
@@ -1078,49 +1096,51 @@ export default function OverviewChart({
                           !isUnlabelled
                             ? series.fillOpacity
                             : allCats
-                              ? 0.05
-                              : series.fillOpacity
+                            ? 0.05
+                            : series.fillOpacity
                         }
                         fillColor={
                           !isUnlabelled && !selectedChain
                             ? {
-                              linearGradient: {
-                                x1: 0,
-                                x2: 0,
-                                y1: 0,
-                                y2: 1,
-                              },
-                              stops:
-                                theme === "dark"
-                                  ? [
-                                    [
-                                      0,
-                                      AllChainsByKeys[
-                                        selectedChain
-                                          ? selectedChain
-                                          : "all_l2s"
-                                      ]?.colors[theme ?? "dark"][0] + "33",
-                                    ],
-                                    [
-                                      1,
-                                      AllChainsByKeys[
-                                        selectedChain
-                                          ? selectedChain
-                                          : "all_l2s"
-                                      ]?.colors[theme ?? "dark"][1] + "33",
-                                    ],
-                                  ]
-                                  : [],
-                            }
+                                linearGradient: {
+                                  x1: 0,
+                                  x2: 0,
+                                  y1: 0,
+                                  y2: 1,
+                                },
+                                stops:
+                                  theme === "dark"
+                                    ? [
+                                        [
+                                          0,
+                                          AllChainsByKeys[
+                                            selectedChain
+                                              ? selectedChain
+                                              : "all_l2s"
+                                          ]?.colors[theme ?? "dark"][0] + "33",
+                                        ],
+                                        [
+                                          1,
+                                          AllChainsByKeys[
+                                            selectedChain
+                                              ? selectedChain
+                                              : "all_l2s"
+                                          ]?.colors[theme ?? "dark"][1] + "33",
+                                        ],
+                                      ]
+                                    : [],
+                              }
                             : isUnlabelled && allCats
-                              ? {
+                            ? {
                                 pattern: {
                                   ...pattern,
-                                  opacity: forceHoveredChartSeriesId === series.id ? 1 : 0.33,
-
+                                  opacity:
+                                    forceHoveredChartSeriesId === series.id
+                                      ? 1
+                                      : 0.33,
                                 },
                               }
-                              : undefined
+                            : undefined
                         }
                       />
                     )
@@ -1132,8 +1152,9 @@ export default function OverviewChart({
         </div>
         {chartAvg && (
           <div
-            className={` items-end relative top-[2px] min-w-[50px] h-[169px]  lg:min-w-[70px] ${allCats ? "hidden" : "flex"
-              }`}
+            className={` items-end relative top-[2px] min-w-[50px] h-[169px]  lg:min-w-[70px] ${
+              allCats ? "hidden" : "flex"
+            }`}
           >
             <animated.div
               className="flex h-[28px] relative items-center justify-center rounded-full w-full px-2.5 lg:text-base text-sm font-medium"
