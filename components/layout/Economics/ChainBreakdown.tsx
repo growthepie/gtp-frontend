@@ -160,7 +160,7 @@ export default function ChainBreakdown({
         const min = data[chain].daily[metric].data[0][0];
         const max =
           data[chain].daily[metric].data[
-          data[chain].daily[metric].data.length - 1
+            data[chain].daily[metric].data.length - 1
           ][0];
 
         xMin = Math.min(min, xMin);
@@ -357,8 +357,8 @@ export default function ChainBreakdown({
             metricSort === "profit_margin" || metricSort === "size"
               ? 0
               : data[a][selectedTimespan].revenue.types.indexOf(
-                showUsd ? "usd" : "eth",
-              );
+                  showUsd ? "usd" : "eth",
+                );
           const aComp = data[a][selectedTimespan][metricSort].total[dataIndex];
 
           const bComp = data[b][selectedTimespan][metricSort].total[dataIndex];
@@ -486,8 +486,8 @@ export default function ChainBreakdown({
           (metric === "chain"
             ? " border-l-[1px] rounded-l-full"
             : metric === "size"
-              ? " border-r-[1px] rounded-r-full"
-              : "")
+            ? " border-r-[1px] rounded-r-full"
+            : "")
         );
       }
       //"border-[#CDD8D3] bg-forest-950 border-r-[#5A6462]"
@@ -629,8 +629,8 @@ export default function ChainBreakdown({
                         metricSort !== "chain"
                           ? "formkit:arrowdown"
                           : sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
+                          ? "formkit:arrowdown"
+                          : "formkit:arrowup"
                       }
                       className={` w-[10px] h-[10px] ${metricSort === "chain"
                           ? "text-forest-50 opacity-100"
@@ -656,8 +656,9 @@ export default function ChainBreakdown({
 
                   <Icon
                     icon={"feather:x-circle"}
-                    className={` dark:text-white text-black w-[10px] -ml-0.5 h-[10px] relative bottom-[0.5px] cursor-pointer ${DAIndex !== 0 ? "block" : "hidden"
-                      }`}
+                    className={` dark:text-white text-black w-[10px] -ml-0.5 h-[10px] relative bottom-[0.5px] cursor-pointer ${
+                      DAIndex !== 0 ? "block" : "hidden"
+                    }`}
                     onClick={(e) => {
                       setDAIndex(0);
                       setEnableDASort(false);
@@ -689,8 +690,8 @@ export default function ChainBreakdown({
                         metricSort !== "revenue"
                           ? "formkit:arrowdown"
                           : sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
+                          ? "formkit:arrowdown"
+                          : "formkit:arrowup"
                       }
                       className={` w-[10px] h-[10px] ${metricSort === "revenue"
                           ? "text-forest-50 opacity-100"
@@ -739,8 +740,8 @@ export default function ChainBreakdown({
                         metricSort !== "costs"
                           ? "formkit:arrowdown"
                           : sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
+                          ? "formkit:arrowdown"
+                          : "formkit:arrowup"
                       }
                       className={` w-[10px] h-[10px] ${metricSort === "costs"
                           ? "text-forest-50 opacity-100"
@@ -790,8 +791,8 @@ export default function ChainBreakdown({
                           metricSort !== "costs_l1"
                             ? "formkit:arrowdown"
                             : sortOrder
-                              ? "formkit:arrowdown"
-                              : "formkit:arrowup"
+                            ? "formkit:arrowdown"
+                            : "formkit:arrowup"
                         }
                         className={` w-[10px] h-[10px] ${metricSort === "costs_l1"
                             ? "text-forest-50 opacity-100"
@@ -818,8 +819,8 @@ export default function ChainBreakdown({
                           metricSort !== "costs_blobs"
                             ? "formkit:arrowdown"
                             : sortOrder
-                              ? "formkit:arrowdown"
-                              : "formkit:arrowup"
+                            ? "formkit:arrowdown"
+                            : "formkit:arrowup"
                         }
                         className={` w-[10px] h-[10px] ${metricSort === "costs_blobs"
                             ? "text-forest-50 opacity-100"
@@ -852,8 +853,8 @@ export default function ChainBreakdown({
                         metricSort !== "profit"
                           ? "formkit:arrowdown"
                           : sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
+                          ? "formkit:arrowdown"
+                          : "formkit:arrowup"
                       }
                       className={` w-[10px] h-[10px] ${metricSort === "profit"
                           ? "text-forest-50 opacity-100"
@@ -901,8 +902,8 @@ export default function ChainBreakdown({
                         metricSort !== "profit_margin"
                           ? "formkit:arrowdown"
                           : sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
+                          ? "formkit:arrowdown"
+                          : "formkit:arrowup"
                       }
                       className={` w-[10px] h-[10px] ${metricSort === "profit_margin"
                           ? "text-forest-50 opacity-100"
@@ -949,8 +950,8 @@ export default function ChainBreakdown({
                       metricSort !== "size"
                         ? "formkit:arrowdown"
                         : sortOrder
-                          ? "formkit:arrowdown"
-                          : "formkit:arrowup"
+                        ? "formkit:arrowdown"
+                        : "formkit:arrowup"
                     }
                     className={` w-[10px] h-[10px] ${metricSort === "size"
                         ? "text-forest-50 opacity-100"
@@ -1004,13 +1005,15 @@ export default function ChainBreakdown({
                   >
                     <div
                       className={`grid  relative rounded-full w-full  min-h-[34px] text-[14px] items-center z-20 cursor-pointer pr-0.5 grid-cols-[auto_200px_200px_170px_145px_110px] min-w-[1000px] 
-                        ${isBouncing && bounceChain === item.key
-                          ? "horizontal-bounce"
-                          : ""
-                        } ${isSidebarOpen
+                        ${
+                          isBouncing && bounceChain === item.key
+                            ? "horizontal-bounce"
+                            : ""
+                        } ${
+                        isSidebarOpen
                           ? " 2xl:grid-cols-[auto_200px_200px_170px_145px_110px] grid-cols-[auto_170px_180px_170px_145px_110px] "
                           : "xl:grid-cols-[auto_200px_200px_170px_145px_110px] grid-cols-[auto_170px_180px_170px_145px_110px] "
-                        }`}
+                      }`}
                       onClick={(e) => {
                         handleClick(e, item.key);
                         e.stopPropagation();
@@ -1030,8 +1033,9 @@ export default function ChainBreakdown({
                           }}
                         >
                           <Icon
-                            icon={`gtp:${AllChainsByKeys[item.key].urlKey
-                              }-logo-monochrome`}
+                            icon={`gtp:${
+                              AllChainsByKeys[item.key].urlKey
+                            }-logo-monochrome`}
                             className={`w-[15px] h-[15px] flex items-center justify-center text-[10px]`}
                             style={{
                               color:
@@ -1113,14 +1117,15 @@ export default function ChainBreakdown({
                           >
                             {formatNumber(
                               data[item.key][selectedTimespan].revenue.total[
-                              dataIndex
+                                dataIndex
                               ],
                             )}
                           </div>
                         </div>
                         <div
-                          className={` w-[120px] flex justify-start items-end h-full ${isSidebarOpen ? "2xl:w-[125px]" : "xl:w-[125px]"
-                            }`}
+                          className={` w-[120px] flex justify-start items-end h-full ${
+                            isSidebarOpen ? "2xl:w-[125px]" : "xl:w-[125px]"
+                          }`}
                         >
                           <div
                             className={`w-[120px] flex items-end justify-center rounded-full h-[4px] bg-[#1DF7EF]`}
@@ -1129,14 +1134,14 @@ export default function ChainBreakdown({
                                   data[item.key][selectedTimespan].revenue
                                     .total[dataIndex]) /
                                 maxRevenue
-                                }%`,
+                              }%`,
 
                               minWidth:
                                 data[item.key][selectedTimespan].revenue.total[
                                   dataIndex
                                 ] /
                                   totalRevenue >
-                                  0.01
+                                0.01
                                   ? "22px"
                                   : `6px`,
                             }}
@@ -1159,7 +1164,7 @@ export default function ChainBreakdown({
                         >
                           {formatNumber(
                             data[item.key][selectedTimespan].costs.total[
-                            dataIndex
+                              dataIndex
                             ],
                           )}
                         </div>
@@ -1180,7 +1185,7 @@ export default function ChainBreakdown({
                                     .costs_l1[dataIndex] /
                                     data[item.key][selectedTimespan].costs
                                       .total[dataIndex]) *
-                                  100,
+                                    100,
                                 )}
                               </span>
                               <span>{"%"}</span>
@@ -1199,9 +1204,9 @@ export default function ChainBreakdown({
                                 (data[item.key][selectedTimespan].costs
                                   .costs_blobs[dataIndex] /
                                   data[item.key][selectedTimespan].costs.total[
-                                  dataIndex
+                                    dataIndex
                                   ]) *
-                                100,
+                                  100,
                               )}
                               {"%"}
                             </div>
@@ -1210,23 +1215,25 @@ export default function ChainBreakdown({
                             <div
                               className="bg-[#FD0F2C] flex items-center justify-start font-bold rounded-l-full pl-[5px] h-[4px] "
                               style={{
-                                width: `${100 *
+                                width: `${
+                                  100 *
                                   (data[item.key][selectedTimespan].costs
                                     .costs_l1[dataIndex] /
                                     data[item.key][selectedTimespan].costs
                                       .total[dataIndex])
-                                  }%`,
+                                }%`,
                               }}
                             ></div>
                             <div
                               className="bg-[#FE5468]  rounded-r-full flex items-center font-bold  justify-end  pr-[5px] h-[4px] "
                               style={{
-                                width: `${120 *
+                                width: `${
+                                  120 *
                                   (data[item.key][selectedTimespan].costs
                                     .costs_blobs[dataIndex] /
                                     data[item.key][selectedTimespan].costs
                                       .total[dataIndex])
-                                  }px`,
+                                }px`,
                               }}
                             ></div>
                           </div>
@@ -1256,7 +1263,7 @@ export default function ChainBreakdown({
                           >
                             {formatNumber(
                               data[item.key][selectedTimespan].profit.total[
-                              dataIndex
+                                dataIndex
                               ],
                             )}
                           </div>
