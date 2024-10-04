@@ -44,8 +44,13 @@ import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { MasterURL } from "@/lib/urls";
 import useSWR from "swr";
-import { CircleChart } from "@/components/layout/CircleChart";
-import Highcharts from "highcharts";
+import dynamic from 'next/dynamic';
+
+const CircleChart = dynamic(() => import('../../../../components/layout/CircleChart'), {
+  loading: () => <p>Loading...</p>,
+  ssr: false
+});
+
 
 type ProjectMetadataType = {
   [project_key: string]: {
@@ -118,6 +123,8 @@ function formatNumber(number: number, decimals?: number): string {
 }
 
 export default function Page() {
+
+
 
   const {
     data: master,

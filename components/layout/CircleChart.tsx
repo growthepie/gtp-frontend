@@ -337,3 +337,5 @@ export const CircleChart = ({ title, data, valuePrefix = "", size = 250, strokeW
     </>
   );
 };
+
+export default CircleChart;
