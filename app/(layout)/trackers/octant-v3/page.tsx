@@ -166,12 +166,16 @@ export default function Page() {
     }, 2000);
   }, []);
 
+  const lastFundingEpoch = useMemo(() => {
+    return summaryData?.epochs ? Object.values(summaryData.epochs).sort((a, b) => b.epoch - a.epoch).filter((epoch) => epoch.has_allocation_started)[0].epoch.toString() : "1"
+  }, [summaryData]);
+
   return (
-    <div >
+    <div className="w-full">
       <ShowLoading
         dataLoading={[!summaryData, !communityData, !projectMetadataData]}
       />
-      <Container className="flex flex-col w-full" isPageRoot>
+      <Container className="@container flex flex-col w-full" isPageRoot>
 
         <div className="w-full flex flex-col lg:flex-row gap-x-[5px] gap-y-[5px] bg-clip-content pb-[30px] md:pb-[60px]">
           <div className="relative flex lg:col-auto lg:w-[275px] lg:basis-[275px]">
@@ -614,10 +618,9 @@ export default function Page() {
             </div>
           </div>
         </TopRowContainer>
-      </Container>
-      <Container className="@container">
 
-        <div className="flex flex-col @[960px]:flex-row @[960px]:flex-wrap">
+
+        <div className="hidden md:flex flex-col @[960px]:flex-row @[960px]:flex-wrap">
           <div className="w-full @[960px]:w-1/2">
             <div className="flex items-center w-full bg-[#1F2726] gap-x-[10px] rounded-[22px] pr-[10px] min-h-[44px] z-[1]">
               <div className={`relative flex justify-center items-center pl-[10px]`}>
@@ -822,28 +825,28 @@ export default function Page() {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
                           })} */}
-                                GLM</div>
+                                <span className="opacity-60 text-[0.55rem]">GLM</span></div>
                             ) : (
                               <div className="text-[#CDD8D3]">-</div>
                             )}
                           </div>
-                          <div className="flex items-center justify-end whitespace-nowrap">
+                          <div className={`flex items-center justify-end whitespace-nowrap ${user.budget_amount < 0.01 && "text-[11px]"}`}>
                             {user.budget_amount > 0 ? (
                               <div className="text-[#CDD8D3]">{user.budget_amount.toLocaleString("en-GB", {
                                 minimumFractionDigits: user.budget_amount < 0.01 ? 4 : 2,
-                                maximumFractionDigits: user.budget_amount < 0.01 ? 4 : 2,
-                              })} ETH</div>
+                                maximumFractionDigits: user.budget_amount < 0.01 ? 5 : 2,
+                              })} <span className="opacity-60 text-[0.55rem]">ETH</span></div>
                             ) : (
                               <div className="text-[#CDD8D3]">-</div>
                             )}
 
                           </div>
-                          <div className="flex items-center justify-end whitespace-nowrap">
+                          <div className={`flex items-center justify-end whitespace-nowrap ${user.allocation_amount < 0.01 && "text-[11px]"}`}>
                             {user.allocation_amount > 0 ? (
                               <div className="text-[#CDD8D3]">{user.allocation_amount.toLocaleString("en-GB", {
                                 minimumFractionDigits: user.allocation_amount < 0.01 ? 4 : 2,
-                                maximumFractionDigits: user.allocation_amount < 0.01 ? 4 : 2,
-                              })} ETH</div>
+                                maximumFractionDigits: user.allocation_amount < 0.01 ? 5 : 2,
+                              })} <span className="opacity-60 text-[0.55rem]">ETH</span></div>
                             ) : (
                               <div className="text-[#CDD8D3]">-</div>
                             )}
@@ -887,17 +890,35 @@ export default function Page() {
                                   <div className="flex flex-wrap gap-x-[5px] gap-y-[5px]">
                                     {user.allocated_to_project_keys.map((project_key, index) => (
                                       <div key={index} className="flex items-center gap-x-[5px] bg-[#344240] rounded-[15px] pl-[0px] pr-[6px] py-[0px] text-[10px]">
-                                        <div className="w-6 h-6 border border-forest-900/20 dark:border-forest-500/20 rounded-full overflow-hidden">
-                                          {projectMetadataData && projectMetadataData[project_key][Epochs[communityEpoch].epoch] && (
-                                            <Image
-                                              src={`https://ipfs.io/ipfs/${projectMetadataData[project_key][Epochs[communityEpoch].epoch].profileImageMedium}`}
-                                              alt={projectMetadataData[project_key][Epochs[communityEpoch].epoch].name}
-                                              width={24}
-                                              height={24}
-                                              className="rounded-full"
-                                            />
+                                        {communityEpoch === 0 ?
+                                          (
+                                            <div className="w-6 h-6 border border-forest-900/20 dark:border-forest-500/20 rounded-full overflow-hidden">
+                                              {projectMetadataData && projectMetadataData[project_key] && Object.values(projectMetadataData[project_key]).slice(1).map((md) => (
+                                                <Image
+                                                  key={md.address}
+                                                  src={`https://ipfs.io/ipfs/${md.profileImageMedium}`}
+                                                  alt={md.name}
+                                                  width={24}
+                                                  height={24}
+                                                  className="rounded-full"
+                                                />
+                                              ))}
+                                            </div>
+                                          )
+                                          :
+                                          (
+                                            <div className="w-6 h-6 border border-forest-900/20 dark:border-forest-500/20 rounded-full overflow-hidden">
+                                              {projectMetadataData && projectMetadataData[project_key][Epochs[communityEpoch].epoch] && (
+                                                <Image
+                                                  src={`https://ipfs.io/ipfs/${projectMetadataData[project_key][Epochs[communityEpoch].epoch].profileImageMedium}`}
+                                                  alt={projectMetadataData[project_key][Epochs[communityEpoch].epoch].name}
+                                                  width={24}
+                                                  height={24}
+                                                  className="rounded-full"
+                                                />
+                                              )}
+                                            </div>
                                           )}
-                                        </div>
                                         {project_key}</div>
                                     ))}
                                   </div>
@@ -1067,6 +1088,372 @@ export default function Page() {
 
           </div>
         </div>
+      </Container>
+      {/* <Container className="@container flex flex-col w-full">
+      </Container> */}
+      <Container className="flex md:hidden flex-col w-full gap-y-[20px]">
+        <div className="flex items-center w-full bg-[#1F2726] gap-x-[10px] rounded-[22px] pr-[10px] min-h-[44px] z-[1]">
+          <div className={`relative flex justify-center items-center pl-[10px]`}>
+            <SearchIcon />
+          </div>
+          <input
+            // ref={inputRef}
+            className={`flex-1 pl-[11px] h-full bg-transparent placeholder-[#CDD8D3] border-none outline-none overflow-x-clip`}
+            placeholder="Search Wallets"
+            value={communitySearch}
+            onChange={(e) => {
+
+              setCommunitySearch(e.target.value);
+            }}
+            onKeyUp={(e) => {
+              // if enter is pressed, add the search term to the address filters
+              if (e.key === "Enter" && communitySearch.length > 0) {
+                // handleFilter("address", search);
+                // setSearch("");
+                // e.preventDefault();
+              }
+            }}
+          />
+          {communitySearch.length > 0 && (
+            <div className="cursor-pointer" onClick={() => setCommunitySearch("")}>
+              <svg width="27" height="26" viewBox="0 0 27 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="1" y="1" width="25" height="24" rx="12" stroke="url(#paint0_linear_8794_34411)" />
+                <path fillRule="evenodd" clipRule="evenodd" d="M17.7435 17.2426C18.8688 16.1174 19.5009 14.5913 19.5009 13C19.5009 11.4087 18.8688 9.88258 17.7435 8.75736C16.6183 7.63214 15.0922 7 13.5009 7C11.9096 7 10.3835 7.63214 9.25827 8.75736C8.13305 9.88258 7.50091 11.4087 7.50091 13C7.50091 14.5913 8.13305 16.1174 9.25827 17.2426C10.3835 18.3679 11.9096 19 13.5009 19C15.0922 19 16.6183 18.3679 17.7435 17.2426V17.2426ZM12.4402 10.8787C12.2996 10.738 12.1088 10.659 11.9099 10.659C11.711 10.659 11.5202 10.738 11.3796 10.8787C11.2389 11.0193 11.1599 11.2101 11.1599 11.409C11.1599 11.6079 11.2389 11.7987 11.3796 11.9393L12.4402 13L11.3796 14.0607C11.2389 14.2013 11.1599 14.3921 11.1599 14.591C11.1599 14.7899 11.2389 14.9807 11.3796 15.1213C11.5202 15.262 11.711 15.341 11.9099 15.341C12.1088 15.341 12.2996 15.262 12.4402 15.1213L13.5009 14.0607L14.5616 15.1213C14.7022 15.262 14.893 15.341 15.0919 15.341C15.2908 15.341 15.4816 15.262 15.6222 15.1213C15.7629 14.9807 15.8419 14.7899 15.8419 14.591C15.8419 14.3921 15.7629 14.2013 15.6222 14.0607L14.5616 13L15.6222 11.9393C15.7629 11.7987 15.8419 11.6079 15.8419 11.409C15.8419 11.2101 15.7629 11.0193 15.6222 10.8787C15.4816 10.738 15.2908 10.659 15.0919 10.659C14.893 10.659 14.7022 10.738 14.5616 10.8787L13.5009 11.9393L12.4402 10.8787Z" fill="#CDD8D3" />
+                <defs>
+                  <linearGradient id="paint0_linear_8794_34411" x1="13.5" y1="1" x2="29.4518" y2="24.361" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#FE5468" />
+                    <stop offset="1" stopColor="#FFDF27" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          )}
+        </div>
+      </Container>
+      <HorizontalScrollContainer className="flex flex-col md:hidden">
+
+        <GridTableHeader
+          gridDefinitionColumns="grid-cols-[20px,minmax(125px,1600px),118px,72px,69px]"
+          className="text-[12px] gap-x-[15px] z-[2] !pl-[5px] !pr-[16px] !pt-[15px] !pb-[10px] select-none"
+        >
+          <div></div>
+          <GridTableHeaderCell
+            metric="user"
+            sort={communityTableSort}
+            setSort={setCommunityTableSort}
+          >
+            Address
+          </GridTableHeaderCell>
+          <GridTableHeaderCell
+            justify="end"
+            metric="mins"
+            sort={communityTableSort}
+            setSort={setCommunityTableSort}
+          >
+            Amount Locked
+          </GridTableHeaderCell>
+          <GridTableHeaderCell
+            justify="end"
+            metric="budget_amounts"
+            sort={communityTableSort}
+            setSort={setCommunityTableSort}
+          >
+            Rewards
+          </GridTableHeaderCell>
+          <GridTableHeaderCell
+            justify="end"
+            metric="allocation_amounts"
+            sort={communityTableSort}
+            setSort={setCommunityTableSort}
+          >
+            Donated
+          </GridTableHeaderCell>
+        </GridTableHeader>
+        <div className="flex flex-col justify-between">
+          <div className="min-h-[300px] flex flex-col transition-all duration-300">
+            {/* <VerticalScrollContainer height={250} className=""> */}
+            {communityDataSortedAndFiltered && communityDataSortedAndFiltered.length > 0 && (
+              communityDataSortedAndFiltered.slice(communityTablePage * communityTablePageSize, communityTablePage * communityTablePageSize + communityTablePageSize).map((userData, index) => {
+                const userLockedEpochs = Object.keys(userData.lockeds).filter((e) => e !== "all");
+                const user = {
+                  user: userData.user,
+                  locked: userData.lockeds[Epochs[communityEpoch].epoch] || 0,
+
+                  min: userData.lockeds[Epochs[communityEpoch].epoch] || 0,
+                  max: userData.lockeds[Epochs[communityEpoch].epoch] || 0,
+
+                  budget_amount: userData.budget_amounts[Epochs[communityEpoch].epoch] || 0,
+                  allocation_amount: userData.allocation_amounts[Epochs[communityEpoch].epoch] || 0,
+                  allocated_to_project_count: userData.allocated_to_project_counts[Epochs[communityEpoch].epoch] || 0,
+                  allocated_to_project_keys: userData.allocated_to_project_keys[Epochs[communityEpoch].epoch] || [],
+                  activeSinceEpoch: Math.min(...userLockedEpochs.map((epoch) => parseInt(epoch))),
+
+                }
+                return (
+                  <div key={index} className="pb-[3px]">
+                    <GridTableRow
+                      gridDefinitionColumns="grid-cols-[20px,minmax(125px,1600px),118px,72px,69px]"
+                      className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] !pl-[5px] !pr-[15px] select-none"
+                      onClick={() => {
+                        if (communityRowsOpen.includes(user.user)) {
+                          setCommunityRowsOpen(communityRowsOpen.filter((u) => u !== user.user));
+                        } else {
+                          setCommunityRowsOpen([...communityRowsOpen, user.user]);
+                        }
+                      }}
+                    >
+                      <div className="flex items-center justify-center">
+                        <div
+                          className="relative flex items-center justify-center rounded-full w-[16px] h-[16px] bg-[#151A19] cursor-pointer"
+
+                        >
+                          {/* <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <g clipPath="url(#clip0_12402_20562)">
+                              <circle cx="8.29395" cy="8" r="7" stroke="#5A6462" />
+                              <path d="M3.67414 6.32422L4.77814 7.86022L4.84214 7.98822L4.91414 7.86022L6.01014 6.32422H6.79414L5.25014 8.42022L6.80214 10.5002H6.01814L4.91414 8.97222L4.84214 8.85222L4.77814 8.97222L3.67414 10.5002H2.89014L4.44214 8.42022L2.89814 6.32422H3.67414Z" fill="#5A6462" />
+                              <path d="M7.6557 11.6362C7.72503 11.6416 7.79437 11.6469 7.8637 11.6522C7.93303 11.6629 7.98637 11.6682 8.0237 11.6682C8.10903 11.6682 8.1837 11.6389 8.2477 11.5802C8.3117 11.5216 8.38103 11.4069 8.4557 11.2362C8.5357 11.0709 8.63703 10.8256 8.7597 10.5002L6.9917 6.32422H7.7357L9.1437 9.78822L10.4157 6.32422H11.1117L9.0797 11.5962C9.0317 11.7189 8.9597 11.8336 8.8637 11.9402C8.77303 12.0522 8.6557 12.1402 8.5117 12.2042C8.3677 12.2682 8.19437 12.3002 7.9917 12.3002C7.9437 12.3002 7.89303 12.2976 7.8397 12.2922C7.7917 12.2869 7.73037 12.2762 7.6557 12.2602V11.6362Z" fill="#5A6462" />
+                              <path d="M11.4951 10.0442L14.1271 6.83622H11.5671V6.32422H14.9191V6.78022L12.3031 9.98822H14.9271V10.5002H11.4951V10.0442Z" fill="#5A6462" />
+                            </g>
+                            <defs>
+                              <clipPath id="clip0_12402_20562">
+                                <rect width="15" height="15" fill="white" transform="translate(0.793945 0.5)" />
+                              </clipPath>
+                            </defs>
+                          </svg> */}
+                          <AddressIcon address={user.user} className="rounded-full" />
+                          <Icon
+                            icon={"gtp:circle-arrow"}
+                            className={`w-[4px] h-[9px] absolute top-[4px] -right-[4px] `}
+                            style={{
+                              transform: `rotate(${communityRowsOpen.includes(user.user) ? "90deg" : "0deg"
+                                })`,
+                              transformOrigin: "-7px 4px",
+                              transition: "transform 0.5s",
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <div className="@container flex h-full items-center hover:bg-transparent select-none">
+                        <span
+                          className="@container flex-1 flex h-full items-center hover:bg-transparent pr-[10px]"
+                          style={{
+                            fontFeatureSettings: "'pnum' on, 'lnum' on",
+                          }}
+                        // onDoubleClick={(e) => {
+                        //   e.preventDefault(); // Prevent default double-click behavior
+                        //   const selection = window.getSelection();
+                        //   const range = document.createRange();
+                        //   range.selectNodeContents(e.currentTarget);
+                        //   selection?.removeAllRanges();
+                        //   selection?.addRange(range);
+                        // }}
+                        >
+                          <div
+                            className="truncate transition-all duration-300"
+                            style={{ direction: 'ltr' }}
+                            onClick={() => {
+                              navigator.clipboard.writeText(user.user)
+                            }}
+                          >
+                            {user.user.slice(0, user.user.length - 6)}
+                          </div>
+                          <div className="transition-all duration-300">
+                            {user.user.slice(-6)}
+                          </div>
+                          <div className="pl-[10px] flex gap-x-[10px]">
+                            <div className="">
+                              <Icon
+                                icon={copiedAddress === user.user ? "feather:check-circle" : "feather:copy"}
+                                className="w-[14px] h-[14px] cursor-pointer z-[10]"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCopyAddress(user.user);
+                                }}
+                              />
+                            </div>
+                            <Link href={`https://etherscan.io/address/${user.user}`} passHref target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <g clip-path="url(#clip0_12260_38955)">
+                                  <path d="M6.85644 1.4375C6.5114 1.4375 6.17242 1.51996 5.87348 1.67659L1.28085 4.06281L1.27832 4.06414C0.979329 4.2211 0.730988 4.44679 0.558212 4.71857C0.385436 4.99035 0.294299 5.29866 0.293945 5.61258V10.3874C0.294299 10.7013 0.385436 11.0097 0.558212 11.2814C0.730988 11.5532 0.979329 11.7789 1.27832 11.9359L1.28085 11.9372L5.87207 14.3227L5.87328 14.3233C6.17227 14.48 6.51132 14.5625 6.85644 14.5625C7.20158 14.5625 7.54064 14.48 7.83964 14.3233L7.84082 14.3227L9.73374 13.3392C9.31253 13.1502 8.93841 12.8751 8.63384 12.5361L7.1871 13.2878L7.18457 13.2892C7.08481 13.3415 6.97164 13.3691 6.85644 13.3691C6.74125 13.3691 6.62808 13.3415 6.52832 13.2891L1.93457 10.9023L1.93354 10.9018C1.83433 10.8495 1.75193 10.7745 1.69453 10.6842C1.63699 10.5937 1.60661 10.491 1.60644 10.3865V5.61355C1.60661 5.509 1.63699 5.40632 1.69453 5.3158C1.75193 5.22552 1.83433 5.1505 1.93354 5.0982L1.93457 5.09766L6.52579 2.71218L6.52832 2.71085C6.62808 2.65848 6.74125 2.6309 6.85644 2.6309C6.97164 2.6309 7.0848 2.65848 7.18457 2.71085L11.7783 5.09766L11.7794 5.0982C11.8786 5.1505 11.961 5.22552 12.0184 5.3158C12.0759 5.40639 12.1063 5.50916 12.1064 5.6138V7.22783C12.6086 7.39394 13.0571 7.67807 13.4189 8.04735V5.61258C13.4186 5.29866 13.3275 4.99035 13.1547 4.71857C12.9819 4.44679 12.7336 4.2211 12.4346 4.06413L7.84082 1.67733L7.83945 1.67661C7.5405 1.51996 7.2015 1.4375 6.85644 1.4375Z" fill="#CDD8D3" />
+                                  <path fillRule="evenodd" clipRule="evenodd" d="M0.384698 5.45315C0.571212 5.19887 0.983791 5.11198 1.30622 5.25907L6.85645 7.79111L12.4067 5.25907C12.7291 5.11198 13.1417 5.19887 13.3282 5.45315C13.5147 5.70744 13.4045 6.03282 13.0821 6.17991L7.19416 8.86602C6.98523 8.96133 6.72766 8.96133 6.51873 8.86602L0.630794 6.17991C0.308366 6.03282 0.198185 5.70744 0.384698 5.45315Z" fill="#CDD8D3" />
+                                  <path fillRule="evenodd" clipRule="evenodd" d="M6.85645 8C7.37421 8 7.79395 8.46875 7.79395 8.9375V13.625C7.79395 14.0938 7.37421 14.5625 6.85645 14.5625C6.33868 14.5625 5.91895 14.0938 5.91895 13.625V8.9375C5.91895 8.46875 6.33868 8 6.85645 8Z" fill="#CDD8D3" />
+                                  <path fillRule="evenodd" clipRule="evenodd" d="M11.0752 11.75C11.8518 11.75 12.4814 11.1204 12.4814 10.3438C12.4814 9.5671 11.8518 8.9375 11.0752 8.9375C10.2985 8.9375 9.66895 9.5671 9.66895 10.3438C9.66895 11.1204 10.2985 11.75 11.0752 11.75ZM11.0752 12.6875C12.3696 12.6875 13.4189 11.6382 13.4189 10.3438C13.4189 9.04933 12.3696 8 11.0752 8C9.78078 8 8.73145 9.04933 8.73145 10.3438C8.73145 11.6382 9.78078 12.6875 11.0752 12.6875Z" fill="#CDD8D3" />
+                                  <path fillRule="evenodd" clipRule="evenodd" d="M11.8756 11.4184C12.0586 11.2353 12.3554 11.2353 12.5385 11.4184L14.6881 13.568C14.8711 13.751 14.8711 14.0478 14.6881 14.2309C14.505 14.4139 14.2082 14.4139 14.0252 14.2309L11.8756 12.0813C11.6925 11.8982 11.6925 11.6014 11.8756 11.4184Z" fill="#CDD8D3" />
+                                </g>
+                                <defs>
+                                  <clipPath id="clip0_12260_38955">
+                                    <rect width="15" height="15" fill="white" transform="translate(0.293945 0.5)" />
+                                  </clipPath>
+                                </defs>
+                              </svg>
+                            </Link>
+                          </div>
+
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-end whitespace-nowrap">
+                        {communityEpoch != 0 && user.min > 0 ? (
+                          <div className="text-[#CDD8D3]">{formatNumber(user.min, 2)} {" "}
+                            {/* {user.min.toLocaleString("en-GB", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })} */}
+                            <span className="opacity-60 text-[0.55rem]">GLM</span></div>
+                        ) : (
+                          <div className="text-[#CDD8D3]">-</div>
+                        )}
+                      </div>
+                      <div className={`flex items-center justify-end whitespace-nowrap ${user.budget_amount < 0.01 && "text-[11px]"}`}>
+                        {user.budget_amount > 0 ? (
+                          <div className="text-[#CDD8D3]">{user.budget_amount.toLocaleString("en-GB", {
+                            minimumFractionDigits: user.budget_amount < 0.01 ? 4 : 2,
+                            maximumFractionDigits: user.budget_amount < 0.01 ? 5 : 2,
+                          })} <span className="opacity-60 text-[0.55rem]">ETH</span></div>
+                        ) : (
+                          <div className="text-[#CDD8D3]">-</div>
+                        )}
+
+                      </div>
+                      <div className={`flex items-center justify-end whitespace-nowrap ${user.allocation_amount < 0.01 && "text-[11px]"}`}>
+                        {user.allocation_amount > 0 ? (
+                          <div className="text-[#CDD8D3]">{user.allocation_amount.toLocaleString("en-GB", {
+                            minimumFractionDigits: user.allocation_amount < 0.01 ? 4 : 2,
+                            maximumFractionDigits: user.allocation_amount < 0.01 ? 5 : 2,
+                          })} <span className="opacity-60 text-[0.55rem]">ETH</span></div>
+                        ) : (
+                          <div className="text-[#CDD8D3]">-</div>
+                        )}
+                      </div>
+                    </GridTableRow>
+                    <div className="pl-[13px] pr-[15px]">
+                      <div className={`flex flex-col bg-[#1F2726] rounded-b-[15px] border-[#CDD8D3]/30 border-dotted border-x border-b transition-all duration-300 ${communityRowsOpen.includes(user.user) ? "min-h-[80px] max-h-[300px] opacity-100" : "max-h-0 min-h-0 opacity-0"} overflow-hidden`}>
+                        <div className="flex flex-col p-[15px] gap-y-[6px] text-[12px]">
+                          <div className="flex items-center justify-between">
+                            <div>Active Since: <span className="font-semibold">Epoch {user.activeSinceEpoch}</span></div>
+                            <div className="flex gap-x-[5px] items-center">
+                              <div>
+                                Donated <span className="font-semibold">{user.allocation_amount.toLocaleString("en-GB", {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })} ETH</span>
+                              </div>
+                              <div className="flex flex-col w-[133px]">
+                                <div className="flex justify-between text-[10px]">
+                                  <div>{(user.allocation_amount / user.budget_amount * 100).toFixed(2)}%</div>
+                                  <div>{((user.budget_amount - user.allocation_amount) / user.budget_amount * 100).toFixed(2)}%</div>
+                                </div>
+                                <div className="flex w-full h-[4px]">
+                                  <div className="h-full rounded-l-full" style={{ background: "linear-gradient(0deg,#1DF7EF 0%,#10808C 100%)", width: `${(user.allocation_amount / user.budget_amount) * 100}%` }}></div>
+                                  <div className="h-full rounded-r-full" style={{ background: "linear-gradient(-3deg,#FFDF27 0%,#FE5468 100%)", width: `${((user.budget_amount - user.allocation_amount) / user.budget_amount) * 100}%` }}></div>
+                                </div>
+                              </div>
+                              <div>
+                                <span className="font-semibold">{(user.budget_amount - user.allocation_amount).toLocaleString("en-GB", {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })} ETH</span>{" "}
+                                Kept
+                              </div>
+                            </div>
+                          </div>
+                          {user.allocated_to_project_keys.length > 0 ? (
+
+                            <div className="flex flex-col gap-y-[5px]">
+                              <div>Wallet donated to <span className="font-semibold">{user.allocated_to_project_keys.length}</span> projects:</div>
+                              <div className="flex flex-wrap gap-x-[5px] gap-y-[5px]">
+                                {user.allocated_to_project_keys.map((project_key, index) => (
+                                  <div key={index} className="flex items-center gap-x-[5px] bg-[#344240] rounded-[15px] pl-[0px] pr-[6px] py-[0px] text-[10px]">
+                                    {communityEpoch === 0 ?
+                                      (
+                                        <div className="w-6 h-6 border border-forest-900/20 dark:border-forest-500/20 rounded-full overflow-hidden">
+                                          {projectMetadataData && projectMetadataData[project_key] && Object.entries(projectMetadataData[project_key]).sort(([aKey, aValue], [bKey, bValue]) => (parseInt(bKey) - parseInt(aKey))).slice(1).map(([key, md]) => (
+                                            <Image
+                                              key={md.address}
+                                              src={`https://ipfs.io/ipfs/${md.profileImageMedium}`}
+                                              alt={md.name}
+                                              width={24}
+                                              height={24}
+                                              className="rounded-full"
+                                            />
+                                          ))}
+                                        </div>
+                                      )
+                                      :
+                                      (
+                                        <div className="w-6 h-6 border border-forest-900/20 dark:border-forest-500/20 rounded-full overflow-hidden">
+                                          {projectMetadataData && projectMetadataData[project_key][Epochs[communityEpoch].epoch] && (
+                                            <Image
+                                              src={`https://ipfs.io/ipfs/${projectMetadataData[project_key][Epochs[communityEpoch].epoch].profileImageMedium}`}
+                                              alt={projectMetadataData[project_key][Epochs[communityEpoch].epoch].name}
+                                              width={24}
+                                              height={24}
+                                              className="rounded-full"
+                                            />
+                                          )}
+                                        </div>
+                                      )}
+                                    {project_key}</div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <div>No donations made to any projects.</div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+          {/* </VerticalScrollContainer> */}
+        </div>
+      </HorizontalScrollContainer>
+      <Container className="flex md:hidden flex-col w-full gap-y-[20px]">
+        {/* pagination */}
+        <div className="relative pt-[10px] w-full select-none">
+          {communityDataSortedAndFiltered.length > communityTablePageSize && (
+            <>
+              <div className="flex w-full justify-center items-center gap-x-[5px] text-[12px] text-[#CDD8D3]">
+                <div className="flex items-center gap-x-[5px]">
+                  <div className="hover:cursor-pointer" onClick={() => setCommunityTablePage(0)}>
+                    <Icon icon="feather:chevrons-left" className="w-4 h-4" />
+                  </div>
+                  <div className="hover:cursor-pointer" onClick={() => communityTablePage > 0 ? setCommunityTablePage(communityTablePage - 1) : null}>
+                    <Icon icon="feather:chevron-left" className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="w-[160px] flex items-center justify-center gap-x-[5px] text-xs">
+                  <div className="text-[12px]">Page</div>
+                  <div className="text-[12px]">{communityTablePage + 1}</div>
+                  <div className="text-[12px]">of</div>
+                  <div className="text-[12px]">{Math.ceil(communityDataSortedAndFiltered.length / communityTablePageSize)}</div>
+                </div>
+
+                <div className="flex items-center gap-x-[5px]">
+                  <div className="hover:cursor-pointer" onClick={() => communityTablePage < Math.floor(communityDataSortedAndFiltered.length / communityTablePageSize) ? setCommunityTablePage(communityTablePage + 1) : null}>
+                    <Icon icon="feather:chevron-right" className="w-4 h-4" />
+                  </div>
+                  <div className="hover:cursor-pointer" onClick={() => setCommunityTablePage(Math.floor(communityDataSortedAndFiltered.length / communityTablePageSize))}>
+                    <Icon icon="feather:chevrons-right" className="w-4 h-4" />
+                  </div>
+                </div>
+              </div>
+              <div className="absolute -bottom-[24px] w-full h-full flex items-center justify-center gap-x-[5px] text-[12px] text-forest-600">
+                <div className="text-[9px]">Showing</div>
+                <div className="text-[9px]">{(communityTablePage * communityTablePageSize) + 1}</div>
+                <div className="text-[9px]">to</div>
+                <div className="text-[9px]">{Math.min((communityTablePage + 1) * communityTablePageSize, communityDataSortedAndFiltered.length)}</div>
+                <div className="text-[9px]">of</div>
+                <div className="text-[9px]">{communityDataSortedAndFiltered.length}</div>
+              </div>
+            </>
+          )}
+        </div>
+      </Container>
+      <Container className="@container">
+
         <div
           className="flex gap-x-[8px] items-center pb-[15px] scroll-mt-8 pt-[60px]"
           ref={JumpToSections.ProjectFunding.ref}
@@ -1101,6 +1488,7 @@ export default function Page() {
           </Heading>
         </div>
         <div className="text-[14px] pb-[15px]">These are all the projects that can participate in the current round of Octant. There are a maximum of 30 projects voted in for this Epoch.</div>
+
         <TopRowContainer
           className={`mb-[15px] flex w-full justify-between gap-y-3 lg:gap-y-0 items-center text-xs bg-forest-50 dark:bg-[#1F2726] lg:z-30 flex-col-reverse rounded-b-[15px] md:rounded-b-[20px] rounded-t-[24px] p-[3px] lg:p-[5px] lg:flex-row lg:rounded-full lg:h-[54px] transition-shadow duration-300`}
         >
@@ -1182,9 +1570,6 @@ export default function Page() {
             </div>
           )}
         </div>
-
-
-
       </Container>
       <HorizontalScrollContainer className="@container">
         <GridTableHeader
@@ -1294,6 +1679,7 @@ export default function Page() {
                   fundingEpoch={fundingEpoch}
                   // lastFundingEpoch={Epochs[Epochs.length - 1].epoch}
                   project_key={fundingRow.project_key}
+                  lastFundingEpoch={lastFundingEpoch}
                 // projectIndex={index}
                 // setCurrentEpoch={setCurrentEpoch}
                 // ProjectsMetadata={ProjectsMetadata}
@@ -1305,7 +1691,9 @@ export default function Page() {
           )}
         </VerticalScrollContainer>
       </HorizontalScrollContainer>
+
     </div>
+
   );
 }
 
@@ -1435,30 +1823,32 @@ const ExpandingButtonMenu = ({
 };
 
 const SearchIcon = () => (
-  <svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <g clipPath="url(#clip0_11948_38516)">
-      <path fillRule="evenodd" clipRule="evenodd" d="M17.8939 8.8C17.8939 13.6601 13.9541 17.6 9.09395 17.6C4.23384 17.6 0.293945 13.6601 0.293945 8.8C0.293945 3.93989 4.23384 0 9.09395 0C13.9541 0 17.8939 3.93989 17.8939 8.8ZM9.09395 15.2C12.6286 15.2 15.4939 12.3346 15.4939 8.8C15.4939 5.26538 12.6286 2.4 9.09395 2.4C5.55932 2.4 2.69395 5.26538 2.69395 8.8C2.69395 12.3346 5.55932 15.2 9.09395 15.2Z" fill="url(#paint0_linear_11948_38516)" />
-      <circle cx="9.04395" cy="8.75" r="5.75" fill="url(#paint1_linear_11948_38516)" />
-      <path fillRule="evenodd" clipRule="evenodd" d="M23.4577 23.2927C23.0672 23.6833 22.4341 23.6833 22.0435 23.2927L14.0009 15.2501C13.6104 14.8596 13.6104 14.2264 14.0009 13.8359L14.1298 13.707C14.5204 13.3164 15.1535 13.3164 15.5441 13.707L23.5867 21.7496C23.9772 22.1401 23.9772 22.7733 23.5867 23.1638L23.4577 23.2927Z" fill="url(#paint2_linear_11948_38516)" />
-    </g>
-    <defs>
-      <linearGradient id="paint0_linear_11948_38516" x1="9.09395" y1="0" x2="20.9584" y2="16.6802" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#FE5468" />
-        <stop offset="1" stopColor="#FFDF27" />
-      </linearGradient>
-      <linearGradient id="paint1_linear_11948_38516" x1="9.04395" y1="14.5" x2="9.04395" y2="3" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#10808C" />
-        <stop offset="1" stopColor="#1DF7EF" />
-      </linearGradient>
-      <linearGradient id="paint2_linear_11948_38516" x1="18.7938" y1="13.4141" x2="25.6506" y2="23.054" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#FE5468" />
-        <stop offset="1" stopColor="#FFDF27" />
-      </linearGradient>
-      <clipPath id="clip0_11948_38516">
-        <rect width="24" height="24" fill="white" transform="translate(0.293945)" />
-      </clipPath>
-    </defs>
-  </svg>
+  <div className="w-6 h-6 z-10">
+    <svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g clipPath="url(#clip0_11948_38516)">
+        <path fillRule="evenodd" clipRule="evenodd" d="M17.8939 8.8C17.8939 13.6601 13.9541 17.6 9.09395 17.6C4.23384 17.6 0.293945 13.6601 0.293945 8.8C0.293945 3.93989 4.23384 0 9.09395 0C13.9541 0 17.8939 3.93989 17.8939 8.8ZM9.09395 15.2C12.6286 15.2 15.4939 12.3346 15.4939 8.8C15.4939 5.26538 12.6286 2.4 9.09395 2.4C5.55932 2.4 2.69395 5.26538 2.69395 8.8C2.69395 12.3346 5.55932 15.2 9.09395 15.2Z" fill="url(#paint0_linear_11948_38516)" />
+        <circle cx="9.04395" cy="8.75" r="5.75" fill="url(#paint1_linear_11948_38516)" />
+        <path fillRule="evenodd" clipRule="evenodd" d="M23.4577 23.2927C23.0672 23.6833 22.4341 23.6833 22.0435 23.2927L14.0009 15.2501C13.6104 14.8596 13.6104 14.2264 14.0009 13.8359L14.1298 13.707C14.5204 13.3164 15.1535 13.3164 15.5441 13.707L23.5867 21.7496C23.9772 22.1401 23.9772 22.7733 23.5867 23.1638L23.4577 23.2927Z" fill="url(#paint2_linear_11948_38516)" />
+      </g>
+      <defs>
+        <linearGradient id="paint0_linear_11948_38516" x1="9.09395" y1="0" x2="20.9584" y2="16.6802" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#FE5468" />
+          <stop offset="1" stopColor="#FFDF27" />
+        </linearGradient>
+        <linearGradient id="paint1_linear_11948_38516" x1="9.04395" y1="14.5" x2="9.04395" y2="3" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#10808C" />
+          <stop offset="1" stopColor="#1DF7EF" />
+        </linearGradient>
+        <linearGradient id="paint2_linear_11948_38516" x1="18.7938" y1="13.4141" x2="25.6506" y2="23.054" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#FE5468" />
+          <stop offset="1" stopColor="#FFDF27" />
+        </linearGradient>
+        <clipPath id="clip0_11948_38516">
+          <rect width="24" height="24" fill="white" transform="translate(0.293945)" />
+        </clipPath>
+      </defs>
+    </svg>
+  </div>
 
 );
 interface SliderProps {
@@ -1649,7 +2039,7 @@ type TableRowProps = {
   project_key: string;
   // projectIndex: number;
   // setCurrentEpoch?: (epoch: EpochData) => void;
-  // lastFundingEpoch: string;
+  lastFundingEpoch: string;
   // ProjectsMetadata: any;
   // master: MasterResponse;
   fundingEpoch: number;
@@ -1661,7 +2051,7 @@ const OctantTableRow = ({
   project_key,
   // projectIndex,
   // setCurrentEpoch,
-  // lastFundingEpoch,
+  lastFundingEpoch,
   // ProjectsMetadata,
   // master,
   fundingEpoch,
@@ -1754,7 +2144,7 @@ const OctantTableRow = ({
               <div className="h-[15px] w-[15px]">
                 <Link
                   href={
-                    `https://octant.app/project/${fundingEpoch === 0 ? row.last_funding_epoch : fundingEpoch}/${row.project_metadata.address}`
+                    `https://octant.app/project/${fundingEpoch === 0 ? lastFundingEpoch : fundingEpoch}/${row.project_metadata.address}`
                   }
                   target="_blank"
                   className="group flex items-center gap-x-[5px] text-xs"

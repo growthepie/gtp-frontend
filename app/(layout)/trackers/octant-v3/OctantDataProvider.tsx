@@ -86,7 +86,7 @@ export const OctantDataContext = createContext<{
   communitySearch: "",
   setCommunitySearch: () => { },
   communityTableSort: {
-    metric: "budget_amount",
+    metric: "allocation_amounts",
     sortOrder: "desc",
   },
   setCommunityTableSort: () => { },
@@ -184,7 +184,7 @@ export const OctantDataProvider = ({ children }) => {
   const [communitySearch, setCommunitySearch] = useState("");
 
   const [communityTableSort, setCommunityTableSort] = useState({
-    metric: "budget_amount",
+    metric: "allocation_amounts",
     sortOrder: "desc",
   });
 
@@ -199,7 +199,7 @@ export const OctantDataProvider = ({ children }) => {
     if (!communityData) return [];
 
     // filter out users that don't have a lock for the current epoch
-    let filteredData = [...communityData].filter(userRow => userRow.lockeds[communityEpochString] !== undefined);
+    let filteredData = [...communityData].filter(userRow => userRow.maxs[communityEpochString] !== undefined);
 
     // filter out users that didn't donate in the current epoch if the user selection is Donating
     if (communityUserSelection === "Donating") {
