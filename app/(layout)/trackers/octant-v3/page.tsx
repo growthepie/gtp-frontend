@@ -718,14 +718,18 @@ export default function Page() {
                         <GridTableRow
                           gridDefinitionColumns="grid-cols-[20px,minmax(125px,1600px),118px,72px,69px]"
                           className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] !pl-[5px] !pr-[15px] select-none"
+                          onClick={() => {
+                            if (communityRowsOpen.includes(user.user)) {
+                              setCommunityRowsOpen(communityRowsOpen.filter((u) => u !== user.user));
+                            } else {
+                              setCommunityRowsOpen([...communityRowsOpen, user.user]);
+                            }
+                          }}
                         >
                           <div className="flex items-center justify-center">
                             <div
                               className="relative flex items-center justify-center rounded-full w-[16px] h-[16px] bg-[#151A19] cursor-pointer"
-                              onClick={(e) => {
-                                handleCommunityRowToggle(user.user);
-                                e.stopPropagation();
-                              }}
+
                             >
                               {/* <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <g clipPath="url(#clip0_12402_20562)">
@@ -753,20 +757,20 @@ export default function Page() {
                               />
                             </div>
                           </div>
-                          <div className="@container flex h-full items-center hover:bg-transparent">
+                          <div className="@container flex h-full items-center hover:bg-transparent select-none">
                             <span
                               className="@container flex-1 flex h-full items-center hover:bg-transparent pr-[10px]"
                               style={{
                                 fontFeatureSettings: "'pnum' on, 'lnum' on",
                               }}
-                              onDoubleClick={(e) => {
-                                e.preventDefault(); // Prevent default double-click behavior
-                                const selection = window.getSelection();
-                                const range = document.createRange();
-                                range.selectNodeContents(e.currentTarget);
-                                selection?.removeAllRanges();
-                                selection?.addRange(range);
-                              }}
+                            // onDoubleClick={(e) => {
+                            //   e.preventDefault(); // Prevent default double-click behavior
+                            //   const selection = window.getSelection();
+                            //   const range = document.createRange();
+                            //   range.selectNodeContents(e.currentTarget);
+                            //   selection?.removeAllRanges();
+                            //   selection?.addRange(range);
+                            // }}
                             >
                               <div
                                 className="truncate transition-all duration-300"
@@ -784,13 +788,14 @@ export default function Page() {
                                 <div className="">
                                   <Icon
                                     icon={copiedAddress === user.user ? "feather:check-circle" : "feather:copy"}
-                                    className="w-[14px] h-[14px] cursor-pointer"
-                                    onClick={() => {
+                                    className="w-[14px] h-[14px] cursor-pointer z-[10]"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
                                       handleCopyAddress(user.user);
                                     }}
                                   />
                                 </div>
-                                <Link href={`https://etherscan.io/address/${user.user}`} passHref target="_blank" rel="noopener noreferrer">
+                                <Link href={`https://etherscan.io/address/${user.user}`} passHref target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
                                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <g clip-path="url(#clip0_12260_38955)">
                                       <path d="M6.85644 1.4375C6.5114 1.4375 6.17242 1.51996 5.87348 1.67659L1.28085 4.06281L1.27832 4.06414C0.979329 4.2211 0.730988 4.44679 0.558212 4.71857C0.385436 4.99035 0.294299 5.29866 0.293945 5.61258V10.3874C0.294299 10.7013 0.385436 11.0097 0.558212 11.2814C0.730988 11.5532 0.979329 11.7789 1.27832 11.9359L1.28085 11.9372L5.87207 14.3227L5.87328 14.3233C6.17227 14.48 6.51132 14.5625 6.85644 14.5625C7.20158 14.5625 7.54064 14.48 7.83964 14.3233L7.84082 14.3227L9.73374 13.3392C9.31253 13.1502 8.93841 12.8751 8.63384 12.5361L7.1871 13.2878L7.18457 13.2892C7.08481 13.3415 6.97164 13.3691 6.85644 13.3691C6.74125 13.3691 6.62808 13.3415 6.52832 13.2891L1.93457 10.9023L1.93354 10.9018C1.83433 10.8495 1.75193 10.7745 1.69453 10.6842C1.63699 10.5937 1.60661 10.491 1.60644 10.3865V5.61355C1.60661 5.509 1.63699 5.40632 1.69453 5.3158C1.75193 5.22552 1.83433 5.1505 1.93354 5.0982L1.93457 5.09766L6.52579 2.71218L6.52832 2.71085C6.62808 2.65848 6.74125 2.6309 6.85644 2.6309C6.97164 2.6309 7.0848 2.65848 7.18457 2.71085L11.7783 5.09766L11.7794 5.0982C11.8786 5.1505 11.961 5.22552 12.0184 5.3158C12.0759 5.40639 12.1063 5.50916 12.1064 5.6138V7.22783C12.6086 7.39394 13.0571 7.67807 13.4189 8.04735V5.61258C13.4186 5.29866 13.3275 4.99035 13.1547 4.71857C12.9819 4.44679 12.7336 4.2211 12.4346 4.06413L7.84082 1.67733L7.83945 1.67661C7.5405 1.51996 7.2015 1.4375 6.85644 1.4375Z" fill="#CDD8D3" />
@@ -810,7 +815,7 @@ export default function Page() {
 
                             </span>
                           </div>
-                          <div className="flex items-center justify-end">
+                          <div className="flex items-center justify-end whitespace-nowrap">
                             {communityEpoch != 0 && user.min > 0 ? (
                               <div className="text-[#CDD8D3]">{formatNumber(user.min, 2)} {" "}
                                 {/* {user.min.toLocaleString("en-GB", {
@@ -822,7 +827,7 @@ export default function Page() {
                               <div className="text-[#CDD8D3]">-</div>
                             )}
                           </div>
-                          <div className="flex items-center justify-end">
+                          <div className="flex items-center justify-end whitespace-nowrap">
                             {user.budget_amount > 0 ? (
                               <div className="text-[#CDD8D3]">{user.budget_amount.toLocaleString("en-GB", {
                                 minimumFractionDigits: user.budget_amount < 0.01 ? 4 : 2,
@@ -833,7 +838,7 @@ export default function Page() {
                             )}
 
                           </div>
-                          <div className="flex items-center justify-end">
+                          <div className="flex items-center justify-end whitespace-nowrap">
                             {user.allocation_amount > 0 ? (
                               <div className="text-[#CDD8D3]">{user.allocation_amount.toLocaleString("en-GB", {
                                 minimumFractionDigits: user.allocation_amount < 0.01 ? 4 : 2,
@@ -1813,12 +1818,12 @@ const OctantTableRow = ({
         </Link>
       </div>
 
-      <div className="flex justify-end item-center gap-x-2 select-none">
+      <div className="flex justify-end item-center gap-x-2">
         <div className="flex justify-end item-center gap-x-2">
           <div className="flex items-center leading-[1] font-inter">
             {row.donors}
           </div>
-          <div className="w-[15px] h-[15px] flex items-center justify-center">
+          <div className="w-[15px] h-[15px] flex items-center justify-center select-none">
             {row.donors < 50 && (
               <Icon
                 icon={"fluent:person-20-filled"}
@@ -1842,7 +1847,7 @@ const OctantTableRow = ({
 
         {/* )} */}
       </div>
-      <div className="flex justify-end select-none">
+      <div className="flex justify-end ">
         {/* {["REWARD_ALLOCATION", "FINALIZED"].includes(currentEpoch.state) && currentEpochProject && ( */}
         <div className="relative flex items-center gap-x-2 pr-0.5">
           <div className="leading-[1.2] font-inter">
@@ -1851,7 +1856,7 @@ const OctantTableRow = ({
           </div>
         </div>
       </div>
-      <div className="flex justify-end select-none">
+      <div className="flex justify-end ">
         <div
           className={`leading-[1.2] font-inter ${row.matched <= 0 && "opacity-30"
             }`}
@@ -1860,7 +1865,7 @@ const OctantTableRow = ({
           <span className="opacity-60 text-[0.55rem]">ETH</span>
         </div>
       </div>
-      <div className="flex justify-end select-none">
+      <div className="flex justify-end">
         <div
           className={`leading-[1.2] font-inter ${row.total <= 0 && "opacity-30"
             }`}

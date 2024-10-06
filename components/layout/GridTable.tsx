@@ -35,6 +35,18 @@ export const GridTableHeader = ({
   );
 };
 
+export type GridTableRowProps = {
+  gridDefinitionColumns: string;
+  className?: string;
+  children: React.ReactNode;
+  style?: React.CSSProperties;
+  bar?: {
+    origin_key: string;
+    width: number;
+  };
+  onClick?: () => void;
+};
+
 // grid grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px] lg:grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px]
 // class="gap-x-[15px] rounded-full border border-forest-900/20 dark:border-forest-500/20 px-[6px] py-[5px] text-xs items-center"
 export const GridTableRow = ({
@@ -43,15 +55,17 @@ export const GridTableRow = ({
   className,
   style,
   bar,
-}: GridTableProps) => {
+  onClick,
+}: GridTableRowProps) => {
   const { AllChainsByKeys } = useMaster();
 
   if (bar)
 
     return (
       <div
-        className={`select-text gap-x-[10px] pl-[10px] pr-[32px] py-[5px] text-xs items-center rounded-full border border-forest-900/20 dark:border-forest-500/20 grid ${gridDefinitionColumns} ${className}`}
+        className={`select-text gap-x-[10px] pl-[10px] pr-[32px] py-[5px] text-xs items-center rounded-full border border-forest-900/20 dark:border-forest-500/20 grid ${gridDefinitionColumns} ${className} ${onClick ? "cursor-pointer" : ""}`}
         style={style}
+        onClick={onClick}
       >
         {children}
         <div
@@ -69,8 +83,9 @@ export const GridTableRow = ({
 
   return (
     <div
-      className={`select-text gap-x-[10px] pl-[10px] pr-[32px] py-[5px] text-xs items-center rounded-full border border-forest-900/20 dark:border-forest-500/20 grid ${gridDefinitionColumns} ${className}`}
+      className={`select-text gap-x-[10px] pl-[10px] pr-[32px] py-[5px] text-xs items-center rounded-full border border-forest-900/20 dark:border-forest-500/20 grid ${gridDefinitionColumns} ${className} ${onClick ? "cursor-pointer" : ""}`}
       style={style}
+      onClick={onClick}
     >
       {children}
 
