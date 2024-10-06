@@ -2163,7 +2163,7 @@ const OctantTableRow = ({
 
       <div className="@container flex h-full items-center hover:bg-transparent select-none">
         <span
-          className="@container flex-1 flex h-full items-center hover:bg-transparent pr-[10px]"
+          className="@container flex-1 flex h-full items-center hover:bg-transparent pr-[10px] max-w-[320px]"
           style={{
             fontFeatureSettings: "'pnum' on, 'lnum' on",
           }}
