@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { OctantURLs } from '@/lib/urls'
 import useSWR from 'swr'
+import { has } from 'lodash';
 
 export const OctantProviders = ({ children }) => {
 
@@ -120,16 +121,18 @@ export const OctantDataProvider = ({ children }) => {
     }
   }
 
-  const Epochs = useMemo<{ epoch: string; label: string }[]>(() => {
+  const Epochs = useMemo<{ epoch: string; label: string; hasAllocationStarted: boolean }[]>(() => {
     let base = [{
       epoch: "all",
       label: "All Epochs",
+      hasAllocationStarted: true
     }]
     if (!summaryData) return base;
 
     return [...base, ...Object.keys(summaryData.epochs).map((epoch) => ({
       epoch,
       label: `Epoch ${epoch}`,
+      hasAllocationStarted: summaryData.epochs[epoch].has_allocation_started
     }))]
   }, [summaryData]);
 
@@ -140,33 +143,36 @@ export const OctantDataProvider = ({ children }) => {
   const [communityEpoch, setCommunityEpoch] = useState(0);
   const [fundingEpoch, setFundingEpoch] = useState(0);
 
+
+
+
   const handlePrevCommunityEpoch = useCallback(() => {
     if (communityEpoch === 0)
-      setCommunityEpoch(Epochs.length - 1);
+      setCommunityEpoch(Epochs.filter(e => e.hasAllocationStarted).length - 1);
     else
       setCommunityEpoch(communityEpoch - 1);
   }, [communityEpoch, Epochs]);
 
   const handleNextCommunityEpoch = useCallback(() => {
-    if (communityEpoch === 4)
+    if (communityEpoch === Epochs.filter(e => e.hasAllocationStarted).length - 1)
       setCommunityEpoch(0);
     else
       setCommunityEpoch(communityEpoch + 1);
-  }, [communityEpoch]);
+  }, [communityEpoch, Epochs]);
 
   const handlePrevFundingEpoch = useCallback(() => {
     if (fundingEpoch === 0)
-      setFundingEpoch(Epochs.length - 1);
+      setFundingEpoch(Epochs.filter(e => e.hasAllocationStarted).length - 1);
     else
       setFundingEpoch(fundingEpoch - 1);
   }, [fundingEpoch, Epochs]);
 
   const handleNextFundingEpoch = useCallback(() => {
-    if (fundingEpoch === 4)
+    if (fundingEpoch === Epochs.filter(e => e.hasAllocationStarted).length - 1)
       setFundingEpoch(0);
     else
       setFundingEpoch(fundingEpoch + 1);
-  }, [fundingEpoch]);
+  }, [fundingEpoch, Epochs]);
 
 
   const [communityUserSelection, setCommunityUserSelection] = useState("All");
@@ -460,5 +466,16 @@ type ProjectMetadataResponse = {
       websiteLabel: string;
       websiteUrl: string;
     }
+  }
+}
+
+
+export type ProjectsByWebsiteResponse = {
+  [website: string]: {
+    owner_project: string
+    display_name: string
+    description: string
+    main_github: string
+    twitter: string
   }
 }

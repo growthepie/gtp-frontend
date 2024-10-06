@@ -82,4 +82,6 @@ export const OctantURLs = {
     "https://api.growthepie.xyz/v1/trackers/octant/project_funding.json",
   project_metadata:
     "https://api.growthepie.xyz/v1/trackers/octant/project_metadata.json",
+  projects_by_website:
+    "https://api.growthepie.xyz/v1/trackers/octant/projects_by_website.json",
 };

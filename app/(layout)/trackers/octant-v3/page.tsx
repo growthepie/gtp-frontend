@@ -27,11 +27,11 @@ import { GridTableHeader, GridTableHeaderCell, GridTableRow, GridTableContainer 
 import { min, set } from "lodash";
 import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { MasterURL } from "@/lib/urls";
+import { MasterURL, OctantURLs } from "@/lib/urls";
 import useSWR from "swr";
 import dynamic from 'next/dynamic';
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { useOctantData } from "./OctantDataProvider";
+import { ProjectsByWebsiteResponse, useOctantData } from "./OctantDataProvider";
 
 const CircleChart = dynamic(() => import('../../../../components/layout/CircleChart'), {
   loading: () => <p>Loading...</p>,
@@ -692,7 +692,7 @@ export default function Page() {
               </GridTableHeaderCell>
             </GridTableHeader>
             <div className="flex flex-col justify-between overflow-hidden">
-              <div className="h-[300px] flex flex-col overflow-hidden">
+              <div className="min-h-[300px] flex flex-col overflow-hidden transition-all duration-300">
                 {/* <VerticalScrollContainer height={250} className=""> */}
                 {communityDataSortedAndFiltered && communityDataSortedAndFiltered.length > 0 && (
                   communityDataSortedAndFiltered.slice(communityTablePage * communityTablePageSize, communityTablePage * communityTablePageSize + communityTablePageSize).map((userData, index) => {
@@ -907,33 +907,28 @@ export default function Page() {
                 )}
               </div>
               {/* pagination */}
-              <div className="relative pt-[10px] w-full">
+              <div className="pt-[10px] w-full">
                 {communityDataSortedAndFiltered.length > communityTablePageSize && (
                   <>
-                    <div className="flex w-full items-center justify-between gap-x-[5px] text-[12px] text-[#CDD8D3]">
+                    <div className="flex w-full justify-center items-center gap-x-[5px] text-[12px] text-[#CDD8D3]">
                       <div className="flex items-center gap-x-[5px]">
+                        <div className="hover:cursor-pointer" onClick={() => setCommunityTablePage(0)}>
+                          <Icon icon="feather:chevrons-left" className="w-4 h-4" />
+                        </div>
+                        <div className="hover:cursor-pointer" onClick={() => communityTablePage > 0 ? setCommunityTablePage(communityTablePage - 1) : null}>
+                          <Icon icon="feather:chevron-left" className="w-4 h-4" />
+                        </div>
+                      </div>
+                      <div className="w-[160px] flex items-center justify-center gap-x-[5px]">
                         <div className="text-[12px]">Showing</div>
                         <div className="text-[12px]">{communityTablePage * communityTablePageSize + 1}</div>
                         <div className="text-[12px]">to</div>
                         <div className="text-[12px]">{Math.min(communityTablePage * communityTablePageSize + communityTablePageSize, communityDataSortedAndFiltered.length)}</div>
                         <div className="text-[12px]">of</div>
                         <div className="text-[12px]">{communityDataSortedAndFiltered.length}</div>
-
-
-                        <div className="w-[300px] flex items-center gap-x-[5px]">
-                          <div className="hover:cursor-pointer" onClick={() => setCommunityTablePage(0)}>
-                            <Icon icon="feather:chevrons-left" className="w-4 h-4" />
-                          </div>
-                          <div className="hover:cursor-pointer" onClick={() => setCommunityTablePage(communityTablePage - 1)}>
-                            <Icon icon="feather:chevron-left" className="w-4 h-4" />
-                          </div>
-                        </div>
                       </div>
-                      {/* slider */}
-
-                      <div className="flex gap-x-[5px] items-center">
-
-                        <div className="hover:cursor-pointer" onClick={() => setCommunityTablePage(communityTablePage + 1)}>
+                      <div className="flex items-center gap-x-[5px]">
+                        <div className="hover:cursor-pointer" onClick={() => communityTablePage < Math.floor(communityDataSortedAndFiltered.length / communityTablePageSize) ? setCommunityTablePage(communityTablePage + 1) : null}>
                           <Icon icon="feather:chevron-right" className="w-4 h-4" />
                         </div>
                         <div className="hover:cursor-pointer" onClick={() => setCommunityTablePage(Math.floor(communityDataSortedAndFiltered.length / communityTablePageSize))}>
@@ -941,23 +936,7 @@ export default function Page() {
                         </div>
                       </div>
                     </div>
-                    <div className="absolute top-[6px] left-[300px] w-[100px]">
-                      <Slider value={communityTablePage} setValue={setCommunityTablePage} max={Math.floor(communityDataSortedAndFiltered.length / communityTablePageSize)} />
-                      {/* <input
-                        type="range"
-                        min={0}
-                        max={Math.floor(communityDataSortedAndFiltered.length / communityTablePageSize)}
-                        value={communityTablePage}
-                        onChange={(e) => setCommunityTablePage(parseInt(e.target.value))}
-                        className="w-full h-[4px] bg-[#1F2726] appearance-none rounded-full overflow-hidden"
-                        style={{
-                          background: `linear-gradient(90deg, #1DF7EF 0%, #10808C ${communityTablePage / Math.floor(communityDataSortedAndFiltered.length / communityTablePageSize) * 100}%, #1F2726 ${communityTablePage / Math.floor(communityDataSortedAndFiltered.length / communityTablePageSize) * 100}%, #1F2726 100%)`,
-                          appearance: "none",
-                          outline: "none",
-                          transition: "background 0.5s",
-                        }}
-                      /> */}
-                    </div>
+
                   </>
                 )}
               </div>
@@ -1672,6 +1651,11 @@ const OctantTableRow = ({
   fundingEpoch,
   // allTimeTotalsByProjectKey
 }: TableRowProps) => {
+
+  const { data: ProjectsByWebsiteResponse } = useSWR<ProjectsByWebsiteResponse>(OctantURLs.projects_by_website);
+
+  if (!ProjectsByWebsiteResponse) return null;
+
   return (
     <GridTableRow
 
@@ -1697,8 +1681,10 @@ const OctantTableRow = ({
             </div>
           )}
         </div>
-        {row.project_metadata && (
-          <div className="flex gap-x-[5px]">
+        <div className="flex gap-x-[5px]">
+
+          {row.project_metadata && (
+
             <div className="flex items-center gap-x-[5px]">
               <div className="h-[15px] w-[15px]">
                 {row.project_metadata.websiteUrl && (
@@ -1716,6 +1702,39 @@ const OctantTableRow = ({
                   </Link>
                 )}
               </div>
+              <>
+                <div className="h-[15px] w-[15px]">
+                  {ProjectsByWebsiteResponse[row.project_metadata.websiteUrl] && ProjectsByWebsiteResponse[row.project_metadata.websiteUrl].twitter && (
+                    <Link
+                      href={
+                        `https://x.com/${ProjectsByWebsiteResponse[row.project_metadata.websiteUrl].twitter}`
+                      }
+                      target="_blank"
+                      className="group flex items-center gap-x-[5px] text-xs"
+                    >
+                      <Icon
+                        icon="ri:twitter-x-fill"
+                        className="w-[15px] h-[15px]"
+                      />
+                    </Link>
+                  )}
+                </div>
+                <div className="h-[15px] w-[15px]">
+                  {ProjectsByWebsiteResponse[row.project_metadata.websiteUrl] && ProjectsByWebsiteResponse[row.project_metadata.websiteUrl].main_github && (
+                    <Link
+                      href={`https://github.com/${ProjectsByWebsiteResponse[row.project_metadata.websiteUrl].main_github}`}
+                      target="_blank"
+                      className="group flex items-center gap-x-[5px] text-xs"
+                    >
+                      <Icon
+                        icon="ri:github-fill"
+                        className="w-[15px] h-[15px]"
+                      />
+                    </Link>
+                  )}
+                </div>
+
+              </>
               <div className="h-[15px] w-[15px]">
                 <Link
                   href={
@@ -1731,8 +1750,9 @@ const OctantTableRow = ({
                 </Link>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+
       </div>
 
       <div className="@container flex h-full items-center hover:bg-transparent">
