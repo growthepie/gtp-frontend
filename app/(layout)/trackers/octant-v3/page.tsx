@@ -656,8 +656,10 @@ export default function Page() {
                 </div>
               )}
             </div>
-            <GridTableHeader gridDefinitionColumns="grid-cols-[20px,minmax(125px,1600px),118px,72px,69px]"
-              className="text-[12px] gap-x-[15px] z-[2] !pl-[5px] !pr-[16px] !pt-[15px] !pb-[10px]">
+            <GridTableHeader
+              gridDefinitionColumns="grid-cols-[20px,minmax(125px,1600px),118px,72px,69px]"
+              className="text-[12px] gap-x-[15px] z-[2] !pl-[5px] !pr-[16px] !pt-[15px] !pb-[10px] select-none"
+            >
               <div></div>
               <GridTableHeaderCell
                 metric="user"
@@ -691,8 +693,8 @@ export default function Page() {
                 Donated
               </GridTableHeaderCell>
             </GridTableHeader>
-            <div className="flex flex-col justify-between overflow-hidden">
-              <div className="min-h-[300px] flex flex-col overflow-hidden transition-all duration-300">
+            <div className="flex flex-col justify-between">
+              <div className="min-h-[300px] flex flex-col transition-all duration-300">
                 {/* <VerticalScrollContainer height={250} className=""> */}
                 {communityDataSortedAndFiltered && communityDataSortedAndFiltered.length > 0 && (
                   communityDataSortedAndFiltered.slice(communityTablePage * communityTablePageSize, communityTablePage * communityTablePageSize + communityTablePageSize).map((userData, index) => {
@@ -715,7 +717,7 @@ export default function Page() {
                       <div key={index} className="pb-[3px]">
                         <GridTableRow
                           gridDefinitionColumns="grid-cols-[20px,minmax(125px,1600px),118px,72px,69px]"
-                          className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] !pl-[5px] !pr-[15px]"
+                          className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] !pl-[5px] !pr-[15px] select-none"
                         >
                           <div className="flex items-center justify-center">
                             <div
@@ -907,7 +909,7 @@ export default function Page() {
                 )}
               </div>
               {/* pagination */}
-              <div className="pt-[10px] w-full">
+              <div className="relative pt-[10px] w-full select-none">
                 {communityDataSortedAndFiltered.length > communityTablePageSize && (
                   <>
                     <div className="flex w-full justify-center items-center gap-x-[5px] text-[12px] text-[#CDD8D3]">
@@ -919,14 +921,13 @@ export default function Page() {
                           <Icon icon="feather:chevron-left" className="w-4 h-4" />
                         </div>
                       </div>
-                      <div className="w-[160px] flex items-center justify-center gap-x-[5px]">
-                        <div className="text-[12px]">Showing</div>
-                        <div className="text-[12px]">{communityTablePage * communityTablePageSize + 1}</div>
-                        <div className="text-[12px]">to</div>
-                        <div className="text-[12px]">{Math.min(communityTablePage * communityTablePageSize + communityTablePageSize, communityDataSortedAndFiltered.length)}</div>
+                      <div className="w-[160px] flex items-center justify-center gap-x-[5px] text-xs">
+                        <div className="text-[12px]">Page</div>
+                        <div className="text-[12px]">{communityTablePage + 1}</div>
                         <div className="text-[12px]">of</div>
-                        <div className="text-[12px]">{communityDataSortedAndFiltered.length}</div>
+                        <div className="text-[12px]">{Math.ceil(communityDataSortedAndFiltered.length / communityTablePageSize)}</div>
                       </div>
+
                       <div className="flex items-center gap-x-[5px]">
                         <div className="hover:cursor-pointer" onClick={() => communityTablePage < Math.floor(communityDataSortedAndFiltered.length / communityTablePageSize) ? setCommunityTablePage(communityTablePage + 1) : null}>
                           <Icon icon="feather:chevron-right" className="w-4 h-4" />
@@ -936,9 +937,19 @@ export default function Page() {
                         </div>
                       </div>
                     </div>
+                    <div className="absolute -bottom-[24px] w-full h-full flex items-center justify-center gap-x-[5px] text-[12px] text-forest-600">
+                      <div className="text-[9px]">Showing</div>
+                      <div className="text-[9px]">{(communityTablePage * communityTablePageSize) + 1}</div>
+                      <div className="text-[9px]">to</div>
+                      <div className="text-[9px]">{Math.min((communityTablePage + 1) * communityTablePageSize, communityDataSortedAndFiltered.length)}</div>
+                      <div className="text-[9px]">of</div>
+                      <div className="text-[9px]">{communityDataSortedAndFiltered.length}</div>
+                    </div>
+
 
                   </>
                 )}
+
               </div>
 
 
@@ -1173,7 +1184,7 @@ export default function Page() {
       <HorizontalScrollContainer className="@container">
         <GridTableHeader
           gridDefinitionColumns="grid-cols-[20px,225px,minmax(125px,1600px),95px,126px,101px,89px]"
-          className="w-full text-[12px] gap-x-[15px] z-[2] !pl-[5px] !pr-[48px] !pt-[15px] !pb-[10px]"
+          className="w-full text-[12px] gap-x-[15px] z-[2] !pl-[5px] !pr-[48px] !pt-[15px] !pb-[10px] select-none"
         >
           <div></div>
           <GridTableHeaderCell
@@ -1355,7 +1366,7 @@ const ExpandingButtonMenu = ({
         className="!z-[15] group-hover/jump:!z-[25] transition-[z-index] delay-100 group-hover/jump:delay-0 w-full flex items-center h-[36px] gap-x-[8px] pl-[6px] pr-[10px] rounded-full dark:bg-[#263130] bg-forest-50"
         onMouseEnter={() => {
           track(`hovered ${button.label} button`, {
-            location: isMobile ? `mobile Chain page` : `desktop Chain page`,
+            location: isMobile ? `mobile Octant page` : `desktop Octant page`,
             page: window.location.pathname,
           });
         }}
@@ -1394,8 +1405,8 @@ const ExpandingButtonMenu = ({
             onClick={(e) => {
               track(`clicked ${item.label} link`, {
                 location: isMobile
-                  ? `mobile Chain page`
-                  : `desktop Chain page`,
+                  ? `mobile Octant page`
+                  : `desktop Octant page`,
                 page: window.location.pathname,
               });
               if (item.href.startsWith("#")) {
@@ -1660,7 +1671,7 @@ const OctantTableRow = ({
     <GridTableRow
 
       gridDefinitionColumns="grid-cols-[20px,225px,minmax(125px,1600px),95px,126px,101px,89px]"
-      className="group w-full text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] !pl-[5px] !pr-[15px] mb-[3px]"
+      className="group w-full text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] !pl-[5px] !pr-[15px] mb-[3px] select-none"
     >
       <div className="w-[26px] h-[18px] px-[4px]">
         <Image
@@ -1671,7 +1682,7 @@ const OctantTableRow = ({
           className="rounded-full"
         />
       </div>
-      <div className="flex justify-between">
+      <div className="flex justify-between select-none">
         <div>
           {row.project_metadata.name ? (
             row.project_metadata.name
@@ -1755,7 +1766,7 @@ const OctantTableRow = ({
 
       </div>
 
-      <div className="@container flex h-full items-center hover:bg-transparent">
+      <div className="@container flex h-full items-center hover:bg-transparent select-none">
         <span
           className="@container flex-1 flex h-full items-center hover:bg-transparent pr-[10px]"
           style={{
@@ -1782,13 +1793,27 @@ const OctantTableRow = ({
           <div className="transition-all duration-300">
             {row.address.slice(-6)}
           </div>
-          <div className="pl-[10px] hidden 3xl:flex">
-
-          </div>
         </span>
+
+        <Link href={`https://etherscan.io/address/${row.address}`} passHref target="_blank" rel="noopener noreferrer">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g clip-path="url(#clip0_12260_38955)">
+              <path d="M6.85644 1.4375C6.5114 1.4375 6.17242 1.51996 5.87348 1.67659L1.28085 4.06281L1.27832 4.06414C0.979329 4.2211 0.730988 4.44679 0.558212 4.71857C0.385436 4.99035 0.294299 5.29866 0.293945 5.61258V10.3874C0.294299 10.7013 0.385436 11.0097 0.558212 11.2814C0.730988 11.5532 0.979329 11.7789 1.27832 11.9359L1.28085 11.9372L5.87207 14.3227L5.87328 14.3233C6.17227 14.48 6.51132 14.5625 6.85644 14.5625C7.20158 14.5625 7.54064 14.48 7.83964 14.3233L7.84082 14.3227L9.73374 13.3392C9.31253 13.1502 8.93841 12.8751 8.63384 12.5361L7.1871 13.2878L7.18457 13.2892C7.08481 13.3415 6.97164 13.3691 6.85644 13.3691C6.74125 13.3691 6.62808 13.3415 6.52832 13.2891L1.93457 10.9023L1.93354 10.9018C1.83433 10.8495 1.75193 10.7745 1.69453 10.6842C1.63699 10.5937 1.60661 10.491 1.60644 10.3865V5.61355C1.60661 5.509 1.63699 5.40632 1.69453 5.3158C1.75193 5.22552 1.83433 5.1505 1.93354 5.0982L1.93457 5.09766L6.52579 2.71218L6.52832 2.71085C6.62808 2.65848 6.74125 2.6309 6.85644 2.6309C6.97164 2.6309 7.0848 2.65848 7.18457 2.71085L11.7783 5.09766L11.7794 5.0982C11.8786 5.1505 11.961 5.22552 12.0184 5.3158C12.0759 5.40639 12.1063 5.50916 12.1064 5.6138V7.22783C12.6086 7.39394 13.0571 7.67807 13.4189 8.04735V5.61258C13.4186 5.29866 13.3275 4.99035 13.1547 4.71857C12.9819 4.44679 12.7336 4.2211 12.4346 4.06413L7.84082 1.67733L7.83945 1.67661C7.5405 1.51996 7.2015 1.4375 6.85644 1.4375Z" fill="#CDD8D3" />
+              <path fillRule="evenodd" clipRule="evenodd" d="M0.384698 5.45315C0.571212 5.19887 0.983791 5.11198 1.30622 5.25907L6.85645 7.79111L12.4067 5.25907C12.7291 5.11198 13.1417 5.19887 13.3282 5.45315C13.5147 5.70744 13.4045 6.03282 13.0821 6.17991L7.19416 8.86602C6.98523 8.96133 6.72766 8.96133 6.51873 8.86602L0.630794 6.17991C0.308366 6.03282 0.198185 5.70744 0.384698 5.45315Z" fill="#CDD8D3" />
+              <path fillRule="evenodd" clipRule="evenodd" d="M6.85645 8C7.37421 8 7.79395 8.46875 7.79395 8.9375V13.625C7.79395 14.0938 7.37421 14.5625 6.85645 14.5625C6.33868 14.5625 5.91895 14.0938 5.91895 13.625V8.9375C5.91895 8.46875 6.33868 8 6.85645 8Z" fill="#CDD8D3" />
+              <path fillRule="evenodd" clipRule="evenodd" d="M11.0752 11.75C11.8518 11.75 12.4814 11.1204 12.4814 10.3438C12.4814 9.5671 11.8518 8.9375 11.0752 8.9375C10.2985 8.9375 9.66895 9.5671 9.66895 10.3438C9.66895 11.1204 10.2985 11.75 11.0752 11.75ZM11.0752 12.6875C12.3696 12.6875 13.4189 11.6382 13.4189 10.3438C13.4189 9.04933 12.3696 8 11.0752 8C9.78078 8 8.73145 9.04933 8.73145 10.3438C8.73145 11.6382 9.78078 12.6875 11.0752 12.6875Z" fill="#CDD8D3" />
+              <path fillRule="evenodd" clipRule="evenodd" d="M11.8756 11.4184C12.0586 11.2353 12.3554 11.2353 12.5385 11.4184L14.6881 13.568C14.8711 13.751 14.8711 14.0478 14.6881 14.2309C14.505 14.4139 14.2082 14.4139 14.0252 14.2309L11.8756 12.0813C11.6925 11.8982 11.6925 11.6014 11.8756 11.4184Z" fill="#CDD8D3" />
+            </g>
+            <defs>
+              <clipPath id="clip0_12260_38955">
+                <rect width="15" height="15" fill="white" transform="translate(0.293945 0.5)" />
+              </clipPath>
+            </defs>
+          </svg>
+        </Link>
       </div>
 
-      <div className="flex justify-end item-center gap-x-2">
+      <div className="flex justify-end item-center gap-x-2 select-none">
         <div className="flex justify-end item-center gap-x-2">
           <div className="flex items-center leading-[1] font-inter">
             {row.donors}
@@ -1817,7 +1842,7 @@ const OctantTableRow = ({
 
         {/* )} */}
       </div>
-      <div className="flex justify-end">
+      <div className="flex justify-end select-none">
         {/* {["REWARD_ALLOCATION", "FINALIZED"].includes(currentEpoch.state) && currentEpochProject && ( */}
         <div className="relative flex items-center gap-x-2 pr-0.5">
           <div className="leading-[1.2] font-inter">
@@ -1826,7 +1851,7 @@ const OctantTableRow = ({
           </div>
         </div>
       </div>
-      <div className="flex justify-end">
+      <div className="flex justify-end select-none">
         <div
           className={`leading-[1.2] font-inter ${row.matched <= 0 && "opacity-30"
             }`}
@@ -1835,7 +1860,7 @@ const OctantTableRow = ({
           <span className="opacity-60 text-[0.55rem]">ETH</span>
         </div>
       </div>
-      <div className="flex justify-end">
+      <div className="flex justify-end select-none">
         <div
           className={`leading-[1.2] font-inter ${row.total <= 0 && "opacity-30"
             }`}
