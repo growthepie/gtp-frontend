@@ -1281,6 +1281,7 @@ export default function Page() {
                 project_key: project_key,
                 owner_project: projectMetadataData && projectMetadataData[fundingRow.project_key] && projectMetadataData[fundingRow.project_key][Epochs[fundingEpoch].epoch] ? projectMetadataData[fundingRow.project_key][Epochs[fundingEpoch].epoch].name : "",
                 project_metadata: projectMetadataData && projectMetadataData[fundingRow.project_key] && projectMetadataData[fundingRow.project_key][Epochs[fundingEpoch].epoch] ? projectMetadataData[fundingRow.project_key][Epochs[fundingEpoch].epoch] : lastEpochProjectMetadata,
+                //@ts-ignore
                 address: projectMetadataData && projectMetadataData[fundingRow.project_key][Epochs[fundingEpoch].epoch] ? projectMetadataData[fundingRow.project_key][Epochs[fundingEpoch].epoch].address : lastEpochProjectMetadata.address || "",
                 donors: fundingRow.donor_counts[Epochs[fundingEpoch].epoch] || 0,
                 allocated: fundingRow.allocations[Epochs[fundingEpoch].epoch] || 0,
