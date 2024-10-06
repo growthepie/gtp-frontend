@@ -24,78 +24,20 @@ import { track } from "@vercel/analytics/react";
 import { useMediaQuery } from "usehooks-ts";
 import ChainSectionHeadAlt from "@/components/layout/SingleChains/ChainSectionHeadAlt";
 import { GridTableHeader, GridTableHeaderCell, GridTableRow, GridTableContainer } from "@/components/layout/GridTable";
-import { set } from "lodash";
-import UsersEpoch1 from "./octant_epoch_1.json";
-import UsersEpoch2 from "./octant_epoch_2.json";
-import UsersEpoch3 from "./octant_epoch_3.json";
-import UsersEpoch4 from "./octant_epoch_4.json";
-import UsersEpoch5 from "./octant_epoch_5.json";
-
-import ProjectsMetadata1 from "./octant_projects_metadata_1.json";
-import ProjectsMetadata2 from "./octant_projects_metadata_2.json";
-import ProjectsMetadata3 from "./octant_projects_metadata_3.json";
-import ProjectsMetadata4 from "./octant_projects_metadata_4.json";
-import ProjectsMetadata5 from "./octant_projects_metadata_5.json";
-import Funding1 from "./octant_funding_1_donor_count.json";
-import Funding2 from "./octant_funding_2_donor_count.json";
-import Funding3 from "./octant_funding_3_donor_count.json";
-import Funding4 from "./octant_funding_4_donor_count.json";
+import { min, set } from "lodash";
 import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { MasterURL } from "@/lib/urls";
 import useSWR from "swr";
 import dynamic from 'next/dynamic';
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { useOctantData } from "./OctantDataProvider";
 
 const CircleChart = dynamic(() => import('../../../../components/layout/CircleChart'), {
   loading: () => <p>Loading...</p>,
   ssr: false
 });
 
-
-type ProjectMetadataType = {
-  [project_key: string]: {
-    name: string
-    introDescription: string
-    profileImageSmall: string
-    profileImageMedium: string
-    profileImageLarge: string
-    websiteLabel: string
-    websiteUrl: string
-    address: string
-    cid: string
-    id: string
-    epoch: number
-    project_key: string
-  }
-};
-
-type CommunityUsers = {
-  user: string
-  locked: number
-  min: number
-  max: number
-  budget_amount: number
-  allocation_amount: number
-  project_count: number
-  project_list: string[]
-  // lastLocked?: number
-}[];
-
-type Funding = {
-  address: string
-  allocated: number
-  matched: number
-  id: string
-  epoch: number
-  total: number
-  project_key: string
-  donor: number
-}[];
-
-type EpochsByProject = {
-  [project: string]: EpochData[];
-};
 
 function formatNumber(number: number, decimals?: number): string {
   if (number === 0) {
@@ -124,100 +66,49 @@ function formatNumber(number: number, decimals?: number): string {
 }
 
 export default function Page() {
-
-
-
+  const isMobile = useMediaQuery("(max-width: 1024px)");
+  const { data: master } = useSWR<MasterResponse>(MasterURL);
   const {
-    data: master,
-    error: masterError,
-    isLoading: masterLoading,
-    isValidating: masterValidating,
-  } = useSWR<MasterResponse>(MasterURL);
+    summaryData,
+    communityData,
+    projectMetadataData,
 
-  const LockStatus = { 'now': { 'total_locked_glm': 155790707.6821193, 'num_users_locked_glm': 1139 }, 'week_ago': { 'total_locked_glm': 155828250.5345542, 'num_users_locked_glm': 1126 }, 'changes': { 'total_locked_glm_diff': -37542.85243490338, 'num_users_locked_glm_diff': 13, 'total_locked_glm_change': -0.0002409245583269795, 'num_users_locked_glm_change': 0.011545293072824156 } }
+    Epochs,
+    communityEpoch,
+    setCommunityEpoch,
+    handlePrevCommunityEpoch,
+    handleNextCommunityEpoch,
+    fundingEpoch,
+    setFundingEpoch,
+    handlePrevFundingEpoch,
+    handleNextFundingEpoch,
 
-  const Epochs = [
-    {
-      epoch: 0,
-      label: "All Epochs",
-    },
-    {
-      epoch: 1,
-      label: "Epoch 1",
-    },
-    {
-      epoch: 2,
-      label: "Epoch 2",
-    },
-    {
-      epoch: 3,
-      label: "Epoch 3",
-    },
-    {
-      epoch: 4,
-      label: "Epoch 4",
-    },
-    // {
-    //   epoch: 5,
-    //   label: "Epoch 5",
-    // },
-  ];
+    communityDataSortedAndFiltered,
 
+    communityTablePage,
+    setCommunityTablePage,
+    communityTablePageSize,
+    setCommunityTablePageSize,
+    communityTablePageMax,
 
+    communityUserSelection,
+    handleCommunityUserSelection,
+    communitySearch,
+    setCommunitySearch,
+    communityTableSort,
+    setCommunityTableSort,
+    UserTypes,
 
-  const [communityEpoch, setCommunityEpoch] = useState(0);
-  const [fundingEpoch, setFundingEpoch] = useState(0);
+    fundingSearch,
+    setFundingSearch,
+    fundingTableSort,
+    setFundingTableSort,
 
-  const handlePrevCommunityEpoch = () => {
-    if (communityEpoch === 0)
-      setCommunityEpoch(Epochs.length - 1);
-    else
-      setCommunityEpoch(communityEpoch - 1);
-  };
-
-  const handleNextCommunityEpoch = () => {
-    if (communityEpoch === 4)
-      setCommunityEpoch(0);
-    else
-      setCommunityEpoch(communityEpoch + 1);
-  };
-
-  const handlePrevFundingEpoch = () => {
-    if (fundingEpoch === 0)
-      setFundingEpoch(Epochs.length - 1);
-    else
-      setFundingEpoch(fundingEpoch - 1);
-  };
-
-  const handleNextFundingEpoch = () => {
-    if (fundingEpoch === 4)
-      setFundingEpoch(0);
-    else
-      setFundingEpoch(fundingEpoch + 1);
-  };
+    fundingDataSortedAndFiltered,
+  } = useOctantData();
 
 
-  const UserTypes = {
-    All: {
-      label: "All Users",
-    },
-    Donating: {
-      label: "Donating Users",
-    }
-  }
 
-  const [communityUserSelection, setCommunityUserSelection] = useState("All");
-
-  const handleCommunityUserSelection = (userType: string) => {
-    setCommunityUserSelection(userType);
-  }
-
-  const [communitySearch, setCommunitySearch] = useState("");
-
-  const [communityTableSort, setCommunityTableSort] = useState({
-    metric: "budget_amount",
-    sortOrder: "desc",
-  });
 
   const [communityRowsOpen, setCommunityRowsOpen] = useState<string[]>([]);
 
@@ -228,510 +119,6 @@ export default function Page() {
       setCommunityRowsOpen([...communityRowsOpen, user]);
     }
   };
-
-  const UserActiveSinceEpochData = useMemo(() => {
-    const epochData = {
-      "1": UsersEpoch1,
-      "2": UsersEpoch2,
-      "3": UsersEpoch3,
-      "4": UsersEpoch4,
-      "5": UsersEpoch5,
-    };
-
-    const data: { [user: string]: number } = {};
-
-    // find out the first epoch that the user was active
-    UsersEpoch1.forEach((user) => {
-      data[user.user] = 1;
-    });
-
-    UsersEpoch2.forEach((user) => {
-      if (!data[user.user]) data[user.user] = 2;
-
-    });
-
-    UsersEpoch3.forEach((user) => {
-      if (!data[user.user]) data[user.user] = 3;
-    });
-
-    UsersEpoch4.forEach((user) => {
-      if (!data[user.user]) data[user.user] = 4;
-
-    });
-
-    UsersEpoch5.forEach((user) => {
-      if (!data[user.user]) data[user.user] = 5;
-    });
-
-    return data;
-
-  }, []);
-
-
-
-
-
-  const CommunityUsersData = useMemo<CommunityUsers>(() => {
-    let data: CommunityUsers = [];
-    if (communityEpoch === 0) {
-      // sum locked, budget_amount, allocation_amount across all epochs for each user
-
-
-      // copy the first epoch
-      data = JSON.parse(JSON.stringify(UsersEpoch1)) as CommunityUsers;
-
-      // for each user in the second epoch, add the values to the first epoch if the user already exists, otherwise add the user
-      [...UsersEpoch2, ...UsersEpoch3, ...UsersEpoch4, ...UsersEpoch5].forEach((user) => {
-
-        let existingUser = data.find((u) => u.user === user.user);
-        if (existingUser) {
-
-          existingUser.min = Math.min(existingUser.min, user.min);
-          existingUser.max = Math.max(existingUser.max, user.max);
-          // existingUser.lastLocked = user.locked;
-          existingUser.locked = user.locked;
-          existingUser.budget_amount += user.budget_amount;
-          existingUser.allocation_amount += user.allocation_amount;
-          existingUser.project_list = [...new Set([...existingUser.project_list, ...user.project_list])];
-          existingUser.project_count = existingUser.project_list.length;
-        }
-        else {
-          data.push(user);
-        }
-      });
-
-      // if not array, set to empty array
-      // if (!data) data = [];
-    }
-    if (communityEpoch === 1) {
-      data = UsersEpoch1;
-    }
-    if (communityEpoch === 2) {
-      data = UsersEpoch2;
-    }
-    if (communityEpoch === 3) {
-      data = UsersEpoch3;
-    }
-    if (communityEpoch === 4) {
-      data = UsersEpoch4;
-    }
-    if (communityEpoch === 5) {
-      data = UsersEpoch5;
-    }
-
-    return data;
-
-    // return data.filter((user) => {
-    //   // return true if they have a budget amount to spend on rewards etc
-    //   if (user.budget_amount > 0) return true;
-    //   return false;
-    // });
-
-
-
-  }, [communityEpoch]);
-
-
-  const CommunityUsersFiltered = useMemo<CommunityUsers>(() => {
-    let data = CommunityUsersData.filter((user) => {
-      if (communityUserSelection === "All") return true;
-      if (communityUserSelection === "Donating") return user.allocation_amount > 0;
-      return true;
-    });
-    // sort the data
-    data.sort((a, b) => {
-      if (a[communityTableSort.metric] < b[communityTableSort.metric]) {
-        return communityTableSort.sortOrder === "asc" ? -1 : 1;
-      }
-      if (a[communityTableSort.metric] > b[communityTableSort.metric]) {
-        return communityTableSort.sortOrder === "asc" ? 1 : -1;
-      }
-      return 0;
-    });
-
-    // filter the data
-    data = data.filter((user) => {
-      if (communitySearch === "") return true;
-      return user.user.toLowerCase().includes(communitySearch.toLowerCase());
-    });
-
-    return data;
-  }, [CommunityUsersData, , communityTableSort, communitySearch, communityUserSelection]);
-
-
-
-
-  const ProjectsMetadata = useMemo<ProjectMetadataType>(() => {
-    // combine all the projects metadata, use the latest epoch if there are duplicates
-    let data: ProjectMetadataType = {};
-
-    Object.values(ProjectsMetadata1).forEach((project) => {
-      data[project.project_key] = project;
-    });
-
-    Object.values(ProjectsMetadata2).forEach((project) => {
-      data[project.project_key] = project;
-    });
-
-    Object.values(ProjectsMetadata3).forEach((project) => {
-      data[project.project_key] = project;
-    });
-
-    Object.values(ProjectsMetadata4).forEach((project) => {
-      data[project.project_key] = project;
-    });
-
-    Object.values(ProjectsMetadata5).forEach((project) => {
-      data[project.project_key] = project;
-    });
-
-    return data;
-  }, []);
-
-  const allTimeTotalsByProjectKey = useMemo(() => {
-    return [...Funding1, ...Funding2, ...Funding3, ...Funding4].reduce((acc, curr) => {
-      acc[curr.project_key] = (acc[curr.project_key] || 0) + curr.total;
-      return acc;
-    }, {});
-  }, []);
-
-  const [fundingSearch, setFundingSearch] = useState("");
-
-  const [fundingTableSort, setFundingTableSort] = useState({
-    metric: "total",
-    sortOrder: "desc",
-  });
-
-
-
-
-  const FundingData = useMemo<Funding>(() => {
-    let data: Funding = [];
-    if (fundingEpoch === 0) {
-      // sum locked, budget_amount, allocation_amount across all epochs for each project
-      data = [...Funding1] as Funding;
-
-      [...Funding2, ...Funding3, ...Funding4].forEach((project) => {
-        let existingProject = data.find((p) => p.project_key === project.project_key);
-        if (existingProject) {
-          existingProject.total += project.total;
-          existingProject.matched += project.matched;
-          existingProject.allocated += project.allocated;
-          existingProject.donor += project.donor;
-        }
-        else {
-          data.push(project);
-        }
-      });
-    }
-    if (fundingEpoch === 1) {
-      data = Funding1;
-    }
-    if (fundingEpoch === 2) {
-      data = Funding2;
-    }
-
-    if (fundingEpoch === 3) {
-      data = Funding3;
-    }
-    if (fundingEpoch === 4) {
-      data = Funding4;
-    }
-
-    if (fundingEpoch === 5) {
-      data = [];
-    }
-
-
-    return data;
-
-
-  }, [fundingEpoch]);
-
-
-  const FundingDataFiltered = useMemo<Funding>(() => {
-    let data = [...FundingData];
-
-    // sort the data
-    data.sort((a, b) => {
-
-      if (fundingTableSort.metric === "all_time_total") {
-        if (allTimeTotalsByProjectKey[a.project_key] < allTimeTotalsByProjectKey[b.project_key]) {
-          return fundingTableSort.sortOrder === "asc" ? -1 : 1;
-        }
-        if (allTimeTotalsByProjectKey[a.project_key] > allTimeTotalsByProjectKey[b.project_key]) {
-          return fundingTableSort.sortOrder === "asc" ? 1 : -1;
-        }
-        return 0;
-      }
-
-      if (a[fundingTableSort.metric] < b[fundingTableSort.metric]) {
-        return fundingTableSort.sortOrder === "asc" ? -1 : 1;
-      }
-      if (a[fundingTableSort.metric] > b[fundingTableSort.metric]) {
-        return fundingTableSort.sortOrder === "asc" ? 1 : -1;
-      }
-      return 0;
-    });
-
-    // filter the data
-    data = data.filter((project) => {
-      if (fundingSearch === "") return true;
-      return project.address.toLowerCase().includes(fundingSearch.toLowerCase()) || ProjectsMetadata[project.project_key].name.toLowerCase().includes(fundingSearch.toLowerCase());
-
-    });
-
-    return data;
-  }, [FundingData, fundingTableSort.metric, fundingTableSort.sortOrder, allTimeTotalsByProjectKey, fundingSearch, ProjectsMetadata]);
-
-
-  const TotalsAcrossEpochsByProjectKey = useMemo(() => {
-    const data: { [project_key: string]: { total: number, matched: number, allocated: number } } = {};
-
-    [...Funding1, ...Funding2, ...Funding3, ...Funding4].forEach((project) => {
-      if (!data[project.project_key]) {
-        data[project.project_key] = { total: 0, matched: 0, allocated: 0 };
-      }
-      data[project.project_key].total += project.total;
-      data[project.project_key].matched += project.matched;
-      data[project.project_key].allocated += project.allocated;
-    });
-
-    return data;
-  }, []);
-
-
-  // const {
-  //   data: epochs,
-  //   isLoading: epochsLoading,
-  //   isValidating: epochsValidating,
-  // } = useSWR<EpochData[]>("/api/trackers/octant");
-  const isMobile = useMediaQuery("(max-width: 1024px)");
-  // use fetch to get data
-  const [epochs, setEpochs] = useState<EpochData[] | null>(null);
-
-  useEffect(() => {
-    async function fetchData() {
-      const response = await fetch("/api/trackers/octant/rounds");
-      const data: EpochData[] = await response.json();
-      setEpochs(data);
-    }
-
-    fetchData();
-  }, []);
-
-  const [currentEpoch, setCurrentEpoch] = useState<EpochData | null>(null);
-
-  const data = useMemo<EpochData | null>(() => {
-    if (!epochs) return null;
-
-    const now = Date.now();
-    //const oneWeekFromNow = now + 7 * 24 * 60 * 60 * 1000;
-
-    // console.log(epochs.map((epoch) => epoch.epoch));
-
-    const currentEpochs = epochs.filter((epoch) => {
-      // console.log(epoch.epoch, epoch.decisionWindow);
-      if (!epoch.decisionWindow || !epoch.toTimestamp) return false;
-      const toTime = new Date(epoch.toTimestamp).getTime();
-      const decisionWindowNumber = new Date(epoch.decisionWindow).getTime();
-
-      return now < decisionWindowNumber && now > toTime;
-    });
-
-    if (currentEpochs.length === 0) {
-      // get the epoch with the decision window that passed most recently
-      let latestEpoch;
-      epochs
-        .sort((a, b) =>
-          a.decisionWindow && b.decisionWindow
-            ? new Date(a.decisionWindow).getTime() -
-            new Date(b.decisionWindow).getTime()
-            : 0,
-        )
-        .forEach((epoch) => {
-          if (!epoch.decisionWindow) return false;
-          const decisionWindowNumber = new Date(epoch.decisionWindow).getTime();
-
-          if (now > decisionWindowNumber) {
-            latestEpoch = epoch;
-          }
-        });
-
-      setCurrentEpoch(latestEpoch);
-
-      return latestEpoch;
-    }
-
-    setCurrentEpoch(currentEpochs[0]);
-
-    return currentEpochs[0];
-  }, [epochs]);
-
-  useEffect(() => {
-    if (!epochs) return;
-
-    setCurrentEpoch(epochs[fundingEpoch - 1]);
-
-  }, [epochs, fundingEpoch]);
-
-  const epochsByProjectKey = useMemo<EpochsByProject | null>(() => {
-    if (!epochs) return null;
-
-    const byProjectKey: EpochsByProject = {};
-
-    epochs.forEach((epoch) => {
-      epoch.projects.forEach((project) => {
-        const project_key = project.project_key;
-        if (!byProjectKey[project_key]) {
-          byProjectKey[project_key] = [];
-        }
-        byProjectKey[project_key].push(epoch);
-      });
-    });
-
-    return byProjectKey;
-  }, [epochs]);
-
-  const [sortKey, setSortKey] = useState<string | null>("rewardsMatched");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
-
-  const onRowSort = useCallback(
-    (a: string, b: string) => {
-      if (
-        !sortKey ||
-        !currentEpoch ||
-        !epochsByProjectKey
-        // !allTimeTotalsByProjectKey
-      )
-        return 0;
-
-      if (sortKey === "epochs") {
-        const aEpochs = epochsByProjectKey[a].map((e) => e.epoch).join();
-        const bEpochs = epochsByProjectKey[b].map((e) => e.epoch).join();
-
-        if (aEpochs < bEpochs) {
-          return sortDirection === "asc" ? -1 : 1;
-        }
-        if (aEpochs > bEpochs) {
-          return sortDirection === "asc" ? 1 : -1;
-        }
-
-        return 0;
-      }
-
-      if (sortKey === "allTimeTotal") {
-        if (allTimeTotalsByProjectKey[a] < allTimeTotalsByProjectKey[b]) {
-          return sortDirection === "asc" ? -1 : 1;
-        }
-        if (allTimeTotalsByProjectKey[a] > allTimeTotalsByProjectKey[b]) {
-          return sortDirection === "asc" ? 1 : -1;
-        }
-
-        return 0;
-      }
-
-      if (!data) return 0;
-
-      const aCurrentEpochProject = currentEpoch.projects.find(
-        (p) => p.name.toLowerCase() === a,
-      );
-      const aLastPresentEpochProject = epochsByProjectKey[a][
-        epochsByProjectKey[a].length - 1
-      ].projects.find((p) => p.name.toLowerCase() === a);
-
-      const bCurrentEpochProject = currentEpoch.projects.find(
-        (p) => p.name.toLowerCase() === b,
-      );
-      const bLastPresentEpochProject = epochsByProjectKey[b][
-        epochsByProjectKey[b].length - 1
-      ].projects.find((p) => p.name.toLowerCase() === b);
-
-      if (["name", "address"].includes(sortKey)) {
-        const aProject = aCurrentEpochProject
-          ? aCurrentEpochProject
-          : aLastPresentEpochProject;
-
-        const bProject = bCurrentEpochProject
-          ? bCurrentEpochProject
-          : bLastPresentEpochProject;
-
-        if (!aProject && !bProject) return 0;
-        if (!aProject) return 1;
-        if (!bProject) return -1;
-
-        const aValue = aProject[sortKey];
-        const bValue = bProject[sortKey];
-
-        if (!aProject && !bProject) return 0;
-        if (!aProject) return 1;
-        if (!bProject) return -1;
-
-        if (aValue.toLowerCase().localeCompare(bValue.toLowerCase()) < 0) {
-          return sortDirection === "asc" ? -1 : 1;
-        }
-        if (aValue.toLowerCase().localeCompare(bValue.toLowerCase()) > 0) {
-          return sortDirection === "asc" ? 1 : -1;
-        }
-        return 0;
-      }
-
-      const aProject = aCurrentEpochProject;
-      const bProject = bCurrentEpochProject;
-
-      if (!aProject && !bProject) return 0;
-      if (!aProject) return 1;
-      if (!bProject) return -1;
-
-      const aValue = aProject[sortKey];
-      const bValue = bProject[sortKey];
-
-      if (aValue < bValue) {
-        return sortDirection === "asc" ? -1 : 1;
-      }
-      if (aValue > bValue) {
-        return sortDirection === "asc" ? 1 : -1;
-      }
-
-      return 0;
-    },
-    [
-      sortKey,
-      currentEpoch,
-      epochsByProjectKey,
-      data,
-      sortDirection,
-      allTimeTotalsByProjectKey
-    ],
-  );
-
-  const TwentyPercentOfTotalMatched = useMemo(() => {
-    if (!data) return 0;
-
-    return (0.2 * Object.values(data.projects).map((p: any) => p.rewardsMatched).reduce((acc, curr) => {
-      return acc + curr;
-    })) / 10 ** 18;
-  }, [data]);
-
-  // Countdown Timer for Decision Window
-  const createTmer = useMemo(() => {
-    if (!currentEpoch || !currentEpoch.decisionWindow) return Infinity;
-
-    const decisionWindowNumber = new Date(
-      currentEpoch.decisionWindow,
-    ).getTime();
-    const now = Date.now();
-
-    return decisionWindowNumber - now;
-  }, [currentEpoch]);
-
-  const CommunityUsersTableRef = useRef<HTMLDivElement>(null);
-
-  const virtualizer = useVirtualizer({
-    count: CommunityUsersFiltered.length,
-    getScrollElement: () => CommunityUsersTableRef.current,
-    estimateSize: () => 38,
-  });
 
 
   const JumpToSections = {
@@ -762,99 +149,6 @@ export default function Page() {
   };
 
 
-  type ExpandingButtonMenuProps = {
-    button: {
-      label: string;
-      icon: string;
-      showIconBackground?: boolean;
-      animateIcon?: boolean;
-    };
-    items: {
-      label: string;
-      icon: string;
-      href: string;
-    }[];
-    className?: string;
-  };
-
-
-  const ExpandingButtonMenu = ({
-    button,
-    items,
-    className,
-  }: ExpandingButtonMenuProps) => {
-    return (
-      <div
-        className={`absolute delay-0 hover:delay-300 group/jump flex flex-col cursor-pointer hover:top-[10px] hover:left-[5px] hover:right-[5px] transition-all duration-300 ${className}`}
-      >
-        <div
-          className="!z-[15] group-hover/jump:!z-[25] transition-[z-index] delay-100 group-hover/jump:delay-0 w-full flex items-center h-[36px] gap-x-[8px] pl-[6px] pr-[10px] rounded-full dark:bg-[#263130] bg-forest-50"
-          onMouseEnter={() => {
-            track(`hovered ${button.label} button`, {
-              location: isMobile ? `mobile Chain page` : `desktop Chain page`,
-              page: window.location.pathname,
-            });
-          }}
-        >
-          <div
-            className={`${button.showIconBackground &&
-              "bg-white dark:bg-forest-1000 relative "
-              } rounded-full w-[25px] h-[25px] p-[5px]`}
-          >
-            <Icon
-              icon={button.icon}
-              className={`w-[15px] h-[15px] ${button.animateIcon &&
-                "transition-transform duration-300 transform delay-0 group-hover/jump:delay-300 group-hover/jump:rotate-90"
-                }`}
-            />
-            <Icon
-              icon={"gtp:circle-arrow"}
-              className={`w-[4px] h-[9px] absolute top-2 right-0 transition-transform delay-0 group-hover/jump:delay-300 duration-500 group-hover/jump:rotate-90 ${button.showIconBackground ? "block" : "hidden"
-                }`}
-              style={{
-                transformOrigin: "-8px 4px",
-              }}
-            />
-          </div>
-          <div className="whitespace-nowrap text-[14px] font-semibold lg:leading-normal leading-tight">
-            {button.label}
-          </div>
-        </div>
-        <div className="absolute !z-[11] group-hover/jump:!z-[21] delay-0 group-hover/jump:delay-300 overflow-hidden whitespace-nowrap  max-h-0 transition-all duration-300 left-0 right-0 top-[16px] bg-white dark:bg-[#151A19] pb-[0px] rounded-b-[22px] group-hover/jump:max-h-[300px] group-hover/jump:pt-[24px] group-hover/jump:pb-[10px] group-hover/jump:shadow-lg group-hover/jump:dark:shadow-[0px_4px_46.2px_0px_#000000]">
-          {items.map((item: { label: string; icon: string; href: string }) => (
-            <Link
-              href={item.href}
-              key={item.label}
-              rel="noreferrer"
-              target="_blank"
-              onClick={(e) => {
-                track(`clicked ${item.label} link`, {
-                  location: isMobile
-                    ? `mobile Chain page`
-                    : `desktop Chain page`,
-                  page: window.location.pathname,
-                });
-                if (item.href.startsWith("#")) {
-                  e.preventDefault();
-                  document.querySelector(item.href)?.scrollIntoView({
-                    behavior: "smooth",
-                  });
-                }
-              }}
-              className="whitespace-nowrap flex items-center gap-x-[10px] h-[32px] font-medium text-sm px-4 py-2 group-hover:w-full w-0 transition-[width] duration-100 ease-in-out hover:bg-forest-50 dark:hover:bg-forest-900"
-            >
-              <div className="w-4 h-4">
-                <Icon icon={item.icon} className="w-4 h-4" />
-              </div>
-              <div>{item.label}</div>
-            </Link>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
 
   const copyAddressTimeout = useRef<number | null>(null);
@@ -873,7 +167,10 @@ export default function Page() {
   }, []);
 
   return (
-    <>
+    <div >
+      <ShowLoading
+        dataLoading={[!summaryData, !communityData, !projectMetadataData]}
+      />
       <Container className="flex flex-col w-full" isPageRoot>
 
         <div className="w-full flex flex-col lg:flex-row gap-x-[5px] gap-y-[5px] bg-clip-content pb-[30px] md:pb-[60px]">
@@ -1107,18 +404,18 @@ export default function Page() {
                             </svg>
                             <div className="flex flex-col items-center pt-[5px]">
                               <div className="font-semibold text-[20px]">
-                                {LockStatus.now.num_users_locked_glm}
+                                {summaryData?.locked_changes.now.num_users_locked_glm}
                               </div>
                               <div className="text-[9px]">Total Wallets</div>
                             </div>
                           </div>
                           <div className="flex bg-[#5A6462] rounded-[11px] w-[135px] px-[13px] py-[5px] gap-x-[6px] h-[43px] items-center justify-center">
-                            <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" className={`${LockStatus.changes.num_users_locked_glm_change >= 0 ? "" : "rotate-180"}`}>
+                            <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" className={`${summaryData && summaryData.locked_changes.changes.num_users_locked_glm_change >= 0 ? "" : "rotate-180"}`}>
                               <g clipPath="url(#clip0_11946_38485)">
                                 <path d="M15.067 15.1489L20.9266 15.1489C23.3019 15.1489 24.5995 12.4851 23.0789 10.7305L15.0525 1.46928C13.9324 0.176906 11.8681 0.176908 10.748 1.46928L2.72159 10.7305C1.20098 12.4851 2.49855 15.1489 4.87383 15.1489L10.7337 15.1489L10.7337 24.5L15.0525 24.5L15.067 15.1489Z" fill="url(#paint0_linear_11946_38485)" />
                               </g>
                               <defs>
-                                {LockStatus.changes.num_users_locked_glm_change >= 0 ? (
+                                {summaryData && summaryData.locked_changes.changes.num_users_locked_glm_change >= 0 ? (
                                   <linearGradient id="paint0_linear_11946_38485" x1="12.9002" y1="0.5" x2="12.9002" y2="24.5" gradientUnits="userSpaceOnUse">
                                     <stop stopColor="#10808C" />
                                     <stop offset="1" stopColor="#1DF7EF" />
@@ -1136,11 +433,11 @@ export default function Page() {
                             </svg>
 
                             <div className="flex flex-col items-center pt-[5px]">
-                              <div className="font-semibold text-[20px]">
-                                {LockStatus.changes.num_users_locked_glm_change > 0 && "+"}
-                                {LockStatus.changes.num_users_locked_glm_change < 0 && "-"}
-                                {(LockStatus.changes.num_users_locked_glm_change * 100).toFixed(1)}%
-                              </div>
+                              {summaryData && <div className="font-semibold text-[20px]">
+                                {summaryData.locked_changes.changes.num_users_locked_glm_change > 0 && "+"}
+                                {summaryData.locked_changes.changes.num_users_locked_glm_change < 0 && "-"}
+                                {(summaryData.locked_changes.changes.num_users_locked_glm_change * 100).toFixed(1)}%
+                              </div>}
                               <div className="text-[9px]">in last week</div>
                             </div>
                           </div>
@@ -1259,7 +556,7 @@ export default function Page() {
               className={`lg:!py-[10px] lg:!px-[15px] text-[16px] leading-[150%]`}
             >
               <span className="hidden sm:block">
-                {UserTypes.All.label} ({CommunityUsersData?.length})
+                {UserTypes.All.label} ({communityData && communityData.filter((user) => user.lockeds[Epochs[communityEpoch].epoch] !== undefined).length})
               </span>
               <span className="block text-xs sm:hidden">
                 {UserTypes.All.label}
@@ -1275,7 +572,7 @@ export default function Page() {
               className={`lg:!py-[10px] lg:!px-[15px] text-[16px] leading-[150%]`}
             >
               <span className="hidden sm:block">
-                {UserTypes.Donating.label} ({CommunityUsersData?.filter((user) => user.allocation_amount > 0).length})
+                {UserTypes.Donating.label} ({communityData && communityData.filter((user) => user.allocation_amounts[Epochs[communityEpoch].epoch] !== undefined && user.allocation_amounts[Epochs[communityEpoch].epoch] > 0).length})
               </span>
               <span className="block text-xs sm:hidden">
                 {UserTypes.Donating.label}
@@ -1320,8 +617,8 @@ export default function Page() {
       </Container>
       <Container className="@container">
 
-        <div className="flex flex-col @[1231px]:flex-row @[1231px]:flex-wrap">
-          <div className="w-full @[1231px]:w-1/2">
+        <div className="flex flex-col @[960px]:flex-row @[960px]:flex-wrap">
+          <div className="w-full @[960px]:w-1/2">
             <div className="flex items-center w-full bg-[#1F2726] gap-x-[10px] rounded-[22px] pr-[10px] min-h-[44px] z-[1]">
               <div className={`relative flex justify-center items-center pl-[10px]`}>
                 <SearchIcon />
@@ -1360,7 +657,7 @@ export default function Page() {
               )}
             </div>
             <GridTableHeader gridDefinitionColumns="grid-cols-[20px,minmax(125px,1600px),118px,72px,69px]"
-              className="text-[12px] gap-x-[15px] z-[2] !pl-[5px] !pr-[48px] !pt-[15px] !pb-[10px]">
+              className="text-[12px] gap-x-[15px] z-[2] !pl-[5px] !pr-[16px] !pt-[15px] !pb-[10px]">
               <div></div>
               <GridTableHeaderCell
                 metric="user"
@@ -1371,7 +668,7 @@ export default function Page() {
               </GridTableHeaderCell>
               <GridTableHeaderCell
                 justify="end"
-                metric="min"
+                metric="mins"
                 sort={communityTableSort}
                 setSort={setCommunityTableSort}
               >
@@ -1379,7 +676,7 @@ export default function Page() {
               </GridTableHeaderCell>
               <GridTableHeaderCell
                 justify="end"
-                metric="budget_amount"
+                metric="budget_amounts"
                 sort={communityTableSort}
                 setSort={setCommunityTableSort}
               >
@@ -1387,31 +684,35 @@ export default function Page() {
               </GridTableHeaderCell>
               <GridTableHeaderCell
                 justify="end"
-                metric="allocation_amount"
+                metric="allocation_amounts"
                 sort={communityTableSort}
                 setSort={setCommunityTableSort}
               >
                 Donated
               </GridTableHeaderCell>
             </GridTableHeader>
-            <VerticalScrollContainer height={250} className="">
-              {/* {CommunityUsersFiltered && CommunityUsersFiltered.length > 0 && (
-                CommunityUsersFiltered.map((user, index) => ( */}
-              <div className="pb-[3px]" ref={CommunityUsersTableRef} style={{ height: `${virtualizer.getTotalSize()}px` }}>
-                {virtualizer
-                  .getVirtualItems()
-                  .map((virtualRow, index) => {
-                    const user = CommunityUsersFiltered[virtualRow.index];
+            <div className="flex flex-col justify-between overflow-hidden">
+              <div className="h-[300px] flex flex-col overflow-hidden">
+                {/* <VerticalScrollContainer height={250} className=""> */}
+                {communityDataSortedAndFiltered && communityDataSortedAndFiltered.length > 0 && (
+                  communityDataSortedAndFiltered.slice(communityTablePage * communityTablePageSize, communityTablePage * communityTablePageSize + communityTablePageSize).map((userData, index) => {
+                    const userLockedEpochs = Object.keys(userData.lockeds).filter((e) => e !== "all");
+                    const user = {
+                      user: userData.user,
+                      locked: userData.lockeds[Epochs[communityEpoch].epoch] || 0,
+
+                      min: userData.lockeds[Epochs[communityEpoch].epoch] || 0,
+                      max: userData.lockeds[Epochs[communityEpoch].epoch] || 0,
+
+                      budget_amount: userData.budget_amounts[Epochs[communityEpoch].epoch] || 0,
+                      allocation_amount: userData.allocation_amounts[Epochs[communityEpoch].epoch] || 0,
+                      allocated_to_project_count: userData.allocated_to_project_counts[Epochs[communityEpoch].epoch] || 0,
+                      allocated_to_project_keys: userData.allocated_to_project_keys[Epochs[communityEpoch].epoch] || [],
+                      activeSinceEpoch: Math.min(...userLockedEpochs.map((epoch) => parseInt(epoch))),
+
+                    }
                     return (
-                      <div key={virtualRow.index} style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        // This change
-                        minHeight: `${virtualRow.size}px`,
-                        transform: `translateY(${virtualRow.start}px)`,
-                      }}>
+                      <div key={index} className="pb-[3px]">
                         <GridTableRow
                           gridDefinitionColumns="grid-cols-[20px,minmax(125px,1600px),118px,72px,69px]"
                           className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] !pl-[5px] !pr-[15px]"
@@ -1545,7 +846,7 @@ export default function Page() {
                           <div className={`flex flex-col bg-[#1F2726] rounded-b-[15px] border-[#CDD8D3]/30 border-dotted border-x border-b transition-all duration-300 ${communityRowsOpen.includes(user.user) ? "min-h-[80px] max-h-[300px] opacity-100" : "max-h-0 min-h-0 opacity-0"} overflow-hidden`}>
                             <div className="flex flex-col p-[15px] gap-y-[6px] text-[12px]">
                               <div className="flex items-center justify-between">
-                                <div>Active Since: <span className="font-semibold">Epoch {UserActiveSinceEpochData[user.user]}</span></div>
+                                <div>Active Since: <span className="font-semibold">Epoch {user.activeSinceEpoch}</span></div>
                                 <div className="flex gap-x-[5px] items-center">
                                   <div>
                                     Donated <span className="font-semibold">{user.allocation_amount.toLocaleString("en-GB", {
@@ -1572,21 +873,23 @@ export default function Page() {
                                   </div>
                                 </div>
                               </div>
-                              {user.project_list.length > 0 ? (
+                              {user.allocated_to_project_keys.length > 0 ? (
 
                                 <div className="flex flex-col gap-y-[5px]">
-                                  <div>Wallet donated to <span className="font-semibold">{user.project_list.length}</span> projects:</div>
+                                  <div>Wallet donated to <span className="font-semibold">{user.allocated_to_project_keys.length}</span> projects:</div>
                                   <div className="flex flex-wrap gap-x-[5px] gap-y-[5px]">
-                                    {user.project_list.map((project_key, index) => (
+                                    {user.allocated_to_project_keys.map((project_key, index) => (
                                       <div key={index} className="flex items-center gap-x-[5px] bg-[#344240] rounded-[15px] pl-[0px] pr-[6px] py-[0px] text-[10px]">
                                         <div className="w-6 h-6 border border-forest-900/20 dark:border-forest-500/20 rounded-full overflow-hidden">
-                                          <Image
-                                            src={`https://ipfs.io/ipfs/${ProjectsMetadata[project_key].profileImageMedium}`}
-                                            alt={ProjectsMetadata[project_key].name}
-                                            width={24}
-                                            height={24}
-                                            className="rounded-full"
-                                          />
+                                          {projectMetadataData && projectMetadataData[project_key][Epochs[communityEpoch].epoch] && (
+                                            <Image
+                                              src={`https://ipfs.io/ipfs/${projectMetadataData[project_key][Epochs[communityEpoch].epoch].profileImageMedium}`}
+                                              alt={projectMetadataData[project_key][Epochs[communityEpoch].epoch].name}
+                                              width={24}
+                                              height={24}
+                                              className="rounded-full"
+                                            />
+                                          )}
                                         </div>
                                         {project_key}</div>
                                     ))}
@@ -1600,15 +903,71 @@ export default function Page() {
                         </div>
                       </div>
                     );
-                  })}
+                  })
+                )}
+              </div>
+              {/* pagination */}
+              <div className="relative pt-[10px] w-full">
+                {communityDataSortedAndFiltered.length > communityTablePageSize && (
+                  <>
+                    <div className="flex w-full items-center justify-between gap-x-[5px] text-[12px] text-[#CDD8D3]">
+                      <div className="flex items-center gap-x-[5px]">
+                        <div className="text-[12px]">Showing</div>
+                        <div className="text-[12px]">{communityTablePage * communityTablePageSize + 1}</div>
+                        <div className="text-[12px]">to</div>
+                        <div className="text-[12px]">{Math.min(communityTablePage * communityTablePageSize + communityTablePageSize, communityDataSortedAndFiltered.length)}</div>
+                        <div className="text-[12px]">of</div>
+                        <div className="text-[12px]">{communityDataSortedAndFiltered.length}</div>
+
+
+                        <div className="w-[300px] flex items-center gap-x-[5px]">
+                          <div className="hover:cursor-pointer" onClick={() => setCommunityTablePage(0)}>
+                            <Icon icon="feather:chevrons-left" className="w-4 h-4" />
+                          </div>
+                          <div className="hover:cursor-pointer" onClick={() => setCommunityTablePage(communityTablePage - 1)}>
+                            <Icon icon="feather:chevron-left" className="w-4 h-4" />
+                          </div>
+                        </div>
+                      </div>
+                      {/* slider */}
+
+                      <div className="flex gap-x-[5px] items-center">
+
+                        <div className="hover:cursor-pointer" onClick={() => setCommunityTablePage(communityTablePage + 1)}>
+                          <Icon icon="feather:chevron-right" className="w-4 h-4" />
+                        </div>
+                        <div className="hover:cursor-pointer" onClick={() => setCommunityTablePage(Math.floor(communityDataSortedAndFiltered.length / communityTablePageSize))}>
+                          <Icon icon="feather:chevrons-right" className="w-4 h-4" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="absolute top-[6px] left-[300px] w-[100px]">
+                      <Slider value={communityTablePage} setValue={setCommunityTablePage} max={Math.floor(communityDataSortedAndFiltered.length / communityTablePageSize)} />
+                      {/* <input
+                        type="range"
+                        min={0}
+                        max={Math.floor(communityDataSortedAndFiltered.length / communityTablePageSize)}
+                        value={communityTablePage}
+                        onChange={(e) => setCommunityTablePage(parseInt(e.target.value))}
+                        className="w-full h-[4px] bg-[#1F2726] appearance-none rounded-full overflow-hidden"
+                        style={{
+                          background: `linear-gradient(90deg, #1DF7EF 0%, #10808C ${communityTablePage / Math.floor(communityDataSortedAndFiltered.length / communityTablePageSize) * 100}%, #1F2726 ${communityTablePage / Math.floor(communityDataSortedAndFiltered.length / communityTablePageSize) * 100}%, #1F2726 100%)`,
+                          appearance: "none",
+                          outline: "none",
+                          transition: "background 0.5s",
+                        }}
+                      /> */}
+                    </div>
+                  </>
+                )}
               </div>
 
 
-            </VerticalScrollContainer>
+              {/* </VerticalScrollContainer> */}
+            </div>
           </div>
-          <div className="flex flex-col @[600px]:flex-row h-auto @[1231px]:h-[340px] w-full @[1231px]:w-1/2 justify-evenly items-center">
-            <style>
-              {`
+          <style>
+            {`
               .one-project {
                 fill: url(#gradient1) !important;
               }
@@ -1629,117 +988,86 @@ export default function Page() {
                 fill: url(#gradient2) !important;
               }
               `}
-            </style>
-            <svg width={0} height={0}>
-              <defs>
-                <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="objectBoundingBox">
-                  <stop stopColor="#1DF7EF" />
-                  <stop offset="0.5" stopColor="#10808C" />
-                </linearGradient>
-                <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="objectBoundingBox">
-                  <stop stopColor="#FFDF27" />
-                  <stop offset="1" stopColor="#FE5468" />
-                </linearGradient>
-              </defs>
-            </svg>
-            <div>
-              <CircleChart
-                title="ALLOCATIONS"
-                data={[
-                  {
-                    label: "kept by wallets",
-                    value: CommunityUsersFiltered.reduce((acc, user) => acc + user.budget_amount - user.allocation_amount, 0),
-                    className: "kept-by-wallets",
-                  },
-                  {
-                    label: "allocated to projects",
-                    value: CommunityUsersFiltered.reduce((acc, user) => acc + user.allocation_amount, 0),
-                    className: "allocated-to-projects",
-                  }
-                ]}
-                valuePrefix="Ξ"
-              // colors={[
-              //   {
-              //     linearGradient: {
-              //       x1: 0,
-              //       y1: 0,
-              //       x2: 1,
-              //       y2: 1,
-              //     },
-              //     stops: [
-              //       [0, "#1DF7EF"],
-              //       [0.5, "#10808C"],
-              //     ]
-              //   },
-              //   {
-              //     linearGradient: {
-              //       x1: 0,
-              //       y1: 0,
-              //       x2: 1,
-              //       y2: 1,
-              //     },
-              //     stops: [
-              //       [0, "#FFDF27"],
-              //       [1, "#FE5468"],
-              //     ]
-              //   },
-              // ]}
-              />
+          </style>
+          <svg width={0} height={0}>
+            <defs>
+              <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="objectBoundingBox">
+                <stop stopColor="#1DF7EF" />
+                <stop offset="0.5" stopColor="#10808C" />
+              </linearGradient>
+              <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="objectBoundingBox">
+                <stop stopColor="#FFDF27" />
+                <stop offset="1" stopColor="#FE5468" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <div className="flex flex-col pt-[50px] gap-y-[20px] @[600px]:flex-row @[600px]:gap-y-0 @[960px]:pt-0 @[960px]:h-[400px] w-full @[960px]:w-1/2 justify-evenly items-center">
+
+
+            <div className="w-[250px] h-[250px] overflow-visible">
+              <div className="relative -top-[20px] -left-[20px] w-fit">
+                <CircleChart
+                  title="ALLOCATIONS"
+                  data={[
+                    {
+                      label: "kept by wallets",
+                      value: communityData ? communityData.reduce((acc, user) => {
+                        if (user.budget_amounts[Epochs[communityEpoch].epoch] === undefined) {
+                          return acc;
+                        }
+                        let allocation = user.allocation_amounts[Epochs[communityEpoch].epoch] || 0;
+                        let budget = user.budget_amounts[Epochs[communityEpoch].epoch] || 0;
+                        return acc + (budget - allocation);
+
+                      }, 0) : 0,
+                      className: "kept-by-wallets",
+                    },
+                    {
+                      label: "allocated to projects",
+                      value: communityData ? communityData.reduce((acc, user) => {
+                        if (user.allocation_amounts[Epochs[communityEpoch].epoch] === undefined) {
+                          return acc;
+                        }
+                        return acc + user.allocation_amounts[Epochs[communityEpoch].epoch];
+                      }, 0) : 0,
+                      className: "allocated-to-projects",
+                    }
+                  ]}
+                  valuePrefix="Ξ"
+                />
+              </div>
             </div>
 
 
-            <div>
-              <CircleChart
-                title={["DONATIONS TO", "# OF PROJECTS"]}
-                data={[
-                  {
-                    label: "1 Project",
-                    value: CommunityUsersFiltered.filter((user) => user.project_list.length === 1).length,
-                    className: "one-project",
-                  },
-                  {
-                    label: "2 to 5 Projects",
-                    value: CommunityUsersFiltered.filter((user) => user.project_list.length > 1 && user.project_list.length <= 5).length,
-                    className: "two-to-five-projects",
-                  },
-                  {
-                    label: "> 5 Projects",
-                    value: CommunityUsersFiltered.filter((user) => user.project_list.length > 5).length,
-                    className: "more-than-five-projects",
-                  },
-                  {
-                    label: "No Projects",
-                    value: CommunityUsersFiltered.filter((user) => user.project_list.length === 0).length,
-                    className: "no-projects",
-                  },
-                ]}
-              // colors={[
-              //   {
-              //     linearGradient: {
-              //       x1: 0,
-              //       y1: 0,
-              //       x2: 1,
-              //       y2: 1,
-              //     },
-              //     stops: [
-              //       [0, "#1DF7EF"],
-              //       [0.5, "#10808C"],
-              //     ]
-              //   },
-              //   {
-              //     linearGradient: {
-              //       x1: 0,
-              //       y1: 0,
-              //       x2: 1,
-              //       y2: 1,
-              //     },
-              //     stops: [
-              //       [0, "#FFDF27"],
-              //       [1, "#FE5468"],
-              //     ]
-              //   },
-              // ]}
-              />
+            <div className="relative w-[250px] h-[250px] overflow-visible">
+              <div className="relative -top-[20px] -left-[20px] w-fit">
+                <CircleChart
+                  title={["DONATIONS TO", "# OF PROJECTS"]}
+                  data={[
+                    {
+                      label: "1 Project",
+                      value: communityData ? communityData.filter((user) => user.allocated_to_project_keys[Epochs[communityEpoch].epoch] && user.allocated_to_project_keys[Epochs[communityEpoch].epoch].length === 1).length : 0,
+                      className: "one-project",
+                    },
+                    {
+                      label: "2 to 5 Projects",
+                      value: communityData ? communityData.filter((user) => user.allocated_to_project_keys[Epochs[communityEpoch].epoch] && user.allocated_to_project_keys[Epochs[communityEpoch].epoch].length > 1 && user.allocated_to_project_keys[Epochs[communityEpoch].epoch].length <= 5).length : 0,
+                      className: "two-to-five-projects",
+                    },
+                    {
+                      label: "> 5 Projects",
+                      value: communityData ? communityData.filter((user) => user.allocated_to_project_keys[Epochs[communityEpoch].epoch] && user.allocated_to_project_keys[Epochs[communityEpoch].epoch].length > 5).length : 0,
+                      className: "more-than-five-projects",
+                    },
+                    {
+                      label: "No Projects",
+                      value: communityData ? communityData.filter((user) => user.allocated_to_project_keys[Epochs[communityEpoch].epoch] && user.allocated_to_project_keys[Epochs[communityEpoch].epoch].length === 0).length : 0,
+                      className: "no-projects",
+                    },
+                  ]}
+
+                />
+              </div>
             </div>
 
           </div>
@@ -1863,7 +1191,6 @@ export default function Page() {
 
 
       </Container>
-
       <HorizontalScrollContainer className="@container">
         <GridTableHeader
           gridDefinitionColumns="grid-cols-[20px,225px,minmax(125px,1600px),95px,126px,101px,89px]"
@@ -1871,7 +1198,7 @@ export default function Page() {
         >
           <div></div>
           <GridTableHeaderCell
-            metric="project_key"
+            metric="project"
             sort={fundingTableSort}
             setSort={setFundingTableSort}
           >
@@ -1887,7 +1214,7 @@ export default function Page() {
           </GridTableHeaderCell>
           <GridTableHeaderCell
             justify="end"
-            metric="donor"
+            metric="donor_counts"
             sort={fundingTableSort}
             setSort={setFundingTableSort}
           >
@@ -1895,7 +1222,7 @@ export default function Page() {
           </GridTableHeaderCell>
           <GridTableHeaderCell
             justify="end"
-            metric="allocated"
+            metric="allocations"
             sort={fundingTableSort}
             setSort={setFundingTableSort}
           >
@@ -1903,7 +1230,7 @@ export default function Page() {
           </GridTableHeaderCell>
           <GridTableHeaderCell
             justify="end"
-            metric="matched"
+            metric="matched_rewards"
             sort={fundingTableSort}
             setSort={setFundingTableSort}
           >
@@ -1927,51 +1254,422 @@ export default function Page() {
           </GridTableHeaderCell> */}
         </GridTableHeader>
         <VerticalScrollContainer height={600} className="">
-          {master && FundingDataFiltered && allTimeTotalsByProjectKey && (
-            FundingDataFiltered.map((row, index) => (
-              <OctantTableRow
-                key={index}
-                FundingDataFilteredRow={row}
-                fundingEpoch={fundingEpoch}
-                lastFundingEpoch={Epochs[Epochs.length - 1].epoch}
-                project_key={row.project_key}
-                projectIndex={index}
-                setCurrentEpoch={setCurrentEpoch}
-                ProjectsMetadata={ProjectsMetadata}
-                master={master}
-                allTimeTotalsByProjectKey={allTimeTotalsByProjectKey}
-              />
-            ))
+          {master && fundingDataSortedAndFiltered && (
+            fundingDataSortedAndFiltered.filter(
+              (fundingRow) => {
+                if (fundingEpoch === 0)
+                  return true;
+
+                return projectMetadataData && projectMetadataData[fundingRow.project_key] !== undefined
+              }
+            ).map((fundingRow, index) => {
+              const project_key = fundingRow.project_key;
+              const lastEpoch = projectMetadataData ? Object.keys(projectMetadataData[project_key]).filter(e => e != "all").map(e => parseInt(e)).sort((a, b) => b - a)[0] : 0;
+              const lastEpochProjectMetadata = projectMetadataData && projectMetadataData[project_key] && projectMetadataData[project_key][lastEpoch] ? projectMetadataData[project_key][lastEpoch] : {};
+              const project: {
+                project_key: string;
+                owner_project: string;
+                project_metadata: any;
+                address: string;
+                donors: number;
+                allocated: number;
+                matched: number;
+                total: number;
+                all_time_total: number;
+                last_funding_epoch: string;
+              } = {
+                project_key: project_key,
+                owner_project: projectMetadataData && projectMetadataData[fundingRow.project_key] && projectMetadataData[fundingRow.project_key][Epochs[fundingEpoch].epoch] ? projectMetadataData[fundingRow.project_key][Epochs[fundingEpoch].epoch].name : "",
+                project_metadata: projectMetadataData && projectMetadataData[fundingRow.project_key] && projectMetadataData[fundingRow.project_key][Epochs[fundingEpoch].epoch] ? projectMetadataData[fundingRow.project_key][Epochs[fundingEpoch].epoch] : lastEpochProjectMetadata,
+                address: projectMetadataData && projectMetadataData[fundingRow.project_key][Epochs[fundingEpoch].epoch] ? projectMetadataData[fundingRow.project_key][Epochs[fundingEpoch].epoch].address : lastEpochProjectMetadata.address || "",
+                donors: fundingRow.donor_counts[Epochs[fundingEpoch].epoch] || 0,
+                allocated: fundingRow.allocations[Epochs[fundingEpoch].epoch] || 0,
+                matched: fundingRow.matched_rewards[Epochs[fundingEpoch].epoch] || 0,
+                total: fundingRow.allocations[Epochs[fundingEpoch].epoch] || 0 + fundingRow.matched_rewards[Epochs[fundingEpoch].epoch] || 0,
+                all_time_total: 0,
+                last_funding_epoch: lastEpoch.toString(),
+              }
+
+              return (
+                <OctantTableRow
+                  key={index}
+                  row={project}
+
+                  fundingEpoch={fundingEpoch}
+                  // lastFundingEpoch={Epochs[Epochs.length - 1].epoch}
+                  project_key={fundingRow.project_key}
+                // projectIndex={index}
+                // setCurrentEpoch={setCurrentEpoch}
+                // ProjectsMetadata={ProjectsMetadata}
+                // master={master}
+                // allTimeTotalsByProjectKey={allTimeTotalsByProjectKey}
+                />
+              );
+            })
           )}
         </VerticalScrollContainer>
       </HorizontalScrollContainer>
-    </>
+    </div>
+  );
+}
+
+type OctantCircleChart = {
+  title: string;
+  epoch: string;
+  communityData: any;
+  valuePrefix: string;
+};
+
+const OctantCircleChart = ({ title, epoch, communityData, valuePrefix }: OctantCircleChart) => {
+  return (
+    <CircleChart
+      title={title}
+      data={[
+        {
+          label: "kept by wallets",
+          value: communityData ? communityData.reduce((acc, user) => acc + user.budget_amounts[
+            epoch
+          ] - user.allocation_amounts[epoch], 0) : 0,
+          className: "kept-by-wallets",
+        },
+        {
+          label: "allocated to projects",
+          value: communityData ? communityData.reduce((acc, user) => acc + user.allocation_amounts[epoch], 0) : 0,
+          className: "allocated-to-projects",
+        }
+      ]}
+      valuePrefix="Ξ"
+    />
   );
 }
 
 
+type ExpandingButtonMenuProps = {
+  button: {
+    label: string;
+    icon: string;
+    showIconBackground?: boolean;
+    animateIcon?: boolean;
+  };
+  items: {
+    label: string;
+    icon: string;
+    href: string;
+  }[];
+  className?: string;
+};
+
+
+const ExpandingButtonMenu = ({
+  button,
+  items,
+  className,
+}: ExpandingButtonMenuProps) => {
+
+  const isMobile = useMediaQuery("(max-width: 640px)");
+  return (
+    <div
+      className={`absolute delay-0 hover:delay-300 group/jump flex flex-col cursor-pointer hover:top-[10px] hover:left-[5px] hover:right-[5px] transition-all duration-300 ${className}`}
+    >
+      <div
+        className="!z-[15] group-hover/jump:!z-[25] transition-[z-index] delay-100 group-hover/jump:delay-0 w-full flex items-center h-[36px] gap-x-[8px] pl-[6px] pr-[10px] rounded-full dark:bg-[#263130] bg-forest-50"
+        onMouseEnter={() => {
+          track(`hovered ${button.label} button`, {
+            location: isMobile ? `mobile Chain page` : `desktop Chain page`,
+            page: window.location.pathname,
+          });
+        }}
+      >
+        <div
+          className={`${button.showIconBackground &&
+            "bg-white dark:bg-forest-1000 relative "
+            } rounded-full w-[25px] h-[25px] p-[5px]`}
+        >
+          <Icon
+            icon={button.icon}
+            className={`w-[15px] h-[15px] ${button.animateIcon &&
+              "transition-transform duration-300 transform delay-0 group-hover/jump:delay-300 group-hover/jump:rotate-90"
+              }`}
+          />
+          <Icon
+            icon={"gtp:circle-arrow"}
+            className={`w-[4px] h-[9px] absolute top-2 right-0 transition-transform delay-0 group-hover/jump:delay-300 duration-500 group-hover/jump:rotate-90 ${button.showIconBackground ? "block" : "hidden"
+              }`}
+            style={{
+              transformOrigin: "-8px 4px",
+            }}
+          />
+        </div>
+        <div className="whitespace-nowrap text-[14px] font-semibold lg:leading-normal leading-tight">
+          {button.label}
+        </div>
+      </div>
+      <div className="absolute !z-[11] group-hover/jump:!z-[21] delay-0 group-hover/jump:delay-300 overflow-hidden whitespace-nowrap  max-h-0 transition-all duration-300 left-0 right-0 top-[16px] bg-white dark:bg-[#151A19] pb-[0px] rounded-b-[22px] group-hover/jump:max-h-[300px] group-hover/jump:pt-[24px] group-hover/jump:pb-[10px] group-hover/jump:shadow-lg group-hover/jump:dark:shadow-[0px_4px_46.2px_0px_#000000]">
+        {items.map((item: { label: string; icon: string; href: string }) => (
+          <Link
+            href={item.href}
+            key={item.label}
+            rel="noreferrer"
+            target="_blank"
+            onClick={(e) => {
+              track(`clicked ${item.label} link`, {
+                location: isMobile
+                  ? `mobile Chain page`
+                  : `desktop Chain page`,
+                page: window.location.pathname,
+              });
+              if (item.href.startsWith("#")) {
+                e.preventDefault();
+                document.querySelector(item.href)?.scrollIntoView({
+                  behavior: "smooth",
+                });
+              }
+            }}
+            className="whitespace-nowrap flex items-center gap-x-[10px] h-[32px] font-medium text-sm px-4 py-2 group-hover:w-full w-0 transition-[width] duration-100 ease-in-out hover:bg-forest-50 dark:hover:bg-forest-900"
+          >
+            <div className="w-4 h-4">
+              <Icon icon={item.icon} className="w-4 h-4" />
+            </div>
+            <div>{item.label}</div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const SearchIcon = () => (
+  <svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g clipPath="url(#clip0_11948_38516)">
+      <path fillRule="evenodd" clipRule="evenodd" d="M17.8939 8.8C17.8939 13.6601 13.9541 17.6 9.09395 17.6C4.23384 17.6 0.293945 13.6601 0.293945 8.8C0.293945 3.93989 4.23384 0 9.09395 0C13.9541 0 17.8939 3.93989 17.8939 8.8ZM9.09395 15.2C12.6286 15.2 15.4939 12.3346 15.4939 8.8C15.4939 5.26538 12.6286 2.4 9.09395 2.4C5.55932 2.4 2.69395 5.26538 2.69395 8.8C2.69395 12.3346 5.55932 15.2 9.09395 15.2Z" fill="url(#paint0_linear_11948_38516)" />
+      <circle cx="9.04395" cy="8.75" r="5.75" fill="url(#paint1_linear_11948_38516)" />
+      <path fillRule="evenodd" clipRule="evenodd" d="M23.4577 23.2927C23.0672 23.6833 22.4341 23.6833 22.0435 23.2927L14.0009 15.2501C13.6104 14.8596 13.6104 14.2264 14.0009 13.8359L14.1298 13.707C14.5204 13.3164 15.1535 13.3164 15.5441 13.707L23.5867 21.7496C23.9772 22.1401 23.9772 22.7733 23.5867 23.1638L23.4577 23.2927Z" fill="url(#paint2_linear_11948_38516)" />
+    </g>
+    <defs>
+      <linearGradient id="paint0_linear_11948_38516" x1="9.09395" y1="0" x2="20.9584" y2="16.6802" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#FE5468" />
+        <stop offset="1" stopColor="#FFDF27" />
+      </linearGradient>
+      <linearGradient id="paint1_linear_11948_38516" x1="9.04395" y1="14.5" x2="9.04395" y2="3" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#10808C" />
+        <stop offset="1" stopColor="#1DF7EF" />
+      </linearGradient>
+      <linearGradient id="paint2_linear_11948_38516" x1="18.7938" y1="13.4141" x2="25.6506" y2="23.054" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#FE5468" />
+        <stop offset="1" stopColor="#FFDF27" />
+      </linearGradient>
+      <clipPath id="clip0_11948_38516">
+        <rect width="24" height="24" fill="white" transform="translate(0.293945)" />
+      </clipPath>
+    </defs>
+  </svg>
+
+);
+interface SliderProps {
+  value: number;
+  min?: number;
+  max?: number;
+  setValue: (value: number) => void;
+}
+
+const Slider: React.FC<SliderProps> = ({ value, min = 0, max = 100, setValue }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [containerMetrics, setContainerMetrics] = useState({
+    width: 0,
+    left: 0,
+  });
+
+  // Update container dimensions
+  useEffect(() => {
+    const updateMetrics = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setContainerMetrics({
+          width: rect.width,
+          left: rect.left,
+        });
+      }
+    };
+
+    updateMetrics();
+    window.addEventListener('resize', updateMetrics);
+    return () => {
+      window.removeEventListener('resize', updateMetrics);
+    };
+  }, []);
+
+  // Calculate the slider value based on clientX
+  const calculateValue = useCallback(
+    (clientX: number) => {
+      const { width, left } = containerMetrics;
+      let newValue = ((clientX - left) / width) * (max - min) + min;
+      newValue = Math.min(Math.max(newValue, min), max);
+      return Math.round(newValue);
+    },
+    [containerMetrics, min, max]
+  );
+
+  // Handle mouse and touch movement
+  const handleMove = useCallback(
+    (clientX: number) => {
+      if (isDragging) {
+        const newValue = calculateValue(clientX);
+        setValue(newValue);
+      }
+    },
+    [isDragging, calculateValue, setValue]
+  );
+
+  // Mouse event handlers
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      handleMove(e.clientX);
+    },
+    [handleMove]
+  );
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  // Touch event handlers
+  const handleTouchMove = useCallback(
+    (e: TouchEvent) => {
+      handleMove(e.touches[0].clientX);
+    },
+    [handleMove]
+  );
+
+  const handleTouchEnd = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  // Attach event listeners
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('touchmove', handleTouchMove);
+      window.addEventListener('touchend', handleTouchEnd);
+    } else {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd]);
+
+  // Handle mouse down and touch start
+  const startDrag = useCallback(
+    (clientX: number) => {
+      setIsDragging(true);
+      const newValue = calculateValue(clientX);
+      setValue(newValue);
+    },
+    [calculateValue, setValue]
+  );
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    startDrag(e.clientX);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    startDrag(e.touches[0].clientX);
+  };
+
+  // Handle keyboard interactions
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    let newValue = value;
+    const step = 1;
+
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+      newValue = Math.max(value - step, min);
+      setValue(newValue);
+      e.preventDefault();
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+      newValue = Math.min(value + step, max);
+      setValue(newValue);
+      e.preventDefault();
+    }
+  };
+
+  // Calculate thumb position percentage
+  const percentage = ((value - min) / (max - min)) * 100;
+
+  return (
+    <div className="w-full">
+      <div
+        ref={containerRef}
+        className="relative w-full h-2 bg-forest-1000 rounded-full cursor-pointer"
+        onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
+        role="slider"
+        aria-valuemin={min}
+        aria-valuemax={max}
+        aria-valuenow={value}
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+      >
+        <div
+          className="absolute top-0 left-0 h-2 bg-forest-900 rounded-full"
+          style={{ width: `${percentage}%`, transition: 'all 0.1s' }}
+        ></div>
+        <div
+          className="absolute top-1/2 left-0 transform -translate-x-1/2 -translate-y-1/2 w-4 h-2 bg-forest-800 border border-forest-800 rounded-full shadow focus:outline-none"
+          style={{
+            left: `${percentage}%`,
+            transition: isDragging ? 'none' : 'left 0.1s',
+          }}
+        ></div>
+      </div>
+      <div className="mt-2 text-center text-gray-700">Value: {value}</div>
+    </div>
+  );
+};
+
 type TableRowProps = {
-  FundingDataFilteredRow: any;
+  row: {
+    project_key: string;
+    owner_project: string;
+    project_metadata: any;
+    address: string;
+    donors: number;
+    allocated: number;
+    matched: number;
+    total: number;
+    all_time_total: number;
+    last_funding_epoch: string;
+  };
   project_key: string;
-  projectIndex: number;
-  setCurrentEpoch?: (epoch: EpochData) => void;
-  lastFundingEpoch: number;
-  ProjectsMetadata: any;
-  master: MasterResponse;
+  // projectIndex: number;
+  // setCurrentEpoch?: (epoch: EpochData) => void;
+  // lastFundingEpoch: string;
+  // ProjectsMetadata: any;
+  // master: MasterResponse;
   fundingEpoch: number;
-  allTimeTotalsByProjectKey: any;
+  // allTimeTotalsByProjectKey: any;
 };
 
 const OctantTableRow = ({
-  FundingDataFilteredRow,
+  row,
   project_key,
-  projectIndex,
-  setCurrentEpoch,
-  lastFundingEpoch,
-  ProjectsMetadata,
-  master,
+  // projectIndex,
+  // setCurrentEpoch,
+  // lastFundingEpoch,
+  // ProjectsMetadata,
+  // master,
   fundingEpoch,
-  allTimeTotalsByProjectKey
+  // allTimeTotalsByProjectKey
 }: TableRowProps) => {
   return (
     <GridTableRow
@@ -1981,8 +1679,8 @@ const OctantTableRow = ({
     >
       <div className="w-[26px] h-[18px] px-[4px]">
         <Image
-          src={`https://ipfs.io/ipfs/${ProjectsMetadata[project_key].profileImageMedium}`}
-          alt={ProjectsMetadata[project_key].name}
+          src={`https://ipfs.io/ipfs/${row.project_metadata.profileImageMedium}`}
+          alt={row.owner_project}
           width={18}
           height={18}
           className="rounded-full"
@@ -1990,22 +1688,22 @@ const OctantTableRow = ({
       </div>
       <div className="flex justify-between">
         <div>
-          {ProjectsMetadata[project_key].name ? (
-            ProjectsMetadata[project_key].name
+          {row.project_metadata.name ? (
+            row.project_metadata.name
           ) : (
             <div className="flex h-full items-center gap-x-[3px] text-[#5A6462] text-[10px]">
               Not Available
             </div>
           )}
         </div>
-        {ProjectsMetadata[project_key] && (
+        {row.project_metadata && (
           <div className="flex gap-x-[5px]">
             <div className="flex items-center gap-x-[5px]">
               <div className="h-[15px] w-[15px]">
-                {ProjectsMetadata[project_key].websiteUrl && (
+                {row.project_metadata.websiteUrl && (
                   <Link
                     href={
-                      ProjectsMetadata[project_key].websiteUrl
+                      row.project_metadata.websiteUrl
                     }
                     target="_blank"
                     className="group flex items-center gap-x-[5px] text-xs"
@@ -2020,7 +1718,7 @@ const OctantTableRow = ({
               <div className="h-[15px] w-[15px]">
                 <Link
                   href={
-                    `https://octant.app/project/${fundingEpoch === 0 ? lastFundingEpoch : fundingEpoch}/${ProjectsMetadata[project_key].address}`
+                    `https://octant.app/project/${fundingEpoch === 0 ? row.last_funding_epoch : fundingEpoch}/${row.project_metadata.address}`
                   }
                   target="_blank"
                   className="group flex items-center gap-x-[5px] text-xs"
@@ -2055,13 +1753,13 @@ const OctantTableRow = ({
             className="truncate transition-all duration-300"
             style={{ direction: 'ltr' }}
             onClick={() => {
-              navigator.clipboard.writeText(FundingDataFilteredRow.address)
+              navigator.clipboard.writeText(row.address);
             }}
           >
-            {FundingDataFilteredRow.address.slice(0, FundingDataFilteredRow.address.length - 6)}
+            {row.address.slice(0, row.address.length - 6)}
           </div>
           <div className="transition-all duration-300">
-            {FundingDataFilteredRow.address.slice(-6)}
+            {row.address.slice(-6)}
           </div>
           <div className="pl-[10px] hidden 3xl:flex">
 
@@ -2072,22 +1770,22 @@ const OctantTableRow = ({
       <div className="flex justify-end item-center gap-x-2">
         <div className="flex justify-end item-center gap-x-2">
           <div className="flex items-center leading-[1] font-inter">
-            {FundingDataFilteredRow.donor}
+            {row.donors}
           </div>
           <div className="w-[15px] h-[15px] flex items-center justify-center">
-            {FundingDataFilteredRow.donor < 50 && (
+            {row.donors < 50 && (
               <Icon
                 icon={"fluent:person-20-filled"}
                 className="w-[15px] h-[15px] text-forest-900/30 dark:text-forest-500/30 fill-current"
               />
             )}
-            {FundingDataFilteredRow.donor >= 50 && FundingDataFilteredRow.donor < 100 && (
+            {row.donors >= 50 && row.donors < 100 && (
               <Icon
                 icon={"fluent:people-20-filled"}
                 className="w-[15px] h-[15px] text-forest-900/30 dark:text-forest-500/30 fill-current"
               />
             )}
-            {FundingDataFilteredRow.donor >= 100 && (
+            {row.donors >= 100 && (
               <Icon
                 icon={"fluent:people-community-20-filled"}
                 className="w-[15px] h-[15px] text-forest-900/30 dark:text-forest-500/30 fill-current"
@@ -2102,26 +1800,26 @@ const OctantTableRow = ({
         {/* {["REWARD_ALLOCATION", "FINALIZED"].includes(currentEpoch.state) && currentEpochProject && ( */}
         <div className="relative flex items-center gap-x-2 pr-0.5">
           <div className="leading-[1.2] font-inter">
-            {(FundingDataFilteredRow.allocated).toFixed(2)}{" "}
+            {(row.allocated).toFixed(2)}{" "}
             <span className="opacity-60 text-[0.55rem]">ETH</span>
           </div>
         </div>
       </div>
       <div className="flex justify-end">
         <div
-          className={`leading-[1.2] font-inter ${FundingDataFilteredRow.matched <= 0 && "opacity-30"
+          className={`leading-[1.2] font-inter ${row.matched <= 0 && "opacity-30"
             }`}
         >
-          {(FundingDataFilteredRow.matched).toFixed(2)}{" "}
+          {(row.matched).toFixed(2)}{" "}
           <span className="opacity-60 text-[0.55rem]">ETH</span>
         </div>
       </div>
       <div className="flex justify-end">
         <div
-          className={`leading-[1.2] font-inter ${FundingDataFilteredRow.total <= 0 && "opacity-30"
+          className={`leading-[1.2] font-inter ${row.total <= 0 && "opacity-30"
             }`}
         >
-          {(FundingDataFilteredRow.total).toFixed(2)}{" "}
+          {(row.total).toFixed(2)}{" "}
           <span className="opacity-60 text-[0.55rem]">ETH</span>
         </div>
       </div>
@@ -2138,32 +1836,3 @@ const OctantTableRow = ({
   );
 
 };
-
-
-const SearchIcon = () => (
-  <svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <g clipPath="url(#clip0_11948_38516)">
-      <path fillRule="evenodd" clipRule="evenodd" d="M17.8939 8.8C17.8939 13.6601 13.9541 17.6 9.09395 17.6C4.23384 17.6 0.293945 13.6601 0.293945 8.8C0.293945 3.93989 4.23384 0 9.09395 0C13.9541 0 17.8939 3.93989 17.8939 8.8ZM9.09395 15.2C12.6286 15.2 15.4939 12.3346 15.4939 8.8C15.4939 5.26538 12.6286 2.4 9.09395 2.4C5.55932 2.4 2.69395 5.26538 2.69395 8.8C2.69395 12.3346 5.55932 15.2 9.09395 15.2Z" fill="url(#paint0_linear_11948_38516)" />
-      <circle cx="9.04395" cy="8.75" r="5.75" fill="url(#paint1_linear_11948_38516)" />
-      <path fillRule="evenodd" clipRule="evenodd" d="M23.4577 23.2927C23.0672 23.6833 22.4341 23.6833 22.0435 23.2927L14.0009 15.2501C13.6104 14.8596 13.6104 14.2264 14.0009 13.8359L14.1298 13.707C14.5204 13.3164 15.1535 13.3164 15.5441 13.707L23.5867 21.7496C23.9772 22.1401 23.9772 22.7733 23.5867 23.1638L23.4577 23.2927Z" fill="url(#paint2_linear_11948_38516)" />
-    </g>
-    <defs>
-      <linearGradient id="paint0_linear_11948_38516" x1="9.09395" y1="0" x2="20.9584" y2="16.6802" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#FE5468" />
-        <stop offset="1" stopColor="#FFDF27" />
-      </linearGradient>
-      <linearGradient id="paint1_linear_11948_38516" x1="9.04395" y1="14.5" x2="9.04395" y2="3" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#10808C" />
-        <stop offset="1" stopColor="#1DF7EF" />
-      </linearGradient>
-      <linearGradient id="paint2_linear_11948_38516" x1="18.7938" y1="13.4141" x2="25.6506" y2="23.054" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#FE5468" />
-        <stop offset="1" stopColor="#FFDF27" />
-      </linearGradient>
-      <clipPath id="clip0_11948_38516">
-        <rect width="24" height="24" fill="white" transform="translate(0.293945)" />
-      </clipPath>
-    </defs>
-  </svg>
-
-);

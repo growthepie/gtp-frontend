@@ -74,3 +74,12 @@ export const FeesURLs = {
   table: "https://api.growthepie.xyz/v1/fees/table.json",
   linechart: "https://api.growthepie.xyz/v1/fees/linechart.json",
 };
+
+export const OctantURLs = {
+  summary: "https://api.growthepie.xyz/v1/trackers/octant/summary.json",
+  community: "https://api.growthepie.xyz/v1/trackers/octant/community.json",
+  project_funding:
+    "https://api.growthepie.xyz/v1/trackers/octant/project_funding.json",
+  project_metadata:
+    "https://api.growthepie.xyz/v1/trackers/octant/project_metadata.json",
+};
