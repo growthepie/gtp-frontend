@@ -189,51 +189,59 @@ export default function Donations() {
             You can donate anytime by sending tokens to one of our following
             wallets:
           </div>
-          <div className="flex gap-x-[5px]">
-            {QRCodes.map((CardData, index) => (
-              <div
-                className={`flex gap-x-[10px] p-[5px] border-[2px] rounded-[17px] border-[#CDD8D3] h-[82px] items-center ${
-                  CardData.wallet ? "w-[215px]" : "w-[200px]"
-                }`}
-                key={CardData.key}
-              >
-                <div className="min-w-[64px] min-h-[64px] max-w-[64px] max-h-[64px] relative">
-                  <Image
-                    src={CardData.qrImage}
-                    alt="QR Code"
-                    width={64}
-                    height={64}
-                  />
-                  <div className="absolute top-0 left-0 w-[64px] h-[64px] bg-opacity-50 flex items-center justify-center" />
-                  <div className="absolute top-[22px] left-[22px] w-[21px] h-[21px] flex items-center justify-center bg-[#1F2726] ">
-                    <Icon
-                      icon={CardData.icon.path}
-                      color={CardData.icon.color}
-                      className="w-[15px] h-[15px]"
+
+          <HorizontalScrollContainer
+            includeMargin={false}
+            forcedMinWidth={QRCodes.length * 215}
+            className="w-full"
+          >
+            <div className="flex gap-x-[5px]">
+              {QRCodes.map((CardData, index) => (
+                <div
+                  className={`flex gap-x-[10px] p-[5px] border-[2px] rounded-[17px] border-[#CDD8D3] h-[82px] items-center ${
+                    CardData.wallet ? "w-[215px]" : "w-[200px]"
+                  }`}
+                  key={CardData.key}
+                >
+                  <div className="min-w-[64px] min-h-[64px] max-w-[64px] max-h-[64px] relative">
+                    <Image
+                      src={CardData.qrImage}
+                      alt="QR Code"
+                      width={64}
+                      height={64}
                     />
+                    <div className="absolute top-0 left-0 w-[64px] h-[64px] bg-opacity-50 flex items-center justify-center" />
+                    <div className="absolute top-[22px] left-[22px] w-[21px] h-[21px] flex items-center justify-center bg-[#1F2726] ">
+                      <Icon
+                        icon={CardData.icon.path}
+                        color={CardData.icon.color}
+                        className="w-[15px] h-[15px]"
+                      />
+                    </div>
+                  </div>
+                  <div className="w-full h-full">
+                    {CardData.wallet ? (
+                      <div className="flex flex-col justify-start text-[14px] w-full h-full items-center text-left pr-[5px]">
+                        <div>
+                          Donate to our <b>{CardData.key}</b> Wallet
+                        </div>
+                        <div className="w-full mt-[10px] text-[9px]">
+                          {CardData.address}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-[14px] w-full h-full flex items-center justify-center text-left pl-[5px]">
+                        <div>
+                          Donate to our <b>{CardData.key}</b> Page
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="w-full h-full">
-                  {CardData.wallet ? (
-                    <div className="flex flex-col justify-start text-[14px] w-full h-full items-center text-left pr-[5px]">
-                      <div>
-                        Donate to our <b>{CardData.key}</b> Wallet
-                      </div>
-                      <div className="w-full mt-[10px] text-[9px]">
-                        {CardData.address}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-[14px] w-full h-full flex items-center justify-center text-left pl-[5px]">
-                      <div>
-                        Donate to our <b>{CardData.key}</b> Page
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </HorizontalScrollContainer>
+
           <div className="text-[20px] font-bold">
             Active Public Goods Funding Rounds
           </div>
@@ -244,7 +252,7 @@ export default function Donations() {
           </div>
           <HorizontalScrollContainer
             includeMargin={false}
-            forcedMinWidth={805}
+            forcedMinWidth={950}
             className="w-full flex flex-col "
           >
             <div className="relative w-full h-full px-[5px] -mb-[5px]">
@@ -353,7 +361,7 @@ export default function Donations() {
           </div>
           <HorizontalScrollContainer
             includeMargin={false}
-            forcedMinWidth={805}
+            forcedMinWidth={950}
             className="w-full flex flex-col "
           >
             <div className="relative w-full h-full px-[15px] -mb-[10px] ">
@@ -409,7 +417,7 @@ export default function Donations() {
           </div>
           <HorizontalScrollContainer
             includeMargin={false}
-            forcedMinWidth={805}
+            forcedMinWidth={950}
             className="w-full flex flex-col "
           >
             <div className="relative w-full h-full px-[15px] -mb-[10px] ">
@@ -474,7 +482,7 @@ export default function Donations() {
             We received grants between 50k - 150k USD from the following
             partners, communities or foundations.
           </div>
-          <div className="w-full flex items-center justify-between px-[23px] ">
+          <div className="w-full flex items-center justify-between md:px-[23px] px-0 gap-x-[20px] md:gap-x-[0px]">
             {Supporters.map((s) => (
               <Link
                 key={s.name}
