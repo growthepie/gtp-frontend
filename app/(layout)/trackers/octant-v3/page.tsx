@@ -1652,7 +1652,7 @@ export default function Page() {
                 project_metadata: any;
                 address: string;
                 donors: number;
-                allocated: number;
+                allocation: number;
                 matched: number;
                 total: number;
                 all_time_total: number;
@@ -1664,9 +1664,9 @@ export default function Page() {
                 //@ts-ignore
                 address: projectMetadataData && projectMetadataData[fundingRow.project_key][Epochs[fundingEpoch].epoch] ? projectMetadataData[fundingRow.project_key][Epochs[fundingEpoch].epoch].address : lastEpochProjectMetadata.address || "",
                 donors: fundingRow.donor_counts[Epochs[fundingEpoch].epoch] || 0,
-                allocated: fundingRow.allocations[Epochs[fundingEpoch].epoch] || 0,
+                allocation: fundingRow.allocations[Epochs[fundingEpoch].epoch] || 0,
                 matched: fundingRow.matched_rewards[Epochs[fundingEpoch].epoch] || 0,
-                total: fundingRow.allocations[Epochs[fundingEpoch].epoch] || 0 + fundingRow.matched_rewards[Epochs[fundingEpoch].epoch] || 0,
+                total: fundingRow.total[Epochs[fundingEpoch].epoch] || 0 + fundingRow.matched_rewards[Epochs[fundingEpoch].epoch] || 0,
                 all_time_total: 0,
                 last_funding_epoch: lastEpoch.toString(),
               }
@@ -2030,7 +2030,7 @@ type TableRowProps = {
     project_metadata: any;
     address: string;
     donors: number;
-    allocated: number;
+    allocation: number;
     matched: number;
     total: number;
     all_time_total: number;
@@ -2241,7 +2241,7 @@ const OctantTableRow = ({
         {/* {["REWARD_ALLOCATION", "FINALIZED"].includes(currentEpoch.state) && currentEpochProject && ( */}
         <div className="relative flex items-center gap-x-2 pr-0.5">
           <div className="leading-[1.2] font-inter">
-            {(row.allocated).toFixed(2)}{" "}
+            {(row.allocation).toFixed(2)}{" "}
             <span className="opacity-60 text-[0.55rem]">ETH</span>
           </div>
         </div>

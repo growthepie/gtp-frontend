@@ -448,6 +448,7 @@ type ProjectFundingResponse = {
   project_key: string
   allocations: { [epoch: string]: number }
   matched_rewards: { [epoch: string]: number }
+  total: { [epoch: string]: number }
   donor_counts: { [epoch: string]: number }
   donor_lists: { [epoch: string]: string[] }
 }[]
