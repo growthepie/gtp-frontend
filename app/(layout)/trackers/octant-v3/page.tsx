@@ -32,6 +32,7 @@ import useSWR from "swr";
 import dynamic from 'next/dynamic';
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { OctantProjectMetadata, OctantProjectMetadataOrNone, useOctantData } from "./OctantDataProvider";
+import QuestionAnswer from "@/components/layout/QuestionAnswer";
 
 const CircleChart = dynamic(() => import('../../../../components/layout/CircleChart'), {
   loading: () => <p>Loading...</p>,
@@ -132,7 +133,7 @@ export default function Page() {
     },
     ProjectFunding: {
       label: "Project Funding",
-      icon: "gtp:gtp-project-funding",
+      icon: "gtp:gtp-project",
       id: "project-funding",
       ref: useRef<HTMLDivElement>(null),
     },
@@ -201,12 +202,12 @@ export default function Page() {
                       [
                         {
                           label: "Community",
-                          icon: "gtp:gtp-fundamentals",
+                          icon: "gtp:gtp-users",
                           href: "#Community",
                         },
                         {
                           label: "Project Funding",
-                          icon: "gtp:gtp-fundamentals",
+                          icon: "gtp:gtp-project",
                           href: "#ProjectFunding",
                         }
                       ]
@@ -537,8 +538,8 @@ export default function Page() {
           ref={JumpToSections.Community.ref}
           id="Community"
         >
-          <div className="w-9 h-9  ">
-            <Icon icon={`gtp:gtp-users`} className="w-9 h-9" />
+          <div className="w-[36px] h-[36px]">
+            <Icon icon="gtp:gtp-users" className="w-[36px] h-[36px]" />
           </div>
           <Heading
             className="leading-[120%] text-[20px] md:text-[30px] break-inside-avoid "
@@ -1461,26 +1462,8 @@ export default function Page() {
           ref={JumpToSections.ProjectFunding.ref}
           id="ProjectFunding"
         >
-          <div className="w-9 h-9  ">
-            <svg width="37" height="36" viewBox="0 0 37 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <g clipPath="url(#clip0_9453_40033)">
-                <path fillRule="evenodd" clipRule="evenodd" d="M8.69395 0C4.1033 0.000608782 0.373027 3.68373 0.296289 8.25623L0.293945 8.25938V30C0.293945 32.4 2.69395 36 6.29395 36H36.2939V7.2H9.89395V0H8.69395C8.69433 0 8.69357 0 8.69395 0ZM7.49395 2.52025C7.07699 2.60497 6.67574 2.73294 6.29508 2.89925C4.176 3.82512 2.69508 5.93962 2.69508 8.4L2.69395 24.1224C3.95416 22.8358 5.62477 21.9529 7.49395 21.6852V2.52025ZM8.69508 24C7.84176 24 7.03004 24.1781 6.29508 24.4993C4.176 25.4251 2.69508 27.5396 2.69508 30C2.69508 30.5035 2.99958 31.4618 3.75013 32.3196C4.46096 33.132 5.34529 33.6 6.29395 33.6H33.8939V9.6H9.89395V24H8.69508Z" fill="url(#paint0_linear_9453_40033)" />
-                <path fillRule="evenodd" clipRule="evenodd" d="M14.7939 14C13.4132 14 12.2939 15.1193 12.2939 16.5V26.5C12.2939 27.8807 13.4132 29 14.7939 29H24.7939C26.1747 29 27.2939 27.8807 27.2939 26.5V16.5C27.2939 15.1193 26.1747 14 24.7939 14H14.7939ZM20.8152 17.1784C20.4124 16.2739 19.1755 16.2739 18.7727 17.1784L18.1488 18.5795C17.9849 18.9477 17.6491 19.2013 17.2615 19.2495L15.7867 19.4333C14.8346 19.552 14.4524 20.7747 15.1555 21.4523L16.2448 22.5021C16.531 22.7779 16.6593 23.1882 16.5837 23.5862L16.2961 25.1009C16.1104 26.0787 17.1111 26.8344 17.9485 26.3488L19.2456 25.5964C19.5864 25.3987 20.0015 25.3987 20.3423 25.5964L21.6394 26.3488C22.4768 26.8344 23.4775 26.0787 23.2918 25.1009L23.0042 23.5862C22.9286 23.1882 23.0569 22.7779 23.3431 22.5021L24.4324 21.4523C25.1355 20.7747 24.7533 19.552 23.8012 19.4333L22.3264 19.2495C21.9388 19.2013 21.603 18.9477 21.4391 18.5795L20.8152 17.1784Z" fill="url(#paint1_linear_9453_40033)" />
-              </g>
-              <defs>
-                <linearGradient id="paint0_linear_9453_40033" x1="18.2939" y1="0" x2="18.2939" y2="36" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#10808C" />
-                  <stop offset="1" stopColor="#1DF7EF" />
-                </linearGradient>
-                <linearGradient id="paint1_linear_9453_40033" x1="19.7939" y1="14" x2="29.9057" y2="28.2161" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#FE5468" />
-                  <stop offset="1" stopColor="#FFDF27" />
-                </linearGradient>
-                <clipPath id="clip0_9453_40033">
-                  <rect width="36" height="36" fill="white" transform="translate(0.293945)" />
-                </clipPath>
-              </defs>
-            </svg>
+          <div className="w-[36px] h-[36px]">
+            <Icon icon="gtp:gtp-project" className="w-[36px] h-[36px]" />
           </div>
           <Heading
             className="leading-[120%] text-[20px] md:text-[30px] break-inside-avoid "
@@ -1693,6 +1676,35 @@ export default function Page() {
           )}
         </VerticalScrollContainer>
       </HorizontalScrollContainer>
+      <Container className="@container">
+
+        <div
+          className="flex gap-x-[8px] items-center pb-[15px] scroll-mt-8 pt-[60px]"
+          ref={JumpToSections.ProjectFunding.ref}
+          id="ProjectFunding"
+        >
+          <div className="w-[36px] h-[36px]">
+            <Icon icon="gtp:gtp-blockspace" className="w-[36px] h-[36px]" />
+          </div>
+          <Heading
+            className="leading-[120%] text-[20px] md:text-[30px] break-inside-avoid "
+            as="h2"
+          >
+            Octant Explained
+          </Heading>
+        </div>
+        <div></div>
+        <QuestionAnswer
+          question="What do you see here?"
+          answer={
+            <div className="flex flex-col gap-y-[15px]">
+              <div>Octant is a platform developed by the Golem Foundation that allows the Ethereum community to participate in decentralized governance and allocate a portion of the Foundation&apos;s staking rewards to public goods projects.</div>
+              <div>In the Community section, you can see the a breakdown of User activity in All Epochs or use the arrows to view individual Epoch data.</div>
+              <div>In the Project Funding section, you can see the projects that have participated in All epochs or use the arrows to view individual Epoch data.</div>
+            </div>
+          }
+        />
+      </Container>
 
     </div>
 
