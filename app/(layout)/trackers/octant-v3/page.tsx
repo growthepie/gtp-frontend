@@ -31,7 +31,7 @@ import { MasterURL, OctantURLs } from "@/lib/urls";
 import useSWR from "swr";
 import dynamic from 'next/dynamic';
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { ProjectsByWebsiteResponse, useOctantData } from "./OctantDataProvider";
+import { OctantProjectMetadata, OctantProjectMetadataOrNone, useOctantData } from "./OctantDataProvider";
 
 const CircleChart = dynamic(() => import('../../../../components/layout/CircleChart'), {
   loading: () => <p>Loading...</p>,
@@ -105,6 +105,8 @@ export default function Page() {
     setFundingTableSort,
 
     fundingDataSortedAndFiltered,
+
+    latestProjectMetadatas,
   } = useOctantData();
 
 
@@ -896,7 +898,7 @@ export default function Page() {
                                               {projectMetadataData && projectMetadataData[project_key] && Object.values(projectMetadataData[project_key]).slice(1).map((md) => (
                                                 <Image
                                                   key={md.address}
-                                                  src={`https://ipfs.io/ipfs/${md.profileImageMedium}`}
+                                                  src={`https://ipfs.io/ipfs/${md.profile_image_medium}`}
                                                   alt={md.name}
                                                   width={24}
                                                   height={24}
@@ -910,7 +912,7 @@ export default function Page() {
                                             <div className="w-6 h-6 border border-forest-900/20 dark:border-forest-500/20 rounded-full overflow-hidden">
                                               {projectMetadataData && projectMetadataData[project_key][Epochs[communityEpoch].epoch] && (
                                                 <Image
-                                                  src={`https://ipfs.io/ipfs/${projectMetadataData[project_key][Epochs[communityEpoch].epoch].profileImageMedium}`}
+                                                  src={`https://ipfs.io/ipfs/${projectMetadataData[project_key][Epochs[communityEpoch].epoch].profile_image_medium}`}
                                                   alt={projectMetadataData[project_key][Epochs[communityEpoch].epoch].name}
                                                   width={24}
                                                   height={24}
@@ -1369,7 +1371,7 @@ export default function Page() {
                                           {projectMetadataData && projectMetadataData[project_key] && Object.entries(projectMetadataData[project_key]).sort(([aKey, aValue], [bKey, bValue]) => (parseInt(bKey) - parseInt(aKey))).slice(1).map(([key, md]) => (
                                             <Image
                                               key={md.address}
-                                              src={`https://ipfs.io/ipfs/${md.profileImageMedium}`}
+                                              src={`https://ipfs.io/ipfs/${md.profile_image_medium}`}
                                               alt={md.name}
                                               width={24}
                                               height={24}
@@ -1383,7 +1385,7 @@ export default function Page() {
                                         <div className="w-6 h-6 border border-forest-900/20 dark:border-forest-500/20 rounded-full overflow-hidden">
                                           {projectMetadataData && projectMetadataData[project_key][Epochs[communityEpoch].epoch] && (
                                             <Image
-                                              src={`https://ipfs.io/ipfs/${projectMetadataData[project_key][Epochs[communityEpoch].epoch].profileImageMedium}`}
+                                              src={`https://ipfs.io/ipfs/${projectMetadataData[project_key][Epochs[communityEpoch].epoch].profile_image_medium}`}
                                               alt={projectMetadataData[project_key][Epochs[communityEpoch].epoch].name}
                                               width={24}
                                               height={24}
@@ -1634,7 +1636,7 @@ export default function Page() {
           </GridTableHeaderCell> */}
         </GridTableHeader>
         <VerticalScrollContainer height={600} className="">
-          {master && fundingDataSortedAndFiltered && (
+          {master && latestProjectMetadatas && fundingDataSortedAndFiltered && (
             fundingDataSortedAndFiltered.filter(
               (fundingRow) => {
                 if (fundingEpoch === 0)
@@ -1645,11 +1647,11 @@ export default function Page() {
             ).map((fundingRow, index) => {
               const project_key = fundingRow.project_key;
               const lastEpoch = projectMetadataData ? Object.keys(projectMetadataData[project_key]).filter(e => e != "all").map(e => parseInt(e)).sort((a, b) => b - a)[0] : 0;
-              const lastEpochProjectMetadata = projectMetadataData && projectMetadataData[project_key] && projectMetadataData[project_key][lastEpoch] ? projectMetadataData[project_key][lastEpoch] : {};
+              const lastEpochProjectMetadata = latestProjectMetadatas[project_key] || { address: "", name: "" };
               const project: {
                 project_key: string;
                 owner_project: string;
-                project_metadata: any;
+                project_metadata: OctantProjectMetadataOrNone;
                 address: string;
                 donors: number;
                 allocation: number;
@@ -2027,7 +2029,7 @@ type TableRowProps = {
   row: {
     project_key: string;
     owner_project: string;
-    project_metadata: any;
+    project_metadata: OctantProjectMetadataOrNone;
     address: string;
     donors: number;
     allocation: number;
@@ -2057,29 +2059,25 @@ const OctantTableRow = ({
   fundingEpoch,
   // allTimeTotalsByProjectKey
 }: TableRowProps) => {
-
-  const { data: ProjectsByWebsiteResponse } = useSWR<ProjectsByWebsiteResponse>(OctantURLs.projects_by_website);
-
-  if (!ProjectsByWebsiteResponse) return null;
-
   return (
     <GridTableRow
-
       gridDefinitionColumns="grid-cols-[20px,225px,minmax(125px,1600px),95px,126px,101px,89px]"
       className="group w-full text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] !pl-[5px] !pr-[15px] mb-[3px] select-none"
     >
       <div className="w-[26px] h-[18px] px-[4px]">
-        <Image
-          src={`https://ipfs.io/ipfs/${row.project_metadata.profileImageMedium}`}
-          alt={row.owner_project}
-          width={18}
-          height={18}
-          className="rounded-full"
-        />
+        {row.project_metadata && (
+          <Image
+            src={`https://ipfs.io/ipfs/${row.project_metadata.profile_image_medium}`}
+            alt={row.owner_project}
+            width={18}
+            height={18}
+            className="rounded-full"
+          />
+        )}
       </div>
       <div className="flex justify-between select-none">
         <div>
-          {row.project_metadata.name ? (
+          {row.project_metadata?.name ? (
             row.project_metadata.name
           ) : (
             <div className="flex h-full items-center gap-x-[3px] text-[#5A6462] text-[10px]">
@@ -2093,10 +2091,10 @@ const OctantTableRow = ({
 
             <div className="flex items-center gap-x-[5px]">
               <div className="h-[15px] w-[15px]">
-                {row.project_metadata.websiteUrl && (
+                {row.project_metadata.website_url && (
                   <Link
                     href={
-                      row.project_metadata.websiteUrl
+                      row.project_metadata.website_url
                     }
                     target="_blank"
                     className="group flex items-center gap-x-[5px] text-xs"
@@ -2110,10 +2108,10 @@ const OctantTableRow = ({
               </div>
               <>
                 <div className="h-[15px] w-[15px]">
-                  {ProjectsByWebsiteResponse[row.project_metadata.websiteUrl] && ProjectsByWebsiteResponse[row.project_metadata.websiteUrl].twitter && (
+                  {row.project_metadata.twitter && (
                     <Link
                       href={
-                        `https://x.com/${ProjectsByWebsiteResponse[row.project_metadata.websiteUrl].twitter}`
+                        `https://x.com/${row.project_metadata.twitter}`
                       }
                       target="_blank"
                       className="group flex items-center gap-x-[5px] text-xs"
@@ -2126,9 +2124,9 @@ const OctantTableRow = ({
                   )}
                 </div>
                 <div className="h-[15px] w-[15px]">
-                  {ProjectsByWebsiteResponse[row.project_metadata.websiteUrl] && ProjectsByWebsiteResponse[row.project_metadata.websiteUrl].main_github && (
+                  {row.project_metadata.main_github && (
                     <Link
-                      href={`https://github.com/${ProjectsByWebsiteResponse[row.project_metadata.websiteUrl].main_github}`}
+                      href={`https://github.com/${row.project_metadata.main_github}`}
                       target="_blank"
                       className="group flex items-center gap-x-[5px] text-xs"
                     >

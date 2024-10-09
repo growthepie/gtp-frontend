@@ -62,6 +62,7 @@ export const OctantDataContext = createContext<{
   setFundingTableSort: (sort: { metric: string, sortOrder: string }) => void;
 
   fundingDataSortedAndFiltered: ProjectFundingResponse;
+  latestProjectMetadatas: { [project_key: string]: OctantProjectMetadata } | null;
 }>({
   Epochs: [],
   communityEpoch: 0,
@@ -100,6 +101,7 @@ export const OctantDataContext = createContext<{
   },
   setFundingTableSort: () => { },
   fundingDataSortedAndFiltered: [],
+  latestProjectMetadatas: null,
 })
 
 export const useOctantData = () => {
@@ -351,6 +353,22 @@ export const OctantDataProvider = ({ children }) => {
   }, [projectFundingData, fundingSearch, fundingEpochString, projectKeyToName, fundingTableSort.metric, fundingTableSort.sortOrder, projectKeyToAddress]);
 
 
+  const latestProjectMetadatas = useMemo(() => {
+    if (!projectMetadataData) return null;
+
+    let latestProjectMetadatas = {};
+    for (let projectKey in projectMetadataData) {
+      const epochs = Object.keys(projectMetadataData[projectKey]).filter(epoch => epoch !== "all").map(epoch => parseInt(epoch));
+
+      let latestEpoch = Math.max(...epochs);
+
+      latestProjectMetadatas[projectKey] = projectMetadataData[projectKey][latestEpoch];
+    }
+
+    return latestProjectMetadatas;
+  }, [projectMetadataData]);
+
+
   return (
     <OctantDataContext.Provider value={{
       summaryData,
@@ -390,6 +408,7 @@ export const OctantDataProvider = ({ children }) => {
       setFundingTableSort,
 
       fundingDataSortedAndFiltered,
+      latestProjectMetadatas
     }}>
       {children}
     </OctantDataContext.Provider>
@@ -455,28 +474,34 @@ type ProjectFundingResponse = {
 
 type ProjectMetadataResponse = {
   [project_key: string]: {
-    [epoch: string]: {
-      address: string;
-      cid: string;
-      name: string;
-      introDescription: string;
-      description: string;
-      profileImageSmall: string;
-      profileImageMedium: string;
-      profileImageLarge: string;
-      websiteLabel: string;
-      websiteUrl: string;
-    }
+    [epoch: string]: OctantProjectMetadata
   }
 }
 
-
-export type ProjectsByWebsiteResponse = {
-  [website: string]: {
-    owner_project: string
-    display_name: string
-    description: string
-    main_github: string
-    twitter: string
-  }
+export type OctantProjectMetadata = {
+  address: string;
+  cid: string;
+  name: string;
+  introDescription: string;
+  description: string;
+  profile_image_small: string;
+  profile_image_medium: string;
+  profile_image_large: string;
+  website_label: string;
+  website_url: string;
+  main_github: string;
+  twitter: string;
 }
+
+export type OctantProjectMetadataOrNone = OctantProjectMetadata | null;
+
+
+// export type ProjectsByWebsiteResponse = {
+//   [website: string]: {
+//     owner_project: string
+//     display_name: string
+//     description: string
+//     main_github: string
+//     twitter: string
+//   }
+// }
