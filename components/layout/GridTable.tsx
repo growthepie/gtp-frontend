@@ -119,25 +119,25 @@ export const GridTableChainIcon = ({ origin_key }: { origin_key: string }) => {
 
 type GridTableHeaderCellProps = {
   children: React.ReactNode;
-  metric: string;
-  sort: {
+  metric?: string;
+  sort?: {
     metric: string;
     sortOrder: string;
   };
-  setSort: (sort: { metric: string; sortOrder: string }) => void;
+  setSort?: (sort: { metric: string; sortOrder: string }) => void;
   justify?: string;
   className?: string;
 };
 
 export const GridTableHeaderCell = ({ children, className, justify, metric, sort, setSort }: GridTableHeaderCellProps) => {
   let alignClass = "justify-start";
-  if (justify === "end") alignClass = "justify-end -mr-[12px]";
+  if (justify === "end") alignClass = setSort ? "justify-end -mr-[12px]" : "justify-end";
   if (justify === "center") alignClass = "justify-center";
   return (
     <div
-      className={`flex items-center ${alignClass || "justify-start"} cursor-pointer ${className}`}
+      className={`flex items-center ${alignClass || "justify-start"} ${setSort && "cursor-pointer"} ${className}`}
       onClick={() => {
-        setSort({
+        (metric && sort && setSort) && setSort({
           metric: metric,
           sortOrder:
             sort.metric === metric
@@ -149,17 +149,19 @@ export const GridTableHeaderCell = ({ children, className, justify, metric, sort
       }}
     >
       {children}
-      <Icon
-        icon={
-          sort.metric === metric && sort.sortOrder === "asc"
-            ? "feather:arrow-up"
-            : "feather:arrow-down"
-        }
-        className="w-[12px] h-[12px]"
-        style={{
-          opacity: sort.metric === metric ? 1 : 0.2,
-        }}
-      />
+      {metric && sort && (
+        <Icon
+          icon={
+            sort.metric === metric && sort.sortOrder === "asc"
+              ? "feather:arrow-up"
+              : "feather:arrow-down"
+          }
+          className="w-[12px] h-[12px]"
+          style={{
+            opacity: sort.metric === metric ? 1 : 0.2,
+          }}
+        />
+      )}
     </div>
   );
 }

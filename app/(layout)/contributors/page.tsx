@@ -107,27 +107,30 @@ export default function ContributorsPage() {
       </div>
 
       <div className="mb-[90px]">
-        <div className="grid grid-cols-2 lg:grid-cols-2 items-center justify-items-center gap-x-[45px] gap-y-[30px] mx-5">
+        <div className="grid grid-flow-col grid-rows-2 sm:grid-rows-1 items-center justify-items-center place-items-center gap-x-[45px] gap-y-[30px] mx-5">
           {Supporters.map((s) => (
             <Link
               key={s.name}
               target="_blank"
               rel="noopener noreferrer"
               href={s.url}
-              className="relative text-center"
+              className="relative text-center h-[98px] md:h-[98px] w-full flex items-center justify-center"
             // style={{
             //   width: s.width,
             //   height: s.height,
             // }}
             >
-              <Image
+              {/* <Image
                 src={s.image}
                 alt={s.name}
                 width={s.width}
                 height={s.height}
                 className="brightness-[.55] grayscale-100 dark:brightness-100 grayscale-0"
               // fill
-              />
+              /> */}
+              <div className="w-full xl:w-3/5">
+                <s.svg />
+              </div>
             </Link>
           ))}
         </div>
@@ -225,3 +228,4 @@ export default function ContributorsPage() {
     </Container>
   );
 }
+
