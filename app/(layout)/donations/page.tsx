@@ -246,7 +246,7 @@ export default function Donations() {
           ))}
         </div>
       </HorizontalScrollContainer>
-      <Container className="flex flex-col gap-y-[15px] pt-[30px]">
+      <Container className="flex flex-col gap-y-[15px] pt-[60px]">
         <div
           className="flex gap-x-[8px] items-center pb-[15px]"
           id="Community"
