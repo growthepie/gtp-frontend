@@ -27,6 +27,10 @@ async function fetchData() {
 
     return jsonResponse.records
       .filter((record: any) => Object.keys(record.fields).length > 0)
+      .sort((a: any, b: any) =>
+        // sort by date in descending order
+        moment(b.fields["Date"]).diff(moment(a.fields["Date"])),
+      )
       .map((record: any) => ({
         name: record.fields["Name"] || "",
         endDate: record.fields["End Date(Time Left)"] || "",
