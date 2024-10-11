@@ -58,6 +58,16 @@ const nextConfig = {
         destination: "https://labels.growthepie.xyz/",
         permanent: true,
       },
+      {
+        source: "/trackers/octant-v2",
+        destination: "/trackers/octant",
+        permanent: true,
+      },
+      {
+        source: "/trackers/octant-v3",
+        destination: "/trackers/octant",
+        permanent: true,
+      },
     ];
   },
   images: {
