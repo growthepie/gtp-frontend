@@ -252,7 +252,7 @@ export default function ContractCard({
             className={`flex flex-row items-center space-x-1 text-xs md:text-sm`}
           >
             {master && (
-              <div className="flex flex-row items-center space-x-1">
+              <div className="flex flex-row items-center justify-end space-x-1">
                 {master.blockspace_categories.main_categories[
                   data[types.indexOf("main_category_key")]
                 ]
@@ -273,26 +273,16 @@ export default function ContractCard({
               </div>
             )}
           </div>
-          {data[types.indexOf("main_category_key")] && (
-            <div className="flex flex-row items-center space-x-1">
-              <Icon
-                icon="feather:info"
-                className="w-6 h-6 block group-hover:hidden"
-              />
-              <Icon
-                icon="feather:chevron-right"
-                className="w-6 h-6 hidden group-hover:block"
-              />
-            </div>
-          )}
-          {/* <Icon
-            icon="feather:info"
-            className="w-6 h-6 block group-hover:hidden"
-          />
-          <Icon
-            icon="feather:chevron-right"
-            className="w-6 h-6 hidden group-hover:block"
-          /> */}
+          <div className={`flex flex-row items-center space-x-1 ${!data[types.indexOf("main_category_key")] && "opacity-0"}`}>
+            <Icon
+              icon="feather:info"
+              className="w-6 h-6 block group-hover:hidden"
+            />
+            <Icon
+              icon="feather:chevron-right"
+              className="w-6 h-6 hidden group-hover:block"
+            />
+          </div>
         </div>
       </div>
     </div>
