@@ -1,12 +1,7 @@
 import React from "react";
 import Container from "@/components/layout/Container";
 import Heading from "@/components/layout/Heading";
-import Subheading from "@/components/layout/Subheading";
-
-import { OctantLinks, OctantLinksMobile } from "../octant/OctantLinks";
 import { Metadata } from "next";
-import Icon from "@/components/layout/Icon";
-import { OctantSubheader } from "../octant/OctantSubheader";
 import { OctantProviders } from "./OctantDataProvider";
 
 export async function generateMetadata(): Promise<Metadata> {
