@@ -1001,10 +1001,10 @@ export default function Page() {
               }
 
               .kept-by-wallets {
-                fill: url(#gradient1) !important;
+                fill: url(#gradient2) !important;
               }
               .allocated-to-projects {
-                fill: url(#gradient2) !important;
+                fill: url(#gradient1) !important;
               }
               `}
           </style>
@@ -1030,7 +1030,7 @@ export default function Page() {
                   data={[
                     {
                       label: "kept by wallets",
-                      value: communityData ? communityData.reduce((acc, user) => {
+                      value: communityDataSortedAndFiltered ? communityDataSortedAndFiltered.reduce((acc, user) => {
                         if (user.budget_amounts[Epochs[communityEpoch].epoch] === undefined) {
                           return acc;
                         }
@@ -1043,7 +1043,7 @@ export default function Page() {
                     },
                     {
                       label: "allocated to projects",
-                      value: communityData ? communityData.reduce((acc, user) => {
+                      value: communityDataSortedAndFiltered ? communityDataSortedAndFiltered.reduce((acc, user) => {
                         if (user.allocation_amounts[Epochs[communityEpoch].epoch] === undefined) {
                           return acc;
                         }
@@ -1065,22 +1065,22 @@ export default function Page() {
                   data={[
                     {
                       label: "1 Project",
-                      value: communityData ? communityData.filter((user) => user.allocated_to_project_keys[Epochs[communityEpoch].epoch] && user.allocated_to_project_keys[Epochs[communityEpoch].epoch].length === 1).length : 0,
+                      value: communityDataSortedAndFiltered ? communityDataSortedAndFiltered.filter((user) => user.allocated_to_project_keys[Epochs[communityEpoch].epoch] && user.allocated_to_project_keys[Epochs[communityEpoch].epoch].length === 1).length : 0,
                       className: "one-project",
                     },
                     {
                       label: "2 to 5 Projects",
-                      value: communityData ? communityData.filter((user) => user.allocated_to_project_keys[Epochs[communityEpoch].epoch] && user.allocated_to_project_keys[Epochs[communityEpoch].epoch].length > 1 && user.allocated_to_project_keys[Epochs[communityEpoch].epoch].length <= 5).length : 0,
+                      value: communityDataSortedAndFiltered ? communityDataSortedAndFiltered.filter((user) => user.allocated_to_project_keys[Epochs[communityEpoch].epoch] && user.allocated_to_project_keys[Epochs[communityEpoch].epoch].length > 1 && user.allocated_to_project_keys[Epochs[communityEpoch].epoch].length <= 5).length : 0,
                       className: "two-to-five-projects",
                     },
                     {
                       label: "> 5 Projects",
-                      value: communityData ? communityData.filter((user) => user.allocated_to_project_keys[Epochs[communityEpoch].epoch] && user.allocated_to_project_keys[Epochs[communityEpoch].epoch].length > 5).length : 0,
+                      value: communityDataSortedAndFiltered ? communityDataSortedAndFiltered.filter((user) => user.allocated_to_project_keys[Epochs[communityEpoch].epoch] && user.allocated_to_project_keys[Epochs[communityEpoch].epoch].length > 5).length : 0,
                       className: "more-than-five-projects",
                     },
                     {
                       label: "No Projects",
-                      value: communityData ? communityData.filter((user) => user.allocated_to_project_keys[Epochs[communityEpoch].epoch] && user.allocated_to_project_keys[Epochs[communityEpoch].epoch].length === 0).length : 0,
+                      value: communityDataSortedAndFiltered ? communityDataSortedAndFiltered.filter((user) => user.allocated_to_project_keys[Epochs[communityEpoch].epoch] && user.allocated_to_project_keys[Epochs[communityEpoch].epoch].length === 0).length : 0,
                       className: "no-projects",
                     },
                   ]}
