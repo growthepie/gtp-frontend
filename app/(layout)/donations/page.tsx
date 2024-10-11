@@ -1,4 +1,5 @@
 "use client";
+import { useMemo } from "react";
 import Container from "@/components/layout/Container";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import { useMaster } from "@/contexts/MasterContext";
@@ -298,7 +299,7 @@ export default function Donations() {
                     <Link
                       href={impactRow.url}
                       target="_blank"
-                      className="w-full  truncate"
+                      className="w-full  truncate hover:underline"
                     >
                       {impactRow.url}
                     </Link>
@@ -315,8 +316,8 @@ export default function Donations() {
         <div className="flex flex-col gap-y-[10px]">
           <div className="text-[20px] font-bold">Platform Updates</div>
           <div className="text-[14px]">
-            The following people and institutions mention us or use our data
-            regularly, free of charge:
+            Our public change log. A list with bigger feature releases and their
+            announcements. We keep building!
           </div>
         </div>
       </Container>
@@ -348,7 +349,7 @@ export default function Donations() {
                   <Link
                     href={updateRow.url}
                     target="_blank"
-                    className="w-full truncate"
+                    className="w-full truncate hover:underline"
                   >
                     {updateRow.url}
                   </Link>
