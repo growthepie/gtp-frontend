@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useElementSizeObserver } from '@/hooks/useElementSizeObserver';
+import { mergeRefs } from 'react-merge-refs';
 
 type ScrollbarPosition = 'left' | 'right';
 
@@ -18,18 +19,21 @@ type VerticalScrollContainerProps = {
   scrollbarWidth?: string | number;
 };
 
-export default function VerticalScrollContainer({
-  children,
-  className,
-  height,
-  paddingRight,
-  paddingLeft,
-  paddingTop,
-  paddingBottom,
-  scrollbarPosition = 'right', // Default to 'right'
-  scrollbarAbsolute = false,
-  scrollbarWidth = "8px",
-}: VerticalScrollContainerProps) {
+export default forwardRef(function VerticalScrollContainer(
+  {
+    children,
+    className,
+    height,
+    paddingRight,
+    paddingLeft,
+    paddingTop,
+    paddingBottom,
+    scrollbarPosition = 'right', // Default to 'right'
+    scrollbarAbsolute = false,
+    scrollbarWidth = "8px",
+  }: VerticalScrollContainerProps,
+  ref: React.Ref<HTMLDivElement>
+) {
   const [currentScrollPercentage, setCurrentScrollPercentage] = useState(0);
   const [contentScrollAreaRef, { height: contentScrollAreaHeight }] =
     useElementSizeObserver<HTMLDivElement>();
@@ -380,7 +384,7 @@ export default function VerticalScrollContainer({
       <div className={`overflow-y-visible w-full ${contentOrder}`}>
         <div
           className="relative overflow-y-scroll scrollbar-none max-w-full transition-all duration-300"
-          ref={contentScrollAreaRef}
+          ref={mergeRefs([contentScrollAreaRef, ref])}
           style={{
             height: `${height}px`,
             maskClip: 'padding-box',
@@ -448,4 +452,4 @@ export default function VerticalScrollContainer({
       )}
     </div>
   );
-}
+});
