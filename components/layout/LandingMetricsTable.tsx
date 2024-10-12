@@ -26,7 +26,7 @@ import GTPIcon from "./GTPIcon";
 import { LandingURL } from "@/lib/urls";
 import useSWR from "swr";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
-import { IS_DEVELOPMENT } from "@/lib/helpers";
+import { IS_DEVELOPMENT, IS_PREVIEW } from "@/lib/helpers";
 
 export default function LandingMetricsTable({
   data,
@@ -171,7 +171,7 @@ export default function LandingMetricsTable({
 
   return (
     <>
-      {IS_DEVELOPMENT && (
+      {(IS_DEVELOPMENT || IS_PREVIEW) && (
         <>
           <GridTableHeader
             gridDefinitionColumns="grid-cols-[26px_125px_190px_minmax(100px,800px)_140px_125px_71px]"
