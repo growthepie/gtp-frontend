@@ -43,6 +43,7 @@ export type GridTableRowProps = {
   bar?: {
     origin_key: string;
     width: number;
+    containerStyle: React.CSSProperties;
   };
   onClick?: () => void;
 };
@@ -69,15 +70,23 @@ export const GridTableRow = ({
       >
         {children}
         <div
-          className={`absolute left-[1px] right-[1px] bottom-[0px] h-[2px] rounded-none font-semibold transition-width duration-300 z-20`}
+          className={`absolute flex flex-col items-start justify-end`}
           style={{
-            background:
-              AllChainsByKeys[
-                bar.origin_key
-              ].colors["dark"][1],
-            width: bar.width * 100 + "%",
+            ...bar.containerStyle,
           }}
-        ></div>
+        >
+          <div
+            className={`z-20`}
+            style={{
+              background:
+                AllChainsByKeys[
+                  bar.origin_key
+                ].colors["dark"][1],
+              width: bar.width * 100 + "%",
+              height: "2px",
+            }}
+          ></div>
+        </div>
       </div >
     );
 
@@ -93,11 +102,11 @@ export const GridTableRow = ({
   );
 };
 
-export const GridTableChainIcon = ({ origin_key }: { origin_key: string }) => {
+export const GridTableChainIcon = ({ origin_key, className }: { origin_key: string, className?: string }) => {
   const { AllChainsByKeys } = useMaster();
 
   return (
-    <div className="flex h-full items-center">
+    <div className={`flex h-full items-center ${className || ""}`}>
       {AllChainsByKeys[origin_key] && (
         <Icon
           icon={`gtp:${AllChainsByKeys[

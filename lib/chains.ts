@@ -151,3 +151,71 @@ export const Get_AllChainsNavigationItems = (master: MasterResponse) => {
     }),
   };
 };
+
+export const GetRankingColor = (percentage, weighted = false) => {
+  const colors = !weighted
+    ? [
+        { percent: 0, color: "#1DF7EF" },
+        { percent: 20, color: "#76EDA0" },
+        { percent: 50, color: "#FFDF27" },
+        { percent: 70, color: "#FF9B47" },
+        { percent: 100, color: "#FE5468" },
+      ]
+    : [
+        { percent: 0, color: "#1DF7EF" },
+        { percent: 2, color: "#76EDA0" },
+        { percent: 10, color: "#FFDF27" },
+        { percent: 40, color: "#FF9B47" },
+        { percent: 80, color: "#FE5468" },
+        { percent: 100, color: "#FE5468" }, // Repeat the final color to ensure upper bound
+      ];
+
+  let lowerBound = colors[0];
+  let upperBound = colors[colors.length - 1];
+
+  if (weighted) {
+    // Adjust lower and upper bounds for weighted gradient
+    lowerBound = colors[0];
+    upperBound = colors[1];
+  }
+
+  for (let i = 0; i < colors.length - 1; i++) {
+    if (
+      percentage >= colors[i].percent &&
+      percentage <= colors[i + 1].percent
+    ) {
+      lowerBound = colors[i];
+      upperBound = colors[i + 1];
+      break;
+    }
+  }
+
+  const percentDiff =
+    (percentage - lowerBound.percent) /
+    (upperBound.percent - lowerBound.percent);
+
+  const r = Math.floor(
+    parseInt(lowerBound.color.substring(1, 3), 16) +
+      percentDiff *
+        (parseInt(upperBound.color.substring(1, 3), 16) -
+          parseInt(lowerBound.color.substring(1, 3), 16)),
+  );
+
+  const g = Math.floor(
+    parseInt(lowerBound.color.substring(3, 5), 16) +
+      percentDiff *
+        (parseInt(upperBound.color.substring(3, 5), 16) -
+          parseInt(lowerBound.color.substring(3, 5), 16)),
+  );
+
+  const b = Math.floor(
+    parseInt(lowerBound.color.substring(5, 7), 16) +
+      percentDiff *
+        (parseInt(upperBound.color.substring(5, 7), 16) -
+          parseInt(lowerBound.color.substring(5, 7), 16)),
+  );
+
+  return `#${r.toString(16).padStart(2, "0")}${g
+    .toString(16)
+    .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+};

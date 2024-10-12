@@ -1,4 +1,5 @@
 import {
+  GetRankingColor,
   // AllChainsByKeys,
   // EnabledChainsByKeys,
   Get_SupportedChainKeys,
@@ -19,6 +20,13 @@ import {
 import { useUIContext } from "@/contexts/UIContext";
 import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
+import { GridTableChainIcon, GridTableContainer, GridTableHeader, GridTableHeaderCell, GridTableRow } from "./GridTable";
+import HorizontalScrollContainer from "../HorizontalScrollContainer";
+import GTPIcon from "./GTPIcon";
+import { LandingURL } from "@/lib/urls";
+import useSWR from "swr";
+import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
+import { IS_DEVELOPMENT } from "@/lib/helpers";
 
 export default function LandingMetricsTable({
   data,
@@ -38,6 +46,7 @@ export default function LandingMetricsTable({
   interactable: boolean;
 }) {
   const { AllChainsByKeys, EnabledChainsByKeys } = useMaster();
+  const { data: landing } = useSWR<LandingPageMetricsResponse>(LandingURL);
 
   const [maxVal, setMaxVal] = useState(0);
 
@@ -128,8 +137,8 @@ export default function LandingMetricsTable({
       })
       .map((data) => ({
         ...data,
-        y: (height += 39) - 39,
-        height: 39,
+        y: (height += 37) - 37,
+        height: 37,
       })),
     {
       key: (d) => d.chain.key,
@@ -162,8 +171,201 @@ export default function LandingMetricsTable({
 
   return (
     <>
+      {IS_DEVELOPMENT && (
+        <>
+          <GridTableHeader
+            gridDefinitionColumns="grid-cols-[26px_125px_190px_minmax(100px,800px)_140px_125px_71px]"
+            className="text-[14px] !font-bold gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] !pt-[15px] pb-[3px] select-none"
+
+          >
+            <GridTableHeaderCell><></></GridTableHeaderCell>
+            <GridTableHeaderCell>Chain</GridTableHeaderCell>
+            <GridTableHeaderCell>Purpose</GridTableHeaderCell>
+            <GridTableHeaderCell justify="center">
+              <div className="flex items-center gap-x-[10px] px-[15px] h-[36px] rounded-full bg-[#1F2726]">
+                {/* ["daa", "throughput", "stables_mcap", "txcosts", "fees", "profit", "fdv"] */}
+                <GTPIcon icon="gtp-metrics-activeaddresses" size="sm" />
+                {/* <GTPIcon icon="gtp-metrics-transactioncount" size="sm" /> */}
+                <GTPIcon icon="gtp-metrics-throughput" size="sm" />
+                <GTPIcon icon="gtp-metrics-stablecoinmarketcap" size="sm" />
+                {/* <GTPIcon icon="gtp-metrics-totalvaluelocked" size="sm" /> */}
+                <GTPIcon icon="gtp-metrics-transactioncosts" size="sm" />
+                <GTPIcon icon="gtp-metrics-feespaidbyusers" size="sm" />
+                {/* <GTPIcon icon="gtp-metrics-rentpaidtol1" size="sm" /> */}
+                <GTPIcon icon="gtp-metrics-onchainprofit" size="sm" />
+                <GTPIcon icon="gtp-metrics-fdv" size="sm" />
+                {/* <GTPIcon icon="gtp-metrics-marketcap" size="sm" /> */}
+              </div>
+            </GridTableHeaderCell>
+            <GridTableHeaderCell className="relative" justify="end">
+              <div className="flex flex-col items-end">
+                <div className="whitespace-nowrap">Weekly Active</div>Addresses
+              </div>
+              <Tooltip placement="left">
+                <TooltipTrigger className="absolute z-[1] -right-[25px] top-0 bottom-0">
+                  <Icon icon="feather:info" className="w-[15px] h-[15px]" />
+                </TooltipTrigger>
+                <TooltipContent className="z-[110]">
+                  <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex flex-col">
+                    <div>
+                      Number of distinct active addresses in last 7 days and share
+                      of total L2 addresses.
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </GridTableHeaderCell>
+            <GridTableHeaderCell className="relative" justify="end">
+              <div className="flex flex-col items-end">
+                <div className="whitespace-nowrap">Cross-Chain</div>Activity
+              </div>
+              <Tooltip placement="left">
+                <TooltipTrigger className="absolute  z-[1] -right-[25px] top-0 bottom-0">
+                  <Icon icon="feather:info" className="w-[15px] h-[15px]" />
+                </TooltipTrigger>
+                <TooltipContent className="z-[110]">
+                  <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex flex-col">
+                    <div>
+                      Percentage of active addresses that also interacted with
+                      other chains in the last 7 days.
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </GridTableHeaderCell>
+            <GridTableHeaderCell justify="end">Age</GridTableHeaderCell>
+          </GridTableHeader>
+          <div className="w-full relative" style={{ height }}>
+            {transitions((style, item, t, index) => {
+              return (
+                <animated.div
+                  className="absolute w-full"
+                  style={{
+                    zIndex: rows().length - index,
+                    ...style,
+                  }}
+                >
+                  <GridTableRow
+                    gridDefinitionColumns="grid-cols-[26px_125px_190px_minmax(100px,800px)_140px_125px_71px]"
+                    className="relative text-[14px] gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] select-none h-[34px] !pb-0 !pt-0"
+                    bar={{
+                      origin_key: item.chain.key,
+                      width: lastValsByChainKey[item.chain.key] / maxVal,
+                      containerStyle: {
+                        left: 22,
+                        right: 1,
+                        top: 0,
+                        bottom: 0,
+                        borderRadius: "0 9999px 9999px 0",
+                        zIndex: -1,
+                        overflow: "hidden",
+                      },
+                    }}
+                  >
+                    <div className="sticky -left-[12px] md:-left-[48px] w-[26px] flex items-center justify-center overflow-visible">
+                      <div className="absolute -left-[5px] h-[32px] w-[40px] pl-[9px] flex items-center justify-start rounded-l-full bg-gradient-to-r from-forest-1000 via-forest-1000 to-transparent">
+                        <GridTableChainIcon origin_key={item.chain.key} />
+                      </div>
+                    </div>
+                    <div>
+                      {data.chains[item.chain.key].chain_name}
+                    </div>
+                    <div className="text-[12px]">
+                      {data.chains[item.chain.key].purpose && (
+                        <>{data.chains[item.chain.key].purpose}</>
+                      )}
+                    </div>
+                    <div className="flex justify-center items-center">
+                      {landing && landing.data.metrics.table_visual[item.chain.key].ranking && (
+                        <div className="flex items-center justify-end gap-x-[10px] px-[15px]">
+                          {["daa", "throughput", "stables_mcap", "txcosts", "fees", "profit", "fdv"].map((metric) => {
+
+                            if (landing.data.metrics.table_visual[item.chain.key].ranking[metric].rank === null) return (
+                              <div
+                                key={metric}
+                                className="flex items-center justify-center w-[15px] h-[15px]"
+                              >
+                                <div
+                                  key={metric}
+                                  className="size-[10px] rounded-full flex items-center justify-center"
+                                  style={{
+                                    background: "#1F272666"
+                                  }}>
+
+                                </div>
+                              </div>
+                            )
+
+                            return (
+                              <div
+                                key={metric}
+                                className="flex items-center justify-center w-[15px] h-[15px]"
+                              >
+                                <div
+                                  key={metric}
+                                  className="size-[10px] rounded-full flex items-center justify-center"
+                                  style={{
+                                    background: GetRankingColor(landing.data.metrics.table_visual[item.chain.key].ranking[metric].color_scale * 100) + "ff"
+                                  }}>
+                                  <div
+                                    className="text-[6.5px] text-[#1F2726] font-black"
+
+                                  >
+                                    {landing.data.metrics.table_visual[item.chain.key].ranking[metric].rank}
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+
+                      )}
+                    </div>
+                    <div className="flex justify-end items-center">
+                      <div className="flex justify-between items-center text-[12px] w-[88px]">
+                        <div className="text-[10px] text-[#5A6462]">
+                          {(
+                            data.chains[item.chain.key].user_share * 100
+                          ).toFixed(2)}
+                          %
+                        </div>
+                        <div className="flex items-center">
+                          {Intl.NumberFormat("en-GB", {
+                            notation: "compact",
+                            maximumFractionDigits: 2,
+                            minimumFractionDigits: 0,
+                          }).format(lastValsByChainKey[item.chain.key])}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex justify-end items-center text-[12px]">
+                      {d3.format(
+                        data.chains[item.chain.key].cross_chain_activity >
+                          0.01
+                          ? ".1%"
+                          : ".1%",
+                      )(data.chains[item.chain.key].cross_chain_activity)}
+                    </div>
+                    <div className="flex justify-end items-center">
+                      {/* {monthsSinceLaunch[item.chain.key][0] && monthsSinceLaunch[item.chain.key][1] % 12 > 0 ? <div className="text-[#5A6462] text-[16px]">+</div> : ""} */}
+                      <div className="text-[12px]">
+                        {moment(master.chains[item.chain.key].launch_date).fromNow(
+                          true,
+                        )}
+                      </div>
+                    </div>
+                  </GridTableRow>
+                </animated.div>
+              );
+            })}
+          </div>
+          <div className="h-[30px]" />
+        </>
+
+      )}
       {/* <div className={`flex flex-col space-y-[5px] overflow-y-hidden overflow-x-scroll ${isSidebarOpen ? "2xl:overflow-x-hidden" : "min-[1168px]:overflow-x-hidden"} z-100 w-full p-0 pt-3 pb-2 md:pb-0 lg:px-0 md:pt-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller`}> */}
-      <div className={`flex flex-col min-w-[1024px] w-full gap-y-[5px]`}>
+      < div className={`flex flex-col min-w-[1024px] w-full gap-y-[5px]`
+      }>
         <div
           className={`h-[40px] flex items-center rounded-full font-semibold text-[0.6rem] text-sm leading-[1.2]`}
         >
@@ -411,7 +613,7 @@ export default function LandingMetricsTable({
             })}
           </div>
         </div>
-      </div>
+      </div >
     </>
   );
 }
