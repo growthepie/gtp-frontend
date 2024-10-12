@@ -642,16 +642,16 @@ const Chain = ({ params }: { params: any }) => {
                                       <TooltipTrigger>
                                         <div
                                           className="w-[24px] h-[24px] rounded-full flex items-center justify-center z-0"
-                                        // style={{
-                                        //   backgroundColor: chainData
-                                        //     ? chainData.ranking[key]
-                                        //       ? getGradientColor(
-                                        //         chainData.ranking[key]
-                                        //           .color_scale * 100,
-                                        //       )
-                                        //       : "#5A6462"
-                                        //     : "#5A6462",
-                                        // }}
+                                          style={{
+                                            backgroundColor: chainData
+                                              ? chainData.ranking[key]
+                                                ? getGradientColor(
+                                                  chainData.ranking[key]
+                                                    .color_scale * 100,
+                                                )
+                                                : "#5A6462"
+                                              : "#5A6462",
+                                          }}
                                         >
                                           <Icon
                                             icon={`gtp:${String(key).replace(
@@ -659,24 +659,6 @@ const Chain = ({ params }: { params: any }) => {
                                               "-",
                                             )}`}
                                             className="w-[15px] h-[15px] z-10 text-[#344240]"
-                                            fill={chainData.ranking[key] ? getGradientColor(
-                                              chainData.ranking[key]
-                                                .color_scale * 100,
-                                            ) : "#5A6462"}
-                                            stroke={chainData.ranking[key] ?
-
-                                              `linear-gradient(0deg, ${getGradientColor(chainData.ranking[key].color_scale * 100)}, #fff)` : "#5A6462"}
-
-                                          // strokeWidth={1}
-                                          // style={{
-                                          //   // glow effect
-                                          //   filter: chainData.ranking[key]
-                                          //     ? `drop-shadow(0px 0px 5px ${getGradientColor(
-                                          //       chainData.ranking[key]
-                                          //         .color_scale * 100,
-                                          //     ) + "99"})`
-                                          //     : "none",
-                                          // }}
                                           />
                                         </div>
                                       </TooltipTrigger>
