@@ -343,11 +343,10 @@ export default function LandingMetricsTable({
                                     e.stopPropagation();
 
                                     setSelectedFundamentalsChains((prev) => {
-                                      if (prev.includes(item.chain.key)) {
-                                        return prev.filter((chain) => chain !== item.chain.key);
-                                      } else {
+                                      if (!prev.includes(item.chain.key)) {
                                         return [...prev, item.chain.key];
                                       }
+                                      return prev;
                                     });
 
                                     // navigate to fundamentals page
