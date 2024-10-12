@@ -1117,7 +1117,7 @@ export const Accordion = ({
             >
               <div
                 className={`flex items-center justify-between ${hideLabel ? "rounded-full" : "rounded-full"
-                  } ${isActive && "!bg-[#151A19]"}`}
+                  }`}
                 style={{
                   padding: padding[size],
                   gap: gap[size],
