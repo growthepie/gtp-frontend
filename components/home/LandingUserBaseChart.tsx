@@ -128,7 +128,7 @@ export default function LandingUserBaseChart() {
               setSelectedMetric={setSelectedMetric}
             />
           </Container>
-          <HorizontalScrollContainer>
+          <HorizontalScrollContainer reduceLeftMask={true}>
             <LandingMetricsTable
               data={{ chains: landing.data.metrics.table_visual }}
               selectedChains={selectedChains}

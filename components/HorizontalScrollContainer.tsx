@@ -18,6 +18,7 @@ type HorizontalScrollContainerProps = {
   paddingTop?: number;
   paddingBottom?: number;
   forcedMinWidth?: number;
+  reduceLeftMask?: boolean;
 };
 
 export default function HorizontalScrollContainer({
@@ -28,6 +29,7 @@ export default function HorizontalScrollContainer({
   paddingLeft = 0,
   paddingTop = 0,
   paddingBottom = 0,
+  reduceLeftMask = false,
   forcedMinWidth,
 }: HorizontalScrollContainerProps) {
   const [currentScrollPercentage, setCurrentScrollPercentage] = useState(0);
@@ -265,14 +267,16 @@ export default function HorizontalScrollContainer({
       );
   }, [currentScrollPercentage, contentScrollAreaWidth, forcedMinWidth]);
 
+  const leftMaskWidth = reduceLeftMask ? 20 : 50;
+
   useEffect(() => {
     if (showLeftGradient && showRightGradient) {
       setMaskGradient(
-        "linear-gradient(to right, transparent, black 50px, black calc(100% - 50px), transparent)"
+        `linear-gradient(to right, transparent, black ${leftMaskWidth}px, black calc(100% - 50px), transparent)`
       );
     } else if (showLeftGradient) {
       setMaskGradient(
-        "linear-gradient(to right, transparent, black 50px, black)"
+        `linear-gradient(to right, transparent, black ${leftMaskWidth}px, black)`
       );
     } else if (showRightGradient) {
       setMaskGradient(
@@ -288,18 +292,18 @@ export default function HorizontalScrollContainer({
       {/* Left Gradient Mask */}
       <div
         className={`transition-opacity duration-300 ${showScroller && showLeftGradient ? "opacity-100" : "opacity-0"
-          } z-10 absolute top-0 bottom-0 -left-[58px] w-[125px] bg-[linear-gradient(-90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none`}
+          } z-[2] absolute top-0 bottom-0 -left-[58px] w-[125px] bg-[linear-gradient(-90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none`}
       ></div>
 
       {/* Right Gradient Mask */}
       <div
         className={`transition-opacity duration-300 ${showScroller && showRightGradient ? "opacity-100" : "opacity-0"
-          } z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none`}
+          } z-[2] absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none`}
       ></div>
 
       <div className="overflow-x-visible">
         <div
-          className={`${includeMargin ? "pl-[20px] md:pl-[50px]" : ""
+          className={`z-[2] ${includeMargin ? "pl-[20px] md:pl-[50px]" : ""
             } relative overflow-x-scroll scrollbar-none max-w-full`}
           ref={contentScrollAreaRef}
           style={{

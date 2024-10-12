@@ -298,8 +298,8 @@ export default function LandingMetricsTable({
                       router.push(`/chains/${item.chain.urlKey}`);
                     }}
                   >
-                    <div className="sticky -left-[12px] md:-left-[48px] w-[26px] flex items-center justify-center overflow-visible">
-                      <div className="absolute -left-[5px] h-[32px] w-[40px] pl-[9px] flex items-center justify-start rounded-l-full bg-gradient-to-r from-forest-1000 via-forest-1000 to-transparent">
+                    <div className="sticky z-[3] -left-[12px] md:-left-[48px] w-[26px] flex items-center justify-center overflow-visible">
+                      <div className="absolute z-[3] -left-[5px] h-[32px] w-[40px] pl-[9px] flex items-center justify-start rounded-l-full bg-gradient-to-r from-forest-1000 via-forest-1000 to-transparent">
                         <GridTableChainIcon origin_key={item.chain.key} />
                       </div>
                     </div>
