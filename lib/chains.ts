@@ -219,3 +219,16 @@ export const GetRankingColor = (percentage, weighted = false) => {
     .toString(16)
     .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
 };
+
+export const GetRankingScale = (
+  value: number,
+  valueRange: [number, number],
+  scaleRange: [number, number],
+): number => {
+  const scale =
+    scaleRange[0] +
+    ((value - valueRange[0]) / (valueRange[1] - valueRange[0])) *
+      (scaleRange[1] - scaleRange[0]);
+
+  return scale;
+};
