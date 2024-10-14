@@ -2045,7 +2045,7 @@ export default function Page() {
         <TopRowContainer
           className={`mb-[15px] flex w-full justify-between gap-y-3 lg:gap-y-0 items-center text-xs bg-forest-50 dark:bg-[#1F2726] lg:z-30 flex-col-reverse rounded-b-[15px] md:rounded-b-[20px] rounded-t-[24px] p-[3px] lg:p-[5px] lg:flex-row lg:rounded-full lg:h-[54px] transition-shadow duration-300`}
         >
-          <TopRowParent className="flex flex-col px-[15px] py-[5px] leading-[120%]">
+          <TopRowParent className="flex flex-col px-[15px] py-[5px] leading-[120%] !items-center !w-full md:!w-fit md:!items-start">
             {/* <div className="text-[9px]">Next Epoch starts in</div>
             <div className="font-bold text-[16px]">{moment("2024-10-13T16:00:00Z").diff(moment(), "days")} days</div> */}
             {EpochStatus}
