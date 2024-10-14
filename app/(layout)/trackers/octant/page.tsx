@@ -124,47 +124,7 @@ export default function Page() {
   };
 
   const [countdownTime, setCountdownTime] = useState<number>(0);
-  const [countdownTimeFormatted, setCountdownTimeFormatted] = useState<React.ReactNode>(null);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCountdownTime(countdownTime - 1);
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [countdownTime]);
-
-  useEffect(() => {
-    const days = Math.floor(countdownTime / 86400);
-    const hours = moment.utc(countdownTime * 1000).format("HH");
-    const minutes = moment.utc(countdownTime * 1000).format("mm");
-    const seconds = moment.utc(countdownTime * 1000).format("ss");
-
-    setCountdownTimeFormatted(
-      <div className="flex items-center gap-x-[5px] leading-[1.1]">
-        {days > 0 && (
-          <div className="flex flex-col items-center">
-            <div className="font-bold text-[12px]">{days}</div>
-            <div className="text-[9px] font-normal text-forest-600">days</div>
-          </div>
-        )}
-        <div className="flex flex-col items-center">
-          <div className="font-bold text-[12px]">{hours}</div>
-          <div className="text-[9px] font-normal text-forest-600">hours</div>
-        </div>
-        <div className="flex flex-col items-center">
-          <div className="font-bold text-[12px]">{minutes}</div>
-          <div className="text-[9px] font-normal text-forest-600">minutes</div>
-        </div>
-        <div className="flex flex-col items-center">
-          <div className="font-bold text-[12px]">{seconds}</div>
-          <div className="text-[9px] font-normal text-forest-600">seconds</div>
-        </div>
-
-      </div>
-    );
-
-  }, [countdownTime]);
+  // const [countdownTimeFormatted, setCountdownTimeFormatted] = useState<React.ReactNode>(null);
 
 
 
@@ -214,11 +174,6 @@ export default function Page() {
           </div> */}
         </>
       );
-    }
-  }, [summaryData]);
-
-  useEffect(() => {
-    if (summaryData && summaryData.epochs) {
     }
   }, [summaryData]);
 
@@ -1437,7 +1392,9 @@ export default function Page() {
             <div className="font-bold text-[16px]">{moment("2024-10-13T16:00:00Z").diff(moment(), "days")} days</div> */}
             {EpochStatus}
             <div className="font-bold text-[16px]">
-              {countdownTimeFormatted}
+              {/* {countdownTimeFormatted}
+               */}
+              <CountdownTimer time={countdownTime} />
             </div>
           </TopRowParent>
           <div className="flex flex-col relative h-full lg:h-[44px] w-full lg:w-[271px] -my-[1px]">
@@ -2493,3 +2450,60 @@ const OctantTableRow = ({
   );
 
 };
+
+
+const CountdownTimer = ({ time }: { time: number }) => {
+
+  const [countdownTime, setCountdownTime] = useState<number>(time);
+
+  useEffect(() => {
+    setCountdownTime(time);
+  }, [time]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCountdownTime(countdownTime - 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [countdownTime]);
+
+  const countdownTimeFormatted = useMemo(() => {
+    const days = Math.floor(countdownTime / 86400);
+    const hours = moment.utc(countdownTime * 1000).format("HH");
+    const minutes = moment.utc(countdownTime * 1000).format("mm");
+    const seconds = moment.utc(countdownTime * 1000).format("ss");
+
+    return (
+      <div className="flex items-center gap-x-[5px] leading-[1.1]">
+        {days > 0 && (
+          <div className="flex flex-col items-center">
+            <div className="font-bold text-[12px]">{days}</div>
+            <div className="text-[9px] font-normal text-forest-600">days</div>
+          </div>
+        )}
+        <div className="flex flex-col items-center">
+          <div className="font-bold text-[12px]">{hours}</div>
+          <div className="text-[9px] font-normal text-forest-600">hours</div>
+        </div>
+        <div className="flex flex-col items-center">
+          <div className="font-bold text-[12px]">{minutes}</div>
+          <div className="text-[9px] font-normal text-forest-600">minutes</div>
+        </div>
+        <div className="flex flex-col items-center">
+          <div className="font-bold text-[12px]">{seconds}</div>
+          <div className="text-[9px] font-normal text-forest-600">seconds</div>
+        </div>
+
+      </div>
+    );
+
+  }, [countdownTime]);
+
+
+  return (
+    <div className="flex items-center gap-x-[5px] leading-[1.1]">
+      {countdownTimeFormatted}
+    </div>
+  );
+}
