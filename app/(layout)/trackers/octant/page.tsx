@@ -238,9 +238,9 @@ export default function Page() {
   const lastFundingEpoch = useMemo(() => {
     return summaryData?.epochs
       ? Object.values(summaryData.epochs)
-          .sort((a, b) => b.epoch - a.epoch)
-          .filter((epoch) => epoch.has_allocation_started)[0]
-          .epoch.toString()
+        .sort((a, b) => b.epoch - a.epoch)
+        .filter((epoch) => epoch.has_allocation_started)[0]
+        .epoch.toString()
       : "1";
   }, [summaryData]);
 
@@ -291,11 +291,11 @@ export default function Page() {
                 userData.allocation_amounts[Epochs[communityEpoch].epoch] || 0,
               allocated_to_project_count:
                 userData.allocated_to_project_counts[
-                  Epochs[communityEpoch].epoch
+                Epochs[communityEpoch].epoch
                 ] || 0,
               allocated_to_project_keys:
                 userData.allocated_to_project_keys[
-                  Epochs[communityEpoch].epoch
+                Epochs[communityEpoch].epoch
                 ] || [],
               activeSinceEpoch: Math.min(
                 ...userLockedEpochs.map((epoch) => parseInt(epoch)),
@@ -711,13 +711,12 @@ export default function Page() {
                               viewBox="0 0 25 25"
                               fill="none"
                               xmlns="http://www.w3.org/2000/svg"
-                              className={`${
-                                summaryData &&
+                              className={`${summaryData &&
                                 summaryData.locked_changes.changes
                                   .num_users_locked_glm_change >= 0
-                                  ? ""
-                                  : "rotate-180"
-                              }`}
+                                ? ""
+                                : "rotate-180"
+                                }`}
                             >
                               <g clipPath="url(#clip0_11946_38485)">
                                 <path
@@ -727,8 +726,8 @@ export default function Page() {
                               </g>
                               <defs>
                                 {summaryData &&
-                                summaryData.locked_changes.changes
-                                  .num_users_locked_glm_change >= 0 ? (
+                                  summaryData.locked_changes.changes
+                                    .num_users_locked_glm_change >= 0 ? (
                                   <linearGradient
                                     id="paint0_linear_11946_38485"
                                     x1="12.9002"
@@ -985,7 +984,7 @@ export default function Page() {
                   communityData.filter(
                     (user) =>
                       user.allocation_amounts[Epochs[communityEpoch].epoch] !==
-                        undefined &&
+                      undefined &&
                       user.allocation_amounts[Epochs[communityEpoch].epoch] > 0,
                   ).length}
                 )
@@ -997,9 +996,8 @@ export default function Page() {
           </TopRowParent>
           <div className="flex flex-col relative h-full lg:h-[44px] w-full lg:w-[271px] -my-[1px]">
             <div
-              className={`relative flex rounded-full h-full w-full lg:z-30 p-[5px] ${
-                isMobile ? "w-full" : "w-[271px]"
-              }`}
+              className={`relative flex rounded-full h-full w-full lg:z-30 p-[5px] ${isMobile ? "w-full" : "w-[271px]"
+                }`}
               style={{
                 backgroundColor: "#344240",
               }}
@@ -1271,23 +1269,23 @@ export default function Page() {
                       label: "kept by wallets",
                       value: communityDataSortedAndFiltered
                         ? communityDataSortedAndFiltered.reduce((acc, user) => {
-                            if (
-                              user.budget_amounts[
-                                Epochs[communityEpoch].epoch
-                              ] === undefined
-                            ) {
-                              return acc;
-                            }
-                            let allocation =
-                              user.allocation_amounts[
-                                Epochs[communityEpoch].epoch
-                              ] || 0;
-                            let budget =
-                              user.budget_amounts[
-                                Epochs[communityEpoch].epoch
-                              ] || 0;
-                            return acc + (budget - allocation);
-                          }, 0)
+                          if (
+                            user.budget_amounts[
+                            Epochs[communityEpoch].epoch
+                            ] === undefined
+                          ) {
+                            return acc;
+                          }
+                          let allocation =
+                            user.allocation_amounts[
+                            Epochs[communityEpoch].epoch
+                            ] || 0;
+                          let budget =
+                            user.budget_amounts[
+                            Epochs[communityEpoch].epoch
+                            ] || 0;
+                          return acc + (budget - allocation);
+                        }, 0)
                         : 0,
                       className: "kept-by-wallets",
                     },
@@ -1295,20 +1293,20 @@ export default function Page() {
                       label: "allocated to projects",
                       value: communityDataSortedAndFiltered
                         ? communityDataSortedAndFiltered.reduce((acc, user) => {
-                            if (
-                              user.allocation_amounts[
-                                Epochs[communityEpoch].epoch
-                              ] === undefined
-                            ) {
-                              return acc;
-                            }
-                            return (
-                              acc +
-                              user.allocation_amounts[
-                                Epochs[communityEpoch].epoch
-                              ]
-                            );
-                          }, 0)
+                          if (
+                            user.allocation_amounts[
+                            Epochs[communityEpoch].epoch
+                            ] === undefined
+                          ) {
+                            return acc;
+                          }
+                          return (
+                            acc +
+                            user.allocation_amounts[
+                            Epochs[communityEpoch].epoch
+                            ]
+                          );
+                        }, 0)
                         : 0,
                       className: "allocated-to-projects",
                     },
@@ -1327,14 +1325,14 @@ export default function Page() {
                       label: "1",
                       value: communityDataSortedAndFiltered
                         ? communityDataSortedAndFiltered.filter(
-                            (user) =>
-                              user.allocated_to_project_keys[
-                                Epochs[communityEpoch].epoch
-                              ] &&
-                              user.allocated_to_project_keys[
-                                Epochs[communityEpoch].epoch
-                              ].length === 1,
-                          ).length
+                          (user) =>
+                            user.allocated_to_project_keys[
+                            Epochs[communityEpoch].epoch
+                            ] &&
+                            user.allocated_to_project_keys[
+                              Epochs[communityEpoch].epoch
+                            ].length === 1,
+                        ).length
                         : 0,
                       className: "one-project",
                     },
@@ -1342,17 +1340,17 @@ export default function Page() {
                       label: "2-5",
                       value: communityDataSortedAndFiltered
                         ? communityDataSortedAndFiltered.filter(
-                            (user) =>
-                              user.allocated_to_project_keys[
-                                Epochs[communityEpoch].epoch
-                              ] &&
-                              user.allocated_to_project_keys[
-                                Epochs[communityEpoch].epoch
-                              ].length > 1 &&
-                              user.allocated_to_project_keys[
-                                Epochs[communityEpoch].epoch
-                              ].length <= 5,
-                          ).length
+                          (user) =>
+                            user.allocated_to_project_keys[
+                            Epochs[communityEpoch].epoch
+                            ] &&
+                            user.allocated_to_project_keys[
+                              Epochs[communityEpoch].epoch
+                            ].length > 1 &&
+                            user.allocated_to_project_keys[
+                              Epochs[communityEpoch].epoch
+                            ].length <= 5,
+                        ).length
                         : 0,
                       className: "two-to-five-projects",
                     },
@@ -1360,14 +1358,14 @@ export default function Page() {
                       label: ">5",
                       value: communityDataSortedAndFiltered
                         ? communityDataSortedAndFiltered.filter(
-                            (user) =>
-                              user.allocated_to_project_keys[
-                                Epochs[communityEpoch].epoch
-                              ] &&
-                              user.allocated_to_project_keys[
-                                Epochs[communityEpoch].epoch
-                              ].length > 5,
-                          ).length
+                          (user) =>
+                            user.allocated_to_project_keys[
+                            Epochs[communityEpoch].epoch
+                            ] &&
+                            user.allocated_to_project_keys[
+                              Epochs[communityEpoch].epoch
+                            ].length > 5,
+                        ).length
                         : 0,
                       className: "more-than-five-projects",
                     },
@@ -1375,14 +1373,14 @@ export default function Page() {
                       label: "0 Projects",
                       value: communityDataSortedAndFiltered
                         ? communityDataSortedAndFiltered.filter(
-                            (user) =>
-                              user.allocated_to_project_keys[
-                                Epochs[communityEpoch].epoch
-                              ] &&
-                              user.allocated_to_project_keys[
-                                Epochs[communityEpoch].epoch
-                              ].length === 0,
-                          ).length
+                          (user) =>
+                            user.allocated_to_project_keys[
+                            Epochs[communityEpoch].epoch
+                            ] &&
+                            user.allocated_to_project_keys[
+                              Epochs[communityEpoch].epoch
+                            ].length === 0,
+                        ).length
                         : 0,
                       className: "no-projects",
                     },
@@ -1510,7 +1508,7 @@ export default function Page() {
                 .slice(
                   communityTablePage * communityTablePageSize,
                   communityTablePage * communityTablePageSize +
-                    communityTablePageSize,
+                  communityTablePageSize,
                 )
                 .map((userData, index) => {
                   const userLockedEpochs = Object.keys(userData.lockeds).filter(
@@ -1528,15 +1526,15 @@ export default function Page() {
                       0,
                     allocation_amount:
                       userData.allocation_amounts[
-                        Epochs[communityEpoch].epoch
+                      Epochs[communityEpoch].epoch
                       ] || 0,
                     allocated_to_project_count:
                       userData.allocated_to_project_counts[
-                        Epochs[communityEpoch].epoch
+                      Epochs[communityEpoch].epoch
                       ] || 0,
                     allocated_to_project_keys:
                       userData.allocated_to_project_keys[
-                        Epochs[communityEpoch].epoch
+                      Epochs[communityEpoch].epoch
                       ] || [],
                     activeSinceEpoch: Math.min(
                       ...userLockedEpochs.map((epoch) => parseInt(epoch)),
@@ -1583,11 +1581,10 @@ export default function Page() {
                               icon={"gtp:circle-arrow"}
                               className={`w-[4px] h-[9px] absolute top-[4px] -right-[4px] `}
                               style={{
-                                transform: `rotate(${
-                                  communityRowsOpen.includes(user.user)
-                                    ? "90deg"
-                                    : "0deg"
-                                })`,
+                                transform: `rotate(${communityRowsOpen.includes(user.user)
+                                  ? "90deg"
+                                  : "0deg"
+                                  })`,
                                 transformOrigin: "-7px 4px",
                                 transition: "transform 0.5s",
                               }}
@@ -1600,14 +1597,14 @@ export default function Page() {
                             style={{
                               fontFeatureSettings: "'pnum' on, 'lnum' on",
                             }}
-                            // onDoubleClick={(e) => {
-                            //   e.preventDefault(); // Prevent default double-click behavior
-                            //   const selection = window.getSelection();
-                            //   const range = document.createRange();
-                            //   range.selectNodeContents(e.currentTarget);
-                            //   selection?.removeAllRanges();
-                            //   selection?.addRange(range);
-                            // }}
+                          // onDoubleClick={(e) => {
+                          //   e.preventDefault(); // Prevent default double-click behavior
+                          //   const selection = window.getSelection();
+                          //   const range = document.createRange();
+                          //   range.selectNodeContents(e.currentTarget);
+                          //   selection?.removeAllRanges();
+                          //   selection?.addRange(range);
+                          // }}
                           >
                             <div
                               className="truncate transition-all duration-300"
@@ -1712,9 +1709,8 @@ export default function Page() {
                           )}
                         </div>
                         <div
-                          className={`flex items-center justify-end whitespace-nowrap ${
-                            user.budget_amount < 0.01 && "text-[11px]"
-                          }`}
+                          className={`flex items-center justify-end whitespace-nowrap ${user.budget_amount < 0.01 && "text-[11px]"
+                            }`}
                         >
                           {user.budget_amount > 0 ? (
                             <div className="text-[#CDD8D3]">
@@ -1733,9 +1729,8 @@ export default function Page() {
                           )}
                         </div>
                         <div
-                          className={`flex items-center justify-end whitespace-nowrap ${
-                            user.allocation_amount < 0.01 && "text-[11px]"
-                          }`}
+                          className={`flex items-center justify-end whitespace-nowrap ${user.allocation_amount < 0.01 && "text-[11px]"
+                            }`}
                         >
                           {user.allocation_amount > 0 ? (
                             <div className="text-[#CDD8D3]">
@@ -1756,11 +1751,10 @@ export default function Page() {
                       </GridTableRow>
                       <div className="pl-[13px] pr-[15px]">
                         <div
-                          className={`flex flex-col bg-[#1F2726] rounded-b-[15px] border-[#CDD8D3]/30 border-dotted border-x border-b transition-all duration-300 ${
-                            communityRowsOpen.includes(user.user)
-                              ? "min-h-[80px] max-h-[300px] opacity-100"
-                              : "max-h-0 min-h-0 opacity-0"
-                          } overflow-hidden`}
+                          className={`flex flex-col bg-[#1F2726] rounded-b-[15px] border-[#CDD8D3]/30 border-dotted border-x border-b transition-all duration-300 ${communityRowsOpen.includes(user.user)
+                            ? "min-h-[80px] max-h-[300px] opacity-100"
+                            : "max-h-0 min-h-0 opacity-0"
+                            } overflow-hidden`}
                         >
                           <div className="flex flex-col p-[15px] gap-y-[6px] text-[12px]">
                             <div className="flex items-center justify-between">
@@ -1810,11 +1804,10 @@ export default function Page() {
                                       style={{
                                         background:
                                           "linear-gradient(0deg,#1DF7EF 0%,#10808C 100%)",
-                                        width: `${
-                                          (user.allocation_amount /
-                                            user.budget_amount) *
+                                        width: `${(user.allocation_amount /
+                                          user.budget_amount) *
                                           100
-                                        }%`,
+                                          }%`,
                                       }}
                                     ></div>
                                     <div
@@ -1822,12 +1815,11 @@ export default function Page() {
                                       style={{
                                         background:
                                           "linear-gradient(-3deg,#FFDF27 0%,#FE5468 100%)",
-                                        width: `${
-                                          ((user.budget_amount -
-                                            user.allocation_amount) /
-                                            user.budget_amount) *
+                                        width: `${((user.budget_amount -
+                                          user.allocation_amount) /
+                                          user.budget_amount) *
                                           100
-                                        }%`,
+                                          }%`,
                                       }}
                                     ></div>
                                   </div>
@@ -1867,11 +1859,11 @@ export default function Page() {
                                           <div className="w-6 h-6 border border-forest-900/20 dark:border-forest-500/20 rounded-full overflow-hidden">
                                             {projectMetadataData &&
                                               projectMetadataData[
-                                                project_key
+                                              project_key
                                               ] &&
                                               Object.entries(
                                                 projectMetadataData[
-                                                  project_key
+                                                project_key
                                                 ],
                                               )
                                                 .sort(
@@ -1898,17 +1890,16 @@ export default function Page() {
                                           <div className="w-6 h-6 border border-forest-900/20 dark:border-forest-500/20 rounded-full overflow-hidden">
                                             {projectMetadataData &&
                                               projectMetadataData[project_key][
-                                                Epochs[communityEpoch].epoch
+                                              Epochs[communityEpoch].epoch
                                               ] && (
                                                 <Image
-                                                  src={`https://ipfs.io/ipfs/${
-                                                    projectMetadataData[
-                                                      project_key
-                                                    ][
-                                                      Epochs[communityEpoch]
-                                                        .epoch
-                                                    ].profile_image_medium
-                                                  }`}
+                                                  src={`https://ipfs.io/ipfs/${projectMetadataData[
+                                                    project_key
+                                                  ][
+                                                    Epochs[communityEpoch]
+                                                      .epoch
+                                                  ].profile_image_medium
+                                                    }`}
                                                   alt={
                                                     projectMetadataData[
                                                       project_key
@@ -1974,7 +1965,7 @@ export default function Page() {
                   <div className="text-[12px]">
                     {Math.ceil(
                       communityDataSortedAndFiltered.length /
-                        communityTablePageSize,
+                      communityTablePageSize,
                     )}
                   </div>
                 </div>
@@ -1984,10 +1975,10 @@ export default function Page() {
                     className="hover:cursor-pointer"
                     onClick={() =>
                       communityTablePage <
-                      Math.floor(
-                        communityDataSortedAndFiltered.length /
+                        Math.floor(
+                          communityDataSortedAndFiltered.length /
                           communityTablePageSize,
-                      )
+                        )
                         ? setCommunityTablePage(communityTablePage + 1)
                         : null
                     }
@@ -2000,7 +1991,7 @@ export default function Page() {
                       setCommunityTablePage(
                         Math.floor(
                           communityDataSortedAndFiltered.length /
-                            communityTablePageSize,
+                          communityTablePageSize,
                         ),
                       )
                     }
@@ -2066,9 +2057,8 @@ export default function Page() {
           </TopRowParent>
           <div className="flex flex-col relative h-full lg:h-[44px] w-full lg:w-[271px] -my-[1px]">
             <div
-              className={`relative flex rounded-full h-full w-full lg:z-30 p-[5px] ${
-                isMobile ? "w-full" : "w-[271px]"
-              }`}
+              className={`relative flex rounded-full h-full w-full lg:z-30 p-[5px] ${isMobile ? "w-full" : "w-[271px]"
+                }`}
               style={{
                 backgroundColor: "#344240",
               }}
@@ -2244,9 +2234,9 @@ export default function Page() {
                   const project_key = fundingRow.project_key;
                   const lastEpoch = projectMetadataData
                     ? Object.keys(projectMetadataData[project_key])
-                        .filter((e) => e != "all")
-                        .map((e) => parseInt(e))
-                        .sort((a, b) => b - a)[0]
+                      .filter((e) => e != "all")
+                      .map((e) => parseInt(e))
+                      .sort((a, b) => b - a)[0]
                     : 0;
                   const lastEpochProjectMetadata = latestProjectMetadatas[
                     project_key
@@ -2266,33 +2256,33 @@ export default function Page() {
                     project_key: project_key,
                     owner_project:
                       projectMetadataData &&
-                      projectMetadataData[fundingRow.project_key] &&
-                      projectMetadataData[fundingRow.project_key][
+                        projectMetadataData[fundingRow.project_key] &&
+                        projectMetadataData[fundingRow.project_key][
                         Epochs[fundingEpoch].epoch
-                      ]
+                        ]
                         ? projectMetadataData[fundingRow.project_key][
-                            Epochs[fundingEpoch].epoch
-                          ].name
+                          Epochs[fundingEpoch].epoch
+                        ].name
                         : "",
                     project_metadata:
                       projectMetadataData &&
-                      projectMetadataData[fundingRow.project_key] &&
-                      projectMetadataData[fundingRow.project_key][
+                        projectMetadataData[fundingRow.project_key] &&
+                        projectMetadataData[fundingRow.project_key][
                         Epochs[fundingEpoch].epoch
-                      ]
+                        ]
                         ? projectMetadataData[fundingRow.project_key][
-                            Epochs[fundingEpoch].epoch
-                          ]
+                        Epochs[fundingEpoch].epoch
+                        ]
                         : lastEpochProjectMetadata,
                     //@ts-ignore
                     address:
                       projectMetadataData &&
-                      projectMetadataData[fundingRow.project_key][
+                        projectMetadataData[fundingRow.project_key][
                         Epochs[fundingEpoch].epoch
-                      ]
+                        ]
                         ? projectMetadataData[fundingRow.project_key][
-                            Epochs[fundingEpoch].epoch
-                          ].address
+                          Epochs[fundingEpoch].epoch
+                        ].address
                         : lastEpochProjectMetadata.address || "",
                     donors:
                       fundingRow.donor_counts[Epochs[fundingEpoch].epoch] || 0,
@@ -2304,9 +2294,9 @@ export default function Page() {
                     total:
                       fundingRow.total[Epochs[fundingEpoch].epoch] ||
                       0 +
-                        fundingRow.matched_rewards[
-                          Epochs[fundingEpoch].epoch
-                        ] ||
+                      fundingRow.matched_rewards[
+                      Epochs[fundingEpoch].epoch
+                      ] ||
                       0,
                     all_time_total: 0,
                     last_funding_epoch: lastEpoch.toString(),
@@ -2320,11 +2310,11 @@ export default function Page() {
                       // lastFundingEpoch={Epochs[Epochs.length - 1].epoch}
                       project_key={fundingRow.project_key}
                       lastFundingEpoch={lastFundingEpoch}
-                      // projectIndex={index}
-                      // setCurrentEpoch={setCurrentEpoch}
-                      // ProjectsMetadata={ProjectsMetadata}
-                      // master={master}
-                      // allTimeTotalsByProjectKey={allTimeTotalsByProjectKey}
+                    // projectIndex={index}
+                    // setCurrentEpoch={setCurrentEpoch}
+                    // ProjectsMetadata={ProjectsMetadata}
+                    // master={master}
+                    // allTimeTotalsByProjectKey={allTimeTotalsByProjectKey}
                     />
                   );
                 })}
@@ -2397,12 +2387,12 @@ const OctantCircleChart = ({
           label: "kept by wallets",
           value: communityData
             ? communityData.reduce(
-                (acc, user) =>
-                  acc +
-                  user.budget_amounts[epoch] -
-                  user.allocation_amounts[epoch],
-                0,
-              )
+              (acc, user) =>
+                acc +
+                user.budget_amounts[epoch] -
+                user.allocation_amounts[epoch],
+              0,
+            )
             : 0,
           className: "kept-by-wallets",
         },
@@ -2410,9 +2400,9 @@ const OctantCircleChart = ({
           label: "allocated to projects",
           value: communityData
             ? communityData.reduce(
-                (acc, user) => acc + user.allocation_amounts[epoch],
-                0,
-              )
+              (acc, user) => acc + user.allocation_amounts[epoch],
+              0,
+            )
             : 0,
           className: "allocated-to-projects",
         },
@@ -2457,23 +2447,20 @@ const ExpandingButtonMenu = ({
         }}
       >
         <div
-          className={`${
-            button.showIconBackground &&
+          className={`${button.showIconBackground &&
             "bg-white dark:bg-forest-1000 relative "
-          } rounded-full w-[25px] h-[25px] p-[5px]`}
+            } rounded-full w-[25px] h-[25px] p-[5px]`}
         >
           <Icon
             icon={button.icon}
-            className={`w-[15px] h-[15px] ${
-              button.animateIcon &&
+            className={`w-[15px] h-[15px] ${button.animateIcon &&
               "transition-transform duration-300 transform delay-0 group-hover/jump:delay-300 group-hover/jump:rotate-90"
-            }`}
+              }`}
           />
           <Icon
             icon={"gtp:circle-arrow"}
-            className={`w-[4px] h-[9px] absolute top-2 right-0 transition-transform delay-0 group-hover/jump:delay-300 duration-500 group-hover/jump:rotate-90 ${
-              button.showIconBackground ? "block" : "hidden"
-            }`}
+            className={`w-[4px] h-[9px] absolute top-2 right-0 transition-transform delay-0 group-hover/jump:delay-300 duration-500 group-hover/jump:rotate-90 ${button.showIconBackground ? "block" : "hidden"
+              }`}
             style={{
               transformOrigin: "-8px 4px",
             }}
@@ -2849,14 +2836,14 @@ const CommunityTableRow = ({
               style={{
                 fontFeatureSettings: "'pnum' on, 'lnum' on",
               }}
-              // onDoubleClick={(e) => {
-              //   e.preventDefault(); // Prevent default double-click behavior
-              //   const selection = window.getSelection();
-              //   const range = document.createRange();
-              //   range.selectNodeContents(e.currentTarget);
-              //   selection?.removeAllRanges();
-              //   selection?.addRange(range);
-              // }}
+            // onDoubleClick={(e) => {
+            //   e.preventDefault(); // Prevent default double-click behavior
+            //   const selection = window.getSelection();
+            //   const range = document.createRange();
+            //   range.selectNodeContents(e.currentTarget);
+            //   selection?.removeAllRanges();
+            //   selection?.addRange(range);
+            // }}
             >
               <div
                 className="truncate transition-all duration-300"
@@ -2959,9 +2946,8 @@ const CommunityTableRow = ({
             )}
           </div>
           <div
-            className={`flex items-center justify-end whitespace-nowrap ${
-              user.budget_amount < 0.01 && "text-[11px]"
-            }`}
+            className={`flex items-center justify-end whitespace-nowrap ${user.budget_amount < 0.01 && "text-[11px]"
+              }`}
           >
             {user.budget_amount > 0 ? (
               <div className="text-[#CDD8D3]">
@@ -2976,9 +2962,8 @@ const CommunityTableRow = ({
             )}
           </div>
           <div
-            className={`flex items-center justify-end whitespace-nowrap ${
-              user.allocation_amount < 0.01 && "text-[11px]"
-            }`}
+            className={`flex items-center justify-end whitespace-nowrap ${user.allocation_amount < 0.01 && "text-[11px]"
+              }`}
           >
             {user.allocation_amount > 0 ? (
               <div className="text-[#CDD8D3]">
@@ -2995,11 +2980,10 @@ const CommunityTableRow = ({
         </GridTableRow>
         <div className="pl-[13px] pr-[15px]">
           <div
-            className={`flex flex-col bg-[#1F2726] rounded-b-[15px] border-[#CDD8D3]/30 border-dotted border-x border-b transition-all duration-300 ${
-              isOpen
-                ? "min-h-[80px] max-h-[300px] opacity-100"
-                : "max-h-0 min-h-0 opacity-0"
-            } overflow-hidden`}
+            className={`flex flex-col bg-[#1F2726] rounded-b-[15px] border-[#CDD8D3]/30 border-dotted border-x border-b transition-all duration-300 ${isOpen
+              ? "min-h-[80px] max-h-[300px] opacity-100"
+              : "max-h-0 min-h-0 opacity-0"
+              } overflow-hidden`}
           >
             <div className="flex flex-col p-[15px] gap-y-[6px] text-[12px]">
               <div className="flex items-center justify-between">
@@ -3044,9 +3028,8 @@ const CommunityTableRow = ({
                         style={{
                           background:
                             "linear-gradient(0deg,#1DF7EF 0%,#10808C 100%)",
-                          width: `${
-                            (user.allocation_amount / user.budget_amount) * 100
-                          }%`,
+                          width: `${(user.allocation_amount / user.budget_amount) * 100
+                            }%`,
                         }}
                       ></div>
                       <div
@@ -3054,11 +3037,10 @@ const CommunityTableRow = ({
                         style={{
                           background:
                             "linear-gradient(-3deg,#FFDF27 0%,#FE5468 100%)",
-                          width: `${
-                            ((user.budget_amount - user.allocation_amount) /
-                              user.budget_amount) *
+                          width: `${((user.budget_amount - user.allocation_amount) /
+                            user.budget_amount) *
                             100
-                          }%`,
+                            }%`,
                         }}
                       ></div>
                     </div>
@@ -3114,14 +3096,13 @@ const CommunityTableRow = ({
                             <div className="w-6 h-6 border border-forest-900/20 dark:border-forest-500/20 rounded-full overflow-hidden">
                               {projectMetadataData &&
                                 projectMetadataData[project_key][
-                                  Epochs[communityEpoch].epoch
+                                Epochs[communityEpoch].epoch
                                 ] && (
                                   <Image
-                                    src={`https://ipfs.io/ipfs/${
-                                      projectMetadataData[project_key][
-                                        Epochs[communityEpoch].epoch
-                                      ].profile_image_medium
-                                    }`}
+                                    src={`https://ipfs.io/ipfs/${projectMetadataData[project_key][
+                                      Epochs[communityEpoch].epoch
+                                    ].profile_image_medium
+                                      }`}
                                     alt={
                                       projectMetadataData[project_key][
                                         Epochs[communityEpoch].epoch
@@ -3186,7 +3167,7 @@ const OctantTableRow = ({
   // master,
   fundingEpoch,
 }: // allTimeTotalsByProjectKey
-TableRowProps) => {
+  TableRowProps) => {
   return (
     <GridTableRow
       gridDefinitionColumns="grid-cols-[20px,225px,minmax(125px,1600px),95px,126px,101px,89px]"
@@ -3262,9 +3243,8 @@ TableRowProps) => {
               </>
               <div className="h-[15px] w-[15px]">
                 <Link
-                  href={`https://octant.app/project/${
-                    fundingEpoch === 0 ? lastFundingEpoch : fundingEpoch
-                  }/${row.project_metadata.address}`}
+                  href={`https://octant.app/project/${fundingEpoch === 0 ? lastFundingEpoch : fundingEpoch
+                    }/${row.project_metadata.address}`}
                   target="_blank"
                   className="group flex items-center gap-x-[5px] text-xs"
                 >
@@ -3419,9 +3399,8 @@ TableRowProps) => {
       </div>
       <div className="flex justify-end ">
         <div
-          className={`leading-[1.2] font-inter ${
-            row.matched <= 0 && "opacity-30"
-          }`}
+          className={`leading-[1.2] font-inter ${row.matched <= 0 && "opacity-30"
+            }`}
         >
           {row.matched.toFixed(2)}{" "}
           <span className="opacity-60 text-[0.55rem]">ETH</span>
@@ -3429,9 +3408,8 @@ TableRowProps) => {
       </div>
       <div className="flex justify-end">
         <div
-          className={`leading-[1.2] font-inter ${
-            row.total <= 0 && "opacity-30"
-          }`}
+          className={`leading-[1.2] font-inter ${row.total <= 0 && "opacity-30"
+            }`}
         >
           {row.total.toFixed(2)}{" "}
           <span className="opacity-60 text-[0.55rem]">ETH</span>
@@ -3474,22 +3452,22 @@ const CountdownTimer = ({ time }: { time: number }) => {
     return (
       <div className="flex items-center gap-x-[5px] leading-[1.1]">
         {days > 0 && (
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center w-[20px]">
             <div className="font-bold text-[12px]">{days}</div>
             <div className="text-[9px] font-normal text-forest-600">days</div>
           </div>
         )}
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center w-[20px]">
           <div className="font-bold text-[12px]">{hours}</div>
-          <div className="text-[9px] font-normal text-forest-600">hours</div>
+          <div className="text-[9px] font-normal text-forest-600">hrs</div>
         </div>
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center w-[20px]">
           <div className="font-bold text-[12px]">{minutes}</div>
-          <div className="text-[9px] font-normal text-forest-600">minutes</div>
+          <div className="text-[9px] font-normal text-forest-600">min</div>
         </div>
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center w-[20px]">
           <div className="font-bold text-[12px]">{seconds}</div>
-          <div className="text-[9px] font-normal text-forest-600">seconds</div>
+          <div className="text-[9px] font-normal text-forest-600">sec</div>
         </div>
       </div>
     );
