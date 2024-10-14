@@ -123,6 +123,104 @@ export default function Page() {
     }
   };
 
+  const [countdownTime, setCountdownTime] = useState<number>(0);
+  const [countdownTimeFormatted, setCountdownTimeFormatted] = useState<React.ReactNode>(null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCountdownTime(countdownTime - 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [countdownTime]);
+
+  useEffect(() => {
+    const days = Math.floor(countdownTime / 86400);
+    const hours = moment.utc(countdownTime * 1000).format("HH");
+    const minutes = moment.utc(countdownTime * 1000).format("mm");
+    const seconds = moment.utc(countdownTime * 1000).format("ss");
+
+    setCountdownTimeFormatted(
+      <div className="flex items-center gap-x-[5px] leading-[1.1]">
+        {days > 0 && (
+          <div className="flex flex-col items-center">
+            <div className="font-bold text-[12px]">{days}</div>
+            <div className="text-[9px] font-normal text-forest-600">days</div>
+          </div>
+        )}
+        <div className="flex flex-col items-center">
+          <div className="font-bold text-[12px]">{hours}</div>
+          <div className="text-[9px] font-normal text-forest-600">hours</div>
+        </div>
+        <div className="flex flex-col items-center">
+          <div className="font-bold text-[12px]">{minutes}</div>
+          <div className="text-[9px] font-normal text-forest-600">minutes</div>
+        </div>
+        <div className="flex flex-col items-center">
+          <div className="font-bold text-[12px]">{seconds}</div>
+          <div className="text-[9px] font-normal text-forest-600">seconds</div>
+        </div>
+
+      </div>
+    );
+
+  }, [countdownTime]);
+
+
+
+  const EpochStatus = useMemo(() => {
+    if (summaryData) {
+      const epochsInfo = summaryData.epochs;
+
+      let currentEpoch = epochsInfo[Object.keys(epochsInfo)[0]];
+      // get current time UTC
+      let currentTime = new Date().getTime() / 1000;
+
+
+      for (let epoch in epochsInfo) {
+        // these are YYYY-MM-DD hh:mm:ss strings in UTC
+        let epochAllocationStart = new Date(epochsInfo[epoch].allocationStart).getTime() / 1000;
+        let epochAllocationEnd = new Date(epochsInfo[epoch].allocationEnd).getTime() / 1000;
+
+        // check if the current time is between the start and end of the epoch
+        if (currentTime >= epochAllocationStart && currentTime <= epochAllocationEnd) {
+          currentEpoch = epochsInfo[epoch];
+          setCountdownTime(epochAllocationEnd - currentTime);
+          setCommunityEpoch(parseInt(epoch));
+          setFundingEpoch(parseInt(epoch));
+          return (
+            <>
+              <div className="text-[9px]">Epoch {currentEpoch.epoch} Allocation ends in</div>
+              {/* time until 10-13-2024 16:00 UTC */}
+              {/* <div className="font-bold text-[16px]">
+                {moment(currentEpoch.allocationEnd).fromNow(true)}
+              </div> */}
+            </>
+          );
+        }
+      }
+
+      let epochAllocationStart = new Date(currentEpoch.allocationStart).getTime() / 1000;
+
+      setCountdownTime(epochAllocationStart - currentTime);
+
+
+      return (
+        <>
+          <div className="text-[9px]">Next Epoch starts in</div>
+          {/* time until 10-13-2024 16:00 UTC */}
+          {/* <div className="font-bold text-[16px]">
+            {moment(currentEpoch.allocationStart).fromNow(true)}
+          </div> */}
+        </>
+      );
+    }
+  }, [summaryData]);
+
+  useEffect(() => {
+    if (summaryData && summaryData.epochs) {
+    }
+  }, [summaryData]);
 
   const JumpToSections = {
     Community: {
@@ -921,22 +1019,22 @@ export default function Page() {
                   title={["DONATIONS TO", "# OF PROJECTS"]}
                   data={[
                     {
-                      label: "1 Project",
+                      label: "1",
                       value: communityDataSortedAndFiltered ? communityDataSortedAndFiltered.filter((user) => user.allocated_to_project_keys[Epochs[communityEpoch].epoch] && user.allocated_to_project_keys[Epochs[communityEpoch].epoch].length === 1).length : 0,
                       className: "one-project",
                     },
                     {
-                      label: "2 to 5 Projects",
+                      label: "2-5",
                       value: communityDataSortedAndFiltered ? communityDataSortedAndFiltered.filter((user) => user.allocated_to_project_keys[Epochs[communityEpoch].epoch] && user.allocated_to_project_keys[Epochs[communityEpoch].epoch].length > 1 && user.allocated_to_project_keys[Epochs[communityEpoch].epoch].length <= 5).length : 0,
                       className: "two-to-five-projects",
                     },
                     {
-                      label: "> 5 Projects",
+                      label: ">5",
                       value: communityDataSortedAndFiltered ? communityDataSortedAndFiltered.filter((user) => user.allocated_to_project_keys[Epochs[communityEpoch].epoch] && user.allocated_to_project_keys[Epochs[communityEpoch].epoch].length > 5).length : 0,
                       className: "more-than-five-projects",
                     },
                     {
-                      label: "No Projects",
+                      label: "0 Projects",
                       value: communityDataSortedAndFiltered ? communityDataSortedAndFiltered.filter((user) => user.allocated_to_project_keys[Epochs[communityEpoch].epoch] && user.allocated_to_project_keys[Epochs[communityEpoch].epoch].length === 0).length : 0,
                       className: "no-projects",
                     },
@@ -1335,9 +1433,12 @@ export default function Page() {
           className={`mb-[15px] flex w-full justify-between gap-y-3 lg:gap-y-0 items-center text-xs bg-forest-50 dark:bg-[#1F2726] lg:z-30 flex-col-reverse rounded-b-[15px] md:rounded-b-[20px] rounded-t-[24px] p-[3px] lg:p-[5px] lg:flex-row lg:rounded-full lg:h-[54px] transition-shadow duration-300`}
         >
           <TopRowParent className="flex flex-col px-[15px] py-[5px] leading-[120%]">
-            <div className="text-[9px]">Next Epoch starts in</div>
-            {/* time until 10-13-2024 16:00 UTC */}
-            <div className="font-bold text-[16px]">{moment("2024-10-13T16:00:00Z").diff(moment(), "days")} days</div>
+            {/* <div className="text-[9px]">Next Epoch starts in</div>
+            <div className="font-bold text-[16px]">{moment("2024-10-13T16:00:00Z").diff(moment(), "days")} days</div> */}
+            {EpochStatus}
+            <div className="font-bold text-[16px]">
+              {countdownTimeFormatted}
+            </div>
           </TopRowParent>
           <div className="flex flex-col relative h-full lg:h-[44px] w-full lg:w-[271px] -my-[1px]">
             <div
