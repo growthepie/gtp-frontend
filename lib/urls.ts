@@ -13,6 +13,10 @@ export const MetricsURLs = {
   throughput: "https://api.growthepie.xyz/v1/metrics/throughput.json",
 };
 
+export const DAMetricsURLs = {
+  "blob-count": "https://api.growthepie.xyz/v1/da_metrics/blob_count.json",
+};
+
 export const ChainsBaseURL = "https://api.growthepie.xyz/v1/chains/";
 
 export const BlockspaceURLs = {

@@ -5,6 +5,7 @@
   fee_metrics: FeeMetrics;
   default_chain_selection: string[];
   blockspace_categories: BlockspaceCategories;
+  da_layers: DataAvailabilityLayers;
 }
 
 export interface Chains {
@@ -71,6 +72,23 @@ export interface MetricInfo {
   units: string[];
   avg: boolean;
   all_l2s_aggregate: string;
+}
+
+export interface DataAvailabilityLayers {
+  [key: string]: {
+    name: string;
+    name_short: string;
+    logo: {
+      body: string;
+      width?: number;
+      height?: number;
+    };
+    colors: {
+      light: [string, string];
+      dark: [string, string];
+      darkTextOnBackground: boolean;
+    };
+  };
 }
 
 export interface FeeMetrics {

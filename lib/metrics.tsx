@@ -1,4 +1,5 @@
 import Icon from "@/components/layout/Icon";
+import { url } from "inspector";
 
 export type MetricItem = {
   label: string;
@@ -262,6 +263,22 @@ export const metricItems: MetricItem[] = [
     key: "market_cap",
     rootKey: "marketCap",
     urlKey: "market-cap",
+  },
+];
+
+export const daMetricItems: MetricItem[] = [
+  {
+    label: "Blob Count",
+    icon: "gtp:gtp-blobs",
+    page: {
+      title: "Blob Count",
+      description: "The Blob Count is a DA Layer Metric",
+      why: "Cool stuff.",
+      icon: "gtp:gtp-blobs",
+      showGwei: false,
+    },
+    key: "blob_count",
+    urlKey: "blob-count",
   },
 ];
 

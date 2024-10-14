@@ -2106,7 +2106,9 @@ export default function ComparisonChart({
                     <div className="absolute bottom-[53.5%] left-0 right-0 flex flex-col gap-y-[3px] items-center justify-center pointer-events-none z-0 opacity-40">
                       <ChartWatermark className="w-[128.67px] h-[30.67px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
                       <div className="font-medium text-[10px] uppercase">
-                        {master && master.metrics[metric_id].name}
+                        {master &&
+                          master.metrics[metric_id] &&
+                          master.metrics[metric_id].name}
                       </div>
                     </div>
                   </div>
