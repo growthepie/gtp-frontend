@@ -187,20 +187,20 @@ const Chain = ({ params }: { params: any }) => {
   const getGradientColor = useCallback((percentage, weighted = false) => {
     const colors = !weighted
       ? [
-        { percent: 0, color: "#1DF7EF" },
-        { percent: 20, color: "#76EDA0" },
-        { percent: 50, color: "#FFDF27" },
-        { percent: 70, color: "#FF9B47" },
-        { percent: 100, color: "#FE5468" },
-      ]
+          { percent: 0, color: "#1DF7EF" },
+          { percent: 20, color: "#76EDA0" },
+          { percent: 50, color: "#FFDF27" },
+          { percent: 70, color: "#FF9B47" },
+          { percent: 100, color: "#FE5468" },
+        ]
       : [
-        { percent: 0, color: "#1DF7EF" },
-        { percent: 2, color: "#76EDA0" },
-        { percent: 10, color: "#FFDF27" },
-        { percent: 40, color: "#FF9B47" },
-        { percent: 80, color: "#FE5468" },
-        { percent: 100, color: "#FE5468" }, // Repeat the final color to ensure upper bound
-      ];
+          { percent: 0, color: "#1DF7EF" },
+          { percent: 2, color: "#76EDA0" },
+          { percent: 10, color: "#FFDF27" },
+          { percent: 40, color: "#FF9B47" },
+          { percent: 80, color: "#FE5468" },
+          { percent: 100, color: "#FE5468" }, // Repeat the final color to ensure upper bound
+        ];
 
     let lowerBound = colors[0];
     let upperBound = colors[colors.length - 1];
@@ -228,23 +228,23 @@ const Chain = ({ params }: { params: any }) => {
 
     const r = Math.floor(
       parseInt(lowerBound.color.substring(1, 3), 16) +
-      percentDiff *
-      (parseInt(upperBound.color.substring(1, 3), 16) -
-        parseInt(lowerBound.color.substring(1, 3), 16)),
+        percentDiff *
+          (parseInt(upperBound.color.substring(1, 3), 16) -
+            parseInt(lowerBound.color.substring(1, 3), 16)),
     );
 
     const g = Math.floor(
       parseInt(lowerBound.color.substring(3, 5), 16) +
-      percentDiff *
-      (parseInt(upperBound.color.substring(3, 5), 16) -
-        parseInt(lowerBound.color.substring(3, 5), 16)),
+        percentDiff *
+          (parseInt(upperBound.color.substring(3, 5), 16) -
+            parseInt(lowerBound.color.substring(3, 5), 16)),
     );
 
     const b = Math.floor(
       parseInt(lowerBound.color.substring(5, 7), 16) +
-      percentDiff *
-      (parseInt(upperBound.color.substring(5, 7), 16) -
-        parseInt(lowerBound.color.substring(5, 7), 16)),
+        percentDiff *
+          (parseInt(upperBound.color.substring(5, 7), 16) -
+            parseInt(lowerBound.color.substring(5, 7), 16)),
     );
 
     return `#${r.toString(16).padStart(2, "0")}${g
@@ -304,20 +304,23 @@ const Chain = ({ params }: { params: any }) => {
           }}
         >
           <div
-            className={`${button.showIconBackground &&
+            className={`${
+              button.showIconBackground &&
               "bg-white dark:bg-forest-1000 relative "
-              } rounded-full w-[25px] h-[25px] p-[5px]`}
+            } rounded-full w-[25px] h-[25px] p-[5px]`}
           >
             <Icon
               icon={button.icon}
-              className={`w-[15px] h-[15px] ${button.animateIcon &&
+              className={`w-[15px] h-[15px] ${
+                button.animateIcon &&
                 "transition-transform duration-300 transform delay-0 group-hover/jump:delay-300 group-hover/jump:rotate-90"
-                }`}
+              }`}
             />
             <Icon
               icon={"gtp:circle-arrow"}
-              className={`w-[4px] h-[9px] absolute top-2 right-0 transition-transform delay-0 group-hover/jump:delay-300 duration-500 group-hover/jump:rotate-90 ${button.showIconBackground ? "block" : "hidden"
-                }`}
+              className={`w-[4px] h-[9px] absolute top-2 right-0 transition-transform delay-0 group-hover/jump:delay-300 duration-500 group-hover/jump:rotate-90 ${
+                button.showIconBackground ? "block" : "hidden"
+              }`}
               style={{
                 transformOrigin: "-8px 4px",
               }}
@@ -475,6 +478,7 @@ const Chain = ({ params }: { params: any }) => {
               <div className="relative flex lg:col-auto lg:w-[253px] lg:basis-[253px]">
                 <ChainSectionHead
                   title={"Menu"}
+                  icon={"gtp:gtp-menu"}
                   enableDropdown={false}
                   defaultDropdown={true}
                   childrenHeight={isMobile ? 97 : 111}
@@ -492,24 +496,24 @@ const Chain = ({ params }: { params: any }) => {
                         items={
                           overviewData
                             ? [
-                              {
-                                label: "Fundamentals",
-                                icon: "gtp:gtp-fundamentals",
-                                href: "#fundamentals",
-                              },
-                              {
-                                label: "Blockspace",
-                                icon: "gtp:gtp-package",
-                                href: "#blockspace",
-                              },
-                            ]
+                                {
+                                  label: "Fundamentals",
+                                  icon: "gtp:gtp-fundamentals",
+                                  href: "#fundamentals",
+                                },
+                                {
+                                  label: "Blockspace",
+                                  icon: "gtp:gtp-package",
+                                  href: "#blockspace",
+                                },
+                              ]
                             : [
-                              {
-                                label: "Fundamentals",
-                                icon: "gtp:gtp-fundamentals",
-                                href: "#fundamentals",
-                              },
-                            ]
+                                {
+                                  label: "Fundamentals",
+                                  icon: "gtp:gtp-fundamentals",
+                                  href: "#fundamentals",
+                                },
+                              ]
                         }
                       />
                       {master.chains[chainKey].block_explorers &&
@@ -588,6 +592,7 @@ const Chain = ({ params }: { params: any }) => {
               <div className="@container min-w-[67px] lg:max-w-[398px] lg:col-auto lg:basis-[398px] lg:flex-grow lg:flex-shrink lg:hover:min-w-[398px] transition-all duration-300">
                 <ChainSectionHeadAlt
                   title={"Background"}
+                  icon={"gtp:gtp-backgroundinformation"}
                   enableDropdown={isMobile}
                   childrenHeight={isMobile ? 200 : 111}
                   className={`transition-all duration-300 min-w-[67px] w-full flex flex-1`}
@@ -646,9 +651,9 @@ const Chain = ({ params }: { params: any }) => {
                                             backgroundColor: chainData
                                               ? chainData.ranking[key]
                                                 ? getGradientColor(
-                                                  chainData.ranking[key]
-                                                    .color_scale * 100,
-                                                )
+                                                    chainData.ranking[key]
+                                                      .color_scale * 100,
+                                                  )
                                                 : "#5A6462"
                                               : "#5A6462",
                                           }}
@@ -691,10 +696,10 @@ const Chain = ({ params }: { params: any }) => {
                                                     backgroundColor: chainData
                                                       ? chainData.ranking[key]
                                                         ? getGradientColor(
-                                                          chainData.ranking[
-                                                            key
-                                                          ].color_scale * 100,
-                                                        )
+                                                            chainData.ranking[
+                                                              key
+                                                            ].color_scale * 100,
+                                                          )
                                                         : "#5A6462"
                                                       : "#5A6462",
                                                   }}
@@ -749,6 +754,7 @@ const Chain = ({ params }: { params: any }) => {
                 <div className="@container min-w-full lg:min-w-[67px] lg:col-auto lg:basis-[228px] lg:flex-shrink lg:hover:min-w-[228px] transition-all duration-300">
                   <ChainSectionHeadAlt
                     title={"Usage"}
+                    icon={"gtp:gtp-usage"}
                     enableDropdown={isMobile}
                     childrenHeight={isMobile ? 116 : 111}
                     className="transition-all duration-300 min-w-[67px] w-full"
@@ -775,16 +781,16 @@ const Chain = ({ params }: { params: any }) => {
                             onClick={() => {
                               if (
                                 !chainData.hottest_contract.data[0][
-                                chainData.hottest_contract.types.indexOf(
-                                  "name",
-                                )
+                                  chainData.hottest_contract.types.indexOf(
+                                    "name",
+                                  )
                                 ]
                               ) {
                                 navigator.clipboard.writeText(
                                   chainData.hottest_contract.data[0][
-                                  chainData.hottest_contract.types.indexOf(
-                                    "address",
-                                  )
+                                    chainData.hottest_contract.types.indexOf(
+                                      "address",
+                                    )
                                   ],
                                 );
                               }
@@ -795,14 +801,15 @@ const Chain = ({ params }: { params: any }) => {
                                 chainData.hottest_contract.data[0] ? (
                                   <>
                                     <span
-                                      className={` truncate ${chainData.hottest_contract.data[0][
-                                        chainData.hottest_contract.types.indexOf(
-                                          "project_name",
-                                        )
-                                      ]
-                                        ? "max-w-[80px]"
-                                        : "max-w-[140px]"
-                                        }`}
+                                      className={` truncate ${
+                                        chainData.hottest_contract.data[0][
+                                          chainData.hottest_contract.types.indexOf(
+                                            "project_name",
+                                          )
+                                        ]
+                                          ? "max-w-[80px]"
+                                          : "max-w-[140px]"
+                                      }`}
                                     >
                                       {chainData.hottest_contract.data[0][
                                         chainData.hottest_contract.types.indexOf(
@@ -810,9 +817,9 @@ const Chain = ({ params }: { params: any }) => {
                                         )
                                       ] ||
                                         chainData.hottest_contract.data[0][
-                                        chainData.hottest_contract.types.indexOf(
-                                          "address",
-                                        )
+                                          chainData.hottest_contract.types.indexOf(
+                                            "address",
+                                          )
                                         ]}
                                     </span>
                                     <span>
@@ -827,9 +834,9 @@ const Chain = ({ params }: { params: any }) => {
                                     <span>
                                       {
                                         chainData.hottest_contract.data[0][
-                                        chainData.hottest_contract.types.indexOf(
-                                          "project_name",
-                                        )
+                                          chainData.hottest_contract.types.indexOf(
+                                            "project_name",
+                                          )
                                         ]
                                       }
                                     </span>
@@ -854,6 +861,7 @@ const Chain = ({ params }: { params: any }) => {
                   <div className="@container min-w-[calc(100%-130px)] lg:min-w-[67px] lg:basis-[232px] lg:flex-grow lg:flex-shrink lg:hover:min-w-[232px] transition-all duration-300">
                     <ChainSectionHeadAlt
                       title={"Technology"}
+                      icon={"gtp:gtp-technology"}
                       enableDropdown={isMobile}
                       childrenHeight={isMobile ? 116 : 111}
                       className={`transition-all duration-300 min-w-[67px]`}
@@ -922,6 +930,7 @@ const Chain = ({ params }: { params: any }) => {
                         title={"Risk"}
                         enableDropdown={isMobile}
                         childrenHeight={isMobile ? 116 : 111}
+                        icon={"gtp:gtp-risk"}
                         className={`transition-all duration-300 min-w-[67px]`}
                         shadowElement={
                           <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[125px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none"></div>
