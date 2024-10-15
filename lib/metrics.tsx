@@ -280,6 +280,45 @@ export const daMetricItems: MetricItem[] = [
     key: "blob_count",
     urlKey: "blob-count",
   },
+  {
+    label: "Data Posted",
+    icon: "gtp:gtp-data-posted",
+    page: {
+      title: "Data Posted",
+      description: "The Data Posted is a DA Layer Metric",
+      why: "Cool stuff.",
+      icon: "gtp:gtp-data-posted",
+      showGwei: false,
+    },
+    key: "data_posted",
+    urlKey: "data-posted",
+  },
+  {
+    label: "Fees Paid",
+    icon: "gtp:gtp-fees-paid",
+    page: {
+      title: "Fees Paid",
+      description: "The Fees Paid is a DA Layer Metric",
+      why: "Cool stuff.",
+      icon: "gtp:gtp-fees-paid",
+      showGwei: false,
+    },
+    key: "fees_paid",
+    urlKey: "fees-paid",
+  },
+  {
+    label: "Fees Paid Per Mbyte",
+    icon: "gtp:gtp-fees-per-mbyte",
+    page: {
+      title: "Fees Paid Per Mbyte",
+      description: "The Fees Paid Per Mbyte is a DA Layer Metric",
+      why: "Cool stuff.",
+      icon: "gtp:gtp-fees-per-mbyte",
+      showGwei: false,
+    },
+    key: "fees_per_mbyte",
+    urlKey: "fees-paid-per-mbyte",
+  },
 ];
 
 export const getFundamentalsByKey = (() => {

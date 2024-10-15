@@ -411,7 +411,80 @@ export const navigationItems: NavigationItem[] = [
         url: "https://labels.growthepie.xyz/",
       },
     ],
+
     // href: "",
+  },
+  {
+    name: "Data Availability",
+    label: "Data Availability",
+    key: "metrics",
+    icon: "gtp-fundamentals",
+    options: [
+      {
+        label: "Blob Count",
+        category: "activity",
+        page: {
+          title: "Active Addresses",
+          description:
+            "The number of distinct addresses that interacted with a chain.",
+          why: "Active addresses is a widely used metric for estimating the number of users on a blockchain network. Although it is not a perfect metric due to the possibility of a single person owning multiple addresses, it can still provide valuable insights into the overall user base of a chain. It is worth noting, however, that this metric can be influenced by Sybil attacks, where an attacker creates a large number of fake identities to artificially inflate the active address count. Therefore, while daily active addresses can be a useful measure, it should be used in conjunction with other metrics to provide a more comprehensive analysis of a chain's user activity.",
+          icon: "gtp-metrics-activeaddresses",
+        },
+        icon: "gtp-metrics-activeaddresses",
+        key: "blob_count",
+        rootKey: "metricsDailyActiveAddresses",
+        urlKey: "blob-count",
+        url: "/data-availability/blob-count",
+      },
+      {
+        label: "Data Posted",
+        category: "activity",
+        page: {
+          title: "Active Addresses",
+          description:
+            "The number of distinct addresses that interacted with a chain.",
+          why: "Active addresses is a widely used metric for estimating the number of users on a blockchain network. Although it is not a perfect metric due to the possibility of a single person owning multiple addresses, it can still provide valuable insights into the overall user base of a chain. It is worth noting, however, that this metric can be influenced by Sybil attacks, where an attacker creates a large number of fake identities to artificially inflate the active address count. Therefore, while daily active addresses can be a useful measure, it should be used in conjunction with other metrics to provide a more comprehensive analysis of a chain's user activity.",
+          icon: "gtp-metrics-activeaddresses",
+        },
+        icon: "gtp-metrics-activeaddresses",
+        key: "data_posted",
+        rootKey: "metricsDailyActiveAddresses",
+        urlKey: "data-posted",
+        url: "/data-availability/data-posted",
+      },
+      {
+        label: "Fees Paid",
+        category: "activity",
+        page: {
+          title: "Transaction Count",
+          description:
+            "The number of daily transactions. We try to only count transactions that are executed by users/smart contracts - no system transactions.",
+          why: "The number of transactions processed on a blockchain is a reliable metric for measuring its usage. However, it should be noted that this metric alone may not provide sufficient insight into the actual value of the transactions being conducted. For instance, while some chains may have a lower transaction count, the value of these transactions may be significantly higher due to their use in decentralized finance (DeFi) applications. On the other hand, certain chains may have a higher transaction count due to their use in gaming or other applications involving lower value transactions.",
+          icon: "gtp-metrics-transactioncount",
+        },
+        icon: "gtp-metrics-transactioncount",
+        key: "fees_paid",
+        rootKey: "metricsTxCount",
+        urlKey: "fees-paid",
+        url: "/data-availability/fees-paid",
+      },
+      {
+        label: "Fees Paid Per Mbyte",
+        category: "activity",
+        page: {
+          title: "Throughput",
+          description:
+            "A chains throughput measured in gas per second. We only include EVM equivalent Layer 2 gas usage.",
+          why: "Throughput is a crucial metric for assessing scalability, reflecting a blockchain's actual compute capacity more accurately than transaction counts, which can vary in complexity (i.e. 21,000 gas for an eth transfer vs 280,000 gas for a simple Uniswap swap). Similarly to how modern storage devices are marketed with specs on read/write speeds rather than the number of files they can process, throughput provides a direct measure of a blockchain's ability to handle compute effectively. Throughput also reveals how close a chain is to its operational limits. This metric is essential for app developers and Layer 2 teams to gauge growth potential, potential cost implications, and performance constraints.",
+          icon: "gtp-metrics-throughput",
+        },
+        icon: "gtp-metrics-throughput",
+        key: "fees_per_mbyte",
+        rootKey: "throughput",
+        urlKey: "fees-paid-per-mbyte",
+        url: "/data-availability/fees-paid-per-mbyte",
+      },
+    ],
   },
   // {
   //   name: "Chains",
