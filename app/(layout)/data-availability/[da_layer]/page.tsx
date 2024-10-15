@@ -23,6 +23,8 @@ import Image from "next/image";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { useMaster } from "@/contexts/MasterContext";
+import { A } from "million/dist/shared/million.485bbee4";
+import DAMetricsTable from "@/components/layout/DAMetricsTable";
 
 const DataAvailability = ({ params }: { params: any }) => {
   const {
@@ -46,7 +48,7 @@ const DataAvailability = ({ params }: { params: any }) => {
         dataValidating={[masterValidating, metricValidating]}
       />
       {master && metricData ? (
-        <FundamentalsContent params={{ ...params, master, metricData }} />
+        <DataAvailabilityContent params={{ ...params, master, metricData }} />
       ) : (
         <div className="w-full min-h-[1024px] md:min-h-[1081px] lg:min-h-[637px] xl:min-h-[736px]" />
       )}
@@ -54,24 +56,26 @@ const DataAvailability = ({ params }: { params: any }) => {
   );
 };
 
-const FundamentalsContent = ({ params }: { params: any }) => {
-  const { AllChains } = useMaster();
+const DataAvailabilityContent = ({ params }: { params: any }) => {
+  const { AllDALayers, AllDALayersByKeys } = useMaster();
+
+  console.log("AllDALayers", AllDALayers);
+  console.log("AllDALayersByKeys", AllDALayersByKeys);
   const master = params.master;
   const metricData = params.metricData;
   const [errorCode, setErrorCode] = useState<number | null>(null);
 
-  const chainKeys = useMemo(() => {
-    if (!metricData)
-      return AllChains.filter((chain) =>
-        Get_SupportedChainKeys(master).includes(chain.key),
-      ).map((chain) => chain.key);
+  console.log("metricData", metricData);
 
-    return AllChains.filter(
-      (chain) =>
-        Object.keys(metricData.data.chains).includes(chain.key) &&
-        Get_SupportedChainKeys(master).includes(chain.key),
-    ).map((chain) => chain.key);
-  }, [master, metricData]);
+  const daLayerKeys = useMemo(() => {
+    if (!metricData)
+      return AllDALayers;
+
+    return AllDALayers.filter(
+      (da) =>
+        Object.keys(metricData.data.chains).includes(da.key)
+    ).map((da) => da.key);
+  }, [AllDALayers, metricData]);
 
   // const pageData = navigationItems[1]?.options.find(
   //   (item) => item.urlKey === params.metric,
@@ -81,28 +85,28 @@ const FundamentalsContent = ({ params }: { params: any }) => {
   //   icon: "",
   // };
 
-  const [selectedChains, setSelectedChains] = useSessionStorage(
-    "fundamentalsChains",
-    [...Get_DefaultChainSelectionKeys(master), "ethereum"],
+  const [selectedDaLayers, setSelectedDaLayers] = useSessionStorage(
+    "dataAvailabilitySelectedDaLayers",
+    AllDALayers.map((da) => da.key),
   );
 
   const [selectedScale, setSelectedScale] = useSessionStorage(
-    "fundamentalsScale",
+    "dataAvailabilityScale",
     "absolute",
   );
 
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
-    "fundamentalsTimespan",
+    "dataAvailabilityTimespan",
     "365d",
   );
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useSessionStorage(
-    "fundamentalsTimeInterval",
+    "dataAvailabilityTimeInterval",
     "daily",
   );
 
   const [showEthereumMainnet, setShowEthereumMainnet] = useSessionStorage(
-    "fundamentalsShowEthereumMainnet",
+    "dataAvailabilityShowEthereumMainnet",
     false,
   );
 
@@ -139,30 +143,30 @@ const FundamentalsContent = ({ params }: { params: any }) => {
       <div className="flex flex-col-reverse xl:flex-row space-x-0 xl:space-x-2">
         <ComparisonChart
           data={Object.keys(metricData.data.chains)
-            .filter((chain) => selectedChains.includes(chain))
-            .map((chain) => {
+            .filter((da) => selectedDaLayers.includes(da))
+            .map((da) => {
               return {
-                name: chain,
+                name: da,
                 // type: 'spline',
-                types: metricData.data.chains[chain][timeIntervalKey].types,
-                data: metricData.data.chains[chain][timeIntervalKey].data,
+                types: metricData.data.chains[da][timeIntervalKey].types,
+                data: metricData.data.chains[da][timeIntervalKey].data,
               };
             })}
           minDailyUnix={
             Object.values(metricData.data.chains).reduce(
-              (acc: number, chain: ChainData) => {
-                if (!chain["daily"].data[0][0]) return acc;
-                return Math.min(acc, chain["daily"].data[0][0]);
+              (acc: number, da: ChainData) => {
+                if (!da["daily"].data[0][0]) return acc;
+                return Math.min(acc, da["daily"].data[0][0]);
               },
               Infinity,
             ) as number
           }
           maxDailyUnix={
             Object.values(metricData.data.chains).reduce(
-              (acc: number, chain: ChainData) => {
+              (acc: number, da: ChainData) => {
                 return Math.max(
                   acc,
-                  chain["daily"].data[chain["daily"].data.length - 1][0],
+                  da["daily"].data[da["daily"].data.length - 1][0],
                 );
               },
               0,
@@ -188,12 +192,12 @@ const FundamentalsContent = ({ params }: { params: any }) => {
           }
           setSelectedScale={setSelectedScale}
         >
-          <MetricsTable
+          <DAMetricsTable
             data={metricData.data.chains}
             master={master}
-            selectedChains={selectedChains}
-            setSelectedChains={setSelectedChains}
-            chainKeys={chainKeys}
+            selectedDALayers={selectedDaLayers}
+            setSelectedDALayers={setSelectedDaLayers}
+            daLayerKeys={daLayerKeys as string[]}
             metric_id={metricData.data.metric_id}
             showEthereumMainnet={showEthereumMainnet}
             setShowEthereumMainnet={setShowEthereumMainnet}

@@ -75,19 +75,21 @@ export interface MetricInfo {
 }
 
 export interface DataAvailabilityLayers {
-  [key: string]: {
-    name: string;
-    name_short: string;
-    logo: {
-      body: string;
-      width?: number;
-      height?: number;
-    };
-    colors: {
-      light: [string, string];
-      dark: [string, string];
-      darkTextOnBackground: boolean;
-    };
+  [key: string]: DataAvailabilityLayerData;
+}
+
+export interface DataAvailabilityLayerData {
+  name: string;
+  name_short: string;
+  logo: {
+    body: string;
+    width?: number;
+    height?: number;
+  };
+  colors: {
+    light: [string, string];
+    dark: [string, string];
+    darkTextOnBackground: boolean;
   };
 }
 

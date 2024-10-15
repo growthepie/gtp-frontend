@@ -1,7 +1,7 @@
 "use client";
 import { Chain, Get_AllChainsByKeys, Get_AllChainsNavigationItems } from "@/lib/chains";
 import { MasterURL } from "@/lib/urls";
-import { MasterResponse } from "@/types/api/MasterResponse";
+import { DataAvailabilityLayerData, DataAvailabilityLayers, MasterResponse } from "@/types/api/MasterResponse";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { ImportChainIcons } from "@/lib/chainIcons";
 import useSWR from "swr";
@@ -11,6 +11,8 @@ type MasterContextType = {
   data: MasterResponse | undefined;
   AllChains: Chain[];
   AllChainsByKeys: { [key: string]: Chain };
+  AllDALayers: (DataAvailabilityLayerData & { key: string })[];
+  AllDALayersByKeys: { [key: string]: DataAvailabilityLayerData & { key: string } };
   EnabledChainsByKeys: { [key: string]: Chain };
   ChainsNavigationItems: {
     name: string;
@@ -33,6 +35,8 @@ const MasterContext = createContext<MasterContextType | null>({
   data: undefined,
   AllChains: [],
   AllChainsByKeys: {},
+  AllDALayers: [],
+  AllDALayersByKeys: {},
   EnabledChainsByKeys: {},
   ChainsNavigationItems: null,
   formatMetric: () => "MasterProvider: formatMetric not found",
@@ -42,6 +46,8 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
   const { data, isLoading } = useSWR<MasterResponse>(MasterURL);
   const [AllChains, setAllChains] = useState<Chain[]>([]);
   const [AllChainsByKeys, setAllChainsByKeys] = useState<{ [key: string]: Chain }>({});
+  const [AllDALayers, setDALayers] = useState<(DataAvailabilityLayerData & { key: string })[]>([]);
+  const [AllDALayersByKeys, setDALayersByKeys] = useState<{ [key: string]: DataAvailabilityLayerData & { key: string } }>({});
   const [EnabledChainsByKeys, setEnabledChainsByKeys] = useState<{ [key: string]: Chain }>({});
   const [ChainsNavigationItems, setChainsNavigationItems] = useState<any>({});
 
@@ -71,6 +77,15 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
 
       const chainsNavigationItems = Get_AllChainsNavigationItems(data);
       setChainsNavigationItems(chainsNavigationItems);
+
+      const daLayersWithKeys: (DataAvailabilityLayerData & { key: string })[] = Object.entries(data.da_layers).map(([key, value]) => ({ ...value, key }));
+
+      // Data Availability Layers
+      setDALayers(daLayersWithKeys);
+      setDALayersByKeys(daLayersWithKeys.reduce((acc, layer) => {
+        acc[layer.key] = layer;
+        return acc;
+      }, {}));
 
       // import chain icons into iconify
       ImportChainIcons(data);
@@ -109,7 +124,7 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <MasterContext.Provider
-      value={{ data, AllChains, AllChainsByKeys, EnabledChainsByKeys, ChainsNavigationItems, formatMetric }}
+      value={{ data, AllChains, AllChainsByKeys, AllDALayers, AllDALayersByKeys, EnabledChainsByKeys, ChainsNavigationItems, formatMetric }}
     >
       {data && !isLoading && AllChains.length > 0 ? children : null}
     </MasterContext.Provider>

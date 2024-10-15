@@ -60,6 +60,11 @@ export const navigationCategories = {
     icon: "feather:bar-chart-2",
     group: "fundamentals",
   },
+  metrics: {
+    label: "Metrics",
+    icon: "feather:bar-chart-2",
+    group: "fundamentals",
+  },
 
   "blockspace-categories": {
     label: "Categories",
@@ -418,11 +423,11 @@ export const navigationItems: NavigationItem[] = [
     name: "Data Availability",
     label: "Data Availability",
     key: "metrics",
-    icon: "gtp-fundamentals",
+    icon: "gtp-data-availability",
     options: [
       {
         label: "Blob Count",
-        category: "activity",
+        category: "metrics",
         page: {
           title: "Active Addresses",
           description:
@@ -430,7 +435,7 @@ export const navigationItems: NavigationItem[] = [
           why: "Active addresses is a widely used metric for estimating the number of users on a blockchain network. Although it is not a perfect metric due to the possibility of a single person owning multiple addresses, it can still provide valuable insights into the overall user base of a chain. It is worth noting, however, that this metric can be influenced by Sybil attacks, where an attacker creates a large number of fake identities to artificially inflate the active address count. Therefore, while daily active addresses can be a useful measure, it should be used in conjunction with other metrics to provide a more comprehensive analysis of a chain's user activity.",
           icon: "gtp-metrics-activeaddresses",
         },
-        icon: "gtp-metrics-activeaddresses",
+        icon: "gtp-blobs",
         key: "blob_count",
         rootKey: "metricsDailyActiveAddresses",
         urlKey: "blob-count",
@@ -438,7 +443,7 @@ export const navigationItems: NavigationItem[] = [
       },
       {
         label: "Data Posted",
-        category: "activity",
+        category: "metrics",
         page: {
           title: "Active Addresses",
           description:
@@ -454,7 +459,7 @@ export const navigationItems: NavigationItem[] = [
       },
       {
         label: "Fees Paid",
-        category: "activity",
+        category: "metrics",
         page: {
           title: "Transaction Count",
           description:
@@ -470,7 +475,7 @@ export const navigationItems: NavigationItem[] = [
       },
       {
         label: "Fees Paid Per Mbyte",
-        category: "activity",
+        category: "metrics",
         page: {
           title: "Throughput",
           description:
