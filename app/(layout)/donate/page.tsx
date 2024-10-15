@@ -200,7 +200,14 @@ export default function Donations() {
         </GridTableHeader>
         <div className="flex flex-col gap-y-[3px]">
           {PGFData &&
-            PGFData.map((donation) => (
+            PGFData.filter((donation) => {
+              const endDate = new Date(donation.endDate);
+              const twoWeeksAgo = new Date(
+                Date.now() - 1000 * 60 * 60 * 24 * 14,
+              );
+
+              return endDate.getTime() > twoWeeksAgo.getTime();
+            }).map((donation) => (
               <GridTableRow
                 gridDefinitionColumns="grid-cols-[115px_200px_90px_minmax(100px,800px)_200px] justify-items-stretch"
                 key={donation.name}
@@ -479,7 +486,7 @@ const QRCodeCard = ({ CardData, index }) => {
                 }}
               >
                 <div
-                  className="truncate transition-all duration-300"
+                  className="truncate transition-all duration-300 "
                   style={{ direction: "ltr" }}
                   onClick={() => {
                     navigator.clipboard.writeText(CardData.address);
@@ -487,7 +494,7 @@ const QRCodeCard = ({ CardData, index }) => {
                 >
                   {CardData.address.slice(0, CardData.address.length - 5)}
                 </div>
-                <div className="transition-all duration-300">
+                <div className="transition-all duration-300 ">
                   {CardData.address.slice(-5)}
                 </div>
                 <div className="pl-[5px]">
