@@ -368,7 +368,7 @@ export const navigationItems: NavigationItem[] = [
   {
     name: "Blockspace",
     label: "Blockspace",
-    icon: "gtp-usage",
+    icon: "gtp-blockspace",
     options: [
       {
         label: "Chain Overview",
