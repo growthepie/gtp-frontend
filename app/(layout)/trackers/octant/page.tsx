@@ -3175,13 +3175,19 @@ const OctantTableRow = ({
     >
       <div className="w-[26px] h-[18px] px-[4px]">
         {row.project_metadata && (
-          <Image
-            src={`https://ipfs.io/ipfs/${row.project_metadata.profile_image_medium}`}
-            alt={row.owner_project}
-            width={18}
-            height={18}
-            className="rounded-full"
-          />
+          <div className="size-[18px] relative">
+
+            <div className="absolute size-[16px] inset-[1px] rounded-full bg-white" />
+            <Image
+              src={`https://ipfs.io/ipfs/${row.project_metadata.profile_image_medium}`}
+              alt={row.owner_project}
+              // width={18}
+              // height={18}
+              fill
+              objectFit="contain"
+              className=" rounded-full"
+            />
+          </div>
         )}
       </div>
       <div className="flex justify-between select-none">
@@ -3457,17 +3463,27 @@ const CountdownTimer = ({ time }: { time: number }) => {
             <div className="text-[9px] font-normal text-forest-600">days</div>
           </div>
         )}
-        <div className="flex flex-col items-center w-[20px]">
-          <div className="font-bold text-[12px]">{hours}</div>
-          <div className="text-[9px] font-normal text-forest-600">hrs</div>
-        </div>
-        <div className="flex flex-col items-center w-[20px]">
-          <div className="font-bold text-[12px]">{minutes}</div>
-          <div className="text-[9px] font-normal text-forest-600">min</div>
-        </div>
-        <div className="flex flex-col items-center w-[20px]">
-          <div className="font-bold text-[12px]">{seconds}</div>
-          <div className="text-[9px] font-normal text-forest-600">sec</div>
+        <div className="flex items-center gap-x-[0px] w-[60px] leading-[1.1]">
+          <div className="flex flex-col items-center">
+            <div className="font-bold text-[12px]">{hours}</div>
+            <div className="text-[9px] font-normal text-forest-600">hrs</div>
+          </div>
+          <div className="flex flex-col items-center">
+            <div className="font-bold text-[12px]">:</div>
+            <div className="text-[9px] font-normal text-forest-600">&nbsp;</div>
+          </div>
+          <div className="flex flex-col items-center">
+            <div className="font-bold text-[12px]">{minutes}</div>
+            <div className="text-[9px] font-normal text-forest-600">min</div>
+          </div>
+          <div className="flex flex-col items-center">
+            <div className="font-bold text-[12px]">:</div>
+            <div className="text-[9px] font-normal text-forest-600">&nbsp;</div>
+          </div>
+          <div className="flex flex-col items-center">
+            <div className="font-bold text-[12px]">{seconds}</div>
+            <div className="text-[9px] font-normal text-forest-600">sec</div>
+          </div>
         </div>
       </div>
     );
