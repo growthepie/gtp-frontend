@@ -21,6 +21,7 @@ import {
 import { Supporters } from "@/lib/contributors";
 import { useSearchParams } from "next/navigation";
 import ShowLoading from "@/components/layout/ShowLoading";
+import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 
 export default function Donations() {
   const { isSidebarOpen } = useUIContext();
@@ -196,7 +197,7 @@ export default function Donations() {
       </Container>
       <HorizontalScrollContainer className="">
         <GridTableHeader
-          gridDefinitionColumns="grid-cols-[115px_200px_90px_minmax(100px,800px)_200px]"
+          gridDefinitionColumns="grid-cols-[115px_200px_90px_minmax(100px,2000px)_200px]"
           className="text-[14px] !font-bold gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] !pt-[15px] !pb-[3px] select-none"
         >
           <GridTableHeaderCell justify="center">Time Left</GridTableHeaderCell>
@@ -222,7 +223,7 @@ export default function Donations() {
               return endDate.getTime() > twoWeeksAgo.getTime();
             }).map((donation) => (
               <GridTableRow
-                gridDefinitionColumns="grid-cols-[115px_200px_90px_minmax(100px,800px)_200px] justify-items-stretch"
+                gridDefinitionColumns="grid-cols-[115px_200px_90px_minmax(100px,2000px)_200px] justify-items-stretch"
                 key={donation.name}
                 className="text-[14px] gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] !pt-[5px] !pb-[5px] h-[34px] select-none"
               >
@@ -307,39 +308,41 @@ export default function Donations() {
       </Container>
       <HorizontalScrollContainer className="">
         <GridTableHeader
-          gridDefinitionColumns="grid-cols-[425px_minmax(100px,800px)_120px]"
-          className="text-[14px] !font-bold gap-x-[15px] z-[2] !pl-[15px] !pr-[16px] !pt-[10px] !pb-[3px] select-none"
+          gridDefinitionColumns="grid-cols-[425px_minmax(100px,2000px)_120px]"
+          className="text-[14px] !font-bold gap-x-[15px] z-[2] !pl-[15px] !pr-[48px] !pt-[10px] !pb-[3px] select-none"
         >
           <GridTableHeaderCell justify="start">Name</GridTableHeaderCell>
           <GridTableHeaderCell justify="start">Link</GridTableHeaderCell>
           <GridTableHeaderCell justify="end">Date</GridTableHeaderCell>
         </GridTableHeader>
-        <div className="flex flex-col gap-y-[3px]">
-          {impactData &&
-            impactData.map((impactRow) => (
-              <GridTableRow
-                gridDefinitionColumns="grid-cols-[425px_minmax(100px,800px)_120px] justify-items-stretch"
-                key={impactRow.name}
-                className="text-[14px] gap-x-[15px] z-[2] !pl-[15px] !pr-[16px] h-[34px] select-none"
-              >
-                <div className="justify-center">{impactRow.name}</div>
-                <div className="flex gap-x-[10px]">
-                  {impactRow.url && (
-                    <Link
-                      href={impactRow.url}
-                      target="_blank"
-                      className="w-full  truncate hover:underline"
-                    >
-                      {impactRow.url}
-                    </Link>
-                  )}
-                </div>
-                <div className="text-right">
-                  {`since ${impactRow.date.replace(/-/g, "/")}`}
-                </div>
-              </GridTableRow>
-            ))}
-        </div>
+        <VerticalScrollContainer height={37 * 9}>
+          <div className="flex flex-col gap-y-[3px]">
+            {impactData &&
+              impactData.map((impactRow) => (
+                <GridTableRow
+                  gridDefinitionColumns="grid-cols-[425px_minmax(100px,2000px)_120px] justify-items-stretch"
+                  key={impactRow.name}
+                  className="text-[14px] gap-x-[15px] z-[2] !pl-[15px] !pr-[16px] h-[34px] select-none"
+                >
+                  <div className="justify-center w-full truncate">{impactRow.name}</div>
+                  <div className="flex gap-x-[10px]">
+                    {impactRow.url && (
+                      <Link
+                        href={impactRow.url}
+                        target="_blank"
+                        className="w-full  truncate hover:underline"
+                      >
+                        {impactRow.url}
+                      </Link>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    {`since ${impactRow.date.replace(/-/g, "/")}`}
+                  </div>
+                </GridTableRow>
+              ))}
+          </div>
+        </VerticalScrollContainer>
       </HorizontalScrollContainer>
       <Container className="pt-[30px]">
         <div className="flex flex-col gap-y-[10px]">
@@ -352,8 +355,8 @@ export default function Donations() {
       </Container>
       <HorizontalScrollContainer className="">
         <GridTableHeader
-          gridDefinitionColumns="grid-cols-[425px_minmax(100px,800px)_120px]"
-          className="text-[14px] !font-bold gap-x-[15px] z-[2] !pl-[15px] !pr-[16px] !pt-[10px] !pb-[3px] select-none"
+          gridDefinitionColumns="grid-cols-[425px_minmax(100px,2000px)_120px]"
+          className="text-[14px] !font-bold gap-x-[15px] z-[2] !pl-[15px] !pr-[48px] !pt-[10px] !pb-[3px] select-none"
         >
           <GridTableHeaderCell justify="start">
             Product Feature
@@ -363,32 +366,34 @@ export default function Donations() {
           </GridTableHeaderCell>
           <GridTableHeaderCell justify="end">Date Released</GridTableHeaderCell>
         </GridTableHeader>
-        <div className="flex flex-col gap-y-[3px]">
-          {updateData &&
-            updateData.map((updateRow) => (
-              <GridTableRow
-                gridDefinitionColumns="grid-cols-[425px_minmax(100px,800px)_120px] justify-items-stretch"
-                key={updateRow.name}
-                className="text-[14px] gap-x-[15px] z-[2] !pl-[15px] !pr-[16px] h-[34px] select-none"
-              >
-                <div className="flex items-center w-full h-full">
-                  {updateRow.name}
-                </div>
-                <div className="flex ">
-                  <Link
-                    href={updateRow.url}
-                    target="_blank"
-                    className="w-full truncate hover:underline"
-                  >
-                    {updateRow.url}
-                  </Link>
-                </div>
-                <div className="flex items-center justify-end w-full h-full gap-x-[3px]">
-                  {updateRow.date.replace(/-/g, "/")}
-                </div>
-              </GridTableRow>
-            ))}
-        </div>
+        <VerticalScrollContainer height={37 * 9}>
+          <div className="flex flex-col gap-y-[3px]">
+            {updateData &&
+              updateData.map((updateRow) => (
+                <GridTableRow
+                  gridDefinitionColumns="grid-cols-[425px_minmax(100px,2000px)_120px] justify-items-stretch"
+                  key={updateRow.name}
+                  className="text-[14px] gap-x-[15px] z-[2] !pl-[15px] !pr-[16px] h-[34px] select-none"
+                >
+                  <div className="flex items-center w-full h-full">
+                    {updateRow.name}
+                  </div>
+                  <div className="flex ">
+                    <Link
+                      href={updateRow.url}
+                      target="_blank"
+                      className="w-full truncate hover:underline"
+                    >
+                      {updateRow.url}
+                    </Link>
+                  </div>
+                  <div className="flex items-center justify-end w-full h-full gap-x-[3px]">
+                    {updateRow.date.replace(/-/g, "/")}
+                  </div>
+                </GridTableRow>
+              ))}
+          </div>
+        </VerticalScrollContainer>
       </HorizontalScrollContainer>
       <Container className="pt-[65px]">
         <div className="flex gap-x-[8px] items-center pb-[15px]">
