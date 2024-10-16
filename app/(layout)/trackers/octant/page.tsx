@@ -2156,7 +2156,7 @@ export default function Page() {
       </Container>
       <HorizontalScrollContainer className="@container">
         <GridTableHeader
-          gridDefinitionColumns="grid-cols-[20px,225px,minmax(125px,1600px),95px,126px,101px,89px]"
+          gridDefinitionColumns="grid-cols-[20px,250px,minmax(125px,1600px),95px,126px,101px,89px]"
           className="w-full text-[12px] gap-x-[15px] z-[2] !pl-[5px] !pr-[48px] !pt-[15px] !pb-[10px] select-none"
         >
           <div></div>
@@ -3170,7 +3170,7 @@ const OctantTableRow = ({
   TableRowProps) => {
   return (
     <GridTableRow
-      gridDefinitionColumns="grid-cols-[20px,225px,minmax(125px,1600px),95px,126px,101px,89px]"
+      gridDefinitionColumns="grid-cols-[20px,250px,minmax(125px,1600px),95px,126px,101px,89px]"
       className="group w-full text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] !pl-[5px] !pr-[15px] select-none"
     >
       <div className="w-[26px] h-[18px] px-[4px]">
@@ -3185,7 +3185,7 @@ const OctantTableRow = ({
         )}
       </div>
       <div className="flex justify-between select-none">
-        <div>
+        <div className="truncate">
           {row.project_metadata?.name ? (
             row.project_metadata.name
           ) : (
