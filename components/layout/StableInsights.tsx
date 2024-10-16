@@ -49,6 +49,7 @@ import { Scrollbars } from "react-custom-scrollbars-2";
 import VerticalScrollContainer from "../VerticalScrollContainer";
 import "@/app/highcharts.axis.css";
 import { useMaster } from "@/contexts/MasterContext";
+import { Sources } from "@/lib/datasources";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -433,6 +434,27 @@ export default function StableInsights({ }: {}) {
     );
   }, []);
 
+  const SourcesDisplay = useMemo(() => {
+    if (!data) return <></>;
+    return data.source && data.source.length > 0 ? (
+      data.source
+        .map<React.ReactNode>((s) => (
+          <Link
+            key={s}
+            rel="noopener noreferrer"
+            target="_blank"
+            href={Sources[s] ?? ""}
+            className="hover:text-forest-500 dark:hover:text-forest-500 underline"
+          >
+            {s}
+          </Link>
+        ))
+        .reduce((prev, curr) => [prev, ", ", curr])
+    ) : (
+      <>Unavailable</>
+    );
+  }, [data]);
+
   const topValue = useMemo(() => {
     if (!data) return 0;
 
@@ -531,11 +553,14 @@ export default function StableInsights({ }: {}) {
 
             <div className="flex flex-col-reverse lg:flex-row w-full gap-x-[10px] gap-y-[5px]">
               <div className="w-full lg:flex-1 lg:pt-[10px] relative">
-                <GridTableHeader gridDefinitionColumns="grid-cols-[auto,100px,50px]">
-                  <div className="font-semibold text-[14px]">Holder</div>
-                  <div className="flex justify-end font-semibold text-[12px]">Amount</div>
+                <GridTableHeader
+                  gridDefinitionColumns="grid-cols-[auto,100px,50px]"
+                  className="text-[14px] !font-bold gap-x-[15px] z-[2] !pl-[15px] !pr-[44px] !pt-[10px] !pb-[3px] select-none"
+                >
+                  <div className="text-[14px]">Holder</div>
+                  <div className="flex justify-end text-[12px]">Amount</div>
                   <div className="flex justify-end">
-                    <div className="flex justify-center text-[9px] items-center bg-[#344240] rounded-full h-[16px] w-[45px] font-medium leading-tight">Share</div>
+                    <div className="flex justify-center text-[9px] items-center bg-[#344240] rounded-full h-[16px] w-[45px] font-bold leading-tight">Share</div>
                   </div>
                 </GridTableHeader>
                 <VerticalScrollContainer height={420}>
@@ -956,13 +981,15 @@ export default function StableInsights({ }: {}) {
                   </div>
                 </TooltipTrigger>
                 <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
-                  <div className="px-3 font-medium gap-x-1 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-autow-[420px] h-[80px] flex items-center">
-                    Data Sources:{" "}
-                    {data.source.map((key, index) => (
-                      <span key={index} className="font-normal">
-                        {key}
-                      </span>
-                    ))}
+                  <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
+                    <div className="flex flex-col space-y-1">
+                      <div className="font-bold text-sm leading-snug">
+                        Data Sources:
+                      </div>
+                      <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
+                        {SourcesDisplay}
+                      </div>
+                    </div>
                   </div>
                 </TooltipContent>
               </InfoToolTip>
