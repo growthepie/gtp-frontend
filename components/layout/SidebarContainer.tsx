@@ -20,7 +20,7 @@ export default function SidebarContainer() {
               href="/"
               className={`${isSidebarOpen ? "relative h-[45.07px] w-[192.87px] block" : "relative h-[45.07px] w-[62px] overflow-clip"} transition-all duration-300`}
             >
-              <div className={`h-[45.07px] w-[192.87px] relative ${isSidebarOpen ? "scale-100  translate-x-[0px] translate-y-[0px]" : "scale-[0.5325] -translate-x-[0px] translate-y-[2px]"} transition-all duration-300`} style={{ transformOrigin: "21px 27px" }}>
+              <div className={`h-[45.07px] w-[192.87px] relative ${isSidebarOpen ? "scale-100  translate-x-[1.5px] translate-y-[0px]" : "scale-[0.5325] translate-x-[1.5px] translate-y-[2px]"} transition-all duration-300`} style={{ transformOrigin: "21px 27px" }}>
                 <svg className="absolute" viewBox="0 0 194 46" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M13.9962 13.991C13.9112 12.805 14.2342 11.716 14.9272 10.66C15.3912 9.958 16.0492 9.2 16.7752 8.365C18.6482 6.208 20.9682 3.538 21.5362 0C22.7712 2.712 22.1722 5.349 20.8052 7.774C20.1902 8.864 19.5092 9.647 18.8592 10.394C18.0942 11.273 17.3732 12.102 16.8552 13.321C16.5702 13.984 16.4082 14.619 16.3322 15.24L13.9962 13.991Z" fill="url(#paint0_radial_2690_14166)" />
                   <path d="M18.0044 16.1366C18.2894 15.0906 18.7824 14.1126 19.4374 13.1636C19.9794 12.3716 20.4874 11.7846 20.9434 11.2576C22.4774 9.48264 23.4294 8.38064 23.1504 2.43164C23.3294 2.81364 23.5064 3.18164 23.6784 3.53664L23.6794 3.53864C25.1754 6.64464 26.2254 8.82264 24.4614 11.8136C23.5894 13.2916 22.9534 14.0266 22.3914 14.6766C21.7584 15.4076 21.2184 16.0326 20.5394 17.4866L18.0044 16.1366Z" fill="url(#paint1_radial_2690_14166)" />
