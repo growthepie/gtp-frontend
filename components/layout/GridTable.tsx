@@ -333,7 +333,12 @@ export const GridTableAddressCell = ({
 
 
   return (
-    <div className={`flex items-center w-full font-bold gap-x-[10px] ${className || ""}`}>
+    <div className={`flex items-center w-full font-bold gap-x-[10px] ${className || ""}`}
+      onClick={(e) => {
+        e.stopPropagation();
+        handleCopyAddress(address);
+      }}
+    >
       <span
         ref={addressRef}
         className="@container flex-1 flex h-full items-center hover:bg-transparent font-mono select-none"
@@ -345,10 +350,6 @@ export const GridTableAddressCell = ({
         //   selection?.removeAllRanges();
         //   selection?.addRange(range);
         // }}
-        onClick={(e) => {
-          e.stopPropagation();
-          handleCopyAddress(address);
-        }}
         style={{
           fontSize: `${fontSize}px`,
         }}
@@ -372,7 +373,10 @@ export const GridTableAddressCell = ({
         </div>
 
       </span>
-      <div className={`flex items-center justify-center size-[15px] ${iconContainerClassName || ""}`}>
+      <div
+        className={`flex items-center justify-center size-[15px] ${iconContainerClassName || ""}`}
+
+      >
         <Icon
           icon={copiedAddress === address ? "feather:check-circle" : "feather:copy"}
           className={`size-[15px] cursor-pointer ${iconClassName || ""}`}

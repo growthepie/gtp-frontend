@@ -397,9 +397,9 @@ export default function Donations() {
             )) : (
               <GridTableRow
                 gridDefinitionColumns="grid-cols-[100%] justify-items-stretch"
-                className="text-[14px] gap-x-[15px] z-[2] !pl-[5px] !pr-[5px] !pt-[5px] !pb-[5px] !h-[34px] select-none"
+                className="text-[14px] gap-x-[15px] z-[2] !pl-[5px] !pr-[5px] h-[34px] !pb-0 !pt-0 flex items-center select-none"
               >
-                <div className="bg-[#1F2726] h-full rounded-full flex items-center justify-center text-[16px] font-bold">
+                <div className="bg-[#1F2726] h-[24px] rounded-full flex items-center justify-center text-[16px] font-bold">
                   Currently no active rounds, please check back later.
                 </div>
               </GridTableRow>
@@ -718,36 +718,35 @@ const CountdownTimer = ({ targetDate, prefixString }: { targetDate: Date, prefix
   if (timeLeft) {
     return (
       <>
-        <div className="flex items-center justify-end gap-x-[5px] h-full">
+        <div className="flex items-center justify-evenly gap-x-[5px] w-full px-[8px] h-full -mt-[2px]">
           {prefixString &&
-            <>{prefixString}</>
+            <div>{prefixString}</div>
           }
-          <div className="flex items-center gap-x-[5px] leading-[120%] text-[11px] pt-[4px] h-[20px]">
-            <div className="flex flex-col items-center space-y-[-5px]">
+          <div className="flex items-center justify-end gap-x-[5px] leading-[120%] text-[11px] pt-[4px] h-[20px]">
+            <div className="flex flex-col items-center space-y-[-3px]">
               <div>{timeLeft.days}</div>
               <div className="font-normal text-[8px] text-forest-400">days</div>
             </div>
             <div className="flex items-center justify-cnter gap-x-[1px] leading-[120%]">
-
-              <div className="flex flex-col items-center space-y-[-5px]">
-                <div>{timeLeft.hours}</div>
+              <div className="flex flex-col items-center space-y-[-3px]">
+                <div>{timeLeft.hours < 10 ? `0${timeLeft.hours}` : timeLeft.hours}</div>
                 <div className="font-normal text-[8px] text-forest-400">hrs</div>
               </div>
-              <div className="flex flex-col items-center space-y-[-5px]">
+              <div className="flex flex-col items-center space-y-[-3px]">
                 <div>:</div>
                 <div>&nbsp;</div>
               </div>
-              <div className="flex flex-col items-center space-y-[-5px]">
-                <div>{timeLeft.minutes}</div>
+              <div className="flex flex-col items-center space-y-[-3px]">
+                <div>{timeLeft.minutes < 10 ? `0${timeLeft.minutes}` : timeLeft.minutes}</div>
                 <div className="font-normal text-[8px] text-forest-400">min</div>
               </div>
-              <div className="flex flex-col items-center space-y-[-5px]">
+              <div className="flex flex-col items-center space-y-[-3px]">
                 <div>:</div>
                 <div>&nbsp;</div>
               </div>
-              <div className="flex flex-col items-center space-y-[-5px]">
-                <div>{timeLeft.seconds}</div>
-                <div className="font-normal text-[8px] text-forest-400">sec</div>
+              <div className="flex flex-col items-center space-y-[-3px]">
+                <div>{timeLeft.seconds < 10 ? `0${timeLeft.seconds}` : timeLeft.seconds}</div>
+                < div className="font-normal text-[8px] text-forest-400">sec</div>
               </div>
             </div>
           </div>
