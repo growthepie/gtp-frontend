@@ -13,15 +13,21 @@ import Link from "next/link";
 import Description from "@/components/layout/Description";
 import "@splidejs/react-splide/css";
 import {
+  GridTableAddressCell,
   GridTableHeader,
   GridTableHeaderCell,
   GridTableRow,
 } from "@/components/layout/GridTable";
 import { Supporters } from "@/lib/contributors";
+import { useSearchParams } from "next/navigation";
+import ShowLoading from "@/components/layout/ShowLoading";
 
 export default function Donations() {
   const { isSidebarOpen } = useUIContext();
   const { AllChainsByKeys } = useMaster();
+  const searchParams = useSearchParams();
+
+  const forceNoPublicGoods = searchParams.get("forceNoPublicGoods") === "true";
 
   const QRCodes = [
     {
@@ -32,7 +38,7 @@ export default function Donations() {
         path: "gtp:giveth-monochrome",
         color: "#CDD8D3",
       },
-      url: "https://giveth.io/donate/",
+      url: "https://giveth.io/project/growthepie-analytics-for-ethereum-scaling-solutions",
       address: null,
     },
     {
@@ -43,7 +49,7 @@ export default function Donations() {
         path: "gtp:ethereum-logo-monochrome",
         color: "#CDD8D3",
       },
-      url: "https://ethereum.org/en/donate/",
+      url: "https://etherscan.io/address/0x7291a5Aa55886900C460Bf4366A46820F40476fB",
       address: "0x7291a5Aa55886900C460Bf4366A46820F40476fB",
     },
     {
@@ -54,8 +60,8 @@ export default function Donations() {
         path: "gtp:optimism-logo-monochrome",
         color: "#FE5468",
       },
-      url: "https://optimism.io/donate/",
-      address: "0x7291a5Aa55886900C460Bf4366A46820F40476fB",
+      url: "https://optimistic.etherscan.io/address/0x700E73d289DE10b6143465E02E6931E6e6a0CA15",
+      address: "0x700E73d289DE10b6143465E02E6931E6e6a0CA15",
     },
     {
       key: "Arbitrum",
@@ -65,8 +71,8 @@ export default function Donations() {
         path: "gtp:arbitrum-logo-monochrome",
         color: "#1DF7EF",
       },
-      url: "https://arbitrum.io/donate/",
-      address: "0x7291a5Aa55886900C460Bf4366A46820F40476fB",
+      url: "https://arbiscan.io/address/0x18f79D6d2166997c9A237C25c4692647CD4faf59",
+      address: "0x18f79D6d2166997c9A237C25c4692647CD4faf59",
     },
     {
       key: "Base",
@@ -76,16 +82,16 @@ export default function Donations() {
         path: "gtp:base-logo-monochrome",
         color: "#0052FF",
       },
-      url: "https://baseledger.io/donate/",
-      address: "0x7291a5Aa55886900C460Bf4366A46820F40476fB",
+      url: "https://basescan.org/address/0xC9847131b6acb8dA9BfC4Ec970Be1D604215A1E4",
+      address: "0xC9847131b6acb8dA9BfC4Ec970Be1D604215A1E4",
     },
   ];
 
   const {
     data: PGFData,
-    isLoading,
-    isValidating,
-    error,
+    isLoading: PFGIsLoading,
+    isValidating: PFGIsValidating,
+    error: PFGError,
   } = useSWR(BASE_URL + "/api/donations/pgf", {
     refreshInterval: 1000 * 60 * 5,
   });
@@ -158,6 +164,7 @@ export default function Donations() {
 
   return (
     <>
+      <ShowLoading dataLoading={[PFGIsLoading, impactIsLoading, updateLoading]} />
       <Container className="pb-[15px]">
         <div className="flex flex-col gap-y-[15px]">
           <Heading
@@ -199,19 +206,25 @@ export default function Donations() {
           <GridTableHeaderCell justify="end">Donate Until</GridTableHeaderCell>
         </GridTableHeader>
         <div className="flex flex-col gap-y-[3px]">
-          {PGFData &&
+          {PGFData && !forceNoPublicGoods &&
             PGFData.filter((donation) => {
               const endDate = new Date(donation.endDate);
               const twoWeeksAgo = new Date(
                 Date.now() - 1000 * 60 * 60 * 24 * 14,
               );
-
+              return endDate.getTime() > twoWeeksAgo.getTime();
+            }).length > 0 ?
+            PGFData.filter((donation) => {
+              const endDate = new Date(donation.endDate);
+              const twoWeeksAgo = new Date(
+                Date.now() - 1000 * 60 * 60 * 24 * 14,
+              );
               return endDate.getTime() > twoWeeksAgo.getTime();
             }).map((donation) => (
               <GridTableRow
                 gridDefinitionColumns="grid-cols-[115px_200px_90px_minmax(100px,800px)_200px] justify-items-stretch"
                 key={donation.name}
-                className="text-[14px] gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] h-[34px] select-none"
+                className="text-[14px] gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] !pt-[5px] !pb-[5px] h-[34px] select-none"
               >
                 <div className="bg-[#1F2726] h-full rounded-full flex items-center justify-center text-[16px] font-bold">
                   {getTimeLeft(donation.endDate)}
@@ -251,7 +264,16 @@ export default function Donations() {
                   {getDonateUntil(donation.endDate)}
                 </div>
               </GridTableRow>
-            ))}
+            )) : (
+              <GridTableRow
+                gridDefinitionColumns="grid-cols-[100%] justify-items-stretch"
+                className="text-[14px] gap-x-[15px] z-[2] !pl-[5px] !pr-[5px] !pt-[5px] !pb-[5px] !h-[34px] select-none"
+              >
+                <div className="bg-[#1F2726] h-full rounded-full flex items-center justify-center text-[16px] font-bold">
+                  Currently no active rounds, please check back later.
+                </div>
+              </GridTableRow>
+            )}
         </div>
       </HorizontalScrollContainer>
       <Container className="flex flex-col gap-y-[15px] pt-[60px]">
@@ -442,11 +464,8 @@ const QRCodeCard = ({ CardData, index }) => {
     <div
       className={`group flex items-center gap-x-[10px] p-[5px] pr-[15px] border-[2px] rounded-[17px] border-[#CDD8D3] cursor-pointer`}
       onClick={() => {
-        if (CardData.wallet) {
-          handleCopyAddress(CardData.address);
-        } else {
-          window.open(CardData.url, "_blank");
-        }
+
+        window.open(CardData.url, "_blank");
       }}
       key={CardData.key}
     >
@@ -469,58 +488,27 @@ const QRCodeCard = ({ CardData, index }) => {
           </div>
         </div>
       </div>
-      <div className="h-full w-full flex flex-col justify-between items-start leading-[111%] py-[5px] sm:py-[5px]">
+      <div className="h-full w-full flex flex-col-reverse justify-between items-start leading-[111%] py-[5px] sm:py-[5px]">
         {CardData.wallet ? (
           <>
-            <div className="w-full hidden xs:block text-[11px] md:text-[14px] truncate text-wrap">
-              Donate to our <b>{CardData.key}</b> Wallet
+            <div className="peer flex w-full items-center hover:bg-transparent select-none text-[9px] leading-[120%]">
+              <GridTableAddressCell address={CardData.address} className="group/address w-full !gap-x-[10px]" fontSize={10} iconClassName="!size-[9px]" iconContainerClassName="!size-[9px] opacity-0 group-hover/address:opacity-100" />
             </div>
             <div className="w-full block xs:hidden">
               <b>{CardData.key}</b>
             </div>
-            <div className="@container flex w-full items-center hover:bg-transparent select-none text-[9px] leading-[120%]">
-              <span
-                className="@container flex-1 flex items-center hover:bg-transparent"
-                style={{
-                  fontFeatureSettings: "'pnum' on, 'lnum' on",
-                }}
-              >
-                <div
-                  className="truncate transition-all duration-300 "
-                  style={{ direction: "ltr" }}
-                  onClick={() => {
-                    navigator.clipboard.writeText(CardData.address);
-                  }}
-                >
-                  {CardData.address.slice(0, CardData.address.length - 5)}
-                </div>
-                <div className="transition-all duration-300 ">
-                  {CardData.address.slice(-5)}
-                </div>
-                <div className="pl-[5px]">
-                  <Icon
-                    icon={
-                      copiedAddress === CardData.address
-                        ? "feather:check-circle"
-                        : "feather:copy"
-                    }
-                    className="w-[9px] h-[9px] cursor-pointer z-[10] opacity-0 group-hover:opacity-100"
-                    // onClick={(e) => {
-                    //   e.stopPropagation();
-                    //   handleCopyAddress(CardData.address);
-                    // }}
-                  />
-                </div>
-              </span>
+            <div className="w-full hidden xs:block text-[11px] md:text-[14px] truncate text-wrap group-hover:underline peer-hover:!no-underline">
+              Donate to our <b className="">{CardData.key}</b> Wallet
             </div>
           </>
         ) : (
           <>
-            <div className="w-full hidden xs:block text-[11px] md:text-[14px] truncate text-wrap">
-              Donate on our <b>{CardData.key}</b> Page
-            </div>
+            <div></div>
             <div className="w-full block xs:hidden">
               <b>{CardData.key}</b>
+            </div>
+            <div className="w-full hidden xs:block text-[11px] md:text-[14px] truncate text-wrap group-hover:underline">
+              Donate on our <b>{CardData.key}</b> Page
             </div>
           </>
         )}

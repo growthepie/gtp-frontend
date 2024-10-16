@@ -14,6 +14,7 @@ import GithubIcon from "@/icons/footer/Github.svg";
 import ContributorsIcon from "@/icons/footer/GTP-Compass.svg";
 import FeedbackIcon from "@/icons/footer/GTP-Donate-1.svg";
 import Image from "next/image";
+import GTPIcon from "./GTPIcon";
 
 export default function Footer() {
   return (
@@ -82,13 +83,17 @@ export default function Footer() {
               ABOUT
             </FooterSectionHeader>
             <FooterLink
-              leftIcon={<Image src={ContributorsIcon} alt="Contributors" width={24} height={24} />}
+              leftIcon={<GTPIcon icon="gtp-compass" size="md" />}
               label="Contributors"
               href="/contributors"
             />
-
             <FooterLink
-              leftIcon={<Image src={FeedbackIcon} alt="Feedback" width={24} height={24} />}
+              leftIcon={<GTPIcon icon="gtp-donate" size="md" />}
+              label="Donate"
+              href="/donate"
+            />
+            <FooterLink
+              leftIcon={<GTPIcon icon="gtp-feedback" size="md" />}
               label="Feedback"
               href="https://discord.gg/fxjJFe7QyN"
             />

@@ -293,3 +293,92 @@ export function GridTableContainer(
     </div>
   );
 }
+type GridTableAddressCellProps = {
+  address: string;
+  className?: string;
+  iconClassName?: string;
+  iconContainerClassName?: string;
+  fontSize?: number;
+};
+export const GridTableAddressCell = ({
+  address,
+  className,
+  iconClassName,
+  iconContainerClassName,
+  fontSize = 12,
+}: GridTableAddressCellProps) => {
+
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+
+  const handleCopyAddress = (address: string) => {
+    navigator.clipboard.writeText(address);
+    setCopiedAddress(address);
+    setTimeout(() => {
+      setCopiedAddress(null);
+    }, 1000);
+  };
+
+  // size 10px font is 6px wide
+  // size 20px font is 9px wide
+
+  const fontWidth = useMemo(() => 0.3 * fontSize + 3, [fontSize]);
+
+  const [addressRef, { width: addressWidth }] = useElementSizeObserver<HTMLDivElement>();
+
+  const numAddressChars = useMemo(() => {
+    return Math.min(Math.floor(addressWidth / fontWidth) - 6, 42 - 6);
+  }, [addressWidth, fontWidth]);
+
+  console.log("numAddressChars", numAddressChars);
+
+
+  return (
+    <div className={`flex items-center w-full font-bold gap-x-[10px] ${className || ""}`}>
+      <span
+        ref={addressRef}
+        className="@container flex-1 flex h-full items-center hover:bg-transparent font-mono select-none"
+        // onDoubleClick={(e) => {
+        //   e.preventDefault(); // Prevent default double-click behavior
+        //   const selection = window.getSelection();
+        //   const range = document.createRange();
+        //   range.selectNodeContents(e.currentTarget);
+        //   selection?.removeAllRanges();
+        //   selection?.addRange(range);
+        // }}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleCopyAddress(address);
+        }}
+        style={{
+          fontSize: `${fontSize}px`,
+        }}
+      >
+
+        <div
+          className={`flex transition-all duration-300 ${numAddressChars === 42 - 6 ? "!font-normal" : "bg-[linear-gradient(90deg,#CDD8D3_calc(100%-17px),transparent_100%)] bg-clip-text text-transparent backface-visibility-hidden"}  `}
+          style={{ direction: 'ltr', textOverflow: ". !important", }}
+          onClick={() => {
+            navigator.clipboard.writeText(address)
+          }}
+        >
+          {address.slice(0, numAddressChars)}
+        </div>
+        <div className={`relative h-full flex items-center text-[#CDD8D333] ${numAddressChars === 42 - 6 && "!hidden"}`}>
+          &hellip;
+
+        </div>
+        <div className={`transition-all duration-300  ${numAddressChars === 42 - 6 ? "!font-normal" : "bg-[linear-gradient(-90deg,#CDD8D3_calc(100%-17px),transparent_100%)] bg-clip-text text-transparent backface-visibility-hidden"} `}>
+          {address.slice(-6)}
+        </div>
+
+      </span>
+      <div className={`flex items-center justify-center size-[15px] ${iconContainerClassName || ""}`}>
+        <Icon
+          icon={copiedAddress === address ? "feather:check-circle" : "feather:copy"}
+          className={`size-[15px] cursor-pointer ${iconClassName || ""}`}
+
+        />
+      </div>
+    </div>
+  )
+};
