@@ -22,6 +22,11 @@ import { Supporters } from "@/lib/contributors";
 import { useSearchParams } from "next/navigation";
 import ShowLoading from "@/components/layout/ShowLoading";
 import VerticalScrollContainer from "@/components/VerticalScrollContainer";
+import { track } from "@vercel/analytics/react";
+import { DonationPGFRow } from "@/app/api/donations/pgf/route";
+import { DonationImpactRow } from "@/app/api/donations/impactusers/route";
+import { DonationUpdateRow } from "@/app/api/donations/updates/route";
+import moment from "moment";
 
 export default function Donations() {
   const { isSidebarOpen } = useUIContext();
@@ -93,7 +98,7 @@ export default function Donations() {
     isLoading: PFGIsLoading,
     isValidating: PFGIsValidating,
     error: PFGError,
-  } = useSWR(BASE_URL + "/api/donations/pgf", {
+  } = useSWR<DonationPGFRow[]>(BASE_URL + "/api/donations/pgf", {
     refreshInterval: 1000 * 60 * 5,
   });
 
@@ -102,7 +107,7 @@ export default function Donations() {
     isLoading: impactIsLoading,
     isValidating: impactIsValidating,
     error: impactError,
-  } = useSWR(BASE_URL + "/api/donations/impactusers", {
+  } = useSWR<DonationImpactRow[]>(BASE_URL + "/api/donations/impactusers", {
     refreshInterval: 1000 * 60 * 5,
   });
 
@@ -111,56 +116,165 @@ export default function Donations() {
     isLoading: updateLoading,
     isValidating: updateValidating,
     error: updateError,
-  } = useSWR(BASE_URL + "/api/donations/updates", {
+  } = useSWR<DonationUpdateRow[]>(BASE_URL + "/api/donations/updates", {
     refreshInterval: 1000 * 60 * 5,
   });
 
-  const getDonateUntil = (endDate: string): string => {
-    // Convert the endDate string to a Date object
-    const utcDate = new Date(endDate);
-
+  const getDonateUntil = (row: DonationPGFRow) => {
     // Get the user's local time string in the desired format
     const options: Intl.DateTimeFormatOptions = {
       day: "2-digit",
-      month: "2-digit",
+      month: "short",
       year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZoneName: "short",
-      hour12: false, // Use 24-hour time format
+      // hour: "2-digit",
+      // minute: "2-digit",
+      // timeZoneName: "short",
+      // dayPeriod: "long",
+      // hour12: false, // Use 24-hour time format
     };
 
+    const start = new Date(row.startDate);
+    const end = new Date(row.endDate);
+    const now = new Date();
+
+    // // check if we are in the middle of the round
+    // if (start.getTime() < now.getTime() && end.getTime() > now.getTime()) {
+    //   const day = moment.utc(end).format("ddd");
+
+    //   return (
+    //     <>
+    //       <div className="flex items-center justify-end gap-x-[5px]">
+    //         <div className="text-forest-400">
+    //           Ends
+    //         </div>
+    //         <div>{day}</div>
+    //         <div>
+    //           {end.toLocaleTimeString(undefined, options)}
+    //         </div>
+    //       </div>
+    //     </>
+    //   )
+    // }
+
+    // // check if the start date is in the future
+    // if (start.getTime() > now.getTime()) {
+    //   const day = moment.utc(start).format("ddd");
+
+    //   return (
+    //     <>
+    //       <div className="flex items-center justify-end gap-x-[5px]">
+    //         <div className="text-forest-400">
+    //           Begins
+    //         </div>
+    //         <div>{day}</div>
+    //         <div>
+    //           {start.toLocaleTimeString(undefined, options)}
+    //         </div>
+    //       </div>
+    //     </>
+    //   )
+    // }
+
+
+    const day = moment.utc(end).format("ddd");
+
     // Format the date using toLocaleString with the user's locale
-    return utcDate.toLocaleString(undefined, options).replace(",", "");
+    return (
+      <>
+        <div className="flex items-center justify-end gap-x-[5px]">
+          {/* <div className="text-forest-400">
+            Ended
+          </div> */}
+          <div className="font-medium">{day},</div>
+          <div className="font-medium">
+            {start.toLocaleDateString("en-GB", options)}
+          </div>
+          <div className="font-light">thru</div>
+          <div className="font-medium">{day},</div>
+          <div className="font-medium">
+            {end.toLocaleDateString("en-GB", options)}
+          </div>
+
+        </div>
+      </>
+    );
+
   };
 
-  const getTimeLeft = (endDate: string): string => {
-    const end = new Date(endDate);
+  type PGFStatus = "Active" | "Upcoming" | "Ended";
+
+  const getPGFStatus = (row: DonationPGFRow): PGFStatus => {
+    const start = new Date(row.startDate);
+    const end = new Date(row.endDate);
     const now = new Date();
-    const timeDiff = end.getTime() - now.getTime();
 
-    if (timeDiff < 0) {
-      return "Time's up!";
+    if (start.getTime() < now.getTime() && end.getTime() > now.getTime()) {
+      return "Active";
     }
 
-    const seconds = Math.floor(timeDiff / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-    const months = Math.floor(days / 30);
-    const years = Math.floor(days / 365);
-
-    if (years > 0) {
-      return `${years} Year${years > 1 ? "s" : ""}`;
-    } else if (months > 0) {
-      return `${months} Month${months > 1 ? "s" : ""}`;
-    } else if (days > 0) {
-      return `${days} Day${days > 1 ? "s" : ""}`;
-    } else if (hours > 0) {
-      return `${hours} Hour${hours > 1 ? "s" : ""}`;
-    } else {
-      return `${minutes} Minute${minutes > 1 ? "s" : ""}`;
+    if (start.getTime() > now.getTime()) {
+      return "Upcoming";
     }
+
+    if (end.getTime() < now.getTime()) {
+      return "Ended";
+    }
+
+    return "Ended";
+  };
+
+  const getTimeLeft = (row: DonationPGFRow) => {
+    const now = new Date();
+    const start = new Date(row.startDate);
+    const end = new Date(row.endDate);
+
+    const isCurrent = start.getTime() < now.getTime() && end.getTime() > now.getTime();
+    const isFuture = start.getTime() > now.getTime();
+    const isPast = end.getTime() < now.getTime();
+
+    if (isCurrent) {
+      const daysLeft = Math.floor((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      return "Ends in " + daysLeft + " days";
+    }
+
+    if (isFuture) {
+      const daysLeft = Math.floor((start.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      return "Starts in " + daysLeft + " days";
+    }
+
+    if (isPast) {
+      const daysAgo = Math.floor((now.getTime() - end.getTime()) / (1000 * 60 * 60 * 24));
+      return "Ended " + daysAgo + " days ago";
+    }
+
+
+
+    // const end = new Date(endDate);
+    // const now = new Date();
+    // const timeDiff = end.getTime() - now.getTime();
+
+    // if (timeDiff < 0) {
+    //   return "Time's up!";
+    // }
+
+    // const seconds = Math.floor(timeDiff / 1000);
+    // const minutes = Math.floor(seconds / 60);
+    // const hours = Math.floor(minutes / 60);
+    // const days = Math.floor(hours / 24);
+    // const months = Math.floor(days / 30);
+    // const years = Math.floor(days / 365);
+
+    // if (years > 0) {
+    //   return `${years} Year${years > 1 ? "s" : ""}`;
+    // } else if (months > 0) {
+    //   return `${months} Month${months > 1 ? "s" : ""}`;
+    // } else if (days > 0) {
+    //   return `${days} Day${days > 1 ? "s" : ""}`;
+    // } else if (hours > 0) {
+    //   return `${hours} Hour${hours > 1 ? "s" : ""}`;
+    // } else {
+    //   return `${minutes} Minute${minutes > 1 ? "s" : ""}`;
+    // }
   };
 
   return (
@@ -197,14 +311,14 @@ export default function Donations() {
       </Container>
       <HorizontalScrollContainer className="">
         <GridTableHeader
-          gridDefinitionColumns="grid-cols-[115px_200px_90px_minmax(100px,2000px)_200px]"
+          gridDefinitionColumns="grid-cols-[180px_200px_90px_minmax(100px,2000px)_320px]"
           className="text-[14px] !font-bold gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] !pt-[15px] !pb-[3px] select-none"
         >
-          <GridTableHeaderCell justify="center">Time Left</GridTableHeaderCell>
+          <GridTableHeaderCell justify="center">Status</GridTableHeaderCell>
           <GridTableHeaderCell justify="start">Name</GridTableHeaderCell>
           <GridTableHeaderCell justify="start">Share</GridTableHeaderCell>
           <GridTableHeaderCell justify="start">Link</GridTableHeaderCell>
-          <GridTableHeaderCell justify="end">Donate Until</GridTableHeaderCell>
+          <GridTableHeaderCell justify="end">Dates</GridTableHeaderCell>
         </GridTableHeader>
         <div className="flex flex-col gap-y-[3px]">
           {PGFData && !forceNoPublicGoods &&
@@ -223,46 +337,61 @@ export default function Donations() {
               return endDate.getTime() > twoWeeksAgo.getTime();
             }).map((donation) => (
               <GridTableRow
-                gridDefinitionColumns="grid-cols-[115px_200px_90px_minmax(100px,2000px)_200px] justify-items-stretch"
+                gridDefinitionColumns="grid-cols-[180px_200px_90px_minmax(100px,2000px)_320px]"
                 key={donation.name}
-                className="text-[14px] gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] !pt-[5px] !pb-[5px] h-[34px] select-none"
+                className={`group text-[14px] gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] h-[34px] !pb-0 !pt-0 flex items-center select-none ${getPGFStatus(donation) === "Ended" && "opacity-40"}`}
+                onClick={() => {
+                  window.open(donation.url, "_blank");
+                  track("clicked Donate PGF Row", {
+                    location: donation.name,
+                    page: window.location.pathname,
+                  });
+                }}
               >
-                <div className="bg-[#1F2726] h-full rounded-full flex items-center justify-center text-[16px] font-bold">
-                  {getTimeLeft(donation.endDate)}
+                <div className="bg-[#1F2726] h-[24px] rounded-full flex items-center justify-center text-[14px] font-bold">
+                  {getPGFStatus(donation) === "Active" &&
+                    <CountdownTimer targetDate={new Date(donation.endDate)} prefixString={getPGFStatus(donation) === "Active" ? "Ends in " : "Starts in "} />
+                  }
+                  {getPGFStatus(donation) === "Upcoming" &&
+                    <div className="text-[12px] font-semibold">{getTimeLeft(donation)}</div>
+                  }
+                  {getPGFStatus(donation) === "Ended" &&
+                    <div className="text-[12px] font-semibold">{getTimeLeft(donation)}</div>
+                  }
                 </div>
-                <div className="justify-center pl-[5px]">{donation.name}</div>
-                <div className="flex gap-x-[10px]">
+                <div className="justify-center">{donation.name}</div>
+                <div className="peer/icons flex gap-x-[10px]">
                   {donation.twitterURL && (
-                    <a href={donation.twitterURL} target="_blank">
+                    <Link href={donation.twitterURL} target="_blank">
                       <Icon
                         icon="ri:twitter-x-fill"
                         className="w-[15px] h-[15px]"
                       />
-                    </a>
+                    </Link>
                   )}
                   {donation.farcasterURL && (
-                    <a href={donation.farcasterURL} target="_blank">
+                    <Link href={donation.farcasterURL} target="_blank">
                       <Icon
                         icon="gtp:farcaster"
                         className="h-[15px] w-[15px]"
                       />
-                    </a>
+                    </Link>
                   )}
                   {donation.lensURL && (
-                    <a href={donation.lensURL} target="_blank">
+                    <Link href={donation.lensURL} target="_blank">
                       <Icon icon="gtp:lens" className="h-[15px] w-[15px]" />
-                    </a>
+                    </Link>
                   )}
                 </div>
                 <Link
                   href={donation.url}
                   target="_blank"
-                  className="hover:underline"
+                  className="group-hover:underline peer-hover/icons:!no-underline"
                 >
                   {donation.url}
                 </Link>
                 <div className="text-right">
-                  {getDonateUntil(donation.endDate)}
+                  {getDonateUntil(donation)}
                 </div>
               </GridTableRow>
             )) : (
@@ -322,7 +451,14 @@ export default function Donations() {
                 <GridTableRow
                   gridDefinitionColumns="grid-cols-[425px_minmax(100px,2000px)_120px] justify-items-stretch"
                   key={impactRow.name}
-                  className="text-[14px] gap-x-[15px] z-[2] !pl-[15px] !pr-[16px] h-[34px] select-none"
+                  className="group text-[14px] gap-x-[15px] z-[2] !pl-[15px] !pr-[16px] h-[34px] select-none"
+                  onClick={() => {
+                    window.open(impactRow.url, "_blank");
+                    track("clicked Donate Impact Row", {
+                      location: impactRow.name,
+                      page: window.location.pathname,
+                    });
+                  }}
                 >
                   <div className="justify-center w-full truncate">{impactRow.name}</div>
                   <div className="flex gap-x-[10px]">
@@ -330,7 +466,7 @@ export default function Donations() {
                       <Link
                         href={impactRow.url}
                         target="_blank"
-                        className="w-full  truncate hover:underline"
+                        className="w-full truncate group-hover:underline"
                       >
                         {impactRow.url}
                       </Link>
@@ -373,7 +509,14 @@ export default function Donations() {
                 <GridTableRow
                   gridDefinitionColumns="grid-cols-[425px_minmax(100px,2000px)_120px] justify-items-stretch"
                   key={updateRow.name}
-                  className="text-[14px] gap-x-[15px] z-[2] !pl-[15px] !pr-[16px] h-[34px] select-none"
+                  className="group text-[14px] gap-x-[15px] z-[2] !pl-[15px] !pr-[16px] h-[34px] select-none"
+                  onClick={() => {
+                    window.open(updateRow.url, "_blank");
+                    track("clicked Donate Update Row", {
+                      location: updateRow.name,
+                      page: window.location.pathname,
+                    });
+                  }}
                 >
                   <div className="flex items-center w-full h-full">
                     {updateRow.name}
@@ -382,7 +525,7 @@ export default function Donations() {
                     <Link
                       href={updateRow.url}
                       target="_blank"
-                      className="w-full truncate hover:underline"
+                      className="w-full truncate group-hover:underline"
                     >
                       {updateRow.url}
                     </Link>
@@ -469,8 +612,11 @@ const QRCodeCard = ({ CardData, index }) => {
     <div
       className={`group flex items-center gap-x-[10px] p-[5px] pr-[15px] border-[2px] rounded-[17px] border-[#CDD8D3] cursor-pointer`}
       onClick={() => {
-
         window.open(CardData.url, "_blank");
+        track("clicked Donate QR Code", {
+          location: CardData.key,
+          page: window.location.pathname,
+        });
       }}
       key={CardData.key}
     >
@@ -520,6 +666,99 @@ const QRCodeCard = ({ CardData, index }) => {
       </div>
     </div>
   );
+};
+
+
+const CountdownTimer = ({ targetDate, prefixString }: { targetDate: Date, prefixString?: string }) => {
+  const calculateTimeLeft = () => {
+    const now = new Date();
+    const difference = targetDate.getTime() - now.getTime();
+
+    let timeLeft: {
+      days: number;
+      hours: number;
+      minutes: number;
+      seconds: number;
+    } | null = null;
+
+    if (difference > 0) {
+      timeLeft = {
+        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((difference / 1000 / 60) % 60),
+        seconds: Math.floor((difference / 1000) % 60),
+      };
+    } else {
+      timeLeft = null; // Countdown has ended
+    }
+
+    return timeLeft;
+  };
+
+  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+
+  useEffect(() => {
+    // Update the countdown every second
+    const timer = setInterval(() => {
+      const updatedTimeLeft = calculateTimeLeft();
+      setTimeLeft(updatedTimeLeft);
+
+      // If the countdown is over, clear the interval
+      if (!updatedTimeLeft) {
+        clearInterval(timer);
+      }
+    }, 1000);
+
+    // Cleanup the interval on component unmount
+    return () => clearInterval(timer);
+  }, [targetDate]);
+
+  const timerComponents = [];
+
+  if (timeLeft) {
+    return (
+      <>
+        <div className="flex items-center justify-end gap-x-[5px] h-full">
+          {prefixString &&
+            <>{prefixString}</>
+          }
+          <div className="flex items-center gap-x-[5px] leading-[120%] text-[11px] pt-[4px] h-[20px]">
+            <div className="flex flex-col items-center space-y-[-5px]">
+              <div>{timeLeft.days}</div>
+              <div className="font-normal text-[8px] text-forest-400">days</div>
+            </div>
+            <div className="flex items-center justify-cnter gap-x-[1px] leading-[120%]">
+
+              <div className="flex flex-col items-center space-y-[-5px]">
+                <div>{timeLeft.hours}</div>
+                <div className="font-normal text-[8px] text-forest-400">hrs</div>
+              </div>
+              <div className="flex flex-col items-center space-y-[-5px]">
+                <div>:</div>
+                <div>&nbsp;</div>
+              </div>
+              <div className="flex flex-col items-center space-y-[-5px]">
+                <div>{timeLeft.minutes}</div>
+                <div className="font-normal text-[8px] text-forest-400">min</div>
+              </div>
+              <div className="flex flex-col items-center space-y-[-5px]">
+                <div>:</div>
+                <div>&nbsp;</div>
+              </div>
+              <div className="flex flex-col items-center space-y-[-5px]">
+                <div>{timeLeft.seconds}</div>
+                <div className="font-normal text-[8px] text-forest-400">sec</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </>
+    )
+  } else {
+    return <div>Time&apos;s up!</div>;
+  }
+
 };
 
 const GivethSVG = () => (

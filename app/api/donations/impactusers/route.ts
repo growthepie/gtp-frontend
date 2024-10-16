@@ -42,6 +42,12 @@ async function fetchData() {
   }
 }
 
+export type DonationImpactRow = {
+  name: string;
+  url: string;
+  date: string;
+};
+
 export async function GET() {
   try {
     const result = await fetchData();

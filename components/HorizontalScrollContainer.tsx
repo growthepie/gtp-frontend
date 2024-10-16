@@ -293,12 +293,22 @@ export default function HorizontalScrollContainer({
       <div
         className={`transition-opacity duration-300 ${showScroller && showLeftGradient ? "opacity-100" : "opacity-0"
           } z-[2] absolute top-0 bottom-0 -left-[58px] w-[125px] bg-[linear-gradient(-90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none`}
+        style={{
+          // to avoid the gradient from being cut off
+          maskImage: "linear-gradient(to bottom, transparent 0, white 30px, white calc(100% - 30px), transparent)",
+          WebkitMaskImage: "linear-gradient(to bottom, transparent 0, white 30px, white calc(100% - 30px), transparent)",
+        }}
       ></div>
 
       {/* Right Gradient Mask */}
       <div
         className={`transition-opacity duration-300 ${showScroller && showRightGradient ? "opacity-100" : "opacity-0"
           } z-[2] absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none`}
+        style={{
+          // to avoid the gradient from being cut off
+          maskImage: "linear-gradient(to bottom, transparent 0, white 30px, white calc(100% - 30px), transparent)",
+          WebkitMaskImage: "linear-gradient(to bottom, transparent 0, white 30px, white calc(100% - 30px), transparent)",
+        }}
       ></div>
 
       <div className="overflow-x-visible">
