@@ -205,8 +205,8 @@ export default function ComparisonChart({
   selectedScale: string;
   setSelectedScale: (scale: string) => void;
   metric_id: string;
-  metric_info_key: "metrics" | "da_metrics";
-  chain_info_key: "chains" | "da_layers";
+  metric_info_key?: "metrics" | "da_metrics";
+  chain_info_key?: "chains" | "da_layers";
   monthly_agg: string;
   is_embed?: boolean;
   embed_start_timestamp?: number;
