@@ -269,12 +269,12 @@ export const metricItems: MetricItem[] = [
 export const daMetricItems: MetricItem[] = [
   {
     label: "Blob Count",
-    icon: "gtp:gtp-blobs",
+    icon: "gtp:gtp-blobs-number",
     page: {
       title: "Blob Count",
       description: "The Blob Count is a DA Layer Metric",
       why: "Cool stuff.",
-      icon: "gtp:gtp-blobs",
+      icon: "gtp:gtp-blobs-number",
       showGwei: false,
     },
     key: "blob_count",
@@ -295,12 +295,12 @@ export const daMetricItems: MetricItem[] = [
   },
   {
     label: "Fees Paid",
-    icon: "gtp:gtp-fees-paid",
+    icon: "gtp:gtp-da-fees-paid",
     page: {
       title: "Fees Paid",
       description: "The Fees Paid is a DA Layer Metric",
       why: "Cool stuff.",
-      icon: "gtp:gtp-fees-paid",
+      icon: "gtp:gtp-da-fees-paid",
       showGwei: false,
     },
     key: "fees_paid",
@@ -308,12 +308,12 @@ export const daMetricItems: MetricItem[] = [
   },
   {
     label: "Fees Paid Per Mbyte",
-    icon: "gtp:gtp-fees-per-mbyte",
+    icon: "gtp:gtp-da-fees-paid-per-mb",
     page: {
       title: "Fees Paid Per Mbyte",
       description: "The Fees Paid Per Mbyte is a DA Layer Metric",
       why: "Cool stuff.",
-      icon: "gtp:gtp-fees-per-mbyte",
+      icon: "gtp:gtp-da-fees-paid-per-mb",
       showGwei: false,
     },
     key: "fees_per_mbyte",
