@@ -27,6 +27,7 @@ import { DonationPGFRow } from "@/app/api/donations/pgf/route";
 import { DonationImpactRow } from "@/app/api/donations/impactusers/route";
 import { DonationUpdateRow } from "@/app/api/donations/updates/route";
 import moment from "moment";
+import Image from "next/image";
 
 export default function Donations() {
   const { isSidebarOpen } = useUIContext();
@@ -554,18 +555,16 @@ export default function Donations() {
           We received grants between 50k - 150k USD from the following partners,
           communities or foundations.
         </Description>
-        <div className="grid gap-x-[15px] grid-flow-col">
+        <div className="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 items-center gap-[30px] pt-[16px] pb-[16px] px-[23px]">
           {Supporters.map((s) => (
             <Link
               key={s.name}
               target="_blank"
               rel="noopener noreferrer"
               href={s.url}
-              className="relative flex items-center justify-center h-[98px] md:h-[98px] cursor-pointer"
+              className="relative text-center"
             >
-              <div className="w-full xl:w-3/5">
-                <s.svg />
-              </div>
+              <s.svg />
             </Link>
           ))}
         </div>
@@ -1971,3 +1970,5 @@ const BaseSVG = () => (
     </defs>
   </svg>
 );
+
+
