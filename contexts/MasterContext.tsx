@@ -11,8 +11,8 @@ type MasterContextType = {
   data: MasterResponse | undefined;
   AllChains: Chain[];
   AllChainsByKeys: { [key: string]: Chain };
-  AllDALayers: (DataAvailabilityLayerData & { key: string })[];
-  AllDALayersByKeys: { [key: string]: DataAvailabilityLayerData & { key: string } };
+  AllDALayers: (DataAvailabilityLayerData & { key: string, label: string })[];
+  AllDALayersByKeys: { [key: string]: DataAvailabilityLayerData & { key: string, label: string } };
   EnabledChainsByKeys: { [key: string]: Chain };
   ChainsNavigationItems: {
     name: string;
@@ -46,8 +46,8 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
   const { data, isLoading } = useSWR<MasterResponse>(MasterURL);
   const [AllChains, setAllChains] = useState<Chain[]>([]);
   const [AllChainsByKeys, setAllChainsByKeys] = useState<{ [key: string]: Chain }>({});
-  const [AllDALayers, setDALayers] = useState<(DataAvailabilityLayerData & { key: string })[]>([]);
-  const [AllDALayersByKeys, setDALayersByKeys] = useState<{ [key: string]: DataAvailabilityLayerData & { key: string } }>({});
+  const [AllDALayers, setDALayers] = useState<(DataAvailabilityLayerData & { key: string, label: string })[]>([]);
+  const [AllDALayersByKeys, setDALayersByKeys] = useState<{ [key: string]: DataAvailabilityLayerData & { key: string, label: string } }>({});
   const [EnabledChainsByKeys, setEnabledChainsByKeys] = useState<{ [key: string]: Chain }>({});
   const [ChainsNavigationItems, setChainsNavigationItems] = useState<any>({});
 
@@ -78,7 +78,7 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
       const chainsNavigationItems = Get_AllChainsNavigationItems(data);
       setChainsNavigationItems(chainsNavigationItems);
 
-      const daLayersWithKeys: (DataAvailabilityLayerData & { key: string })[] = Object.entries(data.da_layers).map(([key, value]) => ({ ...value, key }));
+      const daLayersWithKeys: (DataAvailabilityLayerData & { key: string, label: string })[] = Object.entries(data.da_layers).map(([key, value]) => ({ ...value, key, label: value.name }));
 
       // Data Availability Layers
       setDALayers(daLayersWithKeys);

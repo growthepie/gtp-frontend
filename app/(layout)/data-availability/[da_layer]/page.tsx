@@ -173,6 +173,8 @@ const DataAvailabilityContent = ({ params }: { params: any }) => {
             ) as number
           }
           metric_id={metricData.data.metric_id}
+          metric_info_key="da_metrics"
+          chain_info_key="da_layers"
           timeIntervals={intersection(
             Object.keys(metricData.data.chains.da_celestia),
             ["daily", "weekly", "monthly"],

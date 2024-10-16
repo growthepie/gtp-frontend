@@ -180,6 +180,8 @@ export default function ComparisonChart({
   selectedScale,
   setSelectedScale,
   metric_id,
+  metric_info_key = "metrics",
+  chain_info_key = "chains",
   monthly_agg,
   is_embed = false,
   embed_start_timestamp,
@@ -203,6 +205,8 @@ export default function ComparisonChart({
   selectedScale: string;
   setSelectedScale: (scale: string) => void;
   metric_id: string;
+  metric_info_key: "metrics" | "da_metrics";
+  chain_info_key: "chains" | "da_layers";
   monthly_agg: string;
   is_embed?: boolean;
   embed_start_timestamp?: number;
@@ -505,21 +509,21 @@ export default function ComparisonChart({
 
       if (!data || !master) return;
 
-      const units = Object.keys(master.metrics[metric_id].units);
+      const units = Object.keys(master[metric_info_key][metric_id].units);
       const unitKey =
         units.find((unit) => unit !== "usd" && unit !== "eth") ||
         (showUsd ? "usd" : "eth");
-      let prefix = master.metrics[metric_id].units[unitKey].prefix
-        ? master.metrics[metric_id].units[unitKey].prefix
+      let prefix = master[metric_info_key][metric_id].units[unitKey].prefix
+        ? master[metric_info_key][metric_id].units[unitKey].prefix
         : "";
-      let suffix = master.metrics[metric_id].units[unitKey].suffix
-        ? master.metrics[metric_id].units[unitKey].suffix
+      let suffix = master[metric_info_key][metric_id].units[unitKey].suffix
+        ? master[metric_info_key][metric_id].units[unitKey].suffix
         : "";
 
       const decimals =
         !showUsd && showGwei
           ? 2
-          : master.metrics[metric_id].units[unitKey].decimals_tooltip;
+          : master[metric_info_key][metric_id].units[unitKey].decimals_tooltip;
 
       let tooltipPoints = (showOthers ? firstTenPoints : points)
         .map((point: any) => {
@@ -551,7 +555,7 @@ export default function ComparisonChart({
 
           let value = y;
 
-          if (!showUsd && master.metrics[metric_id].units[unitKey].currency) {
+          if (!showUsd && master[metric_info_key][metric_id].units[unitKey].currency) {
             if (showGwei) {
               prefix = "";
               suffix = " Gwei";
@@ -1274,7 +1278,7 @@ export default function ComparisonChart({
   }, [isMobile, is_embed, height]);
 
   const options = useMemo((): Highcharts.Options => {
-    if (!filteredData || filteredData.length === 0) return {};
+    if (!filteredData || filteredData.length === 0 || !master) return {};
 
     if (filteredData[0].types.includes("usd")) {
       if (!showUsd) setValuePrefix("Ξ");
@@ -1332,12 +1336,8 @@ export default function ComparisonChart({
         opposite: false,
         showFirstLabel: true,
         showLastLabel: true,
-        type: "linear",
-        // ["absolute", "percentage"].includes(selectedScale)
-        //   ? "linear"
-        //   : "logarithmic",
-        // reversed: reversePerformer ?? false,
-        min: metric_id === "profit" ? null : 0,
+        type: master[metric_info_key][metric_id].log_default === true && ["absolute"].includes(selectedScale) ? "logarithmic" : "linear",
+        min: metric_id === "profit" || (master[metric_info_key][metric_id].log_default === true && ["absolute"].includes(selectedScale)) ? null : 0,
         max: selectedScale === "percentage" ? 100 : undefined,
         labels: {
           y: 5,
@@ -2095,8 +2095,8 @@ export default function ComparisonChart({
                       <ChartWatermark className="w-[128.67px] h-[30.67px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
                       <div className="font-medium text-[10px] uppercase">
                         {master &&
-                          master.metrics[metric_id] &&
-                          master.metrics[metric_id].name}
+                          master[metric_info_key][metric_id] &&
+                          master[metric_info_key][metric_id].name}
                       </div>
                     </div>
                   </div>

@@ -38,6 +38,7 @@ const DAMetricsTable = ({
   timeIntervalKey: string;
 }) => {
   const { AllDALayers: DALayers, AllDALayersByKeys: DALayersByKeys } = useMaster();
+
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   const [maxVal, setMaxVal] = useState<number | null>(null);
@@ -341,23 +342,23 @@ const DAMetricsTable = ({
     (item: any) => {
       if (!lastValues || !master) return { value: "0", prefix: "", suffix: "" };
 
-      if (!master.metrics[metric_id]) return { value: lastValues[item.daLayer.key], prefix: "", suffix: "" };
+      if (!master.da_metrics[metric_id]) return { value: lastValues[item.daLayer.key], prefix: "", suffix: "" };
 
-      const units = Object.keys(master.metrics[metric_id].units);
+      const units = Object.keys(master.da_metrics[metric_id].units);
       const unitKey =
         units.find((unit) => unit !== "usd" && unit !== "eth") ||
         (showUsd ? "usd" : "eth");
 
-      let prefix = master.metrics[metric_id].units[unitKey].prefix
-        ? master.metrics[metric_id].units[unitKey].prefix
+      let prefix = master.da_metrics[metric_id].units[unitKey].prefix
+        ? master.da_metrics[metric_id].units[unitKey].prefix
         : "";
-      let suffix = master.metrics[metric_id].units[unitKey].suffix
-        ? master.metrics[metric_id].units[unitKey].suffix
+      let suffix = master.da_metrics[metric_id].units[unitKey].suffix
+        ? master.da_metrics[metric_id].units[unitKey].suffix
         : "";
       const decimals =
         showGwei && !showUsd
           ? 2
-          : master.metrics[metric_id].units[unitKey].decimals;
+          : master.da_metrics[metric_id].units[unitKey].decimals;
 
       let types = item.data[lastValueTimeIntervalKey].types;
       let values =

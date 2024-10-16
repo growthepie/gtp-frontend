@@ -2,6 +2,7 @@
   current_version: string;
   chains: Chains;
   metrics: Metrics;
+  da_metrics: Metrics;
   fee_metrics: FeeMetrics;
   default_chain_selection: string[];
   blockspace_categories: BlockspaceCategories;
@@ -72,6 +73,10 @@ export interface MetricInfo {
   units: string[];
   avg: boolean;
   all_l2s_aggregate: string;
+  fundamental: boolean;
+  log_default: boolean;
+  max_date_fill: boolean;
+  monthly_agg: "sum" | "avg" | "maa";
 }
 
 export interface DataAvailabilityLayers {
