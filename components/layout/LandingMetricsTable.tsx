@@ -8,7 +8,7 @@ import {
   Get_SupportedChainKeys,
 } from "@/lib/chains";
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { createRef, useCallback, useEffect, useMemo, useState } from "react";
 import { useLocalStorage, useMediaQuery, useSessionStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import d3 from "d3";
@@ -33,6 +33,7 @@ import { IS_DEVELOPMENT, IS_PREVIEW } from "@/lib/helpers";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { useRouter } from 'next/navigation'
 import { getFundamentalsByKey } from "@/lib/navigation";
+import { metricItems } from "@/lib/metrics";
 
 export default function LandingMetricsTable({
   data,
@@ -144,8 +145,8 @@ export default function LandingMetricsTable({
       })
       .map((data) => ({
         ...data,
-        y: (height += 37) - 37,
-        height: 37,
+        y: (height += 39) - 39,
+        height: 39,
       })),
     {
       key: (d) => d.chain.key,
@@ -186,6 +187,93 @@ export default function LandingMetricsTable({
     [...Get_DefaultChainSelectionKeys(master), "ethereum"],
   );
 
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+
+  const showGwei = false;
+
+  function formatNumber(number: number, decimals?: number): string {
+    if (number === 0) {
+      return "0";
+    } else if (Math.abs(number) >= 1e9) {
+      if (Math.abs(number) >= 1e12) {
+        return (number / 1e12).toFixed(2) + "T";
+      } else if (Math.abs(number) >= 1e9) {
+        return (number / 1e9).toFixed(2) + "B";
+      }
+    } else if (Math.abs(number) >= 1e6) {
+      return (number / 1e6).toFixed(2) + "M";
+    } else if (Math.abs(number) >= 1e3) {
+      const rounded = (number / 1e3).toFixed(2);
+      return `${rounded}${Math.abs(number) >= 10000 ? "K" : "K"}`;
+    } else if (Math.abs(number) >= 100) {
+      return number.toFixed(decimals ? decimals : 2);
+    } else if (Math.abs(number) >= 10) {
+      return number.toFixed(decimals ? decimals : 2);
+    } else {
+      return number.toFixed(decimals ? decimals : 2);
+    }
+
+    // Default return if none of the conditions are met
+    return "";
+  }
+
+  const getDisplayValue = useCallback((metric_id: string, metric_values: number[], value_keys: string[]) => {
+    if (!master) return { value: "0", prefix: "", suffix: "" };
+
+    const units = Object.keys(master.metrics[metric_id].units);
+    const unitKey =
+      units.find((unit) => unit !== "usd" && unit !== "eth") ||
+      (showUsd ? "usd" : "eth");
+    const valueKey = value_keys.includes("value_eth") ? "value_eth" : "value";
+
+    let prefix = master.metrics[metric_id].units[unitKey].prefix
+      ? master.metrics[metric_id].units[unitKey].prefix
+      : "";
+    let suffix = master.metrics[metric_id].units[unitKey].suffix
+      ? master.metrics[metric_id].units[unitKey].suffix
+      : "";
+    let decimals =
+      showGwei && !showUsd
+        ? 2
+        : master.metrics[metric_id].units[unitKey].decimals;
+
+    let types = value_keys;
+    let values = metric_values;
+
+
+    // if (lastValueTimeIntervalKey === "monthly") {
+    //   types = item.data.last_30d.types;
+    //   values = item.data.last_30d.data;
+    //   // value = formatNumber(values[0]);
+    // }
+
+    console.log("types", types);
+    console.log("values", values);
+
+    let value = formatNumber(values[types.indexOf(valueKey)], decimals);
+
+    if (types.includes("value_eth")) {
+      if (!showUsd) {
+        let navItem = metricItems.find((item) => item.key === metric_id);
+
+        if (navItem && navItem.page?.showGwei) {
+          decimals = 2;
+          prefix = "";
+          suffix = " Gwei";
+          value = formatNumber(
+            values[types.indexOf("value_eth")] * 1000000000,
+            decimals,
+          );
+        }
+      } else {
+        value = formatNumber(values[types.indexOf("value_usd")], decimals);
+      }
+    }
+    return { value, prefix, suffix };
+  },
+    [master, showGwei, showUsd],
+  );
+
 
   return (
     <>
@@ -193,13 +281,14 @@ export default function LandingMetricsTable({
         <>
           <GridTableHeader
             gridDefinitionColumns="grid-cols-[26px_125px_190px_minmax(100px,800px)_140px_125px_71px]"
-            className="text-[14px] !font-bold gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] !pt-[15px] pb-[3px] select-none overflow-visible"
+            className="text-[14px] !font-bold gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] !pt-[15px] pb-[5px] select-none overflow-visible"
 
           >
             <GridTableHeaderCell><></></GridTableHeaderCell>
             <GridTableHeaderCell>Chain</GridTableHeaderCell>
             <GridTableHeaderCell>Purpose</GridTableHeaderCell>
             <GridTableHeaderCell justify="center">
+
               <div className="flex items-center gap-x-[10px] px-[15px] h-[36px] rounded-full bg-[#1F2726] z-[1] relative overflow-visible">
                 {["daa", "throughput", "stables_mcap", "txcosts", "fees", "profit", "fdv"].map((metric) => {
                   return (
@@ -210,14 +299,16 @@ export default function LandingMetricsTable({
                       }}
                       onMouseLeave={() => {
                         setHoveredMetric(null)
-                      }}>
+                      }}
+                    >
                       <GTPMetricIcon key={metric} icon={metric} size="sm" className="z-[2]" />
-                      <div className={`absolute -inset-[5px] bg-[#5A6462] rounded-full z-[1] ${hoveredMetric === metric ? "opacity-100" : "opacity-0"}`} />
-                      <div className={`absolute -top-[42px] z-[11] w-[120px] h-[30px] flex items-end justify-center ${hoveredMetric === metric ? "opacity-100" : "opacity-0"}`}>
+                      <div className={`absolute -inset-[10.5px] bg-[#151A19] border border-[#5A6462] rounded-full z-[1] ${hoveredMetric === metric ? "opacity-100" : "opacity-0"}`} />
+                      <div className={`absolute -top-[44px] z-[11] w-[200px] h-[30px] flex items-end justify-center pointer-events-none ${hoveredMetric === metric ? "opacity-100" : "opacity-0"}`}>
                         <div
-                          className="text-[10px] leading-[120%] text-center font-bold"
+                          className="text-[8.5px] leading-[120%] text-center font-bold"
                           style={{
-                            fontVariant: "all-petite-caps",
+                            textTransform: "uppercase",
+
                           }}
                         >
                           {master.metrics[metric].name}
@@ -316,16 +407,19 @@ export default function LandingMetricsTable({
                         <div className="flex items-center justify-end px-[15px]">
                           {["daa", "throughput", "stables_mcap", "txcosts", "fees", "profit", "fdv"].map((metric) => {
 
-                            // const metricRanks = Object.values(landing.data.metrics.table_visual).map((chain) => chain.ranking[metric].rank).filter((rank) => rank !== null)
-                            // const maxRank = Math.max(...metricRanks)
-                            // const minRank = Math.min(...metricRanks)
+                            const metricRanks = Object.values(landing.data.metrics.table_visual).map((chain) => chain.ranking[metric].rank).filter((rank) => rank !== null)
+                            const maxRank = Math.max(...metricRanks)
+                            const minRank = Math.min(...metricRanks)
 
-                            const valueKey = landing.data.metrics.table_visual[item.chain.key].ranking[metric].value_eth ? "value_eth" : "value";
-                            const values = Object.values(landing.data.metrics.table_visual).map((chain) => chain.ranking[metric][valueKey]).filter((value) => value !== null && value !== undefined)
-                            const maxValue = Math.max(...values)
-                            const minValue = Math.min(...values)
+                            const valueKeys = Object.keys(landing.data.metrics.table_visual[item.chain.key].ranking[metric]).filter((key) => key.includes("value"));
+                            const valueKey = valueKeys.includes("value_eth") ? "value_eth" : "value";
+                            const values = valueKeys.map((key) => landing.data.metrics.table_visual[item.chain.key].ranking[metric][key]);
+                            // const maxValue = Math.max(...values)
+                            // const minValue = Math.min(...values)
 
                             const color = GetRankingColor(landing.data.metrics.table_visual[item.chain.key].ranking[metric].color_scale * 100);
+
+                            const ref = createRef<SVGElement>();
 
                             return (
                               <div
@@ -355,96 +449,77 @@ export default function LandingMetricsTable({
 
                                 >
                                   {landing.data.metrics.table_visual[item.chain.key].ranking[metric].rank !== null ? (
-                                    <>
+                                    <div className="relative w-[25px] h-[37px]">
                                       <div
-                                        className="relative size-[30px] rounded-full flex items-center justify-center transition-transform pointer-events-none"
+                                        className="absolute left-[-3px] size-[30px] rounded-full flex items-center justify-center pointer-events-none"
                                         style={{
                                           transform:
                                             hoveredMetric === metric ?
-                                              `scale(${GetRankingScale(landing.data.metrics.table_visual[item.chain.key].ranking[metric][valueKey], [minValue, maxValue], [0.33, 2])})`
+                                              `scale(${GetRankingScale(landing.data.metrics.table_visual[item.chain.key].ranking[metric].rank, [minRank, maxRank], [7.33 / 11, 15 / 11].reverse() as [number, number])})`
                                               : "scale(1)",
-                                          zIndex: hoveredMetric === metric ? 1 : 0,
+                                          zIndex: hoveredMetric !== metric ? 2 : 4,
                                         }}>
-                                        <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" viewBox="0 0 30 30" className={`bg-transparent fill-transparent`}>
-                                          <defs>
-                                            <filter id="nnneon-filter" x="-100%" y="-100%" width="400%" height="400%" filterUnits="objectBoundingBox" primitiveUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-                                              <feGaussianBlur stdDeviation="2 1" x="0%" y="0%" width="100%" height="100%" in="SourceGraphic" edgeMode="none" result="blur">
-                                              </feGaussianBlur>
-                                            </filter>
-                                            <filter id="nnneon-filter2" x="-100%" y="-100%" width="400%" height="400%" filterUnits="objectBoundingBox" primitiveUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-                                              <feGaussianBlur stdDeviation="1 2" x="0%" y="0%" width="100%" height="100%" in="SourceGraphic" edgeMode="none" result="blur">
-                                              </feGaussianBlur>
-                                            </filter>
-                                            <clipPath id={`${item.chain.key}-${metric}-clip`} filter="url(#nnneon-filter)">
-                                              <path fill-rule="evenodd" clip-rule="evenodd" d="M15 30C23.2843 30 30 23.2843 30 15C30 6.71573 23.2843 0 15 0C6.71573 0 0 6.71573 0 15C0 23.2843 6.71573 30 15 30ZM15 24C19.9706 24 24 19.9706 24 15C24 10.0294 19.9706 6 15 6C10.0294 6 6 10.0294 6 15C6 19.9706 10.0294 24 15 24Z" fill="#D9D9D9" />
-                                            </clipPath>
-                                            <clipPath id="circle-2">
-                                              <circle cx="15" cy="15" r="8" clipPath="url(#circle-1)" />
-                                            </clipPath>
-                                            <clipPath id="circle-1">
-                                              <circle cx="15" cy="15" r="2" />
-                                            </clipPath>
-                                            <clipPath id="shine-circle">
-                                              <circle cx="15" cy="15" r="6" />
-                                            </clipPath>
-                                            <linearGradient id={`${item.chain.key}-${metric}-gradient`} x1="0" x2="1" y1="0" y2="1">
-
-                                              <stop stop-color={color + "ff"} stop-opacity="1" offset="0%">
-                                              </stop>
-                                              <stop stop-color={color + "ff"} stop-opacity="1" offset="33%">
-                                              </stop>
-                                              <stop stop-color={color + "dd"} stop-opacity="1" offset="33%">
-                                              </stop>
-                                              {/* <stop stop-color={color + "aa"} stop-opacity="1" offset="33%">
-                                              </stop> */}
-                                              <stop stop-color={color + "ff"} stop-opacity="1" offset="100%">
-                                              </stop>
-                                            </linearGradient>
-                                            <linearGradient id="shine" x1="0" x2="0" y1="0" y2="1">
-                                              <stop stop-color="#FFFFFF" stop-opacity="0.5" offset="0%">
-                                              </stop>
-                                              <stop stop-color="#FFFFFF" stop-opacity="0" offset="100%">
-                                              </stop>
-                                            </linearGradient>
-                                            <mask id="mask" x="0" y="0" width="100%" height="100%">
-                                              <circle cx="15" cy="13" r="7" fill="white" />
-                                              <circle cx="15" cy="14" r="7" fill="black" clipPath="url(#shine-circle)" />
-
-                                            </mask>
-                                            <feDropShadow id="shadow" dx="0" dy="0" stdDeviation="1" floodColor="#000000" floodOpacity="0.3" />
-                                          </defs>
-                                          <circle
-                                            cx="15" cy="15" r="9"
-                                            stroke={`url(#${item.chain.key}-${metric}-gradient)`}
-                                            strokeWidth="1"
-                                            opacity="0.22"
-                                          />
-                                          {/* <circle
-                                            cx="15" cy="15" r="10"
-                                            stroke={`url(#${item.chain.key}-${metric}-gradient)`}
-                                            strokeWidth="1"
-                                            opacity="0.5"
-                                          /> */}
-
-                                          <circle
-                                            cx="15" cy="15" r="7"
-                                            fill={`url(#${item.chain.key}-${metric}-gradient)`}
-                                            opacity="1"
-                                          />
-
-                                          <text
+                                        <div className="size-[15px] rounded-full flex items-center justify-center border transition-colors"
+                                          style={{
+                                            borderColor: hoveredMetric !== null && hoveredMetric != metric ? "#344240" : color + "7F",
+                                          }}>
+                                          <div className="size-[11px] rounded-full flex items-center justify-center transition-colors"
                                             style={{
-                                              fontFeatureSettings: "'pnum' on, 'lnum' on",
-                                            }}
-                                            x="15" y="16.5"
-                                            textAnchor="middle" alignmentBaseline="middle"
-                                            fontSize="9px" fontWeight="900"
-                                            className="font-raleway"
-                                            fill="#1F2726"
-                                          >{landing.data.metrics.table_visual[item.chain.key].ranking[metric].rank}</text>
-                                        </svg>
+                                              background: hoveredMetric !== null && hoveredMetric != metric ? "#344240" : color,
+                                            }}>
+                                            <div className="absolute inset-0 flex items-center justify-center font-mono text-[8px] font-bold text-[#1F2726]">
+                                              {landing.data.metrics.table_visual[item.chain.key].ranking[metric].rank}
+                                            </div>
+                                          </div>
+                                        </div>
+
                                       </div>
-                                    </>
+                                      <div
+                                        className={`absolute -left-[6px] -top-[2.5px] w-[36px] h-[36px] bg-transparent rounded-full flex items-center justify-center pointer-events-none`}
+                                      >
+                                        <div className={`absolute rounded-full flex items-center justify-center bg-[#151A19] border border-[#5A6462]  ${hoveredMetric === metric ? "opacity-100" : "opacity-0"}`}
+                                          style={{
+                                            left: "0px",
+                                            // transform: hoveredMetric === metric ? "translate(32px, 0)" : "translate(0, 0)",
+                                            // transform: "translate(32px, 0)",
+                                            // transition: hoveredMetric === metric ? "all 0.3s ease-in-out" : "all 0.1s ease-in-out",
+                                            // transitionDelay: hoveredMetric === metric ? "0.6s" : "0s",
+                                            // width: hoveredMetric === metric ? "100px" : "7.5px",
+                                            // height: hoveredMetric === metric ? "36px" : "7.5px",
+                                            // width: "100px",
+                                            height: "36px",
+                                            zIndex: hoveredMetric === metric ? 3 : 0,
+                                            transformOrigin: "10% 50%",
+                                          }}>
+                                          <div
+                                            className="flex w-full items-baseline text-[14px] font-bold font-raleway pl-[37px] pr-[15px] min-w-[100px]"
+                                            style={{
+                                              //     font- variant - numeric: tabular-nums;
+                                              // -moz-font-feature-settings: "tnum";
+                                              // -webkit-font-feature-settings: "tnum";
+                                              // font-feature-settings: "tnum";
+                                              fontVariantNumeric: "tabular-nums",
+                                              WebkitFontFeatureSettings: "'tnum'",
+                                              MozFontFeatureSettings: "'tnum'",
+                                              fontFeatureSettings: "'tnum' on, 'lnum' on, 'pnum' on",
+                                            }}
+                                          >
+
+                                            {getDisplayValue(metric, values, valueKeys).prefix && (
+                                              <div className="">
+                                                {getDisplayValue(metric, values, valueKeys).prefix}
+                                              </div>
+                                            )}
+                                            {getDisplayValue(metric, values, valueKeys).value}
+                                            {getDisplayValue(metric, values, valueKeys).suffix && (
+                                              <div className="pl-[5px] font-raleway font-medium">
+                                                {getDisplayValue(metric, values, valueKeys).suffix}
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
                                   ) : (
                                     <div
                                       className="relative size-[30px] rounded-full flex items-center justify-center transition-transform pointer-events-none"
@@ -455,6 +530,7 @@ export default function LandingMetricsTable({
                                           background: "#1F272666",
                                           transform: hoveredMetric === metric ? "scale(1.1)" : "scale(1)"
                                         }}>
+
                                       </div>
                                     </div>
                                   )}
@@ -507,7 +583,8 @@ export default function LandingMetricsTable({
           <div className="h-[30px]" />
         </>
 
-      )}
+      )
+      }
       {/* <div className={`flex flex-col space-y-[5px] overflow-y-hidden overflow-x-scroll ${isSidebarOpen ? "2xl:overflow-x-hidden" : "min-[1168px]:overflow-x-hidden"} z-100 w-full p-0 pt-3 pb-2 md:pb-0 lg:px-0 md:pt-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller`}> */}
       < div className={`flex flex-col min-w-[1024px] w-full gap-y-[5px]`
       }>
