@@ -31,7 +31,7 @@ module.exports = {
         inter: ["var(--font-inter)", "sans-serif"],
         raleway: ["var(--font-raleway)", "sans-serif"],
         sans: ["var(--font-raleway)", ...defaultTheme.fontFamily.sans],
-        mono: ["var(--font-source-code-pro)", ...defaultTheme.fontFamily.mono],
+        mono: ["var(--font-roboto-mono)", ...defaultTheme.fontFamily.mono],
       },
       lineHeight: {
         snug: "1.2",
