@@ -330,7 +330,7 @@ export default function Donations() {
       </Container>
       <HorizontalScrollContainer className="">
         <GridTableHeader
-          gridDefinitionColumns="grid-cols-[150px_165px_90px_minmax(100px,2000px)_320px]"
+          gridDefinitionColumns="grid-cols-[150px_270px_90px_minmax(100px,2000px)_320px]"
           className="text-[14px] !font-bold gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] !pt-[15px] !pb-[3px] select-none"
         >
           <GridTableHeaderCell justify="center">Status</GridTableHeaderCell>
@@ -356,7 +356,7 @@ export default function Donations() {
               return endDate.getTime() > twoWeeksAgo.getTime();
             }).map((donation) => (
               <GridTableRow
-                gridDefinitionColumns="grid-cols-[150px_165px_90px_minmax(100px,2000px)_320px]"
+                gridDefinitionColumns="grid-cols-[150px_270px_90px_minmax(100px,2000px)_320px]"
                 key={donation.name}
                 className={`group text-[14px] gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] h-[34px] !pb-0 !pt-0 flex items-center select-none ${getPGFStatus(donation) === "Ended" && "opacity-40"}`}
                 onClick={() => {
