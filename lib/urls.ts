@@ -15,6 +15,8 @@ export const MetricsURLs = {
 
 export const DAMetricsURLs = {
   "blob-count": "https://api.growthepie.xyz/v1/da_metrics/blob_count.json",
+  "blob-producers":
+    "https://api.growthepie.xyz/v1/da_metrics/blob_producers.json",
   "data-posted": "https://api.growthepie.xyz/v1/da_metrics/data_posted.json",
   "fees-paid": "https://api.growthepie.xyz/v1/da_metrics/fees_paid.json",
   "fees-paid-per-mbyte":

@@ -13,7 +13,7 @@ import {
 } from "@/lib/chains";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
 import LandingChart from "@/components/layout/LandingChart";
-import LandingMetricsTable from "@/components/layout/LandingMetricsTable";
+import LandingMetricsTable, { TableRankingProvider } from "@/components/layout/LandingMetricsTable";
 import LandingTopContracts from "@/components/layout/LandingTopContracts";
 import Swiper from "@/components/layout/SwiperItems";
 import { Icon } from "@iconify/react";
@@ -129,16 +129,14 @@ export default function LandingUserBaseChart() {
             />
           </Container>
           <HorizontalScrollContainer reduceLeftMask={true}>
-            <LandingMetricsTable
-              data={{ chains: landing.data.metrics.table_visual }}
-              selectedChains={selectedChains}
-              setSelectedChains={setSelectedChains}
-              chains={chains}
-              metric={selectedTimeInterval}
-              master={master}
-              // interactable={selectedMetric !== "Total Users"}
-              interactable={false}
-            />
+            <TableRankingProvider>
+              <LandingMetricsTable
+                data={{ chains: landing.data.metrics.table_visual }}
+                master={master}
+                // interactable={selectedMetric !== "Total Users"}
+                interactable={false}
+              />
+            </TableRankingProvider>
           </HorizontalScrollContainer>
         </>
       ) : (

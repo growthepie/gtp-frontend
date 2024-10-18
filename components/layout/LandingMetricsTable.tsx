@@ -8,8 +8,8 @@ import {
   Get_SupportedChainKeys,
 } from "@/lib/chains";
 import Image from "next/image";
-import { createRef, useCallback, useEffect, useMemo, useState } from "react";
-import { useLocalStorage, useMediaQuery, useSessionStorage } from "usehooks-ts";
+import { ReactNode, createContext, memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import d3 from "d3";
 import moment from "moment";
@@ -23,8 +23,7 @@ import {
 import { useUIContext } from "@/contexts/UIContext";
 import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
-import { GridTableChainIcon, GridTableContainer, GridTableHeader, GridTableHeaderCell, GridTableRow } from "./GridTable";
-import HorizontalScrollContainer from "../HorizontalScrollContainer";
+import { GridTableChainIcon, GridTableHeader, GridTableHeaderCell, GridTableRow } from "./GridTable";
 import GTPIcon, { GTPMetricIcon } from "./GTPIcon";
 import { LandingURL } from "@/lib/urls";
 import useSWR from "swr";
@@ -35,20 +34,40 @@ import { useRouter } from 'next/navigation'
 import { getFundamentalsByKey } from "@/lib/navigation";
 import { metricItems } from "@/lib/metrics";
 
+function formatNumber(number: number, decimals?: number): string {
+  if (number === 0) {
+    return "0";
+  } else if (Math.abs(number) >= 1e9) {
+    if (Math.abs(number) >= 1e12) {
+      return (number / 1e12).toFixed(2) + "T";
+    } else if (Math.abs(number) >= 1e9) {
+      return (number / 1e9).toFixed(2) + "B";
+    }
+  } else if (Math.abs(number) >= 1e6) {
+    return (number / 1e6).toFixed(2) + "M";
+  } else if (Math.abs(number) >= 1e3) {
+    const rounded = (number / 1e3).toFixed(2);
+    return `${rounded}${Math.abs(number) >= 10000 ? "K" : "K"}`;
+  } else if (Math.abs(number) >= 100) {
+    return number.toFixed(decimals ? decimals : 2);
+  } else if (Math.abs(number) >= 10) {
+    return number.toFixed(decimals ? decimals : 2);
+  } else {
+    return number.toFixed(decimals ? decimals : 2);
+  }
+
+  // Default return if none of the conditions are met
+  return "";
+}
+
+
+
 export default function LandingMetricsTable({
   data,
-  chains,
-  selectedChains,
-  setSelectedChains,
-  metric,
   master,
   interactable,
 }: {
   data: any;
-  chains: any;
-  selectedChains: any;
-  setSelectedChains: any;
-  metric: string;
   master: MasterResponse;
   interactable: boolean;
 }) {
@@ -114,26 +133,11 @@ export default function LandingMetricsTable({
         (row) => row.chain.chainType != null && row.chain.chainType != "L1",
       )
       .sort((a, b) => {
-        // // always show multiple at the bottom
-        // if (a.chain.key === "multiple") return 1;
-        // if (b.chain.key === "multiple") return -1;
 
-        // sort by last value in daily data array and keep unselected chains at the bottom in descending order
-        if (selectedChains.includes(a.chain.key)) {
-          if (selectedChains.includes(b.chain.key)) {
-            return b.lastVal - a.lastVal;
-          } else {
-            return -1;
-          }
-        } else {
-          if (selectedChains.includes(b.chain.key)) {
-            return 1;
-          } else {
-            return b.lastVal - a.lastVal;
-          }
-        }
+        return b.lastVal - a.lastVal;
+
       });
-  }, [data, selectedChains]);
+  }, [data]);
 
   let height = 0;
   const transitions = useTransition(
@@ -159,13 +163,6 @@ export default function LandingMetricsTable({
     },
   );
 
-  const timespanLabels = {
-    "1d": "24h",
-    "7d": "7 days",
-    "30d": "30 days",
-    "365d": "1 year",
-  };
-
   const monthsSinceLaunch = useMemo(() => {
     let result = {};
     for (const chain of Object.keys(master.chains)) {
@@ -176,104 +173,6 @@ export default function LandingMetricsTable({
     }
     return result;
   }, [master]);
-
-
-  const [hoveredChain, setHoveredChain] = useState<string | null>(null);
-
-  const [hoveredMetric, setHoveredMetric] = useState<string | null>(null);
-
-  const [selectedFundamentalsChains, setSelectedFundamentalsChains] = useSessionStorage(
-    "fundamentalsChains",
-    [...Get_DefaultChainSelectionKeys(master), "ethereum"],
-  );
-
-  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-
-  const showGwei = false;
-
-  function formatNumber(number: number, decimals?: number): string {
-    if (number === 0) {
-      return "0";
-    } else if (Math.abs(number) >= 1e9) {
-      if (Math.abs(number) >= 1e12) {
-        return (number / 1e12).toFixed(2) + "T";
-      } else if (Math.abs(number) >= 1e9) {
-        return (number / 1e9).toFixed(2) + "B";
-      }
-    } else if (Math.abs(number) >= 1e6) {
-      return (number / 1e6).toFixed(2) + "M";
-    } else if (Math.abs(number) >= 1e3) {
-      const rounded = (number / 1e3).toFixed(2);
-      return `${rounded}${Math.abs(number) >= 10000 ? "K" : "K"}`;
-    } else if (Math.abs(number) >= 100) {
-      return number.toFixed(decimals ? decimals : 2);
-    } else if (Math.abs(number) >= 10) {
-      return number.toFixed(decimals ? decimals : 2);
-    } else {
-      return number.toFixed(decimals ? decimals : 2);
-    }
-
-    // Default return if none of the conditions are met
-    return "";
-  }
-
-  const getDisplayValue = useCallback((metric_id: string, metric_values: number[], value_keys: string[]) => {
-    if (!master) return { value: "0", prefix: "", suffix: "" };
-
-    const units = Object.keys(master.metrics[metric_id].units);
-    const unitKey =
-      units.find((unit) => unit !== "usd" && unit !== "eth") ||
-      (showUsd ? "usd" : "eth");
-    const valueKey = value_keys.includes("value_eth") ? "value_eth" : "value";
-
-    let prefix = master.metrics[metric_id].units[unitKey].prefix
-      ? master.metrics[metric_id].units[unitKey].prefix
-      : "";
-    let suffix = master.metrics[metric_id].units[unitKey].suffix
-      ? master.metrics[metric_id].units[unitKey].suffix
-      : "";
-    let decimals =
-      showGwei && !showUsd
-        ? 2
-        : master.metrics[metric_id].units[unitKey].decimals;
-
-    let types = value_keys;
-    let values = metric_values;
-
-
-    // if (lastValueTimeIntervalKey === "monthly") {
-    //   types = item.data.last_30d.types;
-    //   values = item.data.last_30d.data;
-    //   // value = formatNumber(values[0]);
-    // }
-
-    console.log("types", types);
-    console.log("values", values);
-
-    let value = formatNumber(values[types.indexOf(valueKey)], decimals);
-
-    if (types.includes("value_eth")) {
-      if (!showUsd) {
-        let navItem = metricItems.find((item) => item.key === metric_id);
-
-        if (navItem && navItem.page?.showGwei) {
-          decimals = 2;
-          prefix = "";
-          suffix = " Gwei";
-          value = formatNumber(
-            values[types.indexOf("value_eth")] * 1000000000,
-            decimals,
-          );
-        }
-      } else {
-        value = formatNumber(values[types.indexOf("value_usd")], decimals);
-      }
-    }
-    return { value, prefix, suffix };
-  },
-    [master, showGwei, showUsd],
-  );
-
 
   return (
     <>
@@ -288,38 +187,7 @@ export default function LandingMetricsTable({
             <GridTableHeaderCell>Chain</GridTableHeaderCell>
             <GridTableHeaderCell>Purpose</GridTableHeaderCell>
             <GridTableHeaderCell justify="center">
-
-              <div className="flex items-center gap-x-[10px] px-[15px] h-[36px] rounded-full bg-[#1F2726] z-[1] relative overflow-visible">
-                {["daa", "throughput", "stables_mcap", "txcosts", "fees", "profit", "fdv"].map((metric) => {
-                  return (
-                    <div className="relative flex items-center justify-center size-[15px] cursor-pointer"
-                      key={metric}
-                      onMouseEnter={() => {
-                        setHoveredMetric(metric)
-                      }}
-                      onMouseLeave={() => {
-                        setHoveredMetric(null)
-                      }}
-                    >
-                      <GTPMetricIcon key={metric} icon={metric} size="sm" className="z-[2]" />
-                      <div className={`absolute -inset-[10.5px] bg-[#151A19] border border-[#5A6462] rounded-full z-[1] ${hoveredMetric === metric ? "opacity-100" : "opacity-0"}`} />
-                      <div className={`absolute -top-[44px] z-[11] w-[200px] h-[30px] flex items-end justify-center pointer-events-none ${hoveredMetric === metric ? "opacity-100" : "opacity-0"}`}>
-                        <div
-                          className="text-[8.5px] leading-[120%] text-center font-bold"
-                          style={{
-                            textTransform: "uppercase",
-
-                          }}
-                        >
-                          {master.metrics[metric].name}
-                        </div>
-
-                      </div>
-                    </div>
-
-                  );
-                })}
-              </div>
+              <ChainRankHeader />
             </GridTableHeaderCell>
             <GridTableHeaderCell className="relative" justify="end">
               <div className="flex flex-col items-end">
@@ -402,146 +270,7 @@ export default function LandingMetricsTable({
                         <>{data.chains[item.chain.key].purpose}</>
                       )}
                     </div>
-                    <div className="flex justify-center items-center select-none" onMouseEnter={() => setHoveredChain(item.chain.key)} onMouseLeave={() => setHoveredChain(null)}>
-                      {landing && landing.data.metrics.table_visual[item.chain.key].ranking && (
-                        <div className="flex items-center justify-end px-[15px]">
-                          {["daa", "throughput", "stables_mcap", "txcosts", "fees", "profit", "fdv"].map((metric) => {
-
-                            const metricRanks = Object.values(landing.data.metrics.table_visual).map((chain) => chain.ranking[metric].rank).filter((rank) => rank !== null)
-                            const maxRank = Math.max(...metricRanks)
-                            const minRank = Math.min(...metricRanks)
-
-                            const valueKeys = Object.keys(landing.data.metrics.table_visual[item.chain.key].ranking[metric]).filter((key) => key.includes("value"));
-                            const valueKey = valueKeys.includes("value_eth") ? "value_eth" : "value";
-                            const values = valueKeys.map((key) => landing.data.metrics.table_visual[item.chain.key].ranking[metric][key]);
-                            // const maxValue = Math.max(...values)
-                            // const minValue = Math.min(...values)
-
-                            const color = GetRankingColor(landing.data.metrics.table_visual[item.chain.key].ranking[metric].color_scale * 100);
-
-                            const ref = createRef<SVGElement>();
-
-                            return (
-                              <div
-                                key={metric}
-                                className={`relative flex items-start justify-center size-[25px] ${landing.data.metrics.table_visual[item.chain.key].ranking[metric].rank !== null && "cursor-pointer"}`}
-
-                              >
-                                <div
-                                  className={`absolute w-[25px] h-[37px] -top-[5px] pt-[2px] flex items-start justify-center rounded-full`}
-                                  onMouseEnter={() => {
-                                    setHoveredMetric(metric)
-                                  }}
-                                  onMouseLeave={() => setHoveredMetric(null)}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-
-                                    setSelectedFundamentalsChains((prev) => {
-                                      if (!prev.includes(item.chain.key)) {
-                                        return [...prev, item.chain.key];
-                                      }
-                                      return prev;
-                                    });
-
-                                    // navigate to fundamentals page
-                                    router.push(`/fundamentals/${getFundamentalsByKey[metric].urlKey}`);
-                                  }}
-
-                                >
-                                  {landing.data.metrics.table_visual[item.chain.key].ranking[metric].rank !== null ? (
-                                    <div className="relative w-[25px] h-[37px]">
-                                      <div
-                                        className="absolute left-[-3px] size-[30px] rounded-full flex items-center justify-center pointer-events-none"
-                                        style={{
-                                          transform:
-                                            hoveredMetric === metric ?
-                                              `scale(${GetRankingScale(landing.data.metrics.table_visual[item.chain.key].ranking[metric].rank, [minRank, maxRank], [7.33 / 11, 15 / 11].reverse() as [number, number])})`
-                                              : "scale(1)",
-                                          zIndex: hoveredMetric !== metric ? 2 : 4,
-                                        }}>
-                                        <div className="size-[15px] rounded-full flex items-center justify-center border transition-colors"
-                                          style={{
-                                            borderColor: hoveredMetric !== null && hoveredMetric != metric ? "#344240" : color + "7F",
-                                          }}>
-                                          <div className="size-[11px] rounded-full flex items-center justify-center transition-colors"
-                                            style={{
-                                              background: hoveredMetric !== null && hoveredMetric != metric ? "#344240" : color,
-                                            }}>
-                                            <div className="absolute inset-0 flex items-center justify-center font-mono text-[8px] font-bold text-[#1F2726]">
-                                              {landing.data.metrics.table_visual[item.chain.key].ranking[metric].rank}
-                                            </div>
-                                          </div>
-                                        </div>
-
-                                      </div>
-                                      <div
-                                        className={`absolute -left-[6px] -top-[2.5px] w-[36px] h-[36px] bg-transparent rounded-full flex items-center justify-center pointer-events-none`}
-                                      >
-                                        <div className={`absolute rounded-full flex items-center justify-center bg-[#151A19] border border-[#5A6462]  ${hoveredMetric === metric ? "opacity-100" : "opacity-0"}`}
-                                          style={{
-                                            left: "0px",
-                                            // transform: hoveredMetric === metric ? "translate(32px, 0)" : "translate(0, 0)",
-                                            // transform: "translate(32px, 0)",
-                                            // transition: hoveredMetric === metric ? "all 0.3s ease-in-out" : "all 0.1s ease-in-out",
-                                            // transitionDelay: hoveredMetric === metric ? "0.6s" : "0s",
-                                            // width: hoveredMetric === metric ? "100px" : "7.5px",
-                                            // height: hoveredMetric === metric ? "36px" : "7.5px",
-                                            // width: "100px",
-                                            height: "36px",
-                                            zIndex: hoveredMetric === metric ? 3 : 0,
-                                            transformOrigin: "10% 50%",
-                                          }}>
-                                          <div
-                                            className="flex w-full items-baseline text-[14px] font-bold font-raleway pl-[37px] pr-[15px] min-w-[100px]"
-                                            style={{
-                                              //     font- variant - numeric: tabular-nums;
-                                              // -moz-font-feature-settings: "tnum";
-                                              // -webkit-font-feature-settings: "tnum";
-                                              // font-feature-settings: "tnum";
-                                              fontVariantNumeric: "tabular-nums",
-                                              WebkitFontFeatureSettings: "'tnum'",
-                                              MozFontFeatureSettings: "'tnum'",
-                                              fontFeatureSettings: "'tnum' on, 'lnum' on, 'pnum' on",
-                                            }}
-                                          >
-
-                                            {getDisplayValue(metric, values, valueKeys).prefix && (
-                                              <div className="">
-                                                {getDisplayValue(metric, values, valueKeys).prefix}
-                                              </div>
-                                            )}
-                                            {getDisplayValue(metric, values, valueKeys).value}
-                                            {getDisplayValue(metric, values, valueKeys).suffix && (
-                                              <div className="pl-[5px] font-raleway font-medium">
-                                                {getDisplayValue(metric, values, valueKeys).suffix}
-                                              </div>
-                                            )}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <div
-                                      className="relative size-[30px] rounded-full flex items-center justify-center transition-transform pointer-events-none"
-                                    >
-                                      <div
-                                        className="size-[10px] rounded-full flex items-center justify-center"
-                                        style={{
-                                          background: "#1F272666",
-                                          transform: hoveredMetric === metric ? "scale(1.1)" : "scale(1)"
-                                        }}>
-
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            )
-                          })}
-                        </div>
-
-                      )}
-                    </div>
+                    <ChainRankCell item={item} />
                     <div className="flex justify-end items-center">
                       <div className="flex justify-between items-center text-[12px] w-[88px]">
                         <div className="text-[10px] text-[#5A6462]">
@@ -651,27 +380,19 @@ export default function LandingMetricsTable({
                       className={`group flex items-center  ${!interactable
                         ? "cursor-pointer pointer-events-auto"
                         : "cursor-default pointer-events-none"
-                        } h-[34px] rounded-full w-full border-[1px] whitespace-nowrap relative ${selectedChains.includes(item.chain.key)
-                          ? "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/10"
-                          : "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/5 transition-all duration-100"
-                        }`}
-                      // onClick={() => {
-                      //   if (selectedChains.includes(item.chain.key)) {
-                      //     setSelectedChains(
-                      //       selectedChains.filter((c) => c !== item.chain.key),
-                      //     );
-                      //   } else {
-                      //     setSelectedChains([
-                      //       ...selectedChains,
-                      //       item.chain.key,
-                      //     ]);
-                      //   }
-                      // }}
-                      style={{
-                        color: selectedChains.includes(item.chain.key)
-                          ? undefined
-                          : "#5A6462",
-                      }}
+                        } h-[34px] rounded-full w-full border-[1px] whitespace-nowrap relative border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/10`}
+                    // onClick={() => {
+                    //   if (selectedChains.includes(item.chain.key)) {
+                    //     setSelectedChains(
+                    //       selectedChains.filter((c) => c !== item.chain.key),
+                    //     );
+                    //   } else {
+                    //     setSelectedChains([
+                    //       ...selectedChains,
+                    //       item.chain.key,
+                    //     ]);
+                    //   }
+                    // }}
                     >
                       <div className="w-full h-full absolute inset-0 rounded-full overflow-clip">
                         <div className="relative w-full h-full p-[15px]">
@@ -682,11 +403,7 @@ export default function LandingMetricsTable({
                               <div
                                 className={`absolute bottom-0 h-[2px] rounded-none font-semibold transition-width duration-300 `}
                                 style={{
-                                  background: selectedChains.includes(
-                                    item.chain.key,
-                                  )
-                                    ? item.chain.colors[theme ?? "dark"][1]
-                                    : "#5A6462",
+                                  background: item.chain.colors[theme ?? "dark"][1],
                                   width: `${(lastValsByChainKey[item.chain.key] /
                                     maxVal) *
                                     100
@@ -703,9 +420,7 @@ export default function LandingMetricsTable({
                             icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
                             className="h-[24px] w-[24px]"
                             style={{
-                              color: selectedChains.includes(item.chain.key)
-                                ? item.chain.colors[theme ?? "dark"][1]
-                                : "#5A6462",
+                              color: item.chain.colors[theme ?? "dark"][1],
                             }}
                           />
                         </div>
@@ -779,55 +494,6 @@ export default function LandingMetricsTable({
                             : ".1%",
                         )(data.chains[item.chain.key].cross_chain_activity)}
                       </div>
-                      {interactable && (
-                        <div className={`absolute  ${"-right-[20px]"}`}>
-                          <div
-                            className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50"
-                            style={{
-                              color: selectedChains.includes(item.chain.key)
-                                ? undefined
-                                : "#5A6462",
-                            }}
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className={`w-6 h-6 ${selectedChains.includes(item.chain.key)
-                                ? "opacity-0"
-                                : "opacity-100"
-                                }`}
-                            >
-                              <circle
-                                xmlns="http://www.w3.org/2000/svg"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                              />
-                            </svg>
-                          </div>
-                          <div
-                            className={`p-1 rounded-full ${selectedChains.includes(item.chain.key)
-                              ? "bg-white dark:bg-forest-1000"
-                              : "bg-forest-50 dark:bg-[#1F2726]"
-                              }`}
-                          >
-                            <Icon
-                              icon="feather:check-circle"
-                              className={`w-6 h-6 ${selectedChains.includes(item.chain.key)
-                                ? "opacity-100"
-                                : "opacity-0"
-                                }`}
-                            />
-                          </div>
-                        </div>
-                      )}
                     </div>
                   </Link>
                 </animated.div>
@@ -839,3 +505,277 @@ export default function LandingMetricsTable({
     </>
   );
 }
+
+const ChainRankHeader = memo(function ChainRankHeader(
+
+) {
+  {
+    const { hoveredMetric, setHoveredMetric, rankingKeys } = useTableRanking();
+    const { data: master } = useMaster();
+
+    if (!master) return null;
+
+    return (
+      <div className="flex items-center gap-x-[10px] px-[10px] h-[36px] rounded-full bg-[#1F2726] z-[1] relative overflow-visible">
+        {rankingKeys.map((metric) => {
+          return (
+            <div className="relative flex items-center justify-center size-[15px] cursor-pointer"
+              key={metric}
+              onMouseEnter={() => {
+                setHoveredMetric(metric)
+              }}
+              onMouseLeave={() => {
+                setHoveredMetric(null)
+              }}
+            >
+              <GTPMetricIcon key={metric} icon={metric} size={hoveredMetric === metric ? "md" : "sm"} className="absolute z-[2]" />
+              <div className={`absolute -inset-[10.5px] bg-[#151A19] border border-[#5A6462] rounded-full z-[1] ${hoveredMetric === metric ? "opacity-100" : "opacity-0"}`} />
+              <div className={`absolute -top-[44px] z-[11] w-[200px] h-[30px] flex items-end justify-center pointer-events-none ${hoveredMetric === metric ? "opacity-100" : "opacity-0"}`}>
+                <div
+                  className="text-[8.5px] leading-[120%] text-center font-bold"
+                  style={{
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {master.metrics[metric].name}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    )
+  }
+});
+
+
+const ChainRankCell = memo(function ChainRankIcon(
+  { item }: {
+    item: any,
+  }
+) {
+  const { hoveredMetric, setHoveredMetric, rankingKeys } = useTableRanking();
+
+  const { data: landing } = useSWR<LandingPageMetricsResponse>(LandingURL);
+  const { data: master } = useMaster();
+
+  const router = useRouter();
+
+  const [selectedFundamentalsChains, setSelectedFundamentalsChains] = useSessionStorage(
+    "fundamentalsChains",
+    master ? [...Get_DefaultChainSelectionKeys(master), "ethereum"] : [],
+  );
+
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+
+  const showGwei = false;
+
+  const getDisplayValue = useCallback((metric_id: string, metric_values: number[], value_keys: string[]) => {
+    if (!master) return { value: "0", prefix: "", suffix: "" };
+
+    const units = Object.keys(master.metrics[metric_id].units);
+    const unitKey =
+      units.find((unit) => unit !== "usd" && unit !== "eth") ||
+      (showUsd ? "usd" : "eth");
+    const valueKey = value_keys.includes("value_eth") ? "value_eth" : "value";
+
+    let prefix = master.metrics[metric_id].units[unitKey].prefix
+      ? master.metrics[metric_id].units[unitKey].prefix
+      : "";
+    let suffix = master.metrics[metric_id].units[unitKey].suffix
+      ? master.metrics[metric_id].units[unitKey].suffix
+      : "";
+    let decimals =
+      showGwei && !showUsd
+        ? 2
+        : master.metrics[metric_id].units[unitKey].decimals;
+
+    let types = value_keys;
+    let values = metric_values;
+
+    let rawValue = values[types.indexOf(valueKey)];
+    let isNegative = rawValue < 0;
+    let value = formatNumber(Math.abs(rawValue), decimals);
+
+    if (types.includes("value_eth")) {
+      if (!showUsd) {
+        let navItem = metricItems.find((item) => item.key === metric_id);
+
+        if (navItem && navItem.page?.showGwei) {
+          decimals = 2;
+          prefix = "";
+          suffix = " Gwei";
+          value = formatNumber(
+            values[types.indexOf("value_eth")] * 1000000000,
+            decimals,
+          );
+        }
+      } else {
+        value = formatNumber(values[types.indexOf("value_usd")], decimals);
+      }
+    }
+    return { value, prefix, suffix, isNegative };
+  },
+    [master, showGwei, showUsd],
+  );
+
+
+
+  if (!landing)
+    return null;
+
+  return (
+    <div className="flex justify-center items-center select-none">
+      {landing && landing.data.metrics.table_visual[item.chain.key].ranking && (
+        <div className="flex items-center justify-end px-[15px]">
+          {rankingKeys.map((metric) => {
+            const metricRanks = landing ? Object.values(landing.data.metrics.table_visual).map((chain) => chain.ranking[metric].rank).filter((rank) => rank !== null) : [];
+            const maxRank = Math.max(...metricRanks)
+            const minRank = Math.min(...metricRanks)
+
+            const valueKeys = landing ? Object.keys(landing.data.metrics.table_visual[item.chain.key].ranking[metric]).filter((key) => key.includes("value")) : [];
+            const values = landing ? valueKeys.map((key) => landing.data.metrics.table_visual[item.chain.key].ranking[metric][key]) : [];
+
+            const color = landing ? GetRankingColor(landing.data.metrics.table_visual[item.chain.key].ranking[metric].color_scale * 100) : "#1F2726";
+            return (
+              <div
+                key={metric}
+                className={`relative flex items-start justify-center size-[25px] ${landing.data.metrics.table_visual[item.chain.key].ranking[metric].rank !== null && "cursor-pointer"}`}
+
+              >
+                <div
+                  className={`absolute w-[25px] h-[37px] -top-[5px] pt-[2px] flex items-start justify-center rounded-full`}
+                  onMouseEnter={() => {
+                    setHoveredMetric(metric)
+                  }}
+                  onMouseLeave={() => setHoveredMetric(null)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+
+                    setSelectedFundamentalsChains((prev: string[]) => {
+                      if (!prev.includes(item.chain.key)) {
+                        return [...prev, item.chain.key];
+                      }
+                      return prev;
+                    });
+
+                    // navigate to fundamentals page
+                    router.push(`/fundamentals/${getFundamentalsByKey[metric].urlKey}`);
+                  }}
+
+                >
+                  {landing.data.metrics.table_visual[item.chain.key].ranking[metric].rank !== null ? (
+                    <div className="relative w-[25px] h-[37px]">
+                      <div
+                        className="absolute left-[-3px] size-[30px] rounded-full flex items-center justify-center pointer-events-none"
+                        style={{
+                          transform:
+                            hoveredMetric === metric ?
+                              `scale(${GetRankingScale(landing.data.metrics.table_visual[item.chain.key].ranking[metric].rank, [minRank, maxRank], [7.33 / 11, 15 / 11].reverse() as [number, number])})`
+                              : "scale(1)",
+                          zIndex: hoveredMetric !== metric ? 2 : 4,
+                        }}>
+                        <div className="size-[15px] rounded-full flex items-center justify-center border transition-colors"
+                          style={{
+                            borderColor: hoveredMetric !== null && hoveredMetric != metric ? "#344240" : color + "7F",
+                          }}>
+                          <div className="size-[11px] rounded-full flex items-center justify-center transition-colors"
+                            style={{
+                              background: hoveredMetric !== null && hoveredMetric != metric ? "#344240" : color,
+                            }}>
+                            <div className="absolute inset-0 flex items-center justify-center font-mono text-[8px] font-bold text-[#1F2726]">
+                              {landing.data.metrics.table_visual[item.chain.key].ranking[metric].rank}
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+                      <div
+                        className={`absolute -left-[6px] -top-[2.5px] w-[36px] h-[36px] bg-transparent rounded-full flex items-center justify-end pointer-events-none`}
+                      >
+                        <div className={`absolute rounded-full flex items-center justify-center bg-[#151A19] border border-[#5A6462]  ${hoveredMetric === metric ? "opacity-100" : "opacity-0"}`}
+                          style={{
+                            left: "0px",
+                            height: "36px",
+                            zIndex: hoveredMetric === metric ? 3 : 0,
+                            transformOrigin: "10% 50%",
+                          }}>
+                          <div
+                            className={`flex w-full items-end justify-end text-[14px] font-semibold font-num pr-[15px] pl-[37px] ${getDisplayValue(metric, values, valueKeys).suffix ? "min-w-[150px]" : "min-w-[120px]"} `} style={{
+                              fontVariantNumeric: "tabular-nums",
+                              WebkitFontFeatureSettings: "'tnum'",
+                              MozFontFeatureSettings: "'tnum'",
+                              fontFeatureSettings: "'tnum' on, 'lnum' on, 'pnum' on",
+                            }}
+                          >
+                            {getDisplayValue(metric, values, valueKeys).isNegative && (
+                              <div className="">
+                                {"-"}
+                              </div>
+                            )}
+                            {getDisplayValue(metric, values, valueKeys).prefix && (
+                              <div className="">
+                                {getDisplayValue(metric, values, valueKeys).prefix}
+                              </div>
+                            )}
+                            {getDisplayValue(metric, values, valueKeys).value}
+                            {getDisplayValue(metric, values, valueKeys).suffix && (
+                              <div className="pl-[5px]">
+                                {getDisplayValue(metric, values, valueKeys).suffix}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className="relative size-[30px] rounded-full flex items-center justify-center transition-transform pointer-events-none"
+                    >
+                      <div
+                        className="size-[10px] rounded-full flex items-center justify-center"
+                        style={{
+                          background: "#1F272666",
+                          transform: hoveredMetric === metric ? "scale(1.1)" : "scale(1)"
+                        }}>
+
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  );
+});
+
+
+
+const TableRankingContext = createContext<{
+  hoveredMetric: string | null;
+  setHoveredMetric: (metric: string | null) => void;
+  rankingKeys: string[];
+}>({
+  hoveredMetric: null,
+  setHoveredMetric: () => { },
+  rankingKeys: [],
+});
+
+export const useTableRanking = () => {
+  return useContext(TableRankingContext);
+};
+
+export const TableRankingProvider = ({ children }: { children: ReactNode }) => {
+  const { data: landing } = useSWR<LandingPageMetricsResponse>(LandingURL);
+  const [hoveredMetric, setHoveredMetric] = useState<string | null>(null);
+  const rankingKeys = landing ? Object.keys(landing.data.metrics.table_visual[Object.keys(landing.data.metrics.table_visual)[0]].ranking) : [];
+
+  return (
+    <TableRankingContext.Provider value={{ hoveredMetric, setHoveredMetric, rankingKeys }}>
+      {children}
+    </TableRankingContext.Provider>
+  );
+};

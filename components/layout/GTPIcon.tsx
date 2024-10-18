@@ -35,7 +35,7 @@ const MetricIconMap = {
   rent_paid: "gtp-metrics-rentpaidtol1",
   profit: "gtp-metrics-onchainprofit",
   fdv: "gtp-metrics-fdv",
-  marketcap: "gtp-metrics-marketcap",
+  market_cap: "gtp-metrics-marketcap",
 };
 type GTPMetricIconProps = {
   // should be one of the keys in MetricIconMap

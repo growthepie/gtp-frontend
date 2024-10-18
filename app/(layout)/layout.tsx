@@ -2,16 +2,13 @@ import "../globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import { Providers } from "../providers";
 import CookieConsent from "@/components/layout/CookieConsent";
-import { Raleway, Inter, Roboto_Mono } from "next/font/google";
+import { Raleway, Inter, Roboto_Mono, Fira_Code } from "next/font/google";
 import Header from "@/components/layout/Header";
 import SidebarContainer from "@/components/layout/SidebarContainer";
-import Backgrounds from "@/components/layout/Backgrounds";
 import { Metadata } from "next";
 import Head from "./head";
 import { Graph } from "schema-dts";
 import Share from "@/components/Share";
-import Details from "@/components/Details";
-import BottomBanner from "@/components/BottomBanner";
 import "../background.css";
 import DeveloperTools from "@/components/development/DeveloperTools";
 import Footer from "@/components/layout/Footer";
@@ -166,6 +163,13 @@ const robotoMono = Roboto_Mono({
   adjustFontFallback: false,
 });
 
+const firaCode = Fira_Code({
+  subsets: ["latin"],
+  variable: "--font-fira-code",
+  display: "swap",
+  adjustFontFallback: false,
+});
+
 export default function RootLayout({
   children,
 }: {
@@ -183,7 +187,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${raleway.variable} ${inter.variable} ${robotoMono.variable}`}
+      className={`${raleway.variable} ${inter.variable} ${robotoMono.variable} ${firaCode.variable}`}
       suppressHydrationWarning
       style={{
         fontFeatureSettings: "'pnum' on, 'lnum' on",
