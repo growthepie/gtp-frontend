@@ -278,6 +278,24 @@ export default function Donations() {
     // }
   };
 
+  const formatLinkText = (url: string) => {
+    const urlParts = url.split("/");
+    let domain = url.includes("://") ? urlParts[2] : urlParts[0];
+    const rest = urlParts.slice(3).join("/");
+
+    // replace www. with nothing
+    domain = domain.replace("www.", "");
+
+
+    return (
+      <span className="text-forest-500">
+        <span className="group-hover:underline">{domain}</span>
+        <span className="text-forest-800 group-hover:underline">/{rest}</span>
+      </span>
+    )
+
+  };
+
   return (
     <>
       <ShowLoading dataLoading={[PFGIsLoading, impactIsLoading, updateLoading]} />
@@ -360,7 +378,7 @@ export default function Donations() {
                     <div className="text-[12px] font-semibold">{getTimeLeft(donation)}</div>
                   }
                 </div>
-                <div className="justify-center">{donation.name}</div>
+                <div className="justify-center truncate w-full">{donation.name}</div>
                 <div className="peer/icons flex gap-x-[10px]">
                   {donation.twitterURL && (
                     <Link href={donation.twitterURL} target="_blank">
@@ -387,9 +405,9 @@ export default function Donations() {
                 <Link
                   href={donation.url}
                   target="_blank"
-                  className="group-hover:underline peer-hover/icons:!no-underline"
+                  className="peer-hover/icons:!no-underline truncate w-full text-forest-800"
                 >
-                  {donation.url}
+                  {formatLinkText(donation.url)}
                 </Link>
                 <div className="text-right">
                   {getDonateUntil(donation)}
@@ -467,9 +485,9 @@ export default function Donations() {
                       <Link
                         href={impactRow.url}
                         target="_blank"
-                        className="w-full truncate group-hover:underline"
+                        className="w-full truncate text-forest-800"
                       >
-                        {impactRow.url}
+                        {formatLinkText(impactRow.url)}
                       </Link>
                     )}
                   </div>
@@ -526,9 +544,9 @@ export default function Donations() {
                     <Link
                       href={updateRow.url}
                       target="_blank"
-                      className="w-full truncate group-hover:underline"
+                      className="w-full truncate text-forest-800"
                     >
-                      {updateRow.url}
+                      {formatLinkText(updateRow.url)}
                     </Link>
                   </div>
                   <div className="flex items-center justify-end w-full h-full gap-x-[3px]">
