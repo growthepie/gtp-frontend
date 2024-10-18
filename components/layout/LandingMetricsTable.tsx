@@ -47,7 +47,7 @@ function formatNumber(number: number, decimals?: number): string {
     return (number / 1e6).toFixed(2) + "M";
   } else if (Math.abs(number) >= 1e3) {
     const rounded = (number / 1e3).toFixed(2);
-    return `${rounded}${Math.abs(number) >= 10000 ? "K" : "K"}`;
+    return `${rounded}${Math.abs(number) >= 10000 ? "k" : "k"}`;
   } else if (Math.abs(number) >= 100) {
     return number.toFixed(decimals ? decimals : 2);
   } else if (Math.abs(number) >= 10) {
@@ -701,11 +701,11 @@ const ChainRankCell = memo(function ChainRankIcon(
                             transformOrigin: "10% 50%",
                           }}>
                           <div
-                            className={`flex w-full items-end justify-end text-[14px] font-semibold font-num pr-[15px] pl-[37px] ${getDisplayValue(metric, values, valueKeys).suffix ? "min-w-[150px]" : "min-w-[120px]"} `} style={{
+                            className={`flex w-full items-end justify-end text-[14px] font-medium font-num pr-[15px] pl-[37px] ${getDisplayValue(metric, values, valueKeys).suffix ? "min-w-[150px]" : "min-w-[120px]"} `} style={{
                               fontVariantNumeric: "tabular-nums",
-                              WebkitFontFeatureSettings: "'tnum'",
-                              MozFontFeatureSettings: "'tnum'",
-                              fontFeatureSettings: "'tnum' on, 'lnum' on, 'pnum' on",
+                              // WebkitFontFeatureSettings: "'tnum'",
+                              // MozFontFeatureSettings: "'tnum'",
+                              // fontFeatureSettings: "'tnum' on, 'lnum' on, 'pnum' on",
                             }}
                           >
                             {getDisplayValue(metric, values, valueKeys).isNegative && (
@@ -714,13 +714,13 @@ const ChainRankCell = memo(function ChainRankIcon(
                               </div>
                             )}
                             {getDisplayValue(metric, values, valueKeys).prefix && (
-                              <div className="">
+                              <div className=" font-raleway">
                                 {getDisplayValue(metric, values, valueKeys).prefix}
                               </div>
                             )}
                             {getDisplayValue(metric, values, valueKeys).value}
                             {getDisplayValue(metric, values, valueKeys).suffix && (
-                              <div className="pl-[5px]">
+                              <div className="pl-[5px] font-raleway">
                                 {getDisplayValue(metric, values, valueKeys).suffix}
                               </div>
                             )}

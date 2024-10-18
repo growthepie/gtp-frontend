@@ -577,7 +577,7 @@ export default function OverviewChart({
         Math.abs(number) >= 10000
           ? Math.round(number / 1e3)
           : (number / 1e3).toFixed(1);
-      return `${rounded}${Math.abs(number) >= 10000 ? "K" : "k"}`;
+      return `${rounded}${Math.abs(number) >= 10000 ? "k" : "k"}`;
     } else if (Math.abs(number) >= 100) {
       return number.toFixed(0);
     } else if (Math.abs(number) >= 10) {
