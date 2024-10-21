@@ -335,7 +335,7 @@ export const tooltipPositioner = function (this, width, height, point) {
   };
 };
 
-export const baseOptions: any = {
+export const baseOptions: Highcharts.Options = {
   accessibility: { enabled: false },
   exporting: { enabled: false },
   chart: {
@@ -563,17 +563,16 @@ export const formatNumber =
 
 type TimespanSelections = "1d" | "7d" | "30d" | "90d" | "180d" | "365d" | "max";
 
-export const getTimespans = (
-  data?,
-  isPercentageScale = false,
-): {
+export type Timespans = {
   [key in TimespanSelections]: {
     label: string;
     value: number;
     xMin: number;
     xMax: number;
   };
-} => {
+};
+
+export const getTimespans = (data?, isPercentageScale = false): Timespans => {
   const maxDate = data
     ? new Date(data.length > 0 ? data[data.length - 1][0] : 0)
     : new Date();
