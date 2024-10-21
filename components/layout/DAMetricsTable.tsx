@@ -13,7 +13,7 @@ import HorizontalScrollContainer from "../HorizontalScrollContainer";
 import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
 import { metricItems } from "@/lib/metrics";
-import GTPIcon from "./GTPIcon";
+import { GTPIcon } from "./GTPIcon";
 import { GridTableHeader, GridTableHeaderCell, GridTableRow } from "./GridTable";
 
 const DAMetricsTable = ({
