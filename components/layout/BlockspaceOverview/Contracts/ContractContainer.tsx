@@ -49,6 +49,8 @@ export default function ContractContainer() {
   );
   const { AllChainsByKeys } = useMaster();
 
+  console.log(data);
+
   const contracts = useMemo<{ [key: string]: ContractInfo }>(() => {
     const result: { [key: string]: ContractInfo } = {};
     for (const category of Object.keys(data)) {
@@ -68,7 +70,7 @@ export default function ContractContainer() {
                 // Concatenate and flatten data to the contractArray
                 contractArray = contractArray.concat(categoryData);
               }
-
+              console.log(contractArray);
               return contractArray;
             })()
           : data[standardChainKey]["overview"][selectedTimespan][
@@ -129,6 +131,7 @@ export default function ContractContainer() {
     return result;
   }, [data, selectedCategory, selectedTimespan, allCats]);
 
+  console.log(contracts);
   useEffect(() => {
     if (!contracts) {
       return;
@@ -139,7 +142,7 @@ export default function ContractContainer() {
         if (!AllChainsByKeys.hasOwnProperty(contract.chain)) return false;
 
         const isCategoryMatched =
-          contract.main_category_key === selectedCategory;
+          contract.main_category_key === selectedCategory || allCats;
         const filterChains =
           AllChainsByKeys[contract.chain].ecosystem.includes(
             chainEcosystemFilter,
@@ -223,6 +226,7 @@ export default function ContractContainer() {
     selectedMode,
     showUsd,
     chainEcosystemFilter,
+    allCats,
   ]);
 
   return (
