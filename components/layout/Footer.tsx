@@ -14,7 +14,7 @@ import GithubIcon from "@/icons/footer/Github.svg";
 import ContributorsIcon from "@/icons/footer/GTP-Compass.svg";
 import FeedbackIcon from "@/icons/footer/GTP-Donate-1.svg";
 import Image from "next/image";
-import GTPIcon from "./GTPIcon";
+import { GTPIcon } from "./GTPIcon";
 
 export default function Footer() {
   return (

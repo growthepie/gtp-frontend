@@ -11,7 +11,7 @@ import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
 type HorizontalScrollContainerProps = {
   className?: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   includeMargin?: boolean;
   paddingRight?: number;
   paddingLeft?: number;

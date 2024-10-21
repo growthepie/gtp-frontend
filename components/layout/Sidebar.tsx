@@ -4,24 +4,16 @@ import SidebarMenuGroup from "./SidebarMenuGroup";
 import Link from "next/link";
 import {
   navigationItems,
-  contributorsItem,
-  apiDocsItem,
-  // rpgfItem,
 } from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
 import { Icon } from "@iconify/react";
 import EthUsdSwitch from "./EthUsdSwitch";
 
-import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 import Backgrounds from "./Backgrounds";
-import rpgf from "@/icons/svg/rpgf.svg";
 import { useTheme } from "next-themes";
 import { track } from "@vercel/analytics";
 import { useMaster } from "@/contexts/MasterContext";
-import Chain from "@/app/(layout)/chains/[chain]/page";
-import { GTPIconName } from "@/icons/gtp-icon-names";
-import GTPIcon from "./GTPIcon";
 import VerticalScrollContainer from "../VerticalScrollContainer";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 

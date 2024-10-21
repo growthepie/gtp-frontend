@@ -6,9 +6,10 @@ import Image from "next/image";
 import React from "react";
 import { Contributors, Supporters, Datasources } from "@/lib/contributors";
 import Link from "next/link";
-import Container from "@/components/layout/Container";
-import Description from "@/components/layout/Description";
-import GTPIcon from "@/components/layout/GTPIcon";
+import Container, { PageContainer } from "@/components/layout/Container";
+import { Description } from "@/components/layout/TextComponents";
+import { GTPIcon } from "@/components/layout/GTPIcon";
+import { Title } from "@/components/layout/TextHeadingComponents";
 
 addCollection({
   prefix: "gtp",
@@ -90,8 +91,8 @@ addCollection({
 
 export default function ContributorsPage() {
   return (
-    <Container className="pb-[15px]">
-      <div className="flex flex-col gap-y-[15px]">
+    <PageContainer gapSize="lg">
+      {/* <div className="flex flex-col gap-y-[15px]">
         <div className="flex gap-x-[8px] items-center pb-[15px]">
           <div className="w-[36px] h-[36px]">
             <GTPIcon icon="gtp-data" size="lg" />
@@ -106,8 +107,18 @@ export default function ContributorsPage() {
         <Description className="!pb-[15px]">
           The majority of our data is <span className="font-bold">done through our own raw data aggregation from RPCs</span>. However, we also source some data from:
         </Description>
-      </div>
-      <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 items-center gap-[30px] pt-[16px] pb-[45px]">
+      </div> */}
+      <Title
+        title="Data Sources"
+        titleSize="md"
+        icon="gtp-data"
+        iconSize="lg"
+        as="h2"
+      />
+      <Description>
+        The majority of our data is <span className="font-bold">done through our own raw data aggregation from RPCs</span>. However, we also source some data from:
+      </Description>
+      <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 items-center gap-[30px] pt-[16px] pb-[16px]">
         {Datasources.map((s) => (
           <Link
             key={s.name}
@@ -192,7 +203,7 @@ export default function ContributorsPage() {
           </div>
         ))}
       </div>
-    </Container>
+    </PageContainer>
   );
   return (
     <Container

@@ -574,6 +574,7 @@ export const Chart = ({
                           stacking: undefined,
                         },
                         area: {
+                          //@ts-ignore
                           ...baseOptions.plotOptions.area,
                           stacking:
                             yScale === "percentage"
@@ -698,6 +699,7 @@ export const Chart = ({
                           },
                         ],
                         labels: {
+                          //@ts-ignore
                           ...baseOptions.yAxis.labels,
                           formatter: function (
                             t: Highcharts.AxisLabelsFormatterContextObject,

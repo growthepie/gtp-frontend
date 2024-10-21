@@ -1,6 +1,6 @@
 "use client";
-import { Chain, Get_AllChainsByKeys, Get_AllChainsNavigationItems } from "@/lib/chains";
-import { MasterURL } from "@/lib/urls";
+import { Chain, Get_AllChainsByKeys, Get_AllChainsNavigationItems, Get_SupportedChainKeys } from "@/lib/chains";
+import { GloHolderURL, MasterURL } from "@/lib/urls";
 import { DataAvailabilityLayerData, DataAvailabilityLayers, MasterResponse } from "@/types/api/MasterResponse";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { ImportChainIcons } from "@/lib/chainIcons";
@@ -14,6 +14,7 @@ type MasterContextType = {
   AllDALayers: (DataAvailabilityLayerData & { key: string, label: string })[];
   AllDALayersByKeys: { [key: string]: DataAvailabilityLayerData & { key: string, label: string } };
   EnabledChainsByKeys: { [key: string]: Chain };
+  SupportedChainKeys: string[];
   ChainsNavigationItems: {
     name: string;
     label: string;
@@ -29,6 +30,7 @@ type MasterContextType = {
     }[];
   } | null;
   formatMetric: (value: number, unit: string) => string;
+  getUnits: (metric: string) => any;
 };
 
 const MasterContext = createContext<MasterContextType | null>({
@@ -38,8 +40,10 @@ const MasterContext = createContext<MasterContextType | null>({
   AllDALayers: [],
   AllDALayersByKeys: {},
   EnabledChainsByKeys: {},
+  SupportedChainKeys: [],
   ChainsNavigationItems: null,
   formatMetric: () => "MasterProvider: formatMetric not found",
+  getUnits: () => "MasterProvider: getUnits not found",
 });
 
 export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
@@ -50,6 +54,7 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
   const [AllDALayersByKeys, setDALayersByKeys] = useState<{ [key: string]: DataAvailabilityLayerData & { key: string, label: string } }>({});
   const [EnabledChainsByKeys, setEnabledChainsByKeys] = useState<{ [key: string]: Chain }>({});
   const [ChainsNavigationItems, setChainsNavigationItems] = useState<any>({});
+  const { data: glo_dollar_data } = useSWR(GloHolderURL);
 
   useEffect(() => {
     if (data) {
@@ -122,9 +127,41 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
     })}${suffix || ""}`;
   }, [data]);
 
+  const getUnits = useCallback((metric: string) => {
+    if (!data) {
+      return `MasterProvider: data not found`;
+    }
+
+    const metricInfo = data.metrics[metric];
+    if (!metricInfo) {
+      console.error(`MasterProvider: metricInfo not found: ${metric}`);
+      return {};
+    }
+
+    if (!metricInfo.units) {
+      console.error(`MasterProvider: metricInfo.units not found: ${metric}`);
+      return {};
+    }
+
+
+
+    return metricInfo.units;
+  }, [data]);
+
   return (
     <MasterContext.Provider
-      value={{ data, AllChains, AllChainsByKeys, AllDALayers, AllDALayersByKeys, EnabledChainsByKeys, ChainsNavigationItems, formatMetric }}
+      value={{
+        data,
+        AllChains,
+        AllChainsByKeys,
+        AllDALayers,
+        AllDALayersByKeys,
+        EnabledChainsByKeys,
+        SupportedChainKeys: Get_SupportedChainKeys(data),
+        ChainsNavigationItems,
+        formatMetric,
+        getUnits
+      }}
     >
       {data && !isLoading && AllChains.length > 0 ? children : null}
     </MasterContext.Provider>

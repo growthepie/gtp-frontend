@@ -22,7 +22,7 @@ import {
   Get_AllChainsNavigationItems,
   Get_SupportedChainKeys,
 } from "@/lib/chains";
-import GTPIcon from "./GTPIcon";
+import { GTPIcon, GTPIconSize } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useMaster } from "@/contexts/MasterContext";
 import { useUIContext } from "@/contexts/UIContext";
@@ -1188,11 +1188,21 @@ export const DropdownIcon = ({
     lg: "38px",
   };
 
-  const iconSize = {
-    sm: "15px",
-    md: "15px",
-    lg: "24px",
-  };
+  // const iconSize = {
+  //   sm: "15px",
+  //   md: "15px",
+  //   lg: "24px",
+  // };
+
+
+  // if our dropdownSize is sm, then the iconSize will be sm
+  // if our dropdownSize is md, then the iconSize will be sm
+  // if our dropdownSize is lg, then the iconSize will be md
+  const iconSizeMap: { [key: string]: "sm" | "md" | "lg" } = {
+    sm: "sm",
+    md: "sm",
+    lg: "md",
+  }
 
   const iconBg = {
     none: "transparent",
@@ -1211,10 +1221,8 @@ export const DropdownIcon = ({
       <div className="relative flex h-full px-[5px] items-center justify-center">
         <GTPIcon
           icon={icon}
+          size={iconSizeMap[size]}
           style={{
-            width: iconSize[size],
-            height: iconSize[size],
-            fontSize: iconSize[size],
             color: iconColor,
           }}
         />
@@ -1224,7 +1232,7 @@ export const DropdownIcon = ({
             className={`w-[5px] h-[10px] absolute right-0 transition-all duration-300`}
             style={{
               transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
-              transformOrigin: `calc(-${iconSize[size]}/2) 50%`,
+              transformOrigin: `calc(-${GTPIconSize[iconSizeMap[size]]}/2) 50%`,
             }}
           >
             <svg

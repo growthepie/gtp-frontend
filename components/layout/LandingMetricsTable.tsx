@@ -3,11 +3,8 @@ import {
   GetRankingColor,
   GetRankingScale,
   Get_DefaultChainSelectionKeys,
-  // AllChainsByKeys,
-  // EnabledChainsByKeys,
   Get_SupportedChainKeys,
 } from "@/lib/chains";
-import Image from "next/image";
 import { ReactNode, createContext, memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
@@ -20,11 +17,9 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/layout/Tooltip";
-import { useUIContext } from "@/contexts/UIContext";
 import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
 import { GridTableChainIcon, GridTableHeader, GridTableHeaderCell, GridTableRow } from "./GridTable";
-import GTPIcon, { GTPMetricIcon } from "./GTPIcon";
 import { LandingURL } from "@/lib/urls";
 import useSWR from "swr";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
@@ -33,6 +28,7 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { useRouter } from 'next/navigation'
 import { getFundamentalsByKey } from "@/lib/navigation";
 import { metricItems } from "@/lib/metrics";
+import { GTPMetricIcon, RankIcon } from "./GTPIcon";
 
 function formatNumber(number: number, decimals?: number): string {
   if (number === 0) {
@@ -625,9 +621,9 @@ const ChainRankCell = memo(function ChainRankIcon(
     return null;
 
   return (
-    <div className="flex justify-center items-center select-none">
+    <div className="flex justify-center items-center select-none h-full">
       {landing && landing.data.metrics.table_visual[item.chain.key].ranking && (
-        <div className="flex items-center justify-end px-[15px]">
+        <div className="flex items-center justify-end px-[10px] h-full">
           {rankingKeys.map((metric) => {
             const metricRanks = landing ? Object.values(landing.data.metrics.table_visual).map((chain) => chain.ranking[metric].rank).filter((rank) => rank !== null) : [];
             const maxRank = Math.max(...metricRanks)
@@ -636,7 +632,7 @@ const ChainRankCell = memo(function ChainRankIcon(
             const valueKeys = landing ? Object.keys(landing.data.metrics.table_visual[item.chain.key].ranking[metric]).filter((key) => key.includes("value")) : [];
             const values = landing ? valueKeys.map((key) => landing.data.metrics.table_visual[item.chain.key].ranking[metric][key]) : [];
 
-            const color = landing ? GetRankingColor(landing.data.metrics.table_visual[item.chain.key].ranking[metric].color_scale * 100) : "#1F2726";
+            const colorScale = landing ? landing.data.metrics.table_visual[item.chain.key].ranking[metric].color_scale : 0;
             return (
               <div
                 key={metric}
@@ -644,7 +640,7 @@ const ChainRankCell = memo(function ChainRankIcon(
 
               >
                 <div
-                  className={`absolute w-[25px] h-[37px] -top-[5px] pt-[2px] flex items-start justify-center rounded-full`}
+                  className={`absolute -inset-y-[10px] -inset-x-[5px] flex items-start justify-center rounded-full`}
                   onMouseEnter={() => {
                     setHoveredMetric(metric)
                   }}
@@ -665,9 +661,9 @@ const ChainRankCell = memo(function ChainRankIcon(
 
                 >
                   {landing.data.metrics.table_visual[item.chain.key].ranking[metric].rank !== null ? (
-                    <div className="relative w-[25px] h-[37px]">
+                    <div className="relative h-full w-full">
                       <div
-                        className="absolute left-[-3px] size-[30px] rounded-full flex items-center justify-center pointer-events-none"
+                        className="absolute inset-0 rounded-full flex items-center justify-center pointer-events-none"
                         style={{
                           transform:
                             hoveredMetric === metric ?
@@ -675,38 +671,24 @@ const ChainRankCell = memo(function ChainRankIcon(
                               : "scale(1)",
                           zIndex: hoveredMetric !== metric ? 2 : 4,
                         }}>
-                        <div className="size-[15px] rounded-full flex items-center justify-center border transition-colors"
-                          style={{
-                            borderColor: hoveredMetric !== null && hoveredMetric != metric ? "#344240" : color + "7F",
-                          }}>
-                          <div className="size-[11px] rounded-full flex items-center justify-center transition-colors"
-                            style={{
-                              background: hoveredMetric !== null && hoveredMetric != metric ? "#344240" : color,
-                            }}>
-                            <div className="absolute inset-0 flex items-center justify-center font-mono text-[8px] font-bold text-[#1F2726]">
-                              {landing.data.metrics.table_visual[item.chain.key].ranking[metric].rank}
-                            </div>
-                          </div>
-                        </div>
+                        <RankIcon
+                          colorScale={colorScale}
+                          size="sm"
+                        >
+                          <span className="font-mono text-[9px] font-bold text-[#1F2726]">{landing.data.metrics.table_visual[item.chain.key].ranking[metric].rank}</span>
+                        </RankIcon>
 
                       </div>
                       <div
-                        className={`absolute -left-[6px] -top-[2.5px] w-[36px] h-[36px] bg-transparent rounded-full flex items-center justify-end pointer-events-none`}
+                        className={`absolute inset-0 bg-transparent rounded-full flex items-center justify-end pointer-events-none`}
                       >
-                        <div className={`absolute rounded-full flex items-center justify-center bg-[#151A19] border border-[#5A6462]  ${hoveredMetric === metric ? "opacity-100" : "opacity-0"}`}
+                        <div className={`h-[36px] left-[-3px] absolute rounded-full flex items-center justify-center bg-[#151A19] border border-[#5A6462]  ${hoveredMetric === metric ? "opacity-100" : "opacity-0"}`}
                           style={{
-                            left: "0px",
-                            height: "36px",
                             zIndex: hoveredMetric === metric ? 3 : 0,
-                            transformOrigin: "10% 50%",
-                          }}>
+                          }}
+                        >
                           <div
-                            className={`flex w-full items-end justify-end text-[14px] font-medium font-num pr-[15px] pl-[37px] ${getDisplayValue(metric, values, valueKeys).suffix ? "min-w-[150px]" : "min-w-[120px]"} `} style={{
-                              fontVariantNumeric: "tabular-nums",
-                              // WebkitFontFeatureSettings: "'tnum'",
-                              // MozFontFeatureSettings: "'tnum'",
-                              // fontFeatureSettings: "'tnum' on, 'lnum' on, 'pnum' on",
-                            }}
+                            className={`flex w-full items-end justify-end text-[14px] font-medium font-num pr-[15px] pl-[37px] ${getDisplayValue(metric, values, valueKeys).suffix ? "min-w-[145px]" : "min-w-[115px]"} `}
                           >
                             {getDisplayValue(metric, values, valueKeys).isNegative && (
                               <div className="">
@@ -730,16 +712,14 @@ const ChainRankCell = memo(function ChainRankIcon(
                     </div>
                   ) : (
                     <div
-                      className="relative size-[30px] rounded-full flex items-center justify-center transition-transform pointer-events-none"
+                      className="absolute inset-0 rounded-full flex items-center justify-center transition-transform pointer-events-none"
                     >
-                      <div
-                        className="size-[10px] rounded-full flex items-center justify-center"
-                        style={{
-                          background: "#1F272666",
-                          transform: hoveredMetric === metric ? "scale(1.1)" : "scale(1)"
-                        }}>
-
-                      </div>
+                      <RankIcon
+                        colorScale={-1}
+                        size="sm"
+                      >
+                        {landing.data.metrics.table_visual[item.chain.key].ranking[metric].rank}
+                      </RankIcon>
                     </div>
                   )}
                 </div>
@@ -747,8 +727,9 @@ const ChainRankCell = memo(function ChainRankIcon(
             )
           })}
         </div>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 });
 

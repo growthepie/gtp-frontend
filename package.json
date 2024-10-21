@@ -64,6 +64,7 @@
     "autoprefixer": "^10.4.16",
     "eslint": "^8.51.0",
     "eslint-config-next": "^14.2.3",
+    "eslint-config-prettier": "^9.1.0",
     "postcss": "^8.4.31",
     "sass": "^1.58.0",
     "tailwind-scrollbar": "^3.1.0",

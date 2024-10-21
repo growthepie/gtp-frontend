@@ -1,8 +1,9 @@
-import Container from "@/components/layout/Container";
+import Container, { PageRoot, PageContainer } from "@/components/layout/Container";
 import Heading from "@/components/layout/Heading";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import Icon from "@/components/layout/Icon";
-import Description from "@/components/layout/Description";
+import { Description } from "@/components/layout/TextComponents";
+import { Title } from "@/components/layout/TextHeadingComponents";
 
 export default async function Layout({
   children,
@@ -13,36 +14,13 @@ export default async function Layout({
 
   // </Container>
   return (
-    <>
-      <Container
-        className="pt-[45px] md:pt-[45px] gap-y-[15px]"
-        isPageRoot
-      >
-        {/* <div className="flex items-center h-[43px] gap-x-[8px] ">
-          <Icon
-            icon={"gtp:donate"}
-            className="object-contain w-[36px] h-[36px]"
-            height={36}
-            width={36}
-          />
-          <Heading className="text-[36px] leading-snug " as="h1">
-            {"Donate"}
-          </Heading>
-        </div> */}
-        <div
-          className="flex gap-x-[8px] items-center pb-[15px]"
+    <PageRoot className="pt-[30px]">
+      <PageContainer>
+        <Title
           id="Community"
-        >
-          <div className="w-[36px] h-[36px]">
-            <Icon icon="gtp:gtp-donate" className="w-[36px] h-[36px]" />
-          </div>
-          <Heading
-            className="leading-[120%] text-[36px] md:text-[36px] break-inside-avoid "
-            as="h1"
-          >
-            Donate
-          </Heading>
-        </div>
+          icon="gtp-donate"
+          title="Donate"
+        />
         <Description>
           growthepie.xyz started with an initial grant from the Ethereum
           Foundation back in February 2023. We decided to build the platform as
@@ -50,8 +28,8 @@ export default async function Layout({
           transparent data and visualizations, that everyone understands, not
           just the few.
         </Description>
-      </Container>
-      <div>{children}</div>
-    </>
+      </PageContainer>
+      {children}
+    </PageRoot>
   );
 }

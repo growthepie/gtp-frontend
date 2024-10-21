@@ -1,13 +1,15 @@
 ﻿export type MetricsResponse = {
-  data: {
-    avg?: boolean;
-    monthly_agg: "sum" | "avg" | "unique";
-    metric_id: string;
-    metric_name: string;
-    description: string;
-    source: string[];
-    chains: Chains;
-  };
+  data: MetricData;
+};
+
+export type MetricData = {
+  avg?: boolean;
+  monthly_agg: "sum" | "avg" | "unique";
+  metric_id: string;
+  metric_name: string;
+  description: string;
+  source: string[];
+  chains: Chains;
 };
 
 export type Chains = {

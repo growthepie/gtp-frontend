@@ -18,19 +18,18 @@ export interface TableVisual {
     purpose: string;
     technology: string;
     users: number;
-    ranking: Ranking;
+    ranking: { [key in RankingType]: EthUsdRanking };
   };
 }
 
-export interface Ranking {
-  daa: EthUsdRanking;
-  stables_mcap: EthUsdRanking;
-  fees: EthUsdRanking;
-  profit: EthUsdRanking;
-  txcosts: EthUsdRanking;
-  fdv: EthUsdRanking;
-  throughput: EthUsdRanking;
-}
+export type RankingType =
+  | "daa"
+  | "stables_mcap"
+  | "fees"
+  | "profit"
+  | "txcosts"
+  | "fdv"
+  | "throughput";
 
 export interface ValueRanking {
   rank: number | null;

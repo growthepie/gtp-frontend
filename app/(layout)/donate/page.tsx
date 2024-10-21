@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { BASE_URL } from "@/lib/helpers";
 import useSWR from "swr";
 import Link from "next/link";
-import Description from "@/components/layout/Description";
+import { Description } from "@/components/layout/TextComponents";
 import "@splidejs/react-splide/css";
 import {
   GridTableAddressCell,
@@ -29,12 +29,41 @@ import { DonationUpdateRow } from "@/app/api/donations/updates/route";
 import moment from "moment";
 import Image from "next/image";
 
+
 export default function Donations() {
+  const {
+    data: PGFData,
+    isLoading: PFGIsLoading,
+    isValidating: PFGIsValidating,
+    error: PFGError,
+  } = useSWR<DonationPGFRow[]>(BASE_URL + "/api/donations/pgf", {
+    refreshInterval: 1000 * 60 * 5,
+  });
+
+  const {
+    data: impactData,
+    isLoading: impactIsLoading,
+    isValidating: impactIsValidating,
+    error: impactError,
+  } = useSWR<DonationImpactRow[]>(BASE_URL + "/api/donations/impactusers", {
+    refreshInterval: 1000 * 60 * 5,
+  });
+
+  const {
+    data: updateData,
+    isLoading: updateLoading,
+    isValidating: updateValidating,
+    error: updateError,
+  } = useSWR<DonationUpdateRow[]>(BASE_URL + "/api/donations/updates", {
+    refreshInterval: 1000 * 60 * 5,
+  });
+
   const { isSidebarOpen } = useUIContext();
   const { AllChainsByKeys } = useMaster();
-  const searchParams = useSearchParams();
 
+  const searchParams = useSearchParams();
   const forceNoPublicGoods = searchParams.get("forceNoPublicGoods") === "true";
+
 
   const QRCodes = [
     {
@@ -94,98 +123,23 @@ export default function Donations() {
     },
   ];
 
-  const {
-    data: PGFData,
-    isLoading: PFGIsLoading,
-    isValidating: PFGIsValidating,
-    error: PFGError,
-  } = useSWR<DonationPGFRow[]>(BASE_URL + "/api/donations/pgf", {
-    refreshInterval: 1000 * 60 * 5,
-  });
-
-  const {
-    data: impactData,
-    isLoading: impactIsLoading,
-    isValidating: impactIsValidating,
-    error: impactError,
-  } = useSWR<DonationImpactRow[]>(BASE_URL + "/api/donations/impactusers", {
-    refreshInterval: 1000 * 60 * 5,
-  });
-
-  const {
-    data: updateData,
-    isLoading: updateLoading,
-    isValidating: updateValidating,
-    error: updateError,
-  } = useSWR<DonationUpdateRow[]>(BASE_URL + "/api/donations/updates", {
-    refreshInterval: 1000 * 60 * 5,
-  });
-
   const getDonateUntil = (row: DonationPGFRow) => {
     // Get the user's local time string in the desired format
     const options: Intl.DateTimeFormatOptions = {
       day: "2-digit",
       month: "short",
       year: "numeric",
-      // hour: "2-digit",
-      // minute: "2-digit",
-      // timeZoneName: "short",
-      // dayPeriod: "long",
-      // hour12: false, // Use 24-hour time format
     };
 
     const start = new Date(row.startDate);
     const end = new Date(row.endDate);
     const now = new Date();
-
-    // // check if we are in the middle of the round
-    // if (start.getTime() < now.getTime() && end.getTime() > now.getTime()) {
-    //   const day = moment.utc(end).format("ddd");
-
-    //   return (
-    //     <>
-    //       <div className="flex items-center justify-end gap-x-[5px]">
-    //         <div className="text-forest-400">
-    //           Ends
-    //         </div>
-    //         <div>{day}</div>
-    //         <div>
-    //           {end.toLocaleTimeString(undefined, options)}
-    //         </div>
-    //       </div>
-    //     </>
-    //   )
-    // }
-
-    // // check if the start date is in the future
-    // if (start.getTime() > now.getTime()) {
-    //   const day = moment.utc(start).format("ddd");
-
-    //   return (
-    //     <>
-    //       <div className="flex items-center justify-end gap-x-[5px]">
-    //         <div className="text-forest-400">
-    //           Begins
-    //         </div>
-    //         <div>{day}</div>
-    //         <div>
-    //           {start.toLocaleTimeString(undefined, options)}
-    //         </div>
-    //       </div>
-    //     </>
-    //   )
-    // }
-
-
     const day = moment.utc(end).format("ddd");
 
     // Format the date using toLocaleString with the user's locale
     return (
       <>
         <div className="flex items-center justify-end gap-x-[5px]">
-          {/* <div className="text-forest-400">
-            Ended
-          </div> */}
           <div className="font-medium">{day},</div>
           <div className="font-medium">
             {start.toLocaleDateString("en-GB", options)}
@@ -195,7 +149,6 @@ export default function Donations() {
           <div className="font-medium">
             {end.toLocaleDateString("en-GB", options)}
           </div>
-
         </div>
       </>
     );
@@ -247,35 +200,6 @@ export default function Donations() {
       const daysAgo = Math.floor((now.getTime() - end.getTime()) / (1000 * 60 * 60 * 24));
       return "Ended " + daysAgo + " days ago";
     }
-
-
-
-    // const end = new Date(endDate);
-    // const now = new Date();
-    // const timeDiff = end.getTime() - now.getTime();
-
-    // if (timeDiff < 0) {
-    //   return "Time's up!";
-    // }
-
-    // const seconds = Math.floor(timeDiff / 1000);
-    // const minutes = Math.floor(seconds / 60);
-    // const hours = Math.floor(minutes / 60);
-    // const days = Math.floor(hours / 24);
-    // const months = Math.floor(days / 30);
-    // const years = Math.floor(days / 365);
-
-    // if (years > 0) {
-    //   return `${years} Year${years > 1 ? "s" : ""}`;
-    // } else if (months > 0) {
-    //   return `${months} Month${months > 1 ? "s" : ""}`;
-    // } else if (days > 0) {
-    //   return `${days} Day${days > 1 ? "s" : ""}`;
-    // } else if (hours > 0) {
-    //   return `${hours} Hour${hours > 1 ? "s" : ""}`;
-    // } else {
-    //   return `${minutes} Minute${minutes > 1 ? "s" : ""}`;
-    // }
   };
 
   const formatLinkText = (url: string) => {
@@ -298,7 +222,7 @@ export default function Donations() {
 
   return (
     <>
-      <ShowLoading dataLoading={[PFGIsLoading, impactIsLoading, updateLoading]} />
+      <ShowLoading dataLoading={[PFGIsLoading, impactIsLoading, updateLoading]} dataValidating={[PFGIsValidating, impactIsValidating, updateValidating]} />
       <Container className="pb-[15px]">
         <div className="flex flex-col gap-y-[15px]">
           <Heading
@@ -339,7 +263,7 @@ export default function Donations() {
           <GridTableHeaderCell justify="start">Link</GridTableHeaderCell>
           <GridTableHeaderCell justify="end">Dates</GridTableHeaderCell>
         </GridTableHeader>
-        <div className="flex flex-col gap-y-[3px]">
+        <div className="flex flex-col gap-y-[5px]">
           {PGFData && !forceNoPublicGoods &&
             PGFData.filter((donation) => {
               const endDate = new Date(donation.endDate);
@@ -463,8 +387,8 @@ export default function Donations() {
           <GridTableHeaderCell justify="start">Link</GridTableHeaderCell>
           <GridTableHeaderCell justify="end">Date</GridTableHeaderCell>
         </GridTableHeader>
-        <VerticalScrollContainer height={37 * 9}>
-          <div className="flex flex-col gap-y-[3px]">
+        <VerticalScrollContainer height={39 * 9}>
+          <div className="flex flex-col gap-y-[5px]">
             {impactData &&
               impactData.map((impactRow) => (
                 <GridTableRow
@@ -521,8 +445,8 @@ export default function Donations() {
           </GridTableHeaderCell>
           <GridTableHeaderCell justify="end">Date Released</GridTableHeaderCell>
         </GridTableHeader>
-        <VerticalScrollContainer height={37 * 9}>
-          <div className="flex flex-col gap-y-[3px]">
+        <VerticalScrollContainer height={39 * 9}>
+          <div className="flex flex-col gap-y-[5px]">
             {updateData &&
               updateData.map((updateRow) => (
                 <GridTableRow
