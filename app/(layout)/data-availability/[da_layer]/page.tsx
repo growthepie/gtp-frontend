@@ -4,6 +4,7 @@ import Error from "next/error";
 import { ChainData, MetricsResponse } from "@/types/api/MetricsResponse";
 import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
+import ComparisonChartAlt from "@/components/layout/ComparisonChartAlt";
 import ComparisonChart from "@/components/layout/ComparisonChart";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import useSWR from "swr";
@@ -68,12 +69,10 @@ const DataAvailabilityContent = ({ params }: { params: any }) => {
   console.log("metricData", metricData);
 
   const daLayerKeys = useMemo(() => {
-    if (!metricData)
-      return AllDALayers;
+    if (!metricData) return AllDALayers;
 
-    return AllDALayers.filter(
-      (da) =>
-        Object.keys(metricData.data.chains).includes(da.key)
+    return AllDALayers.filter((da) =>
+      Object.keys(metricData.data.chains).includes(da.key),
     ).map((da) => da.key);
   }, [AllDALayers, metricData]);
 
