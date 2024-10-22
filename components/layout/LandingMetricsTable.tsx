@@ -337,7 +337,7 @@ const ChainRankHeader = memo(function ChainRankHeader(
               <div className={`absolute -inset-[10.5px] bg-[#151A19] border border-[#5A6462] rounded-full z-[1] ${hoveredMetric === metric ? "opacity-100" : "opacity-0"}`} />
               <div className={`absolute -top-[44px] z-[11] w-[200px] h-[30px] flex items-end justify-center pointer-events-none ${hoveredMetric === metric ? "opacity-100" : "opacity-0"}`}>
                 <div
-                  className="text-[8.5px] leading-[120%] text-center font-bold"
+                  className="text-[10px] leading-[120%] text-center font-bold"
                   style={{
                     textTransform: "uppercase",
                   }}
@@ -517,13 +517,13 @@ const ChainRankCell = memo(function ChainRankIcon(
                               </div>
                             )}
                             {getDisplayValue(metric, values, valueKeys).prefix && (
-                              <div className=" font-raleway">
+                              <div className="">
                                 {getDisplayValue(metric, values, valueKeys).prefix}
                               </div>
                             )}
                             {getDisplayValue(metric, values, valueKeys).absoluteValue}
                             {getDisplayValue(metric, values, valueKeys).suffix && (
-                              <div className="pl-[5px] font-raleway">
+                              <div className="pl-[5px]">
                                 {getDisplayValue(metric, values, valueKeys).suffix}
                               </div>
                             )}
