@@ -29,6 +29,7 @@ import { useRouter } from 'next/navigation'
 import { getFundamentalsByKey } from "@/lib/navigation";
 import { metricItems } from "@/lib/metrics";
 import { GTPMetricIcon, RankIcon } from "./GTPIcon";
+import { useUIContext } from "@/contexts/UIContext";
 
 function formatNumber(number: number, decimals?: number): string {
   if (number === 0) {
@@ -174,7 +175,7 @@ export default function LandingMetricsTable({
     <>
       <>
         <GridTableHeader
-          gridDefinitionColumns="grid-cols-[26px_125px_190px_minmax(100px,800px)_140px_125px_71px]"
+          gridDefinitionColumns="grid-cols-[26px_125px_190px_minmax(285px,800px)_140px_125px_71px]"
           className="text-[14px] !font-bold gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] !pt-[15px] pb-[5px] select-none overflow-visible"
 
         >
@@ -233,7 +234,7 @@ export default function LandingMetricsTable({
                 }}
               >
                 <GridTableRow
-                  gridDefinitionColumns="grid-cols-[26px_125px_190px_minmax(100px,800px)_140px_125px_71px]"
+                  gridDefinitionColumns="grid-cols-[26px_125px_190px_minmax(285px,800px)_140px_125px_71px]"
                   className="relative group text-[14px] gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] select-none h-[34px] !pb-0 !pt-0"
                   bar={{
                     origin_key: item.chain.key,
@@ -364,6 +365,7 @@ const ChainRankCell = memo(function ChainRankIcon(
   const { data: master } = useMaster();
 
   const router = useRouter();
+  const { isMobile } = useUIContext();
 
   const [selectedFundamentalsChains, setSelectedFundamentalsChains] = useSessionStorage(
     "fundamentalsChains",
@@ -464,6 +466,8 @@ const ChainRankCell = memo(function ChainRankIcon(
                   onMouseLeave={() => setHoveredMetric(null)}
                   onClick={(e) => {
                     e.stopPropagation();
+
+                    if (isMobile && hoveredMetric !== metric) return;
 
                     setSelectedFundamentalsChains((prev: string[]) => {
                       if (!prev.includes(item.chain.key)) {

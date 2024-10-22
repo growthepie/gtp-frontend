@@ -310,6 +310,7 @@ export const navigationItems: NavigationItem[] = [
   {
     name: "Economics",
     label: "Economics",
+    key: "economics",
     icon: "gtp-metrics-economics",
     newChild: true,
     options: [
@@ -575,7 +576,7 @@ export const getFundamentalsByKey = (() => {
 
   // Loop through each item in navigationItems
   for (const item of navigationItems) {
-    if (item.key === "metrics" && item.options && item.options.length > 0) {
+    if (item.key && ["metrics", "economics"].includes(item.key) && item.options && item.options.length > 0) {
       // Loop through each option
       for (const option of item.options) {
         if (option.key) {
