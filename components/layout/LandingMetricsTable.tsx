@@ -400,6 +400,7 @@ const ChainRankCell = memo(function ChainRankIcon(
     let rawValue = values[types.indexOf(valueKey)];
     let isNegative = rawValue < 0;
     let value = formatNumber(Math.abs(rawValue), decimals);
+    let absoluteValue = formatNumber(Math.abs(rawValue), decimals);
 
     if (types.includes("value_eth")) {
       if (!showUsd) {
@@ -413,12 +414,20 @@ const ChainRankCell = memo(function ChainRankIcon(
             values[types.indexOf("value_eth")] * 1000000000,
             decimals,
           );
+          absoluteValue = formatNumber(
+            Math.abs(values[types.indexOf("value_eth")]) * 1000000000,
+            decimals,
+          );
         }
       } else {
         value = formatNumber(values[types.indexOf("value_usd")], decimals);
+        absoluteValue = formatNumber(
+          Math.abs(values[types.indexOf("value_usd")]),
+          decimals,
+        );
       }
     }
-    return { value, prefix, suffix, isNegative };
+    return { value, prefix, suffix, isNegative, absoluteValue };
   },
     [master, showGwei, showUsd],
   );
@@ -508,7 +517,7 @@ const ChainRankCell = memo(function ChainRankIcon(
                                 {getDisplayValue(metric, values, valueKeys).prefix}
                               </div>
                             )}
-                            {getDisplayValue(metric, values, valueKeys).value}
+                            {getDisplayValue(metric, values, valueKeys).absoluteValue}
                             {getDisplayValue(metric, values, valueKeys).suffix && (
                               <div className="pl-[5px] font-raleway">
                                 {getDisplayValue(metric, values, valueKeys).suffix}
