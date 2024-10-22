@@ -416,7 +416,7 @@ export default function Donations() {
                     )}
                   </div>
                   <div className="text-right">
-                    {`since ${impactRow.date.replace(/-/g, "/")}`}
+                    {`${impactRow.date.replace(/-/g, "/")}`}
                   </div>
                 </GridTableRow>
               ))}

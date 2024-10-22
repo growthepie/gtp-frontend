@@ -3,14 +3,14 @@ import moment from "moment";
 
 const notificationTable = "tblVEHOeuoE5I4aQ7";
 const baseId = "appZWDvjvDmVnOici";
-const CACHE_TTL_SECONDS = 300; // 5 minutes
+const CACHE_TTL_SECONDS = 0; // 5 minutes
 
 const BranchesToInclude =
   IS_PREVIEW || IS_DEVELOPMENT
     ? ["Preview", "Development", "Production", "All"]
     : ["Production", "All"];
 
-const url = `https://api.airtable.com/v0/${baseId}/${notificationTable}`;
+const url = `https://api.airtable.com/v0/${baseId}/${notificationTable}?view=Grid%20view`;
 
 async function fetchData() {
   try {
@@ -25,17 +25,25 @@ async function fetchData() {
 
     const jsonResponse = await response.json();
 
-    return jsonResponse.records
-      .filter((record: any) => Object.keys(record.fields).length > 0)
-      .sort((a: any, b: any) =>
-        // sort by date in descending order
-        moment(b.fields["Date"]).diff(moment(a.fields["Date"])),
-      )
-      .map((record: any) => ({
-        name: record.fields["Name"] || "",
-        url: record.fields["URL"] || "",
-        date: record.fields["Date"] || "",
-      }));
+    if (!jsonResponse.records) {
+      const text = await response.text();
+      console.error("Error fetching donations:", text, jsonResponse);
+      return [];
+    }
+
+    return (
+      jsonResponse.records
+        .filter((record: any) => Object.keys(record.fields).length > 0)
+        // .sort((a: any, b: any) =>
+        //   // sort by date in descending order
+        //   moment(b.fields["Date"]).diff(moment(a.fields["Date"])),
+        // )
+        .map((record: any) => ({
+          name: record.fields["Name"] || "",
+          url: record.fields["URL"] || "",
+          date: record.fields["Date"] || "",
+        }))
+    );
   } catch (error) {
     console.error("Error fetching donations:", error);
     return [];

@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2017",
+    "target": "es2020",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -30,7 +30,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "app/(labels)/layout.tsx.old"
+    "app/(labels)/layout.tsx.old",
+    "lib/figma.ts"
   ],
   "exclude": ["node_modules", "icons"]
 }
