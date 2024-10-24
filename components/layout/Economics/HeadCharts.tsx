@@ -180,14 +180,12 @@ export default function EconHeadCharts({
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${color}"></div>
             <div class="tooltip-point-name text-md">${nameString}</div>
-            <div class="flex-1 text-right font-inter w-full flex">
+            <div class="flex-1 text-right justify-end flex numbers-xs">
               <div class="flex justify-end text-right w-full">
                   <div class="opacity-70 mr-0.5 ${
                     !prefix && "hidden"
                   }">${prefix}</div>
-                  <div style={{
-                            fontFeatureSettings: "'pnum' on, 'lnum' on",
-                          }}>${
+              ${
                             isFees
                               ? parseFloat(displayValue).toLocaleString(
                                   "en-GB",
@@ -199,7 +197,7 @@ export default function EconHeadCharts({
                                 )
                               : formatBytes(displayValue)
                           }
-                  </div>
+               
                 </div>
                 <div class="opacity-70 ml-0.5 ${
                   !suffix && "hidden"
@@ -884,10 +882,10 @@ export default function EconHeadCharts({
                               style: {
                                 backgroundColor: "#1F2726",
                                 whiteSpace: "nowrap",
-                                fontWeight: "semibold",
-                                fontSize: "9px",
-                                fontFamily: "var(--font-raleway), sans-serif",
-                                color: "#CDD8D3",
+                                color: "rgb(215, 223, 222)",
+                                fontSize: "10px",
+                                fontWeight: "700",
+                                fontFamily: "Fira Sans",
                               },
                               formatter: function (
                                 t: Highcharts.AxisLabelsFormatterContextObject,

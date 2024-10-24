@@ -357,7 +357,7 @@ export default function FeesChart({
             }"></div>
             <div class="tooltip-point-name text-md">${AllChainsByKeys[name].label
             }</div>
-            <div class="flex-1 text-right justify-end font-inter flex">
+             <div class="flex-1 text-right justify-end flex numbers-xs">
                 <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
             }">${prefix}</div>
                 ${selectedMetric === "fdv" || selectedMetric === "market_cap"
@@ -394,7 +394,7 @@ export default function FeesChart({
         <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-70">
           <div class="w-4 h-1.5 rounded-r-full" style=""></div>
           <div class="tooltip-point-name text-md">Total</div>
-          <div class="flex-1 text-right justify-end font-inter flex">
+           <div class="flex-1 text-right justify-end flex numbers-xs">
 
               <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
           }">${prefix}</div>
@@ -656,8 +656,10 @@ export default function FeesChart({
             y: 11,
             x: 3,
             style: {
+              color: "rgb(215, 223, 222)",
               fontSize: "10px",
-              color: "#CDD8D34D",
+              fontWeight: "700",
+              fontFamily: "Fira Sans",
             },
             formatter: function (
               t: Highcharts.AxisLabelsFormatterContextObject,

@@ -103,7 +103,7 @@ export const tooltipFormatter = (
         
         </div>
         <div class="tooltip-point-name">${label}</div>
-        <div class="flex-1 text-right font-inter">${value}</div>
+         <div class="flex-1 text-right justify-end flex numbers-xs">${value}</div>
       </div>
       <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
         <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white dark:bg-forest-1000" style="
@@ -241,7 +241,7 @@ export const tooltipFormatter = (
           "></div>
         </div>
         <div class="tooltip-point-name">${label}</div>
-        <div class="flex-1 text-right justify-end font-inter flex">
+         <div class="flex-1 text-right justify-end flex numbers-xs">
           <div class="opacity-70 mr-0.5 ${!prefix && "hidden"}">${prefix}</div>
           ${parseFloat(value).toLocaleString("en-GB", {
             minimumFractionDigits: 0,
@@ -270,7 +270,7 @@ export const tooltipFormatter = (
         <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-70">
           <div class="w-4 h-1.5 rounded-r-full" style=""></div>
           <div class="tooltip-point-name text-md">Total</div>
-          <div class="flex-1 text-right justify-end font-inter flex">
+           <div class="flex-1 text-right justify-end flex numbers-xs">
               <div class="opacity-70 mr-0.5 ${
                 !prefix && "hidden"
               }">${prefix}</div>
@@ -385,6 +385,9 @@ export const baseOptions: Highcharts.Options = {
       y: 5,
       style: {
         color: "rgb(215, 223, 222)",
+        fontSize: "10px",
+        fontWeight: "700",
+        fontFamily: "Fira Sans",
       },
       formatter: function (t: Highcharts.AxisLabelsFormatterContextObject) {
         return formatNumber(t.value, true);

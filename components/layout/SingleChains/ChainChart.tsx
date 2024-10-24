@@ -668,7 +668,7 @@ export default function ChainChart({
                 <div class="flex w-full space-x-2 items-center font-medium mb-1">
                   <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
             }"></div>
-                  <div class="flex-1 text-left justify-start font-inter flex">
+                 <div class="flex-1 text-left justify-end flex numbers-xs">
                       <div class="opacity-70 ${!prefix && "hidden"
             }">${prefix}</div>
                       ${parseFloat(value).toLocaleString("en-GB", {
@@ -943,6 +943,8 @@ export default function ChainChart({
               ? "rgba(215, 223, 222, 0.33)"
               : "rgba(41, 51, 50, 0.33)",
           fontSize: "8px",
+          fontWeight: "700",
+          fontFamily: "Fira Sans",
         },
       },
       // gridLineColor:

@@ -829,7 +829,7 @@ function MetricChart({
               ? `${afterTenPoints.length} Others`
               : "1 Other"
             }</div>
-            <div class="flex-1 text-right justify-end font-inter flex">
+             <div class="flex-1 text-right justify-end flex numbers-xs">
                 <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
             }">${prefix}</div>
                 ${metric_id === "fdv" || metric_id === "market_cap"
@@ -863,7 +863,7 @@ function MetricChart({
         <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-100">
           <div class="w-4 h-1.5 rounded-r-full" style=""></div>
           <div class="tooltip-point-name text-md">Total</div>
-          <div class="flex-1 text-right justify-end font-inter flex">
+           <div class="flex-1 text-right justify-end flex numbers-xs">
             <div class="opacity-70 mr-0.5 ${!prefix && "hidden"}">
               ${prefix}
             </div>

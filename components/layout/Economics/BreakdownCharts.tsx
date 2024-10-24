@@ -341,7 +341,7 @@ function BreakdownCharts({
                     </div>
                   <div class="tooltip-point-name text-md">${name}</div>
                 </div>
-                <div class="flex-1 justify-end text-right font-inter flex">
+                 <div class="flex-1 text-right justify-end flex numbers-xs">
                     <div class="opacity-70 mr-0.5 ${
                       !prefix && "hidden"
                     }">${prefix}</div>
@@ -364,7 +364,7 @@ function BreakdownCharts({
                   </div>
                   <div class="tooltip-point-name text-md">${"Profit"}</div>
                 </div>
-                <div class="flex-1 justify-end text-right font-inter flex">
+                 <div class="flex-1 text-right justify-end flex numbers-xs">
                     <div class="opacity-70 mr-0.5 ${
                       !prefix && "hidden"
                     }">${prefix}</div>
@@ -389,7 +389,7 @@ function BreakdownCharts({
                 }"></div>
                 <div class="tooltip-point-name text-md">${name}</div>
               </div>
-              <div class="flex-1 justify-end text-right font-inter flex">
+               <div class="flex-1 text-right justify-end flex numbers-xs">
                   <div class="opacity-70 mr-0.5 ${
                     !prefix && "hidden"
                   }">${prefix}</div>
@@ -418,7 +418,7 @@ function BreakdownCharts({
             <div class="flex w-full gap-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-70">
               <div class="w-4 h-1.5 rounded-r-full" style=""></div>
               <div class="tooltip-point-name text-md">Total</div>
-              <div class="flex-1 text-right justify-end font-inter flex">
+               <div class="flex-1 text-right justify-end flex numbers-xs">
     
                   <div class="opacity-70 mr-0.5 ${
                     !prefix && "hidden"
@@ -752,12 +752,15 @@ function BreakdownCharts({
                 y: 2,
                 x: -3,
                 style: {
-                  fontSize: "10px",
-                  fontWeight: "600",
-                  color: "#CDD8D3",
                   textAlign: "right",
                   width: 45,
+                  color: "rgb(215, 223, 222)",
+                  fontSize: "10px",
+                  fontWeight: "700",
+                  fontFamily: "Fira Sans",
                 },
+                
+                
                 useHTML: true,
                 formatter: function (
                   this: Highcharts.AxisLabelsFormatterContextObject,
@@ -1087,11 +1090,12 @@ function BreakdownCharts({
                 x: -3,
                 overflow: "allow",
                 style: {
-                  fontSize: "10px",
-                  fontWeight: "600",
-                  color: "#CDD8D3",
                   textAlign: "right",
                   width: 45,
+                  color: "rgb(215, 223, 222)",
+                  fontSize: "10px",
+                  fontWeight: "700",
+                  fontFamily: "Fira Sans",
                 },
                 useHTML: true,
                 formatter: function (

@@ -699,6 +699,7 @@ export const Chart = ({
                           },
                         ],
                         labels: {
+                          
                           //@ts-ignore
                           ...baseOptions.yAxis.labels,
                           formatter: function (

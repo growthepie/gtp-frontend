@@ -673,7 +673,7 @@ export default function OverviewChart({
         
         </div>
         <div class="tooltip-point-name">${name}</div>
-        <div class="flex flex-1 justify-end text-right font-inter">
+         <div class="flex-1 text-right justify-end flex numbers-xs">
         <div>${prefix}</div>
           <div>${Intl.NumberFormat("en-GB", {
             notation: "compact",
@@ -1000,8 +1000,10 @@ export default function OverviewChart({
                   y: 2,
                   x: -4,
                   style: {
-                    color: "#CDD8D3",
-                    fontSize: "12px",
+                    color: "rgb(215, 223, 222)",
+                    fontSize: "10px",
+                    fontWeight: "700",
+                    fontFamily: "Fira Sans",
                   },
                   formatter: function () {
                     const value = this.value as number | bigint;

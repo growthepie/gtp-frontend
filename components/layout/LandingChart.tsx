@@ -531,7 +531,7 @@ export default function LandingChart({
             }"></div>
             <div class="tooltip-point-name text-md">${AllChainsByKeys[name].label
             }</div>
-            <div class="flex-1 text-right justify-end font-inter flex">
+             <div class="flex-1 text-right justify-end flex numbers-xs">
               <div class="inline-block">${parseFloat(y).toLocaleString(
               "en-GB",
               {
@@ -607,7 +607,7 @@ export default function LandingChart({
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5 opacity-60">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6"></div>
             <div class="tooltip-point-name">${rest.length > 1 ? `${rest.length} Others` : "1 Other"}</div>
-            <div class="flex-1 text-right justify-end font-inter flex">
+             <div class="flex-1 text-right justify-end flex numbers-xs">
               <div class="inline-block">${restSum.toLocaleString("en-GB", { minimumFractionDigits: 0, })}</div>
             </div>
           </div>
