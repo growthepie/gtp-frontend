@@ -26,7 +26,7 @@ export default function QuestionAnswer({
   const [ref, { height }] = useElementSizeObserver<HTMLDivElement>();
 
   return (
-    <div className={`rounded-[40px] bg-forest-50 dark:bg-forest-900 px-[30px] py-[23px] flex flex-col ${className}`}>
+    <div className={`rounded-[40px] bg-forest-50 dark:bg-[#1F2726] px-[30px] py-[23px] flex flex-col ${className}`}>
       <div
         className={`flex items-center cursor-pointer space-x-[10px] leading-[133%] ${questionClassName}`}
         onClick={() => setOpen(!open)}

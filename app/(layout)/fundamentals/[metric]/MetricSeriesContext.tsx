@@ -9,7 +9,7 @@ import { useSessionStorage } from "usehooks-ts";
 import { useMetricData } from "./MetricDataContext";
 import { useMetricChartControls } from "./MetricChartControlsContext";
 import { useTheme } from "next-themes";
-import { metricItems } from "@/lib/metrics";
+import { daMetricItems, metricItems } from "@/lib/metrics";
 
 type SeriesData = {
   name: string;
@@ -27,17 +27,17 @@ const MetricSeriesContext = createContext<MetricSeriesContextType>({
 
 type MetricSeriesProviderProps = {
   children: React.ReactNode;
-  type: string;
+  metric_type: "fundamentals" | "data-availability";
 };
 
-export const MetricSeriesProvider = ({ children, type }: MetricSeriesProviderProps) => {
+export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProviderProps) => {
   const UrlsMap = {
     fundamentals: MetricsURLs,
     "data-availability": DAMetricsURLs,
   };
 
   const { theme } = useTheme();
-  const { AllChainsByKeys, AllDALayersByKeys, SupportedChainKeys, EnabledChainsByKeys, data: master } = useMaster();
+  const { data: master, AllChainsByKeys, AllDALayersByKeys, SupportedChainKeys, EnabledChainsByKeys } = useMaster();
 
   const { data, chainKeys, metric_id, avg } = useMetricData();
   const { selectedChains, selectedTimeInterval, selectedTimespan, timeIntervalKey, selectedScale, showEthereumMainnet } = useMetricChartControls();
@@ -45,9 +45,10 @@ export const MetricSeriesProvider = ({ children, type }: MetricSeriesProviderPro
   const [showUsd, setShowUsd] = useSessionStorage("showUsd", true);
 
   const navItem = useMemo(() => {
-    return metricItems.find((item) => item.key === metric_id);
+
+    return metric_type === "fundamentals" ? metricItems.find((item) => item.key === metric_id) : daMetricItems.find((item) => item.key === metric_id);
     //return navigationItems[1].options.find((item) => item.key === metric_id);
-  }, [metric_id]);
+  }, [metric_id, metric_type]);
 
   const urlKey = useMemo(() => {
     if (!navItem) return null;
@@ -203,29 +204,27 @@ export const MetricSeriesProvider = ({ children, type }: MetricSeriesProviderPro
       const secondZoneDashStyle = todaysDate === 1 ? "Solid" : "Dot";
 
       // if it is not the last day of the month, add a zone to the chart to indicate that the data is incomplete
-      // if (new Date().getUTCDate() !== 1) {
-      zoneAxis = "x";
-      console.log(name);
-      console.log(name, seriesData[seriesData.length - 2][0] + 1);
-      zones = [
-        {
-          value: seriesData[seriesData.length - 2][0] + 1,
-          dashStyle: "Solid",
-          fillColor: isColumnChart ? columnFillColor : seriesFill,
-          color: isColumnChart
-            ? columnColor
-            : MetadataByKeys[name].colors[theme ?? "dark"][0],
-        },
-        {
-          // value: monthlyData[monthlyData.length - 2][0],
-          dashStyle: secondZoneDashStyle,
-          fillColor: isColumnChart ? columnFillColor : seriesFill,
-          color: isColumnChart
-            ? secondZoneDottedColumnColor
-            : MetadataByKeys[name].colors[theme ?? "dark"][0],
-        },
-      ];
-      // }
+      if (seriesData.length > 2 && new Date().getUTCDate() !== 1 && selectedTimeInterval === "monthly") {
+        zoneAxis = "x";
+        zones = [
+          {
+            value: seriesData[seriesData.length - 2][0] + 1,
+            dashStyle: "Solid",
+            fillColor: isColumnChart ? columnFillColor : seriesFill,
+            color: isColumnChart
+              ? columnColor
+              : MetadataByKeys[name].colors[theme ?? "dark"][0],
+          },
+          {
+            // value: monthlyData[monthlyData.length - 2][0],
+            dashStyle: secondZoneDashStyle,
+            fillColor: isColumnChart ? columnFillColor : seriesFill,
+            color: isColumnChart
+              ? secondZoneDottedColumnColor
+              : MetadataByKeys[name].colors[theme ?? "dark"][0],
+          },
+        ];
+      }
 
       return {
         data: seriesData,
@@ -274,6 +273,9 @@ export const MetricSeriesProvider = ({ children, type }: MetricSeriesProviderPro
   const seriesData = useMemo(() => {
     if (!data) return [] as SeriesData[];
 
+
+
+
     let borderRadius: string | null = null;
 
 
@@ -292,7 +294,12 @@ export const MetricSeriesProvider = ({ children, type }: MetricSeriesProviderPro
           : 0.5,
     };
 
-    const chainData = chainKeys.filter((chainKey) => selectedChains.includes(chainKey) && SupportedChainKeys.includes(chainKey)).map((chainKey, i) => {
+
+    const chainDataKeys = metric_type === "fundamentals" ? chainKeys.filter((chainKey) =>
+      selectedChains.includes(chainKey) && SupportedChainKeys.includes(chainKey)
+    ) : chainKeys.filter((chainKey) => selectedChains.includes(chainKey));
+
+    const d = chainDataKeys.map((chainKey, i) => {
       const chain = data.chains[chainKey];
 
 
@@ -337,11 +344,139 @@ export const MetricSeriesProvider = ({ children, type }: MetricSeriesProviderPro
           MetadataByKeys[chainKey]?.colors[theme ?? "dark"][0],
         borderWidth: 1,
         lineWidth: 2,
+        ...// @ts-ignore
+        (["area", "line"].includes(getSeriesType(chainKey))
+          ? {
+            shadow: {
+              color:
+                MetadataByKeys[chainKey]?.colors[
+                theme ?? "dark"
+                ][1] + "FF",
+              width: 10,
+            },
+            // color: {
+            //   linearGradient: {
+            //     x1: 0,
+            //     y1: 0,
+            //     x2: 1,
+            //     y2: 0,
+            //   },
+            //   stops: [
+            //     [
+            //       0,
+            //       MetadataByKeys[series.name]?.colors[
+            //         theme ?? "dark"
+            //       ][0],
+            //     ],
+            //     // [0.33, MetadataByKeys[series.name].colors[1]],
+            //     [
+            //       1,
+            //       MetadataByKeys[series.name]?.colors[
+            //         theme ?? "dark"
+            //       ][1],
+            //     ],
+            //   ],
+            // },
+          }
+          : chainKey === "all_l2s"
+            ? {
+              borderColor: "transparent",
+              shadow: "none",
+              // shadow: {
+              //   color: "#CDD8D3" + "FF",
+              //   // color:
+              //   //   MetadataByKeys[series.name].colors[theme ?? "dark"][1] + "33",
+              //   // width: 10,
+              //   offsetX: 0,
+              //   offsetY: 0,
+              //   width: 2,
+              // },
+              // color: {
+              //   linearGradient: {
+              //     x1: 0,
+              //     y1: 0,
+              //     x2: 0,
+              //     y2: 1,
+              //   },
+              //   stops:
+              //     theme === "dark"
+              //       ? [
+              //           [
+              //             0,
+              //             MetadataByKeys[series.name]?.colors[
+              //               theme ?? "dark"
+              //             ][0] + "E6",
+              //           ],
+
+              //           [
+              //             1,
+              //             MetadataByKeys[series.name]?.colors[
+              //               theme ?? "dark"
+              //             ][1] + "E6",
+              //           ],
+              //         ]
+              //       : [
+              //           [
+              //             0,
+              //             MetadataByKeys[series.name]?.colors[
+              //               theme ?? "dark"
+              //             ][0] + "E6",
+              //           ],
+
+              //           [
+              //             1,
+              //             MetadataByKeys[series.name]?.colors[
+              //               theme ?? "dark"
+              //             ][1] + "E6",
+              //           ],
+              //         ],
+              // },
+            }
+            : {
+              borderColor: "transparent",
+              shadow: "none",
+              // shadow: {
+              //   color: "#CDD8D3" + "FF",
+              //   offsetX: 0,
+              //   offsetY: 0,
+              //   width: 2,
+              // },
+              // fillColor: {
+              //   linearGradient: {
+              //     x1: 0,
+              //     y1: 0,
+              //     x2: 0,
+              //     y2: 1,
+              //   },
+              //   stops: [
+              //     [
+              //       0,
+              //       MetadataByKeys[series.name]?.colors[
+              //         theme ?? "dark"
+              //       ][0] + "FF",
+              //     ],
+              //     [
+              //       0.349,
+              //       MetadataByKeys[series.name]?.colors[
+              //         theme ?? "dark"
+              //       ][0] + "88",
+              //     ],
+              //     [
+              //       1,
+              //       MetadataByKeys[series.name]?.colors[
+              //         theme ?? "dark"
+              //       ][0] + "00",
+              //     ],
+              //   ],
+              // },
+            }),
       };
     });
 
-    return chainData;
-  }, [data, selectedTimeInterval, selectedScale, chainKeys, selectedChains, showEthereumMainnet, timeIntervalKey, getSeriesData, getSeriesType, dataGrouping, MetadataByKeys, theme]);
+    console.log("d", d);
+
+    return d;
+  }, [data, selectedTimeInterval, selectedScale, chainKeys, metric_type, selectedChains, SupportedChainKeys, showEthereumMainnet, timeIntervalKey, getSeriesData, getSeriesType, dataGrouping, MetadataByKeys, theme]);
 
   return (
     <MetricSeriesContext.Provider

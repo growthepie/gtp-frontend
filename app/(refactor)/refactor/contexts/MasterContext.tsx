@@ -76,7 +76,7 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [data]);
 
-  const formatMetric = useCallback((value: number, metric: string, unitType: string = "value") => {
+  const formatMetric = useCallback((value: number, metric: string, unitType: string = "value", type = "fundamentals") => {
     if (metric === "gas_fees_usd") {
       metric = "fees";
       unitType = "usd";
@@ -86,7 +86,7 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
       return `MasterProvider: data not found`;
     }
 
-    const metricInfo = data.metrics[metric];
+    const metricInfo = type === "fundamentals" ? data.metrics[metric] : data.da_metrics[metric];
 
     if (!metricInfo) {
       return `MasterProvider: metricInfo not found: ${metric}`;

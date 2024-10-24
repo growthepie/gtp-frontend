@@ -31,12 +31,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Too
 import { Switch } from "@/components/Switch";
 import Link from "next/link";
 import { Sources } from "@/lib/datasources";
-import { MetricDataProvider, useMetricData } from "./MetricDataContext";
-import { MetricChartControlsProvider, useMetricChartControls } from "./MetricChartControlsContext";
-import { MetricSeriesProvider } from "./MetricSeriesContext";
+import { MetricDataProvider, useMetricData } from "@/app/(layout)/fundamentals/[metric]/MetricDataContext";
+import { MetricChartControlsProvider, useMetricChartControls } from "@/app/(layout)/fundamentals/[metric]/MetricChartControlsContext";
+import { MetricSeriesProvider } from "@/app/(layout)/fundamentals/[metric]/MetricSeriesContext";
 import { useParams } from "next/navigation";
-import MetricChart from "./MetricChart";
-import MetricTable from "./MetricTable";
+import MetricChart from "@/app/(layout)/fundamentals/[metric]/MetricChart";
+import MetricTable from "@/app/(layout)/fundamentals/[metric]/MetricTable";
 
 const monthly_agg_labels = {
   avg: "Average",
@@ -59,7 +59,7 @@ const Fundamentals = ({ params: { metric } }) => {
     error: metricError,
     isLoading: metricLoading,
     isValidating: metricValidating,
-  } = useSWR<MetricsResponse>(MetricsURLs[metric]);
+  } = useSWR<MetricsResponse>(DAMetricsURLs[metric]);
 
   return (
     <>
@@ -68,7 +68,7 @@ const Fundamentals = ({ params: { metric } }) => {
         dataValidating={[masterValidating, metricValidating]}
       />
       {master && metricData ? (
-        <FundamentalsContent metric={metric} type="fundamentals" />
+        <DAContent metric={metric} type="data-availability" />
       ) : (
         <div className="w-full min-h-[1024px] md:min-h-[1081px] lg:min-h-[637px] xl:min-h-[736px]" />
       )}
@@ -81,24 +81,24 @@ type FundamentalsContentProps = {
   type: "fundamentals" | "data-availability";
 };
 
-const FundamentalsContent = ({ metric, type }: FundamentalsContentProps) => {
+const DAContent = ({ metric, type }: FundamentalsContentProps) => {
   return (
     <>
-      <MetricDataProvider metric={metric} metric_type="fundamentals">
+      <MetricDataProvider metric={metric} metric_type={type}>
         <MetricChartControlsProvider metric_type={type}>
           <MetricSeriesProvider metric_type={type}>
-            <PageContainer paddingY="none">
+            <PageContainer>
               <FundamentalsTopControls metric={metric} />
             </PageContainer>
-            <div className="flex flex-col-reverse md:flex-row gap-y-[15px] px-0 md:px-[50px]">
-              <div className="w-full md:!w-[503px]">
+            <div className="flex flex-col md:flex-row gap-y-[15px] px-0 md:px-[50px]">
+              <div className="md:w-[503px]">
                 <MetricTable metric_type={type} />
               </div>
-              <div className="flex-1 h-[434px] md:h-[434px] px-[20px] md:px-0">
+              <div className="flex-1 h-[434px] md:h-[434px]">
                 <MetricChart metric_type={type} />
               </div>
             </div>
-            <PageContainer paddingY="none">
+            <PageContainer>
               <FundamentalsBottomControls metric={metric} />
             </PageContainer>
           </MetricSeriesProvider>

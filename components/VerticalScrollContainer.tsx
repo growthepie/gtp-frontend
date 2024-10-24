@@ -17,6 +17,7 @@ type VerticalScrollContainerProps = {
   scrollbarPosition?: ScrollbarPosition; // New Prop
   scrollbarAbsolute?: boolean;
   scrollbarWidth?: string | number;
+  header?: React.ReactNode;
 };
 
 export default forwardRef(function VerticalScrollContainer(
@@ -31,6 +32,7 @@ export default forwardRef(function VerticalScrollContainer(
     scrollbarPosition = 'right', // Default to 'right'
     scrollbarAbsolute = false,
     scrollbarWidth = "8px",
+    header,
   }: VerticalScrollContainerProps,
   ref: React.Ref<HTMLDivElement>
 ) {
@@ -340,59 +342,11 @@ export default forwardRef(function VerticalScrollContainer(
   const scrollbarOrder = scrollbarPosition === 'right' ? 'order-2' : 'order-1';
 
   return (
-    <div
-      className={`relative flex w-full px-0 overflow-y-hidden overflow-x-visible ${className}`}
-      style={{ flexDirection: 'row' }}
-    >
-      {/* Scrollbar */}
-      {scrollbarPosition === 'left' && showScroller && (
+    <>
+      {header && (
         <div
-          className={`${scrollbarAbsolute ? "z-[30] absolute left-[5px]" : "pl-[10px]"} h-full flex flex-col justify-center ${scrollbarSideClasses} order-1`}
-          style={{ height: height }}
-        >
-          <div
-            className="h-full p-0.5 bg-black/30 rounded-full relative"
-            onMouseDown={handleTrackMouseDown}
-            onTouchStart={handleTrackMouseDown} // Added touch event
-            // Removed onClick to integrate behavior into onMouseDown/onTouchStart
-            onWheel={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              contentScrollAreaRef.current!.scrollTop += e.deltaY;
-            }}
-          >
-            <div className="h-full w-2 relative" ref={scrollerRef} style={{ width: scrollbarWidth }}>
-              <div
-                className="h-5 w-2 bg-forest-400/30 rounded-full"
-                style={{
-                  position: 'absolute',
-                  top: scrollerY,
-                  left: '0px',
-                  cursor: 'grab',
-                  width: scrollbarWidth,
-                }}
-                onMouseDown={handleMouseDown}
-                onTouchStart={handleMouseDown} // Added touch event
-                ref={grabberRef}
-              ></div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Content */}
-      <div className={`overflow-y-visible w-full ${contentOrder}`}>
-        <div
-          className="relative overflow-y-scroll scrollbar-none max-w-full transition-all duration-300"
-          ref={mergeRefs([contentScrollAreaRef, ref])}
           style={{
-            height: `${height}px`,
-            maskClip: 'padding-box',
-            WebkitMaskClip: 'padding-box',
-            WebkitMaskImage: maskGradient,
-            maskImage: maskGradient,
-            WebkitMaskSize: '100% 100%',
-            maskSize: '100% 100%',
+            height: 'fit-content',
             paddingRight: computedPaddingRight
               ? `${computedPaddingRight}px`
               : paddingRight
@@ -403,53 +357,123 @@ export default forwardRef(function VerticalScrollContainer(
               : paddingLeft
                 ? `${paddingLeft}px`
                 : undefined,
-            paddingTop: paddingTop ? `${paddingTop}px` : undefined,
-            paddingBottom: paddingBottom ? `${paddingBottom}px` : undefined,
           }}
         >
-          <div>
-            <div className="min-w-fit w-full max-w-full" ref={contentRef}>
-              <div>{children}</div>
+          {header}
+        </div >
+      )}
+      <div
+        className={`relative flex w-full px-0 overflow-y-hidden overflow-x-visible ${className}`}
+        style={{ flexDirection: 'row' }}
+      >
+
+        {/* Scrollbar */}
+        {scrollbarPosition === 'left' && showScroller && (
+          <div
+            className={`${scrollbarAbsolute ? "z-[30] absolute left-[5px]" : "pl-[10px]"} h-full flex flex-col justify-center ${scrollbarSideClasses} order-1`}
+            style={{ height: height }}
+          >
+            <div
+              className="h-full p-0.5 bg-black/30 rounded-full relative"
+              onMouseDown={handleTrackMouseDown}
+              onTouchStart={handleTrackMouseDown} // Added touch event
+              // Removed onClick to integrate behavior into onMouseDown/onTouchStart
+              onWheel={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                contentScrollAreaRef.current!.scrollTop += e.deltaY;
+              }}
+            >
+              <div className="h-full w-2 relative" ref={scrollerRef} style={{ width: scrollbarWidth }}>
+                <div
+                  className="h-5 w-2 bg-forest-400/30 rounded-full"
+                  style={{
+                    position: 'absolute',
+                    top: scrollerY,
+                    left: '0px',
+                    cursor: 'grab',
+                    width: scrollbarWidth,
+                  }}
+                  onMouseDown={handleMouseDown}
+                  onTouchStart={handleMouseDown} // Added touch event
+                  ref={grabberRef}
+                ></div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        )}
 
-      {/* Scrollbar */}
-      {scrollbarPosition === 'right' && showScroller && (
-        <div
-          className={`${scrollbarAbsolute ? "z-[30] absolute right-[5px]" : "pr-[10px]"} h-full flex flex-col justify-center ${scrollbarSideClasses} order-3`}
-          style={{ height: height }}
-        >
+        {/* Content */}
+        <div className={`overflow-y-visible w-full ${contentOrder}`}>
           <div
-            className="h-full p-0.5 bg-black/30 rounded-full relative"
-            onMouseDown={handleTrackMouseDown}
-            onTouchStart={handleTrackMouseDown} // Added touch event
-            // Removed onClick to integrate behavior into onMouseDown/onTouchStart
-            onWheel={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              contentScrollAreaRef.current!.scrollTop += e.deltaY;
+            className="relative overflow-y-scroll scrollbar-none max-w-full transition-all duration-300"
+            ref={mergeRefs([contentScrollAreaRef, ref])}
+            style={{
+              height: `${height}px`,
+              maskClip: 'padding-box',
+              WebkitMaskClip: 'padding-box',
+              WebkitMaskImage: maskGradient,
+              maskImage: maskGradient,
+              WebkitMaskSize: '100% 100%',
+              maskSize: '100% 100%',
+              paddingRight: computedPaddingRight
+                ? `${computedPaddingRight}px`
+                : paddingRight
+                  ? `${paddingRight}px`
+                  : undefined,
+              paddingLeft: computedPaddingLeft
+                ? `${computedPaddingLeft}px`
+                : paddingLeft
+                  ? `${paddingLeft}px`
+                  : undefined,
+              paddingTop: paddingTop ? `${paddingTop}px` : undefined,
+              paddingBottom: paddingBottom ? `${paddingBottom}px` : undefined,
             }}
           >
-            <div className="h-full w-2 relative" ref={scrollerRef} style={{ width: scrollbarWidth }}>
-              <div
-                className="h-5 w-2 bg-forest-400/30 rounded-full"
-                style={{
-                  position: 'absolute',
-                  top: scrollerY,
-                  left: '0px',
-                  cursor: 'grab',
-                  width: scrollbarWidth
-                }}
-                onMouseDown={handleMouseDown}
-                onTouchStart={handleMouseDown} // Added touch event
-                ref={grabberRef}
-              ></div>
+            <div>
+              <div className="min-w-fit w-full max-w-full" ref={contentRef}>
+                <div>{children}</div>
+              </div>
             </div>
           </div>
         </div>
-      )}
-    </div>
+
+        {/* Scrollbar */}
+        {scrollbarPosition === 'right' && showScroller && (
+          <div
+            className={`${scrollbarAbsolute ? "z-[30] absolute right-[5px]" : "pr-[10px]"} h-full flex flex-col justify-center ${scrollbarSideClasses} order-3`}
+            style={{ height: height }}
+          >
+            <div
+              className="h-full p-0.5 bg-black/30 rounded-full relative"
+              onMouseDown={handleTrackMouseDown}
+              onTouchStart={handleTrackMouseDown} // Added touch event
+              // Removed onClick to integrate behavior into onMouseDown/onTouchStart
+              onWheel={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                contentScrollAreaRef.current!.scrollTop += e.deltaY;
+              }}
+            >
+              <div className="h-full w-2 relative" ref={scrollerRef} style={{ width: scrollbarWidth }}>
+                <div
+                  className="h-5 w-2 bg-forest-400/30 rounded-full"
+                  style={{
+                    position: 'absolute',
+                    top: scrollerY,
+                    left: '0px',
+                    cursor: 'grab',
+                    width: scrollbarWidth
+                  }}
+                  onMouseDown={handleMouseDown}
+                  onTouchStart={handleMouseDown} // Added touch event
+                  ref={grabberRef}
+                ></div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 });

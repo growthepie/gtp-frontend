@@ -24,13 +24,13 @@ import {
   Chart,
   XAxis,
   YAxis,
+  Tooltip as HighchartsTooltip,
   Title,
   Subtitle,
   Legend,
   LineSeries,
   SplineSeries,
   AreaSplineSeries,
-  Tooltip,
   AreaRangeSeries,
   PlotBand,
   PlotLine,
@@ -40,7 +40,7 @@ import {
 } from "react-jsx-highcharts";
 import { useUIContext, useHighchartsWrappers } from "@/contexts/UIContext";
 import { useMaster } from "@/contexts/MasterContext";
-import { times } from "lodash";
+import { debounce, times } from "lodash";
 import { useMetricSeries } from "./MetricSeriesContext";
 import { useMetricData } from "./MetricDataContext";
 import { useMetricChartControls } from "./MetricChartControlsContext";
@@ -51,6 +51,9 @@ import { format as d3Format } from "d3"
 import { useTheme } from "next-themes";
 import { BASE_URL } from "@/lib/helpers";
 import EmbedContainer from "@/app/(embeds)/embed/EmbedContainer";
+import ChartWatermark from "@/components/layout/ChartWatermark";
+import { Icon } from "@iconify/react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -171,12 +174,18 @@ const EmbedUrlsMap = {
   "data-availability": `${BASE_URL}/embed/data-availability/`,
 };
 
-const MetricInfoKeyMap = {
-  fundamentals: "metrics",
+const ChainInfoKeyMap = {
+  fundamentals: "chains",
   "data-availability": "da_layers",
 };
 
+const MetricInfoKeyMap = {
+  fundamentals: "metrics",
+  "data-availability": "da_metrics",
+};
+
 type MetricChartProps = {
+  metric_type: "fundamentals" | "data-availability";
   is_embed?: boolean;
   embed_zoomed?: boolean;
   embed_start_timestamp?: number;
@@ -185,19 +194,24 @@ type MetricChartProps = {
 }
 
 function MetricChart({
+  metric_type,
   is_embed = false,
   embed_zoomed = false,
   embed_start_timestamp,
   embed_end_timestamp,
-  type = "fundamentals",
+
 }: MetricChartProps) {
 
   useHighchartsWrappers();
 
   const { theme } = useTheme();
   const { isSidebarOpen, isMobile, setEmbedData, embedData } = useUIContext();
-  const { AllChainsByKeys, data: master, formatMetric, getUnits } = useMaster();
-  const { timespans, metric_id, minDailyUnix, maxDailyUnix, monthly_agg, avg } = useMetricData();
+  const { AllChainsByKeys, data: master, metrics, da_metrics, chains, da_layers } = useMaster();
+
+  const metricsDict = metric_type === "fundamentals" ? metrics : da_metrics;
+  const chainsDict = metric_type === "fundamentals" ? chains : da_layers;
+
+  const { timespans, metric_id, minDailyUnix, maxDailyUnix, monthly_agg, avg, log_default } = useMetricData();
   const {
     selectedTimespan,
     selectedTimeInterval,
@@ -259,7 +273,7 @@ function MetricChart({
     };
 
     let src =
-      EmbedUrlsMap[type] +
+      EmbedUrlsMap[metric_type] +
       navItem?.urlKey +
       "?" +
       new URLSearchParams(vars).toString();
@@ -296,6 +310,7 @@ function MetricChart({
   const yScale: string = "linear";
 
   const valuePrefix = useMemo(() => {
+    if (seriesData.length === 0) return "";
     if (seriesData[0].types.includes("usd")) {
       if (!showUsd) return "Ξ";
       else return "$";
@@ -398,8 +413,6 @@ function MetricChart({
     ...getPlotOptions(selectedScale),
   };
 
-  console.log("timeIntervalKey", timeIntervalKey);
-
   useEffect(() => {
     const startTimestamp = zoomed ? zoomMin : undefined;
     const endTimestamp = zoomed ? zoomMax : maxDailyUnix.valueOf();
@@ -485,6 +498,7 @@ function MetricChart({
             if (!tickLabel) return;
             const tickValue = tickLabel.element.textContent;
             if (tickValue) {
+              // if the tick value is a 4 digit number, increase the font size
               if (tickValue.length === 4) {
                 tickLabel.css({
                   transform: "scale(1.4)",
@@ -499,15 +513,17 @@ function MetricChart({
 
   }, []);
 
-  // useEffect(() => {
-  //   if (chartComponent.current) {
-  //     if (!zoomed)
-  //       chartComponent.current.xAxis[0].setExtremes(
-  //         timespans[selectedTimespan].xMin,
-  //         timespans[selectedTimespan].xMax,
-  //       );
-  //   }
-  // }, [selectedTimespan, timespans, zoomed]);
+  useEffect(() => {
+    if (chartComponent.current) {
+      if (!zoomed)
+        chartComponent.current.xAxis[0].setExtremes(
+          timespans[selectedTimespan].xMin,
+          timespans[selectedTimespan].xMax,
+        );
+    }
+  }, [selectedTimespan, timespans, zoomed]);
+
+
 
   const [selectedTimespansByTimeInterval, setSelectedTimespansByTimeInterval] =
     useSessionStorage("selectedTimespansByTimeInterval", {
@@ -530,6 +546,26 @@ function MetricChart({
 
   const [containerRef, { width, height }] = useElementSizeObserver();
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
+
+  const resituateChart = debounce(() => {
+    chartComponent.current && chartComponent.current.reflow();
+  }, 300);
+
+  useEffect(() => {
+    setTimeout(() => {
+      resituateChart();
+    }, 300);
+
+    return () => {
+      resituateChart.cancel();
+    };
+  }, [isSidebarOpen, resituateChart]);
+
+  useLayoutEffect(() => {
+    if (chartComponent.current) {
+      chartComponent.current.setSize(width, height, true);
+    }
+  }, [width, height, isSidebarOpen]);
 
   function shortenNumber(number) {
     let numberStr = Math.floor(number).toString();
@@ -645,21 +681,18 @@ function MetricChart({
 
       if (!master) return;
 
-      const units = Object.keys(getUnits(metric_id))
+      const units = metricsDict[metric_id].units;
+      const unitKeys = Object.keys(units);
       const unitKey =
-        units.find((unit) => unit !== "usd" && unit !== "eth") ||
+        unitKeys.find((unit) => unit !== "usd" && unit !== "eth") ||
         (showUsd ? "usd" : "eth");
-      let prefix = master.metrics[metric_id].units[unitKey].prefix
-        ? master.metrics[metric_id].units[unitKey].prefix
-        : "";
-      let suffix = master.metrics[metric_id].units[unitKey].suffix
-        ? master.metrics[metric_id].units[unitKey].suffix
-        : "";
+      let prefix = master[MetricInfoKeyMap[metric_type]][metric_id].units[unitKey].prefix || "";;
+      let suffix = master[MetricInfoKeyMap[metric_type]][metric_id].units[unitKey].suffix || "";
 
       const decimals =
         !showUsd && showGwei
           ? 2
-          : master.metrics[metric_id].units[unitKey].decimals_tooltip;
+          : master[MetricInfoKeyMap[metric_type]][metric_id].units[unitKey].decimals_tooltip;
 
       let tooltipPoints = (showOthers ? firstTenPoints : points)
         .map((point: any) => {
@@ -670,9 +703,9 @@ function MetricChart({
               <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
                 <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
               }"></div>
-                <div class="tooltip-point-name">${AllChainsByKeys[name].label
+                <div class="tooltip-point-name text-xs">${AllChainsByKeys[name].label
               }</div>
-                <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
+                <div class="flex-1 text-right numbers-xs">${Highcharts.numberFormat(
                 percentage,
                 2,
               )}%</div>
@@ -691,7 +724,7 @@ function MetricChart({
 
           let value = y;
 
-          if (!showUsd && master.metrics[metric_id].units[unitKey].currency) {
+          if (!showUsd && master[MetricInfoKeyMap[metric_type]][metric_id].units[unitKey].currency) {
             if (showGwei) {
               prefix = "";
               suffix = " Gwei";
@@ -702,10 +735,10 @@ function MetricChart({
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
             }"></div>
-            <div class="tooltip-point-name text-md">${AllChainsByKeys[name].label
+            <div class="tooltip-point-name text-xs">${AllChainsByKeys[name].label
             }</div>
-            <div class="flex-1 text-right justify-end font-inter flex">
-                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+            <div class="flex-1 text-right justify-end flex numbers-xs">
+                <div class="${!prefix && "hidden"
             }">${prefix}</div>
                 ${metric_id === "fdv" || metric_id === "market_cap"
               ? shortenNumber(value).toString()
@@ -714,7 +747,7 @@ function MetricChart({
                 maximumFractionDigits: decimals,
               })
             }
-                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+                <div class="ml-0.5 ${!suffix && "hidden"
             }">${suffix}</div>
             </div>
           </div>
@@ -854,8 +887,9 @@ function MetricChart({
 
       return tooltip + tooltipPoints + sumRow + tooltipEnd;
     },
-    [metric_id, selectedTimeInterval, master, showUsd, showGwei, selectedScale, valuePrefix, reversePerformer, AllChainsByKeys, theme],
+    [metric_id, selectedTimeInterval, master, metricsDict, showUsd, metric_type, showGwei, selectedScale, valuePrefix, reversePerformer, AllChainsByKeys, theme],
   );
+
 
   const tooltipPositioner =
     useCallback<Highcharts.TooltipPositionerCallbackFunction>(
@@ -956,42 +990,90 @@ function MetricChart({
     return "Daily";
   }, [avg, monthly_agg, selectedTimeInterval, selectedTimespan]);
 
+  const { selectedYAxisScale } = useMetricChartControls();
+
+  // const tickInterval = useMemo(() => {
+  //   const timespanDays = (timespans[selectedTimespan].xMax - timespans[selectedTimespan].xMin) / (24 * 3600 * 1000);
+
+  //   if (timespanDays <= 40) {
+  //     return 7 * 3600 * 1000;
+  //   }
+
+  //   if (timespanDays <= 90) {
+  //     return 1 * 24 * 3600 * 1000;
+  //   }
+
+  //   if (timespanDays <= 120) {
+  //     return 3 * 24 * 3600 * 1000;
+  //   }
+
+  //   if (timespanDays <= 160) {
+  //     return 4 * 24 * 3600 * 1000;
+  //   }
+
+  //   return 6 * 24 * 3600 * 1000;
+
+  // }, [timespans, selectedTimespan]);
+
+
+
+
+  if (!master) return null;
+
 
   return (
-    <HighchartsProvider Highcharts={Highcharts}>
-      <HighchartsChart
-        containerProps={{
-          style: { height: "100%", width: "100%" },
-          ref: containerRef,
-        }}
-        syncId="shareTooltip"
-        plotOptions={{
-          ...baseOptions.plotOptions,
-          ...plotOptions,
-        }}
-      >
-        <Chart
-          {...baseOptions.chart}
-          className="zoom-chart"
+    <div className="relative w-full h-full">
+      <div className="relative flex items-end h-[30px]">
 
-          zooming={
-            {
-              type: is_embed ? "x" : "x",
-              mouseWheel: {
-                enabled: false,
-              },
-              resetButton: {
-                theme: {
-                  zIndex: -10,
-                  fill: "transparent",
-                  stroke: "transparent",
-                  style: {
-                    color: "transparent",
-                    height: 0,
-                    width: 0,
+        {log_default === true && (
+          <>
+            <div className="absolute pl-[38.5px]">
+              <YAxisScaleControls />
+            </div>
+
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg width='33' height='8' viewBox='0 0 33 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath opacity='0.5' d='M0.299805 6.80004L0.353397 6.85363L5.49984 1.70718L10.9998 7.20718L16.4998 1.70718L21.9998 7.20718L27.4998 1.70718L32.6463 6.85363L32.7 6.79992V5.49313L27.4998 0.292969L21.9998 5.79297L16.4998 0.292969L10.9998 5.79297L5.49984 0.292969L0.299805 5.49301V6.80004Z' fill='%235A6462'/%3E%3C/svg%3E%0A")`,
+                // center vertically and repeat-x
+                backgroundPositionY: "50%",
+                backgroundRepeat: "repeat-x",
+              }} />
+          </>
+        )}
+      </div>
+      <div className="relative w-full h-full" ref={containerRef}>
+        <HighchartsProvider Highcharts={Highcharts}>
+          <HighchartsChart
+            containerProps={{
+              // style: { height: "100%", width: "100%" },
+              // ref: containerRef,
+            }}
+            syncId="shareTooltip"
+            //@ts-ignore
+            plotOptions={{
+              ...baseOptions.plotOptions,
+              ...plotOptions,
+            }}
+          >
+            <Chart
+              {...baseOptions.chart}
+              // width={width}
+              // height={height}
+              className="zoom-chart"
+              marginTop={5}
+              marginBottom={37}
+              marginRight={0}
+              marginLeft={38.5}
+              zooming={
+                {
+                  type: is_embed ? "x" : undefined,
+                  mouseWheel: {
+                    enabled: false,
                   },
-                  states: {
-                    hover: {
+                  resetButton: {
+                    theme: {
+                      zIndex: -10,
                       fill: "transparent",
                       stroke: "transparent",
                       style: {
@@ -999,159 +1081,241 @@ function MetricChart({
                         height: 0,
                         width: 0,
                       },
+                      states: {
+                        hover: {
+                          fill: "transparent",
+                          stroke: "transparent",
+                          style: {
+                            color: "transparent",
+                            height: 0,
+                            width: 0,
+                          },
+                        },
+                      },
                     },
-                  },
+                  }
+                }
+              }
+              options={{
+                chartComponent: chartComponent.current,
+              }}
+            />
+            <HighchartsTooltip
+              useHTML={true}
+              shared={true}
+              split={false}
+              followPointer={true}
+              followTouchMove={true}
+              backgroundColor={"#2A3433EE"}
+              padding={0}
+              hideDelay={300}
+              stickOnContact={true}
+              shape="rect"
+              borderRadius={17}
+              borderWidth={0}
+              outside={true}
+              shadow={{
+                color: "black",
+                opacity: 0.015,
+                offsetX: 2,
+                offsetY: 2,
+              }}
+              style={{
+                color: "rgb(215, 223, 222)",
+              }}
+              formatter={tooltipFormatter}
+              // ensure tooltip is always above the chart
+              positioner={tooltipPositioner}
+              valuePrefix={"$"}
+              valueSuffix={""}
+            />
+            <XAxis
+              title={undefined}
+              events={{
+                afterSetExtremes: onXAxisSetExtremes,
+              }}
+              type="datetime"
+              labels={{
+                align: undefined,
+                rotation: 0,
+                allowOverlap: false,
+                // staggerLines: 1,
+                reserveSpace: true,
+                overflow: "justify",
+                useHTML: true,
+                formatter: function (this: AxisLabelsFormatterContextObject) {
+
+                  if (timespans[selectedTimespan].xMax - timespans[selectedTimespan].xMin <= 40 * 24 * 3600 * 1000) {
+                    let isBeginningOfWeek = new Date(this.value).getUTCDay() === 1;
+                    let showMonth = this.isFirst || new Date(this.value).getUTCDate() === 1;
+
+                    return new Date(this.value).toLocaleDateString("en-GB", {
+                      timeZone: "UTC",
+                      month: "short",
+                      day: "numeric",
+                      year: this.isFirst ? "numeric" : undefined,
+                    });
+                  }
+                  else {
+                    // if Jan 1st, show year
+                    if (new Date(this.value).getUTCMonth() === 0) {
+                      return new Date(this.value).toLocaleDateString("en-GB", {
+                        timeZone: "UTC",
+                        year: "numeric",
+                      });
+                    }
+                    // if not 1st of the month, show month and day
+                    else if (new Date(this.value).getUTCDate() !== 1) {
+                      return new Date(this.value).toLocaleDateString("en-GB", {
+                        timeZone: "UTC",
+                        month: "short",
+                        day: "numeric",
+                      });
+                    }
+                    return new Date(this.value).toLocaleDateString("en-GB", {
+                      timeZone: "UTC",
+                      month: "short",
+                      year: "numeric",
+                    });
+                  }
                 },
-              }
-            }
-          }
-          options={{
-            chartComponent: chartComponent.current,
-          }}
-        />
-        <Tooltip
-          useHTML={true}
-          shared={true}
-          split={false}
-          followPointer={true}
-          followTouchMove={true}
-          backgroundColor={"#2A3433EE"}
-          padding={0}
-          hideDelay={300}
-          stickOnContact={true}
-          shape="rect"
-          borderRadius={17}
-          borderWidth={0}
-          outside={true}
-          shadow={{
-            color: "black",
-            opacity: 0.015,
-            offsetX: 2,
-            offsetY: 2,
-          }}
-          style={{
-            color: "rgb(215, 223, 222)",
-          }}
-          formatter={tooltipFormatter}
-          // ensure tooltip is always above the chart
-          positioner={tooltipPositioner}
-          valuePrefix={"$"}
-          valueSuffix={""}
-        />
-        <XAxis
-          title={undefined}
-          events={{
-            afterSetExtremes: onXAxisSetExtremes,
-          }}
-          type="datetime"
-          labels={{
-            align: undefined,
-            rotation: 0,
-            allowOverlap: false,
-            // staggerLines: 1,
-            reserveSpace: true,
-            overflow: "justify",
-            useHTML: true,
-            formatter: function (this: AxisLabelsFormatterContextObject) {
-              // if Jan 1st, show year
-              if (new Date(this.value).getUTCMonth() === 0) {
-                return new Date(this.value).toLocaleDateString("en-GB", {
-                  timeZone: "UTC",
-                  year: "numeric",
-                });
-              }
-              return new Date(this.value).toLocaleDateString("en-GB", {
-                timeZone: "UTC",
-                month: isMobile ? "short" : "short",
-                year: "numeric",
-              });
-            },
-            y: 40,
-            style: {
-              fontSize: "10px",
-              color: "#CDD8D3",
-            },
-          }}
-          crosshair={{
-            width: 0.5,
-            color: COLORS.PLOT_LINE,
-            snap: false,
-          }}
-          tickColor="#CDD8D34C"
-          tickmarkPlacement="on"
-          zoomEnabled={false}
-          tickWidth={0}
-          tickLength={20}
-          minorTicks={true}
-          minorTickColor="#CDD8D34C"
-          minorTickLength={3}
-          minorTickWidth={2}
-          minorGridLineWidth={0}
-          minorTickInterval={1000 * 60 * 60 * 24 * 1}
-          min={zoomed ? zoomMin : timespans[selectedTimespan].xMin} // don't include the last day
-          max={zoomed ? zoomMax : timespans[selectedTimespan].xMax}
+                y: 30,
+                style: {
+                  fontSize: "10px",
+                  color: "#CDD8D3",
+                },
+              }}
+              crosshair={{
+                width: 0.5,
+                color: COLORS.PLOT_LINE,
+                snap: false,
+              }}
+              tickColor="#5A6462"
+              tickmarkPlacement="on"
+              zoomEnabled={false}
+              tickPosition="outside"
+              tickWidth={2}
+              tickLength={15}
+              minorTicks={false}
+              minorTickColor="#5A6462"
+              minorTickLength={3}
+              minorTickWidth={2}
+              minorGridLineWidth={0}
+              // tickInterval={}
+              // tickInterval={tickInterval}
+              // minorTickInterval={timespans[selectedTimespan].xMax - timespans[selectedTimespan].xMin <= 40 * 24 * 3600 * 1000 ? 30 * 3600 * 1000 : 30 * 24 * 3600 * 1000}
+              minPadding={0}
+              maxPadding={0}
+              min={zoomed ? zoomMin : timespans[selectedTimespan].xMin} // don't include the last day
+              max={zoomed ? zoomMax : timespans[selectedTimespan].xMax}
 
 
-        />
-        <YAxis
-          opposite={false}
-          // showFirstLabel={true}
-          // showLastLabel={true}
-          type={master![MetricInfoKeyMap[type]][metric_id].log_default === true && ["absolute"].includes(selectedScale) ? "logarithmic" : "linear"}
-          gridLineWidth={1}
-          gridLineColor={"#5A6462"}
-          gridLineDashStyle={"ShortDot"}
-          gridZIndex={10}
-          min={metric_id === "profit" || (master![MetricInfoKeyMap[type]][metric_id].log_default === true && ["absolute"].includes(selectedScale)) ? null : 0}
-          max={selectedScale === "percentage" ? 100 : undefined}
-          showFirstLabel={true}
-          showLastLabel={true}
-          tickAmount={5}
-          zoomEnabled={false}
-          labels={{
-            y: 5,
-            style: {
-              color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
-            },
-            formatter: function (t: AxisLabelsFormatterContextObject) {
-              return formatNumber(t.value, true);
-            },
-          }}
-        >
-          {seriesData.map((series, i) => {
-            return (
-              <Series
-                // type={seriesType}
-                key={i}
-                // name={series.name}
-                // color={"#1DF7EF"}
-                // data={series.data.map((d: any) => [
-                //   d[0],
-                //   d[1]
-                // ])}
-                // lineWidth={1.5}
-                // fillColor={{
-                //   linearGradient: {
-                //     x1: 0,
-                //     y1: 0,
-                //     x2: 0,
-                //     y2: 1,
-                //   },
+            />
+            <YAxis
+              opposite={false}
+              type={selectedYAxisScale === "logarithmic" ? "logarithmic" : "linear"}
+              // showFirstLabel={true}
+              // showLastLabel={true}
+              // type={master[MetricInfoKeyMap[metric_type]][metric_id].log_default && ["absolute"].includes(selectedScale) ? "logarithmic" : "linear"}
+              gridLineWidth={1}
+              gridLineColor={"#5A6462"}
+              // gridLineDashStyle={"ShortDot"}
+              gridZIndex={10}
+              min={metric_id === "profit" || (master[MetricInfoKeyMap[metric_type]][metric_id].log_default && ["absolute"].includes(selectedScale)) ? null : 0}
+              max={selectedScale === "percentage" ? 100 : undefined}
+              showFirstLabel={true}
+              showLastLabel={true}
+              tickAmount={5}
+              zoomEnabled={false}
+              labels={{
+                y: 5,
+                x: -5,
+                align: "right",
+                overflow: "justify",
+                useHTML: true,
+                style: {
+                  color: "rgb(215, 223, 222)",
+                  fontSize: "10px",
+                  fontWeight: "700",
+                  fontFamily: "Fira Sans",
+                },
+                formatter: function (t: AxisLabelsFormatterContextObject) {
+                  return formatNumber(t.value, true);
+                },
+              }}
+            >
+              {seriesData.filter(series => !showEthereumMainnet ? series.name !== "ethereum" : true).map((series, i) => {
+                return (
+                  <Series
+                    // type={seriesType}
+                    key={i}
+                    // name={series.name}
+                    // color={"#1DF7EF"}
+                    // data={series.data.map((d: any) => [
+                    //   d[0],
+                    //   d[1]
+                    // ])}
+                    // lineWidth={1.5}
+                    // fillColor={{
+                    //   linearGradient: {
+                    //     x1: 0,
+                    //     y1: 0,
+                    //     x2: 0,
+                    //     y2: 1,
+                    //   },
 
-                //   stops: [
-                //     [0, "#10808CDD"],
-                //     [0.5, "#10808CDD"],
-                //     [1, "#1DF7EFDD"],
-                //   ],
-                // }}
-                {...series}
-              />
-            );
-          })}
-        </YAxis>
-      </HighchartsChart>
-    </HighchartsProvider>
+                    //   stops: [
+                    //     [0, "#10808CDD"],
+                    //     [0.5, "#10808CDD"],
+                    //     [1, "#1DF7EFDD"],
+                    //   ],
+                    // }}
+                    {...series}
+                  />
+                );
+              })}
+            </YAxis>
+          </HighchartsChart>
+        </HighchartsProvider>
+      </div>
+      <div className="absolute bottom-[53.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50">
+        <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
+      </div>
+    </div>
+  );
+}
 
+const YAxisScaleControls = () => {
+  const { selectedYAxisScale, setSelectedYAxisScale } = useMetricChartControls();
+
+  const handleScaleChange = (scale: string) => {
+    setSelectedYAxisScale(scale);
+  };
+  return (
+    <div className="relative z-[1] flex items-center w-fit p-[2px] pr-[6px] h-[28px] rounded-full bg-[#344240] select-none">
+      <div
+        className={`flex items-center justify-center h-full rounded-full heading-small-xxs cursor-pointer ${selectedYAxisScale === "logarithmic" ? "px-[8px] bg-[#1F2726]" : "px-[8px] "}`}
+        onClick={() => handleScaleChange("logarithmic")}
+      >
+
+        logarithmic
+      </div>
+      <div
+        className={`flex items-center justify-center h-full rounded-full heading-small-xxs cursor-pointer ${selectedYAxisScale === "linear" ? "px-[8px] bg-[#1F2726]" : "px-[8px] "}`}
+        onClick={() => handleScaleChange("linear")}
+      >
+        linear
+      </div>
+
+      <Tooltip placement="right">
+        <TooltipTrigger className="pl-[5px]">
+          <Icon icon="feather:info" className="size-[15px]" />
+        </TooltipTrigger>
+        <TooltipContent className="px-3 py-1.5 w-[400px] text-xs font-medium bg-[#4B5553] z-50 rounded-[15px]">
+          Linear scale shows equal value increments, while logarithmic scale represents values as powers of 10, useful for comparing data with large ranges
+        </TooltipContent>
+      </Tooltip>
+    </div>
   );
 }
 

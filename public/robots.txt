@@ -1,9 +1,0 @@
-# *
-User-agent: *
-Allow: /
-
-# Host
-Host: https://fees.growthepie.xyz
-
-# Sitemaps
-Sitemap: https://fees.growthepie.xyz/sitemap.xml

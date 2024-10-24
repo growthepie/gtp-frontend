@@ -534,6 +534,7 @@ export default function FeesChart({
         },
       },
       events: {
+        //@ts-ignore
         selection: function (event) {
           setZoomed(true);
         },
@@ -545,6 +546,7 @@ export default function FeesChart({
     },
     yAxis: {
       ...baseOptions.yAxis,
+      //@ts-ignore
       type: yScale,
       title: undefined,
       min: yScale === "percentage" ? 0 : undefined,
@@ -565,6 +567,7 @@ export default function FeesChart({
         },
       ],
       labels: {
+        //@ts-ignore
         ...baseOptions.yAxis.labels,
         formatter: function (t: Highcharts.AxisLabelsFormatterContextObject) {
           const isPercentage =

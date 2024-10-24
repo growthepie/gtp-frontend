@@ -1,5 +1,5 @@
-import { useMaster } from "@/contexts/MasterContext";
-import { Get_SupportedChainKeys } from "@/lib/chains";
+import { DALayerWithKey, useMaster } from "@/contexts/MasterContext";
+import { Chain, Get_SupportedChainKeys } from "@/lib/chains";
 import { DAMetricsURLs, MetricsURLs } from "@/lib/urls";
 import { ChainData, MetricData, MetricsResponse } from "@/types/api/MetricsResponse";
 import { intersection } from "lodash";
@@ -25,9 +25,11 @@ type Timespans = {
 
 type MetricDataContextType = {
   data: MetricData | undefined;
+  type: "fundamentals" | "data-availability";
   metric: string;
   metric_id: string;
   avg: boolean;
+  log_default: boolean;
   monthly_agg: string;
   chainKeys: string[];
   sources: string[];
@@ -35,13 +37,18 @@ type MetricDataContextType = {
   timespans: Timespans;
   minDailyUnix: number;
   maxDailyUnix: number;
+
+  allChains: Chain[] | DALayerWithKey[];
+  allChainsByKeys: { [key: string]: Chain } | { [key: string]: DALayerWithKey };
 };
 
 const MetricDataContext = createContext<MetricDataContextType>({
   data: undefined,
+  type: "fundamentals",
   metric: "",
   metric_id: "",
   avg: false,
+  log_default: false,
   monthly_agg: "sum",
   chainKeys: [],
   sources: [],
@@ -49,15 +56,17 @@ const MetricDataContext = createContext<MetricDataContextType>({
   timespans: {},
   minDailyUnix: 0,
   maxDailyUnix: 0,
+  allChains: [],
+  allChainsByKeys: {}
 });
 
 type MetricDataProviderProps = {
   children: React.ReactNode;
   metric: string;
-  type: string;
+  metric_type: "fundamentals" | "data-availability";
 };
 
-export const MetricDataProvider = ({ children, metric, type }: MetricDataProviderProps) => {
+export const MetricDataProvider = ({ children, metric, metric_type }: MetricDataProviderProps) => {
   const UrlsMap = {
     fundamentals: MetricsURLs,
     "data-availability": DAMetricsURLs,
@@ -68,36 +77,45 @@ export const MetricDataProvider = ({ children, metric, type }: MetricDataProvide
     "data-availability": "da",
   };
 
-  const url = UrlsMap[type][metric];
+  const url = UrlsMap[metric_type][metric];
   const storageKeys = {
-    timespan: `${StorageKeyPrefixMap[type]}Timespan`,
-    timeInterval: `${StorageKeyPrefixMap[type]}TimeInterval`,
-    scale: `${StorageKeyPrefixMap[type]}Scale`,
-    chains: `${StorageKeyPrefixMap[type]}Chains`,
-    showEthereumMainnet: `${StorageKeyPrefixMap[type]}ShowEthereumMainnet`,
+    timespan: `${StorageKeyPrefixMap[metric_type]}Timespan`,
+    timeInterval: `${StorageKeyPrefixMap[metric_type]}TimeInterval`,
+    scale: `${StorageKeyPrefixMap[metric_type]}Scale`,
+    chains: `${StorageKeyPrefixMap[metric_type]}Chains`,
+    showEthereumMainnet: `${StorageKeyPrefixMap[metric_type]}ShowEthereumMainnet`,
   }
 
-  const { AllChains, SupportedChainKeys, data: master } = useMaster();
+  const { data: master, SupportedChainKeys, AllChains, AllChainsByKeys, AllDALayers, AllDALayersByKeys, metrics, da_metrics } = useMaster();
 
   const {
     data,
     error,
     isLoading,
     isValidating,
-  } = useSWR<MetricsResponse>(UrlsMap[type][metric]);
+  } = useSWR<MetricsResponse>(UrlsMap[metric_type][metric]);
 
   const chainKeys = useMemo(() => {
-    if (!data)
-      return AllChains.filter((chain) =>
-        SupportedChainKeys.includes(chain.key),
-      ).map((chain) => chain.key);
+    if (metric_type === "fundamentals") {
+      if (!data)
+        return AllChains.filter((chain) =>
+          SupportedChainKeys.includes(chain.key),
+        ).map((chain) => chain.key);
 
-    return AllChains.filter(
+      return AllChains.filter(
+        (chain) =>
+          Object.keys(data.data.chains).includes(chain.key) &&
+          SupportedChainKeys.includes(chain.key)
+      ).map((chain) => chain.key);
+    }
+    if (!data)
+      return []
+
+    return AllDALayers.filter(
       (chain) =>
-        Object.keys(data.data.chains).includes(chain.key) &&
-        SupportedChainKeys.includes(chain.key),
+        Object.keys(data.data.chains).includes(chain.key)
     ).map((chain) => chain.key);
-  }, [data, AllChains, SupportedChainKeys]);
+  }, [metric_type, AllDALayers, data, AllChains, SupportedChainKeys]);
 
 
   const minDailyUnix = useMemo<number>(() => {
@@ -194,42 +212,35 @@ export const MetricDataProvider = ({ children, metric, type }: MetricDataProvide
     };
   }, [data, maxDailyUnix, minDailyUnix]);
 
-
-  const seriesData = useMemo(() => {
-    if (!data) return undefined;
-
-    const chainData = chainKeys.map((chainKey) => {
-      const chain = data.data.chains[chainKey];
-
-      return {
-        name: chainKey,
-        types: chain[Object.keys(chain)[0]].types,
-        data: chain[Object.keys(chain)[0]].data,
-      };
-    });
-
-    return chainData[0];
-  }, [data, chainKeys]);
-
   const metric_id = data?.data.metric_id || "";
+
+  const metricsDict = metric_type === "fundamentals" ? metrics : da_metrics;
+
+  const log_default = metricsDict[metric_id]?.log_default || false;
+
+  if (!data) return null;
 
   return (
     <MetricDataContext.Provider
       value={{
         data: data?.data || undefined,
+        type: metric_type,
         metric_id: metric_id,
         metric: metric,
         avg: data?.data.avg || false,
         monthly_agg: data?.data.monthly_agg || "sum",
+        log_default: log_default,
         chainKeys,
         sources: data?.data.source || [],
         timeIntervals: data ? intersection(
-          Object.keys(data.data.chains.arbitrum),
+          Object.keys(Object.values(data.data.chains)[0]),
           ["daily", "weekly", "monthly"],
         ) : [],
         timespans: timespans,
         minDailyUnix,
         maxDailyUnix,
+        allChains: metric_type === "fundamentals" ? AllChains : AllDALayers,
+        allChainsByKeys: metric_type === "fundamentals" ? AllChainsByKeys : AllDALayersByKeys,
       }}
     >
       {children}

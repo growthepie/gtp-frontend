@@ -168,7 +168,6 @@ const firaSans = Fira_Sans({
   variable: "--font-fira-sans",
   display: "swap",
   weight: ["300", "400", "500", "600", "700", "800"],
-  adjustFontFallback: false,
 });
 
 export default function RootLayout({

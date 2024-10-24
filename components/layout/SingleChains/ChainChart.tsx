@@ -596,8 +596,8 @@ export default function ChainChart({
 
         p[chainIndex][key] = {
           value,
-          prefix,
-          suffix,
+          prefix: prefix || "",
+          suffix: suffix || "",
         };
       });
     });

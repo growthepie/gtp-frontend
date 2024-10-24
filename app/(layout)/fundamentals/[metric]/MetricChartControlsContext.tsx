@@ -1,5 +1,5 @@
 import { useMaster } from "@/contexts/MasterContext";
-import { Get_SupportedChainKeys } from "@/lib/chains";
+import { Chain, Get_SupportedChainKeys } from "@/lib/chains";
 import { DAMetricsURLs, MetricsURLs } from "@/lib/urls";
 import { ChainData, MetricsResponse } from "@/types/api/MetricsResponse";
 import { intersection } from "lodash";
@@ -25,10 +25,16 @@ type MetricChartControlsContextType = {
   setSelectedTimespan: (timespan: string) => void;
   selectedTimeInterval: string;
   setSelectedTimeInterval: (timeInterval: string) => void;
+  selectedTimespansByTimeInterval: { [key: string]: string };
+  setSelectedTimespansByTimeInterval: (timespans: { [key: string]: string }) => void;
   selectedScale: string;
   setSelectedScale: (scale: string) => void;
+  selectedYAxisScale: string;
+  setSelectedYAxisScale: (scale: string) => void;
   selectedChains: string[];
   setSelectedChains: (chains: string[]) => void;
+  lastSelectedChains: string[];
+  setLastSelectedChains: (chains: string[]) => void;
   showEthereumMainnet: boolean;
   setShowEthereumMainnet: (show: boolean) => void;
 
@@ -66,9 +72,15 @@ const MetricChartControlsContext = createContext<MetricChartControlsContextType>
   setSelectedTimespan: () => { },
   selectedTimeInterval: "daily",
   setSelectedTimeInterval: () => { },
+  selectedTimespansByTimeInterval: {},
+  setSelectedTimespansByTimeInterval: () => { },
   selectedScale: "absolute",
   setSelectedScale: () => { },
+  selectedYAxisScale: "linear",
+  setSelectedYAxisScale: () => { },
   selectedChains: [],
+  lastSelectedChains: [],
+  setLastSelectedChains: () => { },
   setSelectedChains: () => { },
   showEthereumMainnet: false,
   setShowEthereumMainnet: () => { },
@@ -95,7 +107,7 @@ const MetricChartControlsContext = createContext<MetricChartControlsContextType>
 
 type MetricChartControlsProviderProps = {
   children: React.ReactNode;
-  type: string;
+  metric_type: "fundamentals" | "data-availability";
   is_embed?: boolean;
   embed_start_timestamp?: number;
   embed_end_timestamp?: number;
@@ -103,7 +115,7 @@ type MetricChartControlsProviderProps = {
 
 export const MetricChartControlsProvider = ({
   children,
-  type,
+  metric_type,
   is_embed = false,
   embed_start_timestamp = undefined,
   embed_end_timestamp = undefined,
@@ -119,16 +131,18 @@ export const MetricChartControlsProvider = ({
     "data-availability": "da",
   };
 
-  const { AllChains, SupportedChainKeys, data: master } = useMaster();
-  const { metric_id } = useMetricData();
+  const { SupportedChainKeys } = useMaster();
+  const { metric_id, allChains, allChainsByKeys, log_default } = useMetricData();
 
-  const url = UrlsMap[type][metric_id];
+  const url = UrlsMap[metric_type][metric_id];
   const storageKeys = {
-    timespan: `${StorageKeyPrefixMap[type]}Timespan`,
-    timeInterval: `${StorageKeyPrefixMap[type]}TimeInterval`,
-    scale: `${StorageKeyPrefixMap[type]}Scale`,
-    chains: `${StorageKeyPrefixMap[type]}Chains`,
-    showEthereumMainnet: `${StorageKeyPrefixMap[type]}ShowEthereumMainnet`,
+    timespan: `${StorageKeyPrefixMap[metric_type]}Timespan`,
+    timeInterval: `${StorageKeyPrefixMap[metric_type]}TimeInterval`,
+    timespanByInterval: `${StorageKeyPrefixMap[metric_type]}TimespanByInterval`,
+    scale: `${StorageKeyPrefixMap[metric_type]}Scale`,
+    chains: `${StorageKeyPrefixMap[metric_type]}Chains`,
+    lastChains: `${StorageKeyPrefixMap[metric_type]}LastChains`,
+    showEthereumMainnet: `${StorageKeyPrefixMap[metric_type]}ShowEthereumMainnet`,
   }
 
 
@@ -138,16 +152,25 @@ export const MetricChartControlsProvider = ({
     error,
     isLoading,
     isValidating,
-  } = useSWR<MetricsResponse>(UrlsMap[type][metric_id]);
+  } = useSWR<MetricsResponse>(UrlsMap[metric_type][metric_id]);
 
-  const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
-    storageKeys["timespan"],
+  const [selectedTimespan, setSelectedTimespan] = useState(
+    // storageKeys["timespan"],
     "365d",
   );
 
-  const [selectedTimeInterval, setSelectedTimeInterval] = useSessionStorage(
-    storageKeys["timeInterval"],
+  const [selectedTimeInterval, setSelectedTimeInterval] = useState(
+    // storageKeys["timeInterval"],
     "daily",
+  );
+
+  const [selectedTimespansByTimeInterval, setSelectedTimespansByTimeInterval] = useState(
+    // storageKeys["timespanByInterval"], 
+    {
+      daily: "365d",
+      monthly: "12m",
+      [selectedTimeInterval]: selectedTimespan,
+    }
   );
 
   const [intervalShown, setIntervalShown] = useState<{
@@ -157,15 +180,30 @@ export const MetricChartControlsProvider = ({
     label: string;
   } | null>(null);
 
-  const [selectedScale, setSelectedScale] = useSessionStorage(
-    storageKeys["scale"],
+  const [selectedScale, setSelectedScale] = useState(
+    // storageKeys["scale"],
     "absolute",
   );
 
+  const [selectedYAxisScale, setSelectedYAxisScale] = useState(log_default ? "logarithmic" : "linear");
+
   const [selectedChains, setSelectedChains] = useSessionStorage(
     storageKeys["chains"],
-    [...SupportedChainKeys, "ethereum"],
+    metric_type === "fundamentals" ? [...SupportedChainKeys.filter(chain => ["all_l2s", "multiple"].includes(chain))] : allChains.map((chain) => chain.key),
   );
+
+  const [lastSelectedChains, setLastSelectedChains] = useState(
+    // storageKeys["lastChains"],
+    metric_type === "fundamentals" ? allChains.filter(
+      (chain: Chain) =>
+        (chain.ecosystem.includes("all-chains") &&
+          ["arbitrum", "optimism", "base", "linea", "zksync_era"].includes(
+            chain.key,
+          )) ||
+        chain.key === "ethereum",
+    ).map((chain) => chain.key) : allChains.map((chain) => chain.key),
+  );
+
 
   const [showEthereumMainnet, setShowEthereumMainnet] = useSessionStorage(
     storageKeys["showEthereumMainnet"],
@@ -203,12 +241,16 @@ export const MetricChartControlsProvider = ({
 
   // add or remove ethereum from selected chains based on showEthereumMainnet
   useEffect(() => {
+
+    if (metric_type === "data-availability")
+      return;
+
     if (showEthereumMainnet) {
       setSelectedChains([...selectedChains, "ethereum"]);
     } else {
       setSelectedChains(selectedChains.filter((chain) => chain !== "ethereum"));
     }
-  }, [showEthereumMainnet]);
+  }, [metric_type, showEthereumMainnet]);
 
   return (
     <MetricChartControlsContext.Provider
@@ -217,10 +259,17 @@ export const MetricChartControlsProvider = ({
         setSelectedTimespan,
         selectedTimeInterval,
         setSelectedTimeInterval,
+        selectedTimespansByTimeInterval,
+        //@ts-ignore
+        setSelectedTimespansByTimeInterval,
         selectedScale,
         setSelectedScale,
+        selectedYAxisScale: selectedYAxisScale,
+        setSelectedYAxisScale: setSelectedYAxisScale,
         selectedChains,
         setSelectedChains,
+        lastSelectedChains,
+        setLastSelectedChains,
         showEthereumMainnet,
         setShowEthereumMainnet,
         timeIntervalKey,

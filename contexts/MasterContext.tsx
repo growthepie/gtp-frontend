@@ -1,18 +1,20 @@
 "use client";
 import { Chain, Get_AllChainsByKeys, Get_AllChainsNavigationItems, Get_SupportedChainKeys } from "@/lib/chains";
 import { GloHolderURL, MasterURL } from "@/lib/urls";
-import { DataAvailabilityLayerData, DataAvailabilityLayers, MasterResponse } from "@/types/api/MasterResponse";
+import { DataAvailabilityLayerData, DataAvailabilityLayers, MasterResponse, Metrics, MetricInfo, UnitSchema, Chains } from "@/types/api/MasterResponse";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { ImportChainIcons } from "@/lib/chainIcons";
 import useSWR from "swr";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 
+export type DALayerWithKey = (DataAvailabilityLayerData & { key: string, label: string });
+
 type MasterContextType = {
   data: MasterResponse | undefined;
   AllChains: Chain[];
   AllChainsByKeys: { [key: string]: Chain };
-  AllDALayers: (DataAvailabilityLayerData & { key: string, label: string })[];
-  AllDALayersByKeys: { [key: string]: DataAvailabilityLayerData & { key: string, label: string } };
+  AllDALayers: DALayerWithKey[];
+  AllDALayersByKeys: { [key: string]: DALayerWithKey };
   EnabledChainsByKeys: { [key: string]: Chain };
   SupportedChainKeys: string[];
   ChainsNavigationItems: {
@@ -29,8 +31,13 @@ type MasterContextType = {
       excludeFromSitemap: boolean;
     }[];
   } | null;
-  formatMetric: (value: number, unit: string) => string;
-  getUnits: (metric: string) => any;
+  formatMetric: (value: number, unit: string, unitType: string, type?: string) => string;
+  // getUnitKeys: (metric: string, type?: string) => (string[] | void);
+  // getMetricInfo: (metric: string, type?: string) => (MetricInfo | void);
+  metrics: Metrics;
+  da_metrics: Metrics;
+  chains: Chains;
+  da_layers: DataAvailabilityLayers;
 };
 
 const MasterContext = createContext<MasterContextType | null>({
@@ -42,16 +49,21 @@ const MasterContext = createContext<MasterContextType | null>({
   EnabledChainsByKeys: {},
   SupportedChainKeys: [],
   ChainsNavigationItems: null,
-  formatMetric: () => "MasterProvider: formatMetric not found",
-  getUnits: () => "MasterProvider: getUnits not found",
+  formatMetric: () => "",
+  // getUnitKeys: () => [],
+  // getMetricInfo: () => ({} as MetricInfo),
+  metrics: {},
+  da_metrics: {},
+  chains: {},
+  da_layers: {},
 });
 
 export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
   const { data, isLoading } = useSWR<MasterResponse>(MasterURL);
   const [AllChains, setAllChains] = useState<Chain[]>([]);
   const [AllChainsByKeys, setAllChainsByKeys] = useState<{ [key: string]: Chain }>({});
-  const [AllDALayers, setDALayers] = useState<(DataAvailabilityLayerData & { key: string, label: string })[]>([]);
-  const [AllDALayersByKeys, setDALayersByKeys] = useState<{ [key: string]: DataAvailabilityLayerData & { key: string, label: string } }>({});
+  const [AllDALayers, setDALayers] = useState<DALayerWithKey[]>([]);
+  const [AllDALayersByKeys, setDALayersByKeys] = useState<{ [key: string]: DALayerWithKey }>({});
   const [EnabledChainsByKeys, setEnabledChainsByKeys] = useState<{ [key: string]: Chain }>({});
   const [ChainsNavigationItems, setChainsNavigationItems] = useState<any>({});
   const { data: glo_dollar_data } = useSWR(GloHolderURL);
@@ -97,7 +109,7 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [data]);
 
-  const formatMetric = useCallback((value: number, metric: string, unitType: string = "value") => {
+  const formatMetric = useCallback((value: number, metric: string, unitType: string = "value", type = "fundamentals") => {
     if (metric === "gas_fees_usd") {
       metric = "fees";
       unitType = "usd";
@@ -107,7 +119,7 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
       return `MasterProvider: data not found`;
     }
 
-    const metricInfo = data.metrics[metric];
+    const metricInfo = type === "fundamentals" ? data.metrics[metric] : data.da_metrics[metric];
 
     if (!metricInfo) {
       return `MasterProvider: metricInfo not found: ${metric}`;
@@ -127,27 +139,6 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
     })}${suffix || ""}`;
   }, [data]);
 
-  const getUnits = useCallback((metric: string) => {
-    if (!data) {
-      return `MasterProvider: data not found`;
-    }
-
-    const metricInfo = data.metrics[metric];
-    if (!metricInfo) {
-      console.error(`MasterProvider: metricInfo not found: ${metric}`);
-      return {};
-    }
-
-    if (!metricInfo.units) {
-      console.error(`MasterProvider: metricInfo.units not found: ${metric}`);
-      return {};
-    }
-
-
-
-    return metricInfo.units;
-  }, [data]);
-
   return (
     <MasterContext.Provider
       value={{
@@ -160,7 +151,12 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
         SupportedChainKeys: Get_SupportedChainKeys(data),
         ChainsNavigationItems,
         formatMetric,
-        getUnits
+        // getUnitKeys,
+        // getMetricInfo,
+        metrics: data?.metrics || {},
+        da_metrics: data?.da_metrics || {},
+        chains: data?.chains || {},
+        da_layers: data?.da_layers || {},
       }}
     >
       {data && !isLoading && AllChains.length > 0 ? children : null}
