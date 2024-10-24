@@ -254,14 +254,16 @@ export default function LandingMetricsTable({
                   }}
                 >
                   <div className="sticky z-[3] -left-[12px] md:-left-[48px] w-[26px] flex items-center justify-center overflow-visible">
-                    <div className="absolute z-[3] -left-[5px] h-[32px] w-[40px] pl-[9px] flex items-center justify-start rounded-l-full bg-gradient-to-r from-forest-1000 via-forest-1000 to-transparent">
+                    <div
+                      className="absolute z-[3] -left-[5px] h-[32px] w-[40px] pl-[9px] flex items-center justify-start rounded-l-full bg-[radial-gradient(circle_at_-32px_16px,_#151A19_0%,_#151A19_72.5%,_transparent_90%)]"
+                    >
                       <GridTableChainIcon origin_key={item.chain.key} />
                     </div>
                   </div>
-                  <div className="text-[14px] group-hover:underline">
+                  <div className="text-xs group-hover:underline">
                     {data.chains[item.chain.key].chain_name}
                   </div>
-                  <div className="text-[12px]">
+                  <div className="text-xs">
                     {data.chains[item.chain.key].purpose && (
                       <>{data.chains[item.chain.key].purpose}</>
                     )}
@@ -311,7 +313,7 @@ export default function LandingMetricsTable({
             );
           })}
         </div>
-        <div className="h-[30px]" />
+        {/* <div className="h-[30px]" /> */}
       </>
     </>
   );
