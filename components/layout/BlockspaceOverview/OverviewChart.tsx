@@ -399,7 +399,7 @@ export default function OverviewChart({
       .reverse();
   }, [master]);
 
-  console.log("categoriesList", categoriesList);
+
 
   const categoriesAllCatChartListOrder = useMemo(() => {
     return categoriesList.reverse();
@@ -653,6 +653,8 @@ export default function OverviewChart({
               theme ?? "dark"
             ][0];
 
+      
+
           let prefix =
             showPercentage || !showPrice || selectedMode.includes("txcount")
               ? ""
@@ -701,7 +703,7 @@ export default function OverviewChart({
 
       return tooltip + tooltipPoints + tooltipEnd;
     },
-    [valuePrefix, reversePerformer, showUsd, selectedValue, selectedChain],
+    [valuePrefix, reversePerformer, showUsd, selectedValue, selectedChain, selectedMode],
   );
 
   const decimalPercentageToHex = (percentage: number) => {
@@ -792,7 +794,7 @@ export default function OverviewChart({
     highchartsPatternFill(Highcharts);
   }, []);
 
-  console.log(selectedMode);
+
   return (
     <>
       <div className="w-full h-[249px] flex items-center">
