@@ -91,14 +91,16 @@ const Error = ({
       <div className="flex flex-col items-center justify-center w-full mt-[85px] md:mt-[125px] -mb-[100px] gap-y-[15px]">
         <div
           className={`flex flex-col bg-[#1F2726] border-forest-400 rounded-[40px] p-[30px] gap-y-[15px] 
-          ${navIndex === 1 || navIndex === 3 ? "h-[579px]" : "h-[519px]"} ${isMobile ? "w-[95%]" : "w-[587px]"
-            }`}
+          ${navIndex === 1 || navIndex === 3 ? "h-[579px]" : "h-[519px]"} ${
+            isMobile ? "w-[95%]" : "w-[587px]"
+          }`}
         >
           <div className="flex items-center gap-x-[10px]">
             <Icon icon="gtp:error" className="w-[24px] h-[25px]" />
             <div
-              className={` font-bold leading-[133%] ${isMobile ? "h-[28px] text-[20px]" : "h-[32px] text-[24px]"
-                }`}
+              className={` font-bold leading-[133%] ${
+                isMobile ? "h-[28px] text-[20px]" : "h-[32px] text-[24px]"
+              }`}
             >
               {header}
             </div>
@@ -115,10 +117,12 @@ const Error = ({
             </Link>
             {randIndices && navIndex && (
               <Link
-                className={`flex self-center items-center p-[15px] w-[299px]  bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px] hover:cursor-pointer ${isMobile ? "h-[50px]" : "h-[54px]"
-                  }`}
-                href={`/${pageGroup}/${navigationItems[navIndex]["options"][randIndices[0]]["urlKey"]
-                  }`}
+                className={`flex self-center items-center p-[15px] w-[299px]  bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px] hover:cursor-pointer ${
+                  isMobile ? "h-[50px]" : "h-[54px]"
+                }`}
+                href={`/${pageGroup}/${
+                  navigationItems[navIndex]["options"][randIndices[0]]["urlKey"]
+                }`}
               >
                 <Icon
                   icon={navigationItems[navIndex]["icon"]}
@@ -135,8 +139,9 @@ const Error = ({
               randIndices.map((index) => (
                 <Link
                   key={index}
-                  className={`flex self-center items-center p-[15px] w-[250px]  bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${isMobile ? "h-[50px]" : "h-[54px]"
-                    }`}
+                  className={`flex self-center items-center p-[15px] w-[250px]  bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${
+                    isMobile ? "h-[50px]" : "h-[54px]"
+                  }`}
                   href={`/${pageGroup}/${navigationItems[navIndex]["options"][index]["urlKey"]}`}
                 >
                   <Icon
@@ -147,8 +152,9 @@ const Error = ({
                 </Link>
               ))}
             <a
-              className={`flex self-center items-center p-[15px] w-[299px] bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${isMobile ? "h-[50px]" : "h-[54px]"
-                }`}
+              className={`flex self-center items-center p-[15px] w-[299px] bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${
+                isMobile ? "h-[50px]" : "h-[54px]"
+              }`}
               href={`https://docs.growthepie.xyz/`}
             >
               <Icon icon="gtp:book-open" className="w-[24px] h-[24px]" />
@@ -156,8 +162,9 @@ const Error = ({
             </a>
             {!navIndex && (
               <a
-                className={`flex self-center items-center p-[15px] w-[299px]  bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${isMobile ? "h-[50px]" : "h-[54px]"
-                  }`}
+                className={`flex self-center items-center p-[15px] w-[299px]  bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${
+                  isMobile ? "h-[50px]" : "h-[54px]"
+                }`}
                 href={`https://mirror.xyz/blog.growthepie.eth`}
               >
                 <Icon icon="gtp:blog" className="w-[25px] h-[25px]" />
@@ -165,9 +172,10 @@ const Error = ({
               </a>
             )}
             <Link
-              className={`flex self-center items-center p-[15px] w-[299px]  bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${isMobile ? "h-[50px]" : "h-[54px]"
-                }`}
-              href={`/optimism-retropgf-3`}
+              className={`flex self-center items-center p-[15px] w-[299px]  bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${
+                isMobile ? "h-[50px]" : "h-[54px]"
+              }`}
+              href={`/trackers/optimism-retropgf-3`}
             >
               <Icon
                 icon="gtp:optimism-logo-monochrome"
