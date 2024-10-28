@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <PageRoot className="pt-[45px]">
+    <PageRoot className="pt-[45px] md:pt-[30px]">
       <PageContainer paddingY="none">
         <Section>
           {/* <div

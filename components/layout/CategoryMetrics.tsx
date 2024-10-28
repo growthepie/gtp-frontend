@@ -44,6 +44,7 @@ import {
   GridTableRow,
 } from "@/components/layout/GridTable";
 import { LabelsProjectsResponse } from "@/types/Labels/ProjectsResponse";
+import "@/app/highcharts.axis.css"
 
 export default function CategoryMetrics({
   data,
@@ -301,10 +302,10 @@ export default function CategoryMetrics({
           item === "all_l2s"
             ? true
             : isMaster
-            ? chainEcosystemFilter === "all-chains"
-              ? true
-              : AllChainsByKeys[item].ecosystem.includes(chainEcosystemFilter)
-            : false;
+              ? chainEcosystemFilter === "all-chains"
+                ? true
+                : AllChainsByKeys[item].ecosystem.includes(chainEcosystemFilter)
+              : false;
 
         return item !== "types" && isSupported && passEcosystem;
       })
@@ -313,8 +314,8 @@ export default function CategoryMetrics({
         selectedChains[itemA] === selectedChains[itemB]
           ? 0
           : selectedChains[itemA]
-          ? -1
-          : 1,
+            ? -1
+            : 1,
       );
   }, [chainValues, selectedChains, chainEcosystemFilter]);
 
@@ -331,10 +332,10 @@ export default function CategoryMetrics({
           item === "all_l2s"
             ? true
             : isMaster
-            ? chainEcosystemFilter === "all-chains"
-              ? true
-              : AllChainsByKeys[item].ecosystem.includes(chainEcosystemFilter)
-            : false;
+              ? chainEcosystemFilter === "all-chains"
+                ? true
+                : AllChainsByKeys[item].ecosystem.includes(chainEcosystemFilter)
+              : false;
 
         return item !== "types" && isSupported && passEcosystem;
       })
@@ -343,8 +344,8 @@ export default function CategoryMetrics({
         selectedChains[itemA] === selectedChains[itemB]
           ? 0
           : selectedChains[itemA]
-          ? -1
-          : 1,
+            ? -1
+            : 1,
       );
 
     // Insert the placeholder array
@@ -510,12 +511,12 @@ export default function CategoryMetrics({
         currChain === "all_l2s"
           ? true
           : isMaster
-          ? chainEcosystemFilter === "all-chains"
-            ? true
-            : AllChainsByKeys[currChain].ecosystem.includes(
+            ? chainEcosystemFilter === "all-chains"
+              ? true
+              : AllChainsByKeys[currChain].ecosystem.includes(
                 chainEcosystemFilter,
               )
-          : false;
+            : false;
       if (
         isSupported &&
         passEcosystem &&
@@ -710,7 +711,7 @@ export default function CategoryMetrics({
         (subcategory) => {
           const subcategoryData =
             data[selectedCategory].subcategories[
-              selectedSubcategories[selectedCategory][subcategory]
+            selectedSubcategories[selectedCategory][subcategory]
             ];
           const subcategoryChains =
             subcategoryData.aggregated[selectedTimespan].data;
@@ -812,8 +813,8 @@ export default function CategoryMetrics({
           selectedCategory === "unlabeled" && contract.sub_category_key === null
             ? true
             : selectedSubcategories[contract.main_category_key]?.includes(
-                contract.sub_category_key,
-              );
+              contract.sub_category_key,
+            );
         const isCategoryMatched =
           contract.main_category_key === selectedCategory;
         const filterChains =
@@ -1108,15 +1109,14 @@ export default function CategoryMetrics({
                   </TopRowChild>
                 ))}
                 <div
-                  className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[63px] right-[22px] md:right-[65px] md:top-[68px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${
-                    !isMobile
-                      ? ["max", "180d"].includes(selectedTimespan)
-                        ? "translate-y-[calc(-100%+3px)]"
-                        : "translate-y-0 "
-                      : ["max", "180d"].includes(selectedTimespan)
+                  className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[63px] right-[22px] md:right-[65px] md:top-[68px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${!isMobile
+                    ? ["max", "180d"].includes(selectedTimespan)
+                      ? "translate-y-[calc(-100%+3px)]"
+                      : "translate-y-0 "
+                    : ["max", "180d"].includes(selectedTimespan)
                       ? "translate-y-[calc(40%+3px)]"
                       : "-translate-y-[calc(40%+3px)]"
-                  }`}
+                    }`}
                 >
                   <div className="font-medium bg-forest-100 dark:bg-forest-1000 rounded-b-2xl rounded-t-none lg:rounded-b-none lg:rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
                     7-day rolling average
@@ -1182,11 +1182,10 @@ export default function CategoryMetrics({
                             />
                           ) : (
                             <div
-                              className={`flex items-center transition-opacity duration-[1500ms] ${
-                                updatePlaceholderOpacity
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              }`}
+                              className={`flex items-center transition-opacity duration-[1500ms] ${updatePlaceholderOpacity
+                                ? "opacity-100"
+                                : "opacity-0"
+                                }`}
                             >
                               <div className="flex-grow border-t border-[#5A6462]"></div>
                               <span className="mx-4 text-[12px] font-semibold text-[#CDD8D3]">
@@ -1208,7 +1207,7 @@ export default function CategoryMetrics({
                       stack={selectedChartType !== "absolute"}
                       types={
                         selectedCategory === null ||
-                        selectedCategory === "Chains"
+                          selectedCategory === "Chains"
                           ? data.native_transfers[dailyKey].types
                           : data[selectedCategory][dailyKey].types
                       }
@@ -1273,11 +1272,10 @@ export default function CategoryMetrics({
               {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
               {/* toggle ETH */}
               <button
-                className={`px-[16px] py-[4px]  rounded-full ${
-                  selectedChartType === "absolute"
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                }`}
+                className={`px-[16px] py-[4px]  rounded-full ${selectedChartType === "absolute"
+                  ? "bg-forest-500 dark:bg-forest-1000"
+                  : "hover:bg-forest-500/10"
+                  }`}
                 onClick={() => {
                   setSelectedChartType("absolute");
                 }}
@@ -1285,11 +1283,10 @@ export default function CategoryMetrics({
                 Absolute
               </button>
               <button
-                className={`px-[16px] py-[4px]  rounded-full ${
-                  selectedChartType === "stacked"
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                }`}
+                className={`px-[16px] py-[4px]  rounded-full ${selectedChartType === "stacked"
+                  ? "bg-forest-500 dark:bg-forest-1000"
+                  : "hover:bg-forest-500/10"
+                  }`}
                 onClick={() => {
                   setSelectedChartType("stacked");
                 }}
@@ -1297,11 +1294,10 @@ export default function CategoryMetrics({
                 Stacked
               </button>
               <button
-                className={`px-[16px] py-[4px]  rounded-full ${
-                  selectedChartType === "percentage"
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                }`}
+                className={`px-[16px] py-[4px]  rounded-full ${selectedChartType === "percentage"
+                  ? "bg-forest-500 dark:bg-forest-1000"
+                  : "hover:bg-forest-500/10"
+                  }`}
                 onClick={() => {
                   setSelectedChartType("percentage");
                 }}
@@ -1322,11 +1318,10 @@ export default function CategoryMetrics({
           </Container>
           <HorizontalScrollContainer paddingBottom={16}>
             <div
-              className={`fixed inset-0 z-[90] flex items-center justify-center transition-opacity duration-200  ${
-                selectedContract
-                  ? "opacity-80"
-                  : "opacity-0 pointer-events-none"
-              }`}
+              className={`fixed inset-0 z-[90] flex items-center justify-center transition-opacity duration-200  ${selectedContract
+                ? "opacity-80"
+                : "opacity-0 pointer-events-none"
+                }`}
             >
               <div
                 className={`absolute inset-0 bg-white dark:bg-black`}
@@ -1806,8 +1801,8 @@ export default function CategoryMetrics({
                           {ownerProjectDisplayNameToProjectData[
                             sortedContracts[key].project_name
                           ] && (
-                            <div className="flex gap-x-[5px] ">
-                              {/* <div className="flex 3xl:hidden">
+                              <div className="flex gap-x-[5px] ">
+                                {/* <div className="flex 3xl:hidden">
                                 <Icon
                                   icon={copiedAddress === sortedContracts[key].project_name.address ? "feather:check-circle" : "feather:copy"}
                                   className="w-[14px] h-[14px] cursor-pointer"
@@ -1816,70 +1811,68 @@ export default function CategoryMetrics({
                                   }}
                                 />
                               </div> */}
-                              <div className="flex items-center gap-x-[5px]">
-                                <div className="h-[15px] w-[15px]">
-                                  {ownerProjectDisplayNameToProjectData[
-                                    sortedContracts[key].project_name
-                                  ][5] && (
-                                    <a
-                                      href={
-                                        ownerProjectDisplayNameToProjectData[
-                                          sortedContracts[key].project_name
-                                        ][5]
-                                      }
-                                      target="_blank"
-                                      className="group flex items-center gap-x-[5px] text-xs"
-                                    >
-                                      <Icon
-                                        icon="feather:monitor"
-                                        className="w-[15px] h-[15px]"
-                                      />
-                                    </a>
-                                  )}
-                                </div>
-                                <div className="h-[15px] w-[15px]">
-                                  {ownerProjectDisplayNameToProjectData[
-                                    sortedContracts[key].project_name
-                                  ][4] && (
-                                    <a
-                                      href={`https://x.com/${
-                                        ownerProjectDisplayNameToProjectData[
-                                          sortedContracts[key].project_name
-                                        ][4]
-                                      }`}
-                                      target="_blank"
-                                      className="group flex items-center gap-x-[5px] text-xs"
-                                    >
-                                      <Icon
-                                        icon="ri:twitter-x-fill"
-                                        className="w-[15px] h-[15px]"
-                                      />
-                                    </a>
-                                  )}
-                                </div>
-                                <div className="h-[15px] w-[15px]">
-                                  {ownerProjectDisplayNameToProjectData[
-                                    sortedContracts[key].project_name
-                                  ][3] && (
-                                    <a
-                                      href={`https://github.com/${
-                                        ownerProjectDisplayNameToProjectData[
-                                          sortedContracts[key].project_name
-                                        ][3]
-                                      }`}
-                                      target="_blank"
-                                      className="group flex items-center gap-x-[5px] text-xs"
-                                    >
-                                      <Icon
-                                        icon="ri:github-fill"
-                                        className="w-[15px] h-[15px]"
-                                      />
-                                    </a>
-                                  )}
+                                <div className="flex items-center gap-x-[5px]">
+                                  <div className="h-[15px] w-[15px]">
+                                    {ownerProjectDisplayNameToProjectData[
+                                      sortedContracts[key].project_name
+                                    ][5] && (
+                                        <a
+                                          href={
+                                            ownerProjectDisplayNameToProjectData[
+                                            sortedContracts[key].project_name
+                                            ][5]
+                                          }
+                                          target="_blank"
+                                          className="group flex items-center gap-x-[5px] text-xs"
+                                        >
+                                          <Icon
+                                            icon="feather:monitor"
+                                            className="w-[15px] h-[15px]"
+                                          />
+                                        </a>
+                                      )}
+                                  </div>
+                                  <div className="h-[15px] w-[15px]">
+                                    {ownerProjectDisplayNameToProjectData[
+                                      sortedContracts[key].project_name
+                                    ][4] && (
+                                        <a
+                                          href={`https://x.com/${ownerProjectDisplayNameToProjectData[
+                                            sortedContracts[key].project_name
+                                          ][4]
+                                            }`}
+                                          target="_blank"
+                                          className="group flex items-center gap-x-[5px] text-xs"
+                                        >
+                                          <Icon
+                                            icon="ri:twitter-x-fill"
+                                            className="w-[15px] h-[15px]"
+                                          />
+                                        </a>
+                                      )}
+                                  </div>
+                                  <div className="h-[15px] w-[15px]">
+                                    {ownerProjectDisplayNameToProjectData[
+                                      sortedContracts[key].project_name
+                                    ][3] && (
+                                        <a
+                                          href={`https://github.com/${ownerProjectDisplayNameToProjectData[
+                                            sortedContracts[key].project_name
+                                          ][3]
+                                            }`}
+                                          target="_blank"
+                                          className="group flex items-center gap-x-[5px] text-xs"
+                                        >
+                                          <Icon
+                                            icon="ri:github-fill"
+                                            className="w-[15px] h-[15px]"
+                                          />
+                                        </a>
+                                      )}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          )}
+                            )}
                         </div>
                         <div className="flex justify-between gap-x-[10px]">
                           {sortedContracts[key].name ? (
@@ -1918,10 +1911,9 @@ export default function CategoryMetrics({
                               </div>
                             </div>
                             <Link
-                              href={`${
-                                master.chains[sortedContracts[key].chain]
-                                  .block_explorer
-                              }address/${sortedContracts[key].address}`}
+                              href={`${master.chains[sortedContracts[key].chain]
+                                .block_explorer
+                                }address/${sortedContracts[key].address}`}
                               rel="noopener noreferrer"
                               target="_blank"
                             >
@@ -1976,240 +1968,47 @@ export default function CategoryMetrics({
                         <div>
                           {
                             master.blockspace_categories.main_categories[
-                              sortedContracts[key].main_category_key
+                            sortedContracts[key].main_category_key
                             ]
                           }
                         </div>
                         <div>
                           {
                             master.blockspace_categories.sub_categories[
-                              sortedContracts[key].sub_category_key
+                            sortedContracts[key].sub_category_key
                             ]
                           }
                         </div>
-                        <div className="flex items-center justify-end">
+                        <div className="flex items-center justify-end numbers-xs">
                           {selectedMode.includes("gas_fees_")
                             ? showUsd
                               ? `$${Number(
-                                  sortedContracts[
-                                    key
-                                  ].gas_fees_absolute_usd.toFixed(0),
-                                ).toLocaleString("en-GB")}`
-                              : `${Number(
-                                  sortedContracts[
-                                    key
-                                  ].gas_fees_absolute_eth.toFixed(0),
-                                ).toLocaleString("en-GB")} Ξ`
-                            : Number(
-                                sortedContracts[key].txcount_absolute,
-                              ).toLocaleString("en-GB")}
-                        </div>
-
-                        {/* <div className="flex w-[100%] items-center ml-4 mr-8">
-                          <div className="flex items-center h-10 !w-[34%] relative">
-                            <div className="absolute right-0 top-0 bottom-0 w-0 group-hover:w-4 bg-gradient-to-r from-transparent to-forest-300 dark:to-forest-800 z-10"></div>
-                            <div className="flex-none mr-[36px]">
-                              <Icon
-                                icon={`gtp:${sortedContracts[
+                                sortedContracts[
                                   key
-                                ].chain.replace("_", "-")}-logo-monochrome`}
-                                className="w-[29px] h-[29px]"
-                                style={{
-                                  color:
-                                    AllChainsByKeys[
-                                      sortedContracts[key].chain
-                                    ].colors[theme ?? "dark"][1],
-                                }}
-                              />
-                            </div>
-                            <div className="flex flex-grow">
-                              <div
-                                className={`flex flex-none items-center space-x-2 w-0 ${copyContract ? " delay-1000" : ""
-                                  } overflow-clip transition-all duration-200 ease-in-out ${sortedContracts[key].name &&
-                                    sortedContracts[key].project_name
-                                    ? "group-hover:w-[48px]"
-                                    : "group-hover:w-[96px]"
-                                  }`}
-                              >
-                                {!(
-                                  sortedContracts[key].name &&
-                                  sortedContracts[key].project_name
-                                ) && (
-                                    <div
-                                      className="rounded-full p-2 bg-forest-50 dark:bg-forest-1000 text-black dark:text-white cursor-pointer"
-                                      onClick={() => {
-                                        setSelectedContract(
-                                          sortedContracts[key],
-                                        );
-                                        setIsContractLabelModalOpen(true);
-                                      }}
-                                    >
-                                      <Icon
-                                        icon="gtp:add-tag"
-                                        className="w-6 h-6"
-                                      />
-
-                                    </div>
-                                  )}
-                                <div
-                                  className={`rounded-full p-2 ${copyContract
-                                    ? "bg-forest-50/60 dark:bg-forest-1000/60"
-                                    : "bg-forest-50 dark:bg-forest-1000"
-                                    } text-white cursor-pointer`}
-                                  onClick={() => {
-                                    navigator.clipboard.writeText(
-                                      sortedContracts[key].address,
-                                    );
-                                    setCopyContract(true);
-                                    setTimeout(() => {
-                                      setCopyContract(false);
-                                    }, 1000);
-                                  }}
-                                >
-                                  {!copyContract && (
-                                    <Icon
-                                      icon="feather:copy"
-                                      className="w-5 h-5"
-                                    />
-                                  )}
-                                  {copyContract && (
-                                    <Icon
-                                      icon="feather:check"
-                                      className="w-5 h-5"
-                                    />
-                                  )}
-                                </div>
-                              </div>
-                              <div
-                                className={`flex flex-col flex-grow h-full justify-start text-ellipsis overflow-hidden whitespace-nowrap `}
-                              >
-                                {sortedContracts[key].name ||
-                                  sortedContracts[key].project_name ? (
-                                  <>
-                                    <div
-                                      className={`min-w-full max-w-full text-base ${sortedContracts[key].project_name
-                                        ? "font-bold"
-                                        : "opacity-30 italic"
-                                        }`}
-                                    >
-                                      {sortedContracts[key].project_name
-                                        ? sortedContracts[key].project_name
-                                        : "Project Label Missing"}
-                                    </div>
-
-                                    <div
-                                      className={`min-w-full max-w-full text-sm ${sortedContracts[key].name
-                                        ? ""
-                                        : "opacity-30 italic"
-                                        }`}
-                                    >
-                                      {sortedContracts[key].name
-                                        ? sortedContracts[key].name
-                                        : "Contract Label Missing"}
-                                    </div>
-                                  </>
-                                ) : (
-                                  <div className="min-w-full max-w-full text-base opacity-30 italic">
-                                    {sortedContracts[key].address.substring(
-                                      0,
-                                      6,
-                                    ) +
-                                      "..." +
-                                      sortedContracts[key].address.substring(
-                                        36,
-                                        42,
-                                      )}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center text-[14px] !w-[43%] justify-start h-full z-10">
-                            <div className="flex w-[40%]">
-                              {master &&
-                                master.blockspace_categories.main_categories[
-                                sortedContracts[key].main_category_key
-                                ]}
-                            </div>
-                            <div className="flex ">
-                              {" "}
-                              {master &&
-                                master.blockspace_categories.sub_categories[
-                                sortedContracts[key].sub_category_key
-                                ]
-                                ? master.blockspace_categories.sub_categories[
-                                sortedContracts[key].sub_category_key
-                                ]
-                                : "Unlabeled"}
-                            </div>
-                          </div>
-                          <div className="flex items-center !w-[23%]  mr-4">
-                            <div className="flex flex-col w-[38%] items-end ">
-                              <div className="flex gap-x-1 w-[110px] justify-end  ">
-                                <div className="flex">
-                                  {" "}
-                                  {selectedMode.includes("gas_fees_")
-                                    ? showUsd
-                                      ? `$`
-                                      : `Ξ`
-                                    : ""}
-                                </div>
-                                {selectedMode.includes("gas_fees_")
-                                  ? showUsd
-                                    ? Number(
-                                      sortedContracts[
-                                        key
-                                      ].gas_fees_absolute_usd.toFixed(0),
-                                    ).toLocaleString("en-GB")
-                                    : Number(
-                                      sortedContracts[
-                                        key
-                                      ].gas_fees_absolute_eth.toFixed(2),
-                                    ).toLocaleString("en-GB")
-                                  : Number(
-                                    sortedContracts[
-                                      key
-                                    ].txcount_absolute.toFixed(0),
-                                  ).toLocaleString("en-GB")}
-                              </div>
-
-                            </div>
-
-                            <div className="flex items-center w-[57%] justify-end ">
-                              {master && (
-                                <Link
-                                  href={
-                                    master.chains[sortedContracts[key].chain]
-                                      .block_explorer +
-                                    "address/" +
-                                    sortedContracts[key].address
-                                  }
-                                  target="_blank"
-                                >
-                                  <Icon
-                                    icon="material-symbols:link"
-                                    className="w-[30px] h-[30px]"
-                                  />
-                                </Link>
-                              )}
-                            </div>
-                          </div>
-                        </div> */}
+                                ].gas_fees_absolute_usd.toFixed(0),
+                              ).toLocaleString("en-GB")}`
+                              : `Ξ${Number(
+                                sortedContracts[
+                                  key
+                                ].gas_fees_absolute_eth.toFixed(0),
+                              ).toLocaleString("en-GB")}`
+                            : Number(
+                              sortedContracts[key].txcount_absolute,
+                            ).toLocaleString("en-GB")}
+                        </div>
                       </GridTableRow>
                     );
                   })}
                 <div className="w-full flex justify-center mb-2">
                   <button
-                    className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full  hover:bg-forest-700 p-[6px 16px] ${
-                      Object.keys(sortedContracts).length <= 10
-                        ? "hidden"
-                        : "visible"
-                    } ${
-                      Object.keys(sortedContracts).length <=
+                    className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full  hover:bg-forest-700 p-[6px 16px] ${Object.keys(sortedContracts).length <= 10
+                      ? "hidden"
+                      : "visible"
+                      } ${Object.keys(sortedContracts).length <=
                         maxDisplayedContracts || maxDisplayedContracts >= 50
                         ? "hidden"
                         : "visible"
-                    }`}
+                      }`}
                     onClick={() => {
                       setShowMore(!showMore);
                       if (

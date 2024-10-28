@@ -7,6 +7,7 @@ import { RefObject, createContext, useContext, useEffect, useMemo, useState } fr
 import useSWR from "swr";
 import { useSessionStorage } from "usehooks-ts";
 import { useMetricData } from "./MetricDataContext";
+import { time } from "console";
 
 const monthly_agg_labels = {
   avg: "Average",
@@ -131,8 +132,8 @@ export const MetricChartControlsProvider = ({
     "data-availability": "da",
   };
 
-  const { SupportedChainKeys } = useMaster();
-  const { metric_id, allChains, allChainsByKeys, log_default } = useMetricData();
+  const { SupportedChainKeys, DefaultChainSelection } = useMaster();
+  const { metric_id, allChains, allChainsByKeys, log_default, chainKeys, data } = useMetricData();
 
   const url = UrlsMap[metric_type][metric_id];
   const storageKeys = {
@@ -145,14 +146,6 @@ export const MetricChartControlsProvider = ({
     showEthereumMainnet: `${StorageKeyPrefixMap[metric_type]}ShowEthereumMainnet`,
   }
 
-
-
-  const {
-    data,
-    error,
-    isLoading,
-    isValidating,
-  } = useSWR<MetricsResponse>(UrlsMap[metric_type][metric_id]);
 
   const [selectedTimespan, setSelectedTimespan] = useState(
     // storageKeys["timespan"],
@@ -189,7 +182,7 @@ export const MetricChartControlsProvider = ({
 
   const [selectedChains, setSelectedChains] = useSessionStorage(
     storageKeys["chains"],
-    metric_type === "fundamentals" ? [...SupportedChainKeys.filter(chain => ["all_l2s", "multiple"].includes(chain))] : allChains.map((chain) => chain.key),
+    metric_type === "fundamentals" ? DefaultChainSelection.filter((chain) => chainKeys.includes(chain)) : allChains.map((chain) => chain.key)
   );
 
   const [lastSelectedChains, setLastSelectedChains] = useState(
@@ -214,9 +207,26 @@ export const MetricChartControlsProvider = ({
   const [zoomMin, setZoomMin] = useState<number | undefined>(is_embed === true && embed_start_timestamp ? embed_start_timestamp : undefined);
   const [zoomMax, setZoomMax] = useState<number | undefined>(is_embed === true && embed_end_timestamp ? embed_end_timestamp : undefined);
 
+  // const timeIntervalKey = useMemo(() => {
+  //   if (
+  //     data?.data.avg === true &&
+  //     ["365d", "max"].includes(selectedTimespan)
+  //   ) {
+  //     return "daily_7d_rolling";
+  //   }
+
+  //   if (selectedTimeInterval === "monthly") {
+  //     return "monthly";
+  //   }
+
+  //   return "daily";
+  // }, [data, selectedTimeInterval, selectedTimespan]);
+
   const timeIntervalKey = useMemo(() => {
+    if (!data) return "daily";
+
     if (
-      data?.data.avg === true &&
+      data.avg === true &&
       ["365d", "max"].includes(selectedTimespan)
     ) {
       return "daily_7d_rolling";
@@ -274,8 +284,8 @@ export const MetricChartControlsProvider = ({
         setShowEthereumMainnet,
         timeIntervalKey,
         metric_id: metric_id,
-        avg: data?.data.avg || false,
-        monthly_agg: data?.data.monthly_agg || "sum",
+        avg: data?.avg || false,
+        monthly_agg: data?.monthly_agg || "sum",
         showTimeIntervals: true,
         showSources: true,
         showAvg: true,

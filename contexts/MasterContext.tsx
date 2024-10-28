@@ -15,6 +15,7 @@ type MasterContextType = {
   AllChainsByKeys: { [key: string]: Chain };
   AllDALayers: DALayerWithKey[];
   AllDALayersByKeys: { [key: string]: DALayerWithKey };
+  DefaultChainSelection: string[];
   EnabledChainsByKeys: { [key: string]: Chain };
   SupportedChainKeys: string[];
   ChainsNavigationItems: {
@@ -46,6 +47,7 @@ const MasterContext = createContext<MasterContextType | null>({
   AllChainsByKeys: {},
   AllDALayers: [],
   AllDALayersByKeys: {},
+  DefaultChainSelection: [],
   EnabledChainsByKeys: {},
   SupportedChainKeys: [],
   ChainsNavigationItems: null,
@@ -64,6 +66,7 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
   const [AllChainsByKeys, setAllChainsByKeys] = useState<{ [key: string]: Chain }>({});
   const [AllDALayers, setDALayers] = useState<DALayerWithKey[]>([]);
   const [AllDALayersByKeys, setDALayersByKeys] = useState<{ [key: string]: DALayerWithKey }>({});
+  const [DefaultChainSelection, setDefaultChainSelection] = useState<string[]>([]);
   const [EnabledChainsByKeys, setEnabledChainsByKeys] = useState<{ [key: string]: Chain }>({});
   const [ChainsNavigationItems, setChainsNavigationItems] = useState<any>({});
   const { data: glo_dollar_data } = useSWR(GloHolderURL);
@@ -103,6 +106,8 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
         acc[layer.key] = layer;
         return acc;
       }, {}));
+
+      setDefaultChainSelection(data.default_chain_selection);
 
       // import chain icons into iconify
       ImportChainIcons(data);
@@ -147,6 +152,7 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
         AllChainsByKeys,
         AllDALayers,
         AllDALayersByKeys,
+        DefaultChainSelection,
         EnabledChainsByKeys,
         SupportedChainKeys: Get_SupportedChainKeys(data),
         ChainsNavigationItems,

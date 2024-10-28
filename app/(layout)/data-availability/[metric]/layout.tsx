@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { DAMetricsURLs, MetricsURLs } from "@/lib/urls";
+import { MetricsURLs } from "@/lib/urls";
 import Container, { PageContainer, PageRoot, Section } from "@/components/layout/Container";
 import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
@@ -8,7 +8,7 @@ import { notFound } from "next/navigation";
 import { track } from "@vercel/analytics/server";
 import Link from "next/link";
 import Icon from "@/components/layout/Icon";
-import { metricItems, daMetricItems } from "@/lib/metrics";
+import { daMetricItems } from "@/lib/metrics";
 import { Title, TitleButtonLink } from "@/components/layout/TextHeadingComponents";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { Description, textToLinkedText } from "@/components/layout/TextComponents";
@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   ) {
     track("404 Error", {
       location: "404 Error",
-      page: "/fundamentals/" + params.metric,
+      page: "/data-availability/" + params.metric,
     });
     return notFound();
   }
@@ -68,7 +68,7 @@ export default async function Layout({
   children: React.ReactNode;
   params: { metric: string };
 }) {
-  const url = DAMetricsURLs[params.metric];
+  const url = MetricsURLs[params.metric];
 
   const pageData = daMetricItems.find((item) => item.urlKey === params.metric)
     ?.page ?? {
@@ -80,7 +80,7 @@ export default async function Layout({
 
 
   return (
-    <PageRoot className="pt-[15px]">
+    <PageRoot className="pt-[45px] md:pt-[30px]">
       <PageContainer paddingY="none">
         <Section>
           <Title

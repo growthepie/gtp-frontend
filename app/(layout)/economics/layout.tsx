@@ -16,7 +16,7 @@ export default async function Layout({
   return (
     <>
       <Container
-        className="flex flex-col w-full pt-[65px] md:pt-[30px] gap-y-[15px]"
+        className="flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px]"
         isPageRoot
       >
         <div className="flex items-center h-[43px] gap-x-[8px] ">

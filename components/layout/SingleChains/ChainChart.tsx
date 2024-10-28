@@ -384,18 +384,18 @@ export default function ChainChart({
         } else {
           if (showGwei(key) && showUsd) {
             // for small USD amounts, show 2 decimals
-            if (val < 1) number = prefix + val.toFixed(2) + suffix;
+            if (val < 1) number = prefix + val.toFixed(2) + " " + suffix;
             else if (val < 10)
               number =
-                prefix + d3.format(".3s")(val).replace(/G/, "B") + suffix;
+                prefix + d3.format(".3s")(val).replace(/G/, "B") + " " + suffix;
             else if (val < 100)
               number =
-                prefix + d3.format(".4s")(val).replace(/G/, "B") + suffix;
+                prefix + d3.format(".4s")(val).replace(/G/, "B") + " " + suffix;
             else
               number =
-                prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+                prefix + d3.format(".2s")(val).replace(/G/, "B") + " " + suffix;
           } else {
-            number = prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+            number = prefix + d3.format(".2s")(val).replace(/G/, "B") + " " + suffix;
           }
         }
       }
@@ -669,7 +669,7 @@ export default function ChainChart({
                   <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
             }"></div>
                  <div class="flex-1 text-left justify-end flex numbers-xs">
-                      <div class="opacity-70 ${!prefix && "hidden"
+                      <div class="${!prefix && "hidden"
             }">${prefix}</div>
                       ${parseFloat(value).toLocaleString("en-GB", {
               minimumFractionDigits:
@@ -677,7 +677,7 @@ export default function ChainChart({
               maximumFractionDigits:
                 showGwei(metricKey) && !showUsd ? 2 : decimals,
             })}
-                      <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+                      <div class="ml-0.5 ${!suffix && "hidden"
             }">${suffix}</div>
                   </div>
                 </div>`;
@@ -943,7 +943,7 @@ export default function ChainChart({
               ? "rgba(215, 223, 222, 0.33)"
               : "rgba(41, 51, 50, 0.33)",
           fontSize: "8px",
-          fontWeight: "700",
+          fontWeight: "300",
           fontFamily: "Fira Sans",
         },
       },

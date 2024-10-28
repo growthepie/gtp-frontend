@@ -34,7 +34,7 @@ import { BASE_URL, IS_PREVIEW } from "@/lib/helpers";
 import { useWindowSize } from "usehooks-ts";
 import EmbedContainer from "@/app/(embeds)/embed/EmbedContainer";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
-import "../../app/highcharts.axis.css";
+import "@/app/highcharts.axis.css"
 import {
   TopRowContainer,
   TopRowChild,
@@ -534,9 +534,9 @@ export default function ComparisonChart({
               <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
                 <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${MetadataByKeys[name].colors[theme ?? "dark"][0]
               }"></div>
-                <div class="tooltip-point-name">${MetadataByKeys[name].label
+                <div class="tooltip-point-name text-xs">${MetadataByKeys[name].label
               }</div>
-                <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
+                <div class="flex-1 text-right numbers-xs">${Highcharts.numberFormat(
                 percentage,
                 2,
               )}%</div>
@@ -566,10 +566,10 @@ export default function ComparisonChart({
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${MetadataByKeys[name].colors[theme ?? "dark"][0]
             }"></div>
-            <div class="tooltip-point-name text-md">${MetadataByKeys[name].label
+            <div class="tooltip-point-name text-xs">${MetadataByKeys[name].label
             }</div>
              <div class="flex-1 text-right justify-end flex numbers-xs">
-                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+                <div class="${!prefix && "hidden"
             }">${prefix}</div>
                 ${metric_id === "fdv" || metric_id === "market_cap"
               ? shortenNumber(value).toString()
@@ -578,7 +578,7 @@ export default function ComparisonChart({
                 maximumFractionDigits: decimals,
               })
             }
-                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+                <div class="ml-0.5 ${!suffix && "hidden"
             }">${suffix}</div>
             </div>
           </div>
@@ -633,11 +633,11 @@ export default function ComparisonChart({
           tooltipPoints += `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5 opacity-60">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6"></div>
-            <div class="tooltip-point-name">${afterTenPoints.length > 1
+            <div class="tooltip-point-name text-xs">${afterTenPoints.length > 1
               ? `${afterTenPoints.length} Others`
               : "1 Other"
             }</div>
-            <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
+            <div class="flex-1 text-right numbers-xs">${Highcharts.numberFormat(
               restPercentage,
               2,
             )}%</div>
@@ -656,12 +656,12 @@ export default function ComparisonChart({
           tooltipPoints += `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5 opacity-60">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6; "></div>
-            <div class="tooltip-point-name text-md">${afterTenPoints.length > 1
+            <div class="tooltip-point-name text-xs">${afterTenPoints.length > 1
               ? `${afterTenPoints.length} Others`
               : "1 Other"
             }</div>
              <div class="flex-1 text-right justify-end flex numbers-xs">
-                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+                <div class="${!prefix && "hidden"
             }">${prefix}</div>
                 ${metric_id === "fdv" || metric_id === "market_cap"
               ? shortenNumber(restSum).toString()
@@ -670,7 +670,7 @@ export default function ComparisonChart({
                 maximumFractionDigits: decimals,
               })
             }
-                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+                <div class="ml-0.5 ${!suffix && "hidden"
             }">${suffix}</div>
             </div>
           </div>
@@ -695,7 +695,7 @@ export default function ComparisonChart({
           <div class="w-4 h-1.5 rounded-r-full" style=""></div>
           <div class="tooltip-point-name text-md">Total</div>
            <div class="flex-1 text-right justify-end flex numbers-xs">
-            <div class="opacity-70 mr-0.5 ${!prefix && "hidden"}">
+            <div class="mr-0.5 ${!prefix && "hidden"}">
               ${prefix}
             </div>
           ${parseFloat(value).toLocaleString("en-GB", {
@@ -706,7 +706,7 @@ export default function ComparisonChart({
                 ? 2
                 : 0,
           })}
-            <div class="opacity-70 ml-0.5 ${!suffix && "hidden"}">
+            <div class="ml-0.5 ${!suffix && "hidden"}">
               ${suffix}
             </div>
           </div>

@@ -13,7 +13,7 @@ export default async function Layout({
 }) {
   return (
     <>
-      <Container className="flex flex-col w-full mt-[25px] md:mt-[45px]">
+      <Container className="flex flex-col w-full mt-[45px] md:mt-[30px]">
         <div className="flex justify-between items-start w-full mb-[0px]">
           <div className="flex flex-col">
             <div className="flex flex-col md:flex-row mb-[15px] md:mb-[19px] items-start">

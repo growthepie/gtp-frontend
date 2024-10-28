@@ -407,6 +407,12 @@ const MetricTable = ({
     [type, lastValueTimeIntervalKey, lastValues, master, metric_id, showGwei, showUsd],
   );
 
+  const lastValueLabels = {
+    monthly: "last 30d",
+    daily: "Yesterday",
+    daily_7d_rolling: "Yesterday",
+  };
+
   const timespanLabels = {
     "1d": "24h",
     // "7d": "7 days",
@@ -425,16 +431,16 @@ const MetricTable = ({
 
   return (
     <HorizontalScrollContainer
-      includeMargin={false}
+      includeMargin={isMobile ? true : false}
     >
       <VerticalScrollContainer
-        height={!isMobile ? 434 : (chainKeys.length) * 39}
-
+        height={!isMobile ? 434 : (chainKeys.filter(chain => chain != "ethereum").length) * 39 + 45}
         scrollbarAbsolute={true}
         scrollbarPosition="right"
+        className="w-full"
         header={
-          <div className="hidden md:block">
-            <div className="pr-[0px] md:pr-[45px] relative">
+          <div className="hidden lg:block">
+            <div className="pr-[0px] lg:pr-[45px] relative">
               <GridTableHeader
                 gridDefinitionColumns="grid-cols-[26px_minmax(30px,2000px)_61px_61px_61px_61px]"
                 className="text-[12px] gap-x-[10px] !font-bold z-[2] !pl-[5px] !pr-[21px] !pt-0 !pb-0 h-[30px] select-none flex items-center"
@@ -446,7 +452,7 @@ const MetricTable = ({
                   Chain
                 </GridTableHeaderCell>
                 <GridTableHeaderCell justify="end" className="truncate">
-                  Yesterday
+                  {lastValueLabels[timeIntervalKey]}
                 </GridTableHeaderCell>
                 {Object.entries(
                   timeIntervalKey === "monthly"
@@ -526,8 +532,8 @@ const MetricTable = ({
         paddingRight={22}
 
       > */}
-        <div className="block md:hidden">
-          <div className="pr-[45px] relative">
+        <div className="block lg:hidden">
+          <div className="pr-[16px] lg:pr-[45px] relative">
             <GridTableHeader
               gridDefinitionColumns="grid-cols-[26px_minmax(30px,2000px)_61px_61px_61px_61px]"
               className="text-[12px] gap-x-[10px] !font-bold z-[2] !pl-[5px] !pr-[21px] !pt-0 !pb-0 h-[30px] select-none flex items-center"
@@ -539,7 +545,7 @@ const MetricTable = ({
                 Chain
               </GridTableHeaderCell>
               <GridTableHeaderCell justify="end" className="truncate">
-                Yesterday
+                {lastValueLabels[timeIntervalKey]}
               </GridTableHeaderCell>
               {Object.entries(
                 timeIntervalKey === "monthly"
@@ -555,7 +561,7 @@ const MetricTable = ({
 
             </GridTableHeader>
             <div
-              className={`absolute top-[5px] right-[34px] cursor-pointer`}
+              className={`absolute top-[5px] right-[5px] cursor-pointer`}
               onClick={onChainSelectToggle}
             >
               <div
@@ -616,7 +622,7 @@ const MetricTable = ({
         <div style={{ height: `${rows().length * 37}px` }}>
           {transitions((style, item, t, index) => (
             <animated.div
-              className="absolute w-full pr-[45px] select-none"
+              className="absolute w-full pr-[16px] lg:pr-[45px] select-none"
               style={{ zIndex: Object.keys(data.chains).length - index, ...style, }}
             >
               <div className="relative group">
@@ -677,7 +683,7 @@ const MetricTable = ({
                     <div key={timespan} className="w-full text-right">
                       {item.data[changesKey][timespan][changesValueIndex] ===
                         null ? (
-                        <span className="numbers-xs text-center inline-block">
+                        <span className="numbers-xs text-center inline-block text-gray-500">
                           —
                         </span>
                       ) : (

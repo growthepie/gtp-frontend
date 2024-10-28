@@ -40,13 +40,13 @@ import {
 } from "react-jsx-highcharts";
 import { useUIContext, useHighchartsWrappers } from "@/contexts/UIContext";
 import { useMaster } from "@/contexts/MasterContext";
-import { debounce, times } from "lodash";
+import { debounce, over, times } from "lodash";
 import { useMetricSeries } from "./MetricSeriesContext";
 import { useMetricData } from "./MetricDataContext";
 import { useMetricChartControls } from "./MetricChartControlsContext";
 import "@/app/highcharts.axis.css";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
-import { metricItems } from "@/lib/metrics";
+import { daMetricItems, metricItems } from "@/lib/metrics";
 import { format as d3Format } from "d3"
 import { useTheme } from "next-themes";
 import { BASE_URL } from "@/lib/helpers";
@@ -232,12 +232,12 @@ function MetricChart({
 
   const { seriesData } = useMetricSeries();
 
-  const [showUsd, setShowUsd] = useSessionStorage("showUsd", true);
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   const navItem = useMemo(() => {
-    return metricItems.find((item) => item.key === metric_id);
+    return metric_type === "fundamentals" ? metricItems.find((item) => item.key === metric_id) : daMetricItems.find((item) => item.key === metric_id);
     //return navigationItems[1].options.find((item) => item.key === metric_id);
-  }, [metric_id]);
+  }, [metric_id, metric_type]);
 
   const urlKey = useMemo(() => {
     if (!navItem) return null;
@@ -561,6 +561,8 @@ function MetricChart({
     };
   }, [isSidebarOpen, resituateChart]);
 
+  console.log("width", width, "height", height);
+
   useLayoutEffect(() => {
     if (chartComponent.current) {
       chartComponent.current.setSize(width, height, true);
@@ -617,7 +619,9 @@ function MetricChart({
         } else {
           if (showGwei && showUsd) {
             // for small USD amounts, show 2 decimals
-            if (val < 1) number = prefix + val.toFixed(2) + suffix;
+            if (val < 0.001) number = prefix + val.toFixed(2) + suffix;
+            if (val < 0.01) number = prefix + val.toFixed(3) + suffix;
+            if (val < 0.1) number = prefix + val.toFixed(4) + suffix;
             else if (val < 10)
               number =
                 prefix + d3Format(".3s")(val).replace(/G/, "B") + suffix;
@@ -686,13 +690,22 @@ function MetricChart({
       const unitKey =
         unitKeys.find((unit) => unit !== "usd" && unit !== "eth") ||
         (showUsd ? "usd" : "eth");
-      let prefix = master[MetricInfoKeyMap[metric_type]][metric_id].units[unitKey].prefix || "";;
-      let suffix = master[MetricInfoKeyMap[metric_type]][metric_id].units[unitKey].suffix || "";
+
+      // units.find((unit) => unit !== "usd" && unit !== "eth") ||
+      // (showUsd ? "usd" : "eth");
+      let prefix = metricsDict[metric_id].units[unitKey].prefix
+        ? metricsDict[metric_id].units[unitKey].prefix
+        : "";
+      let suffix = metricsDict[metric_id].units[unitKey].suffix
+        ? metricsDict[metric_id].units[unitKey].suffix
+        : "";
 
       const decimals =
         !showUsd && showGwei
           ? 2
-          : master[MetricInfoKeyMap[metric_type]][metric_id].units[unitKey].decimals_tooltip;
+          : metricsDict[metric_id].units[unitKey].decimals_tooltip;
+
+
 
       let tooltipPoints = (showOthers ? firstTenPoints : points)
         .map((point: any) => {
@@ -701,11 +714,11 @@ function MetricChart({
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${chainsDict[name].colors[theme ?? "dark"][0]
               }"></div>
-                <div class="tooltip-point-name text-xs">${AllChainsByKeys[name].label
+                <div class="tooltip-point-name text-xs">${chainsDict[name].name
               }</div>
-                <div class="flex-1 text-right numbers-xs">${Highcharts.numberFormat(
+                <div class="flex-1 text-right numbers-xs ">${Highcharts.numberFormat(
                 percentage,
                 2,
               )}%</div>
@@ -717,14 +730,14 @@ function MetricChart({
                 <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
                 style="
                   width: ${(percentage / maxPercentage) * 100}%;
-                  background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+                  background-color: ${chainsDict[name].colors[theme ?? "dark"][0]
               };
                 "></div>
               </div>`;
 
           let value = y;
 
-          if (!showUsd && master[MetricInfoKeyMap[metric_type]][metric_id].units[unitKey].currency) {
+          if (!showUsd && metricsDict[metric_id].units[unitKey].currency) {
             if (showGwei) {
               prefix = "";
               suffix = " Gwei";
@@ -733,11 +746,11 @@ function MetricChart({
 
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${chainsDict[name].colors[theme ?? "dark"][0]
             }"></div>
-            <div class="tooltip-point-name text-xs">${AllChainsByKeys[name].label
+            <div class="tooltip-point-name text-xs">${chainsDict[name].name
             }</div>
-            <div class="flex-1 text-right justify-end flex numbers-xs">
+            <div class="flex-1 text-right justify-end numbers-xs flex">
                 <div class="${!prefix && "hidden"
             }">${prefix}</div>
                 ${metric_id === "fdv" || metric_id === "market_cap"
@@ -747,7 +760,7 @@ function MetricChart({
                 maximumFractionDigits: decimals,
               })
             }
-                <div class="ml-0.5 ${!suffix && "hidden"
+                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
             }">${suffix}</div>
             </div>
           </div>
@@ -757,7 +770,7 @@ function MetricChart({
             <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
             style="
               width: ${(Math.max(0, value) / maxPoint) * 100}%;
-              background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+              background-color: ${chainsDict[name].colors[theme ?? "dark"][0]
             };
             "></div>
           </div>`;
@@ -802,11 +815,11 @@ function MetricChart({
           tooltipPoints += `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5 opacity-60">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6"></div>
-            <div class="tooltip-point-name">${afterTenPoints.length > 1
+            <div class="tooltip-point-name text-xs">${afterTenPoints.length > 1
               ? `${afterTenPoints.length} Others`
               : "1 Other"
             }</div>
-            <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
+            <div class="flex-1 text-right numbers-xs">${Highcharts.numberFormat(
               restPercentage,
               2,
             )}%</div>
@@ -825,12 +838,12 @@ function MetricChart({
           tooltipPoints += `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5 opacity-60">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6; "></div>
-            <div class="tooltip-point-name text-md">${afterTenPoints.length > 1
+            <div class="tooltip-point-name text-xs">${afterTenPoints.length > 1
               ? `${afterTenPoints.length} Others`
               : "1 Other"
             }</div>
-             <div class="flex-1 text-right justify-end flex numbers-xs">
-                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+            <div class="flex-1 text-right justify-end numbers-xs flex">
+                <div class="${!prefix && "hidden"
             }">${prefix}</div>
                 ${metric_id === "fdv" || metric_id === "market_cap"
               ? shortenNumber(restSum).toString()
@@ -862,9 +875,9 @@ function MetricChart({
           ? `
         <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-100">
           <div class="w-4 h-1.5 rounded-r-full" style=""></div>
-          <div class="tooltip-point-name text-md">Total</div>
-           <div class="flex-1 text-right justify-end flex numbers-xs">
-            <div class="opacity-70 mr-0.5 ${!prefix && "hidden"}">
+          <div class="tooltip-point-name text-xs">Total</div>
+          <div class="flex-1 text-right justify-end numbers-xs flex">
+            <div class="${!prefix && "hidden"}">
               ${prefix}
             </div>
           ${parseFloat(value).toLocaleString("en-GB", {
@@ -887,7 +900,7 @@ function MetricChart({
 
       return tooltip + tooltipPoints + sumRow + tooltipEnd;
     },
-    [metric_id, selectedTimeInterval, master, metricsDict, showUsd, metric_type, showGwei, selectedScale, valuePrefix, reversePerformer, AllChainsByKeys, theme],
+    [metric_id, selectedTimeInterval, master, metricsDict, showUsd, showGwei, selectedScale, valuePrefix, reversePerformer, chainsDict, theme],
   );
 
 
@@ -1025,29 +1038,36 @@ function MetricChart({
     <div className="relative w-full h-full">
       <div className="relative flex items-end h-[30px]">
 
-        {log_default === true && (
-          <>
+
+        <>
+          {log_default === true && (
             <div className="absolute pl-[38.5px]">
               <YAxisScaleControls />
             </div>
+          )}
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='33' height='8' viewBox='0 0 33 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath opacity='0.5' d='M0.299805 6.80004L0.353397 6.85363L5.49984 1.70718L10.9998 7.20718L16.4998 1.70718L21.9998 7.20718L27.4998 1.70718L32.6463 6.85363L32.7 6.79992V5.49313L27.4998 0.292969L21.9998 5.79297L16.4998 0.292969L10.9998 5.79297L5.49984 0.292969L0.299805 5.49301V6.80004Z' fill='%235A6462'/%3E%3C/svg%3E%0A")`,
+              // center vertically and repeat-x
+              backgroundPositionY: "50%",
+              backgroundRepeat: "repeat-x",
+            }} />
+        </>
 
-            <div
-              className="absolute inset-0"
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg width='33' height='8' viewBox='0 0 33 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath opacity='0.5' d='M0.299805 6.80004L0.353397 6.85363L5.49984 1.70718L10.9998 7.20718L16.4998 1.70718L21.9998 7.20718L27.4998 1.70718L32.6463 6.85363L32.7 6.79992V5.49313L27.4998 0.292969L21.9998 5.79297L16.4998 0.292969L10.9998 5.79297L5.49984 0.292969L0.299805 5.49301V6.80004Z' fill='%235A6462'/%3E%3C/svg%3E%0A")`,
-                // center vertically and repeat-x
-                backgroundPositionY: "50%",
-                backgroundRepeat: "repeat-x",
-              }} />
-          </>
-        )}
       </div>
-      <div className="relative w-full h-full" ref={containerRef}>
+      <div className="relative w-full h-full overflow-visible" ref={containerRef}>
+        <div className="absolute w-[2px] bottom-[71px] left-[38.5px] -top-[23px]" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='2' height='396' viewBox='0 0 2 396' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg clip-path='url(%23clip0_16047_48574)'%3E%3Cpath opacity='0.5' d='M1.00002 396L1 0' stroke='%235A6462' stroke-width='2' stroke-dasharray='3 6'/%3E%3C/g%3E%3Cdefs%3E%3CclipPath id='clip0_16047_48574'%3E%3Crect width='2' height='396' fill='white'/%3E%3C/clipPath%3E%3C/defs%3E%3C/svg%3E%0A")`,
+        }} />
         <HighchartsProvider Highcharts={Highcharts}>
           <HighchartsChart
             containerProps={{
               // style: { height: "100%", width: "100%" },
               // ref: containerRef,
+              style: {
+                overflow: "visible",
+              }
             }}
             syncId="shareTooltip"
             //@ts-ignore
@@ -1181,6 +1201,7 @@ function MetricChart({
                 },
                 y: 30,
                 style: {
+                  fontFamily: "Fira Sans",
                   fontSize: "10px",
                   color: "#CDD8D3",
                 },
@@ -1213,12 +1234,12 @@ function MetricChart({
             />
             <YAxis
               opposite={false}
-              type={selectedYAxisScale === "logarithmic" ? "logarithmic" : "linear"}
+              type={selectedYAxisScale === "logarithmic" && selectedScale === "absolute" ? "logarithmic" : "linear"}
               // showFirstLabel={true}
               // showLastLabel={true}
               // type={master[MetricInfoKeyMap[metric_type]][metric_id].log_default && ["absolute"].includes(selectedScale) ? "logarithmic" : "linear"}
               gridLineWidth={1}
-              gridLineColor={"#5A6462"}
+              gridLineColor={"#5A6462A7"}
               // gridLineDashStyle={"ShortDot"}
               gridZIndex={10}
               min={metric_id === "profit" || (master[MetricInfoKeyMap[metric_type]][metric_id].log_default && ["absolute"].includes(selectedScale)) ? null : 0}
@@ -1227,13 +1248,26 @@ function MetricChart({
               showLastLabel={true}
               tickAmount={5}
               zoomEnabled={false}
+              plotLines={[
+                {
+                  value: 0,
+                  color: "#CDD8D3",
+                  width: 2,
+                }
+              ]}
               labels={{
-                y: 5,
-                x: -5,
+
+                // y: 5,
+                // x: 0,
+                distance: 9,
+                // justify: false,
                 align: "right",
-                overflow: "justify",
+                // overflow: "justify",
+                // allowOverlap: true,
                 useHTML: true,
                 style: {
+                  whiteSpace: "nowrap",
+                  textAlign: "right",
                   color: "rgb(215, 223, 222)",
                   fontSize: "10px",
                   fontWeight: "700",
@@ -1281,16 +1315,26 @@ function MetricChart({
       <div className="absolute bottom-[53.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50">
         <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
       </div>
-    </div>
+      {
+        seriesData.length === 0 && (
+          <div className="absolute top-[calc(50%+2rem)] left-[0px] text-xs font-medium flex justify-center w-full text-forest-500/60">
+            No chain(s) selected for comparison. Please select at least one.
+          </div>
+        )
+      }
+    </div >
   );
 }
 
 const YAxisScaleControls = () => {
-  const { selectedYAxisScale, setSelectedYAxisScale } = useMetricChartControls();
+  const { selectedYAxisScale, setSelectedYAxisScale, selectedScale } = useMetricChartControls();
 
   const handleScaleChange = (scale: string) => {
     setSelectedYAxisScale(scale);
   };
+
+  if (selectedScale !== "absolute") return null;
+
   return (
     <div className="relative z-[1] flex items-center w-fit p-[2px] pr-[6px] h-[28px] rounded-full bg-[#344240] select-none">
       <div

@@ -506,9 +506,9 @@ export default function LandingChart({
               <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
                 <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
               }"></div>
-                <div class="tooltip-point-name">${AllChainsByKeys[name].label
+                <div class="tooltip-point-name text-xs">${AllChainsByKeys[name].label
               }</div>
-                <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
+                <div class="flex-1 text-right numbers-xs">${Highcharts.numberFormat(
                 percentage,
                 2,
               )}%</div>
@@ -529,7 +529,7 @@ export default function LandingChart({
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
             }"></div>
-            <div class="tooltip-point-name text-md">${AllChainsByKeys[name].label
+            <div class="tooltip-point-name text-xs">${AllChainsByKeys[name].label
             }</div>
              <div class="flex-1 text-right justify-end flex numbers-xs">
               <div class="inline-block">${parseFloat(y).toLocaleString(
@@ -1590,7 +1590,7 @@ export default function LandingChart({
             ) : (
               <>
                 <button
-                  className={`rounded-full flex items-center justify-center space-x-3 px-4 py-1.5 2xl:py-4 text-md w-full 2xl:w-auto 2xl:px-4 2xl:text-md font-medium border-[1px] border-forest-800`}
+                  className={`rounded-full flex items-center justify-center space-x-3 px-4 py-1.5 2xl:py-3 text-md w-full 2xl:w-auto 2xl:px-4 2xl:text-md font-medium border-[1px] border-forest-800`}
                   onClick={() => {
                     // chartComponent?.current?.xAxis[0].setExtremes(
                     //   timespans[selectedTimespan].xMin,
@@ -1601,12 +1601,12 @@ export default function LandingChart({
                 >
                   <Icon
                     icon="feather:zoom-out"
-                    className="h-4 w-4 2xl:w-6 2xl:h-6"
+                    className="h-4 w-4 2xl:w-4 2xl:h-4"
                   />
                   <div>Reset Zoom</div>
                 </button>
                 <button
-                  className={`rounded-full text-md w-full 2xl:w-auto px-4 py-1.5 2xl:py-4 2xl:px-4 font-medium bg-forest-100 dark:bg-forest-1000`}
+                  className={`rounded-full text-md w-full 2xl:w-auto px-4 py-1.5 2xl:py-3.5 2xl:px-4 font-medium bg-forest-100 dark:bg-forest-1000`}
                 >
                   {intervalShown?.label}
                 </button>

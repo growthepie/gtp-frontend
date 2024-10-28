@@ -90,11 +90,11 @@ const FundamentalsContent = ({ metric, type }: FundamentalsContentProps) => {
             <PageContainer paddingY="none">
               <FundamentalsTopControls metric={metric} />
             </PageContainer>
-            <div className="flex flex-col-reverse md:flex-row gap-y-[15px] px-0 md:px-[50px]">
-              <div className="w-full md:!w-[503px]">
+            <div className="flex flex-col-reverse lg:flex-row gap-y-[15px] px-0 lg:px-[50px]">
+              <div className="w-full lg:!w-[503px]">
                 <MetricTable metric_type={type} />
               </div>
-              <div className="flex-1 h-[434px] md:h-[434px] px-[20px] md:px-0">
+              <div className="w-full h-[434px] lg:!w-[calc(100%-503px)] lg:h-[434px] px-[20px] md:px-[50px] lg:px-0">
                 <MetricChart metric_type={type} />
               </div>
             </div>

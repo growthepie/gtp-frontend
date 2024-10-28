@@ -5,7 +5,7 @@ import { ChainData, MetricsResponse } from "@/types/api/MetricsResponse";
 import { intersection, merge } from "lodash";
 import { RefObject, createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
-import { useSessionStorage } from "usehooks-ts";
+import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { useMetricData } from "./MetricDataContext";
 import { useMetricChartControls } from "./MetricChartControlsContext";
 import { useTheme } from "next-themes";
@@ -42,7 +42,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
   const { data, chainKeys, metric_id, avg } = useMetricData();
   const { selectedChains, selectedTimeInterval, selectedTimespan, timeIntervalKey, selectedScale, showEthereumMainnet } = useMetricChartControls();
 
-  const [showUsd, setShowUsd] = useSessionStorage("showUsd", true);
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   const navItem = useMemo(() => {
 
@@ -299,7 +299,16 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
       selectedChains.includes(chainKey) && SupportedChainKeys.includes(chainKey)
     ) : chainKeys.filter((chainKey) => selectedChains.includes(chainKey));
 
-    const d = chainDataKeys.map((chainKey, i) => {
+    const d = chainDataKeys.sort((a, b) => {
+      if (selectedScale === "stacked" || selectedScale === "percentage") {
+        const aData = data.chains[a][timeIntervalKey].data;
+        const bData = data.chains[b][timeIntervalKey].data;
+        // sort by the time of the first data point so that the series are stacked in the correct order
+        return bData[0][0] - aData[0][0];
+      }
+      // else keep the order of the series the same
+      return 0;
+    }).map((chainKey, i) => {
       const chain = data.chains[chainKey];
 
 
@@ -344,6 +353,34 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
           MetadataByKeys[chainKey]?.colors[theme ?? "dark"][0],
         borderWidth: 1,
         lineWidth: 2,
+        states: {
+          hover: {
+            enabled: true,
+            halo: {
+              size: 5,
+              opacity: 1,
+              attributes: {
+                fill:
+                  MetadataByKeys[chainKey]?.colors[
+                  theme ?? "dark"
+                  ][0] + "99",
+                stroke:
+                  MetadataByKeys[chainKey]?.colors[
+                  theme ?? "dark"
+                  ][0] + "66",
+                strokeWidth: 0,
+              },
+            },
+            brightness: 0.3,
+          },
+          inactive: {
+            enabled: true,
+            opacity: 0.6,
+          },
+          selection: {
+            enabled: false,
+          },
+        },
         ...// @ts-ignore
         (["area", "line"].includes(getSeriesType(chainKey))
           ? {
@@ -354,121 +391,16 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
                 ][1] + "FF",
               width: 10,
             },
-            // color: {
-            //   linearGradient: {
-            //     x1: 0,
-            //     y1: 0,
-            //     x2: 1,
-            //     y2: 0,
-            //   },
-            //   stops: [
-            //     [
-            //       0,
-            //       MetadataByKeys[series.name]?.colors[
-            //         theme ?? "dark"
-            //       ][0],
-            //     ],
-            //     // [0.33, MetadataByKeys[series.name].colors[1]],
-            //     [
-            //       1,
-            //       MetadataByKeys[series.name]?.colors[
-            //         theme ?? "dark"
-            //       ][1],
-            //     ],
-            //   ],
-            // },
           }
           : chainKey === "all_l2s"
             ? {
               borderColor: "transparent",
               shadow: "none",
-              // shadow: {
-              //   color: "#CDD8D3" + "FF",
-              //   // color:
-              //   //   MetadataByKeys[series.name].colors[theme ?? "dark"][1] + "33",
-              //   // width: 10,
-              //   offsetX: 0,
-              //   offsetY: 0,
-              //   width: 2,
-              // },
-              // color: {
-              //   linearGradient: {
-              //     x1: 0,
-              //     y1: 0,
-              //     x2: 0,
-              //     y2: 1,
-              //   },
-              //   stops:
-              //     theme === "dark"
-              //       ? [
-              //           [
-              //             0,
-              //             MetadataByKeys[series.name]?.colors[
-              //               theme ?? "dark"
-              //             ][0] + "E6",
-              //           ],
-
-              //           [
-              //             1,
-              //             MetadataByKeys[series.name]?.colors[
-              //               theme ?? "dark"
-              //             ][1] + "E6",
-              //           ],
-              //         ]
-              //       : [
-              //           [
-              //             0,
-              //             MetadataByKeys[series.name]?.colors[
-              //               theme ?? "dark"
-              //             ][0] + "E6",
-              //           ],
-
-              //           [
-              //             1,
-              //             MetadataByKeys[series.name]?.colors[
-              //               theme ?? "dark"
-              //             ][1] + "E6",
-              //           ],
-              //         ],
-              // },
             }
             : {
               borderColor: "transparent",
               shadow: "none",
-              // shadow: {
-              //   color: "#CDD8D3" + "FF",
-              //   offsetX: 0,
-              //   offsetY: 0,
-              //   width: 2,
-              // },
-              // fillColor: {
-              //   linearGradient: {
-              //     x1: 0,
-              //     y1: 0,
-              //     x2: 0,
-              //     y2: 1,
-              //   },
-              //   stops: [
-              //     [
-              //       0,
-              //       MetadataByKeys[series.name]?.colors[
-              //         theme ?? "dark"
-              //       ][0] + "FF",
-              //     ],
-              //     [
-              //       0.349,
-              //       MetadataByKeys[series.name]?.colors[
-              //         theme ?? "dark"
-              //       ][0] + "88",
-              //     ],
-              //     [
-              //       1,
-              //       MetadataByKeys[series.name]?.colors[
-              //         theme ?? "dark"
-              //       ][0] + "00",
-              //     ],
-              //   ],
-              // },
+
             }),
       };
     });

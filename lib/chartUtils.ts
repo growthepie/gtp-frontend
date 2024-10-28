@@ -102,7 +102,7 @@ export const tooltipFormatter = (
           </div>
         
         </div>
-        <div class="tooltip-point-name">${label}</div>
+        <div class="tooltip-point-name text-xs">${label}</div>
          <div class="flex-1 text-right justify-end flex numbers-xs">${value}</div>
       </div>
       <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -180,7 +180,7 @@ export const tooltipFormatter = (
 
     if (dataKey) {
       if (dataKey.includes("eth")) {
-        suffix = "Ξ";
+        prefix = "Ξ";
       } else if (dataKey.includes("usd")) {
         prefix = "$";
       }
@@ -240,14 +240,14 @@ export const tooltipFormatter = (
             opacity: ${fillOpacity};
           "></div>
         </div>
-        <div class="tooltip-point-name">${label}</div>
+        <div class="tooltip-point-name text-xs">${label}</div>
          <div class="flex-1 text-right justify-end flex numbers-xs">
-          <div class="opacity-70 mr-0.5 ${!prefix && "hidden"}">${prefix}</div>
+          <div class="${!prefix && "hidden"}">${prefix}</div>
           ${parseFloat(value).toLocaleString("en-GB", {
             minimumFractionDigits: 0,
             maximumFractionDigits: showTime ? (name === "base" ? 4 : 3) : 2,
           })}
-          <div class="opacity-70 ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
+          <div class="ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
         </div>
       </div>
       <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -269,16 +269,16 @@ export const tooltipFormatter = (
       tooltip += `
         <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-70">
           <div class="w-4 h-1.5 rounded-r-full" style=""></div>
-          <div class="tooltip-point-name text-md">Total</div>
+          <div class="tooltip-point-name text-xs">Total</div>
            <div class="flex-1 text-right justify-end flex numbers-xs">
-              <div class="opacity-70 mr-0.5 ${
+              <div class="${
                 !prefix && "hidden"
               }">${prefix}</div>
               ${parseFloat(value).toLocaleString("en-GB", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
-              <div class="opacity-70 ml-0.5 ${
+              <div class="ml-0.5 ${
                 !suffix && "hidden"
               }">${suffix}</div>
           </div>
@@ -387,7 +387,6 @@ export const baseOptions: Highcharts.Options = {
         color: "rgb(215, 223, 222)",
         fontSize: "10px",
         fontWeight: "700",
-        fontFamily: "Fira Sans",
       },
       formatter: function (t: Highcharts.AxisLabelsFormatterContextObject) {
         return formatNumber(t.value, true);

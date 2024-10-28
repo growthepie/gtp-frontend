@@ -509,15 +509,15 @@ export default function ContractRow({
             ]
           }
         </div>
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-end numbers-xs">
           {selectedMode.includes("gas_fees_")
             ? showUsd
               ? `$${Number(
                 sortedContracts[rowKey].gas_fees_absolute_usd.toFixed(0),
               ).toLocaleString("en-GB")}`
-              : `${Number(
+              : `Ξ${Number(
                 sortedContracts[rowKey].gas_fees_absolute_eth.toFixed(0),
-              ).toLocaleString("en-GB")} Ξ`
+              ).toLocaleString("en-GB")}`
             : Number(sortedContracts[rowKey].txcount_absolute).toLocaleString(
               "en-GB",
             )}

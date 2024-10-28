@@ -80,7 +80,7 @@ export default async function Layout({
 
 
   return (
-    <PageRoot className="pt-[15px]">
+    <PageRoot className="pt-[45px] md:pt-[30px]">
       <PageContainer paddingY="none">
         <Section>
           <Title

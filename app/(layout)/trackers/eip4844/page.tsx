@@ -234,7 +234,7 @@ export default function Eiptracker() {
       />
       {feeData && avgTxCosts && (
         <>
-          <Container className="flex w-full mt-[65px] md:mt-[45px]">
+          <Container className="flex w-full mt-[45px] md:mt-[30px]">
             <div className="flex flex-col px-[20px] gap-y-[5px]">
               <div className="flex gap-x-[8px] items-center">
                 {/* <Image

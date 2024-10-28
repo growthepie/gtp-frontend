@@ -31,12 +31,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Too
 import { Switch } from "@/components/Switch";
 import Link from "next/link";
 import { Sources } from "@/lib/datasources";
-import { MetricDataProvider, useMetricData } from "@/app/(layout)/fundamentals/[metric]/MetricDataContext";
-import { MetricChartControlsProvider, useMetricChartControls } from "@/app/(layout)/fundamentals/[metric]/MetricChartControlsContext";
-import { MetricSeriesProvider } from "@/app/(layout)/fundamentals/[metric]/MetricSeriesContext";
+import { MetricDataProvider, useMetricData } from "../../fundamentals/[metric]/MetricDataContext";
+import { MetricChartControlsProvider, useMetricChartControls } from "../../fundamentals/[metric]/MetricChartControlsContext";
+import { MetricSeriesProvider } from "../../fundamentals/[metric]/MetricSeriesContext";
 import { useParams } from "next/navigation";
-import MetricChart from "@/app/(layout)/fundamentals/[metric]/MetricChart";
-import MetricTable from "@/app/(layout)/fundamentals/[metric]/MetricTable";
+import MetricChart from "../../fundamentals/[metric]/MetricChart";
+import MetricTable from "../../fundamentals/[metric]/MetricTable";
 
 const monthly_agg_labels = {
   avg: "Average",
@@ -68,7 +68,7 @@ const Fundamentals = ({ params: { metric } }) => {
         dataValidating={[masterValidating, metricValidating]}
       />
       {master && metricData ? (
-        <DAContent metric={metric} type="data-availability" />
+        <FundamentalsContent metric={metric} type="data-availability" />
       ) : (
         <div className="w-full min-h-[1024px] md:min-h-[1081px] lg:min-h-[637px] xl:min-h-[736px]" />
       )}
@@ -81,24 +81,24 @@ type FundamentalsContentProps = {
   type: "fundamentals" | "data-availability";
 };
 
-const DAContent = ({ metric, type }: FundamentalsContentProps) => {
+const FundamentalsContent = ({ metric, type }: FundamentalsContentProps) => {
   return (
     <>
       <MetricDataProvider metric={metric} metric_type={type}>
         <MetricChartControlsProvider metric_type={type}>
           <MetricSeriesProvider metric_type={type}>
-            <PageContainer>
+            <PageContainer paddingY="none">
               <FundamentalsTopControls metric={metric} />
             </PageContainer>
-            <div className="flex flex-col md:flex-row gap-y-[15px] px-0 md:px-[50px]">
-              <div className="md:w-[503px]">
+            <div className="flex flex-col-reverse lg:flex-row gap-y-[15px] px-0 lg:px-[50px]">
+              <div className="w-full lg:!w-[503px]">
                 <MetricTable metric_type={type} />
               </div>
-              <div className="flex-1 h-[434px] md:h-[434px]">
+              <div className="w-full h-[434px] lg:!w-[calc(100%-503px)] lg:h-[434px] px-[20px] md:px-[50px] lg:px-0">
                 <MetricChart metric_type={type} />
               </div>
             </div>
-            <PageContainer>
+            <PageContainer paddingY="none">
               <FundamentalsBottomControls metric={metric} />
             </PageContainer>
           </MetricSeriesProvider>

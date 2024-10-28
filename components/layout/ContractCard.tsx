@@ -139,7 +139,7 @@ export default function ContractCard({
           <div className="flex flex-col items-end space-x-3 space-y-1 justify-end absolute right-0 top-0">
             <>
               {metric.includes("gas_fees") && (
-                <div className="flex flex-row items-center text-sm">
+                <div className="flex flex-row items-center numbers-sm">
                   <div>{metric.includes("_usd") ? "$" : "Ξ"}</div>
                   <div>
                     {Intl.NumberFormat("en-GB", {
@@ -150,7 +150,7 @@ export default function ContractCard({
                 </div>
               )}
               {metric.includes("daa") && (
-                <div className="flex flex-row items-end space-x-1 text-sm">
+                <div className="flex flex-row items-end space-x-1 numbers-sm">
                   <div>
                     <Icon icon="feather:users" className="w-4 h-4" />
                   </div>
@@ -163,7 +163,7 @@ export default function ContractCard({
                 </div>
               )}
               {metric.includes("txcount") && (
-                <div className="flex flex-row items-end space-x-1 text-sm">
+                <div className="flex flex-row items-end space-x-1 numbers-sm">
                   <div>
                     <Icon icon="feather:activity" className="w-4 h-4" />
                   </div>
@@ -177,9 +177,9 @@ export default function ContractCard({
               )}
             </>
             {data[types.indexOf(`${metric}_change_percent`)] ? (
-              <div className="flex space-x-1 text-[0.6rem] items-end justify-end ">
+              <div className="flex space-x-1 text-xxs items-end justify-end ">
                 <div
-                  className={`flex flex-row space-x-1 text-xs font-semibold transition-colors duration-200 ${data[types.indexOf(`${metric}_change_percent`)] >= 0
+                  className={`flex flex-row items-end space-x-1 numbers-xs font-semibold transition-colors duration-200 ${data[types.indexOf(`${metric}_change_percent`)] >= 0
                     ? " text-green-500 dark:group-hover:text-green-400"
                     : " text-red-500 dark:group-hover:text-red-400"
                     }`}
@@ -204,12 +204,12 @@ export default function ContractCard({
                   ) / 100.0}
                   %
                 </div>
-                <div className="text-forest-900 dark:text-forest-300">
+                <div className="text-forest-900 dark:text-forest-300 leading-[10px]">
                   {changeSuffix}
                 </div>
               </div>
             ) : (
-              <div className="flex flex-row items-center space-x-1 text-xs md:text-sm">
+              <div className="flex flex-row items-center space-x-1 text-xs md:text-xs">
                 -
               </div>
             )}
