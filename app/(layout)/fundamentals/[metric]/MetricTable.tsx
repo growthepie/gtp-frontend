@@ -35,22 +35,12 @@ const MetricTable = ({
   const [maxVal, setMaxVal] = useState<number | null>(null);
 
   const chainSelectToggleState = useMemo(() => {
-    console.log("chainKeys", chainKeys);
-    console.log("selectedChains", selectedChains);
-    console.log("showEthereumMainnet", showEthereumMainnet);
-
-    console.log("intersection(selectedChains, chainKeys)", intersection(selectedChains, chainKeys));
-
-    console.log("intersection(selectedChains, chainKeys).length", intersection(selectedChains, chainKeys).length);
-    console.log("chainKeys.length", chainKeys.length);
-
-    console.log("diff(selectedChains, chainKeys)", difference(selectedChains, chainKeys));
-
     if (
       intersection(selectedChains, chainKeys).length === 1 &&
       showEthereumMainnet
     )
       return "none";
+
     if (
       intersection(selectedChains, chainKeys).length === 0 &&
       !showEthereumMainnet
@@ -71,7 +61,10 @@ const MetricTable = ({
   const onChainSelectToggle = useCallback(() => {
     // if all chains are selected, unselect all
     if (chainSelectToggleState === "all") {
-      setSelectedChains(["ethereum"]);
+      if (showEthereumMainnet)
+        setSelectedChains(["ethereum"]);
+      else
+        setSelectedChains([]);
     }
 
     // if no chains are selected, select last selected chains
@@ -83,12 +76,7 @@ const MetricTable = ({
     if (chainSelectToggleState === "normal") {
       setSelectedChains(chainKeys);
     }
-  }, [
-    chainSelectToggleState,
-    chainKeys,
-    lastSelectedChains,
-    setSelectedChains,
-  ]);
+  }, [chainSelectToggleState, showEthereumMainnet, setSelectedChains, lastSelectedChains, chainKeys]);
 
   const handleChainClick = useCallback(
     (chainKey: string) => {
@@ -173,8 +161,6 @@ const MetricTable = ({
 
     const sampleChainChangesTypes =
       data.chains[Object.keys(data.chains)[0]][changesKey].types;
-
-    console.log("sampleChainChangesTypes", sampleChainChangesTypes);
 
     if (sampleChainChangesTypes.includes("usd")) {
       if (showUsd) {
@@ -408,7 +394,7 @@ const MetricTable = ({
       }
       return { value, prefix, suffix };
     },
-    [type, lastValueTimeIntervalKey, lastValues, master, metric_id, showGwei, showUsd],
+    [lastValues, master, metricsDict, metric_id, showUsd, showGwei, lastValueTimeIntervalKey],
   );
 
   const lastValueLabels = {
@@ -641,12 +627,12 @@ const MetricTable = ({
                   onClick={() => handleChainClick(item.chain.key)}
                   bar={{
                     width: item.barWidth,
-                    color: item.chain.colors[theme ?? "dark"][1],
+                    color: selectedChains.includes(item.chain.key) ? item.chain.colors[theme ?? "dark"][1] : "#5A6462",
                     containerStyle: {
                       left: 0,
                       right: 0,
                       top: 0,
-                      bottom: 0,
+                      bottom: 1,
                       paddingLeft: "8px",
                       paddingRight: "8px",
                       borderRadius: "9999px 9999px 9999px 9999px",

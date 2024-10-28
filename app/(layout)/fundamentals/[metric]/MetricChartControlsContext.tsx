@@ -140,6 +140,7 @@ export const MetricChartControlsProvider = ({
     timespan: `${StorageKeyPrefixMap[metric_type]}Timespan`,
     timeInterval: `${StorageKeyPrefixMap[metric_type]}TimeInterval`,
     timespanByInterval: `${StorageKeyPrefixMap[metric_type]}TimespanByInterval`,
+    intervalShown: `${StorageKeyPrefixMap[metric_type]}IntervalShown`,
     scale: `${StorageKeyPrefixMap[metric_type]}Scale`,
     chains: `${StorageKeyPrefixMap[metric_type]}Chains`,
     lastChains: `${StorageKeyPrefixMap[metric_type]}LastChains`,
@@ -147,18 +148,18 @@ export const MetricChartControlsProvider = ({
   }
 
 
-  const [selectedTimespan, setSelectedTimespan] = useState(
-    // storageKeys["timespan"],
+  const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
+    storageKeys["timespan"],
     "365d",
   );
 
-  const [selectedTimeInterval, setSelectedTimeInterval] = useState(
-    // storageKeys["timeInterval"],
+  const [selectedTimeInterval, setSelectedTimeInterval] = useSessionStorage(
+    storageKeys["timeInterval"],
     "daily",
   );
 
-  const [selectedTimespansByTimeInterval, setSelectedTimespansByTimeInterval] = useState(
-    // storageKeys["timespanByInterval"], 
+  const [selectedTimespansByTimeInterval, setSelectedTimespansByTimeInterval] = useSessionStorage(
+    storageKeys["timespanByInterval"],
     {
       daily: "365d",
       monthly: "12m",
@@ -166,15 +167,18 @@ export const MetricChartControlsProvider = ({
     }
   );
 
-  const [intervalShown, setIntervalShown] = useState<{
+  const [intervalShown, setIntervalShown] = useSessionStorage<{
     min: number;
     max: number;
     num: number;
     label: string;
-  } | null>(null);
+  } | null>(
+    `${StorageKeyPrefixMap[metric_type]}IntervalShown`,
+    null,
+  );
 
-  const [selectedScale, setSelectedScale] = useState(
-    // storageKeys["scale"],
+  const [selectedScale, setSelectedScale] = useSessionStorage(
+    storageKeys["scale"],
     "absolute",
   );
 
@@ -185,8 +189,8 @@ export const MetricChartControlsProvider = ({
     metric_type === "fundamentals" ? DefaultChainSelection.filter((chain) => chainKeys.includes(chain)) : allChains.map((chain) => chain.key)
   );
 
-  const [lastSelectedChains, setLastSelectedChains] = useState(
-    // storageKeys["lastChains"],
+  const [lastSelectedChains, setLastSelectedChains] = useSessionStorage(
+    storageKeys["lastChains"],
     metric_type === "fundamentals" ? allChains.filter(
       (chain: Chain) =>
         (chain.ecosystem.includes("all-chains") &&
@@ -205,7 +209,7 @@ export const MetricChartControlsProvider = ({
 
   const [zoomed, setZoomed] = useState(false);
   const [zoomMin, setZoomMin] = useState<number | undefined>(is_embed === true && embed_start_timestamp ? embed_start_timestamp : undefined);
-  const [zoomMax, setZoomMax] = useState<number | undefined>(is_embed === true && embed_end_timestamp ? embed_end_timestamp : undefined);
+  const [zoomMax, setZoomMax] = useState<number | undefined>(is_embed === true && embed_start_timestamp ? embed_start_timestamp : undefined);
 
   // const timeIntervalKey = useMemo(() => {
   //   if (

@@ -187,7 +187,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
         pattern: {
           path: {
             d: "M 0 0 L 10 10 M 9 -1 L 11 1 M -1 9 L 1 11",
-            strokeWidth: 3,
+            "stroke-width": 3,
           },
           width: 10,
           height: 10,
@@ -368,7 +368,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
                   MetadataByKeys[chainKey]?.colors[
                   theme ?? "dark"
                   ][0] + "66",
-                strokeWidth: 0,
+                "stroke-width": 0,
               },
             },
             brightness: 0.3,
