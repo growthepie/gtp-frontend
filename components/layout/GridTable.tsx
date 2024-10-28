@@ -41,7 +41,8 @@ export type GridTableRowProps = {
   children: React.ReactNode;
   style?: React.CSSProperties;
   bar?: {
-    origin_key: string;
+    origin_key?: string;
+    color?: string;
     width: number;
     containerStyle: React.CSSProperties;
   };
@@ -60,6 +61,19 @@ export const GridTableRow = ({
 }: GridTableRowProps) => {
   const { AllChainsByKeys } = useMaster();
 
+  const getBarColor = () => {
+    if (bar && bar.origin_key) {
+      return AllChainsByKeys[bar.origin_key].colors["dark"][1];
+    }
+
+    if (bar && bar.color) {
+      return bar.color;
+    }
+
+    return "white";
+  }
+
+
   if (bar)
 
     return (
@@ -76,12 +90,9 @@ export const GridTableRow = ({
           }}
         >
           <div
-            className={`z-20`}
+            className={`z-20 transition-all duration-300`}
             style={{
-              background:
-                AllChainsByKeys[
-                  bar.origin_key
-                ].colors["dark"][1],
+              background: getBarColor(),
               width: bar.width * 100 + "%",
               height: "2px",
             }}

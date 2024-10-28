@@ -236,7 +236,11 @@ const MetricTable = ({
   }, [data, valueIndex, lastValueTimeIntervalKey, showUsd, lastValues]);
 
   const rows = useCallback(() => {
-    if (!data || maxVal === null || lastValues === null) return [];
+    if (!data || lastValues === null) return [];
+
+    const valuesArray = Object.values<number>(lastValues);
+
+    const maxVal = Math.max(...valuesArray);
 
     return Object.keys(data.chains)
       .filter(
@@ -250,7 +254,7 @@ const MetricTable = ({
           data: data.chains[chain],
           chain: allChainsByKeys[chain],
           lastVal: lastValues[chain],
-          barWidth: `${(Math.max(lastValues[chain], 0) / maxVal) * 100}%`,
+          barWidth: (Math.max(lastValues[chain], 0) / maxVal),
         };
       })
       .sort((a, b) => {
@@ -289,7 +293,7 @@ const MetricTable = ({
           }
         }
       });
-  }, [data, maxVal, lastValues, reversePerformer, selectedChains]);
+  }, [data, lastValues, reversePerformer, selectedChains]);
 
   let height = 0;
   const transitions = useTransition(
@@ -635,6 +639,21 @@ const MetricTable = ({
                     }`}
 
                   onClick={() => handleChainClick(item.chain.key)}
+                  bar={{
+                    width: item.barWidth,
+                    color: item.chain.colors[theme ?? "dark"][1],
+                    containerStyle: {
+                      left: 0,
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                      paddingLeft: "8px",
+                      paddingRight: "8px",
+                      borderRadius: "9999px 9999px 9999px 9999px",
+                      zIndex: -1,
+                      overflow: "hidden",
+                    },
+                  }}
                 >
                   <div className="flex items-center justify-center size-[26px]">
                     <Icon
