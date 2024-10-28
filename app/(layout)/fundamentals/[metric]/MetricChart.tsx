@@ -1037,29 +1037,29 @@ function MetricChart({
   return (
     <div className="relative w-full h-full">
       <div className="relative flex items-end h-[30px]">
-
-
-        <>
-          {log_default === true && (
+        {log_default === true && (
+          <>
             <div className="absolute pl-[38.5px]">
               <YAxisScaleControls />
             </div>
-          )}
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='33' height='8' viewBox='0 0 33 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath opacity='0.5' d='M0.299805 6.80004L0.353397 6.85363L5.49984 1.70718L10.9998 7.20718L16.4998 1.70718L21.9998 7.20718L27.4998 1.70718L32.6463 6.85363L32.7 6.79992V5.49313L27.4998 0.292969L21.9998 5.79297L16.4998 0.292969L10.9998 5.79297L5.49984 0.292969L0.299805 5.49301V6.80004Z' fill='%235A6462'/%3E%3C/svg%3E%0A")`,
-              // center vertically and repeat-x
-              backgroundPositionY: "50%",
-              backgroundRepeat: "repeat-x",
-            }} />
-        </>
-
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg width='33' height='8' viewBox='0 0 33 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath opacity='0.5' d='M0.299805 6.80004L0.353397 6.85363L5.49984 1.70718L10.9998 7.20718L16.4998 1.70718L21.9998 7.20718L27.4998 1.70718L32.6463 6.85363L32.7 6.79992V5.49313L27.4998 0.292969L21.9998 5.79297L16.4998 0.292969L10.9998 5.79297L5.49984 0.292969L0.299805 5.49301V6.80004Z' fill='%235A6462'/%3E%3C/svg%3E%0A")`,
+                // center vertically and repeat-x
+                backgroundPositionY: "50%",
+                backgroundRepeat: "repeat-x",
+              }} />
+          </>
+        )}
       </div>
       <div id="content-container" className="relative w-full h-full overflow-visible" ref={containerRef}>
-        <div className="absolute w-[2px] bottom-[71px] left-[38.5px] -top-[23px]" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='2' height='396' viewBox='0 0 2 396' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg clip-path='url(%23clip0_16047_48574)'%3E%3Cpath opacity='0.5' d='M1.00002 396L1 0' stroke='%235A6462' stroke-width='2' stroke-dasharray='3 6'/%3E%3C/g%3E%3Cdefs%3E%3CclipPath id='clip0_16047_48574'%3E%3Crect width='2' height='396' fill='white'/%3E%3C/clipPath%3E%3C/defs%3E%3C/svg%3E%0A")`,
-        }} />
+        <div
+          className={`absolute w-[2px] bottom-[71px] left-[38.5px] ${log_default === true ? "-top-[23px]" : "top-0"}`}
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='2' height='396' viewBox='0 0 2 396' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg clip-path='url(%23clip0_16047_48574)'%3E%3Cpath opacity='0.5' d='M1.00002 396L1 0' stroke='%235A6462' stroke-width='2' stroke-dasharray='3 6'/%3E%3C/g%3E%3Cdefs%3E%3CclipPath id='clip0_16047_48574'%3E%3Crect width='2' height='396' fill='white'/%3E%3C/clipPath%3E%3C/defs%3E%3C/svg%3E%0A")`,
+          }}
+        />
         <HighchartsProvider Highcharts={Highcharts}>
           <HighchartsChart
             containerProps={{
