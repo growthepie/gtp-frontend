@@ -303,6 +303,16 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
       if (selectedScale === "stacked" || selectedScale === "percentage") {
         const aData = data.chains[a][timeIntervalKey].data;
         const bData = data.chains[b][timeIntervalKey].data;
+
+        if (selectedScale === "stacked" && showEthereumMainnet) {
+          if (a === "ethereum") {
+            return 1;
+          }
+          if (b === "ethereum") {
+            return -1;
+          }
+        }
+
         // sort by the time of the first data point so that the series are stacked in the correct order
         return bData[0][0] - aData[0][0];
       }
@@ -404,8 +414,6 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
             }),
       };
     });
-
-    console.log("d", d);
 
     return d;
   }, [data, selectedTimeInterval, selectedScale, chainKeys, metric_type, selectedChains, SupportedChainKeys, showEthereumMainnet, timeIntervalKey, getSeriesData, getSeriesType, dataGrouping, MetadataByKeys, theme]);

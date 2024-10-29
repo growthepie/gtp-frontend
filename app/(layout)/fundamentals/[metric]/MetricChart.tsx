@@ -15,6 +15,7 @@ import Highcharts, {
 import highchartsAnnotations from "highcharts/modules/annotations";
 import highchartsPatternFill from "highcharts/modules/pattern-fill";
 import highchartsRoundedCorners from "highcharts-rounded-corners";
+import highchartsAccessibility from "highcharts/modules/accessibility";
 import addHighchartsMore from "highcharts/highcharts-more";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { AxisTickPositionerCallbackFunction } from "highcharts";
@@ -202,7 +203,7 @@ function MetricChart({
 
 }: MetricChartProps) {
 
-  useHighchartsWrappers();
+  // useHighchartsWrappers();
 
   const { theme } = useTheme();
   const { isSidebarOpen, isMobile, setEmbedData, embedData } = useUIContext();
@@ -478,6 +479,7 @@ function MetricChart({
     highchartsRoundedCorners(Highcharts);
     highchartsAnnotations(Highcharts);
     highchartsPatternFill(Highcharts);
+    highchartsAccessibility(Highcharts);
 
     // update x-axis label sizes if it is a 4 digit number
     Highcharts.wrap(
@@ -561,8 +563,6 @@ function MetricChart({
     };
   }, [isSidebarOpen, resituateChart]);
 
-  console.log("width", width, "height", height);
-
   useLayoutEffect(() => {
     if (chartComponent.current) {
       chartComponent.current.setSize(width, height, true);
@@ -596,9 +596,22 @@ function MetricChart({
 
   const formatNumber = useCallback(
     (value: number | string, isAxis = false) => {
-      let prefix = valuePrefix;
-      let suffix = "";
+      // let prefix = valuePrefix;
+      // let suffix = "";
       let val = parseFloat(value as string);
+
+      const units = metricsDict[metric_id].units;
+      const unitKeys = Object.keys(units);
+      const unitKey =
+        unitKeys.find((unit) => unit !== "usd" && unit !== "eth") ||
+        (showUsd ? "usd" : "eth");
+
+      let prefix = metricsDict[metric_id].units[unitKey].prefix
+        ? metricsDict[metric_id].units[unitKey].prefix
+        : "";
+      let suffix = metricsDict[metric_id].units[unitKey].suffix
+        ? metricsDict[metric_id].units[unitKey].suffix
+        : "";
 
       if (
         !showUsd &&
@@ -614,6 +627,8 @@ function MetricChart({
       let number = d3Format(`.2~s`)(val).replace(/G/, "B");
 
       if (isAxis) {
+
+
         if (selectedScale === "percentage") {
           number = d3Format(".2~s")(val).replace(/G/, "B") + "%";
         } else {
@@ -639,7 +654,7 @@ function MetricChart({
 
       return number;
     },
-    [valuePrefix, showUsd, seriesData, selectedScale, showGwei],
+    [metricsDict, metric_id, showUsd, seriesData, selectedScale, showGwei],
   );
 
   const tooltipFormatter = useCallback(
@@ -760,7 +775,7 @@ function MetricChart({
                 maximumFractionDigits: decimals,
               })
             }
-                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+                <div class="ml-0.5 ${!suffix && "hidden"
             }">${suffix}</div>
             </div>
           </div>
@@ -813,7 +828,7 @@ function MetricChart({
 
         if (selectedScale === "percentage")
           tooltipPoints += `
-          <div class="flex w-full space-x-2 items-center font-medium mb-0.5 opacity-60">
+          <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6"></div>
             <div class="tooltip-point-name text-xs">${afterTenPoints.length > 1
               ? `${afterTenPoints.length} Others`
@@ -836,7 +851,7 @@ function MetricChart({
           </div>`;
         else
           tooltipPoints += `
-          <div class="flex w-full space-x-2 items-center font-medium mb-0.5 opacity-60">
+          <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6; "></div>
             <div class="tooltip-point-name text-xs">${afterTenPoints.length > 1
               ? `${afterTenPoints.length} Others`
@@ -852,7 +867,7 @@ function MetricChart({
                 maximumFractionDigits: decimals,
               })
             }
-                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+                <div class="ml-0.5 ${!suffix && "hidden"
             }">${suffix}</div>
             </div>
           </div>
@@ -873,7 +888,7 @@ function MetricChart({
       const sumRow =
         selectedScale === "stacked"
           ? `
-        <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-100">
+        <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5">
           <div class="w-4 h-1.5 rounded-r-full" style=""></div>
           <div class="tooltip-point-name text-xs">Total</div>
           <div class="flex-1 text-right justify-end numbers-xs flex">
@@ -888,7 +903,7 @@ function MetricChart({
                 ? 2
                 : 0,
           })}
-            <div class="opacity-70 ml-0.5 ${!suffix && "hidden"}">
+            <div class="ml-0.5 ${!suffix && "hidden"}">
               ${suffix}
             </div>
           </div>
@@ -1080,42 +1095,16 @@ function MetricChart({
               {...baseOptions.chart}
               // width={width}
               // height={height}
-              className="zoom-chart"
+              // className="zoom-chart" zoom not working
               marginTop={5}
               marginBottom={37}
               marginRight={0}
               marginLeft={38.5}
-              zooming={
-                {
-                  type: is_embed ? "x" : undefined,
-                  mouseWheel: {
-                    enabled: false,
-                  },
-                  resetButton: {
-                    theme: {
-                      zIndex: -10,
-                      fill: "transparent",
-                      stroke: "transparent",
-                      style: {
-                        color: "transparent",
-                        height: 0,
-                        width: 0,
-                      },
-                      states: {
-                        hover: {
-                          fill: "transparent",
-                          stroke: "transparent",
-                          style: {
-                            color: "transparent",
-                            height: 0,
-                            width: 0,
-                          },
-                        },
-                      },
-                    },
-                  }
-                }
-              }
+              zooming={{
+                mouseWheel: {
+                  enabled: false,
+                },
+              }}
               options={{
                 chartComponent: chartComponent.current,
               }}
@@ -1251,7 +1240,7 @@ function MetricChart({
               plotLines={[
                 {
                   value: 0,
-                  color: "#CDD8D3",
+                  color: "#CDD8D3A7",
                   width: 2,
                 }
               ]}
@@ -1312,8 +1301,13 @@ function MetricChart({
           </HighchartsChart>
         </HighchartsProvider>
       </div>
-      <div className="absolute bottom-[53.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50">
-        <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
+      <div className="absolute bottom-[53.5%] left-0 right-0 flex flex-col gap-y-[3px] items-center justify-center pointer-events-none z-0 opacity-40">
+        <ChartWatermark className="w-[128.67px] h-[30.67px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
+        <div className="font-medium text-[10px] uppercase">
+          {master &&
+            metricsDict[metric_id] &&
+            metricsDict[metric_id].name}
+        </div>
       </div>
       {
         seriesData.length === 0 && (

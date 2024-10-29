@@ -69,7 +69,10 @@ const MetricTable = ({
 
     // if no chains are selected, select last selected chains
     if (chainSelectToggleState === "none") {
-      setSelectedChains(lastSelectedChains);
+      if (showEthereumMainnet)
+        setSelectedChains([...lastSelectedChains, "ethereum"]);
+      else
+        setSelectedChains([...lastSelectedChains]);
     }
 
     // if some chains are selected, select all chains
