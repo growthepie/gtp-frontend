@@ -270,7 +270,7 @@ export default function LandingMetricsTable({
                   </div>
                   <ChainRankCell item={item} />
                   <div className="flex justify-end items-center">
-                    <div className="flex gap-[5px] items-center text-[12px] w-[88px]">
+                    <div className="flex gap-[5px] items-center text-[12px] w-[98px]">
                       <div className="w-1/2 flex justify-end text-right numbers-xs text-[#5A6462]">
                         {(
                           data.chains[item.chain.key].user_share * 100
