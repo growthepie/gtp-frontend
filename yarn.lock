@@ -5083,10 +5083,15 @@ highcharts-react-official@^3.2.1:
   dependencies:
     highcharts ">=3.0.0"
 
-highcharts@>=3.0.0, highcharts@^11.4.1:
+highcharts@>=3.0.0:
   version "11.4.3"
   resolved "https://registry.yarnpkg.com/highcharts/-/highcharts-11.4.3.tgz#a6cd961e0a7d4bf749ff32db41a90125a6ab4673"
   integrity sha512-rMmvYvcdwyUVfnRPfiZ0PnW6TgVhoS0FTBI8fc4Fp8l8ocoC9dMecvxS6E6tm7h7LrnSGoEo3b/0IRHuLatD2w==
+
+highcharts@^11.4.8:
+  version "11.4.8"
+  resolved "https://registry.yarnpkg.com/highcharts/-/highcharts-11.4.8.tgz#252e71b81c24ec9f99e756b76dbebd7546e18dda"
+  integrity sha512-5Tke9LuzZszC4osaFisxLIcw7xgNGz4Sy3Jc9pRMV+ydm6sYqsPYdU8ELOgpzGNrbrRNDRBtveoR5xS3SzneEA==
 
 home-or-tmp@^2.0.0:
   version "2.0.0"
