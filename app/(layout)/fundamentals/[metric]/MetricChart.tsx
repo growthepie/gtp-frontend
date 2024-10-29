@@ -625,12 +625,10 @@ function MetricChart({
       let number = d3Format(`.2~s`)(val).replace(/G/, "B");
 
       if (isAxis) {
-
-
         if (selectedScale === "percentage") {
           number = d3Format(".2~s")(val).replace(/G/, "B") + "%";
         } else {
-          if (showGwei && showUsd) {
+          if (showUsd) {
             // for small USD amounts, show 2 decimals
             if (val < 1) number = prefix + val.toFixed(2) + suffix;
             else if (val < 10)
