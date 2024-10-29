@@ -1,18 +1,13 @@
 import { Metadata } from "next";
 import { MetricsURLs } from "@/lib/urls";
-import Container, { PageContainer, PageRoot, Section } from "@/components/layout/Container";
-import Heading from "@/components/layout/Heading";
-import Subheading from "@/components/layout/Subheading";
+import { PageContainer, PageRoot, Section } from "@/components/layout/Container";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import { notFound } from "next/navigation";
 import { track } from "@vercel/analytics/server";
-import Link from "next/link";
-import Icon from "@/components/layout/Icon";
 import { metricItems } from "@/lib/metrics";
 import { Title, TitleButtonLink } from "@/components/layout/TextHeadingComponents";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { Description, textToLinkedText } from "@/components/layout/TextComponents";
-import ReactMarkdown from "react-markdown";
 
 type Props = {
   params: { metric: string };

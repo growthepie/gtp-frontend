@@ -1,43 +1,20 @@
 "use client";
-import { useMemo, useState, useEffect, createContext, useContext, RefObject, ReactNode } from "react";
-import Error from "next/error";
-import { ChainData, MetricsResponse } from "@/types/api/MetricsResponse";
-import Heading from "@/components/layout/Heading";
-import Subheading from "@/components/layout/Subheading";
-import ComparisonChart from "@/components/layout/ComparisonChart";
-import { useLocalStorage, useSessionStorage } from "usehooks-ts";
+import { MetricsResponse } from "@/types/api/MetricsResponse";
 import useSWR from "swr";
-import MetricsTable from "@/components/layout/MetricsTable";
-import { DAMetricsURLs, MetricsURLs } from "@/lib/urls";
+import { MetricsURLs } from "@/lib/urls";
 import {
-  Get_DefaultChainSelectionKeys,
-  Get_SupportedChainKeys,
 } from "@/lib/chains";
-import { intersection } from "lodash";
-import { Icon } from "@iconify/react";
-import QuestionAnswer from "@/components/layout/QuestionAnswer";
-import { navigationCategories, navigationItems } from "@/lib/navigation";
-import Container, { PageContainer } from "@/components/layout/Container";
+import { PageContainer } from "@/components/layout/Container";
 import ShowLoading from "@/components/layout/ShowLoading";
-import Image from "next/image";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { useMaster } from "@/contexts/MasterContext";
-import { TopRowChild, TopRowContainer, TopRowParent } from "@/components/layout/TopRow";
-import { metricItems } from "@/lib/metrics";
-import { Timespans, getTimespans } from "@/lib/chartUtils";
-import { useTheme } from "next-themes";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
-import { Switch } from "@/components/Switch";
-import Link from "next/link";
-import { Sources } from "@/lib/datasources";
-import { MetricDataProvider, useMetricData } from "./MetricDataContext";
-import { MetricChartControlsProvider, useMetricChartControls } from "./MetricChartControlsContext";
-import { MetricSeriesProvider } from "./MetricSeriesContext";
+import { MetricDataProvider, } from "@/components/metric/MetricDataContext";
+import { MetricChartControlsProvider } from "@/components/metric/MetricChartControlsContext";
+import { MetricSeriesProvider } from "@/components/metric/MetricSeriesContext";
 import { useParams } from "next/navigation";
-import MetricChart from "./MetricChart";
-import MetricTable from "./MetricTable";
-import { MetricBottomControls, MetricControls, MetricTopControls } from "./MetricControls";
+import MetricChart from "@/components/metric/MetricChart";
+import MetricTable from "@/components/metric/MetricTable";
+import { MetricBottomControls, MetricTopControls } from "@/components/metric/MetricControls";
 
 const monthly_agg_labels = {
   avg: "Average",

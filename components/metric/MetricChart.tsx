@@ -25,17 +25,6 @@ import {
   XAxis,
   YAxis,
   Tooltip as HighchartsTooltip,
-  Title,
-  Subtitle,
-  Legend,
-  LineSeries,
-  SplineSeries,
-  AreaSplineSeries,
-  AreaRangeSeries,
-  PlotBand,
-  PlotLine,
-  withHighcharts,
-  ColumnSeries,
   Series,
 } from "react-jsx-highcharts";
 import { useUIContext, useHighchartsWrappers } from "@/contexts/UIContext";
