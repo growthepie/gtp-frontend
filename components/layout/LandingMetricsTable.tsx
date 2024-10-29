@@ -517,7 +517,7 @@ const ChainRankCell = memo(function ChainRankIcon(
                           }}
                         >
                           <div
-                            className={`flex w-full items-end justify-end text-[14px] font-medium font-num pr-[15px] pl-[37px] ${getDisplayValue(metric, values, valueKeys).suffix ? "min-w-[145px]" : "min-w-[115px]"} `}
+                            className={`flex w-full items-end justify-end numbers-sm pr-[15px] pl-[37px] ${getDisplayValue(metric, values, valueKeys).suffix ? "min-w-[145px]" : "min-w-[115px]"} `}
                           >
                             {getDisplayValue(metric, values, valueKeys).isNegative && (
                               <div className="">

@@ -459,10 +459,10 @@ export default function EconHeadCharts({
                         />
                       </div>
                     </div>
-                    <div className="absolute text-[18px] top-[14px] right-[30px]">
+                    <div className="absolute text-[18px] top-[18px] right-[30px] numbers">
                       {!isMultipleSeries
                         ? valuePrefix +
-                        " " +
+
                         Intl.NumberFormat("en-GB", {
                           notation: "standard",
                           maximumFractionDigits: 2,
@@ -473,7 +473,6 @@ export default function EconHeadCharts({
                           ],
                         )
                         : valuePrefix +
-                        " " +
                         Intl.NumberFormat("en-GB", {
                           notation: "standard",
                           maximumFractionDigits: 2,
