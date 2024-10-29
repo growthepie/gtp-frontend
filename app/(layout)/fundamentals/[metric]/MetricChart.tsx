@@ -144,7 +144,7 @@ const baseOptions: Highcharts.Options = {
       },
       marker: {
         lineColor: "white",
-        radius: 0,
+        radius: 5,
         symbol: "circle",
       },
       shadow: false,
@@ -370,7 +370,7 @@ function MetricChart({
       default:
         return {
           column: {
-            stacking: "normal",
+            stacking: undefined,
           },
           line: {
             stacking: undefined,
@@ -632,9 +632,7 @@ function MetricChart({
         } else {
           if (showGwei && showUsd) {
             // for small USD amounts, show 2 decimals
-            if (val < 0.001) number = prefix + val.toFixed(2) + suffix;
-            if (val < 0.01) number = prefix + val.toFixed(3) + suffix;
-            if (val < 0.1) number = prefix + val.toFixed(4) + suffix;
+            if (val < 1) number = prefix + val.toFixed(2) + suffix;
             else if (val < 10)
               number =
                 prefix + d3Format(".3s")(val).replace(/G/, "B") + suffix;

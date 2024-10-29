@@ -430,7 +430,7 @@ const MetricTable = ({
         height={!isMobile ? 434 : (chainKeys.filter(chain => chain != "ethereum").length) * 39 + 45}
         scrollbarAbsolute={true}
         scrollbarPosition="right"
-        className="w-full"
+        className="min-w-[503px] w-full"
         header={
           <div className="hidden lg:block">
             <div className="pr-[0px] lg:pr-[45px] relative">

@@ -83,8 +83,9 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
   );
 
   const MetadataByKeys = useMemo(() => {
-    return merge(AllChainsByKeys, AllDALayersByKeys);
-  }, [AllChainsByKeys, AllDALayersByKeys]);
+    if (!master) return {};
+    return metric_type === "fundamentals" ? master.chains : master.da_layers
+  }, [master, metric_type]);
 
   const getSeriesData = useCallback(
     (name: string, types: string[], data: number[][]) => {
@@ -144,6 +145,12 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
         return [d[timeIndex], d[valueIndex] * valueMulitplier];
       });
 
+      let marker = {
+        lineColor: MetadataByKeys[name].colors[theme ?? "dark"][0],
+        radius: 0,
+        symbol: "circle",
+      }
+
       if (selectedTimeInterval === "daily") {
         return {
           data: seriesData,
@@ -152,6 +159,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
           fillColor: seriesFill,
           fillOpacity,
           color,
+          marker,
         };
       }
 
@@ -203,27 +211,44 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
 
       const secondZoneDashStyle = todaysDate === 1 ? "Solid" : "Dot";
 
+
+
       // if it is not the last day of the month, add a zone to the chart to indicate that the data is incomplete
-      if (seriesData.length > 2 && new Date().getUTCDate() !== 1 && selectedTimeInterval === "monthly") {
-        zoneAxis = "x";
-        zones = [
-          {
-            value: seriesData[seriesData.length - 2][0] + 1,
-            dashStyle: "Solid",
-            fillColor: isColumnChart ? columnFillColor : seriesFill,
-            color: isColumnChart
-              ? columnColor
-              : MetadataByKeys[name].colors[theme ?? "dark"][0],
-          },
-          {
-            // value: monthlyData[monthlyData.length - 2][0],
-            dashStyle: secondZoneDashStyle,
-            fillColor: isColumnChart ? columnFillColor : seriesFill,
-            color: isColumnChart
-              ? secondZoneDottedColumnColor
-              : MetadataByKeys[name].colors[theme ?? "dark"][0],
-          },
-        ];
+      if (selectedTimeInterval === "monthly") {
+        if (seriesData.length > 2 && new Date().getUTCDate() !== 1) {
+          zoneAxis = "x";
+          zones = [
+            {
+              value: seriesData[seriesData.length - 2][0] + 1,
+              dashStyle: "Solid",
+              fillColor: isColumnChart ? columnFillColor : seriesFill,
+              color: isColumnChart
+                ? columnColor
+                : MetadataByKeys[name].colors["dark"][0],
+            },
+            {
+              // value: monthlyData[monthlyData.length - 2][0],
+              dashStyle: secondZoneDashStyle,
+              fillColor: isColumnChart ? columnFillColor : seriesFill,
+              color: isColumnChart
+                ? secondZoneDottedColumnColor
+                : MetadataByKeys[name].colors["dark"][0],
+            },
+          ];
+        } else if (new Date().getUTCDate() !== 1) {
+          zoneAxis = "x";
+          zones = [
+            {
+              // value: monthlyData[monthlyData.length - 2][0],
+              dashStyle: secondZoneDashStyle,
+              fillColor: isColumnChart ? columnFillColor : seriesFill,
+              color: isColumnChart
+                ? secondZoneDottedColumnColor
+                : MetadataByKeys[name].colors["dark"][0],
+            }
+          ];
+          marker.radius = 2;
+        }
       }
 
       return {
@@ -233,6 +258,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
         fillColor,
         fillOpacity,
         color,
+        marker,
       };
     },
     [
@@ -300,11 +326,11 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
     ) : chainKeys.filter((chainKey) => selectedChains.includes(chainKey));
 
     const d = chainDataKeys.sort((a, b) => {
-      if (selectedScale === "stacked" || selectedScale === "percentage") {
+      if (["stacked", "percentage"].includes(selectedScale)) {
         const aData = data.chains[a][timeIntervalKey].data;
         const bData = data.chains[b][timeIntervalKey].data;
 
-        if (selectedScale === "stacked" && showEthereumMainnet) {
+        if (showEthereumMainnet) {
           if (a === "ethereum") {
             return 1;
           }
@@ -363,6 +389,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
           MetadataByKeys[chainKey]?.colors[theme ?? "dark"][0],
         borderWidth: 1,
         lineWidth: 2,
+        marker: getSeriesData(chainKey, chain[timeIntervalKey].types, chain[timeIntervalKey].data).marker,
         states: {
           hover: {
             enabled: true,
