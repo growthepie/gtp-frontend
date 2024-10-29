@@ -15,7 +15,6 @@ import Highcharts, {
 import highchartsAnnotations from "highcharts/modules/annotations";
 import highchartsPatternFill from "highcharts/modules/pattern-fill";
 import highchartsRoundedCorners from "highcharts-rounded-corners";
-import highchartsAccessibility from "highcharts/modules/accessibility";
 import addHighchartsMore from "highcharts/highcharts-more";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { AxisTickPositionerCallbackFunction } from "highcharts";
@@ -479,7 +478,6 @@ function MetricChart({
     highchartsRoundedCorners(Highcharts);
     highchartsAnnotations(Highcharts);
     highchartsPatternFill(Highcharts);
-    highchartsAccessibility(Highcharts);
 
     // update x-axis label sizes if it is a 4 digit number
     Highcharts.wrap(
