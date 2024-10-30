@@ -147,8 +147,8 @@ export default function ChainAnimations({
         <div
           key={chain}
           className={`relative cursor-pointer flex flex-row items-center rounded-full justify-between text-xs  transition-opacity font-medium z-0 select-none pl-[2px]  pr-[2px] h-[34px] ${AllChainsByKeys[chain].darkTextOnBackground === true
-              ? "text-white dark:text-black"
-              : "text-white"
+            ? "text-white dark:text-black"
+            : "text-white"
             } ${isShaking ? "animate-shake " : ""} ${selectedChains[chain] ? "opacity-100" : "opacity-30"
             }`}
           style={{
@@ -215,7 +215,7 @@ export default function ChainAnimations({
                           notation: "compact",
                           maximumFractionDigits: 2,
                           minimumFractionDigits: 2,
-                        }).format(value).format(value).replace(/K$/, "k")}
+                        }).format(value).replace(/K$/, "k")}
                     </div>
                   </div>
                 )}
