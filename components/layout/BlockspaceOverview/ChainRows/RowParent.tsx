@@ -102,7 +102,7 @@ export default function RowParent({ chainKey, index }) {
   return (
     <div key={index} className="w-full h-full relative">
       {DisabledStates[selectedMode] &&
-      DisabledStates[selectedMode][chainKey] ? (
+        DisabledStates[selectedMode][chainKey] ? (
         <>
           <div
             className={`flex flex-row flex-grow h-full pl-[2px] items-center rounded-full text-xs font-medium text-white dark:text-[#CDD8D3]`}
@@ -111,9 +111,8 @@ export default function RowParent({ chainKey, index }) {
                 AllChainsByKeys[chainKey].colors[theme ?? "dark"][1],
                 50,
               ),
-              boxShadow: `0px 0px 0px 2px ${
-                AllChainsByKeys[chainKey].colors[theme ?? "dark"][1]
-              } inset`,
+              boxShadow: `0px 0px 0px 2px ${AllChainsByKeys[chainKey].colors[theme ?? "dark"][1]
+                } inset`,
               // borderWidth: "2px",
               // boxSizing: "border-box",
             }}
@@ -163,32 +162,29 @@ export default function RowParent({ chainKey, index }) {
         </>
       ) : (
         <div
-          className={`flex flex-row relative  flex-grow h-full pl-[134px] items-center rounded-full text-xs font-medium ${
-            AllChainsByKeys[chainKey].darkTextOnBackground === true
-              ? "text-white dark:text-black"
-              : "text-white"
-          }`}
+          className={`flex flex-row relative  flex-grow h-full pl-[134px] items-center rounded-full text-xs font-medium ${AllChainsByKeys[chainKey].darkTextOnBackground === true
+            ? "text-white dark:text-black"
+            : "text-white"
+            }`}
           style={{
             backgroundColor:
               AllChainsByKeys[chainKey].colors[theme ?? "dark"][1],
           }}
         >
           <div
-            className={`flex items-center h-[31px]  absolute w-[140px] gap-x-[10px] transition-all min-w-[140px]  rounded-full  text-[#CDD8D3] ${
-              forceSelectedChain
-                ? isCategoryHovered("all_chain")
-                  ? isCategoryHovered("all_chain") && allCats
-                    ? `rounded-l-full shadow-lg z-[30] w-[154px] h-[39px] border-[2px] left-[0px] bg-[#1F2726]`
-                    : `rounded-l-full shadow-lg z-[30] w-[147px] h-[41px] border-[2px] left-[0px] bg-[#1F2726]`
-                  : allCats
+            className={`flex items-center h-[31px]  absolute w-[140px] gap-x-[10px] transition-all min-w-[140px]  rounded-full  text-[#CDD8D3] ${forceSelectedChain
+              ? isCategoryHovered("all_chain")
+                ? isCategoryHovered("all_chain") && allCats
+                  ? `rounded-l-full shadow-lg z-[30] w-[154px] h-[39px] border-[2px] left-[0px] bg-[#1F2726]`
+                  : `rounded-l-full shadow-lg z-[30] w-[147px] h-[41px] border-[2px] left-[0px] bg-[#1F2726]`
+                : allCats
                   ? `rounded-l-full shadow-lg z-[30] w-[154px] h-[41px] border-[2px] left-[0px] bg-[#151A19]`
                   : "z-[20] left-[2px] bg-[#1F2726]"
-                : "z-[20] left-[2px] bg-[#1F2726]"
-            }  ${
-              forceSelectedChain
+              : "z-[20] left-[2px] bg-[#1F2726]"
+              }  ${forceSelectedChain
                 ? "hover:cursor-pointer"
                 : "hover:cursor-default"
-            } `}
+              } `}
             onMouseEnter={() => {
               // setIsCategoryHovered((prev) => ({
               //   ...prev,
@@ -236,9 +232,9 @@ export default function RowParent({ chainKey, index }) {
                     minimumFractionDigits: 2,
                   }).format(
                     data[chainKey].totals[selectedTimespan].data[
-                      data[chainKey].totals.types.indexOf(displayMode)
+                    data[chainKey].totals.types.indexOf(displayMode)
                     ],
-                  )}
+                  ).replace(/K/, "k")}
               </div>
               <Link
                 href={`/chains/${AllChainsByKeys[chainKey].urlKey}/`}

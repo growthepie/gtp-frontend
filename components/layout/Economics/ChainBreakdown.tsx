@@ -341,7 +341,7 @@ export default function ChainBreakdown({
             notation: "compact",
             maximumFractionDigits: 2,
             minimumFractionDigits: 2,
-          }).format(x)}
+          }).format(x).replace(/K/g, "k")}
         </span>
       </div>
     );

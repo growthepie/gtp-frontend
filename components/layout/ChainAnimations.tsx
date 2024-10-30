@@ -146,13 +146,11 @@ export default function ChainAnimations({
       <>
         <div
           key={chain}
-          className={`relative cursor-pointer flex flex-row items-center rounded-full justify-between text-xs  transition-opacity font-medium z-0 select-none pl-[2px]  pr-[2px] h-[34px] ${
-            AllChainsByKeys[chain].darkTextOnBackground === true
+          className={`relative cursor-pointer flex flex-row items-center rounded-full justify-between text-xs  transition-opacity font-medium z-0 select-none pl-[2px]  pr-[2px] h-[34px] ${AllChainsByKeys[chain].darkTextOnBackground === true
               ? "text-white dark:text-black"
               : "text-white"
-          } ${isShaking ? "animate-shake " : ""} ${
-            selectedChains[chain] ? "opacity-100" : "opacity-30"
-          }`}
+            } ${isShaking ? "animate-shake " : ""} ${selectedChains[chain] ? "opacity-100" : "opacity-30"
+            }`}
           style={{
             width: width,
             backgroundColor: AllChainsByKeys[chain].colors[theme ?? "dark"][1],
@@ -209,15 +207,15 @@ export default function ChainAnimations({
                     <div>
                       {showUsd
                         ? Intl.NumberFormat(undefined, {
-                            notation: "compact",
-                            maximumFractionDigits: 2,
-                            minimumFractionDigits: 2,
-                          }).format(value)
+                          notation: "compact",
+                          maximumFractionDigits: 2,
+                          minimumFractionDigits: 2,
+                        }).format(value).replace(/K$/, "k")
                         : Intl.NumberFormat(undefined, {
-                            notation: "compact",
-                            maximumFractionDigits: 2,
-                            minimumFractionDigits: 2,
-                          }).format(value)}
+                          notation: "compact",
+                          maximumFractionDigits: 2,
+                          minimumFractionDigits: 2,
+                        }).format(value).format(value).replace(/K$/, "k")}
                     </div>
                   </div>
                 )}
@@ -235,9 +233,8 @@ export default function ChainAnimations({
           </div>
           <div className="flex items-center justify-center absolute right-2 h-[17px] w-[17px] bg-[#1F2726] rounded-full">
             <Icon
-              icon={`feather:${
-                !selectedChains[chain] ? "circle" : "check-circle"
-              }`}
+              icon={`feather:${!selectedChains[chain] ? "circle" : "check-circle"
+                }`}
               className="w-[15px] h-[15px] align-middle"
               style={{
                 color: AllChainsByKeys[chain].colors[theme ?? "dark"][0],
