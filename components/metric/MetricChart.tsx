@@ -613,25 +613,36 @@ function MetricChart({
 
       let number = d3Format(`.2~s`)(val).replace(/G/, "B");
 
+      let absVal = Math.abs(val);
+
+      // let formatStringPrefix = units[unitKey].currency ? "." : "~."
+
       if (isAxis) {
         if (selectedScale === "percentage") {
           number = d3Format(".2~s")(val).replace(/G/, "B") + "%";
         } else {
-          if (showUsd) {
+          if (prefix || suffix) {
             // for small USD amounts, show 2 decimals
-            if (val < 1) number = prefix + val.toFixed(2) + suffix;
-            else if (val < 10)
-              number =
-                prefix + d3Format(".3s")(val).replace(/G/, "B") + suffix;
-            else if (val < 100)
-              number =
-                prefix + d3Format(".4s")(val).replace(/G/, "B") + suffix;
+            if (absVal === 0) number = "0";
+            else if (absVal < 1) number = val.toFixed(2);
+            else if (absVal < 10)
+              number = units[unitKey].currency ? val.toFixed(2) :
+                d3Format(`~.3s`)(val).replace(/G/, "B");
+            else if (absVal < 100)
+              number = units[unitKey].currency ? d3Format(`s`)(val).replace(/G/, "B") :
+                d3Format(`~.4s`)(val).replace(/G/, "B")
             else
-              number =
-                prefix + d3Format(".2s")(val).replace(/G/, "B") + suffix;
+              number = units[unitKey].currency ? d3Format(`s`)(val).replace(/G/, "B") :
+                d3Format(`~.2s`)(val).replace(/G/, "B");
           } else {
-            number = prefix + d3Format(".2s")(val).replace(/G/, "B") + suffix;
+            if (absVal === 0) number = "0";
+            else if (absVal < 1) number = val.toFixed(2);
+            else if (absVal < 10)
+              d3Format(`.2s`)(val).replace(/G/, "B")
+            else number = d3Format(`s`)(val).replace(/G/, "B");
           }
+          // for negative values, add a minus sign before the prefix
+          number = `${prefix}${number} ${suffix}`.replace(`${prefix}-`, `\u2212${prefix}`);
         }
       }
 
@@ -1037,7 +1048,7 @@ function MetricChart({
       <div className="relative flex items-end h-[30px]">
         {log_default === true && (
           <>
-            <div className="absolute pl-[38.5px]">
+            <div className="absolute pl-[60px]">
               <YAxisScaleControls />
             </div>
             <div
@@ -1053,7 +1064,7 @@ function MetricChart({
       </div>
       <div id="content-container" className="relative w-full h-full overflow-visible" ref={containerRef}>
         <div
-          className={`absolute w-[2px] bottom-[71px] left-[38.5px] ${log_default === true ? "-top-[23px]" : "top-0"}`}
+          className={`absolute w-[2px] bottom-[71px] left-[60px] ${log_default === true ? "-top-[23px]" : "top-0"}`}
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='2' height='396' viewBox='0 0 2 396' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg clip-path='url(%23clip0_16047_48574)'%3E%3Cpath opacity='0.5' d='M1.00002 396L1 0' stroke='%235A6462' stroke-width='2' stroke-dasharray='3 6'/%3E%3C/g%3E%3Cdefs%3E%3CclipPath id='clip0_16047_48574'%3E%3Crect width='2' height='396' fill='white'/%3E%3C/clipPath%3E%3C/defs%3E%3C/svg%3E%0A")`,
           }}
@@ -1082,7 +1093,7 @@ function MetricChart({
               marginTop={5}
               marginBottom={37}
               marginRight={0}
-              marginLeft={38.5}
+              marginLeft={60}
               zooming={{
                 mouseWheel: {
                   enabled: false,
@@ -1228,7 +1239,6 @@ function MetricChart({
                 }
               ]}
               labels={{
-
                 // y: 5,
                 // x: 0,
                 distance: 9,

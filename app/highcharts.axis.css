@@ -22,9 +22,8 @@
   @apply !font-raleway;
 }
 
-.highcharts-axis-labels.highcharts-yaxis-labels text {
-  font-size: 10px !important;
-  @apply !font-num;
+.highcharts-axis-labels.highcharts-yaxis-labels text, .highcharts-axis-labels.highcharts-yaxis-labels span {
+  @apply !numbers-xxs;
 }
 
 .highcharts-axis-labels. .year-label {

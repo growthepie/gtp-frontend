@@ -138,7 +138,7 @@ module.exports = {
           letterSpacing: '0.05em', // 5%
           lineHeight: '100%',
           textRendering: 'optimizeLegibility',
-          fontFeatureSettings: '"tnum" !important',
+          fontFeatureSettings: '"tnum" on, "lnum" on !important',
         },
       };
 
