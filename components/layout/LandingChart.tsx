@@ -1758,11 +1758,11 @@ const MobileMetricCard = ({
         </div>
       </div>
       <div className="flex flex-col items-center justify-center w-7/12 gap-y-[3px]">
-        <div className="text-[20px] font-[650] leading-[1.2] flex items-end">
-          <div className="text-[20px]">
+        <div className="numbers-xl font-[650] py-[5px] flex items-end">
+          <div className="numbers-xl">
             {metric_value.toLocaleString("en-GB")}
           </div>
-          <div className="text-[20px] leading-tight">{is_multiple && "x"}</div>
+          <div className="numbers-xl">{is_multiple && "x"}</div>
         </div>
         <div className="text-[10px] font-medium leading-[1.5]">
           {metric_comparison > 0 ? (
@@ -1819,13 +1819,13 @@ const MetricCard = ({
         <div className="text-[10px] font-medium leading-[1.5]">
           {metric_name}
         </div>
-        <div className="text-[24px] font-[650] leading-[1.33] flex items-end">
-          <div className="text-[24px]">
+        <div className="numbers-2xl font-[650] flex items-end pt-[5px] pb-[8px]">
+          <div className="">
             {metric_value.toLocaleString("en-GB")}
           </div>
-          <div className="text-[24px] leading-tight">{is_multiple && "x"}</div>
+          <span className="numbers-2xl">{is_multiple && "x"}</span>
         </div>
-        <div className="text-[10px] font-medium leading-[1.5]">
+        <div className="numbers-xxs font-medium">
           {metric_comparison > 0 ? (
             <span
               className="text-green-500 dark:text-green-500 font-semibold"
@@ -1851,7 +1851,7 @@ const MetricCard = ({
               {(metric_comparison * 100).toFixed(2)}%
             </span>
           )}{" "}
-          in last week
+          <span className="font-raleway">in last week</span>
         </div>
       </div>
     </div>
