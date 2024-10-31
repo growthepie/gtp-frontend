@@ -510,8 +510,7 @@ export const navigationItems: NavigationItem[] = [
 
     // href: "",
   },
-  // include only if not PRODUCTION
-  ...(!IS_PRODUCTION ? [dataAvailabilityGroup] : []),
+  ...[dataAvailabilityGroup],
   {
     name: "Trackers",
     label: "Public Goods",
