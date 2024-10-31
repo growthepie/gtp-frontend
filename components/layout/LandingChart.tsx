@@ -43,6 +43,8 @@ import {
   TopRowParent,
 } from "@/components/layout/TopRow";
 import { useMaster } from "@/contexts/MasterContext";
+import { GTPIcon } from "./GTPIcon";
+import { GTPIconName } from "@/icons/gtp-icon-names";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -855,7 +857,7 @@ export default function LandingChart({
 
   const getChartHeight = useCallback(() => {
     if (is_embed) return height;
-    if (isMobile) return 284;
+    if (isMobile) return 264;
     return 360;
   }, [isMobile, is_embed, height]);
 
@@ -1496,7 +1498,7 @@ export default function LandingChart({
       >
         <div className="flex flex-col lg:hidden justify-center pb-[15px] gap-y-[5px]">
           <MobileMetricCard
-            icon="feather:users"
+            icon="gtp-users"
             metric_name="Active Addresses"
             metric_value={latest_total}
             metric_comparison={latest_total_comparison}
@@ -1504,14 +1506,14 @@ export default function LandingChart({
           />
           <div className="flex justify-center gap-x-[5px]">
             <MobileMetricCard
-              icon="gtp:wallet-chain"
+              icon="gtp-walletsmultiplechains"
               metric_name="Multi-Chain Users"
               metric_value={cross_chain_users}
               metric_comparison={cross_chain_users_comparison}
               theme={theme || "dark"}
             />
             <MobileMetricCard
-              icon="feather:layers"
+              icon="gtp-layers"
               metric_name="L2 Dominance"
               metric_value={(Math.round(l2_dominance * 100) / 100).toFixed(2)}
               metric_comparison={l2_dominance_comparison}
@@ -1670,21 +1672,21 @@ export default function LandingChart({
             <div className="flex justify-center items-center">
               <div className="flex items-center justify-center gap-x-[20px] pr-[10px]">
                 <MetricCard
-                  icon="feather:users"
+                  icon="gtp-users"
                   metric_name="Active Addresses"
                   metric_value={latest_total}
                   metric_comparison={latest_total_comparison}
                   theme={theme || "dark"}
                 />
                 <MetricCard
-                  icon="gtp:wallet-chain"
+                  icon="gtp-walletsmultiplechains"
                   metric_name="Active on Multiple Chains"
                   metric_value={cross_chain_users}
                   metric_comparison={cross_chain_users_comparison}
                   theme={theme || "dark"}
                 />
                 <MetricCard
-                  icon="feather:layers"
+                  icon="gtp-layers"
                   metric_name="Layer 2 Dominance"
                   metric_value={(Math.round(l2_dominance * 100) / 100).toFixed(
                     2,
@@ -1742,7 +1744,7 @@ const MobileMetricCard = ({
   is_multiple = false,
   theme,
 }: {
-  icon: string;
+  icon: GTPIconName;
   metric_name: string;
   metric_value: number | string;
   metric_comparison: number;
@@ -1752,7 +1754,7 @@ const MobileMetricCard = ({
   return (
     <div className="flex bg-forest-200/10 dark:bg-[#CDD8D3]/20 backdrop-blur-[30px] rounded-[15px] px-[7px] pt-[10px] pb-[7px] items-center w-full">
       <div className="flex flex-col items-center flex-1">
-        <Icon icon={icon} className="w-[30px] h-[30px]" />
+        <GTPIcon icon={icon} size="md" />
         <div className="block text-[10px] font-medium leading-[1.5] text-center">
           {metric_name}
         </div>
@@ -1805,7 +1807,7 @@ const MetricCard = ({
   is_multiple = false,
   theme,
 }: {
-  icon: string;
+  icon: GTPIconName;
   metric_name: string;
   metric_value: number | string;
   metric_comparison: number;
@@ -1813,8 +1815,8 @@ const MetricCard = ({
   theme: string;
 }) => {
   return (
-    <div className="hidden lg:flex bg-forest-200/10 dark:bg-[#CDD8D3]/20 rounded-[11px] px-[13px] py-[5px] items-center backdrop-blur-[30px]">
-      <Icon icon={icon} className="w-[28px] h-[32px] mr-[6px]" />
+    <div className="hidden lg:flex gap-x-[6px] bg-forest-200/10 dark:bg-[#CDD8D3]/20 rounded-[11px] px-[13px] py-[5px] items-center backdrop-blur-[30px]">
+      <GTPIcon icon={icon} size="md" />
       <div className="flex flex-col items-center justify-center -space-y-[5px]">
         <div className="text-[10px] font-medium leading-[1.5]">
           {metric_name}

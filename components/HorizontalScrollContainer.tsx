@@ -288,7 +288,7 @@ export default function HorizontalScrollContainer({
   }, [showLeftGradient, showRightGradient]);
 
   return (
-    <div className={`relative w-full px-0 overflow-x-hidden ${className}`}>
+    <div className={`relative w-full px-0 overflow-x-hidden overflow-y-hidden ${className}`}>
       {/* Left Gradient Mask */}
       <div
         className={`transition-opacity duration-300 ${showScroller && showLeftGradient ? "opacity-100" : "opacity-0"
@@ -335,7 +335,7 @@ export default function HorizontalScrollContainer({
             }
           >
             <div
-              className={`w-full max-w-full ${includeMargin ? "pr-[20px] md:pr-[50px]" : ""
+              className={`w-full max-w-full overflow-y-clip ${includeMargin ? "pr-[20px] md:pr-[50px]" : ""
                 }`}
               ref={contentRef}
               style={{
