@@ -46,7 +46,7 @@ const CategoryComparison = () => {
         dataValidating={[usageValidating]}
       />
       <Container
-        className="flex flex-col w-full pt-[65px] md:pt-[30px]"
+        className="flex flex-col w-full pt-[45px] md:pt-[30px]"
         isPageRoot
       >
         <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] relative">

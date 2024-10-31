@@ -1,6 +1,6 @@
-.highcharts-tick {
+/* .highcharts-tick {
   stroke-dasharray: 0 10 15;
-}
+} */
 /*
 .highcharts-axis-labels text {
   text-anchor: middle !important;
@@ -17,12 +17,18 @@
 .highcharts-title,
 .highcharts-label span,
 .highcharts-axis-labels span,
+.highcharts-axis-labels > span,
 .highcharts-axis-labels text {
   @apply !font-raleway;
 }
 
-.highcharts-axis-labels .year-label {
+.highcharts-axis-labels.highcharts-yaxis-labels text, .highcharts-axis-labels.highcharts-yaxis-labels span {
+  @apply !numbers-xxs;
+}
+
+.highcharts-axis-labels. .year-label {
   font-size: 20px !important;
+  @apply !font-raleway;
 }
 
 .highcharts-column-series path {
@@ -31,4 +37,9 @@
   opacity: 0.9;
   /* filter: drop-shadow(0px 0px 1px #cdd8d3); */
   /* filter: box-shadow(0px 0px 2px #cdd8d3); */
+}
+
+.highcharts-zero-line {
+  stroke: #CDD8D3;
+  stroke-width: 2px;
 }

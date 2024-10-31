@@ -28,6 +28,7 @@ import { useUIContext } from "@/contexts/UIContext";
 import { useMaster } from "@/contexts/MasterContext";
 import ChartWatermark from "@/components/layout/ChartWatermark";
 import { unix } from "moment";
+import "@/app/highcharts.axis.css";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -180,30 +181,25 @@ export default function EconHeadCharts({
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${color}"></div>
             <div class="tooltip-point-name text-md">${nameString}</div>
-            <div class="flex-1 text-right font-inter w-full flex">
+            <div class="flex-1 text-right justify-end flex numbers-xs">
               <div class="flex justify-end text-right w-full">
-                  <div class="opacity-70 mr-0.5 ${
-                    !prefix && "hidden"
-                  }">${prefix}</div>
-                  <div style={{
-                            fontFeatureSettings: "'pnum' on, 'lnum' on",
-                          }}>${
-                            isFees
-                              ? parseFloat(displayValue).toLocaleString(
-                                  "en-GB",
-                                  {
-                                    minimumFractionDigits: 2,
+                  <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+            }">${prefix}</div>
+              ${isFees
+              ? parseFloat(displayValue).toLocaleString(
+                "en-GB",
+                {
+                  minimumFractionDigits: 2,
 
-                                    maximumFractionDigits: 2,
-                                  },
-                                )
-                              : formatBytes(displayValue)
-                          }
-                  </div>
+                  maximumFractionDigits: 2,
+                },
+              )
+              : formatBytes(displayValue)
+            }
+               
                 </div>
-                <div class="opacity-70 ml-0.5 ${
-                  !suffix && "hidden"
-                }">${suffix}</div>
+                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+            }">${suffix}</div>
             </div>
           </div>
          `;
@@ -296,12 +292,12 @@ export default function EconHeadCharts({
 
       if (showUsd) {
         if (val < 1) {
-          number = valuePrefix + " " + val.toFixed(2);
+          number = valuePrefix + val.toFixed(2);
         } else {
-          number = valuePrefix + " " + formatLargeNumber(val);
+          number = valuePrefix + formatLargeNumber(val);
         }
       } else {
-        number = valuePrefix + " " + formatLargeNumber(val);
+        number = valuePrefix + formatLargeNumber(val);
       }
 
       return number;
@@ -317,7 +313,7 @@ export default function EconHeadCharts({
       if (
         i === 0 ||
         data[key].daily.data[data[key].daily.data.length - 1][unixIndex] <
-          smallestUnixTimestamp
+        smallestUnixTimestamp
       ) {
         smallestUnixTimestamp =
           data[key].daily.data[data[key].daily.data.length - 1][unixIndex];
@@ -350,7 +346,7 @@ export default function EconHeadCharts({
     Object.keys(data).map((key) => {
       sum +=
         data[key].daily.data[data[key].daily.data.length - 1][
-          data[key].daily.types.indexOf(showUsd ? "usd" : "eth")
+        data[key].daily.types.indexOf(showUsd ? "usd" : "eth")
         ];
     });
 
@@ -397,12 +393,12 @@ export default function EconHeadCharts({
         }}
         aria-labelledby={"economics-traction-title"}
         hasTrack={false}
-        // onDrag={(e) => {
-        //   setIsDragging(true);
-        // }}
-        // onDragged={(e) => {
-        //   setIsDragging(false);
-        // }}
+      // onDrag={(e) => {
+      //   setIsDragging(true);
+      // }}
+      // onDragged={(e) => {
+      //   setIsDragging(false);
+      // }}
       >
         <SplideTrack>
           {Object.keys(chart_data.metrics)
@@ -421,8 +417,8 @@ export default function EconHeadCharts({
                 : 0;
               const dataIndex = !isMultipleSeries
                 ? chart_data.metrics[key].daily.types.indexOf(
-                    showUsd ? "usd" : "eth",
-                  )
+                  showUsd ? "usd" : "eth",
+                )
                 : 0;
 
               const lastMultiIndex = isMultipleSeries
@@ -441,9 +437,8 @@ export default function EconHeadCharts({
                 <SplideSlide key={"Splide" + key}>
                   <div className="relative flex flex-col w-full overflow-hidden h-[197px] bg-[#1F2726] rounded-2xl  group ">
                     <div
-                      className={`absolute items-center text-[16px] font-bold top-[15px] left-[15px] flex gap-x-[10px]  z-10 ${
-                        link ? "cursor-pointer" : ""
-                      }`}
+                      className={`absolute items-center text-[16px] font-bold top-[15px] left-[15px] flex gap-x-[10px]  z-10 ${link ? "cursor-pointer" : ""
+                        }`}
                       onClick={() => {
                         if (link) window.location.href = link;
                       }}
@@ -455,9 +450,8 @@ export default function EconHeadCharts({
                       </div>
 
                       <div
-                        className={`rounded-full w-[15px] h-[15px] bg-[#344240] flex items-center justify-center text-[10px] z-10 ${
-                          !link ? "hidden" : "block"
-                        }`}
+                        className={`rounded-full w-[15px] h-[15px] bg-[#344240] flex items-center justify-center text-[10px] z-10 ${!link ? "hidden" : "block"
+                          }`}
                       >
                         <Icon
                           icon="feather:arrow-right"
@@ -465,26 +459,25 @@ export default function EconHeadCharts({
                         />
                       </div>
                     </div>
-                    <div className="absolute text-[18px] top-[14px] right-[30px]">
+                    <div className="absolute text-[18px] top-[18px] right-[30px] numbers">
                       {!isMultipleSeries
                         ? valuePrefix +
-                          " " +
-                          Intl.NumberFormat("en-GB", {
-                            notation: "standard",
-                            maximumFractionDigits: 2,
-                            minimumFractionDigits: 2,
-                          }).format(
-                            chart_data.metrics[key].daily.data[lastIndex][
-                              dataIndex
-                            ],
-                          )
+
+                        Intl.NumberFormat("en-GB", {
+                          notation: "standard",
+                          maximumFractionDigits: 2,
+                          minimumFractionDigits: 2,
+                        }).format(
+                          chart_data.metrics[key].daily.data[lastIndex][
+                          dataIndex
+                          ],
+                        )
                         : valuePrefix +
-                          " " +
-                          Intl.NumberFormat("en-GB", {
-                            notation: "standard",
-                            maximumFractionDigits: 2,
-                            minimumFractionDigits: 2,
-                          }).format(sumDisplayValue)}
+                        Intl.NumberFormat("en-GB", {
+                          notation: "standard",
+                          maximumFractionDigits: 2,
+                          minimumFractionDigits: 2,
+                        }).format(sumDisplayValue)}
                     </div>
                     <hr className="absolute w-full border-t-[2px] top-[51px] border-[#5A64624F] my-4" />
                     <hr className="absolute w-full border-t-[2px] top-[89px] border-[#5A64624F] my-4" />
@@ -498,60 +491,60 @@ export default function EconHeadCharts({
                       <div className="text-[#CDD8D3] text-[9px] font-medium leading-[150%]">
                         {!isMultipleSeries
                           ? new Date(
-                              chart_data.metrics[key].daily.data[0][unixIndex],
-                            ).toLocaleDateString("en-GB", {
-                              timeZone: "UTC",
-                              month: "short",
-                              // day: "numeric",
-                              year: "numeric",
-                            })
+                            chart_data.metrics[key].daily.data[0][unixIndex],
+                          ).toLocaleDateString("en-GB", {
+                            timeZone: "UTC",
+                            month: "short",
+                            // day: "numeric",
+                            year: "numeric",
+                          })
                           : new Date(
-                              chart_data.metrics[key][
-                                lastMultiIndex
-                              ].daily.data[0][unixIndex],
-                            ).toLocaleDateString("en-GB", {
-                              timeZone: "UTC",
-                              month: "short",
-                              // day: "numeric",
-                              year: "numeric",
-                            })}
+                            chart_data.metrics[key][
+                              lastMultiIndex
+                            ].daily.data[0][unixIndex],
+                          ).toLocaleDateString("en-GB", {
+                            timeZone: "UTC",
+                            month: "short",
+                            // day: "numeric",
+                            year: "numeric",
+                          })}
                       </div>
                     </div>
                     <div className=" duration-[900ms] group-hover:opacity-0 z-20 absolute right-[15px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/70 pointer-events-none">
                       <div className="text-[#CDD8D3] text-[9px] font-medium leading-[150%]">
                         {!isMultipleSeries
                           ? new Date(
-                              chart_data.metrics[key].daily.data[lastIndex][
-                                unixIndex
-                              ],
-                            ).toLocaleDateString("en-GB", {
-                              timeZone: "UTC",
-                              month: "short",
-                              // day: "numeric",
-                              year: "numeric",
-                            })
+                            chart_data.metrics[key].daily.data[lastIndex][
+                            unixIndex
+                            ],
+                          ).toLocaleDateString("en-GB", {
+                            timeZone: "UTC",
+                            month: "short",
+                            // day: "numeric",
+                            year: "numeric",
+                          })
                           : new Date(
-                              chart_data.metrics[key][
-                                lastMultiIndex
-                              ].daily.data[
-                                chart_data.metrics[key][lastMultiIndex].daily
-                                  .data.length - 1
-                              ][unixIndex],
-                            ).toLocaleDateString("en-GB", {
-                              timeZone: "UTC",
-                              month: "short",
-                              // day: "numeric",
-                              year: "numeric",
-                            })}
+                            chart_data.metrics[key][
+                              lastMultiIndex
+                            ].daily.data[
+                            chart_data.metrics[key][lastMultiIndex].daily
+                              .data.length - 1
+                            ][unixIndex],
+                          ).toLocaleDateString("en-GB", {
+                            timeZone: "UTC",
+                            month: "short",
+                            // day: "numeric",
+                            year: "numeric",
+                          })}
                       </div>
                       <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
                     </div>
-                    <div className="relative w-full h-full flex justify-center items-end overflow-visible">
+                    <div className="relative w-full h-[197px] flex justify-center items-end overflow-visible">
                       <HighchartsProvider Highcharts={Highcharts}>
                         <HighchartsChart
                           containerProps={{
                             style: {
-                              height: "100%",
+                              height: "197px",
                               width: "100%",
                               marginLeft: "auto",
                               marginRight: "auto",
@@ -714,7 +707,7 @@ export default function EconHeadCharts({
                                 }
                                 const lastPoint: Highcharts.Point =
                                   chart.series[index].points[
-                                    chart.series[index].points.length - 1
+                                  chart.series[index].points.length - 1
                                   ];
                                 // check if i exists as a key in lastPointLines
                                 if (!lastPointLines[dictionaryKey]) {
@@ -851,19 +844,19 @@ export default function EconHeadCharts({
                               !isMultipleSeries
                                 ? chart_data.metrics[key].daily.data[0][0]
                                 : chart_data.metrics[key][firstMultiIndex].daily
-                                    .data[0][0]
+                                  .data[0][0]
                             }
                             max={
                               !isMultipleSeries
                                 ? chart_data.metrics[key].daily.data[
-                                    chart_data.metrics[key].daily.data.length -
-                                      1
-                                  ][0]
+                                chart_data.metrics[key].daily.data.length -
+                                1
+                                ][0]
                                 : chart_data.metrics[key][lastMultiIndex].daily
-                                    .data[
-                                    chart_data.metrics[key][lastMultiIndex]
-                                      .daily.data.length - 1
-                                  ][0]
+                                  .data[
+                                chart_data.metrics[key][lastMultiIndex]
+                                  .daily.data.length - 1
+                                ][0]
                             }
                           ></XAxis>
 
@@ -884,10 +877,10 @@ export default function EconHeadCharts({
                               style: {
                                 backgroundColor: "#1F2726",
                                 whiteSpace: "nowrap",
-                                fontWeight: "semibold",
-                                fontSize: "9px",
-                                fontFamily: "var(--font-raleway), sans-serif",
-                                color: "#CDD8D3",
+                                color: "rgb(215, 223, 222)",
+                                fontSize: "10px",
+                                fontWeight: "300",
+                                fontFamily: "Fira Sans",
                               },
                               formatter: function (
                                 t: Highcharts.AxisLabelsFormatterContextObject,
@@ -906,11 +899,11 @@ export default function EconHeadCharts({
                                   (d: any) => [
                                     d[0],
                                     d[
-                                      chart_data.metrics[
-                                        key
-                                      ].daily.types.indexOf(
-                                        showUsd ? "usd" : "eth",
-                                      )
+                                    chart_data.metrics[
+                                      key
+                                    ].daily.types.indexOf(
+                                      showUsd ? "usd" : "eth",
+                                    )
                                     ],
                                   ],
                                 )}
@@ -953,11 +946,11 @@ export default function EconHeadCharts({
                                         ].daily.data.map((d: any) => [
                                           d[0],
                                           d[
-                                            chart_data.metrics[key][
-                                              costKey
-                                            ].daily.types.indexOf(
-                                              showUsd ? "usd" : "eth",
-                                            )
+                                          chart_data.metrics[key][
+                                            costKey
+                                          ].daily.types.indexOf(
+                                            showUsd ? "usd" : "eth",
+                                          )
                                           ],
                                         ])}
                                         color={{
@@ -983,17 +976,17 @@ export default function EconHeadCharts({
                                             [
                                               0,
                                               METRIC_COLORS[key][costKey][1] +
-                                                "DD",
+                                              "DD",
                                             ],
                                             [
                                               0.6,
                                               METRIC_COLORS[key][costKey][1] +
-                                                "DD",
+                                              "DD",
                                             ],
                                             [
                                               1,
                                               METRIC_COLORS[key][costKey][0] +
-                                                "DD",
+                                              "DD",
                                             ],
                                           ],
                                         }}
@@ -1008,7 +1001,7 @@ export default function EconHeadCharts({
                                             [
                                               0,
                                               METRIC_COLORS[key][costKey][
-                                                costKey === "costs_l1" ? 0 : 1
+                                              costKey === "costs_l1" ? 0 : 1
                                               ],
                                             ], // Use the unique color for each series
                                             [1, METRIC_COLORS[key][costKey][1]],

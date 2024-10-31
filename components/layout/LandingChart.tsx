@@ -43,6 +43,8 @@ import {
   TopRowParent,
 } from "@/components/layout/TopRow";
 import { useMaster } from "@/contexts/MasterContext";
+import { GTPIcon } from "./GTPIcon";
+import { GTPIconName } from "@/icons/gtp-icon-names";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -506,9 +508,9 @@ export default function LandingChart({
               <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
                 <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
               }"></div>
-                <div class="tooltip-point-name">${AllChainsByKeys[name].label
+                <div class="tooltip-point-name text-xs">${AllChainsByKeys[name].label
               }</div>
-                <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
+                <div class="flex-1 text-right numbers-xs">${Highcharts.numberFormat(
                 percentage,
                 2,
               )}%</div>
@@ -529,9 +531,9 @@ export default function LandingChart({
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
             }"></div>
-            <div class="tooltip-point-name text-md">${AllChainsByKeys[name].label
+            <div class="tooltip-point-name text-xs">${AllChainsByKeys[name].label
             }</div>
-            <div class="flex-1 text-right justify-end font-inter flex">
+             <div class="flex-1 text-right justify-end flex numbers-xs">
               <div class="inline-block">${parseFloat(y).toLocaleString(
               "en-GB",
               {
@@ -607,7 +609,7 @@ export default function LandingChart({
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5 opacity-60">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6"></div>
             <div class="tooltip-point-name">${rest.length > 1 ? `${rest.length} Others` : "1 Other"}</div>
-            <div class="flex-1 text-right justify-end font-inter flex">
+             <div class="flex-1 text-right justify-end flex numbers-xs">
               <div class="inline-block">${restSum.toLocaleString("en-GB", { minimumFractionDigits: 0, })}</div>
             </div>
           </div>
@@ -855,7 +857,7 @@ export default function LandingChart({
 
   const getChartHeight = useCallback(() => {
     if (is_embed) return height;
-    if (isMobile) return 284;
+    if (isMobile) return 264;
     return 360;
   }, [isMobile, is_embed, height]);
 
@@ -1496,7 +1498,7 @@ export default function LandingChart({
       >
         <div className="flex flex-col lg:hidden justify-center pb-[15px] gap-y-[5px]">
           <MobileMetricCard
-            icon="feather:users"
+            icon="gtp-users"
             metric_name="Active Addresses"
             metric_value={latest_total}
             metric_comparison={latest_total_comparison}
@@ -1504,14 +1506,14 @@ export default function LandingChart({
           />
           <div className="flex justify-center gap-x-[5px]">
             <MobileMetricCard
-              icon="gtp:wallet-chain"
+              icon="gtp-walletsmultiplechains"
               metric_name="Multi-Chain Users"
               metric_value={cross_chain_users}
               metric_comparison={cross_chain_users_comparison}
               theme={theme || "dark"}
             />
             <MobileMetricCard
-              icon="feather:layers"
+              icon="gtp-layers"
               metric_name="L2 Dominance"
               metric_value={(Math.round(l2_dominance * 100) / 100).toFixed(2)}
               metric_comparison={l2_dominance_comparison}
@@ -1590,7 +1592,7 @@ export default function LandingChart({
             ) : (
               <>
                 <button
-                  className={`rounded-full flex items-center justify-center space-x-3 px-4 py-1.5 2xl:py-4 text-md w-full 2xl:w-auto 2xl:px-4 2xl:text-md font-medium border-[1px] border-forest-800`}
+                  className={`rounded-full flex items-center justify-center space-x-3 px-4 py-1.5 2xl:py-3 text-md w-full 2xl:w-auto 2xl:px-4 2xl:text-md font-medium border-[1px] border-forest-800`}
                   onClick={() => {
                     // chartComponent?.current?.xAxis[0].setExtremes(
                     //   timespans[selectedTimespan].xMin,
@@ -1601,12 +1603,12 @@ export default function LandingChart({
                 >
                   <Icon
                     icon="feather:zoom-out"
-                    className="h-4 w-4 2xl:w-6 2xl:h-6"
+                    className="h-4 w-4 2xl:w-4 2xl:h-4"
                   />
                   <div>Reset Zoom</div>
                 </button>
                 <button
-                  className={`rounded-full text-md w-full 2xl:w-auto px-4 py-1.5 2xl:py-4 2xl:px-4 font-medium bg-forest-100 dark:bg-forest-1000`}
+                  className={`rounded-full text-md w-full 2xl:w-auto px-4 py-1.5 2xl:py-3.5 2xl:px-4 font-medium bg-forest-100 dark:bg-forest-1000`}
                 >
                   {intervalShown?.label}
                 </button>
@@ -1670,21 +1672,21 @@ export default function LandingChart({
             <div className="flex justify-center items-center">
               <div className="flex items-center justify-center gap-x-[20px] pr-[10px]">
                 <MetricCard
-                  icon="feather:users"
+                  icon="gtp-users"
                   metric_name="Active Addresses"
                   metric_value={latest_total}
                   metric_comparison={latest_total_comparison}
                   theme={theme || "dark"}
                 />
                 <MetricCard
-                  icon="gtp:wallet-chain"
+                  icon="gtp-walletsmultiplechains"
                   metric_name="Active on Multiple Chains"
                   metric_value={cross_chain_users}
                   metric_comparison={cross_chain_users_comparison}
                   theme={theme || "dark"}
                 />
                 <MetricCard
-                  icon="feather:layers"
+                  icon="gtp-layers"
                   metric_name="Layer 2 Dominance"
                   metric_value={(Math.round(l2_dominance * 100) / 100).toFixed(
                     2,
@@ -1742,7 +1744,7 @@ const MobileMetricCard = ({
   is_multiple = false,
   theme,
 }: {
-  icon: string;
+  icon: GTPIconName;
   metric_name: string;
   metric_value: number | string;
   metric_comparison: number;
@@ -1752,17 +1754,17 @@ const MobileMetricCard = ({
   return (
     <div className="flex bg-forest-200/10 dark:bg-[#CDD8D3]/20 backdrop-blur-[30px] rounded-[15px] px-[7px] pt-[10px] pb-[7px] items-center w-full">
       <div className="flex flex-col items-center flex-1">
-        <Icon icon={icon} className="w-[30px] h-[30px]" />
+        <GTPIcon icon={icon} size="md" />
         <div className="block text-[10px] font-medium leading-[1.5] text-center">
           {metric_name}
         </div>
       </div>
       <div className="flex flex-col items-center justify-center w-7/12 gap-y-[3px]">
-        <div className="text-[20px] font-[650] leading-[1.2] flex items-end">
-          <div className="text-[20px]">
+        <div className="numbers-xl font-[650] py-[5px] flex items-end">
+          <div className="numbers-xl">
             {metric_value.toLocaleString("en-GB")}
           </div>
-          <div className="text-[20px] leading-tight">{is_multiple && "x"}</div>
+          <div className="numbers-xl">{is_multiple && "x"}</div>
         </div>
         <div className="text-[10px] font-medium leading-[1.5]">
           {metric_comparison > 0 ? (
@@ -1805,7 +1807,7 @@ const MetricCard = ({
   is_multiple = false,
   theme,
 }: {
-  icon: string;
+  icon: GTPIconName;
   metric_name: string;
   metric_value: number | string;
   metric_comparison: number;
@@ -1813,19 +1815,19 @@ const MetricCard = ({
   theme: string;
 }) => {
   return (
-    <div className="hidden lg:flex bg-forest-200/10 dark:bg-[#CDD8D3]/20 rounded-[11px] px-[13px] py-[5px] items-center backdrop-blur-[30px]">
-      <Icon icon={icon} className="w-[28px] h-[32px] mr-[6px]" />
+    <div className="hidden lg:flex gap-x-[6px] bg-forest-200/10 dark:bg-[#CDD8D3]/20 rounded-[11px] px-[13px] py-[5px] items-center backdrop-blur-[30px]">
+      <GTPIcon icon={icon} size="md" />
       <div className="flex flex-col items-center justify-center -space-y-[5px]">
         <div className="text-[10px] font-medium leading-[1.5]">
           {metric_name}
         </div>
-        <div className="text-[24px] font-[650] leading-[1.33] flex items-end">
-          <div className="text-[24px]">
+        <div className="numbers-2xl font-[650] flex items-end pt-[5px] pb-[8px]">
+          <div className="">
             {metric_value.toLocaleString("en-GB")}
           </div>
-          <div className="text-[24px] leading-tight">{is_multiple && "x"}</div>
+          <span className="numbers-2xl">{is_multiple && "x"}</span>
         </div>
-        <div className="text-[10px] font-medium leading-[1.5]">
+        <div className="numbers-xxs font-medium">
           {metric_comparison > 0 ? (
             <span
               className="text-green-500 dark:text-green-500 font-semibold"
@@ -1851,7 +1853,7 @@ const MetricCard = ({
               {(metric_comparison * 100).toFixed(2)}%
             </span>
           )}{" "}
-          in last week
+          <span className="font-raleway">in last week</span>
         </div>
       </div>
     </div>

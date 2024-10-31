@@ -14,7 +14,7 @@ export default async function Layout({
 
   // </Container>
   return (
-    <PageRoot className="pt-[30px]">
+    <PageRoot className="pt-[45px] md:pt-[30px]">
       <PageContainer>
         <Title
           id="Community"

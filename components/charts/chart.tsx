@@ -699,6 +699,7 @@ export const Chart = ({
                           },
                         ],
                         labels: {
+
                           //@ts-ignore
                           ...baseOptions.yAxis.labels,
                           formatter: function (
@@ -721,8 +722,8 @@ export const Chart = ({
                                 series.length > 0 &&
                                 series[0].dataKey.includes("eth")
                               ) {
-                                prefix = "";
-                                suffix = "Ξ";
+                                prefix = "Ξ";
+                                suffix = "";
                               }
                             }
 

@@ -254,28 +254,30 @@ export default function LandingMetricsTable({
                   }}
                 >
                   <div className="sticky z-[3] -left-[12px] md:-left-[48px] w-[26px] flex items-center justify-center overflow-visible">
-                    <div className="absolute z-[3] -left-[5px] h-[32px] w-[40px] pl-[9px] flex items-center justify-start rounded-l-full bg-gradient-to-r from-forest-1000 via-forest-1000 to-transparent">
+                    <div
+                      className="absolute z-[3] -left-[5px] h-[32px] w-[40px] pl-[9px] flex items-center justify-start rounded-l-full bg-[radial-gradient(circle_at_-32px_16px,_#151A19_0%,_#151A19_72.5%,_transparent_90%)]"
+                    >
                       <GridTableChainIcon origin_key={item.chain.key} />
                     </div>
                   </div>
-                  <div className="text-[14px] group-hover:underline">
+                  <div className="text-xs group-hover:underline">
                     {data.chains[item.chain.key].chain_name}
                   </div>
-                  <div className="text-[12px]">
+                  <div className="text-xs">
                     {data.chains[item.chain.key].purpose && (
                       <>{data.chains[item.chain.key].purpose}</>
                     )}
                   </div>
                   <ChainRankCell item={item} />
                   <div className="flex justify-end items-center">
-                    <div className="flex justify-between items-center text-[12px] w-[88px]">
-                      <div className="text-[10px] text-[#5A6462]">
+                    <div className="flex gap-[5px] items-center text-[12px] w-[98px]">
+                      <div className="w-1/2 flex justify-end text-right numbers-xs text-[#5A6462]">
                         {(
                           data.chains[item.chain.key].user_share * 100
                         ).toFixed(2)}
                         %
                       </div>
-                      <div className="flex items-center">
+                      <div className="w-1/2 text-right flex justify-end items-center numbers-xs">
                         {Intl.NumberFormat("en-GB", {
                           notation: "compact",
                           maximumFractionDigits: 2,
@@ -284,7 +286,7 @@ export default function LandingMetricsTable({
                       </div>
                     </div>
                   </div>
-                  <div className="flex justify-end items-center text-[12px]">
+                  <div className="flex justify-end items-center numbers-xs">
                     {d3.format(
                       data.chains[item.chain.key].cross_chain_activity >
                         0.01
@@ -294,10 +296,16 @@ export default function LandingMetricsTable({
                   </div>
                   <div className="flex justify-end items-center">
                     {/* {monthsSinceLaunch[item.chain.key][0] && monthsSinceLaunch[item.chain.key][1] % 12 > 0 ? <div className="text-[#5A6462] text-[16px]">+</div> : ""} */}
-                    <div className="text-[12px]">
+                    <div className=" numbers-xs">
                       {moment(master.chains[item.chain.key].launch_date).fromNow(
                         true,
-                      )}
+                      ).split(" ")[0] === "a" ? "1" : moment(master.chains[item.chain.key].launch_date).fromNow(true).split(" ")[0]}
+                      {" "}
+                      <span className="numbers-xxs">
+                        {moment(master.chains[item.chain.key].launch_date).fromNow(
+                          true,
+                        ).split(" ")[1]}
+                      </span>
                     </div>
                   </div>
                 </GridTableRow>
@@ -305,7 +313,7 @@ export default function LandingMetricsTable({
             );
           })}
         </div>
-        <div className="h-[30px]" />
+        {/* <div className="h-[30px]" /> */}
       </>
     </>
   );
@@ -509,7 +517,7 @@ const ChainRankCell = memo(function ChainRankIcon(
                           }}
                         >
                           <div
-                            className={`flex w-full items-end justify-end text-[14px] font-medium font-num pr-[15px] pl-[37px] ${getDisplayValue(metric, values, valueKeys).suffix ? "min-w-[145px]" : "min-w-[115px]"} `}
+                            className={`flex w-full items-end justify-end numbers-sm pr-[15px] pl-[37px] ${getDisplayValue(metric, values, valueKeys).suffix ? "min-w-[145px]" : "min-w-[115px]"} `}
                           >
                             {getDisplayValue(metric, values, valueKeys).isNegative && (
                               <div className="">

@@ -1,7 +1,7 @@
 "use client";
 import { MetricsResponse } from "@/types/api/MetricsResponse";
 import useSWR from "swr";
-import { MetricsURLs } from "@/lib/urls";
+import { DAMetricsURLs, MetricsURLs } from "@/lib/urls";
 import {
 } from "@/lib/chains";
 import { PageContainer } from "@/components/layout/Container";
@@ -23,7 +23,7 @@ const monthly_agg_labels = {
   distinct: "Distinct",
 };
 
-const Fundamentals = ({ params: { metric } }) => {
+const DataAvailability = ({ params: { metric } }) => {
   const { is_og } = useParams();
   const {
     data: master,
@@ -37,7 +37,7 @@ const Fundamentals = ({ params: { metric } }) => {
     error: metricError,
     isLoading: metricLoading,
     isValidating: metricValidating,
-  } = useSWR<MetricsResponse>(MetricsURLs[metric]);
+  } = useSWR<MetricsResponse>(DAMetricsURLs[metric]);
 
   return (
     <>
@@ -46,7 +46,7 @@ const Fundamentals = ({ params: { metric } }) => {
         dataValidating={[masterValidating, metricValidating]}
       />
       {master && metricData ? (
-        <FundamentalsContent metric={metric} type="fundamentals" />
+        <DAContent metric={metric} type="data-availability" />
       ) : (
         <div className="w-full min-h-[1024px] md:min-h-[1081px] lg:min-h-[637px] xl:min-h-[736px]" />
       )}
@@ -54,15 +54,15 @@ const Fundamentals = ({ params: { metric } }) => {
   );
 };
 
-type FundamentalsContentProps = {
+type DAContentProps = {
   metric: string;
   type: "fundamentals" | "data-availability";
 };
 
-const FundamentalsContent = ({ metric, type }: FundamentalsContentProps) => {
+const DAContent = ({ metric, type }: DAContentProps) => {
   return (
     <>
-      <MetricDataProvider metric={metric} metric_type="fundamentals">
+      <MetricDataProvider metric={metric} metric_type={type}>
         <MetricChartControlsProvider metric_type={type}>
           <MetricSeriesProvider metric_type={type}>
             <PageContainer className="" paddingY="none">
@@ -89,4 +89,4 @@ const FundamentalsContent = ({ metric, type }: FundamentalsContentProps) => {
   );
 };
 
-export default Fundamentals;
+export default DataAvailability;

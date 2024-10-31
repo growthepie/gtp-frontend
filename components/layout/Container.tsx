@@ -61,8 +61,6 @@ const directionMap = {
 
 
 export const PageRoot = ({ children, className = '', gapSize = "md", direction = "column" }: PageRootProps) => {
-
-
   return (
     <div className={`flex ${directionMap[direction]} ${gapSizeMap[gapSize]} ${className}`}>
       {children}

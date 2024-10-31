@@ -4,7 +4,7 @@ import { PageContainer, PageRoot, Section } from "@/components/layout/Container"
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import { notFound } from "next/navigation";
 import { track } from "@vercel/analytics/server";
-import { metricItems } from "@/lib/metrics";
+import { daMetricItems } from "@/lib/metrics";
 import { Title, TitleButtonLink } from "@/components/layout/TextHeadingComponents";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { Description, textToLinkedText } from "@/components/layout/TextComponents";
@@ -17,16 +17,16 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (
     !params.metric ||
-    metricItems.find((item) => item.urlKey === params.metric) === undefined
+    daMetricItems.find((item) => item.urlKey === params.metric) === undefined
   ) {
     track("404 Error", {
       location: "404 Error",
-      page: "/fundamentals/" + params.metric,
+      page: "/data-availability/" + params.metric,
     });
     return notFound();
   }
 
-  const option = metricItems.find((item) => item.urlKey === params.metric);
+  const option = daMetricItems.find((item) => item.urlKey === params.metric);
 
   if (option) {
     const currentDate = new Date();
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       openGraph: {
         images: [
           {
-            url: `https://api.growthepie.xyz/v1/og_images/fundamentals/${params.metric}.png?date=${dateString}`,
+            url: `https://api.growthepie.xyz/v1/og_images/data-availability/${params.metric}.png?date=${dateString}`,
             width: 1200,
             height: 627,
             alt: "growthepie.xyz",
@@ -65,7 +65,7 @@ export default async function Layout({
 }) {
   const url = MetricsURLs[params.metric];
 
-  const pageData = metricItems.find((item) => item.urlKey === params.metric)
+  const pageData = daMetricItems.find((item) => item.urlKey === params.metric)
     ?.page ?? {
     title: "",
     description: "",

@@ -70,7 +70,7 @@ export interface Metrics {
 export interface MetricInfo {
   name: string;
   metric_keys: string[];
-  units: string[];
+  units: { [key: string]: UnitSchema };
   avg: boolean;
   all_l2s_aggregate: string;
   fundamental: boolean;

@@ -129,9 +129,9 @@ const dataAvailabilityGroup: NavigationItem = {
         description:
           "The number of distinct addresses that interacted with a chain.",
         why: "Active addresses is a widely used metric for estimating the number of users on a blockchain network. Although it is not a perfect metric due to the possibility of a single person owning multiple addresses, it can still provide valuable insights into the overall user base of a chain. It is worth noting, however, that this metric can be influenced by Sybil attacks, where an attacker creates a large number of fake identities to artificially inflate the active address count. Therefore, while daily active addresses can be a useful measure, it should be used in conjunction with other metrics to provide a more comprehensive analysis of a chain's user activity.",
-        icon: "gtp-metrics-activeaddresses",
+        icon: "gtp-blob-producers",
       },
-      icon: "gtp-blobs-number",
+      icon: "gtp-blob-producers",
       key: "blob_producers",
       rootKey: "metricsDailyActiveAddresses",
       urlKey: "blob-producers",
@@ -170,7 +170,7 @@ const dataAvailabilityGroup: NavigationItem = {
       url: "/data-availability/fees-paid",
     },
     {
-      label: "Fees Paid Per Mbyte",
+      label: "Fees Paid Per MB",
       category: "metrics",
       page: {
         title: "Throughput",
@@ -182,8 +182,8 @@ const dataAvailabilityGroup: NavigationItem = {
       icon: "gtp-da-fees-paid-per-mb",
       key: "fees_per_mbyte",
       rootKey: "throughput",
-      urlKey: "fees-paid-per-mbyte",
-      url: "/data-availability/fees-paid-per-mbyte",
+      urlKey: "fees-paid-per-megabyte",
+      url: "/data-availability/fees-paid-per-megabyte",
     },
   ],
 };
@@ -510,8 +510,7 @@ export const navigationItems: NavigationItem[] = [
 
     // href: "",
   },
-  // include only if not PRODUCTION
-  ...(!IS_PRODUCTION ? [dataAvailabilityGroup] : []),
+  ...[dataAvailabilityGroup],
   {
     name: "Trackers",
     label: "Public Goods",

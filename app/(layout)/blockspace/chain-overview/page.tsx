@@ -83,10 +83,10 @@ const ChainOverview = () => {
           chain === "all_l2s"
             ? true
             : isMaster
-            ? chainEcosystemFilter === "all-chains"
-              ? true
-              : AllChainsByKeys[chain].ecosystem.includes(chainEcosystemFilter)
-            : false;
+              ? chainEcosystemFilter === "all-chains"
+                ? true
+                : AllChainsByKeys[chain].ecosystem.includes(chainEcosystemFilter)
+              : false;
 
         return passEcosystem && isSupported;
       })
@@ -115,7 +115,7 @@ const ChainOverview = () => {
             dataValidating={[usageValidating]}
           />
           <Container
-            className="flex flex-col w-full pt-[65px] md:pt-[30px] gap-y-[15px] mb-[15px]"
+            className="flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] mb-[15px]"
             isPageRoot
           >
             <div className="flex items-center w-[99.8%] justify-between md:text-[36px] relative">
@@ -150,7 +150,7 @@ const ChainOverview = () => {
               setSelectedTimespan={setSelectedTimespan}
               data={chainFilter}
               master={master}
-              // data={!chainEcosystemFilter || chainEcosystemFilter=== "all-chains" ? usageData.data.chains : )}
+            // data={!chainEcosystemFilter || chainEcosystemFilter=== "all-chains" ? usageData.data.chains : )}
             />
           )}
         </>

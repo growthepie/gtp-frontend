@@ -274,7 +274,7 @@ export const daMetricItems: MetricItem[] = [
     page: {
       title: "Blob Count",
       description:
-        "The Blob Count represents the total number of data blobs submitted to a given Data Availability layer. Each blob contains transaction data or state proofs necessary for validating and securing the blockchain.",
+        "Blob Count tracks the total number of data blobs submitted to a given Data Availability layer. A blob is a flexible-sized piece of data that contains transaction information necessary for recreating the state of the rollup.",
       why: "Monitoring the Blob Count is essential for assessing the data throughput and scalability of the DA layer. A higher blob count indicates increased usage and demand for data availability services, reflecting the network's capacity to handle more transactions and maintain security.",
       icon: "gtp-blobs-number",
       showGwei: false,
@@ -284,13 +284,13 @@ export const daMetricItems: MetricItem[] = [
   },
   {
     label: "Blob Producers",
-    icon: "gtp-blobs-number",
+    icon: "gtp-blob-producers",
     page: {
       title: "Blob Producers",
       description:
-        "Blob Producers are the entities responsible for generating and submitting data blobs to the Data Availability layer. These can include validators, sequencers, or other network participants that ensure data is available for transaction verification.",
+        "Blob Producers refer to the number of unique entities that submit data blobs to the Data Availability layer. In the context of rollups these are generally the sequencers who ensure data is available for transaction or state verification. However, this metric tracks all entities acting on the Data Availability layer, so there may be other entities apart from rollups that utilises the DA solution.",
       why: "Tracking the number of Blob Producers provides insights into the decentralization and resilience of the DA layer. A diverse and growing number of producers can enhance the network's robustness, reduce the risk of centralization, and improve data availability reliability.",
-      icon: "gtp-blobs-number",
+      icon: "gtp-blob-producers",
       showGwei: false,
     },
     key: "blob_producers",
@@ -302,7 +302,7 @@ export const daMetricItems: MetricItem[] = [
     page: {
       title: "Data Posted",
       description:
-        "Data Posted measures the total volume of data submitted to the Data Availability layer. This includes all transaction data, state proofs, and other necessary information required for the blockchain's operation.",
+        "Data Posted measures the total size of data submitted to the Data Availability layer. In the context of rollups, this includes transactions or state changes, often compressed using various compression techniques.",
       why: "Understanding the volume of Data Posted is crucial for evaluating the network's usage patterns and scalability. High data volumes may indicate increased network activity and demand for data availability services, while also highlighting potential areas for optimization and scaling.",
       icon: "gtp-data-posted",
       showGwei: false,
@@ -325,18 +325,18 @@ export const daMetricItems: MetricItem[] = [
     urlKey: "fees-paid",
   },
   {
-    label: "Fees Paid Per Mbyte",
+    label: "Fees Paid Per MB",
     icon: "gtp-da-fees-paid-per-mb",
     page: {
-      title: "Fees Paid Per Mbyte",
+      title: "Fees Paid Per MB",
       description:
-        "Fees Paid Per Mbyte measures the average fees paid for each megabyte of data posted to the Data Availability layer. This metric provides a standardized view of the cost efficiency of data posting.",
+        "Fees Paid Per MB (1024 KiB) measures the average fees paid for each megabyte of data posted to the Data Availability layer. This metric provides a standardized view of the cost efficiency of data posting.",
       why: "Evaluating Fees Paid Per Mbyte is important for assessing the cost-effectiveness of data availability services. It helps users and developers understand the financial implications of their data usage and can guide decisions related to scaling, optimization, and budgeting for transactions.",
       icon: "gtp-da-fees-paid-per-mb",
       showGwei: false,
     },
     key: "fees_per_mbyte",
-    urlKey: "fees-paid-per-mbyte",
+    urlKey: "fees-paid-per-megabyte",
   },
 ];
 

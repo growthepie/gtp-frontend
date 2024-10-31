@@ -3,6 +3,168 @@
 @tailwind utilities;
 
 /* @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;700;900&display=swap"); */
+/* 
+@layer utilities {
+
+  .heading-large {
+    @apply font-raleway font-bold leading-[120%];
+  }
+
+  .heading-large-xxxs {
+    @apply heading-large text-[10px];
+  }
+
+  .heading-large-xxs {
+    @apply heading-large text-[12px];
+  }
+
+  .heading-large-xs {
+    @apply heading-large text-[14px];
+  }
+
+  .heading-large-sm {
+    @apply heading-large text-[16px];
+  }
+
+  .heading-large-md {
+    @apply heading-large text-[20px];
+  }
+
+  .heading-large-lg {
+    @apply heading-large text-[30px];
+  }
+
+  .heading-large-xl {
+    @apply heading-large text-[36px];
+  }
+
+  .heading-large-2xl {
+    @apply heading-large text-[48px];
+  }
+
+  .heading-large-3xl {
+    @apply heading-large text-[60px];
+  }
+
+  .heading-large-4xl {
+    @apply heading-large text-[72px];
+  }
+
+  .heading-large-5xl {
+    @apply heading-large text-[80px];
+  }
+
+  .heading-large-6xl {
+    @apply heading-large text-[92px];
+  }
+
+
+
+
+  .heading-small {
+    @apply font-raleway leading-[120%];
+  }
+
+  .heading-small-xxxs {
+    @apply heading-small text-[9px];
+  }
+
+  .heading-small-xxs {
+    @apply heading-small text-[10px];
+  }
+
+  .heading-small-xs {
+    @apply heading-small text-[12px];
+  }
+
+  .heading-small-sm {
+    @apply heading-small text-[15px];
+  }
+
+  .heading-small-md {
+    @apply heading-small text-[16px];
+  }
+
+  .heading-small-lg {
+    @apply heading-small text-[18px];
+  }
+
+  .heading-small-xl {
+    @apply heading-small text-[20px];
+  }
+
+  .heading-small-2xl {
+    @apply heading-small text-[24px];
+  }
+
+  .heading-small-3xl {
+    @apply heading-small text-[30px];
+  }
+
+  .heading-small-4xl {
+    @apply heading-small text-[36px];
+  }
+
+  .heading-small-5xl {
+    @apply heading-small text-[48px];
+  }
+
+  .heading-small-6xl {
+    @apply heading-small text-[60px];
+  }
+
+  .numbers {
+    @apply font-num font-medium tracking-[5%];
+  }
+
+  .numbers-xxxs {
+    @apply numbers text-[9px];
+  }
+
+  .numbers-xxs {
+    @apply numbers text-[10px];
+  }
+
+  .numbers-xs {
+    @apply numbers text-[12px];
+  }
+
+  .numbers-sm {
+    @apply numbers text-[14px];
+  }
+
+  .numbers-md {
+    @apply numbers text-[16px];
+  }
+
+  .numbers-lg {
+    @apply numbers text-[18px];
+  }
+
+  .numbers-xl {
+    @apply numbers text-[20px];
+  }
+
+  .numbers-2xl {
+    @apply numbers text-[24px];
+  }
+
+  .numbers-3xl {
+    @apply numbers text-[30px];
+  }
+
+  .numbers-4xl {
+    @apply numbers text-[36px];
+  }
+
+  .numbers-5xl {
+    @apply numbers text-[48px];
+  }
+
+  .numbers-6xl {
+    @apply numbers text-[60px];
+  }
+} */
 
 :root {
   /* Your default theme */

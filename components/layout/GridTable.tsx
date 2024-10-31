@@ -41,7 +41,8 @@ export type GridTableRowProps = {
   children: React.ReactNode;
   style?: React.CSSProperties;
   bar?: {
-    origin_key: string;
+    origin_key?: string;
+    color?: string;
     width: number;
     containerStyle: React.CSSProperties;
   };
@@ -60,6 +61,19 @@ export const GridTableRow = ({
 }: GridTableRowProps) => {
   const { AllChainsByKeys } = useMaster();
 
+  const getBarColor = () => {
+    if (bar && bar.origin_key) {
+      return AllChainsByKeys[bar.origin_key].colors["dark"][1];
+    }
+
+    if (bar && bar.color) {
+      return bar.color;
+    }
+
+    return "white";
+  }
+
+
   if (bar)
 
     return (
@@ -76,12 +90,9 @@ export const GridTableRow = ({
           }}
         >
           <div
-            className={`z-20`}
+            className={`z-20 transition-all duration-300`}
             style={{
-              background:
-                AllChainsByKeys[
-                  bar.origin_key
-                ].colors["dark"][1],
+              background: getBarColor(),
               width: bar.width * 100 + "%",
               height: "2px",
             }}
@@ -266,9 +277,7 @@ export function GridTableContainer(
       >
 
         <div className="px-[20px] md:px-[60px] relative">
-
           <div className="sticky h-[54px] top-[0px] md:top-[0px] z-[1]">
-
             <div className="relative z-50">
               {header}
               <div className={`absolute pl-[60px] pr-[60px] top-[0px] md:top-[0px] h-[40px] z-[1]`}>
@@ -293,6 +302,7 @@ export function GridTableContainer(
     </div>
   );
 }
+
 type GridTableAddressCellProps = {
   address: string;
   className?: string;
