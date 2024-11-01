@@ -204,18 +204,18 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
         },
       };
 
-      const todaysDate = new Date().getUTCDate();
+      const todaysDateUTC = new Date().getUTCDate();
 
       const secondZoneDottedColumnColor =
-        todaysDate === 1 ? columnColor : dottedColumnColor;
+        todaysDateUTC === 1 ? columnColor : dottedColumnColor;
 
-      const secondZoneDashStyle = todaysDate === 1 ? "Solid" : "Dot";
+      const secondZoneDashStyle = todaysDateUTC === 1 ? "Solid" : "Dot";
 
 
 
       // if it is not the last day of the month, add a zone to the chart to indicate that the data is incomplete
       if (selectedTimeInterval === "monthly") {
-        if (seriesData.length > 2 && new Date().getUTCDate() !== 1) {
+        if (seriesData.length > 2 && todaysDateUTC !== 1) {
           zoneAxis = "x";
           zones = [
             {
@@ -235,7 +235,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
                 : MetadataByKeys[name].colors["dark"][0],
             },
           ];
-        } else if (new Date().getUTCDate() !== 1) {
+        } else if (todaysDateUTC !== 1) {
           zoneAxis = "x";
           zones = [
             {
@@ -248,6 +248,18 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
             }
           ];
           marker.radius = 2;
+        } else {
+          zoneAxis = "x";
+          zones = [
+            {
+              // value: monthlyData[monthlyData.length - 2][0],
+              dashStyle: secondZoneDashStyle,
+              fillColor: isColumnChart ? columnFillColor : seriesFill,
+              color: isColumnChart
+                ? secondZoneDottedColumnColor
+                : MetadataByKeys[name].colors["dark"][0],
+            }
+          ];
         }
       }
 
