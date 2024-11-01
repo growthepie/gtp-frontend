@@ -122,6 +122,7 @@ const baseOptions: Highcharts.Options = {
         },
       },
       groupPadding: 0,
+      // pointPadding: 0.1,
       animation: false,
     },
     series: {
@@ -133,7 +134,7 @@ const baseOptions: Highcharts.Options = {
       },
       marker: {
         lineColor: "white",
-        radius: 5,
+        radius: 0,
         symbol: "circle",
       },
       shadow: false,
@@ -1081,7 +1082,7 @@ function MetricChart({
             syncId="shareTooltip"
             //@ts-ignore
             plotOptions={{
-              ...baseOptions.plotOptions,
+              // ...baseOptions.plotOptions,
               ...plotOptions,
             }}
           >
@@ -1235,7 +1236,8 @@ function MetricChart({
                 {
                   value: 0,
                   color: "#CDD8D3A7",
-                  width: 2,
+                  className: "highcharts-zero-line",
+                  // width: 2,
                 }
               ]}
               labels={{
@@ -1263,29 +1265,7 @@ function MetricChart({
               {seriesData.filter(series => !showEthereumMainnet ? series.name !== "ethereum" : true).map((series, i) => {
                 return (
                   <Series
-                    // type={seriesType}
                     key={i}
-                    // name={series.name}
-                    // color={"#1DF7EF"}
-                    // data={series.data.map((d: any) => [
-                    //   d[0],
-                    //   d[1]
-                    // ])}
-                    // lineWidth={1.5}
-                    // fillColor={{
-                    //   linearGradient: {
-                    //     x1: 0,
-                    //     y1: 0,
-                    //     x2: 0,
-                    //     y2: 1,
-                    //   },
-
-                    //   stops: [
-                    //     [0, "#10808CDD"],
-                    //     [0.5, "#10808CDD"],
-                    //     [1, "#1DF7EFDD"],
-                    //   ],
-                    // }}
                     {...series}
                   />
                 );

@@ -180,10 +180,10 @@ export default function EconHeadCharts({
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${color}"></div>
-            <div class="tooltip-point-name text-md">${nameString}</div>
+            <div class="tooltip-point-name text-xs">${nameString}</div>
             <div class="flex-1 text-right justify-end flex numbers-xs">
               <div class="flex justify-end text-right w-full">
-                  <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+                  <div class="${!prefix && "hidden"
             }">${prefix}</div>
               ${isFees
               ? parseFloat(displayValue).toLocaleString(
@@ -198,7 +198,7 @@ export default function EconHeadCharts({
             }
                
                 </div>
-                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+                <div class="ml-0.5 ${!suffix && "hidden"
             }">${suffix}</div>
             </div>
           </div>
@@ -930,7 +930,6 @@ export default function EconHeadCharts({
                               <>
                                 {Object.keys(chart_data.metrics[key]).map(
                                   (costKey, j) => {
-                                    console.log(costKey);
                                     return (
                                       <AreaSeries
                                         key={costKey}

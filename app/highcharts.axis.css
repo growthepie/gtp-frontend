@@ -40,6 +40,6 @@
 }
 
 .highcharts-zero-line {
-  stroke: #CDD8D3;
+  stroke: #CDD8D3 !important;
   stroke-width: 2px;
 }

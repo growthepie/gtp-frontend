@@ -389,8 +389,8 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
         type: getSeriesType(chainKey),
         clip: true,
         dataGrouping: dataGrouping,
-        borderRadiusTopLeft: borderRadius,
-        borderRadiusTopRight: borderRadius,
+        // borderRadiusTopLeft: borderRadius,
+        // borderRadiusTopRight: borderRadius,
         fillOpacity: getSeriesData(chainKey, chain[timeIntervalKey].types, chain[timeIntervalKey].data)
           .fillOpacity,
         fillColor: getSeriesData(chainKey, chain[timeIntervalKey].types, chain[timeIntervalKey].data)

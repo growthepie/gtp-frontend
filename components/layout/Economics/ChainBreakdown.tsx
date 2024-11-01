@@ -62,7 +62,7 @@ export default function ChainBreakdown({
   const triggerShrink = useMediaQuery("(max-width: 1120px)");
   const [isMonthly, setIsMonthly] = useState(false);
 
-  console.log(metricSort);
+  // console.log(metricSort);
 
   const [openChain, setOpenChain] = useState(() => {
     const initialState = Object.keys(data).reduce((acc, key) => {
@@ -347,7 +347,7 @@ export default function ChainBreakdown({
     );
   }
 
-  console.log(data ? data : "");
+  // console.log(data ? data : "");
   const sortedChainData = useMemo(() => {
     let retData: string[];
     if (metricSort !== "chain") {
@@ -506,7 +506,7 @@ export default function ChainBreakdown({
     return retHeight;
   }, [openChain, data, selectedTimespan]);
 
-  console.log(allChainsDA);
+  // console.log(allChainsDA);
 
   return (
     <div className="h-full">

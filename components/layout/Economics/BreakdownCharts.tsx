@@ -258,7 +258,7 @@ function BreakdownCharts({
           });
       }
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-40 text-xs font-raleway">
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-44 text-xs font-raleway">
             <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2 ">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
@@ -337,16 +337,16 @@ function BreakdownCharts({
                     <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${series.color
               }">
                     </div>
-                  <div class="tooltip-point-name text-md">${name}</div>
+                  <div class="tooltip-point-name text-xs">${name}</div>
                 </div>
                  <div class="flex-1 text-right justify-end flex numbers-xs">
-                    <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+                    <div class="${!prefix && "hidden"
               }">${prefix}</div>
                     ${parseFloat(displayValue).toLocaleString("en-GB", {
                 minimumFractionDigits: valuePrefix ? 2 : 0,
                 maximumFractionDigits: valuePrefix ? 2 : 0,
               })}
-                    <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+                    <div class="ml-0.5 ${!suffix && "hidden"
               }">${suffix}</div>
                 </div>
               </div>
@@ -359,13 +359,13 @@ function BreakdownCharts({
                   <div class="tooltip-point-name text-md">${"Profit"}</div>
                 </div>
                  <div class="flex-1 text-right justify-end flex numbers-xs">
-                    <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+                    <div class="${!prefix && "hidden"
                 }">${prefix}</div>
                     ${parseFloat(String(profitY)).toLocaleString("en-GB", {
                   minimumFractionDigits: valuePrefix ? 2 : 0,
                   maximumFractionDigits: valuePrefix ? 2 : 0,
                 })}
-                    <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+                    <div class="ml-0.5 ${!suffix && "hidden"
                 }">${suffix}</div>
                 </div>
               </div>`
@@ -378,16 +378,16 @@ function BreakdownCharts({
               <div class="flex gap-x-1 items-center">
                 <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${series.color
               }"></div>
-                <div class="tooltip-point-name text-md">${name}</div>
+                <div class="tooltip-point-name text-xs">${name}</div>
               </div>
                <div class="flex-1 text-right justify-end flex numbers-xs">
-                  <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+                  <div class="${!prefix && "hidden"
               }">${prefix}</div>
                   ${parseFloat(displayValue).toLocaleString("en-GB", {
                 minimumFractionDigits: valuePrefix ? 2 : 0,
                 maximumFractionDigits: valuePrefix ? 2 : 0,
               })}
-                  <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+                  <div class="ml-0.5 ${!suffix && "hidden"
               }">${suffix}</div>
               </div>
             </div>
@@ -406,16 +406,16 @@ function BreakdownCharts({
           ? `
             <div class="flex w-full gap-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-70">
               <div class="w-4 h-1.5 rounded-r-full" style=""></div>
-              <div class="tooltip-point-name text-md">Total</div>
+              <div class="tooltip-point-name text-xs">Total</div>
                <div class="flex-1 text-right justify-end flex numbers-xs">
     
-                  <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+                  <div class="${!prefix && "hidden"
           }">${prefix}</div>
                   ${parseFloat(value).toLocaleString("en-GB", {
             minimumFractionDigits: valuePrefix ? 2 : 0,
             maximumFractionDigits: valuePrefix ? 2 : 0,
           })}
-                  <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+                  <div class="ml-0.5 ${!suffix && "hidden"
           }">${suffix}</div>
               </div>
             </div>
@@ -426,14 +426,7 @@ function BreakdownCharts({
 
       return tooltip + tooltipPoints + sumRow + tooltipEnd;
     },
-    [
-      valuePrefix,
-      reversePerformer,
-      dailyData,
-      isMonthly,
-      selectedTimespan,
-      timespans,
-    ],
+    [valuePrefix, AllChainsByKeys, dailyData.profit.data, dailyData.profit.types, showUsd],
   );
 
   const tooltipManager = useMemo(() => {
