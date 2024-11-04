@@ -104,6 +104,7 @@ const dataAvailabilityGroup: NavigationItem = {
   label: "Data Availability",
   key: "metrics",
   icon: "gtp-data-availability",
+  newChild: true,
   options: [
     {
       label: "Blob Count",

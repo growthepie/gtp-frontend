@@ -84,10 +84,10 @@ export default function SidebarContainer() {
               </div>
             </Link>
             <div className="absolute flex items-end p-[10px] right-0 cursor-pointer " onClick={() => {
-              track("clicked Sidebar Close", {
-                location: "desktop sidebar",
-                page: window.location.pathname,
-              });
+              // track("clicked Sidebar Close", {
+              //   location: "desktop sidebar",
+              //   page: window.location.pathname,
+              // });
               toggleSidebar();
             }}>
               <Icon

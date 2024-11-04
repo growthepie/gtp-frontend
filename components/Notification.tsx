@@ -177,19 +177,19 @@ const Notification = () => {
   const handleShowNotifications = (isMobile = false) => {
     if (isMobile) {
       // show immediately on mobile
-      track("opened Notification Center", {
-        location: "mobile header",
-        page: currentPath,
-      });
+      // track("opened Notification Center", {
+      //   location: "mobile header",
+      //   page: currentPath,
+      // });
       setOpenNotif(true);
       updateSeenNotifications();
     } else {
       // show after a delay on desktop
       hoverTimeoutRef.current = setTimeout(() => {
-        track("opened Notification Center", {
-          location: "desktop header",
-          page: currentPath,
-        });
+        // track("opened Notification Center", {
+        //   location: "desktop header",
+        //   page: currentPath,
+        // });
         setOpenNotif(true);
         updateSeenNotifications();
       }, 300);
@@ -338,10 +338,10 @@ const Notification = () => {
                   className={`w-[24px] h-[24px] transition-transform duration-300 ${openNotif ? "rotate-90" : "rotate-0"
                     }`}
                   onClick={() => {
-                    track("clicked Notification Center", {
-                      location: "desktop header",
-                      page: window.location.pathname,
-                    });
+                    // track("clicked Notification Center", {
+                    //   location: "desktop header",
+                    //   page: window.location.pathname,
+                    // });
                     setOpenNotif(!openNotif);
                   }}
                   style={{

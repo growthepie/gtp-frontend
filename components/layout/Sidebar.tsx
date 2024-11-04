@@ -102,16 +102,16 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
           //   top: scrollHeight >= 15 ? "20px" : `calc(28px - ${scrollHeight}px)`,
           // }}
           onClick={() => {
-            if (isMobileSidebarOpen)
-              track("closed Navigation Menu", {
-                location: "mobile sidebar",
-                page: window.location.pathname,
-              });
-            else
-              track("opened Navigation Menu", {
-                location: "mobile sidebar",
-                page: window.location.pathname,
-              });
+            // if (isMobileSidebarOpen)
+            //   track("closed Navigation Menu", {
+            //     location: "mobile sidebar",
+            //     page: window.location.pathname,
+            //   });
+            // else
+            //   track("opened Navigation Menu", {
+            //     location: "mobile sidebar",
+            //     page: window.location.pathname,
+            //   });
 
             toggleMobileSidebar();
           }}
