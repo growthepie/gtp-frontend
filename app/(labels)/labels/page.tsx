@@ -771,7 +771,7 @@ export default function LabelsPage() {
       {/* <div className="relative pb-[114px] pt-[140px]"> */}
       <LabelsContainer className="pt-[110px] md:pt-[175px] flex items-end sm:items-center justify-between md:justify-start gap-x-[10px] z-[21]">
         <h1 className="text-[20px] md:text-[30px] pl-[15px] leading-[120%] font-bold z-[19]">
-          Smart Contracts on Ethereum Layer 2s
+          Smart Contracts in the Ethereum Ecosystem
         </h1>
       </LabelsContainer>
       <div className={`sticky pl-[60px] pr-[60px] top-[70px] md:top-[144px] z-[1]`}>
