@@ -24,11 +24,11 @@ const MetricTable = ({
 }: {
   metric_type: "fundamentals" | "data-availability";
 }) => {
-  const { data: master, metrics, da_metrics } = useMaster();
+  const { data: master, metrics, da_metrics, ChainsNavigationItemsByKeys } = useMaster();
 
   const metricsDict = metric_type === "fundamentals" ? metrics : da_metrics;
 
-  const { data, chainKeys, type, allChains, allChainsByKeys, metric_id, timeIntervals } = useMetricData();
+  const { data, chainKeys, type, allChains, allChainsByKeys, metric_id, timeIntervals, } = useMetricData();
   const { selectedChains, setSelectedChains, lastSelectedChains, setLastSelectedChains, showEthereumMainnet, setShowEthereumMainnet, timeIntervalKey } = useMetricChartControls();
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
@@ -656,9 +656,9 @@ const MetricTable = ({
                     />
                   </div>
                   <div className="text-xs">
-                    {metric_type === "fundamentals" ? (
+                    {metric_type === "fundamentals" && ChainsNavigationItemsByKeys[item.chain.key] ? (
                       <Link
-                        href={`/chains/${item.chain.key}`}
+                        href={`/chains/${ChainsNavigationItemsByKeys[item.chain.key].urlKey}`}
                         className={`truncate hover:underline`}
                         prefetch={true}
                       >

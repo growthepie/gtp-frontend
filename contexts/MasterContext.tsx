@@ -32,6 +32,16 @@ type MasterContextType = {
       excludeFromSitemap: boolean;
     }[];
   } | null;
+  ChainsNavigationItemsByKeys: {
+    [key: string]: {
+      label: string;
+      icon: GTPIconName;
+      key: string;
+      urlKey: string;
+      hide: boolean;
+      excludeFromSitemap: boolean;
+    }
+  }
   formatMetric: (value: number, unit: string, unitType: string, type?: string) => string;
   // getUnitKeys: (metric: string, type?: string) => (string[] | void);
   // getMetricInfo: (metric: string, type?: string) => (MetricInfo | void);
@@ -51,6 +61,7 @@ const MasterContext = createContext<MasterContextType | null>({
   EnabledChainsByKeys: {},
   SupportedChainKeys: [],
   ChainsNavigationItems: null,
+  ChainsNavigationItemsByKeys: {},
   formatMetric: () => "",
   // getUnitKeys: () => [],
   // getMetricInfo: () => ({} as MetricInfo),
@@ -69,6 +80,7 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
   const [DefaultChainSelection, setDefaultChainSelection] = useState<string[]>([]);
   const [EnabledChainsByKeys, setEnabledChainsByKeys] = useState<{ [key: string]: Chain }>({});
   const [ChainsNavigationItems, setChainsNavigationItems] = useState<any>({});
+  const [ChainsNavigationItemsByKeys, setChainsNavigationItemsByKeys] = useState<any>({});
   const { data: glo_dollar_data } = useSWR(GloHolderURL);
 
   useEffect(() => {
@@ -97,6 +109,13 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
 
       const chainsNavigationItems = Get_AllChainsNavigationItems(data);
       setChainsNavigationItems(chainsNavigationItems);
+
+      const chainsNavigationItemsByKeys = chainsNavigationItems.options.reduce((acc, item) => {
+        acc[item.key] = item;
+        return acc;
+      }, {});
+
+      setChainsNavigationItemsByKeys(chainsNavigationItemsByKeys);
 
       const daLayersWithKeys: (DataAvailabilityLayerData & { key: string, label: string })[] = Object.entries(data.da_layers).map(([key, value]) => ({ ...value, key, label: value.name }));
 
@@ -156,6 +175,7 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
         EnabledChainsByKeys,
         SupportedChainKeys: Get_SupportedChainKeys(data),
         ChainsNavigationItems,
+        ChainsNavigationItemsByKeys,
         formatMetric,
         // getUnitKeys,
         // getMetricInfo,
