@@ -334,6 +334,7 @@ export const daMetricItems: MetricItem[] = [
       why: "Evaluating Fees Paid Per Mbyte is important for assessing the cost-effectiveness of data availability services. It helps users and developers understand the financial implications of their data usage and can guide decisions. The volatility of this metric is also an important datapoint.",
       icon: "gtp-da-fees-paid-per-mb",
       showGwei: false,
+      reversePerformer: true,
     },
     key: "fees_per_mbyte",
     urlKey: "fees-paid-per-megabyte",

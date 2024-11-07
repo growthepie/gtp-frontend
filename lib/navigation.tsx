@@ -104,7 +104,7 @@ const dataAvailabilityGroup: NavigationItem = {
   label: "Data Availability",
   key: "metrics",
   icon: "gtp-data-availability",
-  newChild: true,
+  // newChild: true,
   options: [
     {
       label: "Blob Count",
@@ -313,7 +313,7 @@ export const navigationItems: NavigationItem[] = [
     label: "Economics",
     key: "economics",
     icon: "gtp-metrics-economics",
-    newChild: true,
+    // newChild: true,
     options: [
       {
         label: "Overview",
@@ -327,7 +327,7 @@ export const navigationItems: NavigationItem[] = [
         rootKey: "economics",
         urlKey: "economics",
         url: "/economics",
-        showNew: true,
+        // showNew: true,
       },
       {
         label: "Revenue",
@@ -534,7 +534,7 @@ export const navigationItems: NavigationItem[] = [
         rootKey: "octant",
         urlKey: "octant",
         url: "/trackers/octant",
-        showNew: false,
+        // showNew: false,
       },
       {
         label: "Glo Dollar",
