@@ -12,7 +12,7 @@ import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
-import { metricItems } from "@/lib/metrics";
+import { metricItems, daMetricItems } from "@/lib/metrics";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GridTableContainer, GridTableHeader, GridTableHeaderCell, GridTableRow } from "@/components/layout/GridTable";
 import { useMetricChartControls } from "./MetricChartControlsContext";
@@ -118,10 +118,10 @@ const MetricTable = ({
   const { theme } = useTheme();
 
   const [showGwei, reversePerformer] = useMemo(() => {
-    const item = metricItems.find((item) => item.key === metric_id);
+    const item = metric_type === "fundamentals" ? metricItems.find((item) => item.key === metric_id) : daMetricItems.find((item) => item.key === metric_id);
 
     return [item?.page?.showGwei, item?.page?.reversePerformer];
-  }, [metric_id]);
+  }, [metric_id, metric_type]);
 
   const { isSidebarOpen, isSafariBrowser } = useUIContext();
 
