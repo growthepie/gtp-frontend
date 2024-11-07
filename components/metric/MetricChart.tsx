@@ -1047,7 +1047,7 @@ function MetricChart({
   return (
     <div className="relative w-full h-full">
       <div className="relative flex items-end h-[30px]">
-        {log_default === true && (
+        {log_default === true && selectedScale === "absolute" && (
           <>
             <div className="absolute pl-[60px]">
               <YAxisScaleControls />
@@ -1065,7 +1065,7 @@ function MetricChart({
       </div>
       <div id="content-container" className="relative w-full h-full overflow-visible" ref={containerRef}>
         <div
-          className={`absolute w-[2px] bottom-[71px] left-[60px] ${log_default === true ? "-top-[23px]" : "top-0"}`}
+          className={`absolute w-[2px] bottom-[71px] left-[60px] ${log_default === true && selectedScale === "absolute" ? "-top-[23px]" : "top-0"}`}
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='2' height='396' viewBox='0 0 2 396' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg clip-path='url(%23clip0_16047_48574)'%3E%3Cpath opacity='0.5' d='M1.00002 396L1 0' stroke='%235A6462' stroke-width='2' stroke-dasharray='3 6'/%3E%3C/g%3E%3Cdefs%3E%3CclipPath id='clip0_16047_48574'%3E%3Crect width='2' height='396' fill='white'/%3E%3C/clipPath%3E%3C/defs%3E%3C/svg%3E%0A")`,
           }}

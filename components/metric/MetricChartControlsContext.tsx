@@ -276,7 +276,7 @@ export const MetricChartControlsProvider = ({
         selectedTimespansByTimeInterval,
         //@ts-ignore
         setSelectedTimespansByTimeInterval,
-        selectedScale,
+        selectedScale: metric_id === "txcosts" ? "absolute" : selectedScale,
         setSelectedScale,
         selectedYAxisScale: selectedYAxisScale,
         setSelectedYAxisScale: setSelectedYAxisScale,
