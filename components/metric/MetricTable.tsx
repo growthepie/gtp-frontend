@@ -661,6 +661,7 @@ const MetricTable = ({
                         href={`/chains/${ChainsNavigationItemsByKeys[item.chain.key].urlKey}`}
                         className={`truncate hover:underline`}
                         prefetch={true}
+                        onClick={(e) => e.stopPropagation()}
                       >
                         {item.chain.label}
                       </Link>
