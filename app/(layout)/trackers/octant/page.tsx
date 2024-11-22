@@ -353,10 +353,6 @@ export default function Page() {
 
   return (
     <div className="w-full">
-      <div>
-        <div>{JSON.stringify(currentEpoch)}</div>
-        <div>{JSON.stringify(nextEpoch)}</div>
-      </div>
       <ShowLoading
         dataLoading={[!summaryData, !communityData, !projectMetadataData]}
       />
