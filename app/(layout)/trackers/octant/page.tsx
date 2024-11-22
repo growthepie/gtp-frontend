@@ -39,6 +39,7 @@ import useSWR from "swr";
 import dynamic from "next/dynamic";
 import { measureElement, useVirtualizer } from "@tanstack/react-virtual";
 import {
+  EpochSummary,
   OctantProjectMetadata,
   OctantProjectMetadataOrNone,
   useOctantData,
@@ -133,63 +134,84 @@ export default function Page() {
     }
   };
 
-  const [countdownTime, setCountdownTime] = useState<number>(0);
-  // const [countdownTimeFormatted, setCountdownTimeFormatted] = useState<React.ReactNode>(null);
+  const [currentEpoch, setCurrentEpoch] = useState<EpochSummary | null>(null);
+  const [nextEpoch, setNextEpoch] = useState<EpochSummary | null>(null);
 
-  const EpochStatus = useMemo(() => {
-    if (summaryData) {
-      const epochsInfo = summaryData.epochs;
+  const processEpochSummaries = useCallback(() => {
+    // iterate over the epochs and find the current and next epoch
+    // the currentEpoch should be set to the first epoch where the current time is between the start and end of the epoch Allocation Window
+    // the nextEpoch should be set to the first epoch where the current time is before the start of the epoch Allocation Window
+    if (!summaryData) return;
 
-      let currentEpoch = epochsInfo[Object.keys(epochsInfo)[0]];
-      // get current time UTC
-      let currentTime = new Date().getTime() / 1000;
+    const epochsInfo = summaryData.epochs;
 
-      for (let epoch in epochsInfo) {
-        // these are YYYY-MM-DD hh:mm:ss strings in UTC
-        let epochAllocationStart =
-          new Date(epochsInfo[epoch].allocationStart).getTime() / 1000;
-        let epochAllocationEnd =
-          new Date(epochsInfo[epoch].allocationEnd).getTime() / 1000;
+    const now = new Date().getTime() / 1000;
 
-        // check if the current time is between the start and end of the epoch
-        if (
-          currentTime >= epochAllocationStart &&
-          currentTime <= epochAllocationEnd
-        ) {
-          currentEpoch = epochsInfo[epoch];
-          setCountdownTime(epochAllocationEnd - currentTime);
-          setCommunityEpoch(parseInt(epoch));
-          setFundingEpoch(parseInt(epoch));
-          return (
-            <>
-              <div className="text-[9px]">
-                Epoch {currentEpoch.epoch} Allocation ends in
-              </div>
-              {/* time until 10-13-2024 16:00 UTC */}
-              {/* <div className="font-bold text-[16px]">
-                {moment(currentEpoch.allocationEnd).fromNow(true)}
-              </div> */}
-            </>
-          );
-        }
+    let curr: string | null = null;
+    let next: string | null = null;
+
+    const epochKeys = Object.keys(epochsInfo).sort((a, b) => parseInt(b) - parseInt(a));
+
+    for (let i = 0; i < epochKeys.length; i++) {
+      let epoch = epochKeys[i];
+      let epochAllocationStart =
+        new Date(epochsInfo[epoch].allocationStart).getTime() / 1000;
+      let epochAllocationEnd =
+        new Date(epochsInfo[epoch].allocationEnd).getTime() / 1000;
+
+
+      if (now >= epochAllocationStart && now <= epochAllocationEnd) {
+        curr = epoch;
+        continue;
       }
 
-      let epochAllocationStart =
-        new Date(currentEpoch.allocationStart).getTime() / 1000;
+      if (now < epochAllocationStart) {
+        next = epoch;
+        continue;
+      }
 
-      setCountdownTime(epochAllocationStart - currentTime);
+      if (curr && next) break;
+    }
 
+    let countdownEnd = 0;
+
+    if (next) {
+      setNextEpoch(epochsInfo[next]);
+      countdownEnd = new Date(epochsInfo[next].allocationStart).getTime() / 1000;
+    }
+
+    if (curr) {
+      setCurrentEpoch(epochsInfo[curr]);
+      countdownEnd = new Date(epochsInfo[curr].allocationEnd).getTime() / 1000;
+    }
+
+    setCountdownTime(countdownEnd - now);
+
+  }, [summaryData]);
+
+  useEffect(() => {
+    if (!summaryData) return;
+    processEpochSummaries();
+  }, [processEpochSummaries, summaryData]);
+
+  const EpochStatus = useMemo(() => {
+    if (currentEpoch) {
       return (
-        <>
-          <div className="text-[9px]">Next Epoch starts in</div>
-          {/* time until 10-13-2024 16:00 UTC */}
-          {/* <div className="font-bold text-[16px]">
-            {moment(currentEpoch.allocationStart).fromNow(true)}
-          </div> */}
-        </>
+        <div className="text-[9px]">
+          Epoch {currentEpoch.epoch} Allocation ends in
+        </div>
       );
     }
-  }, [summaryData]);
+    if (nextEpoch) {
+      return (
+        <div className="text-[9px]">
+          Epoch {nextEpoch.epoch} Allocation starts in
+        </div>
+      );
+    }
+  }, [currentEpoch, nextEpoch]);
+
+  const [countdownTime, setCountdownTime] = useState<number>(0);
 
   const JumpToSections = {
     Community: {
@@ -331,6 +353,10 @@ export default function Page() {
 
   return (
     <div className="w-full">
+      <div>
+        <div>{JSON.stringify(currentEpoch)}</div>
+        <div>{JSON.stringify(nextEpoch)}</div>
+      </div>
       <ShowLoading
         dataLoading={[!summaryData, !communityData, !projectMetadataData]}
       />
