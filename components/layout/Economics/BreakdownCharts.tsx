@@ -1153,7 +1153,12 @@ function BreakdownCharts({
 }
 
 export default React.memo(BreakdownCharts, (prevProps, nextProps) => {
-  // Custom comparison function to prevent unnecessary re-renders
+  // Prevent re-renders if isOpen is false in both prev and next props
+  if (!prevProps.isOpen && !nextProps.isOpen) {
+    return true; // No need to re-render
+  }
+
+  // Normal comparison logic
   return (
     prevProps.data === nextProps.data &&
     prevProps.dailyData === nextProps.dailyData &&
@@ -1164,3 +1169,4 @@ export default React.memo(BreakdownCharts, (prevProps, nextProps) => {
     prevProps.isMonthly === nextProps.isMonthly
   );
 });
+
