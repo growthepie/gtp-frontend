@@ -29,6 +29,12 @@ import { useMaster } from "@/contexts/MasterContext";
 import ChartWatermark from "@/components/layout/ChartWatermark";
 import { unix } from "moment";
 import "@/app/highcharts.axis.css";
+import {
+  TopRowContainer,
+  TopRowChild,
+  TopRowParent,
+} from "@/components/layout/TopRow";
+
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -56,11 +62,15 @@ const urls = {
 export default function EconHeadCharts({
   chart_data,
   selectedTimespan,
+  setSelectedTimespan,
   isMonthly,
+  setIsMonthly,
 }: {
   chart_data: l2_data;
   selectedTimespan: string;
+  setSelectedTimespan: (selectedTimespan: string) => void;
   isMonthly: boolean;
+  setIsMonthly: (isMonthly: boolean) => void;
 }) {
   const { AllChains, AllChainsByKeys } = useMaster();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
@@ -468,7 +478,78 @@ export default function EconHeadCharts({
   }, [dataTimestampExtremes.xMax, dataTimestampExtremes.xMin, isMonthly]);
 
   return (
-    <div className="wrapper h-[197px] w-full">
+    <div>
+      <TopRowContainer className="-py-[3px]">
+        <TopRowParent className="-py-[10px]">
+          <TopRowChild
+            isSelected={!isMonthly}
+            onClick={() => {
+              const isTransferrableTimespan =
+                selectedTimespan === "max" || selectedTimespan === "365d";
+              if (!isTransferrableTimespan) {
+                setSelectedTimespan("max");
+              }
+              setIsMonthly(false);
+            }}
+            style={{
+              paddingTop: "10.5px",
+              paddingBottom: "10.5px",
+              paddingLeft: "16px",
+              paddingRight: "16px",
+            }}
+          >
+            {"Daily"}
+          </TopRowChild>
+          <TopRowChild
+            isSelected={isMonthly}
+            onClick={() => {
+              const isTransferrableTimespan =
+                selectedTimespan === "max" || selectedTimespan === "365d";
+              if (!isTransferrableTimespan) {
+                setSelectedTimespan("max");
+              }
+              setIsMonthly(true);
+            }}
+            style={{
+              paddingTop: "10.5px",
+              paddingBottom: "10.5px",
+              paddingLeft: "16px",
+              paddingRight: "16px",
+            }}
+          >
+            {"Monthly"}
+          </TopRowChild>
+        </TopRowParent>
+        <TopRowParent className="-py-[10px]">
+          {Object.keys(timespans).map((key) => {
+            {
+              return (
+                <TopRowChild
+                  className={`px-[10px]`}
+                  onClick={() => {
+                    setSelectedTimespan(key);
+                  }}
+                  key={key}
+                  style={{
+                    paddingTop: "10.5px",
+                    paddingBottom: "10.5px",
+                    paddingLeft: "16px",
+                    paddingRight: "16px",
+                  }}
+                  isSelected={selectedTimespan === key}
+                >
+                  {selectedTimespan === key
+                    ? timespans[key].label
+                    : timespans[key].shortLabel}
+                </TopRowChild>
+              );
+            }
+          })}
+        </TopRowParent>
+      </TopRowContainer>
+    <div className={`wrapper  w-full mt-[15px] transition-height overflow-hidden ${
+      selectedTimespan === "1d" ? "h-[0px]" : "h-[197px]"
+    }`}>
       <Splide
         options={{
           gap: "15px",
@@ -1157,6 +1238,7 @@ export default function EconHeadCharts({
           <div className="splide__progress__bar" />
         </div>
       </Splide>
+    </div>
     </div>
   );
 }

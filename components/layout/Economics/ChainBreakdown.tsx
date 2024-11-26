@@ -19,11 +19,7 @@ import { useTransition, animated } from "@react-spring/web";
 import { set, times } from "lodash";
 import { useUIContext } from "@/contexts/UIContext";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
-import {
-  TopRowContainer,
-  TopRowChild,
-  TopRowParent,
-} from "@/components/layout/TopRow";
+
 import Container from "../Container";
 import {
   Tooltip,
@@ -537,74 +533,7 @@ export default function ChainBreakdown({
                 </Heading>
               </div>
             </div>
-            <TopRowContainer className="-py-[3px]">
-              <TopRowParent className="-py-[10px]">
-                <TopRowChild
-                  isSelected={!isMonthly}
-                  onClick={() => {
-                    const isTransferrableTimespan =
-                      selectedTimespan === "max" || selectedTimespan === "365d";
-                    if (!isTransferrableTimespan) {
-                      setSelectedTimespan("max");
-                    }
-                    setIsMonthly(false);
-                  }}
-                  style={{
-                    paddingTop: "10.5px",
-                    paddingBottom: "10.5px",
-                    paddingLeft: "16px",
-                    paddingRight: "16px",
-                  }}
-                >
-                  {"Daily"}
-                </TopRowChild>
-                <TopRowChild
-                  isSelected={isMonthly}
-                  onClick={() => {
-                    const isTransferrableTimespan =
-                      selectedTimespan === "max" || selectedTimespan === "365d";
-                    if (!isTransferrableTimespan) {
-                      setSelectedTimespan("max");
-                    }
-                    setIsMonthly(true);
-                  }}
-                  style={{
-                    paddingTop: "10.5px",
-                    paddingBottom: "10.5px",
-                    paddingLeft: "16px",
-                    paddingRight: "16px",
-                  }}
-                >
-                  {"Monthly"}
-                </TopRowChild>
-              </TopRowParent>
-              <TopRowParent className="-py-[10px]">
-                {Object.keys(timespans).map((key) => {
-                  {
-                    return (
-                      <TopRowChild
-                        className={`px-[10px]`}
-                        onClick={() => {
-                          setSelectedTimespan(key);
-                        }}
-                        key={key}
-                        style={{
-                          paddingTop: "10.5px",
-                          paddingBottom: "10.5px",
-                          paddingLeft: "16px",
-                          paddingRight: "16px",
-                        }}
-                        isSelected={selectedTimespan === key}
-                      >
-                        {selectedTimespan === key
-                          ? timespans[key].label
-                          : timespans[key].shortLabel}
-                      </TopRowChild>
-                    );
-                  }
-                })}
-              </TopRowParent>
-            </TopRowContainer>
+
           </Container>
           <HorizontalScrollContainer
             includeMargin={true}

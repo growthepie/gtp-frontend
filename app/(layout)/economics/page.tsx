@@ -57,8 +57,8 @@ export default function Economics() {
       />
       {/* <div className="mt-[15px] flex flex-col gap-y-[60px] h-full"> */}
       {/*Data Availability Fee Markets */}
-      <Container className="pb-[60px]">
-        {econData && <EconHeadCharts chart_data={econData.data.all_l2s} selectedTimespan={selectedTimespan} isMonthly={isMonthly} />}
+      <Container className={` ${selectedTimespan === "1d" ? "pb-[0px]" : "pb-[60px]"}`}>
+        {econData && <EconHeadCharts chart_data={econData.data.all_l2s} selectedTimespan={selectedTimespan} setSelectedTimespan={setSelectedTimespan} isMonthly={isMonthly} setIsMonthly={setIsMonthly} />}
       </Container>
       {econData && master && <ChainBreakdown data={econData.data.chain_breakdown} master={master} selectedTimespan={selectedTimespan} setSelectedTimespan={setSelectedTimespan} isMonthly={isMonthly} setIsMonthly={setIsMonthly} />}
       {/* </div> */}
