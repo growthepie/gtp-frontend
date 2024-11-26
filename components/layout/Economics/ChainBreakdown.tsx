@@ -44,12 +44,20 @@ type MetricSort = "revenue" | "profit" | "chain" | "costs" | "costs_l1" | "costs
 export default function ChainBreakdown({
   data,
   master,
+  selectedTimespan,
+  setSelectedTimespan,
+  isMonthly,
+  setIsMonthly,
 }: {
   data: ChainBreakdownResponse;
   master: MasterResponse;
+  selectedTimespan: string;
+  setSelectedTimespan: (value: string) => void;
+  isMonthly: boolean;
+  setIsMonthly: (value: boolean) => void;
 }) {
   const { AllChainsByKeys } = useMaster();
-  const [selectedTimespan, setSelectedTimespan] = useState("365d");
+ 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [DAIndex, setDAIndex] = useState(0);
   const [metricSort, setMetricSort] = useState<MetricSort>("revenue");
@@ -60,7 +68,7 @@ export default function ChainBreakdown({
   const { isSidebarOpen } = useUIContext();
   const isMobile = useMediaQuery("(max-width: 1024px)");
   const triggerShrink = useMediaQuery("(max-width: 1120px)");
-  const [isMonthly, setIsMonthly] = useState(false);
+
 
   // console.log(metricSort);
 

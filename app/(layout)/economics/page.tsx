@@ -2,6 +2,7 @@
 import Image from "next/image";
 import Heading from "@/components/layout/Heading";
 import useSWR from "swr";
+import { useState } from "react";
 import { EconomicsURL } from "@/lib/urls";
 import {
   EconomicsResponse,
@@ -31,6 +32,8 @@ export default function Economics() {
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
+  const [selectedTimespan, setSelectedTimespan] = useState("365d");
+  const [isMonthly, setIsMonthly] = useState(false);
   // if (!econData || !master) {
   //   return (
   //     <ShowLoading
@@ -55,9 +58,9 @@ export default function Economics() {
       {/* <div className="mt-[15px] flex flex-col gap-y-[60px] h-full"> */}
       {/*Data Availability Fee Markets */}
       <Container className="pb-[60px]">
-        {econData && <EconHeadCharts chart_data={econData.data.all_l2s} />}
+        {econData && <EconHeadCharts chart_data={econData.data.all_l2s} selectedTimespan={selectedTimespan} isMonthly={isMonthly} />}
       </Container>
-      {econData && master && <ChainBreakdown data={econData.data.chain_breakdown} master={master} />}
+      {econData && master && <ChainBreakdown data={econData.data.chain_breakdown} master={master} selectedTimespan={selectedTimespan} setSelectedTimespan={setSelectedTimespan} isMonthly={isMonthly} setIsMonthly={setIsMonthly} />}
       {/* </div> */}
     </>
   );
