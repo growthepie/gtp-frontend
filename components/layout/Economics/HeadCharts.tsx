@@ -844,7 +844,8 @@ export default function EconHeadCharts({
                               if (
                                 !chart ||
                                 !chart.series ||
-                                chart.series.length === 0
+                                chart.series.length === 0 ||
+                                selectedTimespan === "1d"
                               )
                                 return;
 
