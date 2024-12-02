@@ -29,6 +29,12 @@ import { useMaster } from "@/contexts/MasterContext";
 import ChartWatermark from "@/components/layout/ChartWatermark";
 import { unix } from "moment";
 import "@/app/highcharts.axis.css";
+import {
+  TopRowContainer,
+  TopRowChild,
+  TopRowParent,
+} from "@/components/layout/TopRow";
+
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -55,8 +61,16 @@ const urls = {
 
 export default function EconHeadCharts({
   chart_data,
+  selectedTimespan,
+  setSelectedTimespan,
+  isMonthly,
+  setIsMonthly,
 }: {
   chart_data: l2_data;
+  selectedTimespan: string;
+  setSelectedTimespan: (selectedTimespan: string) => void;
+  isMonthly: boolean;
+  setIsMonthly: (isMonthly: boolean) => void;
 }) {
   const { AllChains, AllChainsByKeys } = useMaster();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
@@ -353,8 +367,189 @@ export default function EconHeadCharts({
     return sum;
   }
 
+  const dataTimestampExtremes = useMemo(() => {
+    let xMin = Infinity;
+    let xMax = -Infinity;
+
+    Object.keys(chart_data.metrics).map((key) => {
+      // chart_data.metrics[key]
+      if(key === "costs") {
+        Object.keys(chart_data.metrics[key]).map((cost_key) => {
+          chart_data.metrics[key][cost_key].daily.data.map((data) => {
+            const min = chart_data.metrics[key][cost_key].daily.data[0][0];
+            const max =
+              chart_data.metrics[key][cost_key].daily.data[
+              chart_data.metrics[key][cost_key].daily.data.length - 1
+              ][0];
+    
+            xMin = Math.min(min, xMin);
+            xMax = Math.max(max, xMax);
+          });
+        });
+      }else {
+        const min = chart_data.metrics[key].daily.data[0][0];
+        const max =
+          chart_data.metrics[key].daily.data[
+          chart_data.metrics[key].daily.data.length - 1
+          ][0];
+
+        xMin = Math.min(min, xMin);
+        xMax = Math.max(max, xMax);
+      }
+    });
+
+    return { xMin, xMax };
+  }, [chart_data]);
+
+  const timespans = useMemo(() => {
+    let xMin = dataTimestampExtremes.xMin;
+    let xMax = dataTimestampExtremes.xMax;
+
+    if (!isMonthly) {
+      return {
+        "1d": {
+          shortLabel: "1d",
+          label: "1 day",
+          value: 1,
+        },
+        "7d": {
+          shortLabel: "7d",
+          label: "7 days",
+          value: 7,
+          xMin: xMax - 7 * 24 * 60 * 60 * 1000,
+          xMax: xMax,
+        },
+        "30d": {
+          shortLabel: "30d",
+          label: "30 days",
+          value: 30,
+          xMin: xMax - 30 * 24 * 60 * 60 * 1000,
+          xMax: xMax,
+        },
+        "90d": {
+          shortLabel: "90d",
+          label: "90 days",
+          value: 90,
+          xMin: xMax - 90 * 24 * 60 * 60 * 1000,
+          xMax: xMax,
+        },
+        "365d": {
+          shortLabel: "1y",
+          label: "1 year",
+          value: 365,
+          xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+          xMax: xMax,
+        },
+
+        max: {
+          shortLabel: "Max",
+          label: "Max",
+          value: 0,
+          xMin: xMin,
+          xMax: xMax,
+        },
+      };
+    } else {
+      return {
+        "180d": {
+          shortLabel: "6m",
+          label: "6 months",
+          value: 90,
+          xMin: xMax - 180 * 24 * 60 * 60 * 1000,
+          xMax: xMax,
+        },
+        "365d": {
+          shortLabel: "1y",
+          label: "1 year",
+          value: 365,
+          xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+          xMax: xMax,
+        },
+
+        max: {
+          shortLabel: "Max",
+          label: "Max",
+          value: 0,
+          xMin: xMin,
+          xMax: xMax,
+        },
+      };
+    }
+  }, [dataTimestampExtremes.xMax, dataTimestampExtremes.xMin, isMonthly]);
+
   return (
-    <div className="wrapper h-[197px] w-full">
+    <div>
+      <TopRowContainer className="-py-[3px]">
+        <TopRowParent className="-py-[10px]">
+          <TopRowChild
+            isSelected={!isMonthly}
+            onClick={() => {
+              const isTransferrableTimespan =
+                selectedTimespan === "max" || selectedTimespan === "365d";
+              if (!isTransferrableTimespan) {
+                setSelectedTimespan("max");
+              }
+              setIsMonthly(false);
+            }}
+            style={{
+              paddingTop: "10.5px",
+              paddingBottom: "10.5px",
+              paddingLeft: "16px",
+              paddingRight: "16px",
+            }}
+          >
+            {"Daily"}
+          </TopRowChild>
+          <TopRowChild
+            isSelected={isMonthly}
+            onClick={() => {
+              const isTransferrableTimespan =
+                selectedTimespan === "max" || selectedTimespan === "365d";
+              if (!isTransferrableTimespan) {
+                setSelectedTimespan("max");
+              }
+              setIsMonthly(true);
+            }}
+            style={{
+              paddingTop: "10.5px",
+              paddingBottom: "10.5px",
+              paddingLeft: "16px",
+              paddingRight: "16px",
+            }}
+          >
+            {"Monthly"}
+          </TopRowChild>
+        </TopRowParent>
+        <TopRowParent className="-py-[10px]">
+          {Object.keys(timespans).map((key) => {
+            {
+              return (
+                <TopRowChild
+                  className={`px-[10px]`}
+                  onClick={() => {
+                    setSelectedTimespan(key);
+                  }}
+                  key={key}
+                  style={{
+                    paddingTop: "10.5px",
+                    paddingBottom: "10.5px",
+                    paddingLeft: "16px",
+                    paddingRight: "16px",
+                  }}
+                  isSelected={selectedTimespan === key}
+                >
+                  {selectedTimespan === key
+                    ? timespans[key].label
+                    : timespans[key].shortLabel}
+                </TopRowChild>
+              );
+            }
+          })}
+        </TopRowParent>
+      </TopRowContainer>
+    <div className={`wrapper  w-full mt-[15px] transition-height duration-500 overflow-hidden ${
+      selectedTimespan === "1d" ? "h-[0px]" : "h-[197px]"
+    }`}>
       <Splide
         options={{
           gap: "15px",
@@ -649,7 +844,8 @@ export default function EconHeadCharts({
                               if (
                                 !chart ||
                                 !chart.series ||
-                                chart.series.length === 0
+                                chart.series.length === 0 ||
+                                selectedTimespan === "1d"
                               )
                                 return;
 
@@ -840,24 +1036,8 @@ export default function EconHeadCharts({
                             ordinal={false}
                             minorTicks={false}
                             minorTickInterval={1000 * 60 * 60 * 24 * 1}
-                            min={
-                              !isMultipleSeries
-                                ? chart_data.metrics[key].daily.data[0][0]
-                                : chart_data.metrics[key][firstMultiIndex].daily
-                                  .data[0][0]
-                            }
-                            max={
-                              !isMultipleSeries
-                                ? chart_data.metrics[key].daily.data[
-                                chart_data.metrics[key].daily.data.length -
-                                1
-                                ][0]
-                                : chart_data.metrics[key][lastMultiIndex].daily
-                                  .data[
-                                chart_data.metrics[key][lastMultiIndex]
-                                  .daily.data.length - 1
-                                ][0]
-                            }
+                            min={timespans[selectedTimespan].xMin + 1000 * 60 * 60 * 24 * 1} // don't include the last day
+                            max={timespans[selectedTimespan].xMax}
                           ></XAxis>
 
                           <YAxis
@@ -1059,6 +1239,7 @@ export default function EconHeadCharts({
           <div className="splide__progress__bar" />
         </div>
       </Splide>
+    </div>
     </div>
   );
 }

@@ -19,11 +19,7 @@ import { useTransition, animated } from "@react-spring/web";
 import { set, times } from "lodash";
 import { useUIContext } from "@/contexts/UIContext";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
-import {
-  TopRowContainer,
-  TopRowChild,
-  TopRowParent,
-} from "@/components/layout/TopRow";
+
 import Container from "../Container";
 import {
   Tooltip,
@@ -44,12 +40,20 @@ type MetricSort = "revenue" | "profit" | "chain" | "costs" | "costs_l1" | "costs
 export default function ChainBreakdown({
   data,
   master,
+  selectedTimespan,
+  setSelectedTimespan,
+  isMonthly,
+  setIsMonthly,
 }: {
   data: ChainBreakdownResponse;
   master: MasterResponse;
+  selectedTimespan: string;
+  setSelectedTimespan: (value: string) => void;
+  isMonthly: boolean;
+  setIsMonthly: (value: boolean) => void;
 }) {
   const { AllChainsByKeys } = useMaster();
-  const [selectedTimespan, setSelectedTimespan] = useState("365d");
+ 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [DAIndex, setDAIndex] = useState(0);
   const [metricSort, setMetricSort] = useState<MetricSort>("revenue");
@@ -60,7 +64,7 @@ export default function ChainBreakdown({
   const { isSidebarOpen } = useUIContext();
   const isMobile = useMediaQuery("(max-width: 1024px)");
   const triggerShrink = useMediaQuery("(max-width: 1120px)");
-  const [isMonthly, setIsMonthly] = useState(false);
+
 
   // console.log(metricSort);
 
@@ -514,90 +518,7 @@ export default function ChainBreakdown({
       <div>xMin {new Date(timespans[selectedTimespan].xMin).toDateString()}</div> */}
       {sortedChainData && (
         <div className="flex flex-col gap-y-[15px]">
-          <Container className="flex flex-col gap-y-[15px]">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-x-[8px]">
-                <Image
-                  src="/GTP-Metrics.svg"
-                  alt="GTP Chain"
-                  className="object-contain w-[36px] h-[36px] "
-                  height={36}
-                  width={36}
-                />
-                <Heading className="text-[30px] leading-snug " as="h2">
-                  Chain Breakdown
-                </Heading>
-              </div>
-            </div>
-            <TopRowContainer className="-py-[3px]">
-              <TopRowParent className="-py-[10px]">
-                <TopRowChild
-                  isSelected={!isMonthly}
-                  onClick={() => {
-                    const isTransferrableTimespan =
-                      selectedTimespan === "max" || selectedTimespan === "365d";
-                    if (!isTransferrableTimespan) {
-                      setSelectedTimespan("max");
-                    }
-                    setIsMonthly(false);
-                  }}
-                  style={{
-                    paddingTop: "10.5px",
-                    paddingBottom: "10.5px",
-                    paddingLeft: "16px",
-                    paddingRight: "16px",
-                  }}
-                >
-                  {"Daily"}
-                </TopRowChild>
-                <TopRowChild
-                  isSelected={isMonthly}
-                  onClick={() => {
-                    const isTransferrableTimespan =
-                      selectedTimespan === "max" || selectedTimespan === "365d";
-                    if (!isTransferrableTimespan) {
-                      setSelectedTimespan("max");
-                    }
-                    setIsMonthly(true);
-                  }}
-                  style={{
-                    paddingTop: "10.5px",
-                    paddingBottom: "10.5px",
-                    paddingLeft: "16px",
-                    paddingRight: "16px",
-                  }}
-                >
-                  {"Monthly"}
-                </TopRowChild>
-              </TopRowParent>
-              <TopRowParent className="-py-[10px]">
-                {Object.keys(timespans).map((key) => {
-                  {
-                    return (
-                      <TopRowChild
-                        className={`px-[10px]`}
-                        onClick={() => {
-                          setSelectedTimespan(key);
-                        }}
-                        key={key}
-                        style={{
-                          paddingTop: "10.5px",
-                          paddingBottom: "10.5px",
-                          paddingLeft: "16px",
-                          paddingRight: "16px",
-                        }}
-                        isSelected={selectedTimespan === key}
-                      >
-                        {selectedTimespan === key
-                          ? timespans[key].label
-                          : timespans[key].shortLabel}
-                      </TopRowChild>
-                    );
-                  }
-                })}
-              </TopRowParent>
-            </TopRowContainer>
-          </Container>
+
           <HorizontalScrollContainer
             includeMargin={true}
             className="w-full flex flex-col "
@@ -1040,7 +961,7 @@ export default function ChainBreakdown({
                           />
                           <Icon
                             icon={"gtp:circle-arrow"}
-                            className={`w-[4px] h-[9px] absolute top-[9px] right-0 `}
+                            className={`w-[4px] h-[9px] absolute top-[9px] right-0 ${selectedTimespan !== "1d" ? "visible" : "hidden"}`}
                             style={{
                               transform: `rotate(${openChain[item.key] && selectedTimespan !== "1d"
                                 ? "90deg"
@@ -1099,7 +1020,7 @@ export default function ChainBreakdown({
                         </div>
                       </div>
                       <div
-                        className={`relative flex items-end pb-[6px] justify-start gap-x-[5px] h-full px-[10px] bg-[#34424044] ${columnBorder(
+                        className={`relative flex items-center  justify-start gap-x-[5px] h-full px-[10px] bg-[#34424044] ${columnBorder(
                           "revenue",
                           item.key,
                         )}`}
@@ -1117,11 +1038,11 @@ export default function ChainBreakdown({
                           </div>
                         </div>
                         <div
-                          className={` w-[120px] flex justify-start items-end h-full ${isSidebarOpen ? "2xl:w-[125px]" : "xl:w-[125px]"
+                          className={` w-[120px] flex justify-start items-end pb-[6px] h-full ${isSidebarOpen ? "2xl:w-[125px]" : "xl:w-[125px]"
                             }`}
                         >
                           <div
-                            className={`w-[120px] flex items-end justify-center rounded-full h-[4px] bg-[#1DF7EF]`}
+                            className={`w-[120px] flex items-center justify-center rounded-full h-[4px] bg-[#1DF7EF]`}
                             style={{
                               width: `${(100 *
                                 data[item.key][selectedTimespan].revenue
@@ -1144,13 +1065,13 @@ export default function ChainBreakdown({
                         </div>
                       </div>
                       <div
-                        className={`flex items-end justify-center gap-x-[5px] pb-[6px] h-full ${columnBorder(
+                        className={`flex items-center justify-center gap-x-[5px]  h-full ${columnBorder(
                           "costs",
                           item.key,
                         )}`}
                       >
                         <div
-                          className="w-[65px] flex justify-end items-end h-full numbers-xs"
+                          className="w-[65px] flex justify-end items-center h-full numbers-xs"
                         >
                           {formatNumber(
                             data[item.key][selectedTimespan].costs.total[
@@ -1158,7 +1079,7 @@ export default function ChainBreakdown({
                             ],
                           )}
                         </div>
-                        <div className="flex flex-col justify-end w-[120px] h-full">
+                        <div className="flex flex-col justify-end pb-[6px] w-[120px] h-full">
                           <div className="flex w-full justify-between h-[15px] numbers-xxs">
                             <div className="flex gap-x-[0.5px] ">
                               <span

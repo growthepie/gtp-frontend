@@ -215,7 +215,8 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
 
       // if it is not the last day of the month, add a zone to the chart to indicate that the data is incomplete
       if (selectedTimeInterval === "monthly") {
-        if (seriesData.length > 2 && todaysDateUTC !== 1) {
+
+        if (seriesData.length > 1 && todaysDateUTC !== 1) {
           zoneAxis = "x";
           zones = [
             {
