@@ -84,12 +84,19 @@ module.exports = {
       },
       animation: {
         shake: "shake 0.5s ease-in-out infinite",
+        glint: 'glint 8s linear infinite',
       },
       keyframes: {
         shake: {
           "0%, 100%": { transform: "translateX(0)" },
           "10%, 30%, 50%, 70%, 90%": { transform: "translateX(-5px)" },
           "20%, 40%, 60%, 80%": { transform: "translateX(5px)" },
+        },
+        glint: {
+          '0%': { transform: 'translateX(-100%) skewX(-20deg) skewY(-35deg)' },
+          '10%': { transform: 'translateX(50%) skewX(-20deg) skewY(-35deg)' },
+          '20%': { transform: 'translateX(100%) skewX(-20deg) skewY(-35deg)' },
+          '100%': { transform: 'translateX(100%) skewX(-20deg) skewY(-35deg)' },
         },
       },
     },

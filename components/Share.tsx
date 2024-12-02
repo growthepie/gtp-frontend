@@ -160,6 +160,11 @@ export default function Share() {
     <>
       <div>
         <div>
+          <div className="absolute inset-0 z-40 w-full h-full overflow-hidden pointer-events-none rounded-full">
+            {/* Glint effect */}
+            <div className="w-full h-full"></div>
+            <div className="absolute top-1/2 -translate-y-1/2 w-full h-1 bg-gradient-to-r from-transparent via-white to-transparent opacity-60 transform -skew-x-20 animate-glint blur-sm"></div>
+          </div>
           <button
             className="select-none flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-[#1F2726] rounded-full px-4 py-2"
             onClick={() => {
@@ -290,6 +295,7 @@ export default function Share() {
                     : "w-[calc(100vw-30px)] xs:w-[calc(100vw-46px)] md:w-[579px]"
                   }`}
               >
+
                 <div className="flex w-full h-[32px] justify-between items-center justify-self-start ">
                   <div className="flex items-center gap-x-[10px]">
                     <Icon
