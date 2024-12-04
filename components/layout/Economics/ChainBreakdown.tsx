@@ -1392,7 +1392,7 @@ export default function ChainBreakdown({
                   : "xl:grid-cols-[auto_200px_200px_170px_145px_110px] grid-cols-[auto_170px_180px_170px_145px_110px] "
                   } min-w-[1125px]`}
               >
-                <div className="inline-flex items-center"><div className="heading-large-xs">TOTAL &nbsp;</div><div className="heading-large-xs text-[#5A6462] ">IN THE LAST {(timespans[selectedTimespan].label).toUpperCase()}</div></div>
+                <div className="inline-flex items-center"><div className="heading-large-xs">TOTAL &nbsp;</div><div className="heading-large-xs text-[#5A6462] ">  {selectedTimespan === "max" ? "FOR MAXIMUM TIMEFRAME AVAILABLE" : ("IN THE LAST " + (timespans[selectedTimespan].label).toUpperCase()) }</div></div>
                 <div className="w-full h-[34px] px-[2px]">
                   <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs  bg-[#34424044]">
                     {formatNumber(totals[selectedTimespan].revenue.total[showUsd ? 0 : 1])}
