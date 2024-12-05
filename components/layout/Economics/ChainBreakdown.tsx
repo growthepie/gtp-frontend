@@ -10,7 +10,7 @@ import {
   ReactNode,
   useCallback,
 } from "react";
-import { ChainBreakdownResponse } from "@/types/api/EconomicsResponse";
+import { ChainBreakdownResponse, ChainBreakdownData } from "@/types/api/EconomicsResponse";
 import BreakdownCharts from "@/components/layout/Economics/BreakdownCharts";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { MasterResponse } from "@/types/api/MasterResponse";
@@ -44,6 +44,7 @@ export default function ChainBreakdown({
   setSelectedTimespan,
   isMonthly,
   setIsMonthly,
+  totals,
 }: {
   data: ChainBreakdownResponse;
   master: MasterResponse;
@@ -51,6 +52,7 @@ export default function ChainBreakdown({
   setSelectedTimespan: (value: string) => void;
   isMonthly: boolean;
   setIsMonthly: (value: boolean) => void;
+  totals: ChainBreakdownData;
 }) {
   const { AllChainsByKeys } = useMaster();
  
@@ -510,6 +512,10 @@ export default function ChainBreakdown({
     return retHeight;
   }, [openChain, data, selectedTimespan]);
 
+
+
+
+
   // console.log(allChainsDA);
 
   return (
@@ -517,7 +523,7 @@ export default function ChainBreakdown({
       {/* <div>xMax {new Date(timespans[selectedTimespan].xMax).toDateString()}</div>
       <div>xMin {new Date(timespans[selectedTimespan].xMin).toDateString()}</div> */}
       {sortedChainData && (
-        <div className="flex flex-col gap-y-[15px]">
+        <div className="flex flex-col mb-[30px]">
 
           <HorizontalScrollContainer
             includeMargin={true}
@@ -1117,7 +1123,7 @@ export default function ChainBreakdown({
                           </div>
                           <div className="flex justify-start w-full items-end text-[8px] ">
                             <div
-                              className="bg-[#FD0F2C] flex items-center justify-start font-bold rounded-l-full pl-[5px] h-[4px] "
+                              className="bg-[#D03434] flex items-center justify-start font-bold rounded-l-full pl-[5px] h-[4px] "
                               style={{
                                 width: `${100 *
                                   (data[item.key][selectedTimespan].costs
@@ -1380,8 +1386,176 @@ export default function ChainBreakdown({
                   </animated.div>
                 );
               })}
+              <div
+                className={`grid absolute w-full pl-[45px] -bottom-[10px] pr-0.5 grid-cols-[auto_200px_200px_170px_145px_110px] mb-[15px]  ${isSidebarOpen
+                  ? " 2xl:grid-cols-[auto_200px_200px_170px_145px_110px] grid-cols-[auto_170px_180px_170px_145px_110px] "
+                  : "xl:grid-cols-[auto_200px_200px_170px_145px_110px] grid-cols-[auto_170px_180px_170px_145px_110px] "
+                  } min-w-[1125px]`}
+              >
+                <div className="inline-flex items-center"><div className="heading-large-xs">TOTAL &nbsp;</div><div className="heading-large-xs text-[#5A6462] ">  {selectedTimespan === "max" ? "FOR MAXIMUM TIMEFRAME AVAILABLE" : ("IN THE LAST " + (timespans[selectedTimespan].label).toUpperCase()) }</div></div>
+                <div className="w-full h-[34px] px-[2px]">
+                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs  bg-[#34424044]">
+                    {formatNumber(totals[selectedTimespan].revenue.total[showUsd ? 0 : 1])}
+                  </div>
+                </div>
+                <div className="w-full h-[34px] px-[2px]">
+                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs ">
+                    {formatNumber(totals[selectedTimespan].costs.total[showUsd ? 0 : 1])}
+                  </div>
+                </div>
+                <div className="w-full h-[34px] px-[2px]">
+                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs bg-[#34424044]">
+                    {formatNumber(totals[selectedTimespan].profit.total[showUsd ? 0 : 1])}
+                  </div>
+                </div>
+                <div className="w-full h-[34px] px-[2px]">
+                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs">
+                  <div
+                        className={`flex items-center py-[6px] justify-center gap-x-[5px] px-[5px]   h-full relative ${totals[selectedTimespan].profit_margin
+                          .total[0] > 0
+                          ? "flex-row"
+                          : "flex-row-reverse pl-[16px]"
+                          } `}
+                      >
+                        <div
+                          className={`numbers-xs min-w-[60px] max-w-[60px] flex items-center ${totals[selectedTimespan].profit_margin
+                            .total[0] > 0
+                            ? "justify-end"
+                            : "justify-start"
+                            }`}
+                        >
+                          <div>
+                            {Intl.NumberFormat("en-GB", {
+                              notation: "standard",
+                              maximumFractionDigits: 1,
+                              minimumFractionDigits: 1,
+                            }).format(
+                              totals[selectedTimespan].profit_margin
+                                .total[0] * 100,
+                            )}
+                          </div>
+                          <span>{"%"}</span>
+                        </div>
+                  <div
+                    className={`relative flex items-center px-[3px]  h-full w-[65px]  border-dashed border-forest-50  ${totals[selectedTimespan].profit_margin
+                            .total[0] > 0
+                            ? "border-l-[1px] justify-start flex-row"
+                            : "border-r-[1px] justify-start flex-row-reverse"
+                            }`}
+                        >
+                          <div
+                            className={`absolute h-[4px] bg-[#5A6462] w-[50px] z-0 ${totals[selectedTimespan].profit_margin
+                              .total[0] > 0
+                              ? "rounded-r-full"
+                              : "rounded-l-full"
+                              }`}
+                          />
+                          <div
+                            className={`h-[4px] z-10 ${totals[selectedTimespan].profit_margin
+                              .total[0] > 0
+                              ? "bg-[#45AA6F] rounded-r-2xl "
+                              : "bg-[#FF8F27] rounded-l-2xl"
+                              }`}
+                            style={{
+                              width: `${(
+                                50 *
+                                (totals[selectedTimespan].profit_margin
+                                  .total[0] > 0
+                                  ? 1
+                                  : -1) *
+                                  totals[selectedTimespan].profit_margin
+                                  .total[0]
+                              ).toFixed(2)}px`,
+                              minWidth: "1px",
+                              maxWidth: "50px",
+                            }}
+                          ></div>
+                          <div
+                            className={` items-center flex-row-reverse relative ${(totals[selectedTimespan].profit_margin
+                              .total[0] > 0
+                              ? 1
+                              : -1) *
+                              totals[selectedTimespan].profit_margin
+                                .total[0] *
+                              100 >
+                              100
+                              ? "flex"
+                              : "hidden"
+                              }`}
+                          >
+                            <div
+                              className={`h-[4px] w-[4px] z-10 absolute right-[-18px] ${totals[selectedTimespan].profit_margin
+                                .total[0] > 0
+                                ? "hidden"
+                                : "bg-[#5A6462] block"
+                                }`}
+                            ></div>
+                            <div
+                              className={`h-[4px] w-[4px] z-10 absolute right-[-14px] ${totals[selectedTimespan].profit_margin
+                                .total[0] > 0
+                                ? "hidden"
+                                : "bg-[#FF8F27] block"
+                                }`}
+                            ></div>
+                            <div
+                              className={`h-[4px] w-[3px] z-10 absolute right-[-11px] ${totals[selectedTimespan].profit_margin
+                                .total[0] > 0
+                                ? "hidden"
+                                : "bg-[#5A6462] block"
+                                }`}
+                            ></div>
+                            <div
+                              className={`h-[4px] w-[3px] z-10 absolute right-[-8px] ${totals[selectedTimespan].profit_margin
+                                .total[0] > 0
+                                ? "hidden"
+                                : "bg-[#FF8F27] block"
+                                }`}
+                            ></div>
+                            <div
+                              className={`h-[4px] w-[2px] z-10 absolute right-[-5px] ${totals[selectedTimespan].profit_margin
+                                .total[0] > 0
+                                ? "hidden"
+                                : "bg-[#5A6462] block"
+                                }`}
+                            ></div>
+                            <div
+                              className={`h-[4px] w-[2px] z-10 absolute right-[-3px] ${totals[selectedTimespan].profit_margin
+                                .total[0] > 0
+                                ? "hidden"
+                                : "bg-[#FF8F27] block"
+                                }`}
+                            ></div>
+                            <div
+                              className={`h-[4px] w-[1px] z-10 absolute right-[-2px] ${totals[selectedTimespan].profit_margin
+                                .total[0] > 0
+                                ? "hidden"
+                                : "bg-[#5A6462] block"
+                                }`}
+                            ></div>
+                            <div
+                              className={`h-[4px] w-[1px] z-10 absolute right-[-1px] ${totals[selectedTimespan].profit_margin
+                                .total[0] > 0
+                                ? "hidden"
+                                : "bg-[#FF8F27] block"
+                                }`}
+                            ></div>
+                          </div>
+                        </div>
+                  </div>
+                  </div>
+                </div>
+                <div className="w-full h-[34px] px-[2px]">
+                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs bg-[#34424044]">
+                    {formatBytes(
+                        totals[selectedTimespan].size.total[0],
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
+
           </HorizontalScrollContainer>
+          
         </div>
       )}
     </div>
