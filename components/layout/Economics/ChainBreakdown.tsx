@@ -1123,7 +1123,7 @@ export default function ChainBreakdown({
                           </div>
                           <div className="flex justify-start w-full items-end text-[8px] ">
                             <div
-                              className="bg-[#FD0F2C] flex items-center justify-start font-bold rounded-l-full pl-[5px] h-[4px] "
+                              className="bg-[#D03434] flex items-center justify-start font-bold rounded-l-full pl-[5px] h-[4px] "
                               style={{
                                 width: `${100 *
                                   (data[item.key][selectedTimespan].costs
