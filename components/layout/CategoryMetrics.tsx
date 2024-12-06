@@ -1999,7 +1999,7 @@ export default function CategoryMetrics({
                       </GridTableRow>
                     );
                   })}
-                <div className="w-full flex justify-center mb-2">
+                <div className="w-full flex justify-center mb-2 h-[60px]">
                   <button
                     className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full  hover:bg-forest-700 p-[6px 16px] ${Object.keys(sortedContracts).length <= 10
                       ? "hidden"
