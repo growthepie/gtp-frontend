@@ -49,7 +49,7 @@ export default function ContractContainer() {
   );
   const { AllChainsByKeys } = useMaster();
 
-  console.log(data);
+
 
   const contracts = useMemo<{ [key: string]: ContractInfo }>(() => {
     const result: { [key: string]: ContractInfo } = {};
@@ -70,7 +70,7 @@ export default function ContractContainer() {
                 // Concatenate and flatten data to the contractArray
                 contractArray = contractArray.concat(categoryData);
               }
-              console.log(contractArray);
+            
               return contractArray;
             })()
           : data[standardChainKey]["overview"][selectedTimespan][
@@ -131,7 +131,7 @@ export default function ContractContainer() {
     return result;
   }, [data, selectedCategory, selectedTimespan, allCats]);
 
-  console.log(contracts);
+ 
   useEffect(() => {
     if (!contracts) {
       return;
@@ -458,7 +458,7 @@ export default function ContractContainer() {
                 />
               );
             })}
-          <div className="w-full flex justify-center pb-2">
+          <div className="w-full flex justify-center pb-6 ">
             <button
               className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full  hover:bg-forest-700 ${
                 Object.keys(sortedContracts).length <= 10 ? "hidden" : "visible"
