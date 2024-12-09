@@ -135,7 +135,7 @@ const ChainOverview = () => {
               </div>
               <EcosystemDropdown />
             </div>
-            <div className="flex items-center w-[99%] mx-auto ">
+            <div className="flex items-center w-[99%] mx-auto pb-[15px]">
               <div className="text-[14px]">
                 An overview of chains high-level blockspace usage. All expressed
                 in share of chain usage. You can toggle between share of chain

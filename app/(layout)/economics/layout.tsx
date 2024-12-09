@@ -31,7 +31,7 @@ export default async function Layout({
             {"Onchain Economics"}
           </Heading>
         </div>
-        <div className="text-[14px] mb-[15px]">
+        <div className="text-[14px] mb-[30px]">
           Aggregated metrics across all chains listed in the table below.
         </div>
       </Container>
