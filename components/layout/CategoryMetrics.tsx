@@ -45,6 +45,7 @@ import {
 } from "@/components/layout/GridTable";
 import { LabelsProjectsResponse } from "@/types/Labels/ProjectsResponse";
 import "@/app/highcharts.axis.css"
+import VerticalScrollContainer from "../VerticalScrollContainer";
 
 export default function CategoryMetrics({
   data,
@@ -1148,7 +1149,7 @@ export default function CategoryMetrics({
 
             <Container>
               <div className="flex flex-col justify-between lg:flex-row w-[98.5%] gap-y-8 mx-auto mt-[20px] lg:mt-[30px] mb-[20px] lg:mb-0">
-                <div className="w-full lg:w-[44%] flex flex-col justify-between ">
+                <VerticalScrollContainer height={468} className="w-full lg:w-[44%] flex flex-col justify-between ">
                   <div
                     className="mt-4 relative"
                     style={{
@@ -1197,7 +1198,7 @@ export default function CategoryMetrics({
                         </animated.div>
                       ))}
                   </div>
-                </div>
+                </VerticalScrollContainer>
                 <div className="w-full lg:w-[56%] relative bottom-2 mt-1 mb-[30px] h-[320px] lg:mt-0 lg:h-auto">
                   {chartSeries && (
                     <Chart
@@ -1219,7 +1220,7 @@ export default function CategoryMetrics({
                           : "linear"
                       }
                       // yScale="linear"
-                      chartHeight={isMobile ? "400" : "560"}
+                      chartHeight={isMobile ? "400" : "468"}
                       chartWidth="100%"
                       decimals={selectedMode === "txcount_" ? 0 : 2}
                     />
@@ -1999,7 +2000,7 @@ export default function CategoryMetrics({
                       </GridTableRow>
                     );
                   })}
-                <div className="w-full flex justify-center mb-2">
+                <div className="w-full flex justify-center mb-2 h-[60px]">
                   <button
                     className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full  hover:bg-forest-700 p-[6px 16px] ${Object.keys(sortedContracts).length <= 10
                       ? "hidden"

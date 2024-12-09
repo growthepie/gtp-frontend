@@ -458,7 +458,7 @@ export default function ContractContainer() {
                 />
               );
             })}
-          <div className="w-full flex justify-center pb-6 ">
+          <div className="w-full flex justify-center pb-6">
             <button
               className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full  hover:bg-forest-700 ${
                 Object.keys(sortedContracts).length <= 10 ? "hidden" : "visible"

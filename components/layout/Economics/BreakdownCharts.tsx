@@ -356,7 +356,7 @@ function BreakdownCharts({
                   <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${profitY >= 0 ? "#EEFF97" : "#FFDF27"
                 }">
                   </div>
-                  <div class="tooltip-point-name text-md">${"Profit"}</div>
+                  <div class="tooltip-point-name text-xs">${"Profit"}</div>
                 </div>
                  <div class="flex-1 text-right justify-end flex numbers-xs">
                     <div class="${!prefix && "hidden"
@@ -552,11 +552,11 @@ function BreakdownCharts({
       >
         <div className="absolute bottom-2.5 left-[50px] w-[48px] h-[16px] bg-[#344240AA] bg-opacity-50 z-20 rounded-full flex items-center  gap-x-[2px] px-[3px]">
           <div className="w-[5px] h-[5px] bg-[#1DF7EF] rounded-full"></div>
-          <div className="text-[8px]">Revenue</div>
+          <div className="text-xxxs">Revenue</div>
         </div>
         <div className="absolute bottom-2.5 left-[102px] w-[32px] h-[16px] bg-[#344240AA] bg-opacity-50 z-20 rounded-full flex items-center  gap-x-[2px] px-[3px]">
           <div className="w-[5px] h-[5px] bg-[#FE5468] rounded-full" />
-          <div className="text-[8px]">Cost</div>
+          <div className="text-xxxs">Cost</div>
         </div>
         <HighchartsProvider Highcharts={Highcharts}>
           <HighchartsChart
@@ -860,11 +860,11 @@ function BreakdownCharts({
       >
         <div className="absolute top-2.5 left-[50px] w-[36px] h-[16px] bg-[#344240AA] bg-opacity-50 z-20 rounded-full flex items-center  gap-x-[2px] px-[3px]">
           <div className="w-[5px] h-[5px] bg-[#EEFF97] rounded-full"></div>
-          <div className="text-[8px]">Profit</div>
+          <div className="text-xxxs">Profit</div>
         </div>
         <div className="absolute bottom-[36px] left-[50px] w-[36px] h-[16px] bg-[#344240AA] bg-opacity-50 rounded-full flex items-center z-20  gap-x-[2px] px-[3px]">
           <div className="w-[5px] h-[5px] bg-[#FFDF27] rounded-full" />
-          <div className="text-[8px]">Loss</div>
+          <div className="text-xxxs">Loss</div>
         </div>
         <HighchartsProvider Highcharts={Highcharts}>
           {" "}

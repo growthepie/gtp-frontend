@@ -92,7 +92,7 @@ export default async function Layout({
               )
             }
           />
-          <Description>
+          <Description className="pb-[15px]">
             {textToLinkedText(pageData.description)}
           </Description>
         </Section>

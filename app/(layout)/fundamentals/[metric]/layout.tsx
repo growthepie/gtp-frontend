@@ -76,7 +76,7 @@ export default async function Layout({
 
   return (
     <PageRoot className="pt-[45px] md:pt-[30px]">
-      <PageContainer paddingY="none">
+      <PageContainer paddingY="none" >
         <Section>
           <Title
             icon={pageData.icon as GTPIconName}
@@ -92,7 +92,7 @@ export default async function Layout({
               )
             }
           />
-          <Description>
+          <Description className="pb-[15px]">
             {textToLinkedText(pageData.description)}
           </Description>
         </Section>

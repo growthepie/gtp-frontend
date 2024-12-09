@@ -151,7 +151,7 @@ export default function RowContainer() {
       {/* <colorful rows> */}
       {/* {selectedScale === "gasfees" ? ( */}
 
-      <div className="flex flex-col space-y-[5px] min-w-[880px] md:min-w-[910px] mb-8">
+      <div className="flex flex-col space-y-[5px] min-w-[880px] md:min-w-[910px] mb-8 pb-2.5">
         {
           //chain name is key
           Object.keys(data)

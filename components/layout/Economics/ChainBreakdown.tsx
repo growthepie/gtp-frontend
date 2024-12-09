@@ -547,7 +547,7 @@ export default function ChainBreakdown({
                     }
                   }}
                 >
-                  <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
+                  <div className="text-xs group-hover:text-forest-50/80 font-bold">
                     Chain
                   </div>
                   <div>
@@ -567,7 +567,7 @@ export default function ChainBreakdown({
                   </div>
                 </div>
                 <div
-                  className="flex items-center bg-[#344240] gap-x-1 text-[10px] rounded-full px-[5px] py-[2px] cursor-pointer"
+                  className="flex items-center bg-[#344240] gap-x-1 text-xxs rounded-full px-[5px] py-[2px] cursor-pointer"
                   onClick={() => {
                     setEnableDASort(true);
                     if (DAIndex === allChainsDA.length - 1) {
@@ -606,7 +606,7 @@ export default function ChainBreakdown({
                     }
                   }}
                 >
-                  <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
+                  <div className="text-xs group-hover:text-forest-50/80 font-bold">
                     Revenue
                   </div>
 
@@ -633,7 +633,7 @@ export default function ChainBreakdown({
                       <div className="flex flex-col items-center">
                         <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
                           <div className="flex flex-col gap-y-[5px] items-center">
-                            <div className="flex items-center gap-x-[5px] text-[10px] ">
+                            <div className="flex items-center gap-x-[5px] text-xxs">
                               The sum of fees that were paid by users of the
                               chain in gas fees.
                             </div>
@@ -648,7 +648,7 @@ export default function ChainBreakdown({
                 {" "}
                 <div className="flex items-center group gap-x-[1px]">
                   <div
-                    className="text-[12px] group-hover:text-forest-50/80 font-bold cursor-pointer"
+                    className="text-xs group-hover:text-forest-50/80 font-bold cursor-pointer"
                     onClick={() => {
                       if (metricSort !== "costs") {
                         setSortOrder(true);
@@ -683,7 +683,7 @@ export default function ChainBreakdown({
                       <div className="flex flex-col items-center">
                         <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
                           <div className="flex flex-col gap-y-[5px] items-center">
-                            <div className="flex items-center gap-x-[5px] text-[10px] ">
+                            <div className="flex items-center gap-x-[5px] text-xs ">
                               The chains onchain expenses. L1 costs are gas fees
                               paid to Ethereum for posting proofs, states, and
                               pointing to Blobs. Blob costs are fees paid for
@@ -696,8 +696,8 @@ export default function ChainBreakdown({
                     </TooltipContent>
                   </Tooltip>
                 </div>
-                <div className="flex items-center  gap-x-[1.5px] text-[8px] w-[98px] h-[16px] cursor-pointer">
-                  <div className="flex justify-center group items-center rounded-l-full border-[2px] border-r-[0px] border-[#D03434] w-[66px] px-[5px]  ">
+                <div className="flex items-center  gap-x-[1.5px] text-xxxs w-[104px] h-[16px] cursor-pointer">
+                  <div className="flex justify-center group items-center rounded-l-full border-[2px] border-r-[0px] border-[#D03434] w-[72px] px-[5px]  ">
                     <div
                       className=" group-hover:text-forest-50/80"
                       onClick={() => {
@@ -770,7 +770,7 @@ export default function ChainBreakdown({
                     }
                   }}
                 >
-                  <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
+                  <div className="text-xs group-hover:text-forest-50/80 font-bold">
                     Loss | Profit
                   </div>
                   <div>
@@ -796,7 +796,7 @@ export default function ChainBreakdown({
                       <div className="flex flex-col items-center">
                         <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
                           <div className="flex flex-col gap-y-[5px] items-center">
-                            <div className="flex items-center gap-x-[5px] text-[10px] ">
+                            <div className="flex items-center gap-x-[5px] text-xs ">
                               The chains total revenue minus its costs.
                             </div>
                           </div>
@@ -819,7 +819,7 @@ export default function ChainBreakdown({
               >
                 {" "}
                 <div className="flex items-center group gap-x-[1px] ">
-                  <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
+                  <div className="text-xs group-hover:text-forest-50/80 font-bold">
                     Margin
                   </div>
                   <div>
@@ -845,7 +845,7 @@ export default function ChainBreakdown({
                       <div className="flex flex-col items-center">
                         <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
                           <div className="flex flex-col gap-y-[5px] items-center">
-                            <div className="flex items-center gap-x-[5px] text-[10px] ">
+                            <div className="flex items-center gap-x-[5px] text-xxs ">
                               The profit margin of the chain calculated as
                               (Revenue - Costs) / Revenue
                             </div>
@@ -867,7 +867,7 @@ export default function ChainBreakdown({
                   }
                 }}
               >
-                <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
+                <div className="text-xs group-hover:text-forest-50/80 font-bold">
                   {"Blob Data"}
                 </div>
                 <div>
@@ -893,7 +893,7 @@ export default function ChainBreakdown({
                     <div className="flex flex-col items-center">
                       <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
                         <div className="flex flex-col gap-y-[5px] items-center">
-                          <div className="flex items-center gap-x-[5px] text-[10px] ">
+                          <div className="flex items-center gap-x-[5px] text-xxs ">
                             The total amount of data that is stored in Blobs.
                           </div>
                         </div>
@@ -930,7 +930,7 @@ export default function ChainBreakdown({
                     style={{ ...style }}
                   >
                     <div
-                      className={`grid  relative rounded-full w-full  min-h-[34px] text-[14px] items-center z-20 cursor-pointer pr-0.5 grid-cols-[auto_200px_200px_170px_145px_110px] min-w-[1000px] 
+                      className={`grid  relative rounded-full w-full  min-h-[34px] text-sm items-center z-20 cursor-pointer pr-0.5 grid-cols-[auto_200px_200px_170px_145px_110px] min-w-[1000px] 
                         ${isBouncing && bounceChain === item.key
                           ? "horizontal-bounce"
                           : ""
@@ -959,7 +959,7 @@ export default function ChainBreakdown({
                           <Icon
                             icon={`gtp:${AllChainsByKeys[item.key].urlKey
                               }-logo-monochrome`}
-                            className={`w-[15px] h-[15px] flex items-center justify-center text-[10px]`}
+                            className={`w-[15px] h-[15px] flex items-center justify-center text-xxs`}
                             style={{
                               color:
                                 AllChainsByKeys[item.key].colors["dark"][0],
@@ -995,7 +995,7 @@ export default function ChainBreakdown({
                         </div>
 
                         <div
-                          className="flex items-center bg-[#344240] gap-x-1 h-[18px] text-[10px] rounded-full px-[6px] py-[3px]"
+                          className="flex items-center bg-[#344240] gap-x-1 h-[18px] text-xxs rounded-full px-[6px] py-[3px]"
                           key={localDataAvail.label}
                           onClick={(e) => {
                             if (
@@ -1121,7 +1121,7 @@ export default function ChainBreakdown({
                               {"%"}
                             </div>
                           </div>
-                          <div className="flex justify-start w-full items-end text-[8px] ">
+                          <div className="flex justify-start w-full items-end text-xxxs ">
                             <div
                               className="bg-[#D03434] flex items-center justify-start font-bold rounded-l-full pl-[5px] h-[4px] "
                               style={{
