@@ -285,6 +285,7 @@ export const iconNames = [
   "worldchain-logo-monochrome",
   "zksync-era-logo-monochrome",
   "zora-logo-monochrome",
+  "mint-logo-monochrome",
   "da-ethereum-calldata-logo-monochrome",
   "da-ethereum-blobs-logo-monochrome",
   "da-celestia-logo-monochrome"
