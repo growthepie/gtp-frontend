@@ -547,7 +547,7 @@ export default function EconHeadCharts({
           })}
         </TopRowParent>
       </TopRowContainer>
-    <div className={`wrapper  w-full mt-[15px] transition-height duration-500 overflow-hidden ${
+    <div className={`wrapper  w-full mt-[15px] transition-height duration-500 overflow-visible ${
       selectedTimespan === "1d" ? "h-[0px]" : "h-[197px]"
     }`}>
       <Splide
@@ -630,7 +630,7 @@ export default function EconHeadCharts({
 
               return (
                 <SplideSlide key={"Splide" + key}>
-                  <div className="relative flex flex-col w-full overflow-hidden h-[197px] bg-[#1F2726] rounded-2xl  group ">
+                  <div className="relative flex flex-col w-full overflow-visible h-[197px] bg-[#1F2726] rounded-2xl  group ">
                     <div
                       className={`absolute items-center text-[16px] font-bold top-[15px] left-[15px] flex gap-x-[10px]  z-10 ${link ? "cursor-pointer" : ""
                         }`}

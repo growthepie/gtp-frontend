@@ -20,8 +20,8 @@ export default async function Layout({
                     {"Data Availability Overview"}
                     </Heading>
                 </div>
-                <div className="text-[14px] mb-[15px]">
-                    This is about DA
+                <div className="text-[14px] mb-[30px]">
+                    Metrics around Data Availability (DA).
                 </div>
             </Container>
             <Container>

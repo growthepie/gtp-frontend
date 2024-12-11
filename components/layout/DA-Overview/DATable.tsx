@@ -13,18 +13,18 @@ export default function DATable(){
             className="w-full flex flex-col "
           >
             <div
-              className={`grid  pr-0.5 grid-cols-[auto_200px_200px_170px_145px_110px_110px] mb-[15px]  ${isSidebarOpen
-                ? " 2xl:grid-cols-[auto_200px_200px_170px_145px_110px_110px] grid-cols-[auto_170px_180px_170px_145px_110px_110px] "
-                : "xl:grid-cols-[auto_200px_200px_170px_145px_110px_110px] grid-cols-[auto_170px_180px_170px_145px_110px_110px] "
+              className={`grid  pr-0.5 grid-cols-[auto_182px_199px_114px_240px_102px_136px] mb-[15px]  ${isSidebarOpen
+                ? " 2xl:grid-cols-[auto_182px_199px_114px_240px_102px_136px] grid-cols-[auto_182px_199px_114px_240px_102px_136px] "
+                : "xl:grid-cols-[auto_182px_199px_114px_240px_102px_136px] grid-cols-[auto_182px_199px_114px_240px_102px_136px] "
                 } min-w-[1125px]`}
             >
                 <div className="text-[14px] font-bold">DA Layer</div>
-                <div className="text-[14px] font-bold">DA Data</div>
+                <div className="text-[14px] font-bold">Data Posted</div>
                 <div className="text-[14px] font-bold">Fees Paid</div>
-                <div className="text-[14px] font-bold">Blob Producers</div>
-                <div className="text-[14px] font-bold">$ per MB</div>  
+                <div className="text-[14px] font-bold">Fees/MB</div>
+                <div className="text-[14px] font-bold">DA Consumers(Total | Chains)</div>  
                 <div className="text-[14px] font-bold">Blob Count</div> 
-                <div className="text-[14px] font-bold">Bandwidth</div>   
+                <div className="text-[14px] font-bold">Fixed Parameters</div>   
             </div>
           </HorizontalScrollContainer>
         </>

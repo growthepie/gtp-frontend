@@ -3,11 +3,16 @@ import { useEffect, useState, useMemo } from "react";
 import { TopRowContainer, TopRowParent, TopRowChild } from "@/components/layout/TopRow";
 import DAHeadCharts from "@/components/layout/DA-Overview/DAHeadCharts";
 import DATable from "@/components/layout/DA-Overview/DATable";
+import useSWR from "swr";
+import { DAOverviewURL } from "@/lib/urls";
+import { DAOverviewResponse } from "@/types/api/DAOverviewResponse";
 
 export default function DAOverviewPage() {
     const [selectedTimespan, setSelectedTimespan] = useState("365d");
     const [isMonthly, setIsMonthly] = useState(false);
 
+    const {data, error, isLoading, isValidating} = useSWR<DAOverviewResponse>(DAOverviewURL);
+   
     const timespans = useMemo(() => {
         let xMax = Date.now();
     
@@ -84,7 +89,10 @@ export default function DAOverviewPage() {
       }, [isMonthly]);
 
     return (
+      <>
+      {data && (
         <>
+      
             <TopRowContainer className="-py-[3px]">
                 <TopRowParent className="-py-[10px]">
                 <TopRowChild
@@ -153,8 +161,11 @@ export default function DAOverviewPage() {
                 })}
                 </TopRowParent>
             </TopRowContainer>
-            <DAHeadCharts selectedTimespan={selectedTimespan} timespans={timespans} />
+            <DAHeadCharts selectedTimespan={selectedTimespan} timespans={timespans} data={data.data.all_da} />
             <DATable />
-        </>        
+          
+        </>
+      )}
+      </>        
     )
 }

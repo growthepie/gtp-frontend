@@ -31,6 +31,8 @@ export const BlockspaceURLs = {
     "https://api.growthepie.xyz/v1/blockspace/category_comparison.json",
 };
 
+export const DAOverviewURL = "https://api.growthepie.xyz/v1/da_overview.json";
+
 export const ChainBlockspaceURLs = {
   ethereum: "https://api.growthepie.xyz/v1/chains/blockspace/ethereum.json",
   arbitrum: "https://api.growthepie.xyz/v1/chains/blockspace/arbitrum.json",
