@@ -10,6 +10,7 @@ import {
     PlotBand,
     AreaSeries,
 } from "react-jsx-highcharts";
+import Container from "../Container";
 import Highcharts, { chart } from "highcharts/highstock";
 import { useState, useCallback, useMemo } from "react";
 import { useLocalStorage } from "usehooks-ts";
@@ -303,7 +304,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
       );
 
     return (
-        <>
+      <Container>
         <div className="flex gap-x-[15px] mt-[15px] mb-[30px]">
         {Object.keys(data.metrics)
             .map((metricKey, i) => { 
@@ -681,6 +682,6 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                 <TopDAConsumers consumer_data={data.top_da_consumers} selectedTimespan={selectedTimespan} />
             </div>
             </div>
-        </>
+        </Container>
     )
 }

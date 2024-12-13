@@ -24,9 +24,9 @@ export default async function Layout({
                     Metrics around Data Availability (DA).
                 </div>
             </Container>
-            <Container>
+            <div>
                 {children}
-            </Container>
+            </div>
         </>
     )
   }
