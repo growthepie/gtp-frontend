@@ -97,7 +97,7 @@ export default function TopDAConsumers({consumer_data, selectedTimespan}: {consu
                                 />
                                 <div className="flex flex-col ">
                                     <div className="numbers-sm -mb-[1px]">{formatBytes(sortedDAConsumers[item.index][4])}</div>
-                                    <div className="text-xxs -mt-[1px]">{sortedDAConsumers[item.index][1] ? sortedDAConsumers[item.index][3] : "Unknown"}</div>
+                                    <div className="text-xxs -mt-[1px]">{sortedDAConsumers[item.index][1] ? sortedDAConsumers[item.index][3] : "Unknown(Temp)"}</div>
                                 </div>
                             </div>
                             <div></div>
