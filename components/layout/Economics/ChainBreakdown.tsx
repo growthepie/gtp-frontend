@@ -917,6 +917,11 @@ export default function ChainBreakdown({
                 const localDataAvail = dataAvailToArray(
                   master.chains[item.key].da_layer,
                 )[0];
+               
+
+                console.log(((data[item.key][selectedTimespan].revenue
+                  .total[dataIndex]) /
+                maxRevenue) + " " + item.key);
 
                 return (
                   <animated.div
@@ -1062,8 +1067,8 @@ export default function ChainBreakdown({
                                 ] /
                                   totalRevenue >
                                   0.01
-                                  ? "22px"
-                                  : `6px`,
+                                  ? "8px"
+                                  : `4px`,
                             }}
                           >
                             &nbsp;

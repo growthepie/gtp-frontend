@@ -92,7 +92,7 @@ export default function DATable({breakdown_data, selectedTimespan}: {breakdown_d
 
         let retData: string[];
         if(REGULAR_METRICS.includes(selectedCategory)){
-            retData = Object.keys(breakdown_data).sort((a, b) => {
+            retData = Object.keys(breakdown_data).filter((row_key) => row_key !== "totals").sort((a, b) => {
               let types = breakdown_data[a][selectedTimespan][selectedCategory].types;
               let typeIndex = types.includes("usd") ? types.indexOf(showUsd ? "usd" : "eth") : 0;
 
