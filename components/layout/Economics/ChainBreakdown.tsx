@@ -1061,14 +1061,7 @@ export default function ChainBreakdown({
                                 maxRevenue
                                 }%`,
 
-                              minWidth:
-                                data[item.key][selectedTimespan].revenue.total[
-                                  dataIndex
-                                ] /
-                                  totalRevenue >
-                                  0.01
-                                  ? "8px"
-                                  : `4px`,
+                              minWidth: `4px`,
                             }}
                           >
                             &nbsp;
