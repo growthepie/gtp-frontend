@@ -19,7 +19,7 @@ const REGULAR_METRICS = ["fees", "size", "fees_per_mb", "da_consumers", "fixed_p
 export default function DATable({breakdown_data, selectedTimespan}: {breakdown_data: DAOverviewBreakdown, selectedTimespan: string}) {
 
     const { isSidebarOpen } = useUIContext();
-    const { AllDALayersByKeys } = useMaster();
+    const { AllDALayersByKeys, AllChainsByKeys } = useMaster();
   
     const [selectedCategory, setSelectedCategory] = useState("fees");
     const [isBouncing, setIsBouncing] = useState(false);
@@ -56,9 +56,9 @@ export default function DATable({breakdown_data, selectedTimespan}: {breakdown_d
         (metric, key) => {
           const isOpen = openDA[key];
           const openDark =
-            metric === "fees" || metric === "da_consumers" || metric === "fixed_parameters";
+            metric === "fees" || metric === "da_consumers";
           const openLight =
-            metric === "name" || metric === "size" || metric === "fees_per_mb" || metric === "blob_count";
+            metric === "name" || metric === "size" || metric === "fees_per_mb" || metric === "fixed_parameters";
     
           if (isOpen) {
             if (openLight) {
@@ -78,7 +78,7 @@ export default function DATable({breakdown_data, selectedTimespan}: {breakdown_d
               (metric === "name"
                 ? " border-l-[1px] rounded-l-full"
                 : metric === "fixed_parameters"
-                  ? " border-r-[1px] rounded-r-full"
+                  ? " border-r-[1px] rounded-r-full bg-forest-950"
                   : "")
             );
           }
@@ -213,6 +213,45 @@ export default function DATable({breakdown_data, selectedTimespan}: {breakdown_d
     }, [openDA, breakdown_data, selectedTimespan]);
 
 
+    const createDAConsumers = useCallback((da_row) => {
+
+
+      const iconDisplay = Array.isArray(da_row.total[1])
+      ? da_row.total[1]
+          .filter((chain) => chain !== "eclipse")
+          .map((chain, index) => (
+            <Icon 
+              key={index} 
+              icon={`gtp:${AllChainsByKeys[chain].urlKey}-logo-monochrome`} 
+              className="w-[15px] h-[15px]" 
+            />
+          ))
+      : da_row.total[1];
+  //     <Icon
+  //     icon={
+  //       selectedCategory !== "name"
+  //         ? "formkit:arrowdown"
+  //         : sortOrder
+  //           ? "formkit:arrowdown"
+  //           : "formkit:arrowup"
+  //     }
+  //     className={` w-[10px] h-[10px] ${selectedCategory === "name"
+  //       ? "text-forest-50 opacity-100"
+  //       : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+  //       } `}
+  // />
+
+      return (
+        
+          <div className="flex items-center gap-x-[5px] number-xs">
+            <div>{da_row.total[0]}</div>
+            <div className="flex gap-x-[5px] items-center">{iconDisplay}</div>
+          </div>
+        
+      )
+    }, []);
+
+
     return (
         <>
           <HorizontalScrollContainer
@@ -220,9 +259,9 @@ export default function DATable({breakdown_data, selectedTimespan}: {breakdown_d
             className="w-full flex flex-col "
           >
             <div
-              className={`grid pl-[44px]  pr-0.5 grid-cols-[auto_200px_199px_114px_240px_102px_136px] mb-[15px]  ${isSidebarOpen
-                ? " 2xl:grid-cols-[auto_200px_199px_114px_240px_102px_136px] grid-cols-[auto_200px_199px_114px_240px_102px_136px] "
-                : "xl:grid-cols-[auto_200px_199px_114px_240px_102px_136px] grid-cols-[auto_200px_199px_114px_240px_102px_136px] "
+              className={`grid pl-[44px]  pr-0.5 grid-cols-[auto_200px_199px_114px_240px_136px] mb-[15px]  ${isSidebarOpen
+                ? " 2xl:grid-cols-[auto_200px_199px_114px_240px_136px] grid-cols-[auto_200px_199px_114px_240px_136px] "
+                : "xl:grid-cols-[auto_200px_199px_114px_240px_136px] grid-cols-[auto_200px_199px_114px_240px_136px] "
                 } min-w-[1125px]`}
             >
                 <div className="heading-small-xxs font-bold flex items-center">
@@ -369,7 +408,7 @@ export default function DATable({breakdown_data, selectedTimespan}: {breakdown_d
                     </TooltipContent>
                   </Tooltip>
                 </div>  
-                <div className="w-full flex justify-center items-center heading-small-xxs font-bold pr-0.5 ">
+                {/* <div className="w-full flex justify-center items-center heading-small-xxs font-bold pr-0.5 ">
                   <div>Blob Count</div>
                   <Icon
                     icon={
@@ -400,7 +439,7 @@ export default function DATable({breakdown_data, selectedTimespan}: {breakdown_d
                       </div>
                     </TooltipContent>
                   </Tooltip>
-                </div> 
+                </div>  */}
                 <div className="heading-small-xxs flex font-bold items-center pl-0.5 ">
                   <div>Fixed Parameters</div>
                   <Icon
@@ -449,13 +488,13 @@ export default function DATable({breakdown_data, selectedTimespan}: {breakdown_d
                     style={{ ...style }}
                   >
                     <div
-                      className={`grid  relative rounded-full w-full  min-h-[34px] text-sm items-center z-20 cursor-pointer pr-0.5 grid-cols-[auto_182px_199px_114px_240px_102px_136px] min-w-[1125px] 
+                      className={`grid  relative rounded-full w-full  min-h-[34px] text-sm items-center z-20 cursor-pointer pr-0.5 grid-cols-[auto_200px_199px_114px_240px_136px] min-w-[1125px] 
                         ${isBouncing && bounceChain === item.key
                           ? "horizontal-bounce"
                           : ""
                         } ${isSidebarOpen
-                          ? " 2xl:grid-cols-[auto_200px_199px_114px_240px_102px_136px] grid-cols-[auto_200px_199px_114px_240px_102px_136px] "
-                          : "xl:grid-cols-[auto_200px_199px_114px_240px_102px_136px] grid-cols-[auto_200px_199px_114px_240px_102px_136px] "
+                          ? " 2xl:grid-cols-[auto_200px_199px_114px_240px_136px] grid-cols-[auto_200px_199px_114px_240px_136px] "
+                          : "xl:grid-cols-[auto_200px_199px_114px_240px_136px] grid-cols-[auto_200px_199px_114px_240px_136px] "
                         }`}
                       onClick={(e) => {
                         handleClick(e, item.key);
@@ -500,19 +539,14 @@ export default function DATable({breakdown_data, selectedTimespan}: {breakdown_d
                             }`}
                         >
                           <div
-                            className={`w-[120px] flex items-center justify-center rounded-full h-[4px] bg-[#1DF7EF]`}
+                            className={`w-[110px] flex items-center justify-center rounded-full h-[4px] bg-[#1DF7EF]`}
                             style={{
                               width: `${(100 *
                                 breakdown_data[item.key][selectedTimespan].size.total[0]) /
                                 totalDataPosted
                                 }%`,
 
-                              minWidth:
-                                breakdown_data[item.key][selectedTimespan].size.total[0] /
-                                  totalDataPosted >
-                                  0.01
-                                  ? "22px"
-                                  : `6px`,
+                                minWidth: "4px",
                             }}
                           >
                             &nbsp;
@@ -538,19 +572,14 @@ export default function DATable({breakdown_data, selectedTimespan}: {breakdown_d
                             }`}
                         >
                           <div
-                            className={`w-[120px] flex items-center justify-center rounded-full h-[4px] bg-[#FE5468]`}
+                            className={`w-[110px] flex items-center justify-center rounded-full h-[4px] bg-[#FE5468]`}
                             style={{
                               width: `${(100 *
                                 breakdown_data[item.key][selectedTimespan].fees.total[typeIndex]) /
                                 totalFeesPaid
                                 }%`,
 
-                              minWidth:
-                                breakdown_data[item.key][selectedTimespan].size.total[typeIndex] /
-                                  totalFeesPaid >
-                                  0.01
-                                  ? "22px"
-                                  : `6px`,
+                              minWidth: "4px",
                             }}
                           >
                             &nbsp;
@@ -558,29 +587,27 @@ export default function DATable({breakdown_data, selectedTimespan}: {breakdown_d
                         </div>
                       </div>
                       <div
-                        className={`flex items-center gap-x-[10px] w-full px-[5px] h-full bg-[#1F2726]  ${columnBorder(
+                        className={`flex items-center numbers-xs justify-end w-full px-[5px] h-full bg-[#1F2726]  ${columnBorder(
                           "fees_per_mb",
                           item.key,
                         )} `}
                       >
-
+                        <span>{showUsd ? "$" : "Ξ"}</span>
+                        {breakdown_data[item.key][selectedTimespan].fees_per_mb.total[typeIndex] < 0.001 ? Number(breakdown_data[item.key][selectedTimespan].fees_per_mb.total[typeIndex]).toExponential(2) : Intl.NumberFormat("en-GB", {
+                          notation: "compact",
+                          maximumFractionDigits: 3,
+                          minimumFractionDigits: 3,
+                        }).format(breakdown_data[item.key][selectedTimespan].fees_per_mb.total[typeIndex])}      
                       </div>
                       <div
-                        className={`flex items-center gap-x-[10px] w-full px-[5px] h-full bg-[#344240]  ${columnBorder(
+                        className={`flex items-center gap-x-[10px] justify-end w-full px-[5px] h-full bg-[#344240]  ${columnBorder(
                           "da_consumers",
                           item.key,
                         )} `}
                       >
-
+                        {createDAConsumers(breakdown_data[item.key][selectedTimespan].da_consumers)}
                       </div>
-                      <div
-                        className={`flex items-center gap-x-[10px] w-full px-[5px] h-full bg-[#1F2726] ${columnBorder(
-                          "blob_count",
-                          item.key,
-                        )} `}
-                      >
 
-                      </div>
                       <div
                         className={`flex items-center gap-x-[10px] w-full px-[5px] h-full bg-[#344240] ${columnBorder(
                           "fixed_parameters",
