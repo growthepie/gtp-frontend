@@ -1,6 +1,6 @@
 "use client"
 import Container from "@/components/layout/Container"
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
     HighchartsProvider,
     HighchartsChart,
@@ -18,6 +18,10 @@ import { BlockspaceURLs } from "@/lib/urls";
 import { ChainOverviewResponse } from "@/types/api/ChainOverviewResponse";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { useEffect } from "react"; // not sure if this is needed
+import { TopRowContainer, TopRowParent, TopRowChild } from "@/components/layout/TopRow";
+import { time } from "console";
+
+
 
 
 
@@ -41,34 +45,81 @@ export default function Page(){
           setSelectedTimespan("7d");
         }
       }, []);
+    const timespans = useMemo(() => {
+    let xMax = Date.now();
 
-      //are these set somewhere already - how would I have found and used them here instead of hardcoding?
-    const dateRanges = { //co pilot helped with this - do I need to minus an extra day?
-        "7d": [new Date().setDate(new Date().getDate() - 8), new Date().setDate(new Date().getDate() - 1)],
-        "30d": [new Date().setDate(new Date().getDate() - 31), new Date().setDate(new Date().getDate() - 1)],
-        "180d": [new Date().setDate(new Date().getDate() - 181), new Date().setDate(new Date().getDate() - 1)],
-        // "max": [0, new Date().setDate(new Date().getDate() - 1)]
-        "max": [new Date().setDate(new Date().getDate() - 1091), new Date().setDate(new Date().getDate() + 40)]// Why is it shifting? 
-    };
+    
+        return {
+        "1d": {
+            shortLabel: "1d",
+            label: "1 day",
+            value: 1,
+            xMin: xMax - 1 * 24 * 60 * 60 * 1000,
+            xMax: xMax,
+        },
+        "7d": {
+            shortLabel: "7d",
+            label: "7 days",
+            value: 7,
+            xMin: xMax - 7 * 24 * 60 * 60 * 1000,
+            xMax: xMax,
+        },
+        "30d": {
+            shortLabel: "30d",
+            label: "30 days",
+            value: 30,
+            xMin: xMax - 30 * 24 * 60 * 60 * 1000,
+            xMax: xMax,
+        },
+        "90d": {
+            shortLabel: "90d",
+            label: "90 days",
+            value: 90,
+            xMin: xMax - 90 * 24 * 60 * 60 * 1000,
+            xMax: xMax,
+        },
+        "365d": {
+            shortLabel: "1y",
+            label: "1 year",
+            value: 365,
+            xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+            xMax: xMax,
+        },
 
-    const dateRange = dateRanges[selectedTimespan];
- 
-    const handleTimespanChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        setSelectedTimespan(event.target.value);
-    };
+        max: {
+            shortLabel: "Max",
+            label: "Max",
+            value: 0,
+            xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+            xMax: xMax,
+        },
+        };
+        
+      }, []);
+
+
+
+   
 
     
 
    
     return (
         <Container>
-            <div className={``}>Days </div>
-            <select value={selectedTimespan} onChange={handleTimespanChange}>
-                <option value="7d">7 Days</option>
-                <option value="30d">30 Days</option>
-                <option value="180d">180 Days</option>
-                <option value="max">Max</option>
-            </select>
+            <TopRowContainer>
+                <TopRowParent>
+                   {Object.keys(timespans).map((timespan) => (
+                        <TopRowChild
+                            isSelected={selectedTimespan === timespan}
+                            key={timespan}
+                            onClick={() => setSelectedTimespan(timespan)}
+                            className={`${selectedTimespan === timespan ? "selected" : ""}`}
+                        >
+                            {timespans[timespan].shortLabel}
+                        </TopRowChild>
+                    ))}
+                </TopRowParent>
+            </TopRowContainer>
             <HighchartsProvider Highcharts={Highcharts}>
                 <HighchartsChart
                     containerProps={{
@@ -77,7 +128,7 @@ export default function Page(){
                         width: "100%",
                         marginLeft: "auto",
                         marginRight: "auto",
-                        position: "absolute",
+                        position: "relative",
 
                         overflow: "visible",
                     },
@@ -102,19 +153,20 @@ export default function Page(){
                     </YAxis>
                     <XAxis
                         type="datetime"
-                        min={dateRange[0]}
-                        max={dateRange[1]}
+                        min={timespans[selectedTimespan].xMin}
+                        max={timespans[selectedTimespan].xMax}
                     >
                     </XAxis>
                     <Tooltip
+                        useHTML={true}
                         backgroundColor="rgba(31, 39, 38, 0.65)"
                         borderRadius={15}
                         style={{ color: '#FFFFFF', padding: '10px' }}
                         formatter={function () {
-                            return `<div style="padding: 10px;">
-                                        <b style="font-size: 16px;">${new Date(this.x).toLocaleDateString()}</b><br/>
+                            return `<div class="p-4 flex flex-col gap-y-[10px]">
+                                        <b style="font-size: 16px;">${(new Date(Number (this.x)).toLocaleDateString())}</b><br/> 
                                         ${this.series.name}: ${this.y}<br/>
-                                        <div style="width: 100%; height: 5px; background-color: ${this.color}; margin-top: 10px;"></div>
+                                        <div class="w-[100%] h-[5px] mt-[10px]" style="background-color: ${this.color}"></div>
                                     </div>`;
                         }}
                     />

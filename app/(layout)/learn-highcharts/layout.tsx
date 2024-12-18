@@ -1,5 +1,12 @@
 import { Metadata } from "next";
 import { navigationItems } from "@/lib/navigation";
+import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
+import Container from "@/components/layout/Container";
+import Heading from "@/components/layout/Heading";
+import QuestionAnswer from "@/components/layout/QuestionAnswer";
+import Image from "next/image";
+import Link from "next/link";
+
 
 type Props = {
   params: { metric: string };
@@ -39,5 +46,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return children;
+  return(
+    <>
+      <Container className="flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px]">
+        <div className="flex items-center h-[43px] gap-x-[8px]">
+          <Image
+              src="/GTP-Metrics-Economics.svg"
+              alt="GTP Chain"
+              className="object-contain w-[36px] h-[36px]"
+              height={36}
+              width={36}
+          />
+          <Heading className="text-[36px] leading-snug " as="h1">ETH Wave</Heading>
+        </div>
+        <div className="text-[14px] mb-[30px]">
+          Chart in progress
+        </div>
+      </Container>
+      <div>{children}</div>
+    </>
+  )
+    
 }
