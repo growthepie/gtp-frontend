@@ -907,7 +907,7 @@ export default function ChainBreakdown({
               {/*END TOP ROW */}
             </div>
             <div
-              className={`relative flex flex-col -mt-[5px] min-w-[1125px] z-0 transition-height duration-300 `}
+              className={`relative flex flex-col -mt-[5px] min-w-[1125px] z-0 transition-height duration-500 `}
               style={{ height: minimumHeight }}
             >
               {transitions((style, item) => {

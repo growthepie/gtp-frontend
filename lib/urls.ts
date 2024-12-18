@@ -32,6 +32,7 @@ export const BlockspaceURLs = {
 };
 
 export const DAOverviewURL = "https://api.growthepie.xyz/v1/da_overview.json";
+export const DATimeseriesURL = "https://api.growthepie.xyz/v1/da_timeseries.json";
 
 export const ChainBlockspaceURLs = {
   ethereum: "https://api.growthepie.xyz/v1/chains/blockspace/ethereum.json",

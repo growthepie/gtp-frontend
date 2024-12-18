@@ -12,11 +12,19 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/layout/Tooltip";
-
+import DABreakdownCharts from "@/components/layout/DA-Overview/DABreakdownCharts";
+import useSWR from "swr"; 
+import { DATimeseriesResponse } from "@/types/api/DATimeseriesResponse";
+import { DATimeseriesURL } from "@/lib/urls";
+import { chart } from "highcharts";
+import ShowLoading from "@/components/layout/ShowLoading";
 
 const REGULAR_METRICS = ["fees", "size", "fees_per_mb", "da_consumers", "fixed_parameters"];
 
 export default function DATable({breakdown_data, selectedTimespan}: {breakdown_data: DAOverviewBreakdown, selectedTimespan: string}) {
+
+
+    const {data: chart_data, error: chart_error, isLoading: chart_loading, isValidating: chart_validating} = useSWR<DATimeseriesResponse>(DATimeseriesURL);
 
     const { isSidebarOpen } = useUIContext();
     const { AllDALayersByKeys, AllChainsByKeys } = useMaster();
@@ -56,9 +64,9 @@ export default function DATable({breakdown_data, selectedTimespan}: {breakdown_d
         (metric, key) => {
           const isOpen = openDA[key];
           const openDark =
-            metric === "fees" || metric === "da_consumers";
+            metric === "fees" || metric === "da_consumers" || metric === "fixed_parameters";
           const openLight =
-            metric === "name" || metric === "size" || metric === "fees_per_mb" || metric === "fixed_parameters";
+            metric === "name" || metric === "size" || metric === "fees_per_mb";
     
           if (isOpen) {
             if (openLight) {
@@ -78,7 +86,7 @@ export default function DATable({breakdown_data, selectedTimespan}: {breakdown_d
               (metric === "name"
                 ? " border-l-[1px] rounded-l-full"
                 : metric === "fixed_parameters"
-                  ? " border-r-[1px] rounded-r-full bg-forest-950"
+                  ? " border-r-[1px] rounded-r-full "
                   : "")
             );
           }
@@ -185,8 +193,8 @@ export default function DATable({breakdown_data, selectedTimespan}: {breakdown_d
           });
         }
         return {
-          y: index * 39 + prevOpenCharts * 387,
-          height: 39 + (openDA[key] ? 387 : 0),
+          y: index * 39 + prevOpenCharts * 248,
+          height: 39 + (openDA[key] ? 248 : 0),
           key: key, // Assuming `chain` is used as a key
           i: index,
         };
@@ -251,9 +259,20 @@ export default function DATable({breakdown_data, selectedTimespan}: {breakdown_d
       )
     }, []);
 
+   
+
 
     return (
         <>
+        {chart_loading || !chart_data ? (
+            <div>
+              <ShowLoading
+                dataLoading={[chart_loading]}
+                dataValidating={[chart_validating]}
+                fullScreen={true}
+              />
+            </div>
+          ) : (
           <HorizontalScrollContainer
             includeMargin={true}
             className="w-full flex flex-col "
@@ -609,7 +628,7 @@ export default function DATable({breakdown_data, selectedTimespan}: {breakdown_d
                       </div>
 
                       <div
-                        className={`flex items-center gap-x-[10px] w-full px-[5px] h-full bg-[#344240] ${columnBorder(
+                        className={`flex items-center gap-x-[10px] w-full px-[5px] h-full bg-[#1F2726] ${columnBorder(
                           "fixed_parameters",
                           item.key,
                         )} `}
@@ -618,12 +637,27 @@ export default function DATable({breakdown_data, selectedTimespan}: {breakdown_d
                       </div>
 
                     </div>
+                    <div
+                      className={`flex bottom-2 z-0 relative top-[0px] justify-center w-full transition-height duration-300 overflow-hidden ${openDA[item.key] && selectedTimespan !== "1d"
+                        ? "h-[248px]"
+                        : "h-[0px]"
+                        }`}
+                    >
+                      <div className="w-[97.5%] bg-forest-950 rounded-b-2xl border-dotted border-[1.25px] border-t-0 border-forest-50/30">
+                        <DABreakdownCharts
+                          data={chart_data.data.da_layers[item.key]}
+                          selectedTimespan={selectedTimespan}
+                          
+                        />
+                      </div>
+                    </div>
                   </animated.div>
                 )})}
 
               
             </div>
           </HorizontalScrollContainer>
+          )}
         </>
     )
 }
