@@ -90,7 +90,10 @@ export default function Page(){
                         title={"test"}
                         
                     />
-                    <YAxis><LineSeries name="Gas fees eth"  color={"#FF0420"} data={chainOverviewData?.data.chains["all_l2s"].daily["cefi"].data.map(
+                    <YAxis><LineSeries 
+                        name="All L2s"  
+                        color={"#FF0420"} 
+                        data={chainOverviewData?.data.chains["all_l2s"].daily["cefi"].data.map(
                         (d: any) => [
                         d[0],
                         showUsd ? d[2] : d[1], // 1 = ETH 2 = USD
@@ -104,12 +107,17 @@ export default function Page(){
                     >
                     </XAxis>
                     <Tooltip
-                    style={
-                        { color: '#FFFFFF', padding: '10px' }
-                    }
-                    backgroundColor="#1b2135"
-                    borderRadius={15}
-                    ></Tooltip>
+                        backgroundColor="rgba(31, 39, 38, 0.65)"
+                        borderRadius={15}
+                        style={{ color: '#FFFFFF', padding: '10px' }}
+                        formatter={function () {
+                            return `<div style="padding: 10px;">
+                                        <b style="font-size: 16px;">${new Date(this.x).toLocaleDateString()}</b><br/>
+                                        ${this.series.name}: ${this.y}<br/>
+                                        <div style="width: 100%; height: 5px; background-color: ${this.color}; margin-top: 10px;"></div>
+                                    </div>`;
+                        }}
+                    />
                     <Title>Chart Ex</Title>
                     
                 </HighchartsChart>
