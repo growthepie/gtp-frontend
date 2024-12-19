@@ -224,18 +224,31 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
 
     const createDAConsumers = useCallback((da_row) => {
 
-
-      const iconDisplay = Array.isArray(da_row.total[1])
-      ? da_row.total[1]
-          .filter((chain) => chain !== "eclipse")
-          .map((chain, index) => (
+      let more = 0;
+      const retHTML = da_row.chains.values.map((chain, index) => {
+        if (chain[1] && chain[1] !== "gitcoin_pgn") {
+          
+          return (
             <Icon 
               key={index} 
-              icon={`gtp:${AllChainsByKeys[chain].urlKey}-logo-monochrome`} 
+              icon={`gtp:${AllChainsByKeys[chain[1]].urlKey}-logo-monochrome`} 
               className="w-[15px] h-[15px]" 
             />
-          ))
-      : da_row.total[1];
+          );
+        }else{
+          more += 1;
+        }
+        return null; // Return null for items that don't meet the condition
+      });
+      
+      
+      // const iconDisplay = Array.isArray(da_row.total[1])
+      // ? da_row.total[1]
+      //     .filter((chain) => chain !== "eclipse")
+      //     .map((chain, index) => (
+
+      //     ))
+      // : da_row.total[1];
   //     <Icon
   //     icon={
   //       selectedCategory !== "name"
@@ -249,15 +262,24 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
   //       : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
   //       } `}
   // />
+          return(
+            <div className="flex items-center gap-x-[2px]">
+                <div className="numbers-xs mr-[3px]">{da_row.count}</div>
+                {retHTML}
+                <div className="ml-[3px] w-[60px] px-[5px] py-[3px] rounded-full bg-[#344240] text-xxs">
+                  {`+ ${more} more`}
+                </div>
+            </div>
+          )
 
-      return (
+      // return (
         
-          <div className="flex items-center gap-x-[5px] number-xs">
-            <div>{da_row.total[0]}</div>
-            <div className="flex gap-x-[5px] items-center">{iconDisplay}</div>
-          </div>
+      //     <div className="flex items-center gap-x-[5px] number-xs">
+      //       <div>{da_row.total[0]}</div>
+      //       <div className="flex gap-x-[5px] items-center">{iconDisplay}</div>
+      //     </div>
         
-      )
+      // )
     }, []);
 
    
@@ -279,9 +301,9 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
             className="w-full flex flex-col "
           >
             <div
-              className={`grid pl-[44px]  pr-0.5 grid-cols-[auto_200px_199px_114px_240px_136px] mb-[15px]  ${isSidebarOpen
-                ? " 2xl:grid-cols-[auto_200px_199px_114px_240px_136px] grid-cols-[auto_200px_199px_114px_240px_136px] "
-                : "xl:grid-cols-[auto_200px_199px_114px_240px_136px] grid-cols-[auto_200px_199px_114px_240px_136px] "
+              className={`grid pl-[44px]  pr-0.5 grid-cols-[auto_200px_199px_114px_280px_46px] mb-[15px]  ${isSidebarOpen
+                ? " 2xl:grid-cols-[auto_200px_199px_114px_280px_46px] grid-cols-[auto_200px_199px_114px_280px_46px] "
+                : "xl:grid-cols-[auto_200px_199px_114px_280px_46px] grid-cols-[auto_200px_199px_114px_280px_46px]"
                 } min-w-[1125px]`}
             >
                 <div className="heading-small-xxs font-bold flex items-center">
@@ -461,36 +483,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                   </Tooltip>
                 </div>  */}
                 <div className="heading-small-xxs flex font-bold items-center pl-0.5 ">
-                  <div>Fixed Parameters</div>
-                  <Icon
-                    icon={
-                      selectedCategory !== "fixed_parameters"
-                        ? "formkit:arrowdown"
-                        : sortOrder
-                          ? "formkit:arrowdown"
-                          : "formkit:arrowup"
-                    }
-                    className={` w-[10px] h-[10px] ${selectedCategory === "fixed_parameters"
-                      ? "text-forest-50 opacity-100"
-                      : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
-                      } `}
-                  />
-                  <Tooltip key={"Fixed Parameters"} placement="right">
-                    <TooltipTrigger>
-                      <Icon icon="feather:info" className="w-[15px] h-[15px]" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <div className="flex flex-col items-center">
-                        <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
-                          <div className="flex flex-col gap-y-[5px] items-center">
-                            <div className="flex items-center gap-x-[5px] text-xxs">
-                              Fixed Parameters
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
+
                 </div>   
             </div>
             <div
@@ -508,13 +501,13 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                     style={{ ...style }}
                   >
                     <div
-                      className={`grid  relative rounded-full w-full  min-h-[34px] text-sm items-center z-20 cursor-pointer pr-0.5 grid-cols-[auto_200px_199px_114px_240px_136px] min-w-[1125px] 
+                      className={`grid  relative rounded-full w-full  min-h-[34px] text-sm items-center z-20 cursor-pointer pr-0.5 grid-cols-[auto_200px_199px_114px_280px_46px] min-w-[1125px] 
                         ${isBouncing && bounceChain === item.key
                           ? "horizontal-bounce"
                           : ""
                         } ${isSidebarOpen
-                          ? " 2xl:grid-cols-[auto_200px_199px_114px_240px_136px] grid-cols-[auto_200px_199px_114px_240px_136px] "
-                          : "xl:grid-cols-[auto_200px_199px_114px_240px_136px] grid-cols-[auto_200px_199px_114px_240px_136px] "
+                          ? " 2xl:grid-cols-[auto_200px_199px_114px_280px_46px] grid-cols-[auto_200px_199px_114px_280px_46px] "
+                          : "xl:grid-cols-[auto_200px_199px_114px_280px_46px] grid-cols-[auto_200px_199px_114px_280px_46px] "
                         }`}
                       onClick={(e) => {
                         handleClick(e, item.key);
@@ -574,7 +567,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                         </div>
                       </div>
                       <div
-                        className={`flex w-full px-[5px] items-center gap-x-[10px] h-full bg-[#344240]  ${columnBorder(
+                        className={`flex w-full px-[5px] items-center gap-x-[10px] h-full bg-[#344240C0]  ${columnBorder(
                           "fees",
                           item.key,
                         )} `}
@@ -620,7 +613,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                         }).format(breakdown_data[item.key][selectedTimespan].fees_per_mb.total[typeIndex])}      
                       </div>
                       <div
-                        className={`flex items-center gap-x-[10px] justify-end w-full px-[5px] h-full bg-[#344240]  ${columnBorder(
+                        className={`flex items-center gap-x-[10px] justify-end w-full px-[5px] h-full bg-[#34424090]  ${columnBorder(
                           "da_consumers",
                           item.key,
                         )} `}

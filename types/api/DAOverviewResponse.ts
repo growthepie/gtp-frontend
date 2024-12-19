@@ -57,7 +57,13 @@ export interface DACategoryColumns {
     fees: DACategoryData;
     size: DACategoryData;
     fees_per_mb: DACategoryData;
-    da_consumers: any;
+    da_consumers: {
+        count: number;
+        chains: {
+            types: string[];
+            values: string[];
+        }
+    }
     fixed_params: any;
 }
 
