@@ -74,7 +74,7 @@ export default function TopDAConsumers({consumer_data, selectedTimespan}: {consu
     return (
         <div className="w-full h-full relative">
             {transitions((style, item) => {
-                console.log((sortedDAConsumers[item.index][4] / sortedDAConsumers[0][4]) * 100)
+               
                 return(
                     <animated.div
                         className="absolute w-full "

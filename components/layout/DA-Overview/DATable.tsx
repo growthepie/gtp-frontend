@@ -12,16 +12,17 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/layout/Tooltip";
-import DABreakdownCharts from "@/components/layout/DA-Overview/DABreakdownCharts";
+import DABreakdownCharts from "@/components/layout/DA-Overview/DATableCharts";
 import useSWR from "swr"; 
 import { DATimeseriesResponse } from "@/types/api/DATimeseriesResponse";
 import { DATimeseriesURL } from "@/lib/urls";
 import { chart } from "highcharts";
 import ShowLoading from "@/components/layout/ShowLoading";
+import DATableCharts from "@/components/layout/DA-Overview/DATableCharts";
 
 const REGULAR_METRICS = ["fees", "size", "fees_per_mb", "da_consumers", "fixed_parameters"];
 
-export default function DATable({breakdown_data, selectedTimespan}: {breakdown_data: DAOverviewBreakdown, selectedTimespan: string}) {
+export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {breakdown_data: DAOverviewBreakdown, selectedTimespan: string, isMonthly: boolean}) {
 
 
     const {data: chart_data, error: chart_error, isLoading: chart_loading, isValidating: chart_validating} = useSWR<DATimeseriesResponse>(DATimeseriesURL);
@@ -644,10 +645,11 @@ export default function DATable({breakdown_data, selectedTimespan}: {breakdown_d
                         }`}
                     >
                       <div className="w-[97.5%] bg-forest-950 rounded-b-2xl border-dotted border-[1.25px] border-t-0 border-forest-50/30">
-                        <DABreakdownCharts
+                        <DATableCharts
                           data={chart_data.data.da_layers[item.key]}
                           selectedTimespan={selectedTimespan}
-                          
+                          isMonthly={isMonthly}
+                          da_name={item.key}
                         />
                       </div>
                     </div>

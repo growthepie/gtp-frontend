@@ -14,6 +14,8 @@ import {
 import Highcharts, { chart } from "highcharts/highstock";
 import { useLocalStorage } from "usehooks-ts";
 import Image from "next/image";
+import { useMemo } from "react";
+import { useMaster } from "@/contexts/MasterContext";
 
 const COLORS = {
     GRID: "rgb(215, 223, 222)",
@@ -26,9 +28,100 @@ const COLORS = {
 
 // @/public/da_table_watermark.png
 
-export default function DABreakdownCharts({selectedTimespan, data}: {selectedTimespan: string, data?: any}){
+export default function DATableCharts({selectedTimespan, data, isMonthly, da_name}: {selectedTimespan: string, data?: any, isMonthly: boolean, da_name: string}) {
 
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+    const { AllDALayersByKeys, AllChainsByKeys } = useMaster();
+    
+
+    const timespans = useMemo(() => {
+
+        let xMax = 0;
+        Object.keys(data.da_consumers).forEach((key) => { 
+          
+          const values = data.da_consumers[key].daily.values;
+          const types = data.da_consumers[key].daily.types;
+      
+          if(values[0][types.indexOf("unix")] > xMax){
+            xMax = values[0][types.indexOf("unix")];
+          }
+        })
+
+    
+        if (!isMonthly) {
+          return {
+            "1d": {
+              shortLabel: "1d",
+              label: "1 day",
+              value: 1,
+            },
+            "7d": {
+              shortLabel: "7d",
+              label: "7 days",
+              value: 7,
+              xMin: xMax - 7 * 24 * 60 * 60 * 1000,
+              xMax: xMax,
+            },
+            "30d": {
+              shortLabel: "30d",
+              label: "30 days",
+              value: 30,
+              xMin: xMax - 30 * 24 * 60 * 60 * 1000,
+              xMax: xMax,
+            },
+            "90d": {
+              shortLabel: "90d",
+              label: "90 days",
+              value: 90,
+              xMin: xMax - 90 * 24 * 60 * 60 * 1000,
+              xMax: xMax,
+            },
+            "365d": {
+              shortLabel: "1y",
+              label: "1 year",
+              value: 365,
+              xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+              xMax: xMax,
+            },
+    
+            max: {
+              shortLabel: "Max",
+              label: "Max",
+              value: 0,
+              xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+              xMax: xMax,
+            },
+          };
+        } else {
+          return {
+            "180d": {
+              shortLabel: "6m",
+              label: "6 months",
+              value: 90,
+              xMin: xMax - 180 * 24 * 60 * 60 * 1000,
+              xMax: xMax,
+            },
+            "365d": {
+              shortLabel: "1y",
+              label: "1 year",
+              value: 365,
+              xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+              xMax: xMax,
+            },
+    
+            max: {
+              shortLabel: "Max",
+              label: "Max",
+              value: 0,
+              xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+              xMax: xMax,
+            },
+          };
+        }
+      }, [isMonthly, data, selectedTimespan]);
+
+
+
 
     return(
         <div className="flex h-full">
@@ -52,7 +145,8 @@ export default function DABreakdownCharts({selectedTimespan, data}: {selectedTim
                         plotOptions={{
                             column: {
                                 stacking: "normal",
-                                pointPadding: 0.2,
+                                groupPadding: 0.1,
+                                pointWidth: 1,
                                 borderWidth: 0,
                                 color: {
                                     linearGradient: {
@@ -79,7 +173,8 @@ export default function DABreakdownCharts({selectedTimespan, data}: {selectedTim
                         style={{ borderRadius: 15 }}
                         animation={{ duration: 50 }}
                         // margin={[0, 15, 0, 0]} // Use the array form for margin
-                        margin={[15, 21, 15, 0]}
+                        //margin={[15, 21, 15, 0]}
+                    
                         spacingBottom={0}
                         spacingTop={40}
                         spacingLeft={10}
@@ -137,6 +232,7 @@ export default function DABreakdownCharts({selectedTimespan, data}: {selectedTim
                                 return `<span style="">${date.toLocaleDateString(
                                 "en-GB",
                                 {
+                                    year: "numeric",
                                     month: "short",
                                 },
                                 )}</span>`;
@@ -149,11 +245,13 @@ export default function DABreakdownCharts({selectedTimespan, data}: {selectedTim
                             snap: false,
                         }}
                         tickmarkPlacement="on"
-                        tickWidth={0}
+                        tickWidth={4}
                         tickLength={20}
                         ordinal={false}
-                        minorTicks={false}
+                        minorTicks={true}
                         minorTickInterval={1000 * 60 * 60 * 24 * 1}
+                        min={timespans[selectedTimespan].xMin}
+                        max={timespans[selectedTimespan].xMax}
                     ></XAxis>
                     <YAxis
                     opposite={false}
@@ -185,8 +283,21 @@ export default function DABreakdownCharts({selectedTimespan, data}: {selectedTim
                         // },
                     }}
                     min={0}
+                    
                     >
-                        <ColumnSeries data={[[0, 5], [10, 15], [20, 45], [30, 50], [40, 65]]} />
+                        {Object.keys(data.da_consumers).map((key, index) => {
+                           
+                            return(
+                                <ColumnSeries 
+                                    key={key + "-DATableCharts" + da_name} name={key} 
+                                    color={AllChainsByKeys[key] ? AllChainsByKeys[key].colors["dark"][0] : "FF0420"} 
+                                    data={data.da_consumers[key].daily.values.map((d) => [d[4], d[3]])}
+                                    
+                                />
+                            )
+                        })}
+
+                        
                     </YAxis>                     
                         
                     </HighchartsChart>

@@ -164,7 +164,7 @@ export default function DAOverviewPage() {
               </TopRowContainer>
             </Container>
             <DAHeadCharts selectedTimespan={selectedTimespan} isMonthly={isMonthly} data={data.data.all_da} />
-            <DATable breakdown_data={data.data.da_breakdown} selectedTimespan={selectedTimespan} />
+            <DATable breakdown_data={data.data.da_breakdown} selectedTimespan={selectedTimespan} isMonthly={isMonthly} />
           
         </>
       )}
