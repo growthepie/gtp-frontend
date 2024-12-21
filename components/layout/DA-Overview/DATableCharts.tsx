@@ -10,12 +10,20 @@ import {
     PlotBand,
     AreaSeries,
     ColumnSeries,
+    LineSeries,
+    PieSeries,
+    Series,
 } from "react-jsx-highcharts";
 import Highcharts, { chart } from "highcharts/highstock";
 import { useLocalStorage } from "usehooks-ts";
 import Image from "next/image";
 import { useMemo } from "react";
 import { useMaster } from "@/contexts/MasterContext";
+import "@/app/highcharts.axis.css";
+import Icon from "@/components/layout/Icon";
+import { DAConsumerChart } from "@/types/api/DAOverviewResponse";
+import { stringToDOM } from "million";
+import { Any } from "react-spring";
 
 const COLORS = {
     GRID: "rgb(215, 223, 222)",
@@ -26,14 +34,16 @@ const COLORS = {
     ANNOTATION_BG: "rgb(215, 223, 222)",
 };
 
+type PieData = { name: string, y: number, color: string }[]
 // @/public/da_table_watermark.png
 
-export default function DATableCharts({selectedTimespan, data, isMonthly, da_name}: {selectedTimespan: string, data?: any, isMonthly: boolean, da_name: string}) {
+export default function DATableCharts({selectedTimespan, data, isMonthly, da_name, pie_data}: {selectedTimespan: string, data?: any, isMonthly: boolean, da_name: string, pie_data: DAConsumerChart}) {
 
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
     const { AllDALayersByKeys, AllChainsByKeys } = useMaster();
-    
 
+
+    
     const timespans = useMemo(() => {
 
         let xMax = 0;
@@ -121,11 +131,38 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
       }, [isMonthly, data, selectedTimespan]);
 
 
+    const allChainsTotal = useMemo(() => {
+
+        let totalArray = [[Number, Number]]
+        Object.keys(data.da_consumers).forEach((key) => { 
+          
+          const values = data.da_consumers[key].daily.values;
+          const types = data.da_consumers[key].daily.types;
+          const total = values.map((d) => [
+            d[types.indexOf("unix")], 
+            d[types.indexOf("data_posted")]
+          ])
+          
+        })
+    }, [data]);
+
+
+    const pieFormattedData = useMemo(() => {
+        let pieRetData: [string, number][] = []; // Correctly define the type as an array of [string, number] tuples
+    
+        pie_data.data.forEach((d) => {
+            pieRetData.push([d[0], d[4]]); // d[0] is string, d[4] is number
+        });
+    
+        return pieRetData;
+    }, [pie_data]);
+    
+
 
 
     return(
-        <div className="flex h-full">
-            <div className="min-w-[700px] flex flex-1 h-[217px] relative">
+        <div className="flex h-full w-full gap-x-[10px]">
+            <div className="min-w-[730px] w-full flex flex-1 h-[217px] relative mr-[20px]">
                 <div className="absolute left-[calc(50%-113px)] top-[calc(50%-29.5px)]">
                     <Image src="/da_table_watermark.png" alt="chart_watermark" width={226} height={59} />
                 </div>
@@ -135,8 +172,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                             style: {
                                 height: "217px",
                                 width: "100%",
-                                marginLeft: "auto",
-                                marginRight: "auto",
+                                
                                 
 
                                 overflow: "visible",
@@ -145,8 +181,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         plotOptions={{
                             column: {
                                 stacking: "normal",
-                                groupPadding: 0.1,
-                                pointWidth: 1,
+
                                 borderWidth: 0,
                                 color: {
                                     linearGradient: {
@@ -164,9 +199,10 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         }}
                     >
                     <Chart
-                        backgroundColor={"transparent"}
-                        type="area"
+                        backgroundColor={""}
+                        type="column"
                         title={"test"}
+                        overflow="visible"
                         panning={{ enabled: true }}
                         panKey="shift"
                         zooming={{ type: undefined }}
@@ -174,11 +210,12 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         animation={{ duration: 50 }}
                         // margin={[0, 15, 0, 0]} // Use the array form for margin
                         //margin={[15, 21, 15, 0]}
-                    
-                        spacingBottom={0}
-                        spacingTop={40}
-                        spacingLeft={10}
-                        spacingRight={10} 
+                        marginLeft={40}
+                        
+
+                        marginBottom={30}
+
+                        marginTop={2}
                     />
                     <Tooltip
                         useHTML={true}
@@ -212,31 +249,53 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                     <XAxis
                         title={undefined}
                         type="datetime"
+                   
                         labels={{
+                            align: undefined,
+                            rotation: 0,
+                            // allowOverlap: false,
+                            // staggerLines: 1,
+                            // reserveSpace: true,
+
+                            
+                            overflow: "justify",
                             useHTML: true,
+                            distance: -14,
                             style: {
-                            color: COLORS.LABEL,
-                            fontSize: "10px",
-                            fontFamily: "var(--font-raleway), sans-serif",
-                            zIndex: 1000,
+                                color: COLORS.LABEL,
+                                fontSize: "10px",
+                                fontWeight: "550",
+                                fontVariant: "small-caps",
+                                textTransform: "lowercase",
+                                fontFamily: "var(--font-raleway), sans-serif",
+                                // fontVariant: "all-small-caps",
+                                zIndex: 1000,
+                                paddingTop: "22px",
                             },
                             enabled: true,
-                            formatter: (item) => {
-                            const date = new Date(item.value);
-                            const isMonthStart = date.getDate() === 1;
-                            const isYearStart =
-                                isMonthStart && date.getMonth() === 0;
-                            if (isYearStart) {
-                                return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
-                            } else {
-                                return `<span style="">${date.toLocaleDateString(
-                                "en-GB",
-                                {
-                                    year: "numeric",
-                                    month: "short",
-                                },
-                                )}</span>`;
-                            }
+
+                            formatter: function () {
+                            // Convert Unix timestamp to milliseconds
+                            const date = new Date(this.value);
+                            // Format the date as needed (e.g., "dd MMM yyyy")
+                            const dateString = date
+                                .toLocaleDateString("en-GB", {
+                                day: !(
+                                    timespans[selectedTimespan].value >= 90 ||
+                                    selectedTimespan === "max"
+                                )
+                                    ? "2-digit"
+                                    : undefined,
+                                month: "short",
+                                year:
+                                    timespans[selectedTimespan].value >= 90 ||
+                                    selectedTimespan === "max"
+                                    ? "numeric"
+                                    : undefined,
+                                })
+                                .toUpperCase();
+
+                            return `<span class="font-bold">${dateString}</span>`;
                             },
                         }}
                         crosshair={{
@@ -244,14 +303,37 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                             color: COLORS.PLOT_LINE,
                             snap: false,
                         }}
-                        tickmarkPlacement="on"
-                        tickWidth={4}
-                        tickLength={20}
-                        ordinal={false}
-                        minorTicks={true}
+                        zoomEnabled={false}
+                 
+                        lineWidth={1}
+                        
+                        
+                        startOnTick={true}
+                        endOnTick={true}
+                        tickAmount={0}
+
+                        tickLength={5}
+                        tickWidth={1}
+                        // ordinal={true}
+                        
+                        minorTicks={false}
+                        minorTickLength={2}
+                        minorTickWidth={2}
+                        minorGridLineWidth={0}
                         minorTickInterval={1000 * 60 * 60 * 24 * 1}
-                        min={timespans[selectedTimespan].xMin}
+                        // min={
+                        //   timespans[selectedTimespan].xMin
+                        //     ? newestUnixTimestamp -
+                        //       1000 *
+                        //         60 *
+                        //         60 *
+                        //         24 *
+                        //         (timespans[selectedTimespan].value - 1)
+                        //     : undefined
+                        // }
+                        min={timespans[selectedTimespan].xMin} // don't include the last day
                         max={timespans[selectedTimespan].xMax}
+                        panningEnabled={true}
                     ></XAxis>
                     <YAxis
                     opposite={false}
@@ -262,12 +344,9 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                     showLastLabel={false}
                     tickAmount={5}
                     labels={{
-                        align: "left",
+                        align: "right",
                         y: -2,
-                        x: 2,
-                
-                        
-
+                        x: -2,
                         style: {
                             backgroundColor: "#1F2726",
                             whiteSpace: "nowrap",
@@ -286,14 +365,19 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                     
                     >
                         {Object.keys(data.da_consumers).map((key, index) => {
-                           
+                            const types = data.da_consumers[key].daily.types;
+
                             return(
-                                <ColumnSeries 
-                                    key={key + "-DATableCharts" + da_name} name={key} 
-                                    color={AllChainsByKeys[key] ? AllChainsByKeys[key].colors["dark"][0] : "FF0420"} 
-                                    data={data.da_consumers[key].daily.values.map((d) => [d[4], d[3]])}
+                                <ColumnSeries
+                                    key={key + "-DATableCharts" + da_name} 
+                                    name={key} 
+                                    visible={data.da_consumers[key].daily.values.length > 0}
                                     
-                                />
+                                    data={data.da_consumers[key].daily.values.map((d) => [
+                                        d[types.indexOf("unix")], 
+                                        d[types.indexOf("data_posted")]
+                                    ])}
+/>
                             )
                         })}
 
@@ -304,13 +388,230 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
 
                 </HighchartsProvider>
             </div>
-            <div className="min-w-[125px]">
+            <div className="min-w-[125px] flex flex-col gap-y-[2px] items-start h-full pt-[15px]">
                 {/* Chains */}
-                Fill test 
+                {Object.keys(data.da_consumers).map((key, index) => {
+
+                    return(
+                        <div className="flex gap-x-[2px] px-[5px] bg-[#344240] text-xxs rounded-full py-[2px] items-center">
+                            <div>{AllChainsByKeys[data.da_consumers[key].daily.values[0][2]] ? (<Icon icon={`gtp:${AllChainsByKeys[data.da_consumers[key].daily.values[0][2]].urlKey}-logo-monochrome`} className="w-[12px] h-[12px]" style={{ color: AllChainsByKeys[key].colors["dark"][0] }} />) : (<div>{"+"}</div>)}</div>
+                            <div>{data.da_consumers[key].daily.values[0][1]}</div>
+
+                        </div>
+                    )
+                })}
             </div>
             <div className="min-w-[254px] flex">
                 {/* Pie Chart */}
-                Fill test 
+                <HighchartsProvider Highcharts={Highcharts}>
+                    <HighchartsChart                             
+                        containerProps={{
+                            style: {
+                                height: "217px",
+                                width: "100%",
+                                
+                                
+
+                                overflow: "visible",
+                            },
+                        }}
+                        plotOptions={{
+                            pie: {
+                                allowPointSelect: true,
+                                cursor: "pointer",
+                                dataLabels: {
+                                    enabled: true,
+                                    format: "<b>{point.name}</b>: {point.percentage:.1f} %",
+                                },
+                                showInLegend: true,
+                            }
+                        }}
+                    >
+                    <Chart
+                        backgroundColor={""}
+                        type="column"
+                        title={"test"}
+                        overflow="visible"
+                        panning={{ enabled: true }}
+                        panKey="shift"
+                        zooming={{ type: undefined }}
+                        style={{ borderRadius: 15 }}
+                        animation={{ duration: 50 }}
+                        // margin={[0, 15, 0, 0]} // Use the array form for margin
+                        //margin={[15, 21, 15, 0]}
+                        marginLeft={40}
+                        
+
+                        marginBottom={30}
+
+                        marginTop={2}
+                    />
+                    <Tooltip
+                        useHTML={true}
+                        shared={true}
+                        split={false}
+                        followPointer={true}
+                        followTouchMove={true}
+                        backgroundColor={"#2A3433EE"}
+                        padding={0}
+                        hideDelay={300}
+                        stickOnContact={true}
+                        shape="rect"
+                        borderRadius={17}
+                        borderWidth={0}
+                        outside={true}
+                        shadow={{
+                            color: "black",
+                            opacity: 0.015,
+                            offsetX: 2,
+                            offsetY: 2,
+                        }}
+                        style={{
+                            color: "rgb(215, 223, 222)",
+                        }}
+                    
+                        // ensure tooltip is always above the chart
+                        //positioner={tooltipPositioner}
+                        valuePrefix={showUsd ? "$" : ""}
+                        valueSuffix={showUsd ? "" : " Gwei"}
+                    />
+                    <XAxis
+                        title={undefined}
+                        type="datetime"
+                   
+                        labels={{
+                            align: undefined,
+                            rotation: 0,
+                            // allowOverlap: false,
+                            // staggerLines: 1,
+                            // reserveSpace: true,
+
+                            
+                            overflow: "justify",
+                            useHTML: true,
+                            distance: -14,
+                            style: {
+                                color: COLORS.LABEL,
+                                fontSize: "10px",
+                                fontWeight: "550",
+                                fontVariant: "small-caps",
+                                textTransform: "lowercase",
+                                fontFamily: "var(--font-raleway), sans-serif",
+                                // fontVariant: "all-small-caps",
+                                zIndex: 1000,
+                                paddingTop: "22px",
+                            },
+                            enabled: true,
+
+                            formatter: function () {
+                            // Convert Unix timestamp to milliseconds
+                            const date = new Date(this.value);
+                            // Format the date as needed (e.g., "dd MMM yyyy")
+                            const dateString = date
+                                .toLocaleDateString("en-GB", {
+                                day: !(
+                                    timespans[selectedTimespan].value >= 90 ||
+                                    selectedTimespan === "max"
+                                )
+                                    ? "2-digit"
+                                    : undefined,
+                                month: "short",
+                                year:
+                                    timespans[selectedTimespan].value >= 90 ||
+                                    selectedTimespan === "max"
+                                    ? "numeric"
+                                    : undefined,
+                                })
+                                .toUpperCase();
+
+                            return `<span class="font-bold">${dateString}</span>`;
+                            },
+                        }}
+                        crosshair={{
+                            width: 0.5,
+                            color: COLORS.PLOT_LINE,
+                            snap: false,
+                        }}
+                        zoomEnabled={false}
+                 
+                        lineWidth={1}
+                        
+                        
+                        startOnTick={true}
+                        endOnTick={true}
+                        tickAmount={0}
+
+                        tickLength={5}
+                        tickWidth={1}
+                        // ordinal={true}
+                        
+                        minorTicks={false}
+                        minorTickLength={2}
+                        minorTickWidth={2}
+                        minorGridLineWidth={0}
+                        minorTickInterval={1000 * 60 * 60 * 24 * 1}
+                        // min={
+                        //   timespans[selectedTimespan].xMin
+                        //     ? newestUnixTimestamp -
+                        //       1000 *
+                        //         60 *
+                        //         60 *
+                        //         24 *
+                        //         (timespans[selectedTimespan].value - 1)
+                        //     : undefined
+                        // }
+                        min={timespans[selectedTimespan].xMin} // don't include the last day
+                        max={timespans[selectedTimespan].xMax}
+                        panningEnabled={true}
+                    ></XAxis>
+                    <YAxis
+                    opposite={false}
+                    type="linear"
+                    gridLineWidth={0}
+                    gridLineColor={"#5A64624F"}
+                    showFirstLabel={false}
+                    showLastLabel={false}
+                    tickAmount={5}
+                    labels={{
+                        align: "right",
+                        y: -2,
+                        x: -2,
+                        style: {
+                            backgroundColor: "#1F2726",
+                            whiteSpace: "nowrap",
+                            color: "rgb(215, 223, 222)",
+                            fontSize: "9px",
+                            fontWeight: "600",
+                            fontFamily: "var(--font-raleway), sans-serif",
+                        },
+                        // formatter: function (
+                        // t: Highcharts.AxisLabelsFormatterContextObject,
+                        // ) {
+                        //   return formatNumber(metricKey, t.value);
+                        // },
+                    }}
+                    min={0}
+                    
+                    >
+
+                        
+                            <PieSeries
+                                key={`${"Pie"}-DATableCharts-${da_name}`}
+                                name={"Pie Chart"}
+                                
+                                type="pie"
+                                data={pieFormattedData}
+                            />
+                        
+                    
+
+
+                        
+                    </YAxis>                     
+                        
+                    </HighchartsChart>
+
+                </HighchartsProvider>
             </div>
         </div>
     )

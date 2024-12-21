@@ -65,6 +65,12 @@ export interface DACategoryColumns {
         }
     }
     fixed_params: any;
+    da_consumer_chart: DAConsumerChart
+}
+
+export interface DAConsumerChart {
+        types: string[];
+        data: DataRowConsumers[]; 
 }
 
 export interface DACategoryData {
@@ -83,3 +89,4 @@ export interface DACategoryData_fixed_params {
 }
 
 type DataRow = [number, number, number] | [number, number, number, number, number];
+type DataRowConsumers = [string, string, string, string, number];

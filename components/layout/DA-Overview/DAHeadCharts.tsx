@@ -21,6 +21,7 @@ import { AllDAOverview } from "@/types/api/DAOverviewResponse";
 import { useUIContext } from "@/contexts/UIContext";
 import d3 from "d3";
 import TopDAConsumers from "./TopDAConsumers";
+import "@/app/highcharts.axis.css";
 
 const COLORS = {
     GRID: "rgb(215, 223, 222)",
@@ -201,11 +202,11 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
               const { name } = series;
               const nameString = name;
               let isFees = chartTitle.includes("fees_paid");
-           
+              
               
     
               let prefix = isFees ? valuePrefix : "";
-              let suffix = "";
+              let suffix = isFees ? "" : " GB";
               let value = y;
               let displayValue = y;
     
@@ -296,6 +297,8 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
             } else {
               number = valuePrefix + formatLargeNumber(val);
             }
+          } else {
+            number = number + " GB";
           }
     
           return number;
@@ -617,14 +620,14 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                                 align: "left",
                                 y: -2,
                                 x: 2,
-                      
+                                
                                
 
                                 style: {
                                   backgroundColor: "#1F2726",
                                   whiteSpace: "nowrap",
                                   color: "rgb(215, 223, 222)",
-                                  fontSize: "9px",
+                                  fontSize: "8px",
                                   fontWeight: "600",
                                   fontFamily: "var(--font-raleway), sans-serif",
                                 },

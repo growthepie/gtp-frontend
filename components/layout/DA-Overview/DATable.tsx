@@ -126,25 +126,33 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
     }, [breakdown_data, selectedCategory, selectedTimespan, showUsd]);
 
 
-    const totalDataPosted = useMemo(() => {
-      let totalData = 0;
+    const maxDataPosted = useMemo(() => {
+      let maxData = 0;
 
-      Object.keys(breakdown_data).map((key) => {
-        totalData += breakdown_data[key][selectedTimespan]["size"].total[0];
+      Object.keys(breakdown_data).filter((key) => key !== "totals").map((key) => {
+        if(breakdown_data[key][selectedTimespan].size.total[0] > maxData){
+          maxData = breakdown_data[key][selectedTimespan]["size"].total[0];
+        }
       });
 
-      return totalData;
+      return maxData;
     }, [breakdown_data, selectedTimespan, showUsd]);
 
-    const totalFeesPaid = useMemo(() => {
-      let totalFees = 0;
-      let typeIndex = breakdown_data[Object.keys(breakdown_data)[0]][selectedTimespan]["fees"].types.indexOf(showUsd ? "usd" : "eth");
 
-      Object.keys(breakdown_data).map((key) => {
-        totalFees += breakdown_data[key][selectedTimespan]["fees"].total[typeIndex];
+
+    const maxFeesPaid = useMemo(() => {
+      let maxFees = 0;
+      let typeIndex = breakdown_data[Object.keys(breakdown_data)[0]][selectedTimespan]["fees"].types.indexOf("bytes");
+
+      Object.keys(breakdown_data).filter((key) => key !== "totals").map((key) => {
+        if(breakdown_data[key][selectedTimespan]["fees"].total[typeIndex] > maxFees){
+       
+        
+          maxFees = breakdown_data[key][selectedTimespan]["fees"].total[typeIndex];
+        }
       });
 
-      return totalFees;
+      return maxFees;
     }, [breakdown_data, selectedTimespan, showUsd]);
 
     function formatNumber(x: number) {
@@ -304,7 +312,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
               className={`grid pl-[44px]  pr-0.5 grid-cols-[auto_200px_199px_114px_280px_46px] mb-[15px]  ${isSidebarOpen
                 ? " 2xl:grid-cols-[auto_200px_199px_114px_280px_46px] grid-cols-[auto_200px_199px_114px_280px_46px] "
                 : "xl:grid-cols-[auto_200px_199px_114px_280px_46px] grid-cols-[auto_200px_199px_114px_280px_46px]"
-                } min-w-[1125px]`}
+                } min-w-[1250px] `}
             >
                 <div className="heading-small-xxs font-bold flex items-center">
                   <div>DA Layer</div>
@@ -501,7 +509,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                     style={{ ...style }}
                   >
                     <div
-                      className={`grid  relative rounded-full w-full  min-h-[34px] text-sm items-center z-20 cursor-pointer pr-0.5 grid-cols-[auto_200px_199px_114px_280px_46px] min-w-[1125px] 
+                      className={`grid  relative rounded-full w-full  min-h-[34px] text-sm items-center z-20 cursor-pointer pr-0.5 grid-cols-[auto_200px_199px_114px_280px_46px] min-w-[1250px] 
                         ${isBouncing && bounceChain === item.key
                           ? "horizontal-bounce"
                           : ""
@@ -548,15 +556,15 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                           </div>
                         </div>
                         <div
-                          className={` w-[110px] flex justify-start items-end pb-[6px] h-full ${isSidebarOpen ? "2xl:w-[125px]" : "xl:w-[125px]"
+                          className={` w-[139px] pr-[10px] flex justify-start items-end pb-[6px] h-full ${isSidebarOpen ? "2xl:w-[125px]" : "xl:w-[125px]"
                             }`}
                         >
                           <div
-                            className={`w-[110px] flex items-center justify-center rounded-full h-[4px] bg-[#1DF7EF]`}
+                            className={`w-[129px] flex items-center justify-center rounded-full h-[4px] bg-[#1DF7EF]`}
                             style={{
                               width: `${(100 *
                                 breakdown_data[item.key][selectedTimespan].size.total[0]) /
-                                totalDataPosted
+                                maxDataPosted
                                 }%`,
 
                                 minWidth: "4px",
@@ -589,7 +597,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                             style={{
                               width: `${(100 *
                                 breakdown_data[item.key][selectedTimespan].fees.total[typeIndex]) /
-                                totalFeesPaid
+                                maxFeesPaid
                                 }%`,
 
                               minWidth: "4px",
@@ -643,6 +651,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                           selectedTimespan={selectedTimespan}
                           isMonthly={isMonthly}
                           da_name={item.key}
+                          pie_data={breakdown_data[item.key][selectedTimespan].da_consumer_chart}
                         />
                       </div>
                     </div>
