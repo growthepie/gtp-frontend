@@ -97,6 +97,84 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
         [openDA],
     );
 
+
+    const timespans = useMemo(() => {
+
+      let xMax = 0;
+
+  
+      if (!isMonthly) {
+        return {
+          "1d": {
+            shortLabel: "1d",
+            label: "1 day",
+            value: 1,
+          },
+          "7d": {
+            shortLabel: "7d",
+            label: "7 days",
+            value: 7,
+            xMin: xMax - 7 * 24 * 60 * 60 * 1000,
+            xMax: xMax,
+          },
+          "30d": {
+            shortLabel: "30d",
+            label: "30 days",
+            value: 30,
+            xMin: xMax - 30 * 24 * 60 * 60 * 1000,
+            xMax: xMax,
+          },
+          "90d": {
+            shortLabel: "90d",
+            label: "90 days",
+            value: 90,
+            xMin: xMax - 90 * 24 * 60 * 60 * 1000,
+            xMax: xMax,
+          },
+          "365d": {
+            shortLabel: "1y",
+            label: "1 year",
+            value: 365,
+            xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+            xMax: xMax,
+          },
+  
+          max: {
+            shortLabel: "Max",
+            label: "Max",
+            value: 0,
+            xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+            xMax: xMax,
+          },
+        };
+      } else {
+        return {
+          "180d": {
+            shortLabel: "6m",
+            label: "6 months",
+            value: 90,
+            xMin: xMax - 180 * 24 * 60 * 60 * 1000,
+            xMax: xMax,
+          },
+          "365d": {
+            shortLabel: "1y",
+            label: "1 year",
+            value: 365,
+            xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+            xMax: xMax,
+          },
+  
+          max: {
+            shortLabel: "Max",
+            label: "Max",
+            value: 0,
+            xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+            xMax: xMax,
+          },
+        };
+      }
+    }, [selectedTimespan, isMonthly]);
+
     const sortedBreakdownData = useMemo(() => {
 
         let retData: string[];
@@ -137,6 +215,8 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
 
       return maxData;
     }, [breakdown_data, selectedTimespan, showUsd]);
+
+    
 
 
 
@@ -223,7 +303,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
       let retHeight: number = 39;
       Object.keys(breakdown_data).map((key) => {
         retHeight += 39;
-        retHeight += openDA[key] && selectedTimespan !== "1d" ? 387 : 0;
+        retHeight += openDA[key] && selectedTimespan !== "1d" ? 248 : 0;
       });
   
       return retHeight;
@@ -657,7 +737,49 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                     </div>
                   </animated.div>
                 )})}
-
+            <div
+                className={`grid w-full pl-[45px] absolute bottom-[29px] h-[34px] pr-0.5 grid-cols-[auto_200px_199px_114px_280px_46px] mb-[15px]  ${isSidebarOpen
+                  ? " 2xl:grid-cols-[auto_200px_199px_114px_280px_46px] grid-cols-[auto_200px_199px_114px_280px_46px] "
+                  : "xl:grid-cols-[auto_200px_199px_114px_280px_46px] grid-cols-[auto_200px_199px_114px_280px_46px] "
+                  } min-w-[1250px]`}
+              >
+                <div className="inline-flex items-center"><div className="heading-large-xs">TOTAL &nbsp;</div><div className="heading-large-xs text-[#5A6462] ">  {selectedTimespan === "max" ? "FOR MAXIMUM TIMEFRAME AVAILABLE" : ("IN THE LAST " + (timespans[selectedTimespan].label).toUpperCase()) }</div></div>
+                <div className="w-full h-[34px] px-[2px]">
+                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs  bg-[#34424044]">
+                    {formatBytes(breakdown_data["totals"][selectedTimespan].size.total[0], 2)}
+                  </div>
+                </div>
+                <div className="w-full h-[34px] px-[2px]">
+                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs ">
+                    {formatNumber(
+                      breakdown_data["totals"][selectedTimespan].fees.total[
+                        breakdown_data["totals"][selectedTimespan].fees.types.findIndex(
+                          type => type === (showUsd ? "usd" : "eth")
+                        )
+                      ]
+                    )}
+                  </div>
+                </div>
+                <div className="w-full h-[34px] px-[2px]">
+                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs bg-[#34424044]">
+                    {"Ø " + (breakdown_data["totals"][selectedTimespan].fees_per_mb.total[showUsd ? 0 : 1] < 0.001 ? Number(breakdown_data["totals"][selectedTimespan].fees_per_mb.total[showUsd ? 0 : 1]).toExponential(2) : Intl.NumberFormat("en-GB", {
+                          notation: "compact",
+                          maximumFractionDigits: 3,
+                          minimumFractionDigits: 3,
+                        }).format(breakdown_data["totals"][selectedTimespan].fees_per_mb.total[showUsd ? 0 : 1])) + ` ${showUsd ? "$" : "Ξ"}/MB`}
+                  </div>
+                </div>
+                <div className="w-full h-[34px] px-[2px]">
+                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs">
+                    {35}
+                  </div>
+                </div>
+                <div className="w-full h-[34px] px-[2px]">
+                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs bg-[#34424044]">
+                
+                  </div>
+                </div>
+              </div>
               
             </div>
           </HorizontalScrollContainer>

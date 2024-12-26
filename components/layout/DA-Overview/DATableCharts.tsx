@@ -24,6 +24,7 @@ import Icon from "@/components/layout/Icon";
 import { DAConsumerChart } from "@/types/api/DAOverviewResponse";
 import { stringToDOM } from "million";
 import { Any } from "react-spring";
+import { format } from "path";
 
 const COLORS = {
     GRID: "rgb(215, 223, 222)",
@@ -156,6 +157,19 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
     
         return pieRetData;
     }, [pie_data]);
+    
+
+    const formattedPieData = useMemo(() => {
+        let pieRetData: PieData = []; // Correctly define the type as an array of [string, number] tuples
+
+        pie_data.data.forEach((d) => {
+            pieRetData.push({name: d[0], y: d[4], color: AllChainsByKeys[d[0]] ? AllChainsByKeys[d[0]].colors["dark"][0] : "#566462"}); // d[0] is string, d[4] is number
+        });
+
+        return pieRetData;
+    }, [pie_data])
+
+
     
 
 
@@ -401,14 +415,15 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                     )
                 })}
             </div>
-            <div className="min-w-[254px] flex">
+            <div className="min-w-[254px] flex items-center  relative ">
                 {/* Pie Chart */}
+                <div className="absolute left-[21%] w-[99px] flex items-center justify-center bottom-[52%] text-xxs font-semibold ">{"% OF TOTAL USAGE"}</div>
                 <HighchartsProvider Highcharts={Highcharts}>
                     <HighchartsChart                             
                         containerProps={{
                             style: {
-                                height: "217px",
-                                width: "100%",
+                                height: "254px",
+                                width: "200px",
                                 
                                 
 
@@ -424,6 +439,8 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                     format: "<b>{point.name}</b>: {point.percentage:.1f} %",
                                 },
                                 showInLegend: true,
+                                borderWidth: 10,
+                                borderColor: "transparent",
                             }
                         }}
                     >
@@ -439,7 +456,6 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         animation={{ duration: 50 }}
                         // margin={[0, 15, 0, 0]} // Use the array form for margin
                         //margin={[15, 21, 15, 0]}
-                        marginLeft={40}
                         
 
                         marginBottom={30}
@@ -478,7 +494,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                     <XAxis
                         title={undefined}
                         type="datetime"
-                   
+                        
                         labels={{
                             align: undefined,
                             rotation: 0,
@@ -529,8 +545,9 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         }}
                         crosshair={{
                             width: 0.5,
-                            color: COLORS.PLOT_LINE,
+                            color: "transparent",
                             snap: false,
+
                         }}
                         zoomEnabled={false}
                  
@@ -593,20 +610,17 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                     min={0}
                     
                     >
-
-                        
                             <PieSeries
                                 key={`${"Pie"}-DATableCharts-${da_name}`}
                                 name={"Pie Chart"}
-                                
+                                innerSize={"95%"}
+                                dataLabels={{
+                                    enabled: false,
+                                }}
                                 type="pie"
-                                data={pieFormattedData}
-                            />
-                        
-                    
-
-
-                        
+                                data={formattedPieData}
+                                
+                            /> 
                     </YAxis>                     
                         
                     </HighchartsChart>
