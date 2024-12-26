@@ -407,7 +407,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                 {Object.keys(data.da_consumers).map((key, index) => {
 
                     return(
-                        <div className="flex gap-x-[2px] px-[5px] bg-[#344240] text-xxs rounded-full py-[2px] items-center">
+                        <div key={key + "da_consumers_info"} className="flex gap-x-[2px] px-[5px] bg-[#344240] text-xxs rounded-full py-[2px] items-center">
                             <div>{AllChainsByKeys[data.da_consumers[key].daily.values[0][2]] ? (<Icon icon={`gtp:${AllChainsByKeys[data.da_consumers[key].daily.values[0][2]].urlKey}-logo-monochrome`} className="w-[12px] h-[12px]" style={{ color: AllChainsByKeys[key].colors["dark"][0] }} />) : (<div>{"+"}</div>)}</div>
                             <div>{data.da_consumers[key].daily.values[0][1]}</div>
 
