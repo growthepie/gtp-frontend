@@ -2,7 +2,7 @@ import "../globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import { Providers } from "../providers";
 import CookieConsent from "@/components/layout/CookieConsent";
-import { Raleway, Inter, Roboto_Mono } from "next/font/google";
+import { Raleway, Inter, Roboto_Mono, Fira_Sans } from "next/font/google";
 import Header from "@/components/layout/Header";
 import SidebarContainer from "@/components/layout/SidebarContainer";
 import Backgrounds from "@/components/layout/Backgrounds";
