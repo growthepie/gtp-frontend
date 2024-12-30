@@ -2073,12 +2073,7 @@ const LabelsSVGSparkline = ({ chainKey }: { chainKey: string }) => {
           </div>
         </div>
       ) : (
-        <div
-          className="flex flex-col justify-center items-end"
-          style={{
-            fontFeatureSettings: "'pnum' on, 'lnum' on",
-          }}
-        >
+        <div className="flex flex-col justify-center items-end numbers-xs">
           <div className="min-w-[55px] text-right">
             {formatMetric(value, valueType)}
           </div>
