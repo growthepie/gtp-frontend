@@ -314,14 +314,14 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
             let is_fees = metricKey.includes("fees_paid");
             let prefix = is_fees ? valuePrefix : "";
             
-              
+            let url = metricKey.includes("fees_paid") ? "/data-availability/fees-paid" : "/data-availability/data-posted";
             return (          
             <div className="relative flex flex-col w-full overflow-hidden h-[232px] bg-[#1F2726] rounded-2xl  group " key={metricKey}>
-                <div
-                    className={`absolute items-center text-[16px] font-bold top-[15px] left-[15px] flex gap-x-[10px]  z-10 ${/*link ? "cursor-pointer" : ""*/ ""}`}
-                    onClick={() => {
-                        //if (link) window.location.href = link;
-                    }}
+                <Link
+                    className={`absolute hover:underline items-center text-[16px] font-bold top-[15px] left-[15px] flex gap-x-[10px]  z-10 ${/*link ? "cursor-pointer" : ""*/ ""}`}
+                    href={url}
+                    target="_blank"
+                    rel="noopener"
                 >
                 
                     <div>{chart_titles[metricKey]}</div>
@@ -333,7 +333,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                         className="w-[11px] h-[11px]"
                         />
                     </div>
-                </div>
+                </Link>
                 <div className="absolute text-[18px] top-[17px] right-[30px] numbers">
                     {prefix + Intl.NumberFormat("en-GB", {                          
                           notation: "standard",

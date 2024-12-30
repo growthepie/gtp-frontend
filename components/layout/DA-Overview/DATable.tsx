@@ -20,7 +20,7 @@ import { chart } from "highcharts";
 import ShowLoading from "@/components/layout/ShowLoading";
 import DATableCharts from "@/components/layout/DA-Overview/DATableCharts";
 
-const REGULAR_METRICS = ["fees", "size", "fees_per_mb", "da_consumers", "fixed_parameters"];
+const REGULAR_METRICS = ["fees", "size", "fees_per_mb", "fixed_parameters"];
 
 export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {breakdown_data: DAOverviewBreakdown, selectedTimespan: string, isMonthly: boolean}) {
 
@@ -30,7 +30,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
     const { isSidebarOpen } = useUIContext();
     const { AllDALayersByKeys, AllChainsByKeys } = useMaster();
   
-    const [selectedCategory, setSelectedCategory] = useState("fees");
+    const [selectedCategory, setSelectedCategory] = useState("size");
     const [isBouncing, setIsBouncing] = useState(false);
     const [bounceChain, setBounceChain] = useState("");
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
@@ -192,7 +192,26 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
               return 0;
             });
         }else{
-          retData = Object.keys(breakdown_data);
+          if(selectedCategory === "da_consumers"){
+            retData = Object.keys(breakdown_data).filter((row_key) => row_key !== "totals").sort((a, b) => {
+                let aComp = breakdown_data[a][selectedTimespan][selectedCategory].count;
+                let bComp = breakdown_data[b][selectedTimespan][selectedCategory].count;
+
+                if (aComp > bComp) return -1;
+                if (aComp < bComp) return 1;
+
+                return 0;
+            });
+          }else if(selectedCategory === "name"){
+            retData = Object.keys(breakdown_data).filter((row_key) => row_key !== "totals").sort((a, b) => {
+              if (a > b) return -1;
+              if (a < b) return 1;
+          
+              return 0;
+            });
+          }else {
+            retData = Object.keys(breakdown_data).filter((row_key) => row_key !== "totals");
+          }
         }
 
         return retData.reduce((acc, key) => {
@@ -394,7 +413,14 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                 : "xl:grid-cols-[auto_200px_199px_114px_280px_46px] grid-cols-[auto_200px_199px_114px_280px_46px]"
                 } min-w-[1250px] `}
             >
-                <div className="heading-small-xxs font-bold flex items-center">
+                <div className="heading-small-xxs font-bold flex items-center" onClick={() => {
+                  if (selectedCategory !== "name") {
+                    setSortOrder(true);
+                    setSelectedCategory("name");
+                  } else {
+                    setSortOrder(!sortOrder);
+                  }
+                }}>
                   <div>DA Layer</div>
                   <Icon
                       icon={
@@ -410,7 +436,14 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                         } `}
                   />
                 </div>
-                <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1">
+                <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1" onClick={() => {
+                  if (selectedCategory !== "size") {
+                    setSortOrder(true);
+                    setSelectedCategory("size");
+                  } else {
+                    setSortOrder(!sortOrder);
+                  }
+                }}>
                   <div>Data Posted</div>
                   <Icon
                       icon={
@@ -442,7 +475,16 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                     </TooltipContent>
                   </Tooltip>
                 </div>
-                <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1">
+                <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1"
+                  onClick={() => {
+                    if (selectedCategory !== "fees") {
+                      setSortOrder(true);
+                      setSelectedCategory("fees");
+                    } else {
+                      setSortOrder(!sortOrder);
+                    }        
+                  }}
+                >
                   <div>Fees Paid</div>
                   <Icon
                     icon={
@@ -474,7 +516,16 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                     </TooltipContent>
                   </Tooltip>
                 </div>
-                <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1">
+                <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1"
+                  onClick={() => {
+                    if (selectedCategory !== "fees_per_mb") {
+                      setSortOrder(true);
+                      setSelectedCategory("fees_per_mb");
+                    } else {
+                      setSortOrder(!sortOrder);
+                    }
+                  }}
+                >
                   <div>Fees/MB</div>
                   <Icon
                     icon={
@@ -506,7 +557,16 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                     </TooltipContent>
                   </Tooltip>
                 </div>
-                <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1">
+                <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1"
+                  onClick={() => {
+                    if (selectedCategory !== "da_consumers") {
+                      setSortOrder(true);
+                      setSelectedCategory("da_consumers");
+                    } else {
+                      setSortOrder(!sortOrder);
+                    }        
+                  }}
+                >
                   <div>DA Consumers(Total | Chains)</div>
                   <Icon
                     icon={
