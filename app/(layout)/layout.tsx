@@ -165,6 +165,13 @@ const robotoMono = Roboto_Mono({
   adjustFontFallback: false,
 });
 
+const firaSans = Fira_Sans({
+  subsets: ["latin"],
+  variable: "--font-fira-sans",
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700", "800"],
+});
+
 export default function RootLayout({
   children,
 }: {
@@ -182,7 +189,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${raleway.variable} ${inter.variable} ${robotoMono.variable}`}
+      className={`${raleway.variable} ${inter.variable} ${robotoMono.variable} ${firaSans.variable}`}
       suppressHydrationWarning
       style={{
         fontFeatureSettings: "'pnum' on, 'lnum' on",
