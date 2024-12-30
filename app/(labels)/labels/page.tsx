@@ -44,7 +44,10 @@ import {
 import { uniqBy } from "lodash";
 import { useMaster } from "@/contexts/Master";
 import { useUIContext } from "@/contexts/UIContext";
-import SVGSparkline, { SVGSparklineProvider, useSVGSparkline } from "./SVGSparkline";
+import SVGSparkline, {
+  SVGSparklineProvider,
+  useSVGSparkline,
+} from "./SVGSparkline";
 import { useLabelsPage } from "./LabelsContext";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
@@ -104,17 +107,17 @@ export default function LabelsPage() {
 
   const [showDeploymentTx, setShowDeploymentTx] = useSessionStorage(
     "labels::showDeploymentTx",
-    false
+    false,
   );
 
   const [showDeployerAddress, setShowDeployerAddress] = useSessionStorage(
     "labels::showDeployerAddress",
-    false
+    false,
   );
 
   const [allowDownloadData, setAllowDownloadData] = useSessionStorage(
     "labels::allowDownloadData",
-    false
+    false,
   );
 
   const [labelsChainsFilter, setLabelsChainsFilter] = useSessionStorage<
@@ -259,7 +262,7 @@ export default function LabelsPage() {
     if (!currentMetric) return;
 
     if (metricKeys.includes(sort.metric) && sort.metric !== currentMetric) {
-      setSort(prev => ({
+      setSort((prev) => ({
         ...prev,
         metric: currentMetric,
       }));
@@ -305,9 +308,12 @@ export default function LabelsPage() {
   // The scrollable element for your list
   const listRef = useRef<HTMLDivElement>();
 
-  const [labelsOwnerProjects, setLabelsOwnerProjects] = useSessionStorage<{ owner_project: string; owner_project_clear: string }[]>("labelsOwnerProjects", []);
+  const [labelsOwnerProjects, setLabelsOwnerProjects] = useSessionStorage<
+    { owner_project: string; owner_project_clear: string }[]
+  >("labelsOwnerProjects", []);
 
-  const [labelsDeployerAddresses, setLabelsDeployerAddresses] = useSessionStorage<string[]>("labelsDeployerAddresses", []);
+  const [labelsDeployerAddresses, setLabelsDeployerAddresses] =
+    useSessionStorage<string[]>("labelsDeployerAddresses", []);
 
   const data = useMemo(() => {
     if (!quickLabelsData && !fullLabelsData) return [];
@@ -388,8 +394,10 @@ export default function LabelsPage() {
 
       if (all_usage_categories.length > 0) {
         if (isUnlabeledSelected) {
-          rows = rows.filter((label) =>
-            all_usage_categories.includes(label.usage_category) || label.usage_category === null,
+          rows = rows.filter(
+            (label) =>
+              all_usage_categories.includes(label.usage_category) ||
+              label.usage_category === null,
           );
         } else {
           rows = rows.filter((label) =>
@@ -407,7 +415,10 @@ export default function LabelsPage() {
       }
     }
 
-    if (labelsFilters.deployer_address && labelsFilters.deployer_address.length > 0) {
+    if (
+      labelsFilters.deployer_address &&
+      labelsFilters.deployer_address.length > 0
+    ) {
       rows = rows.filter((label) =>
         labelsFilters.deployer_address.includes(label.deployer_address),
       );
@@ -477,9 +488,15 @@ export default function LabelsPage() {
     }
 
     if (
-      ["owner_project", "address", "name", "category", "subcategory", "deployment_tx", "deployer_address"].includes(
-        sort.metric,
-      )
+      [
+        "owner_project",
+        "address",
+        "name",
+        "category",
+        "subcategory",
+        "deployment_tx",
+        "deployer_address",
+      ].includes(sort.metric)
     ) {
       rows.sort((a, b) => {
         let aMetric = a[sort.metric];
@@ -517,37 +534,40 @@ export default function LabelsPage() {
   }, [filteredLabelsData, setLabelsNumberFiltered]);
 
   useEffect(() => {
-    if (!fullLabelsData)
-      return;
+    if (!fullLabelsData) return;
 
-    const uniqueOwnerProjects =
-      uniqBy(
-        fullLabelsData.data.filter((label) => label.owner_project && label.owner_project !== "")
-          .map((label) => ({
-            owner_project: label.owner_project,
-            owner_project_clear:
-              label.owner_project_clear || label.owner_project,
-          }))
-          .sort((a, b) =>
-            a.owner_project_clear
-
-              .localeCompare(b.owner_project_clear),
-          ),
-        "owner_project");
+    const uniqueOwnerProjects = uniqBy(
+      fullLabelsData.data
+        .filter((label) => label.owner_project && label.owner_project !== "")
+        .map((label) => ({
+          owner_project: label.owner_project,
+          owner_project_clear: label.owner_project_clear || label.owner_project,
+        }))
+        .sort((a, b) =>
+          a.owner_project_clear.localeCompare(b.owner_project_clear),
+        ),
+      "owner_project",
+    );
 
     setLabelsOwnerProjects(uniqueOwnerProjects);
 
     const uniqueDeployerAddresses = uniqBy(
       fullLabelsData.data
-        .filter((label) => label.deployer_address && label.deployer_address !== "")
+        .filter(
+          (label) => label.deployer_address && label.deployer_address !== "",
+        )
         .map((label) => label.deployer_address)
         .sort((a, b) => a.localeCompare(b)),
       (a) => a,
     );
 
     setLabelsDeployerAddresses(uniqueDeployerAddresses);
-
-  }, [fullLabelsData, data, setLabelsDeployerAddresses, setLabelsOwnerProjects]);
+  }, [
+    fullLabelsData,
+    data,
+    setLabelsDeployerAddresses,
+    setLabelsOwnerProjects,
+  ]);
 
   // The virtualizer
   const virtualizer = useWindowVirtualizer({
@@ -566,22 +586,27 @@ export default function LabelsPage() {
   const [paddingTop, paddingBottom] =
     items.length > 0
       ? [
-        Math.max(0, items[0].start - virtualizer.options.scrollMargin),
-        Math.max(0, virtualizer.getTotalSize() - items[items.length - 1].end),
-      ]
+          Math.max(0, items[0].start - virtualizer.options.scrollMargin),
+          Math.max(0, virtualizer.getTotalSize() - items[items.length - 1].end),
+        ]
       : [0, 0];
 
   const handleFilter = useCallback(
     (key: string, value: string | number) => {
-      if (key === "owner_project" && typeof value !== "string" && typeof value !== "number" && typeof key === "string") {
+      if (
+        key === "owner_project" &&
+        typeof value !== "string" &&
+        typeof value !== "number" &&
+        typeof key === "string"
+      ) {
         setLabelsFilters({
           ...labelsFilters,
           owner_project: labelsFilters[key].find(
-            (f) => f.owner_project === value['owner_project'],
+            (f) => f.owner_project === value["owner_project"],
           )
             ? labelsFilters[key].filter(
-              (f) => f.owner_project !== value['owner_project'],
-            )
+                (f) => f.owner_project !== value["owner_project"],
+              )
             : [...labelsFilters[key], value],
         });
       } else {
@@ -611,14 +636,15 @@ export default function LabelsPage() {
     Object.keys(sparklineLabelsData.data).forEach((key) => {
       if (key === "types") return;
       const data = sparklineLabelsData.data[key].sparkline;
-      const timestamps = data.map((row) => row[sparklineLabelsData.data.types.indexOf("unix")]);
+      const timestamps = data.map(
+        (row) => row[sparklineLabelsData.data.types.indexOf("unix")],
+      );
 
       min = Math.min(min, ...timestamps);
       max = Math.max(max, ...timestamps);
     });
 
     return [min, max];
-
   }, [sparklineLabelsData]);
 
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
@@ -638,32 +664,105 @@ export default function LabelsPage() {
     }, 2000);
   }, []);
 
-
   const gridTemplateColumns = useMemo(() => {
-
-    let cols = ["15px", "minmax(150px, 350px)", "225px", "180px", "120px", "120px", "125px", "185px"];
-    let colsLarge = ["15px", "minmax(150px, 350px)", "225px", "180px", "120px", "120px", "125px", "185px"];
-
+    let cols = [
+      "15px",
+      "minmax(150px, 350px)",
+      "225px",
+      "180px",
+      "120px",
+      "120px",
+      "125px",
+      "185px",
+    ];
+    let colsLarge = [
+      "15px",
+      "minmax(150px, 350px)",
+      "225px",
+      "180px",
+      "120px",
+      "120px",
+      "125px",
+      "185px",
+    ];
 
     if (showDeploymentTx && showDeployerAddress) {
-      cols = ["15px", "minmax(150px, 350px)", "215px", "180px", "120px", "120px", "125px", "120px", "115px", "185px"]
-      colsLarge = ["15px", "minmax(150px, 350px)", "215px", "180px", "120px", "120px", "125px", "120px", "115px", "185px"]
-    }
-    else if (showDeploymentTx) {
-      cols = ["15px", "minmax(150px, 350px)", "215px", "180px", "120px", "120px", "125px", "120px", "185px"]
-      colsLarge = ["15px", "minmax(150px, 350px)", "215px", "180px", "120px", "120px", "125px", "120px", "185px"]
-    }
-
-    else if (showDeployerAddress) {
-      cols = ["15px", "minmax(150px, 350px)", "215px", "180px", "120px", "120px", "125px", "120px", "185px"]
-      colsLarge = ["15px", "minmax(150px, 350px)", "215px", "180px", "120px", "120px", "125px", "120px", "185px"]
+      cols = [
+        "15px",
+        "minmax(150px, 350px)",
+        "215px",
+        "180px",
+        "120px",
+        "120px",
+        "125px",
+        "120px",
+        "115px",
+        "185px",
+      ];
+      colsLarge = [
+        "15px",
+        "minmax(150px, 350px)",
+        "215px",
+        "180px",
+        "120px",
+        "120px",
+        "125px",
+        "120px",
+        "115px",
+        "185px",
+      ];
+    } else if (showDeploymentTx) {
+      cols = [
+        "15px",
+        "minmax(150px, 350px)",
+        "215px",
+        "180px",
+        "120px",
+        "120px",
+        "125px",
+        "120px",
+        "185px",
+      ];
+      colsLarge = [
+        "15px",
+        "minmax(150px, 350px)",
+        "215px",
+        "180px",
+        "120px",
+        "120px",
+        "125px",
+        "120px",
+        "185px",
+      ];
+    } else if (showDeployerAddress) {
+      cols = [
+        "15px",
+        "minmax(150px, 350px)",
+        "215px",
+        "180px",
+        "120px",
+        "120px",
+        "125px",
+        "120px",
+        "185px",
+      ];
+      colsLarge = [
+        "15px",
+        "minmax(150px, 350px)",
+        "215px",
+        "180px",
+        "120px",
+        "120px",
+        "125px",
+        "120px",
+        "185px",
+      ];
     }
 
     if (is2XL) return colsLarge.join(" ");
 
     return cols.join(" ");
   }, [is2XL, showDeployerAddress, showDeploymentTx]);
-
 
   // const downloadCSV = useCallback(() => {
   //   // compile CSV from data w/ headers
@@ -717,7 +816,6 @@ export default function LabelsPage() {
   //   URL.revokeObjectURL(url);
   // }, [filteredLabelsData]);
 
-
   // const downloadJSON = useCallback(() => {
   //   const json = JSON.stringify(filteredLabelsData, null, 2);
 
@@ -736,28 +834,27 @@ export default function LabelsPage() {
     setDownloadData(filteredLabelsData);
   }, [filteredLabelsData, setDownloadData]);
 
-
   // const addressFirstRef = useRef<HTMLDivElement>(null);
-  const [addressRef, { width: addressWidth }] = useElementSizeObserver<HTMLDivElement>();
+  const [addressRef, { width: addressWidth }] =
+    useElementSizeObserver<HTMLDivElement>();
 
   const numAddressChars = useMemo(() => {
     return Math.min(Math.floor((addressWidth - 24) / 7.2) - 6, 42 - 6);
   }, [addressWidth, showDeployerAddress, showDeploymentTx]);
 
+  const getProjectTwitterLink = useCallback(
+    (ownerProject: string) => {
+      if (!ownerProjectToProjectData[ownerProject]) return "";
+      const twitter = ownerProjectToProjectData[ownerProject][4];
 
-  const getProjectTwitterLink = useCallback((ownerProject: string) => {
-    if (!ownerProjectToProjectData[ownerProject]) return "";
-    const twitter = ownerProjectToProjectData[
-      ownerProject
-    ][4];
+      // if includes "https://" or "http://" then return the link
+      if (twitter.includes("https://") || twitter.includes("http://"))
+        return twitter;
 
-    // if includes "https://" or "http://" then return the link
-    if (twitter.includes("https://") || twitter.includes("http://"))
-      return twitter;
-
-    return `https://x.com/${twitter}`;
-  }, [ownerProjectToProjectData]);
-
+      return `https://x.com/${twitter}`;
+    },
+    [ownerProjectToProjectData],
+  );
 
   return (
     <>
@@ -774,12 +871,16 @@ export default function LabelsPage() {
           Smart Contracts in the Ethereum Ecosystem
         </h1>
       </LabelsContainer>
-      <div className={`sticky pl-[60px] pr-[60px] top-[70px] md:top-[144px] z-[1]`}>
+      <div
+        className={`sticky pl-[60px] pr-[60px] top-[70px] md:top-[144px] z-[1]`}
+      >
         <div
           className="bg-[#151a19] z-50 fixed inset-0 pointer-events-none"
           style={{
             backgroundPosition: "top",
-            maskImage: isMobile ? `linear-gradient(to bottom, white 0, white 120px, transparent 150px` : `linear-gradient(to bottom, white 0, white 200px, transparent 230px`,
+            maskImage: isMobile
+              ? `linear-gradient(to bottom, white 0, white 120px, transparent 150px`
+              : `linear-gradient(to bottom, white 0, white 200px, transparent 230px`,
           }}
         >
           <div className="background-gradient-group">
@@ -798,7 +899,7 @@ export default function LabelsPage() {
               <GridTableHeader
                 className="pb-[4px] text-[12px] gap-x-[20px] z-[2]"
                 style={{
-                  gridTemplateColumns: gridTemplateColumns
+                  gridTemplateColumns: gridTemplateColumns,
                 }}
               >
                 <div className="flex items-center justify-center"></div>
@@ -853,7 +954,7 @@ export default function LabelsPage() {
                     }
                     rightIcon={
                       sort.metric === "owner_project" &&
-                        sort.sortOrder === "asc"
+                      sort.sortOrder === "asc"
                         ? "feather:arrow-up"
                         : "feather:arrow-down"
                     }
@@ -969,7 +1070,7 @@ export default function LabelsPage() {
                   <Icon
                     icon={
                       sort.metric === "deployment_date" &&
-                        sort.sortOrder === "asc"
+                      sort.sortOrder === "asc"
                         ? "feather:arrow-up"
                         : "feather:arrow-down"
                     }
@@ -998,7 +1099,7 @@ export default function LabelsPage() {
                     <Icon
                       icon={
                         sort.metric === "deployment_tx" &&
-                          sort.sortOrder === "asc"
+                        sort.sortOrder === "asc"
                           ? "feather:arrow-up"
                           : "feather:arrow-down"
                       }
@@ -1028,7 +1129,7 @@ export default function LabelsPage() {
                     <Icon
                       icon={
                         sort.metric === "deployer_address" &&
-                          sort.sortOrder === "asc"
+                        sort.sortOrder === "asc"
                           ? "feather:arrow-up"
                           : "feather:arrow-down"
                       }
@@ -1056,11 +1157,10 @@ export default function LabelsPage() {
                       }}
                     >
                       {metricKeysLabels[currentMetric]} (7 days)
-
                       <Icon
                         icon={
                           sort.metric === currentMetric &&
-                            sort.sortOrder === "asc"
+                          sort.sortOrder === "asc"
                             ? "feather:arrow-up"
                             : "feather:arrow-down"
                         }
@@ -1115,22 +1215,24 @@ export default function LabelsPage() {
                       left: 0,
                       width: "100%",
                       height: `${item.size}px`,
-                      transform: `translateY(${item.start - virtualizer.options.scrollMargin
-                        }px)`,
+                      transform: `translateY(${
+                        item.start - virtualizer.options.scrollMargin
+                      }px)`,
                     }}
                   >
                     <GridTableRow
                       className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[20px] mb-[3px]"
                       style={{
-                        gridTemplateColumns: gridTemplateColumns
+                        gridTemplateColumns: gridTemplateColumns,
                       }}
                     >
                       <div className="flex h-full items-center">
                         <Icon
-                          icon={`gtp:${AllChainsByKeys[
-                            filteredLabelsData[item.index].origin_key
-                          ].urlKey
-                            }-logo-monochrome`}
+                          icon={`gtp:${
+                            AllChainsByKeys[
+                              filteredLabelsData[item.index].origin_key
+                            ].urlKey
+                          }-logo-monochrome`}
                           className="w-[15px] h-[15px]"
                           style={{
                             color:
@@ -1140,9 +1242,9 @@ export default function LabelsPage() {
                           }}
                         />
                       </div>
-                      <div className="flex h-full items-center hover:bg-transparent"
+                      <div
+                        className="flex h-full items-center hover:bg-transparent"
                         ref={index === 0 ? addressRef : undefined}
-
                       >
                         <span
                           className="@container flex-1 flex h-full items-center hover:bg-transparent pr-[10px] font-mono select-none"
@@ -1156,43 +1258,66 @@ export default function LabelsPage() {
                           }}
                         >
                           <div
-                            className={`flex transition-all duration-300 ${numAddressChars === 42 - 6 ? "" : "font-semibold bg-[linear-gradient(90deg,#CDD8D3_calc(100%-17px),transparent_100%)] bg-clip-text text-transparent backface-visibility-hidden"}  `}
-                            style={{ direction: 'ltr', textOverflow: ". !important", }}
+                            className={`flex transition-all duration-300 ${
+                              numAddressChars === 42 - 6
+                                ? ""
+                                : "font-semibold bg-[linear-gradient(90deg,#CDD8D3_calc(100%-17px),transparent_100%)] bg-clip-text text-transparent backface-visibility-hidden"
+                            }  `}
+                            style={{
+                              direction: "ltr",
+                              textOverflow: ". !important",
+                            }}
                             onClick={() => {
-                              navigator.clipboard.writeText(filteredLabelsData[item.index].address)
+                              navigator.clipboard.writeText(
+                                filteredLabelsData[item.index].address,
+                              );
                             }}
                           >
-
-                            {filteredLabelsData[item.index].address.slice(0, numAddressChars)}
-
+                            {filteredLabelsData[item.index].address.slice(
+                              0,
+                              numAddressChars,
+                            )}
                           </div>
-                          <div className={`relative h-full flex items-center text-[#CDD8D333] ${numAddressChars === 42 - 6 && "!hidden"}`}>
+                          <div
+                            className={`relative h-full flex items-center text-[#CDD8D333] ${
+                              numAddressChars === 42 - 6 && "!hidden"
+                            }`}
+                          >
                             &hellip;
-
                           </div>
-                          <div className={`transition-all duration-300  ${numAddressChars === 42 - 6 ? "" : "font-semibold bg-[linear-gradient(-90deg,#CDD8D3_calc(100%-17px),transparent_100%)] bg-clip-text text-transparent backface-visibility-hidden"} `}>
+                          <div
+                            className={`transition-all duration-300  ${
+                              numAddressChars === 42 - 6
+                                ? ""
+                                : "font-semibold bg-[linear-gradient(-90deg,#CDD8D3_calc(100%-17px),transparent_100%)] bg-clip-text text-transparent backface-visibility-hidden"
+                            } `}
+                          >
                             {filteredLabelsData[item.index].address.slice(-6)}
                           </div>
                           <div className="pl-[10px] flex">
                             <Icon
-                              icon={copiedAddress === filteredLabelsData[item.index].address ? "feather:check-circle" : "feather:copy"}
+                              icon={
+                                copiedAddress ===
+                                filteredLabelsData[item.index].address
+                                  ? "feather:check-circle"
+                                  : "feather:copy"
+                              }
                               className="w-[14px] h-[14px] cursor-pointer"
                               onClick={() => {
-                                handleCopyAddress(filteredLabelsData[item.index].address);
+                                handleCopyAddress(
+                                  filteredLabelsData[item.index].address,
+                                );
                               }}
                             />
                           </div>
                         </span>
                       </div>
                       <div className="flex h-full items-center justify-between w-full">
-
                         {filteredLabelsData[item.index].owner_project ? (
                           <>
                             <div className="flex h-full items-center gap-x-[3px] max-w-full">
-
                               <Tooltip placement="right" allowInteract>
                                 <TooltipTrigger className="max-w-full">
-
                                   <Badge
                                     size="sm"
                                     className="max-w-[155px]"
@@ -1242,160 +1367,178 @@ export default function LabelsPage() {
                                     filteredLabelsData[item.index].owner_project
                                   ][2] ||
                                     ownerProjectToProjectData[
-                                    filteredLabelsData[item.index].owner_project
+                                      filteredLabelsData[item.index]
+                                        .owner_project
                                     ][4] ||
                                     ownerProjectToProjectData[
-                                    filteredLabelsData[item.index].owner_project
+                                      filteredLabelsData[item.index]
+                                        .owner_project
                                     ][5]) && (
                                     <TooltipContent className="relativeflex flex-col items-start justify-center gap-y-[5px] rounded-[10px] p-2.5 bg-[#151a19] border border-[#5A6462] z-[19] max-w-[300px]">
                                       <div className="absolute top-[calc(50%-4px)] -left-1 w-2 h-2 bg-[#151a19]  border-[#5A6462] border border-r-0 border-t-0 transform rotate-45"></div>
                                       {ownerProjectToProjectData[
-                                        filteredLabelsData[item.index].owner_project
+                                        filteredLabelsData[item.index]
+                                          .owner_project
                                       ][2] && (
-                                          <div className="flex items-center text-xs pb-1">{`${ownerProjectToProjectData[
+                                        <div className="flex items-center text-xs pb-1">{`${
+                                          ownerProjectToProjectData[
                                             filteredLabelsData[item.index]
                                               .owner_project
                                           ][2]
-                                            }`}</div>
-                                        )}
+                                        }`}</div>
+                                      )}
 
                                       {ownerProjectToProjectData[
-                                        filteredLabelsData[item.index].owner_project
+                                        filteredLabelsData[item.index]
+                                          .owner_project
                                       ][5] && (
-                                          <a
-                                            href={
-                                              ownerProjectToProjectData[
+                                        <a
+                                          href={
+                                            ownerProjectToProjectData[
                                               filteredLabelsData[item.index]
                                                 .owner_project
+                                            ][5]
+                                          }
+                                          target="_blank"
+                                          className="group flex items-center gap-x-[5px] text-xs"
+                                        >
+                                          <div className="w-[12px] h-[12px]">
+                                            <Icon
+                                              icon="feather:globe"
+                                              className="w-[12px] h-[12px]"
+                                            />
+                                          </div>
+                                          <div className="group-hover:underline">
+                                            {
+                                              ownerProjectToProjectData[
+                                                filteredLabelsData[item.index]
+                                                  .owner_project
                                               ][5]
                                             }
+                                          </div>
+                                        </a>
+                                      )}
+                                      {ownerProjectToProjectData[
+                                        filteredLabelsData[item.index]
+                                          .owner_project
+                                      ][4] && (
+                                        <div className="flex items-center">
+                                          <a
+                                            href={getProjectTwitterLink(
+                                              filteredLabelsData[item.index],
+                                            )}
                                             target="_blank"
                                             className="group flex items-center gap-x-[5px] text-xs"
                                           >
                                             <div className="w-[12px] h-[12px]">
                                               <Icon
-                                                icon="feather:globe"
+                                                icon="prime:twitter"
                                                 className="w-[12px] h-[12px]"
                                               />
                                             </div>
                                             <div className="group-hover:underline">
                                               {
                                                 ownerProjectToProjectData[
-                                                filteredLabelsData[item.index]
-                                                  .owner_project
-                                                ][5]
+                                                  filteredLabelsData[item.index]
+                                                    .owner_project
+                                                ][4]
                                               }
                                             </div>
                                           </a>
-                                        )}
-                                      {ownerProjectToProjectData[
-                                        filteredLabelsData[item.index].owner_project
-                                      ][4] && (
-                                          <div className="flex items-center">
-                                            <a
-                                              href={
-                                                getProjectTwitterLink(filteredLabelsData[item.index])
-                                              }
-                                              target="_blank"
-                                              className="group flex items-center gap-x-[5px] text-xs"
-                                            >
-                                              <div className="w-[12px] h-[12px]">
-                                                <Icon
-                                                  icon="prime:twitter"
-                                                  className="w-[12px] h-[12px]"
-                                                />
-                                              </div>
-                                              <div className="group-hover:underline">
-                                                {
-                                                  ownerProjectToProjectData[
-                                                  filteredLabelsData[item.index]
-                                                    .owner_project
-                                                  ][4]
-                                                }
-                                              </div>
-                                            </a>
-                                          </div>
-                                        )}
+                                        </div>
+                                      )}
                                     </TooltipContent>
                                   )}
                               </Tooltip>
-
                             </div>
                             <div className="flex justify-between gap-x-[5px] xmax-w-0 @[390px]:max-w-[100px] xgroup-hover:max-w-[100px] overflow-hidden transition-all duration-300">
                               <div className="flex items-center gap-x-[5px]">
                                 {ownerProjectToProjectData[
                                   filteredLabelsData[item.index].owner_project
-                                ] && ownerProjectToProjectData[filteredLabelsData[item.index].owner_project][5] && (
+                                ] &&
+                                  ownerProjectToProjectData[
+                                    filteredLabelsData[item.index].owner_project
+                                  ][5] && (
                                     <div className="h-[15px] w-[15px]">
                                       {ownerProjectToProjectData[
-                                        filteredLabelsData[item.index].owner_project
+                                        filteredLabelsData[item.index]
+                                          .owner_project
                                       ][5] && (
-
-                                          <a
-                                            href={
-                                              ownerProjectToProjectData[
-                                              filteredLabelsData[item.index].owner_project
-                                              ][5]
-                                            }
-                                            target="_blank"
-                                            className="group flex items-center gap-x-[5px] text-xs"
-                                          >
-
-                                            <Icon
-                                              icon="ri:global-line"
-                                              className="w-[15px] h-[15px]"
-                                            />
-
-                                          </a>
-                                        )}
+                                        <a
+                                          href={
+                                            ownerProjectToProjectData[
+                                              filteredLabelsData[item.index]
+                                                .owner_project
+                                            ][5]
+                                          }
+                                          target="_blank"
+                                          className="group flex items-center gap-x-[5px] text-xs"
+                                        >
+                                          <Icon
+                                            icon="ri:global-line"
+                                            className="w-[15px] h-[15px]"
+                                          />
+                                        </a>
+                                      )}
                                     </div>
                                   )}
                                 {ownerProjectToProjectData[
                                   filteredLabelsData[item.index].owner_project
-                                ] && ownerProjectToProjectData[filteredLabelsData[item.index].owner_project][3] && (
+                                ] &&
+                                  ownerProjectToProjectData[
+                                    filteredLabelsData[item.index].owner_project
+                                  ][3] && (
                                     <div className="h-[15px] w-[15px]">
-
                                       {ownerProjectToProjectData[
-                                        filteredLabelsData[item.index].owner_project
+                                        filteredLabelsData[item.index]
+                                          .owner_project
                                       ][3] && (
-                                          <a
-                                            href={`https://github.com/${ownerProjectToProjectData[filteredLabelsData[item.index].owner_project][3]}/`}
-                                            target="_blank"
-                                            className="group flex items-center gap-x-[5px] text-xs"
-                                          >
-                                            <Icon
-                                              icon="ri:github-fill"
-                                              className="w-[15px] h-[15px]"
-                                            />
-                                          </a>
-                                        )}
+                                        <a
+                                          href={`https://github.com/${
+                                            ownerProjectToProjectData[
+                                              filteredLabelsData[item.index]
+                                                .owner_project
+                                            ][3]
+                                          }/`}
+                                          target="_blank"
+                                          className="group flex items-center gap-x-[5px] text-xs"
+                                        >
+                                          <Icon
+                                            icon="ri:github-fill"
+                                            className="w-[15px] h-[15px]"
+                                          />
+                                        </a>
+                                      )}
                                     </div>
                                   )}
                                 {ownerProjectToProjectData[
                                   filteredLabelsData[item.index].owner_project
-                                ] && ownerProjectToProjectData[filteredLabelsData[item.index].owner_project][4] && (
+                                ] &&
+                                  ownerProjectToProjectData[
+                                    filteredLabelsData[item.index].owner_project
+                                  ][4] && (
                                     <div className="h-[15px] w-[15px]">
-
                                       {ownerProjectToProjectData[
-                                        filteredLabelsData[item.index].owner_project
+                                        filteredLabelsData[item.index]
+                                          .owner_project
                                       ][4] && (
-                                          <a
-                                            href={
-                                              getProjectTwitterLink(filteredLabelsData[item.index].owner_project)
-                                            }
-                                            target="_blank"
-                                            className="group flex items-center gap-x-[5px] text-xs"
-                                          >
-                                            <Icon
-                                              icon="ri:twitter-x-fill"
-                                              className="w-[15px] h-[15px]"
-                                            />
-                                          </a>
-                                        )}
+                                        <a
+                                          href={getProjectTwitterLink(
+                                            filteredLabelsData[item.index]
+                                              .owner_project,
+                                          )}
+                                          target="_blank"
+                                          className="group flex items-center gap-x-[5px] text-xs"
+                                        >
+                                          <Icon
+                                            icon="ri:twitter-x-fill"
+                                            className="w-[15px] h-[15px]"
+                                          />
+                                        </a>
+                                      )}
                                     </div>
                                   )}
                               </div>
-
                             </div>
                           </>
                         ) : (
@@ -1446,9 +1589,10 @@ export default function LabelsPage() {
                               size="sm"
                               label={
                                 master?.blockspace_categories.main_categories[
-                                subcategoryToCategoryMapping[
-                                filteredLabelsData[item.index].usage_category
-                                ]
+                                  subcategoryToCategoryMapping[
+                                    filteredLabelsData[item.index]
+                                      .usage_category
+                                  ]
                                 ]
                               }
                               leftIcon={
@@ -1471,7 +1615,8 @@ export default function LabelsPage() {
                               rightIcon={
                                 labelsFilters.category.includes(
                                   subcategoryToCategoryMapping[
-                                  filteredLabelsData[item.index].usage_category
+                                    filteredLabelsData[item.index]
+                                      .usage_category
                                   ],
                                 )
                                   ? "heroicons-solid:x-circle"
@@ -1480,7 +1625,8 @@ export default function LabelsPage() {
                               rightIconColor={
                                 labelsFilters.category.includes(
                                   subcategoryToCategoryMapping[
-                                  filteredLabelsData[item.index].usage_category
+                                    filteredLabelsData[item.index]
+                                      .usage_category
                                   ],
                                 )
                                   ? "#FE5468"
@@ -1490,7 +1636,8 @@ export default function LabelsPage() {
                                 handleFilter(
                                   "category",
                                   subcategoryToCategoryMapping[
-                                  filteredLabelsData[item.index].usage_category
+                                    filteredLabelsData[item.index]
+                                      .usage_category
                                   ],
                                 )
                               }
@@ -1505,7 +1652,7 @@ export default function LabelsPage() {
                               size="sm"
                               label={
                                 master?.blockspace_categories.sub_categories[
-                                filteredLabelsData[item.index].usage_category
+                                  filteredLabelsData[item.index].usage_category
                                 ]
                               }
                               leftIcon={null}
@@ -1569,22 +1716,41 @@ export default function LabelsPage() {
                             <>
                               <div
                                 className="truncate transition-all duration-300"
-                                style={{ direction: 'ltr' }}
+                                style={{ direction: "ltr" }}
                                 onClick={() => {
-                                  navigator.clipboard.writeText(filteredLabelsData[item.index].deployment_tx)
+                                  navigator.clipboard.writeText(
+                                    filteredLabelsData[item.index]
+                                      .deployment_tx,
+                                  );
                                 }}
                               >
-                                {filteredLabelsData[item.index].deployment_tx.slice(0, filteredLabelsData[item.index].deployment_tx.length - 6)}
+                                {filteredLabelsData[
+                                  item.index
+                                ].deployment_tx.slice(
+                                  0,
+                                  filteredLabelsData[item.index].deployment_tx
+                                    .length - 6,
+                                )}
                               </div>
                               <div className="transition-all duration-300">
-                                {filteredLabelsData[item.index].deployment_tx.slice(-6)}
+                                {filteredLabelsData[
+                                  item.index
+                                ].deployment_tx.slice(-6)}
                               </div>
                               <div className="pl-[10px]">
                                 <Icon
-                                  icon={copiedAddress === filteredLabelsData[item.index].deployment_tx ? "feather:check-circle" : "feather:copy"}
+                                  icon={
+                                    copiedAddress ===
+                                    filteredLabelsData[item.index].deployment_tx
+                                      ? "feather:check-circle"
+                                      : "feather:copy"
+                                  }
                                   className="w-[14px] h-[14px] cursor-pointer"
                                   onClick={() => {
-                                    handleCopyAddress(filteredLabelsData[item.index].deployment_tx);
+                                    handleCopyAddress(
+                                      filteredLabelsData[item.index]
+                                        .deployment_tx,
+                                    );
                                   }}
                                 />
                               </div>
@@ -1613,23 +1779,54 @@ export default function LabelsPage() {
                                 size="sm"
                                 truncateStyle="middle"
                                 className="!max-w-[110px]"
-                                label={filteredLabelsData[item.index].deployer_address}
-                                leftIcon={"material-symbols:deployed-code-account-rounded"}
+                                label={
+                                  filteredLabelsData[item.index]
+                                    .deployer_address
+                                }
+                                leftIcon={
+                                  "material-symbols:deployed-code-account-rounded"
+                                }
                                 leftIconColor="#CDD8D3"
                                 rightIcon={
-                                  labelsFilters.deployer_address.includes(filteredLabelsData[item.index].deployer_address) ? "heroicons-solid:x-circle" : "heroicons-solid:plus-circle"
+                                  labelsFilters.deployer_address.includes(
+                                    filteredLabelsData[item.index]
+                                      .deployer_address,
+                                  )
+                                    ? "heroicons-solid:x-circle"
+                                    : "heroicons-solid:plus-circle"
                                 }
                                 rightIconColor={
-                                  labelsFilters.deployer_address.includes(filteredLabelsData[item.index].deployer_address) ? "#FE5468" : undefined
+                                  labelsFilters.deployer_address.includes(
+                                    filteredLabelsData[item.index]
+                                      .deployer_address,
+                                  )
+                                    ? "#FE5468"
+                                    : undefined
                                 }
-                                onClick={(e) => { handleFilter("deployer_address", filteredLabelsData[item.index].deployer_address); e.stopPropagation(); }}
+                                onClick={(e) => {
+                                  handleFilter(
+                                    "deployer_address",
+                                    filteredLabelsData[item.index]
+                                      .deployer_address,
+                                  );
+                                  e.stopPropagation();
+                                }}
                               />
                               <div className="pl-[10px]">
                                 <Icon
-                                  icon={copiedAddress === filteredLabelsData[item.index].deployer_address ? "feather:check-circle" : "feather:copy"}
+                                  icon={
+                                    copiedAddress ===
+                                    filteredLabelsData[item.index]
+                                      .deployer_address
+                                      ? "feather:check-circle"
+                                      : "feather:copy"
+                                  }
                                   className="w-[14px] h-[14px] cursor-pointer"
                                   onClick={() => {
-                                    handleCopyAddress(filteredLabelsData[item.index].deployer_address);
+                                    handleCopyAddress(
+                                      filteredLabelsData[item.index]
+                                        .deployer_address,
+                                    );
                                   }}
                                 />
                               </div>
@@ -1640,43 +1837,65 @@ export default function LabelsPage() {
                       <div className="flex items-center justify-between pl-[20px]">
                         <div className="relative flex h-[20px] justify-between w-full">
                           <SVGSparklineProvider
-                            key={`${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address}`}
+                            key={`${
+                              filteredLabelsData[item.index].origin_key
+                            }_${filteredLabelsData[item.index].address}`}
                             isDBLoading={false}
                             minUnix={SparklineTimestampRange[0]}
                             maxUnix={SparklineTimestampRange[1]}
-                            data={sparklineLabelsData && sparklineLabelsData.data[
-                              `${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address
-                              }`
-                            ] ? sparklineLabelsData.data[
-                              `${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address
-                              }`
-                            ].sparkline.map((d) => [d[sparklineLabelsData.data.types.indexOf("unix")], d[sparklineLabelsData.data.types.indexOf(currentMetric)]]) : []}
+                            data={
+                              sparklineLabelsData &&
+                              sparklineLabelsData.data[
+                                `${filteredLabelsData[item.index].origin_key}_${
+                                  filteredLabelsData[item.index].address
+                                }`
+                              ]
+                                ? sparklineLabelsData.data[
+                                    `${
+                                      filteredLabelsData[item.index].origin_key
+                                    }_${filteredLabelsData[item.index].address}`
+                                  ].sparkline.map((d) => [
+                                    d[
+                                      sparklineLabelsData.data.types.indexOf(
+                                        "unix",
+                                      )
+                                    ],
+                                    d[
+                                      sparklineLabelsData.data.types.indexOf(
+                                        currentMetric,
+                                      )
+                                    ],
+                                  ])
+                                : []
+                            }
                             change={
                               filteredLabelsData[item.index][
-                              `${currentMetric}_change`
+                                `${currentMetric}_change`
                               ]
                             }
                             value={
                               filteredLabelsData[item.index][currentMetric]
                             }
-                            valueType={
-                              currentMetric
-                            }
+                            valueType={currentMetric}
                           >
-                            <LabelsSVGSparkline chainKey={filteredLabelsData[item.index].origin_key} />
+                            <LabelsSVGSparkline
+                              chainKey={
+                                filteredLabelsData[item.index].origin_key
+                              }
+                            />
                           </SVGSparklineProvider>
                         </div>
                       </div>
                     </GridTableRow>
                   </div>
-                )
+                );
               })}
             </div>
           )}
-        </div >
+        </div>
 
         {/* </div> */}
-      </LabelsTableContainer >
+      </LabelsTableContainer>
       {/* </div> */}
 
       {/* <Footer downloadCSV={downloadCSV} downloadJSON={downloadJSON} /> */}
@@ -1728,46 +1947,46 @@ const GridTableRow = ({
 };
 
 const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
-  const { data, change, value, valueType, hoverDataPoint, setHoverDataPoint, isDBLoading } = useCanvasSparkline();
+  const {
+    data,
+    change,
+    value,
+    valueType,
+    hoverDataPoint,
+    setHoverDataPoint,
+    isDBLoading,
+  } = useCanvasSparkline();
   const { formatMetric } = useMaster();
 
   return (
     <>
-      {isDBLoading ?
+      {isDBLoading ? (
         <div className="relative flex items-center justify-center text-[#5A6462] text-[10px] w-[100px] h-full">
           Loading Chart
-        </div> :
-        <CanvasSparkline chainKey={chainKey} />
-      }
-      {hoverDataPoint ? (
-        <div
-          className="flex flex-col justify-center items-end"
-          style={{
-            fontFeatureSettings: "'pnum' on, 'lnum' on",
-          }}
-        >
-          <div className="min-w-[55px] text-right" >
-            {hoverDataPoint[1] && formatMetric(hoverDataPoint[1], valueType)}
-          </div>
-          <div className={`text-[9px] text-right leading-[1] text-forest-400`}>{new Date(hoverDataPoint[0]).toLocaleDateString("en-GB",
-            {
-              month: "short",
-              day: "numeric",
-              year: "numeric"
-            }
-          )}</div>
         </div>
       ) : (
-        <div
-          className="flex flex-col justify-center items-end"
-          style={{
-            fontFeatureSettings: "'pnum' on, 'lnum' on",
-          }}
-        >
+        <CanvasSparkline chainKey={chainKey} />
+      )}
+      {hoverDataPoint ? (
+        <div className="flex flex-col justify-center items-end numbers-xs">
+          <div className="min-w-[55px] text-right">
+            {hoverDataPoint[1] && formatMetric(hoverDataPoint[1], valueType)}
+          </div>
+          <div className={`text-[9px] text-right leading-[1] text-forest-400`}>
+            {new Date(hoverDataPoint[0]).toLocaleDateString("en-GB", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col justify-center items-end numbers-xs">
           <div className="min-w-[55px] text-right">
             {formatMetric(value, valueType)}
           </div>
-          {(change === null || parseFloat((change * 100).toFixed(0)) === "0") && (
+          {(change === null ||
+            parseFloat((change * 100).toFixed(0)) === "0") && (
             <div
               className={`text-[9px] text-right leading-[1] text-[#CDD8D399] font-normal`}
             >
@@ -1775,7 +1994,7 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
               {change !== null && "0.0%"}
             </div>
           )}
-          {(change !== null && parseFloat((change * 100).toFixed(1)) > 0) && (
+          {change !== null && parseFloat((change * 100).toFixed(1)) > 0 && (
             <div
               className={`text-[9px] text-right leading-[1] text-[#1DF7EF] font-normal`}
             >
@@ -1783,10 +2002,11 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
               {(change * 100).toLocaleString("en-GB", {
                 minimumFractionDigits: 1,
                 maximumFractionDigits: 1,
-              })}%
+              })}
+              %
             </div>
           )}
-          {(change !== null && parseFloat((change * 100).toFixed(1)) < 0) && (
+          {change !== null && parseFloat((change * 100).toFixed(1)) < 0 && (
             <div
               className={`text-[9px] text-right leading-[1] text-[#FE5468] font-semibold`}
             >
@@ -1794,7 +2014,8 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
               {(change * 100).toLocaleString("en-GB", {
                 minimumFractionDigits: 1,
                 maximumFractionDigits: 1,
-              })}%
+              })}
+              %
             </div>
           )}
           {/* <div
@@ -1813,17 +2034,26 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
 };
 
 const LabelsSVGSparkline = ({ chainKey }: { chainKey: string }) => {
-  const { data, change, value, valueType, hoverDataPoint, setHoverDataPoint, isDBLoading } = useSVGSparkline();
+  const {
+    data,
+    change,
+    value,
+    valueType,
+    hoverDataPoint,
+    setHoverDataPoint,
+    isDBLoading,
+  } = useSVGSparkline();
   const { formatMetric } = useMaster();
 
   return (
     <>
-      {isDBLoading ?
+      {isDBLoading ? (
         <div className="relative flex items-center justify-center text-[#5A6462] text-[10px] w-[100px] h-full">
           Loading Chart
-        </div> :
+        </div>
+      ) : (
         <SVGSparkline chainKey={chainKey} />
-      }
+      )}
       {hoverDataPoint ? (
         <div
           className="flex flex-col justify-center items-end"
@@ -1831,16 +2061,16 @@ const LabelsSVGSparkline = ({ chainKey }: { chainKey: string }) => {
             fontFeatureSettings: "'pnum' on, 'lnum' on",
           }}
         >
-          <div className="min-w-[55px] text-right" >
+          <div className="min-w-[55px] text-right">
             {hoverDataPoint[1] && formatMetric(hoverDataPoint[1], valueType)}
           </div>
-          <div className={`text-[9px] text-right leading-[1] text-forest-400`}>{new Date(hoverDataPoint[0]).toLocaleDateString("en-GB",
-            {
+          <div className={`text-[9px] text-right leading-[1] text-forest-400`}>
+            {new Date(hoverDataPoint[0]).toLocaleDateString("en-GB", {
               month: "short",
               day: "numeric",
-              year: "numeric"
-            }
-          )}</div>
+              year: "numeric",
+            })}
+          </div>
         </div>
       ) : (
         <div
@@ -1852,7 +2082,8 @@ const LabelsSVGSparkline = ({ chainKey }: { chainKey: string }) => {
           <div className="min-w-[55px] text-right">
             {formatMetric(value, valueType)}
           </div>
-          {(change === null || parseFloat((change * 100).toFixed(0)) === "0") && (
+          {(change === null ||
+            parseFloat((change * 100).toFixed(0)) === "0") && (
             <div
               className={`text-[9px] text-right leading-[1] text-[#CDD8D399] font-normal`}
             >
@@ -1860,7 +2091,7 @@ const LabelsSVGSparkline = ({ chainKey }: { chainKey: string }) => {
               {change !== null && "0.0%"}
             </div>
           )}
-          {(change !== null && parseFloat((change * 100).toFixed(1)) > 0) && (
+          {change !== null && parseFloat((change * 100).toFixed(1)) > 0 && (
             <div
               className={`text-[9px] text-right leading-[1] text-[#1DF7EF] font-normal`}
             >
@@ -1868,10 +2099,11 @@ const LabelsSVGSparkline = ({ chainKey }: { chainKey: string }) => {
               {(change * 100).toLocaleString("en-GB", {
                 minimumFractionDigits: 1,
                 maximumFractionDigits: 1,
-              })}%
+              })}
+              %
             </div>
           )}
-          {(change !== null && parseFloat((change * 100).toFixed(1)) < 0) && (
+          {change !== null && parseFloat((change * 100).toFixed(1)) < 0 && (
             <div
               className={`text-[9px] text-right leading-[1] text-[#FE5468] font-semibold`}
             >
@@ -1879,7 +2111,8 @@ const LabelsSVGSparkline = ({ chainKey }: { chainKey: string }) => {
               {(change * 100).toLocaleString("en-GB", {
                 minimumFractionDigits: 1,
                 maximumFractionDigits: 1,
-              })}%
+              })}
+              %
             </div>
           )}
           {/* <div
