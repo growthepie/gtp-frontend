@@ -1,6 +1,6 @@
 import { Providers } from "../../providers";
 import CookieConsent from "@/components/layout/CookieConsent";
-import { Raleway, Inter, Roboto_Mono, Source_Code_Pro } from "next/font/google";
+import { Raleway, Inter, Roboto_Mono, Fira_Sans } from "next/font/google";
 import { Metadata } from "next";
 import { Graph } from "schema-dts";
 import Head from "../../(layout)/head";
@@ -83,6 +83,7 @@ const firaSans = Fira_Sans({
   display: "swap",
   weight: ["300", "400", "500", "600", "700", "800"],
 });
+
 export default function RootLayout({
   children,
 }: {
