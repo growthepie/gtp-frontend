@@ -77,12 +77,12 @@ const robotoMono = Roboto_Mono({
   display: "swap",
 });
 
-const sourceCodePro = Source_Code_Pro({
+const firaSans = Fira_Sans({
   subsets: ["latin"],
-  variable: "--font-source-code-pro",
+  variable: "--font-fira-sans",
   display: "swap",
+  weight: ["300", "400", "500", "600", "700", "800"],
 });
-
 export default function RootLayout({
   children,
 }: {
@@ -91,7 +91,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${raleway.variable} ${inter.variable} ${robotoMono.variable} ${sourceCodePro.variable} scroll-smooth`}
+      className={`${raleway.variable} ${inter.variable} ${robotoMono.variable} ${firaSans.variable} scroll-smooth`}
       suppressHydrationWarning
       style={{
         fontFeatureSettings: "'pnum' on, 'lnum' on",
@@ -129,8 +129,8 @@ export default function RootLayout({
           </MasterProvider>
           {/* <DeveloperTools /> */}
           <CookieConsent />
-        </Providers >
-      </body >
-    </html >
+        </Providers>
+      </body>
+    </html>
   );
 }
