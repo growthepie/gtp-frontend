@@ -1077,6 +1077,7 @@ function MetricChart({
               // ref: containerRef,
               style: {
                 overflow: "visible",
+
               }
             }}
             syncId="shareTooltip"
@@ -1093,8 +1094,9 @@ function MetricChart({
               // className="zoom-chart" zoom not working
               marginTop={5}
               marginBottom={37}
-              marginRight={0}
+              marginRight={5}
               marginLeft={60}
+              
               zooming={{
                 mouseWheel: {
                   enabled: false,
