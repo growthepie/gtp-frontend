@@ -14,22 +14,47 @@ import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
 import { metricItems, daMetricItems } from "@/lib/metrics";
 import { GTPIcon } from "@/components/layout/GTPIcon";
-import { GridTableContainer, GridTableHeader, GridTableHeaderCell, GridTableRow } from "@/components/layout/GridTable";
+import {
+  GridTableContainer,
+  GridTableHeader,
+  GridTableHeaderCell,
+  GridTableRow,
+} from "@/components/layout/GridTable";
 import { useMetricChartControls } from "./MetricChartControlsContext";
 import { useMetricData } from "./MetricDataContext";
-
 
 const MetricTable = ({
   metric_type,
 }: {
   metric_type: "fundamentals" | "data-availability";
 }) => {
-  const { data: master, metrics, da_metrics, ChainsNavigationItemsByKeys } = useMaster();
+  const {
+    data: master,
+    metrics,
+    da_metrics,
+    ChainsNavigationItemsByKeys,
+  } = useMaster();
 
   const metricsDict = metric_type === "fundamentals" ? metrics : da_metrics;
 
-  const { data, chainKeys, type, allChains, allChainsByKeys, metric_id, timeIntervals, } = useMetricData();
-  const { selectedChains, setSelectedChains, lastSelectedChains, setLastSelectedChains, showEthereumMainnet, setShowEthereumMainnet, timeIntervalKey } = useMetricChartControls();
+  const {
+    data,
+    chainKeys,
+    type,
+    allChains,
+    allChainsByKeys,
+    metric_id,
+    timeIntervals,
+  } = useMetricData();
+  const {
+    selectedChains,
+    setSelectedChains,
+    lastSelectedChains,
+    setLastSelectedChains,
+    showEthereumMainnet,
+    setShowEthereumMainnet,
+    timeIntervalKey,
+  } = useMetricChartControls();
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [maxVal, setMaxVal] = useState<number | null>(null);
@@ -48,7 +73,10 @@ const MetricTable = ({
       return "none";
 
     if (chainKeys.includes("ethereum")) {
-      if (intersection(selectedChains, chainKeys).length >= chainKeys.length - 1)
+      if (
+        intersection(selectedChains, chainKeys).length >=
+        chainKeys.length - 1
+      )
         return "all";
     } else {
       if (intersection(selectedChains, chainKeys).length === chainKeys.length)
@@ -61,25 +89,28 @@ const MetricTable = ({
   const onChainSelectToggle = useCallback(() => {
     // if all chains are selected, unselect all
     if (chainSelectToggleState === "all") {
-      if (showEthereumMainnet)
-        setSelectedChains(["ethereum"]);
-      else
-        setSelectedChains([]);
+      if (showEthereumMainnet) setSelectedChains(["ethereum"]);
+      else setSelectedChains([]);
     }
 
     // if no chains are selected, select last selected chains
     if (chainSelectToggleState === "none") {
       if (showEthereumMainnet)
         setSelectedChains([...lastSelectedChains, "ethereum"]);
-      else
-        setSelectedChains([...lastSelectedChains]);
+      else setSelectedChains([...lastSelectedChains]);
     }
 
     // if some chains are selected, select all chains
     if (chainSelectToggleState === "normal") {
       setSelectedChains(chainKeys);
     }
-  }, [chainSelectToggleState, showEthereumMainnet, setSelectedChains, lastSelectedChains, chainKeys]);
+  }, [
+    chainSelectToggleState,
+    showEthereumMainnet,
+    setSelectedChains,
+    lastSelectedChains,
+    chainKeys,
+  ]);
 
   const handleChainClick = useCallback(
     (chainKey: string) => {
@@ -118,7 +149,10 @@ const MetricTable = ({
   const { theme } = useTheme();
 
   const [showGwei, reversePerformer] = useMemo(() => {
-    const item = metric_type === "fundamentals" ? metricItems.find((item) => item.key === metric_id) : daMetricItems.find((item) => item.key === metric_id);
+    const item =
+      metric_type === "fundamentals"
+        ? metricItems.find((item) => item.key === metric_id)
+        : daMetricItems.find((item) => item.key === metric_id);
 
     return [item?.page?.showGwei, item?.page?.reversePerformer];
   }, [metric_id, metric_type]);
@@ -145,8 +179,7 @@ const MetricTable = ({
     if (!data) return;
 
     const sampleChainDataTypes =
-      data.chains[Object.keys(data.chains)[0]][lastValueTimeIntervalKey].types;
-
+      data.chains[chainKeys[0]][lastValueTimeIntervalKey].types;
 
     if (sampleChainDataTypes.includes("usd")) {
       if (showUsd) {
@@ -157,13 +190,12 @@ const MetricTable = ({
     } else {
       return 1;
     }
-  }, [data, showUsd, lastValueTimeIntervalKey]);
+  }, [chainKeys, data, showUsd, lastValueTimeIntervalKey]);
 
   const changesValueIndex = useMemo(() => {
     if (!data) return;
 
-    const sampleChainChangesTypes =
-      data.chains[Object.keys(data.chains)[0]][changesKey].types;
+    const sampleChainChangesTypes = data.chains[chainKeys[0]][changesKey].types;
 
     if (sampleChainChangesTypes.includes("usd")) {
       if (showUsd) {
@@ -179,13 +211,13 @@ const MetricTable = ({
   const lastValues = useMemo(() => {
     if (!data) return null;
 
-    return Object.keys(data.chains)
+    return chainKeys
       .filter((chain) => chain !== "ethereum")
       .reduce((acc, chain) => {
         let types = data.chains[chain][lastValueTimeIntervalKey].types;
         let values =
           data.chains[chain][lastValueTimeIntervalKey].data[
-          data.chains[chain][lastValueTimeIntervalKey].data.length - 1
+            data.chains[chain][lastValueTimeIntervalKey].data.length - 1
           ];
         let lastVal = values[valueIndex];
 
@@ -211,7 +243,7 @@ const MetricTable = ({
           [chain]: lastVal,
         };
       }, {});
-  }, [data, valueIndex, lastValueTimeIntervalKey, showUsd]);
+  }, [chainKeys, data, valueIndex, lastValueTimeIntervalKey, showUsd]);
 
   // set maxVal
   useEffect(() => {
@@ -231,19 +263,19 @@ const MetricTable = ({
 
     const maxVal = Math.max(...valuesArray);
 
-    return Object.keys(data.chains)
+    return chainKeys
       .filter(
         (chain) =>
           chain !== "ethereum" &&
           Object.keys(allChainsByKeys).includes(chain) &&
-          allChainsByKeys[chain]
+          allChainsByKeys[chain],
       )
       .map((chain: any) => {
         return {
           data: data.chains[chain],
           chain: allChainsByKeys[chain],
           lastVal: lastValues[chain],
-          barWidth: (Math.max(lastValues[chain], 0) / maxVal),
+          barWidth: Math.max(lastValues[chain], 0) / maxVal,
         };
       })
       .sort((a, b) => {
@@ -282,16 +314,22 @@ const MetricTable = ({
           }
         }
       });
-  }, [data, lastValues, reversePerformer, selectedChains]);
+  }, [
+    allChainsByKeys,
+    chainKeys,
+    data,
+    lastValues,
+    reversePerformer,
+    selectedChains,
+  ]);
 
   let height = 0;
   const transitions = useTransition(
-    rows()
-      .map((data) => ({
-        ...data,
-        y: (height += 39) - 39,
-        height: 39,
-      })),
+    rows().map((data) => ({
+      ...data,
+      y: (height += 39) - 39,
+      height: 39,
+    })),
     {
       key: (d) => d.chain.key,
       from: { opacity: 0, height: 0 },
@@ -333,37 +371,31 @@ const MetricTable = ({
     (item: any) => {
       if (!lastValues || !master) return { value: "0", prefix: "", suffix: "" };
 
-      if (!master) return { value: lastValues[item.chain.key], prefix: "", suffix: "" };
+      if (!master)
+        return { value: lastValues[item.chain.key], prefix: "", suffix: "" };
 
       // if (!master.da_metrics[metric_id]) return { value: lastValues[item.chain.key], prefix: "", suffix: "" };
-
 
       const units = metricsDict[metric_id].units;
       const unitKeys = Object.keys(units);
 
       // const units = [];
 
-      if (unitKeys.length === 0) return { value: lastValues[item.chain.key], prefix: "", suffix: "" };
+      if (unitKeys.length === 0)
+        return { value: lastValues[item.chain.key], prefix: "", suffix: "" };
 
       const unitKey =
         unitKeys.find((unit) => unit !== "usd" && unit !== "eth") ||
         (showUsd ? "usd" : "eth");
 
-      let prefix = units[unitKey].prefix
-        ? units[unitKey].prefix
-        : "";
-      let suffix = units[unitKey].suffix
-        ? units[unitKey].suffix
-        : "";
-      const decimals =
-        showGwei && !showUsd
-          ? 2
-          : units[unitKey].decimals;
+      let prefix = units[unitKey].prefix ? units[unitKey].prefix : "";
+      let suffix = units[unitKey].suffix ? units[unitKey].suffix : "";
+      const decimals = showGwei && !showUsd ? 2 : units[unitKey].decimals;
 
       let types = item.data[lastValueTimeIntervalKey].types;
       let values =
         item.data[lastValueTimeIntervalKey].data[
-        item.data[lastValueTimeIntervalKey].data.length - 1
+          item.data[lastValueTimeIntervalKey].data.length - 1
         ];
       // let value = formatNumber(
       //   item.data[lastValueTimeIntervalKey].data[
@@ -397,7 +429,15 @@ const MetricTable = ({
       }
       return { value, prefix, suffix };
     },
-    [lastValues, master, metricsDict, metric_id, showUsd, showGwei, lastValueTimeIntervalKey],
+    [
+      lastValues,
+      master,
+      metricsDict,
+      metric_id,
+      showUsd,
+      showGwei,
+      lastValueTimeIntervalKey,
+    ],
   );
 
   const lastValueLabels = {
@@ -423,27 +463,27 @@ const MetricTable = ({
   if (!data) return null;
 
   return (
-    <HorizontalScrollContainer
-      includeMargin={isMobile ? true : false}
-    >
+    <HorizontalScrollContainer includeMargin={isMobile ? true : false}>
       <VerticalScrollContainer
-        height={!isMobile ? 434 : (chainKeys.filter(chain => chain != "ethereum").length) * 39 + 45}
+        height={
+          !isMobile
+            ? 434
+            : chainKeys.filter((chain) => chain != "ethereum").length * 39 + 45
+        }
         scrollbarAbsolute={true}
         scrollbarPosition="right"
-        className="min-w-[503px] w-full"
+        className="w-full min-w-[503px]"
         header={
           <div className="hidden lg:block">
-            <div className="pr-[0px] lg:pr-[45px] relative">
+            <div className="relative pr-[0px] lg:pr-[45px]">
               <GridTableHeader
                 gridDefinitionColumns="grid-cols-[26px_minmax(30px,2000px)_61px_61px_61px_61px]"
-                className="text-[12px] gap-x-[10px] !font-bold z-[2] !pl-[5px] !pr-[21px] !pt-0 !pb-0 h-[30px] select-none flex items-center"
+                className="z-[2] flex h-[30px] select-none items-center gap-x-[10px] !pb-0 !pl-[5px] !pr-[21px] !pt-0 text-[12px] !font-bold"
               >
                 <GridTableHeaderCell>
                   <div></div>
                 </GridTableHeaderCell>
-                <GridTableHeaderCell>
-                  Chain
-                </GridTableHeaderCell>
+                <GridTableHeaderCell>Chain</GridTableHeaderCell>
                 <GridTableHeaderCell justify="end" className="truncate">
                   {lastValueLabels[timeIntervalKey]}
                 </GridTableHeaderCell>
@@ -455,17 +495,14 @@ const MetricTable = ({
                   <GridTableHeaderCell key={timespan} justify="end">
                     {label}
                   </GridTableHeaderCell>
-
                 ))}
-
-
               </GridTableHeader>
               <div
-                className={`absolute top-[5px] right-[34px] cursor-pointer`}
+                className={`absolute right-[34px] top-[5px] cursor-pointer`}
                 onClick={onChainSelectToggle}
               >
                 <div
-                  className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-full"
                   style={{
                     color:
                       chainSelectToggleState === "all" ? undefined : "#5A6462",
@@ -481,10 +518,11 @@ const MetricTable = ({
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className={`w-6 h-6 ${chainSelectToggleState === "none"
-                      ? "opacity-100"
-                      : "opacity-0"
-                      }`}
+                    className={`h-6 w-6 ${
+                      chainSelectToggleState === "none"
+                        ? "opacity-100"
+                        : "opacity-0"
+                    }`}
                   >
                     <circle
                       xmlns="http://www.w3.org/2000/svg"
@@ -495,17 +533,19 @@ const MetricTable = ({
                   </svg>
                 </div>
                 <div
-                  className={`p-1 rounded-full ${chainSelectToggleState === "none"
-                    ? "bg-forest-50 dark:bg-[#1F2726]"
-                    : "bg-white dark:bg-forest-1000"
-                    }`}
+                  className={`rounded-full p-1 ${
+                    chainSelectToggleState === "none"
+                      ? "bg-forest-50 dark:bg-[#1F2726]"
+                      : "bg-white dark:bg-forest-1000"
+                  }`}
                 >
                   <Icon
                     icon="feather:check-circle"
-                    className={`w-[15px] h-[15px] ${chainSelectToggleState === "none"
-                      ? "opacity-0"
-                      : "opacity-100"
-                      }`}
+                    className={`h-[15px] w-[15px] ${
+                      chainSelectToggleState === "none"
+                        ? "opacity-0"
+                        : "opacity-100"
+                    }`}
                     style={{
                       color:
                         chainSelectToggleState === "all"
@@ -519,24 +559,23 @@ const MetricTable = ({
               </div>
             </div>
           </div>
-        }>
+        }
+      >
         {/* <VerticalScrollContainer
         height={!isMobile ? 434 : chainKeys.length * 39}
         paddingRight={22}
 
       > */}
         <div className="block lg:hidden">
-          <div className="pr-[16px] lg:pr-[45px] relative">
+          <div className="relative pr-[16px] lg:pr-[45px]">
             <GridTableHeader
               gridDefinitionColumns="grid-cols-[26px_minmax(30px,2000px)_61px_61px_61px_61px]"
-              className="text-[12px] gap-x-[10px] !font-bold z-[2] !pl-[5px] !pr-[21px] !pt-0 !pb-0 h-[30px] select-none flex items-center"
+              className="z-[2] flex h-[30px] select-none items-center gap-x-[10px] !pb-0 !pl-[5px] !pr-[21px] !pt-0 text-[12px] !font-bold"
             >
               <GridTableHeaderCell>
                 <div></div>
               </GridTableHeaderCell>
-              <GridTableHeaderCell>
-                Chain
-              </GridTableHeaderCell>
+              <GridTableHeaderCell>Chain</GridTableHeaderCell>
               <GridTableHeaderCell justify="end" className="truncate">
                 {lastValueLabels[timeIntervalKey]}
               </GridTableHeaderCell>
@@ -548,17 +587,14 @@ const MetricTable = ({
                 <GridTableHeaderCell key={timespan} justify="end">
                   {label}
                 </GridTableHeaderCell>
-
               ))}
-
-
             </GridTableHeader>
             <div
-              className={`absolute top-[5px] right-[5px] cursor-pointer`}
+              className={`absolute right-[5px] top-[5px] cursor-pointer`}
               onClick={onChainSelectToggle}
             >
               <div
-                className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-full"
                 style={{
                   color:
                     chainSelectToggleState === "all" ? undefined : "#5A6462",
@@ -574,10 +610,11 @@ const MetricTable = ({
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className={`w-6 h-6 ${chainSelectToggleState === "none"
-                    ? "opacity-100"
-                    : "opacity-0"
-                    }`}
+                  className={`h-6 w-6 ${
+                    chainSelectToggleState === "none"
+                      ? "opacity-100"
+                      : "opacity-0"
+                  }`}
                 >
                   <circle
                     xmlns="http://www.w3.org/2000/svg"
@@ -588,17 +625,19 @@ const MetricTable = ({
                 </svg>
               </div>
               <div
-                className={`p-1 rounded-full ${chainSelectToggleState === "none"
-                  ? "bg-forest-50 dark:bg-[#1F2726]"
-                  : "bg-white dark:bg-forest-1000"
-                  }`}
+                className={`rounded-full p-1 ${
+                  chainSelectToggleState === "none"
+                    ? "bg-forest-50 dark:bg-[#1F2726]"
+                    : "bg-white dark:bg-forest-1000"
+                }`}
               >
                 <Icon
                   icon="feather:check-circle"
-                  className={`w-[15px] h-[15px] ${chainSelectToggleState === "none"
-                    ? "opacity-0"
-                    : "opacity-100"
-                    }`}
+                  className={`h-[15px] w-[15px] ${
+                    chainSelectToggleState === "none"
+                      ? "opacity-0"
+                      : "opacity-100"
+                  }`}
                   style={{
                     color:
                       chainSelectToggleState === "all"
@@ -615,22 +654,27 @@ const MetricTable = ({
         <div style={{ height: `${rows().length * 37}px` }}>
           {transitions((style, item, t, index) => (
             <animated.div
-              className="absolute w-full pr-[16px] lg:pr-[45px] select-none"
-              style={{ zIndex: Object.keys(data.chains).length - index, ...style, }}
+              className="absolute w-full select-none pr-[16px] lg:pr-[45px]"
+              style={{
+                zIndex: chainKeys.length - index,
+                ...style,
+              }}
             >
-              <div className="relative group">
+              <div className="group relative">
                 <GridTableRow
                   key={item.chain.key}
                   gridDefinitionColumns="grid-cols-[26px_minmax(30px,2000px)_61px_61px_61px_61px]"
-                  className={`text-[14px] gap-x-[10px] z-[2] !pl-[5px] !pr-[21px] !pt-0 !pb-0 h-[34px] select-none flex items-center cursor-pointer ${selectedChains.includes(item.chain.key)
-                    ? "border-black/[16%] dark:border-[#5A6462] group-hover:bg-forest-500/10"
-                    : "border-black/[16%] dark:border-[#5A6462] group-hover:bg-forest-500/5 transition-all duration-100"
-                    }`}
-
+                  className={`z-[2] flex h-[34px] cursor-pointer select-none items-center gap-x-[10px] !pb-0 !pl-[5px] !pr-[21px] !pt-0 text-[14px] ${
+                    selectedChains.includes(item.chain.key)
+                      ? "border-black/[16%] group-hover:bg-forest-500/10 dark:border-[#5A6462]"
+                      : "border-black/[16%] transition-all duration-100 group-hover:bg-forest-500/5 dark:border-[#5A6462]"
+                  }`}
                   onClick={() => handleChainClick(item.chain.key)}
                   bar={{
                     width: item.barWidth,
-                    color: selectedChains.includes(item.chain.key) ? item.chain.colors[theme ?? "dark"][1] : "#5A6462",
+                    color: selectedChains.includes(item.chain.key)
+                      ? item.chain.colors[theme ?? "dark"][1]
+                      : "#5A6462",
                     containerStyle: {
                       left: 0,
                       right: 0,
@@ -644,7 +688,7 @@ const MetricTable = ({
                     },
                   }}
                 >
-                  <div className="flex items-center justify-center size-[26px]">
+                  <div className="flex size-[26px] items-center justify-center">
                     <Icon
                       icon={`gtp:${item.chain.key.replace("_", "-").replace("_", "-")}-logo-monochrome`}
                       className="size-[15px]"
@@ -656,7 +700,8 @@ const MetricTable = ({
                     />
                   </div>
                   <div className="text-xs">
-                    {metric_type === "fundamentals" && ChainsNavigationItemsByKeys[item.chain.key] ? (
+                    {metric_type === "fundamentals" &&
+                    ChainsNavigationItemsByKeys[item.chain.key] ? (
                       <Link
                         href={`/chains/${ChainsNavigationItemsByKeys[item.chain.key].urlKey}`}
                         className={`truncate hover:underline`}
@@ -672,9 +717,7 @@ const MetricTable = ({
                   <div>
                     <div className="flex w-full justify-end numbers-xs">
                       {getDisplayValue(item).prefix && (
-                        <div className="">
-                          {getDisplayValue(item).prefix}
-                        </div>
+                        <div className="">{getDisplayValue(item).prefix}</div>
                       )}
                       {getDisplayValue(item).value}
                       {getDisplayValue(item).suffix && (
@@ -691,19 +734,19 @@ const MetricTable = ({
                   ).map((timespan) => (
                     <div key={timespan} className="w-full text-right">
                       {item.data[changesKey][timespan][changesValueIndex] ===
-                        null ? (
-                        <span className="numbers-xs text-center inline-block text-gray-500">
+                      null ? (
+                        <span className="inline-block text-center text-gray-500 numbers-xs">
                           —
                         </span>
                       ) : (
                         <>
                           {(reversePerformer ? -1.0 : 1.0) *
                             item.data[changesKey][timespan][
-                            changesValueIndex
+                              changesValueIndex
                             ] >=
-                            0 ? (
+                          0 ? (
                             <div
-                              className={`numbers-xs text-positive`}
+                              className={`text-positive numbers-xs`}
                               style={{
                                 color: selectedChains.includes(item.chain.key)
                                   ? undefined
@@ -715,7 +758,7 @@ const MetricTable = ({
                                 const rawPercentage = Math.abs(
                                   Math.round(
                                     item.data[changesKey][timespan][
-                                    changesValueIndex
+                                      changesValueIndex
                                     ] * 1000,
                                   ) / 10,
                                 ).toFixed(1);
@@ -740,7 +783,7 @@ const MetricTable = ({
                             </div>
                           ) : (
                             <div
-                              className={`numbers-xs text-negative`}
+                              className={`text-negative numbers-xs`}
                               style={{
                                 color: selectedChains.includes(item.chain.key)
                                   ? undefined
@@ -748,15 +791,13 @@ const MetricTable = ({
                               }}
                             >
                               {reversePerformer ? "+" : "-"}
-                              {
-                                Math.abs(
-                                  Math.round(
-                                    item.data[changesKey][timespan][
+                              {Math.abs(
+                                Math.round(
+                                  item.data[changesKey][timespan][
                                     changesValueIndex
-                                    ] * 1000,
-                                  ) / 10,
-                                ).toFixed(1)
-                              }
+                                  ] * 1000,
+                                ) / 10,
+                              ).toFixed(1)}
                               %
                             </div>
                           )}
@@ -766,11 +807,11 @@ const MetricTable = ({
                   ))}
                 </GridTableRow>
                 <div
-                  className={`absolute cursor-pointer top-0 right-[-15px]`}
+                  className={`absolute right-[-15px] top-0 cursor-pointer`}
                   onClick={() => handleChainClick(item.chain.key)}
                 >
                   <div
-                    className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-full"
                     style={{
                       color: selectedChains.includes(item.chain.key)
                         ? undefined
@@ -787,14 +828,15 @@ const MetricTable = ({
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className={`w-6 h-6 ${item.chain.key === "ethereum"
-                        ? showEthereumMainnet
-                          ? "opacity-0"
-                          : "opacity-100"
-                        : selectedChains.includes(item.chain.key)
-                          ? "opacity-0"
-                          : "opacity-100"
-                        }`}
+                      className={`h-6 w-6 ${
+                        item.chain.key === "ethereum"
+                          ? showEthereumMainnet
+                            ? "opacity-0"
+                            : "opacity-100"
+                          : selectedChains.includes(item.chain.key)
+                            ? "opacity-0"
+                            : "opacity-100"
+                      }`}
                     >
                       <circle
                         xmlns="http://www.w3.org/2000/svg"
@@ -805,21 +847,23 @@ const MetricTable = ({
                     </svg>
                   </div>
                   <div
-                    className={`p-1 rounded-full ${selectedChains.includes(item.chain.key)
-                      ? "bg-white dark:bg-forest-1000"
-                      : "bg-forest-50 dark:bg-[#1F2726]"
-                      }`}
+                    className={`rounded-full p-1 ${
+                      selectedChains.includes(item.chain.key)
+                        ? "bg-white dark:bg-forest-1000"
+                        : "bg-forest-50 dark:bg-[#1F2726]"
+                    }`}
                   >
                     <Icon
                       icon="feather:check-circle"
-                      className={`w-[24px] h-[24px] ${item.chain.key === "ethereum"
-                        ? showEthereumMainnet
-                          ? "opacity-100"
-                          : "opacity-0"
-                        : selectedChains.includes(item.chain.key)
-                          ? "opacity-100"
-                          : "opacity-0"
-                        }`}
+                      className={`h-[24px] w-[24px] ${
+                        item.chain.key === "ethereum"
+                          ? showEthereumMainnet
+                            ? "opacity-100"
+                            : "opacity-0"
+                          : selectedChains.includes(item.chain.key)
+                            ? "opacity-100"
+                            : "opacity-0"
+                      }`}
                       style={{
                         color: selectedChains.includes(item.chain.key)
                           ? undefined
@@ -834,7 +878,6 @@ const MetricTable = ({
         </div>
         {/* </VerticalScrollContainer> */}
       </VerticalScrollContainer>
-
     </HorizontalScrollContainer>
   );
 };
