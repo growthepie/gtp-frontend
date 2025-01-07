@@ -4,6 +4,16 @@ import Heading from "@/components/layout/Heading";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import Image from "next/image";
 import Link from "next/link";
+import { Metadata } from "next";
+
+
+export async function generateMetadata(): Promise<Metadata> {  
+  
+  return {
+    title: "Layer 2 Fees - Real-time Data",
+    description: "Aggregated economics metrics across layer2 chains.",
+  };
+}
 
 export default async function Layout({
   children,
