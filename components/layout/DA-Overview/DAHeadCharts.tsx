@@ -22,6 +22,7 @@ import { useUIContext } from "@/contexts/UIContext";
 import d3 from "d3";
 import TopDAConsumers from "./TopDAConsumers";
 import "@/app/highcharts.axis.css";
+import { Any } from "react-spring";
 
 const COLORS = {
     GRID: "rgb(215, 223, 222)",
@@ -196,8 +197,8 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
           }, 0);
     
           const tooltipPoints = points
-    
-            .map((point: any, index: number) => {
+          .sort((a: any, b: any) => b.y - a.y)
+          .map((point: any, index: number)  => {
               const { series, y, percentage } = point;
               const { name } = series;
               const nameString = name;

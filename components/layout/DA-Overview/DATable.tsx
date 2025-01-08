@@ -19,6 +19,9 @@ import { DATimeseriesURL } from "@/lib/urls";
 import { chart } from "highcharts";
 import ShowLoading from "@/components/layout/ShowLoading";
 import DATableCharts from "@/components/layout/DA-Overview/DATableCharts";
+import Image from "next/image";
+
+
 
 const REGULAR_METRICS = ["fees", "size", "fees_per_mb", "fixed_parameters"];
 
@@ -241,11 +244,12 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
 
     const maxFeesPaid = useMemo(() => {
       let maxFees = 0;
-      let typeIndex = breakdown_data[Object.keys(breakdown_data)[0]][selectedTimespan]["fees"].types.indexOf("bytes");
+      let typeIndex = breakdown_data[Object.keys(breakdown_data)[0]][selectedTimespan]["fees"].types.indexOf(showUsd ? "usd" : "eth");
 
       Object.keys(breakdown_data).filter((key) => key !== "totals").map((key) => {
+        console.log(breakdown_data[key][selectedTimespan]["fees"].total[typeIndex])
         if(breakdown_data[key][selectedTimespan]["fees"].total[typeIndex] > maxFees){
-       
+          
         
           maxFees = breakdown_data[key][selectedTimespan]["fees"].total[typeIndex];
         }
@@ -253,6 +257,9 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
 
       return maxFees;
     }, [breakdown_data, selectedTimespan, showUsd]);
+
+   
+  
 
     function formatNumber(x: number) {
       return (
@@ -413,7 +420,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                 : "xl:grid-cols-[auto_200px_199px_114px_280px_46px] grid-cols-[auto_200px_199px_114px_280px_46px]"
                 } min-w-[1250px] `}
             >
-                <div className="heading-small-xxs font-bold flex items-center" onClick={() => {
+                <div className="heading-small-xxs font-bold flex items-center cursor-pointer" onClick={() => {
                   if (selectedCategory !== "name") {
                     setSortOrder(true);
                     setSelectedCategory("name");
@@ -436,7 +443,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                         } `}
                   />
                 </div>
-                <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1" onClick={() => {
+                <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1 cursor-pointer" onClick={() => {
                   if (selectedCategory !== "size") {
                     setSortOrder(true);
                     setSelectedCategory("size");
@@ -475,7 +482,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                     </TooltipContent>
                   </Tooltip>
                 </div>
-                <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1"
+                <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1 cursor-pointer"
                   onClick={() => {
                     if (selectedCategory !== "fees") {
                       setSortOrder(true);
@@ -516,7 +523,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                     </TooltipContent>
                   </Tooltip>
                 </div>
-                <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1"
+                <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1 cursor-pointer"
                   onClick={() => {
                     if (selectedCategory !== "fees_per_mb") {
                       setSortOrder(true);
@@ -557,7 +564,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                     </TooltipContent>
                   </Tooltip>
                 </div>
-                <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1"
+                <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1 cursor-pointer"
                   onClick={() => {
                     if (selectedCategory !== "da_consumers") {
                       setSortOrder(true);
@@ -635,7 +642,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                 </div>   
             </div>
             <div
-              className={`relative flex flex-col -mt-[5px] min-w-[1125px] z-0 transition-height duration-500 `}
+              className={`relative overflow-visible flex flex-col -mt-[5px] min-w-[1125px] z-0 transition-height duration-500 `}
               style={{ height: minimumHeight }}
             >
               {transitions((style, item) => {
@@ -770,12 +777,19 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                       </div>
 
                       <div
-                        className={`flex items-center gap-x-[10px] w-full px-[5px] h-full bg-[#1F2726] ${columnBorder(
+                        className={`flex relative overflow-visible items-center gap-x-[10px] w-full px-[5px] justify-center h-full bg-[#1F2726] group/more z-10 ${columnBorder(
                           "fixed_parameters",
                           item.key,
                         )} `}
                       >
-
+                        <Icon icon="gtp:gtp-more" className="w-[24px] h-[24px]" />
+                        <div className="absolute  right-[20px] -top-[25px] w-[238px] h-[133px] bg-[#1F2726] rounded-2xl hidden group-hover/more:flex-col group-hover/more:flex z-20 px-[15px] py-[15px] gap-y-[2.5px]">
+                          <div className=" heading-small-xs">Parameters</div>
+                          <div className="flex items-center gap-x-[1px]"><div className="text-xs">Blob Size:</div><div className="number-xs font-bold"> {"some value"}</div></div>
+                          <div className="flex items-center gap-x-[1px]"><div className="text-xs">Bandwidth:</div><div className="number-xs"> {"some value"}</div></div>
+                          <div className="flex items-center gap-x-[1px]"><div className="text-xs">Blocktime:</div><div className="number-xs"> {"some value"}</div></div>
+                          <div className="flex items-center gap-x-[1px]"><div className="text-xs">Risk Analysis:</div><div className="number-xs"> {"some value"}</div></div>
+                        </div>
                       </div>
 
                     </div>
@@ -795,6 +809,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                         />
                       </div>
                     </div>
+
                   </animated.div>
                 )})}
             <div
@@ -805,12 +820,12 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
               >
                 <div className="inline-flex items-center"><div className="heading-large-xs">TOTAL &nbsp;</div><div className="heading-large-xs text-[#5A6462] ">  {selectedTimespan === "max" ? "FOR MAXIMUM TIMEFRAME AVAILABLE" : ("IN THE LAST " + (timespans[selectedTimespan].label).toUpperCase()) }</div></div>
                 <div className="w-full h-[34px] px-[2px]">
-                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs  bg-[#34424044]">
+                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs  ">
                     {formatBytes(breakdown_data["totals"][selectedTimespan].size.total[0], 2)}
                   </div>
                 </div>
                 <div className="w-full h-[34px] px-[2px]">
-                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs ">
+                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs bg-[#34424044]">
                     {formatNumber(
                       breakdown_data["totals"][selectedTimespan].fees.total[
                         breakdown_data["totals"][selectedTimespan].fees.types.findIndex(
@@ -821,7 +836,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                   </div>
                 </div>
                 <div className="w-full h-[34px] px-[2px]">
-                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs bg-[#34424044]">
+                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs ">
                     {"Ø " + (breakdown_data["totals"][selectedTimespan].fees_per_mb.total[showUsd ? 0 : 1] < 0.001 ? Number(breakdown_data["totals"][selectedTimespan].fees_per_mb.total[showUsd ? 0 : 1]).toExponential(2) : Intl.NumberFormat("en-GB", {
                           notation: "compact",
                           maximumFractionDigits: 3,
@@ -830,12 +845,12 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                   </div>
                 </div>
                 <div className="w-full h-[34px] px-[2px]">
-                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs">
+                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs bg-[#34424044]">
                     {35}
                   </div>
                 </div>
                 <div className="w-full h-[34px] px-[2px]">
-                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs bg-[#34424044]">
+                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs ">
                 
                   </div>
                 </div>

@@ -209,7 +209,24 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                         [1, '#FFDF27']  // 100% color
                                     ]
                                 }
-                            }
+                            },
+                            area: {
+                                stacking: "normal",
+                                lineWidth: 2,
+                                marker: {
+                                    enabled: false,
+                                },
+                                
+                            },
+                            series: {
+                                zIndex: 10,
+                                animation: false,
+                                marker: {
+                                lineColor: "white",
+                                radius: 0,
+                                symbol: "circle",
+                                },
+                            },
                         }}
                     >
                     <Chart
@@ -380,18 +397,20 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                     >
                         {Object.keys(data.da_consumers).map((key, index) => {
                             const types = data.da_consumers[key].daily.types;
-
+                            const name = data.da_consumers[key].daily.values[0][1];
+                      
                             return(
-                                <ColumnSeries
+                                <AreaSeries
                                     key={key + "-DATableCharts" + da_name} 
-                                    name={key} 
+                                    name={name} 
                                     visible={data.da_consumers[key].daily.values.length > 0}
                                     
                                     data={data.da_consumers[key].daily.values.map((d) => [
                                         d[types.indexOf("unix")], 
                                         d[types.indexOf("data_posted")]
                                     ])}
-/>
+                                    color={AllChainsByKeys[key] ? AllChainsByKeys[key].colors["dark"][0] : "#566462"}
+                                />
                             )
                         })}
 
