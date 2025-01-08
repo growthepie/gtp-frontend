@@ -398,7 +398,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         {Object.keys(data.da_consumers).map((key, index) => {
                             const types = data.da_consumers[key].daily.types;
                             const name = data.da_consumers[key].daily.values[0][1];
-                      
+                            
                             return(
                                 <AreaSeries
                                     key={key + "-DATableCharts" + da_name} 

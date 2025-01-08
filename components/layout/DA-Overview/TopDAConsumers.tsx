@@ -14,6 +14,8 @@ type DARowData = {
     height: any;
 };
 
+const unlabelledDAHex = ["#7D8887", "#697474", "#556060", "#404C4B", "#2C3938"]
+
 
 export default function TopDAConsumers({consumer_data, selectedTimespan}: {consumer_data: TopConsumerColumns, selectedTimespan: string}) {
     const { AllChainsByKeys, da_metrics } = useMaster();
@@ -74,6 +76,8 @@ export default function TopDAConsumers({consumer_data, selectedTimespan}: {consu
     return (
         <div className="w-full h-full relative">
             {transitions((style, item) => {
+
+                
                
                 return(
                     <animated.div
@@ -83,21 +87,21 @@ export default function TopDAConsumers({consumer_data, selectedTimespan}: {consu
                     >
                         <div className={`h-full rounded-full bg-red-400 flex items-center px-[2px]`}
                              style={{
-                                backgroundColor: AllChainsByKeys[sortedDAConsumers[item.index][3]] ? AllChainsByKeys[sortedDAConsumers[item.index][3]].colors["dark"][0] : `rgba(255, 255, 255, 0.1)`,
+                                backgroundColor: AllChainsByKeys[sortedDAConsumers[item.index][3]] ? AllChainsByKeys[sortedDAConsumers[item.index][3]].colors["dark"][0] : unlabelledDAHex[item.index],
                                 width: `${(sortedDAConsumers[item.index][4] / sortedDAConsumers[0][4]) * 100}%`,
                                 minWidth: "122px"
                              }}
                         >
                             <div className="bg-[#1F2726] w-[122px] h-[30px] rounded-full flex items-center px-[5px] gap-x-[10px]">
                                 <Icon
-                                    icon={sortedDAConsumers[item.index][3] ? `gtp:${sortedDAConsumers[item.index][3].replace("_", "-").replace("_", "-")}-logo-monochrome` : "fa:question-circle"}
-                                    className="size-[15px]"
+                                    icon={sortedDAConsumers[item.index][3] ? `gtp:${sortedDAConsumers[item.index][3].replace("_", "-").replace("_", "-")}-logo-monochrome` : "gtp:chain-dark"}
+                                    className="w-[15px] h-[15px]"
                                     style={{}}
 
                                 />
                                 <div className="flex flex-col ">
                                     <div className="numbers-sm -mb-[1px]">{formatBytes(sortedDAConsumers[item.index][4])}</div>
-                                    <div className="text-xxs -mt-[1px]">{sortedDAConsumers[item.index][1] ? sortedDAConsumers[item.index][1] : sortedDAConsumers[item.index][0].slice(0, 10) + "..."}</div>
+                                    <div className="text-xxs -mt-[1px]">{sortedDAConsumers[item.index][1] ? sortedDAConsumers[item.index][1] : "Not listed chains"}</div>
                                 </div>
                             </div>
                             <div></div>
