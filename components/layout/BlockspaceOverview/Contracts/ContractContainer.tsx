@@ -70,7 +70,7 @@ export default function ContractContainer() {
                 // Concatenate and flatten data to the contractArray
                 contractArray = contractArray.concat(categoryData);
               }
-              
+            
               return contractArray;
             })()
           : data[standardChainKey]["overview"][selectedTimespan][
@@ -131,7 +131,7 @@ export default function ContractContainer() {
     return result;
   }, [data, selectedCategory, selectedTimespan, allCats]);
 
-  
+ 
   useEffect(() => {
     if (!contracts) {
       return;

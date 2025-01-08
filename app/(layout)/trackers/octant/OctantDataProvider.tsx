@@ -419,17 +419,7 @@ export default OctantDataProvider
 
 type SummaryResponse = {
   epochs: {
-    [epoch: string]: {
-      epoch: number
-      fromTs: string
-      toTs: string
-      fromDatetime: string
-      toDatetime: string
-      allocationStart: string
-      allocationEnd: string
-      has_allocation_started: boolean
-      has_allocation_ended: boolean
-    }
+    [epoch: string]: EpochSummary
   }
   locked_changes: {
     now: {
@@ -449,6 +439,18 @@ type SummaryResponse = {
   }
   median_reward_amounts: { [epoch: string]: number | null }
 }
+
+export type EpochSummary = {
+  epoch: number
+  fromTs: string
+  toTs: string
+  fromDatetime: string
+  toDatetime: string
+  allocationStart: string
+  allocationEnd: string
+  has_allocation_started: boolean
+  has_allocation_ended: boolean
+};
 
 type CommunityResponse = CommunityRow[];
 
