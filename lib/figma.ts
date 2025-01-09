@@ -2,11 +2,16 @@
 const fs = require("fs").promises;
 const path = require("path");
 
+// use env.local
+require("dotenv").config({ path: ".env.local" });
+
 const outputDir = path.resolve(__dirname, "../icons/small");
 
 // Access environment variables directly from process.env
 const FIGMA_ACCESS_TOKEN = process.env.FIGMA_ACCESS_TOKEN as string;
 const FIGMA_FILE_KEY = process.env.FIGMA_FILE_KEY as string;
+
+console.log("process.env", process.env);
 
 if (!FIGMA_ACCESS_TOKEN || !FIGMA_FILE_KEY) {
   console.error(
@@ -74,6 +79,7 @@ async function fetchFigmaFile(
  */
 function traverseDocument(node: FigmaNode, componentSets: FigmaNode[]) {
   if (node.type === "COMPONENT_SET" && node.name.startsWith("GTP-")) {
+    console.log("Found component set:", node.name);
     componentSets.push(node);
   }
 
