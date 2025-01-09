@@ -36,22 +36,22 @@ export default function ChainAnimations({
   const { AllChainsByKeys } = useMaster();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [isShaking, setIsShaking] = useState(false);
-  const [width, setWidth] = useState(() => {
-    if (sortedValues && value) {
-      const largestValue = Math.max(
-        ...Object.values(sortedValues).map(([, value]) => value),
-      );
-      let minWidth = 144;
+  // const [width, setWidth] = useState(() => {
+  //   if (sortedValues && value) {
+  //     const largestValue = Math.max(
+  //       ...Object.values(sortedValues).map(([, value]) => value),
+  //     );
+  //     let minWidth = 144;
 
-      const relativeWidth = 144 + (sortedValues[index][1] / largestValue) * 150;
+  //     const relativeWidth = 144 + (sortedValues[index][1] / largestValue) * 150;
 
-      const percentage = (value / largestValue) * 99;
-      const newWidth = `max(${percentage}%, ${relativeWidth}px)`;
-      return `max(${percentage}%, ${minWidth}px)`;
-    } else {
-      return "auto";
-    }
-  });
+  //     const percentage = (value / largestValue) * 99;
+  //     const newWidth = `max(${percentage}%, ${relativeWidth}px)`;
+  //     return `max(${percentage}%, ${minWidth}px)`;
+  //   } else {
+  //     return "auto";
+  //   }
+  // });
 
   const availableSelectedChains = useMemo(() => {
     let counter = 0;
@@ -122,27 +122,27 @@ export default function ChainAnimations({
     }
   }, [selectedChains, setSelectedChains, sortedValues]);
 
-  useEffect(() => {
-    if (sortedValues && value && selectedChains) {
-      const valuesOfSelected = Object.values(sortedValues).filter(
-        ([chain, value]) => selectedChains[chain],
-      );
-      const largestValue = Math.max(
-        ...Object.values(valuesOfSelected).map(([, value]) => value),
-      );
-      let minWidth = 144;
+  // useEffect(() => {
+  //   if (sortedValues && value && selectedChains) {
+  //     const valuesOfSelected = Object.values(sortedValues).filter(
+  //       ([chain, value]) => selectedChains[chain],
+  //     );
+  //     const largestValue = Math.max(
+  //       ...Object.values(valuesOfSelected).map(([, value]) => value),
+  //     );
+  //     let minWidth = 144;
 
-      const relativeWidth = 144 + (sortedValues[index][1] / largestValue) * 150;
+  //     const relativeWidth = 144 + (sortedValues[index][1] / largestValue) * 150;
 
-      const percentage = (value / largestValue) * 99;
-      const newWidth = `max(${percentage}%, ${relativeWidth}px)`;
+  //     const percentage = (value / largestValue) * 99;
+  //     const newWidth = `max(${percentage}%, ${relativeWidth}px)`;
 
-      // Set the width state using the setWidth function
-      setWidth(newWidth);
-    } else {
-      setWidth("auto");
-    }
-  }, [value, sortedValues, index, selectedChains]);
+  //     // Set the width state using the setWidth function
+  //     setWidth(newWidth);
+  //   } else {
+  //     setWidth("auto");
+  //   }
+  // }, [value, sortedValues, index, selectedChains]);
 
   const valuesOfSelected = useMemo(() => {
     return Object.values(sortedValues).filter(
@@ -189,10 +189,11 @@ export default function ChainAnimations({
           style={{
             // width: `max(${percentage}%, ${relativeWidth}px)`,
             width: `max(${percentage}%, ${relativeWidth}px)`,
+            maxWidth: "1000%",
             backgroundColor: AllChainsByKeys[chain].colors[theme ?? "dark"][1],
             maskImage:
               percentage > 100
-                ? `linear-gradient(to right, white 0px, white ${parentContainerWidth - 40}px, transparent ${parentContainerWidth}px)`
+                ? `linear-gradient(to right, white 0px, white ${parentContainerWidth - 40}px, transparent ${parentContainerWidth}px, transparent 100%)`
                 : `none`,
             // marginRight: percentage > 100 ? "-10px" : undefined,
             // height: "45px",
