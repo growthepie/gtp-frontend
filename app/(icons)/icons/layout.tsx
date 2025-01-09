@@ -43,7 +43,6 @@ const jsonLd: Graph = {
   ],
 };
 
-
 // const jsonLd = [jsonLdOrg, jsonLdWebSite];
 export const viewport = {
   width: "device-width",
@@ -63,31 +62,32 @@ const gtpMain = {
     "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
 };
 
-const gtpLabels = {
+const gtpIcons = {
   title: {
-    absolute: "Ethereum Layer 2 Labels - growthepie",
+    absolute: "Open Source Icons - growthepie",
     template: "%s - growthepie",
   },
   description:
-    "Labels for Ethereum Layer 2 solutions - growthepie. A comprehensive list of labels for Ethereum Layer 2 solutions.",
+    "Explore and download open source icons from growthepie. Freely available icons designed for the Ethereum ecosystem and beyond.",
 };
 
-const isLabels =
+const isIcons =
   process.env.NEXT_PUBLIC_VERCEL_URL &&
-  process.env.NEXT_PUBLIC_VERCEL_URL.includes("labels.");
+  process.env.NEXT_PUBLIC_VERCEL_URL.includes("icons.");
 
-const host = isLabels ? "labels.growthepie.xyz" : "www.growthepie.xyz";
+const host = isIcons ? "icons.growthepie.xyz" : "www.growthepie.xyz";
 
-const title = isLabels ? gtpLabels.title : gtpMain.title;
-const description = isLabels ? gtpLabels.description : gtpMain.description;
+const title = isIcons ? gtpIcons.title : gtpMain.title;
+const description = isIcons ? gtpIcons.description : gtpMain.description;
 
 export const metadata: Metadata = {
   metadataBase: new URL(`https://${host}`),
   title,
   description,
   openGraph: {
-    title: "growthepie",
-    description: "Growing Ethereum’s Ecosystem Together",
+    title: "Open Source Icons - growthepie",
+    description:
+      "Explore and download open source icons from growthepie. Freely available icons designed for the Ethereum ecosystem and beyond.",
     url: `https://${host}`,
     images: [
       {
@@ -102,8 +102,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "growthepie.xyz",
-    description: "Growing Ethereum’s Ecosystem Together",
+    title: "icons.growthepie.xyz",
+    description:
+      "Explore and download open source icons from growthepie. Freely available icons designed for the Ethereum ecosystem and beyond.",
     site: "@growthepie_eth",
     siteId: "1636391104689094656",
     creator: "@growthepie_eth",
@@ -156,14 +157,14 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <Head />
-      <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500">
+      <body className="bg-forest-50 text-forest-900 dark:bg-[#1F2726] dark:text-forest-500">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <Providers forcedTheme="dark">
           <MasterProvider>
-            <main className="font-raleway relative flex-1 w-full mx-auto min-h-screen select-none">
+            <main className="relative mx-auto min-h-screen w-full flex-1 select-none font-raleway">
               <div className="background-container !fixed">
                 <div className="background-gradient-group">
                   <div className="background-gradient-yellow"></div>
@@ -177,6 +178,6 @@ export default function RootLayout({
           <CookieConsent />
         </Providers>
       </body>
-    </html >
+    </html>
   );
 }

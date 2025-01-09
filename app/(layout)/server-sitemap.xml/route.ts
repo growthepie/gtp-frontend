@@ -14,39 +14,59 @@ export async function GET(request: Request) {
 
   const fundamentals = navigationItems[1];
   const blockspace = navigationItems[2];
-  const trackers = navigationItems[3];
+  const dataAvailability = navigationItems[3];
+  const trackers = navigationItems[4];
 
   const chains = Get_AllChainsNavigationItems(masterData);
 
   const masterChainKeys = Object.keys(masterData.chains);
 
-  const pages = [
-    ...fundamentals.options
-      .filter((c) => c.excludeFromSitemap !== true)
-      .map(
-        (option) => `https://www.growthepie.xyz/fundamentals/${option.urlKey}`,
-      ),
-    ...blockspace.options
-      .filter((c) => c.excludeFromSitemap !== true)
-      .map(
-        (option) => `https://www.growthepie.xyz/blockspace/${option.urlKey}`,
-      ),
-    ...Object.keys(masterData.blockspace_categories.main_categories).map(
-      (category) =>
-        `https://www.growthepie.xyz/blockspace/chain-overview/${category}`,
-    ),
-    ...chains.options
-      .filter(
-        (c) =>
-          c.key &&
-          Get_SupportedChainKeys(masterData).includes(c.key) &&
-          c.excludeFromSitemap !== true,
-      )
-      .map((option) => `https://www.growthepie.xyz/chains/${option.urlKey}`),
-    ...trackers.options
-      .filter((c) => c.hide !== true && c.excludeFromSitemap !== true)
-      .map((option) => `https://www.growthepie.xyz/trackers/${option.urlKey}`),
-  ];
+  // const pages = [
+  //   ...fundamentals.options
+  //     .filter((c) => c.excludeFromSitemap !== true)
+  //     .map(
+  //       (option) => `https://www.growthepie.xyz/fundamentals/${option.urlKey}`,
+  //     ),
+  //   ...blockspace.options
+  //     .filter((c) => c.excludeFromSitemap !== true)
+  //     .map(
+  //       (option) => `https://www.growthepie.xyz/blockspace/${option.urlKey}`,
+  //     ),
+  //   ...Object.keys(masterData.blockspace_categories.main_categories).map(
+  //     (category) =>
+  //       `https://www.growthepie.xyz/blockspace/chain-overview/${category}`,
+  //   ),
+  //   ...chains.options
+  //     .filter(
+  //       (c) =>
+  //         c.key &&
+  //         Get_SupportedChainKeys(masterData).includes(c.key) &&
+  //         c.excludeFromSitemap !== true,
+  //     )
+  //     .map((option) => `https://www.growthepie.xyz/chains/${option.urlKey}`),
+  //   ...dataAvailability.options
+  //     .filter((c) => c.excludeFromSitemap !== true)
+  //     .map(
+  //       (option) =>
+  //         `https://www.growthepie.xyz/data-availability/${option.urlKey}`,
+  //     ),
+  //   ...trackers.options
+  //     .filter((c) => c.hide !== true && c.excludeFromSitemap !== true)
+  //     .map((option) => `https://www.growthepie.xyz/trackers/${option.urlKey}`),
+  // ];
+
+  const pages = navigationItems
+    .map((item) => {
+      return item.options
+        .filter(
+          (option) =>
+            option.excludeFromSitemap !== true &&
+            option.url &&
+            !option.url.includes("https://"),
+        )
+        .map((option) => `https://www.growthepie.xyz${option.url}`);
+    })
+    .flat();
 
   const getDate = () => {
     const date = new Date();
