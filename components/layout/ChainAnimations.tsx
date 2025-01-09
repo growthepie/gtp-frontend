@@ -279,9 +279,9 @@ export default function ChainAnimations({
           </div>
           <div
             className="absolute right-2 flex h-[17px] w-[17px] items-center justify-center rounded-full bg-[#1F2726]"
-            // style={{
-            //   left: percentage > 100 ? parentContainerWidth - 25 : undefined,
-            // }}
+            style={{
+              left: percentage > 100 ? parentContainerWidth - 25 : undefined,
+            }}
           >
             <Icon
               icon={`feather:${

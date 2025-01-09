@@ -1170,7 +1170,7 @@ export default function CategoryMetrics({
                 >
                   <div
                     ref={chainAnimationsContainer}
-                    className="relative mt-4"
+                    className="relative mt-4 overflow-hidden"
                     style={{
                       height: height,
                       minHeight: isMobile ? undefined : "500px",
