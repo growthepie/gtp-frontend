@@ -64,16 +64,14 @@ const gtpMain = {
 
 const gtpIcons = {
   title: {
-    absolute: "Open Source Icons - growthepie",
+    absolute: "growthepie Icons - Open Source Icons for Ethereum",
     template: "%s - growthepie",
   },
   description:
     "Explore and download open source icons from growthepie. Freely available icons designed for the Ethereum ecosystem and beyond.",
 };
 
-const isIcons =
-  process.env.NEXT_PUBLIC_VERCEL_URL &&
-  process.env.NEXT_PUBLIC_VERCEL_URL.includes("icons.");
+const isIcons = true;
 
 const host = isIcons ? "icons.growthepie.xyz" : "www.growthepie.xyz";
 
@@ -85,7 +83,7 @@ export const metadata: Metadata = {
   title,
   description,
   openGraph: {
-    title: "Open Source Icons - growthepie",
+    title: "icons.growthepie.xyz",
     description:
       "Explore and download open source icons from growthepie. Freely available icons designed for the Ethereum ecosystem and beyond.",
     url: `https://${host}`,
