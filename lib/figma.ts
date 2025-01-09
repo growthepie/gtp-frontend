@@ -11,8 +11,6 @@ const outputDir = path.resolve(__dirname, "../icons/small");
 const FIGMA_ACCESS_TOKEN = process.env.FIGMA_ACCESS_TOKEN as string;
 const FIGMA_FILE_KEY = process.env.FIGMA_FILE_KEY as string;
 
-console.log("process.env", process.env);
-
 if (!FIGMA_ACCESS_TOKEN || !FIGMA_FILE_KEY) {
   console.error(
     "Missing FIGMA_ACCESS_TOKEN or FIGMA_FILE_KEY in environment variables.",
