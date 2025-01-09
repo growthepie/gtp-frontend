@@ -48,7 +48,6 @@ const nextConfig = {
           ],
           destination: "/labels",
         },
-        ,
         {
           source: "/",
           has: [
