@@ -686,7 +686,7 @@ export default function EconHeadCharts({
                       <div className="text-[#CDD8D3] text-[9px] font-medium leading-[150%]">
                         {!isMultipleSeries
                           ? new Date(
-                            chart_data.metrics[key].daily.data[0][unixIndex],
+                            timespans[selectedTimespan].xMin,
                           ).toLocaleDateString("en-GB", {
                             timeZone: "UTC",
                             month: "short",
@@ -694,9 +694,7 @@ export default function EconHeadCharts({
                             year: "numeric",
                           })
                           : new Date(
-                            chart_data.metrics[key][
-                              lastMultiIndex
-                            ].daily.data[0][unixIndex],
+                            timespans[selectedTimespan].xMin,
                           ).toLocaleDateString("en-GB", {
                             timeZone: "UTC",
                             month: "short",

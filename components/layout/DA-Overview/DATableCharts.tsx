@@ -51,12 +51,15 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
         Object.keys(data.da_consumers).forEach((key) => { 
           
           const values = data.da_consumers[key].daily.values;
+          const length = values.length;
           const types = data.da_consumers[key].daily.types;
       
-          if(values[0][types.indexOf("unix")] > xMax){
-            xMax = values[0][types.indexOf("unix")];
+          if(values[values.length - 1][types.indexOf("unix")] > xMax){
+            xMax = values[values.length - 1][types.indexOf("unix")];
           }
         })
+
+        console.log(new Date(xMax))
 
     
         if (!isMonthly) {
@@ -177,8 +180,8 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
     return(
         <div className="flex h-full w-full gap-x-[10px]">
             <div className="min-w-[730px] w-full flex flex-1 h-[217px] relative mr-[20px]">
-                <div className="absolute left-[calc(50%-113px)] top-[calc(50%-29.5px)]">
-                    <Image src="/da_table_watermark.png" alt="chart_watermark" width={226} height={59} />
+                <div className="absolute left-[calc(50%-113px)] top-[calc(50%-29.5px)] z-50">
+                    <Image src="/da_table_watermark.png" alt="chart_watermark" width={226} height={59}  className="mix-blend-darken"/>
                 </div>
                 <HighchartsProvider Highcharts={Highcharts}>
                     <HighchartsChart                             
