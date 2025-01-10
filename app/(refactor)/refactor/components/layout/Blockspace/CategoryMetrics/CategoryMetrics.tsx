@@ -409,7 +409,7 @@ export default function CategoryMetrics({
         (subcategory) => {
           const subcategoryData =
             data[selectedCategory].subcategories[
-            selectedSubcategories[selectedCategory][subcategory]
+              selectedSubcategories[selectedCategory][subcategory]
             ];
           const subcategoryChains =
             subcategoryData.aggregated[selectedTimespan].data;
@@ -557,7 +557,7 @@ export default function CategoryMetrics({
   return (
     <>
       {selectedSubcategories && (
-        <div className="w-full flex-col relative">
+        <div className="relative w-full flex-col">
           <Container>
             <TopRowContainer>
               <TopRowParent>
@@ -578,8 +578,8 @@ export default function CategoryMetrics({
                   Transaction Count
                 </TopRowChild>
               </TopRowParent>
-              <div className="block lg:hidden w-[70%] mx-auto my-[10px]">
-                <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
+              <div className="mx-auto my-[10px] block w-[70%] lg:hidden">
+                <hr className="border-top-[1px] h-[0.5px] border-dotted border-forest-400" />
               </div>
               <TopRowParent>
                 {Object.keys(timespans).map((timespan) => (
@@ -610,16 +610,17 @@ export default function CategoryMetrics({
                   </TopRowChild>
                 ))}
                 <div
-                  className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[63px] right-[22px] md:right-[65px] md:top-[68px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${!isMobile
-                    ? ["max", "180d"].includes(selectedTimespan)
-                      ? "translate-y-[calc(-100%+3px)]"
-                      : "translate-y-0 "
-                    : ["max", "180d"].includes(selectedTimespan)
-                      ? "translate-y-[calc(40%+3px)]"
-                      : "-translate-y-[calc(40%+3px)]"
-                    }`}
+                  className={`absolute right-[22px] top-[63px] -z-10 w-[calc(50%-34px)] pr-[15px] text-xs transition-[transform] duration-300 ease-in-out md:right-[65px] md:top-[68px] md:w-[calc(50%-56px)] lg:right-[65px] lg:top-0 lg:w-[168px] lg:pr-[23px] xl:w-[158px] xl:pr-[23px] ${
+                    !isMobile
+                      ? ["max", "180d"].includes(selectedTimespan)
+                        ? "translate-y-[calc(-100%+3px)]"
+                        : "translate-y-0"
+                      : ["max", "180d"].includes(selectedTimespan)
+                        ? "translate-y-[calc(40%+3px)]"
+                        : "-translate-y-[calc(40%+3px)]"
+                  }`}
                 >
-                  <div className="font-medium bg-forest-100 dark:bg-forest-1000 rounded-b-2xl rounded-t-none lg:rounded-b-none lg:rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
+                  <div className="z-0 w-full rounded-b-2xl rounded-t-none border border-forest-700 bg-forest-100 py-1 text-center font-medium dark:border-forest-400 dark:bg-forest-1000 lg:rounded-b-none lg:rounded-t-2xl">
                     7-day rolling average
                   </div>
                 </div>
@@ -648,10 +649,10 @@ export default function CategoryMetrics({
             </HorizontalScrollContainer>
 
             <Container>
-              <div className="flex flex-col justify-between lg:flex-row w-[98.5%] gap-y-8 mx-auto mt-[20px] lg:mt-[30px] mb-[20px] lg:mb-0">
-                <div className="w-full lg:w-[44%] flex flex-col justify-between ">
+              <div className="mx-auto mb-[20px] mt-[20px] flex w-[98.5%] flex-col justify-between gap-y-8 lg:mb-0 lg:mt-[30px] lg:flex-row">
+                <div className="flex w-full flex-col justify-between lg:w-[44%]">
                   <div
-                    className="mt-4 relative"
+                    className="relative mt-4"
                     style={{
                       height: height,
                       minHeight: isMobile ? undefined : "500px",
@@ -678,12 +679,13 @@ export default function CategoryMetrics({
                             setSelectedChains={setSelectedChains}
                             selectedCategory={selectedCategory}
                             master={master}
+                            parentContainerWidth={0}
                           />
                         </animated.div>
                       ))}
                   </div>
                 </div>
-                <div className="w-full lg:w-[56%] relative bottom-2 mt-6 mb-[30px] h-[320px] lg:mt-0 lg:h-auto">
+                <div className="relative bottom-2 mb-[30px] mt-6 h-[320px] w-full lg:mt-0 lg:h-auto lg:w-[56%]">
                   {chartSeries && (
                     <Chart
                       chartType={
@@ -692,7 +694,7 @@ export default function CategoryMetrics({
                       stack={selectedChartType !== "absolute"}
                       types={
                         selectedCategory === null ||
-                          selectedCategory === "Chains"
+                        selectedCategory === "Chains"
                           ? data.native_transfers[dailyKey].types
                           : data[selectedCategory][dailyKey].types
                       }
@@ -710,8 +712,8 @@ export default function CategoryMetrics({
                     />
                   )}
                 </div>
-                <div className="flex flex-wrap items-center w-[100%] gap-y-2 lg:hidden mt-8 ">
-                  <div className="font-bold text-sm pr-2 pl-2">
+                <div className="mt-8 flex w-[100%] flex-wrap items-center gap-y-2 lg:hidden">
+                  <div className="pl-2 pr-2 text-sm font-bold">
                     {formatSubcategories(selectedCategory)}:{" "}
                   </div>
 
@@ -720,7 +722,7 @@ export default function CategoryMetrics({
                       (subcategory) => (
                         <div
                           key={subcategory}
-                          className="  text-xs px-[2px] py-[5px] mx-[5px]"
+                          className="mx-[5px] px-[2px] py-[5px] text-xs"
                         >
                           {formatSubcategories(subcategory)}
                         </div>
@@ -730,8 +732,8 @@ export default function CategoryMetrics({
               </div>
               <div>
                 {" "}
-                <div className="flex flex-wrap items-center w-[98%] mx-auto gap-y-2 invisible lg:visible ">
-                  <div className="font-bold text-sm pr-2 pl-2">
+                <div className="invisible mx-auto flex w-[98%] flex-wrap items-center gap-y-2 lg:visible">
+                  <div className="pl-2 pr-2 text-sm font-bold">
                     {formatSubcategories(selectedCategory)}:{" "}
                   </div>
 
@@ -740,7 +742,7 @@ export default function CategoryMetrics({
                       (subcategory) => (
                         <div
                           key={subcategory}
-                          className="  text-xs px-[4px] py-[5px] mx-[5px]"
+                          className="mx-[5px] px-[4px] py-[5px] text-xs"
                         >
                           {formatSubcategories(subcategory)}
                         </div>
@@ -752,15 +754,16 @@ export default function CategoryMetrics({
           </div>
           <Container>
             {" "}
-            <div className="flex flex-row w-[100%] mx-auto justify-center md:items-center items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
+            <div className="mx-auto mt-8 flex w-[100%] flex-row items-end justify-center gap-x-1 rounded-full bg-forest-50 p-0.5 px-0.5 py-[4px] text-md text-sm dark:bg-[#1F2726] md:items-center md:justify-end md:rounded-full md:px-1 md:text-base">
               {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
               {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
               {/* toggle ETH */}
               <button
-                className={`px-[16px] py-[4px]  rounded-full ${selectedChartType === "absolute"
-                  ? "bg-forest-500 dark:bg-forest-1000"
-                  : "hover:bg-forest-500/10"
-                  }`}
+                className={`rounded-full px-[16px] py-[4px] ${
+                  selectedChartType === "absolute"
+                    ? "bg-forest-500 dark:bg-forest-1000"
+                    : "hover:bg-forest-500/10"
+                }`}
                 onClick={() => {
                   setSelectedChartType("absolute");
                 }}
@@ -768,10 +771,11 @@ export default function CategoryMetrics({
                 Absolute
               </button>
               <button
-                className={`px-[16px] py-[4px]  rounded-full ${selectedChartType === "stacked"
-                  ? "bg-forest-500 dark:bg-forest-1000"
-                  : "hover:bg-forest-500/10"
-                  }`}
+                className={`rounded-full px-[16px] py-[4px] ${
+                  selectedChartType === "stacked"
+                    ? "bg-forest-500 dark:bg-forest-1000"
+                    : "hover:bg-forest-500/10"
+                }`}
                 onClick={() => {
                   setSelectedChartType("stacked");
                 }}
@@ -779,10 +783,11 @@ export default function CategoryMetrics({
                 Stacked
               </button>
               <button
-                className={`px-[16px] py-[4px]  rounded-full ${selectedChartType === "percentage"
-                  ? "bg-forest-500 dark:bg-forest-1000"
-                  : "hover:bg-forest-500/10"
-                  }`}
+                className={`rounded-full px-[16px] py-[4px] ${
+                  selectedChartType === "percentage"
+                    ? "bg-forest-500 dark:bg-forest-1000"
+                    : "hover:bg-forest-500/10"
+                }`}
                 onClick={() => {
                   setSelectedChartType("percentage");
                 }}
@@ -792,9 +797,9 @@ export default function CategoryMetrics({
             </div>
           </Container>
           <Container>
-            <div className="w-[97%] mx-auto mt-[5px] lg:mt-[30px] flex flex-col">
+            <div className="mx-auto mt-[5px] flex w-[97%] flex-col lg:mt-[30px]">
               <h1 className="text-lg font-bold">Most Active Contracts</h1>
-              <p className="text-sm mt-[15px]">
+              <p className="mt-[15px] text-sm">
                 See the most active contracts within the selected timeframe (
                 {timespans[selectedTimespan].label}) and for your selected
                 category/subcategories.{" "}

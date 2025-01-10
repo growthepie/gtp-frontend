@@ -28,6 +28,7 @@ import ChainAnimations from "./ChainAnimations";
 import { useUIContext } from "@/contexts/UIContext";
 import ContractLabelModal from "./ContractLabelModal";
 import CategoryBar from "@/components/layout/CategoryBar";
+import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
 import {
   TopRowContainer,
@@ -44,7 +45,7 @@ import {
   GridTableRow,
 } from "@/components/layout/GridTable";
 import { LabelsProjectsResponse } from "@/types/Labels/ProjectsResponse";
-import "@/app/highcharts.axis.css"
+import "@/app/highcharts.axis.css";
 import VerticalScrollContainer from "../VerticalScrollContainer";
 
 export default function CategoryMetrics({
@@ -130,7 +131,7 @@ export default function CategoryMetrics({
   };
 
   const { isSidebarOpen } = useUIContext();
-  const [selectedMode, setSelectedMode] = useState("gas_fees_");
+  const [selectedMode, setSelectedMode] = useState("txcount_");
   const [selectedCategory, setSelectedCategory] = useState(
     queryCategory ?? "defi",
   );
@@ -147,7 +148,9 @@ export default function CategoryMetrics({
 
   const [contractCategory, setContractCategory] = useState("gas_fees");
   const [sortOrder, setSortOrder] = useState(true);
-  const [chainValues, setChainValues] = useState<any[][] | null>(null);
+  const [chainValues, setChainValues] = useState<[string, number][] | null>(
+    null,
+  );
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [showMore, setShowMore] = useState(false);
@@ -290,11 +293,11 @@ export default function CategoryMetrics({
     setContracts(result);
   }, [data, selectedTimespan]);
 
-  const sortedChainValues = useMemo(() => {
+  const sortedChainValues = useMemo<[string, number][] | null>(() => {
     if (!chainValues || !selectedChains) return null;
 
     return chainValues
-      .filter(([item]) => {
+      .filter(([item]: [string, number]) => {
         const supportedChainKeys = Get_SupportedChainKeys(master);
         const isSupported =
           item === "all_l2s" ? true : supportedChainKeys.includes(item);
@@ -320,7 +323,9 @@ export default function CategoryMetrics({
       );
   }, [chainValues, selectedChains, chainEcosystemFilter]);
 
-  const sortedChainValuesWithPlaceholder = useMemo(() => {
+  const sortedChainValuesWithPlaceholder = useMemo<
+    [string, number, number][] | null
+  >(() => {
     if (!chainValues || !selectedChains) return null;
 
     let sortedValues = chainValues
@@ -366,7 +371,13 @@ export default function CategoryMetrics({
     }
 
     return result;
-  }, [chainValues, selectedChains, chainEcosystemFilter]);
+  }, [
+    chainValues,
+    selectedChains,
+    master,
+    chainEcosystemFilter,
+    AllChainsByKeys,
+  ]);
 
   const timespans = useMemo(() => {
     return {
@@ -515,8 +526,8 @@ export default function CategoryMetrics({
             ? chainEcosystemFilter === "all-chains"
               ? true
               : AllChainsByKeys[currChain].ecosystem.includes(
-                chainEcosystemFilter,
-              )
+                  chainEcosystemFilter,
+                )
             : false;
       if (
         isSupported &&
@@ -712,7 +723,7 @@ export default function CategoryMetrics({
         (subcategory) => {
           const subcategoryData =
             data[selectedCategory].subcategories[
-            selectedSubcategories[selectedCategory][subcategory]
+              selectedSubcategories[selectedCategory][subcategory]
             ];
           const subcategoryChains =
             subcategoryData.aggregated[selectedTimespan].data;
@@ -741,7 +752,7 @@ export default function CategoryMetrics({
     }
 
     if (updatedChainValues !== null) {
-      setChainValues(updatedChainValues);
+      setChainValues(updatedChainValues as [string, number][]);
     }
   }, [
     selectedSubcategories,
@@ -814,8 +825,8 @@ export default function CategoryMetrics({
           selectedCategory === "unlabeled" && contract.sub_category_key === null
             ? true
             : selectedSubcategories[contract.main_category_key]?.includes(
-              contract.sub_category_key,
-            );
+                contract.sub_category_key,
+              );
         const isCategoryMatched =
           contract.main_category_key === selectedCategory;
         const filterChains =
@@ -1052,12 +1063,15 @@ export default function CategoryMetrics({
     }
   }, [sortedChainValues, sortedChainValuesWithPlaceholder]);
 
-  console.log(sortedChainValues);
+  const [chainAnimationsContainer, { width: chainAnimationsContainerWidth }] =
+    useElementSizeObserver<HTMLDivElement>();
+
+  // console.log(sortedChainValues);
 
   return (
     <>
       {selectedSubcategories && (
-        <div className="w-full flex-col relative">
+        <div className="relative w-full flex-col">
           <Container>
             <TopRowContainer>
               <TopRowParent>
@@ -1078,8 +1092,8 @@ export default function CategoryMetrics({
                   Transaction Count
                 </TopRowChild>
               </TopRowParent>
-              <div className="block lg:hidden w-[70%] mx-auto my-[10px]">
-                <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
+              <div className="mx-auto my-[10px] block w-[70%] lg:hidden">
+                <hr className="border-top-[1px] h-[0.5px] border-dotted border-forest-400" />
               </div>
               <TopRowParent>
                 {Object.keys(timespans).map((timespan) => (
@@ -1110,16 +1124,17 @@ export default function CategoryMetrics({
                   </TopRowChild>
                 ))}
                 <div
-                  className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[63px] right-[22px] md:right-[65px] md:top-[68px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${!isMobile
-                    ? ["max", "180d"].includes(selectedTimespan)
-                      ? "translate-y-[calc(-100%+3px)]"
-                      : "translate-y-0 "
-                    : ["max", "180d"].includes(selectedTimespan)
-                      ? "translate-y-[calc(40%+3px)]"
-                      : "-translate-y-[calc(40%+3px)]"
-                    }`}
+                  className={`absolute right-[22px] top-[63px] -z-10 w-[calc(50%-34px)] pr-[15px] text-xs transition-[transform] duration-300 ease-in-out md:right-[65px] md:top-[68px] md:w-[calc(50%-56px)] lg:right-[65px] lg:top-0 lg:w-[168px] lg:pr-[23px] xl:w-[158px] xl:pr-[23px] ${
+                    !isMobile
+                      ? ["max", "180d"].includes(selectedTimespan)
+                        ? "translate-y-[calc(-100%+3px)]"
+                        : "translate-y-0"
+                      : ["max", "180d"].includes(selectedTimespan)
+                        ? "translate-y-[calc(40%+3px)]"
+                        : "-translate-y-[calc(40%+3px)]"
+                  }`}
                 >
-                  <div className="font-medium bg-forest-100 dark:bg-forest-1000 rounded-b-2xl rounded-t-none lg:rounded-b-none lg:rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
+                  <div className="z-0 w-full rounded-b-2xl rounded-t-none border border-forest-700 bg-forest-100 py-1 text-center font-medium dark:border-forest-400 dark:bg-forest-1000 lg:rounded-b-none lg:rounded-t-2xl">
                     7-day rolling average
                   </div>
                 </div>
@@ -1148,10 +1163,14 @@ export default function CategoryMetrics({
             </HorizontalScrollContainer>
 
             <Container>
-              <div className="flex flex-col justify-between lg:flex-row w-[98.5%] gap-y-8 mx-auto mt-[20px] lg:mt-[30px] mb-[20px] lg:mb-0">
-                <VerticalScrollContainer height={468} className="w-full lg:w-[44%] flex flex-col justify-between ">
+              <div className="mx-auto mb-[20px] mt-[20px] flex w-[98.5%] flex-col justify-between gap-y-8 lg:mb-0 lg:mt-[30px] lg:flex-row">
+                <VerticalScrollContainer
+                  height={468}
+                  className="flex w-full flex-col justify-between lg:w-[44%]"
+                >
                   <div
-                    className="mt-4 relative"
+                    ref={chainAnimationsContainer}
+                    className="relative mt-4 overflow-hidden"
                     style={{
                       height: height,
                       minHeight: isMobile ? undefined : "500px",
@@ -1179,14 +1198,18 @@ export default function CategoryMetrics({
                               selectedChains={selectedChains}
                               setSelectedChains={setSelectedChains}
                               selectedCategory={selectedCategory}
+                              parentContainerWidth={
+                                chainAnimationsContainerWidth
+                              }
                               master={master}
                             />
                           ) : (
                             <div
-                              className={`flex items-center transition-opacity duration-[1500ms] ${updatePlaceholderOpacity
-                                ? "opacity-100"
-                                : "opacity-0"
-                                }`}
+                              className={`flex items-center transition-opacity duration-[1500ms] ${
+                                updatePlaceholderOpacity
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              }`}
                             >
                               <div className="flex-grow border-t border-[#5A6462]"></div>
                               <span className="mx-4 text-[12px] font-semibold text-[#CDD8D3]">
@@ -1199,7 +1222,7 @@ export default function CategoryMetrics({
                       ))}
                   </div>
                 </VerticalScrollContainer>
-                <div className="w-full lg:w-[56%] relative bottom-2 mt-1 mb-[30px] h-[320px] lg:mt-0 lg:h-auto">
+                <div className="relative bottom-2 mb-[30px] mt-1 h-[320px] w-full lg:mt-0 lg:h-auto lg:w-[56%]">
                   {chartSeries && (
                     <Chart
                       chartType={
@@ -1208,7 +1231,7 @@ export default function CategoryMetrics({
                       stack={selectedChartType !== "absolute"}
                       types={
                         selectedCategory === null ||
-                          selectedCategory === "Chains"
+                        selectedCategory === "Chains"
                           ? data.native_transfers[dailyKey].types
                           : data[selectedCategory][dailyKey].types
                       }
@@ -1226,8 +1249,8 @@ export default function CategoryMetrics({
                     />
                   )}
                 </div>
-                <div className="flex flex-wrap items-center w-[100%] gap-y-2 lg:hidden mt-8 ">
-                  <div className="font-bold text-sm pr-2 pl-2">
+                <div className="mt-8 flex w-[100%] flex-wrap items-center gap-y-2 lg:hidden">
+                  <div className="pl-2 pr-2 text-sm font-bold">
                     {formatSubcategories(selectedCategory)}:{" "}
                   </div>
 
@@ -1236,7 +1259,7 @@ export default function CategoryMetrics({
                       (subcategory) => (
                         <div
                           key={subcategory}
-                          className="  text-xs px-[2px] py-[5px] mx-[5px]"
+                          className="mx-[5px] px-[2px] py-[5px] text-xs"
                         >
                           {formatSubcategories(subcategory)}
                         </div>
@@ -1246,8 +1269,8 @@ export default function CategoryMetrics({
               </div>
               <div>
                 {" "}
-                <div className="items-center w-[98%] mx-auto gap-y-2 hidden lg:flex lg:flex-row ">
-                  <div className="font-bold text-sm pr-2 pl-2">
+                <div className="mx-auto hidden w-[98%] items-center gap-y-2 lg:flex lg:flex-row">
+                  <div className="pl-2 pr-2 text-sm font-bold">
                     {formatSubcategories(selectedCategory)}:{" "}
                   </div>
 
@@ -1256,7 +1279,7 @@ export default function CategoryMetrics({
                       (subcategory) => (
                         <div
                           key={subcategory}
-                          className="  text-xs px-[4px] py-[5px] mx-[5px]"
+                          className="mx-[5px] px-[4px] py-[5px] text-xs"
                         >
                           {formatSubcategories(subcategory)}
                         </div>
@@ -1268,15 +1291,16 @@ export default function CategoryMetrics({
           </div>
           <Container>
             {" "}
-            <div className="flex flex-row w-[100%] mx-auto justify-center md:items-center items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
+            <div className="mx-auto mt-8 flex w-[100%] flex-row items-end justify-center gap-x-1 rounded-full bg-forest-50 p-0.5 px-0.5 py-[4px] text-md text-sm dark:bg-[#1F2726] md:items-center md:justify-end md:rounded-full md:px-1 md:text-base">
               {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
               {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
               {/* toggle ETH */}
               <button
-                className={`px-[16px] py-[4px]  rounded-full ${selectedChartType === "absolute"
-                  ? "bg-forest-500 dark:bg-forest-1000"
-                  : "hover:bg-forest-500/10"
-                  }`}
+                className={`rounded-full px-[16px] py-[4px] ${
+                  selectedChartType === "absolute"
+                    ? "bg-forest-500 dark:bg-forest-1000"
+                    : "hover:bg-forest-500/10"
+                }`}
                 onClick={() => {
                   setSelectedChartType("absolute");
                 }}
@@ -1284,10 +1308,11 @@ export default function CategoryMetrics({
                 Absolute
               </button>
               <button
-                className={`px-[16px] py-[4px]  rounded-full ${selectedChartType === "stacked"
-                  ? "bg-forest-500 dark:bg-forest-1000"
-                  : "hover:bg-forest-500/10"
-                  }`}
+                className={`rounded-full px-[16px] py-[4px] ${
+                  selectedChartType === "stacked"
+                    ? "bg-forest-500 dark:bg-forest-1000"
+                    : "hover:bg-forest-500/10"
+                }`}
                 onClick={() => {
                   setSelectedChartType("stacked");
                 }}
@@ -1295,10 +1320,11 @@ export default function CategoryMetrics({
                 Stacked
               </button>
               <button
-                className={`px-[16px] py-[4px]  rounded-full ${selectedChartType === "percentage"
-                  ? "bg-forest-500 dark:bg-forest-1000"
-                  : "hover:bg-forest-500/10"
-                  }`}
+                className={`rounded-full px-[16px] py-[4px] ${
+                  selectedChartType === "percentage"
+                    ? "bg-forest-500 dark:bg-forest-1000"
+                    : "hover:bg-forest-500/10"
+                }`}
                 onClick={() => {
                   setSelectedChartType("percentage");
                 }}
@@ -1308,9 +1334,9 @@ export default function CategoryMetrics({
             </div>
           </Container>
           <Container>
-            <div className="w-[97%] mx-auto mt-[5px] lg:mt-[30px] flex flex-col">
+            <div className="mx-auto mt-[5px] flex w-[97%] flex-col lg:mt-[30px]">
               <h1 className="text-lg font-bold">Most Active Contracts</h1>
-              <p className="text-sm mt-[15px]">
+              <p className="mt-[15px] text-sm">
                 See the most active contracts within the selected timeframe (
                 {timespans[selectedTimespan].label}) and for your selected
                 category/subcategories.{" "}
@@ -1319,20 +1345,21 @@ export default function CategoryMetrics({
           </Container>
           <HorizontalScrollContainer paddingBottom={16}>
             <div
-              className={`fixed inset-0 z-[90] flex items-center justify-center transition-opacity duration-200  ${selectedContract
-                ? "opacity-80"
-                : "opacity-0 pointer-events-none"
-                }`}
+              className={`fixed inset-0 z-[90] flex items-center justify-center transition-opacity duration-200 ${
+                selectedContract
+                  ? "opacity-80"
+                  : "pointer-events-none opacity-0"
+              }`}
             >
               <div
                 className={`absolute inset-0 bg-white dark:bg-black`}
                 onClick={() => setSelectedContract(null)}
               ></div>
             </div>
-            <div className="flex flex-col w-[99%] mx-auto min-w-[880px] ">
+            <div className="mx-auto flex w-[99%] min-w-[880px] flex-col">
               <GridTableHeader
                 gridDefinitionColumns="grid-cols-[20px,225px,280px,95px,minmax(135px,800px),115px]"
-                className="pb-[4px] text-[12px] gap-x-[15px] z-[2]"
+                className="z-[2] gap-x-[15px] pb-[4px] text-[12px]"
               >
                 <div></div>
                 {/* <button
@@ -1536,12 +1563,12 @@ export default function CategoryMetrics({
                     ) {
                       return (
                         <div key={key + "" + sortOrder}>
-                          <div className="flex rounded-[27px] bg-forest-50 dark:bg-forest-1000 border-forest-200 dark:border-forest-500 border mt-[7.5px] group relative z-[100]">
-                            <div className="absolute top-0 left-0 right-0 bottom-[-1px] pointer-events-none">
-                              <div className="w-full h-full rounded-[27px] overflow-clip">
-                                <div className="relative w-full h-full">
+                          <div className="group relative z-[100] mt-[7.5px] flex rounded-[27px] border border-forest-200 bg-forest-50 dark:border-forest-500 dark:bg-forest-1000">
+                            <div className="pointer-events-none absolute bottom-[-1px] left-0 right-0 top-0">
+                              <div className="h-full w-full overflow-clip rounded-[27px]">
+                                <div className="relative h-full w-full">
                                   <div
-                                    className={`absolute left-[1px] right-[1px] bottom-[0px] h-[2px] rounded-none font-semibold transition-width duration-300 z-20`}
+                                    className={`absolute bottom-[0px] left-[1px] right-[1px] z-20 h-[2px] rounded-none font-semibold transition-width duration-300`}
                                     style={{
                                       background:
                                         AllChainsByKeys[
@@ -1553,12 +1580,12 @@ export default function CategoryMetrics({
                                 </div>
                               </div>
                             </div>
-                            <div className="flex flex-col items-center justify-center w-full h-full pl-[15px] pr-[30px] py-[10px] space-y-[15px]">
-                              <div className="flex space-x-[26px] items-center w-full">
+                            <div className="flex h-full w-full flex-col items-center justify-center space-y-[15px] py-[10px] pl-[15px] pr-[30px]">
+                              <div className="flex w-full items-center space-x-[26px]">
                                 <div>
                                   <Icon
                                     icon="gtp:add-tag"
-                                    className="w-[34px] h-[34px]"
+                                    className="h-[34px] w-[34px]"
                                   />
                                 </div>
                                 <div className="text-[16px]">
@@ -1567,7 +1594,7 @@ export default function CategoryMetrics({
                                 </div>
                               </div>
                               <form
-                                className="flex flex-col space-y-[5px] items-start justify-center w-full"
+                                className="flex w-full flex-col items-start justify-center space-y-[5px]"
                                 onSubmit={(e) => {
                                   e.preventDefault();
                                   const formData = new FormData(
@@ -1602,24 +1629,24 @@ export default function CategoryMetrics({
                                   name="chain"
                                   value={selectedContract.chain}
                                 />
-                                <div className="flex space-x-[26px] items-center w-full">
+                                <div className="flex w-full items-center space-x-[26px]">
                                   <Icon
                                     icon={`gtp:${selectedContract.chain.replace(
                                       "_",
                                       "-",
                                     )}-logo-monochrome`}
-                                    className="w-[34px] h-[34px]"
+                                    className="h-[34px] w-[34px]"
                                     style={{
                                       color:
                                         AllChainsByKeys[selectedContract.chain]
                                           .colors[theme ?? "dark"][1],
                                     }}
                                   />
-                                  <div className="flex space-x-[15px] items-center w-full">
+                                  <div className="flex w-full items-center space-x-[15px]">
                                     <div className="relative w-[33%]">
                                       <input
                                         type="text"
-                                        className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[2px]"
+                                        className="w-full rounded-full border border-forest-200 bg-transparent px-[15px] py-[2px] dark:border-forest-500"
                                         placeholder="Contract Name"
                                         name="name"
                                       />
@@ -1628,11 +1655,11 @@ export default function CategoryMetrics({
                                           <TooltipTrigger>
                                             <Icon
                                               icon="feather:info"
-                                              className="w-6 h-6 text-forest-900 dark:text-forest-500"
+                                              className="h-6 w-6 text-forest-900 dark:text-forest-500"
                                             />
                                           </TooltipTrigger>
                                           <TooltipContent className="z-[110]">
-                                            <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg w-[420px] flex flex-col">
+                                            <div className="flex w-[420px] flex-col rounded-xl bg-forest-100 p-3 text-sm text-forest-900 shadow-lg dark:bg-[#4B5553] dark:text-forest-100">
                                               <div className="font-medium">
                                                 This is the Contract name.
                                               </div>
@@ -1649,7 +1676,7 @@ export default function CategoryMetrics({
                                     <div className="relative w-[33%]">
                                       <input
                                         type="text"
-                                        className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[2px]"
+                                        className="w-full rounded-full border border-forest-200 bg-transparent px-[15px] py-[2px] dark:border-forest-500"
                                         placeholder="Project Name"
                                         name="project_name"
                                       />
@@ -1658,11 +1685,11 @@ export default function CategoryMetrics({
                                           <TooltipTrigger>
                                             <Icon
                                               icon="feather:info"
-                                              className="w-6 h-6 text-forest-900 dark:text-forest-500"
+                                              className="h-6 w-6 text-forest-900 dark:text-forest-500"
                                             />
                                           </TooltipTrigger>
                                           <TooltipContent className="z-[110]">
-                                            <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg w-[420px] flex flex-col">
+                                            <div className="flex w-[420px] flex-col rounded-xl bg-forest-100 p-3 text-sm text-forest-900 shadow-lg dark:bg-[#4B5553] dark:text-forest-100">
                                               <div className="font-medium">
                                                 This is the Project name.
                                               </div>
@@ -1678,7 +1705,7 @@ export default function CategoryMetrics({
                                     </div>
                                     <div className="relative w-[16%]">
                                       <select
-                                        className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[4px]"
+                                        className="w-full rounded-full border border-forest-200 bg-transparent px-[15px] py-[4px] dark:border-forest-500"
                                         name="main_category_key"
                                         onChange={(e) => {
                                           setLabelFormMainCategoryKey(
@@ -1709,7 +1736,7 @@ export default function CategoryMetrics({
                                     </div>
                                     <div className="relative w-[16%]">
                                       <select
-                                        className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[4px]"
+                                        className="w-full rounded-full border border-forest-200 bg-transparent px-[15px] py-[4px] dark:border-forest-500"
                                         name="sub_category_key"
                                       >
                                         <option value="" disabled selected>
@@ -1732,39 +1759,39 @@ export default function CategoryMetrics({
                                     </div>
                                   </div>
                                 </div>
-                                <div className="pl-[50px] flex flex-col space-y-[5px] text-[14px] items-start justify-center w-full ml-2 pt-[15px]">
+                                <div className="ml-2 flex w-full flex-col items-start justify-center space-y-[5px] pl-[50px] pt-[15px] text-[14px]">
                                   <div>
                                     Please add your details to participate in
                                     ...
                                   </div>
-                                  <div className="flex space-x-[15px] items-center w-full">
+                                  <div className="flex w-full items-center space-x-[15px]">
                                     <input
                                       type="text"
-                                      className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[2px]"
+                                      className="w-full rounded-full border border-forest-200 bg-transparent px-[15px] py-[2px] dark:border-forest-500"
                                       placeholder="X Handle (formerly Twitter)"
                                       name="twitter_handle"
                                     />
                                     <input
                                       type="text"
-                                      className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[2px]"
+                                      className="w-full rounded-full border border-forest-200 bg-transparent px-[15px] py-[2px] dark:border-forest-500"
                                       placeholder="Source (optional)"
                                       name="source"
                                     />
                                   </div>
                                 </div>
-                                <div className="flex space-x-[15px] items-start justify-center w-full font-medium pt-[15px]">
+                                <div className="flex w-full items-start justify-center space-x-[15px] pt-[15px] font-medium">
                                   <button
-                                    className="px-[16px] py-[6px] rounded-full border border-forest-900 dark:border-forest-500 text-forest-900 dark:text-forest-500"
+                                    className="rounded-full border border-forest-900 px-[16px] py-[6px] text-forest-900 dark:border-forest-500 dark:text-forest-500"
                                     onClick={() => setSelectedContract(null)}
                                     disabled={isFormSubmitting}
                                   >
                                     Cancel
                                   </button>
-                                  <button className="px-[16px] py-[6px] rounded-full bg-[#F0995A] text-forest-900">
+                                  <button className="rounded-full bg-[#F0995A] px-[16px] py-[6px] text-forest-900">
                                     {isFormSubmitting ? (
                                       <Icon
                                         icon="feather:loader"
-                                        className="w-4 h-4 animate-spin"
+                                        className="h-4 w-4 animate-spin"
                                       />
                                     ) : (
                                       "Submit"
@@ -1784,7 +1811,7 @@ export default function CategoryMetrics({
                       <GridTableRow
                         key={key + "" + sortOrder}
                         gridDefinitionColumns="grid-cols-[20px,225px,280px,95px,minmax(135px,800px),115px] relative"
-                        className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] mb-[3px]"
+                        className="group mb-[3px] inline-grid h-[34px] gap-x-[15px] text-[12px] transition-all duration-300"
                       >
                         <GridTableChainIcon
                           origin_key={sortedContracts[key].chain}
@@ -1794,7 +1821,7 @@ export default function CategoryMetrics({
                             {sortedContracts[key].project_name ? (
                               sortedContracts[key].project_name
                             ) : (
-                              <div className="flex h-full items-center gap-x-[3px] text-[#5A6462] text-[10px]">
+                              <div className="flex h-full items-center gap-x-[3px] text-[10px] text-[#5A6462]">
                                 Not Available
                               </div>
                             )}
@@ -1802,8 +1829,8 @@ export default function CategoryMetrics({
                           {ownerProjectDisplayNameToProjectData[
                             sortedContracts[key].project_name
                           ] && (
-                              <div className="flex gap-x-[5px] ">
-                                {/* <div className="flex 3xl:hidden">
+                            <div className="flex gap-x-[5px]">
+                              {/* <div className="flex 3xl:hidden">
                                 <Icon
                                   icon={copiedAddress === sortedContracts[key].project_name.address ? "feather:check-circle" : "feather:copy"}
                                   className="w-[14px] h-[14px] cursor-pointer"
@@ -1812,68 +1839,70 @@ export default function CategoryMetrics({
                                   }}
                                 />
                               </div> */}
-                                <div className="flex items-center gap-x-[5px]">
-                                  <div className="h-[15px] w-[15px]">
-                                    {ownerProjectDisplayNameToProjectData[
-                                      sortedContracts[key].project_name
-                                    ][5] && (
-                                        <a
-                                          href={
-                                            ownerProjectDisplayNameToProjectData[
-                                            sortedContracts[key].project_name
-                                            ][5]
-                                          }
-                                          target="_blank"
-                                          className="group flex items-center gap-x-[5px] text-xs"
-                                        >
-                                          <Icon
-                                            icon="feather:monitor"
-                                            className="w-[15px] h-[15px]"
-                                          />
-                                        </a>
-                                      )}
-                                  </div>
-                                  <div className="h-[15px] w-[15px]">
-                                    {ownerProjectDisplayNameToProjectData[
-                                      sortedContracts[key].project_name
-                                    ][4] && (
-                                        <a
-                                          href={`https://x.com/${ownerProjectDisplayNameToProjectData[
-                                            sortedContracts[key].project_name
-                                          ][4]
-                                            }`}
-                                          target="_blank"
-                                          className="group flex items-center gap-x-[5px] text-xs"
-                                        >
-                                          <Icon
-                                            icon="ri:twitter-x-fill"
-                                            className="w-[15px] h-[15px]"
-                                          />
-                                        </a>
-                                      )}
-                                  </div>
-                                  <div className="h-[15px] w-[15px]">
-                                    {ownerProjectDisplayNameToProjectData[
-                                      sortedContracts[key].project_name
-                                    ][3] && (
-                                        <a
-                                          href={`https://github.com/${ownerProjectDisplayNameToProjectData[
-                                            sortedContracts[key].project_name
-                                          ][3]
-                                            }`}
-                                          target="_blank"
-                                          className="group flex items-center gap-x-[5px] text-xs"
-                                        >
-                                          <Icon
-                                            icon="ri:github-fill"
-                                            className="w-[15px] h-[15px]"
-                                          />
-                                        </a>
-                                      )}
-                                  </div>
+                              <div className="flex items-center gap-x-[5px]">
+                                <div className="h-[15px] w-[15px]">
+                                  {ownerProjectDisplayNameToProjectData[
+                                    sortedContracts[key].project_name
+                                  ][5] && (
+                                    <a
+                                      href={
+                                        ownerProjectDisplayNameToProjectData[
+                                          sortedContracts[key].project_name
+                                        ][5]
+                                      }
+                                      target="_blank"
+                                      className="group flex items-center gap-x-[5px] text-xs"
+                                    >
+                                      <Icon
+                                        icon="feather:monitor"
+                                        className="h-[15px] w-[15px]"
+                                      />
+                                    </a>
+                                  )}
+                                </div>
+                                <div className="h-[15px] w-[15px]">
+                                  {ownerProjectDisplayNameToProjectData[
+                                    sortedContracts[key].project_name
+                                  ][4] && (
+                                    <a
+                                      href={`https://x.com/${
+                                        ownerProjectDisplayNameToProjectData[
+                                          sortedContracts[key].project_name
+                                        ][4]
+                                      }`}
+                                      target="_blank"
+                                      className="group flex items-center gap-x-[5px] text-xs"
+                                    >
+                                      <Icon
+                                        icon="ri:twitter-x-fill"
+                                        className="h-[15px] w-[15px]"
+                                      />
+                                    </a>
+                                  )}
+                                </div>
+                                <div className="h-[15px] w-[15px]">
+                                  {ownerProjectDisplayNameToProjectData[
+                                    sortedContracts[key].project_name
+                                  ][3] && (
+                                    <a
+                                      href={`https://github.com/${
+                                        ownerProjectDisplayNameToProjectData[
+                                          sortedContracts[key].project_name
+                                        ][3]
+                                      }`}
+                                      target="_blank"
+                                      className="group flex items-center gap-x-[5px] text-xs"
+                                    >
+                                      <Icon
+                                        icon="ri:github-fill"
+                                        className="h-[15px] w-[15px]"
+                                      />
+                                    </a>
+                                  )}
                                 </div>
                               </div>
-                            )}
+                            </div>
+                          )}
                         </div>
                         <div className="flex justify-between gap-x-[10px]">
                           {sortedContracts[key].name ? (
@@ -1907,20 +1936,21 @@ export default function CategoryMetrics({
                                       ? "feather:check"
                                       : "feather:copy"
                                   }
-                                  className="w-[15px] h-[15px]"
+                                  className="h-[15px] w-[15px]"
                                 />
                               </div>
                             </div>
                             <Link
-                              href={`${master.chains[sortedContracts[key].chain]
-                                .block_explorer
-                                }address/${sortedContracts[key].address}`}
+                              href={`${
+                                master.chains[sortedContracts[key].chain]
+                                  .block_explorer
+                              }address/${sortedContracts[key].address}`}
                               rel="noopener noreferrer"
                               target="_blank"
                             >
                               <Icon
                                 icon="gtp:gtp-block-explorer-alt"
-                                className="w-[15px] h-[15px]"
+                                className="h-[15px] w-[15px]"
                               />
                             </Link>
                             {/* <div className="h-[15px] w-[15px]">
@@ -1969,14 +1999,14 @@ export default function CategoryMetrics({
                         <div>
                           {
                             master.blockspace_categories.main_categories[
-                            sortedContracts[key].main_category_key
+                              sortedContracts[key].main_category_key
                             ]
                           }
                         </div>
                         <div>
                           {
                             master.blockspace_categories.sub_categories[
-                            sortedContracts[key].sub_category_key
+                              sortedContracts[key].sub_category_key
                             ]
                           }
                         </div>
@@ -1984,32 +2014,34 @@ export default function CategoryMetrics({
                           {selectedMode.includes("gas_fees_")
                             ? showUsd
                               ? `$${Number(
-                                sortedContracts[
-                                  key
-                                ].gas_fees_absolute_usd.toFixed(0),
-                              ).toLocaleString("en-GB")}`
+                                  sortedContracts[
+                                    key
+                                  ].gas_fees_absolute_usd.toFixed(0),
+                                ).toLocaleString("en-GB")}`
                               : `Ξ${Number(
-                                sortedContracts[
-                                  key
-                                ].gas_fees_absolute_eth.toFixed(0),
-                              ).toLocaleString("en-GB")}`
+                                  sortedContracts[
+                                    key
+                                  ].gas_fees_absolute_eth.toFixed(0),
+                                ).toLocaleString("en-GB")}`
                             : Number(
-                              sortedContracts[key].txcount_absolute,
-                            ).toLocaleString("en-GB")}
+                                sortedContracts[key].txcount_absolute,
+                              ).toLocaleString("en-GB")}
                         </div>
                       </GridTableRow>
                     );
                   })}
-                <div className="w-full flex justify-center mb-2 h-[60px]">
+                <div className="mb-2 flex h-[60px] w-full justify-center">
                   <button
-                    className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full  hover:bg-forest-700 p-[6px 16px] ${Object.keys(sortedContracts).length <= 10
-                      ? "hidden"
-                      : "visible"
-                      } ${Object.keys(sortedContracts).length <=
+                    className={`p-[6px 16px] relative top-[21px] mx-auto h-[40px] w-[125px] rounded-full border-[1px] border-forest-50 hover:bg-forest-700 ${
+                      Object.keys(sortedContracts).length <= 10
+                        ? "hidden"
+                        : "visible"
+                    } ${
+                      Object.keys(sortedContracts).length <=
                         maxDisplayedContracts || maxDisplayedContracts >= 50
                         ? "hidden"
                         : "visible"
-                      }`}
+                    }`}
                     onClick={() => {
                       setShowMore(!showMore);
                       if (

@@ -17,6 +17,7 @@ export default function ChainAnimations({
   selectedChains,
   setSelectedChains,
   selectedCategory,
+  parentContainerWidth,
   master,
 }: {
   chain: string;
@@ -28,28 +29,29 @@ export default function ChainAnimations({
   selectedChains: Object;
   setSelectedChains: (show: Object) => void;
   selectedCategory: string;
+  parentContainerWidth: number;
   master: MasterResponse;
 }) {
   const { theme } = useTheme();
   const { AllChainsByKeys } = useMaster();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [isShaking, setIsShaking] = useState(false);
-  const [width, setWidth] = useState(() => {
-    if (sortedValues && value) {
-      const largestValue = Math.max(
-        ...Object.values(sortedValues).map(([, value]) => value),
-      );
-      let minWidth = 144;
+  // const [width, setWidth] = useState(() => {
+  //   if (sortedValues && value) {
+  //     const largestValue = Math.max(
+  //       ...Object.values(sortedValues).map(([, value]) => value),
+  //     );
+  //     let minWidth = 144;
 
-      const relativeWidth = 144 + (sortedValues[index][1] / largestValue) * 150;
+  //     const relativeWidth = 144 + (sortedValues[index][1] / largestValue) * 150;
 
-      const percentage = (value / largestValue) * 99;
-      const newWidth = `max(${percentage}%, ${relativeWidth}px)`;
-      return `max(${percentage}%, ${minWidth}px)`;
-    } else {
-      return "auto";
-    }
-  });
+  //     const percentage = (value / largestValue) * 99;
+  //     const newWidth = `max(${percentage}%, ${relativeWidth}px)`;
+  //     return `max(${percentage}%, ${minWidth}px)`;
+  //   } else {
+  //     return "auto";
+  //   }
+  // });
 
   const availableSelectedChains = useMemo(() => {
     let counter = 0;
@@ -70,7 +72,7 @@ export default function ChainAnimations({
     } else {
       return counter;
     }
-  }, [selectedChains, selectedMode, selectedMode]);
+  }, [selectedChains, selectedMode, sortedValues]);
 
   const changeMode = useMemo(() => {
     if (
@@ -88,7 +90,7 @@ export default function ChainAnimations({
         return updatedSelectedChains;
       });
     }
-  }, [selectedMode]);
+  }, [selectedChains, selectedMode, setSelectedChains]);
 
   const changeCategory = useMemo(() => {
     let allFalse = true;
@@ -118,26 +120,57 @@ export default function ChainAnimations({
         }));
       }
     }
-  }, [sortedValues]);
+  }, [selectedChains, setSelectedChains, sortedValues]);
 
-  useEffect(() => {
+  // useEffect(() => {
+  //   if (sortedValues && value && selectedChains) {
+  //     const valuesOfSelected = Object.values(sortedValues).filter(
+  //       ([chain, value]) => selectedChains[chain],
+  //     );
+  //     const largestValue = Math.max(
+  //       ...Object.values(valuesOfSelected).map(([, value]) => value),
+  //     );
+  //     let minWidth = 144;
+
+  //     const relativeWidth = 144 + (sortedValues[index][1] / largestValue) * 150;
+
+  //     const percentage = (value / largestValue) * 99;
+  //     const newWidth = `max(${percentage}%, ${relativeWidth}px)`;
+
+  //     // Set the width state using the setWidth function
+  //     setWidth(newWidth);
+  //   } else {
+  //     setWidth("auto");
+  //   }
+  // }, [value, sortedValues, index, selectedChains]);
+
+  const valuesOfSelected = useMemo(() => {
+    return Object.values(sortedValues).filter(
+      ([chain, value]) => selectedChains[chain],
+    );
+  }, [sortedValues, selectedChains]);
+
+  const largestValue = useMemo(() => {
+    return Math.max(
+      ...Object.values(valuesOfSelected).map(([, value]) => value),
+    );
+  }, [valuesOfSelected]);
+
+  const relativeWidth = useMemo(() => {
     if (sortedValues && value) {
-      const largestValue = Math.max(
-        ...Object.values(sortedValues).map(([, value]) => value),
-      );
-      let minWidth = 144;
-
-      const relativeWidth = 144 + (sortedValues[index][1] / largestValue) * 150;
-
-      const percentage = (value / largestValue) * 99;
-      const newWidth = `max(${percentage}%, ${relativeWidth}px)`;
-
-      // Set the width state using the setWidth function
-      setWidth(newWidth);
+      return 144 + (sortedValues[index][1] / largestValue) * 150;
     } else {
-      setWidth("auto");
+      return 144;
     }
-  }, [value, sortedValues]);
+  }, [sortedValues, value, index, largestValue]);
+
+  const percentage = useMemo(() => {
+    if (sortedValues && value) {
+      return (value / largestValue) * 100;
+    } else {
+      return 0;
+    }
+  }, [sortedValues, value, largestValue]);
 
   if (chain === "imx" && selectedMode === "gas_fees_") {
     return null;
@@ -146,14 +179,23 @@ export default function ChainAnimations({
       <>
         <div
           key={chain}
-          className={`relative cursor-pointer flex flex-row items-center rounded-full justify-between text-xs  transition-opacity font-medium z-0 select-none pl-[2px]  pr-[2px] h-[34px] ${AllChainsByKeys[chain].darkTextOnBackground === true
-            ? "text-white dark:text-black"
-            : "text-white"
-            } ${isShaking ? "animate-shake " : ""} ${selectedChains[chain] ? "opacity-100" : "opacity-30"
-            }`}
+          className={`relative z-0 flex h-[34px] cursor-pointer select-none flex-row items-center justify-between rounded-full pl-[2px] pr-[2px] text-xs font-medium transition-all duration-500 ${
+            AllChainsByKeys[chain].darkTextOnBackground === true
+              ? "text-white dark:text-black"
+              : "text-white"
+          } ${isShaking ? "animate-shake" : ""} ${
+            selectedChains[chain] ? "opacity-100" : "opacity-30"
+          }`}
           style={{
-            width: width,
+            // width: `max(${percentage}%, ${relativeWidth}px)`,
+            width: `max(${percentage}%, ${relativeWidth}px)`,
+            maxWidth: "1000%",
             backgroundColor: AllChainsByKeys[chain].colors[theme ?? "dark"][1],
+            maskImage:
+              percentage > 100
+                ? `linear-gradient(to right, white 0px, white ${parentContainerWidth - 40}px, transparent ${parentContainerWidth}px, transparent 100%)`
+                : `none`,
+            // marginRight: percentage > 100 ? "-10px" : undefined,
             // height: "45px",
             // bottom: `${index * 45}px`,
           }}
@@ -175,21 +217,21 @@ export default function ChainAnimations({
             }
           }}
         >
-          <div className=" w-[140px] gap-x-[10px] h-[30px] flex items-center  bg-[#1F2726] rounded-full ">
+          <div className="flex h-[30px] w-[140px] items-center gap-x-[10px] rounded-full bg-[#1F2726]">
             <div
-              className="flex justify-center items-center w-[30px] h-full z-20 "
+              className="z-20 flex h-full w-[30px] items-center justify-center"
               style={{
                 color: AllChainsByKeys[chain].colors["dark"][0],
               }}
             >
               <Icon
                 icon={`gtp:${chain.replace("_", "-")}-logo-monochrome`}
-                className="w-[15px] h-[15px]"
+                className="h-[15px] w-[15px]"
               />
             </div>
 
             <div className="flex flex-col text-[#CDD8D3]">
-              <div className="text-[14px] font-bold -mb-[4px] mt-[1px] ">
+              <div className="-mb-[4px] mt-[1px] text-[14px] font-bold">
                 {" "}
                 {selectedValue === "share" ? (
                   <div>{Math.round(value * 100)}%</div>
@@ -207,22 +249,26 @@ export default function ChainAnimations({
                     <div>
                       {showUsd
                         ? Intl.NumberFormat(undefined, {
-                          notation: "compact",
-                          maximumFractionDigits: 2,
-                          minimumFractionDigits: 2,
-                        }).format(value).replace(/K$/, "k")
+                            notation: "compact",
+                            maximumFractionDigits: 2,
+                            minimumFractionDigits: 2,
+                          })
+                            .format(value)
+                            .replace(/K$/, "k")
                         : Intl.NumberFormat(undefined, {
-                          notation: "compact",
-                          maximumFractionDigits: 2,
-                          minimumFractionDigits: 2,
-                        }).format(value).replace(/K$/, "k")}
+                            notation: "compact",
+                            maximumFractionDigits: 2,
+                            minimumFractionDigits: 2,
+                          })
+                            .format(value)
+                            .replace(/K$/, "k")}
                     </div>
                   </div>
                 )}
               </div>
               <Link
                 href={`/chains/${AllChainsByKeys[chain].urlKey}/`}
-                className="hover:underline text-[10px]"
+                className="text-[10px] hover:underline"
                 onClick={(e) => {
                   e.stopPropagation();
                 }}
@@ -231,11 +277,17 @@ export default function ChainAnimations({
               </Link>
             </div>
           </div>
-          <div className="flex items-center justify-center absolute right-2 h-[17px] w-[17px] bg-[#1F2726] rounded-full">
+          <div
+            className="absolute right-2 flex h-[17px] w-[17px] items-center justify-center rounded-full bg-[#1F2726]"
+            style={{
+              left: percentage > 100 ? parentContainerWidth - 25 : undefined,
+            }}
+          >
             <Icon
-              icon={`feather:${!selectedChains[chain] ? "circle" : "check-circle"
-                }`}
-              className="w-[15px] h-[15px] align-middle"
+              icon={`feather:${
+                !selectedChains[chain] ? "circle" : "check-circle"
+              }`}
+              className="h-[15px] w-[15px] align-middle"
               style={{
                 color: AllChainsByKeys[chain].colors[theme ?? "dark"][0],
                 lineHeight: 1, // Ensure the line height doesn't cause vertical misalignment

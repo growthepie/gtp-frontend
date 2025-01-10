@@ -48,6 +48,26 @@ const nextConfig = {
           ],
           destination: "/labels",
         },
+        {
+          source: "/",
+          has: [
+            {
+              type: "host",
+              value: "icons.growthepie.xyz",
+            },
+          ],
+          destination: "/icons",
+        },
+        {
+          source: "/",
+          has: [
+            {
+              type: "host",
+              value: "dev.icons.growthepie.xyz",
+            },
+          ],
+          destination: "/icons",
+        },
       ],
     };
   },
@@ -111,6 +131,10 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "content.optimism.io",
+      },
+      {
+        protocol: "https",
+        hostname: "api.growthepie.xyz",
       },
     ],
   },
