@@ -547,7 +547,7 @@ export default function EconHeadCharts({
           })}
         </TopRowParent>
       </TopRowContainer>
-    <div className={`wrapper  w-full mt-[15px] transition-height duration-500 overflow-visible ${
+    <div className={`wrapper  w-full mt-[15px] transition-height duration-500 relative overflow-hidden ${
       selectedTimespan === "1d" ? "h-[0px]" : "h-[197px]"
     }`}>
       <Splide
