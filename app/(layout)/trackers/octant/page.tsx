@@ -150,24 +150,51 @@ export default function Page() {
     let curr: string | null = null;
     let next: string | null = null;
 
-    const epochKeys = Object.keys(epochsInfo).sort((a, b) => parseInt(b) - parseInt(a));
+    const epochKeys = Object.keys(epochsInfo).sort(
+      (a, b) => parseInt(a) - parseInt(b),
+    );
 
     for (let i = 0; i < epochKeys.length; i++) {
       let epoch = epochKeys[i];
-      let epochAllocationStart =
-        new Date(epochsInfo[epoch].allocationStart).getTime() / 1000;
-      let epochAllocationEnd =
-        new Date(epochsInfo[epoch].allocationEnd).getTime() / 1000;
+      // let epochAllocationStart =
+      //   new Date(epochsInfo[epoch].allocationStart).getTime() / 1000;
+      // let epochAllocationEnd =
+      //   new Date(epochsInfo[epoch].allocationEnd).getTime() / 1000;
 
+      // the incoming data is in UTC, so we need to adjust the time to the local timezone
+      let epochAllocationStart = moment
+        .utc(epochsInfo[epoch].allocationStart)
+        .local()
+        .unix();
+      let epochAllocationEnd = moment
+        .utc(epochsInfo[epoch].allocationEnd)
+        .local()
+        .unix();
 
-      if (now >= epochAllocationStart && now <= epochAllocationEnd) {
-        curr = epoch;
-        continue;
-      }
-
-      if (now < epochAllocationStart) {
-        next = epoch;
-        continue;
+      if (now <= epochAllocationEnd) {
+        if (now >= epochAllocationStart && now <= epochAllocationEnd) {
+          // console.log(
+          //   "curr",
+          //   epoch,
+          //   "is now",
+          //   epochAllocationStart,
+          //   now,
+          //   epochAllocationEnd,
+          // );
+          curr = epoch;
+          continue;
+        } else {
+          // console.log(
+          //   "next",
+          //   epoch,
+          //   "is now",
+          //   epochAllocationStart,
+          //   now,
+          //   epochAllocationEnd,
+          // );
+          next = epoch;
+          continue;
+        }
       }
 
       if (curr && next) break;
@@ -177,16 +204,20 @@ export default function Page() {
 
     if (next) {
       setNextEpoch(epochsInfo[next]);
-      countdownEnd = new Date(epochsInfo[next].allocationStart).getTime() / 1000;
+      countdownEnd =
+        new Date(epochsInfo[next].allocationStart).getTime() / 1000;
     }
 
     if (curr) {
       setCurrentEpoch(epochsInfo[curr]);
+      setCommunityEpoch(parseInt(curr));
+      setFundingEpoch(parseInt(curr));
       countdownEnd = new Date(epochsInfo[curr].allocationEnd).getTime() / 1000;
     }
 
-    setCountdownTime(countdownEnd - now);
+    // console.log("curr", curr, "next", next, "countdownEnd", countdownEnd);
 
+    setCountdownTime(countdownEnd - now);
   }, [summaryData]);
 
   useEffect(() => {
@@ -260,9 +291,9 @@ export default function Page() {
   const lastFundingEpoch = useMemo(() => {
     return summaryData?.epochs
       ? Object.values(summaryData.epochs)
-        .sort((a, b) => b.epoch - a.epoch)
-        .filter((epoch) => epoch.has_allocation_started)[0]
-        .epoch.toString()
+          .sort((a, b) => b.epoch - a.epoch)
+          .filter((epoch) => epoch.has_allocation_started)[0]
+          .epoch.toString()
       : "1";
   }, [summaryData]);
 
@@ -313,11 +344,11 @@ export default function Page() {
                 userData.allocation_amounts[Epochs[communityEpoch].epoch] || 0,
               allocated_to_project_count:
                 userData.allocated_to_project_counts[
-                Epochs[communityEpoch].epoch
+                  Epochs[communityEpoch].epoch
                 ] || 0,
               allocated_to_project_keys:
                 userData.allocated_to_project_keys[
-                Epochs[communityEpoch].epoch
+                  Epochs[communityEpoch].epoch
                 ] || [],
               activeSinceEpoch: Math.min(
                 ...userLockedEpochs.map((epoch) => parseInt(epoch)),
@@ -356,8 +387,8 @@ export default function Page() {
       <ShowLoading
         dataLoading={[!summaryData, !communityData, !projectMetadataData]}
       />
-      <Container className="@container flex flex-col w-full" isPageRoot>
-        <div className="w-full flex flex-col lg:flex-row gap-x-[5px] gap-y-[5px] bg-clip-content pb-[30px] md:pb-[60px]">
+      <Container className="flex w-full flex-col @container" isPageRoot>
+        <div className="flex w-full flex-col gap-x-[5px] gap-y-[5px] bg-clip-content pb-[30px] md:pb-[60px] lg:flex-row">
           <div className="relative flex lg:col-auto lg:w-[275px] lg:basis-[275px]">
             <ChainSectionHead
               title={"Menu"}
@@ -365,12 +396,12 @@ export default function Page() {
               enableDropdown={false}
               defaultDropdown={true}
               childrenHeight={isMobile ? 97 : 111}
-              className="transition-all duration-300 w-full lg:!w-[275px]"
+              className="w-full transition-all duration-300 lg:!w-[275px]"
             >
-              <div className="relative h-[97px] lg:h-[111px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-visible select-none">
-                <div className="flex flex-col justify-between gap-y-[10px] min-w-[120px] ">
+              <div className="relative flex h-[97px] select-none gap-x-[10px] overflow-visible rounded-[15px] bg-forest-50 px-[5px] py-[10px] dark:bg-[#1F2726] lg:h-[111px]">
+                <div className="flex min-w-[120px] flex-col justify-between gap-y-[10px]">
                   <ExpandingButtonMenu
-                    className={`left-[5px] top-[10px] lg:top-[10px] right-[calc((100%/2)+5px)] lg:right-[calc((100%/2)+5px)]`}
+                    className={`left-[5px] right-[calc((100%/2)+5px)] top-[10px] lg:right-[calc((100%/2)+5px)] lg:top-[10px]`}
                     button={{
                       label: "Jump to …",
                       icon: "gtp:gtp-jump-to-section",
@@ -390,7 +421,7 @@ export default function Page() {
                     ]}
                   />
                   <ExpandingButtonMenu
-                    className="absolute left-[5px] top-[50px] lg:top-[65px] right-[calc((100%/2)+5px)] lg:right-[140px]"
+                    className="absolute left-[5px] right-[calc((100%/2)+5px)] top-[50px] lg:right-[140px] lg:top-[65px]"
                     button={{
                       label: "More",
                       icon: "feather:chevron-right",
@@ -427,13 +458,13 @@ export default function Page() {
                     ]}
                   />
                 </div>
-                <div className="flex flex-col justify-between gap-y-[10px] flex-1 min-w-[90px] ">
+                <div className="flex min-w-[90px] flex-1 flex-col justify-between gap-y-[10px]">
                   <Link
                     href={`https://octant.app/`}
-                    className="absolute right-[5px] top-[10px] lg:top-[10px] left-[calc((100%/2)+5px)] lg:left-[140px]"
+                    className="absolute left-[calc((100%/2)+5px)] right-[5px] top-[10px] lg:left-[140px] lg:top-[10px]"
                   >
-                    <div className="flex items-center w-full h-[36px] gap-x-[8px] pl-[6px] pr-[10px] rounded-full dark:bg-[#263130] bg-forest-50">
-                      <div className="bg-forest-1000 rounded-full flex items-center justify-center w-[26px] h-[26px]">
+                    <div className="flex h-[36px] w-full items-center gap-x-[8px] rounded-full bg-forest-50 pl-[6px] pr-[10px] dark:bg-[#263130]">
+                      <div className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-forest-1000">
                         <svg
                           width="27"
                           height="26"
@@ -455,17 +486,17 @@ export default function Page() {
                           />
                         </svg>
                       </div>
-                      <div className="text-[14px] font-semibold truncate">
+                      <div className="truncate text-[14px] font-semibold">
                         Octant App
                       </div>
                     </div>
                   </Link>
                   <Link
                     href={`https://docs.octant.app/`}
-                    className="absolute right-[5px] top-[50px] lg:top-[65px] left-[calc((100%/2)+5px)] lg:left-[140px]"
+                    className="absolute left-[calc((100%/2)+5px)] right-[5px] top-[50px] lg:left-[140px] lg:top-[65px]"
                   >
-                    <div className="flex items-center w-full h-[36px] gap-x-[8px] pl-[6px] pr-[10px] rounded-full dark:bg-[#263130] bg-forest-50">
-                      <div className="bg-forest-1000 rounded-full flex items-center justify-center w-[26px] h-[26px]">
+                    <div className="flex h-[36px] w-full items-center gap-x-[8px] rounded-full bg-forest-50 pl-[6px] pr-[10px] dark:bg-[#263130]">
+                      <div className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-forest-1000">
                         <svg
                           width="16"
                           height="16"
@@ -570,7 +601,7 @@ export default function Page() {
                           </defs>
                         </svg>
                       </div>
-                      <div className="text-[14px] font-semibold truncate">
+                      <div className="truncate text-[14px] font-semibold">
                         Docs
                       </div>
                     </div>
@@ -580,22 +611,22 @@ export default function Page() {
             </ChainSectionHead>
           </div>
 
-          <div className="@container min-w-[67px] lg:max-w-[398px] lg:col-auto lg:basis-[398px] lg:flex-grow lg:flex-shrink lg:hover:min-w-[398px] transition-all duration-300">
+          <div className="min-w-[67px] transition-all duration-300 @container lg:col-auto lg:max-w-[398px] lg:flex-shrink lg:flex-grow lg:basis-[398px] lg:hover:min-w-[398px]">
             <ChainSectionHeadAlt
               title={"Background"}
               icon={"gtp:gtp-backgroundinformation"}
               enableDropdown={isMobile}
               childrenHeight={isMobile ? 200 : 111}
-              className={`transition-all duration-300 min-w-[67px] w-full flex flex-1`}
+              className={`flex w-full min-w-[67px] flex-1 transition-all duration-300`}
               shadowElement={
-                <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[398px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none"></div>
+                <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[398px]:opacity-0"></div>
               }
             >
               <div
-                className={`group bg-clip-border min-h-[111px] lg:max-h-[111px] relative flex flex-col justify-between transition-opacity duration-300 px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden`}
+                className={`group relative flex min-h-[111px] flex-col justify-between overflow-hidden rounded-[15px] bg-forest-50 bg-clip-border px-[10px] py-[10px] transition-opacity duration-300 dark:bg-[#1F2726] lg:max-h-[111px]`}
               >
-                <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[398px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none"></div>
-                <div className="w-full lg:w-[378px] h-auto lg:h-[calc(111px-20px)] flex flex-col justify-between gap-y-[5px]">
+                <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[398px]:opacity-0"></div>
+                <div className="flex h-auto w-full flex-col justify-between gap-y-[5px] lg:h-[calc(111px-20px)] lg:w-[378px]">
                   <div className="w-full">
                     <div className="text-[10px] font-semibold text-[#5A6462]">
                       Background Information
@@ -616,22 +647,22 @@ export default function Page() {
               </div>
             </ChainSectionHeadAlt>
           </div>
-          <div className="flex flex-col gap-y-[5px] lg:flex-row gap-x-[5px] flex-grow flex-shrink basis-0">
-            <div className="@container min-w-full lg:min-w-[67px] lg:col-auto lg:basis-[294px] lg:flex-shrink lg:hover:min-w-[294px] transition-all duration-300">
+          <div className="flex flex-shrink flex-grow basis-0 flex-col gap-x-[5px] gap-y-[5px] lg:flex-row">
+            <div className="min-w-full transition-all duration-300 @container lg:col-auto lg:min-w-[67px] lg:flex-shrink lg:basis-[294px] lg:hover:min-w-[294px]">
               <ChainSectionHeadAlt
                 title={"Community"}
                 icon={"gtp:gtp-users"}
                 enableDropdown={isMobile}
                 childrenHeight={isMobile ? 116 : 111}
-                className="transition-all duration-300 min-w-[67px] w-full"
+                className="w-full min-w-[67px] transition-all duration-300"
                 shadowElement={
-                  <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[294px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none"></div>
+                  <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[294px]:opacity-0"></div>
                 }
               >
-                <div className="group flex flex-col gap-y-[5px] overflow-hidden relative">
-                  <div className="bg-clip-border  min-h-[111px] lg:max-h-[111px] flex relative gap-x-[5px] px-[5px] py-[10px] items-center rounded-[15px] overflow-hidden bg-forest-50 dark:bg-[#1F2726] justify-between ">
-                    <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[228px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none"></div>
-                    <div className="flex-col flex pl-[5px]">
+                <div className="group relative flex flex-col gap-y-[5px] overflow-hidden">
+                  <div className="relative flex min-h-[111px] items-center justify-between gap-x-[5px] overflow-hidden rounded-[15px] bg-forest-50 bg-clip-border px-[5px] py-[10px] dark:bg-[#1F2726] lg:max-h-[111px]">
+                    <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[228px]:opacity-0"></div>
+                    <div className="flex flex-col pl-[5px]">
                       <div className="text-[10px] font-semibold text-[#5A6462]">
                         User Wallets with GLM locked
                       </div>
@@ -644,7 +675,7 @@ export default function Page() {
                           Epoch.
                         </div>
                         <div className="flex w-full justify-between pt-[5px]">
-                          <div className="flex bg-[#5A6462] rounded-[11px] w-[135px] px-[13px] py-[5px] gap-x-[6px] h-[43px] items-center justify-center">
+                          <div className="flex h-[43px] w-[135px] items-center justify-center gap-x-[6px] rounded-[11px] bg-[#5A6462] px-[13px] py-[5px]">
                             <svg
                               width="24"
                               height="25"
@@ -717,7 +748,7 @@ export default function Page() {
                               </defs>
                             </svg>
                             <div className="flex flex-col items-center pt-[5px]">
-                              <div className="font-semibold text-[20px]">
+                              <div className="text-[20px] font-semibold">
                                 {
                                   summaryData?.locked_changes.now
                                     .num_users_locked_glm
@@ -726,19 +757,20 @@ export default function Page() {
                               <div className="text-[9px]">Total Wallets</div>
                             </div>
                           </div>
-                          <div className="flex bg-[#5A6462] rounded-[11px] w-[135px] px-[13px] py-[5px] gap-x-[6px] h-[43px] items-center justify-center">
+                          <div className="flex h-[43px] w-[135px] items-center justify-center gap-x-[6px] rounded-[11px] bg-[#5A6462] px-[13px] py-[5px]">
                             <svg
                               width="25"
                               height="25"
                               viewBox="0 0 25 25"
                               fill="none"
                               xmlns="http://www.w3.org/2000/svg"
-                              className={`${summaryData &&
+                              className={`${
+                                summaryData &&
                                 summaryData.locked_changes.changes
                                   .num_users_locked_glm_change >= 0
-                                ? ""
-                                : "rotate-180"
-                                }`}
+                                  ? ""
+                                  : "rotate-180"
+                              }`}
                             >
                               <g clipPath="url(#clip0_11946_38485)">
                                 <path
@@ -748,8 +780,8 @@ export default function Page() {
                               </g>
                               <defs>
                                 {summaryData &&
-                                  summaryData.locked_changes.changes
-                                    .num_users_locked_glm_change >= 0 ? (
+                                summaryData.locked_changes.changes
+                                  .num_users_locked_glm_change >= 0 ? (
                                   <linearGradient
                                     id="paint0_linear_11946_38485"
                                     x1="12.9002"
@@ -787,7 +819,7 @@ export default function Page() {
 
                             <div className="flex flex-col items-center pt-[5px]">
                               {summaryData && (
-                                <div className="font-semibold text-[20px]">
+                                <div className="text-[20px] font-semibold">
                                   {summaryData.locked_changes.changes
                                     .num_users_locked_glm_change > 0 && "+"}
                                   {summaryData.locked_changes.changes
@@ -809,32 +841,32 @@ export default function Page() {
                 </div>
               </ChainSectionHeadAlt>
             </div>
-            <div className="flex gap-x-[5px] flex-grow flex-shrink basis-0">
-              <div className="@container min-w-full lg:min-w-[67px] lg:basis-[294px] lg:flex-grow lg:flex-shrink lg:hover:min-w-[294px] min-[1700px]:min-w-[294px] lg:max-w-[294px] transition-all duration-300">
+            <div className="flex flex-shrink flex-grow basis-0 gap-x-[5px]">
+              <div className="min-w-full transition-all duration-300 @container lg:min-w-[67px] lg:max-w-[294px] lg:flex-shrink lg:flex-grow lg:basis-[294px] lg:hover:min-w-[294px] min-[1700px]:min-w-[294px]">
                 <ChainSectionHeadAlt
                   title={"Project Funding"}
                   icon={"gtp:gtp-project"}
                   enableDropdown={isMobile}
                   childrenHeight={isMobile ? 116 : 111}
-                  className={`transition-all duration-300 min-w-[67px]`}
+                  className={`min-w-[67px] transition-all duration-300`}
                   shadowElement={
-                    <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[232px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none"></div>
+                    <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[232px]:opacity-0"></div>
                   }
                 >
-                  <div className="group relative h-[111px] flex px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] gap-x-[5px] overflow-hidden">
-                    <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[232px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none"></div>
-                    <div className="flex-col flex">
+                  <div className="group relative flex h-[111px] gap-x-[5px] overflow-hidden rounded-[15px] bg-forest-50 px-[10px] py-[10px] dark:bg-[#1F2726]">
+                    <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[232px]:opacity-0"></div>
+                    <div className="flex flex-col">
                       <div className="text-[10px] font-semibold text-[#5A6462]">
                         Total Funding Paid Out to Projects
                       </div>
-                      <div className={`text-[10px] leading-[150%] w-full`}>
+                      <div className={`w-full text-[10px] leading-[150%]`}>
                         <div>
                           Funding that has been paid out over all Epochs to
                           date, from donations and matching from the Golem
                           Foundation.
                         </div>
-                        <div className="flex w-full justify-between pt-[5px] gap-x-[5px]">
-                          <div className="flex bg-[#5A6462] rounded-[11px] w-[135px] px-[13px] py-[5px] gap-x-[6px] h-[43px] items-center justify-center">
+                        <div className="flex w-full justify-between gap-x-[5px] pt-[5px]">
+                          <div className="flex h-[43px] w-[135px] items-center justify-center gap-x-[6px] rounded-[11px] bg-[#5A6462] px-[13px] py-[5px]">
                             <svg
                               width="25"
                               height="25"
@@ -863,7 +895,7 @@ export default function Page() {
                               </defs>
                             </svg>
                             <div className="flex flex-col items-center pt-[5px]">
-                              <div className="font-semibold text-[20px]">
+                              <div className="text-[20px] font-semibold">
                                 1145{" "}
                                 <span className="text-[14px] font-normal">
                                   ETH
@@ -872,7 +904,7 @@ export default function Page() {
                               <div className="text-[9px]">Total Funded</div>
                             </div>
                           </div>
-                          <div className="flex bg-[#5A6462] rounded-[11px] w-[135px] px-[13px] py-[5px] gap-x-[6px] h-[43px] items-center justify-center">
+                          <div className="flex h-[43px] w-[135px] items-center justify-center gap-x-[6px] rounded-[11px] bg-[#5A6462] px-[13px] py-[5px]">
                             <svg
                               width="25"
                               height="25"
@@ -928,13 +960,13 @@ export default function Page() {
                               </defs>
                             </svg>
                             <div className="flex flex-col items-center pt-[5px]">
-                              <div className="font-semibold text-[20px]">
+                              <div className="text-[20px] font-semibold">
                                 6.67{" "}
                                 <span className="text-[14px] font-normal">
                                   ETH
                                 </span>
                               </div>
-                              <div className="text-[9px] whitespace-nowrap">
+                              <div className="whitespace-nowrap text-[9px]">
                                 Mdn. Project Funding
                               </div>
                             </div>
@@ -949,26 +981,26 @@ export default function Page() {
           </div>
         </div>
         <div
-          className="flex gap-x-[8px] items-center pb-[15px] scroll-mt-8"
+          className="flex scroll-mt-8 items-center gap-x-[8px] pb-[15px]"
           ref={JumpToSections.Community.ref}
           id="Community"
         >
-          <div className="w-[36px] h-[36px]">
-            <Icon icon="gtp:gtp-users" className="w-[36px] h-[36px]" />
+          <div className="h-[36px] w-[36px]">
+            <Icon icon="gtp:gtp-users" className="h-[36px] w-[36px]" />
           </div>
           <Heading
-            className="leading-[120%] text-[20px] md:text-[30px] break-inside-avoid "
+            className="break-inside-avoid text-[20px] leading-[120%] md:text-[30px]"
             as="h2"
           >
             Community
           </Heading>
         </div>
-        <div className="text-[14px] pb-[15px]">
+        <div className="pb-[15px] text-[14px]">
           This is all about the owners of GLM and who have locked their funds in
           Octant. Either donating/allocating or not.
         </div>
         <TopRowContainer
-          className={`mb-[15px] flex w-full justify-between gap-y-3 lg:gap-y-0 items-center text-xs bg-forest-50 dark:bg-[#1F2726] lg:z-30 flex-col-reverse rounded-b-[15px] md:rounded-b-[20px] rounded-t-[24px] p-[3px] lg:p-[5px] lg:flex-row lg:rounded-full lg:h-[54px] transition-shadow duration-300`}
+          className={`mb-[15px] flex w-full flex-col-reverse items-center justify-between gap-y-3 rounded-b-[15px] rounded-t-[24px] bg-forest-50 p-[3px] text-xs transition-shadow duration-300 dark:bg-[#1F2726] md:rounded-b-[20px] lg:z-30 lg:h-[54px] lg:flex-row lg:gap-y-0 lg:rounded-full lg:p-[5px]`}
         >
           <TopRowParent>
             <TopRowChild
@@ -977,7 +1009,7 @@ export default function Page() {
                 handleCommunityUserSelection("All");
               }}
               style={{}}
-              className={`lg:!py-[10px] lg:!px-[15px] text-[16px] leading-[150%]`}
+              className={`text-[16px] leading-[150%] lg:!px-[15px] lg:!py-[10px]`}
             >
               <span className="hidden sm:block">
                 {UserTypes.All.label} (
@@ -998,7 +1030,7 @@ export default function Page() {
                 handleCommunityUserSelection("Donating");
               }}
               style={{}}
-              className={`lg:!py-[10px] lg:!px-[15px] text-[16px] leading-[150%]`}
+              className={`text-[16px] leading-[150%] lg:!px-[15px] lg:!py-[10px]`}
             >
               <span className="hidden sm:block">
                 {UserTypes.Donating.label} (
@@ -1006,7 +1038,7 @@ export default function Page() {
                   communityData.filter(
                     (user) =>
                       user.allocation_amounts[Epochs[communityEpoch].epoch] !==
-                      undefined &&
+                        undefined &&
                       user.allocation_amounts[Epochs[communityEpoch].epoch] > 0,
                   ).length}
                 )
@@ -1016,51 +1048,52 @@ export default function Page() {
               </span>
             </TopRowChild>
           </TopRowParent>
-          <div className="flex flex-col relative h-full lg:h-[44px] w-full lg:w-[271px] -my-[1px]">
+          <div className="relative -my-[1px] flex h-full w-full flex-col lg:h-[44px] lg:w-[271px]">
             <div
-              className={`relative flex rounded-full h-full w-full lg:z-30 p-[5px] ${isMobile ? "w-full" : "w-[271px]"
-                }`}
+              className={`relative flex h-full w-full rounded-full p-[5px] lg:z-30 ${
+                isMobile ? "w-full" : "w-[271px]"
+              }`}
               style={{
                 backgroundColor: "#344240",
               }}
             >
               <div
-                className="rounded-[40px] w-[54px] h-[34px] bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[15] hover:cursor-pointer"
+                className="z-[15] flex h-[34px] w-[54px] items-center justify-center rounded-[40px] bg-forest-50 hover:cursor-pointer dark:bg-[#1F2726]"
                 onClick={handlePrevCommunityEpoch}
               >
-                <Icon icon="feather:arrow-left" className="w-6 h-6" />
+                <Icon icon="feather:arrow-left" className="h-6 w-6" />
               </div>
-              <div className="flex flex-1 flex-col items-center justify-self-center  gap-y-[1px]">
+              <div className="flex flex-1 flex-col items-center gap-y-[1px] justify-self-center">
                 <div
-                  className={`flex gap-x-[5px] justify-center items-center w-[123px] h-full`}
+                  className={`flex h-full w-[123px] items-center justify-center gap-x-[5px]`}
                 >
-                  <div className="text-sm overflow-ellipsis truncate whitespace-nowrap">
+                  <div className="truncate overflow-ellipsis whitespace-nowrap text-sm">
                     {Epochs[communityEpoch].label}
                   </div>
                 </div>
               </div>
               <div
-                className="rounded-[40px] w-[54px] h-[34px] bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[15] hover:cursor-pointer"
+                className="z-[15] flex h-[34px] w-[54px] items-center justify-center rounded-[40px] bg-forest-50 hover:cursor-pointer dark:bg-[#1F2726]"
                 onClick={handleNextCommunityEpoch}
               >
-                <Icon icon="feather:arrow-right" className="w-6 h-6" />
+                <Icon icon="feather:arrow-right" className="h-6 w-6" />
               </div>
             </div>
           </div>
         </TopRowContainer>
 
-        <div className="hidden md:flex flex-col -mr-[32px] @[960px]:mr-0 @[960px]:flex-row @[960px]:flex-wrap">
+        <div className="-mr-[32px] hidden flex-col @[960px]:mr-0 @[960px]:flex-row @[960px]:flex-wrap md:flex">
           <div className="w-full @[960px]:w-1/2">
             <div className="pr-[32px]">
-              <div className="flex items-center w-full bg-[#1F2726] gap-x-[10px] rounded-[22px] pr-[10px] min-h-[44px] z-[1]">
+              <div className="z-[1] flex min-h-[44px] w-full items-center gap-x-[10px] rounded-[22px] bg-[#1F2726] pr-[10px]">
                 <div
-                  className={`relative flex justify-center items-center pl-[10px]`}
+                  className={`relative flex items-center justify-center pl-[10px]`}
                 >
                   <SearchIcon />
                 </div>
                 <input
                   // ref={inputRef}
-                  className={`flex-1 pl-[11px] h-full bg-transparent placeholder-[#CDD8D3] border-none outline-none overflow-x-clip`}
+                  className={`h-full flex-1 overflow-x-clip border-none bg-transparent pl-[11px] placeholder-[#CDD8D3] outline-none`}
                   placeholder="Search Wallets"
                   value={communitySearch}
                   onChange={(e) => {
@@ -1121,7 +1154,7 @@ export default function Page() {
             </div>
             <GridTableHeader
               gridDefinitionColumns="grid-cols-[20px,minmax(80px,1600px),118px,72px,69px]"
-              className="text-[12px] gap-x-[15px] z-[2] !pl-[5px] !pr-[46px] !pt-[15px] !pb-[10px] select-none"
+              className="z-[2] select-none gap-x-[15px] !pb-[10px] !pl-[5px] !pr-[46px] !pt-[15px] text-[12px]"
             >
               <div></div>
               <GridTableHeaderCell
@@ -1281,9 +1314,9 @@ export default function Page() {
               </linearGradient>
             </defs>
           </svg>
-          <div className="flex flex-col pt-[50px] gap-y-[20px] @[600px]:flex-row @[600px]:gap-y-0 @[960px]:pt-0 @[960px]:h-[337px] w-full @[960px]:w-1/2 justify-evenly items-center">
-            <div className="w-[250px] h-[250px] overflow-visible">
-              <div className="relative -top-[20px] -left-[20px] w-fit">
+          <div className="flex w-full flex-col items-center justify-evenly gap-y-[20px] pt-[50px] @[600px]:flex-row @[600px]:gap-y-0 @[960px]:h-[337px] @[960px]:w-1/2 @[960px]:pt-0">
+            <div className="h-[250px] w-[250px] overflow-visible">
+              <div className="relative -left-[20px] -top-[20px] w-fit">
                 <CircleChart
                   title="ALLOCATIONS"
                   data={[
@@ -1291,23 +1324,23 @@ export default function Page() {
                       label: "kept by wallets",
                       value: communityDataSortedAndFiltered
                         ? communityDataSortedAndFiltered.reduce((acc, user) => {
-                          if (
-                            user.budget_amounts[
-                            Epochs[communityEpoch].epoch
-                            ] === undefined
-                          ) {
-                            return acc;
-                          }
-                          let allocation =
-                            user.allocation_amounts[
-                            Epochs[communityEpoch].epoch
-                            ] || 0;
-                          let budget =
-                            user.budget_amounts[
-                            Epochs[communityEpoch].epoch
-                            ] || 0;
-                          return acc + (budget - allocation);
-                        }, 0)
+                            if (
+                              user.budget_amounts[
+                                Epochs[communityEpoch].epoch
+                              ] === undefined
+                            ) {
+                              return acc;
+                            }
+                            let allocation =
+                              user.allocation_amounts[
+                                Epochs[communityEpoch].epoch
+                              ] || 0;
+                            let budget =
+                              user.budget_amounts[
+                                Epochs[communityEpoch].epoch
+                              ] || 0;
+                            return acc + (budget - allocation);
+                          }, 0)
                         : 0,
                       className: "kept-by-wallets",
                     },
@@ -1315,20 +1348,20 @@ export default function Page() {
                       label: "allocated to projects",
                       value: communityDataSortedAndFiltered
                         ? communityDataSortedAndFiltered.reduce((acc, user) => {
-                          if (
-                            user.allocation_amounts[
-                            Epochs[communityEpoch].epoch
-                            ] === undefined
-                          ) {
-                            return acc;
-                          }
-                          return (
-                            acc +
-                            user.allocation_amounts[
-                            Epochs[communityEpoch].epoch
-                            ]
-                          );
-                        }, 0)
+                            if (
+                              user.allocation_amounts[
+                                Epochs[communityEpoch].epoch
+                              ] === undefined
+                            ) {
+                              return acc;
+                            }
+                            return (
+                              acc +
+                              user.allocation_amounts[
+                                Epochs[communityEpoch].epoch
+                              ]
+                            );
+                          }, 0)
                         : 0,
                       className: "allocated-to-projects",
                     },
@@ -1338,8 +1371,8 @@ export default function Page() {
               </div>
             </div>
 
-            <div className="relative w-[250px] h-[250px] overflow-visible">
-              <div className="relative -top-[20px] -left-[20px] w-fit">
+            <div className="relative h-[250px] w-[250px] overflow-visible">
+              <div className="relative -left-[20px] -top-[20px] w-fit">
                 <CircleChart
                   title={["DONATIONS TO", "# OF PROJECTS"]}
                   data={[
@@ -1347,14 +1380,14 @@ export default function Page() {
                       label: "1",
                       value: communityDataSortedAndFiltered
                         ? communityDataSortedAndFiltered.filter(
-                          (user) =>
-                            user.allocated_to_project_keys[
-                            Epochs[communityEpoch].epoch
-                            ] &&
-                            user.allocated_to_project_keys[
-                              Epochs[communityEpoch].epoch
-                            ].length === 1,
-                        ).length
+                            (user) =>
+                              user.allocated_to_project_keys[
+                                Epochs[communityEpoch].epoch
+                              ] &&
+                              user.allocated_to_project_keys[
+                                Epochs[communityEpoch].epoch
+                              ].length === 1,
+                          ).length
                         : 0,
                       className: "one-project",
                     },
@@ -1362,17 +1395,17 @@ export default function Page() {
                       label: "2-5",
                       value: communityDataSortedAndFiltered
                         ? communityDataSortedAndFiltered.filter(
-                          (user) =>
-                            user.allocated_to_project_keys[
-                            Epochs[communityEpoch].epoch
-                            ] &&
-                            user.allocated_to_project_keys[
-                              Epochs[communityEpoch].epoch
-                            ].length > 1 &&
-                            user.allocated_to_project_keys[
-                              Epochs[communityEpoch].epoch
-                            ].length <= 5,
-                        ).length
+                            (user) =>
+                              user.allocated_to_project_keys[
+                                Epochs[communityEpoch].epoch
+                              ] &&
+                              user.allocated_to_project_keys[
+                                Epochs[communityEpoch].epoch
+                              ].length > 1 &&
+                              user.allocated_to_project_keys[
+                                Epochs[communityEpoch].epoch
+                              ].length <= 5,
+                          ).length
                         : 0,
                       className: "two-to-five-projects",
                     },
@@ -1380,14 +1413,14 @@ export default function Page() {
                       label: ">5",
                       value: communityDataSortedAndFiltered
                         ? communityDataSortedAndFiltered.filter(
-                          (user) =>
-                            user.allocated_to_project_keys[
-                            Epochs[communityEpoch].epoch
-                            ] &&
-                            user.allocated_to_project_keys[
-                              Epochs[communityEpoch].epoch
-                            ].length > 5,
-                        ).length
+                            (user) =>
+                              user.allocated_to_project_keys[
+                                Epochs[communityEpoch].epoch
+                              ] &&
+                              user.allocated_to_project_keys[
+                                Epochs[communityEpoch].epoch
+                              ].length > 5,
+                          ).length
                         : 0,
                       className: "more-than-five-projects",
                     },
@@ -1395,14 +1428,14 @@ export default function Page() {
                       label: "0 Projects",
                       value: communityDataSortedAndFiltered
                         ? communityDataSortedAndFiltered.filter(
-                          (user) =>
-                            user.allocated_to_project_keys[
-                            Epochs[communityEpoch].epoch
-                            ] &&
-                            user.allocated_to_project_keys[
-                              Epochs[communityEpoch].epoch
-                            ].length === 0,
-                        ).length
+                            (user) =>
+                              user.allocated_to_project_keys[
+                                Epochs[communityEpoch].epoch
+                              ] &&
+                              user.allocated_to_project_keys[
+                                Epochs[communityEpoch].epoch
+                              ].length === 0,
+                          ).length
                         : 0,
                       className: "no-projects",
                     },
@@ -1415,16 +1448,16 @@ export default function Page() {
       </Container>
       {/* <Container className="@container flex flex-col w-full">
       </Container> */}
-      <Container className="flex md:hidden flex-col w-full gap-y-[20px]">
-        <div className="flex items-center w-full bg-[#1F2726] gap-x-[10px] rounded-[22px] pr-[10px] min-h-[44px] z-[1]">
+      <Container className="flex w-full flex-col gap-y-[20px] md:hidden">
+        <div className="z-[1] flex min-h-[44px] w-full items-center gap-x-[10px] rounded-[22px] bg-[#1F2726] pr-[10px]">
           <div
-            className={`relative flex justify-center items-center pl-[10px]`}
+            className={`relative flex items-center justify-center pl-[10px]`}
           >
             <SearchIcon />
           </div>
           <input
             // ref={inputRef}
-            className={`flex-1 pl-[11px] h-full bg-transparent placeholder-[#CDD8D3] border-none outline-none overflow-x-clip`}
+            className={`h-full flex-1 overflow-x-clip border-none bg-transparent pl-[11px] placeholder-[#CDD8D3] outline-none`}
             placeholder="Search Wallets"
             value={communitySearch}
             onChange={(e) => {
@@ -1486,7 +1519,7 @@ export default function Page() {
       <HorizontalScrollContainer className="flex flex-col md:hidden">
         <GridTableHeader
           gridDefinitionColumns="grid-cols-[20px,minmax(125px,1600px),118px,72px,69px]"
-          className="text-[12px] gap-x-[15px] z-[2] !pl-[5px] !pr-[16px] !pt-[15px] !pb-[10px] select-none"
+          className="z-[2] select-none gap-x-[15px] !pb-[10px] !pl-[5px] !pr-[16px] !pt-[15px] text-[12px]"
         >
           <div></div>
           <GridTableHeaderCell
@@ -1522,7 +1555,7 @@ export default function Page() {
           </GridTableHeaderCell>
         </GridTableHeader>
         <div className="flex flex-col justify-between">
-          <div className="min-h-[250px] flex flex-col transition-all duration-300">
+          <div className="flex min-h-[250px] flex-col transition-all duration-300">
             {/* <VerticalScrollContainer height={250} className=""> */}
             {communityDataSortedAndFiltered &&
               communityDataSortedAndFiltered.length > 0 &&
@@ -1530,7 +1563,7 @@ export default function Page() {
                 .slice(
                   communityTablePage * communityTablePageSize,
                   communityTablePage * communityTablePageSize +
-                  communityTablePageSize,
+                    communityTablePageSize,
                 )
                 .map((userData, index) => {
                   const userLockedEpochs = Object.keys(userData.lockeds).filter(
@@ -1548,15 +1581,15 @@ export default function Page() {
                       0,
                     allocation_amount:
                       userData.allocation_amounts[
-                      Epochs[communityEpoch].epoch
+                        Epochs[communityEpoch].epoch
                       ] || 0,
                     allocated_to_project_count:
                       userData.allocated_to_project_counts[
-                      Epochs[communityEpoch].epoch
+                        Epochs[communityEpoch].epoch
                       ] || 0,
                     allocated_to_project_keys:
                       userData.allocated_to_project_keys[
-                      Epochs[communityEpoch].epoch
+                        Epochs[communityEpoch].epoch
                       ] || [],
                     activeSinceEpoch: Math.min(
                       ...userLockedEpochs.map((epoch) => parseInt(epoch)),
@@ -1566,7 +1599,7 @@ export default function Page() {
                     <div key={index} className="pb-[3px]">
                       <GridTableRow
                         gridDefinitionColumns="grid-cols-[20px,minmax(125px,1600px),118px,72px,69px]"
-                        className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] !pl-[5px] !pr-[15px] select-none"
+                        className="group inline-grid h-[34px] select-none gap-x-[15px] !pl-[5px] !pr-[15px] text-[12px] transition-all duration-300"
                         onClick={() => {
                           if (communityRowsOpen.includes(user.user)) {
                             setCommunityRowsOpen(
@@ -1581,7 +1614,7 @@ export default function Page() {
                         }}
                       >
                         <div className="flex items-center justify-center">
-                          <div className="relative flex items-center justify-center rounded-full w-[16px] h-[16px] bg-[#151A19] cursor-pointer">
+                          <div className="relative flex h-[16px] w-[16px] cursor-pointer items-center justify-center rounded-full bg-[#151A19]">
                             {/* <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <g clipPath="url(#clip0_12402_20562)">
                               <circle cx="8.29395" cy="8" r="7" stroke="#5A6462" />
@@ -1601,32 +1634,33 @@ export default function Page() {
                             />
                             <Icon
                               icon={"gtp:circle-arrow"}
-                              className={`w-[4px] h-[9px] absolute top-[4px] -right-[4px] `}
+                              className={`absolute -right-[4px] top-[4px] h-[9px] w-[4px]`}
                               style={{
-                                transform: `rotate(${communityRowsOpen.includes(user.user)
-                                  ? "90deg"
-                                  : "0deg"
-                                  })`,
+                                transform: `rotate(${
+                                  communityRowsOpen.includes(user.user)
+                                    ? "90deg"
+                                    : "0deg"
+                                })`,
                                 transformOrigin: "-7px 4px",
                                 transition: "transform 0.5s",
                               }}
                             />
                           </div>
                         </div>
-                        <div className="@container flex h-full items-center hover:bg-transparent select-none">
+                        <div className="flex h-full select-none items-center @container hover:bg-transparent">
                           <span
-                            className="@container flex-1 flex h-full items-center hover:bg-transparent pr-[10px]"
+                            className="flex h-full flex-1 items-center pr-[10px] @container hover:bg-transparent"
                             style={{
                               fontFeatureSettings: "'pnum' on, 'lnum' on",
                             }}
-                          // onDoubleClick={(e) => {
-                          //   e.preventDefault(); // Prevent default double-click behavior
-                          //   const selection = window.getSelection();
-                          //   const range = document.createRange();
-                          //   range.selectNodeContents(e.currentTarget);
-                          //   selection?.removeAllRanges();
-                          //   selection?.addRange(range);
-                          // }}
+                            // onDoubleClick={(e) => {
+                            //   e.preventDefault(); // Prevent default double-click behavior
+                            //   const selection = window.getSelection();
+                            //   const range = document.createRange();
+                            //   range.selectNodeContents(e.currentTarget);
+                            //   selection?.removeAllRanges();
+                            //   selection?.addRange(range);
+                            // }}
                           >
                             <div
                               className="truncate transition-all duration-300"
@@ -1640,7 +1674,7 @@ export default function Page() {
                             <div className="transition-all duration-300">
                               {user.user.slice(-6)}
                             </div>
-                            <div className="pl-[10px] flex gap-x-[10px]">
+                            <div className="flex gap-x-[10px] pl-[10px]">
                               <div className="">
                                 <Icon
                                   icon={
@@ -1648,7 +1682,7 @@ export default function Page() {
                                       ? "feather:check-circle"
                                       : "feather:copy"
                                   }
-                                  className="w-[14px] h-[14px] cursor-pointer z-[10]"
+                                  className="z-[10] h-[14px] w-[14px] cursor-pointer"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleCopyAddress(user.user);
@@ -1722,7 +1756,7 @@ export default function Page() {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
                           })} */}
-                              <span className="opacity-60 text-[0.55rem]">
+                              <span className="text-[0.55rem] opacity-60">
                                 GLM
                               </span>
                             </div>
@@ -1731,8 +1765,9 @@ export default function Page() {
                           )}
                         </div>
                         <div
-                          className={`flex items-center justify-end whitespace-nowrap ${user.budget_amount < 0.01 && "text-[11px]"
-                            }`}
+                          className={`flex items-center justify-end whitespace-nowrap ${
+                            user.budget_amount < 0.01 && "text-[11px]"
+                          }`}
                         >
                           {user.budget_amount > 0 ? (
                             <div className="text-[#CDD8D3]">
@@ -1742,7 +1777,7 @@ export default function Page() {
                                 maximumFractionDigits:
                                   user.budget_amount < 0.01 ? 5 : 2,
                               })}{" "}
-                              <span className="opacity-60 text-[0.55rem]">
+                              <span className="text-[0.55rem] opacity-60">
                                 ETH
                               </span>
                             </div>
@@ -1751,8 +1786,9 @@ export default function Page() {
                           )}
                         </div>
                         <div
-                          className={`flex items-center justify-end whitespace-nowrap ${user.allocation_amount < 0.01 && "text-[11px]"
-                            }`}
+                          className={`flex items-center justify-end whitespace-nowrap ${
+                            user.allocation_amount < 0.01 && "text-[11px]"
+                          }`}
                         >
                           {user.allocation_amount > 0 ? (
                             <div className="text-[#CDD8D3]">
@@ -1762,7 +1798,7 @@ export default function Page() {
                                 maximumFractionDigits:
                                   user.allocation_amount < 0.01 ? 5 : 2,
                               })}{" "}
-                              <span className="opacity-60 text-[0.55rem]">
+                              <span className="text-[0.55rem] opacity-60">
                                 ETH
                               </span>
                             </div>
@@ -1773,12 +1809,13 @@ export default function Page() {
                       </GridTableRow>
                       <div className="pl-[13px] pr-[15px]">
                         <div
-                          className={`flex flex-col bg-[#1F2726] rounded-b-[15px] border-[#CDD8D3]/30 border-dotted border-x border-b transition-all duration-300 ${communityRowsOpen.includes(user.user)
-                            ? "min-h-[80px] max-h-[300px] opacity-100"
-                            : "max-h-0 min-h-0 opacity-0"
-                            } overflow-hidden`}
+                          className={`flex flex-col rounded-b-[15px] border-x border-b border-dotted border-[#CDD8D3]/30 bg-[#1F2726] transition-all duration-300 ${
+                            communityRowsOpen.includes(user.user)
+                              ? "max-h-[300px] min-h-[80px] opacity-100"
+                              : "max-h-0 min-h-0 opacity-0"
+                          } overflow-hidden`}
                         >
-                          <div className="flex flex-col p-[15px] gap-y-[6px] text-[12px]">
+                          <div className="flex flex-col gap-y-[6px] p-[15px] text-[12px]">
                             <div className="flex items-center justify-between">
                               <div>
                                 Active Since:{" "}
@@ -1786,7 +1823,7 @@ export default function Page() {
                                   Epoch {user.activeSinceEpoch}
                                 </span>
                               </div>
-                              <div className="flex gap-x-[5px] items-center">
+                              <div className="flex items-center gap-x-[5px]">
                                 <div>
                                   Donated{" "}
                                   <span className="font-semibold">
@@ -1800,7 +1837,7 @@ export default function Page() {
                                     ETH
                                   </span>
                                 </div>
-                                <div className="flex flex-col w-[133px]">
+                                <div className="flex w-[133px] flex-col">
                                   <div className="flex justify-between text-[10px]">
                                     <div>
                                       {(
@@ -1820,16 +1857,17 @@ export default function Page() {
                                       %
                                     </div>
                                   </div>
-                                  <div className="flex w-full h-[4px]">
+                                  <div className="flex h-[4px] w-full">
                                     <div
                                       className="h-full rounded-l-full"
                                       style={{
                                         background:
                                           "linear-gradient(0deg,#1DF7EF 0%,#10808C 100%)",
-                                        width: `${(user.allocation_amount /
-                                          user.budget_amount) *
+                                        width: `${
+                                          (user.allocation_amount /
+                                            user.budget_amount) *
                                           100
-                                          }%`,
+                                        }%`,
                                       }}
                                     ></div>
                                     <div
@@ -1837,11 +1875,12 @@ export default function Page() {
                                       style={{
                                         background:
                                           "linear-gradient(-3deg,#FFDF27 0%,#FE5468 100%)",
-                                        width: `${((user.budget_amount -
-                                          user.allocation_amount) /
-                                          user.budget_amount) *
+                                        width: `${
+                                          ((user.budget_amount -
+                                            user.allocation_amount) /
+                                            user.budget_amount) *
                                           100
-                                          }%`,
+                                        }%`,
                                       }}
                                     ></div>
                                   </div>
@@ -1875,17 +1914,17 @@ export default function Page() {
                                     (project_key, index) => (
                                       <div
                                         key={index}
-                                        className="flex items-center gap-x-[5px] bg-[#344240] rounded-[15px] pl-[0px] pr-[6px] py-[0px] text-[10px]"
+                                        className="flex items-center gap-x-[5px] rounded-[15px] bg-[#344240] py-[0px] pl-[0px] pr-[6px] text-[10px]"
                                       >
                                         {communityEpoch === 0 ? (
-                                          <div className="w-6 h-6 border border-forest-900/20 dark:border-forest-500/20 rounded-full overflow-hidden">
+                                          <div className="h-6 w-6 overflow-hidden rounded-full border border-forest-900/20 dark:border-forest-500/20">
                                             {projectMetadataData &&
                                               projectMetadataData[
-                                              project_key
+                                                project_key
                                               ] &&
                                               Object.entries(
                                                 projectMetadataData[
-                                                project_key
+                                                  project_key
                                                 ],
                                               )
                                                 .sort(
@@ -1909,19 +1948,20 @@ export default function Page() {
                                                 ))}
                                           </div>
                                         ) : (
-                                          <div className="w-6 h-6 border border-forest-900/20 dark:border-forest-500/20 rounded-full overflow-hidden">
+                                          <div className="h-6 w-6 overflow-hidden rounded-full border border-forest-900/20 dark:border-forest-500/20">
                                             {projectMetadataData &&
                                               projectMetadataData[project_key][
-                                              Epochs[communityEpoch].epoch
+                                                Epochs[communityEpoch].epoch
                                               ] && (
                                                 <Image
-                                                  src={`https://ipfs.io/ipfs/${projectMetadataData[
-                                                    project_key
-                                                  ][
-                                                    Epochs[communityEpoch]
-                                                      .epoch
-                                                  ].profile_image_medium
-                                                    }`}
+                                                  src={`https://ipfs.io/ipfs/${
+                                                    projectMetadataData[
+                                                      project_key
+                                                    ][
+                                                      Epochs[communityEpoch]
+                                                        .epoch
+                                                    ].profile_image_medium
+                                                  }`}
                                                   alt={
                                                     projectMetadataData[
                                                       project_key
@@ -1956,18 +1996,18 @@ export default function Page() {
           {/* </VerticalScrollContainer> */}
         </div>
       </HorizontalScrollContainer>
-      <Container className="flex md:hidden flex-col w-full gap-y-[20px]">
+      <Container className="flex w-full flex-col gap-y-[20px] md:hidden">
         {/* pagination */}
-        <div className="relative pt-[10px] w-full select-none">
+        <div className="relative w-full select-none pt-[10px]">
           {communityDataSortedAndFiltered.length > communityTablePageSize && (
             <>
-              <div className="flex w-full justify-center items-center gap-x-[5px] text-[12px] text-[#CDD8D3]">
+              <div className="flex w-full items-center justify-center gap-x-[5px] text-[12px] text-[#CDD8D3]">
                 <div className="flex items-center gap-x-[5px]">
                   <div
                     className="hover:cursor-pointer"
                     onClick={() => setCommunityTablePage(0)}
                   >
-                    <Icon icon="feather:chevrons-left" className="w-4 h-4" />
+                    <Icon icon="feather:chevrons-left" className="h-4 w-4" />
                   </div>
                   <div
                     className="hover:cursor-pointer"
@@ -1977,17 +2017,17 @@ export default function Page() {
                         : null
                     }
                   >
-                    <Icon icon="feather:chevron-left" className="w-4 h-4" />
+                    <Icon icon="feather:chevron-left" className="h-4 w-4" />
                   </div>
                 </div>
-                <div className="w-[160px] flex items-center justify-center gap-x-[5px] text-xs">
+                <div className="flex w-[160px] items-center justify-center gap-x-[5px] text-xs">
                   <div className="text-[12px]">Page</div>
                   <div className="text-[12px]">{communityTablePage + 1}</div>
                   <div className="text-[12px]">of</div>
                   <div className="text-[12px]">
                     {Math.ceil(
                       communityDataSortedAndFiltered.length /
-                      communityTablePageSize,
+                        communityTablePageSize,
                     )}
                   </div>
                 </div>
@@ -1997,15 +2037,15 @@ export default function Page() {
                     className="hover:cursor-pointer"
                     onClick={() =>
                       communityTablePage <
-                        Math.floor(
-                          communityDataSortedAndFiltered.length /
+                      Math.floor(
+                        communityDataSortedAndFiltered.length /
                           communityTablePageSize,
-                        )
+                      )
                         ? setCommunityTablePage(communityTablePage + 1)
                         : null
                     }
                   >
-                    <Icon icon="feather:chevron-right" className="w-4 h-4" />
+                    <Icon icon="feather:chevron-right" className="h-4 w-4" />
                   </div>
                   <div
                     className="hover:cursor-pointer"
@@ -2013,16 +2053,16 @@ export default function Page() {
                       setCommunityTablePage(
                         Math.floor(
                           communityDataSortedAndFiltered.length /
-                          communityTablePageSize,
+                            communityTablePageSize,
                         ),
                       )
                     }
                   >
-                    <Icon icon="feather:chevrons-right" className="w-4 h-4" />
+                    <Icon icon="feather:chevrons-right" className="h-4 w-4" />
                   </div>
                 </div>
               </div>
-              <div className="absolute -bottom-[24px] w-full h-full flex items-center justify-center gap-x-[5px] text-[12px] text-forest-600">
+              <div className="absolute -bottom-[24px] flex h-full w-full items-center justify-center gap-x-[5px] text-[12px] text-forest-600">
                 <div className="text-[9px]">Showing</div>
                 <div className="text-[9px]">
                   {communityTablePage * communityTablePageSize + 1}
@@ -2045,79 +2085,80 @@ export default function Page() {
       </Container>
       <Container className="@container">
         <div
-          className="flex gap-x-[8px] items-center pb-[15px] scroll-mt-8 pt-[60px]"
+          className="flex scroll-mt-8 items-center gap-x-[8px] pb-[15px] pt-[60px]"
           ref={JumpToSections.ProjectFunding.ref}
           id="ProjectFunding"
         >
-          <div className="w-[36px] h-[36px]">
-            <Icon icon="gtp:gtp-project" className="w-[36px] h-[36px]" />
+          <div className="h-[36px] w-[36px]">
+            <Icon icon="gtp:gtp-project" className="h-[36px] w-[36px]" />
           </div>
           <Heading
-            className="leading-[120%] text-[20px] md:text-[30px] break-inside-avoid "
+            className="break-inside-avoid text-[20px] leading-[120%] md:text-[30px]"
             as="h2"
           >
             Project Funding
           </Heading>
         </div>
-        <div className="text-[14px] pb-[15px]">
+        <div className="pb-[15px] text-[14px]">
           These are all the projects that can participate in the current round
           of Octant. There are a maximum of 30 projects voted in for this Epoch.
         </div>
 
         <TopRowContainer
-          className={`mb-[15px] flex w-full justify-between gap-y-3 lg:gap-y-0 items-center text-xs bg-forest-50 dark:bg-[#1F2726] lg:z-30 flex-col-reverse rounded-b-[15px] md:rounded-b-[20px] rounded-t-[24px] p-[3px] lg:p-[5px] lg:flex-row lg:rounded-full lg:h-[54px] transition-shadow duration-300`}
+          className={`mb-[15px] flex w-full flex-col-reverse items-center justify-between gap-y-3 rounded-b-[15px] rounded-t-[24px] bg-forest-50 p-[3px] text-xs transition-shadow duration-300 dark:bg-[#1F2726] md:rounded-b-[20px] lg:z-30 lg:h-[54px] lg:flex-row lg:gap-y-0 lg:rounded-full lg:p-[5px]`}
         >
-          <TopRowParent className="flex flex-col px-[15px] py-[5px] leading-[120%] !items-center !w-full md:!w-fit md:!items-start">
+          <TopRowParent className="flex !w-full flex-col !items-center px-[15px] py-[5px] leading-[120%] md:!w-fit md:!items-start">
             {/* <div className="text-[9px]">Next Epoch starts in</div>
             <div className="font-bold text-[16px]">{moment("2024-10-13T16:00:00Z").diff(moment(), "days")} days</div> */}
             {EpochStatus}
-            <div className="font-bold text-[16px]">
+            <div className="text-[16px] font-bold">
               {/* {countdownTimeFormatted}
                */}
               <CountdownTimer time={countdownTime} />
             </div>
           </TopRowParent>
-          <div className="flex flex-col relative h-full lg:h-[44px] w-full lg:w-[271px] -my-[1px]">
+          <div className="relative -my-[1px] flex h-full w-full flex-col lg:h-[44px] lg:w-[271px]">
             <div
-              className={`relative flex rounded-full h-full w-full lg:z-30 p-[5px] ${isMobile ? "w-full" : "w-[271px]"
-                }`}
+              className={`relative flex h-full w-full rounded-full p-[5px] lg:z-30 ${
+                isMobile ? "w-full" : "w-[271px]"
+              }`}
               style={{
                 backgroundColor: "#344240",
               }}
             >
               <div
-                className="rounded-[40px] w-[54px] h-[34px] bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[15] hover:cursor-pointer"
+                className="z-[15] flex h-[34px] w-[54px] items-center justify-center rounded-[40px] bg-forest-50 hover:cursor-pointer dark:bg-[#1F2726]"
                 onClick={handlePrevFundingEpoch}
               >
-                <Icon icon="feather:arrow-left" className="w-6 h-6" />
+                <Icon icon="feather:arrow-left" className="h-6 w-6" />
               </div>
-              <div className="flex flex-1 flex-col items-center justify-self-center  gap-y-[1px]">
+              <div className="flex flex-1 flex-col items-center gap-y-[1px] justify-self-center">
                 <div
-                  className={`flex gap-x-[5px] justify-center items-center w-[123px] h-full`}
+                  className={`flex h-full w-[123px] items-center justify-center gap-x-[5px]`}
                 >
-                  <div className="text-sm overflow-ellipsis truncate whitespace-nowrap">
+                  <div className="truncate overflow-ellipsis whitespace-nowrap text-sm">
                     {Epochs[fundingEpoch].label}
                   </div>
                 </div>
               </div>
               <div
-                className="rounded-[40px] w-[54px] h-[34px] bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[15] hover:cursor-pointer"
+                className="z-[15] flex h-[34px] w-[54px] items-center justify-center rounded-[40px] bg-forest-50 hover:cursor-pointer dark:bg-[#1F2726]"
                 onClick={handleNextFundingEpoch}
               >
-                <Icon icon="feather:arrow-right" className="w-6 h-6" />
+                <Icon icon="feather:arrow-right" className="h-6 w-6" />
               </div>
             </div>
           </div>
         </TopRowContainer>
-        <div className="flex items-center w-full bg-[#1F2726] gap-x-[10px] rounded-[22px] pr-[10px] min-h-[44px] z-[1]">
+        <div className="z-[1] flex min-h-[44px] w-full items-center gap-x-[10px] rounded-[22px] bg-[#1F2726] pr-[10px]">
           <div
-            className={`relative flex justify-center items-center pl-[10px]`}
+            className={`relative flex items-center justify-center pl-[10px]`}
           >
             <SearchIcon />
           </div>
           <input
             // ref={inputRef}
-            className={`flex-1 pl-[11px] h-full bg-transparent placeholder-[#CDD8D3] border-none outline-none overflow-x-clip`}
+            className={`h-full flex-1 overflow-x-clip border-none bg-transparent pl-[11px] placeholder-[#CDD8D3] outline-none`}
             placeholder="Find Project"
             value={fundingSearch}
             onChange={(e) => {
@@ -2179,7 +2220,7 @@ export default function Page() {
       <HorizontalScrollContainer className="@container">
         <GridTableHeader
           gridDefinitionColumns="grid-cols-[20px,250px,minmax(125px,1600px),95px,126px,101px,89px]"
-          className="w-full text-[12px] gap-x-[15px] z-[2] !pl-[5px] !pr-[48px] !pt-[15px] !pb-[10px] select-none"
+          className="z-[2] w-full select-none gap-x-[15px] !pb-[10px] !pl-[5px] !pr-[48px] !pt-[15px] text-[12px]"
         >
           <div></div>
           <GridTableHeaderCell
@@ -2256,9 +2297,9 @@ export default function Page() {
                   const project_key = fundingRow.project_key;
                   const lastEpoch = projectMetadataData
                     ? Object.keys(projectMetadataData[project_key])
-                      .filter((e) => e != "all")
-                      .map((e) => parseInt(e))
-                      .sort((a, b) => b - a)[0]
+                        .filter((e) => e != "all")
+                        .map((e) => parseInt(e))
+                        .sort((a, b) => b - a)[0]
                     : 0;
                   const lastEpochProjectMetadata = latestProjectMetadatas[
                     project_key
@@ -2278,33 +2319,33 @@ export default function Page() {
                     project_key: project_key,
                     owner_project:
                       projectMetadataData &&
-                        projectMetadataData[fundingRow.project_key] &&
-                        projectMetadataData[fundingRow.project_key][
+                      projectMetadataData[fundingRow.project_key] &&
+                      projectMetadataData[fundingRow.project_key][
                         Epochs[fundingEpoch].epoch
-                        ]
+                      ]
                         ? projectMetadataData[fundingRow.project_key][
-                          Epochs[fundingEpoch].epoch
-                        ].name
+                            Epochs[fundingEpoch].epoch
+                          ].name
                         : "",
                     project_metadata:
                       projectMetadataData &&
-                        projectMetadataData[fundingRow.project_key] &&
-                        projectMetadataData[fundingRow.project_key][
+                      projectMetadataData[fundingRow.project_key] &&
+                      projectMetadataData[fundingRow.project_key][
                         Epochs[fundingEpoch].epoch
-                        ]
+                      ]
                         ? projectMetadataData[fundingRow.project_key][
-                        Epochs[fundingEpoch].epoch
-                        ]
+                            Epochs[fundingEpoch].epoch
+                          ]
                         : lastEpochProjectMetadata,
                     //@ts-ignore
                     address:
                       projectMetadataData &&
-                        projectMetadataData[fundingRow.project_key][
+                      projectMetadataData[fundingRow.project_key][
                         Epochs[fundingEpoch].epoch
-                        ]
+                      ]
                         ? projectMetadataData[fundingRow.project_key][
-                          Epochs[fundingEpoch].epoch
-                        ].address
+                            Epochs[fundingEpoch].epoch
+                          ].address
                         : lastEpochProjectMetadata.address || "",
                     donors:
                       fundingRow.donor_counts[Epochs[fundingEpoch].epoch] || 0,
@@ -2316,9 +2357,9 @@ export default function Page() {
                     total:
                       fundingRow.total[Epochs[fundingEpoch].epoch] ||
                       0 +
-                      fundingRow.matched_rewards[
-                      Epochs[fundingEpoch].epoch
-                      ] ||
+                        fundingRow.matched_rewards[
+                          Epochs[fundingEpoch].epoch
+                        ] ||
                       0,
                     all_time_total: 0,
                     last_funding_epoch: lastEpoch.toString(),
@@ -2332,11 +2373,11 @@ export default function Page() {
                       // lastFundingEpoch={Epochs[Epochs.length - 1].epoch}
                       project_key={fundingRow.project_key}
                       lastFundingEpoch={lastFundingEpoch}
-                    // projectIndex={index}
-                    // setCurrentEpoch={setCurrentEpoch}
-                    // ProjectsMetadata={ProjectsMetadata}
-                    // master={master}
-                    // allTimeTotalsByProjectKey={allTimeTotalsByProjectKey}
+                      // projectIndex={index}
+                      // setCurrentEpoch={setCurrentEpoch}
+                      // ProjectsMetadata={ProjectsMetadata}
+                      // master={master}
+                      // allTimeTotalsByProjectKey={allTimeTotalsByProjectKey}
                     />
                   );
                 })}
@@ -2345,15 +2386,15 @@ export default function Page() {
       </HorizontalScrollContainer>
       <Container className="@container">
         <div
-          className="flex gap-x-[8px] items-center pb-[15px] scroll-mt-8 pt-[60px]"
+          className="flex scroll-mt-8 items-center gap-x-[8px] pb-[15px] pt-[60px]"
           ref={JumpToSections.ProjectFunding.ref}
           id="ProjectFunding"
         >
-          <div className="w-[36px] h-[36px]">
-            <Icon icon="gtp:gtp-blockspace" className="w-[36px] h-[36px]" />
+          <div className="h-[36px] w-[36px]">
+            <Icon icon="gtp:gtp-blockspace" className="h-[36px] w-[36px]" />
           </div>
           <Heading
-            className="leading-[120%] text-[20px] md:text-[30px] break-inside-avoid "
+            className="break-inside-avoid text-[20px] leading-[120%] md:text-[30px]"
             as="h2"
           >
             Octant Explained
@@ -2409,12 +2450,12 @@ const OctantCircleChart = ({
           label: "kept by wallets",
           value: communityData
             ? communityData.reduce(
-              (acc, user) =>
-                acc +
-                user.budget_amounts[epoch] -
-                user.allocation_amounts[epoch],
-              0,
-            )
+                (acc, user) =>
+                  acc +
+                  user.budget_amounts[epoch] -
+                  user.allocation_amounts[epoch],
+                0,
+              )
             : 0,
           className: "kept-by-wallets",
         },
@@ -2422,9 +2463,9 @@ const OctantCircleChart = ({
           label: "allocated to projects",
           value: communityData
             ? communityData.reduce(
-              (acc, user) => acc + user.allocation_amounts[epoch],
-              0,
-            )
+                (acc, user) => acc + user.allocation_amounts[epoch],
+                0,
+              )
             : 0,
           className: "allocated-to-projects",
         },
@@ -2457,10 +2498,10 @@ const ExpandingButtonMenu = ({
   const isMobile = useMediaQuery("(max-width: 640px)");
   return (
     <div
-      className={`absolute delay-0 hover:delay-300 group/jump flex flex-col cursor-pointer hover:top-[10px] hover:left-[5px] hover:right-[5px] transition-all duration-300 ${className}`}
+      className={`group/jump absolute flex cursor-pointer flex-col transition-all delay-0 duration-300 hover:left-[5px] hover:right-[5px] hover:top-[10px] hover:delay-300 ${className}`}
     >
       <div
-        className="!z-[15] group-hover/jump:!z-[25] transition-[z-index] delay-100 group-hover/jump:delay-0 w-full flex items-center h-[36px] gap-x-[8px] pl-[6px] pr-[10px] rounded-full dark:bg-[#263130] bg-forest-50"
+        className="!z-[15] flex h-[36px] w-full items-center gap-x-[8px] rounded-full bg-forest-50 pl-[6px] pr-[10px] transition-[z-index] delay-100 group-hover/jump:!z-[25] group-hover/jump:delay-0 dark:bg-[#263130]"
         onMouseEnter={() => {
           track(`hovered ${button.label} button`, {
             location: isMobile ? `mobile Octant page` : `desktop Octant page`,
@@ -2469,30 +2510,32 @@ const ExpandingButtonMenu = ({
         }}
       >
         <div
-          className={`${button.showIconBackground &&
-            "bg-white dark:bg-forest-1000 relative "
-            } rounded-full w-[25px] h-[25px] p-[5px]`}
+          className={`${
+            button.showIconBackground && "relative bg-white dark:bg-forest-1000"
+          } h-[25px] w-[25px] rounded-full p-[5px]`}
         >
           <Icon
             icon={button.icon}
-            className={`w-[15px] h-[15px] ${button.animateIcon &&
-              "transition-transform duration-300 transform delay-0 group-hover/jump:delay-300 group-hover/jump:rotate-90"
-              }`}
+            className={`h-[15px] w-[15px] ${
+              button.animateIcon &&
+              "transform transition-transform delay-0 duration-300 group-hover/jump:rotate-90 group-hover/jump:delay-300"
+            }`}
           />
           <Icon
             icon={"gtp:circle-arrow"}
-            className={`w-[4px] h-[9px] absolute top-2 right-0 transition-transform delay-0 group-hover/jump:delay-300 duration-500 group-hover/jump:rotate-90 ${button.showIconBackground ? "block" : "hidden"
-              }`}
+            className={`absolute right-0 top-2 h-[9px] w-[4px] transition-transform delay-0 duration-500 group-hover/jump:rotate-90 group-hover/jump:delay-300 ${
+              button.showIconBackground ? "block" : "hidden"
+            }`}
             style={{
               transformOrigin: "-8px 4px",
             }}
           />
         </div>
-        <div className="whitespace-nowrap text-[14px] font-semibold lg:leading-normal leading-tight">
+        <div className="whitespace-nowrap text-[14px] font-semibold leading-tight lg:leading-normal">
           {button.label}
         </div>
       </div>
-      <div className="absolute !z-[11] group-hover/jump:!z-[21] delay-0 group-hover/jump:delay-300 overflow-hidden whitespace-nowrap  max-h-0 transition-all duration-300 left-0 right-0 top-[16px] bg-white dark:bg-[#151A19] pb-[0px] rounded-b-[22px] group-hover/jump:max-h-[300px] group-hover/jump:pt-[24px] group-hover/jump:pb-[10px] group-hover/jump:shadow-lg group-hover/jump:dark:shadow-[0px_4px_46.2px_0px_#000000]">
+      <div className="absolute left-0 right-0 top-[16px] !z-[11] max-h-0 overflow-hidden whitespace-nowrap rounded-b-[22px] bg-white pb-[0px] transition-all delay-0 duration-300 group-hover/jump:!z-[21] group-hover/jump:max-h-[300px] group-hover/jump:pb-[10px] group-hover/jump:pt-[24px] group-hover/jump:shadow-lg group-hover/jump:delay-300 dark:bg-[#151A19] group-hover/jump:dark:shadow-[0px_4px_46.2px_0px_#000000]">
         {items.map((item: { label: string; icon: string; href: string }) => (
           <Link
             href={item.href}
@@ -2513,10 +2556,10 @@ const ExpandingButtonMenu = ({
                 });
               }
             }}
-            className="whitespace-nowrap flex items-center gap-x-[10px] h-[32px] font-medium text-sm px-4 py-2 group-hover:w-full w-0 transition-[width] duration-100 ease-in-out hover:bg-forest-50 dark:hover:bg-forest-900"
+            className="flex h-[32px] w-0 items-center gap-x-[10px] whitespace-nowrap px-4 py-2 text-sm font-medium transition-[width] duration-100 ease-in-out group-hover:w-full hover:bg-forest-50 dark:hover:bg-forest-900"
           >
-            <div className="w-4 h-4">
-              <Icon icon={item.icon} className="w-4 h-4" />
+            <div className="h-4 w-4">
+              <Icon icon={item.icon} className="h-4 w-4" />
             </div>
             <div>{item.label}</div>
           </Link>
@@ -2527,7 +2570,7 @@ const ExpandingButtonMenu = ({
 };
 
 const SearchIcon = () => (
-  <div className="w-6 h-6 z-10">
+  <div className="z-10 h-6 w-6">
     <svg
       width="25"
       height="24"
@@ -2757,7 +2800,7 @@ const Slider: React.FC<SliderProps> = ({
     <div className="w-full">
       <div
         ref={containerRef}
-        className="relative w-full h-2 bg-forest-1000 rounded-full cursor-pointer"
+        className="relative h-2 w-full cursor-pointer rounded-full bg-forest-1000"
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
         role="slider"
@@ -2768,11 +2811,11 @@ const Slider: React.FC<SliderProps> = ({
         onKeyDown={handleKeyDown}
       >
         <div
-          className="absolute top-0 left-0 h-2 bg-forest-900 rounded-full"
+          className="absolute left-0 top-0 h-2 rounded-full bg-forest-900"
           style={{ width: `${percentage}%`, transition: "all 0.1s" }}
         ></div>
         <div
-          className="absolute top-1/2 left-0 transform -translate-x-1/2 -translate-y-1/2 w-4 h-2 bg-forest-800 border border-forest-800 rounded-full shadow focus:outline-none"
+          className="absolute left-0 top-1/2 h-2 w-4 -translate-x-1/2 -translate-y-1/2 transform rounded-full border border-forest-800 bg-forest-800 shadow focus:outline-none"
           style={{
             left: `${percentage}%`,
             transition: isDragging ? "none" : "left 0.1s",
@@ -2833,17 +2876,17 @@ const CommunityTableRow = ({
       <div className="pb-[3px]">
         <GridTableRow
           gridDefinitionColumns="grid-cols-[20px,minmax(80px,1600px),118px,72px,69px]"
-          className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] !pl-[5px] !pr-[15px] select-none"
+          className="group inline-grid h-[34px] select-none gap-x-[15px] !pl-[5px] !pr-[15px] text-[12px] transition-all duration-300"
           onClick={() => {
             setIsOpen(!isOpen);
           }}
         >
           <div className="flex items-center justify-center">
-            <div className="relative flex items-center justify-center rounded-full w-[16px] h-[16px] bg-[#151A19] cursor-pointer">
+            <div className="relative flex h-[16px] w-[16px] cursor-pointer items-center justify-center rounded-full bg-[#151A19]">
               <AddressIcon address={user.user} className="rounded-full" />
               <Icon
                 icon={"gtp:circle-arrow"}
-                className={`w-[4px] h-[9px] absolute top-[4px] -right-[4px] `}
+                className={`absolute -right-[4px] top-[4px] h-[9px] w-[4px]`}
                 style={{
                   transform: `rotate(${isOpen ? "90deg" : "0deg"})`,
                   transformOrigin: "-7px 4px",
@@ -2852,20 +2895,20 @@ const CommunityTableRow = ({
               />
             </div>
           </div>
-          <div className="@container flex h-full items-center hover:bg-transparent select-none">
+          <div className="flex h-full select-none items-center @container hover:bg-transparent">
             <span
-              className="@container flex-1 flex h-full items-center hover:bg-transparent pr-[10px]"
+              className="flex h-full flex-1 items-center pr-[10px] @container hover:bg-transparent"
               style={{
                 fontFeatureSettings: "'pnum' on, 'lnum' on",
               }}
-            // onDoubleClick={(e) => {
-            //   e.preventDefault(); // Prevent default double-click behavior
-            //   const selection = window.getSelection();
-            //   const range = document.createRange();
-            //   range.selectNodeContents(e.currentTarget);
-            //   selection?.removeAllRanges();
-            //   selection?.addRange(range);
-            // }}
+              // onDoubleClick={(e) => {
+              //   e.preventDefault(); // Prevent default double-click behavior
+              //   const selection = window.getSelection();
+              //   const range = document.createRange();
+              //   range.selectNodeContents(e.currentTarget);
+              //   selection?.removeAllRanges();
+              //   selection?.addRange(range);
+              // }}
             >
               <div
                 className="truncate transition-all duration-300"
@@ -2879,7 +2922,7 @@ const CommunityTableRow = ({
               <div className="transition-all duration-300">
                 {user.user.slice(-6)}
               </div>
-              <div className="pl-[10px] flex gap-x-[10px]">
+              <div className="flex gap-x-[10px] pl-[10px]">
                 <div className="">
                   <Icon
                     icon={
@@ -2887,7 +2930,7 @@ const CommunityTableRow = ({
                         ? "feather:check-circle"
                         : "feather:copy"
                     }
-                    className="w-[14px] h-[14px] cursor-pointer z-[10]"
+                    className="z-[10] h-[14px] w-[14px] cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleCopyAddress(user.user);
@@ -2961,15 +3004,16 @@ const CommunityTableRow = ({
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
                           })} */}
-                <span className="opacity-60 text-[0.55rem]">GLM</span>
+                <span className="text-[0.55rem] opacity-60">GLM</span>
               </div>
             ) : (
               <div className="text-[#CDD8D3]">-</div>
             )}
           </div>
           <div
-            className={`flex items-center justify-end whitespace-nowrap ${user.budget_amount < 0.01 && "text-[11px]"
-              }`}
+            className={`flex items-center justify-end whitespace-nowrap ${
+              user.budget_amount < 0.01 && "text-[11px]"
+            }`}
           >
             {user.budget_amount > 0 ? (
               <div className="text-[#CDD8D3]">
@@ -2977,15 +3021,16 @@ const CommunityTableRow = ({
                   minimumFractionDigits: user.budget_amount < 0.01 ? 4 : 2,
                   maximumFractionDigits: user.budget_amount < 0.01 ? 5 : 2,
                 })}{" "}
-                <span className="opacity-60 text-[0.55rem]">ETH</span>
+                <span className="text-[0.55rem] opacity-60">ETH</span>
               </div>
             ) : (
               <div className="text-[#CDD8D3]">-</div>
             )}
           </div>
           <div
-            className={`flex items-center justify-end whitespace-nowrap ${user.allocation_amount < 0.01 && "text-[11px]"
-              }`}
+            className={`flex items-center justify-end whitespace-nowrap ${
+              user.allocation_amount < 0.01 && "text-[11px]"
+            }`}
           >
             {user.allocation_amount > 0 ? (
               <div className="text-[#CDD8D3]">
@@ -2993,7 +3038,7 @@ const CommunityTableRow = ({
                   minimumFractionDigits: user.allocation_amount < 0.01 ? 4 : 2,
                   maximumFractionDigits: user.allocation_amount < 0.01 ? 5 : 2,
                 })}{" "}
-                <span className="opacity-60 text-[0.55rem]">ETH</span>
+                <span className="text-[0.55rem] opacity-60">ETH</span>
               </div>
             ) : (
               <div className="text-[#CDD8D3]">-</div>
@@ -3002,12 +3047,13 @@ const CommunityTableRow = ({
         </GridTableRow>
         <div className="pl-[13px] pr-[15px]">
           <div
-            className={`flex flex-col bg-[#1F2726] rounded-b-[15px] border-[#CDD8D3]/30 border-dotted border-x border-b transition-all duration-300 ${isOpen
-              ? "min-h-[80px] max-h-[300px] opacity-100"
-              : "max-h-0 min-h-0 opacity-0"
-              } overflow-hidden`}
+            className={`flex flex-col rounded-b-[15px] border-x border-b border-dotted border-[#CDD8D3]/30 bg-[#1F2726] transition-all duration-300 ${
+              isOpen
+                ? "max-h-[300px] min-h-[80px] opacity-100"
+                : "max-h-0 min-h-0 opacity-0"
+            } overflow-hidden`}
           >
-            <div className="flex flex-col p-[15px] gap-y-[6px] text-[12px]">
+            <div className="flex flex-col gap-y-[6px] p-[15px] text-[12px]">
               <div className="flex items-center justify-between">
                 <div>
                   Active Since:{" "}
@@ -3015,7 +3061,7 @@ const CommunityTableRow = ({
                     Epoch {user.activeSinceEpoch}
                   </span>
                 </div>
-                <div className="flex gap-x-[5px] items-center">
+                <div className="flex items-center gap-x-[5px]">
                   <div>
                     Donated{" "}
                     <span className="font-semibold">
@@ -3026,7 +3072,7 @@ const CommunityTableRow = ({
                       ETH
                     </span>
                   </div>
-                  <div className="flex flex-col w-[133px]">
+                  <div className="flex w-[133px] flex-col">
                     <div className="flex justify-between text-[10px]">
                       <div>
                         {(
@@ -3044,14 +3090,15 @@ const CommunityTableRow = ({
                         %
                       </div>
                     </div>
-                    <div className="flex w-full h-[4px]">
+                    <div className="flex h-[4px] w-full">
                       <div
                         className="h-full rounded-l-full"
                         style={{
                           background:
                             "linear-gradient(0deg,#1DF7EF 0%,#10808C 100%)",
-                          width: `${(user.allocation_amount / user.budget_amount) * 100
-                            }%`,
+                          width: `${
+                            (user.allocation_amount / user.budget_amount) * 100
+                          }%`,
                         }}
                       ></div>
                       <div
@@ -3059,10 +3106,11 @@ const CommunityTableRow = ({
                         style={{
                           background:
                             "linear-gradient(-3deg,#FFDF27 0%,#FE5468 100%)",
-                          width: `${((user.budget_amount - user.allocation_amount) /
-                            user.budget_amount) *
+                          width: `${
+                            ((user.budget_amount - user.allocation_amount) /
+                              user.budget_amount) *
                             100
-                            }%`,
+                          }%`,
                         }}
                       ></div>
                     </div>
@@ -3095,10 +3143,10 @@ const CommunityTableRow = ({
                       (project_key, index) => (
                         <div
                           key={index + project_key}
-                          className="flex items-center gap-x-[5px] bg-[#344240] rounded-[15px] pl-[0px] pr-[6px] py-[0px] text-[10px]"
+                          className="flex items-center gap-x-[5px] rounded-[15px] bg-[#344240] py-[0px] pl-[0px] pr-[6px] text-[10px]"
                         >
                           {communityEpoch === 0 ? (
-                            <div className="w-6 h-6 border border-forest-900/20 dark:border-forest-500/20 rounded-full overflow-hidden">
+                            <div className="h-6 w-6 overflow-hidden rounded-full border border-forest-900/20 dark:border-forest-500/20">
                               {projectMetadataData &&
                                 projectMetadataData[project_key] &&
                                 Object.values(projectMetadataData[project_key])
@@ -3115,16 +3163,17 @@ const CommunityTableRow = ({
                                   ))}
                             </div>
                           ) : (
-                            <div className="w-6 h-6 border border-forest-900/20 dark:border-forest-500/20 rounded-full overflow-hidden">
+                            <div className="h-6 w-6 overflow-hidden rounded-full border border-forest-900/20 dark:border-forest-500/20">
                               {projectMetadataData &&
                                 projectMetadataData[project_key][
-                                Epochs[communityEpoch].epoch
+                                  Epochs[communityEpoch].epoch
                                 ] && (
                                   <Image
-                                    src={`https://ipfs.io/ipfs/${projectMetadataData[project_key][
-                                      Epochs[communityEpoch].epoch
-                                    ].profile_image_medium
-                                      }`}
+                                    src={`https://ipfs.io/ipfs/${
+                                      projectMetadataData[project_key][
+                                        Epochs[communityEpoch].epoch
+                                      ].profile_image_medium
+                                    }`}
                                     alt={
                                       projectMetadataData[project_key][
                                         Epochs[communityEpoch].epoch
@@ -3189,17 +3238,16 @@ const OctantTableRow = ({
   // master,
   fundingEpoch,
 }: // allTimeTotalsByProjectKey
-  TableRowProps) => {
+TableRowProps) => {
   return (
     <GridTableRow
       gridDefinitionColumns="grid-cols-[20px,250px,minmax(125px,1600px),95px,126px,101px,89px]"
-      className="group w-full text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] !pl-[5px] !pr-[15px] select-none"
+      className="group inline-grid h-[34px] w-full select-none gap-x-[15px] !pl-[5px] !pr-[15px] text-[12px] transition-all duration-300"
     >
-      <div className="w-[26px] h-[18px] px-[4px]">
+      <div className="h-[18px] w-[26px] px-[4px]">
         {row.project_metadata && (
-          <div className="size-[18px] relative">
-
-            <div className="absolute size-[16px] inset-[1px] rounded-full bg-white" />
+          <div className="relative size-[18px]">
+            <div className="absolute inset-[1px] size-[16px] rounded-full bg-white" />
             <Image
               src={`https://ipfs.io/ipfs/${row.project_metadata.profile_image_medium}`}
               alt={row.owner_project}
@@ -3207,17 +3255,17 @@ const OctantTableRow = ({
               // height={18}
               fill
               objectFit="contain"
-              className=" rounded-full"
+              className="rounded-full"
             />
           </div>
         )}
       </div>
-      <div className="flex justify-between select-none">
+      <div className="flex select-none justify-between">
         <div className="truncate">
           {row.project_metadata?.name ? (
             row.project_metadata.name
           ) : (
-            <div className="flex h-full items-center gap-x-[3px] text-[#5A6462] text-[10px]">
+            <div className="flex h-full items-center gap-x-[3px] text-[10px] text-[#5A6462]">
               Not Available
             </div>
           )}
@@ -3234,7 +3282,7 @@ const OctantTableRow = ({
                   >
                     <Icon
                       icon="feather:monitor"
-                      className="w-[15px] h-[15px]"
+                      className="h-[15px] w-[15px]"
                     />
                   </Link>
                 )}
@@ -3249,7 +3297,7 @@ const OctantTableRow = ({
                     >
                       <Icon
                         icon="ri:twitter-x-fill"
-                        className="w-[15px] h-[15px]"
+                        className="h-[15px] w-[15px]"
                       />
                     </Link>
                   )}
@@ -3263,7 +3311,7 @@ const OctantTableRow = ({
                     >
                       <Icon
                         icon="ri:github-fill"
-                        className="w-[15px] h-[15px]"
+                        className="h-[15px] w-[15px]"
                       />
                     </Link>
                   )}
@@ -3271,8 +3319,9 @@ const OctantTableRow = ({
               </>
               <div className="h-[15px] w-[15px]">
                 <Link
-                  href={`https://octant.app/project/${fundingEpoch === 0 ? lastFundingEpoch : fundingEpoch
-                    }/${row.project_metadata.address}`}
+                  href={`https://octant.app/project/${
+                    fundingEpoch === 0 ? lastFundingEpoch : fundingEpoch
+                  }/${row.project_metadata.address}`}
                   target="_blank"
                   className="group flex items-center gap-x-[5px] text-xs"
                 >
@@ -3301,9 +3350,9 @@ const OctantTableRow = ({
         </div>
       </div>
 
-      <div className="@container flex h-full items-center hover:bg-transparent select-none">
+      <div className="flex h-full select-none items-center @container hover:bg-transparent">
         <span
-          className="@container flex-1 flex h-full items-center hover:bg-transparent pr-[10px] max-w-[320px]"
+          className="flex h-full max-w-[320px] flex-1 items-center pr-[10px] @container hover:bg-transparent"
           style={{
             fontFeatureSettings: "'pnum' on, 'lnum' on",
           }}
@@ -3387,28 +3436,28 @@ const OctantTableRow = ({
         </Link>
       </div>
 
-      <div className="flex justify-end item-center gap-x-2">
-        <div className="flex justify-end item-center gap-x-2">
-          <div className="flex items-center leading-[1] font-inter">
+      <div className="item-center flex justify-end gap-x-2">
+        <div className="item-center flex justify-end gap-x-2">
+          <div className="flex items-center font-inter leading-[1]">
             {row.donors}
           </div>
-          <div className="w-[15px] h-[15px] flex items-center justify-center select-none">
+          <div className="flex h-[15px] w-[15px] select-none items-center justify-center">
             {row.donors < 50 && (
               <Icon
                 icon={"fluent:person-20-filled"}
-                className="w-[15px] h-[15px] text-forest-900/30 dark:text-forest-500/30 fill-current"
+                className="h-[15px] w-[15px] fill-current text-forest-900/30 dark:text-forest-500/30"
               />
             )}
             {row.donors >= 50 && row.donors < 100 && (
               <Icon
                 icon={"fluent:people-20-filled"}
-                className="w-[15px] h-[15px] text-forest-900/30 dark:text-forest-500/30 fill-current"
+                className="h-[15px] w-[15px] fill-current text-forest-900/30 dark:text-forest-500/30"
               />
             )}
             {row.donors >= 100 && (
               <Icon
                 icon={"fluent:people-community-20-filled"}
-                className="w-[15px] h-[15px] text-forest-900/30 dark:text-forest-500/30 fill-current"
+                className="h-[15px] w-[15px] fill-current text-forest-900/30 dark:text-forest-500/30"
               />
             )}
           </div>
@@ -3416,31 +3465,33 @@ const OctantTableRow = ({
 
         {/* )} */}
       </div>
-      <div className="flex justify-end ">
+      <div className="flex justify-end">
         {/* {["REWARD_ALLOCATION", "FINALIZED"].includes(currentEpoch.state) && currentEpochProject && ( */}
         <div className="relative flex items-center gap-x-2 pr-0.5">
-          <div className="leading-[1.2] font-inter">
+          <div className="font-inter leading-[1.2]">
             {row.allocation.toFixed(2)}{" "}
-            <span className="opacity-60 text-[0.55rem]">ETH</span>
+            <span className="text-[0.55rem] opacity-60">ETH</span>
           </div>
-        </div>
-      </div>
-      <div className="flex justify-end ">
-        <div
-          className={`leading-[1.2] font-inter ${row.matched <= 0 && "opacity-30"
-            }`}
-        >
-          {row.matched.toFixed(2)}{" "}
-          <span className="opacity-60 text-[0.55rem]">ETH</span>
         </div>
       </div>
       <div className="flex justify-end">
         <div
-          className={`leading-[1.2] font-inter ${row.total <= 0 && "opacity-30"
-            }`}
+          className={`font-inter leading-[1.2] ${
+            row.matched <= 0 && "opacity-30"
+          }`}
+        >
+          {row.matched.toFixed(2)}{" "}
+          <span className="text-[0.55rem] opacity-60">ETH</span>
+        </div>
+      </div>
+      <div className="flex justify-end">
+        <div
+          className={`font-inter leading-[1.2] ${
+            row.total <= 0 && "opacity-30"
+          }`}
         >
           {row.total.toFixed(2)}{" "}
-          <span className="opacity-60 text-[0.55rem]">ETH</span>
+          <span className="text-[0.55rem] opacity-60">ETH</span>
         </div>
       </div>
       {/* <div className="flex justify-end">
@@ -3480,30 +3531,30 @@ const CountdownTimer = ({ time }: { time: number }) => {
     return (
       <div className="flex items-center gap-x-[5px] leading-[1.1]">
         {days > 0 && (
-          <div className="flex flex-col items-center w-[20px]">
-            <div className="font-bold text-[12px]">{days}</div>
+          <div className="flex w-[20px] flex-col items-center">
+            <div className="text-[12px] font-bold">{days}</div>
             <div className="text-[9px] font-normal text-forest-600">days</div>
           </div>
         )}
-        <div className="flex items-center gap-x-[0px] w-[60px] leading-[1.1]">
+        <div className="flex w-[60px] items-center gap-x-[0px] leading-[1.1]">
           <div className="flex flex-col items-center">
-            <div className="font-bold text-[12px]">{hours}</div>
+            <div className="text-[12px] font-bold">{hours}</div>
             <div className="text-[9px] font-normal text-forest-600">hrs</div>
           </div>
           <div className="flex flex-col items-center">
-            <div className="font-bold text-[12px]">:</div>
+            <div className="text-[12px] font-bold">:</div>
             <div className="text-[9px] font-normal text-forest-600">&nbsp;</div>
           </div>
           <div className="flex flex-col items-center">
-            <div className="font-bold text-[12px]">{minutes}</div>
+            <div className="text-[12px] font-bold">{minutes}</div>
             <div className="text-[9px] font-normal text-forest-600">min</div>
           </div>
           <div className="flex flex-col items-center">
-            <div className="font-bold text-[12px]">:</div>
+            <div className="text-[12px] font-bold">:</div>
             <div className="text-[9px] font-normal text-forest-600">&nbsp;</div>
           </div>
           <div className="flex flex-col items-center">
-            <div className="font-bold text-[12px]">{seconds}</div>
+            <div className="text-[12px] font-bold">{seconds}</div>
             <div className="text-[9px] font-normal text-forest-600">sec</div>
           </div>
         </div>
