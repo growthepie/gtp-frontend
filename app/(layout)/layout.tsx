@@ -194,7 +194,7 @@ export default function RootLayout({
       }}
     >
       <Head />
-      <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway !overflow-x-hidden overflow-y-scroll">
+      <body className="!overflow-x-hidden overflow-y-scroll bg-forest-50 font-raleway text-forest-900 dark:bg-[#1F2726] dark:text-forest-500">
         <script
           dangerouslySetInnerHTML={{
             __html: script,
@@ -206,27 +206,33 @@ export default function RootLayout({
         />
         <Providers>
           <div className="flex h-fit w-full justify-center">
-            <div className="flex w-full max-w-[1680px] min-h-screen">
+            <div className="flex min-h-screen w-full max-w-[1680px]">
               <SidebarContainer />
-              <div id="content-panel" className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative min-h-full bg-white dark:bg-inherit">
-                <div className="w-full relative min-h-full">
-                  <div className="background-container !fixed">
+              <div
+                id="content-panel"
+                className="relative z-10 flex min-h-full flex-1 flex-col overflow-y-auto overflow-x-hidden bg-white dark:bg-inherit"
+              >
+                <div className="relative min-h-full w-full">
+                  <div
+                    id="background-container"
+                    className="background-container !fixed"
+                  >
                     <div className="background-gradient-group">
                       <div className="background-gradient-yellow"></div>
                       <div className="background-gradient-green"></div>
                     </div>
                   </div>
                   <Header />
-                  <main className="flex-1 w-full mx-auto z-10 pb-[165px] min-h-[calc(100vh-218px-56px)] md:min-h-[calc(100vh-207px-80px)]">
+                  <main className="z-10 mx-auto min-h-[calc(100vh-218px-56px)] w-full flex-1 pb-[165px] md:min-h-[calc(100vh-207px-80px)]">
                     {children}
                   </main>
                   {/* <BottomBanner /> */}
                   <Footer />
                 </div>
               </div>
-              <div className="z-50 flex fixed bottom-[20px] w-full max-w-[1680px] justify-end pointer-events-none">
-                <div className="pr-[20px] md:pr-[50px] pointer-events-auto">
-                  <div className="relative flex gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#5A6462] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
+              <div className="pointer-events-none fixed bottom-[20px] z-50 flex w-full max-w-[1680px] justify-end">
+                <div className="pointer-events-auto pr-[20px] md:pr-[50px]">
+                  <div className="relative z-50 flex gap-x-[15px] rounded-full bg-forest-500 p-[5px] shadow-[0px_0px_50px_0px_#00000033] dark:bg-[#5A6462] dark:shadow-[0px_0px_50px_0px_#000000]">
                     {/* <Details /> */}
                     <Share />
                   </div>
