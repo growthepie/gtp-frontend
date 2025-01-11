@@ -916,6 +916,7 @@ export default function CategoryMetrics({
     selectedMode,
     showUsd,
     chainEcosystemFilter,
+    AllChainsByKeys,
   ]);
 
   const largestContractValue = useMemo(() => {

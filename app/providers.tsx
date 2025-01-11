@@ -21,7 +21,9 @@ type ProvidersProps = {
 
 // bypass AWS rate limiting in development
 const headers = new Headers();
-headers.set("Test-Header", "true");
+headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
+headers.set("Pragma", "no-cache");
+headers.set("Expires", "0");
 
 if (process.env.NEXT_PUBLIC_X_DEVELOPER_TOKEN)
   headers.set("X-Developer-Token", process.env.NEXT_PUBLIC_X_DEVELOPER_TOKEN);
