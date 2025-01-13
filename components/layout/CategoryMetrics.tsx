@@ -188,9 +188,14 @@ export default function CategoryMetrics({
     [key: string]: boolean;
   }>(
     Object.entries(AllChainsByKeys).reduce((acc, [key, chain]) => {
-      if (AllChainsByKeys[key].chainType === "L2") acc[key] = true;
+      if (Get_SupportedChainKeys(master).includes(chain.key)) acc[key] = true;
       return acc;
     }, {}),
+
+    // Object.entries(AllChainsByKeys).reduce((acc, [key, chain]) => {
+    //   if (AllChainsByKeys[key].chainType === "L2") acc[key] = true;
+    //   return acc;
+    // }, {}),
   );
 
   const [contracts, setContracts] = useState<{ [key: string]: ContractInfo }>(
@@ -916,6 +921,7 @@ export default function CategoryMetrics({
     selectedMode,
     showUsd,
     chainEcosystemFilter,
+    AllChainsByKeys,
   ]);
 
   const largestContractValue = useMemo(() => {

@@ -79,6 +79,11 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: "/optimism-retropgf-3",
+        destination: "/trackers/optimism-retropgf-3",
+        permanent: true,
+      },
+      {
         source: "/trackers/octant-v2",
         destination: "/trackers/octant",
         permanent: true,
