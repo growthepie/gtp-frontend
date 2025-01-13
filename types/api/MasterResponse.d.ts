@@ -1,6 +1,7 @@
 ﻿export interface MasterResponse {
   current_version: string;
   chains: Chains;
+  custom_logos: { [key: string]: CustomLogo };
   metrics: Metrics;
   da_metrics: Metrics;
   fee_metrics: FeeMetrics;
@@ -11,6 +12,12 @@
 
 export interface Chains {
   [key: string]: ChainInfo;
+}
+
+export interface CustomLogo {
+  body: string;
+  width?: number;
+  height?: number;
 }
 
 export interface ChainInfo {

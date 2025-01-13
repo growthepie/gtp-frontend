@@ -17,7 +17,7 @@ import {
 import Highcharts, { chart } from "highcharts/highstock";
 import { useLocalStorage } from "usehooks-ts";
 import Image from "next/image";
-import { useMemo } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { useMaster } from "@/contexts/MasterContext";
 import "@/app/highcharts.axis.css";
 import Icon from "@/components/layout/Icon";
@@ -25,6 +25,7 @@ import { DAConsumerChart } from "@/types/api/DAOverviewResponse";
 import { stringToDOM } from "million";
 import { Any } from "react-spring";
 import { format } from "path";
+import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 
 const COLORS = {
     GRID: "rgb(215, 223, 222)",
@@ -42,6 +43,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
 
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
     const { AllDALayersByKeys, AllChainsByKeys } = useMaster();
+    const [selectedChain, setSelectedChain] = useState<string>("all");
 
 
     
@@ -58,8 +60,6 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
             xMax = values[values.length - 1][types.indexOf("unix")];
           }
         })
-
-        console.log(new Date(xMax))
 
     
         if (!isMonthly) {
@@ -176,6 +176,141 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
     
 
 
+    const tooltipFormatter = useCallback(
+        function (this: any) {
+            const { x, points } = this;
+            const date = new Date(x);
+            let dateString = date.toLocaleDateString("en-GB", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+            });
+            const chartTitle = this.series.chart.title.textStr;
+    
+            // check if data steps are less than 1 day
+            // if so, add the time to the tooltip
+            const timeDiff = points[0].series.xData[1] - points[0].series.xData[0];
+            if (timeDiff < 1000 * 60 * 60 * 24) {
+                dateString +=
+                    " " +
+                    date.toLocaleTimeString("en-GB", {
+                        hour: "numeric",
+                        minute: "2-digit",
+                    });
+            }
+    
+            // Create a scrollable container using CSS
+            const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-52 text-xs font-raleway">
+                <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>
+                <div class="max-height: 50px; overflow-y: auto; -webkit-overflow-scrolling: touch; hover:!pointer-events: auto; tooltip-scrollbar"
+                    onwheel="(function(e) {
+                        const scroller = e.currentTarget;
+                        const isAtTop = scroller.scrollTop === 0;
+                        const isAtBottom = scroller.scrollHeight - scroller.clientHeight === scroller.scrollTop;
+                        
+                        if (e.deltaY < 0 && isAtTop) {
+                            // Scrolling up at the top
+                            return;
+                        }
+                        if (e.deltaY > 0 && isAtBottom) {
+                            // Scrolling down at the bottom
+                            return;
+                        }
+                        
+                        e.stopPropagation();
+                        e.preventDefault();
+                        scroller.scrollTop += e.deltaY;
+                    })(event)"
+                >`;
+            const tooltipEnd = `</div></div>`;
+    
+            // Updated scrollbar styles with thicker width and new color
+            const scrollbarStyles = `
+                <style>
+                    .custom-scrollbar::-webkit-scrollbar {
+                        width: 8px;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-track {
+                        background: rgba(31, 39, 38, 0.1);
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-thumb {
+                        background: #1F2726;
+                        border-radius: 4px;
+                    }
+                    /* Firefox */
+                    .custom-scrollbar {
+                        scrollbar-width: thin;
+                        scrollbar-color: #1F2726 rgba(31, 39, 38, 0.1);
+                    }
+                    /* Prevent text selection during scrolling */
+                    #tooltipScroller {
+                        user-select: none;
+                    }
+                </style>
+            `;
+    
+            let pointsSum = points.reduce((acc: number, point: any) => {
+                acc += point.y;
+                return acc;
+            }, 0);
+    
+            let pointSumNonNegative = points.reduce((acc: number, point: any) => {
+                if (point.y > 0) acc += point.y;
+                return acc;
+            }, 0);
+    
+            const maxPoint = points.reduce((max: number, point: any) => {
+                if (point.y > max) max = point.y;
+                return max;
+            }, 0);
+    
+            const maxPercentage = points.reduce((max: number, point: any) => {
+                if (point.percentage > max) max = point.percentage;
+                return max;
+            }, 0);
+    
+            const tooltipPoints = points
+                .sort((a: any, b: any) => b.y - a.y)
+                .map((point: any, index: number) => {
+                    const { series, y, percentage } = point;
+                    const { name } = series;
+                    const nameString = name;
+    
+                    let prefix = showUsd ? "$" : "Ξ";
+                    let suffix = "";
+                    let value = y;
+                    let displayValue = y;
+    
+                    return `
+                    <div class="flex w-[190px] space-x-2 items-center font-medium mb-0.5 pr-[5px]">
+                        <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${series.color}"></div>
+                        <div class="tooltip-point-name text-xs">${nameString}</div>
+                        <div class="flex-1 text-right justify-end flex numbers-xs">
+                            <div class="flex justify-end text-right w-full">
+                                <div class="${!prefix && "hidden"}">${prefix}</div>
+                                ${Intl.NumberFormat("en-GB", {
+                                    notation: "standard",
+                                    maximumFractionDigits: 2,
+                                    minimumFractionDigits: 2,
+                                }).format(displayValue)}
+                            </div>
+                            <div class="ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
+                        </div>
+                    </div>
+                    `;
+                })
+                .join("");
+    
+            return scrollbarStyles + tooltip + tooltipPoints + tooltipEnd;
+        },
+        [showUsd],
+    );
+
+
+    const filteredList = useMemo(() => {
+
+    }, [data, selectedTimespan]);
+
 
     return(
         <div className="flex h-full w-full gap-x-[10px]">
@@ -183,6 +318,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                 <div className="absolute left-[calc(50%-113px)] top-[calc(50%-29.5px)] z-50">
                     <Image src="/da_table_watermark.png" alt="chart_watermark" width={226} height={59}  className="mix-blend-darken"/>
                 </div>
+                
                 <HighchartsProvider Highcharts={Highcharts}>
                     <HighchartsChart                             
                         containerProps={{
@@ -257,7 +393,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         split={false}
                         followPointer={true}
                         followTouchMove={true}
-                        backgroundColor={"#2A3433EE"}
+                        backgroundColor={"#1F2726"}
                         padding={0}
                         hideDelay={300}
                         stickOnContact={true}
@@ -279,6 +415,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         //positioner={tooltipPositioner}
                         valuePrefix={showUsd ? "$" : ""}
                         valueSuffix={showUsd ? "" : " Gwei"}
+                        formatter={tooltipFormatter}
                     />
                     <XAxis
                         title={undefined}
@@ -510,8 +647,11 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                     
                         // ensure tooltip is always above the chart
                         //positioner={tooltipPositioner}
+
                         valuePrefix={showUsd ? "$" : ""}
                         valueSuffix={showUsd ? "" : " Gwei"}
+                       
+                        
                     />
                     <XAxis
                         title={undefined}
