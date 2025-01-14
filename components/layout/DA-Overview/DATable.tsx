@@ -339,14 +339,15 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
     const createDAConsumers = useCallback((da_row) => {
       if (!master) return;
 
-      const tempBrokeChains = ["orderly", "manta", "derive", "ancient8"]
+      const tempBrokeChains = ["orderly", "manta", "derive", "ancient8", "karak"]
       let more = 0;
 
       
       const retHTML = da_row.chains.values.map((chain, index) => {
    
         if (chain[1] && chain[1] !== "gitcoin_pgn" && !tempBrokeChains.includes(chain[1])) {
-
+          console.log(chain[1])
+          console.log(AllChainsByKeys[chain[1]] ? "" : master.custom_logos[chain[1]].body)
 
           return (
             <Icon 
