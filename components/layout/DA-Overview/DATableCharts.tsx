@@ -399,7 +399,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
         function (this: any) {
             
 
-            console.log(this)
+          
             return `<div class="mt-3 mr-3 mb-3 w-40 text-xs font-raleway justify-between gap-x-[5px] flex items-center">
                 <div class="flex gap-x-[5px] items-center ">
                     <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${this.color}"></div>

@@ -339,16 +339,14 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
     const createDAConsumers = useCallback((da_row) => {
       if (!master) return;
 
-      const tempBrokeChains = ["orderly", "manta", "derive", "ancient8", "karak"]
       let more = 0;
-
+      let addedLogos = 0;
       
       const retHTML = da_row.chains.values.map((chain, index) => {
-   
-        if (chain[1] && chain[1] !== "gitcoin_pgn" && !tempBrokeChains.includes(chain[1])) {
-          console.log(chain[1])
-          console.log(AllChainsByKeys[chain[1]] ? "" : master.custom_logos[chain[1]].body)
-
+        const chainLogoExists = (AllChainsByKeys[chain[1]] || master.custom_logos[chain[1]]) ? true : false;
+        
+        if (chainLogoExists && addedLogos < 5) {
+          addedLogos = addedLogos + 1;
           return (
             <Icon 
               key={index} 
@@ -362,36 +360,15 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
         return null; // Return null for items that don't meet the condition
       });
       
-      
-      // const iconDisplay = Array.isArray(da_row.total[1])
-      // ? da_row.total[1]
-      //     .filter((chain) => chain !== "eclipse")
-      //     .map((chain, index) => (
-
-      //     ))
-      // : da_row.total[1];
-  //     <Icon
-  //     icon={
-  //       selectedCategory !== "name"
-  //         ? "formkit:arrowdown"
-  //         : sortOrder
-  //           ? "formkit:arrowdown"
-  //           : "formkit:arrowup"
-  //     }
-  //     className={` w-[10px] h-[10px] ${selectedCategory === "name"
-  //       ? "text-forest-50 opacity-100"
-  //       : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
-  //       } `}
-  // />
-          return(
-            <div className="flex items-center gap-x-[2px]">
-                <div className="numbers-xs mr-[3px]">{da_row.count}</div>
-                {retHTML}
-                <div className="ml-[3px] w-[60px] px-[5px] py-[3px] rounded-full bg-[#344240] text-xxs">
-                  {`+ ${more} more`}
-                </div>
+      return(
+        <div className="flex items-center gap-x-[2px]">
+            <div className="numbers-xs mr-[3px]">{da_row.count}</div>
+            {retHTML}
+            <div className="ml-[3px] w-[60px] px-[5px] py-[3px] rounded-full bg-[#344240] text-xxs">
+              {`+ ${more} more`}
             </div>
-          )
+        </div>
+      )
 
       // return (
         
