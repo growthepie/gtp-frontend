@@ -4,13 +4,8 @@ import IconsContainer from "@/components/layout/IconsContainer";
 import { useUIContext } from "@/contexts/UIContext";
 import FloatingBar from "./FloatingBar";
 import { LogoIcon } from "./Icons";
-export default function Header({
-  downloadCSV,
-  downloadJSON,
-}: {
-  downloadCSV: () => void;
-  downloadJSON: () => void;
-}) {
+
+export default function Header({}) {
   const { isMobile } = useUIContext();
   return (
     <div className="fixed flex flex-col w-full z-50 items-center">
@@ -48,7 +43,7 @@ export default function Header({
       </header>
       <IconsContainer className={`absolute top-[76px] w-full`}>
         {!isMobile && (
-          <FloatingBar downloadCSV={downloadCSV} downloadJSON={downloadJSON} />
+          <FloatingBar/>
         )}
       </IconsContainer>
     </div>

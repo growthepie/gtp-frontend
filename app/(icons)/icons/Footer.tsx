@@ -4,9 +4,9 @@ import Link from "next/link";
 import { track } from "@vercel/analytics";
 import Container from "@/components/layout/Container";
 import { useUIContext } from "@/contexts/UIContext";
-import { ShareIcon } from "./Icons";
+import { GTPIcon } from "@/components/layout/GTPIcon";
 
-export default function Footer({ downloadCSV, downloadJSON }) {
+export default function Footer({ }) {
   const { isMobile } = useUIContext();
 
   return (
@@ -74,14 +74,18 @@ export default function Footer({ downloadCSV, downloadJSON }) {
           </div>
 
           {/* Right Side Share Button */}
-          <div className="flex h-14 w-28 items-center justify-center gap-4 rounded-full bg-[#344240] p-1">
-            <div className="flex h-11 w-[109px] items-center gap-2.5 rounded-[40px] bg-[#1F2726] p-2.5">
-              <div className="flex h-6 w-6 items-center justify-center text-[#CDD8D3]">
-                <ShareIcon />
+          <div className="h-14 p-1 bg-[#33413f] rounded-[40px] flex items-center gap-4">
+            <div className="h-11 px-[15px] py-2.5 bg-[#1f2726] rounded-[40px] flex justify-start items-start gap-2.5">
+                <div className="self-stretch justify-start items-center gap-2.5 inline-flex">
+                    <GTPIcon
+                        icon="gtp-share-monochrome"
+                        size="sm"
+                        className="w-6 h-6 relative"
+                    />
+                <div className="text-[#cdd8d3] text-[16px] font-['Raleway'] leading-[19.2px] text-left">
+                  Share
+                </div>
               </div>
-              <span className="font-raleway text-sm font-bold text-[#CDD8D3]">
-                Share
-              </span>
             </div>
           </div>
         </Container>

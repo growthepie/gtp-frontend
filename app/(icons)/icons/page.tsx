@@ -9,7 +9,7 @@ const IconsPage = () => {
   return (
     <div className="flex flex-col h-screen">
       {/* Header*/}
-      <Header downloadCSV={() => {}} downloadJSON={() => {}} />
+      <Header/>
 
       {/* Scrollable Container*/}
       <main
@@ -55,7 +55,7 @@ const IconsPage = () => {
       </main>
 
       {/* Footer */}
-      <Footer downloadCSV={() => {}} downloadJSON={() => {}} />
+      <Footer />
     </div>
   );
 };
