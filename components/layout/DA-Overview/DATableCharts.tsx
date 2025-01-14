@@ -17,7 +17,7 @@ import {
 import Highcharts, { chart } from "highcharts/highstock";
 import { useLocalStorage } from "usehooks-ts";
 import Image from "next/image";
-import { useMemo } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { useMaster } from "@/contexts/MasterContext";
 import "@/app/highcharts.axis.css";
 import Icon from "@/components/layout/Icon";
@@ -25,6 +25,8 @@ import { DAConsumerChart } from "@/types/api/DAOverviewResponse";
 import { stringToDOM } from "million";
 import { Any } from "react-spring";
 import { format } from "path";
+import VerticalScrollContainer from "@/components/VerticalScrollContainer";
+import { animated, useSpring, useTransition } from "@react-spring/web";
 
 const COLORS = {
     GRID: "rgb(215, 223, 222)",
@@ -42,6 +44,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
 
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
     const { AllDALayersByKeys, AllChainsByKeys } = useMaster();
+    const [selectedChains, setSelectedChains] = useState<string[]>([]);
 
 
     
@@ -58,8 +61,6 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
             xMax = values[values.length - 1][types.indexOf("unix")];
           }
         })
-
-        console.log(new Date(xMax))
 
     
         if (!isMonthly) {
@@ -148,33 +149,273 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
           ])
           
         })
-    }, [data]);
-
-
-    const pieFormattedData = useMemo(() => {
-        let pieRetData: [string, number][] = []; // Correctly define the type as an array of [string, number] tuples
-    
-        pie_data.data.forEach((d) => {
-            pieRetData.push([d[0], d[4]]); // d[0] is string, d[4] is number
-        });
-    
-        return pieRetData;
-    }, [pie_data]);
-    
+    }, [data]);    
 
     const formattedPieData = useMemo(() => {
         let pieRetData: PieData = []; // Correctly define the type as an array of [string, number] tuples
+    
+        // Create a map of pie data for quick lookup
 
+        let pieTotal = 0;
         pie_data.data.forEach((d) => {
-            pieRetData.push({name: d[0], y: d[4], color: AllChainsByKeys[d[0]] ? AllChainsByKeys[d[0]].colors["dark"][0] : "#566462"}); // d[0] is string, d[4] is number
+            pieTotal += d[4];
         });
-
+        
+        const pieDataMap = new Map(
+            pie_data.data.map((d) => [
+                d[0],
+                {
+                    name: d[1],
+                    y: d[4],
+                    color: AllChainsByKeys[d[0]] 
+                        ? AllChainsByKeys[d[0]].colors["dark"][0] 
+                        : "#566462",
+                },
+            ])
+        );
+    
+        // Add selected chains in order
+        if(selectedChains.length !== 0){
+            selectedChains.forEach((chain) => {
+                if (pieDataMap.has(chain)) {
+                    pieRetData.push(pieDataMap.get(chain)!); // Add data in selected order
+                }
+            });
+        }else{
+        // Add non-selected chains
+            pie_data.data.forEach((d) => {
+                if (!selectedChains.includes(d[0])) {
+                    pieRetData.push({
+                        name: d[1] ? d[1] : d[0],
+                        y: d[4] / pieTotal,
+                        color: AllChainsByKeys[d[0]] 
+                            ? AllChainsByKeys[d[0]].colors["dark"][0] 
+                            : "#566462",
+                    });
+                }
+            });
+        }
+    
         return pieRetData;
-    }, [pie_data])
-
-
+    }, [pie_data, selectedChains, AllChainsByKeys]);
     
 
+
+    const filteredChains = useMemo(() => {
+        const baseData = data.da_consumers;
+
+        if (selectedChains.length === 0) {
+            return baseData;
+        } else {
+            const filteredData: any = {};
+            selectedChains.forEach((chain) => {
+                filteredData[chain] = baseData[chain];
+            });
+            return filteredData;
+        }
+    }, [data, selectedChains]);
+
+    const sortedSelectedData = useMemo (() => {
+        if(selectedChains.length === 0){
+            return data.da_consumers;
+        }else{
+            const sortedData: any = {};
+            // Add selected chains in order
+            selectedChains.forEach((chain) => {
+                sortedData[chain] = data.da_consumers[chain];
+            });
+    
+            // Add divider-line key
+            sortedData['divider-line'] = null;
+    
+            // Add non-selected chains
+            Object.keys(data.da_consumers).forEach((chain) => {
+                if (!selectedChains.includes(chain)) {
+                    sortedData[chain] = data.da_consumers[chain];
+                }
+            });
+    
+            return sortedData;
+        }
+    }, [data, selectedChains]);
+
+
+    const transitions = useTransition(
+   
+        Object.keys(sortedSelectedData).map((key, index) => {
+
+          return {
+            y: index,
+            height: 21,
+            key: key, // Assuming `chain` is used as a key
+            i: index,
+          };
+        }),
+        {
+          key: (d) => d.key,
+          from: { height: 0 },
+          leave: { height: 0 },
+          enter: ({ y, height }) => ({ y, height }),
+          update: ({ y, height }) => ({ y, height }), // Ensure height change is animated
+          config: { mass: 5, tension: 500, friction: 100 },
+          trail: 25,
+        },
+      );
+
+
+    const tooltipFormatter = useCallback(
+        function (this: any) {
+            const { x, points } = this;
+            const date = new Date(x);
+            let dateString = date.toLocaleDateString("en-GB", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+            });
+            const chartTitle = this.series.chart.title.textStr;
+    
+            // check if data steps are less than 1 day
+            // if so, add the time to the tooltip
+            const timeDiff = points[0].series.xData[1] - points[0].series.xData[0];
+            if (timeDiff < 1000 * 60 * 60 * 24) {
+                dateString +=
+                    " " +
+                    date.toLocaleTimeString("en-GB", {
+                        hour: "numeric",
+                        minute: "2-digit",
+                    });
+            }
+    
+            // Create a scrollable container using CSS
+            const tooltip = `<div class="mt-3 mr-3 mb-3 w-[245px] md:w-52 text-xs font-raleway ">
+                <div class="flex justify-between items-start max-w-[175px] heading-small-xs ml-6 mb-2"><div>${dateString}</div><div class="text-xs">Fees Paid</div></div>
+                <div class="max-h-[150px] w-full overflow-y-auto overflow-x-hidden -webkit-overflow-scrolling: touch; hover:!pointer-events-auto tooltip-scrollbar"
+                    onwheel="(function(e) {
+                        const scroller = e.currentTarget;
+                        const isAtTop = scroller.scrollTop === 0;
+                        const isAtBottom = scroller.scrollHeight - scroller.clientHeight === scroller.scrollTop;
+                        
+                        if (e.deltaY < 0 && isAtTop) {
+                            // Scrolling up at the top
+                            return;
+                        }
+                        if (e.deltaY > 0 && isAtBottom) {
+                            // Scrolling down at the bottom
+                            return;
+                        }
+                        
+                        e.stopPropagation();
+                        e.preventDefault();
+                        scroller.scrollTop += e.deltaY;
+                    })(event)"
+                >`;
+            const tooltipEnd = `</div></div>`;
+    
+            // Updated scrollbar styles with thicker width and new color
+            const scrollbarStyles = `
+                <style>
+                    .custom-scrollbar::-webkit-scrollbar {
+                        width: 8px;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-track {
+                        background: rgba(31, 39, 38, 0.1);
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-thumb {
+                        background: #1F2726;
+                        border-radius: 4px;
+                    }
+                    /* Firefox */
+                    .custom-scrollbar {
+                        scrollbar-width: thin;
+                        scrollbar-color: #1F2726 rgba(31, 39, 38, 0.1);
+                    }
+                    /* Prevent text selection during scrolling */
+                    #tooltipScroller {
+                        user-select: none;
+                    }
+                </style>
+            `;
+    
+            let pointsSum = points.reduce((acc: number, point: any) => {
+                acc += point.y;
+                return acc;
+            }, 0);
+    
+            let pointSumNonNegative = points.reduce((acc: number, point: any) => {
+                if (point.y > 0) acc += point.y;
+                return acc;
+            }, 0);
+    
+            const maxPoint = points.reduce((max: number, point: any) => {
+                if (point.y > max) max = point.y;
+                return max;
+            }, 0);
+    
+            const maxPercentage = points.reduce((max: number, point: any) => {
+                if (point.percentage > max) max = point.percentage;
+                return max;
+            }, 0);
+    
+            const tooltipPoints = points
+                .sort((a: any, b: any) => b.y - a.y)
+                .map((point: any, index: number) => {
+                    const { series, y, percentage } = point;
+                    const { name } = series;
+                    const nameString = name;
+    
+                    let prefix = showUsd ? "$" : "Ξ";
+                    let suffix = "";
+                    let value = y;
+                    let displayValue = y;
+    
+                    return `
+                    <div class="flex w-[215px] space-x-2 items-center font-medium mb-0.5 pr-4 overflow-x-hidden ">
+                        <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${series.color}"></div>
+                        <div class="tooltip-point-name text-xs">${nameString}</div>
+                        <div class="flex-1 text-right justify-end flex numbers-xs">
+                            <div class="flex justify-end text-right w-full">
+                                <div class="${!prefix && "hidden"}">${prefix}</div>
+                                ${Intl.NumberFormat("en-GB", {
+                                    notation: "standard",
+                                    maximumFractionDigits: 2,
+                                    minimumFractionDigits: 2,
+                                }).format(displayValue)}
+                            </div>
+                            <div class="ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
+                        </div>
+                    </div>
+                    `;
+                })
+                .join("");
+    
+            return scrollbarStyles + tooltip + tooltipPoints + tooltipEnd;
+        },
+        [showUsd],
+    );
+
+
+
+    const pieTooltipFormatter = useCallback(
+        function (this: any) {
+            
+
+            console.log(this)
+            return `<div class="mt-3 mr-3 mb-3 w-40 text-xs font-raleway justify-between gap-x-[5px] flex items-center">
+                <div class="flex gap-x-[5px] items-center ">
+                    <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${this.color}"></div>
+                    <div class="tooltip-point-name text-xs">${this.key}</div>
+                </div>
+                <div class="tooltip-point-name numbers-xs">${Intl.NumberFormat("en-GB", {
+                    notation: "standard",
+                    maximumFractionDigits: 2,
+                    minimumFractionDigits: 2,
+                }).format(this.y * 100) + " %"}</div>
+            
+            </div>`;
+
+
+    }, [showUsd])
+    
 
 
     return(
@@ -183,11 +424,12 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                 <div className="absolute left-[calc(50%-113px)] top-[calc(50%-29.5px)] z-50">
                     <Image src="/da_table_watermark.png" alt="chart_watermark" width={226} height={59}  className="mix-blend-darken"/>
                 </div>
+                
                 <HighchartsProvider Highcharts={Highcharts}>
                     <HighchartsChart                             
                         containerProps={{
                             style: {
-                                height: "217px",
+                                height: "234px",
                                 width: "100%",
                                 
                                 
@@ -257,7 +499,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         split={false}
                         followPointer={true}
                         followTouchMove={true}
-                        backgroundColor={"#2A3433EE"}
+                        backgroundColor={"#1F2726"}
                         padding={0}
                         hideDelay={300}
                         stickOnContact={true}
@@ -279,6 +521,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         //positioner={tooltipPositioner}
                         valuePrefix={showUsd ? "$" : ""}
                         valueSuffix={showUsd ? "" : " Gwei"}
+                        formatter={tooltipFormatter}
                     />
                     <XAxis
                         title={undefined}
@@ -398,7 +641,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                     min={0}
                     
                     >
-                        {Object.keys(data.da_consumers).map((key, index) => {
+                        {Object.keys(filteredChains).map((key, index) => {
                             const types = data.da_consumers[key].daily.types;
                             const name = data.da_consumers[key].daily.values[0][1];
                             
@@ -426,26 +669,53 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
             </div>
             <div className="min-w-[125px] flex flex-col gap-y-[2px] items-start h-full pt-[15px]">
                 {/* Chains */}
-                {Object.keys(data.da_consumers).map((key, index) => {
+                {transitions((style, item) => {
+                    if(item.key === "divider-line"){ 
 
-                    return(
-                        <div key={key + "da_consumers_info"} className="flex gap-x-[2px] px-[5px] bg-[#344240] text-xxs rounded-full py-[2px] items-center">
-                            <div>{AllChainsByKeys[data.da_consumers[key].daily.values[0][2]] ? (<Icon icon={`gtp:${AllChainsByKeys[data.da_consumers[key].daily.values[0][2]].urlKey}-logo-monochrome`} className="w-[12px] h-[12px]" style={{ color: AllChainsByKeys[key].colors["dark"][0] }} />) : (<div>{"+"}</div>)}</div>
-                            <div>{data.da_consumers[key].daily.values[0][1]}</div>
+                        return(
+                            <animated.div key={item.key + "divider"} className={`w-full items-center ${
+                                selectedChains.length === 0 ? "hidden" : "flex "
+                            
+                            }`} style={{ ...style }}>
+                                <div className="w-full h-[1px] bg-[#5A64624F]"></div>
+                                <div className="text-xxs text-nowrap "> Not in charts</div>
+                                <div className="w-full h-[1px] bg-[#5A64624F]"></div>
+                            </animated.div>
+                        )
+                    }else {
 
-                        </div>
-                    )
+                        return(
+                            <animated.div key={item.key + "da_consumers_info"} className={`flex gap-x-[5px] px-[5px] text-xxs rounded-full py-[2px] items-center transition-all cursor-pointer ${
+                                (!selectedChains.includes(item.key) && selectedChains.length > 0) ? "bg-forest-900" : "bg-[#344240]"
+                            }`}
+                                onClick={() => {
+                                    setSelectedChains((prev) => {
+                                        if (prev.includes(item.key)) {
+                                            return prev.filter((chain) => chain !== item.key);
+                                        } else {
+                                            return [...prev, item.key];
+                                        }
+                                    });
+                                }}
+                                style={{ ...style }}
+                            >
+                                <div>{AllChainsByKeys[data.da_consumers[item.key].daily.values[0][2]] ? (<Icon icon={`gtp:${AllChainsByKeys[data.da_consumers[item.key].daily.values[0][2]].urlKey}-logo-monochrome`} className="w-[12px] h-[12px]" style={{ color: AllChainsByKeys[item.key].colors["dark"][0] }} />) : (<div>{"+"}</div>)}</div>
+                                <div>{data.da_consumers[item.key].daily.values[0][1]}</div>
+
+                            </animated.div>
+                        )
+                    }
                 })}
             </div>
-            <div className="min-w-[254px] flex items-center  relative ">
+            <div className="min-w-[254px] flex items-center  relative pt-[15px] ">
                 {/* Pie Chart */}
-                <div className="absolute left-[21%] w-[99px] flex items-center justify-center bottom-[52%] text-xxs font-semibold ">{"% OF TOTAL USAGE"}</div>
+                <div className="absolute left-[31%] w-[99px] flex items-center justify-center bottom-[49%] text-xxxs font-bold leading-[120%] ">{"% OF TOTAL USAGE"}</div>
                 <HighchartsProvider Highcharts={Highcharts}>
                     <HighchartsChart                             
                         containerProps={{
                             style: {
-                                height: "254px",
-                                width: "200px",
+                                height: "234px",
+                                width: "254px",
                                 
                                 
 
@@ -483,6 +753,8 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         marginBottom={30}
 
                         marginTop={2}
+
+                        
                     />
                     <Tooltip
                         useHTML={true}
@@ -510,8 +782,11 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                     
                         // ensure tooltip is always above the chart
                         //positioner={tooltipPositioner}
+
                         valuePrefix={showUsd ? "$" : ""}
                         valueSuffix={showUsd ? "" : " Gwei"}
+                        formatter={pieTooltipFormatter}
+                        
                     />
                     <XAxis
                         title={undefined}
@@ -641,6 +916,13 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                 }}
                                 type="pie"
                                 data={formattedPieData}
+                                point={{
+                                    events: {
+                                        mouseOver: function () {
+                                            
+                                        },
+                                    },
+                                }}
                                 
                             /> 
                     </YAxis>                     

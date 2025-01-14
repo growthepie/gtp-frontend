@@ -31,7 +31,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
     const {data: chart_data, error: chart_error, isLoading: chart_loading, isValidating: chart_validating} = useSWR<DATimeseriesResponse>(DATimeseriesURL);
 
     const { isSidebarOpen } = useUIContext();
-    const { AllDALayersByKeys, AllChainsByKeys } = useMaster();
+    const { AllDALayersByKeys, AllChainsByKeys, data: master } = useMaster();
   
     const [selectedCategory, setSelectedCategory] = useState("size");
     const [isBouncing, setIsBouncing] = useState(false);
@@ -247,7 +247,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
       let typeIndex = breakdown_data[Object.keys(breakdown_data)[0]][selectedTimespan]["fees"].types.indexOf(showUsd ? "usd" : "eth");
 
       Object.keys(breakdown_data).filter((key) => key !== "totals").map((key) => {
-        console.log(breakdown_data[key][selectedTimespan]["fees"].total[typeIndex])
+       
         if(breakdown_data[key][selectedTimespan]["fees"].total[typeIndex] > maxFees){
           
         
@@ -337,15 +337,22 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
 
 
     const createDAConsumers = useCallback((da_row) => {
+      if (!master) return;
 
+      const tempBrokeChains = ["orderly", "manta", "derive", "ancient8", "karak"]
       let more = 0;
+
+      
       const retHTML = da_row.chains.values.map((chain, index) => {
-        if (chain[1] && chain[1] !== "gitcoin_pgn") {
-          
+   
+        if (chain[1] && chain[1] !== "gitcoin_pgn" && !tempBrokeChains.includes(chain[1])) {
+          console.log(chain[1])
+          console.log(AllChainsByKeys[chain[1]] ? "" : master.custom_logos[chain[1]].body)
+
           return (
             <Icon 
               key={index} 
-              icon={`gtp:${AllChainsByKeys[chain[1]].urlKey}-logo-monochrome`} 
+              icon={AllChainsByKeys[chain[1]] ? `gtp:${AllChainsByKeys[chain[1]].urlKey}-logo-monochrome` : master.custom_logos[chain[1]].body } 
               className="w-[15px] h-[15px]" 
             />
           );
