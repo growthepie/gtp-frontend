@@ -36,7 +36,7 @@ const COLORS = {
 
 const chart_titles = {
     data_posted: "Data Posted",
-    fees_paid: "Fees Paid (Data Availability)",
+    fees_paid: "DA Fees Paid",
 }
 
 const area_colors = {
@@ -310,7 +310,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
     return (
       <Container>
         <div className="flex gap-x-[15px] mt-[15px] mb-[30px]">
-        {Object.keys(data.metrics)
+        {Object.keys(data.metrics).reverse()
             .map((metricKey, i) => { 
             let is_fees = metricKey.includes("fees_paid");
             let prefix = is_fees ? valuePrefix : "";
@@ -338,9 +338,10 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                 <div className="absolute text-[18px] top-[17px] right-[30px] numbers">
                     {prefix + Intl.NumberFormat("en-GB", {                          
                           notation: "standard",
-                          maximumFractionDigits: 2,
-                          minimumFractionDigits: 2,}).format(getSumDisplayValue(data.metrics[metricKey]))
+                          maximumFractionDigits: is_fees ? 0 : 2,
+                          minimumFractionDigits: is_fees ? 0 : 2,}).format(getSumDisplayValue(data.metrics[metricKey]))
                     }
+                    {is_fees ? "" : "GB"}
                 </div>
                 <hr className="absolute w-full border-t-[2px] top-[64px] border-[#5A64624F] my-4" />
                 <hr className="absolute w-full border-t-[2px] top-[114px] border-[#5A64624F] my-4" />
