@@ -17,10 +17,30 @@ import useSWR from "swr";
 import { BlockspaceURLs } from "@/lib/urls";
 import { ChainOverviewResponse } from "@/types/api/ChainOverviewResponse";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
-import { useEffect } from "react"; // not sure if this is needed
+import { useEffect } from "react";
 import { TopRowContainer, TopRowParent, TopRowChild } from "@/components/layout/TopRow";
 import { time } from "console";
+import {
+    baseOptions,
+    getTimespans,
+    getTickPositions,
+    getXAxisLabels,
+    decimalToPercent,
+    tooltipFormatter, // maybe I need to use this 
+    formatNumber,
+    tooltipPositioner,
+  } from "@/lib/chartUtils";
+import ChartWatermark from "@/components/layout/ChartWatermark"; 
 
+const COLORS = {
+    GRID: "rgb(215, 223, 222)",
+    PLOT_LINE: "rgb(215, 223, 222)",
+    LABEL: "rgb(215, 223, 222)",
+    LABEL_HOVER: "#6c7696",
+    // TOOLTIP_BG: "#1b2135", //Should be transparent? 
+    TOOLTIP_BG: "rgba(40, 51, 51, 0.8)",
+    ANNOTATION_BG: "rgb(215, 223, 222)",
+  };
 
 
 
@@ -98,15 +118,14 @@ export default function Page(){
       }, []);
 
 
-
-   
-
-    
-
    
     return (
         <Container>
             <TopRowContainer>
+                <div // Why did I have to add a div why couldnt I do this in parent?
+                    className= "flex justify-end"
+                >
+                </div>
                 <TopRowParent>
                    {Object.keys(timespans).map((timespan) => (
                         <TopRowChild
@@ -143,7 +162,7 @@ export default function Page(){
                     />
                     <YAxis><LineSeries 
                         name="All L2s"  
-                        color={"#FF0420"} 
+                        color={COLORS.PLOT_LINE}
                         data={chainOverviewData?.data.chains["all_l2s"].daily["cefi"].data.map(
                         (d: any) => [
                         d[0],
@@ -159,9 +178,9 @@ export default function Page(){
                     </XAxis>
                     <Tooltip
                         useHTML={true}
-                        backgroundColor="rgba(31, 39, 38, 0.65)"
                         borderRadius={15}
-                        style={{ color: '#FFFFFF', padding: '10px' }}
+                        backgroundColor={COLORS.TOOLTIP_BG}
+                        style={{ color: 'rgb(215, 223, 222)', padding: '10px' }}
                         formatter={function () {
                             return `<div class="p-4 flex flex-col gap-y-[10px]">
                                         <b style="font-size: 16px;">${(new Date(Number (this.x)).toLocaleDateString())}</b><br/> 
@@ -170,7 +189,12 @@ export default function Page(){
                                     </div>`;
                         }}
                     />
-                    <Title>Chart Ex</Title>
+                    {/* <ChartWatermark
+                        className={`h-[30.67px] md:h-[46px] ${parseInt(chartHeight, 10) > 200
+                        ? "w-[128px] md:w-[163px]"
+                        : "w-[128.67px] md:w-[193px] "
+                        } text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten`}
+                    /> */}
                     
                 </HighchartsChart>
             </HighchartsProvider>
