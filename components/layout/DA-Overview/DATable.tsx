@@ -385,7 +385,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
 
     return (
         <>
-        {chart_loading || !chart_data ? (
+        {chart_loading || !chart_data || !master ? (
             <div>
               <ShowLoading
                 dataLoading={[chart_loading]}
@@ -790,6 +790,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                           isMonthly={isMonthly}
                           da_name={item.key}
                           pie_data={breakdown_data[item.key][selectedTimespan].da_consumer_chart}
+                          master={master}
                         />
                       </div>
                     </div>
@@ -823,8 +824,8 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                   <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs ">
                     {"Ø " + (breakdown_data["totals"][selectedTimespan].fees_per_mb.total[showUsd ? 0 : 1] < 0.001 ? Number(breakdown_data["totals"][selectedTimespan].fees_per_mb.total[showUsd ? 0 : 1]).toExponential(2) : Intl.NumberFormat("en-GB", {
                           notation: "compact",
-                          maximumFractionDigits: 3,
-                          minimumFractionDigits: 3,
+                          maximumFractionDigits: 2,
+                          minimumFractionDigits: 2,
                         }).format(breakdown_data["totals"][selectedTimespan].fees_per_mb.total[showUsd ? 0 : 1])) + ` ${showUsd ? "$" : "Ξ"}/MB`}
                   </div>
                 </div>
@@ -833,11 +834,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                     {35}
                   </div>
                 </div>
-                <div className="w-full h-[34px] px-[2px]">
-                  <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs ">
-                
-                  </div>
-                </div>
+
               </div>
               
             </div>

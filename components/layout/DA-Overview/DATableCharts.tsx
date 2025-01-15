@@ -27,6 +27,8 @@ import { Any } from "react-spring";
 import { format } from "path";
 import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 import { animated, useSpring, useTransition } from "@react-spring/web";
+import { MasterResponse } from "@/types/api/MasterResponse";
+import DynamicIcon from "../DynamicIcon";
 
 const COLORS = {
     GRID: "rgb(215, 223, 222)",
@@ -40,11 +42,14 @@ const COLORS = {
 type PieData = { name: string, y: number, color: string }[]
 // @/public/da_table_watermark.png
 
-export default function DATableCharts({selectedTimespan, data, isMonthly, da_name, pie_data}: {selectedTimespan: string, data?: any, isMonthly: boolean, da_name: string, pie_data: DAConsumerChart}) {
+
+const UNLISTED_CHAIN_COLORS = ["#7D8887", "#717D7C","#667170","#5A6665","#4F5B5A","#43504F","#384443","#2C3938"]
+
+export default function DATableCharts({selectedTimespan, data, isMonthly, da_name, pie_data, master}: {selectedTimespan: string, data?: any, isMonthly: boolean, da_name: string, pie_data: DAConsumerChart, master: MasterResponse }) {
 
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
     const { AllDALayersByKeys, AllChainsByKeys } = useMaster();
-    const [selectedChains, setSelectedChains] = useState<string[]>([]);
+    const [selectedChain, setSelectedChain] = useState<string>("all");
 
 
     
@@ -175,16 +180,16 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
         );
     
         // Add selected chains in order
-        if(selectedChains.length !== 0){
-            selectedChains.forEach((chain) => {
-                if (pieDataMap.has(chain)) {
-                    pieRetData.push(pieDataMap.get(chain)!); // Add data in selected order
-                }
-            });
+        if(selectedChain !== "all"){
+        
+            if (pieDataMap.has(selectedChain)) {
+                pieRetData.push(pieDataMap.get(selectedChain)!); // Add data in selected order
+            }
+        
         }else{
         // Add non-selected chains
             pie_data.data.forEach((d) => {
-                if (!selectedChains.includes(d[0])) {
+                
                     pieRetData.push({
                         name: d[1] ? d[1] : d[0],
                         y: d[4] / pieTotal,
@@ -192,75 +197,39 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                             ? AllChainsByKeys[d[0]].colors["dark"][0] 
                             : "#566462",
                     });
-                }
+                
             });
         }
     
         return pieRetData;
-    }, [pie_data, selectedChains, AllChainsByKeys]);
+    }, [pie_data, selectedChain, AllChainsByKeys]);
     
 
 
     const filteredChains = useMemo(() => {
         const baseData = data.da_consumers;
 
-        if (selectedChains.length === 0) {
+        if (selectedChain === "all") {
             return baseData;
         } else {
             const filteredData: any = {};
-            selectedChains.forEach((chain) => {
-                filteredData[chain] = baseData[chain];
-            });
+            filteredData[selectedChain] = baseData[selectedChain];
             return filteredData;
         }
-    }, [data, selectedChains]);
+    }, [data, selectedChain]);
 
-    const sortedSelectedData = useMemo (() => {
-        if(selectedChains.length === 0){
-            return data.da_consumers;
-        }else{
-            const sortedData: any = {};
-            // Add selected chains in order
-            selectedChains.forEach((chain) => {
-                sortedData[chain] = data.da_consumers[chain];
-            });
+    function formatBytes(bytes: number, decimals = 2) {
+        if (!+bytes) return "0 Bytes";
     
-            // Add divider-line key
-            sortedData['divider-line'] = null;
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
     
-            // Add non-selected chains
-            Object.keys(data.da_consumers).forEach((chain) => {
-                if (!selectedChains.includes(chain)) {
-                    sortedData[chain] = data.da_consumers[chain];
-                }
-            });
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
     
-            return sortedData;
-        }
-    }, [data, selectedChains]);
+        return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+    }
 
-
-    const transitions = useTransition(
-   
-        Object.keys(sortedSelectedData).map((key, index) => {
-
-          return {
-            y: index,
-            height: 21,
-            key: key, // Assuming `chain` is used as a key
-            i: index,
-          };
-        }),
-        {
-          key: (d) => d.key,
-          from: { height: 0 },
-          leave: { height: 0 },
-          enter: ({ y, height }) => ({ y, height }),
-          update: ({ y, height }) => ({ y, height }), // Ensure height change is animated
-          config: { mass: 5, tension: 500, friction: 100 },
-          trail: 25,
-        },
-      );
 
 
     const tooltipFormatter = useCallback(
@@ -272,6 +241,8 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                 day: "numeric",
                 year: "numeric",
             });
+
+            let total = 0;
             const chartTitle = this.series.chart.title.textStr;
     
             // check if data steps are less than 1 day
@@ -287,9 +258,9 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
             }
     
             // Create a scrollable container using CSS
-            const tooltip = `<div class="mt-3 mr-3 mb-3 w-[245px] md:w-52 text-xs font-raleway ">
-                <div class="flex justify-between items-start max-w-[175px] heading-small-xs ml-6 mb-2"><div>${dateString}</div><div class="text-xs">Fees Paid</div></div>
-                <div class="max-h-[150px] w-full overflow-y-auto overflow-x-hidden -webkit-overflow-scrolling: touch; hover:!pointer-events-auto tooltip-scrollbar"
+            const tooltip = `<div class="mt-3 mr-3 w-[245px] md:w-52 text-xs font-raleway ">
+                <div class="flex justify-between items-start max-w-[175px] heading-small-xs ml-6 mb-2"><div>${dateString}</div><div class="text-xs">Data Posted</div></div>
+                <div class="max-h-[200px] w-full overflow-y-auto overflow-x-hidden -webkit-overflow-scrolling: touch; hover:!pointer-events-auto tooltip-scrollbar"
                     onwheel="(function(e) {
                         const scroller = e.currentTarget;
                         const isAtTop = scroller.scrollTop === 0;
@@ -356,39 +327,46 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                 return max;
             }, 0);
     
+        
             const tooltipPoints = points
                 .sort((a: any, b: any) => b.y - a.y)
                 .map((point: any, index: number) => {
                     const { series, y, percentage } = point;
                     const { name } = series;
                     const nameString = name;
-    
-                    let prefix = showUsd ? "$" : "Ξ";
+                    let percentSize = (y / pointsSum) * 175;
                     let suffix = "";
                     let value = y;
                     let displayValue = y;
+                    total += y;
     
                     return `
-                    <div class="flex w-[215px] space-x-2 items-center font-medium mb-0.5 pr-4 overflow-x-hidden ">
+                    <div class="flex w-[215px] space-x-2 items-center font-medium mb-0.5 pr-2 overflow-x-hidden ">
                         <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${series.color}"></div>
                         <div class="tooltip-point-name text-xs">${nameString}</div>
-                        <div class="flex-1 text-right justify-end flex numbers-xs">
+                        <div class="flex-1 text-right justify-end flex numbers-xs w-full">
                             <div class="flex justify-end text-right w-full">
-                                <div class="${!prefix && "hidden"}">${prefix}</div>
-                                ${Intl.NumberFormat("en-GB", {
-                                    notation: "standard",
-                                    maximumFractionDigits: 2,
-                                    minimumFractionDigits: 2,
-                                }).format(displayValue)}
+                                <div class="flex justify-end w-full">${formatBytes(displayValue)}</div>
+                                
+                                
                             </div>
                             <div class="ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
+                        </div>
+                        <div class="relative">
+                            <hr class="absolute border-t-[2px] right-[8px] top-[6px] min-w-[1px]" style="width: ${percentSize}px; border-color: ${series.color}"; />
                         </div>
                     </div>
                     `;
                 })
                 .join("");
-    
-            return scrollbarStyles + tooltip + tooltipPoints + tooltipEnd;
+            
+            const totalString = `
+                <div class="flex items-center pl-[25px] pr-[20px] mb-1.5 w-full justify-between">
+                    <div class="tooltip-point-name text-xs font bold">Total</div>
+                    <div class="numbers-xs">${formatBytes(total)}</div>
+                </div>
+            `
+            return scrollbarStyles + tooltip + tooltipPoints + tooltipEnd + totalString;
         },
         [showUsd],
     );
@@ -422,7 +400,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
         <div className="flex h-full w-full gap-x-[10px]">
             <div className="min-w-[730px] w-full flex flex-1 h-[217px] relative mr-[20px]">
                 <div className="absolute left-[calc(50%-113px)] top-[calc(50%-29.5px)] z-50">
-                    <Image src="/da_table_watermark.png" alt="chart_watermark" width={226} height={59}  className="mix-blend-darken"/>
+                    <Image src="/da_table_watermark.svg" alt="chart_watermark" width={226} height={59}  className="mix-blend-darken"/>
                 </div>
                 
                 <HighchartsProvider Highcharts={Highcharts}>
@@ -655,7 +633,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                         d[types.indexOf("unix")], 
                                         d[types.indexOf("data_posted")]
                                     ])}
-                                    color={AllChainsByKeys[key] ? AllChainsByKeys[key].colors["dark"][0] : "#566462"}
+                                    color={AllChainsByKeys[key] ? AllChainsByKeys[key].colors["dark"][0] : UNLISTED_CHAIN_COLORS[index]}
                                 />
                             )
                         })}
@@ -667,45 +645,50 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
 
                 </HighchartsProvider>
             </div>
-            <div className="min-w-[125px] flex flex-col gap-y-[2px] items-start h-full pt-[15px]">
+            <div className="min-w-[125px] flex flex-col gap-y-[2px] items-start justify-center h-full">
                 {/* Chains */}
-                {transitions((style, item) => {
-                    if(item.key === "divider-line"){ 
 
+                
+                {Object.keys(data.da_consumers).map((key, index) => {
+                        const custom_logo_keys = Object.keys(master.custom_logos);
+                        
                         return(
-                            <animated.div key={item.key + "divider"} className={`w-full items-center ${
-                                selectedChains.length === 0 ? "hidden" : "flex "
-                            
-                            }`} style={{ ...style }}>
-                                <div className="w-full h-[1px] bg-[#5A64624F]"></div>
-                                <div className="text-xxs text-nowrap "> Not in charts</div>
-                                <div className="w-full h-[1px] bg-[#5A64624F]"></div>
-                            </animated.div>
-                        )
-                    }else {
+                            <div key={key + "da_consumers_info"} className={`flex relative gap-x-[5px] px-[5px] text-xxs rounded-full py-[0.5px] items-center transition-all cursor-pointer bg-[#344240] ${
+                                (selectedChain === "all" || selectedChain === key) ? "bg-[#344240] border-[1px] border-transparent" : "bg-transparent border-[1px] border-[#344240]"}
+                                ${selectedChain === "all" ? "px-[5px]" : "pl-[5px] pr-[20px]"}
 
-                        return(
-                            <animated.div key={item.key + "da_consumers_info"} className={`flex gap-x-[5px] px-[5px] text-xxs rounded-full py-[2px] items-center transition-all cursor-pointer ${
-                                (!selectedChains.includes(item.key) && selectedChains.length > 0) ? "bg-forest-900" : "bg-[#344240]"
                             }`}
                                 onClick={() => {
-                                    setSelectedChains((prev) => {
-                                        if (prev.includes(item.key)) {
-                                            return prev.filter((chain) => chain !== item.key);
+                                    setSelectedChain((prev) => {
+                                        if (selectedChain === key) {
+                                            return "all";
                                         } else {
-                                            return [...prev, item.key];
+                                            return key
                                         }
                                     });
                                 }}
-                                style={{ ...style }}
+                               
                             >
-                                <div>{AllChainsByKeys[data.da_consumers[item.key].daily.values[0][2]] ? (<Icon icon={`gtp:${AllChainsByKeys[data.da_consumers[item.key].daily.values[0][2]].urlKey}-logo-monochrome`} className="w-[12px] h-[12px]" style={{ color: AllChainsByKeys[item.key].colors["dark"][0] }} />) : (<div>{"+"}</div>)}</div>
-                                <div>{data.da_consumers[item.key].daily.values[0][1]}</div>
-
-                            </animated.div>
+                                
+                                <div>{AllChainsByKeys[data.da_consumers[key].daily.values[0][2]] ? 
+                                    (<Icon icon={`gtp:${AllChainsByKeys[data.da_consumers[key].daily.values[0][2]].urlKey}-logo-monochrome`} className="w-[12px] h-[12px]" style={{ color: AllChainsByKeys[key].colors["dark"][0] }} />) 
+                                    : custom_logo_keys.includes(key) 
+                                        ? (    
+                                         <DynamicIcon 
+                                            pathString={master.custom_logos[key].body}
+                                            size={12} 
+                                            className="text-forest-200"
+                                            viewBox="0 0 15 15"
+                                             
+                                        />
+                                          ) 
+                                        : (<div></div>)}</div>
+                                <div className="text-xxs">{data.da_consumers[key].daily.values[0][1]}</div>
+                                <div className={`absolute right-[2px] top-[2.5px] w-[12px] h-[12px] text-[#FE5468] ${selectedChain === "all" ? "invisible" : "visible"}`}><Icon icon={selectedChain === key ? "gtp:x-circle" : "gtp:plus-circle"} className="w-[12px] h-[12px] "></Icon></div>
+                            </div>
                         )
                     }
-                })}
+                )}
             </div>
             <div className="min-w-[254px] flex items-center  relative pt-[15px] ">
                 {/* Pie Chart */}
@@ -738,7 +721,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                     >
                     <Chart
                         backgroundColor={""}
-                        type="column"
+                        type="area"
                         title={"test"}
                         overflow="visible"
                         panning={{ enabled: true }}
@@ -848,7 +831,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         }}
                         zoomEnabled={false}
                  
-                        lineWidth={1}
+                        lineWidth={3}
                         
                         
                         startOnTick={true}
