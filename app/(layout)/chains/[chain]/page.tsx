@@ -1066,7 +1066,7 @@ const Chain = ({ params }: { params: any }) => {
         )}
       </Container>
 
-      {master && overviewData !== null && chainKey !== "ethereum" && (
+      {master && overviewData !== null && (
         <>
           <Container className="flex flex-col w-full pt-[30px] md:pt-[60px]">
             <div className="flex items-center justify-between md:text-[36px] mb-[15px] relative">
