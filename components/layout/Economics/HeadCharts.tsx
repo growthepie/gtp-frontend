@@ -1007,7 +1007,7 @@ export default function EconHeadCharts({
                                 fontFamily: "var(--font-raleway), sans-serif",
                                 zIndex: 1000,
                               },
-                              enabled: true,
+                              enabled: false,
                               formatter: (item) => {
                                 const date = new Date(item.value);
                                 const isMonthStart = date.getDate() === 1;
