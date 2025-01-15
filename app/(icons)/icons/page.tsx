@@ -1,15 +1,29 @@
 "use client";
 
+import { useState } from "react";
 import Header from "../../(icons)/icons/Header";
 import Footer from "../../(icons)/icons/Footer";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { iconNames, GTPIconName } from "@/icons/gtp-icon-names";
 
 const IconsPage = () => {
+  // 1) Lifted search state
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // 2) Filter icon list based on user input
+  const filteredIcons = iconNames.filter((iconName) =>
+    iconName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="flex flex-col h-screen">
       {/* Header*/}
-      <Header/>
+      {/* Pass query-related props and count of filtered icons */}
+      <Header
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        iconsCount={filteredIcons.length}
+      />
 
       {/* Scrollable Container*/}
       <main
@@ -37,7 +51,7 @@ const IconsPage = () => {
             </h1>
           </div>
 
-          {/* Icon Cards */}
+          {/* Icon Cards - only show filtered icons */}
           <div
             className="
               w-full
@@ -47,7 +61,7 @@ const IconsPage = () => {
               mx-auto
             "
           >
-            {iconNames.map((iconName) => (
+            {filteredIcons.map((iconName) => (
               <IconCard iconName={iconName as GTPIconName} key={iconName} />
             ))}
           </div>

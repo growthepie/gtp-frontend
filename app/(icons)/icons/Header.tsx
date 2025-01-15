@@ -5,7 +5,18 @@ import { useUIContext } from "@/contexts/UIContext";
 import FloatingBar from "./FloatingBar";
 import { LogoIcon } from "./Icons";
 
-export default function Header({}) {
+// Add optional props for search query & icons count
+interface HeaderProps {
+  searchQuery?: string;
+  setSearchQuery?: (value: string) => void;
+  iconsCount?: number;
+}
+
+export default function Header({
+  searchQuery = "",
+  setSearchQuery = () => {},
+  iconsCount = 0,
+}: HeaderProps) {
   const { isMobile } = useUIContext();
   return (
     <div className="fixed flex flex-col w-full z-50 items-center">
@@ -43,7 +54,11 @@ export default function Header({}) {
       </header>
       <IconsContainer className={`absolute top-[76px] w-full`}>
         {!isMobile && (
-          <FloatingBar/>
+          <FloatingBar
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            iconsCount={iconsCount}
+          />
         )}
       </IconsContainer>
     </div>

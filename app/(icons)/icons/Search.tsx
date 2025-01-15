@@ -1,17 +1,17 @@
 "use client";
 
-import { useState } from "react";
-
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { CloseIcon } from "./Icons";
 
-export default function Search() {
-  const [query, setQuery] = useState("");
+// Receive everything via props: query, setQuery, iconsCount
+interface SearchProps {
+  query: string;
+  setQuery: (value: string) => void;
+  iconsCount: number;
+}
 
-  // Example count of icons
-  const iconsCount = 89;
-
+export default function Search({ query, setQuery, iconsCount }: SearchProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
   };

@@ -4,7 +4,18 @@ import { useState } from "react";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 
-export default function FloatingBar({}) {
+// Accept searchQuery, setSearchQuery, and iconsCount from props
+interface FloatingBarProps {
+  searchQuery: string;
+  setSearchQuery: (value: string) => void;
+  iconsCount: number;
+}
+
+export default function FloatingBar({
+  searchQuery,
+  setSearchQuery,
+  iconsCount,
+}: FloatingBarProps) {
   const [selectedFormat, setSelectedFormat] = useState<"SVG" | "PNG" | null>(null);
 
   return (
@@ -88,9 +99,12 @@ export default function FloatingBar({}) {
 
       {/* Search Bar */}
       <div className="flex-1">
-        <Search />
+        <Search 
+          query={searchQuery} 
+          setQuery={setSearchQuery} 
+          iconsCount={iconsCount}
+        />
       </div>
-
     </div>
   );
 }
