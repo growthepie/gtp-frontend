@@ -630,7 +630,7 @@ export default function EconHeadCharts({
 
               return (
                 <SplideSlide key={"Splide" + key}>
-                  <div className="relative flex flex-col w-full overflow-visible h-[197px] bg-[#1F2726] rounded-2xl  group ">
+                  <div className="relative flex flex-col w-full overflow-hidden h-[197px] bg-[#1F2726] rounded-2xl  group ">
                     <div
                       className={`absolute items-center text-[16px] font-bold top-[15px] left-[15px] flex gap-x-[10px]  z-10 ${link ? "cursor-pointer" : ""
                         }`}
@@ -674,10 +674,10 @@ export default function EconHeadCharts({
                           minimumFractionDigits: 2,
                         }).format(sumDisplayValue)}
                     </div>
-                    <hr className="absolute w-full border-t-[2px] top-[51px] border-[#5A64624F] my-4" />
-                    <hr className="absolute w-full border-t-[2px] top-[89px] border-[#5A64624F] my-4" />
-                    <hr className="absolute w-full border-t-[2px] top-[126px] border-[#5A64624F] my-4" />
-                    <div className="absolute bottom-[41.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-20">
+                    <hr className="absolute w-full border-t-[2px] top-[54px] border-[#5A64624F] my-4" />
+                    <hr className="absolute w-full border-t-[2px] top-[95px] border-[#5A64624F] my-4" />
+                    <hr className="absolute w-full border-t-[2px] top-[137px] border-[#5A64624F] my-4" />
+                    <div className="absolute bottom-[38.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-20">
                       <ChartWatermark className="w-[128.54px] h-[25.69px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
                     </div>
 
@@ -831,7 +831,7 @@ export default function EconHeadCharts({
                             style={{ borderRadius: 15 }}
                             animation={{ duration: 50 }}
                             // margin={[0, 15, 0, 0]} // Use the array form for margin
-                            margin={[33, 21, 15, 0]}
+                            margin={[33, 21, 0, 0]}
                             spacingBottom={0}
                             spacingTop={40}
                             spacingLeft={10}
