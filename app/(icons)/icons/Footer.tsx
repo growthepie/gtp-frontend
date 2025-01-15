@@ -74,14 +74,18 @@ export default function Footer({ }) {
           </div>
 
           {/* Right Side Share Button */}
-          <div className="h-14 p-1 bg-[#33413f] rounded-[40px] flex items-center gap-4">
+          <div className="relative h-14 p-1 bg-[#33413f] rounded-[40px] flex items-center gap-4">
+            <div className="absolute inset-0 z-40 w-full h-full overflow-hidden pointer-events-none rounded-full">
+              <div className="w-full h-full"></div>
+              <div className="absolute top-1/2 -translate-y-1/2 w-full h-1 bg-gradient-to-r from-transparent via-white to-transparent opacity-60 transform -skew-x-20 animate-glint blur-sm"></div>
+            </div>
             <div className="h-11 px-[15px] py-2.5 bg-[#1f2726] rounded-[40px] flex justify-start items-start gap-2.5">
-                <div className="self-stretch justify-start items-center gap-2.5 inline-flex">
-                    <GTPIcon
-                        icon="gtp-share-monochrome"
-                        size="sm"
-                        className="w-6 h-6 relative"
-                    />
+              <div className="self-stretch justify-start items-center gap-2.5 inline-flex">
+                <GTPIcon
+                  icon="gtp-share-monochrome"
+                  size="sm"
+                  className="w-6 h-6 relative"
+                />
                 <div className="text-[#cdd8d3] text-[16px] font-['Raleway'] leading-[19.2px] text-left">
                   Share
                 </div>
