@@ -1092,9 +1092,6 @@ export default function LabelsPage() {
                       <div className="@container flex h-full items-center hover:bg-transparent">
                         <span
                           className="@container flex-1 flex h-full items-center hover:bg-transparent pr-[10px]"
-                          style={{
-                            fontFeatureSettings: "'pnum' on, 'lnum' on",
-                          }}
                           onDoubleClick={(e) => {
                             e.preventDefault(); // Prevent default double-click behavior
                             const selection = window.getSelection();
@@ -1421,9 +1418,6 @@ export default function LabelsPage() {
                       {showDeploymentTx && (
                         <div
                           className="@container flex-1 flex h-full items-center hover:bg-transparent pr-[10px] text-[11px]"
-                          style={{
-                            fontFeatureSettings: "'pnum' on, 'lnum' on",
-                          }}
                           onDoubleClick={(e) => {
                             e.preventDefault(); // Prevent default double-click behavior
                             const selection = window.getSelection();
@@ -1463,9 +1457,6 @@ export default function LabelsPage() {
                       {showDeployerAddress && (
                         <div
                           className="@container flex-1 flex h-full items-center hover:bg-transparent pr-[10px] text-[11px]"
-                          style={{
-                            fontFeatureSettings: "'pnum' on, 'lnum' on",
-                          }}
                           onDoubleClick={(e) => {
                             e.preventDefault(); // Prevent default double-click behavior
                             const selection = window.getSelection();
@@ -1606,10 +1597,7 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
       }
       {hoverDataPoint ? (
         <div
-          className="flex flex-col justify-center items-end"
-          style={{
-            fontFeatureSettings: "'pnum' on, 'lnum' on",
-          }}
+          className="flex flex-col justify-center items-end numbers-xs"
         >
           <div className="min-w-[55px] text-right" >
             {hoverDataPoint[1] && formatMetric(hoverDataPoint[1], valueType)}
@@ -1624,10 +1612,7 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
         </div>
       ) : (
         <div
-          className="flex flex-col justify-center items-end"
-          style={{
-            fontFeatureSettings: "'pnum' on, 'lnum' on",
-          }}
+          className="flex flex-col justify-center items-end numbers-xs"
         >
           <div className="min-w-[55px] text-right">
             {formatMetric(value, valueType)}
@@ -1691,10 +1676,8 @@ const LabelsSVGSparkline = ({ chainKey }: { chainKey: string }) => {
       }
       {hoverDataPoint ? (
         <div
-          className="flex flex-col justify-center items-end"
-          style={{
-            fontFeatureSettings: "'pnum' on, 'lnum' on",
-          }}
+          className="flex flex-col justify-center items-end numbers-xs"
+          
         >
           <div className="min-w-[55px] text-right" >
             {hoverDataPoint[1] && formatMetric(hoverDataPoint[1], valueType)}
@@ -1709,10 +1692,7 @@ const LabelsSVGSparkline = ({ chainKey }: { chainKey: string }) => {
         </div>
       ) : (
         <div
-          className="flex flex-col justify-center items-end"
-          style={{
-            fontFeatureSettings: "'pnum' on, 'lnum' on",
-          }}
+          className="flex flex-col justify-center items-end numbers-xs"
         >
           <div className="min-w-[55px] text-right">
             {formatMetric(value, valueType)}

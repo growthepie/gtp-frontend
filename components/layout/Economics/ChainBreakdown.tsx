@@ -907,7 +907,7 @@ export default function ChainBreakdown({
               {/*END TOP ROW */}
             </div>
             <div
-              className={`relative flex flex-col -mt-[5px] min-w-[1125px] z-0 transition-height duration-300 `}
+              className={`relative flex flex-col -mt-[5px] min-w-[1125px] z-0 transition-height duration-500 `}
               style={{ height: minimumHeight }}
             >
               {transitions((style, item) => {
@@ -917,6 +917,11 @@ export default function ChainBreakdown({
                 const localDataAvail = dataAvailToArray(
                   master.chains[item.key].da_layer,
                 )[0];
+               
+
+                console.log(((data[item.key][selectedTimespan].revenue
+                  .total[dataIndex]) /
+                maxRevenue) + " " + item.key);
 
                 return (
                   <animated.div
@@ -1056,14 +1061,7 @@ export default function ChainBreakdown({
                                 maxRevenue
                                 }%`,
 
-                              minWidth:
-                                data[item.key][selectedTimespan].revenue.total[
-                                  dataIndex
-                                ] /
-                                  totalRevenue >
-                                  0.01
-                                  ? "22px"
-                                  : `6px`,
+                              minWidth: `4px`,
                             }}
                           >
                             &nbsp;

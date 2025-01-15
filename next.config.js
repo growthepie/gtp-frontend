@@ -48,6 +48,26 @@ const nextConfig = {
           ],
           destination: "/labels",
         },
+        {
+          source: "/",
+          has: [
+            {
+              type: "host",
+              value: "icons.growthepie.xyz",
+            },
+          ],
+          destination: "/icons",
+        },
+        {
+          source: "/",
+          has: [
+            {
+              type: "host",
+              value: "dev.icons.growthepie.xyz",
+            },
+          ],
+          destination: "/icons",
+        },
       ],
     };
   },
@@ -56,6 +76,11 @@ const nextConfig = {
       {
         source: "/labels",
         destination: "https://labels.growthepie.xyz/",
+        permanent: true,
+      },
+      {
+        source: "/optimism-retropgf-3",
+        destination: "/trackers/optimism-retropgf-3",
         permanent: true,
       },
       {
@@ -111,6 +136,10 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "content.optimism.io",
+      },
+      {
+        protocol: "https",
+        hostname: "api.growthepie.xyz",
       },
     ],
   },
