@@ -394,6 +394,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
 
     }, [showUsd])
     
+   
 
 
     return(
@@ -416,23 +417,6 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                             },
                         }}
                         plotOptions={{
-                            column: {
-                                stacking: "normal",
-
-                                borderWidth: 0,
-                                color: {
-                                    linearGradient: {
-                                        x1: 0,
-                                        y1: 1,
-                                        x2: 0,
-                                        y2: 0 // Adjust this for vertical or diagonal gradients if needed
-                                    },
-                                    stops: [
-                                        [0, '#FE5468'], // 0% color
-                                        [1, '#FFDF27']  // 100% color
-                                    ]
-                                }
-                            },
                             area: {
                                 stacking: "normal",
                                 lineWidth: 2,
@@ -454,7 +438,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                     >
                     <Chart
                         backgroundColor={""}
-                        type="column"
+                        type="area"
                         title={"test"}
                         overflow="visible"
                         panning={{ enabled: true }}
@@ -530,27 +514,30 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                             enabled: true,
 
                             formatter: function () {
-                            // Convert Unix timestamp to milliseconds
-                            const date = new Date(this.value);
-                            // Format the date as needed (e.g., "dd MMM yyyy")
-                            const dateString = date
-                                .toLocaleDateString("en-GB", {
-                                day: !(
-                                    timespans[selectedTimespan].value >= 90 ||
-                                    selectedTimespan === "max"
-                                )
-                                    ? "2-digit"
-                                    : undefined,
-                                month: "short",
-                                year:
-                                    timespans[selectedTimespan].value >= 90 ||
-                                    selectedTimespan === "max"
-                                    ? "numeric"
-                                    : undefined,
-                                })
-                                .toUpperCase();
-
-                            return `<span class="font-bold">${dateString}</span>`;
+                                // Convert Unix timestamp to milliseconds
+                                const date = new Date(this.value);
+                                
+                                // Create a new date set to the first day of the month
+                                const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+                                
+                                // Format the date using the first day
+                                const dateString = firstDayOfMonth
+                                    .toLocaleDateString("en-GB", {
+                                        day: !(
+                                            timespans[selectedTimespan].value >= 90 ||
+                                            selectedTimespan === "max"
+                                        )
+                                            ? "2-digit"
+                                            : undefined,
+                                        month: "short",
+                                        year:
+                                            timespans[selectedTimespan].value >= 90 ||
+                                            selectedTimespan === "max"
+                                            ? "numeric"
+                                            : undefined,
+                                    })
+                                    .toUpperCase();
+                                return `<span class="font-bold">${dateString}</span>`;
                             },
                         }}
                         crosshair={{
@@ -564,7 +551,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         
                         
                         startOnTick={true}
-                        endOnTick={true}
+                        endOnTick={false}
                         tickAmount={0}
 
                         tickLength={5}
@@ -610,11 +597,11 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                             fontWeight: "600",
                             fontFamily: "var(--font-raleway), sans-serif",
                         },
-                        // formatter: function (
-                        // t: Highcharts.AxisLabelsFormatterContextObject,
-                        // ) {
-                        //   return formatNumber(metricKey, t.value);
-                        // },
+                        formatter: function (
+                        t: Highcharts.AxisLabelsFormatterContextObject,
+                        ) {
+                          return formatBytes(t.value as number);
+                        },
                     }}
                     min={0}
                     
