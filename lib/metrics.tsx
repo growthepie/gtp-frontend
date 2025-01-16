@@ -28,7 +28,7 @@ export const metricCategories = {
     group: "fundamentals",
   },
   "value-locked": {
-    label: "Value Locked",
+    label: "Value Secured",
     icon: "feather:star",
     group: "fundamentals",
   },
@@ -96,8 +96,9 @@ export const metricItems: MetricItem[] = [
     category: "value-locked",
     page: {
       title: "Stablecoin Market Cap",
-      description: "The sum of stablecoins that are secured by the chain.",
-      why: "Stablecoin market cap is a crucial metric for evaluating the growth and development of a blockchain's real-world use-cases. Stables are a popular choice for use in DeFi applications such as lending, borrowing, and trading as well as payments. Since stablecoins are usually 1:1 backed by real-world assets, this metric is also harder to inflate than Total Value Secures which included all types of tokens.",
+      description:
+        "The sum of all tracked stablecoins that are secured by the chain.",
+      why: "Stablecoin market cap is a crucial metric for evaluating the growth and development of a blockchain's use-cases. Stablecoins are a popular choice for use in DeFi applications such as lending, borrowing, and trading as well as payments. Since stablecoins are usually 1:1 backed by real-world assets, this metric is harder to inflate than Total Value Secured which includes all types of tokens.",
       icon: "gtp-metrics-stablecoinmarketcap",
     },
     icon: "gtp-metrics-stablecoinmarketcap",
@@ -112,13 +113,13 @@ export const metricItems: MetricItem[] = [
       title: "Total Value Secured",
       description:
         "The sum of all funds secured by the chain. Methodology and data is derived from L2Beat.com.",
-      why: "Total Value Sercured is a crucial metric for assessing the success in a blockchain. High TVS indicates that users have significant trust in the chain's security and reliability, as well as confidence in the usefulness and functionality of the various applications available on the chain.",
+      why: "Total Value Secured is a crucial metric for assessing the success in a blockchain. High TVS indicates that users have significant trust in the chain's security and reliability, as well as confidence in the usefulness and functionality of the various applications available on the chain.",
       icon: "gtp-metrics-totalvaluelocked",
     },
     icon: "gtp-metrics-totalvaluelocked",
     key: "tvl",
     rootKey: "metricsTvl",
-    urlKey: "total-value-locked",
+    urlKey: "total-value-secured",
   },
 
   {
@@ -165,7 +166,7 @@ export const metricItems: MetricItem[] = [
     page: {
       title: "Rent Paid to L1",
       description:
-        "The gas fees paid by Layer 2s to post transaction data & verification states onto Ethereum. For data availability: Ethereum calldata and Ethereum Blobs are tracked here.",
+        "The gas fees paid by Layer 2s to post transaction data & verification states onto Ethereum. For data availability: Ethereum Calldata and Ethereum Blobs are tracked here.",
       why: "Rent paid to L1 quantifies the expenses associated with posting L2 transaction data and proofs onto the Ethereum blockchain. The term 'rent' signifies the gas fees L2s incur to leverage the security of the Ethereum blockchain. This metric provides valuable insights into the value accrual for ETH holders.",
       icon: "gtp-metrics-rentpaidtol1",
     },
@@ -201,18 +202,18 @@ export const metricItems: MetricItem[] = [
           className="flex items-center space-x-1 font-inter text-lg"
           key="fdv-title-tags"
         >
-          <span className="font-inter text-xs px-1.5 py-0.5 rounded bg-forest-900 dark:bg-forest-500 font-medium text-white dark:text-forest-1000">
+          <span className="rounded bg-forest-900 px-1.5 py-0.5 font-inter text-xs font-medium text-white dark:bg-forest-500 dark:text-forest-1000">
             FDV
           </span>
           <div>=</div>
-          <span className="font-inter text-xs px-1.5 py-[1px] rounded border border-forest-900 dark:border-forest-500 font-medium">
+          <span className="rounded border border-forest-900 px-1.5 py-[1px] font-inter text-xs font-medium dark:border-forest-500">
             Total Token Supply
           </span>
           <Icon
-            className="text-forest-900 dark:text-forest-500 text-base"
+            className="text-base text-forest-900 dark:text-forest-500"
             icon="feather:x"
           />
-          <span className="font-inter text-xs px-1.5 py-[1px] rounded border border-forest-900 dark:border-forest-500 font-medium">
+          <span className="rounded border border-forest-900 px-1.5 py-[1px] font-inter text-xs font-medium dark:border-forest-500">
             Token Price
           </span>
         </div>,
@@ -236,19 +237,19 @@ export const metricItems: MetricItem[] = [
           className="flex items-center space-x-1 font-inter text-lg"
           key="market-cap-title-tags"
         >
-          <span className="font-inter text-xs px-1.5 py-0.5 rounded bg-forest-900 dark:bg-forest-500 font-medium text-white dark:text-forest-1000">
+          <span className="rounded bg-forest-900 px-1.5 py-0.5 font-inter text-xs font-medium text-white dark:bg-forest-500 dark:text-forest-1000">
             MC
           </span>
           <div>=</div>
-          <span className="font-inter text-xs px-1.5 py-[1px] rounded border border-forest-900 dark:border-forest-500 font-medium">
+          <span className="rounded border border-forest-900 px-1.5 py-[1px] font-inter text-xs font-medium dark:border-forest-500">
             Circulating Token Supply
           </span>
           <Icon
-            className="text-forest-900 dark:text-forest-500 text-base"
+            className="text-base text-forest-900 dark:text-forest-500"
             icon="feather:x"
           />
 
-          <span className="font-inter text-xs px-1.5 py-[1px] rounded border border-forest-900 dark:border-forest-500 font-medium">
+          <span className="rounded border border-forest-900 px-1.5 py-[1px] font-inter text-xs font-medium dark:border-forest-500">
             Token Price
           </span>
         </div>,
@@ -294,7 +295,7 @@ export const daMetricItems: MetricItem[] = [
       showGwei: false,
     },
     key: "blob_producers",
-    urlKey: "blob-producers",
+    urlKey: "da-consumers",
   },
   {
     label: "Data Posted",

@@ -157,34 +157,34 @@ export default function SidebarMenuGroup({
       hideLabel={!sidebarOpen}
       className=""
       accordionClassName="mb-[10px]"
-      rightContent={item.newChild &&
-        (
-          <div className="transition-all duration-300 absolute top-[8px] bottom-[8px] right-[0px] md:right-[20px] text-xs flex items-center justify-center font-bold overflow-hidden pointer-events-none">
+      rightContent={
+        item.newChild && (
+          <div className="pointer-events-none absolute bottom-[8px] right-[0px] top-[8px] flex items-center justify-center overflow-hidden text-xs font-bold transition-all duration-300 md:right-[20px]">
             <div
-              className={`transition-all duration-300 w-[50px] h-full rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${!sidebarOpen || isOpen
-                ? "translate-x-[60px] ease-in-out opacity-0"
-                : "delay-300 translate-x-0 ease-in-out opacity-100"
-                }`}
+              className={`h-full w-[50px] rounded-full bg-gradient-to-t from-[#FFDF27] to-[#FE5468] transition-all duration-300 md:rounded-br-none md:rounded-tr-none ${
+                !sidebarOpen || isOpen
+                  ? "translate-x-[60px] opacity-0 ease-in-out"
+                  : "translate-x-0 opacity-100 delay-300 ease-in-out"
+              }`}
             >
-              <div
-                className="transition-all duration-300 absolute inset-0 pr-[8px] rounded-full md:rounded-br-none md:rounded-tr-none text-xs flex items-center justify-end font-bold hard-shine-2 text-forest-900"
-              >
+              <div className="hard-shine-2 absolute inset-0 flex items-center justify-end rounded-full pr-[8px] text-xs font-bold text-forest-900 transition-all duration-300 md:rounded-br-none md:rounded-tr-none">
                 NEW!
               </div>
             </div>
           </div>
-        )}
+        )
+      }
     >
       {item.label === "Chains" ? (
-        <div className="pl-[9px] gap-y-[5px]">
+        <div className="gap-y-[5px] pl-[9px]">
           {Object.keys(ChainGroups).length > 0 &&
             Object.entries(ChainGroups).map(([bucket, chains]: any) => {
               if (chains.length === 0) return <div key={bucket}></div>;
 
               return (
-                <div key={bucket} className="flex flex-col w-full">
+                <div key={bucket} className="flex w-full flex-col">
                   <div
-                    className="text-[14px] font-bold text-[#5A6462] px-[5px] py-[5px]"
+                    className="px-[5px] py-[5px] text-[14px] font-bold text-[#5A6462]"
                     style={{ fontVariant: "all-small-caps" }}
                   >
                     {sidebarOpen ? bucket.toUpperCase() : <span>&nbsp;</span>}
@@ -212,23 +212,23 @@ export default function SidebarMenuGroup({
                           ? pathname.localeCompare(option.url) === 0
                           : false
                       }
-                      rightContent={option.showNew &&
-                        (
-                          <div className="transition-all duration-300 absolute top-1 bottom-1 right-[2px] md:right-[16px] text-xs flex items-center justify-center font-bold overflow-hidden">
+                      rightContent={
+                        option.showNew && (
+                          <div className="absolute bottom-1 right-[2px] top-1 flex items-center justify-center overflow-hidden text-xs font-bold transition-all duration-300 md:right-[16px]">
                             <div
-                              className={`transition-all duration-300 w-[50px] h-full rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${sidebarOpen && isOpen
-                                ? "delay-300 translate-x-[0px] ease-in-out opacity-100"
-                                : "translate-x-[60px] ease-in-out opacity-0"
-                                }`}
+                              className={`h-full w-[50px] rounded-full bg-gradient-to-t from-[#FFDF27] to-[#FE5468] transition-all duration-300 md:rounded-br-none md:rounded-tr-none ${
+                                sidebarOpen && isOpen
+                                  ? "translate-x-[0px] opacity-100 delay-300 ease-in-out"
+                                  : "translate-x-[60px] opacity-0 ease-in-out"
+                              }`}
                             >
-                              <div
-                                className="transition-all duration-300 absolute inset-0 pr-[8px] rounded-full md:rounded-br-none md:rounded-tr-none text-xs flex items-center justify-end font-bold hard-shine-2 text-forest-900"
-                              >
+                              <div className="hard-shine-2 absolute inset-0 flex items-center justify-end rounded-full pr-[8px] text-xs font-bold text-forest-900 transition-all duration-300 md:rounded-br-none md:rounded-tr-none">
                                 NEW!
                               </div>
                             </div>
                           </div>
-                        )}
+                        )
+                      }
                     />
                   ))}
                 </div>
@@ -236,7 +236,7 @@ export default function SidebarMenuGroup({
             })}
         </div>
       ) : (
-        <div className="px-[3px] gap-y-[-5px] w-full">
+        <div className="w-full gap-y-[-5px] px-[3px]">
           {item.options
             .filter((o) => o.hide !== true)
             .map((option, i) => {
@@ -251,7 +251,7 @@ export default function SidebarMenuGroup({
                 ) {
                   label = (
                     <div
-                      className="text-[14px] font-bold text-[#5A6462] p-[5px]"
+                      className="p-[5px] text-[14px] font-bold text-[#5A6462]"
                       style={{ fontVariant: "all-small-caps" }}
                     >
                       {sidebarOpen ? (
@@ -267,7 +267,10 @@ export default function SidebarMenuGroup({
               }
 
               return (
-                <div key={option.key} className="flex flex-col gap-y-[-5px] w-full">
+                <div
+                  key={option.key}
+                  className="flex w-full flex-col gap-y-[-5px]"
+                >
                   {label}
                   <Accordion
                     key={option.key}
@@ -283,23 +286,23 @@ export default function SidebarMenuGroup({
                         ? pathname.localeCompare(option.url) === 0
                         : false
                     }
-                    rightContent={option.showNew &&
-                      (
-                        <div className="transition-all duration-300 absolute top-1 bottom-1 right-[2px] md:right-[16px] text-xs flex items-center justify-center font-bold overflow-hidden">
+                    rightContent={
+                      option.showNew && (
+                        <div className="absolute bottom-1 right-[2px] top-1 flex items-center justify-center overflow-hidden text-xs font-bold transition-all duration-300 md:right-[16px]">
                           <div
-                            className={`transition-all duration-300 w-[50px] h-full rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${sidebarOpen && isOpen
-                              ? "delay-300 translate-x-[0px] ease-in-out opacity-100"
-                              : "translate-x-[60px] ease-in-out opacity-0"
-                              }`}
+                            className={`h-full w-[50px] rounded-full bg-gradient-to-t from-[#FFDF27] to-[#FE5468] transition-all duration-300 md:rounded-br-none md:rounded-tr-none ${
+                              sidebarOpen && isOpen
+                                ? "translate-x-[0px] opacity-100 delay-300 ease-in-out"
+                                : "translate-x-[60px] opacity-0 ease-in-out"
+                            }`}
                           >
-                            <div
-                              className="transition-all duration-300 absolute inset-0 pr-[8px] rounded-full md:rounded-br-none md:rounded-tr-none text-xs flex items-center justify-end font-bold hard-shine-2 text-forest-900"
-                            >
+                            <div className="hard-shine-2 absolute inset-0 flex items-center justify-end rounded-full pr-[8px] text-xs font-bold text-forest-900 transition-all duration-300 md:rounded-br-none md:rounded-tr-none">
                               NEW!
                             </div>
                           </div>
                         </div>
-                      )}
+                      )
+                    }
                   />
                 </div>
               );
@@ -985,7 +988,7 @@ export const Accordion = ({
   isOpen = false,
   hideLabel = false,
   isActive = false,
-  onToggle = () => { },
+  onToggle = () => {},
   width = undefined,
   rightContent,
 }: AccordionProps) => {
@@ -1055,7 +1058,7 @@ export const Accordion = ({
       <Tooltip placement="top-start">
         <TooltipTrigger className="w-full">
           <Link
-            className={`relative flex flex-col overflow-visible w-full ${className}`}
+            className={`relative flex w-full flex-col overflow-visible ${className}`}
             href={link ? link : ""}
             target={link && link.startsWith("http") ? "_blank" : undefined}
             rel={
@@ -1070,9 +1073,11 @@ export const Accordion = ({
             onMouseLeave={() => setIsHovered(false)}
           >
             <div
-              className={`w-full flex items-center justify-between ${hideLabel ? "rounded-full" : "rounded-full"
-                }  ${children ? "cursor-pointer" : ""} ${isActive && "!bg-[#151A19]"
-                } ${link && !hideLabel && "hover:!bg-[#5A6462]"}`}
+              className={`flex w-full items-center justify-between ${
+                hideLabel ? "rounded-full" : "rounded-full"
+              } ${children ? "cursor-pointer" : ""} ${
+                isActive && "!bg-[#151A19]"
+              } ${link && !hideLabel && "hover:!bg-[#5A6462]"}`}
               onClick={() => {
                 onToggle && onToggle();
               }}
@@ -1095,7 +1100,7 @@ export const Accordion = ({
                 }
               />
               <div
-                className="flex-1 flex items-start justify-start font-semibold truncate transition-all duration-300 "
+                className="flex flex-1 items-start justify-start truncate font-semibold transition-all duration-300"
                 style={{
                   fontSize: fontSize[size],
                   opacity: hideLabel ? 0 : 1,
@@ -1106,18 +1111,19 @@ export const Accordion = ({
             </div>
             {rightContent}
           </Link>
-        </TooltipTrigger >
+        </TooltipTrigger>
         {hideLabel && (
           <TooltipContent
             className={`${hideLabel ? "z-50" : ""} pointer-events-none`}
           >
             <div
-              className="absolute pointer-events-none"
+              className="pointer-events-none absolute"
               style={{ top: 5, left: 0 }}
             >
               <div
-                className={`flex items-center justify-between ${hideLabel ? "rounded-full" : "rounded-full"
-                  }`}
+                className={`flex items-center justify-between ${
+                  hideLabel ? "rounded-full" : "rounded-full"
+                }`}
                 style={{
                   padding: padding[size],
                   gap: gap[size],
@@ -1138,7 +1144,7 @@ export const Accordion = ({
                   }
                 />
                 <div
-                  className="flex-1 flex items-start justify-start font-semibold truncate transition-all duration-300"
+                  className="flex flex-1 items-start justify-start truncate font-semibold transition-all duration-300"
                   style={{
                     fontSize: fontSize[size],
                     // opacity: hideLabel ? 0 : 1,
@@ -1150,7 +1156,7 @@ export const Accordion = ({
             </div>
           </TooltipContent>
         )}
-      </Tooltip >
+      </Tooltip>
       {children && (
         <div
           className={`overflow-hidden transition-[max-height] duration-300 ${accordionClassName}`}
@@ -1158,7 +1164,9 @@ export const Accordion = ({
             maxHeight: isOpen ? childrenHeight : "0",
           }}
         >
-          <div className="w-full" ref={ref}>{children}</div>
+          <div className="w-full" ref={ref}>
+            {children}
+          </div>
         </div>
       )}
     </>
@@ -1194,7 +1202,6 @@ export const DropdownIcon = ({
   //   lg: "24px",
   // };
 
-
   // if our dropdownSize is sm, then the iconSize will be sm
   // if our dropdownSize is md, then the iconSize will be sm
   // if our dropdownSize is lg, then the iconSize will be md
@@ -1202,7 +1209,7 @@ export const DropdownIcon = ({
     sm: "sm",
     md: "sm",
     lg: "md",
-  }
+  };
 
   const iconBg = {
     none: "transparent",
@@ -1218,7 +1225,7 @@ export const DropdownIcon = ({
         background: iconBg[iconBackground],
       }}
     >
-      <div className="relative flex h-full px-[5px] items-center justify-center">
+      <div className="relative flex h-full items-center justify-center px-[5px]">
         <GTPIcon
           icon={icon}
           size={iconSizeMap[size]}
@@ -1229,7 +1236,7 @@ export const DropdownIcon = ({
 
         {showArrow && (
           <div
-            className={`w-[5px] h-[10px] absolute right-0 transition-all duration-300`}
+            className={`absolute right-0 h-[10px] w-[5px] transition-all duration-300`}
             style={{
               transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
               transformOrigin: `calc(-${GTPIconSize[iconSizeMap[size]]}/2) 50%`,

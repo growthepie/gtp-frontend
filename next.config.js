@@ -74,6 +74,16 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: "/data-availability/blob-producers",
+        destination: "/data-availability/da-consumers",
+        permanent: true,
+      },
+      {
+        source: "/fundamentals/total-value-locked",
+        destination: "/fundamentals/total-value-secured",
+        permanent: true,
+      },
+      {
         source: "/labels",
         destination: "https://labels.growthepie.xyz/",
         permanent: true,
