@@ -17,7 +17,7 @@ import {
 import Highcharts, { chart } from "highcharts/highstock";
 import { useLocalStorage } from "usehooks-ts";
 import Image from "next/image";
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import { useMaster } from "@/contexts/MasterContext";
 import "@/app/highcharts.axis.css";
 import Icon from "@/components/layout/Icon";
@@ -29,6 +29,8 @@ import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 import { animated, useSpring, useTransition } from "@react-spring/web";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import DynamicIcon from "../DynamicIcon";
+import { match } from "assert";
+import useChartSync from "./components/ChartHandler";
 
 const COLORS = {
     GRID: "rgb(215, 223, 222)",
@@ -50,7 +52,10 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
     const { AllDALayersByKeys, AllChainsByKeys } = useMaster();
     const [selectedChain, setSelectedChain] = useState<string>("all");
-
+    const [hoverChain, setHoverChain] = useState<string | null>(null);
+    const pieChartComponent = useRef<Highcharts.Chart | null>(null);
+    const chartComponent = useRef<Highcharts.Chart | null>(null);
+   
 
     
     const timespans = useMemo(() => {
@@ -395,8 +400,27 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
 
 
     }, [showUsd])
+
+
+    const getNameFromKey = useMemo(() => {
+
+        const chains = pie_data.data.reduce((acc, d) => {
+            acc[d[0]] = d[1];
+            return acc;
+        }, {});
+        
+        return chains;
+
+    }, [pie_data])
+
+
+    useChartSync(pieChartComponent, chartComponent, hoverChain, getNameFromKey);
     
-   
+    
+
+    
+
+
 
 
     return(
@@ -456,6 +480,13 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         marginBottom={30}
 
                         marginTop={2}
+                        onRender={function (event) {
+                            const chart = this; // Assign `this` to a variable for clarity
+                            chartComponent.current = chart;
+                        
+
+                        }}
+                        
                     />
                     <Tooltip
                         useHTML={true}
@@ -647,14 +678,14 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         const custom_logo_keys = Object.keys(master.custom_logos);
 
                         if(!data.da_consumers[key][isMonthly ? "monthly" : "daily"].values[0]){
-                            return <div></div>
+                            return <div key={key}></div>
                         }
                         
                         return(
-                            <div key={key + "da_consumers_info"} className={`flex relative gap-x-[5px] px-[5px] text-xxs rounded-full py-[0.5px] items-center transition-all cursor-pointer bg-[#344240] ${
+                            <div key={key + "da_consumers_info"} className={`flex group/chain relative gap-x-[5px] px-[5px] text-xxs rounded-full py-[0.5px] items-center transition-all cursor-pointer bg-[#344240] ${
                                 (selectedChain === "all" || selectedChain === key) ? "bg-[#344240] border-[1px] border-transparent" : "bg-transparent border-[1px] border-[#344240]"}
                                 ${selectedChain === "all" ? "px-[5px]" : "pl-[5px] pr-[20px]"}
-
+                                
                             }`}
                                 onClick={() => {
                                     setSelectedChain((prev) => {
@@ -665,7 +696,14 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                         }
                                     });
                                 }}
-                               
+                               onMouseEnter={() => {
+                                    setHoverChain(key);
+                                   
+
+                               }}
+                               onMouseLeave={() => {
+                                    setHoverChain(null);
+                               }}
                             >
                                 
                                 <div>{AllChainsByKeys[data.da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][2]] ? 
@@ -681,7 +719,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                         />
                                           ) 
                                         : (<div></div>)}</div>
-                                <div className="text-xxs">{data.da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1]}</div>
+                                <div className="text-xxs group-hover/chain:font-bold ">{data.da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1]}</div>
                                 <div className={`absolute right-[2px] top-[2.5px] w-[12px] h-[12px] text-[#FE5468] ${selectedChain === "all" ? "invisible" : "visible"}`}><Icon icon={selectedChain === key ? "gtp:x-circle" : "gtp:plus-circle"} className="w-[12px] h-[12px] "></Icon></div>
                             </div>
                         )
@@ -703,6 +741,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                 overflow: "visible",
                             },
                         }}
+
                         plotOptions={{
                             pie: {
                                 allowPointSelect: true,
@@ -719,7 +758,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                     >
                     <Chart
                         backgroundColor={""}
-                        type="area"
+                        type="pie"
                         title={"test"}
                         overflow="visible"
                         panning={{ enabled: true }}
@@ -729,12 +768,20 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         animation={{ duration: 50 }}
                         // margin={[0, 15, 0, 0]} // Use the array form for margin
                         //margin={[15, 21, 15, 0]}
-                        
+
 
                         marginBottom={30}
 
                         marginTop={2}
+                        
+                        onRender={function (event) {
+                            const chart = this; // Assign `this` to a variable for clarity
+                            pieChartComponent.current = chart;
+                        
 
+                        }}
+                        
+                        
                         
                     />
                     <Tooltip
@@ -892,6 +939,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                 key={`${"Pie"}-DATableCharts-${da_name}`}
                                 name={"Pie Chart"}
                                 innerSize={"95%"}
+                                size={"100%"}
                                 dataLabels={{
                                     enabled: false,
                                 }}
@@ -899,11 +947,12 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                 data={formattedPieData}
                                 point={{
                                     events: {
-                                        mouseOver: function () {
-                                            
+                                        update: function (event) {
+                                          
                                         },
                                     },
                                 }}
+                                
                                 
                             /> 
                     </YAxis>                     
