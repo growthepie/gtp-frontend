@@ -4,6 +4,7 @@ export const MetricsURLs = {
   "stablecoin-market-cap":
     "https://api.growthepie.xyz/v1/metrics/stables_mcap.json",
   "total-value-locked": "https://api.growthepie.xyz/v1/metrics/tvl.json",
+  "total-value-secured": "https://api.growthepie.xyz/v1/metrics/tvl.json",
   "transaction-count": "https://api.growthepie.xyz/v1/metrics/txcount.json",
   "transaction-costs": "https://api.growthepie.xyz/v1/metrics/txcosts.json",
   "rent-paid": "https://api.growthepie.xyz/v1/metrics/rent_paid.json",
@@ -16,6 +17,8 @@ export const MetricsURLs = {
 export const DAMetricsURLs = {
   "blob-count": "https://api.growthepie.xyz/v1/da_metrics/blob_count.json",
   "blob-producers":
+    "https://api.growthepie.xyz/v1/da_metrics/blob_producers.json",
+  "da-consumers":
     "https://api.growthepie.xyz/v1/da_metrics/blob_producers.json",
   "data-posted": "https://api.growthepie.xyz/v1/da_metrics/data_posted.json",
   "fees-paid": "https://api.growthepie.xyz/v1/da_metrics/fees_paid.json",
@@ -32,7 +35,8 @@ export const BlockspaceURLs = {
 };
 
 export const DAOverviewURL = "https://api.growthepie.xyz/v1/da_overview.json";
-export const DATimeseriesURL = "https://api.growthepie.xyz/v1/da_timeseries.json";
+export const DATimeseriesURL =
+  "https://api.growthepie.xyz/v1/da_timeseries.json";
 
 export const ChainBlockspaceURLs = {
   ethereum: "https://api.growthepie.xyz/v1/chains/blockspace/ethereum.json",
