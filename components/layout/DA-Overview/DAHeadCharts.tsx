@@ -68,8 +68,8 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
 
       let xMax = 0;
       Object.keys(data.metrics["fees_paid"]).forEach((key) => { 
-        if(data.metrics["fees_paid"][key].daily.data[data.metrics["fees_paid"][key].daily.data.length - 1][0] > xMax){
-          xMax = data.metrics["fees_paid"][key].daily.data[data.metrics["fees_paid"][key].daily.data.length - 1][0];
+        if(data.metrics["fees_paid"][key].daily.data[data.metrics["fees_paid"][key][isMonthly ? "monthly" : "daily"].data.length - 1][0] > xMax){
+          xMax = data.metrics["fees_paid"][key].daily.data[data.metrics["fees_paid"][key][isMonthly ? "monthly" : "daily"].data.length - 1][0];
         }
       })
   
@@ -119,11 +119,11 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
         };
       } else {
         return {
-          "180d": {
-            shortLabel: "6m",
-            label: "6 months",
+          "90d": {
+            shortLabel: "3m",
+            label: "3 months",
             value: 90,
-            xMin: xMax - 180 * 24 * 60 * 60 * 1000,
+            xMin: xMax - 90 * 24 * 60 * 60 * 1000,
             xMax: xMax,
           },
           "365d": {
@@ -256,12 +256,12 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
         let sum = 0;
         Object.keys(isolated_data).map((key) => {
             let typeIndex = 1;
-            if(isolated_data[key].daily.types.includes("usd")){
-                typeIndex = isolated_data[key].daily.types.indexOf(showUsd ? "usd" : "eth")
+            if(isolated_data[key][isMonthly ? "monthly" : "daily"].types.includes("usd")){
+                typeIndex = isolated_data[key][isMonthly ? "monthly" : "daily"].types.indexOf(showUsd ? "usd" : "eth")
             }
      
           sum +=
-            isolated_data[key].daily.data[isolated_data[key].daily.data.length - 1][
+            isolated_data[key][isMonthly ? "monthly" : "daily"].data[isolated_data[key][isMonthly ? "monthly" : "daily"].data.length - 1][
                 typeIndex
             ];
         });
@@ -644,7 +644,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                             >
                                 {Object.keys(data.metrics[metricKey])
                                 .map((key, i) => {
-                                    let types = data.metrics[metricKey][key].daily.types;
+                                    let types = data.metrics[metricKey][key][isMonthly ? "monthly" : "daily"].types;
                                     let typeIndex = 1;
 
                                     
@@ -659,7 +659,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                                     return(
                                         <AreaSeries 
                                             key={key}
-                                            data={data.metrics[metricKey][key].daily.data.map((d) => [d[0], d[typeIndex]])}
+                                            data={data.metrics[metricKey][key][isMonthly ? "monthly" : "daily"].data.map((d) => [d[0], d[typeIndex]])}
                                             color={area_colors[key]}
                                             name={data.metrics[metricKey][key].metric_name}
                                         />

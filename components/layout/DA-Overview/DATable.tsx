@@ -152,11 +152,11 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
         };
       } else {
         return {
-          "180d": {
-            shortLabel: "6m",
-            label: "6 months",
+          "90d": {
+            shortLabel: "3m",
+            label: "3 months",
             value: 90,
-            xMin: xMax - 180 * 24 * 60 * 60 * 1000,
+            xMin: xMax - 90 * 24 * 60 * 60 * 1000,
             xMax: xMax,
           },
           "365d": {
