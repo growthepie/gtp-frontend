@@ -46,7 +46,7 @@ export const navigationCategories = {
     group: "fundamentals",
   },
   "value-locked": {
-    label: "Value Locked",
+    label: "Value Secured",
     icon: "feather:star",
     group: "fundamentals",
   },
@@ -98,7 +98,6 @@ export const navigationCategories = {
   },
 };
 
-
 const dataAvailabilityGroup: NavigationItem = {
   name: "Data Availability",
   label: "Data Availability",
@@ -123,7 +122,7 @@ const dataAvailabilityGroup: NavigationItem = {
       url: "/data-availability/blob-count",
     },
     {
-      label: "Blob Producers",
+      label: "DA Consumers",
       category: "metrics",
       page: {
         title: "Active Addresses",
@@ -135,8 +134,8 @@ const dataAvailabilityGroup: NavigationItem = {
       icon: "gtp-blob-producers",
       key: "blob_producers",
       rootKey: "metricsDailyActiveAddresses",
-      urlKey: "blob-producers",
-      url: "/data-availability/blob-producers",
+      urlKey: "da-consumers",
+      url: "/data-availability/da-consumers",
     },
     {
       label: "Data Posted",
@@ -260,7 +259,7 @@ export const navigationItems: NavigationItem[] = [
         url: "/fundamentals/stablecoin-market-cap",
       },
       {
-        label: "Total Value Locked",
+        label: "Total Value Secured",
         category: "value-locked",
         page: {
           title: "Total Value Locked",
@@ -272,8 +271,8 @@ export const navigationItems: NavigationItem[] = [
         icon: "gtp-metrics-totalvaluelocked",
         key: "tvl",
         rootKey: "metricsTvl",
-        urlKey: "total-value-locked",
-        url: "/fundamentals/total-value-locked",
+        urlKey: "total-value-secured",
+        url: "/fundamentals/total-value-secured",
       },
 
       // // put navigation items that we want to hide in production here
@@ -389,18 +388,18 @@ export const navigationItems: NavigationItem[] = [
               className="flex items-center space-x-1 font-inter text-lg"
               key="fdv-title-tags"
             >
-              <span className="font-inter text-xs px-1.5 py-0.5 rounded bg-forest-900 dark:bg-forest-500 font-medium text-white dark:text-forest-1000">
+              <span className="rounded bg-forest-900 px-1.5 py-0.5 font-inter text-xs font-medium text-white dark:bg-forest-500 dark:text-forest-1000">
                 FDV
               </span>
               <div>=</div>
-              <span className="font-inter text-xs px-1.5 py-[1px] rounded border border-forest-900 dark:border-forest-500 font-medium">
+              <span className="rounded border border-forest-900 px-1.5 py-[1px] font-inter text-xs font-medium dark:border-forest-500">
                 Total Token Supply
               </span>
               <Icon
-                className="text-forest-900 dark:text-forest-500 text-base"
+                className="text-base text-forest-900 dark:text-forest-500"
                 icon="feather:x"
               />
-              <span className="font-inter text-xs px-1.5 py-[1px] rounded border border-forest-900 dark:border-forest-500 font-medium">
+              <span className="rounded border border-forest-900 px-1.5 py-[1px] font-inter text-xs font-medium dark:border-forest-500">
                 Token Price
               </span>
             </div>,
@@ -425,19 +424,19 @@ export const navigationItems: NavigationItem[] = [
               className="flex items-center space-x-1 font-inter text-lg"
               key="market-cap-title-tags"
             >
-              <span className="font-inter text-xs px-1.5 py-0.5 rounded bg-forest-900 dark:bg-forest-500 font-medium text-white dark:text-forest-1000">
+              <span className="rounded bg-forest-900 px-1.5 py-0.5 font-inter text-xs font-medium text-white dark:bg-forest-500 dark:text-forest-1000">
                 MC
               </span>
               <div>=</div>
-              <span className="font-inter text-xs px-1.5 py-[1px] rounded border border-forest-900 dark:border-forest-500 font-medium">
+              <span className="rounded border border-forest-900 px-1.5 py-[1px] font-inter text-xs font-medium dark:border-forest-500">
                 Circulating Token Supply
               </span>
               <Icon
-                className="text-forest-900 dark:text-forest-500 text-base"
+                className="text-base text-forest-900 dark:text-forest-500"
                 icon="feather:x"
               />
 
-              <span className="font-inter text-xs px-1.5 py-[1px] rounded border border-forest-900 dark:border-forest-500 font-medium">
+              <span className="rounded border border-forest-900 px-1.5 py-[1px] font-inter text-xs font-medium dark:border-forest-500">
                 Token Price
               </span>
             </div>,
@@ -576,7 +575,12 @@ export const getFundamentalsByKey = (() => {
 
   // Loop through each item in navigationItems
   for (const item of navigationItems) {
-    if (item.key && ["metrics", "economics"].includes(item.key) && item.options && item.options.length > 0) {
+    if (
+      item.key &&
+      ["metrics", "economics"].includes(item.key) &&
+      item.options &&
+      item.options.length > 0
+    ) {
       // Loop through each option
       for (const option of item.options) {
         if (option.key) {

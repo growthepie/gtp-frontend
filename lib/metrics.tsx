@@ -28,7 +28,7 @@ export const metricCategories = {
     group: "fundamentals",
   },
   "value-locked": {
-    label: "Value Locked",
+    label: "Value Secured",
     icon: "feather:star",
     group: "fundamentals",
   },
@@ -53,7 +53,7 @@ export const metricItems: MetricItem[] = [
       title: "Active Addresses",
       description:
         "The number of distinct addresses that interacted with a chain.",
-      why: "Active addresses is a widely used metric for estimating the number of users on a blockchain network. Although it is not a perfect metric due to the possibility of a single person owning multiple addresses, it can still provide valuable insights into the overall user base of a chain. It is worth noting, however, that this metric can be influenced by Sybil attacks, where an attacker creates a large number of fake identities to artificially inflate the active address count. Therefore, while daily active addresses can be a useful measure, it should be used in conjunction with other metrics to provide a more comprehensive analysis of a chain's user activity.",
+      why: "Active addresses is a widely used metric for estimating the engagement on a blockchain network. Although it is not a perfect metric due to the possibility of a single person owning multiple addresses, it can still provide valuable insights into the overall activity of a chain. It is worth noting, however, that this metric can be influenced by Sybil attacks, where an attacker creates a large number of fake identities to artificially inflate the active address count. Therefore, while active addresses can be a useful measure, it should be used in conjunction with other metrics to provide a more comprehensive analysis of a chain's user activity.",
       icon: "gtp-metrics-activeaddresses",
     },
     icon: "gtp-metrics-activeaddresses",
@@ -67,7 +67,7 @@ export const metricItems: MetricItem[] = [
     page: {
       title: "Transaction Count",
       description:
-        "The number of daily transactions. We try to only count transactions that are executed by users/smart contracts - no system transactions.",
+        "The number of transactions on the network. We only count transactions that are executed by users/smart contracts - no system transactions.",
       why: "The number of transactions processed on a blockchain is a reliable metric for measuring its usage. However, it should be noted that this metric alone may not provide sufficient insight into the actual value of the transactions being conducted. For instance, while some chains may have a lower transaction count, the value of these transactions may be significantly higher due to their use in decentralized finance (DeFi) applications. On the other hand, certain chains may have a higher transaction count due to their use in gaming or other applications involving lower value transactions.",
       icon: "gtp-metrics-transactioncount",
     },
@@ -96,8 +96,9 @@ export const metricItems: MetricItem[] = [
     category: "value-locked",
     page: {
       title: "Stablecoin Market Cap",
-      description: "The sum of stablecoins that are locked on the chain.",
-      why: "Stablecoin market cap is a crucial metric for evaluating the growth and development of a blockchain's decentralized finance (DeFi) ecosystem.Stables are a popular choice for use in DeFi applications such as lending, borrowing, and trading. The market cap of stablecoins on a particular chain can provide valuable insights into the level of adoption and usage of DeFi applications on the network. A high stablecoin market cap is indicative of a robust and thriving DeFi ecosystem, where users are actively engaged in utilizing the various financial applications available on the chain.",
+      description:
+        "The sum of all tracked stablecoins that are secured by the chain.",
+      why: "Stablecoin market cap is a crucial metric for evaluating the growth and development of a blockchain's use-cases. Stablecoins are a popular choice for use in DeFi applications such as lending, borrowing, and trading as well as payments. Since stablecoins are usually 1:1 backed by real-world assets, this metric is harder to inflate than Total Value Secured which includes all types of tokens.",
       icon: "gtp-metrics-stablecoinmarketcap",
     },
     icon: "gtp-metrics-stablecoinmarketcap",
@@ -106,19 +107,19 @@ export const metricItems: MetricItem[] = [
     urlKey: "stablecoin-market-cap",
   },
   {
-    label: "Total Value Locked",
+    label: "Total Value Secured",
     category: "value-locked",
     page: {
-      title: "Total Value Locked",
+      title: "Total Value Secured",
       description:
-        "The sum of all funds locked on the chain. Methodology and data is derived from L2Beat.com.",
-      why: "TVL is a crucial metric for assessing the success of a blockchain. A high TVL indicates that users have significant trust in the chain's security and reliability, as well as confidence in the usefulness and functionality of the various applications available on the chain.",
+        "The sum of all funds secured by the chain. Methodology and data is derived from L2Beat.com.",
+      why: "Total Value Secured is a crucial metric for assessing the success in a blockchain. High TVS indicates that users have significant trust in the chain's security and reliability, as well as confidence in the usefulness and functionality of the various applications available on the chain.",
       icon: "gtp-metrics-totalvaluelocked",
     },
     icon: "gtp-metrics-totalvaluelocked",
     key: "tvl",
     rootKey: "metricsTvl",
-    urlKey: "total-value-locked",
+    urlKey: "total-value-secured",
   },
 
   {
@@ -165,7 +166,7 @@ export const metricItems: MetricItem[] = [
     page: {
       title: "Rent Paid to L1",
       description:
-        "The gas fees paid by Layer 2s to post transaction data & verification states onto Ethereum. For data availability: Ethereum calldata and blobs are tracked here.",
+        "The gas fees paid by Layer 2s to post transaction data & verification states onto Ethereum. For data availability: Ethereum Calldata and Ethereum Blobs are tracked here.",
       why: "Rent paid to L1 quantifies the expenses associated with posting L2 transaction data and proofs onto the Ethereum blockchain. The term 'rent' signifies the gas fees L2s incur to leverage the security of the Ethereum blockchain. This metric provides valuable insights into the value accrual for ETH holders.",
       icon: "gtp-metrics-rentpaidtol1",
     },
@@ -201,18 +202,18 @@ export const metricItems: MetricItem[] = [
           className="flex items-center space-x-1 font-inter text-lg"
           key="fdv-title-tags"
         >
-          <span className="font-inter text-xs px-1.5 py-0.5 rounded bg-forest-900 dark:bg-forest-500 font-medium text-white dark:text-forest-1000">
+          <span className="rounded bg-forest-900 px-1.5 py-0.5 font-inter text-xs font-medium text-white dark:bg-forest-500 dark:text-forest-1000">
             FDV
           </span>
           <div>=</div>
-          <span className="font-inter text-xs px-1.5 py-[1px] rounded border border-forest-900 dark:border-forest-500 font-medium">
+          <span className="rounded border border-forest-900 px-1.5 py-[1px] font-inter text-xs font-medium dark:border-forest-500">
             Total Token Supply
           </span>
           <Icon
-            className="text-forest-900 dark:text-forest-500 text-base"
+            className="text-base text-forest-900 dark:text-forest-500"
             icon="feather:x"
           />
-          <span className="font-inter text-xs px-1.5 py-[1px] rounded border border-forest-900 dark:border-forest-500 font-medium">
+          <span className="rounded border border-forest-900 px-1.5 py-[1px] font-inter text-xs font-medium dark:border-forest-500">
             Token Price
           </span>
         </div>,
@@ -236,19 +237,19 @@ export const metricItems: MetricItem[] = [
           className="flex items-center space-x-1 font-inter text-lg"
           key="market-cap-title-tags"
         >
-          <span className="font-inter text-xs px-1.5 py-0.5 rounded bg-forest-900 dark:bg-forest-500 font-medium text-white dark:text-forest-1000">
+          <span className="rounded bg-forest-900 px-1.5 py-0.5 font-inter text-xs font-medium text-white dark:bg-forest-500 dark:text-forest-1000">
             MC
           </span>
           <div>=</div>
-          <span className="font-inter text-xs px-1.5 py-[1px] rounded border border-forest-900 dark:border-forest-500 font-medium">
+          <span className="rounded border border-forest-900 px-1.5 py-[1px] font-inter text-xs font-medium dark:border-forest-500">
             Circulating Token Supply
           </span>
           <Icon
-            className="text-forest-900 dark:text-forest-500 text-base"
+            className="text-base text-forest-900 dark:text-forest-500"
             icon="feather:x"
           />
 
-          <span className="font-inter text-xs px-1.5 py-[1px] rounded border border-forest-900 dark:border-forest-500 font-medium">
+          <span className="rounded border border-forest-900 px-1.5 py-[1px] font-inter text-xs font-medium dark:border-forest-500">
             Token Price
           </span>
         </div>,
@@ -283,18 +284,18 @@ export const daMetricItems: MetricItem[] = [
     urlKey: "blob-count",
   },
   {
-    label: "Blob Producers",
+    label: "DA Consumers",
     icon: "gtp-blob-producers",
     page: {
-      title: "Blob Producers",
+      title: "DA Consumers",
       description:
-        "Blob Producers refer to the number of unique entities that submit data blobs to the Data Availability layer. In the context of layer 2s, these are generally the sequencers who ensure data is available for transaction or state verification. However, this metric tracks all entities acting on the Data Availability layer, so there may be other entities apart from rollups that utilise the DA solution.",
-      why: "Tracking the number of Blob Producers provides insights into the diversity of usage of the DA layer. A diverse and growing number of producers shows that more layer 2s or other entities are posting data to this DA layer.",
+        "DA Consumers refers to the number of unique entities that submit data blobs to the Data Availability layer. In the context of layer 2s, these are generally the sequencers who ensure data is available for transaction or state verification. However, this metric tracks all entities acting on the Data Availability layer, so there may be other entities apart from rollups that utilize the DA solution.",
+      why: "Tracking the number of DA Consumers provides insights into the diversity of usage of the DA layer. A diverse and growing number of consumers shows that more layer 2s or other entities are posting data to this DA layer.",
       icon: "gtp-blob-producers",
       showGwei: false,
     },
     key: "blob_producers",
-    urlKey: "blob-producers",
+    urlKey: "da-consumers",
   },
   {
     label: "Data Posted",
@@ -311,12 +312,12 @@ export const daMetricItems: MetricItem[] = [
     urlKey: "data-posted",
   },
   {
-    label: "Fees Paid",
+    label: "DA Fees Paid",
     icon: "gtp-da-fees-paid",
     page: {
-      title: "Fees Paid",
+      title: "DA Fees Paid",
       description:
-        "Fees Paid refers to the fees collected by the Data Availability layer for processing and storing data blobs.",
+        "DA Fees Paid refers to the fees collected by the Data Availability layer for processing and storing data blobs.",
       why: "Analyzing Fees Paid helps in understanding the economic sustainability of the DA layer. It reflects the cost associated with data availability services and can indicate the financial health of the network. Additionally, it provides insights into the demand for data posting and the efficiency of fee structures.",
       icon: "gtp-da-fees-paid",
       showGwei: false,
