@@ -649,7 +649,12 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                 {/* Chains */}
 
                 
-                {Object.keys(data.da_consumers).map((key, index) => {
+                {Object.keys(data.da_consumers)  .sort((a, b) => {
+                    
+                    if (a === "others") return 1;
+                    if (b === "others") return -1;
+                    return 0;
+                }).map((key, index) => {
                         const custom_logo_keys = Object.keys(master.custom_logos);
                         
                         return(

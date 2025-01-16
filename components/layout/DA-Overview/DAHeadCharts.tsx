@@ -317,7 +317,8 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
             
             let url = metricKey.includes("fees_paid") ? "/data-availability/fees-paid" : "/data-availability/data-posted";
             return (          
-            <div className="relative flex flex-col w-full overflow-hidden h-[232px] bg-[#1F2726] rounded-2xl  group " key={metricKey}>
+            <div className={`relative flex flex-col w-full overflow-hidden h-[232px] bg-[#1F2726] rounded-2xl  group 
+            ${selectedTimespan === "1d" ?  "hidden" : "flex flex-col"}`} key={metricKey}>
                 <Link
                     className={`absolute hover:underline items-center text-[16px] font-bold top-[15px] left-[15px] flex gap-x-[10px]  z-10 ${/*link ? "cursor-pointer" : ""*/ ""}`}
                     href={url}
@@ -671,18 +672,9 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                 </div>
             </div>
             )})}
-            <div className="flex flex-col gap-y-[5px] w-full h-full py-[15px]">
+            <div className="flex flex-col gap-y-[5px] w-full py-[15px] relative overflow-hidden h-[232px]">
                 <div className="flex items-center heading-large-sm gap-x-[10px] ">
                     <div>Top 5 DA Consumers (by Data Posted)</div>
-                    <div
-                        className={`rounded-full w-[15px] h-[15px] bg-[#344240] flex items-center justify-center text-[10px] z-10 `}
-                      >
-                        <Icon
-                          icon="feather:arrow-right"
-                          className="w-[11px] h-[11px]"
-                        />
-                    </div>
-
                 </div>
                 <TopDAConsumers consumer_data={data.top_da_consumers} selectedTimespan={selectedTimespan} />
             </div>

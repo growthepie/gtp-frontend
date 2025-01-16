@@ -240,7 +240,15 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
 
     
 
+    const totalDAConsumers = useMemo(() => {
+        let total = 0;
+        Object.keys(breakdown_data).forEach((key) => {
+            if (key === "totals") return;
+            total += breakdown_data[key][selectedTimespan].da_consumers.count;
+        });
 
+        return total;
+    }, [])
 
     const maxFeesPaid = useMemo(() => {
       let maxFees = 0;
@@ -659,11 +667,23 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                           item.key,
                         )} `}
                       >
-                        <div className="w-[26px] h-[26px] rounded-full bg-[#151A19] flex items-center justify-center">
+                        <div className="w-[26px] h-[26px] relative rounded-full bg-[#151A19] flex items-center justify-center">
                           <Icon icon={`gtp:${item.key.replaceAll("_", "-")}-logo-monochrome`} className="w-[15px] h-[15px]"
                           style={{
                             color:
                               AllDALayersByKeys[item.key].colors["dark"][0],
+                            }}
+                          />
+                          <Icon
+                            icon={"gtp:circle-arrow"}
+                            className={`w-[4px] h-[9px] absolute top-[9px] right-0 ${selectedTimespan !== "1d" ? "visible" : "hidden"}`}
+                            style={{
+                              transform: `rotate(${openDA[item.key] && selectedTimespan !== "1d"
+                                ? "90deg"
+                                : "0deg"
+                                })`,
+                              transformOrigin: "-8px 4px",
+                              transition: "transform 0.5s",
                             }}
                           />
                         </div>
@@ -752,12 +772,15 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                         }).format(breakdown_data[item.key][selectedTimespan].fees_per_mb.total[typeIndex])}      
                       </div>
                       <div
-                        className={`flex items-center gap-x-[10px] justify-end w-full px-[5px] h-full bg-[#34424090]  ${columnBorder(
+                        className={`flex items-center gap-x-[10px] justify-end relative overflow-visible w-full px-[5px] group h-full bg-[#34424090]  ${columnBorder(
                           "da_consumers",
                           item.key,
                         )} `}
                       >
                         {createDAConsumers(breakdown_data[item.key][selectedTimespan].da_consumers)}
+                        <div className="absolute z-20 w-[245px] p-[15px] h-[140px] top-[30px] group hidden group-hover:block bg-[#1F2726] rounded-[10px]">
+                          <div className="heading-small-xs z-40 ">DA Consumers (Chains) </div>
+                        </div>
                       </div>
 
                       <div
@@ -769,10 +792,9 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                         <Icon icon="gtp:gtp-more" className="w-[24px] h-[24px]" />
                         <div className="absolute  right-[20px] -top-[25px] w-[238px] h-[133px] bg-[#1F2726] rounded-2xl hidden group-hover/more:flex-col group-hover/more:flex z-20 px-[15px] py-[15px] gap-y-[2.5px]">
                           <div className=" heading-small-xs">Parameters</div>
-                          <div className="flex items-center gap-x-[1px]"><div className="text-xs">Blob Size:</div><div className="number-xs font-bold"> {"some value"}</div></div>
-                          <div className="flex items-center gap-x-[1px]"><div className="text-xs">Bandwidth:</div><div className="number-xs"> {"some value"}</div></div>
-                          <div className="flex items-center gap-x-[1px]"><div className="text-xs">Blocktime:</div><div className="number-xs"> {"some value"}</div></div>
-                          <div className="flex items-center gap-x-[1px]"><div className="text-xs">Risk Analysis:</div><div className="number-xs"> {"some value"}</div></div>
+                          <div className="flex items-center gap-x-[2px]"><div className="text-xs">Blob Size:</div><div className="number-xs font-bold"> {breakdown_data[item.key][selectedTimespan].fixed_params.blob_size}</div></div>
+                          <div className="flex items-center gap-x-[2px]"><div className="text-xs">Blocktime:</div><div className="number-xs font-bold"> {breakdown_data[item.key][selectedTimespan].fixed_params.block_time}</div></div>
+                          <div className="flex items-center gap-x-[2px]"><div className="text-xs">Risk Analysis:</div><a href={breakdown_data[item.key][selectedTimespan].fixed_params.l2beat_risk} target="_blank" className="numbers-xs underline">L2BEAT DA Risk</a></div>
                         </div>
                       </div>
 
@@ -831,7 +853,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                 </div>
                 <div className="w-full h-[34px] px-[2px]">
                   <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs bg-[#34424044]">
-                    {35}
+                    {totalDAConsumers}
                   </div>
                 </div>
 
