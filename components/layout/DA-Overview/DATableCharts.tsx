@@ -647,7 +647,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         const custom_logo_keys = Object.keys(master.custom_logos);
 
                         if(!data.da_consumers[key][isMonthly ? "monthly" : "daily"].values[0]){
-                            return <div></div>
+                            return <div key={key + "da_consumers_info"}></div>
                         }
                         
                         return(
