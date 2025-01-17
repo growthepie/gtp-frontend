@@ -62,11 +62,12 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
     const timespans = useMemo(() => {
 
         let xMax = 0;
-        Object.keys(data.da_consumers).forEach((key) => { 
+        console.log(data)
+        Object.keys(data[selectedTimespan].da_consumers).forEach((key) => { 
           
-          const values = data.da_consumers[key][isMonthly ? "monthly" : "daily"].values;
+          const values = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values;
           const length = values.length;
-          const types = data.da_consumers[key][isMonthly ? "monthly" : "daily"].types;
+          const types = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].types;
       
             if(values.length > 0){
                 if(values[values.length - 1][types.indexOf("unix")] > xMax){
@@ -152,10 +153,10 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
     const allChainsTotal = useMemo(() => {
 
         let totalArray = [[Number, Number]]
-        Object.keys(data.da_consumers).forEach((key) => { 
+        Object.keys(data[selectedTimespan].da_consumers).forEach((key) => { 
           
-          const values = data.da_consumers[key][isMonthly ? "monthly" : "daily"].values;
-          const types = data.da_consumers[key][isMonthly ? "monthly" : "daily"].types;
+          const values = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values;
+          const types = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].types;
           const total = values.map((d) => [
             d[types.indexOf("unix")], 
             d[types.indexOf("data_posted")]
@@ -215,7 +216,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
 
 
     const filteredChains = useMemo(() => {
-        const baseData = data.da_consumers;
+        const baseData = data[selectedTimespan].da_consumers;
 
         if (selectedChain === "all") {
             return baseData;
@@ -224,7 +225,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
             filteredData[selectedChain] = baseData[selectedChain];
             return filteredData;
         }
-    }, [data, selectedChain]);
+    }, [data, selectedChain, selectedTimespan]);
 
     function formatBytes(bytes: number, decimals = 2) {
         if (!+bytes) return "0 Bytes";
@@ -658,17 +659,18 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                     min={0}
                     
                     >
-                        {Object.keys(filteredChains).filter((key) => {return data.da_consumers[key][isMonthly ? "monthly" : "daily"].values[0]}).map((key, index) => {
-                            const types = data.da_consumers[key][isMonthly ? "monthly" : "daily"].types;
-                            const name = data.da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1];
+                        {Object.keys(filteredChains).filter((key) => {return data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0]}).map((key, index) => {
+                            console.log(key)
+                            const types = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].types;
+                            const name = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1];
                             
                             return(
                                 <AreaSeries
                                     key={key + "-DATableCharts" + da_name} 
                                     name={name} 
-                                    visible={data.da_consumers[key][isMonthly ? "monthly" : "daily"].values.length > 0}
+                                    visible={data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values.length > 0}
                                     
-                                    data={data.da_consumers[key][isMonthly ? "monthly" : "daily"].values.map((d) => [
+                                    data={data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values.map((d) => [
                                         d[types.indexOf("unix")], 
                                         d[types.indexOf("data_posted")]
                                     ])}
@@ -688,7 +690,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                 {/* Chains */}
 
                 
-                {Object.keys(data.da_consumers)  .sort((a, b) => {
+                {Object.keys(data[selectedTimespan].da_consumers).sort((a, b) => {
                     
                     if (a === "others") return 1;
                     if (b === "others") return -1;
@@ -696,9 +698,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                 }).map((key, index) => {
                         const custom_logo_keys = Object.keys(master.custom_logos);
 
-                        if(!data.da_consumers[key][isMonthly ? "monthly" : "daily"].values[0]){
-                            return <div key={key}></div>
-                        }
+
                         
                         return(
                             <div key={key + "da_consumers_info"} className={`flex group/chain relative gap-x-[5px] px-[5px] text-xxs rounded-full py-[0.5px] items-center transition-all cursor-pointer bg-[#344240] ${
@@ -725,8 +725,8 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                }}
                             >
                                 
-                                <div>{AllChainsByKeys[data.da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][2]] ? 
-                                    (<Icon icon={`gtp:${AllChainsByKeys[data.da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][2]].urlKey}-logo-monochrome`} className="w-[12px] h-[12px]" style={{ color: AllChainsByKeys[key].colors["dark"][0] }} />) 
+                                <div>{AllChainsByKeys[data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][2]] ? 
+                                    (<Icon icon={`gtp:${AllChainsByKeys[data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][2]].urlKey}-logo-monochrome`} className="w-[12px] h-[12px]" style={{ color: AllChainsByKeys[key].colors["dark"][0] }} />) 
                                     : custom_logo_keys.includes(key) 
                                         ? (    
                                          <DynamicIcon 
@@ -738,7 +738,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                         />
                                           ) 
                                         : (<div></div>)}</div>
-                                <div className="text-xxs group-hover/chain:font-bold ">{data.da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1]}</div>
+                                <div className="text-xxs group-hover/chain:font-bold ">{data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1]}</div>
                                 <div className={`absolute right-[2px] top-[2.5px] w-[12px] h-[12px] text-[#FE5468] ${selectedChain === "all" ? "invisible" : "visible"}`}><Icon icon={selectedChain === key ? "gtp:x-circle" : "gtp:plus-circle"} className="w-[12px] h-[12px] "></Icon></div>
                             </div>
                         )
