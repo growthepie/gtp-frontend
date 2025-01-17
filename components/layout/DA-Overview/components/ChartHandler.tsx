@@ -28,7 +28,6 @@ const updateAreaChart = (chart, matchedName) => {
     if (!series?.length) return;
 
     series.forEach(s => {
-        console.log(s.name, matchedName);
         const opacity = !matchedName || s.name === matchedName ? 1.0 : 0.5;
         s.update({ type: s.type, opacity }, false); // Batch updates
         

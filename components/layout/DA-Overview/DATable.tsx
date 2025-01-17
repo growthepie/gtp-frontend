@@ -316,8 +316,8 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
           });
         }
         return {
-          y: index * 39 + prevOpenCharts * 248,
-          height: 39 + (openDA[key] ? 248 : 0),
+          y: index * 39 + prevOpenCharts * 295,
+          height: 39 + (openDA[key] ? 295 : 0),
           key: key, // Assuming `chain` is used as a key
           i: index,
         };
@@ -337,7 +337,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
       let retHeight: number = 39;
       Object.keys(breakdown_data).map((key) => {
         retHeight += 39;
-        retHeight += openDA[key] && selectedTimespan !== "1d" ? 248 : 0;
+        retHeight += openDA[key] && selectedTimespan !== "1d" ? 295 : 0;
       });
   
       return retHeight;
@@ -371,8 +371,9 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
       return(
         <div className="flex items-center gap-x-[2px]">
             <div className="numbers-xs mr-[3px]">{da_row.count}</div>
+            <div className="w-[6px] h-[6px] bg-[#344240] rounded-full mr-[5px]"></div>
             {retHTML}
-            <div className="ml-[3px] w-[60px] px-[5px] py-[3px] rounded-full bg-[#344240] text-xxs">
+            <div className="ml-[3px] w-auto pl-[5px] pr-[6px] py-[1.5px] rounded-full bg-[#344240] text-xxs">
               {`+ ${more} more`}
             </div>
         </div>
@@ -566,7 +567,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                     }        
                   }}
                 >
-                  <div>DA Consumers(Total | Chains)</div>
+                  <div className="flex gap-x-[3px] items-center">{`DA Consumers(Total`}<div className="w-[6px] h-[6px] bg-[#344240] rounded-full"></div>{`Chains)`}</div>
                   <Icon
                     icon={
                       selectedCategory !== "da_consumers"
@@ -801,7 +802,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                     </div>
                     <div
                       className={`flex bottom-2 z-0 relative top-[0px] justify-center w-full transition-height duration-300 overflow-hidden ${openDA[item.key] && selectedTimespan !== "1d"
-                        ? "h-[248px]"
+                        ? "h-[295px]"
                         : "h-[0px]"
                         }`}
                     >

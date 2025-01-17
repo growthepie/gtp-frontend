@@ -31,6 +31,7 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import DynamicIcon from "../DynamicIcon";
 import { match } from "assert";
 import useChartSync from "./components/ChartHandler";
+import { get } from "lodash";
 
 const COLORS = {
     GRID: "rgb(215, 223, 222)",
@@ -425,16 +426,22 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
 
     return(
         <div className="flex h-full w-full gap-x-[10px]">
-            <div className="min-w-[730px] w-full flex flex-1 h-[217px] relative mr-[20px]">
-                <div className="absolute left-[calc(50%-113px)] top-[calc(50%-29.5px)] z-50">
+            <div className="min-w-[730px] w-full mt-[39px] flex flex-1 h-[217px] relative mr-[20px] px-[5px]">
+                <div className="absolute left-[calc(50%-113px)] top-[calc(39%-29.5px)] z-50">
                     <Image src="/da_table_watermark.svg" alt="chart_watermark" width={226} height={59}  className="mix-blend-darken"/>
                 </div>
+                <div className="heading-large-xs w-[250px] absolute left-[15px] h-[39px] flex items-center -top-[40px]">
+                    Data Posted {selectedChain !== "all" ? `(${getNameFromKey[selectedChain]})` : ""}
+                </div>
+                <hr className="absolute w-[91%] border-t-[2px] left-[55px] top-[5px] border-[#5A64624F] border-dotted " />
+                <hr className="absolute w-[91%] border-t-[2px] left-[55px] top-[97px] border-[#5A64624F] border-dotted " />
+            
                 
                 <HighchartsProvider Highcharts={Highcharts}>
                     <HighchartsChart                             
                         containerProps={{
                             style: {
-                                height: "234px",
+                                height: "222px",
                                 width: "100%",
                                 
                                 
@@ -474,12 +481,12 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         animation={{ duration: 50 }}
                         // margin={[0, 15, 0, 0]} // Use the array form for margin
                         //margin={[15, 21, 15, 0]}
-                        marginLeft={40}
+                        marginLeft={50}
                         
 
                         marginBottom={30}
 
-                        marginTop={2}
+                        marginTop={5}
                         onRender={function (event) {
                             const chart = this; // Assign `this` to a variable for clarity
                             chartComponent.current = chart;
@@ -581,9 +588,17 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         zoomEnabled={false}
                  
                         lineWidth={1}
-                        
-                        
-                        startOnTick={true}
+                        plotLines={
+                            [{
+                                value: timespans[selectedTimespan].xMin,
+                                color: "#5A64624F",
+                                width: 1,
+                                zIndex: 1000,
+                                dashStyle: "Dash",
+                            }]
+                        }
+                        gridLineWidth={0}
+                        startOnTick={false}
                         endOnTick={false}
                         tickAmount={0}
 
@@ -615,13 +630,16 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                     type="linear"
                     gridLineWidth={0}
                     gridLineColor={"#5A64624F"}
-                    showFirstLabel={false}
-                    showLastLabel={false}
-                    tickAmount={5}
+                    showFirstLabel={true}
+                    showLastLabel={true}
+                    tickAmount={3}
+                    offset={0}
+                   
                     labels={{
                         align: "right",
-                        y: -2,
+                        y: 2,
                         x: -2,
+                        
                         style: {
                             backgroundColor: "#1F2726",
                             whiteSpace: "nowrap",
@@ -629,11 +647,12 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                             fontSize: "9px",
                             fontWeight: "600",
                             fontFamily: "var(--font-raleway), sans-serif",
+                            
                         },
                         formatter: function (
                         t: Highcharts.AxisLabelsFormatterContextObject,
                         ) {
-                          return formatBytes(t.value as number);
+                          return formatBytes(t.value as number, 1);
                         },
                     }}
                     min={0}
@@ -918,6 +937,8 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         align: "right",
                         y: -2,
                         x: -2,
+                        
+                        
                         style: {
                             backgroundColor: "#1F2726",
                             whiteSpace: "nowrap",
