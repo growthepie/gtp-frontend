@@ -53,7 +53,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
     const { AllDALayersByKeys, AllChainsByKeys } = useMaster();
     const [selectedChain, setSelectedChain] = useState<string>("all");
-    const [hoverChain, setHoverChain] = useState<string | null>(null);
+  // const [hoverChain, setHoverChain] = useState<string | null>(null);
     const pieChartComponent = useRef<Highcharts.Chart | null>(null);
     const chartComponent = useRef<Highcharts.Chart | null>(null);
    
@@ -404,7 +404,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
     }, [showUsd])
 
 
-    const getNameFromKey = useMemo(() => {
+  const getNameFromKey = useMemo<Record<string, string>>(() => {
 
         const chains = pie_data.data.reduce((acc, d) => {
             acc[d[0]] = d[1];
@@ -416,7 +416,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
     }, [pie_data])
 
 
-    useChartSync(pieChartComponent, chartComponent, hoverChain, getNameFromKey);
+  // const { hoverChain, setHoverChain } = useChartSync(pieChartComponent, chartComponent, getNameFromKey)
     
     
 
@@ -686,65 +686,18 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
 
                 </HighchartsProvider>
             </div>
-            <div className="min-w-[125px] flex flex-col gap-y-[2px] items-start justify-center h-full">
-                {/* Chains */}
-
-                
-                {Object.keys(data[selectedTimespan].da_consumers).sort((a, b) => {
-                    
-                    if (a === "others") return 1;
-                    if (b === "others") return -1;
-                    return 0;
-                }).map((key, index) => {
-                        const custom_logo_keys = Object.keys(master.custom_logos);
-
-
-                        
-                        return(
-                            <div key={key + "da_consumers_info"} className={`flex group/chain relative gap-x-[5px] px-[5px] text-xxs rounded-full py-[0.5px] items-center transition-all cursor-pointer bg-[#344240] ${
-                                (selectedChain === "all" || selectedChain === key) ? "bg-[#344240] border-[1px] border-transparent" : "bg-transparent border-[1px] border-[#344240]"}
-                                ${selectedChain === "all" ? "px-[5px]" : "pl-[5px] pr-[20px]"}
-                                
-                            }`}
-                                onClick={() => {
-                                    setSelectedChain((prev) => {
-                                        if (selectedChain === key) {
-                                            return "all";
-                                        } else {
-                                            return key
-                                        }
-                                    });
-                                }}
-                               onMouseEnter={() => {
-                                    setHoverChain(key);
-                                   
-
-                               }}
-                               onMouseLeave={() => {
-                                    setHoverChain(null);
-                               }}
-                            >
-                                
-                                <div>{AllChainsByKeys[data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][2]] ? 
-                                    (<Icon icon={`gtp:${AllChainsByKeys[data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][2]].urlKey}-logo-monochrome`} className="w-[12px] h-[12px]" style={{ color: AllChainsByKeys[key].colors["dark"][0] }} />) 
-                                    : custom_logo_keys.includes(key) 
-                                        ? (    
-                                         <DynamicIcon 
-                                            pathString={master.custom_logos[key].body}
-                                            size={12} 
-                                            className="text-forest-200"
-                                            viewBox="0 0 15 15"
-                                             
-                                        />
-                                          ) 
-                                        : (<div></div>)}</div>
-                                <div className="text-xxs group-hover/chain:font-bold ">{data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1]}</div>
-                                <div className={`absolute right-[2px] top-[2.5px] w-[12px] h-[12px] text-[#FE5468] ${selectedChain === "all" ? "invisible" : "visible"}`}><Icon icon={selectedChain === key ? "gtp:x-circle" : "gtp:plus-circle"} className="w-[12px] h-[12px] "></Icon></div>
-                            </div>
-                        )
-                    }
-                )}
-            </div>
+      <ChartLegend 
+        selectedTimespan={selectedTimespan}
+        data={data}
+        isMonthly={isMonthly}
+        setSelectedChain={setSelectedChain}
+        selectedChain={selectedChain}
+        isPie={true}
+        pie_data={pie_data}
+        pieChartComponent={pieChartComponent}
+        chartComponent={chartComponent}
+        getNameFromKey={getNameFromKey}
+      />
             <div className="min-w-[254px] flex items-center  relative pt-[15px] ">
                 {/* Pie Chart */}
                 <div className="absolute left-[31%] w-[99px] flex items-center justify-center bottom-[49%] text-xxxs font-bold leading-[120%] ">{"% OF TOTAL USAGE"}</div>
@@ -985,3 +938,96 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
         </div>
     )
 }
+
+const ChartLegend = (
+  {
+    selectedTimespan,
+    data,
+    isMonthly,
+    setSelectedChain,
+    selectedChain,
+    isPie,
+    pie_data,
+    pieChartComponent,
+    chartComponent,
+    getNameFromKey
+
+  }: {
+    selectedTimespan: string,
+    data: any,
+    isMonthly: boolean,
+    setSelectedChain: React.Dispatch<React.SetStateAction<string>>,
+    selectedChain: string,
+    isPie: boolean,
+    pie_data: DAConsumerChart,
+    pieChartComponent: React.MutableRefObject<Highcharts.Chart | null>,
+    chartComponent: React.MutableRefObject<Highcharts.Chart | null>,
+    getNameFromKey: Record<string, string>
+
+  }) => {
+  const { AllChainsByKeys, data: master } = useMaster();
+  const { hoverChain, setHoverChain } = useChartSync(pieChartComponent, chartComponent, getNameFromKey)
+
+  if(!master) return null;
+
+  return (
+    <div className="min-w-[125px] flex flex-col gap-y-[2px] items-start justify-center h-full">
+      {/* Chains */}
+
+
+      {Object.keys(data[selectedTimespan].da_consumers).sort((a, b) => {
+
+        if (a === "others") return 1;
+        if (b === "others") return -1;
+        return 0;
+      }).map((key, index) => {
+        const custom_logo_keys = Object.keys(master.custom_logos);
+
+
+
+        return (
+          <div key={key + "da_consumers_info"} className={`flex group/chain relative gap-x-[5px] px-[5px] text-xxs rounded-full py-[0.5px] items-center transition-all cursor-pointer bg-[#344240] ${(selectedChain === "all" || selectedChain === key) ? "bg-[#344240] border-[1px] border-transparent" : "bg-transparent border-[1px] border-[#344240]"}
+${selectedChain === "all" ? "px-[5px]" : "pl-[5px] pr-[20px]"}
+
+}`}
+            onClick={() => {
+              setSelectedChain((prev) => {
+                if (selectedChain === key) {
+                  return "all";
+                } else {
+                  return key
+                }
+              });
+            }}
+            onMouseEnter={() => {
+              setHoverChain(key);
+
+
+            }}
+            onMouseLeave={() => {
+              setHoverChain(null);
+            }}
+          >
+
+            <div>{AllChainsByKeys[data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][2]] ?
+              (<Icon icon={`gtp:${AllChainsByKeys[data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][2]].urlKey}-logo-monochrome`} className="w-[12px] h-[12px]" style={{ color: AllChainsByKeys[key].colors["dark"][0] }} />)
+              : custom_logo_keys.includes(key)
+                ? (
+                  <DynamicIcon
+                    pathString={master.custom_logos[key].body}
+                    size={12}
+                    className="text-forest-200"
+                    viewBox="0 0 15 15"
+
+                  />
+                )
+                : (<div></div>)}</div>
+            <div className="text-xxs group-hover/chain:font-bold ">{data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1]}</div>
+            <div className={`absolute right-[2px] top-[2.5px] w-[12px] h-[12px] text-[#FE5468] ${selectedChain === "all" ? "invisible" : "visible"}`}><Icon icon={selectedChain === key ? "gtp:x-circle" : "gtp:plus-circle"} className="w-[12px] h-[12px] "></Icon></div>
+          </div>
+        )
+      }
+      )}
+    </div>
+  )
+};
