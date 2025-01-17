@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState, MutableRefObject } from 'react';
 
 // Separate the chart update logic into reusable functions
 const updatePieChart = (chart, matchedName) => {
@@ -39,27 +39,31 @@ const updateAreaChart = (chart, matchedName) => {
 };
 
 // Custom hook for chart synchronization
-const useChartSync = (pieChartRef, chartRef, hoverChain, getNameFromKey) => {
-    const updateCharts = useCallback(() => {
+const useChartSync = (pieChartRef:MutableRefObject<Highcharts.Chart | null>, chartRef: MutableRefObject<Highcharts.Chart | null>, getNameFromKey: Record<string, string>) => {
+    const [hoverChain, setHoverChain] = useState<string | null>(null);
+    
+    const updateCharts = () => {
         const matchedName = hoverChain ? getNameFromKey[hoverChain] : null;
         
         updatePieChart(pieChartRef.current, matchedName);
         updateAreaChart(chartRef.current, matchedName);
-    }, [hoverChain, getNameFromKey]);
+    };
 
     useEffect(() => {
         updateCharts();
         
         // Optional: Add cleanup function
         return () => {
-            if (pieChartRef.current) {
+            if (pieChartRef.current && pieChartRef.current.tooltip) {
                 pieChartRef.current.tooltip.hide();
             }
-            if (chartRef.current) {
+            if (chartRef.current && chartRef.current.tooltip) {
                 chartRef.current.tooltip.hide();
             }
         };
-    }, [updateCharts]);
+    }, [hoverChain]);
+
+    return { setHoverChain, hoverChain };
 };
 
 export default useChartSync;
