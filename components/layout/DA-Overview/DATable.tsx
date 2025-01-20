@@ -316,8 +316,8 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
           });
         }
         return {
-          y: index * 39 + prevOpenCharts * 248,
-          height: 39 + (openDA[key] ? 248 : 0),
+          y: index * 39 + prevOpenCharts * 295,
+          height: 39 + (openDA[key] ? 295 : 0),
           key: key, // Assuming `chain` is used as a key
           i: index,
         };
@@ -333,12 +333,17 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
       },
     );
 
+    const EXTRA_PADDING = 80;
+
     const minimumHeight = useMemo(() => {
       let retHeight: number = 39;
       Object.keys(breakdown_data).map((key) => {
         retHeight += 39;
-        retHeight += openDA[key] && selectedTimespan !== "1d" ? 248 : 0;
+        retHeight += openDA[key] && selectedTimespan !== "1d" ? 295 : 0;
       });
+
+      // add extra padding to the bottom for tooltip
+      retHeight += EXTRA_PADDING;
   
       return retHeight;
     }, [openDA, breakdown_data, selectedTimespan]);
@@ -371,8 +376,9 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
       return(
         <div className="flex items-center gap-x-[2px]">
             <div className="numbers-xs mr-[3px]">{da_row.count}</div>
+            <div className="w-[6px] h-[6px] bg-[#344240] rounded-full mr-[5px]"></div>
             {retHTML}
-            <div className="ml-[3px] w-[60px] px-[5px] py-[3px] rounded-full bg-[#344240] text-xxs">
+            <div className="ml-[3px] w-auto pl-[5px] pr-[6px] py-[1.5px] rounded-full bg-[#344240] text-xxs">
               {`+ ${more} more`}
             </div>
         </div>
@@ -566,7 +572,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                     }        
                   }}
                 >
-                  <div>DA Consumers(Total | Chains)</div>
+                  <div className="flex gap-x-[3px] items-center">{`DA Consumers(Total`}<div className="w-[6px] h-[6px] bg-[#344240] rounded-full"></div>{`Chains)`}</div>
                   <Icon
                     icon={
                       selectedCategory !== "da_consumers"
@@ -648,7 +654,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                     style={{ ...style }}
                   >
                     <div
-                      className={`grid  relative rounded-full w-full  min-h-[34px] text-sm items-center z-20 cursor-pointer pr-0.5 grid-cols-[auto_200px_199px_114px_280px_46px] min-w-[1250px] 
+                      className={`grid  relative rounded-full w-full  min-h-[34px] text-sm items-center cursor-pointer pr-0.5 grid-cols-[auto_200px_199px_114px_280px_46px] min-w-[1250px] 
                         ${isBouncing && bounceChain === item.key
                           ? "horizontal-bounce"
                           : ""
@@ -772,25 +778,37 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                         }).format(breakdown_data[item.key][selectedTimespan].fees_per_mb.total[typeIndex])}      
                       </div>
                       <div
-                        className={`flex items-center gap-x-[10px] justify-end relative overflow-visible w-full px-[5px] group h-full bg-[#34424090]  ${columnBorder(
+                        className={`flex items-center justify-end h-full bg-[#34424090] ${columnBorder(
                           "da_consumers",
                           item.key,
                         )} `}
                       >
-                        {createDAConsumers(breakdown_data[item.key][selectedTimespan].da_consumers)}
-                        <div className="absolute z-20 w-[245px] p-[15px] h-[140px] top-[30px] group hidden group-hover:block bg-[#1F2726] rounded-[10px]">
-                          <div className="heading-small-xs z-40 ">DA Consumers (Chains) </div>
+                        <div className="flex items-center gap-x-[10px] relative overflow-visible px-[10px] group h-full">
+                          {createDAConsumers(breakdown_data[item.key][selectedTimespan].da_consumers)}
+                          <div 
+                            className="absolute z-20 right-[19px] top-[32px] w-[245px] p-[15px] h-[140px] group hidden group-hover:block bg-[#1F2726] rounded-[10px]"
+                            style={{
+                              boxShadow: "0px 0px 30px #000000",
+                            }}
+                          >
+                            <div className="heading-small-xs ">DA Consumers (Chains) </div>
+                          </div>
                         </div>
                       </div>
 
                       <div
-                        className={`flex relative overflow-visible items-center gap-x-[10px] w-full px-[5px] justify-center h-full bg-[#1F2726] group/more z-10 ${columnBorder(
+                        className={`flex relative overflow-visible items-center gap-x-[10px] w-full px-[5px] justify-center h-full bg-[#1F2726] group/more ${columnBorder(
                           "fixed_parameters",
                           item.key,
                         )} `}
                       >
                         <Icon icon="gtp:gtp-more" className="w-[24px] h-[24px]" />
-                        <div className="absolute  right-[20px] -top-[25px] w-[238px] h-[133px] bg-[#1F2726] rounded-2xl hidden group-hover/more:flex-col group-hover/more:flex z-20 px-[15px] py-[15px] gap-y-[2.5px]">
+                        <div 
+                          className="absolute z-20 right-[19px] top-[32px] w-[238px] h-[133px] bg-[#1F2726] rounded-2xl hidden group-hover/more:flex-col group-hover/more:flex px-[15px] py-[15px] gap-y-[2.5px]"
+                          style={{
+                            boxShadow: "0px 0px 30px #000000",
+                          }}
+                        >
                           <div className=" heading-small-xs">Parameters</div>
                           <div className="flex items-center gap-x-[2px]"><div className="text-xs">Blob Size:</div><div className="number-xs font-bold"> {breakdown_data[item.key][selectedTimespan].fixed_params.blob_size}</div></div>
                           <div className="flex items-center gap-x-[2px]"><div className="text-xs">Blocktime:</div><div className="number-xs font-bold"> {breakdown_data[item.key][selectedTimespan].fixed_params.block_time}</div></div>
@@ -801,7 +819,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                     </div>
                     <div
                       className={`flex bottom-2 z-0 relative top-[0px] justify-center w-full transition-height duration-300 overflow-hidden ${openDA[item.key] && selectedTimespan !== "1d"
-                        ? "h-[248px]"
+                        ? "h-[295px]"
                         : "h-[0px]"
                         }`}
                     >
@@ -820,10 +838,13 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                   </animated.div>
                 )})}
             <div
-                className={`grid w-full pl-[45px] absolute bottom-[29px] h-[34px] pr-0.5 grid-cols-[auto_200px_199px_114px_280px_46px] mb-[15px]  ${isSidebarOpen
+                className={`z-[-1] grid w-full pl-[45px] absolute h-[34px] pr-0.5 grid-cols-[auto_200px_199px_114px_280px_46px] mb-[15px]  ${isSidebarOpen
                   ? " 2xl:grid-cols-[auto_200px_199px_114px_280px_46px] grid-cols-[auto_200px_199px_114px_280px_46px] "
                   : "xl:grid-cols-[auto_200px_199px_114px_280px_46px] grid-cols-[auto_200px_199px_114px_280px_46px] "
                   } min-w-[1250px]`}
+                  style={{
+                    bottom: `${29 + EXTRA_PADDING}px`,
+                  }}
               >
                 <div className="inline-flex items-center"><div className="heading-large-xs">TOTAL &nbsp;</div><div className="heading-large-xs text-[#5A6462] ">  {selectedTimespan === "max" ? "FOR MAXIMUM TIMEFRAME AVAILABLE" : ("IN THE LAST " + (timespans[selectedTimespan].label).toUpperCase()) }</div></div>
                 <div className="w-full h-[34px] px-[2px]">

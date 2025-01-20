@@ -17,7 +17,7 @@ import {
 import Highcharts, { chart } from "highcharts/highstock";
 import { useLocalStorage } from "usehooks-ts";
 import Image from "next/image";
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import { useMaster } from "@/contexts/MasterContext";
 import "@/app/highcharts.axis.css";
 import Icon from "@/components/layout/Icon";
@@ -29,6 +29,9 @@ import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 import { animated, useSpring, useTransition } from "@react-spring/web";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import DynamicIcon from "../DynamicIcon";
+import { match } from "assert";
+import useChartSync from "./components/ChartHandler";
+import { get } from "lodash";
 
 const COLORS = {
     GRID: "rgb(215, 223, 222)",
@@ -50,17 +53,21 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
     const { AllDALayersByKeys, AllChainsByKeys } = useMaster();
     const [selectedChain, setSelectedChain] = useState<string>("all");
-
+  // const [hoverChain, setHoverChain] = useState<string | null>(null);
+    const pieChartComponent = useRef<Highcharts.Chart | null>(null);
+    const chartComponent = useRef<Highcharts.Chart | null>(null);
+   
 
     
     const timespans = useMemo(() => {
 
         let xMax = 0;
-        Object.keys(data.da_consumers).forEach((key) => { 
+        console.log(data)
+        Object.keys(data[selectedTimespan].da_consumers).forEach((key) => { 
           
-          const values = data.da_consumers[key][isMonthly ? "monthly" : "daily"].values;
+          const values = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values;
           const length = values.length;
-          const types = data.da_consumers[key][isMonthly ? "monthly" : "daily"].types;
+          const types = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].types;
       
             if(values.length > 0){
                 if(values[values.length - 1][types.indexOf("unix")] > xMax){
@@ -146,10 +153,10 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
     const allChainsTotal = useMemo(() => {
 
         let totalArray = [[Number, Number]]
-        Object.keys(data.da_consumers).forEach((key) => { 
+        Object.keys(data[selectedTimespan].da_consumers).forEach((key) => { 
           
-          const values = data.da_consumers[key][isMonthly ? "monthly" : "daily"].values;
-          const types = data.da_consumers[key][isMonthly ? "monthly" : "daily"].types;
+          const values = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values;
+          const types = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].types;
           const total = values.map((d) => [
             d[types.indexOf("unix")], 
             d[types.indexOf("data_posted")]
@@ -209,7 +216,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
 
 
     const filteredChains = useMemo(() => {
-        const baseData = data.da_consumers;
+        const baseData = data[selectedTimespan].da_consumers;
 
         if (selectedChain === "all") {
             return baseData;
@@ -218,7 +225,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
             filteredData[selectedChain] = baseData[selectedChain];
             return filteredData;
         }
-    }, [data, selectedChain]);
+    }, [data, selectedChain, selectedTimespan]);
 
     function formatBytes(bytes: number, decimals = 2) {
         if (!+bytes) return "0 Bytes";
@@ -395,22 +402,47 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
 
 
     }, [showUsd])
+
+
+  const getNameFromKey = useMemo<Record<string, string>>(() => {
+
+        const chains = pie_data.data.reduce((acc, d) => {
+            acc[d[0]] = d[1];
+            return acc;
+        }, {});
+        
+        return chains;
+
+    }, [pie_data])
+
+
+  // const { hoverChain, setHoverChain } = useChartSync(pieChartComponent, chartComponent, getNameFromKey)
     
-   
+    
+
+    
+
+
 
 
     return(
         <div className="flex h-full w-full gap-x-[10px]">
-            <div className="min-w-[730px] w-full flex flex-1 h-[217px] relative mr-[20px]">
-                <div className="absolute left-[calc(50%-113px)] top-[calc(50%-29.5px)] z-50">
+            <div className="min-w-[730px] w-full mt-[39px] flex flex-1 h-[217px] relative mr-[20px] px-[5px]">
+                <div className="absolute left-[calc(50%-113px)] top-[calc(39%-29.5px)] z-50">
                     <Image src="/da_table_watermark.svg" alt="chart_watermark" width={226} height={59}  className="mix-blend-darken"/>
                 </div>
+                <div className="heading-large-xs w-[250px] absolute left-[15px] h-[39px] flex items-center -top-[40px]">
+                    Data Posted {selectedChain !== "all" ? `(${getNameFromKey[selectedChain]})` : ""}
+                </div>
+                <hr className="absolute w-[91%] border-t-[2px] left-[55px] top-[5px] border-[#5A64624F] border-dotted " />
+                <hr className="absolute w-[91%] border-t-[2px] left-[55px] top-[97px] border-[#5A64624F] border-dotted " />
+            
                 
                 <HighchartsProvider Highcharts={Highcharts}>
                     <HighchartsChart                             
                         containerProps={{
                             style: {
-                                height: "234px",
+                                height: "222px",
                                 width: "100%",
                                 
                                 
@@ -450,12 +482,19 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         animation={{ duration: 50 }}
                         // margin={[0, 15, 0, 0]} // Use the array form for margin
                         //margin={[15, 21, 15, 0]}
-                        marginLeft={40}
+                        marginLeft={50}
                         
 
                         marginBottom={30}
 
-                        marginTop={2}
+                        marginTop={5}
+                        onRender={function (event) {
+                            const chart = this; // Assign `this` to a variable for clarity
+                            chartComponent.current = chart;
+                        
+
+                        }}
+                        
                     />
                     <Tooltip
                         useHTML={true}
@@ -550,9 +589,17 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         zoomEnabled={false}
                  
                         lineWidth={1}
-                        
-                        
-                        startOnTick={true}
+                        plotLines={
+                            [{
+                                value: timespans[selectedTimespan].xMin,
+                                color: "#5A64624F",
+                                width: 1,
+                                zIndex: 1000,
+                                dashStyle: "Dash",
+                            }]
+                        }
+                        gridLineWidth={0}
+                        startOnTick={false}
                         endOnTick={false}
                         tickAmount={0}
 
@@ -584,13 +631,16 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                     type="linear"
                     gridLineWidth={0}
                     gridLineColor={"#5A64624F"}
-                    showFirstLabel={false}
-                    showLastLabel={false}
-                    tickAmount={5}
+                    showFirstLabel={true}
+                    showLastLabel={true}
+                    tickAmount={3}
+                    offset={0}
+                   
                     labels={{
                         align: "right",
-                        y: -2,
+                        y: 2,
                         x: -2,
+                        
                         style: {
                             backgroundColor: "#1F2726",
                             whiteSpace: "nowrap",
@@ -598,27 +648,29 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                             fontSize: "9px",
                             fontWeight: "600",
                             fontFamily: "var(--font-raleway), sans-serif",
+                            
                         },
                         formatter: function (
                         t: Highcharts.AxisLabelsFormatterContextObject,
                         ) {
-                          return formatBytes(t.value as number);
+                          return formatBytes(t.value as number, 1);
                         },
                     }}
                     min={0}
                     
                     >
-                        {Object.keys(filteredChains).filter((key) => {return data.da_consumers[key][isMonthly ? "monthly" : "daily"].values[0]}).map((key, index) => {
-                            const types = data.da_consumers[key][isMonthly ? "monthly" : "daily"].types;
-                            const name = data.da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1];
+                        {Object.keys(filteredChains).filter((key) => {return data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0]}).map((key, index) => {
+                            console.log(key)
+                            const types = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].types;
+                            const name = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1];
                             
                             return(
                                 <AreaSeries
                                     key={key + "-DATableCharts" + da_name} 
                                     name={name} 
-                                    visible={data.da_consumers[key][isMonthly ? "monthly" : "daily"].values.length > 0}
+                                    visible={data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values.length > 0}
                                     
-                                    data={data.da_consumers[key][isMonthly ? "monthly" : "daily"].values.map((d) => [
+                                    data={data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values.map((d) => [
                                         d[types.indexOf("unix")], 
                                         d[types.indexOf("data_posted")]
                                     ])}
@@ -634,60 +686,18 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
 
                 </HighchartsProvider>
             </div>
-            <div className="min-w-[125px] flex flex-col gap-y-[2px] items-start justify-center h-full">
-                {/* Chains */}
-
-                
-                {Object.keys(data.da_consumers)  .sort((a, b) => {
-                    
-                    if (a === "others") return 1;
-                    if (b === "others") return -1;
-                    return 0;
-                }).map((key, index) => {
-                        const custom_logo_keys = Object.keys(master.custom_logos);
-
-                        if(!data.da_consumers[key][isMonthly ? "monthly" : "daily"].values[0]){
-                            return <div key={key + "da_consumers_info"}></div>
-                        }
-                        
-                        return(
-                            <div key={key + "da_consumers_info"} className={`flex relative gap-x-[5px] px-[5px] text-xxs rounded-full py-[0.5px] items-center transition-all cursor-pointer bg-[#344240] ${
-                                (selectedChain === "all" || selectedChain === key) ? "bg-[#344240] border-[1px] border-transparent" : "bg-transparent border-[1px] border-[#344240]"}
-                                ${selectedChain === "all" ? "px-[5px]" : "pl-[5px] pr-[20px]"}
-
-                            }`}
-                                onClick={() => {
-                                    setSelectedChain((prev) => {
-                                        if (selectedChain === key) {
-                                            return "all";
-                                        } else {
-                                            return key
-                                        }
-                                    });
-                                }}
-                               
-                            >
-                                
-                                <div>{AllChainsByKeys[data.da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][2]] ? 
-                                    (<Icon icon={`gtp:${AllChainsByKeys[data.da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][2]].urlKey}-logo-monochrome`} className="w-[12px] h-[12px]" style={{ color: AllChainsByKeys[key].colors["dark"][0] }} />) 
-                                    : custom_logo_keys.includes(key) 
-                                        ? (    
-                                         <DynamicIcon 
-                                            pathString={master.custom_logos[key].body}
-                                            size={12} 
-                                            className="text-forest-200"
-                                            viewBox="0 0 15 15"
-                                             
-                                        />
-                                          ) 
-                                        : (<div></div>)}</div>
-                                <div className="text-xxs">{data.da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1]}</div>
-                                <div className={`absolute right-[2px] top-[2.5px] w-[12px] h-[12px] text-[#FE5468] ${selectedChain === "all" ? "invisible" : "visible"}`}><Icon icon={selectedChain === key ? "gtp:x-circle" : "gtp:plus-circle"} className="w-[12px] h-[12px] "></Icon></div>
-                            </div>
-                        )
-                    }
-                )}
-            </div>
+      <ChartLegend 
+        selectedTimespan={selectedTimespan}
+        data={data}
+        isMonthly={isMonthly}
+        setSelectedChain={setSelectedChain}
+        selectedChain={selectedChain}
+        isPie={true}
+        pie_data={pie_data}
+        pieChartComponent={pieChartComponent}
+        chartComponent={chartComponent}
+        getNameFromKey={getNameFromKey}
+      />
             <div className="min-w-[254px] flex items-center  relative pt-[15px] ">
                 {/* Pie Chart */}
                 <div className="absolute left-[31%] w-[99px] flex items-center justify-center bottom-[49%] text-xxxs font-bold leading-[120%] ">{"% OF TOTAL USAGE"}</div>
@@ -703,6 +713,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                 overflow: "visible",
                             },
                         }}
+
                         plotOptions={{
                             pie: {
                                 allowPointSelect: true,
@@ -719,7 +730,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                     >
                     <Chart
                         backgroundColor={""}
-                        type="area"
+                        type="pie"
                         title={"test"}
                         overflow="visible"
                         panning={{ enabled: true }}
@@ -729,12 +740,20 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         animation={{ duration: 50 }}
                         // margin={[0, 15, 0, 0]} // Use the array form for margin
                         //margin={[15, 21, 15, 0]}
-                        
+
 
                         marginBottom={30}
 
                         marginTop={2}
+                        
+                        onRender={function (event) {
+                            const chart = this; // Assign `this` to a variable for clarity
+                            pieChartComponent.current = chart;
+                        
 
+                        }}
+                        
+                        
                         
                     />
                     <Tooltip
@@ -871,6 +890,8 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         align: "right",
                         y: -2,
                         x: -2,
+                        
+                        
                         style: {
                             backgroundColor: "#1F2726",
                             whiteSpace: "nowrap",
@@ -892,6 +913,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                 key={`${"Pie"}-DATableCharts-${da_name}`}
                                 name={"Pie Chart"}
                                 innerSize={"95%"}
+                                size={"100%"}
                                 dataLabels={{
                                     enabled: false,
                                 }}
@@ -899,11 +921,12 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                 data={formattedPieData}
                                 point={{
                                     events: {
-                                        mouseOver: function () {
-                                            
+                                        update: function (event) {
+                                          
                                         },
                                     },
                                 }}
+                                
                                 
                             /> 
                     </YAxis>                     
@@ -915,3 +938,96 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
         </div>
     )
 }
+
+const ChartLegend = (
+  {
+    selectedTimespan,
+    data,
+    isMonthly,
+    setSelectedChain,
+    selectedChain,
+    isPie,
+    pie_data,
+    pieChartComponent,
+    chartComponent,
+    getNameFromKey
+
+  }: {
+    selectedTimespan: string,
+    data: any,
+    isMonthly: boolean,
+    setSelectedChain: React.Dispatch<React.SetStateAction<string>>,
+    selectedChain: string,
+    isPie: boolean,
+    pie_data: DAConsumerChart,
+    pieChartComponent: React.MutableRefObject<Highcharts.Chart | null>,
+    chartComponent: React.MutableRefObject<Highcharts.Chart | null>,
+    getNameFromKey: Record<string, string>
+
+  }) => {
+  const { AllChainsByKeys, data: master } = useMaster();
+  const { hoverChain, setHoverChain } = useChartSync(pieChartComponent, chartComponent, getNameFromKey)
+
+  if(!master) return null;
+
+  return (
+    <div className="min-w-[125px] flex flex-col gap-y-[2px] items-start justify-center h-full">
+      {/* Chains */}
+
+
+      {Object.keys(data[selectedTimespan].da_consumers).sort((a, b) => {
+
+        if (a === "others") return 1;
+        if (b === "others") return -1;
+        return 0;
+      }).map((key, index) => {
+        const custom_logo_keys = Object.keys(master.custom_logos);
+
+
+
+        return (
+          <div key={key + "da_consumers_info"} className={`flex group/chain relative gap-x-[5px] px-[5px] text-xxs rounded-full py-[0.5px] items-center transition-all cursor-pointer bg-[#344240] ${(selectedChain === "all" || selectedChain === key) ? "bg-[#344240] border-[1px] border-transparent" : "bg-transparent border-[1px] border-[#344240]"}
+${selectedChain === "all" ? "px-[5px]" : "pl-[5px] pr-[20px]"}
+
+}`}
+            onClick={() => {
+              setSelectedChain((prev) => {
+                if (selectedChain === key) {
+                  return "all";
+                } else {
+                  return key
+                }
+              });
+            }}
+            onMouseEnter={() => {
+              setHoverChain(key);
+
+
+            }}
+            onMouseLeave={() => {
+              setHoverChain(null);
+            }}
+          >
+
+            <div>{AllChainsByKeys[data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][2]] ?
+              (<Icon icon={`gtp:${AllChainsByKeys[data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][2]].urlKey}-logo-monochrome`} className="w-[12px] h-[12px]" style={{ color: AllChainsByKeys[key].colors["dark"][0] }} />)
+              : custom_logo_keys.includes(key)
+                ? (
+                  <DynamicIcon
+                    pathString={master.custom_logos[key].body}
+                    size={12}
+                    className="text-forest-200"
+                    viewBox="0 0 15 15"
+
+                  />
+                )
+                : (<div></div>)}</div>
+            <div className="text-xxs group-hover/chain:font-bold ">{data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1]}</div>
+            <div className={`absolute right-[2px] top-[2.5px] w-[12px] h-[12px] text-[#FE5468] ${selectedChain === "all" ? "invisible" : "visible"}`}><Icon icon={selectedChain === key ? "gtp:x-circle" : "gtp:plus-circle"} className="w-[12px] h-[12px] "></Icon></div>
+          </div>
+        )
+      }
+      )}
+    </div>
+  )
+};
