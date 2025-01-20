@@ -152,7 +152,7 @@ export default function TopDAConsumers({consumer_data, selectedTimespan}: {consu
                                         <div className="numbers-sm -mb-[1px]">{formatBytes(sortedDAConsumers[item.index][4])}</div>
                                         {AllChainsByKeys[sortedDAConsumers[item.index][3]] ? 
                                         (
-                                          <Link className="text-xxs -mt-[1px] hover:underline" href={`chains/${AllChainsByKeys[sortedDAConsumers[item.index][3]].urlKey}`}>{sortedDAConsumers[item.index][1] ? sortedDAConsumers[item.index][1] : "Not listed chains"}</Link>
+                                          <Link className="text-xxs -mt-[1px] hover:underline" href={`../chains/${AllChainsByKeys[sortedDAConsumers[item.index][3]].urlKey}`}>{sortedDAConsumers[item.index][1] ? sortedDAConsumers[item.index][1] : "Not listed chains"}</Link>
                                         ) : (
                                             <div className="text-xxs -mt-[1px]">{sortedDAConsumers[item.index][1] ? sortedDAConsumers[item.index][1] : "Not listed chains"}</div>
                                         )

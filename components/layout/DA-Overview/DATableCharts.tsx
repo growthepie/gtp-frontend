@@ -62,19 +62,27 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
     const timespans = useMemo(() => {
 
         let xMax = 0;
-        console.log(data)
-        Object.keys(data[selectedTimespan].da_consumers).forEach((key) => { 
-          
-          const values = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values;
-          const length = values.length;
-          const types = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].types;
+        let xMin = Infinity;
       
-            if(values.length > 0){
-                if(values[values.length - 1][types.indexOf("unix")] > xMax){
-                    xMax = values[values.length - 1][types.indexOf("unix")];
+        Object.keys(data[selectedTimespan].da_consumers).forEach((key) => {
+            const values = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values;
+            const types = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].types;
+            
+            if (values.length > 0) {
+                const unixIndex = types.indexOf("unix");
+        
+                // Calculate xMax (latest x-value)
+                if (values[values.length - 1][unixIndex] > xMax) {
+                xMax = values[values.length - 1][unixIndex];
+                }
+        
+                // Calculate xMin (earliest x-value)
+                if (values[0][unixIndex] < xMin) {
+                xMin = values[0][unixIndex];
                 }
             }
-        })
+        });
+       
 
     
         if (!isMonthly) {
@@ -117,7 +125,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
               shortLabel: "Max",
               label: "Max",
               value: 0,
-              xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+              xMin: xMin,
               xMax: xMax,
             },
           };
@@ -142,7 +150,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
               shortLabel: "Max",
               label: "Max",
               value: 0,
-              xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+              xMin: xMin,
               xMax: xMax,
             },
           };
@@ -176,14 +184,14 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
         });
         
         const pieDataMap = new Map(
-            pie_data.data.map((d) => [
+            pie_data.data.map((d, index) => [
                 d[0],
                 {
                     name: d[1],
                     y: d[4],
                     color: AllChainsByKeys[d[0]] 
                         ? AllChainsByKeys[d[0]].colors["dark"][0] 
-                        : "#566462",
+                        : UNLISTED_CHAIN_COLORS[index],
                 },
             ])
         );
@@ -197,14 +205,14 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
         
         }else{
         // Add non-selected chains
-            pie_data.data.forEach((d) => {
-                
+            pie_data.data.forEach((d, index) => {
+                console.log(UNLISTED_CHAIN_COLORS[index])
                     pieRetData.push({
                         name: d[1] ? d[1] : d[0],
                         y: d[4] / pieTotal,
                         color: AllChainsByKeys[d[0]] 
                             ? AllChainsByKeys[d[0]].colors["dark"][0] 
-                            : "#566462",
+                            : UNLISTED_CHAIN_COLORS[index],
                     });
                 
             });
@@ -660,7 +668,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                     
                     >
                         {Object.keys(filteredChains).filter((key) => {return data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0]}).map((key, index) => {
-                            console.log(key)
+                         
                             const types = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].types;
                             const name = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1];
                             

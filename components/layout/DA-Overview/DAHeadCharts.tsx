@@ -12,7 +12,7 @@ import {
 } from "react-jsx-highcharts";
 import Container from "../Container";
 import Highcharts, { chart } from "highcharts/highstock";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import ChartWatermark from "../ChartWatermark";
 import Link from "next/link";
@@ -49,6 +49,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
     const [chartWidth, setChartWidth] = useState<number | null>(null);
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
     const { isSidebarOpen, isSafariBrowser } = useUIContext();
+    const chartComponent = useRef<Highcharts.Chart | null>(null);
     const lastPointLines = useMemo<{
         [key: string]: Highcharts.SVGElement[];
     }>(() => ({}), []);
@@ -67,11 +68,23 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
     const timespans = useMemo(() => {
 
       let xMax = 0;
+      let xMin = Infinity;
+      
       Object.keys(data.metrics["fees_paid"]).forEach((key) => { 
-        if(data.metrics["fees_paid"][key].daily.data[data.metrics["fees_paid"][key][isMonthly ? "monthly" : "daily"].data.length - 1][0] > xMax){
-          xMax = data.metrics["fees_paid"][key].daily.data[data.metrics["fees_paid"][key][isMonthly ? "monthly" : "daily"].data.length - 1][0];
+        const dataset = data.metrics["fees_paid"][key][isMonthly ? "monthly" : "daily"].data;
+      
+        // Find xMax (latest x-value)
+        const latestX = dataset[dataset.length - 1][0];
+        if (latestX > xMax) {
+          xMax = latestX;
         }
-      })
+      
+        // Find xMin (earliest x-value)
+        const earliestX = dataset[0][0];
+        if (earliestX < xMin) {
+          xMin = earliestX;
+        }
+      });
   
       if (!isMonthly) {
         return {
@@ -113,7 +126,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
             shortLabel: "Max",
             label: "Max",
             value: 0,
-            xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+            xMin: xMin,
             xMax: xMax,
           },
         };
@@ -138,7 +151,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
             shortLabel: "Max",
             label: "Max",
             value: 0,
-            xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+            xMin: xMin,
             xMax: xMax,
           },
         };
@@ -307,6 +320,16 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
         [showUsd],
       );
 
+
+      // useEffect(() => {
+      //   console.log(`Inside ${isMonthly ? "Monthly" : "Daily"} useEffect`)
+      //   console.log(chartComponent)
+      //   console.log("------------------------------------------------------")
+      //   chartComponent.current?.redraw();
+      // }, [isMonthly]);
+
+
+
     return (
       <Container>
         <div className="flex gap-x-[15px] mt-[15px] mb-[30px]">
@@ -322,8 +345,8 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                 <Link
                     className={`absolute hover:underline items-center text-[16px] font-bold top-[15px] left-[15px] flex gap-x-[10px]  z-10 ${/*link ? "cursor-pointer" : ""*/ ""}`}
                     href={url}
-                    target="_blank"
-                    rel="noopener"
+                    target=""
+                    rel=""
                 >
                 
                     <div>{chart_titles[metricKey]}</div>
@@ -342,7 +365,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                           maximumFractionDigits: is_fees ? 0 : 2,
                           minimumFractionDigits: is_fees ? 0 : 2,}).format(getSumDisplayValue(data.metrics[metricKey]))
                     }
-                    {is_fees ? "" : "GB"}
+                    {is_fees ? "" : " GB"}
                 </div>
                 <hr className="absolute w-full border-t-[2px] top-[64px] border-[#5A64624F] my-4" />
                 <hr className="absolute w-full border-t-[2px] top-[114px] border-[#5A64624F] my-4" />
@@ -412,9 +435,16 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                             spacingTop={40}
                             spacingLeft={10}
                             spacingRight={10}
-                            onRender={(chartData) => {
+                            onLoad={function (event) {
+                              console.log(this);
+
+                            
+    
+                            }}
+                            onRender={function (chartData) {
                                 const chart = chartData.target as any; // Cast chartData.target to any
-  
+                                const chartRef = this; // Assign `this` to a variable for clarity
+                                chartComponent.current = chartRef;
                                 if (
                                   !chart ||
                                   !chart.series ||
@@ -479,6 +509,9 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                                     chart.series[index].points[
                                     chart.series[index].points.length - 1
                                     ];
+
+
+                                    
                                   // check if i exists as a key in lastPointLines
                                   if (!lastPointLines[dictionaryKey]) {
                                     lastPointLines[dictionaryKey] = [];
@@ -497,6 +530,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                                   // calculate the fraction that 15px is in relation to the pixel width of the chart
                                   const fraction = 21 / chart.chartWidth;
                                   // create a bordered line from the last point to the top of the chart's container
+                                  
                                   lastPointLines[dictionaryKey][
                                     lastPointLines[dictionaryKey].length
                                   ] = chart.renderer

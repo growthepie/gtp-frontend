@@ -40,7 +40,8 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
     const [sortOrder, setSortOrder] = useState(true);
     const [openDA, setOpenDA] = useState(() => {
       const initialState = Object.keys(breakdown_data).reduce((acc, key) => {
-        acc[key] = false;
+        
+        acc[key] = key === "da_ethereum_blobs" ? true : false;
         return acc;
       }, {});
       return initialState;
