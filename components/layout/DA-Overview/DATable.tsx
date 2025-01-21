@@ -397,7 +397,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
 
    
 
-
+    //daconsumers breakdown_data[item.key][selectedTimespan].da_consumers
     return (
         <>
         {chart_loading || !chart_data || !master ? (
@@ -774,8 +774,8 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                         <span>{showUsd ? "$" : "Ξ"}</span>
                         {breakdown_data[item.key][selectedTimespan].fees_per_mb.total[typeIndex] < 0.001 ? Number(breakdown_data[item.key][selectedTimespan].fees_per_mb.total[typeIndex]).toExponential(2) : Intl.NumberFormat("en-GB", {
                           notation: "compact",
-                          maximumFractionDigits: 3,
-                          minimumFractionDigits: 3,
+                          maximumFractionDigits: 2,
+                          minimumFractionDigits: 2,
                         }).format(breakdown_data[item.key][selectedTimespan].fees_per_mb.total[typeIndex])}      
                       </div>
                       <div

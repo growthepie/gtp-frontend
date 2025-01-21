@@ -373,6 +373,34 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                 <div className="absolute bottom-[40%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-20">
                     <ChartWatermark className="w-[128.54px] h-[25.69px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
                 </div>
+                <div className="opacity-100 transition-opacity duration-[900ms] z-20 group-hover:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/70 pointer-events-none">
+                      <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
+                      <div className="text-[#CDD8D3] text-[9px] font-medium leading-[150%]">
+                          {new Date(
+                            timespans[selectedTimespan].xMin,
+                          ).toLocaleDateString("en-GB", {
+                            timeZone: "UTC",
+                            month: "short",
+                            // day: "numeric",
+                            year: "numeric",
+                          })}
+
+                      </div>
+                </div>
+                <div className=" duration-[900ms] group-hover:opacity-0 z-20 absolute right-[15px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/70 pointer-events-none">
+                      <div className="text-[#CDD8D3] text-[9px] font-medium leading-[150%]">
+                        {new Date(
+                            timespans[selectedTimespan].xMax,
+                          ).toLocaleDateString("en-GB", {
+                            timeZone: "UTC",
+                            month: "short",
+                            // day: "numeric",
+                            year: "numeric",
+                          })}
+                          
+                      </div>
+                      <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
+                  </div>
 
                 <div className="h-[232px] pt-[15px]">
                     <HighchartsProvider Highcharts={Highcharts}>
@@ -435,12 +463,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                             spacingTop={40}
                             spacingLeft={10}
                             spacingRight={10}
-                            onLoad={function (event) {
-                              console.log(this);
 
-                            
-    
-                            }}
                             onRender={function (chartData) {
                                 const chart = chartData.target as any; // Cast chartData.target to any
                                 const chartRef = this; // Assign `this` to a variable for clarity
