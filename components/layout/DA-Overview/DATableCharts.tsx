@@ -62,19 +62,27 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
     const timespans = useMemo(() => {
 
         let xMax = 0;
-        console.log(data)
-        Object.keys(data[selectedTimespan].da_consumers).forEach((key) => { 
-          
-          const values = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values;
-          const length = values.length;
-          const types = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].types;
+        let xMin = Infinity;
       
-            if(values.length > 0){
-                if(values[values.length - 1][types.indexOf("unix")] > xMax){
-                    xMax = values[values.length - 1][types.indexOf("unix")];
+        Object.keys(data[selectedTimespan].da_consumers).forEach((key) => {
+            const values = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values;
+            const types = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].types;
+            
+            if (values.length > 0) {
+                const unixIndex = types.indexOf("unix");
+        
+                // Calculate xMax (latest x-value)
+                if (values[values.length - 1][unixIndex] > xMax) {
+                xMax = values[values.length - 1][unixIndex];
+                }
+        
+                // Calculate xMin (earliest x-value)
+                if (values[0][unixIndex] < xMin) {
+                xMin = values[0][unixIndex];
                 }
             }
-        })
+        });
+       
 
     
         if (!isMonthly) {
@@ -117,7 +125,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
               shortLabel: "Max",
               label: "Max",
               value: 0,
-              xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+              xMin: xMin,
               xMax: xMax,
             },
           };
@@ -142,7 +150,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
               shortLabel: "Max",
               label: "Max",
               value: 0,
-              xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+              xMin: xMin,
               xMax: xMax,
             },
           };
@@ -176,14 +184,14 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
         });
         
         const pieDataMap = new Map(
-            pie_data.data.map((d) => [
+            pie_data.data.map((d, index) => [
                 d[0],
                 {
                     name: d[1],
                     y: d[4],
                     color: AllChainsByKeys[d[0]] 
                         ? AllChainsByKeys[d[0]].colors["dark"][0] 
-                        : "#566462",
+                        : UNLISTED_CHAIN_COLORS[index],
                 },
             ])
         );
@@ -197,14 +205,14 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
         
         }else{
         // Add non-selected chains
-            pie_data.data.forEach((d) => {
+            pie_data.data.forEach((d, index) => {
                 
                     pieRetData.push({
                         name: d[1] ? d[1] : d[0],
                         y: d[4] / pieTotal,
                         color: AllChainsByKeys[d[0]] 
                             ? AllChainsByKeys[d[0]].colors["dark"][0] 
-                            : "#566462",
+                            : UNLISTED_CHAIN_COLORS[index],
                     });
                 
             });
@@ -392,16 +400,20 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                     <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${this.color}"></div>
                     <div class="tooltip-point-name text-xs">${this.key}</div>
                 </div>
-                <div class="tooltip-point-name numbers-xs">${Intl.NumberFormat("en-GB", {
+                <div class="tooltip-point-name numbers-xs">${selectedChain === "all" ? Intl.NumberFormat("en-GB", {
                     notation: "standard",
                     maximumFractionDigits: 2,
                     minimumFractionDigits: 2,
-                }).format(this.y * 100) + " %"}</div>
+                }).format((this.y * 100)) + " %" 
+                
+                :
+                (formatBytes(this.y))
+            }</div>
             
             </div>`;
 
 
-    }, [showUsd])
+    }, [showUsd, selectedChain])
 
 
   const getNameFromKey = useMemo<Record<string, string>>(() => {
@@ -494,6 +506,8 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         
 
                         }}
+
+
                         
                     />
                     <Tooltip
@@ -660,7 +674,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                     
                     >
                         {Object.keys(filteredChains).filter((key) => {return data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0]}).map((key, index) => {
-                            console.log(key)
+                         
                             const types = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].types;
                             const name = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1];
                             
@@ -686,18 +700,18 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
 
                 </HighchartsProvider>
             </div>
-      <ChartLegend 
-        selectedTimespan={selectedTimespan}
-        data={data}
-        isMonthly={isMonthly}
-        setSelectedChain={setSelectedChain}
-        selectedChain={selectedChain}
-        isPie={true}
-        pie_data={pie_data}
-        pieChartComponent={pieChartComponent}
-        chartComponent={chartComponent}
-        getNameFromKey={getNameFromKey}
-      />
+            <ChartLegend 
+                selectedTimespan={selectedTimespan}
+                data={data}
+                isMonthly={isMonthly}
+                setSelectedChain={setSelectedChain}
+                selectedChain={selectedChain}
+                isPie={true}
+                pie_data={pie_data}
+                pieChartComponent={pieChartComponent}
+                chartComponent={chartComponent}
+                getNameFromKey={getNameFromKey}
+            />
             <div className="min-w-[254px] flex items-center  relative pt-[15px] ">
                 {/* Pie Chart */}
                 <div className="absolute left-[31%] w-[99px] flex items-center justify-center bottom-[49%] text-xxxs font-bold leading-[120%] ">{"% OF TOTAL USAGE"}</div>
@@ -716,7 +730,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
 
                         plotOptions={{
                             pie: {
-                                allowPointSelect: true,
+                                allowPointSelect: false,
                                 cursor: "pointer",
                                 dataLabels: {
                                     enabled: true,
@@ -725,6 +739,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                 showInLegend: true,
                                 borderWidth: 10,
                                 borderColor: "transparent",
+
                             }
                         }}
                     >
@@ -919,11 +934,21 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                 }}
                                 type="pie"
                                 data={formattedPieData}
+                                
                                 point={{
                                     events: {
-                                        update: function (event) {
-                                          
-                                        },
+                                        click: function (event) {
+                                            
+                                            if(event.point.options.name){
+                                                const key = Object.entries(getNameFromKey).find(([_, value]) => value === event.point.options.name)?.[0];
+                                                if(key && key !== selectedChain){
+                                                    setSelectedChain(key)
+                                                }else if(key === selectedChain){
+                                                    setSelectedChain("all")
+                                                }
+                                                
+                                            }
+                                        }
                                     },
                                 }}
                                 
@@ -987,9 +1012,9 @@ const ChartLegend = (
 
         return (
           <div key={key + "da_consumers_info"} className={`flex group/chain relative gap-x-[5px] px-[5px] text-xxs rounded-full py-[0.5px] items-center transition-all cursor-pointer bg-[#344240] ${(selectedChain === "all" || selectedChain === key) ? "bg-[#344240] border-[1px] border-transparent" : "bg-transparent border-[1px] border-[#344240]"}
-${selectedChain === "all" ? "px-[5px]" : "pl-[5px] pr-[20px]"}
+            ${selectedChain === "all" ? "px-[5px]" : "pl-[5px] pr-[20px]"}
 
-}`}
+            }`}
             onClick={() => {
               setSelectedChain((prev) => {
                 if (selectedChain === key) {
