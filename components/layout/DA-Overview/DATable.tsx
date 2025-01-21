@@ -20,6 +20,8 @@ import { chart } from "highcharts";
 import ShowLoading from "@/components/layout/ShowLoading";
 import DATableCharts from "@/components/layout/DA-Overview/DATableCharts";
 import Image from "next/image";
+import DynamicIcon from "../DynamicIcon";
+import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 
 
 
@@ -792,7 +794,37 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                               boxShadow: "0px 0px 30px #000000",
                             }}
                           >
-                            <div className="heading-small-xs ">DA Consumers (Chains) </div>
+                            <div className="heading-small-xs mb-[5px]">DA Consumers (Chains) </div>
+                            <VerticalScrollContainer height={87}>
+                            <div className="flex flex-wrap items-center gap-x-[5px] gap-y-[5px] ">
+                            {Object.keys(breakdown_data[item.key][selectedTimespan].da_consumers.chains.values).map((chain, index) => {
+                              const custom_logo_keys = Object.keys(master.custom_logos);
+                              const key = breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][1];
+                              console.log(key);
+                              console.log(custom_logo_keys)
+                              console.log(custom_logo_keys.includes(key));
+                              return (
+                                <div key={index + "da_consumers_hover"} className="flex flex-wrap items-center rounded-full bg-[#344240] pl-[3px] pr-[5px] gap-x-[4px]">
+                                  <div>{AllChainsByKeys[breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][1]] ?
+                                      (<Icon icon={`gtp:${AllChainsByKeys[breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][1]].urlKey}-logo-monochrome`} className="w-[12px] h-[12px]" style={{ color: AllChainsByKeys[key].colors["dark"][0] }} />)
+                                      : custom_logo_keys.includes(key)
+                                        ? (
+                                          <DynamicIcon
+                                            pathString={master.custom_logos[key].body}
+                                            size={12}
+                                            className="text-forest-200"
+                                            viewBox="0 0 15 15"
+
+                                          />
+                                        )
+                                        : (<div></div>)}</div>
+                                  <div className="text-xxs">{breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][0]}</div>
+
+                                </div>
+                              )
+                            })}
+                            </div>
+                            </VerticalScrollContainer>
                           </div>
                         </div>
                       </div>
