@@ -87,6 +87,13 @@ export const LabelsParquetURLS = {
   projects: "https://api.growthepie.xyz/v1/labels/projects.parquet",
 };
 
+export const ApplicationsURLs = {
+  overview: "https://api.growthepie.xyz/v1/apps/app_overview_test.json",
+};
+export const ApplicationsParquetURLs = {
+  overview: "https://api.growthepie.xyz/v1/apps/app_overview_test.parquet",
+};
+
 export const FeesURLs = {
   table: "https://api.growthepie.xyz/v1/fees/table.json",
   linechart: "https://api.growthepie.xyz/v1/fees/linechart.json",

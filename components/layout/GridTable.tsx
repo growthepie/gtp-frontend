@@ -113,7 +113,7 @@ export const GridTableRow = ({
   );
 };
 
-export const GridTableChainIcon = ({ origin_key, className }: { origin_key: string, className?: string }) => {
+export const GridTableChainIcon = ({ origin_key, className, color }: { origin_key: string, className?: string, color?: string}) => {
   const { AllChainsByKeys } = useMaster();
 
   return (
@@ -126,7 +126,7 @@ export const GridTableChainIcon = ({ origin_key, className }: { origin_key: stri
             }-logo-monochrome`}
           className="w-[15px] h-[15px]"
           style={{
-            color:
+            color: color ||
               AllChainsByKeys[
                 origin_key
               ].colors["dark"][0],

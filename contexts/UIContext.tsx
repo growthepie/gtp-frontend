@@ -1,7 +1,7 @@
 'use client';
 import { createContext, useContext, useState, useMemo, useEffect, useLayoutEffect, useRef } from "react";
+import { debounce } from 'lodash';
 import Highcharts from "highcharts/highstock";
-
 
 export type EmbedData = {
   width: number;
@@ -89,19 +89,52 @@ export const UIContextProvider = ({ children }) => {
 
     // Handle resize events
     const updateSize = () => {
+      // const currentWidth = window.innerWidth;
+      // const isExpanding = currentWidth > prevWindowWidthRef.current;
+      // setState(prevState => ({
+      //   ...prevState,
+      //   isSidebarOpen: !state.isSidebarOpen && currentWidth >= 1280 && !isExpanding ? false : currentWidth >= 1280,
+      //   isMobile: window.innerWidth < 768,
+      // }));
+
+      // prevWindowWidthRef.current = currentWidth;
       const currentWidth = window.innerWidth;
       const isExpanding = currentWidth > prevWindowWidthRef.current;
-      setState(prevState => ({
-        ...prevState,
-        isSidebarOpen: !state.isSidebarOpen && currentWidth >= 1280 && !isExpanding ? false : currentWidth >= 1280,
-        isMobile: window.innerWidth < 768,
-      }));
+      
+      setState(prevState => {
+        const newIsMobile = currentWidth < 768;
+        const newIsSidebarOpen = currentWidth >= 1280 
+          ? !isExpanding || prevState.isSidebarOpen 
+          : false;
 
+        // Only update if values actually changed
+        if (
+          prevState.isMobile === newIsMobile &&
+          prevState.isSidebarOpen === newIsSidebarOpen
+        ) return prevState;
+
+        return {
+          ...prevState,
+          isSidebarOpen: newIsSidebarOpen,
+          isMobile: newIsMobile,
+        };
+      });
+      
       prevWindowWidthRef.current = currentWidth;
     };
 
-    window.addEventListener('resize', updateSize);
-    return () => window.removeEventListener('resize', updateSize);
+    
+    const debouncedUpdateSize = debounce(updateSize, 100);
+    const onWindowResize = () => {
+      prevWindowWidthRef.current = window.innerWidth;
+      debouncedUpdateSize();
+    };
+
+    window.addEventListener('resize', onWindowResize);
+    return () => {
+      window.removeEventListener('resize', onWindowResize);
+      debouncedUpdateSize.cancel();
+    };
   }, []);
 
   useEffect(() => {
