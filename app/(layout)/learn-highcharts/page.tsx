@@ -11,6 +11,7 @@ import {
     Tooltip,
     PlotBand,
     LineSeries,
+    AreaSeries,
 } from "react-jsx-highcharts";
 import Highcharts from "highcharts/highstock";
 import useSWR from "swr";
@@ -31,6 +32,7 @@ import {
     tooltipPositioner,
   } from "@/lib/chartUtils";
 import ChartWatermark from "@/components/layout/ChartWatermark"; 
+import { useMaster } from "@/contexts/MasterContext";
 
 const COLORS = {
     GRID: "rgb(215, 223, 222)",
@@ -46,6 +48,7 @@ const COLORS = {
 
 
 export default function Page(){
+    const { data: master } = useMaster();
     const { data: chainOverviewData, 
             error: chainOverviewError, 
             isLoading: chainOverviewLoading, 
@@ -60,6 +63,7 @@ export default function Page(){
         "blockspaceTimespan",
         "max",
     );
+    const [selectedCategory, setSelectedCategory] = useState("defi");
     useEffect(() => { // not sure if this is needed? if defualt is max?
         if (selectedTimespan === "1d") {
           setSelectedTimespan("7d");
@@ -205,8 +209,8 @@ export default function Page(){
 
    
     return (
+      <>{master && ( 
         <Container>
-       
             <TopRowContainer>
                 <div // Why did I have to add a div why couldnt I do this in parent?
                     className= "flex justify-end"
@@ -225,6 +229,13 @@ export default function Page(){
                     ))}
                 </TopRowParent>
             </TopRowContainer>
+            <div className="flex gap-x-2 my-[15px]">{Object.keys(master.blockspace_categories.main_categories).map((key) => {
+                return (
+                    <div key={key} className={`flex items-center gap-x-1 rounded-full justify-center px-2 ${selectedCategory === key ? "bg-[#151A19]" : "bg-[#344240]"}`} 
+                    onClick={() => setSelectedCategory(key)}>
+                        <div className="text-xs">{master.blockspace_categories.main_categories[key]}</div>
+                    </div>)
+            })}</div>
             <div className="relative ">
             <HighchartsProvider Highcharts={Highcharts}>
                 <HighchartsChart
@@ -247,10 +258,10 @@ export default function Page(){
                         title={"test"}
                         
                     />
-                    <YAxis><LineSeries 
+                    <YAxis><AreaSeries 
                         name="All L2s"  
-                        color={COLORS.PLOT_LINE}
-                        data={chainOverviewData?.data.chains["all_l2s"].daily["cefi"].data.map(
+                        color={master.chains.all_l2s.colors['dark'][1]}
+                        data={chainOverviewData?.data.chains["all_l2s"].daily[selectedCategory].data.map(
                         (d: any) => [
                         d[0],
                         showUsd ? d[2] : d[1], // 1 = ETH 2 = USD
@@ -286,7 +297,7 @@ export default function Page(){
                 <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
             </div>
         </div>
-            
         </Container>
+      )}</>
     );
 }
