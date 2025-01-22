@@ -1,4 +1,5 @@
 "use client";
+import ShowLoading from "@/components/layout/ShowLoading";
 import { DALayerWithKey, useMaster } from "@/contexts/MasterContext";
 import { Chain, Get_SupportedChainKeys } from "@/lib/chains";
 import { IS_PRODUCTION } from "@/lib/helpers";
@@ -377,6 +378,11 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
       dataWithRanking, 
       applicationRowsSortedFiltered
       }}>
+        <ShowLoading
+        dataLoading={[masterLoading, applicationsLoading, projectsLoading]}
+        dataValidating={[masterValidating, applicationsValidating, projectsValidating]}
+        // fullScreen={true}
+      />
       {children}
     </ApplicationsDataContext.Provider>
   );  
