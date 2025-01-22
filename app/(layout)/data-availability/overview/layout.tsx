@@ -3,7 +3,11 @@ import Heading from "@/components/layout/Heading";
 
 import Image from "next/image";
 import Icon from "@/components/layout/Icon";
-import { Metadata } from 'next';
+import next, { Metadata } from 'next';
+import QuestionAnswer from "@/components/layout/QuestionAnswer";
+
+import Link from "next/link";
+
 
 type Props = {
     params: { metric: string };
@@ -53,6 +57,56 @@ export default async function Layout({
             <div>
                 {children}
             </div>
+            <Container className="pt-[15px]">
+            <QuestionAnswer
+            startOpen={true}
+            question="Details"
+            answer={
+                <>
+                <div className="pb-[10px]">
+                    <div>
+                    Our Data Availability Overview page breaks down important metrics around DA:
+                    </div>
+                    <ul className="list-disc list-inside pt-[5px] text-[14px] space-y-[5px]">
+                    <li>
+                        <span className="font-bold">Data Posted:</span> The amount of data that was submitted to the DA layer. Different DA layers can handle different amounts of data based on their scaling capabilities.
+                    </li>
+                    <li>
+                        <span className="font-bold">DA Fees Paid:</span> The fees collected by the DA layer for processing and storing data. This is influenced by the amount of data that was processed but also by the fee market structure and demand that a DA layer experiences.
+                    </li>
+                    <li>
+                        <span className="font-bold">Fees/MB:</span> The average cost that a Layer 2 pays per Megabyte of data submitted. This value is important for Layer 2s since it directly influences their costs and with that potentially also the transaction costs that they pass on to their users.
+                    </li>
+                    <li>
+                        <span className="font-bold">DA Consumers:</span> The Layer 2 networks that have submitted at least 100MB worth of data to the DA layer. Usually, a Layer 2 uses only a single DA layer. But it is also possible that Layer 2s switch between DA layers if this allows them to save costs.
+                    </li>
+                    </ul>
+                </div>
+                </>
+            }
+            note={
+                <>
+                <div>Important Notes:</div>
+                <ul className="list-disc list-inside pt-[5px] text-[14px]">
+                    <li>
+                    In order to provide this type of analysis, we have to map Layer 2s / DA consumers to their respective onchain identifiers. This effort can easily be accessed in our{' '}
+                    <Link className="underline" href="https://github.com/growthepie/gtp-dna/tree/main/economics_da" target="_blank">
+                        GitHub mapping file
+                    </Link>.
+                    </li>
+                    <li>
+                    If you identify missing Layer 2s on this page, please head over to our{' '}
+                    <Link className="underline" href="https://github.com/growthepie/gtp-dna/tree/main/economics_da" target="_blank">
+                        GitHub
+                    </Link>{' '}
+                    and create a PR. This will help us to keep this page up-to-date.
+                    </li>
+                </ul>
+                </>
+            }
+            />
+        </Container>
+
         </>
     )
   }

@@ -35,6 +35,7 @@ import { match } from "assert";
 import useChartSync from "./components/ChartHandler";
 import { get } from "lodash";
 import { locale } from "moment";
+import ChartWatermark from "../ChartWatermark";
 
 const COLORS = {
     GRID: "rgb(215, 223, 222)",
@@ -434,7 +435,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
     }, [showUsd, selectedChain])
 
 
-  const getNameFromKey = useMemo<Record<string, string>>(() => {
+    const getNameFromKey = useMemo<Record<string, string>>(() => {
 
         const chains = pie_data.data.reduce((acc, d) => {
             acc[d[0]] = d[1];
@@ -456,9 +457,11 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
     return(
         <div className="flex h-full w-full gap-x-[10px]">
             <div className="min-w-[730px] w-full mt-[39px] flex flex-1 h-[217px] relative mr-[20px] px-[5px] overflow-hidden  pr-[5px]">
-                <div className="absolute left-[calc(50%-113px)] top-[calc(39%-29.5px)] z-50">
-                    <Image src="/da_table_watermark.svg" alt="chart_watermark" width={226} height={59}  className="mix-blend-darken"/>
+                <div className="absolute left-[calc(50%-85px)] top-[calc(39%-29.5px)] z-50 opacity-20">
+                    <ChartWatermark className="w-[225px] h-[45px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
+                    <div className="w-[225px] h-[15px] flex items-center justify-center "><div className=" text-[10px] leading-[120%] font-semibold ">DA: {da_name === "da_celestia" ? "CELESTIA" : "ETHEREUM BLOBS"}</div></div>
                 </div>
+                
                 <div className="heading-large-xs w-[250px] absolute left-[15px] h-[39px] flex items-center -top-[40px]">
                     Data Posted {selectedChain !== "all" ? `(${getNameFromKey[selectedChain]})` : ""}
                 </div>
@@ -705,7 +708,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                     type={isMonthly ? "column" : "area"}
                                     key={key + "-DATableCharts" + da_name} 
                                     name={name} 
-                                    pointPlacement="on"
+                                    
                                     visible={data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values.length > 0}
                                     
                                     data={data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values.map((d) => [
