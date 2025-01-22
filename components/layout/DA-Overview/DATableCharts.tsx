@@ -460,7 +460,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                     Data Posted {selectedChain !== "all" ? `(${getNameFromKey[selectedChain]})` : ""}
             </div>
             <div className="min-w-[730px] w-full mt-[39px] flex flex-1 h-[217px] relative px-[5px] overflow-hidden  pr-[5px]">
-                <div className="absolute left-[calc(50%-85px)] top-[calc(39%-29.5px)] z-50 opacity-20">
+                <div className="absolute left-[calc(50%-85px)] top-[calc(39%-29.5px)] z-0 opacity-20">
                     <ChartWatermark className="w-[225px] h-[45px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
                     <div className="w-[225px] h-[15px] flex items-center justify-center "><div className=" text-[10px] leading-[120%] font-semibold ">DA: {da_name === "da_celestia" ? "CELESTIA" : "ETHEREUM BLOBS"}</div></div>
                 </div>
@@ -704,6 +704,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                             const types = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].types;
                             const name = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1];
                             const color = AllChainsByKeys[key] ? AllChainsByKeys[key].colors["dark"][0] : UNLISTED_CHAIN_COLORS[index];
+                            const unlistedColor =  AllChainsByKeys[key] ? false : true;
 
                             
                             return(
@@ -731,7 +732,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                                 },
                                                 stops: [
                                                   [0, color + "FF"],
-                                                  [1, color + "00"],
+                                                  [1, color + unlistedColor ? "55" : "00"],
                                                 ],
                                               }
                                             : undefined, // Disable gradient when isMonthly is false
@@ -1064,7 +1065,7 @@ const ChartLegend = (
 
         return (
           <div key={key + "da_consumers_info"} className={`flex group/chain  relative gap-x-[5px] px-[5px] text-xxs rounded-full py-[0.5px] items-center transition-all cursor-pointer bg-[#344240] ${(selectedChain === "all" || selectedChain === key) ? "bg-[#344240] border-[1px] border-transparent hover:bg-[#5A6462] " : "bg-transparent border-[1px] border-[#344240] hover:bg-[#5A6462] "}
-            ${selectedChain === "all" ? "px-[5px]" : "pl-[5px] pr-[20px]"}
+            ${selectedChain === "all" || selectedChain !== key ? "px-[5px]" : "pl-[5px] pr-[20px]"}
 
             }`}
             onClick={() => {
@@ -1106,7 +1107,7 @@ const ChartLegend = (
                     }}
                     />)}</div>
             <div className="text-xxs ">{data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1]}</div>
-            <div className={`absolute right-[2px] top-[2.5px] w-[12px] h-[12px] text-[#FE5468] ${selectedChain === "all" ? "invisible" : "visible"}`}><Icon icon={selectedChain === key ? "gtp:x-circle" : "gtp:plus-circle"} className="w-[12px] h-[12px] "></Icon></div>
+            <div className={`absolute right-[2px] top-[2.5px] w-[12px] h-[12px] text-[#FE5468] ${selectedChain === "all" ? "invisible" : "visible"}`}><Icon icon={selectedChain === key ? "gtp:x-circle" : ""} className="w-[12px] h-[12px] "></Icon></div>
           </div>
         )
       }
