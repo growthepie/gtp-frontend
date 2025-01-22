@@ -47,7 +47,7 @@ export default async function Layout({
                     </Heading>
                 </div>
                 <div className="text-[14px] mb-[30px]">
-                    Metrics around Data Availability (DA).
+                This page shows an overview of common Data Availability (DA) solutions that are used by Layer 2s. DA is becoming more and more important for the modular Layer 2 architecture. Different solutions have different trade-offs with regards to scalability, costs, and security assumptions.
                 </div>
             </Container>
             <div>

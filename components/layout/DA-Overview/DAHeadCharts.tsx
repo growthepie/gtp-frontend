@@ -139,6 +139,13 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
             xMin: xMax - 90 * 24 * 60 * 60 * 1000,
             xMax: xMax,
           },
+          "180d": {
+            shortLabel: "6m",
+            label: "6 months",
+            value: 180,
+            xMin: xMax - 180 * 24 * 60 * 60 * 1000,
+            xMax: xMax,
+          },
           "365d": {
             shortLabel: "1y",
             label: "1 year",

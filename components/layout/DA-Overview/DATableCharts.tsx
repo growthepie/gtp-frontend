@@ -12,7 +12,9 @@ import {
     ColumnSeries,
     LineSeries,
     PieSeries,
+    
     Series,
+    
 } from "react-jsx-highcharts";
 import Highcharts, { chart } from "highcharts/highstock";
 import { useLocalStorage } from "usehooks-ts";
@@ -32,6 +34,7 @@ import DynamicIcon from "../DynamicIcon";
 import { match } from "assert";
 import useChartSync from "./components/ChartHandler";
 import { get } from "lodash";
+import { locale } from "moment";
 
 const COLORS = {
     GRID: "rgb(215, 223, 222)",
@@ -113,12 +116,20 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
               xMin: xMax - 90 * 24 * 60 * 60 * 1000,
               xMax: xMax,
             },
+
+            "180d": {
+                shortLabel: "6m",
+                label: "6 months",
+                value: 180,
+                xMin: xMax - 180 * 24 * 60 * 60 * 1000,
+                xMax: xMax,
+            },
             "365d": {
-              shortLabel: "1y",
-              label: "1 year",
-              value: 365,
-              xMin: xMax - 365 * 24 * 60 * 60 * 1000,
-              xMax: xMax,
+                shortLabel: "1y",
+                label: "1 year",
+                value: 365,
+                xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+                xMax: xMax,
             },
     
             max: {
@@ -136,6 +147,13 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                 label: "3 months",
                 value: 90,
                 xMin: xMax - 90 * 24 * 60 * 60 * 1000,
+                xMax: xMax,
+            },
+            "180d": {
+                shortLabel: "6m",
+                label: "6 months",
+                value: 180,
+                xMin: xMax - 180 * 24 * 60 * 60 * 1000,
                 xMax: xMax,
             },
             "365d": {
@@ -435,20 +453,18 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
     
 
 
-
-
     return(
         <div className="flex h-full w-full gap-x-[10px]">
-            <div className="min-w-[730px] w-full mt-[39px] flex flex-1 h-[217px] relative mr-[20px] px-[5px]">
+            <div className="min-w-[730px] w-full mt-[39px] flex flex-1 h-[217px] relative mr-[20px] px-[5px] overflow-hidden  pr-[5px]">
                 <div className="absolute left-[calc(50%-113px)] top-[calc(39%-29.5px)] z-50">
                     <Image src="/da_table_watermark.svg" alt="chart_watermark" width={226} height={59}  className="mix-blend-darken"/>
                 </div>
                 <div className="heading-large-xs w-[250px] absolute left-[15px] h-[39px] flex items-center -top-[40px]">
                     Data Posted {selectedChain !== "all" ? `(${getNameFromKey[selectedChain]})` : ""}
                 </div>
-                <hr className="absolute w-[91%] border-t-[2px] left-[55px] top-[5px] border-[#5A64624F] border-dotted " />
-                <hr className="absolute w-[91%] border-t-[2px] left-[55px] top-[97px] border-[#5A64624F] border-dotted " />
-            
+                <hr className="absolute w-[92.5%] border-t-[2px] left-[55px] top-[5px] border-[#5A64624F] border-dotted " />
+                <hr className="absolute w-[92.5%] border-t-[2px] left-[55px] top-[97px] border-[#5A64624F] border-dotted " />
+                <hr className="absolute w-[92.5%] border-t-[2px] left-[55px] top-[192px] border-[#5A64624F] border-dotted " />
                 
                 <HighchartsProvider Highcharts={Highcharts}>
                     <HighchartsChart                             
@@ -456,12 +472,16 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                             style: {
                                 height: "222px",
                                 width: "100%",
-                                
+                                position: "absolute",
                                 
 
                                 overflow: "visible",
                             },
                         }}
+                        time={{
+                            timezone: 'UTC',
+                        }}
+
                         plotOptions={{
                             area: {
                                 stacking: "normal",
@@ -470,6 +490,12 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                     enabled: false,
                                 },
                                 
+                            },
+                            column: {
+                                stacking: "normal",
+                                borderColor: "transparent",
+                                groupPadding: 0,
+                                animation: true,
                             },
                             series: {
                                 zIndex: 10,
@@ -496,14 +522,17 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         //margin={[15, 21, 15, 0]}
                         marginLeft={50}
                         
-
+                        
                         marginBottom={30}
 
                         marginTop={5}
                         onRender={function (event) {
                             const chart = this; // Assign `this` to a variable for clarity
                             chartComponent.current = chart;
-                        
+                           
+                                
+                            
+
 
                         }}
 
@@ -603,15 +632,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         zoomEnabled={false}
                  
                         lineWidth={1}
-                        plotLines={
-                            [{
-                                value: timespans[selectedTimespan].xMin,
-                                color: "#5A64624F",
-                                width: 1,
-                                zIndex: 1000,
-                                dashStyle: "Dash",
-                            }]
-                        }
+
                         gridLineWidth={0}
                         startOnTick={false}
                         endOnTick={false}
@@ -677,18 +698,40 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                          
                             const types = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].types;
                             const name = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1];
+                            const color = AllChainsByKeys[key] ? AllChainsByKeys[key].colors["dark"][0] : UNLISTED_CHAIN_COLORS[index];
                             
                             return(
-                                <AreaSeries
+                                <Series
+                                    type={isMonthly ? "column" : "area"}
                                     key={key + "-DATableCharts" + da_name} 
                                     name={name} 
+                                    pointPlacement="on"
                                     visible={data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values.length > 0}
                                     
                                     data={data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values.map((d) => [
                                         d[types.indexOf("unix")], 
                                         d[types.indexOf("data_posted")]
                                     ])}
-                                    color={AllChainsByKeys[key] ? AllChainsByKeys[key].colors["dark"][0] : UNLISTED_CHAIN_COLORS[index]}
+                                    color={color}
+                                    zones={[
+                                        {
+                                          color: isMonthly
+                                            ? {
+                                                linearGradient: {
+                                                  x1: 0,
+                                                  y1: 0,
+                                                  x2: 0,
+                                                  y2: 1,
+                                                },
+                                                stops: [
+                                                  [0, color + "FF"],
+                                                  [1, color + "00"],
+                                                ],
+                                              }
+                                            : undefined, // Disable gradient when isMonthly is false
+                                        },
+                                      ]}
+                                      
                                 />
                             )
                         })}
@@ -764,7 +807,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         onRender={function (event) {
                             const chart = this; // Assign `this` to a variable for clarity
                             pieChartComponent.current = chart;
-                        
+
 
                         }}
                         
@@ -1011,7 +1054,7 @@ const ChartLegend = (
 
 
         return (
-          <div key={key + "da_consumers_info"} className={`flex group/chain relative gap-x-[5px] px-[5px] text-xxs rounded-full py-[0.5px] items-center transition-all cursor-pointer bg-[#344240] ${(selectedChain === "all" || selectedChain === key) ? "bg-[#344240] border-[1px] border-transparent" : "bg-transparent border-[1px] border-[#344240]"}
+          <div key={key + "da_consumers_info"} className={`flex group/chain  relative gap-x-[5px] px-[5px] text-xxs rounded-full py-[0.5px] items-center transition-all cursor-pointer bg-[#344240] ${(selectedChain === "all" || selectedChain === key) ? "bg-[#344240] border-[1px] border-transparent hover:bg-[#5A6462] " : "bg-transparent border-[1px] border-[#344240] hover:bg-[#5A6462] "}
             ${selectedChain === "all" ? "px-[5px]" : "pl-[5px] pr-[20px]"}
 
             }`}
@@ -1046,8 +1089,14 @@ const ChartLegend = (
 
                   />
                 )
-                : (<div></div>)}</div>
-            <div className="text-xxs group-hover/chain:font-bold ">{data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1]}</div>
+                : ( <Icon
+                    icon={"gtp:chain-dark"}
+                    className={`w-[12px] h-[12px] ${key === "others" ? "hidden" : "block"}`}
+                    style={{
+                        color: UNLISTED_CHAIN_COLORS[index]
+                    }}
+                    />)}</div>
+            <div className="text-xxs ">{data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1]}</div>
             <div className={`absolute right-[2px] top-[2.5px] w-[12px] h-[12px] text-[#FE5468] ${selectedChain === "all" ? "invisible" : "visible"}`}><Icon icon={selectedChain === key ? "gtp:x-circle" : "gtp:plus-circle"} className="w-[12px] h-[12px] "></Icon></div>
           </div>
         )
