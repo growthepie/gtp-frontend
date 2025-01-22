@@ -22,10 +22,14 @@ import DATableCharts from "@/components/layout/DA-Overview/DATableCharts";
 import Image from "next/image";
 import DynamicIcon from "../DynamicIcon";
 import VerticalScrollContainer from "@/components/VerticalScrollContainer";
+import { first } from "lodash";
 
 
 
 const REGULAR_METRICS = ["fees", "size", "fees_per_mb", "fixed_parameters"];
+const UNLISTED_CHAIN_COLORS = ["#7D8887", "#717D7C","#667170","#5A6665","#4F5B5A","#43504F","#384443","#2C3938"]
+
+
 
 export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {breakdown_data: DAOverviewBreakdown, selectedTimespan: string, isMonthly: boolean}) {
 
@@ -137,6 +141,13 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
             xMin: xMax - 90 * 24 * 60 * 60 * 1000,
             xMax: xMax,
           },
+          "180d": {
+            shortLabel: "6m",
+            label: "6 months",
+            value: 180,
+            xMin: xMax - 180 * 24 * 60 * 60 * 1000,
+            xMax: xMax,
+          },
           "365d": {
             shortLabel: "1y",
             label: "1 year",
@@ -162,6 +173,14 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
             xMin: xMax - 90 * 24 * 60 * 60 * 1000,
             xMax: xMax,
           },
+          "180d": {
+            shortLabel: "6m",
+            label: "6 months",
+            value: 180,
+            xMin: xMax - 180 * 24 * 60 * 60 * 1000,
+            xMax: xMax,
+          },
+
           "365d": {
             shortLabel: "1y",
             label: "1 year",
@@ -357,20 +376,34 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
 
       let more = 0;
       let addedLogos = 0;
+      const primaryIndex = da_row.chains.types.findIndex((type) => type.includes("gtp_origin_key"));
+      const altIndex = da_row.chains.types.findIndex((type) => type.includes("da_consumer_key"));
+      
       
       const retHTML = da_row.chains.values.map((chain, index) => {
-        const chainLogoExists = (AllChainsByKeys[chain[1]] || master.custom_logos[chain[1]]) ? true : false;
+        const chainLogoExists = (AllChainsByKeys[chain[primaryIndex]] || master.custom_logos[chain[altIndex]]) ? true : false;
         
         if (chainLogoExists && addedLogos < 5) {
-          addedLogos = addedLogos + 1;
-          return (
-            <Icon 
-              key={index} 
-              icon={AllChainsByKeys[chain[1]] ? `gtp:${AllChainsByKeys[chain[1]].urlKey}-logo-monochrome` : master.custom_logos[chain[1]].body } 
-              className="w-[15px] h-[15px]" 
+          addedLogos += 1;
+          return AllChainsByKeys[chain[primaryIndex]] ? (
+            <Icon
+              key={index}
+              icon={
+                AllChainsByKeys[chain[primaryIndex]]
+                  ? `gtp:${AllChainsByKeys[chain[primaryIndex]].urlKey}-logo-monochrome`
+                  : master.custom_logos[chain[altIndex]].body
+              }
+              className="w-[15px] h-[15px]"
+            />
+          ) : (
+            <DynamicIcon
+              pathString={master.custom_logos[chain[altIndex]].body}
+              size={12}
+              className="text-forest-200"
+              viewBox="0 0 15 15"
             />
           );
-        }else{
+        } else {
           more += 1;
         }
         return null; // Return null for items that don't meet the condition
@@ -475,7 +508,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                         <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
                           <div className="flex flex-col gap-y-[5px] items-center">
                             <div className="flex items-center gap-x-[5px] text-xxs">
-                              Total data posted on da layer
+                              The amount of data that was submitted to the DA layer.
                             </div>
                           </div>
                         </div>
@@ -516,7 +549,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                         <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
                           <div className="flex flex-col gap-y-[5px] items-center">
                             <div className="flex items-center gap-x-[5px] text-xxs">
-                              Fees paid to l1
+                              The fees collected by the DA layer for processing and storing data.
                             </div>
                           </div>
                         </div>
@@ -557,7 +590,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                         <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
                           <div className="flex flex-col gap-y-[5px] items-center">
                             <div className="flex items-center gap-x-[5px] text-xxs">
-                              Fees paid to l1 per mb
+                              The average cost that a Layer 2 pays per Megabyte of data submitted.
                             </div>
                           </div>
                         </div>
@@ -598,7 +631,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                         <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
                           <div className="flex flex-col gap-y-[5px] items-center">
                             <div className="flex items-center gap-x-[5px] text-xxs">
-                              DA Consumers
+                              The Layer 2 networks that have submitted at least 100MB worth of data to the DA layer.
                             </div>
                           </div>
                         </div>
@@ -789,42 +822,52 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                         <div className="flex items-center gap-x-[10px] relative overflow-visible px-[10px] group h-full">
                           {createDAConsumers(breakdown_data[item.key][selectedTimespan].da_consumers)}
                           <div 
-                            className="absolute z-20 right-[19px] top-[32px] w-[245px] p-[15px] h-[140px] group hidden group-hover:block bg-[#1F2726] rounded-[10px]"
+                            className="absolute z-20 right-[19px] top-[32px] w-[245px] p-[15px] max-h-[154px] overflow-y-scroll  group hidden group-hover:block bg-[#1F2726] rounded-[10px]"
                             style={{
                               boxShadow: "0px 0px 30px #000000",
                             }}
                           >
                             <div className="heading-small-xs mb-[5px]">DA Consumers (Chains) </div>
-                            <VerticalScrollContainer height={87}>
+                            
                             <div className="flex flex-wrap items-center gap-x-[5px] gap-y-[5px] ">
                             {Object.keys(breakdown_data[item.key][selectedTimespan].da_consumers.chains.values).map((chain, index) => {
+                              const types = breakdown_data[item.key][selectedTimespan].da_consumers.chains.types
+                              
+                              
                               const custom_logo_keys = Object.keys(master.custom_logos);
-                              const key = breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][1];
-                              console.log(key);
-                              console.log(custom_logo_keys)
-                              console.log(custom_logo_keys.includes(key));
+                              const first_key = types.findIndex((type) => type.includes("gtp_origin_key"));
+                              
+                              const alt_key = types.findIndex((type) => type.includes("da_consumer_key"));
+                              
                               return (
                                 <div key={index + "da_consumers_hover"} className="flex flex-wrap items-center rounded-full bg-[#344240] pl-[3px] pr-[5px] gap-x-[4px]">
-                                  <div>{AllChainsByKeys[breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][1]] ?
-                                      (<Icon icon={`gtp:${AllChainsByKeys[breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][1]].urlKey}-logo-monochrome`} className="w-[12px] h-[12px]" style={{ color: AllChainsByKeys[key].colors["dark"][0] }} />)
-                                      : custom_logo_keys.includes(key)
+                                  <div>{AllChainsByKeys[breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][first_key]] ?
+                                      (<Icon icon={`gtp:${AllChainsByKeys[breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][first_key]].urlKey}-logo-monochrome`} className="w-[12px] h-[12px]" style={{ color: AllChainsByKeys[breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][first_key]].colors["dark"][0] }} />)
+                                      : custom_logo_keys.includes(alt_key)
                                         ? (
                                           <DynamicIcon
-                                            pathString={master.custom_logos[key].body}
+                                            pathString={master.custom_logos[alt_key].body}
                                             size={12}
                                             className="text-forest-200"
                                             viewBox="0 0 15 15"
 
                                           />
                                         )
-                                        : (<div></div>)}</div>
-                                  <div className="text-xxs">{breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][0]}</div>
+                                        : (                                            
+                                        <Icon
+                                          icon={"gtp:chain-dark"}
+                                          className="w-[12px] h-[12px]"
+                                          style={{
+                                              color: UNLISTED_CHAIN_COLORS[index]
+                                          }}
+                                           />)}</div>
+                                  <div className="text-xxs">{breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][1]}</div>
 
                                 </div>
                               )
                             })}
                             </div>
-                            </VerticalScrollContainer>
+                            
                           </div>
                         </div>
                       </div>

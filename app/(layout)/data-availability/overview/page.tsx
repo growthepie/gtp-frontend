@@ -63,11 +63,12 @@ export default function DAOverviewPage() {
           };
         } else {
           return {
-            "90d": {
-              shortLabel: "3m",
-              label: "3 months",
-              value: 90,
-              xMin: xMax - 90 * 24 * 60 * 60 * 1000,
+
+            "180d": {
+              shortLabel: "6m",
+              label: "6 months",
+              value: 180,
+              xMin: xMax - 180 * 24 * 60 * 60 * 1000,
               xMax: xMax,
             },
             "365d": {
@@ -77,6 +78,7 @@ export default function DAOverviewPage() {
               xMin: xMax - 365 * 24 * 60 * 60 * 1000,
               xMax: xMax,
             },
+
     
             max: {
               shortLabel: "Max",
