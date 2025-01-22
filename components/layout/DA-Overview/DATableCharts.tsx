@@ -456,15 +456,16 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
 
     return(
         <div className="flex h-full w-full gap-x-[10px]">
-            <div className="min-w-[730px] w-full mt-[39px] flex flex-1 h-[217px] relative mr-[20px] px-[5px] overflow-hidden  pr-[5px]">
+            <div className="heading-large-xs w-[250px] absolute left-[45px] h-[39px] flex items-center -top-[0px]">
+                    Data Posted {selectedChain !== "all" ? `(${getNameFromKey[selectedChain]})` : ""}
+            </div>
+            <div className="min-w-[730px] w-full mt-[39px] flex flex-1 h-[217px] relative px-[5px] overflow-hidden  pr-[5px]">
                 <div className="absolute left-[calc(50%-85px)] top-[calc(39%-29.5px)] z-50 opacity-20">
                     <ChartWatermark className="w-[225px] h-[45px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
                     <div className="w-[225px] h-[15px] flex items-center justify-center "><div className=" text-[10px] leading-[120%] font-semibold ">DA: {da_name === "da_celestia" ? "CELESTIA" : "ETHEREUM BLOBS"}</div></div>
                 </div>
                 
-                <div className="heading-large-xs w-[250px] absolute left-[15px] h-[39px] flex items-center -top-[40px]">
-                    Data Posted {selectedChain !== "all" ? `(${getNameFromKey[selectedChain]})` : ""}
-                </div>
+
                 <hr className="absolute w-[92.5%] border-t-[2px] left-[55px] top-[5px] border-[#5A64624F] border-dotted " />
                 <hr className="absolute w-[92.5%] border-t-[2px] left-[55px] top-[97px] border-[#5A64624F] border-dotted " />
                 <hr className="absolute w-[92.5%] border-t-[2px] left-[55px] top-[192px] border-[#5A64624F] border-dotted " />
@@ -499,6 +500,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                 borderColor: "transparent",
                                 groupPadding: 0,
                                 animation: true,
+                               
                             },
                             series: {
                                 zIndex: 10,
@@ -702,6 +704,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                             const types = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].types;
                             const name = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1];
                             const color = AllChainsByKeys[key] ? AllChainsByKeys[key].colors["dark"][0] : UNLISTED_CHAIN_COLORS[index];
+
                             
                             return(
                                 <Series
@@ -746,267 +749,270 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
 
                 </HighchartsProvider>
             </div>
-            <ChartLegend 
-                selectedTimespan={selectedTimespan}
-                data={data}
-                isMonthly={isMonthly}
-                setSelectedChain={setSelectedChain}
-                selectedChain={selectedChain}
-                isPie={true}
-                pie_data={pie_data}
-                pieChartComponent={pieChartComponent}
-                chartComponent={chartComponent}
-                getNameFromKey={getNameFromKey}
-            />
-            <div className="min-w-[254px] flex items-center  relative pt-[15px] ">
+            <div className="p-[15px] pl-[30px] flex">
+                <ChartLegend 
+                    selectedTimespan={selectedTimespan}
+                    data={data}
+                    isMonthly={isMonthly}
+                    setSelectedChain={setSelectedChain}
+                    selectedChain={selectedChain}
+                    isPie={true}
+                    pie_data={pie_data}
+                    pieChartComponent={pieChartComponent}
+                    chartComponent={chartComponent}
+                    getNameFromKey={getNameFromKey}
+                />
+                <div className="min-w-[254px] flex items-center justify-center  relative  ">
                 {/* Pie Chart */}
-                <div className="absolute left-[31%] w-[99px] flex items-center justify-center bottom-[49%] text-xxxs font-bold leading-[120%] ">{"% OF TOTAL USAGE"}</div>
-                <HighchartsProvider Highcharts={Highcharts}>
-                    <HighchartsChart                             
-                        containerProps={{
-                            style: {
-                                height: "234px",
-                                width: "254px",
-                                
-                                
+                <div className="absolute left-[32%] w-[99px] flex items-center justify-center bottom-[48%] text-xxxs font-bold leading-[120%] ">{"% OF TOTAL USAGE"}</div>
+                    <HighchartsProvider Highcharts={Highcharts}>
+                        <HighchartsChart                             
+                            containerProps={{
+                                style: {
+                                    height: "254px",
+                                    width: "254px",
+                                    
+                                    
 
-                                overflow: "visible",
-                            },
-                        }}
-
-                        plotOptions={{
-                            pie: {
-                                allowPointSelect: false,
-                                cursor: "pointer",
-                                dataLabels: {
-                                    enabled: true,
-                                    format: "<b>{point.name}</b>: {point.percentage:.1f} %",
+                                    overflow: "visible",
                                 },
-                                showInLegend: true,
-                                borderWidth: 10,
-                                borderColor: "transparent",
+                            }}
 
-                            }
-                        }}
-                    >
-                    <Chart
-                        backgroundColor={""}
-                        type="pie"
-                        title={"test"}
-                        overflow="visible"
-                        panning={{ enabled: true }}
-                        panKey="shift"
-                        zooming={{ type: undefined }}
-                        style={{ borderRadius: 15 }}
-                        animation={{ duration: 50 }}
-                        // margin={[0, 15, 0, 0]} // Use the array form for margin
-                        //margin={[15, 21, 15, 0]}
-
-
-                        marginBottom={30}
-
-                        marginTop={2}
-                        
-                        onRender={function (event) {
-                            const chart = this; // Assign `this` to a variable for clarity
-                            pieChartComponent.current = chart;
-
-
-                        }}
-                        
-                        
-                        
-                    />
-                    <Tooltip
-                        useHTML={true}
-                        shared={true}
-                        split={false}
-                        followPointer={true}
-                        followTouchMove={true}
-                        backgroundColor={"#2A3433EE"}
-                        padding={0}
-                        hideDelay={300}
-                        stickOnContact={true}
-                        shape="rect"
-                        borderRadius={17}
-                        borderWidth={0}
-                        outside={true}
-                        shadow={{
-                            color: "black",
-                            opacity: 0.015,
-                            offsetX: 2,
-                            offsetY: 2,
-                        }}
-                        style={{
-                            color: "rgb(215, 223, 222)",
-                        }}
-                    
-                        // ensure tooltip is always above the chart
-                        //positioner={tooltipPositioner}
-
-                        valuePrefix={showUsd ? "$" : ""}
-                        valueSuffix={showUsd ? "" : " Gwei"}
-                        formatter={pieTooltipFormatter}
-                        
-                    />
-                    <XAxis
-                        title={undefined}
-                        type="datetime"
-                        
-                        labels={{
-                            align: undefined,
-                            rotation: 0,
-                            // allowOverlap: false,
-                            // staggerLines: 1,
-                            // reserveSpace: true,
-
-                            
-                            overflow: "justify",
-                            useHTML: true,
-                            distance: -14,
-                            style: {
-                                color: COLORS.LABEL,
-                                fontSize: "10px",
-                                fontWeight: "550",
-                                fontVariant: "small-caps",
-                                textTransform: "lowercase",
-                                fontFamily: "var(--font-raleway), sans-serif",
-                                // fontVariant: "all-small-caps",
-                                zIndex: 1000,
-                                paddingTop: "22px",
-                            },
-                            enabled: true,
-
-                            formatter: function () {
-                            // Convert Unix timestamp to milliseconds
-                            const date = new Date(this.value);
-                            // Format the date as needed (e.g., "dd MMM yyyy")
-                            const dateString = date
-                                .toLocaleDateString("en-GB", {
-                                day: !(
-                                    timespans[selectedTimespan].value >= 90 ||
-                                    selectedTimespan === "max"
-                                )
-                                    ? "2-digit"
-                                    : undefined,
-                                month: "short",
-                                year:
-                                    timespans[selectedTimespan].value >= 90 ||
-                                    selectedTimespan === "max"
-                                    ? "numeric"
-                                    : undefined,
-                                })
-                                .toUpperCase();
-
-                            return `<span class="font-bold">${dateString}</span>`;
-                            },
-                        }}
-                        crosshair={{
-                            width: 0.5,
-                            color: "transparent",
-                            snap: false,
-
-                        }}
-                        zoomEnabled={false}
-                 
-                        lineWidth={3}
-                        
-                        
-                        startOnTick={true}
-                        endOnTick={true}
-                        tickAmount={0}
-
-                        tickLength={5}
-                        tickWidth={1}
-                        // ordinal={true}
-                        
-                        minorTicks={false}
-                        minorTickLength={2}
-                        minorTickWidth={2}
-                        minorGridLineWidth={0}
-                        minorTickInterval={1000 * 60 * 60 * 24 * 1}
-                        // min={
-                        //   timespans[selectedTimespan].xMin
-                        //     ? newestUnixTimestamp -
-                        //       1000 *
-                        //         60 *
-                        //         60 *
-                        //         24 *
-                        //         (timespans[selectedTimespan].value - 1)
-                        //     : undefined
-                        // }
-                        min={timespans[selectedTimespan].xMin} // don't include the last day
-                        max={timespans[selectedTimespan].xMax}
-                        panningEnabled={true}
-                    ></XAxis>
-                    <YAxis
-                    opposite={false}
-                    type="linear"
-                    gridLineWidth={0}
-                    gridLineColor={"#5A64624F"}
-                    showFirstLabel={false}
-                    showLastLabel={false}
-                    tickAmount={5}
-                    labels={{
-                        align: "right",
-                        y: -2,
-                        x: -2,
-                        
-                        
-                        style: {
-                            backgroundColor: "#1F2726",
-                            whiteSpace: "nowrap",
-                            color: "rgb(215, 223, 222)",
-                            fontSize: "9px",
-                            fontWeight: "600",
-                            fontFamily: "var(--font-raleway), sans-serif",
-                        },
-                        // formatter: function (
-                        // t: Highcharts.AxisLabelsFormatterContextObject,
-                        // ) {
-                        //   return formatNumber(metricKey, t.value);
-                        // },
-                    }}
-                    min={0}
-                    
-                    >
-                            <PieSeries
-                                key={`${"Pie"}-DATableCharts-${da_name}`}
-                                name={"Pie Chart"}
-                                innerSize={"95%"}
-                                size={"100%"}
-                                dataLabels={{
-                                    enabled: false,
-                                }}
-                                type="pie"
-                                data={formattedPieData}
-                                
-                                point={{
-                                    events: {
-                                        click: function (event) {
-                                            
-                                            if(event.point.options.name){
-                                                const key = Object.entries(getNameFromKey).find(([_, value]) => value === event.point.options.name)?.[0];
-                                                if(key && key !== selectedChain){
-                                                    setSelectedChain(key)
-                                                }else if(key === selectedChain){
-                                                    setSelectedChain("all")
-                                                }
-                                                
-                                            }
-                                        }
+                            plotOptions={{
+                                pie: {
+                                    allowPointSelect: false,
+                                    cursor: "pointer",
+                                    dataLabels: {
+                                        enabled: true,
+                                        format: "<b>{point.name}</b>: {point.percentage:.1f} %",
                                     },
-                                }}
-                                
-                                
-                            /> 
-                    </YAxis>                     
-                        
-                    </HighchartsChart>
+                                    showInLegend: true,
+                                    borderWidth: 10,
+                                    borderColor: "transparent",
 
-                </HighchartsProvider>
+                                }
+                            }}
+                        >
+                        <Chart
+                            backgroundColor={""}
+                            type="pie"
+                            title={"test"}
+                            overflow="visible"
+                            panning={{ enabled: true }}
+                            panKey="shift"
+                            zooming={{ type: undefined }}
+                            style={{ borderRadius: 15 }}
+                            animation={{ duration: 50 }}
+                            // margin={[0, 15, 0, 0]} // Use the array form for margin
+                            //margin={[15, 21, 15, 0]}
+
+
+                            marginBottom={10}
+
+                            marginTop={2}
+                            
+                            onRender={function (event) {
+                                const chart = this; // Assign `this` to a variable for clarity
+                                pieChartComponent.current = chart;
+
+
+                            }}
+                            
+                            
+                            
+                        />
+                        <Tooltip
+                            useHTML={true}
+                            shared={true}
+                            split={false}
+                            followPointer={true}
+                            followTouchMove={true}
+                            backgroundColor={"#2A3433EE"}
+                            padding={0}
+                            hideDelay={300}
+                            stickOnContact={true}
+                            shape="rect"
+                            borderRadius={17}
+                            borderWidth={0}
+                            outside={true}
+                            shadow={{
+                                color: "black",
+                                opacity: 0.015,
+                                offsetX: 2,
+                                offsetY: 2,
+                            }}
+                            style={{
+                                color: "rgb(215, 223, 222)",
+                            }}
+                        
+                            // ensure tooltip is always above the chart
+                            //positioner={tooltipPositioner}
+
+                            valuePrefix={showUsd ? "$" : ""}
+                            valueSuffix={showUsd ? "" : " Gwei"}
+                            formatter={pieTooltipFormatter}
+                            
+                        />
+                        <XAxis
+                            title={undefined}
+                            type="datetime"
+                            
+                            labels={{
+                                align: undefined,
+                                rotation: 0,
+                                // allowOverlap: false,
+                                // staggerLines: 1,
+                                // reserveSpace: true,
+
+                                
+                                overflow: "justify",
+                                useHTML: true,
+                                distance: -14,
+                                style: {
+                                    color: COLORS.LABEL,
+                                    fontSize: "10px",
+                                    fontWeight: "550",
+                                    fontVariant: "small-caps",
+                                    textTransform: "lowercase",
+                                    fontFamily: "var(--font-raleway), sans-serif",
+                                    // fontVariant: "all-small-caps",
+                                    zIndex: 1000,
+                                    paddingTop: "22px",
+                                },
+                                enabled: true,
+
+                                formatter: function () {
+                                // Convert Unix timestamp to milliseconds
+                                const date = new Date(this.value);
+                                // Format the date as needed (e.g., "dd MMM yyyy")
+                                const dateString = date
+                                    .toLocaleDateString("en-GB", {
+                                    day: !(
+                                        timespans[selectedTimespan].value >= 90 ||
+                                        selectedTimespan === "max"
+                                    )
+                                        ? "2-digit"
+                                        : undefined,
+                                    month: "short",
+                                    year:
+                                        timespans[selectedTimespan].value >= 90 ||
+                                        selectedTimespan === "max"
+                                        ? "numeric"
+                                        : undefined,
+                                    })
+                                    .toUpperCase();
+
+                                return `<span class="font-bold">${dateString}</span>`;
+                                },
+                            }}
+                            crosshair={{
+                                width: 0.5,
+                                color: "transparent",
+                                snap: false,
+
+                            }}
+                            zoomEnabled={false}
+                    
+                            lineWidth={3}
+                            
+                            
+                            startOnTick={true}
+                            endOnTick={true}
+                            tickAmount={0}
+
+                            tickLength={5}
+                            tickWidth={1}
+                            // ordinal={true}
+                            
+                            minorTicks={false}
+                            minorTickLength={2}
+                            minorTickWidth={2}
+                            minorGridLineWidth={0}
+                            minorTickInterval={1000 * 60 * 60 * 24 * 1}
+                            // min={
+                            //   timespans[selectedTimespan].xMin
+                            //     ? newestUnixTimestamp -
+                            //       1000 *
+                            //         60 *
+                            //         60 *
+                            //         24 *
+                            //         (timespans[selectedTimespan].value - 1)
+                            //     : undefined
+                            // }
+                            min={timespans[selectedTimespan].xMin} // don't include the last day
+                            max={timespans[selectedTimespan].xMax}
+                            panningEnabled={true}
+                        ></XAxis>
+                        <YAxis
+                        opposite={false}
+                        type="linear"
+                        gridLineWidth={0}
+                        gridLineColor={"#5A64624F"}
+                        showFirstLabel={false}
+                        showLastLabel={false}
+                        tickAmount={5}
+                        labels={{
+                            align: "right",
+                            y: -2,
+                            x: -2,
+                            
+                            
+                            style: {
+                                backgroundColor: "#1F2726",
+                                whiteSpace: "nowrap",
+                                color: "rgb(215, 223, 222)",
+                                fontSize: "9px",
+                                fontWeight: "600",
+                                fontFamily: "var(--font-raleway), sans-serif",
+                            },
+                            // formatter: function (
+                            // t: Highcharts.AxisLabelsFormatterContextObject,
+                            // ) {
+                            //   return formatNumber(metricKey, t.value);
+                            // },
+                        }}
+                        min={0}
+                        
+                        >
+                                <PieSeries
+                                    key={`${"Pie"}-DATableCharts-${da_name}`}
+                                    name={"Pie Chart"}
+                                    innerSize={"95%"}
+                                    size={"100%"}
+                                    dataLabels={{
+                                        enabled: false,
+                                    }}
+                                    type="pie"
+                                    data={formattedPieData}
+                                    
+                                    point={{
+                                        events: {
+                                            click: function (event) {
+                                                
+                                                if(event.point.options.name){
+                                                    const key = Object.entries(getNameFromKey).find(([_, value]) => value === event.point.options.name)?.[0];
+                                                    if(key && key !== selectedChain){
+                                                        setSelectedChain(key)
+                                                    }else if(key === selectedChain){
+                                                        setSelectedChain("all")
+                                                    }
+                                                    
+                                                }
+                                            }
+                                        },
+                                    }}
+                                    
+                                    
+                                /> 
+                        </YAxis>                     
+                            
+                        </HighchartsChart>
+
+                    </HighchartsProvider>
+                </div>
             </div>
         </div>
+    
     )
 }
 

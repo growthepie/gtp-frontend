@@ -738,7 +738,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
             )})}
             <div className="flex flex-col gap-y-[5px] w-full py-[15px] relative overflow-hidden h-[232px]">
                 <div className="flex items-center heading-large-sm gap-x-[10px] ">
-                    <div>Top 5 DA Consumers (by Data Posted)</div>
+                    <div>Top 5 DA Consumers</div>
                 </div>
                 <TopDAConsumers consumer_data={data.top_da_consumers} selectedTimespan={selectedTimespan} />
             </div>
