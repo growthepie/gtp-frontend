@@ -5,7 +5,7 @@
 export interface Data {
   sort: Sort;
   types: Columns[];
-  data: Datum[];
+  data: AppDatum[];
 }
 
 export interface Sort {
@@ -22,7 +22,7 @@ export type Columns =
   | "gas_fees_usd"
   | "txcount";
 
-export type Datum = (string | number | null)[];
+export type AppDatum = (string | number | null)[];
 
 export interface ParsedDatum {
   owner_project: string;
@@ -35,7 +35,7 @@ export interface ParsedDatum {
 }
 
 export class AppOverviewResponseHelper {
-  private response: AppOverviewResponse;
+  public response: AppOverviewResponse;
   private typesIndexes: Record<Columns, number>;
   public data: ParsedDatum[];
   public types: Columns[];
@@ -66,7 +66,7 @@ export class AppOverviewResponseHelper {
     return this.response.data.sort;
   }
 
-  private parseDatum(datum: Datum): ParsedDatum {
+  private parseDatum(datum: AppDatum): ParsedDatum {
     const [
       owner_project,
       origin_key,
