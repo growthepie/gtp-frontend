@@ -24,6 +24,7 @@ import DynamicIcon from "../DynamicIcon";
 import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 import { first } from "lodash";
 import { Badge } from "@/app/(labels)/labels/Search";
+import Link from "next/link";
 
 
 
@@ -999,9 +1000,9 @@ const MoreTooltip = ({ item, selectedTimespan, breakdown_data}) => {
             <div className="text-xs">{param.label}:</div>
             <div className="numbers-xs">
               {param.key === "l2beat_risk" ? (
-                <a href={breakdown_data[item.key][selectedTimespan].fixed_params[param.key]} target="_blank" className="underline">
+                <Link href={breakdown_data[item.key][selectedTimespan].fixed_params[param.key]} target="_blank" className="underline">
                   L2BEAT DA Risk
-                </a>
+                </Link>
               ) : (
                 breakdown_data[item.key][selectedTimespan].fixed_params[param.key]
               )}
