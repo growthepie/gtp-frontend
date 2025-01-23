@@ -917,7 +917,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
 const DaConsumersTooltip = ({item, selectedTimespan, breakdown_data, AllChainsByKeys, master}) => {
   return (
     <div
-      className="absolute z-20 right-[19px] top-[32px] w-[245px] pl-[20px] pr-[5px] py-[15px] group flex flex-col gap-y-[5px] bg-[#1F2726] rounded-[10px] transition-opacity duration-300 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto hover:pointer-events-auto"
+      className="cursor-default absolute z-20 right-[19px] top-[32px] w-[245px] pl-[20px] pr-[5px] py-[15px] group flex flex-col gap-y-[5px] bg-[#1F2726] rounded-[15px] transition-opacity duration-300 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto hover:pointer-events-auto"
       style={{
         boxShadow: "0px 0px 30px #000000",
       }}
@@ -956,6 +956,7 @@ const DaConsumersTooltip = ({item, selectedTimespan, breakdown_data, AllChainsBy
                 leftIconColor={color}
                 label={breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][1]}
                 size="sm"
+                className="!cursor-default select-none"
                 onClick={() => {
                 }}
               />
@@ -971,7 +972,7 @@ const DaConsumersTooltip = ({item, selectedTimespan, breakdown_data, AllChainsBy
 const MoreTooltip = ({ item, selectedTimespan, breakdown_data}) => {
   return (
     <div
-      className="cursor-default absolute z-20 right-[19px] top-[32px] w-[238px] bg-[#1F2726] rounded-2xl flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300 opacity-0 group-hover/more:opacity-100 pointer-events-none group-hover/more:pointer-events-auto hover:pointer-events-auto"
+      className="cursor-default absolute z-20 right-[19px] top-[32px] w-[238px] bg-[#1F2726] rounded-[15px] flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300 opacity-0 group-hover/more:opacity-100 pointer-events-none group-hover/more:pointer-events-auto hover:pointer-events-auto"
       style={{
         boxShadow: "0px 0px 30px #000000",
       }}
