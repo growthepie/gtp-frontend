@@ -7,32 +7,141 @@ import { ApplicationsURLs, DAMetricsURLs, DAOverviewURL, LabelsURLS, MasterURL, 
 import { DAOverviewResponse } from "@/types/api/DAOverviewResponse";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { ChainData, MetricData, MetricsResponse } from "@/types/api/MetricsResponse";
-import { AppOverviewResponse, AppOverviewResponseHelper, ParsedDatum } from "@/types/applications/AppOverviewResponse";
+import { AppDatum, AppOverviewResponse, AppOverviewResponseHelper, ParsedDatum } from "@/types/applications/AppOverviewResponse";
 import { intersection } from "lodash";
 import { RefObject, createContext, useContext, useEffect, useMemo, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 
-export type ApplicationRow = {
+function calculatePercentageChange(current, previous) {
+  if (previous === 0) return current === 0 ? 0 : Infinity;
+  return ((current - previous) / previous) * 100;
+}
+
+function assignRanks(items, metric) {
+  // Sort items by the specified metric in descending order
+  items.sort((a, b) => b[metric] - a[metric]);
+  // Assign ranks, handling ties
+  let rank = 1;
+  items.forEach((item, index) => {
+    if (index > 0 && item[metric] < items[index - 1][metric]) rank = index + 1;
+    item[`rank_${metric}`] = rank;
+  });
+}
+
+export type AggregatedDataRow = {
   owner_project: string;
-  display_name: string;
-  description: string;
-  main_github: string;
-  twitter: string;
-  website: string;
-  logo_path: string;
-  dataKeys: ["origin_key", "timespan", "num_contracts", "gas_fees_eth", "gas_fees_eth_change", "gas_fees_usd", "gas_fees_usd_change", "txcount", "txcount_change"];
-  data: [
-    string, // origin_key
-    string, // timespan
-    number, // num_contracts
-    number, // gas_fees_eth
-    number, // gas_fees_eth_change (put placeholder for now)
-    number, // gas_fees_usd
-    number, // gas_fees_usd_change (put placeholder for now)
-    number, // txcount
-    number, // txcount_change (put placeholder for now)
-  ][]
+  origin_keys: string[];  // Add this line
+  num_contracts: number;
+  gas_fees_eth: number;
+  prev_gas_fees_eth: number;
+  gas_fees_usd: number;
+  txcount: number;
+  prev_txcount: number;
+  gas_fees_eth_pct: number;
+  gas_fees_usd_pct: number;
+  txcount_pct: number;
+  rank_gas_fees_eth: number;
+  rank_gas_fees_usd: number;
+  rank_txcount: number;
+}
+
+function ownerProjectToOriginKeysMap(data: AppDatum[]): { [key: string]: string[] } {
+  return data.reduce((acc, entry) => {
+    const [owner, origin]: [string, string] = [entry[0] as string, entry[1] as string];
+    if (!acc[owner]) acc[owner] = [];
+    if (!acc[owner].includes(origin)) acc[owner].push(origin);
+    return acc;
+  }, {});
+}
+
+function aggregateProjectData(
+  data: AppDatum[], typesArr: string[], timespan: string, chains: string[]
+): AggregatedDataRow[] {
+  // get Mapping of owner_project to origin_keys
+  const ownerProjectToOriginKeys = ownerProjectToOriginKeysMap(data);
+
+  // Convert chain filter to Set for O(1) lookups
+  const chainFilter = chains.length === 0
+    ? new Set(data.map(d => d[1]))
+    : new Set(chains);
+
+  // Group data by owner_project in a single pass
+  const aggregation = new Map();
+
+  const typesInexes = {
+    owner_project: typesArr.indexOf("owner_project"),
+    origin_key: typesArr.indexOf("origin_key"),
+    num_contracts: typesArr.indexOf("num_contracts"),
+    gas_fees_eth: typesArr.indexOf("gas_fees_eth"),
+    prev_gas_fees_eth: typesArr.indexOf("prev_gas_fees_eth"),
+    gas_fees_usd: typesArr.indexOf("gas_fees_usd"),
+    txcount: typesArr.indexOf("txcount"),
+    prev_txcount: typesArr.indexOf("prev_txcount"),
+  };
+
+  for (const entry of data) {
+    const [
+      owner, origin, numContracts, gasEth, prevGasEth, gasUsd, txCount, prevTxCount
+    ] = [
+      entry[typesInexes.owner_project] as string, entry[typesInexes.origin_key] as string, entry[typesInexes.num_contracts] as number, entry[typesInexes.gas_fees_eth] as number, entry[typesInexes.prev_gas_fees_eth] as number, entry[typesInexes.gas_fees_usd] as number, entry[typesInexes.txcount] as number, entry[typesInexes.prev_txcount] as number
+    ];
+
+    // Skip if not matching the filter
+    if (!chainFilter.has(origin)) continue;
+
+    // Initialize the group if it doesn't exist
+    if (!aggregation.has(owner)) {
+      aggregation.set(owner, {
+        // origin_keys: new Set(),  // Use Set for unique keys
+        num_contracts: 0,
+        gas_fees_eth: 0,
+        prev_gas_fees_eth: 0,
+        gas_fees_usd: 0,
+        txcount: 0,
+        prev_txcount: 0,
+      });
+    }
+
+    // Aggregate metrics
+    const acc = aggregation.get(owner);
+    // acc.origin_keys.add(origin);
+    acc.num_contracts += numContracts;
+    acc.gas_fees_eth += gasEth;
+    acc.prev_gas_fees_eth += prevGasEth;
+    acc.gas_fees_usd += gasUsd;
+    acc.txcount += txCount;
+    acc.prev_txcount += prevTxCount;
+  }
+
+  // Convert to final array format and calculate percentage changes
+  const results = Array.from(aggregation.entries()).map(([owner, metrics]) => {
+    const { origin_keys, ...otherMetrics} = metrics;
+    return {
+    owner_project: owner,
+    origin_keys: ownerProjectToOriginKeys[owner].sort(),  // Sort origin_keys
+    ...otherMetrics,
+    gas_fees_eth_pct: calculatePercentageChange(
+      metrics.gas_fees_eth,
+      metrics.prev_gas_fees_eth
+    ),
+    gas_fees_usd_pct: calculatePercentageChange(
+      metrics.gas_fees_eth,
+      metrics.prev_gas_fees_eth
+    ),
+    txcount_pct: calculatePercentageChange(
+      metrics.txcount,
+      metrics.prev_txcount
+    ),
+    };
+  });
+
+  // Calculate ranks in a single pass for all metrics
+  assignRanks(results, 'gas_fees_eth');
+  assignRanks(results, 'gas_fees_usd');
+  assignRanks(results, 'txcount');
+
+  return results;
 }
 
 const devMiddleware = (useSWRNext) => {
@@ -90,17 +199,23 @@ export type ApplicationsDataContextType = {
   data: any;
   topGainers: ParsedDatum[];
   topLosers: ParsedDatum[];
-  ownerProjectToProjectData: { [key: string]: {
-    owner_project: string;
-    display_name: string;
-    description: string;
-    main_github: string;
-    twitter: string;
-    website: string;
-    logo_path: string;
-  }};
-  dataWithRanking: { [key: string]: (ParsedDatum & {ranking: number}) };
-  applicationRowsSortedFiltered: ApplicationRow[];
+  ownerProjectToProjectData: {
+    [key: string]: {
+      owner_project: string;
+      display_name: string;
+      description: string;
+      main_github: string;
+      twitter: string;
+      website: string;
+      logo_path: string;
+      main_category: string;
+    }
+  };
+  dataWithRanking: { [key: string]: (ParsedDatum & { ranking: number }) };
+  applicationDataAggregated: AggregatedDataRow[];
+  isLoading: boolean;
+  sortOrder: "asc" | "desc";
+  setSortOrder: (value: "asc" | "desc") => void;
 }
 
 export const ApplicationsDataContext = createContext<ApplicationsDataContextType | undefined>(undefined);
@@ -111,7 +226,15 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
-  
+
+  const [selectedMetrics, setSelectedMetrics] = useState<("num_contracts" | "gas_fees_eth" | "gas_fees_usd" | "txcount")[]>(["gas_fees_usd"]);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [selectedTimespan, setSelectedTimespan] = useState<string>("7d");
+  const [selectedChains, setSelectedChains] = useState<string[]>([]);
+  const [isMonthly, setIsMonthly] = useState<boolean>(false);
+
+  const { data, error, isLoading, isValidating } = useSWR<DAOverviewResponse>(DAOverviewURL);
+
   const {
     data: master,
     error: masterError,
@@ -144,27 +267,24 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
     if (!projectsData) return {};
 
     let ownerProjectToProjectData = {};
+    const typesArr = projectsData.data.types;
     projectsData.data.data.forEach((project) => {
-      ownerProjectToProjectData[project[0]] = {
-        owner_project: project[0],
-        display_name: project[1],
-        description: project[2],
-        main_github: project[3],
-        twitter: project[4],
-        website: project[5],
-        logo_path: project[6],
+      ownerProjectToProjectData[project[typesArr.indexOf("owner_project")]] = {
+        owner_project: project[typesArr.indexOf("owner_project")],
+        display_name: project[typesArr.indexOf("display_name")],
+        description: project[typesArr.indexOf("description")],
+        main_github: project[typesArr.indexOf("main_github")],
+        twitter: project[typesArr.indexOf("twitter")],
+        website: project[typesArr.indexOf("website")],
+        logo_path: project[typesArr.indexOf("logo_path")],
+        main_category: project[typesArr.indexOf("main_category")],
       }
     });
 
     return ownerProjectToProjectData;
   }, [projectsData]);
 
-  const [selectedMetrics, setSelectedMetrics] = useState<("num_contracts" | "gas_fees_eth" | "gas_fees_usd" | "txcount")[]>(["gas_fees_usd"]);
-  const [selectedTimespan, setSelectedTimespan] = useState<string>("7d");
-  const [selectedChains, setSelectedChains] = useState<string[]>([]);
-  const [isMonthly, setIsMonthly] = useState<boolean>(false);
 
-  const { data, error, isLoading, isValidating } = useSWR<DAOverviewResponse>(DAOverviewURL);
 
   const timespans = useMemo(() => {
     let xMax = Date.now();
@@ -288,104 +408,70 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
         sum,
       };
     }).sort((a, b) => b.sum - a.sum).reduce((acc, datum, index) => {
-    // add ranking
-    return {
-      ...acc,
-      [datum.origin_key]: {
-        ...datum,
-        ranking: index + 1,
-      },
-    };
+      // add ranking
+      return {
+        ...acc,
+        [datum.origin_key]: {
+          ...datum,
+          ranking: index + 1,
+        },
+      };
     }, {});
 
     return dataWithRanking;
 
   }, [applicationsData, selectedMetrics]);
 
-  
+  const {
+    data: applicationsDataTimespan,
+    error: applicationsTimespanError,
+    isLoading: applicationsTimespanLoading,
+    isValidating: applicationsTimespanValidating,
+  } = useSWR<AppOverviewResponseHelper>(ApplicationsURLs.overview.replace('_test', `_${selectedTimespan}`), fallbackFetcher, {
+    use:
+      apiRoot === "dev" && !IS_PRODUCTION
+        ? [devMiddleware, applicationsMiddleware]
+        : [applicationsMiddleware],
+  });
 
-  const applicationRows = useMemo(() => {
-    if (!applicationsData) return [];
+  const applicationDataAggregated = useMemo(() => {
+    if (!applicationsDataTimespan) return [];
 
-    const applicationRows: {[key: string]: ApplicationRow} = applicationsData.data.reduce((acc, datum) => {
-      const owner_project = datum.owner_project;
-
-      const data: [string, string, number, number, number, number, number, number, number] = [datum.origin_key, datum.timespan, datum.num_contracts, datum.gas_fees_eth, datum.gas_fees_eth /100, datum.gas_fees_usd, datum.gas_fees_usd/100, datum.txcount, datum.txcount/100];
-
-      if (!acc[owner_project]) {
-
-        const display_name = ownerProjectToProjectData[owner_project]?.display_name || "";
-        const description = ownerProjectToProjectData[owner_project]?.description || "";
-        const main_github = ownerProjectToProjectData[owner_project]?.main_github || "";
-        const twitter = ownerProjectToProjectData[owner_project]?.twitter || "";
-        const website = ownerProjectToProjectData[owner_project]?.website || "";
-        const logo_path = ownerProjectToProjectData[owner_project]?.logo_path || "";
-
-        acc[owner_project] = {
-          owner_project,
-          display_name,
-          description,
-          main_github,
-          twitter,
-          website,
-          logo_path,
-          dataKeys: ["origin_key", "timespan", "num_contracts", "gas_fees_eth", "gas_fees_eth_change", "gas_fees_usd", "gas_fees_usd_change", "txcount", "txcount_change"],
-          data: [data],
-        };
-      }else{
-        acc[owner_project].data.push(data);
-      }
-
-      return acc;
-    }, {} as { [key: string]: ApplicationRow });
-
-    return Object.values(applicationRows);
-  }, [applicationsData, ownerProjectToProjectData]);
-
-  const applicationRowsSortedFiltered = useMemo(() => {
-    return applicationRows.filter((application) => application.data.some((datum) => (selectedChains.length === 0 || selectedChains.includes(datum[application.dataKeys.indexOf("origin_key")] as string)) && datum[application.dataKeys.indexOf("timespan")] === selectedTimespan))
-    .sort((a, b) => {
-      // sort by descending order of the sum of all selected metrics
-      const aSum = a.data
-      .filter((datum) => (selectedChains.length === 0 || selectedChains.includes(datum[a.dataKeys.indexOf("origin_key")] as string)) && selectedTimespan == datum[a.dataKeys.indexOf("timespan")])
-      .reduce(
-        (acc, datum) => {
-          return selectedMetrics.length === 0 ? acc + (datum[a.dataKeys.indexOf("gas_fees_usd")] as number) : acc + (datum[a.dataKeys.indexOf(selectedMetrics[0])] as number)
-        }, 0
-      );
-      const bSum = b.data
-      .filter((datum) => (selectedChains.length === 0 || selectedChains.includes(datum[b.dataKeys.indexOf("origin_key")] as string)) && selectedTimespan == datum[b.dataKeys.indexOf("timespan")])
-      .reduce(
-        (acc, datum) => {
-          return selectedMetrics.length === 0 ? acc + (datum[b.dataKeys.indexOf("gas_fees_usd")] as number) : acc + (datum[b.dataKeys.indexOf(selectedMetrics[0])] as number)
-        }, 0
-      );
-      return bSum - aSum;
+    const result =  aggregateProjectData(applicationsDataTimespan.response.data.data, applicationsDataTimespan.response.data.types, selectedTimespan, selectedChains).sort((a, b) => {
+      const aSum = a[selectedMetrics[0]];
+      const bSum = b[selectedMetrics[0]];
+      return sortOrder === "asc" ? aSum - bSum : bSum - aSum;
     });
-  }, [applicationRows, selectedChains, selectedTimespan, selectedMetrics]);
+    
+    return result;
+
+  }, [applicationsDataTimespan, selectedTimespan, selectedChains, sortOrder, selectedMetrics]);
 
 
   return (
-    <ApplicationsDataContext.Provider value={{ 
-      selectedTimespan, setSelectedTimespan, 
+    <ApplicationsDataContext.Provider value={{
+      selectedTimespan, setSelectedTimespan,
       selectedMetrics, setSelectedMetrics,
       selectedChains, setSelectedChains,
-      isMonthly, setIsMonthly, 
+      isMonthly, setIsMonthly,
       timespans,
-      data, 
-      topGainers, topLosers, 
-      ownerProjectToProjectData, 
-      dataWithRanking, 
-      applicationRowsSortedFiltered
-      }}>
-        <ShowLoading
+      data,
+      topGainers, topLosers,
+      ownerProjectToProjectData,
+      dataWithRanking,
+      applicationDataAggregated,
+      isLoading: applicationsTimespanLoading || applicationsLoading || masterLoading || projectsLoading,
+      sortOrder,
+      setSortOrder,
+    }}>
+      <ShowLoading
         dataLoading={[masterLoading, applicationsLoading, projectsLoading]}
         dataValidating={[masterValidating, applicationsValidating, projectsValidating]}
-        // fullScreen={true}
+      // fullScreen={true}
       />
       {children}
     </ApplicationsDataContext.Provider>
-  );  
+  );
 }
 
 export const useApplicationsData = () => {
