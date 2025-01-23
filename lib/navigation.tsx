@@ -106,6 +106,20 @@ const dataAvailabilityGroup: NavigationItem = {
   // newChild: true,
   options: [
     {
+      label: "Overview",
+      page: {
+        title: "Overview",
+        description: `This page shows an overview of common Data Availability (DA) solutions that are used by Layer 2s. DA is becoming more and more important for the modular Layer 2 architecture. Different solutions have different trade-offs with regards to scalability, costs, and security assumptions.`,
+        icon: "gtp-overview",
+      },
+      icon: "gtp-overview",
+      key: "data-availability-overview",
+      rootKey: "metricsDataAvailabilityOverview",
+      urlKey: "overview",
+      url: "/data-availability/overview",
+      // showNew: true,
+    },
+    {
       label: "Blob Count",
       category: "metrics",
       page: {
