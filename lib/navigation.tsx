@@ -117,7 +117,7 @@ const dataAvailabilityGroup: NavigationItem = {
       rootKey: "metricsDataAvailabilityOverview",
       urlKey: "overview",
       url: "/data-availability/overview",
-      // showNew: true,
+      showNew: true,
     },
     {
       label: "Blob Count",
