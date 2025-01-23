@@ -36,6 +36,7 @@ import useChartSync from "./components/ChartHandler";
 import { get } from "lodash";
 import { locale } from "moment";
 import ChartWatermark from "../ChartWatermark";
+import { Badge } from "@/app/(labels)/labels/Search";
 
 const COLORS = {
     GRID: "rgb(215, 223, 222)",
@@ -1061,55 +1062,97 @@ const ChartLegend = (
       }).map((key, index) => {
         const custom_logo_keys = Object.keys(master.custom_logos);
 
-
+        // default to unlisted chain icon
+        let icon = "gtp:chain-dark";
+        let color = UNLISTED_CHAIN_COLORS[index];
+        
+        // check if chain exists in AllChainsByKeys 
+        if(AllChainsByKeys[data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][2]]){
+          icon = `gtp:${AllChainsByKeys[data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][2]].urlKey}-logo-monochrome`;
+          color = AllChainsByKeys[key].colors["dark"][0];
+        // check if chain exists in custom logos (see libs/icons.mjs for how it gets imported)
+        }else if(custom_logo_keys.includes(key)){
+          icon = `gtp:${key}-custom-logo-monochrome`;
+          color="#b5c4c3";
+        }
 
         return (
-          <div key={key + "da_consumers_info"} className={`flex group/chain  relative gap-x-[5px] px-[5px] text-xxs rounded-full py-[0.5px] items-center transition-all cursor-pointer bg-[#344240] ${(selectedChain === "all" || selectedChain === key) ? "bg-[#344240] border-[1px] border-transparent hover:bg-[#5A6462] " : "bg-transparent border-[1px] border-[#344240] hover:bg-[#5A6462] "}
-            ${selectedChain === "all" || selectedChain !== key ? "px-[5px]" : "pl-[5px] pr-[20px]"}
-
-            }`}
-            onClick={() => {
-              setSelectedChain((prev) => {
-                if (selectedChain === key) {
-                  return "all";
-                } else {
-                  return key
-                }
-              });
-            }}
-            onMouseEnter={() => {
-              setHoverChain(key);
-
-
-            }}
-            onMouseLeave={() => {
-              setHoverChain(null);
-            }}
-          >
-
-            <div>{AllChainsByKeys[data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][2]] ?
-              (<Icon icon={`gtp:${AllChainsByKeys[data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][2]].urlKey}-logo-monochrome`} className="w-[12px] h-[12px]" style={{ color: AllChainsByKeys[key].colors["dark"][0] }} />)
-              : custom_logo_keys.includes(key)
-                ? (
-                  <DynamicIcon
-                    pathString={master.custom_logos[key].body}
-                    size={12}
-                    className="text-forest-200"
-                    viewBox="0 0 15 15"
-
-                  />
-                )
-                : ( <Icon
-                    icon={"gtp:chain-dark"}
-                    className={`w-[12px] h-[12px] ${key === "others" ? "hidden" : "block"}`}
-                    style={{
-                        color: UNLISTED_CHAIN_COLORS[index]
-                    }}
-                    />)}</div>
-            <div className="text-xxs ">{data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1]}</div>
-            <div className={`absolute right-[2px] top-[2.5px] w-[12px] h-[12px] text-[#FE5468] ${selectedChain === "all" ? "invisible" : "visible"}`}><Icon icon={selectedChain === key ? "gtp:x-circle" : ""} className="w-[12px] h-[12px] "></Icon></div>
-          </div>
+            <Badge
+                key={index + "da_consumers"}
+                leftIcon={icon}
+                leftIconColor={color}
+                rightIcon={selectedChain === key ? "heroicons-solid:x-circle" : ""}
+                rightIconSize="md"
+                rightIconColor="#FE5468"
+                label={data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1]}
+                size="sm"
+                onClick={() => {
+                    setSelectedChain((prev) => {
+                        if (selectedChain === key) {
+                            return "all";
+                        } else {
+                            return key
+                        }
+                    });
+                }}     
+                onMouseEnter={() => {
+                    setHoverChain(key);
+                }}
+                onMouseLeave={() => {
+                    setHoverChain(null);
+                }}   
+                className={`bg-[#344240] hover:bg-[#5A6462] cursor-pointer select-none`}
+            />
         )
+
+
+        // return (
+        //   <div key={key + "da_consumers_info"} className={`flex group/chain  relative gap-x-[5px] px-[5px] text-xxs rounded-full py-[0.5px] items-center transition-all cursor-pointer bg-[#344240] ${(selectedChain === "all" || selectedChain === key) ? "bg-[#344240] border-[1px] border-transparent hover:bg-[#5A6462] " : "bg-transparent border-[1px] border-[#344240] hover:bg-[#5A6462] "}
+        //     ${selectedChain === "all" || selectedChain !== key ? "px-[5px]" : "pl-[5px] pr-[20px]"}
+
+        //     }`}
+        //     onClick={() => {
+        //       setSelectedChain((prev) => {
+        //         if (selectedChain === key) {
+        //           return "all";
+        //         } else {
+        //           return key
+        //         }
+        //       });
+        //     }}
+        //     onMouseEnter={() => {
+        //       setHoverChain(key);
+
+
+        //     }}
+        //     onMouseLeave={() => {
+        //       setHoverChain(null);
+        //     }}
+        //   >
+
+        //     <div>{AllChainsByKeys[data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][2]] ?
+        //       (<Icon icon={`gtp:${AllChainsByKeys[data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][2]].urlKey}-logo-monochrome`} className="w-[12px] h-[12px]" style={{ color: AllChainsByKeys[key].colors["dark"][0] }} />)
+        //       : custom_logo_keys.includes(key)
+        //         ? (
+        //           <DynamicIcon
+        //             pathString={master.custom_logos[key].body}
+        //             size={12}
+        //             className="text-forest-200"
+        //             viewBox="0 0 15 15"
+
+        //           />
+        //         )
+        //         : ( <Icon
+        //             icon={"gtp:chain-dark"}
+        //             className={`w-[12px] h-[12px] ${key === "others" ? "hidden" : "block"}`}
+        //             style={{
+        //                 color: UNLISTED_CHAIN_COLORS[index]
+        //             }}
+        //             />)}</div>
+        //     <div className="text-xxs ">{data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1]}</div>
+        //     <div className={`absolute right-[2px] top-[2.5px] w-[12px] h-[12px] text-[#FE5468] ${selectedChain === "all" ? "invisible" : "visible"}`}><Icon icon={selectedChain === key ? "gtp:x-circle" : ""} className="w-[12px] h-[12px] "></Icon></div>
+        //   </div>
+        // )
       }
       )}
     </div>

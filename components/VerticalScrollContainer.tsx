@@ -17,6 +17,8 @@ type VerticalScrollContainerProps = {
   scrollbarPosition?: ScrollbarPosition; // New Prop
   scrollbarAbsolute?: boolean;
   scrollbarWidth?: string | number;
+  scrollThumbColor?: string;
+  scrollTrackColor?: string;
   header?: React.ReactNode;
 };
 
@@ -32,6 +34,8 @@ export default forwardRef(function VerticalScrollContainer(
     scrollbarPosition = 'right', // Default to 'right'
     scrollbarAbsolute = false,
     scrollbarWidth = "8px",
+    scrollThumbColor = "rgb(136 160 157 / 0.3)", //"bg-forest-400/30",
+    scrollTrackColor = "rgb(0 0 0 / 0.3)", //"bg-black/30",
     header,
   }: VerticalScrollContainerProps,
   ref: React.Ref<HTMLDivElement>
@@ -325,6 +329,16 @@ export default forwardRef(function VerticalScrollContainer(
     }
   }, [showTopGradient, showBottomGradient]);
 
+  useEffect(() => {
+    // on content change, check if scrollbar is needed and hide gradient if not
+    if (contentScrollAreaRef.current) {
+      if (contentHeight < contentScrollAreaHeight) {
+        setMaskGradient('');
+      }
+    }
+
+  }, [children, contentHeight, contentScrollAreaHeight, contentScrollAreaRef]);
+
   // Determine padding based on scrollbar position
   const computedPaddingRight =
     scrollbarPosition === 'right' ? paddingRight : undefined;
@@ -374,7 +388,10 @@ export default forwardRef(function VerticalScrollContainer(
             style={{ height: height }}
           >
             <div
-              className="h-full p-0.5 bg-black/30 rounded-full relative"
+              className="h-full p-0.5 rounded-full relative"
+              style={{
+                background: scrollTrackColor,
+              }}
               onMouseDown={handleTrackMouseDown}
               onTouchStart={handleTrackMouseDown} // Added touch event
               // Removed onClick to integrate behavior into onMouseDown/onTouchStart
@@ -386,9 +403,10 @@ export default forwardRef(function VerticalScrollContainer(
             >
               <div className="h-full w-2 relative" ref={scrollerRef} style={{ width: scrollbarWidth }}>
                 <div
-                  className="h-5 w-2 bg-forest-400/30 rounded-full"
+                  className="h-5 w-2 rounded-full"
                   style={{
                     position: 'absolute',
+                    background: scrollThumbColor,
                     top: scrollerY,
                     left: '0px',
                     cursor: 'grab',
@@ -445,7 +463,10 @@ export default forwardRef(function VerticalScrollContainer(
             style={{ height: height }}
           >
             <div
-              className="h-full p-0.5 bg-black/30 rounded-full relative"
+              className="h-full p-0.5 rounded-full relative"
+              style={{ 
+                background: scrollTrackColor
+               }}
               onMouseDown={handleTrackMouseDown}
               onTouchStart={handleTrackMouseDown} // Added touch event
               // Removed onClick to integrate behavior into onMouseDown/onTouchStart
@@ -457,9 +478,10 @@ export default forwardRef(function VerticalScrollContainer(
             >
               <div className="h-full w-2 relative" ref={scrollerRef} style={{ width: scrollbarWidth }}>
                 <div
-                  className="h-5 w-2 bg-forest-400/30 rounded-full"
+                  className="h-5 w-2 rounded-full"
                   style={{
                     position: 'absolute',
+                    background: scrollThumbColor,
                     top: scrollerY,
                     left: '0px',
                     cursor: 'grab',

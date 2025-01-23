@@ -897,13 +897,15 @@ const SearchIcon = () => (
 );
 
 type BadgeProps = {
-  onClick: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onMouseEnter?: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onMouseLeave?: (e: React.MouseEvent<HTMLDivElement>) => void;
   label: string | React.ReactNode;
   leftIcon?: string;
   leftIconColor?: string;
-  rightIcon: string;
+  rightIcon?: string;
   rightIconColor?: string;
-  rightIconSize?: "sm" | "base";
+  rightIconSize?: "sm" | "md" | "base";
   size?: "sm" | "base";
   className?: string;
   showLabel?: boolean;
@@ -911,6 +913,8 @@ type BadgeProps = {
 };
 export const Badge = ({
   onClick,
+  onMouseEnter,
+  onMouseLeave,
   label,
   leftIcon,
   leftIconColor = "#CDD8D3",
@@ -922,15 +926,30 @@ export const Badge = ({
   showLabel = true,
   altColoring = false,
 }: BadgeProps) => {
-  if (size === "sm")
+  if (size === "sm"){
+    let rIconSize = "w-[14px] h-[14px]";
+    let rIconContainerSize = "w-[14px] h-[14px]";
+    if(rightIconSize === "sm")
+      rIconSize = "w-[10px] h-[10px]";
+      rIconContainerSize = "w-[10px] h-[10px]";
+    if(rightIconSize === "md")
+      rIconSize = "size-[15px] h-[15px]";
+      rIconContainerSize = "w-[14px] h-[12px] -mt-[1px]";
+
     return (
       <div
-        className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} text-[10px] rounded-full pl-[5px] pr-[2px] py-[3px] gap-x-[4px] cursor-pointer max-w-full ${className}`}
+        className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} text-[10px] rounded-full pl-[3px] pr-[2px] py-[3px] gap-x-[4px] cursor-pointer max-w-full ${className}`}
         onClick={onClick}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
       >
         {leftIcon ? (
           <div className="flex items-center justify-center w-[12px] h-[12px]">
-            {leftIcon}
+            <Icon
+              icon={leftIcon}
+              className="w-[12px] h-[12px]"
+              style={{ color: leftIconColor }}
+            />
           </div>
         ) : (
           <div className="w-[0px] h-[12px]" />
@@ -938,25 +957,29 @@ export const Badge = ({
         <div className="text-[#CDD8D3] leading-[120%] text-[10px] truncate">
           {label}
         </div>
-        <div
-          className={`flex items-center justify-center ${rightIconSize == "sm" ? "pr-[3px]" : "w-[14px] h-[14px]"
+        {rightIcon ? (
+          <div
+          className={`relative flex items-center justify-center ${rightIconSize == "sm" ? "pr-[3px]" : rIconContainerSize
             }`}
-        >
+          >
           <Icon
             icon={rightIcon}
-            className={
-              rightIconSize == "sm" ? "w-[10px] h-[10px]" : "w-[14px] h-[14px]"
-            }
+            className={`absolute ${rIconSize}`}
             style={{ color: rightIconColor }}
           />
-        </div>
+        </div>) : (
+          <div className="w-[0px] h-[12px]" />
+        )}
       </div>
     );
+  }
 
   return (
     <div
       className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} text-[10px] rounded-full pl-[2px] pr-[5px] gap-x-[5px] cursor-pointer ${className}`}
       onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       {leftIcon ? (
         <div className="flex items-center justify-center w-[25px] h-[25px]">
@@ -976,13 +999,17 @@ export const Badge = ({
           {label}
         </div>
       )}
-      <div className="flex items-center justify-center w-[15px] h-[15px]">
-        <Icon
-          icon={rightIcon}
-          className="w-[15px] h-[15px]"
-          style={{ color: rightIconColor }}
-        />
-      </div>
+      {rightIcon ? (
+        <div className="flex items-center justify-center w-[15px] h-[15px]">
+          <Icon
+            icon={rightIcon}
+            className="w-[15px] h-[15px]"
+            style={{ color: rightIconColor }}
+          />
+        </div>
+        ) : (
+          <div className="w-[3px] h-[25px]" />
+      )}
     </div>
   );
 };

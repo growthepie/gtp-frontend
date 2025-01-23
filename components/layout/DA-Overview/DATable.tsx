@@ -1,7 +1,7 @@
 "use client"
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer"
 import { useUIContext } from "@/contexts/UIContext";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { animated, useSpring, useTransition } from "@react-spring/web";
 import { DAOverviewBreakdown } from "@/types/api/DAOverviewResponse";
 import { useLocalStorage } from "usehooks-ts";
@@ -23,6 +23,7 @@ import Image from "next/image";
 import DynamicIcon from "../DynamicIcon";
 import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 import { first } from "lodash";
+import { Badge } from "@/app/(labels)/labels/Search";
 
 
 
@@ -821,54 +822,14 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                       >
                         <div className="flex items-center gap-x-[10px] relative overflow-visible px-[10px] group h-full">
                           {createDAConsumers(breakdown_data[item.key][selectedTimespan].da_consumers)}
-                          <div 
-                            className="absolute z-20 right-[19px] top-[32px] w-[245px] p-[15px] max-h-[154px] overflow-y-scroll  group hidden group-hover:block bg-[#1F2726] rounded-[10px]"
-                            style={{
-                              boxShadow: "0px 0px 30px #000000",
-                            }}
-                          >
-                            <div className="heading-small-xs mb-[5px]">DA Consumers (Chains) </div>
-                            
-                            <div className="flex flex-wrap items-center gap-x-[5px] gap-y-[5px] ">
-                            {Object.keys(breakdown_data[item.key][selectedTimespan].da_consumers.chains.values).map((chain, index) => {
-                              const types = breakdown_data[item.key][selectedTimespan].da_consumers.chains.types
-                              
-                              
-                              const custom_logo_keys = Object.keys(master.custom_logos);
-                              const first_key = types.findIndex((type) => type.includes("gtp_origin_key"));
-                              
-                              const alt_key = types.findIndex((type) => type.includes("da_consumer_key"));
-                              
-                              return (
-                                <div key={index + "da_consumers_hover"} className="flex flex-wrap items-center rounded-full bg-[#344240] pl-[3px] pr-[5px] gap-x-[4px]">
-                                  <div>{AllChainsByKeys[breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][first_key]] ?
-                                      (<Icon icon={`gtp:${AllChainsByKeys[breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][first_key]].urlKey}-logo-monochrome`} className="w-[12px] h-[12px]" style={{ color: AllChainsByKeys[breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][first_key]].colors["dark"][0] }} />)
-                                      : custom_logo_keys.includes(alt_key)
-                                        ? (
-                                          <DynamicIcon
-                                            pathString={master.custom_logos[alt_key].body}
-                                            size={12}
-                                            className="text-forest-200"
-                                            viewBox="0 0 15 15"
+                          <DaConsumersTooltip 
+                            item={item}
+                            breakdown_data={breakdown_data}
+                            selectedTimespan={selectedTimespan}
+                            AllChainsByKeys={AllChainsByKeys}
+                            master={master}
+                          />
 
-                                          />
-                                        )
-                                        : (                                            
-                                        <Icon
-                                          icon={"gtp:chain-dark"}
-                                          className="w-[12px] h-[12px]"
-                                          style={{
-                                              color: UNLISTED_CHAIN_COLORS[index]
-                                          }}
-                                           />)}</div>
-                                  <div className="text-xxs">{breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][1]}</div>
-
-                                </div>
-                              )
-                            })}
-                            </div>
-                            
-                          </div>
                         </div>
                       </div>
 
@@ -879,19 +840,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                         )} `}
                       >
                         <Icon icon="gtp:gtp-more" className="w-[24px] h-[24px]" />
-                        <div 
-                          className="absolute z-20 right-[19px] top-[32px] w-[238px] h-[133px] bg-[#1F2726] rounded-2xl hidden group-hover/more:flex-col group-hover/more:flex px-[15px] py-[15px] gap-y-[2.5px]"
-                          style={{
-                            boxShadow: "0px 0px 30px #000000",
-                          }}
-                        >
-                          <div className=" heading-small-xs">Parameters</div>
-                          <div className="flex items-center gap-x-[2px]"><div className="text-xs">Blob Size:</div><div className="heading-large-xxs "> {breakdown_data[item.key][selectedTimespan].fixed_params.blob_size}</div></div>
-                          <div className="flex items-center gap-x-[2px]"><div className="text-xs">Bandwidth:</div><div className="heading-large-xxs"> {breakdown_data[item.key][selectedTimespan].fixed_params.bandwidth}</div></div>
-
-                          <div className="flex items-center gap-x-[2px]"><div className="text-xs">Blocktime:</div><div className="heading-large-xxs"> {breakdown_data[item.key][selectedTimespan].fixed_params.block_time}</div></div>
-                          <div className="flex items-center gap-x-[2px]"><div className="text-xs">Risk Analysis:</div><a href={breakdown_data[item.key][selectedTimespan].fixed_params.l2beat_risk} target="_blank" className="heading-large-xxs underline">L2BEAT DA Risk</a></div>
-                        </div>
+                        <MoreTooltip breakdown_data={breakdown_data} item={item} selectedTimespan={selectedTimespan} />
                       </div>
 
                     </div>
@@ -963,4 +912,102 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
           )}
         </>
     )
+}
+
+const DaConsumersTooltip = ({item, selectedTimespan, breakdown_data, AllChainsByKeys, master}) => {
+  return (
+    <div
+      className="absolute z-20 right-[19px] top-[32px] w-[245px] pl-[20px] pr-[5px] py-[15px] group flex flex-col gap-y-[5px] bg-[#1F2726] rounded-[10px] transition-opacity duration-300 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto hover:pointer-events-auto"
+      style={{
+        boxShadow: "0px 0px 30px #000000",
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+      }}
+    >
+      <div className="heading-small-xs h-[18px]">DA Consumers (Chains)</div>
+      <VerticalScrollContainer height={154-60} className="w-full" scrollThumbColor="#1F2726" scrollTrackColor="#151A19">
+        <div className="flex flex-wrap items-center gap-x-[5px] gap-y-[5px] h-fit">
+          {Object.keys(breakdown_data[item.key][selectedTimespan].da_consumers.chains.values).map((chain, index) => {
+            const types = breakdown_data[item.key][selectedTimespan].da_consumers.chains.types
+
+
+            const custom_logo_keys = Object.keys(master.custom_logos);
+            const first_key = types.findIndex((type) => type.includes("gtp_origin_key"));
+            const alt_key = types.findIndex((type) => type.includes("da_consumer_key"));
+
+            // default to unlisted chain icon
+            let icon = "gtp:chain-dark";
+            let color = UNLISTED_CHAIN_COLORS[index];
+
+            // check if chain exists in AllChainsByKeys 
+            if (AllChainsByKeys[breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][first_key]]) {
+              icon = `gtp:${AllChainsByKeys[breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][first_key]].urlKey}-logo-monochrome`;
+              color = AllChainsByKeys[breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][first_key]].colors["dark"][0];
+              // check if chain exists in custom logos (see libs/icons.mjs for how it gets imported)
+            } else if (custom_logo_keys.includes(alt_key)) {
+              icon = `gtp:${alt_key}-custom-logo-monochrome`;
+              color = "#b5c4c3";
+            }
+            return (
+              <Badge
+                key={index + "da_consumers"}
+                leftIcon={icon}
+                leftIconColor={color}
+                label={breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][1]}
+                size="sm"
+                onClick={() => {
+                }}
+              />
+            );
+          })}
+        </div>
+      </VerticalScrollContainer>
+
+    </div>
+  )
+}
+
+const MoreTooltip = ({ item, selectedTimespan, breakdown_data}) => {
+  return (
+    <div
+      className="cursor-default absolute z-20 right-[19px] top-[32px] w-[238px] bg-[#1F2726] rounded-2xl flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300 opacity-0 group-hover/more:opacity-100 pointer-events-none group-hover/more:pointer-events-auto hover:pointer-events-auto"
+      style={{
+        boxShadow: "0px 0px 30px #000000",
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+      }}
+    >
+      <div className=" heading-small-xs">Parameters</div>
+      <div>
+        {[{
+          key: "blob_size",
+          label: "Blob Size",
+        }, {
+          key: "bandwidth",
+          label: "Bandwidth",
+        }, {
+          key: "block_time",
+          label: "Blocktime",
+        }, {
+          key: "l2beat_risk",
+          label: "Risk Analysis",
+        }].map((param) => (
+          <div key={param.key} className="flex items-center gap-x-[5px] h-[20px]">
+            <div className="text-xs">{param.label}:</div>
+            <div className="numbers-xs">
+              {param.key === "l2beat_risk" ? (
+                <a href={breakdown_data[item.key][selectedTimespan].fixed_params[param.key]} target="_blank" className="underline">
+                  L2BEAT DA Risk
+                </a>
+              ) : (
+                breakdown_data[item.key][selectedTimespan].fixed_params[param.key]
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
