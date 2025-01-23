@@ -608,7 +608,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                     }        
                   }}
                 >
-                  <div className="flex gap-x-[3px] items-center">{`DA Consumers(Total`}<div className="w-[6px] h-[6px] bg-[#344240] rounded-full"></div>{`Chains)`}</div>
+                  <div className="flex gap-x-[3px] items-center">{`DA Consumers (Total`}<div className="w-[6px] h-[6px] bg-[#344240] rounded-full"></div>{`Chains)`}</div>
                   <Icon
                     icon={
                       selectedCategory !== "da_consumers"
@@ -886,11 +886,11 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                           }}
                         >
                           <div className=" heading-small-xs">Parameters</div>
-                          <div className="flex items-center gap-x-[2px]"><div className="text-xs">Blob Size:</div><div className="number-xs font-bold"> {breakdown_data[item.key][selectedTimespan].fixed_params.blob_size}</div></div>
-                          <div className="flex items-center gap-x-[2px]"><div className="text-xs">Bandwidth:</div><div className="number-xs font-bold"> {breakdown_data[item.key][selectedTimespan].fixed_params.bandwidth}</div></div>
+                          <div className="flex items-center gap-x-[2px]"><div className="text-xs">Blob Size:</div><div className="heading-large-xxs "> {breakdown_data[item.key][selectedTimespan].fixed_params.blob_size}</div></div>
+                          <div className="flex items-center gap-x-[2px]"><div className="text-xs">Bandwidth:</div><div className="heading-large-xxs"> {breakdown_data[item.key][selectedTimespan].fixed_params.bandwidth}</div></div>
 
-                          <div className="flex items-center gap-x-[2px]"><div className="text-xs">Blocktime:</div><div className="number-xs font-bold"> {breakdown_data[item.key][selectedTimespan].fixed_params.block_time}</div></div>
-                          <div className="flex items-center gap-x-[2px]"><div className="text-xs">Risk Analysis:</div><a href={breakdown_data[item.key][selectedTimespan].fixed_params.l2beat_risk} target="_blank" className="numbers-xs underline">L2BEAT DA Risk</a></div>
+                          <div className="flex items-center gap-x-[2px]"><div className="text-xs">Blocktime:</div><div className="heading-large-xxs"> {breakdown_data[item.key][selectedTimespan].fixed_params.block_time}</div></div>
+                          <div className="flex items-center gap-x-[2px]"><div className="text-xs">Risk Analysis:</div><a href={breakdown_data[item.key][selectedTimespan].fixed_params.l2beat_risk} target="_blank" className="heading-large-xxs underline">L2BEAT DA Risk</a></div>
                         </div>
                       </div>
 
