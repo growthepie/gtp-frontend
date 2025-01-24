@@ -478,17 +478,18 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                               }}
                               plotOptions={{
                               line: {
-                                  lineWidth: 2,
+                                  lineWidth: 1.5,
                                   
                               },
                               area: {
                                   stacking: "normal",
-                                  lineWidth: 2,
-                                  // shadow: {
-                                  //   color:
-                                  //     AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1] + "33",
-                                  //   width: 10,
-                                  // },
+                                  lineWidth: 1.5,
+                                  states: {
+                                    hover: {
+                                      brightness: 1.5
+                                    }
+                                  },
+
                                   // borderColor: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
                                   // borderWidth: 1,
                               },
@@ -779,6 +780,10 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                                               data={data.metrics[metricKey][key][isMonthly ? "monthly" : "daily"].data.map((d) => [d[0], d[typeIndex]])}
                                               color={area_colors[key]}
                                               name={data.metrics[metricKey][key].metric_name}
+                                              shadow={{
+                                                color: area_colors[key] + "CC",
+                                                width: 5,
+                                              }}
                                               states={{
                                                 hover: {
                                                   halo: {
@@ -791,7 +796,9 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                                                       area_colors[key] + "66",
                                                       "stroke-width": 0,
                                                     },
+                                                    
                                                   },
+                                                  brightness: 0.8,
                                                 }
                                               }}
                                               fillColor={{

@@ -721,6 +721,10 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                         d[types.indexOf("data_posted")]
                                     ])}
                                     color={color}
+                                    shadow={{
+                                        color: color + "CC",
+                                        width: 5,
+                                    }}
                                     states={{
                                         hover: {
                                           halo: {
