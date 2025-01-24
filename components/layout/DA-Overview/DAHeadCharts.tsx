@@ -779,6 +779,40 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                                               data={data.metrics[metricKey][key][isMonthly ? "monthly" : "daily"].data.map((d) => [d[0], d[typeIndex]])}
                                               color={area_colors[key]}
                                               name={data.metrics[metricKey][key].metric_name}
+                                              states={{
+                                                hover: {
+                                                  halo: {
+                                                    size: 5,
+                                                    opacity: 1,
+                                                    attributes: {
+                                                      fill:
+                                                        area_colors[key] + "99",
+                                                      stroke:
+                                                      area_colors[key] + "66",
+                                                      "stroke-width": 0,
+                                                    },
+                                                  },
+                                                }
+                                              }}
+                                              fillColor={{
+                                                linearGradient: {
+                                                  x1: 0,
+                                                  y1: 0,
+                                                  x2: 0,
+                                                  y2: 1,
+                                                },
+                                                stops: [
+                                                  [
+                                                    0,
+                                                    area_colors[key] + "33",
+                                                  ],
+  
+                                                  [
+                                                    1,
+                                                    area_colors[key] + "33",
+                                                  ],
+                                                ],
+                                              }}
                                           />
                                       )
                               })}

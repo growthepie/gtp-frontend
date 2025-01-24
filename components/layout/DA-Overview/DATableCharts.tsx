@@ -721,6 +721,40 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                         d[types.indexOf("data_posted")]
                                     ])}
                                     color={color}
+                                    states={{
+                                        hover: {
+                                          halo: {
+                                            size: 5,
+                                            opacity: 1,
+                                            attributes: {
+                                              fill:
+                                                color + "99",
+                                              stroke:
+                                               color + "66",
+                                              "stroke-width": 0,
+                                            },
+                                          },
+                                        }
+                                      }}
+                                      fillColor={{
+                                        linearGradient: {
+                                          x1: 0,
+                                          y1: 0,
+                                          x2: 0,
+                                          y2: 1,
+                                        },
+                                        stops: [
+                                          [
+                                            0,
+                                            color  + "33",
+                                          ],
+
+                                          [
+                                            1,
+                                            color + "33",
+                                          ],
+                                        ],
+                                      }}
                                     zones={[
                                         {
                                           color: isMonthly
