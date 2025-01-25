@@ -460,7 +460,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
             <div className="heading-large-xs w-[250px] absolute left-[45px] h-[39px] flex items-center -top-[0px]">
                     Data Posted {selectedChain !== "all" ? `(${getNameFromKey[selectedChain]})` : ""}
             </div>
-            <div className="min-w-[730px] w-full mt-[39px] flex flex-1 h-[217px] relative px-[5px] overflow-hidden  pr-[5px]">
+            <div className="min-w-[450px] w-full mt-[39px] flex flex-1 h-[217px] relative px-[5px] overflow-hidden  pr-[5px]">
                 <div className="absolute left-[calc(50%-85px)] top-[calc(39%-29.5px)] z-0 opacity-20">
                     <ChartWatermark className="w-[225px] h-[45px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
                     <div className="w-[225px] h-[15px] flex items-center justify-center "><div className=" text-[10px] leading-[120%] font-semibold ">DA: {da_name === "da_celestia" ? "CELESTIA" : "ETHEREUM BLOBS"}</div></div>

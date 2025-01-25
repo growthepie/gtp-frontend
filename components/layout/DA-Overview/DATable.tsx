@@ -452,9 +452,9 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
           >
             <div
               className={`grid pl-[44px]  pr-0.5 grid-cols-[auto_200px_199px_114px_280px_46px] mb-[15px]  ${isSidebarOpen
-                ? " 2xl:grid-cols-[auto_200px_199px_114px_280px_46px] grid-cols-[auto_200px_199px_114px_280px_46px] "
-                : "xl:grid-cols-[auto_200px_199px_114px_280px_46px] grid-cols-[auto_200px_199px_114px_280px_46px]"
-                } min-w-[1250px] `}
+                ? " 2xl:grid-cols-[auto_200px_199px_114px_280px_46px] grid-cols-[auto_200px_199px_94px_215px_46px]"
+                : "xl:grid-cols-[auto_200px_199px_94px_215px_46px] grid-cols-[auto_200px_199px_94px_215px_46px]"
+                } min-w-[970px] `}
             >
                 <div className="heading-small-xxs font-bold flex items-center cursor-pointer" onClick={() => {
                   if (selectedCategory !== "name") {
@@ -678,7 +678,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                 </div>   
             </div>
             <div
-              className={`relative overflow-visible flex flex-col -mt-[5px] min-w-[1125px] z-0 transition-height duration-500 `}
+              className={`relative overflow-visible flex flex-col -mt-[5px] min-w-[970px] z-0 transition-height duration-500 `}
               style={{ height: minimumHeight }}
             >
               {transitions((style, item) => {
@@ -692,13 +692,13 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                     style={{ ...style }}
                   >
                     <div
-                      className={`grid  relative rounded-full w-full  min-h-[34px] text-sm items-center cursor-pointer pr-0.5 grid-cols-[auto_200px_199px_114px_280px_46px] min-w-[1250px] 
+                      className={`grid  relative rounded-full w-full  min-h-[34px] text-sm items-center cursor-pointer pr-0.5 grid-cols-[auto_200px_199px_114px_280px_46px] min-w-[970px] 
                         ${isBouncing && bounceChain === item.key
                           ? "horizontal-bounce"
                           : ""
                         } ${isSidebarOpen
-                          ? " 2xl:grid-cols-[auto_200px_199px_114px_280px_46px] grid-cols-[auto_200px_199px_114px_280px_46px] "
-                          : "xl:grid-cols-[auto_200px_199px_114px_280px_46px] grid-cols-[auto_200px_199px_114px_280px_46px] "
+                          ? " 2xl:grid-cols-[auto_200px_199px_114px_280px_46px] grid-cols-[auto_200px_199px_94px_215px_46px] "
+                          : "xl:grid-cols-[auto_200px_199px_94px_215px_46px] grid-cols-[auto_200px_199px_94px_215px_46px] "
                         }`}
                       onClick={(e) => {
                         handleClick(e, item.key);
@@ -867,14 +867,14 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                 )})}
             <div
                 className={`z-[-1] grid w-full pl-[45px] absolute h-[34px] pr-0.5 grid-cols-[auto_200px_199px_114px_280px_46px] mb-[15px]  ${isSidebarOpen
-                  ? " 2xl:grid-cols-[auto_200px_199px_114px_280px_46px] grid-cols-[auto_200px_199px_114px_280px_46px] "
-                  : "xl:grid-cols-[auto_200px_199px_114px_280px_46px] grid-cols-[auto_200px_199px_114px_280px_46px] "
-                  } min-w-[1250px]`}
+                  ? " 2xl:grid-cols-[auto_200px_199px_114px_280px_46px] grid-cols-[auto_200px_199px_94px_215px_46px] "
+                  : "xl:grid-cols-[auto_200px_199px_94px_215px_46px] grid-cols-[auto_200px_199px_94px_215px_46px]"
+                  } min-w-[970px]`}
                   style={{
                     bottom: `${29 + EXTRA_PADDING}px`,
                   }}
               >
-                <div className="inline-flex items-center"><div className="heading-large-xs">TOTAL &nbsp;</div><div className="heading-large-xs text-[#5A6462] ">  {selectedTimespan === "max" ? "FOR MAXIMUM TIMEFRAME AVAILABLE" : ("IN THE LAST " + (timespans[selectedTimespan].label).toUpperCase()) }</div></div>
+                <div className="inline-flex items-center"><div className="2xl:heading-large-xs heading-large-xxs ">TOTAL &nbsp;</div><div className="2xl:heading-large-xs heading-large-xxs  text-[#5A6462] ">  {selectedTimespan === "max" ? "FOR MAXIMUM TIMEFRAME AVAILABLE" : ("IN THE LAST " + (timespans[selectedTimespan].label).toUpperCase()) }</div></div>
                 <div className="w-full h-[34px] px-[2px]">
                   <div className="flex rounded-full w-full h-[34px] border-[#5A6462] border-[1px] items-center justify-center numbers-xs  ">
                     {formatBytes(breakdown_data["totals"][selectedTimespan].size.total[0], 2)}
