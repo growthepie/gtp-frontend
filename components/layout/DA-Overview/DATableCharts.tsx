@@ -722,8 +722,9 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                     ])}
                                     color={color}
                                     shadow={{
+                                    
                                         color: color + "CC",
-                                        width: 5,
+                                        width: isMonthly ? 0 : 5,
                                     }}
                                     states={{
                                         hover: {
@@ -770,8 +771,9 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                                   y2: 1,
                                                 },
                                                 stops: [
-                                                  [0, color + "FF"],
-                                                  [1, color + unlistedColor ? "55" : "00"],
+                                                  [0, color + "CC"],
+                                                  [0.65, color + "AA"],
+                                                  [1, color + unlistedColor ? "99" : "99"],
                                                 ],
                                               }
                                             : undefined, // Disable gradient when isMonthly is false
