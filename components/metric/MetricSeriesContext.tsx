@@ -439,7 +439,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
                 MetadataByKeys[chainKey]?.colors[
                 theme ?? "dark"
                 ][1] + "FF",
-              width: 10,
+              width: 7,
             },
           }
           : chainKey === "all_l2s"
