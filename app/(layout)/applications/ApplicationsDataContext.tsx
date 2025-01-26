@@ -10,8 +10,84 @@ import { ChainData, MetricData, MetricsResponse } from "@/types/api/MetricsRespo
 import { AppDatum, AppOverviewResponse, AppOverviewResponseHelper, ParsedDatum } from "@/types/applications/AppOverviewResponse";
 import { intersection } from "lodash";
 import { RefObject, createContext, useContext, useEffect, useMemo, useState } from "react";
-import useSWR, { useSWRConfig } from "swr";
+import { LogLevel } from "react-virtuoso";
+import useSWR, { useSWRConfig, preload} from "swr";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
+
+
+export interface Metrics {
+  [metric: string]: MetricDef;
+}
+
+export interface MetricDef {
+  name:                 string;
+  name_short:           string;
+  units:                { [key: string]: Unit };
+  category:             string;
+  currency:             boolean;
+  priority:             number;
+  invert_normalization: boolean;
+}
+
+export interface Unit {
+  currency:         boolean;
+  prefix:           string;
+  suffix:           null;
+  decimals:         number;
+  decimals_tooltip: number;
+  agg:              boolean;
+  agg_tooltip:      boolean;
+}
+
+const metricsDef: Metrics = {
+  gas_fees: {
+    name: "Gas Fees",
+    name_short: "Gas Fees",
+    units: {
+      usd: {
+        currency: true,
+        prefix: "$",
+        suffix: null,
+        decimals: 0,
+        decimals_tooltip: 2,
+        agg: true,
+        agg_tooltip: true,
+      },
+      eth: {
+        currency: false,
+        prefix: "Ξ",
+        suffix: null,
+        decimals: 0,
+        decimals_tooltip: 2,
+        agg: true,
+        agg_tooltip: true,
+      },
+    },
+    category: "Gas Fees",
+    currency: true,
+    priority: 1,
+    invert_normalization: false,
+  },
+  txcount: {
+    name: "Transactions",
+    name_short: "Transactions",
+    units: {
+      count: {
+        currency: false,
+        prefix: "",
+        suffix: null,
+        decimals: 0,
+        decimals_tooltip: 0,
+        agg: true,
+        agg_tooltip: true,
+      },
+    },
+    category: "Transactions",
+    currency: false,
+    priority: 2,
+    invert_normalization: false,
+  },
+};
 
 function calculatePercentageChange(current, previous) {
   if (previous === 0) return current === 0 ? 0 : Infinity;
@@ -38,9 +114,9 @@ export type AggregatedDataRow = {
   gas_fees_usd: number;
   txcount: number;
   prev_txcount: number;
-  gas_fees_eth_pct: number;
-  gas_fees_usd_pct: number;
-  txcount_pct: number;
+  gas_fees_eth_change_pct: number;
+  gas_fees_usd_change_pct: number;
+  txcount_change_pct: number;
   rank_gas_fees_eth: number;
   rank_gas_fees_usd: number;
   rank_txcount: number;
@@ -56,8 +132,9 @@ function ownerProjectToOriginKeysMap(data: AppDatum[]): { [key: string]: string[
 }
 
 function aggregateProjectData(
-  data: AppDatum[], typesArr: string[], timespan: string, chains: string[]
+  data: AppDatum[], typesArr: string[], showUsd: boolean, chains: string[]
 ): AggregatedDataRow[] {
+  // const data = AppOverviewResponseHelper.fromResponse(rawData).response.data.data;
   // get Mapping of owner_project to origin_keys
   const ownerProjectToOriginKeys = ownerProjectToOriginKeysMap(data);
 
@@ -121,15 +198,15 @@ function aggregateProjectData(
     owner_project: owner,
     origin_keys: ownerProjectToOriginKeys[owner].sort(),  // Sort origin_keys
     ...otherMetrics,
-    gas_fees_eth_pct: calculatePercentageChange(
+    gas_fees_eth_change_pct: calculatePercentageChange(
       metrics.gas_fees_eth,
       metrics.prev_gas_fees_eth
     ),
-    gas_fees_usd_pct: calculatePercentageChange(
+    gas_fees_usd_change_pct: calculatePercentageChange(
       metrics.gas_fees_eth,
       metrics.prev_gas_fees_eth
     ),
-    txcount_pct: calculatePercentageChange(
+    txcount_change_pct: calculatePercentageChange(
       metrics.txcount,
       metrics.prev_txcount
     ),
@@ -162,27 +239,28 @@ const devMiddleware = (useSWRNext) => {
   };
 };
 
-function applicationsMiddleware(useSWRNext) {
-  return (key, fetcher, config) => {
-    /// Add logger to the original fetcher.
-    const extendedFetcher = (...args) => {
-      return fetcher(...args).then((data) => {
-        const helper = AppOverviewResponseHelper.fromResponse(data);
-        return helper;
-      });
-    };
+// function applicationsMiddleware(useSWRNext) {
+//   return (key, fetcher, config) => {
+//     /// Add logger to the original fetcher.
+//     const extendedFetcher = (...args) => {
+//       return fetcher(...args).then((data) => {
+//         const helper = AppOverviewResponseHelper.fromResponse(data);
+//         return helper;
+//       });
+//     };
 
-    // Execute the hook with the new fetcher.
-    return useSWRNext(key, extendedFetcher, config);
-  };
-}
+//     // Execute the hook with the new fetcher.
+//     return useSWRNext(key, extendedFetcher, config);
+//   };
+// }
 
 
 export type ApplicationsDataContextType = {
   selectedTimespan: string;
   setSelectedTimespan: (value: string) => void;
-  selectedMetrics: ("num_contracts" | "gas_fees_eth" | "gas_fees_usd" | "txcount")[];
-  setSelectedMetrics: (value: ("num_contracts" | "gas_fees_eth" | "gas_fees_usd" | "txcount")[]) => void;
+  selectedMetrics: string[];
+  setSelectedMetrics: (value: string[]) => void;
+  selectedMetricKeys: string[];
   selectedChains: string[];
   setSelectedChains: (value: string[]) => void;
   isMonthly: boolean;
@@ -197,8 +275,6 @@ export type ApplicationsDataContextType = {
     };
   }
   data: any;
-  topGainers: ParsedDatum[];
-  topLosers: ParsedDatum[];
   ownerProjectToProjectData: {
     [key: string]: {
       owner_project: string;
@@ -211,11 +287,16 @@ export type ApplicationsDataContextType = {
       main_category: string;
     }
   };
-  dataWithRanking: { [key: string]: (ParsedDatum & { ranking: number }) };
   applicationDataAggregated: AggregatedDataRow[];
   isLoading: boolean;
-  sortOrder: "asc" | "desc";
-  setSortOrder: (value: "asc" | "desc") => void;
+  sort: {
+    metric: string;
+    sortOrder: string;
+  };
+  setSort: React.Dispatch<React.SetStateAction<{ metric: string; sortOrder: string; }>>;
+  // sortOrder: "asc" | "desc";
+  // setSortOrder: React.Dispatch<React.SetStateAction<"asc" | "desc">>;
+  metricsDef: Metrics;
 }
 
 export const ApplicationsDataContext = createContext<ApplicationsDataContextType | undefined>(undefined);
@@ -227,8 +308,12 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
 
-  const [selectedMetrics, setSelectedMetrics] = useState<("num_contracts" | "gas_fees_eth" | "gas_fees_usd" | "txcount")[]>(["gas_fees_usd"]);
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [selectedMetrics, setSelectedMetrics] = useState<string[]>([...Object.keys(metricsDef).slice(0,2)]);
+  const [sort, setSort] = useState<{ metric: string; sortOrder: string }>({ 
+    metric: Object.keys(metricsDef)[0], 
+    sortOrder: "desc"
+   });
+  // const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [selectedTimespan, setSelectedTimespan] = useState<string>("7d");
   const [selectedChains, setSelectedChains] = useState<string[]>([]);
   const [isMonthly, setIsMonthly] = useState<boolean>(false);
@@ -241,18 +326,6 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
     isLoading: masterLoading,
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
-
-  const {
-    data: applicationsData,
-    error: applicationsError,
-    isLoading: applicationsLoading,
-    isValidating: applicationsValidating,
-  } = useSWR<AppOverviewResponseHelper>(ApplicationsURLs.overview, fallbackFetcher, {
-    use:
-      apiRoot === "dev" && !IS_PRODUCTION
-        ? [devMiddleware, applicationsMiddleware]
-        : [applicationsMiddleware],
-  });
 
   const {
     data: projectsData,
@@ -377,96 +450,88 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
     }
   }, [isMonthly]);
 
-  const topGainers = useMemo(() => {
-    if (!applicationsData) return [];
-    return applicationsData.data.sort((a, b) => {
-      // sort by descending order of the sum of all selected metrics
-      const aSum = selectedMetrics.reduce((acc, metric) => acc + a[metric], 0);
-      const bSum = selectedMetrics.reduce((acc, metric) => acc + b[metric], 0);
-      return bSum - aSum;
-    }).slice(0, 3);
-  }, [applicationsData, selectedMetrics]);
+  const selectedMetricKeys = useMemo(() => {
+    return selectedMetrics.map((metric) => {
+      if(metric === "gas_fees")
+        return showUsd ? "gas_fees_usd" : "gas_fees_eth";
+      return metric;
+    });
+  }, [selectedMetrics, showUsd]);
 
-  const topLosers = useMemo(() => {
-    if (!applicationsData) return [];
-    return applicationsData.data.sort((a, b) => {
-      // sort by ascending order of the sum of all selected metrics
-      const aSum = selectedMetrics.reduce((acc, metric) => acc + a[metric], 0);
-      const bSum = selectedMetrics.reduce((acc, metric) => acc + b[metric], 0);
-      return aSum - bSum;
-    }).slice(0, 3);
-  }, [applicationsData, selectedMetrics]);
 
-  const dataWithRanking = useMemo(() => {
-    // sort by descending order of the sum of all selected metrics
-    if (!applicationsData) return [];
+  const multiFetcher = (urls) => {
+    if(!fetcher) return Promise.all(urls.map(url => fallbackFetcher(url)));
 
-    const dataWithRanking = applicationsData.data.map((datum) => {
-      const sum = selectedMetrics.reduce((acc, metric) => acc + datum[metric], 0);
-      return {
-        ...datum,
-        sum,
-      };
-    }).sort((a, b) => b.sum - a.sum).reduce((acc, datum, index) => {
-      // add ranking
-      return {
-        ...acc,
-        [datum.origin_key]: {
-          ...datum,
-          ranking: index + 1,
-        },
-      };
-    }, {});
+    return Promise.all(urls.map(url => fetcher(url)));
+  }
 
-    return dataWithRanking;
-
-  }, [applicationsData, selectedMetrics]);
 
   const {
-    data: applicationsDataTimespan,
+    data: applicationsTimespan,
     error: applicationsTimespanError,
     isLoading: applicationsTimespanLoading,
     isValidating: applicationsTimespanValidating,
-  } = useSWR<AppOverviewResponseHelper>(ApplicationsURLs.overview.replace('_test', `_${selectedTimespan}`), fallbackFetcher, {
-    use:
-      apiRoot === "dev" && !IS_PRODUCTION
-        ? [devMiddleware, applicationsMiddleware]
-        : [applicationsMiddleware],
-  });
+  } = useSWR(
+    ["1d", "7d", "30d", "90d", "365d", "max"].map((timeframe) => ApplicationsURLs.overview.replace('_test', `_${timeframe}`)), multiFetcher);
+
+  const applicationDataFiltered = useMemo(() => {
+    if (!applicationsTimespan) return [];
+    const applicationsDataTimespan = {
+      "1d": applicationsTimespan[0],
+      "7d": applicationsTimespan[1],
+      "30d": applicationsTimespan[2],
+      "90d": applicationsTimespan[3],
+      "365d": applicationsTimespan[4],
+      "max": applicationsTimespan[5],
+    };
+
+    if (!applicationsDataTimespan || !applicationsDataTimespan[selectedTimespan]) return [];
+    
+    return aggregateProjectData(applicationsDataTimespan[selectedTimespan].data.data, applicationsDataTimespan[selectedTimespan].data.types, showUsd, selectedChains)
+
+  }, [applicationsTimespan, selectedTimespan, showUsd, selectedChains]);
 
   const applicationDataAggregated = useMemo(() => {
-    if (!applicationsDataTimespan) return [];
-
-    const result =  aggregateProjectData(applicationsDataTimespan.response.data.data, applicationsDataTimespan.response.data.types, selectedTimespan, selectedChains).sort((a, b) => {
-      const aSum = a[selectedMetrics[0]];
-      const bSum = b[selectedMetrics[0]];
-      return sortOrder === "asc" ? aSum - bSum : bSum - aSum;
-    });
+    const sorted = [...applicationDataFiltered];
+    let metric = sort.metric;
+    if(metric == "gas_fees")
+      metric = showUsd ? "gas_fees_usd" : "gas_fees_eth";
     
-    return result;
+    sorted.sort((a, b) => {
+      if(!a[metric] && !b[metric]) return 0;
 
-  }, [applicationsDataTimespan, selectedTimespan, selectedChains, sortOrder, selectedMetrics]);
+      if(!a[metric] || a[metric] == Infinity) return 1;
+      if(!b[metric] || b[metric] == Infinity) return -1;
+
+      if(sort.sortOrder === "asc")
+        return a[metric] - b[metric];
+      return b[metric] - a[metric];
+    });
+    return sorted;
+  }, [applicationDataFiltered, showUsd, sort.metric, sort.sortOrder]);
 
 
   return (
     <ApplicationsDataContext.Provider value={{
       selectedTimespan, setSelectedTimespan,
       selectedMetrics, setSelectedMetrics,
+      selectedMetricKeys,
       selectedChains, setSelectedChains,
       isMonthly, setIsMonthly,
       timespans,
       data,
-      topGainers, topLosers,
       ownerProjectToProjectData,
-      dataWithRanking,
       applicationDataAggregated,
-      isLoading: applicationsTimespanLoading || applicationsLoading || masterLoading || projectsLoading,
-      sortOrder,
-      setSortOrder,
+      isLoading: applicationsTimespanLoading || masterLoading || projectsLoading,
+      // sortOrder,
+      // setSortOrder,
+      sort,
+      setSort,
+      metricsDef,
     }}>
       <ShowLoading
-        dataLoading={[masterLoading, applicationsLoading, projectsLoading]}
-        dataValidating={[masterValidating, applicationsValidating, projectsValidating]}
+        dataLoading={[masterLoading, projectsLoading]}
+        dataValidating={[masterValidating, projectsValidating]}
       // fullScreen={true}
       />
       {children}

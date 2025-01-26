@@ -144,19 +144,68 @@ type GridTableHeaderCellProps = {
     metric: string;
     sortOrder: string;
   };
-  setSort?: (sort: { metric: string; sortOrder: string }) => void;
+  setSort?: React.Dispatch<
+    React.SetStateAction<{
+      metric: string;
+      sortOrder: string;
+    }
+  >>;
+  onSort?: () => void;
   justify?: string;
   className?: string;
+  extraRight?: React.ReactNode;
+  extraLeft?: React.ReactNode;
 };
 
-export const GridTableHeaderCell = ({ children, className, justify, metric, sort, setSort }: GridTableHeaderCellProps) => {
+export const GridTableHeaderCell = ({ children, className, justify, metric, sort, setSort, onSort, extraLeft, extraRight}: GridTableHeaderCellProps) => {
   let alignClass = "justify-start";
   if (justify === "end") alignClass = setSort ? "justify-end -mr-[12px]" : "justify-end";
   if (justify === "center") alignClass = "justify-center";
+
+  if(extraLeft || extraRight) {
+    return (
+      <div className={`flex items-center ${alignClass || "justify-start"} gap-x-[12px]  ${className}`}>
+        {extraLeft}
+        <div
+          className={`flex items-center ${alignClass || "justify-start"} ${(onSort || setSort) && "cursor-pointer"}`}
+          onClick={() => {
+            if(onSort) onSort();
+            (metric && sort && setSort) && setSort({
+              metric: metric,
+              sortOrder:
+                sort.metric === metric
+                  ? sort.sortOrder === "asc"
+                    ? "desc"
+                    : "asc"
+                  : "desc",
+            });
+          }}
+        >
+          {children}
+          {metric && sort && (
+            <Icon
+              icon={
+                sort.metric === metric && sort.sortOrder === "asc"
+                  ? "feather:arrow-up"
+                  : "feather:arrow-down"
+              }
+              className="w-[12px] h-[12px]"
+              style={{
+                opacity: sort.metric === metric ? 1 : 0.2,
+              }}
+            />
+          )}
+        </div>
+        {extraRight}
+      </div>
+    );
+  }
+
   return (
     <div
-      className={`flex items-center ${alignClass || "justify-start"} ${setSort && "cursor-pointer"} ${className}`}
+      className={`flex items-center ${alignClass || "justify-start"} ${(onSort || setSort) && "cursor-pointer"} ${className}`}
       onClick={() => {
+        if(onSort) onSort();
         (metric && sort && setSort) && setSort({
           metric: metric,
           sortOrder:

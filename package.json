@@ -48,6 +48,7 @@
     "react-markdown": "^8.0.7",
     "react-merge-refs": "^2.1.1",
     "react-spring": "^9.7.3",
+    "react-virtuoso": "^4.12.3",
     "schema-dts": "^1.1.2",
     "swr": "^2.1.1",
     "usehooks-ts": "^3.1.0"

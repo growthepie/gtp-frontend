@@ -147,6 +147,11 @@ module.exports = {
           textRendering: 'optimizeLegibility',
           fontFeatureSettings: '"tnum" on, "lnum" on !important',
         },
+        'text': {
+          fontFamily: theme('fontFamily.raleway'),
+          fontWeight: '500', // medium
+          lineHeight: '150%',
+        },
       };
 
       // Define size variants for each category
@@ -180,6 +185,20 @@ module.exports = {
           '6xl': '80px',
         },
         'numbers': {
+          'xxxs': '9px',
+          'xxs': '10px',
+          'xs': '12px',
+          'sm': '14px',
+          'md': '16px',
+          'lg': '18px',
+          'xl': '20px',
+          '2xl': '24px',
+          '3xl': '30px',
+          '4xl': '36px',
+          '5xl': '48px',
+          '6xl': '60px',
+        },
+        'text': {
           'xxxs': '9px',
           'xxs': '10px',
           'xs': '12px',
