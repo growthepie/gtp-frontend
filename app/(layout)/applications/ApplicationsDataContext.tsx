@@ -27,6 +27,7 @@ export interface MetricDef {
   currency:             boolean;
   priority:             number;
   invert_normalization: boolean;
+  icon:                 string;
 }
 
 export interface Unit {
@@ -63,13 +64,14 @@ const metricsDef: Metrics = {
         agg_tooltip: true,
       },
     },
+    icon: "gtp-metrics-transactioncosts",
     category: "Gas Fees",
     currency: true,
     priority: 1,
     invert_normalization: false,
   },
   txcount: {
-    name: "Transactions",
+    name: "Transaction Count",
     name_short: "Transactions",
     units: {
       count: {
@@ -82,6 +84,7 @@ const metricsDef: Metrics = {
         agg_tooltip: true,
       },
     },
+    icon: "gtp-metrics-transactioncount",
     category: "Transactions",
     currency: false,
     priority: 2,
@@ -259,7 +262,7 @@ export type ApplicationsDataContextType = {
   selectedTimespan: string;
   setSelectedTimespan: (value: string) => void;
   selectedMetrics: string[];
-  setSelectedMetrics: (value: string[]) => void;
+  setSelectedMetrics: React.Dispatch<React.SetStateAction<string[]>>;
   selectedMetricKeys: string[];
   selectedChains: string[];
   setSelectedChains: (value: string[]) => void;

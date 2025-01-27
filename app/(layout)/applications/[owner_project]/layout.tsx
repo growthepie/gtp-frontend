@@ -9,7 +9,7 @@ import Controls from "../Controls";
 import { ApplicationsDataProvider } from "../ApplicationsDataContext";
 import { ApplicationsURLs, LabelsURLS } from "@/lib/urls";
 import ReactDOM from 'react-dom';
-import { ApplicationDescription, ApplicationDisplayName, ApplicationIcon } from "../Components";
+import { ApplicationDescription, ApplicationDisplayName, ApplicationIcon, BackButton } from "../Components";
 import { Metadata, ResolvingMetadata } from "next";
 import Link from "next/link";
 
@@ -62,9 +62,10 @@ export default async function Layout({
     <>
       <Container className="flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px]" isPageRoot>
         <div className="flex items-center h-[43px] gap-x-[8px] ">
-        <Link className="size-[36px] bg-[#344240] rounded-full flex justify-center items-center" href={`/applications/overview`}>
+        {/* <Link className="size-[36px] bg-[#344240] rounded-full flex justify-center items-center" href={`/applications/overview`}>
           <Icon icon="feather:arrow-left" className="size-[26px]  text-[#CDD8D3]" />
-        </Link>
+        </Link> */}
+        <BackButton />
           <ApplicationIcon owner_project={owner_project} size="lg" />
           <Heading className="heading-large-xl" as="h1">
             <ApplicationDisplayName owner_project={owner_project} />

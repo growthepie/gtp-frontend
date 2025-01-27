@@ -189,7 +189,7 @@ export const GridTableHeaderCell = ({ children, className, justify, metric, sort
                   ? "feather:arrow-up"
                   : "feather:arrow-down"
               }
-              className="w-[12px] h-[12px]"
+              className="w-[10px] h-[10px]"
               style={{
                 opacity: sort.metric === metric ? 1 : 0.2,
               }}
@@ -225,7 +225,7 @@ export const GridTableHeaderCell = ({ children, className, justify, metric, sort
               ? "feather:arrow-up"
               : "feather:arrow-down"
           }
-          className="w-[12px] h-[12px]"
+          className="w-[10px] h-[10px]"
           style={{
             opacity: sort.metric === metric ? 1 : 0.2,
           }}

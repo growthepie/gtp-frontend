@@ -8,6 +8,7 @@ import { DAOverviewURL } from "@/lib/urls";
 import { DAOverviewResponse } from "@/types/api/DAOverviewResponse";
 import Container from "@/components/layout/Container";
 import { useApplicationsData } from "./ApplicationsDataContext";
+import { MetricSelect } from "./Components";
 
 export default function Controls() {
   const { data, selectedTimespan, setSelectedTimespan, isMonthly, setIsMonthly, timespans } = useApplicationsData();
@@ -18,7 +19,7 @@ export default function Controls() {
       {data && (
           <TopRowContainer className="">
             <TopRowParent className="">
-              <TopRowChild
+              {/* <TopRowChild
                 isSelected={!isMonthly}
                 onClick={() => {
                   const isTransferrableTimespan =
@@ -55,7 +56,8 @@ export default function Controls() {
                 }}
               >
                 {"Monthly"}
-              </TopRowChild>
+              </TopRowChild> */}
+              <MetricSelect />
             </TopRowParent>
             <TopRowParent className="-py-[10px]">
               {Object.keys(timespans).map((key) => {

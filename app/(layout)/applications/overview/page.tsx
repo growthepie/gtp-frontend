@@ -28,6 +28,7 @@ import { set } from "lodash";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import VerticalVirtuosoScrollContainer from "@/components/VerticalVirtuosoScrollContainer";
 import { ApplicationDisplayName, ApplicationIcon } from "../Components";
+import { useUIContext } from "@/contexts/UIContext";
 
 export default function Page() {
   const { applicationDataAggregated, selectedMetrics, isLoading } = useApplicationsData();
@@ -331,9 +332,9 @@ const ApplicationCard = ({ application, className, width }: { application?: Aggr
         ) : (
           <div className="heading-large-md flex-1 opacity-60"><ApplicationDisplayName owner_project={application.owner_project} /></div>
         )}
-        <div className="cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center">
+        <Link className="cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center" href={`/applications/${application.owner_project}`}>
           <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-[#CDD8D3]" />
-        </div>
+        </Link>
       </div>
       <div className="flex items-center justify-between gap-x-[5px]">
         <div className="text-xs">{ownerProjectToProjectData[application.owner_project] && ownerProjectToProjectData[application.owner_project].main_category}</div>
@@ -498,7 +499,7 @@ const ApplicationsTable = () => {
           <GridTableHeaderCell
             key={metric}
             metric={metric}
-            className="heading-small-xs pl-[25px] pr-[15px] z-[0]"
+            className="heading-small-xs pl-[25px] pr-[15px] z-[0] whitespace-nowrap"
             justify="end"
             sort={sort}
             setSort={setSort}
@@ -526,7 +527,7 @@ const ApplicationsTable = () => {
                         ? "feather:arrow-up"
                         : "feather:arrow-down"
                     }
-                    className="w-[12px] h-[12px]"
+                    className="w-[10px] h-[10px]"
                     style={{
                       opacity: sort.metric === `${selectedMetricKeys[index]}_change_pct` ? 1 : 0.2,
                     }}
@@ -551,7 +552,7 @@ const ApplicationsTable = () => {
       </GridTableHeader>
       <div className="flex flex-col gap-y-[5px]">
         <VerticalVirtuosoScrollContainer
-          height={600}
+          height={800}
           totalCount={applicationDataAggregated.length}
           itemContent={(index) => (
             <ApplicationTableRow key={applicationDataAggregated[index].owner_project} application={applicationDataAggregated[index]} maxMetrics={maxMetrics} />
@@ -658,7 +659,7 @@ const Value = ({ rank, def, value, change_pct, maxMetric }: { rank: number, def:
   return (
     <div className="flex items-center justify-end gap-[5px]">
       <div className="numbers-xs text-[#5A6462]">{rank}</div>
-    <div className="w-[160px] flex flex-col items-end gap-y-[2px]">
+    <div className="w-[178px] flex flex-col items-end gap-y-[2px]">
       
       <div className="flex justify-end items-center gap-x-[2px]">
         <div className="numbers-xs">
@@ -729,7 +730,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics }: { application: Ag
       {selectedMetricKeys.map((key, index) => (
         <div 
           key={key}
-          className={`flex justify-end pr-[15px] items-center text-right h-full ${index % 2 == 0 ? 'bg-[#344240]/30' : ''} `}
+          className={`flex justify-end pr-[15px] items-center text-right h-full ${selectedMetricKeys.length == 1 || (selectedMetricKeys.length > 1 && (index+1) % 2 == 0) ? 'bg-[#344240]/30' : ''} `}
         >
           <Value rank={application[`rank_${key}`]} def={metricsDef[selectedMetrics[index]]} value={application[key]} change_pct={application[`${key}_change_pct`]} maxMetric={maxMetrics[index]} />
         </div>
