@@ -701,10 +701,10 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                     
                     >
                         {Object.keys(filteredChains).filter((key) => {return data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0]}).map((key, index) => {
-                         
+                            const realIndex = Object.keys(data[selectedTimespan].da_consumers).findIndex((k) => k === key);
                             const types = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].types;
                             const name = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1];
-                            const color = AllChainsByKeys[key] ? AllChainsByKeys[key].colors["dark"][0] : UNLISTED_CHAIN_COLORS[index];
+                            const color = AllChainsByKeys[key] ? AllChainsByKeys[key].colors["dark"][0] : UNLISTED_CHAIN_COLORS[realIndex];
                             const unlistedColor =  AllChainsByKeys[key] ? false : true;
 
                             
@@ -721,11 +721,11 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                         d[types.indexOf("data_posted")]
                                     ])}
                                     color={color}
-                                    shadow={{
+                                    shadow={isMonthly ? {
                                     
                                         color: color + "CC",
-                                        width: isMonthly ? 0 : 5,
-                                    }}
+                                        width: 5,
+                                    }: undefined}
                                     states={{
                                         hover: {
                                           halo: {
@@ -771,9 +771,9 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                                   y2: 1,
                                                 },
                                                 stops: [
-                                                  [0, color + "CC"],
-                                                  [0.65, color + "AA"],
-                                                  [1, color + unlistedColor ? "99" : "99"],
+                                                  [0, color + "FF"],
+                                                  [0.65, color + "FF"],
+                                                  [1, color + "00"],
                                                 ],
                                               }
                                             : undefined, // Disable gradient when isMonthly is false
