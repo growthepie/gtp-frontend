@@ -961,7 +961,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                             const types = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].types;
                             const name = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1];
                             console.log("name", name);
-                            // const color = AllChainsByKeys[key] ? AllChainsByKeys[key].colors["dark"][0] : UNLISTED_CHAIN_COLORS[realIndex];
+                            const daColor = AllChainsByKeys[key] ? AllChainsByKeys[key].colors["dark"][0] : UNLISTED_CHAIN_COLORS[realIndex];
                             
                             const unlistedColor =  AllChainsByKeys[key] ? false : true;
 
@@ -1014,32 +1014,66 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                         d[types.indexOf("data_posted")]
                                     ])}
                                     color={color}
-                                    shadow={isMonthly ? {
-
-                                        color: color + "CC",
-                                        width: 5,
-                                    } : undefined}
+                                    
                                     states={{
                                         hover: {
-                                            halo: {
-                                                size: 5,
-                                                opacity: 1,
-                                                attributes: {
-                                                    fill:
-                                                        color + "99",
-                                                    stroke:
-                                                        color + "66",
-                                                    "stroke-width": 0,
-                                                },
+                                          enabled: true,
+                                          halo: {
+                                            size: 5,
+                                            opacity: 1,
+                                            attributes: {
+                                              fill:
+                                                daColor + "99",
+                                              stroke:
+                                                daColor + "66",
+                                              "stroke-width": 0,
                                             },
-                                        }
-                                    }}
+                                          },
+                                          brightness: 0.3,
+                                        },
+                                        inactive: {
+                                          enabled: true,
+                                          opacity: 0.6,
+                                        },
+                                        selection: {
+                                          enabled: false,
+                                        },
+                                      }}
                                     pointPlacement={pointsSettings.pointPlacement}
                                     fillColor={fillColor}
                                     fillOpacity={fillOpacity}
                                     zones={zones}
                                     zoneAxis={zoneAxis}
-                                    // marker={marker}
+                                    marker={marker}
+                                    clip={true}
+                                    // // @ts-ignore
+                                    // (["area", "line"].includes(getSeriesType(chainKey))
+                                    // ? {
+                                    //     shadow: {
+                                    //     color:
+                                    //         MetadataByKeys[chainKey]?.colors[
+                                    //         theme ?? "dark"
+                                    //         ][1] + "FF",
+                                    //     width: 7,
+                                    //     },
+                                    // }
+                                    // : chainKey === "all_l2s"
+                                    //     ? {
+                                    //     borderColor: "transparent",
+                                    //     shadow: "none",
+                                    //     }
+                                    //     : {
+                                    //     borderColor: "transparent",
+                                    //     shadow: "none",
+
+                                    //     }),
+                                    shadow={isMonthly ? {
+
+                                        color: color + "CC",
+                                        width: 5,
+                                    } : undefined}
+                                    borderColor={isMonthly ? color : undefined}
+
                                 />
                             )
                         })}
