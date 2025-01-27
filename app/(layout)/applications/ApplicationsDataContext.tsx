@@ -134,17 +134,26 @@ function ownerProjectToOriginKeysMap(data: AppDatum[]): { [key: string]: string[
   }, {});
 }
 
+function ownerProjectToProjectData(data: AppDatum[]): { [key: string]: any } {
+  return data.reduce((acc, entry) => {
+    const [owner, origin]: [string, string] = [entry[0] as string, entry[1] as string];
+    if (!acc[owner]) acc[owner] = [];
+    if (!acc[owner].includes(origin)) acc[owner].push(origin);
+    return acc;
+  }, {});
+}
+
+
+
 function aggregateProjectData(
-  data: AppDatum[], typesArr: string[], showUsd: boolean, chains: string[]
+  data: AppDatum[], typesArr: string[], ownerProjectToProjectData: {[key: string]: any}, filters: { [key: string]: string[] } = { origin_key: [], owner_project: [], category: [] }
 ): AggregatedDataRow[] {
   // const data = AppOverviewResponseHelper.fromResponse(rawData).response.data.data;
   // get Mapping of owner_project to origin_keys
   const ownerProjectToOriginKeys = ownerProjectToOriginKeysMap(data);
 
   // Convert chain filter to Set for O(1) lookups
-  const chainFilter = chains.length === 0
-    ? new Set(data.map(d => d[1]))
-    : new Set(chains);
+  const chainFilter = new Set(filters.origin_key);
 
   // Group data by owner_project in a single pass
   const aggregation = new Map();
@@ -168,7 +177,15 @@ function aggregateProjectData(
     ];
 
     // Skip if not matching the filter
-    if (!chainFilter.has(origin)) continue;
+    if (chainFilter.size > 0 && !chainFilter.has(origin)) continue;
+
+    // Skip if not matching the filter
+    if(filters.owner_project.length > 0){
+      // allow partial matches
+      const ownerProjectDisplay = ownerProjectToProjectData[owner].display_name.toLowerCase();
+      if(!filters.owner_project.some((filter) => ownerProjectDisplay.includes(filter.toLowerCase()))) continue;
+    }
+
 
     // Initialize the group if it doesn't exist
     if (!aggregation.has(owner)) {
@@ -300,6 +317,9 @@ export type ApplicationsDataContextType = {
   // sortOrder: "asc" | "desc";
   // setSortOrder: React.Dispatch<React.SetStateAction<"asc" | "desc">>;
   metricsDef: Metrics;
+  applicationsChains: string[];
+  selectedStringFilters: string[];
+  setSelectedStringFilters: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 export const ApplicationsDataContext = createContext<ApplicationsDataContextType | undefined>(undefined);
@@ -311,7 +331,7 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
 
-  const [selectedMetrics, setSelectedMetrics] = useState<string[]>([...Object.keys(metricsDef).slice(0,2)]);
+  const [selectedMetrics, setSelectedMetrics] = useState<string[]>([...Object.keys(metricsDef).slice(0,1)]);
   const [sort, setSort] = useState<{ metric: string; sortOrder: string }>({ 
     metric: Object.keys(metricsDef)[0], 
     sortOrder: "desc"
@@ -320,6 +340,7 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
   const [selectedTimespan, setSelectedTimespan] = useState<string>("7d");
   const [selectedChains, setSelectedChains] = useState<string[]>([]);
   const [isMonthly, setIsMonthly] = useState<boolean>(false);
+  const [selectedStringFilters, setSelectedStringFilters] = useState<string[]>([]);
 
   const { data, error, isLoading, isValidating } = useSWR<DAOverviewResponse>(DAOverviewURL);
 
@@ -490,9 +511,13 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
 
     if (!applicationsDataTimespan || !applicationsDataTimespan[selectedTimespan]) return [];
     
-    return aggregateProjectData(applicationsDataTimespan[selectedTimespan].data.data, applicationsDataTimespan[selectedTimespan].data.types, showUsd, selectedChains)
+    return aggregateProjectData(applicationsDataTimespan[selectedTimespan].data.data, applicationsDataTimespan[selectedTimespan].data.types, ownerProjectToProjectData, {
+      origin_key: selectedChains,
+      owner_project: selectedStringFilters,
+      category: selectedStringFilters,
+    })
 
-  }, [applicationsTimespan, selectedTimespan, showUsd, selectedChains]);
+  }, [applicationsTimespan, selectedTimespan, selectedChains, selectedStringFilters, ownerProjectToProjectData]);
 
   const applicationDataAggregated = useMemo(() => {
     const sorted = [...applicationDataFiltered];
@@ -513,6 +538,17 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
     return sorted;
   }, [applicationDataFiltered, showUsd, sort.metric, sort.sortOrder]);
 
+  // distinct chains across all data
+  const applicationsChains = useMemo(() => {
+    const chains = new Set<string>();
+    applicationDataFiltered.forEach((app) => {
+      app.origin_keys.forEach((chain) => {
+        chains.add(chain);
+      });
+    });
+    return Array.from(chains);
+  }, [applicationDataFiltered]);
+
 
   return (
     <ApplicationsDataContext.Provider value={{
@@ -531,6 +567,9 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
       sort,
       setSort,
       metricsDef,
+      applicationsChains,
+      selectedStringFilters,
+      setSelectedStringFilters,
     }}>
       <ShowLoading
         dataLoading={[masterLoading, projectsLoading]}

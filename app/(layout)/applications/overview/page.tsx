@@ -389,7 +389,7 @@ const Links = memo(({ application }: { application: AggregatedDataRow }) => {
       {ownerProjectToProjectData[application.owner_project] && keys.map((key, index) => (
         <div key={index} className="h-[15px] w-[15px]">
           {ownerProjectToProjectData[application.owner_project][key] && <Link
-            href={ownerProjectToProjectData[application.owner_project][key].includes("http") ? ownerProjectToProjectData[application.owner_project][key] : `https://${ownerProjectToProjectData[application.owner_project][key]}`}
+            href={`${linkPrefixes[index]}${ownerProjectToProjectData[application.owner_project][key]}`}
             target="_blank"
           >
             <Icon

@@ -9,10 +9,12 @@ import useDragScroll from "@/hooks/useDragScroll";
 import { update } from "lodash";
 import { useUIContext } from "@/contexts/UIContext";
 import { useMaster } from "@/contexts/MasterContext";
+import { useApplicationsData } from "./ApplicationsDataContext";
 
 export default function Search() {
   const { AllChainsByKeys } = useMaster();
   const { isMobile } = useUIContext();
+  const {selectedChains, setSelectedChains, applicationDataAggregated, applicationsChains, selectedStringFilters, setSelectedStringFilters} = useApplicationsData();
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -29,36 +31,40 @@ export default function Search() {
   // const [labelsCategoriesFilter, setLabelsCategoriesFilter] = useSessionStorage<string[]>('labelsCategoriesFilter', []);
   // const [labelsSubcategoriesFilter, setLabelsSubcategoriesFilter] = useSessionStorage<string[]>('labelsSubcategoriesFilter', []);
   // const [labelsChainsFilter, setLabelsChainsFilter] = useSessionStorage<string[]>('labelsChainsFilter', []);
-  const [labelsNumberFiltered, setLabelsNumberFiltered] =
-    useSessionStorage<number>("labelsNumberFiltered", 0);
+  // const [applicationsNumberFiltered, setApplicationsNumberFiltered] =
+  //   useSessionStorage<number>("applicationsNumberFiltered", 0);
 
-  const [labelsFilters, setLabelsFilters] = useSessionStorage<{
-    address: string[];
-    origin_key: string[];
-    name: string[];
-    owner_project: { owner_project: string; owner_project_clear: string }[];
-    category: string[];
-    subcategory: string[];
-    txcount: number[];
-    txcount_change: number[];
-    gas_fees_usd: number[];
-    gas_fees_usd_change: number[];
-    daa: number[];
-    daa_change: number[];
-  }>("labelsFilters", {
-    address: [],
-    origin_key: [],
-    name: [],
-    owner_project: [],
-    category: [],
-    subcategory: [],
-    txcount: [],
-    txcount_change: [],
-    gas_fees_usd: [],
-    gas_fees_usd_change: [],
-    daa: [],
-    daa_change: [],
-  });
+  const applicationsNumberFiltered = useMemo(() => {
+    return applicationDataAggregated.length;
+  }, [applicationDataAggregated]);
+
+  // const [applicationsFilters, setApplicationsFilters] = useSessionStorage<{
+  //   address: string[];
+  //   origin_key: string[];
+  //   name: string[];
+  //   owner_project: { owner_project: string; owner_project_clear: string }[];
+  //   category: string[];
+  //   subcategory: string[];
+  //   txcount: number[];
+  //   txcount_change: number[];
+  //   gas_fees_usd: number[];
+  //   gas_fees_usd_change: number[];
+  //   daa: number[];
+  //   daa_change: number[];
+  // }>("applicationsFilters", {
+  //   address: [],
+  //   origin_key: [],
+  //   name: [],
+  //   owner_project: [],
+  //   category: [],
+  //   subcategory: [],
+  //   txcount: [],
+  //   txcount_change: [],
+  //   gas_fees_usd: [],
+  //   gas_fees_usd_change: [],
+  //   daa: [],
+  //   daa_change: [],
+  // });
 
   const handleFilter = useCallback(
     (
@@ -68,41 +74,56 @@ export default function Search() {
         | number
         | { owner_project: string; owner_project_clear: string },
     ) => {
-      if (key === "owner_project" && typeof value !== "string" && typeof value !== "number" && typeof key === "string") {
-        setLabelsFilters({
-          ...labelsFilters,
-          owner_project: labelsFilters[key].find(
-            (f) => f.owner_project === value['owner_project'],
-          )
-            ? labelsFilters[key].filter(
-              (f) => f.owner_project !== value['owner_project'],
-            )
-            : [...labelsFilters[key], value],
-        });
-      } else {
-        setLabelsFilters({
-          ...labelsFilters,
-          [key]: labelsFilters[key].includes(value)
-            ? labelsFilters[key].filter((f) => f !== value)
-            : [...labelsFilters[key], value],
-        });
+      // if (key === "owner_project" && typeof value !== "string" && typeof value !== "number" && typeof key === "string") {
+      //   setApplicationsFilters({
+      //     ...applicationsFilters,
+      //     owner_project: applicationsFilters[key].find(
+      //       (f) => f.owner_project === value['owner_project'],
+      //     )
+      //       ? applicationsFilters[key].filter(
+      //         (f) => f.owner_project !== value['owner_project'],
+      //       )
+      //       : [...applicationsFilters[key], value],
+      //   });
+      // } else {
+      //   setApplicationsFilters({
+      //     ...applicationsFilters,
+      //     [key]: applicationsFilters[key].includes(value)
+      //       ? applicationsFilters[key].filter((f) => f !== value)
+      //       : [...applicationsFilters[key], value],
+      //   });
+      // }
+
+      if (key === "origin_key") {
+        setSelectedChains(
+          selectedChains.includes(value as string)
+            ? selectedChains.filter((chain) => chain !== value)
+            : [...selectedChains, value as string],
+        );
+      }
+      if (key === "string") {
+        setSelectedStringFilters(
+          selectedStringFilters.includes(value as string)
+            ? selectedStringFilters.filter((string) => string !== value)
+            : [...selectedStringFilters, value as string],
+        );
       }
 
       setSearch("");
     },
-    [labelsFilters, setLabelsFilters],
+    [selectedChains, selectedStringFilters, setSelectedChains, setSelectedStringFilters],
   );
 
   const [search, setSearch] = useState<string>("");
 
-  const [labelsAutocomplete, setLabelsAutocomplete] = useSessionStorage<{
+  const [applicationsAutocomplete, setApplicationsAutocomplete] = useSessionStorage<{
     address: string[];
     origin_key: string[];
     name: string[];
     owner_project: { owner_project: string; owner_project_clear: string }[];
     category: string[];
     subcategory: string[];
-  }>("labelsAutocomplete", {
+  }>("applicationsAutocomplete", {
     address: [],
     origin_key: [],
     name: [],
@@ -128,12 +149,12 @@ export default function Search() {
     );
   };
 
-  const [labelsOwnerProjects, setLabelsOwnerProjects] = useSessionStorage<
+  const [applicationsOwnerProjects, setApplicationsOwnerProjects] = useSessionStorage<
     { owner_project: string; owner_project_clear: string }[]
-  >("labelsOwnerProjects", []);
+  >("applicationsOwnerProjects", []);
 
-  const [labelsOwnerProjectClears, setLabelsOwnerProjectClears] =
-    useSessionStorage<string[]>("labelsOwnerProjectClears", []);
+  const [applicationsOwnerProjectClears, setApplicationsOwnerProjectClears] =
+    useSessionStorage<string[]>("applicationsProjectClears", []);
 
   const Filters = useMemo(() => {
     if (!master) return [];
@@ -144,21 +165,21 @@ export default function Search() {
 
     // const allSubcategoryFilters = [...labelsFilters.subcategory, ...categorySubcategoryFilters];
 
-    const addressFilters = labelsFilters.address.map((address) => (
-      <Badge
-        key={address}
-        onClick={() => handleFilter("address", address)}
-        label={address}
-        leftIcon="heroicons-solid:qrcode"
-        leftIconColor="#CDD8D3"
-        rightIcon="heroicons-solid:x-circle"
-        rightIconColor="#FE5468"
-        showLabel={true}
-        altColoring={isOpen}
-      />
-    ));
+    // const addressFilters = applicationsFilters.address.map((address) => (
+    //   <Badge
+    //     key={address}
+    //     onClick={() => handleFilter("address", address)}
+    //     label={address}
+    //     leftIcon="heroicons-solid:qrcode"
+    //     leftIconColor="#CDD8D3"
+    //     rightIcon="heroicons-solid:x-circle"
+    //     rightIconColor="#FE5468"
+    //     showLabel={true}
+    //     altColoring={isOpen}
+    //   />
+    // ));
 
-    const chainFilters = labelsFilters.origin_key.map((chainKey) => (
+    const chainFilters = selectedChains.map((chainKey) => (
       <Badge
         key={chainKey}
         onClick={(e) => { handleFilter("origin_key", chainKey); e.stopPropagation(); }}
@@ -172,12 +193,12 @@ export default function Search() {
       />
     ));
 
-    const categoryFilters = labelsFilters.category.map((category) => (
+    const stringFilters = selectedStringFilters.map((string) => (
       <Badge
-        key={category}
-        onClick={(e) => { handleFilter("category", category); e.stopPropagation(); }}
-        label={master.blockspace_categories.main_categories[category]}
-        leftIcon="feather:tag"
+        key={string}
+        onClick={(e) => { handleFilter("string", string); e.stopPropagation(); }}
+        label={<>&quot;{boldSearch(string)}&quot;</>}
+        leftIcon="feather:search"
         leftIconColor="#CDD8D3"
         rightIcon="heroicons-solid:x-circle"
         rightIconColor="#FE5468"
@@ -186,75 +207,80 @@ export default function Search() {
       />
     ));
 
-    const subcategoryFilters = labelsFilters.subcategory.map((subcategory) => (
-      <Badge
-        key={subcategory}
-        onClick={(e) => { handleFilter("subcategory", subcategory); e.stopPropagation(); }}
-        label={master.blockspace_categories.sub_categories[subcategory]}
-        leftIcon="feather:tag"
-        leftIconColor="#CDD8D3"
-        rightIcon="heroicons-solid:x-circle"
-        rightIconColor="#FE5468"
-        showLabel={true}
-        altColoring={isOpen}
-      />
-    ));
+    // const categoryFilters = applicationsFilters.category.map((category) => (
+    //   <Badge
+    //     key={category}
+    //     onClick={(e) => { handleFilter("category", category); e.stopPropagation(); }}
+    //     label={master.blockspace_categories.main_categories[category]}
+    //     leftIcon="feather:tag"
+    //     leftIconColor="#CDD8D3"
+    //     rightIcon="heroicons-solid:x-circle"
+    //     rightIconColor="#FE5468"
+    //     showLabel={true}
+    //     altColoring={isOpen}
+    //   />
+    // ));
 
-    const ownerProjectFilters = labelsFilters.owner_project.map(
-      (row, index) => (
-        <Badge
-          key={row.owner_project}
-          onClick={(e) => { handleFilter("owner_project", row); e.stopPropagation(); }}
-          label={row.owner_project_clear}
-          leftIcon="feather:tag"
-          leftIconColor="#CDD8D3"
-          rightIcon="heroicons-solid:x-circle"
-          rightIconColor="#FE5468"
-          showLabel={true}
-          altColoring={isOpen}
-        />
-      ),
-    );
+    // const subcategoryFilters = applicationsFilters.subcategory.map((subcategory) => (
+    //   <Badge
+    //     key={subcategory}
+    //     onClick={(e) => { handleFilter("subcategory", subcategory); e.stopPropagation(); }}
+    //     label={master.blockspace_categories.sub_categories[subcategory]}
+    //     leftIcon="feather:tag"
+    //     leftIconColor="#CDD8D3"
+    //     rightIcon="heroicons-solid:x-circle"
+    //     rightIconColor="#FE5468"
+    //     showLabel={true}
+    //     altColoring={isOpen}
+    //   />
+    // ));
 
-    const nameFilters = labelsFilters.name.map((name) => (
-      <Badge
-        key={name}
-        onClick={(e) => { handleFilter("name", name); e.stopPropagation(); }}
-        label={name}
-        leftIcon={undefined}
-        leftIconColor="#CDD8D3"
-        rightIcon="heroicons-solid:x-circle"
-        rightIconColor="#FE5468"
-        showLabel={true}
-        altColoring={isOpen}
-      />
-    ));
+    // const ownerProjectFilters = applicationDataAggregated.map(
+    //   (row, index) => (
+    //     <Badge
+    //       key={row.owner_project}
+    //       onClick={(e) => { handleFilter("owner_project", row.owner_project); e.stopPropagation(); }}
+    //       label={row.owner_project}
+    //       leftIcon="feather:tag"
+    //       leftIconColor="#CDD8D3"
+    //       rightIcon="heroicons-solid:x-circle"
+    //       rightIconColor="#FE5468"
+    //       showLabel={true}
+    //       altColoring={isOpen}
+    //     />
+    //   ),
+    // );
+
+    // const nameFilters = applicationsFilters.name.map((name) => (
+    //   <Badge
+    //     key={name}
+    //     onClick={(e) => { handleFilter("name", name); e.stopPropagation(); }}
+    //     label={name}
+    //     leftIcon={undefined}
+    //     leftIconColor="#CDD8D3"
+    //     rightIcon="heroicons-solid:x-circle"
+    //     rightIconColor="#FE5468"
+    //     showLabel={true}
+    //     altColoring={isOpen}
+    //   />
+    // ));
 
     return [
-      ...addressFilters,
+      // ...addressFilters,
       ...chainFilters,
-      ...categoryFilters,
-      ...subcategoryFilters,
-      ...ownerProjectFilters,
-      ...nameFilters,
+      ...stringFilters,
+      // ...categoryFilters,
+      // ...subcategoryFilters,
+      // ...ownerProjectFilters,
+      // ...nameFilters,
     ];
-  }, [
-    handleFilter,
-    isOpen,
-    labelsFilters.address,
-    labelsFilters.category,
-    labelsFilters.name,
-    labelsFilters.origin_key,
-    labelsFilters.owner_project,
-    labelsFilters.subcategory,
-    master,
-  ]);
+  }, [master, selectedChains, selectedStringFilters, AllChainsByKeys, isOpen, handleFilter]);
 
   useEffect(() => {
-    if (!master || labelsOwnerProjects.length === 0) return;
+    if (!master || applicationsOwnerProjects.length === 0) return;
 
     if (search.length === 0) {
-      setLabelsAutocomplete({
+      setApplicationsAutocomplete({
         address: [],
         name: [],
         owner_project: [],
@@ -279,14 +305,14 @@ export default function Search() {
         .toLowerCase()
         .includes(search.toLowerCase()),
     );
-    const chainAutocomplete = Object.keys(master.chains).filter((chainKey) =>
+    const chainAutocomplete = applicationsChains.filter((chainKey) =>
       master.chains[chainKey].name.toLowerCase().includes(search.toLowerCase()),
     );
-    const ownerProjectAutocomplete = labelsOwnerProjects.filter((row) =>
+    const ownerProjectAutocomplete = applicationsOwnerProjects.filter((row) =>
       row.owner_project.toLowerCase().includes(search.toLowerCase()),
     );
 
-    setLabelsAutocomplete({
+    setApplicationsAutocomplete({
       address: [],
       name: [],
       owner_project: ownerProjectAutocomplete,
@@ -294,7 +320,7 @@ export default function Search() {
       subcategory: subcategoryAutocomplete,
       origin_key: chainAutocomplete,
     });
-  }, [labelsOwnerProjects, master, search, setLabelsAutocomplete]);
+  }, [applicationsChains, applicationsOwnerProjects, master, search, setApplicationsAutocomplete]);
 
   return (
     <div className="relative w-full h-[44px]">
@@ -311,9 +337,9 @@ export default function Search() {
         onClick={() => setIsOpen(true)}
       >
         <div className="flex items-center w-full min-h-[44px]">
-          <div className="absolute flex items-center w-full bg-[#1F2726] gap-x-[10px] rounded-[22px] pr-[10px] min-h-[44px] z-[1]" />
+          <div className="absolute flex items-center w-full bg-[#1F2726] gap-x-[10px] rounded-[22px] pr-[10px] min-h-[44px] z-[7]" />
           {/* <div className="relative w-full min-h-[44px] z-10 flex items-center bg-[#1F2726] gap-x-[10px] rounded-[22px] pr-[10px]"> */}
-          <div className="absolute inset-0 z-[2] flex items-center w-full">
+          <div className="absolute inset-0 z-[8] flex items-center w-full">
             <div className={`relative flex justify-center items-center pl-[10px]`}>
               {isOpen ? (
                 <div className="flex items-center justify-center w-[24px] h-[24px]">
@@ -327,7 +353,7 @@ export default function Search() {
             <input
               ref={inputRef}
               className={`${isOpen ? "flex-1" : Filters.length > 0 ? "w-[63px]" : "flex-1"} pl-[11px] h-full bg-transparent text-white placeholder-[#CDD8D3] border-none outline-none overflow-x-clip`}
-              placeholder="Search"
+              placeholder="Search & Filter"
               value={search}
               onChange={(e) => {
 
@@ -336,7 +362,7 @@ export default function Search() {
               onKeyUp={(e) => {
                 // if enter is pressed, add the search term to the address filters
                 if (e.key === "Enter" && search.length > 0) {
-                  handleFilter("address", search);
+                  handleFilter("string", search);
                   setSearch("");
                   e.preventDefault();
                 }
@@ -358,28 +384,29 @@ export default function Search() {
                 {Filters.length > 0 && (
                   <div className={`flex items-center px-[15px] h-[24px] border border-[#CDD8D3] rounded-full`}>
                     <div className="text-[8px] text-[#CDD8D3] font-medium">
-                      {labelsNumberFiltered.toLocaleString("en-GB")} contracts
+                      {applicationsNumberFiltered.toLocaleString("en-GB")} contracts
                     </div>
                   </div>
                 )}
-                {Object.values(labelsFilters).flat().length > 0 && (
+                {selectedChains.length > 0 && (
                   <div
                     className="flex flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px]"
                     onClick={() =>
-                      setLabelsFilters({
-                        address: [],
-                        origin_key: [],
-                        name: [],
-                        owner_project: [],
-                        category: [],
-                        subcategory: [],
-                        txcount: [],
-                        txcount_change: [],
-                        gas_fees_usd: [],
-                        gas_fees_usd_change: [],
-                        daa: [],
-                        daa_change: [],
-                      })
+                      // setApplicationsFilters({
+                      //   address: [],
+                      //   origin_key: [],
+                      //   name: [],
+                      //   owner_project: [],
+                      //   category: [],
+                      //   subcategory: [],
+                      //   txcount: [],
+                      //   txcount_change: [],
+                      //   gas_fees_usd: [],
+                      //   gas_fees_usd_change: [],
+                      //   daa: [],
+                      //   daa_change: [],
+                      // })
+                      setSelectedChains([])
                     }
                   >
                     <svg width="27" height="26" viewBox="0 0 27 26" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -397,74 +424,8 @@ export default function Search() {
               </div>
             </div>
           </div>
-          {/* <div className="flex items-center justify-between gap-x-[10px] flex-1 pl-[10px] md:pl-0 z-[2]">
-            <div className={`flex w-full items-center gap-x-[10px] pl-[10px] md:pl-0`}>
-              <div className={`${isOpen ? "w-full" : "w-[120px]"}`}>
-                <input
-                  ref={inputRef}
-                  className={`pl-[11px] h-full bg-transparent text-white placeholder-[#CDD8D3] border-none outline-none`}
-                  placeholder="Search"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-              <div className="flex justify-between gap-x-[10px] basis-[calc(100%-120px)]">
-
-                {!isOpen && Filters.length > 0 && (
-                  <div className="w-[calc(100%-230px)]">
-                    <FilterSelectionContainer className="w-full">
-                      {Filters}
-                    </FilterSelectionContainer>
-                  </div>
-                )}
-                <div className={`flex justify-end items-center gap-x-[10px] shrink-0 overflow-clip whitespace-nowrap transition-all duration-300`}>
-                  {Filters.length > 0 && (
-                    <div className={`flex items-center px-[15px] h-[24px] border border-[#CDD8D3] rounded-full`}>
-                      <div className="text-[8px] text-[#CDD8D3] font-medium">
-                        {labelsNumberFiltered.toLocaleString("en-GB")} contracts
-                      </div>
-                    </div>
-                  )}
-                  {Object.values(labelsFilters).flat().length > 0 && (
-                    <div
-                      className="flex flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px]"
-                      onClick={() =>
-                        setLabelsFilters({
-                          address: [],
-                          origin_key: [],
-                          name: [],
-                          owner_project: [],
-                          category: [],
-                          subcategory: [],
-                          txcount: [],
-                          txcount_change: [],
-                          gas_fees_usd: [],
-                          gas_fees_usd_change: [],
-                          daa: [],
-                          daa_change: [],
-                        })
-                      }
-                    >
-                      <svg width="27" height="26" viewBox="0 0 27 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="1" y="1" width="25" height="24" rx="12" stroke="url(#paint0_linear_8794_34411)" />
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M17.7435 17.2426C18.8688 16.1174 19.5009 14.5913 19.5009 13C19.5009 11.4087 18.8688 9.88258 17.7435 8.75736C16.6183 7.63214 15.0922 7 13.5009 7C11.9096 7 10.3835 7.63214 9.25827 8.75736C8.13305 9.88258 7.50091 11.4087 7.50091 13C7.50091 14.5913 8.13305 16.1174 9.25827 17.2426C10.3835 18.3679 11.9096 19 13.5009 19C15.0922 19 16.6183 18.3679 17.7435 17.2426V17.2426ZM12.4402 10.8787C12.2996 10.738 12.1088 10.659 11.9099 10.659C11.711 10.659 11.5202 10.738 11.3796 10.8787C11.2389 11.0193 11.1599 11.2101 11.1599 11.409C11.1599 11.6079 11.2389 11.7987 11.3796 11.9393L12.4402 13L11.3796 14.0607C11.2389 14.2013 11.1599 14.3921 11.1599 14.591C11.1599 14.7899 11.2389 14.9807 11.3796 15.1213C11.5202 15.262 11.711 15.341 11.9099 15.341C12.1088 15.341 12.2996 15.262 12.4402 15.1213L13.5009 14.0607L14.5616 15.1213C14.7022 15.262 14.893 15.341 15.0919 15.341C15.2908 15.341 15.4816 15.262 15.6222 15.1213C15.7629 14.9807 15.8419 14.7899 15.8419 14.591C15.8419 14.3921 15.7629 14.2013 15.6222 14.0607L14.5616 13L15.6222 11.9393C15.7629 11.7987 15.8419 11.6079 15.8419 11.409C15.8419 11.2101 15.7629 11.0193 15.6222 10.8787C15.4816 10.738 15.2908 10.659 15.0919 10.659C14.893 10.659 14.7022 10.738 14.5616 10.8787L13.5009 11.9393L12.4402 10.8787Z" fill="#CDD8D3" />
-                        <defs>
-                          <linearGradient id="paint0_linear_8794_34411" x1="13.5" y1="1" x2="29.4518" y2="24.361" gradientUnits="userSpaceOnUse">
-                            <stop stop-color="#FE5468" />
-                            <stop offset="1" stop-color="#FFDF27" />
-                          </linearGradient>
-                        </defs>
-                      </svg>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-          </div> */}
-          {/* </div> */}
           <div
-            className={`z-[0] absolute flex flex-col-reverse md:flex-col rounded-t-[22px] md:rounded-t-none md:rounded-b-[22px] bg-[#151A19] left-0 right-0 bottom-[calc(100%-22px)] md:bottom-auto md:top-[calc(100%-22px)] shadow-[0px_0px_50px_0px_#000000] transition-all duration-300 ${isOpen ? "max-h-[650px]" : "max-h-0"
+            className={`z-[6] absolute flex flex-col-reverse md:flex-col rounded-t-[22px] md:rounded-t-none md:rounded-b-[22px] bg-[#151A19] left-0 right-0 bottom-[calc(100%-22px)] md:bottom-auto md:top-[calc(100%-22px)] shadow-[0px_0px_50px_0px_#000000] transition-all duration-300 ${isOpen ? "max-h-[650px]" : "max-h-0"
               } overflow-hidden overflow-y-auto lg:overflow-y-hidden scrollbar-thin scrollbar-thumb-forest-700 scrollbar-track-transparent`}
           >
             <div className={`flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] pb-[25px] pt-[5px] md:pb-[5px] md:pt-[25px] gap-y-[10px] text-[10px] bg-[#344240] z-[1] ${Filters.length > 0 ? "max-h-[100px]" : "max-h-[20px] opacity-0 !p-0"} transition-all duration-300 overflow-clip`}>
@@ -484,7 +445,7 @@ export default function Search() {
               </div>
             </div>
             <div className="flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] pb-[10px] pt-[10px] gap-y-[10px] text-[10px]">
-              <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start md:items-center">
+              {/* <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start md:items-center">
                 <div className="flex gap-x-[10px] items-center">
                   <div className="w-[15px] h-[15px]">
                     <Icon
@@ -515,7 +476,7 @@ export default function Search() {
                     />
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start md:items-center">
                 <div className="flex gap-x-[10px] items-center">
@@ -531,11 +492,10 @@ export default function Search() {
 
                 {master && (
                   <FilterSelectionContainer className="w-full md:flex-1">
-                    {Object.keys(master.chains)
+                    {applicationsChains
                       .filter(
                         (chainKey) =>
-                          !labelsFilters.origin_key.includes(chainKey) &&
-                          master.chains[chainKey].enable_contracts === true,
+                          !selectedChains.includes(chainKey)
                       )
                       .sort((a, b) =>
                         master.chains[a].name.localeCompare(
@@ -550,7 +510,7 @@ export default function Search() {
                             e.stopPropagation();
                           }}
                           label={
-                            labelsAutocomplete.origin_key.length > 0
+                            applicationsAutocomplete.origin_key.length > 0
                               ? boldSearch(master.chains[chainKey].name)
                               : master.chains[chainKey].name
                           }
@@ -560,7 +520,7 @@ export default function Search() {
                           }
                           rightIcon="heroicons-solid:plus-circle"
                           className={`${search.length > 0
-                            ? labelsAutocomplete.origin_key.includes(chainKey)
+                            ? applicationsAutocomplete.origin_key.includes(chainKey)
                               ? "opacity-100"
                               : "opacity-30"
                             : "opacity-100"
@@ -570,33 +530,7 @@ export default function Search() {
                   </FilterSelectionContainer>
                 )}
               </div>
-              {/* <div className="flex gap-x-[10px] items-center">
-                <div className="w-[15px] h-[15px]"><Icon icon="feather:tag" className='w-[15px] h-[15px]' /></div>
-                <div className="text-white leading-[150%] whitespace-nowrap">Category</div>
-                <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
-                <div className="grid grid-flow-col grid-cols-4 grid-rows-2 justify-between items-center flex-1 pl-[18px] gap-x-[5px] gap-y-[5px]">
-                  {master && Object.entries(master.blockspace_categories.main_categories).map(([categoryKey, category]) => (
-                    <Badge
-                      key={categoryKey}
-                      size='sm'
-                      onClick={(e) => {
-                        handleFilter('subcategory', categoryKey)
-                        e.stopPropagation();
-                      }}
-                      label={labelsAutocomplete.category.length > 0 ? boldSearch(master.blockspace_categories.main_categories[categoryKey]) : master.blockspace_categories.main_categories[categoryKey]}
-                      leftIcon={undefined}
-                      leftIconColor={'#CDD8D3'}
-                      rightIcon="heroicons-solid:plus-circle"
-                      className={`w-fit justify-between ${search.length > 0 ? labelsAutocomplete.category.includes(categoryKey) ? "opacity-100" : "opacity-30" : "opacity-100"} transition-all`}
-                    />
-                  ))}
-                </div>
-                <div className="flex items-center bg-[#344240] rounded-full pl-[2px] pr-[5px] gap-x-[5px]">
-                  <div className="flex items-center justify-center w-[25px] h-[25px]"><Icon icon="feather:search" className='text-[#CDD8D3] w-[15px] h-[15px]' /></div>
-                  <div className="flex items-center justify-center w-[15px] h-[15px]"><Icon icon="heroicons-solid:plus-circle" className='text-[#5A6462] w-[15px] h-[15px]' /></div>
-                </div>
-              </div> */}
-              <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start md:items-center">
+              {/* <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start md:items-center">
                 <div className="flex gap-x-[10px] items-start">
                   <div className="w-[15px] h-[15px] mt-1">
                     <Icon icon="feather:tag" className="w-[15px] h-[15px]" />
@@ -642,7 +576,7 @@ export default function Search() {
                                   e.stopPropagation();
                                 }}
                                 label={
-                                  labelsAutocomplete.category.length > 0
+                                  applicationsAutocomplete.category.length > 0
                                     ? boldSearch(
                                       master.blockspace_categories
                                         .main_categories[categoryKey],
@@ -652,17 +586,17 @@ export default function Search() {
                                 }
                                 leftIcon={undefined}
                                 rightIconColor={
-                                  labelsFilters.category.includes(categoryKey)
+                                  applicationsFilters.category.includes(categoryKey)
                                     ? "#FE5468"
                                     : "#5A6462"
                                 }
                                 rightIcon={
-                                  labelsFilters.category.includes(categoryKey)
+                                  applicationsFilters.category.includes(categoryKey)
                                     ? "heroicons-solid:x-circle"
                                     : "heroicons-solid:plus-circle"
                                 }
                                 className={`w-fit h-fit justify-between bg-transparent rounded-l-[15px] ${search.length > 0
-                                  ? labelsAutocomplete.category.includes(
+                                  ? applicationsAutocomplete.category.includes(
                                     categoryKey,
                                   )
                                     ? "opacity-100"
@@ -679,7 +613,7 @@ export default function Search() {
                                   ? master.blockspace_categories.sub_categories[
                                   subcategoryKey
                                   ] &&
-                                  labelsAutocomplete.subcategory.includes(
+                                  applicationsAutocomplete.subcategory.includes(
                                     subcategoryKey,
                                   )
                                   : master.blockspace_categories.sub_categories[
@@ -696,7 +630,7 @@ export default function Search() {
                                       e.stopPropagation();
                                     }}
                                     label={
-                                      labelsAutocomplete.subcategory.length > 0
+                                      applicationsAutocomplete.subcategory.length > 0
                                         ? boldSearch(
                                           master.blockspace_categories
                                             .sub_categories[subcategory],
@@ -706,21 +640,21 @@ export default function Search() {
                                     }
                                     leftIcon={undefined}
                                     rightIconColor={
-                                      labelsFilters.subcategory.includes(
+                                      applicationsFilters.subcategory.includes(
                                         subcategory,
                                       )
                                         ? "#FE5468"
                                         : "#5A6462"
                                     }
                                     rightIcon={
-                                      labelsFilters.subcategory.includes(
+                                      applicationsFilters.subcategory.includes(
                                         subcategory,
                                       )
                                         ? "heroicons-solid:x-circle"
                                         : "heroicons-solid:plus-circle"
                                     }
                                     className={`w-fit h-fit ${search.length > 0
-                                      ? labelsAutocomplete.subcategory.includes(
+                                      ? applicationsAutocomplete.subcategory.includes(
                                         subcategory,
                                       )
                                         ? "opacity-100"
@@ -734,11 +668,8 @@ export default function Search() {
                         ))}
                   </div>
                 </div>
-              </div>
-              {/* <div>
-                {JSON.stringify(labelsFilters)}
               </div> */}
-              <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start">
+              {/* <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start">
                 <div className="flex gap-x-[10px] items-start">
                   <div className="w-[15px] h-[15px] mt-1">
                     <Icon icon="feather:tag" className="w-[15px] h-[15px]" />
@@ -750,7 +681,7 @@ export default function Search() {
                 </div>
                 <FilterSelectionContainer className="w-full md:flex-1">
                   {search.length > 0
-                    ? labelsAutocomplete.owner_project.map(
+                    ? applicationsAutocomplete.owner_project.map(
                       (ownerProjectRow) => (
                         <Badge
                           key={ownerProjectRow.owner_project}
@@ -758,7 +689,7 @@ export default function Search() {
                             handleFilter("owner_project", ownerProjectRow)
                           }
                           label={
-                            labelsAutocomplete.owner_project.length > 0
+                            applicationsAutocomplete.owner_project.length > 0
                               ? boldSearch(
                                 ownerProjectRow.owner_project_clear,
                               )
@@ -767,7 +698,7 @@ export default function Search() {
                           leftIcon="feather:tag"
                           leftIconColor="#CDD8D3"
                           rightIcon={
-                            labelsFilters.owner_project.find(
+                            applicationsFilters.owner_project.find(
                               (f) =>
                                 f.owner_project ===
                                 ownerProjectRow.owner_project,
@@ -776,7 +707,7 @@ export default function Search() {
                               : "heroicons-solid:plus-circle"
                           }
                           rightIconColor={
-                            labelsFilters.owner_project.find(
+                            applicationsFilters.owner_project.find(
                               (f) =>
                                 f.owner_project ===
                                 ownerProjectRow.owner_project,
@@ -788,7 +719,7 @@ export default function Search() {
                         />
                       ),
                     )
-                    : labelsOwnerProjects.map((ownerProjectRow) => (
+                    : applicationsOwnerProjects.map((ownerProjectRow) => (
                       <Badge
                         key={ownerProjectRow.owner_project}
                         onClick={() =>
@@ -798,7 +729,7 @@ export default function Search() {
                         leftIcon="feather:tag"
                         leftIconColor="#CDD8D3"
                         rightIcon={
-                          labelsFilters.owner_project.find(
+                          applicationsFilters.owner_project.find(
                             (f) =>
                               f.owner_project ===
                               ownerProjectRow.owner_project,
@@ -807,7 +738,7 @@ export default function Search() {
                             : "heroicons-solid:plus-circle"
                         }
                         rightIconColor={
-                          labelsFilters.owner_project.find(
+                          applicationsFilters.owner_project.find(
                             (f) =>
                               f.owner_project ===
                               ownerProjectRow.owner_project,
@@ -819,7 +750,7 @@ export default function Search() {
                       />
                     ))}
                 </FilterSelectionContainer>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

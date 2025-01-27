@@ -67,52 +67,33 @@ export const BackButton = () => {
   );
 }
 
-
-export const MetricSelect = () => {
-  const { selectedMetrics, setSelectedMetrics, metricsDef, sort, setSort} = useApplicationsData();
-  const {isMobile, isSidebarOpen, toggleSidebar} = useUIContext();
+export type MultipleSelectTopRowChildProps = {
+  handleNext: () => void;
+  handlePrev: () => void;
+  selected: string[];
+  setSelected: React.Dispatch<React.SetStateAction<string[]>>;
+  options: {
+    key: string;
+    icon?: string;
+    name: string;
+  }[];
+};
+export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, setSelected, options }: MultipleSelectTopRowChildProps) => {
+  const { isMobile } = useUIContext();
   const [isOpen, setIsOpen] = useState(false);
-
-  const metrics = Object.keys(metricsDef);
-
-  const handleNextMetric = () => {
-    const index = metrics.indexOf(selectedMetrics[0]);
-    const newIndex = (index + 1) % metrics.length;
-
-    if(sort.metric === selectedMetrics[0]){
-      setSort({...sort, metric: metrics[newIndex]});
-    }
-
-    setSelectedMetrics([metrics[newIndex]]);
-  }
-
-  const handlePrevMetric = () => {
-    const index = metrics.indexOf(selectedMetrics[0]);
-    const newIndex = index === 0 ? metrics.length - 1 : index - 1;
-
-    if(sort.metric === selectedMetrics[0]){
-      setSort({...sort, metric: metrics[newIndex]});
-    }
-
-    setSelectedMetrics([metrics[newIndex]]);
-  }
-
-
 
   return (
     <>
     <div className="flex flex-col relative h-full lg:h-[54px] w-full lg:w-[271px] -my-[1px]">
       <div
-        className={`relative flex rounded-full h-full w-full lg:z-30 p-[5px] cursor-pointer ${
-          isMobile ? "w-full" : "w-[271px]"
-        }`}
+        className={`relative flex rounded-full h-full w-full lg:z-[5] p-[5px] cursor-pointer ${isMobile ? "w-full" : "w-[271px]"}`}
         style={{
           backgroundColor: "#151A19",
         }}
       >
         <div
-          className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[15] hover:cursor-pointer"
-          onClick={handlePrevMetric}
+          className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[2] hover:cursor-pointer"
+          onClick={handlePrev}
         >
           <Icon icon="feather:arrow-left" className="w-6 h-6" />
         </div>
@@ -122,28 +103,15 @@ export const MetricSelect = () => {
             setIsOpen(!isOpen);
           }}
         >
-          {/* <div
-            className={`font-[500] leading-[150%] text-[12px]`}
-          >
-            {metricsDef[selectedMetrics[0]].name}
-          </div> */}
-          <div
-            className={`flex font-[550] gap-x-[5px] justify-center items-center w-32`}
-          >
-            {/* {compChain && (
-              <Icon
-                icon={`gtp:${AllChainsByKeys[compChain].urlKey}-logo-monochrome`}
-                className="w-[22px] h-[22px]"
-              />
-            )} */}
+          <div className={`flex font-[550] gap-x-[5px] justify-center items-center w-32`}>
             <div className="text-sm overflow-ellipsis truncate whitespace-nowrap">
-              {selectedMetrics.length > 1 ? "Multiple" : metricsDef[selectedMetrics[0]].name}
+              {selected.length > 1 ? "Multiple" : options.find((option) => option.key === selected[0])?.name}
             </div>
           </div>
         </div>
         <div
-          className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[15] hover:cursor-pointer"
-          onClick={handleNextMetric}
+          className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[2] hover:cursor-pointer"
+          onClick={handleNext}
           
         >
           <Icon icon="feather:arrow-right" className="w-6 h-6" />
@@ -152,50 +120,50 @@ export const MetricSelect = () => {
       <div
         className={`flex flex-col relative lg:absolute lg:top-[27px] bottom-auto lg:left-0 lg:right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300 ${
           isOpen
-            ? `lg:z-[25] overflow-hidden border-transparent rounded-b-[30px] lg:border-forest-200 lg:dark:border-forest-500 lg:rounded-b-2xl lg:shadow-[0px_4px_46.2px_#00000066] lg:dark:shadow-[0px_4px_46.2px_#000000]`
-            : "max-h-0 z-20 overflow-hidden border-transparent rounded-b-[22px]"
+            ? `lg:z-[4] overflow-hidden border-transparent rounded-b-[30px] lg:border-forest-200 lg:dark:border-forest-500 lg:rounded-b-2xl lg:shadow-[0px_4px_46.2px_#00000066] lg:dark:shadow-[0px_4px_46.2px_#000000]`
+            : "max-h-0 z-[3] overflow-hidden border-transparent rounded-b-[22px]"
         } `}
         style={{
-          maxHeight: isOpen ? `${metrics.length * 34 + 70}px` : "0px",
+          maxHeight: isOpen ? `${options.length * 34 + 70}px` : "0px",
         }}
       >
         <div className="pb-[20px] lg:pb-[10px]">
           <div className="h-[10px] lg:h-[28px]"></div>
-          {metrics.map((metric, index) => (
+          {options.map((opt, index) => (
             <div
               className="flex px-[25px] py-[5px] gap-x-[15px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
               onClick={() => {
                 setIsOpen(false);
-                // delay(400).then(() =>
-                //   setChainKey([chainKey[0], chain.key]),
-                // );
-                setSelectedMetrics((prev) => {
-                  if (prev.includes(metric)) {
+
+                setSelected((prev) => {
+                  if (prev.includes(opt.key)) {
                     if(prev.length === 1) return prev;
-                    return prev.filter((m) => m !== metric);
+                    return prev.filter((m) => m !== opt.key);
                   } else {
-                    return [...prev, metric];
+                    return [...prev, opt.key];
                   }
                 });
               }}
               key={index}
             >
                 <Icon
-                  icon={selectedMetrics.includes(metric) ? "feather:check-circle" : "feather:circle"}
+                  icon={selected.includes(opt.key) ? "feather:check-circle" : "feather:circle"}
                   className="size-[15px]"
                 />
-                <GTPIcon
-                  icon={(selectedMetrics.includes(metric) ? `${metricsDef[metric].icon}` : `${metricsDef[metric].icon}-monochrome`) as GTPIconName}
+                {opt.icon && (
+                  <GTPIcon
+                  icon={(selected.includes(opt.key) ? `${opt.icon}` : `${opt.icon}-monochrome`) as GTPIconName}
                   className="size-[24px] text-[#5A6462]"
                 />
-              <div>{metricsDef[metric].name}</div>
+                )}
+              <div>{opt.name}</div>
             </div>
           ))}
         </div>
       </div>
       {isOpen && (
         <div
-          className={`hidden lg:block lg:fixed inset-0 z-20`}
+          className={`hidden lg:block lg:fixed inset-0 z-[3]`}
           onClick={() => {
             setIsOpen(false);
           }}

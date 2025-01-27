@@ -8,10 +8,10 @@ import { DAOverviewURL } from "@/lib/urls";
 import { DAOverviewResponse } from "@/types/api/DAOverviewResponse";
 import Container from "@/components/layout/Container";
 import { useApplicationsData } from "./ApplicationsDataContext";
-import { MetricSelect } from "./Components";
+import { MultipleSelectTopRowChild } from "./Components";
 
 export default function Controls() {
-  const { data, selectedTimespan, setSelectedTimespan, isMonthly, setIsMonthly, timespans } = useApplicationsData();
+  const { data, metricsDef, selectedMetrics, setSelectedMetrics, sort, setSort, selectedTimespan, setSelectedTimespan, isMonthly, setIsMonthly, timespans } = useApplicationsData();
 
 
   return (
@@ -57,7 +57,40 @@ export default function Controls() {
               >
                 {"Monthly"}
               </TopRowChild> */}
-              <MetricSelect />
+              <MultipleSelectTopRowChild 
+              handleNext={() => {
+                const metrics = Object.keys(metricsDef);
+                const index = metrics.indexOf(selectedMetrics[0]);
+                const newIndex = (index + 1) % metrics.length;
+            
+                if(sort.metric === selectedMetrics[0]){
+                  setSort({...sort, metric: metrics[newIndex]});
+                }
+            
+                setSelectedMetrics([metrics[newIndex]]);
+              }}
+              handlePrev={() => {
+                const metrics = Object.keys(metricsDef);
+                const index = metrics.indexOf(selectedMetrics[0]);
+                const newIndex = index === 0 ? metrics.length - 1 : index - 1;
+            
+                if(sort.metric === selectedMetrics[0]){
+                  setSort({...sort, metric: metrics[newIndex]});
+                }
+            
+                setSelectedMetrics([metrics[newIndex]]);
+              }}
+              options={Object.keys(metricsDef).map((key) => {
+                return {
+                  key,
+                  name: metricsDef[key].name,
+                  icon: metricsDef[key].icon,
+                };
+              })}
+              selected={selectedMetrics}
+              setSelected={setSelectedMetrics}
+              />
+
             </TopRowParent>
             <TopRowParent className="-py-[10px]">
               {Object.keys(timespans).map((key) => {
