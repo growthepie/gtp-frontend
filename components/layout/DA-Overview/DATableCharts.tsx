@@ -518,7 +518,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                 };
             const selectedTimeInterval = isMonthly ? "monthly" : "daily";
 
-            const timeIndex = 0;
+            const timeIndex = types.findIndex((type) => type === "unix");
             let valueIndex = 1;
             let valueMulitplier = 1;
 
@@ -559,7 +559,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                     // if (showGwei) valueMulitplier = 1000000000;
                 }
             }
-
+            console.log(data)
             const seriesData = data.map((d) => {
                 return [d[timeIndex], d[valueIndex] * valueMulitplier];
             });
@@ -569,7 +569,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                 radius: 0,
                 symbol: "circle",
             }
-
+            console.log(color)
             if (selectedTimeInterval === "daily") {
                 return {
                     data: seriesData,
@@ -630,7 +630,8 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
 
             const secondZoneDashStyle = todaysDateUTC === 1 ? "Solid" : "Dot";
 
-
+            console.log(isColumnChart)
+            console.log(seriesData)
 
             // if it is not the last day of the month, add a zone to the chart to indicate that the data is incomplete
             if (selectedTimeInterval === "monthly") {
@@ -713,9 +714,9 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                 </div>
                 
 
-                <hr className="absolute w-[92.5%] border-t-[2px] left-[55px] top-[5px] border-[#5A64624F] border-dotted " />
+                <hr className="absolute w-[92.5%] border-t-[2px] left-[55px] top-[4px] border-[#5A64624F] border-dotted " />
                 <hr className="absolute w-[92.5%] border-t-[2px] left-[55px] top-[97px] border-[#5A64624F] border-dotted " />
-                <hr className="absolute w-[92.5%] border-t-[2px] left-[55px] top-[192px] border-[#5A64624F] border-dotted " />
+                <hr className="absolute w-[92.5%] border-t-[2px] left-[55px] top-[190px] border-[#5A64624F] border-dotted " />
                 
                 <HighchartsProvider Highcharts={Highcharts}>
                     <HighchartsChart                             
@@ -775,7 +776,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                         marginLeft={50}
                         
                         
-                        marginBottom={30}
+                        marginBottom={32}
 
                         marginTop={5}
                         onRender={function (event) {
@@ -960,7 +961,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                             const realIndex = Object.keys(data[selectedTimespan].da_consumers).findIndex((k) => k === key);
                             const types = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].types;
                             const name = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1];
-                            console.log("name", name);
+                            
                             const daColor = AllChainsByKeys[key] ? AllChainsByKeys[key].colors["dark"][0] : UNLISTED_CHAIN_COLORS[realIndex];
                             
                             const unlistedColor =  AllChainsByKeys[key] ? false : true;
@@ -973,7 +974,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                                 AllChainsByKeys[key] ? AllChainsByKeys[key].colors["dark"][0] : UNLISTED_CHAIN_COLORS[realIndex],
                             );
 
-                            console.log("seriesData", seriesData);
+                            
 
                             const color = seriesData.color;
                             const zoneAxis = seriesData.zoneAxis;
