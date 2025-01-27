@@ -37,6 +37,9 @@ import { get } from "lodash";
 import { locale } from "moment";
 import ChartWatermark from "../ChartWatermark";
 import { Badge } from "@/app/(labels)/labels/Search";
+import highchartsPatternFill from "highcharts/modules/pattern-fill";
+// import highchartsAnnotations from "highcharts/modules/annotations";
+import highchartsRoundedCorners from "highcharts-rounded-corners";
 
 const COLORS = {
     GRID: "rgb(215, 223, 222)",
@@ -61,6 +64,50 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
   // const [hoverChain, setHoverChain] = useState<string | null>(null);
     const pieChartComponent = useRef<Highcharts.Chart | null>(null);
     const chartComponent = useRef<Highcharts.Chart | null>(null);
+
+    useEffect(() => {
+        Highcharts.setOptions({
+          lang: {
+            numericSymbols: ["K", " M", "B", "T", "P", "E"],
+          },
+        });
+        highchartsRoundedCorners(Highcharts);
+        // highchartsAnnotations(Highcharts);
+        highchartsPatternFill(Highcharts);
+    
+        // update x-axis label sizes if it is a 4 digit number
+        Highcharts.wrap(
+          Highcharts.Axis.prototype,
+          "renderTick",
+          function (proceed) {
+            proceed.apply(this, Array.prototype.slice.call(arguments, 1));
+    
+            const axis: Highcharts.Axis = this;
+            const ticks: Highcharts.Dictionary<Highcharts.Tick> = axis.ticks;
+            if (
+              axis.isXAxis &&
+              axis.options.labels &&
+              axis.options.labels.enabled
+            ) {
+              Object.keys(ticks).forEach((tick) => {
+                const tickLabel = ticks[tick].label;
+                if (!tickLabel) return;
+                const tickValue = tickLabel.element.textContent;
+                if (tickValue) {
+                  // if the tick value is a 4 digit number, increase the font size
+                  if (tickValue.length === 4) {
+                    tickLabel.css({
+                      transform: "scale(1.4)",
+                      fontWeight: "600",
+                    });
+                  }
+                }
+              });
+            }
+          },
+        );
+    
+      }, []);
    
 
     
@@ -267,15 +314,25 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
         return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
     }
 
+    const getNameFromKey = useMemo<Record<string, string>>(() => {
 
+        const chains = pie_data.data.reduce((acc, d) => {
+            acc[d[0]] = d[1];
+            return acc;
+        }, {});
+        
+        return chains;
+
+    }, [pie_data])
 
     const tooltipFormatter = useCallback(
         function (this: any) {
             const { x, points } = this;
             const date = new Date(x);
             let dateString = date.toLocaleDateString("en-GB", {
+                timeZone: "UTC",
                 month: "short",
-                day: "numeric",
+                day: !isMonthly ? "numeric" : undefined,
                 year: "numeric",
             });
 
@@ -289,6 +346,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                 dateString +=
                     " " +
                     date.toLocaleTimeString("en-GB", {
+                        timeZone: "UTC",
                         hour: "numeric",
                         minute: "2-digit",
                     });
@@ -364,12 +422,18 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                 return max;
             }, 0);
     
+            const nameToKey = Object.keys(getNameFromKey).reduce((acc, key) => {
+                acc[getNameFromKey[key]] = key;
+                return acc;
+            }, {});
         
             const tooltipPoints = points
                 .sort((a: any, b: any) => b.y - a.y)
                 .map((point: any, index: number) => {
                     const { series, y, percentage } = point;
                     const { name } = series;
+                    const realIndex = Object.keys(data[selectedTimespan].da_consumers).findIndex((k) => k === name);
+                    const color = AllChainsByKeys[nameToKey[name]] ? AllChainsByKeys[nameToKey[name]].colors["dark"][0] : UNLISTED_CHAIN_COLORS[realIndex];
                     const nameString = name;
                     let percentSize = (y / pointsSum) * 175;
                     let suffix = "";
@@ -379,7 +443,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
     
                     return `
                     <div class="flex w-[215px] space-x-2 items-center font-medium mb-0.5 pr-2 overflow-x-hidden ">
-                        <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${series.color}"></div>
+                        <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${color}"></div>
                         <div class="tooltip-point-name text-xs">${nameString}</div>
                         <div class="flex-1 text-right justify-end flex numbers-xs w-full">
                             <div class="flex justify-end text-right w-full">
@@ -390,7 +454,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                             <div class="ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
                         </div>
                         <div class="relative">
-                            <hr class="absolute border-t-[2px] right-[8px] top-[6px] min-w-[1px]" style="width: ${percentSize}px; border-color: ${series.color}"; />
+                            <hr class="absolute border-t-[2px] right-[8px] top-[6px] min-w-[1px]" style="width: ${percentSize}px; border-color: ${color}"; />
                         </div>
                     </div>
                     `;
@@ -405,7 +469,7 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
             `
             return scrollbarStyles + tooltip + tooltipPoints + tooltipEnd + totalString;
         },
-        [showUsd],
+        [AllChainsByKeys, data, getNameFromKey, isMonthly, selectedTimespan],
     );
 
 
@@ -436,19 +500,201 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
     }, [showUsd, selectedChain])
 
 
-    const getNameFromKey = useMemo<Record<string, string>>(() => {
 
-        const chains = pie_data.data.reduce((acc, d) => {
-            acc[d[0]] = d[1];
-            return acc;
-        }, {});
-        
-        return chains;
-
-    }, [pie_data])
 
 
   // const { hoverChain, setHoverChain } = useChartSync(pieChartComponent, chartComponent, getNameFromKey)
+
+    const getSeriesData = useCallback(
+        (name: string, types: string[], data: number[][], chartType: string, daColor: string) => {
+            if (name === "")
+                return {
+                    data: [],
+                    zoneAxis: undefined,
+                    zones: undefined,
+                    fillColor: undefined,
+                    fillOpacity: undefined,
+                    color: undefined,
+                };
+            const selectedTimeInterval = isMonthly ? "monthly" : "daily";
+
+            const timeIndex = 0;
+            let valueIndex = 1;
+            let valueMulitplier = 1;
+
+            let zones: any[] | undefined = undefined;
+            let zoneAxis: string | undefined = undefined;
+
+            const isLineChart = chartType === "line";
+            const isColumnChart = chartType === "column";
+
+            const isAreaChart = chartType === "area";
+
+            let fillOpacity = undefined;
+
+            let seriesFill = "transparent";
+
+            if (isAreaChart) {
+                seriesFill = daColor + "33";
+            }
+
+            if (isAreaChart) {
+                seriesFill = daColor + "33";
+            }
+
+            let fillColor =
+                selectedTimeInterval === "daily"
+                    ? daColor
+                    : undefined;
+            let color =
+                selectedTimeInterval === "daily"
+                    ? daColor
+                    : undefined;
+
+            if (types.includes("usd")) {
+                if (showUsd) {
+                    valueIndex = types.indexOf("usd");
+                } else {
+                    valueIndex = types.indexOf("eth");
+                    // if (showGwei) valueMulitplier = 1000000000;
+                }
+            }
+
+            const seriesData = data.map((d) => {
+                return [d[timeIndex], d[valueIndex] * valueMulitplier];
+            });
+
+            let marker = {
+                lineColor: daColor,
+                radius: 0,
+                symbol: "circle",
+            }
+
+            if (selectedTimeInterval === "daily") {
+                return {
+                    data: seriesData,
+                    zoneAxis,
+                    zones,
+                    fillColor: seriesFill,
+                    fillOpacity,
+                    color,
+                    marker,
+                };
+            }
+
+            const columnFillColor = {
+                linearGradient: {
+                    x1: 0,
+                    y1: 0,
+                    x2: 0,
+                    y2: 1,
+                },
+                stops: [
+                    [0, daColor + "FF"],
+                    // [0.349, daColor + "88"],
+                    [1, daColor + "00"],
+                ],
+            };
+
+            const columnColor = {
+                linearGradient: {
+                    x1: 0,
+                    y1: 0,
+                    x2: 0,
+                    y2: 1,
+                },
+                stops: [
+                    [0, daColor + "FF"],
+                    // [0.349, daColor + "88"],
+                    [1, daColor + "00"],
+                ],
+            };
+
+            const dottedColumnColor = {
+                pattern: {
+                    path: {
+                        d: "M 0 0 L 10 10 M 9 -1 L 11 1 M -1 9 L 1 11",
+                        "stroke-width": 3,
+                    },
+                    width: 10,
+                    height: 10,
+                    opacity: 1,
+                    color: daColor + "CC",
+                },
+            };
+
+            const todaysDateUTC = new Date().getUTCDate();
+
+            const secondZoneDottedColumnColor =
+                todaysDateUTC === 1 ? columnColor : dottedColumnColor;
+
+            const secondZoneDashStyle = todaysDateUTC === 1 ? "Solid" : "Dot";
+
+
+
+            // if it is not the last day of the month, add a zone to the chart to indicate that the data is incomplete
+            if (selectedTimeInterval === "monthly") {
+
+                if (seriesData.length > 1 && todaysDateUTC !== 1) {
+                    zoneAxis = "x";
+                    zones = [
+                        {
+                            value: seriesData[seriesData.length - 2][0] + 1,
+                            dashStyle: "Solid",
+                            fillColor: isColumnChart ? columnFillColor : seriesFill,
+                            color: isColumnChart
+                                ? columnColor
+                                : daColor,
+                        },
+                        {
+                            // value: monthlyData[monthlyData.length - 2][0],
+                            dashStyle: secondZoneDashStyle,
+                            fillColor: isColumnChart ? columnFillColor : seriesFill,
+                            color: isColumnChart
+                                ? secondZoneDottedColumnColor
+                                : daColor,
+                        },
+                    ];
+                } else if (todaysDateUTC !== 1) {
+                    zoneAxis = "x";
+                    zones = [
+                        {
+                            // value: monthlyData[monthlyData.length - 2][0],
+                            dashStyle: secondZoneDashStyle,
+                            fillColor: isColumnChart ? columnFillColor : seriesFill,
+                            color: isColumnChart
+                                ? secondZoneDottedColumnColor
+                                : daColor,
+                        }
+                    ];
+                    marker.radius = 2;
+                } else {
+                    zoneAxis = "x";
+                    zones = [
+                        {
+                            // value: monthlyData[monthlyData.length - 2][0],
+                            dashStyle: secondZoneDashStyle,
+                            fillColor: isColumnChart ? columnFillColor : seriesFill,
+                            color: isColumnChart
+                                ? secondZoneDottedColumnColor
+                                : daColor,
+                        }
+                    ];
+                }
+            }
+
+            return {
+                data: seriesData,
+                zoneAxis,
+                zones,
+                fillColor,
+                fillOpacity,
+                color,
+                marker,
+            };
+        },
+        [isMonthly, showUsd],
+    );
     
     
 
@@ -603,32 +849,42 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                             },
                             enabled: true,
 
-                            formatter: function () {
-                                // Convert Unix timestamp to milliseconds
-                                const date = new Date(this.value);
-                                
-                                // Create a new date set to the first day of the month
-                                const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-                                
-                                // Format the date using the first day
-                                const dateString = firstDayOfMonth
-                                    .toLocaleDateString("en-GB", {
-                                        day: !(
-                                            timespans[selectedTimespan].value >= 90 ||
-                                            selectedTimespan === "max"
-                                        )
-                                            ? "2-digit"
-                                            : undefined,
-                                        month: "short",
-                                        year:
-                                            timespans[selectedTimespan].value >= 90 ||
-                                            selectedTimespan === "max"
-                                            ? "numeric"
-                                            : undefined,
-                                    })
-                                    .toUpperCase();
-                                return `<span class="font-bold">${dateString}</span>`;
-                            },
+                            formatter: function (this: Highcharts.AxisLabelsFormatterContextObject) {
+
+                                if (timespans[selectedTimespan].xMax - timespans[selectedTimespan].xMin <= 40 * 24 * 3600 * 1000) {
+                                  let isBeginningOfWeek = new Date(this.value).getUTCDay() === 1;
+                                  let showMonth = this.isFirst || new Date(this.value).getUTCDate() === 1;
+              
+                                  return new Date(this.value).toLocaleDateString("en-GB", {
+                                    timeZone: "UTC",
+                                    month: "short",
+                                    day: "numeric",
+                                    year: this.isFirst ? "numeric" : undefined,
+                                  });
+                                }
+                                else {
+                                  // if Jan 1st, show year
+                                  if (new Date(this.value).getUTCMonth() === 0) {
+                                    return new Date(this.value).toLocaleDateString("en-GB", {
+                                      timeZone: "UTC",
+                                      year: "numeric",
+                                    });
+                                  }
+                                  // if not 1st of the month, show month and day
+                                  else if (new Date(this.value).getUTCDate() !== 1) {
+                                    return new Date(this.value).toLocaleDateString("en-GB", {
+                                      timeZone: "UTC",
+                                      month: "short",
+                                      day: "numeric",
+                                    });
+                                  }
+                                  return new Date(this.value).toLocaleDateString("en-GB", {
+                                    timeZone: "UTC",
+                                    month: "short",
+                                    year: "numeric",
+                                  });
+                                }
+                              },
                         }}
                         crosshair={{
                             width: 0.5,
@@ -704,82 +960,86 @@ export default function DATableCharts({selectedTimespan, data, isMonthly, da_nam
                             const realIndex = Object.keys(data[selectedTimespan].da_consumers).findIndex((k) => k === key);
                             const types = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].types;
                             const name = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1];
-                            const color = AllChainsByKeys[key] ? AllChainsByKeys[key].colors["dark"][0] : UNLISTED_CHAIN_COLORS[realIndex];
+                            console.log("name", name);
+                            // const color = AllChainsByKeys[key] ? AllChainsByKeys[key].colors["dark"][0] : UNLISTED_CHAIN_COLORS[realIndex];
+                            
                             const unlistedColor =  AllChainsByKeys[key] ? false : true;
 
+                            const seriesData = getSeriesData(
+                                name,
+                                types,
+                                data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values,
+                                isMonthly ? "column" : "area",
+                                AllChainsByKeys[key] ? AllChainsByKeys[key].colors["dark"][0] : UNLISTED_CHAIN_COLORS[realIndex],
+                            );
+
+                            console.log("seriesData", seriesData);
+
+                            const color = seriesData.color;
+                            const zoneAxis = seriesData.zoneAxis;
+                            const zones = seriesData.zones;
+                            const fillColor = seriesData.fillColor;
+                            const fillOpacity = seriesData.fillOpacity;
+                            const marker = seriesData.marker;
+                            const pointsSettings = {
+                                pointPlacement:
+                                  isMonthly
+                                    ? 0
+                                    : 0.5,
+                              };
+
+                            // getSeries data returns:
+                            // return {
+                            //     data: [],
+                            //     zoneAxis: undefined,
+                            //     zones: undefined,
+                            //     fillColor: undefined,
+                            //     fillOpacity: undefined,
+                            //     color: undefined,
+                            // };
+
                             
-                            return(
+
+                            
+                            return (
                                 <Series
                                     type={isMonthly ? "column" : "area"}
-                                    key={key + "-DATableCharts" + da_name} 
-                                    name={name} 
-                                    
+                                    key={key + "-DATableCharts" + da_name}
+                                    name={name}
+
                                     visible={data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values.length > 0}
-                                    
+
                                     data={data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values.map((d) => [
-                                        d[types.indexOf("unix")], 
+                                        d[types.indexOf("unix")],
                                         d[types.indexOf("data_posted")]
                                     ])}
                                     color={color}
                                     shadow={isMonthly ? {
-                                    
+
                                         color: color + "CC",
                                         width: 5,
-                                    }: undefined}
+                                    } : undefined}
                                     states={{
                                         hover: {
-                                          halo: {
-                                            size: 5,
-                                            opacity: 1,
-                                            attributes: {
-                                              fill:
-                                                color + "99",
-                                              stroke:
-                                               color + "66",
-                                              "stroke-width": 0,
-                                            },
-                                          },
-                                        }
-                                      }}
-                                      fillColor={{
-                                        linearGradient: {
-                                          x1: 0,
-                                          y1: 0,
-                                          x2: 0,
-                                          y2: 1,
-                                        },
-                                        stops: [
-                                          [
-                                            0,
-                                            color  + "33",
-                                          ],
-
-                                          [
-                                            1,
-                                            color + "33",
-                                          ],
-                                        ],
-                                      }}
-                                    zones={[
-                                        {
-                                          color: isMonthly
-                                            ? {
-                                                linearGradient: {
-                                                  x1: 0,
-                                                  y1: 0,
-                                                  x2: 0,
-                                                  y2: 1,
+                                            halo: {
+                                                size: 5,
+                                                opacity: 1,
+                                                attributes: {
+                                                    fill:
+                                                        color + "99",
+                                                    stroke:
+                                                        color + "66",
+                                                    "stroke-width": 0,
                                                 },
-                                                stops: [
-                                                  [0, color + "FF"],
-                                                  [0.65, color + "FF"],
-                                                  [1, color + "00"],
-                                                ],
-                                              }
-                                            : undefined, // Disable gradient when isMonthly is false
-                                        },
-                                      ]}
-                                      
+                                            },
+                                        }
+                                    }}
+                                    pointPlacement={pointsSettings.pointPlacement}
+                                    fillColor={fillColor}
+                                    fillOpacity={fillOpacity}
+                                    zones={zones}
+                                    zoneAxis={zoneAxis}
+                                    // marker={marker}
                                 />
                             )
                         })}
