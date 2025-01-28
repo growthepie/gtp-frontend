@@ -1,25 +1,15 @@
 "use client";
-import { useEffect, useMemo, useState, useRef } from "react";
-import Image from "next/image";
-import { useMediaQuery } from "@react-hook/media-query";
-import Heading from "@/components/layout/Heading";
-import Subheading from "@/components/layout/Subheading";
+import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import {
-  // AllChains,
-  // AllChainsByKeys,
   Get_SupportedChainKeys,
 } from "@/lib/chains";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
 import LandingChart from "@/components/layout/LandingChart";
 import LandingMetricsTable, { TableRankingProvider } from "@/components/layout/LandingMetricsTable";
-import LandingTopContracts from "@/components/layout/LandingTopContracts";
-import Swiper from "@/components/layout/SwiperItems";
 import { Icon } from "@iconify/react";
-import TopAnimation from "@/components/TopAnimation";
 import { LandingURL, MasterURL } from "@/lib/urls";
-import Link from "next/link";
 import Container from "@/components/layout/Container";
 import ShowLoading from "@/components/layout/ShowLoading";
 import HorizontalScrollContainer from "../HorizontalScrollContainer";
@@ -27,13 +17,7 @@ import { isMobile } from "react-device-detect";
 import { useMaster } from "@/contexts/MasterContext";
 
 export default function LandingUserBaseChart() {
-  // const isLargeScreen = useMediaQuery("(min-width: 1280px)");
-
   const [isSidebarOpen] = useState(false);
-
-  // useEffect(() => {
-  //   setIsSidebarOpen(isLargeScreen);
-  // }, [isLargeScreen]);
 
   const { AllChains, AllChainsByKeys } = useMaster();
 

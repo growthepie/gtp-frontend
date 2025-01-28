@@ -12,6 +12,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
+import LandingSwiperItems from "@/components/layout/LandingSwiperItems";
 // import { LandingURL } from "@/lib/urls";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -54,12 +55,11 @@ export default async function Page() {
           <div>Aggregated daily metrics across all tracked Layer 2s.</div>
         </Subheading>
       </Container>
-      <Container className="!px-0 fade-edge-div pb-[24px] -mb-[24px]">
-        <SwiperContainer ariaId={"layer-2-traction-title"} />
-        {/* <div className="h-[145px] md:h-[183px] w-full">
-          <ShowLoading section />
-        </div> */}
-      </Container>
+      {/* <Container className="!px-0 fade-edge-div pb-[24px] -mb-[24px]"> */}
+      <SwiperContainer ariaId={"layer-2-traction-title"} size="landing">
+        <LandingSwiperItems />
+      </SwiperContainer>
+      {/* </Container> */}
 
       <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
         <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">

@@ -34,20 +34,6 @@ export default function Economics() {
 
   const [selectedTimespan, setSelectedTimespan] = useState("365d");
   const [isMonthly, setIsMonthly] = useState(false);
-  // if (!econData || !master) {
-  //   return (
-  //     <ShowLoading
-  //       dataLoading={[econLoading, masterLoading]}
-  //       dataValidating={[econValidating, masterValidating]}
-  //     />
-  //   );
-  // }
-
-  // const {
-  //   chain_breakdown,
-  //   all_l2s,
-  // }: { chain_breakdown: ChainBreakdownResponse; all_l2s: l2_data } =
-  //   econData.data;
 
   return (
     <>
@@ -55,14 +41,13 @@ export default function Economics() {
         dataLoading={[econLoading, masterLoading]}
         dataValidating={[econValidating, masterValidating]}
       />
-      {/* <div className="mt-[15px] flex flex-col gap-y-[60px] h-full"> */}
       {/*Data Availability Fee Markets */}
-      <Container className={` ${selectedTimespan === "1d" ? "pb-[0px]" : "pb-[30px]"}`}>
-        {econData && <EconHeadCharts chart_data={econData.data.all_l2s} selectedTimespan={selectedTimespan} setSelectedTimespan={setSelectedTimespan} isMonthly={isMonthly} setIsMonthly={setIsMonthly} />}
-      </Container>
-      {econData && master && <ChainBreakdown data={Object.fromEntries(Object.entries(econData.data.chain_breakdown).filter(([key]) => key !== "totals"))} master={master} selectedTimespan={selectedTimespan} setSelectedTimespan={setSelectedTimespan} isMonthly={isMonthly} setIsMonthly={setIsMonthly} totals={econData.data.chain_breakdown["totals"]} />}
-      {/* </div> */}
-
+      <div className={`flex flex-col transition-[gap] duration-300 ${selectedTimespan === "1d" ? "gap-y-[15px]" : "gap-y-[30px]"}`}>
+        <div className={`flex flex-col gap-y-[15px]`}>
+          {econData && <EconHeadCharts chart_data={econData.data.all_l2s} selectedTimespan={selectedTimespan} setSelectedTimespan={setSelectedTimespan} isMonthly={isMonthly} setIsMonthly={setIsMonthly} />}
+        </div>
+        {econData && master && <ChainBreakdown data={Object.fromEntries(Object.entries(econData.data.chain_breakdown).filter(([key]) => key !== "totals"))} master={master} selectedTimespan={selectedTimespan} setSelectedTimespan={setSelectedTimespan} isMonthly={isMonthly} setIsMonthly={setIsMonthly} totals={econData.data.chain_breakdown["totals"]} />}
+      </div>
     </>
   );
 }

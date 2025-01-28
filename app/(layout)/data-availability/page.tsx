@@ -12,6 +12,7 @@ import Icon from "@/components/layout/Icon";
 import Image from "next/image";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import Link from "next/link";
+import ShowLoading from "@/components/layout/ShowLoading";
 
 export default function DAOverviewPage() {
     const [selectedTimespan, setSelectedTimespan] = useState("365d");
@@ -98,97 +99,104 @@ export default function DAOverviewPage() {
 
     return (
       <>
+      <ShowLoading
+        dataLoading={[isLoading]}
+        dataValidating={[isValidating]}
+      />
       <Container className={`flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] `} isPageRoot >
-          <div className="flex items-center h-[43px] gap-x-[8px] ">
-              <Icon icon="gtp:gtp-data-availability" className="w-[24px] h-[24px]"/>
-              <Heading className="text-[36px] leading-snug " as="h1">
-              {"Data Availability Overview"}
-              </Heading>
-          </div>
-          <div className="text-[14px] mb-[30px]">
+        <div className="flex items-center h-[43px] gap-x-[8px] ">
+          <Icon icon="gtp:gtp-data-availability" className="w-[24px] h-[24px]"/>
+          <Heading className="text-[36px] leading-snug " as="h1">
+            Data Availability Overview
+          </Heading>
+        </div>
+        <div className="text-[14px] mb-[30px]">
           This page shows an overview of common Data Availability (DA) solutions that are used by Layer 2s. DA is becoming more and more important for the modular Layer 2 architecture. Different solutions have different trade-offs with regards to scalability, costs, and security assumptions.
-          </div>
+        </div>
       </Container>
-      {data && (
-        <>
-          <Container>
-              <TopRowContainer className="-py-[3px]">
-                  <TopRowParent className="-py-[10px]">
-                  <TopRowChild
-                      isSelected={!isMonthly}
-                      onClick={() => {
-                      const isTransferrableTimespan =
-                          selectedTimespan === "max" || selectedTimespan === "365d";
-                      if (!isTransferrableTimespan) {
-                          setSelectedTimespan("max");
-                      }
-                      setIsMonthly(false);
-                      }}
-                      style={{
-                      paddingTop: "10.5px",
-                      paddingBottom: "10.5px",
-                      paddingLeft: "16px",
-                      paddingRight: "16px",
-                      }}
-                  >
-                      {"Daily"}
-                  </TopRowChild>
-                  <TopRowChild
-                      isSelected={isMonthly}
-                      onClick={() => {
-                      const isTransferrableTimespan =
-                          selectedTimespan === "max" || selectedTimespan === "365d";
-                      if (!isTransferrableTimespan) {
-                          setSelectedTimespan("max");
-                      }
-                      setIsMonthly(true);
-                      }}
-                      style={{
-                      paddingTop: "10.5px",
-                      paddingBottom: "10.5px",
-                      paddingLeft: "16px",
-                      paddingRight: "16px",
-                      }}
-                  >
-                      {"Monthly"}
-                  </TopRowChild>
-                  </TopRowParent>
-                  <div className="block 2xl:hidden w-[80%] mx-auto my-[10px]">
-                    <hr className="border-dashed border-top-[1px] h-[0.5px] border-forest-400" />
-                  </div>
-                  <TopRowParent className="-py-[10px]">
-                  {Object.keys(timespans).map((key) => {
-                      {
-                      return (
-                          <TopRowChild
-                          className={`px-[10px]`}
-                          onClick={() => {
-                              setSelectedTimespan(key);
-                          }}
-                          key={key}
-                          style={{
-                              paddingTop: "10.5px",
-                              paddingBottom: "10.5px",
-                              paddingLeft: "16px",
-                              paddingRight: "16px",
-                          }}
-                          isSelected={selectedTimespan === key}
-                          >
-                          {selectedTimespan === key
-                              ? timespans[key].label
-                              : timespans[key].shortLabel}
-                          </TopRowChild>
-                      );
-                      }
-                  })}
-                  </TopRowParent>
-              </TopRowContainer>
-            </Container>
-            <DAHeadCharts selectedTimespan={selectedTimespan} isMonthly={isMonthly} data={data.data.all_da} />
-            <DATable breakdown_data={data.data.da_breakdown} selectedTimespan={selectedTimespan} isMonthly={isMonthly} />
-          
-        </>
-      )}
+      <div className={`flex flex-col transition-[gap] duration-300 gap-y-[30px]`}>
+        {data && (
+          <>
+          <div className={`flex flex-col gap-y-[15px]`}>
+            <Container>
+                <TopRowContainer className="-py-[3px]">
+                    <TopRowParent className="-py-[10px]">
+                    <TopRowChild
+                        isSelected={!isMonthly}
+                        onClick={() => {
+                        const isTransferrableTimespan =
+                            selectedTimespan === "max" || selectedTimespan === "365d";
+                        if (!isTransferrableTimespan) {
+                            setSelectedTimespan("max");
+                        }
+                        setIsMonthly(false);
+                        }}
+                        style={{
+                        paddingTop: "10.5px",
+                        paddingBottom: "10.5px",
+                        paddingLeft: "16px",
+                        paddingRight: "16px",
+                        }}
+                    >
+                        {"Daily"}
+                    </TopRowChild>
+                    <TopRowChild
+                        isSelected={isMonthly}
+                        onClick={() => {
+                        const isTransferrableTimespan =
+                            selectedTimespan === "max" || selectedTimespan === "365d";
+                        if (!isTransferrableTimespan) {
+                            setSelectedTimespan("max");
+                        }
+                        setIsMonthly(true);
+                        }}
+                        style={{
+                        paddingTop: "10.5px",
+                        paddingBottom: "10.5px",
+                        paddingLeft: "16px",
+                        paddingRight: "16px",
+                        }}
+                    >
+                        {"Monthly"}
+                    </TopRowChild>
+                    </TopRowParent>
+                    <div className="block 2xl:hidden w-[80%] mx-auto my-[10px]">
+                      <hr className="border-dashed border-top-[1px] h-[0.5px] border-forest-400" />
+                    </div>
+                    <TopRowParent className="-py-[10px]">
+                    {Object.keys(timespans).map((key) => {
+                        {
+                        return (
+                            <TopRowChild
+                            className={`px-[10px]`}
+                            onClick={() => {
+                                setSelectedTimespan(key);
+                            }}
+                            key={key}
+                            style={{
+                                paddingTop: "10.5px",
+                                paddingBottom: "10.5px",
+                                paddingLeft: "16px",
+                                paddingRight: "16px",
+                            }}
+                            isSelected={selectedTimespan === key}
+                            >
+                            {selectedTimespan === key
+                                ? timespans[key].label
+                                : timespans[key].shortLabel}
+                            </TopRowChild>
+                        );
+                        }
+                    })}
+                    </TopRowParent>
+                </TopRowContainer>
+              </Container>
+              <DAHeadCharts selectedTimespan={selectedTimespan} isMonthly={isMonthly} data={data.data.all_da} />
+              </div>
+              <DATable breakdown_data={data.data.da_breakdown} selectedTimespan={selectedTimespan} isMonthly={isMonthly} />
+          </>
+        )}
+      </div>
 
         <Container className="pt-[15px]">
             <QuestionAnswer
