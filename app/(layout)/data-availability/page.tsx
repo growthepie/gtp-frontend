@@ -12,6 +12,7 @@ import Icon from "@/components/layout/Icon";
 import Image from "next/image";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import Link from "next/link";
+import ShowLoading from "@/components/layout/ShowLoading";
 
 export default function DAOverviewPage() {
     const [selectedTimespan, setSelectedTimespan] = useState("365d");
@@ -98,16 +99,20 @@ export default function DAOverviewPage() {
 
     return (
       <>
+      <ShowLoading
+        dataLoading={[isLoading]}
+        dataValidating={[isValidating]}
+      />
       <Container className={`flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] `} isPageRoot >
-          <div className="flex items-center h-[43px] gap-x-[8px] ">
-              <Icon icon="gtp:gtp-data-availability" className="w-[24px] h-[24px]"/>
-              <Heading className="text-[36px] leading-snug " as="h1">
-              {"Data Availability Overview"}
-              </Heading>
-          </div>
-          <div className="text-[14px] mb-[30px]">
+        <div className="flex items-center h-[43px] gap-x-[8px] ">
+          <Icon icon="gtp:gtp-data-availability" className="w-[24px] h-[24px]"/>
+          <Heading className="text-[36px] leading-snug " as="h1">
+            Data Availability Overview
+          </Heading>
+        </div>
+        <div className="text-[14px] mb-[30px]">
           This page shows an overview of common Data Availability (DA) solutions that are used by Layer 2s. DA is becoming more and more important for the modular Layer 2 architecture. Different solutions have different trade-offs with regards to scalability, costs, and security assumptions.
-          </div>
+        </div>
       </Container>
       {data && (
         <>

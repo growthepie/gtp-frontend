@@ -17,7 +17,7 @@ import useSWR from "swr";
 import { DATimeseriesResponse } from "@/types/api/DATimeseriesResponse";
 import { DATimeseriesURL } from "@/lib/urls";
 import { chart } from "highcharts";
-import ShowLoading from "@/components/layout/ShowLoading";
+// import ShowLoading from "@/components/layout/ShowLoading";
 import DATableCharts from "@/components/layout/DA-Overview/DATableCharts";
 import Image from "next/image";
 import DynamicIcon from "../DynamicIcon";
@@ -437,15 +437,15 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
     //daconsumers breakdown_data[item.key][selectedTimespan].da_consumers
     return (
         <>
-        {chart_loading || !chart_data || !master ? (
-            <div>
-              <ShowLoading
+        {/* {chart_loading || !chart_data || !master ? ( */}
+            {/* <div> */}
+              {/* <ShowLoading
                 dataLoading={[chart_loading]}
                 dataValidating={[chart_validating]}
                 fullScreen={true}
-              />
-            </div>
-          ) : (
+              /> */}
+            {/* </div> */}
+           {/* ) : ( */}
           <HorizontalScrollContainer
             includeMargin={true}
             className="w-full flex flex-col "
@@ -852,14 +852,16 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                         }`}
                     >
                       <div className="w-[97.5%] bg-forest-950 rounded-b-2xl border-dotted border-[1.25px] border-t-0 border-forest-50/30">
-                        <DATableCharts
-                          data={chart_data.data.da_layers[item.key]}
-                          selectedTimespan={selectedTimespan}
-                          isMonthly={isMonthly}
-                          da_name={item.key}
-                          pie_data={breakdown_data[item.key][selectedTimespan].da_consumer_chart}
-                          master={master}
-                        />
+                        {chart_data && master && (
+                          <DATableCharts
+                            data={chart_data.data.da_layers[item.key]}
+                            selectedTimespan={selectedTimespan}
+                            isMonthly={isMonthly}
+                            da_name={item.key}
+                            pie_data={breakdown_data[item.key][selectedTimespan].da_consumer_chart}
+                            master={master}
+                          />
+                        )}
                       </div>
                     </div>
 
@@ -910,7 +912,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
               
             </div>
           </HorizontalScrollContainer>
-          )}
+          {/* )} */}
         </>
     )
 }

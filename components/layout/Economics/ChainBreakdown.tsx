@@ -699,7 +699,7 @@ export default function ChainBreakdown({
                 <div className="flex items-center  gap-x-[1.5px] text-xxxs w-[104px] h-[16px] cursor-pointer">
                   <div className="flex justify-center group items-center rounded-l-full border-[2px] border-r-[0px] border-[#D03434] w-[72px] px-[5px]  ">
                     <div
-                      className=" group-hover:text-forest-50/80"
+                      className=" group-hover:text-forest-50/80 whitespace-nowrap"
                       onClick={() => {
                         if (metricSort !== "costs_l1") {
                           setSortOrder(true);
