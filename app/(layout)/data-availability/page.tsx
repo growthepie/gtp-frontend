@@ -116,7 +116,7 @@ export default function DAOverviewPage() {
       </Container>
       {data && (
         <>
-          <Container>
+          <Container className="mb-[15px]">
           <TopRowContainer className="!flex-col !rounded-[15px] !py-[3px] !px-[3px] !text-xs  2xl:!gap-y-0 2xl:!text-base 2xl:!flex 2xl:!flex-row 2xl:!rounded-full">
             <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 2xl:!mx-0 !gap-x-[4px] 2xl:!gap-x-[5px]">
                   <TopRowChild
