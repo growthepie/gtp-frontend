@@ -354,7 +354,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
               drag: true,
             },
             900: {
-              perPage: selectedTimespan === "1d" ? 1 : isSidebarOpen ? 1 : 2,
+              perPage: selectedTimespan === "1d" ? 1 : isSidebarOpen ? 1 : 1,
               drag: true,
             },
             1100: {

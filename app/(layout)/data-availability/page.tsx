@@ -137,6 +137,9 @@ export default function DAOverviewPage() {
                       {"Monthly"}
                   </TopRowChild>
                   </TopRowParent>
+                  <div className="block 2xl:hidden w-[80%] mx-auto my-[10px]">
+                    <hr className="border-dashed border-top-[1px] h-[0.5px] border-forest-400" />
+                  </div>
                   <TopRowParent className="-py-[10px]">
                   {Object.keys(timespans).map((key) => {
                       {
