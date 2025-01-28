@@ -116,7 +116,7 @@ const dataAvailabilityGroup: NavigationItem = {
       key: "data-availability-overview",
       rootKey: "metricsDataAvailabilityOverview",
       urlKey: "overview",
-      url: "/data-availability/overview",
+      url: "/data-availability",
       showNew: true,
     },
     {
