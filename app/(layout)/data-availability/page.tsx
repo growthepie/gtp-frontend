@@ -112,8 +112,8 @@ export default function DAOverviewPage() {
       {data && (
         <>
           <Container>
-              <TopRowContainer className="-py-[3px]">
-                  <TopRowParent className="-py-[10px]">
+          <TopRowContainer className="!flex-col !rounded-[15px] !py-[3px] !px-[3px] !text-xs  2xl:!gap-y-0 2xl:!text-base 2xl:!flex 2xl:!flex-row 2xl:!rounded-full">
+            <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 2xl:!mx-0 !gap-x-[4px] 2xl:!gap-x-[5px]">
                   <TopRowChild
                       isSelected={!isMonthly}
                       onClick={() => {
@@ -122,8 +122,10 @@ export default function DAOverviewPage() {
                       if (!isTransferrableTimespan) {
                           setSelectedTimespan("max");
                       }
+                      
                       setIsMonthly(false);
                       }}
+                      className={"!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
                       style={{
                       paddingTop: "10.5px",
                       paddingBottom: "10.5px",
@@ -143,6 +145,7 @@ export default function DAOverviewPage() {
                       }
                       setIsMonthly(true);
                       }}
+                      className={"!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
                       style={{
                       paddingTop: "10.5px",
                       paddingBottom: "10.5px",
@@ -153,19 +156,20 @@ export default function DAOverviewPage() {
                       {"Monthly"}
                   </TopRowChild>
                   </TopRowParent>
-                  <div className="block 2xl:hidden w-[80%] mx-auto my-[10px]">
-                    <hr className="border-dashed border-top-[1px] h-[0.5px] border-forest-400" />
+                  <div className="block 2xl:hidden w-[70%] mx-auto my-[10px]">
+                    <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
                   </div>
-                  <TopRowParent className="-py-[10px]">
+                  <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 2xl:!mx-0 !gap-x-[4px] 2xl:!gap-x-[5px]">
                   {Object.keys(timespans).map((key) => {
                       {
                       return (
                           <TopRowChild
-                          className={`px-[10px]`}
+                          className={"!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
                           onClick={() => {
                               setSelectedTimespan(key);
                           }}
                           key={key}
+                          
                           style={{
                               paddingTop: "10.5px",
                               paddingBottom: "10.5px",
