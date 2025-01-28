@@ -1411,6 +1411,12 @@ const ChartLegend = (
           color="#b5c4c3";
         }
 
+        let bgBorderClass = "border-[1px] border-[#344240] bg-[#344240] hover:border-[#5A6462] hover:bg-[#5A6462] h-[18px] !py-[2px] !px-[2px]";
+
+        if(selectedChain !== "all" && selectedChain !== key)
+            bgBorderClass = "border-[1px] border-[#344240] bg-transparent hover:border-[#5A6462] hover:bg-[#5A6462] h-[18px] !py-[2px] !px-[2px]";
+        
+
         return (
             <Badge
                 key={index + "da_consumers"}
@@ -1436,7 +1442,7 @@ const ChartLegend = (
                 onMouseLeave={() => {
                     setHoverChain(null);
                 }}   
-                className={`bg-[#344240] hover:bg-[#5A6462] cursor-pointer select-none`}
+                className={`cursor-pointer select-none ${bgBorderClass}`}
             />
         )
 
