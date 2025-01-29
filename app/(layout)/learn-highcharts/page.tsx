@@ -34,6 +34,7 @@ import {
 import ChartWatermark from "@/components/layout/ChartWatermark"; 
 import { useMaster } from "@/contexts/MasterContext";
 import "@/app/highcharts.axis.css";
+import { max } from "lodash";
 
 const COLORS = {
     GRID: "rgb(215, 223, 222)",
@@ -249,8 +250,15 @@ export default function Page(){
                         position: "relative",
 
                         overflow: "visible",
-                    },
+                    }
                     }}
+                    plotOptions = {{
+                      area: {
+                          marker: {
+                              enabled: false
+                          }
+                      }
+                     }}
                     
                 >
                     <Chart 
@@ -267,7 +275,7 @@ export default function Page(){
                             fontWeight: '700',
                             color: 'rgb(215, 223, 222)'
                         },
-                        formatter: function (this: Highcharts.YAxisLabelsFormatter) {
+                        formatter: function (this: any) {
                           const prefix = showUsd ? '$' : 'Ξ';
                           let value = this.value;
                           let suffix = '';
@@ -284,7 +292,35 @@ export default function Page(){
                     }
                     ><AreaSeries 
                         name="All L2s"  
-                        color={master.chains.all_l2s.colors['dark'][1]}
+                        // color={master.chains.all_l2s.colors['dark'][1] 
+                        color={{
+                          linearGradient: {
+                            x1: 0,
+                            y1: 0,
+                            x2: 0,
+                            y2: 1,
+                          },
+                          stops: [
+                              [0, master.chains.all_l2s.colors['dark'][0] + "F9"],
+                              [1, master.chains.all_l2s.colors['dark'][1] + "F9"],
+                          ]
+                        }}
+                        fillColor={{linearGradient: {
+                          x1: 0,
+                          y1: 0,
+                          x2: 0,
+                          y2: 1,
+                        },
+                        stops: [
+                            
+                           
+                            // [0.349, daColor + "88"],
+                            [0, master.chains.all_l2s.colors['dark'][0] + "33"],
+                            // [0.55, master.chains.all_l2s.colors['dark'][0] + "CC"],
+                            [1, master.chains.all_l2s.colors['dark'][1] + "33"],
+                        ]
+                          }}
+                     
                         data={chainOverviewData?.data.chains["all_l2s"].daily[selectedCategory].data.map(
                         (d: any) => [
                         d[0],
@@ -296,10 +332,33 @@ export default function Page(){
                     labels={{
                       style: {
                           color: 'rgb(215, 223, 222)'
+                      },
+                      formatter: function () {
+                        // Convert Unix timestamp to milliseconds
+                        const date = new Date(this.value);
+                        // Format the date as needed (e.g., "dd MMM yyyy")
+                        const dateString = date
+                            .toLocaleDateString("en-GB", {
+                            day: !(
+                                timespans[selectedTimespan].value >= 90 ||
+                                selectedTimespan === "max"
+                            )
+                                ? "2-digit"
+                                : undefined,
+                            month: "short",
+                            year:
+                                timespans[selectedTimespan].value >= 90 ||
+                                selectedTimespan === "max"
+                                ? "numeric"
+                                : undefined,
+                            })
+                            .toUpperCase();
+
+                        return `<span class="font-semibold">${dateString}</span>`;
                       }
                     }}
                         type="datetime"
-                        min={timespans[selectedTimespan].xMin}
+                        min={selectedTimespan !== 'max' ? timespans[selectedTimespan].xMin : undefined}
                         max={timespans[selectedTimespan].xMax}
                     >
                     </XAxis>
