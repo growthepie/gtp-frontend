@@ -176,7 +176,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
           const date = new Date(x);
           let dateString = date.toLocaleDateString("en-GB", {
             month: "short",
-            day: "numeric",
+            day: isMonthly ? undefined : "numeric",
             year: "numeric",
           });
           const chartTitle = this.series.chart.title.textStr;
@@ -272,7 +272,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
     
           return tooltip + tooltipPoints + tooltipEnd;
         },
-        [showUsd],
+        [showUsd, isMonthly],
       );
 
     function getSumDisplayValue(isolated_data) {
