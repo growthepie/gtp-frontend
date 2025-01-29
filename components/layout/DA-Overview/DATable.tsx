@@ -357,7 +357,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
       },
     );
 
-    const EXTRA_PADDING = 80;
+    const EXTRA_PADDING = 65;
 
     const minimumHeight = useMemo(() => {
       let retHeight: number = 39;
@@ -448,7 +448,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
            {/* ) : ( */}
           <HorizontalScrollContainer
             includeMargin={true}
-            className="w-full flex flex-col "
+            className="w-full flex flex-col mt-[30px] overflow-visible"
           >
             <div
               className={`grid pl-[44px]  pr-0.5 grid-cols-[auto_200px_199px_114px_280px_46px] mb-[15px]  ${isSidebarOpen
@@ -857,6 +857,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                             data={chart_data.data.da_layers[item.key]}
                             selectedTimespan={selectedTimespan}
                             isMonthly={isMonthly}
+                            isOpen={openDA[item.key]}
                             da_name={item.key}
                             pie_data={breakdown_data[item.key][selectedTimespan].da_consumer_chart}
                             master={master}
@@ -959,7 +960,7 @@ const DaConsumersTooltip = ({item, selectedTimespan, breakdown_data, AllChainsBy
                 leftIconColor={color}
                 label={breakdown_data[item.key][selectedTimespan].da_consumers.chains.values[index][1]}
                 size="sm"
-                className="!cursor-default select-none"
+                className="!cursor-default select-none group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto hover:pointer-events-auto"
                 onClick={() => {
                 }}
               />
