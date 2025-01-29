@@ -467,7 +467,7 @@ export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selec
                                 backgroundColor={"transparent"}
                                 type="area"
                                 title={"test"}
-                                panning={{ enabled: true }}
+                                panning={{ enabled: false }}
                                 panKey="shift"
                                 zooming={{ type: undefined }}
                                 style={{ borderRadius: 15 }}
