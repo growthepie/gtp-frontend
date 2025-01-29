@@ -33,6 +33,7 @@ import {
   } from "@/lib/chartUtils";
 import ChartWatermark from "@/components/layout/ChartWatermark"; 
 import { useMaster } from "@/contexts/MasterContext";
+import "@/app/highcharts.axis.css";
 
 const COLORS = {
     GRID: "rgb(215, 223, 222)",
@@ -229,9 +230,9 @@ export default function Page(){
                     ))}
                 </TopRowParent>
             </TopRowContainer>
-            <div className="flex gap-x-2 my-[15px]">{Object.keys(master.blockspace_categories.main_categories).map((key) => {
+            <div className="flex gap-x-2 my-[15px] cursor-pointer">{Object.keys(master.blockspace_categories.main_categories).map((key) => {
                 return (
-                    <div key={key} className={`flex items-center gap-x-1 rounded-full justify-center px-2 ${selectedCategory === key ? "bg-[#151A19]" : "bg-[#344240]"}`} 
+                    <div key={key} className={`flex items-center gap-x-1 rounded-full justify-center px-2 ${selectedCategory === key ? "bg-[#151A19] border border-white" : "bg-[#344240]"}`} 
                     onClick={() => setSelectedCategory(key)}>
                         <div className="text-xs">{master.blockspace_categories.main_categories[key]}</div>
                     </div>)
@@ -258,7 +259,30 @@ export default function Page(){
                         title={"test"}
                         
                     />
-                    <YAxis><AreaSeries 
+                    <YAxis
+                      gridLineColor="#2d3532"
+                      tickAmount={3}
+                      labels={{
+                        style: {
+                            fontWeight: '700',
+                            color: 'rgb(215, 223, 222)'
+                        },
+                        formatter: function (this: Highcharts.YAxisLabelsFormatter) {
+                          const prefix = showUsd ? '$' : 'Ξ';
+                          let value = this.value;
+                          let suffix = '';
+                          if (value >= 1000 && value < 10000) {
+                              value = value / 1000;
+                              suffix = 'K';
+                          } else if (value >= 10000) {
+                              value = value / 1000000;
+                              suffix = 'M';
+                          }
+                          return `${prefix}${value}${suffix}`;
+                      }
+                      }
+                    }
+                    ><AreaSeries 
                         name="All L2s"  
                         color={master.chains.all_l2s.colors['dark'][1]}
                         data={chainOverviewData?.data.chains["all_l2s"].daily[selectedCategory].data.map(
@@ -269,6 +293,11 @@ export default function Page(){
                     )} />
                     </YAxis>
                     <XAxis
+                    labels={{
+                      style: {
+                          color: 'rgb(215, 223, 222)'
+                      }
+                    }}
                         type="datetime"
                         min={timespans[selectedTimespan].xMin}
                         max={timespans[selectedTimespan].xMax}
