@@ -19,7 +19,7 @@ import {
 import Highcharts, { chart } from "highcharts/highstock";
 import { useLocalStorage } from "usehooks-ts";
 import Image from "next/image";
-import { useMemo, useState, useCallback, useRef, useEffect } from "react";
+import { useMemo, memo,  useState, useCallback, useRef, useEffect } from "react";
 import { useMaster } from "@/contexts/MasterContext";
 import "@/app/highcharts.axis.css";
 import Icon from "@/components/layout/Icon";
@@ -52,12 +52,27 @@ const COLORS = {
 
 type PieData = { name: string, y: number, color: string }[]
 // @/public/da_table_watermark.png
-
+interface DATableChartsProps {
+    selectedTimespan: string;
+    data?: any;
+    isOpen?: boolean;
+    isMonthly: boolean;
+    da_name: string;
+    pie_data: DAConsumerChart;
+    master: MasterResponse;
+}
 
 const UNLISTED_CHAIN_COLORS = ["#7D8887", "#717D7C","#667170","#5A6665","#4F5B5A","#43504F","#384443","#2C3938"]
 
-export default function DATableCharts({selectedTimespan, data, isMonthly, da_name, pie_data, master}: {selectedTimespan: string, data?: any, isMonthly: boolean, da_name: string, pie_data: DAConsumerChart, master: MasterResponse }) {
-
+const DATableChartsComponent = ({
+    selectedTimespan,
+    data,
+    isMonthly,
+    isOpen,
+    da_name,
+    pie_data,
+    master,
+  }: DATableChartsProps) => {
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
     const { AllDALayersByKeys, AllChainsByKeys } = useMaster();
     const [selectedChain, setSelectedChain] = useState<string>("all");
@@ -1499,3 +1514,19 @@ const ChartLegend = (
     </div>
   )
 };
+
+
+const DATableCharts = memo(DATableChartsComponent, (prevProps, nextProps) => {
+    if (!prevProps.isOpen && !nextProps.isOpen) {
+        return true; // No need to re-render
+    }
+    return (
+      prevProps.selectedTimespan === nextProps.selectedTimespan &&
+      prevProps.isMonthly === nextProps.isMonthly &&
+      prevProps.da_name === nextProps.da_name &&
+      prevProps.data === nextProps.data &&
+      prevProps.pie_data === nextProps.pie_data &&
+      prevProps.master === nextProps.master
+    );
+  });
+  export default DATableCharts;
