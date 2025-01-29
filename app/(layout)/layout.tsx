@@ -89,7 +89,7 @@ const gtpFees = {
   description:
     "Fee analytics by the minute for Ethereum L2s — median transaction fees, native / ETH transfer fees, token swap fees, and more...",
 };
-const isFees = true;
+const isFees = false;
 
 const host = isFees ? "fees.growthepie.xyz" : "www.growthepie.xyz";
 
