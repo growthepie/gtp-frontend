@@ -1,22 +1,28 @@
 import Link from "next/link";
 import Search from "./Search";
-import { useState } from "react";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 
-// Accept searchQuery, setSearchQuery, and iconsCount from props
 interface FloatingBarProps {
   searchQuery: string;
   setSearchQuery: (value: string) => void;
   iconsCount: number;
+  onDownloadAll?: (format: "SVG" | "PNG") => void;
+  selectedFormat: "SVG" | "PNG";
+  setSelectedFormat: React.Dispatch<React.SetStateAction<"SVG" | "PNG">>;
 }
 
 export default function FloatingBar({
   searchQuery,
   setSearchQuery,
   iconsCount,
+  onDownloadAll = () => {},
+  selectedFormat,
+  setSelectedFormat,
 }: FloatingBarProps) {
-  const [selectedFormat, setSelectedFormat] = useState<"SVG" | "PNG">("SVG");
+  const handleDownloadAllClick = () => {
+    onDownloadAll(selectedFormat);
+  };
 
   return (
     <div className="flex p-[5px] items-center w-full rounded-full mt-[16px] bg-[#344240] shadow-[0px_0px_50px_0px_#000000] gap-x-[5px] md:gap-x-[15px] z-0 pointer-events-auto">
@@ -32,7 +38,7 @@ export default function FloatingBar({
       </Link>
 
       {/* Select Format Section */}
-      <div className="flex flex-col items-center gap-[2px] w-[137px] h-[43px]">
+      <div className="flex flex-col items-center gap-[2px] w-[137px] h-[43px] mb-2">
         {/* Title */}
         <span
           className="font-raleway font-bold text-[10px] leading-[12px] uppercase text-[#5A6462] text-center"
@@ -51,18 +57,21 @@ export default function FloatingBar({
           ].map(({ format, icon }) => (
             <div
               key={format}
-              className={`relative flex items-center justify-center w-[61px] h-[34px] rounded-full cursor-pointer ${
-                selectedFormat === format ? "bg-[#5A6462]" : "bg-[#5A6462]"
-              }`}
+              className={`
+                relative flex items-center justify-center 
+                w-[61px] h-[34px] rounded-full cursor-pointer 
+                bg-[#5A6462]
+              `}
               onClick={() => setSelectedFormat(format as "SVG" | "PNG")}
             >
               {/* Inner Rect */}
-              <div
-                className={`absolute inset-0 m-[2px] rounded-full bg-[#1F2726]`}
-              />
+              <div className="absolute inset-0 m-[2px] rounded-full bg-[#1F2726]" />
               {/* Icon */}
               <div
-                className={`absolute left-[7px] w-[26px] h-[26px] rounded-full bg-[#1F2726] flex items-center justify-center`}
+                className="
+                  absolute left-[7px] w-[26px] h-[26px] rounded-full 
+                  bg-[#1F2726] flex items-center justify-center
+                "
               >
                 <GTPIcon icon={icon} size="sm" className="w-[15px] h-[15px]" />
               </div>
@@ -90,6 +99,7 @@ export default function FloatingBar({
       {/* Download All Button */}
       <button
         className="flex items-center bg-[#1F2726] gap-x-[10px] rounded-full p-[10px_15px] text-white hover:bg-[#2b3635] focus:outline-none"
+        onClick={handleDownloadAllClick}
       >
         <div className="w-6 h-6">
           <GTPIcon icon="gtp-download" size="sm" className="w-[24px] h-[24px]" />
@@ -99,11 +109,7 @@ export default function FloatingBar({
 
       {/* Search Bar */}
       <div className="flex-1">
-        <Search 
-          query={searchQuery} 
-          setQuery={setSearchQuery} 
-          iconsCount={iconsCount}
-        />
+        <Search query={searchQuery} setQuery={setSearchQuery} iconsCount={iconsCount} />
       </div>
     </div>
   );
