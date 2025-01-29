@@ -16,7 +16,7 @@ const Imprint = () => {
         <div className="flex flex-col w-full">
           <div className="mb-4">
             c/o w3.hub <br />
-            orbal GmbH / growthepoe <br />
+            orbal GmbH / growthepie <br />
             Möckernstr. 120 <br />
             10963 Berlin <br />
             Germany
