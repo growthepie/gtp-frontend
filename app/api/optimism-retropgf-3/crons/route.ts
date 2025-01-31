@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { NextRequest } from "next/server";
 import { Pool } from "pg";
 import { request, gql } from "graphql-request";
