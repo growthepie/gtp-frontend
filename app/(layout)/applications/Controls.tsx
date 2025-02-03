@@ -9,54 +9,19 @@ import { DAOverviewResponse } from "@/types/api/DAOverviewResponse";
 import Container from "@/components/layout/Container";
 import { useApplicationsData } from "./ApplicationsDataContext";
 import { MultipleSelectTopRowChild } from "./Components";
+import { useTimespan } from "./TimespanContext";
 
 export default function Controls() {
-  const { data, metricsDef, selectedMetrics, setSelectedMetrics, sort, setSort, selectedTimespan, setSelectedTimespan, isMonthly, setIsMonthly, timespans } = useApplicationsData();
+  const { data, metricsDef, selectedMetrics, setSelectedMetrics, sort, setSort } = useApplicationsData();
+  const { selectedTimespan, setSelectedTimespan, timespans } = useTimespan();
 
 
   return (
     <>
       {data && (
-          <TopRowContainer className="">
+          <TopRowContainer className="gap-y-[10px] rounded-t-[15px] rounded-b-[24px] flex-col-reverse">
             <TopRowParent className="">
-              {/* <TopRowChild
-                isSelected={!isMonthly}
-                onClick={() => {
-                  const isTransferrableTimespan =
-                    selectedTimespan === "max" || selectedTimespan === "365d";
-                  if (!isTransferrableTimespan) {
-                    setSelectedTimespan("max");
-                  }
-                  setIsMonthly(false);
-                }}
-                style={{
-                  paddingTop: "10.5px",
-                  paddingBottom: "10.5px",
-                  paddingLeft: "16px",
-                  paddingRight: "16px",
-                }}
-              >
-                {"Daily"}
-              </TopRowChild>
-              <TopRowChild
-                isSelected={isMonthly}
-                onClick={() => {
-                  const isTransferrableTimespan =
-                    selectedTimespan === "max" || selectedTimespan === "365d";
-                  if (!isTransferrableTimespan) {
-                    setSelectedTimespan("max");
-                  }
-                  setIsMonthly(true);
-                }}
-                style={{
-                  paddingTop: "10.5px",
-                  paddingBottom: "10.5px",
-                  paddingLeft: "16px",
-                  paddingRight: "16px",
-                }}
-              >
-                {"Monthly"}
-              </TopRowChild> */}
+
               <MultipleSelectTopRowChild 
               handleNext={() => {
                 const metrics = Object.keys(metricsDef);
@@ -97,22 +62,16 @@ export default function Controls() {
                 {
                   return (
                     <TopRowChild
-                      className={`px-[10px]`}
+                      className="flex items-center justify-center h-[28px] md:h-[44px]"
                       onClick={() => {
                         setSelectedTimespan(key);
                       }}
-                      key={key}
-                      style={{
-                        paddingTop: "10.5px",
-                        paddingBottom: "10.5px",
-                        paddingLeft: "16px",
-                        paddingRight: "16px",
-                      }}
                       isSelected={selectedTimespan === key}
                     >
-                      {selectedTimespan === key
+                      {/* {selectedTimespan === key
                         ? timespans[key].label
-                        : timespans[key].shortLabel}
+                        : timespans[key].shortLabel} */}
+                        {timespans[key].shortLabel}
                     </TopRowChild>
                   );
                 }

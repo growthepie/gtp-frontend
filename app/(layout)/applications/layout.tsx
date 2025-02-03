@@ -8,6 +8,7 @@ import Search from "./Search";
 import Controls from "./Controls";
 import { ApplicationsDataProvider } from "./ApplicationsDataContext";
 import { ApplicationsURLs } from "@/lib/urls";
+import { TimespanProvider } from "./TimespanContext";
 import ReactDOM from 'react-dom';
 
 // prefetch data for all timeframes
@@ -32,9 +33,11 @@ export default async function Layout({
   const { owner_project } = params;
 
   return (
-    <ApplicationsDataProvider>
-      <PreloadResources />
-      {children}
-    </ApplicationsDataProvider>
+    <TimespanProvider>
+      <ApplicationsDataProvider>
+        <PreloadResources />
+        {children}
+      </ApplicationsDataProvider>
+    </TimespanProvider>
   )
 }

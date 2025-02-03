@@ -33,15 +33,16 @@ import { useUIContext } from "@/contexts/UIContext";
 export default function Page() {
   const { applicationDataAggregated, selectedMetrics, isLoading } = useApplicationsData();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  
-  const {topGainers, topLosers} = useMemo(() => {
+
+  const { topGainers, topLosers } = useMemo(() => {
     let medianMetricKey = selectedMetrics[0];
-    if(selectedMetrics[0] === "gas_fees")
+    if (selectedMetrics[0] === "gas_fees")
       medianMetricKey = "gas_fees_eth";
 
-    const medianValue = applicationDataAggregated.reduce((acc, application) => {
-      return acc + application[medianMetricKey];
-    }, 0) / applicationDataAggregated.length;
+    const medianMetricValues = applicationDataAggregated.map((application) => application[medianMetricKey])
+      .sort((a, b) => a - b);
+
+    const medianValue = medianMetricValues[Math.floor(medianMetricValues.length / 2)];
 
     console.log("medianMetricKey", medianMetricKey);
     console.log("medianValue", medianValue);
@@ -49,7 +50,7 @@ export default function Page() {
 
     // filter out applications with < median value of selected metric and with previous value of 0
     const filteredApplications = applicationDataAggregated
-    .filter((application) => application[medianMetricKey] > medianValue && application["prev_" + medianMetricKey] > 0);
+      .filter((application) => application[medianMetricKey] > medianValue && application["prev_" + medianMetricKey] > 0);
     console.log("filteredApplications", filteredApplications);
 
     // top 3 applications with highest change_pct
@@ -73,7 +74,7 @@ export default function Page() {
           </div>
         </div>
       </Container>
-      <Container className="hidden md:grid grid-flow-row pt-[10px]  md:grid-cols-2 lg:grid-cols-3 gap-[10px]">
+      <Container className="hidden md:grid md:grid-rows-3 md:grid-flow-col lg:grid-rows-2 lg:grid-flow-row pt-[10px] lg:grid-cols-3 gap-[10px]">
         {topGainers.map((application, index) => (
           <ApplicationCard key={application.owner_project} application={application} />
         ))}
@@ -84,7 +85,12 @@ export default function Page() {
           <ApplicationCard key={index} application={undefined} />
         ))}
       </Container>
-      {applicationDataAggregated.length > 0 && <ApplicationCardSwiper />}
+      {/* <Container> */}
+      <div className="block md:hidden pt-[10px]">
+        <CardSwiper cards={[...topGainers.map((application) => <ApplicationCard key={application.owner_project} application={application} />), ...topLosers.map((application) => <ApplicationCard key={application.owner_project} application={application} />)]} />
+        </div>
+      {/* </Container> */}
+      {/* {applicationDataAggregated.length > 0 && <ApplicationCardSwiper />} */}
       <Container className="pt-[30px] pb-[15px]">
         <div className="flex flex-col gap-y-[10px]">
           <div className="heading-large">Top Ranked (Gas Fees USD)</div>
@@ -94,14 +100,75 @@ export default function Page() {
         </div>
       </Container>
       {/* <HorizontalScrollContainer reduceLeftMask={true}> */}
-        <ApplicationsTable />
+      <ApplicationsTable />
       {/* </HorizontalScrollContainer> */}
     </>
   )
 }
 
+const CardSwiper = ({ cards }: { cards: React.ReactNode[] }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const handleScroll = () => {
+    if (containerRef.current) {
+      // get the container’s bounding rect to compute center
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const containerCenter = containerRect.left + containerRect.width / 2;
+
+      const children = Array.from(containerRef.current.children);
+      let closestIndex = 0;
+      let closestDistance = Infinity;
+
+      children.forEach((child, index) => {
+        const rect = child.getBoundingClientRect();
+        // Calculate the center of each card
+        const childCenter = rect.left + rect.width / 2;
+        const distance = Math.abs(childCenter - containerCenter);
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestIndex = index;
+        }
+      });
+
+      setActiveIndex(closestIndex);
+
+    }
+  };
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    container.addEventListener("scroll", handleScroll);
+    // Run once on mount to set the active index correctly.
+    handleScroll();
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      className="flex overflow-x-scroll scroll-smooth snap-x snap-mandatory touch-pan-x scrollbar-none px-[20px] -space-x-[calc(100vw/10)] touch-none"
+    >
+      {cards.map((card, index) => (
+        <div
+          key={index}
+          className={`snap-center transition-[transform,opacity] duration-300 ease-in-out ${
+            index === activeIndex ? "scale-100 opacity-100" : "scale-[0.75] opacity-50"
+          }`}
+          style={{ 
+            minWidth: "calc(100vw - 40px)",
+          }}
+        >
+          {card}
+        </div>
+      ))}
+    </div>
+  );
+};
+
 const ApplicationCardSwiper = () => {
-  const { selectedChains, selectedTimespan, applicationDataAggregated } = useApplicationsData();
+  const { applicationDataAggregated } = useApplicationsData();
   const [cardWidth, setCardWidth] = useState(340);
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollLeft, setScrollLeft] = useState(0);
@@ -223,7 +290,7 @@ const ApplicationCardSwiper = () => {
 
 const ApplicationCard = ({ application, className, width }: { application?: AggregatedDataRow, className?: string, width?: number }) => {
   const { AllChainsByKeys } = useMaster();
-  const { ownerProjectToProjectData, selectedChains, setSelectedChains, selectedMetrics, selectedTimespan, metricsDef} = useApplicationsData();
+  const { ownerProjectToProjectData, selectedChains, setSelectedChains, selectedMetrics, metricsDef } = useApplicationsData();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   const numContractsString = useCallback((application: AggregatedDataRow) => {
@@ -233,7 +300,7 @@ const ApplicationCard = ({ application, className, width }: { application?: Aggr
 
   const metricKey = useMemo(() => {
     let key = selectedMetrics[0];
-    if(selectedMetrics[0] === "gas_fees")
+    if (selectedMetrics[0] === "gas_fees")
       key = showUsd ? "gas_fees_usd" : "gas_fees_eth";
 
     return key;
@@ -254,18 +321,18 @@ const ApplicationCard = ({ application, className, width }: { application?: Aggr
 
   const prefix = useMemo(() => {
     const def = metricsDef[selectedMetrics[0]].units;
-    
-    if(Object.keys(def).includes("usd")) {
+
+    if (Object.keys(def).includes("usd")) {
       return showUsd ? def.usd.prefix : def.eth.prefix;
-    }else {
+    } else {
       return Object.values(def)[0].prefix;
     }
   }, [metricsDef, selectedMetrics, showUsd]);
 
-  if(!application) {
+  if (!application) {
     return (
       <div className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] min-w-[340px] ${className || ""} transition-all duration-300`} style={{ width: width || undefined }}>
-        </div>
+      </div>
     )
   }
 
@@ -281,9 +348,9 @@ const ApplicationCard = ({ application, className, width }: { application?: Aggr
             <div className="numbers-xs text-[#5A6462]">Rank</div>
             <div className="numbers-xs text-[#CDD8D3]">{rank}</div>
             {application[`${metricKey}_change_pct`] !== Infinity ? (
-            <div className={`flex justify-end w-[49px] numbers-xs ${application[`${metricKey}_change_pct`] < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
-              {application[`${metricKey}_change_pct`] < 0 ? '-' : '+'}{Math.abs(application[`${metricKey}_change_pct`]).toFixed(0)}%
-            </div>
+              <div className={`flex justify-end w-[49px] numbers-xs ${application[`${metricKey}_change_pct`] < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
+                {application[`${metricKey}_change_pct`] < 0 ? '-' : '+'}{Math.abs(application[`${metricKey}_change_pct`]).toFixed(0)}%
+              </div>
             ) : <div className="w-[49px]">&nbsp;</div>}
           </div>
 
@@ -365,25 +432,6 @@ const Links = memo(({ application }: { application: AggregatedDataRow }) => {
   const icons = ["feather:monitor", "ri:twitter-x-fill", "ri:github-fill"];
   const keys = ["website", "twitter", "main_github"];
 
-
-  // const links: { icon: string, link: string }[]  = useMemo(() => {
-  //   keys.forEach((key, i) => {
-  //   const link = ownerProjectToProjectData[application] ? ownerProjectToProjectData[application.owner_project][key] : "";
-  //   if (link) {
-  //     links.push({
-  //       icon: icons[i],
-  //       link: `${linkPrefixes[i]}${link}`,
-  //     });
-  //   } else {
-  //     links.push({
-  //       icon: icons[i],
-  //       link: "",
-  //     });
-  //   }
-
-  //   return links;
-  // });
-
   return (
     <div className="flex items-center gap-x-[5px]">
       {ownerProjectToProjectData[application.owner_project] && keys.map((key, index) => (
@@ -406,13 +454,12 @@ const Links = memo(({ application }: { application: AggregatedDataRow }) => {
 Links.displayName = 'Links';
 
 const ApplicationsTable = () => {
-  const { AllChainsByKeys } = useMaster();
-  const { selectedChains, selectedTimespan, metricsDef, selectedMetrics, applicationDataAggregated, sort, setSort, setSelectedMetrics, selectedMetricKeys, ownerProjectToProjectData } = useApplicationsData();
+  const { metricsDef, selectedMetrics, applicationDataAggregated, sort, setSort, setSelectedMetrics, selectedMetricKeys, ownerProjectToProjectData } = useApplicationsData();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   const metricKey = useMemo(() => {
     let key = selectedMetrics[0];
-    if(selectedMetrics[0] === "gas_fees")
+    if (selectedMetrics[0] === "gas_fees")
       key = showUsd ? "gas_fees_usd" : "gas_fees_eth";
 
     return key;
@@ -442,14 +489,14 @@ const ApplicationsTable = () => {
         gas_fees_usd: application.gas_fees_usd,
         gas_fees_change_pct: application[metricKey + "_change_pct"],
         rank_gas_fees: application[`rank_${metricKey}`],
-        
+
 
       };
     });
   }, [applicationDataAggregated, metricKey, ownerProjectToProjectData]);
 
   // Memoize gridColumns to prevent recalculations
-  const gridColumns = useMemo(() => 
+  const gridColumns = useMemo(() =>
     `26px 313px 199px minmax(135px,800px) 95px ${selectedMetricKeys.map(() => `237px`).join(" ")} 20px`,
     [selectedMetricKeys]
   );
@@ -496,56 +543,56 @@ const ApplicationsTable = () => {
         {selectedMetrics.map((metric, index) => {
           // let key = selectedMetricKeys[index];
           return (
-          <GridTableHeaderCell
-            key={metric}
-            metric={metric}
-            className="heading-small-xs pl-[25px] pr-[15px] z-[0] whitespace-nowrap"
-            justify="end"
-            sort={sort}
-            setSort={setSort}
-            extraRight={
-              <div className="flex items-center gap-x-[5px] pl-[5px] cursor-default z-[10]">
-                <div 
-                className="cursor-pointer flex items-center rounded-full bg-[#344240] text-[#CDD8D3] gap-x-[2px] px-[5px] h-[18px]"
-                onClick={() => {
-                  setSort({
-                    metric: `${selectedMetricKeys[index]}_change_pct`, //"gas_fees_change_pct",
-                    sortOrder:
-                      sort.metric === `${selectedMetricKeys[index]}_change_pct`
-                        ? sort.sortOrder === "asc"
-                          ? "desc"
-                          : "asc"
-                        : "desc",
-                  });
-                }}
-                >
-                  <div className="text-xxxs !leading-[14px]">Change</div>
-                  {/* <Icon icon="feather:arrow-down" className="w-[10px] h-[10px]" /> */}
-                  <Icon
-                    icon={
-                      sort.metric === `${selectedMetricKeys[index]}_change_pct` && sort.sortOrder === "asc"
-                        ? "feather:arrow-up"
-                        : "feather:arrow-down"
-                    }
-                    className="w-[10px] h-[10px]"
-                    style={{
-                      opacity: sort.metric === `${selectedMetricKeys[index]}_change_pct` ? 1 : 0.2,
+            <GridTableHeaderCell
+              key={metric}
+              metric={metric}
+              className="heading-small-xs pl-[25px] pr-[15px] z-[0] whitespace-nowrap"
+              justify="end"
+              sort={sort}
+              setSort={setSort}
+              extraRight={
+                <div className="flex items-center gap-x-[5px] pl-[5px] cursor-default z-[10]">
+                  <div
+                    className="cursor-pointer flex items-center rounded-full bg-[#344240] text-[#CDD8D3] gap-x-[2px] px-[5px] h-[18px]"
+                    onClick={() => {
+                      setSort({
+                        metric: `${selectedMetricKeys[index]}_change_pct`, //"gas_fees_change_pct",
+                        sortOrder:
+                          sort.metric === `${selectedMetricKeys[index]}_change_pct`
+                            ? sort.sortOrder === "asc"
+                              ? "desc"
+                              : "asc"
+                            : "desc",
+                      });
                     }}
-                  />
+                  >
+                    <div className="text-xxxs !leading-[14px]">Change</div>
+                    {/* <Icon icon="feather:arrow-down" className="w-[10px] h-[10px]" /> */}
+                    <Icon
+                      icon={
+                        sort.metric === `${selectedMetricKeys[index]}_change_pct` && sort.sortOrder === "asc"
+                          ? "feather:arrow-up"
+                          : "feather:arrow-down"
+                      }
+                      className="w-[10px] h-[10px]"
+                      style={{
+                        opacity: sort.metric === `${selectedMetricKeys[index]}_change_pct` ? 1 : 0.2,
+                      }}
+                    />
+                  </div>
+                  <Tooltip placement="bottom">
+                    <TooltipTrigger>
+                      <Icon icon="feather:info" className="w-[15px] h-[15px]" />
+                    </TooltipTrigger>
+                    <TooltipContent className="z-[99]">
+                      <MetricTooltip metric={metric} />
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
-                <Tooltip placement="bottom">
-                  <TooltipTrigger>
-                    <Icon icon="feather:info" className="w-[15px] h-[15px]" />
-                  </TooltipTrigger>
-                  <TooltipContent className="z-[99]">
-                    <MetricTooltip metric={metric} />
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            }
-          >
-            {metricsDef[metric].name} {Object.keys(metricsDef[metric].units).includes("eth") && <>({showUsd ? "USD" : "ETH"})</>}
-          </GridTableHeaderCell>
+              }
+            >
+              {metricsDef[metric].name} {Object.keys(metricsDef[metric].units).includes("eth") && <>({showUsd ? "USD" : "ETH"})</>}
+            </GridTableHeaderCell>
           )
         })}
         <div />
@@ -557,14 +604,14 @@ const ApplicationsTable = () => {
           itemContent={(index) => (
             <ApplicationTableRow key={applicationDataAggregated[index].owner_project} application={applicationDataAggregated[index]} maxMetrics={maxMetrics} />
           )}
-          />
+        />
       </div>
 
-      </HorizontalScrollContainer>
+    </HorizontalScrollContainer>
   )
 }
 type AltApplicationTableRowProps = {
-  logo_path: string;  
+  logo_path: string;
   owner_project: string;
   display_name: string;
   origin_keys: string[];
@@ -613,7 +660,7 @@ const Chains = ({ origin_keys }: { origin_keys: string[] }) => {
 };
 
 const Category = ({ category }: { category: string }) => {
-  const getGTPCategoryIcon= (category: string): GTPIconName | "" => {
+  const getGTPCategoryIcon = (category: string): GTPIconName | "" => {
 
     switch (category) {
       case "Cross-Chain":
@@ -651,7 +698,7 @@ const Category = ({ category }: { category: string }) => {
 const Value = ({ rank, def, value, change_pct, maxMetric }: { rank: number, def: MetricDef, value: number, change_pct: number, maxMetric: number }) => {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
-  const progressWidth = useMemo(() => 
+  const progressWidth = useMemo(() =>
     `${(value / maxMetric) * 100}%`,
     [value, maxMetric]
   );
@@ -659,31 +706,31 @@ const Value = ({ rank, def, value, change_pct, maxMetric }: { rank: number, def:
   return (
     <div className="flex items-center justify-end gap-[5px]">
       <div className="numbers-xs text-[#5A6462]">{rank}</div>
-    <div className="w-[178px] flex flex-col items-end gap-y-[2px]">
-      
-      <div className="flex justify-end items-center gap-x-[2px]">
-        <div className="numbers-xs">
-          {Object.keys(def.units).includes("eth") ? showUsd ? def.units.usd.prefix : def.units.eth.prefix : Object.values(def.units)[0].prefix}
-          {value.toLocaleString("en-GB")}
-        </div>
-        {change_pct !== Infinity ?
-        <div className={`numbers-xxs w-[49px] text-right ${change_pct < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
-          {change_pct < 0 ? '-' : '+'}{Math.abs(change_pct).toFixed(0)}%
+      <div className="w-[178px] flex flex-col items-end gap-y-[2px]">
+
+        <div className="flex justify-end items-center gap-x-[2px]">
+          <div className="numbers-xs">
+            {Object.keys(def.units).includes("eth") ? showUsd ? def.units.usd.prefix : def.units.eth.prefix : Object.values(def.units)[0].prefix}
+            {value.toLocaleString("en-GB")}
           </div>
-          : <div className="w-[49px]">&nbsp;</div>}
-      </div>
-      <div className="relative w-full h-[4px] rounded-full">
-        <div className="absolute h-[4px] right-0"
-          style={{
-            width: progressWidth,
-            background: "linear-gradient(145deg, #FE5468 0%, #FFDF27 100%)",
-            borderRadius: "999px",
-          }}
-        />
+          {change_pct !== Infinity ?
+            <div className={`numbers-xxs w-[49px] text-right ${change_pct < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
+              {change_pct < 0 ? '-' : '+'}{Math.abs(change_pct).toFixed(0)}%
+            </div>
+            : <div className="w-[49px]">&nbsp;</div>}
+        </div>
+        <div className="relative w-full h-[4px] rounded-full">
+          <div className="absolute h-[4px] right-0"
+            style={{
+              width: progressWidth,
+              background: "linear-gradient(145deg, #FE5468 0%, #FFDF27 100%)",
+              borderRadius: "999px",
+            }}
+          />
 
           {/* {maxMetric} */}
+        </div>
       </div>
-    </div>
     </div>
   )
 }
@@ -691,16 +738,16 @@ const Value = ({ rank, def, value, change_pct, maxMetric }: { rank: number, def:
 
 
 const ApplicationTableRow = memo(({ application, maxMetrics }: { application: AggregatedDataRow, maxMetrics: number[] }) => {
-  const { ownerProjectToProjectData, selectedMetricKeys, selectedMetrics, metricsDef} = useApplicationsData();
+  const { ownerProjectToProjectData, selectedMetricKeys, selectedMetrics, metricsDef } = useApplicationsData();
 
   // Memoize gridColumns to prevent recalculations
-  const gridColumns = useMemo(() => 
+  const gridColumns = useMemo(() =>
     `26px 313px 199px minmax(135px,800px) 95px ${selectedMetricKeys.map(() => `237px`).join(" ")} 20px`,
     [selectedMetricKeys]
   );
 
   return (
-    <GridTableRow 
+    <GridTableRow
       gridDefinitionColumns={gridColumns}
       className={`group text-[14px] !px-[5px] !py-0 h-[34px] gap-x-[15px] mb-[5px]`}
       style={{
@@ -728,9 +775,9 @@ const ApplicationTableRow = memo(({ application, maxMetrics }: { application: Ag
         {application.num_contracts}
       </div>
       {selectedMetricKeys.map((key, index) => (
-        <div 
+        <div
           key={key}
-          className={`flex justify-end pr-[15px] items-center text-right h-full ${selectedMetricKeys.length == 1 || (selectedMetricKeys.length > 1 && (index+1) % 2 == 0) ? 'bg-[#344240]/30' : ''} `}
+          className={`flex justify-end pr-[15px] items-center text-right h-full ${selectedMetricKeys.length == 1 || (selectedMetricKeys.length > 1 && (index + 1) % 2 == 0) ? 'bg-[#344240]/30' : ''} `}
         >
           <Value rank={application[`rank_${key}`]} def={metricsDef[selectedMetrics[index]]} value={application[key]} change_pct={application[`${key}_change_pct`]} maxMetric={maxMetrics[index]} />
         </div>

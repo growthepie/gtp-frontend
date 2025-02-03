@@ -6,12 +6,13 @@ import Icon from "@/components/layout/Icon";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import Search from "../Search";
 import Controls from "../Controls";
-import { ApplicationsDataProvider } from "../ApplicationsDataContext";
+import { AggregatedDataRow, ApplicationsDataProvider, useApplicationsData } from "../ApplicationsDataContext";
 import { ApplicationsURLs, LabelsURLS } from "@/lib/urls";
 import ReactDOM from 'react-dom';
-import { ApplicationDescription, ApplicationDisplayName, ApplicationIcon, BackButton } from "../Components";
+import { ApplicationDescription, ApplicationDisplayName, ApplicationIcon, BackButton, ProjectDetailsLinks } from "../Components";
 import { Metadata, ResolvingMetadata } from "next";
 import Link from "next/link";
+import { memo } from "react";
 
   // fetch data
   const projectsData = await fetch(LabelsURLS.projects).then((res) => res.json());
@@ -36,7 +37,7 @@ import Link from "next/link";
 type Props = {
   params: Promise<{ owner_project: string }>,
 }
- 
+
 export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata
@@ -71,10 +72,16 @@ export default async function Layout({
             <ApplicationDisplayName owner_project={owner_project} />
           </Heading>
         </div>
-        <div className="text-sm">
-          <ApplicationDescription owner_project={owner_project} />
+        <div className="flex items-end gap-x-[10px]">
+          <div className="flex-1 text-sm font-medium">
+            {/* <ApplicationDescription owner_project={owner_project} /> */}
+            Relay is a cross-chain payment system that enables instant, low-cost bridging and transaction execution by connecting users with relayers who act on their behalf for a small fee. It aims to minimize gas costs and execution latency, making it suitable for applications like payments, bridging, NFT minting, and gas abstraction. I can add one more sentence to that and its still legible. And one more maybe so that we reach 450 characters. Let’s see. 
+          </div>
+          <ProjectDetailsLinks owner_project={owner_project} />
         </div>
+        <Controls />
       </Container>
+
       {children}
     </>
   )

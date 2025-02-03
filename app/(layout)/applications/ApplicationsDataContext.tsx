@@ -13,6 +13,7 @@ import { RefObject, createContext, useContext, useEffect, useMemo, useState } fr
 import { LogLevel } from "react-virtuoso";
 import useSWR, { useSWRConfig, preload} from "swr";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
+import { useTimespan } from "./TimespanContext";
 
 
 export interface Metrics {
@@ -276,24 +277,24 @@ const devMiddleware = (useSWRNext) => {
 
 
 export type ApplicationsDataContextType = {
-  selectedTimespan: string;
-  setSelectedTimespan: (value: string) => void;
+  // selectedTimespan: string;
+  // setSelectedTimespan: (value: string) => void;
   selectedMetrics: string[];
   setSelectedMetrics: React.Dispatch<React.SetStateAction<string[]>>;
   selectedMetricKeys: string[];
   selectedChains: string[];
   setSelectedChains: (value: string[]) => void;
-  isMonthly: boolean;
-  setIsMonthly: (value: boolean) => void;
-  timespans: {
-    [key: string]: {
-      label: string;
-      shortLabel: string;
-      value: number;
-      xMin: number;
-      xMax: number;
-    };
-  }
+  // isMonthly: boolean;
+  // setIsMonthly: (value: boolean) => void;
+  // timespans: {
+  //   [key: string]: {
+  //     label: string;
+  //     shortLabel: string;
+  //     value: number;
+  //     xMin: number;
+  //     xMax: number;
+  //   };
+  // }
   data: any;
   ownerProjectToProjectData: {
     [key: string]: {
@@ -335,11 +336,12 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
   const [sort, setSort] = useState<{ metric: string; sortOrder: string }>({ 
     metric: Object.keys(metricsDef)[0], 
     sortOrder: "desc"
-   });
+  });
+  const {timespans, selectedTimespan, setSelectedTimespan, isMonthly, setIsMonthly} = useTimespan();
   // const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [selectedTimespan, setSelectedTimespan] = useState<string>("7d");
+  // const [selectedTimespan, setSelectedTimespan] = useState<string>("7d");
   const [selectedChains, setSelectedChains] = useState<string[]>([]);
-  const [isMonthly, setIsMonthly] = useState<boolean>(false);
+  // const [isMonthly, setIsMonthly] = useState<boolean>(false);
   const [selectedStringFilters, setSelectedStringFilters] = useState<string[]>([]);
 
   const { data, error, isLoading, isValidating } = useSWR<DAOverviewResponse>(DAOverviewURL);
@@ -383,96 +385,96 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
 
 
 
-  const timespans = useMemo(() => {
-    let xMax = Date.now();
+  // const timespans = useMemo(() => {
+  //   let xMax = Date.now();
 
-    if (!isMonthly) {
-      return {
-        "1d": {
-          shortLabel: "1d",
-          label: "1 day",
-          value: 1,
-          xMin: xMax - 1 * 24 * 60 * 60 * 1000,
-          xMax: xMax,
-        },
-        "7d": {
-          shortLabel: "7d",
-          label: "7 days",
-          value: 7,
-          xMin: xMax - 7 * 24 * 60 * 60 * 1000,
-          xMax: xMax,
-        },
-        "30d": {
-          shortLabel: "30d",
-          label: "30 days",
-          value: 30,
-          xMin: xMax - 30 * 24 * 60 * 60 * 1000,
-          xMax: xMax,
-        },
-        "90d": {
-          shortLabel: "90d",
-          label: "90 days",
-          value: 90,
-          xMin: xMax - 90 * 24 * 60 * 60 * 1000,
-          xMax: xMax,
-        },
-        "365d": {
-          shortLabel: "1y",
-          label: "1 year",
-          value: 365,
-          xMin: xMax - 365 * 24 * 60 * 60 * 1000,
-          xMax: xMax,
-        },
-        max: {
-          shortLabel: "Max",
-          label: "Max",
-          value: 0,
-          xMin: xMax - 365 * 24 * 60 * 60 * 1000,
-          xMax: xMax,
-        },
-      } as {
-        [key: string]: {
-          label: string;
-          shortLabel: string;
-          value: number;
-          xMin: number;
-          xMax: number;
-        };
-      };
-    } else {
-      return {
-        "90d": {
-          shortLabel: "3m",
-          label: "3 months",
-          value: 90,
-          xMin: xMax - 90 * 24 * 60 * 60 * 1000,
-          xMax: xMax,
-        },
-        "365d": {
-          shortLabel: "1y",
-          label: "1 year",
-          value: 365,
-          xMin: xMax - 365 * 24 * 60 * 60 * 1000,
-          xMax: xMax,
-        },
-        max: {
-          shortLabel: "Max",
-          label: "Max",
-          value: 0,
-          xMin: xMax - 365 * 24 * 60 * 60 * 1000,
-          xMax: xMax,
-        },
-      } as {
-        [key: string]: {
-          label: string;
-          shortLabel: string;
-          value: number;
-          xMin: number;
-          xMax: number;
-        };
-      };
-    }
-  }, [isMonthly]);
+  //   if (!isMonthly) {
+  //     return {
+  //       "1d": {
+  //         shortLabel: "1d",
+  //         label: "1 day",
+  //         value: 1,
+  //         xMin: xMax - 1 * 24 * 60 * 60 * 1000,
+  //         xMax: xMax,
+  //       },
+  //       "7d": {
+  //         shortLabel: "7d",
+  //         label: "7 days",
+  //         value: 7,
+  //         xMin: xMax - 7 * 24 * 60 * 60 * 1000,
+  //         xMax: xMax,
+  //       },
+  //       "30d": {
+  //         shortLabel: "30d",
+  //         label: "30 days",
+  //         value: 30,
+  //         xMin: xMax - 30 * 24 * 60 * 60 * 1000,
+  //         xMax: xMax,
+  //       },
+  //       "90d": {
+  //         shortLabel: "90d",
+  //         label: "90 days",
+  //         value: 90,
+  //         xMin: xMax - 90 * 24 * 60 * 60 * 1000,
+  //         xMax: xMax,
+  //       },
+  //       "365d": {
+  //         shortLabel: "1y",
+  //         label: "1 year",
+  //         value: 365,
+  //         xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+  //         xMax: xMax,
+  //       },
+  //       max: {
+  //         shortLabel: "Max",
+  //         label: "Max",
+  //         value: 0,
+  //         xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+  //         xMax: xMax,
+  //       },
+  //     } as {
+  //       [key: string]: {
+  //         label: string;
+  //         shortLabel: string;
+  //         value: number;
+  //         xMin: number;
+  //         xMax: number;
+  //       };
+  //     };
+  //   } else {
+  //     return {
+  //       "90d": {
+  //         shortLabel: "3m",
+  //         label: "3 months",
+  //         value: 90,
+  //         xMin: xMax - 90 * 24 * 60 * 60 * 1000,
+  //         xMax: xMax,
+  //       },
+  //       "365d": {
+  //         shortLabel: "1y",
+  //         label: "1 year",
+  //         value: 365,
+  //         xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+  //         xMax: xMax,
+  //       },
+  //       max: {
+  //         shortLabel: "Max",
+  //         label: "Max",
+  //         value: 0,
+  //         xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+  //         xMax: xMax,
+  //       },
+  //     } as {
+  //       [key: string]: {
+  //         label: string;
+  //         shortLabel: string;
+  //         value: number;
+  //         xMin: number;
+  //         xMax: number;
+  //       };
+  //     };
+  //   }
+  // }, [isMonthly]);
 
   const selectedMetricKeys = useMemo(() => {
     return selectedMetrics.map((metric) => {
@@ -552,12 +554,12 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
 
   return (
     <ApplicationsDataContext.Provider value={{
-      selectedTimespan, setSelectedTimespan,
+      // selectedTimespan, setSelectedTimespan,
       selectedMetrics, setSelectedMetrics,
       selectedMetricKeys,
       selectedChains, setSelectedChains,
-      isMonthly, setIsMonthly,
-      timespans,
+      // isMonthly, setIsMonthly,
+      // timespans,
       data,
       ownerProjectToProjectData,
       applicationDataAggregated,
