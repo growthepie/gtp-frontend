@@ -183,13 +183,13 @@ const Imprint = () => {
             states of the European Union and other provisions related to data
             protection is:
           </p>
-          <p className="mb-4">orbal GmbH i.G.</p>
-          <p className="mb-4">Lohmühlenstraße 26</p>
-          <p className="mb-4">12435 Berlin</p>
+          <p className="mb-4">orbal GmbH</p>
+          <p className="mb-4">c/o w3.hub</p>
+          <p className="mb-4">Möckernstr. 120</p>
+          <p className="mb-4">10963 Berlin</p>
           <p className="mb-4">Germany</p>
           <p className="mb-4">Represented by: Matthias Seidl</p>
           <strong>Contact information</strong>
-          <p className="mb-4">Telephone: +49 1573 523 8975</p>
           <p className="mb-4">E-Mail: matthias@orbal-analytics.com</p>
           <p className="mb-4">Internet address: www.orbal-analytics.com</p>
         </li>
@@ -197,7 +197,7 @@ const Imprint = () => {
           <strong className="mb-2">Cookies</strong>
           <p className="mb-4">
             The Internet pages of orbal GmbH use cookies. Cookies are text files
-            that are stored in acomputer system via an Internet browser.Many
+            that are stored in a computer system via an Internet browser. Many
             Internet sites and servers use cookies. Many cookies contain a
             so-called cookie ID. A cookie ID is a unique identifier of the
             cookie. It consists of a character string through which Internet

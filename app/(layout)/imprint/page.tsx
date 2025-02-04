@@ -15,9 +15,10 @@ const Imprint = () => {
       <div className="flex flex-col">
         <div className="flex flex-col w-full">
           <div className="mb-4">
-            orbal GmbH <br />
-            Lohmühlenstraße 26 <br />
-            12435 Berlin <br />
+            c/o w3.hub <br />
+            orbal GmbH / growthepie <br />
+            Möckernstr. 120 <br />
+            10963 Berlin <br />
             Germany
           </div>
           <div className="mb-4">
@@ -29,7 +30,6 @@ const Imprint = () => {
 
           <h2 className="text-xl font-bold mb-4">Contact information</h2>
           <div className="mb-4">
-            Telephone: +49 1573 523 8975 <br />
             E-Mail: matthias@orbal-analytics.com <br />
             Internet address: www.orbal-analytics.com
           </div>
