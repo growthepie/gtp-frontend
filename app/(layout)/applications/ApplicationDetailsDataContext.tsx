@@ -1,14 +1,57 @@
 "use client";
 import ShowLoading from "@/components/layout/ShowLoading";
 import { ApplicationsURLs } from "@/lib/urls";
+import { DailyData } from "@/types/api/EconomicsResponse";
 import { createContext, useContext } from "react";
-
 import useSWR from "swr";
 
+export interface AppplicationDetailsRespomse {
+  metrics:          Metrics;
+  contracts:        Contracts;
+  last_updated_utc: Date;
+}
+
+export interface Contracts {
+  types: string[];
+  data:  Array<Array<number | null | string>>;
+}
+
+export interface Metrics {
+  [key: string]: MetricData;
+}
+
+export interface MetricData {
+  metric_name: string;
+  avg:         boolean;
+  over_time:   OverTime;
+  aggregated:  Aggregated;
+}
+
+export interface Aggregated {
+  types: string[];
+  data:  AggData;
+}
+
+export interface AggData {
+  [chain: string]: number[];
+}
+
+export interface OverTime {
+  [chain: string]: OverTimeData;
+}
+
+export interface OverTimeData {
+  daily: Daily;
+}
+
+export interface Daily {
+  types: string[];
+  data:  number[];
+}
 
 
 export type ApplicationDetailsDataContextType = {
-  data: any
+  data: AppplicationDetailsRespomse;
 }
 
 export const ApplicationDetailsDataContext = createContext<ApplicationDetailsDataContextType | undefined>(undefined);
@@ -26,19 +69,19 @@ export const ApplicationDetailsDataProvider = ({
     data: applicationDetailsData,
     isLoading: applicationDetailsLoading,
     isValidating: applicationDetailsValidating 
-  } = useSWR(
+  } = useSWR<AppplicationDetailsRespomse>(
     owner_project ? ApplicationsURLs.details.replace("{owner_project}", owner_project) : null,
   );
 
   return (
     <ApplicationDetailsDataContext.Provider value={{
-      data: applicationDetailsData,
+      data: applicationDetailsData || {} as AppplicationDetailsRespomse,
     }}>
       <ShowLoading 
         dataLoading={[applicationDetailsLoading]} 
-        // dataValidating={[applicationDetailsData]} 
+        dataValidating={[applicationDetailsValidating]} 
       />
-      {children}
+      {applicationDetailsData && children}
     </ApplicationDetailsDataContext.Provider>
   );
 }

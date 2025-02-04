@@ -388,7 +388,7 @@ const ApplicationCard = ({ application, className, width }: { application?: Aggr
           <div className="h-[20px] flex items-center gap-x-[3px]">
             <div className="numbers-sm text-[#CDD8D3]">
               {prefix}
-              {value.toLocaleString("en-GB")}
+              {value?.toLocaleString("en-GB")}
 
 
             </div>
@@ -717,7 +717,7 @@ const Value = ({ rank, def, value, change_pct, maxMetric }: { rank: number, def:
         <div className="flex justify-end items-center gap-x-[2px]">
           <div className="numbers-xs">
             {Object.keys(def.units).includes("eth") ? showUsd ? def.units.usd.prefix : def.units.eth.prefix : Object.values(def.units)[0].prefix}
-            {value.toLocaleString("en-GB")}
+            {value?.toLocaleString("en-GB")}
           </div>
           {change_pct !== Infinity ?
             <div className={`numbers-xxs w-[49px] text-right ${change_pct < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>

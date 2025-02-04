@@ -12,7 +12,7 @@ export default async function Layout({
 }) {
   return (
     <>
-        <ApplicationsDataProvider>
+      <ApplicationsDataProvider>
         <Container className="flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px]" isPageRoot>
           <div className="flex items-center h-[43px] gap-x-[8px] ">
             <GTPIcon icon="gtp-project" size="lg" />

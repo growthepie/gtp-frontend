@@ -89,6 +89,26 @@ const metricsDef: Metrics = {
     priority: 2,
     invert_normalization: false,
   },
+  daa: {
+    name: "Daily Active Addresses",
+    name_short: "DAAs",
+    units: {
+      count: {
+        currency: false,
+        prefix: "",
+        suffix: null,
+        decimals: 0,
+        decimals_tooltip: 0,
+        agg: true,
+        agg_tooltip: true,
+      },
+    },
+    icon: "gtp-metrics-activeaddresses",
+    category: "Addresses",
+    currency: false,
+    priority: 3,
+    invert_normalization: false,
+  },
 };
 
 
@@ -117,7 +137,7 @@ export const MetricsProvider = ({ children }: { children: React.ReactNode }) => 
   return (
     <MetricsContext.Provider value={{
       metricsDef,
-      selectedMetrics, 
+      selectedMetrics: Object.keys(metricsDef).filter((metric) => selectedMetrics.includes(metric)),
       setSelectedMetrics,
       selectedMetricKeys,
     }}>
