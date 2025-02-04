@@ -1,13 +1,5 @@
 "use client"
-import { useEffect, useState, useMemo } from "react";
 import { TopRowContainer, TopRowParent, TopRowChild } from "@/components/layout/TopRow";
-import DAHeadCharts from "@/components/layout/DA-Overview/DAHeadCharts";
-import DATable from "@/components/layout/DA-Overview/DATable";
-import useSWR from "swr";
-import { DAOverviewURL } from "@/lib/urls";
-import { DAOverviewResponse } from "@/types/api/DAOverviewResponse";
-import Container from "@/components/layout/Container";
-import { useApplicationsData } from "./ApplicationsDataContext";
 import { MultipleSelectTopRowChild } from "./Components";
 import { useTimespan } from "./TimespanContext";
 import { useMetrics } from "./MetricsContext";

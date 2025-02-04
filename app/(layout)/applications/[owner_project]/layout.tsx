@@ -1,18 +1,9 @@
 import Container from "@/components/layout/Container";
 import Heading from "@/components/layout/Heading";
-
-import Image from "next/image";
-import Icon from "@/components/layout/Icon";
-import { GTPIcon } from "@/components/layout/GTPIcon";
-import Search from "../Search";
 import Controls from "../Controls";
-import { AggregatedDataRow, ApplicationsDataProvider, useApplicationsData } from "../ApplicationsDataContext";
-import { ApplicationsURLs, LabelsURLS } from "@/lib/urls";
-import ReactDOM from 'react-dom';
-import { ApplicationDescription, ApplicationDisplayName, ApplicationIcon, BackButton, ProjectDetailsLinks } from "../Components";
+import { LabelsURLS } from "@/lib/urls";
+import { ApplicationDisplayName, ApplicationIcon, BackButton, ProjectDetailsLinks } from "../Components";
 import { Metadata, ResolvingMetadata } from "next";
-import Link from "next/link";
-import { memo } from "react";
 import { ApplicationDetailsDataProvider } from "../ApplicationDetailsDataContext";
 
   // fetch data

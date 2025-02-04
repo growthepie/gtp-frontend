@@ -1,21 +1,7 @@
-import Container from "@/components/layout/Container";
-import Heading from "@/components/layout/Heading";
-
-import Image from "next/image";
-import Icon from "@/components/layout/Icon";
-import { GTPIcon } from "@/components/layout/GTPIcon";
-import Search from "./Search";
-import Controls from "./Controls";
-import { ApplicationsDataProvider } from "./ApplicationsDataContext";
-import { ApplicationsURLs } from "@/lib/urls";
 import { TimespanProvider } from "./TimespanContext";
-import ReactDOM from 'react-dom';
 import { MetricsProvider } from "./MetricsContext";
 import { ProjectsMetadataProvider } from "./ProjectsMetadataContext";
 import { SortProvider } from "./SortContext";
-
-
-
 
 export default async function Layout({
   children, params
