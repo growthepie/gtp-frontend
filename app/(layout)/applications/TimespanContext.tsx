@@ -25,108 +25,121 @@ export type TimespanContextType = {
       label: string;
       shortLabel: string;
       value: number;
-      xMin: number;
-      xMax: number;
+      // xMin: number;
+      // xMax: number;
     };
   }
 }
 
 export const TimespanContext = createContext<TimespanContextType | undefined>(undefined);
 
-export const TimespanProvider = ({ children }: { children: React.ReactNode }) => {
+type TimespanProviderProps = {
+  children: React.ReactNode;
+  timespans: {
+    [key: string]: {
+      label: string;
+      shortLabel: string;
+      value: number;
+      // xMin: number;
+      // xMax: number;
+    };
+  };
+}
+
+export const TimespanProvider = ({ children, timespans }: TimespanProviderProps) => {
   const [selectedTimespan, setSelectedTimespan] = useState<string>("7d");
   const [isMonthly, setIsMonthly] = useState<boolean>(false);
 
-  const timespans = useMemo(() => {
-    let xMax = Date.now();
+  // const timespans = useMemo(() => {
+  //   let xMax = Date.now();
 
-    if (!isMonthly) {
-      return {
-        "1d": {
-          shortLabel: "1d",
-          label: "1 day",
-          value: 1,
-          xMin: xMax - 1 * 24 * 60 * 60 * 1000,
-          xMax: xMax,
-        },
-        "7d": {
-          shortLabel: "7d",
-          label: "7 days",
-          value: 7,
-          xMin: xMax - 7 * 24 * 60 * 60 * 1000,
-          xMax: xMax,
-        },
-        "30d": {
-          shortLabel: "30d",
-          label: "30 days",
-          value: 30,
-          xMin: xMax - 30 * 24 * 60 * 60 * 1000,
-          xMax: xMax,
-        },
-        "90d": {
-          shortLabel: "90d",
-          label: "90 days",
-          value: 90,
-          xMin: xMax - 90 * 24 * 60 * 60 * 1000,
-          xMax: xMax,
-        },
-        "365d": {
-          shortLabel: "1y",
-          label: "1 year",
-          value: 365,
-          xMin: xMax - 365 * 24 * 60 * 60 * 1000,
-          xMax: xMax,
-        },
-        max: {
-          shortLabel: "Max",
-          label: "Max",
-          value: 0,
-          xMin: xMax - 365 * 24 * 60 * 60 * 1000,
-          xMax: xMax,
-        },
-      } as {
-        [key: string]: {
-          label: string;
-          shortLabel: string;
-          value: number;
-          xMin: number;
-          xMax: number;
-        };
-      };
-    } else {
-      return {
-        "90d": {
-          shortLabel: "3m",
-          label: "3 months",
-          value: 90,
-          xMin: xMax - 90 * 24 * 60 * 60 * 1000,
-          xMax: xMax,
-        },
-        "365d": {
-          shortLabel: "1y",
-          label: "1 year",
-          value: 365,
-          xMin: xMax - 365 * 24 * 60 * 60 * 1000,
-          xMax: xMax,
-        },
-        max: {
-          shortLabel: "Max",
-          label: "Max",
-          value: 0,
-          xMin: xMax - 365 * 24 * 60 * 60 * 1000,
-          xMax: xMax,
-        },
-      } as {
-        [key: string]: {
-          label: string;
-          shortLabel: string;
-          value: number;
-          xMin: number;
-          xMax: number;
-        };
-      };
-    }
-  }, [isMonthly]);
+  //   if (!isMonthly) {
+  //     return {
+  //       "1d": {
+  //         shortLabel: "1d",
+  //         label: "1 day",
+  //         value: 1,
+  //         xMin: xMax - 1 * 24 * 60 * 60 * 1000,
+  //         xMax: xMax,
+  //       },
+  //       "7d": {
+  //         shortLabel: "7d",
+  //         label: "7 days",
+  //         value: 7,
+  //         xMin: xMax - 7 * 24 * 60 * 60 * 1000,
+  //         xMax: xMax,
+  //       },
+  //       "30d": {
+  //         shortLabel: "30d",
+  //         label: "30 days",
+  //         value: 30,
+  //         xMin: xMax - 30 * 24 * 60 * 60 * 1000,
+  //         xMax: xMax,
+  //       },
+  //       "90d": {
+  //         shortLabel: "90d",
+  //         label: "90 days",
+  //         value: 90,
+  //         xMin: xMax - 90 * 24 * 60 * 60 * 1000,
+  //         xMax: xMax,
+  //       },
+  //       "365d": {
+  //         shortLabel: "1y",
+  //         label: "1 year",
+  //         value: 365,
+  //         xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+  //         xMax: xMax,
+  //       },
+  //       max: {
+  //         shortLabel: "Max",
+  //         label: "Max",
+  //         value: 0,
+  //         xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+  //         xMax: xMax,
+  //       },
+  //     } as {
+  //       [key: string]: {
+  //         label: string;
+  //         shortLabel: string;
+  //         value: number;
+  //         xMin: number;
+  //         xMax: number;
+  //       };
+  //     };
+  //   } else {
+  //     return {
+  //       "90d": {
+  //         shortLabel: "3m",
+  //         label: "3 months",
+  //         value: 90,
+  //         xMin: xMax - 90 * 24 * 60 * 60 * 1000,
+  //         xMax: xMax,
+  //       },
+  //       "365d": {
+  //         shortLabel: "1y",
+  //         label: "1 year",
+  //         value: 365,
+  //         xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+  //         xMax: xMax,
+  //       },
+  //       max: {
+  //         shortLabel: "Max",
+  //         label: "Max",
+  //         value: 0,
+  //         xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+  //         xMax: xMax,
+  //       },
+  //     } as {
+  //       [key: string]: {
+  //         label: string;
+  //         shortLabel: string;
+  //         value: number;
+  //         xMin: number;
+  //         xMax: number;
+  //       };
+  //     };
+  //   }
+  // }, [isMonthly]);
 
   return (
     <TimespanContext.Provider value={{

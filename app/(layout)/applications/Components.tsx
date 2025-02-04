@@ -1,6 +1,5 @@
 "use client";
 import Image from "next/image";
-import { useApplicationsData } from "./ApplicationsDataContext";
 import { useRouter } from "next/navigation";
 import Icon from "@/components/layout/Icon";
 import { useUIContext } from "@/contexts/UIContext";
@@ -9,6 +8,7 @@ import { delay } from "lodash";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import Link from "next/link";
+import { useProjectsMetadata } from "./ProjectsMetadataContext";
 
 
 type ApplicationIconProps = {
@@ -17,7 +17,7 @@ type ApplicationIconProps = {
 };
 
 export const ApplicationIcon = ({ owner_project, size }: ApplicationIconProps) => {
-  const { ownerProjectToProjectData } = useApplicationsData();
+  const { ownerProjectToProjectData } = useProjectsMetadata();
   const sizeClassMap = {
     sm: "w-[15px] h-[15px]",
     md: "w-[24px] h-[24px]",
@@ -50,12 +50,12 @@ export const ApplicationIcon = ({ owner_project, size }: ApplicationIconProps) =
 }
 
 export const ApplicationDisplayName = ({ owner_project }: { owner_project: string }) => {
-  const { ownerProjectToProjectData } = useApplicationsData();
+  const { ownerProjectToProjectData } = useProjectsMetadata();
   return ownerProjectToProjectData[owner_project] ? ownerProjectToProjectData[owner_project].display_name : owner_project;
 }
 
 export const ApplicationDescription = ({ owner_project }: { owner_project: string }) => {
-  const { ownerProjectToProjectData } = useApplicationsData();
+  const { ownerProjectToProjectData } = useProjectsMetadata();
   return ownerProjectToProjectData[owner_project] ? ownerProjectToProjectData[owner_project].description : "";
 }
 
@@ -176,7 +176,7 @@ export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, se
 
 export const ProjectDetailsLinks = memo(({ owner_project }: { owner_project: string }) => {
   "use client";
-  const { ownerProjectToProjectData } = useApplicationsData();
+  const { ownerProjectToProjectData } = useProjectsMetadata();
   const linkPrefixes = ["https://x.com/", "https://github.com/", "", ""];
   const icons = ["ri:twitter-x-fill", "ri:github-fill", "feather:monitor", "ri:discord-fill"];
   const keys = ["twitter", "main_github", "website", "discord"];
@@ -194,13 +194,9 @@ export const ProjectDetailsLinks = memo(({ owner_project }: { owner_project: str
           >
             {key === "website" ? (
               <>
-              <Image
-                src={`https://api.growthepie.xyz/v1/apps/logos/${ownerProjectToProjectData[owner_project].logo_path}`}
-                alt={owner_project}
-                width={24}
-                height={24}
-                className="size-[36px] select-none"
-              />
+                {ownerProjectToProjectData[owner_project] && (
+                  <ApplicationIcon owner_project={owner_project} size="lg" />
+                )}
                 <div className="text-xxxs">{ownerProjectToProjectData[owner_project].display_name}</div>
                 <div className="size-[24px] rounded-full bg-[#344240] flex justify-center items-center">
                   <Icon icon="feather:arrow-right" className="size-[17px] text-[#CDD8D3]" />

@@ -13,6 +13,7 @@ import { ApplicationDescription, ApplicationDisplayName, ApplicationIcon, BackBu
 import { Metadata, ResolvingMetadata } from "next";
 import Link from "next/link";
 import { memo } from "react";
+import { ApplicationDetailsDataProvider } from "../ApplicationDetailsDataContext";
 
   // fetch data
   const projectsData = await fetch(LabelsURLS.projects).then((res) => res.json());
@@ -81,8 +82,9 @@ export default async function Layout({
         </div>
         <Controls />
       </Container>
-
-      {children}
+      <ApplicationDetailsDataProvider owner_project={owner_project}>
+        {children}
+      </ApplicationDetailsDataProvider>
     </>
   )
 }

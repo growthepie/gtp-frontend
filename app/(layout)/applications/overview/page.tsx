@@ -7,7 +7,8 @@ import Icon from "@/components/layout/Icon";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import Search from "../Search";
 import Controls from "../Controls";
-import { AggregatedDataRow, MetricDef, useApplicationsData } from "../ApplicationsDataContext";
+import { AggregatedDataRow, useApplicationsData } from "../ApplicationsDataContext";
+import { MetricDef, useMetrics } from "../MetricsContext";
 import { ParsedDatum } from "@/types/applications/AppOverviewResponse";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
@@ -29,9 +30,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Too
 import VerticalVirtuosoScrollContainer from "@/components/VerticalVirtuosoScrollContainer";
 import { ApplicationDisplayName, ApplicationIcon } from "../Components";
 import { useUIContext } from "@/contexts/UIContext";
+import { useProjectsMetadata } from "../ProjectsMetadataContext";
+import { useSort } from "../SortContext";
 
 export default function Page() {
-  const { applicationDataAggregated, selectedMetrics, isLoading } = useApplicationsData();
+  const { applicationDataAggregated, isLoading } = useApplicationsData();
+  const { selectedMetrics } = useMetrics();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   const { topGainers, topLosers } = useMemo(() => {
@@ -100,7 +104,9 @@ export default function Page() {
         </div>
       </Container>
       {/* <HorizontalScrollContainer reduceLeftMask={true}> */}
+      <div className="h-[800px]">
       <ApplicationsTable />
+      </div>
       {/* </HorizontalScrollContainer> */}
     </>
   )
@@ -290,7 +296,9 @@ const ApplicationCardSwiper = () => {
 
 const ApplicationCard = ({ application, className, width }: { application?: AggregatedDataRow, className?: string, width?: number }) => {
   const { AllChainsByKeys } = useMaster();
-  const { ownerProjectToProjectData, selectedChains, setSelectedChains, selectedMetrics, metricsDef } = useApplicationsData();
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+  const { selectedChains, setSelectedChains, } = useApplicationsData();
+  const { selectedMetrics, metricsDef } = useMetrics();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   const numContractsString = useCallback((application: AggregatedDataRow) => {
@@ -427,7 +435,7 @@ const ApplicationCard = ({ application, className, width }: { application?: Aggr
 }
 
 const Links = memo(({ application }: { application: AggregatedDataRow }) => {
-  const { ownerProjectToProjectData } = useApplicationsData();
+  const { ownerProjectToProjectData } = useProjectsMetadata();
   const linkPrefixes = ["", "https://x.com/", "https://github.com/"];
   const icons = ["feather:monitor", "ri:twitter-x-fill", "ri:github-fill"];
   const keys = ["website", "twitter", "main_github"];
@@ -454,7 +462,10 @@ const Links = memo(({ application }: { application: AggregatedDataRow }) => {
 Links.displayName = 'Links';
 
 const ApplicationsTable = () => {
-  const { metricsDef, selectedMetrics, applicationDataAggregated, sort, setSort, setSelectedMetrics, selectedMetricKeys, ownerProjectToProjectData } = useApplicationsData();
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+  const { applicationDataAggregated} = useApplicationsData();
+  const { sort, setSort } = useSort();
+  const { metricsDef, selectedMetrics, setSelectedMetrics, selectedMetricKeys, } = useMetrics();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   const metricKey = useMemo(() => {
@@ -738,7 +749,8 @@ const Value = ({ rank, def, value, change_pct, maxMetric }: { rank: number, def:
 
 
 const ApplicationTableRow = memo(({ application, maxMetrics }: { application: AggregatedDataRow, maxMetrics: number[] }) => {
-  const { ownerProjectToProjectData, selectedMetricKeys, selectedMetrics, metricsDef } = useApplicationsData();
+  const { ownerProjectToProjectData  } = useProjectsMetadata();
+  const { metricsDef, selectedMetrics, selectedMetricKeys, } = useMetrics();
 
   // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() =>

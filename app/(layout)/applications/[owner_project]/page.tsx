@@ -7,7 +7,7 @@ import Icon from "@/components/layout/Icon";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import Search from "../Search";
 import Controls from "../Controls";
-import { AggregatedDataRow, MetricDef, useApplicationsData } from "../ApplicationsDataContext";
+import { AggregatedDataRow, useApplicationsData } from "../ApplicationsDataContext";
 import { ParsedDatum } from "@/types/applications/AppOverviewResponse";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
@@ -27,14 +27,15 @@ import { Virtuoso } from "react-virtuoso";
 import { set } from "lodash";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import VerticalVirtuosoScrollContainer from "@/components/VerticalVirtuosoScrollContainer";
+import { useApplicationDetailsData } from "../ApplicationDetailsDataContext";
+import { useProjectsMetadata } from "../ProjectsMetadataContext";
 
 type Props = {
   params: { owner_project: string };
 };
 
-export default function Page({ params }: { params: any }) {
-  const { owner_project } = params;
-  const { applicationDataAggregated, selectedMetrics, isLoading, ownerProjectToProjectData } = useApplicationsData();
+export default function Page({ params: { owner_project } }: Props) {
+  const { ownerProjectToProjectData } = useProjectsMetadata();
 
   const projectData = ownerProjectToProjectData[owner_project];
 
@@ -45,7 +46,7 @@ export default function Page({ params }: { params: any }) {
   return (
     <Container>
       <div className="flex items-center h-[43px] gap-x-[8px] ">
-        </div>
+      </div>
     </Container>
   );
 
