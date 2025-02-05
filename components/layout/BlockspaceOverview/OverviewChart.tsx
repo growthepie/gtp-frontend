@@ -42,6 +42,7 @@ import { fill } from "lodash";
 import { useMaster } from "@/contexts/MasterContext";
 import { fullBrowserVersion } from "react-device-detect";
 import "@/app/highcharts.axis.css";
+import ChartWatermark from "@/components/layout/ChartWatermark"; 
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -1048,7 +1049,7 @@ export default function OverviewChart({
                       : AllChainsByKeys[standardChainKey].colors[
                       theme ?? "dark"
                       ][0] + fillHexColorOpacity;
-
+                      
                   return (
                     series && (
                       <AreaSeries
@@ -1152,6 +1153,12 @@ export default function OverviewChart({
               </YAxis>
             </HighchartsChart>
           </HighchartsProvider>
+          {/* <div className="absolute bottom-[calc(50%-64px)] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50"> */}
+          {/* <div className="absolute bottom-[calc(46.2%-0px)] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50"> */}
+          {/* <div className="absolute top-[857px] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50"> */}
+          <div className="relative top-[-153px] md:top-[-162px] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50">
+            <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
+          </div>
         </div>
         {chartAvg && (
           <div
