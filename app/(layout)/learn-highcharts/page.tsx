@@ -35,6 +35,8 @@ import ChartWatermark from "@/components/layout/ChartWatermark";
 import { useMaster } from "@/contexts/MasterContext";
 import "@/app/highcharts.axis.css";
 import { max } from "lodash";
+import { white } from "tailwindcss/colors";
+import PracticeChart from "@/components/layout/PracticeChart";
 
 const COLORS = {
     GRID: "rgb(215, 223, 222)",
@@ -42,7 +44,7 @@ const COLORS = {
     LABEL: "rgb(215, 223, 222)",
     LABEL_HOVER: "#6c7696",
     // TOOLTIP_BG: "#1b2135", //Should be transparent? 
-    TOOLTIP_BG: "rgba(40, 51, 51, 0.8)",
+    // TOOLTIP_BG: "rgba(40, 51, 51, 0.8)",
     ANNOTATION_BG: "rgb(215, 223, 222)",
   };
 
@@ -211,7 +213,7 @@ export default function Page(){
 
    
     return (
-      <>{master && ( 
+      <>{chainOverviewData && master && ( 
         <Container>
             <TopRowContainer>
                 <div // Why did I have to add a div why couldnt I do this in parent?
@@ -239,151 +241,14 @@ export default function Page(){
                     </div>)
             })}</div>
             <div className="relative ">
-            <HighchartsProvider Highcharts={Highcharts}>
-                <HighchartsChart
-                    containerProps={{
-                    style: {
-                        height: "197px",
-                        width: "100%",
-                        marginLeft: "auto",
-                        marginRight: "auto",
-                        position: "relative",
-
-                        overflow: "visible",
-                    }
-                    }}
-                    plotOptions = {{
-                      area: {
-                          marker: {
-                              enabled: false
-                          }
-                      }
-                     }}
-                    
-                >
-                    <Chart 
-                        backgroundColor={"transparent"}
-                        type="line"
-                        title={"test"}
-                        
-                    />
-                    <YAxis
-                      gridLineColor="#2d3532"
-                      tickAmount={3}
-                      labels={{
-                        style: {
-                            fontWeight: '700',
-                            color: 'rgb(215, 223, 222)'
-                        },
-                        formatter: function (this: any) {
-                          const prefix = showUsd ? '$' : 'Ξ';
-                          let value = this.value;
-                          let suffix = '';
-                          if (value >= 1000 && value < 10000) {
-                              value = value / 1000;
-                              suffix = 'K';
-                          } else if (value >= 10000) {
-                              value = value / 1000000;
-                              suffix = 'M';
-                          }
-                          return `${prefix}${value}${suffix}`;
-                      }
-                      }
-                    }
-                    ><AreaSeries 
-                        name="All L2s"  
-                        // color={master.chains.all_l2s.colors['dark'][1] 
-                        color={{
-                          linearGradient: {
-                            x1: 0,
-                            y1: 0,
-                            x2: 0,
-                            y2: 1,
-                          },
-                          stops: [
-                              [0, master.chains.all_l2s.colors['dark'][0] + "F9"],
-                              [1, master.chains.all_l2s.colors['dark'][1] + "F9"],
-                          ]
-                        }}
-                        fillColor={{linearGradient: {
-                          x1: 0,
-                          y1: 0,
-                          x2: 0,
-                          y2: 1,
-                        },
-                        stops: [
-                            
-                           
-                            // [0.349, daColor + "88"],
-                            [0, master.chains.all_l2s.colors['dark'][0] + "33"],
-                            // [0.55, master.chains.all_l2s.colors['dark'][0] + "CC"],
-                            [1, master.chains.all_l2s.colors['dark'][1] + "33"],
-                        ]
-                          }}
-                     
-                        data={chainOverviewData?.data.chains["all_l2s"].daily[selectedCategory].data.map(
-                        (d: any) => [
-                        d[0],
-                        showUsd ? d[2] : d[1], // 1 = ETH 2 = USD
-                        ],
-                    )} />
-                    </YAxis>
-                    <XAxis
-                    labels={{
-                      style: {
-                          color: 'rgb(215, 223, 222)'
-                      },
-                      formatter: function () {
-                        // Convert Unix timestamp to milliseconds
-                        const date = new Date(this.value);
-                        // Format the date as needed (e.g., "dd MMM yyyy")
-                        const dateString = date
-                            .toLocaleDateString("en-GB", {
-                            day: !(
-                                timespans[selectedTimespan].value >= 90 ||
-                                selectedTimespan === "max"
-                            )
-                                ? "2-digit"
-                                : undefined,
-                            month: "short",
-                            year:
-                                timespans[selectedTimespan].value >= 90 ||
-                                selectedTimespan === "max"
-                                ? "numeric"
-                                : undefined,
-                            })
-                            .toUpperCase();
-
-                        return `<span class="font-semibold">${dateString}</span>`;
-                      }
-                    }}
-                        type="datetime"
-                        min={selectedTimespan !== 'max' ? timespans[selectedTimespan].xMin : undefined}
-                        max={timespans[selectedTimespan].xMax}
-                    >
-                    </XAxis>
-                    <Tooltip
-                        useHTML={true}
-                        borderRadius={15}
-                        backgroundColor={COLORS.TOOLTIP_BG}
-                        style={{ color: 'rgb(215, 223, 222)', padding: '10px' }}
-                        formatter={tooltipFormatter}
-                        shared={true}
-                    />
-                    {/* <ChartWatermark
-                        className={`h-[30.67px] md:h-[46px] ${parseInt(chartHeight, 10) > 200
-                        ? "w-[128px] md:w-[163px]"
-                        : "w-[128.67px] md:w-[193px] "
-                        } text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten`}
-                    /> */}
-                    
-                </HighchartsChart>
-               
-                
-            </HighchartsProvider>
-            <div className="absolute bottom-[calc(50%-0px)] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50">
-                <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
-            </div>
+            <PracticeChart
+              data={chainOverviewData}
+              master={master}
+              showUsd={showUsd} 
+              selectedCategory={selectedCategory}
+              selectedTimespan={selectedTimespan}
+              timespans={timespans} 
+            />
         </div>
         </Container>
       )}</>
