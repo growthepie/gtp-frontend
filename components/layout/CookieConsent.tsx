@@ -54,7 +54,7 @@ export default function CookieConsent() {
 
   return (
     <div
-      className={`flex md:flex-col flex-col-reverse items-center justify-between lg:space-y-0 lg:space-x-8 bg-[#344240] bg-opacity-[0.95] text-base text-forest-900 dark:text-forest-50  border-[0.5px] bottom-0 mb-10 p-[15px] fixed z-50 w-[90%] sm:w-9/12 max-w-[884px] mx-auto rounded-3xl lg:rounded-[34px] left-[50%] transform -translate-x-1/2 shadow-2xl shadow-black/70 ${
+      className={`flex md:flex-col flex-col-reverse items-center justify-between lg:space-y-0 lg:space-x-8 bg-[#1F2726] bg-opacity-[0.95] text-base text-forest-900 dark:text-forest-50  border-[0.5px] bottom-0 mb-10 p-[15px] fixed z-50 w-[90%] sm:w-9/12 max-w-[884px] mx-auto rounded-3xl lg:rounded-[34px] left-[50%] transform -translate-x-1/2 shadow-2xl shadow-black/70 ${
         consent ? "hidden" : ""
       }`}
     >
@@ -96,7 +96,7 @@ export default function CookieConsent() {
           </div>
         </div>
       </div>
-      <div className="flex md:flex-row flex-col md:gap-x-[5px] lg:gap-x-[30px] lg:gap-y-[0px] gap-y-[10px] items-center justify-between w-full text-xs md:text-xxs md:pt-[15px] pr-[15px] pl-[10px]">
+      <div className="flex md:flex-row flex-col md:gap-x-[5px] lg:gap-x-[30px] lg:gap-y-[0px] gap-y-[10px] items-center justify-between w-full text-xs md:text-xxs md:pt-[15px] pr-[30px] pl-[10px]">
         <div className="flex-col gap-y-[10px] lg:max-w-[250px]">
           <div className="heading-large-xs pb-[10px]">Do you enjoy using growthepie?</div>
           <p className=" text-xxs md:text-xs ">Help us stay free for everyone, keeping data open and accessible! Also check out our impact&nbsp;   
@@ -105,7 +105,7 @@ export default function CookieConsent() {
             here
           </Link>.</p>
         </div>
-        <div className="w-full group/qr flex border-[#CDD8D3] border-[2px] items-center gap-x-[15px] rounded-[20px] py-[3px] sm:py-[5px] px-[5px] max-w-[500px]"
+        <div className="w-full group/qr flex border-[#CDD8D3] border-[2px] items-center gap-x-[15px]  rounded-[20px] py-[3px] sm:py-[5px] px-[5px] max-w-[500px]"
           onClick={(e) => {
             window.open("https://etherscan.io/address/0x9438b8B447179740cD97869997a2FCc9b4AA63a2", "_blank");
             track("clicked Donate QR Code", {
