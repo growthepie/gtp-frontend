@@ -115,13 +115,13 @@ export default function CookieConsent() {
             e.stopPropagation();
           }}
         >
-            <div className=" min-w-[55px] min-h-[60px] sm:min-w-[100px] sm:min-h-[100px] relative ">
+            <div className=" min-w-[55px] min-h-[60px] sm:min-w-[100px] sm:min-h-[100px] pl-[4px] top-[4px] relative ">
               <EthSVG />
               
               
              
             </div>
-            <div className="flex flex-col  sm:pt-[0px] sm:pb-[0px] sm:min-h-[100px] sm:justify-between cursor-pointer ">
+            <div className="flex flex-col  sm:pt-[2px] sm:pb-[2px] sm:min-h-[100px] sm:justify-between cursor-pointer ">
               <div>
                 <div className="heading-small-xxxs sm:heading-small-xxs lg:heading-small-xs group-hover/qr:underline">Donate to our wallet on any Ethereum compatible wallet.</div>
                 <div className=" text-xxs md:text-xs sm:mt-[10px] pb-[2px]">Scan it with your wallet app!</div>
@@ -192,7 +192,7 @@ const TruncatedAddress = ({ address, minLength = 12 }) => {
 
 
 const EthSVG = () => (
-  <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg width="100" height="100" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
   <path d="M29.2686 -0.000976562H26.8296V2.43805H29.2686V-0.000976562Z" fill="#CDD8D3"/>
   <path d="M34.1461 -0.000976562H31.707V2.43805H34.1461V-0.000976562Z" fill="#CDD8D3"/>
   <path d="M41.4634 -0.000976562H39.0244V2.43805H41.4634V-0.000976562Z" fill="#CDD8D3"/>
