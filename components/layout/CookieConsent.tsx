@@ -105,7 +105,7 @@ export default function CookieConsent() {
             here
           </Link>.</p>
         </div>
-        <div className="w-full group/qr flex border-[#CDD8D3] border-[2px] items-center gap-x-[15px]  rounded-[20px] py-[3px] sm:py-[5px] px-[5px] max-w-[500px]"
+        <div className="w-full group/qr flex border-[#CDD8D3] border-[2px] items-center gap-x-[15px]  rounded-[20px] py-[3px] sm:pt-[7px] px-[5px] max-w-[500px]"
           onClick={(e) => {
             window.open("https://etherscan.io/address/0x9438b8B447179740cD97869997a2FCc9b4AA63a2", "_blank");
             track("clicked Donate QR Code", {
@@ -115,13 +115,13 @@ export default function CookieConsent() {
             e.stopPropagation();
           }}
         >
-            <div className=" min-w-[55px] min-h-[60px] sm:min-w-[100px] sm:min-h-[100px] pl-[4px] top-[4px] relative ">
+            <div className=" min-w-[65px] min-h-[70px] sm:min-w-[104px] sm:min-h-[104px] pl-[4px] top-[7px] sm:top-[4px] relative ">
               <EthSVG />
               
               
              
             </div>
-            <div className="flex flex-col  sm:pt-[2px] sm:pb-[2px] sm:min-h-[100px] sm:justify-between cursor-pointer ">
+            <div className="flex flex-col  sm:pt-[1px] sm:pb-[4px] sm:min-h-[98px] sm:justify-between cursor-pointer ">
               <div>
                 <div className="heading-small-xxxs sm:heading-small-xxs lg:heading-small-xs group-hover/qr:underline">Donate to our wallet on any Ethereum compatible wallet.</div>
                 <div className=" text-xxs md:text-xs sm:mt-[10px] pb-[2px]">Scan it with your wallet app!</div>
@@ -192,7 +192,7 @@ const TruncatedAddress = ({ address, minLength = 12 }) => {
 
 
 const EthSVG = () => (
-  <svg width="100" height="100" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg  viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
   <path d="M29.2686 -0.000976562H26.8296V2.43805H29.2686V-0.000976562Z" fill="#CDD8D3"/>
   <path d="M34.1461 -0.000976562H31.707V2.43805H34.1461V-0.000976562Z" fill="#CDD8D3"/>
   <path d="M41.4634 -0.000976562H39.0244V2.43805H41.4634V-0.000976562Z" fill="#CDD8D3"/>
@@ -879,7 +879,7 @@ const EthSVG = () => (
   <path d="M50.9689 39.0615L58.1876 51.0122L50.9689 55.2735L43.75 51.0127L50.9689 39.0615Z" fill="#CDD8D3"/>
   </svg>
 
-)
+);
 
 const EthereumSVG = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 70 70">
