@@ -232,10 +232,8 @@ export default function RootLayout({
               </div>
               <div className="pointer-events-none fixed bottom-[20px] z-50 flex w-full max-w-[1680px] justify-end">
                 <div className="pointer-events-auto pr-[20px] md:pr-[50px]">
-                  <div className="relative z-50 flex gap-x-[15px] rounded-full bg-forest-500 p-[5px] shadow-[0px_0px_50px_0px_#00000033] dark:bg-[#5A6462] dark:shadow-[0px_0px_50px_0px_#000000]">
                     {/* <Details /> */}
                     <Share />
-                  </div>
                 </div>
               </div>
             </div>
