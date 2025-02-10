@@ -1450,7 +1450,7 @@ export default function CategoryMetrics({
                   justify="end"
                   metric={selectedMode === "gas_fees_" ? "gas_fees" : "txcount"}
                   sort={{
-                    sortOrder: sortOrder ? "asc" : "desc",
+                    sortOrder: sortOrder ? "desc" : "asc",
                     metric: contractCategory,
                   }}
                   setSort={(sort: { metric: string; sortOrder: string }) => {
