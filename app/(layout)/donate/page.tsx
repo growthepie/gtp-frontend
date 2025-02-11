@@ -66,6 +66,7 @@ export default function Donations() {
   const forceNoPublicGoods = searchParams.get("forceNoPublicGoods") === "true";
 
 
+
   const QRCodes = [
     {
       key: "Ethereum",
@@ -208,7 +209,7 @@ export default function Donations() {
             wallets:
           </Description>
         </div>
-        <div className="w-full pb-[30px] grid gap-[10px] grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 justify-items-stretch items-center">
+        <div className="w-full pb-[30px] flex md:flex-row flex-col md:gap-y-[0px] gap-y-[10px] gap-x-[10px] justify-items-stretch items-start md:items-center ">
           {QRCodes.map((CardData, index) => (
             <QRCodeCard key={index} CardData={CardData} index={index} />
           ))}
@@ -489,6 +490,8 @@ export default function Donations() {
 
 const QRCodeCard = ({ CardData, index }) => {
   const [copiedAddress, setCopiedAddress] = useState(null);
+  const [copied, setCopied] = useState(false);
+
   const copyAddressTimeout = useRef<NodeJS.Timeout>();
 
   const handleCopyAddress = (address) => {
@@ -521,9 +524,19 @@ const QRCodeCard = ({ CardData, index }) => {
       setCopiedAddress(null);
     }, 3000);
   };
+
+
+  function triggerCopy() {
+    setCopied(true);
+    setTimeout(() => {
+      setCopied(false);
+    }, 1500); // 3000 milliseconds (3 seconds)
+  }
+
+
   return (
     <div
-      className={`group flex items-center  gap-x-[10px] p-[5px] pr-[15px] border-[2px] rounded-[17px] border-[#CDD8D3] cursor-pointer
+      className={`group flex items-center w-auto gap-x-[10px] p-[5px] pr-[15px] border-[2px] rounded-[17px] border-[#CDD8D3] cursor-pointer max-w-[460px]
         ${CardData.key !== "Ethereum" ? "h-[58px]  sm:h-[82px]" : "h-[74px] sm:h-[110px]"}`}
       onClick={() => {
         window.open(CardData.url, "_blank");
@@ -560,17 +573,48 @@ const QRCodeCard = ({ CardData, index }) => {
           </div>
         </div>
       </div>
-      <div className="h-full w-full flex flex-col-reverse justify-between items-start leading-[111%] py-[5px] sm:py-[5px]">
+      <div className="h-full w-full flex flex-col-reverse justify-between items-start leading-[111%] py-[5px] sm:py-[5px] ">
         {CardData.wallet ? (
           <>
-            <div className="peer flex w-full items-center hover:bg-transparent select-none text-[9px] leading-[120%]">
-              <GridTableAddressCell address={CardData.address} className="group/address w-full !gap-x-[10px]" fontSize={10} iconClassName="!size-[9px]" iconContainerClassName="!size-[9px] opacity-0 group-hover/address:opacity-100" />
+            <div className="peer flex w-full items-center hover:bg-transparent select-none numbers-xxs md:numbers-xs  leading-[120%] pb-[2px]">
+              <div className="flex gap-x-[5px] items-center group " onClick={(e) => {
+
+                    const text = "0x9438b8B447179740cD97869997a2FCc9b4AA63a2";
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                      navigator.clipboard.writeText(text).catch((err) => console.error("Copy failed:", err));
+                    } else {
+                      const tempInput = document.createElement("input");
+                      tempInput.value = text;
+                      document.body.appendChild(tempInput);
+                      tempInput.select();
+                      document.execCommand("copy");
+                      document.body.removeChild(tempInput);
+                     
+                    }
+                    triggerCopy();
+                    e.stopPropagation();
+                  }}
+                >
+                <div className=" numbers-xxs md:numbers-xs  "><TruncatedAddress address="0x9438b8B447179740cD97869997a2FCc9b4AA63a2" /></div>
+                <div>
+                    <Icon
+                      className="w-[12px] h-[12px] sm:w-[15px] sm:h-[15px] hover:cursor-pointer group-hover:visible invisible"
+                      icon={copied ? "feather:check-circle" : "feather:copy"}
+
+                    />
+                      
+                 
+                </div>
+              </div>            
             </div>
             <div className="w-full block xs:hidden">
               <b>{CardData.key}</b>
             </div>
-            <div className="w-full hidden xs:block text-[11px] md:text-[14px] truncate text-wrap group-hover:underline peer-hover:!no-underline">
-              Donate to our <b className="">{CardData.key}</b> Wallet
+            <div className="w-full hidden xs:block text-xs truncate text-wrap group-hover:underline peer-hover:!no-underline">
+              Scan it with your wallet app!
+            </div>
+            <div className="w-full hidden xs:block heading-small-xs truncate text-wrap group-hover:underline peer-hover:!no-underline">
+              Donate to our wall on any {CardData.key} compatible wallet.
             </div>
           </>
         ) : (
@@ -588,6 +632,26 @@ const QRCodeCard = ({ CardData, index }) => {
     </div>
   );
 };
+
+const TruncatedAddress = ({ address, minLength = 12 }) => {
+  return (
+    <div className="flex items-center overflow-hidden">
+      <div className="truncate">
+        {address.length > minLength ? (
+          <>
+            <span className="hidden lg:inline">{address}</span>
+            <span className="lg:hidden">
+              {`${address.slice(0, 6)}...${address.slice(-4)}`}
+            </span>
+          </>
+        ) : (
+          address
+        )}
+      </div>
+    </div>
+  );
+};
+
 
 
 const CountdownTimer = ({ targetDate, prefixString }: { targetDate: Date, prefixString?: string }) => {

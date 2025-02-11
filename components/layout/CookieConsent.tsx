@@ -69,7 +69,7 @@ export default function CookieConsent() {
           <div className="flex items-center space-x-8 text-xxs md:text-xxs">
             <div>
               Our website uses cookies to analyze how the site is used and to ensure your experience is consistent between visits. Find our{" "}
-              <Link href="/privacy-policy" className="underline relative md:text-xxs">
+              <Link href="/privacy-policy" className="underline relative md:text-xxs text-nowrap">
                 Privacy Policy here.
               </Link>
             </div>
