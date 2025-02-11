@@ -447,7 +447,7 @@ const DATableChartsComponent = ({
                 .map((point: any, index: number) => {
                     const { series, y, percentage } = point;
                     const { name } = series;
-                    const realIndex = Object.keys(data[selectedTimespan].da_consumers).findIndex((k) => k === name);
+                    const realIndex = Object.keys(data[selectedTimespan].da_consumers).findIndex((k) => k === nameToKey[name]);
                     const color = AllChainsByKeys[nameToKey[name]] ? AllChainsByKeys[nameToKey[name]].colors["dark"][0] : UNLISTED_CHAIN_COLORS[realIndex];
                     const nameString = name;
                     let percentSize = (y / pointsSum) * 175;
@@ -455,6 +455,7 @@ const DATableChartsComponent = ({
                     let value = y;
                     let displayValue = y;
                     total += y;
+
     
                     return `
                     <div class="flex w-[215px] space-x-2 items-center font-medium mb-0.5 pr-2 overflow-x-hidden ">
