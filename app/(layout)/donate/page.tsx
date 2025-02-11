@@ -76,7 +76,7 @@ export default function Donations() {
         path: "gtp:ethereum-logo-monochrome",
         color: "#CDD8D3",
       },
-      url: "https://etherscan.io/address/0x7291a5Aa55886900C460Bf4366A46820F40476fB",
+      url: "https://etherscan.io/address/0x9438b8B447179740cD97869997a2FCc9b4AA63a2",
       address: "0x9438b8B447179740cD97869997a2FCc9b4AA63a2",
       fullSize: true,
     },
@@ -623,8 +623,8 @@ const QRCodeCard = ({ CardData, index }) => {
             <div className="w-full block xs:hidden">
               <b>{CardData.key}</b>
             </div>
-            <div className="w-full hidden xs:block text-[11px] md:text-[14px] truncate text-wrap group-hover:underline">
-              Donate on our <b>{CardData.key}</b> Page
+            <div className="w-full hidden xs:block heading-small-xs  truncate text-wrap group-hover:underline">
+              Donate on our {CardData.key} Page
             </div>
           </>
         )}
