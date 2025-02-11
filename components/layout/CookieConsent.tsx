@@ -10,12 +10,12 @@ export default function CookieConsent() {
   const [consent, setConsent] = useState(true);
   const [copied, setCopied] = useState(false);
   useEffect(() => {
-    setConsent(hasCookie("growthepieCookieConsent"));
+    setConsent(hasCookie("gtpCookieConsent"));
   }, []);
 
   const acceptCookie = () => {
     setConsent(true);
-    setCookie("growthepieCookieConsent", "true", {
+    setCookie("gtpCookieConsent", "true", {
       maxAge: 60 * 60 * 24 * 365,
     });
 
@@ -34,7 +34,7 @@ export default function CookieConsent() {
 
   const denyCookie = () => {
     setConsent(true);
-    setCookie("growthepieCookieConsent", "false", {
+    setCookie("gtpCookieConsent", "false", {
       maxAge: 60 * 60 * 24 * 365,
     });
     console.log("denying cookies");
