@@ -5,7 +5,7 @@ import { DailyData } from "@/types/api/EconomicsResponse";
 import { createContext, useContext } from "react";
 import useSWR from "swr";
 
-export interface AppplicationDetailsRespomse {
+export interface AppplicationDetailsResponse {
   metrics:          Metrics;
   contracts:        Contracts;
   last_updated_utc: Date;
@@ -49,9 +49,41 @@ export interface Daily {
   data:  number[];
 }
 
+type ContractKeys = [
+  "address",
+  "name",
+  "main_category_key",
+  "sub_category_key",
+  "origin_key",
+  "txcount",
+  "fees_paid_eth",
+  "fees_paid_usd",
+  "daa"
+]
+
+export type ContractDict = {
+  [key in ContractKeys[number]]: string | number;
+}
+
+
+const getContractDictArray = (contracts: Contracts): ContractDict[] => {
+  const types = contracts.types;
+  const data = contracts.data;
+
+  return data.map((contractData) => {
+    const contractDict: ContractDict = {} as ContractDict;
+    types.forEach((type, index) => {
+      contractDict[type] = contractData[index];
+    });
+    return contractDict;
+  });
+}
+
 
 export type ApplicationDetailsDataContextType = {
-  data: AppplicationDetailsRespomse;
+  data: AppplicationDetailsResponse;
+  owner_project: string;
+  contracts: ContractDict[];
 }
 
 export const ApplicationDetailsDataContext = createContext<ApplicationDetailsDataContextType | undefined>(undefined);
@@ -69,13 +101,15 @@ export const ApplicationDetailsDataProvider = ({
     data: applicationDetailsData,
     isLoading: applicationDetailsLoading,
     isValidating: applicationDetailsValidating 
-  } = useSWR<AppplicationDetailsRespomse>(
+  } = useSWR<AppplicationDetailsResponse>(
     owner_project ? ApplicationsURLs.details.replace("{owner_project}", owner_project) : null,
   );
 
   return (
     <ApplicationDetailsDataContext.Provider value={{
-      data: applicationDetailsData || {} as AppplicationDetailsRespomse,
+      data: applicationDetailsData || {} as AppplicationDetailsResponse,
+      owner_project,
+      contracts: applicationDetailsData ? getContractDictArray(applicationDetailsData.contracts) : [],
     }}>
       <ShowLoading 
         dataLoading={[applicationDetailsLoading]} 

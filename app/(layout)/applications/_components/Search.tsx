@@ -9,7 +9,7 @@ import useDragScroll from "@/hooks/useDragScroll";
 import { update } from "lodash";
 import { useUIContext } from "@/contexts/UIContext";
 import { useMaster } from "@/contexts/MasterContext";
-import { useApplicationsData } from "./ApplicationsDataContext";
+import { useApplicationsData } from "../_contexts/ApplicationsDataContext";
 
 export default function Search() {
   const { AllChainsByKeys } = useMaster();

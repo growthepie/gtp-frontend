@@ -45,12 +45,16 @@ export type AggregatedDataRow = {
   gas_fees_usd: number;
   txcount: number;
   prev_txcount: number;
+  daa: number;
+  prev_daa: number;
   gas_fees_eth_change_pct: number;
   gas_fees_usd_change_pct: number;
   txcount_change_pct: number;
+  daa_change_pct: number;
   rank_gas_fees_eth: number;
   rank_gas_fees_usd: number;
   rank_txcount: number;
+  rank_daa: number;
 }
 
 function ownerProjectToOriginKeysMap(data: AppDatum[]): { [key: string]: string[] } {
@@ -85,13 +89,25 @@ function aggregateProjectData(
     gas_fees_usd: typesArr.indexOf("gas_fees_usd"),
     txcount: typesArr.indexOf("txcount"),
     prev_txcount: typesArr.indexOf("prev_txcount"),
+    daa: typesArr.indexOf("daa"),
+    prev_daa: typesArr.indexOf("prev_daa"),
   };
 
   for (const entry of data) {
     const [
-      owner, origin, numContracts, gasEth, prevGasEth, gasUsd, txCount, prevTxCount
+      owner, 
+      origin, 
+      numContracts, 
+      gasEth, prevGasEth, gasUsd, 
+      txCount, prevTxCount, 
+      daa, prevDaa
     ] = [
-      entry[typesInexes.owner_project] as string, entry[typesInexes.origin_key] as string, entry[typesInexes.num_contracts] as number, entry[typesInexes.gas_fees_eth] as number, entry[typesInexes.prev_gas_fees_eth] as number, entry[typesInexes.gas_fees_usd] as number, entry[typesInexes.txcount] as number, entry[typesInexes.prev_txcount] as number
+      entry[typesInexes.owner_project] as string, 
+      entry[typesInexes.origin_key] as string, 
+      entry[typesInexes.num_contracts] as number, 
+      entry[typesInexes.gas_fees_eth] as number, entry[typesInexes.prev_gas_fees_eth] as number, entry[typesInexes.gas_fees_usd] as number, 
+      entry[typesInexes.txcount] as number, entry[typesInexes.prev_txcount] as number,
+      entry[typesInexes.daa] as number, entry[typesInexes.prev_daa] as number
     ];
 
     // Skip if not matching the filter
@@ -115,6 +131,8 @@ function aggregateProjectData(
         gas_fees_usd: 0,
         txcount: 0,
         prev_txcount: 0,
+        daa: 0,
+        prev_daa: 0,
       });
     }
 
@@ -127,6 +145,8 @@ function aggregateProjectData(
     acc.gas_fees_usd += gasUsd;
     acc.txcount += txCount;
     acc.prev_txcount += prevTxCount;
+    acc.daa += daa;
+    acc.prev_daa += prevDaa;
   }
 
   // Convert to final array format and calculate percentage changes
@@ -147,6 +167,10 @@ function aggregateProjectData(
     txcount_change_pct: calculatePercentageChange(
       metrics.txcount,
       metrics.prev_txcount
+    ),
+    daa_change_pct: calculatePercentageChange(
+      metrics.daa,
+      metrics.prev_daa
     ),
     };
   });

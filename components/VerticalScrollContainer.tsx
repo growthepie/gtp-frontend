@@ -334,6 +334,10 @@ export default forwardRef(function VerticalScrollContainer(
     if (contentScrollAreaRef.current) {
       if (contentHeight < contentScrollAreaHeight) {
         setMaskGradient('');
+      }else{
+        setMaskGradient(
+          'linear-gradient(to bottom, transparent, black 50px, black calc(100% - 50px), transparent)'
+        );
       }
     }
 

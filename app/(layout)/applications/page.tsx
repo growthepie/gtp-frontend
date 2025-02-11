@@ -2,8 +2,8 @@
 import Container from "@/components/layout/Container";
 import Icon from "@/components/layout/Icon";
 import { GTPIcon } from "@/components/layout/GTPIcon";
-import { AggregatedDataRow, useApplicationsData } from "../_contexts/ApplicationsDataContext";
-import { MetricDef, useMetrics } from "../_contexts/MetricsContext";
+import { AggregatedDataRow, useApplicationsData } from "./_contexts/ApplicationsDataContext";
+import { MetricDef, useMetrics } from "./_contexts/MetricsContext";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
@@ -17,9 +17,9 @@ import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import { useLocalStorage } from "usehooks-ts";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import VerticalVirtuosoScrollContainer from "@/components/VerticalVirtuosoScrollContainer";
-import { ApplicationDisplayName, ApplicationIcon } from "../_components/Components";
-import { useProjectsMetadata } from "../_contexts/ProjectsMetadataContext";
-import { useSort } from "../_contexts/SortContext";
+import { ApplicationDisplayName, ApplicationIcon, Category, Chains, Links, MetricTooltip } from "./_components/Components";
+import { useProjectsMetadata } from "./_contexts/ProjectsMetadataContext";
+import { useSort } from "./_contexts/SortContext";
 import { ApplicationsURLs } from "@/lib/urls";
 import { preload } from "react-dom";
 import useDragScroll from "@/hooks/useDragScroll";
@@ -406,7 +406,7 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
         </div>
       </div>
       <div className="w-full flex items-center gap-x-[5px]">
-        <ApplicationIcon owner_project={application.owner_project} size="lg" />
+        <ApplicationIcon owner_project={application.owner_project} size="md" />
         {ownerProjectToProjectData[application.owner_project] ? (
           <div className="heading-large-md flex-1"><ApplicationDisplayName owner_project={application.owner_project} /></div>
         ) : (
@@ -433,7 +433,7 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
             </div>
           ))}
         </div> */}
-        <Links application={application} />
+        <Links owner_project={application.owner_project} />
       </div>
     </div>
   )
@@ -441,32 +441,7 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
 
 ApplicationCard.displayName = 'ApplicationCard';
 
-const Links = memo(({ application }: { application: AggregatedDataRow }) => {
-  const { ownerProjectToProjectData } = useProjectsMetadata();
-  const linkPrefixes = ["", "https://x.com/", "https://github.com/"];
-  const icons = ["feather:monitor", "ri:twitter-x-fill", "ri:github-fill"];
-  const keys = ["website", "twitter", "main_github"];
 
-  return (
-    <div className="flex items-center gap-x-[5px]">
-      {ownerProjectToProjectData[application.owner_project] && keys.map((key, index) => (
-        <div key={index} className="h-[15px] w-[15px]">
-          {ownerProjectToProjectData[application.owner_project][key] && <Link
-            href={`${linkPrefixes[index]}${ownerProjectToProjectData[application.owner_project][key]}`}
-            target="_blank"
-          >
-            <Icon
-              icon={icons[index]}
-              className="w-[15px] h-[15px] select-none"
-            />
-          </Link>}
-        </div>
-      ))}
-    </div>
-  );
-});
-
-Links.displayName = 'Links';
 
 const ApplicationsTable = () => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
@@ -628,6 +603,7 @@ const ApplicationsTable = () => {
     </HorizontalScrollContainer>
   )
 }
+
 type AltApplicationTableRowProps = {
   logo_path: string;
   owner_project: string;
@@ -642,76 +618,6 @@ type AltApplicationTableRowProps = {
   rank_gas_fees: number;
 };
 
-
-const Chains = ({ origin_keys }: { origin_keys: string[] }) => {
-  const { AllChainsByKeys } = useMaster();
-  const { selectedChains, setSelectedChains } = useApplicationsData();
-
-  return (
-    <div className="flex items-center gap-x-[5px]">
-      {origin_keys.map((chain, index) => (
-        <div
-          key={index}
-          className={`cursor-pointer ${selectedChains.includes(chain) ? '' : '!text-[#5A6462]'} hover:!text-inherit`} style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors["dark"][0] : '' }}
-          onClick={() => {
-            if (selectedChains.includes(chain)) {
-              setSelectedChains(selectedChains.filter((c) => c !== chain));
-            } else {
-              setSelectedChains([...selectedChains, chain]);
-            }
-          }}
-        >
-          {AllChainsByKeys[chain] && (
-            // <GridTableChainIcon origin_key={AllChainsByKeys[chain].key} color={AllChainsByKeys[chain].colors["dark"][0]} />
-            <Icon
-              icon={`gtp:${AllChainsByKeys[
-                chain
-              ].urlKey
-                }-logo-monochrome`}
-              className="w-[15px] h-[15px]"
-            />
-          )}
-        </div>
-      ))}
-    </div>
-  );
-};
-
-const Category = ({ category }: { category: string }) => {
-  const getGTPCategoryIcon = (category: string): GTPIconName | "" => {
-
-    switch (category) {
-      case "Cross-Chain":
-        return "gtp-crosschain";
-      case "Utility":
-        return "gtp-utilities";
-      case "Token Transfers":
-        return "gtp-tokentransfers";
-      case "DeFi":
-        return "gtp-defi";
-      case "Social":
-        return "gtp-socials";
-      case "NFT":
-        return "gtp-nft";
-      case "CeFi":
-        return "gtp-cefi";
-      default:
-        return "";
-    }
-  }
-
-  return (
-    <div className="flex items-center gap-x-[5px] whitespace-nowrap">
-      {/* <GTPIcon icon={getGTPCategoryIcon()} size="sm" /> */}
-      {category && (
-        <>
-          <GTPIcon icon={getGTPCategoryIcon(category) as GTPIconName} size="sm" />
-          {category}
-        </>
-      )}
-    </div>
-  );
-}
 
 const Value = memo(({ rank, def, value, change_pct, maxMetric }: { rank: number, def: MetricDef, value: number, change_pct: number, maxMetric: number }) => {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
@@ -779,12 +685,12 @@ const ApplicationTableRow = memo(({ application, maxMetrics }: { application: Ag
         <div
           className="absolute z-[3] -left-[5px] h-[32px] w-[35px] pl-[5px] flex items-center justify-start rounded-l-full bg-[radial-gradient(circle_at_-32px_16px,_#151A19_0%,_#151A19_72.5%,_transparent_90%)]"
         >
-          <ApplicationIcon owner_project={application.owner_project} size="md" />
+          <ApplicationIcon owner_project={application.owner_project} size="sm" />
         </div>
       </div>
       <div className="flex items-center gap-x-[5px] justify-between">
         <ApplicationDisplayName owner_project={application.owner_project} />
-        <Links application={application} />
+        <Links owner_project={application.owner_project} />
       </div>
       <div className="flex items-center gap-x-[5px]">
         <Chains origin_keys={application.origin_keys} />
@@ -815,33 +721,3 @@ const ApplicationTableRow = memo(({ application, maxMetrics }: { application: Ag
 
 ApplicationTableRow.displayName = 'ApplicationTableRow';
 
-const MetricTooltip = ({ metric }: { metric: string }) => {
-  const content = {
-    gas_fees: {
-      title: "Gas Fees",
-      content: "The total gas fees paid by all contracts in the selected timeframe across the selected chains.",
-    },
-    txcount: {
-      title: "Transactions",
-      content: "The total number of transactions in the selected timeframe across the selected chains.",
-    }
-  }
-
-
-  return (
-    <div
-      className="w-[238px] bg-[#1F2726] rounded-[15px] flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300"
-      style={{
-        boxShadow: "0px 0px 30px #000000",
-      }}
-      onClick={(e) => {
-        e.stopPropagation();
-      }}
-    >
-      <div className="heading-small-xs">{content[metric].title}</div>
-      <div className="text-xs">
-        {content[metric].content}
-      </div>
-    </div>
-  );
-}

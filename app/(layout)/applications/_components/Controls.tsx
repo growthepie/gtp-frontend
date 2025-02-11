@@ -1,9 +1,9 @@
 "use client"
 import { TopRowContainer, TopRowParent, TopRowChild } from "@/components/layout/TopRow";
 import { MultipleSelectTopRowChild } from "./Components";
-import { useTimespan } from "./TimespanContext";
-import { useMetrics } from "./MetricsContext";
-import { useSort } from "./SortContext";
+import { useTimespan } from "../_contexts/TimespanContext";
+import { useMetrics } from "../_contexts/MetricsContext";
+import { useSort } from "../_contexts/SortContext";
 
 export default function Controls() {
   const { sort, setSort } = useSort();
@@ -52,10 +52,9 @@ export default function Controls() {
 
         </TopRowParent>
         <TopRowParent className="-py-[10px]">
-          {Object.keys(timespans).map((key) => {
-            {
-              return (
+          {Object.keys(timespans).map((key) => (
                 <TopRowChild
+                  key={key}
                   className="flex items-center justify-center h-[28px] md:h-[44px]"
                   onClick={() => {
                     setSelectedTimespan(key);
@@ -67,9 +66,8 @@ export default function Controls() {
                     : timespans[key].shortLabel} */}
                     {timespans[key].shortLabel}
                 </TopRowChild>
-              );
-            }
-          })}
+              )
+          )}
         </TopRowParent>
       </TopRowContainer>
       
