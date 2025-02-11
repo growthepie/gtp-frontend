@@ -21,23 +21,27 @@ export default function Page({ params: { owner_project } }: Props) {
       {selectedMetrics.map((metric) => (
         <MetricSection key={metric} metric={metric} owner_project={owner_project} />
       ))}
-      <Container className="pt-[30px] pb-[15px]">
+      <Container>
+      <div className="pt-[30px] pb-[15px]">
         <div className="flex flex-col gap-y-[10px]">
           <div className="heading-large">Most Active Contracts</div>
           <div className="text-xs">
             See the most active contracts within the selected timeframe (Maximum) for 1inch.
           </div>
         </div>
-        <div className="rounded-md bg-forest-1000/60 h-[152px] w-full"></div>
-      </Container>
-      <Container className="pt-[30px] pb-[15px]">
+        
+      </div>
+      <div className="rounded-md bg-forest-1000/60 h-[152px] w-full"></div>
+      <div className="pt-[30px] pb-[15px]">
         <div className="flex flex-col gap-y-[10px]">
           <div className="heading-large">Similar Applications</div>
           <div className="text-xs">
             See other applications similar to 1inch sorted by their performance in terms of gas fees.
           </div>
         </div>
-        <div className="rounded-md bg-forest-1000/60 h-[140px] w-full"></div>
+        
+      </div>
+      <div className="rounded-md bg-forest-1000/60 h-[140px] w-full"></div>
       </Container>
     </>
   );

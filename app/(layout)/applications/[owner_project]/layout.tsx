@@ -2,48 +2,48 @@ import Container from "@/components/layout/Container";
 import Heading from "@/components/layout/Heading";
 import Controls from "../Controls";
 import { LabelsURLS } from "@/lib/urls";
-import { ApplicationDisplayName, ApplicationIcon, BackButton, ProjectDetailsLinks } from "../Components";
+import { ApplicationDisplayName, ApplicationIcon, BackButton, PageTitle, ProjectDetailsLinks } from "../Components";
 import { Metadata, ResolvingMetadata } from "next";
 import { ApplicationDetailsDataProvider } from "../ApplicationDetailsDataContext";
 
-  // fetch data
-  const projectsData = await fetch(LabelsURLS.projects).then((res) => res.json());
-  const typesArr = projectsData.data.types;
+// // fetch data
+// const projectsData = await fetch(LabelsURLS.projects).then((res) => res.json());
+// const typesArr = projectsData.data.types;
 
-  const ownerProjectToProjectData = projectsData.data.data.reduce((curr, project) => {
-    return {
-      ...curr,
-      [project[typesArr.indexOf("owner_project")]]: {
-        owner_project: project[typesArr.indexOf("owner_project")],
-        display_name: project[typesArr.indexOf("display_name")],
-        description: project[typesArr.indexOf("description")],
-        main_github: project[typesArr.indexOf("main_github")],
-        twitter: project[typesArr.indexOf("twitter")],
-        website: project[typesArr.indexOf("website")],
-        logo_path: project[typesArr.indexOf("logo_path")],
-        main_category: project[typesArr.indexOf("main_category")],
-      }
-    }
-  }, {});
+// const ownerProjectToProjectData = projectsData.data.data.reduce((curr, project) => {
+//   return {
+//     ...curr,
+//     [project[typesArr.indexOf("owner_project")]]: {
+//       owner_project: project[typesArr.indexOf("owner_project")],
+//       display_name: project[typesArr.indexOf("display_name")],
+//       description: project[typesArr.indexOf("description")],
+//       main_github: project[typesArr.indexOf("main_github")],
+//       twitter: project[typesArr.indexOf("twitter")],
+//       website: project[typesArr.indexOf("website")],
+//       logo_path: project[typesArr.indexOf("logo_path")],
+//       main_category: project[typesArr.indexOf("main_category")],
+//     }
+//   }
+// }, {});
 
-type Props = {
-  params: Promise<{ owner_project: string }>,
-}
+// type Props = {
+//   params: Promise<{ owner_project: string }>,
+// }
 
-export async function generateMetadata(
-  { params }: Props,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
-  // read route params
-  const owner_project = (await params).owner_project;
+// export async function generateMetadata(
+//   { params }: Props,
+//   parent: ResolvingMetadata
+// ): Promise<Metadata> {
+//   // read route params
+//   const owner_project = (await params).owner_project;
   
-  return {
-    title: ownerProjectToProjectData[owner_project].display_name,
-    description: ownerProjectToProjectData[owner_project].description,
-  }
-}
+//   return {
+//     title: ownerProjectToProjectData[owner_project].display_name,
+//     description: ownerProjectToProjectData[owner_project].description,
+//   }
+// }
 
-export default async function Layout({
+export default function Layout({
   children, params
 }: {
   children: React.ReactNode;
@@ -53,6 +53,7 @@ export default async function Layout({
 
   return (
     <>
+      <PageTitle owner_project={owner_project} />
       <Container className="flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px]" isPageRoot>
         <div className="flex items-center h-[43px] gap-x-[8px] ">
         {/* <Link className="size-[36px] bg-[#344240] rounded-full flex justify-center items-center" href={`/applications/overview`}>

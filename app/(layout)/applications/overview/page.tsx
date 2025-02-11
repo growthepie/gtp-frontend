@@ -22,6 +22,7 @@ import { useProjectsMetadata } from "../ProjectsMetadataContext";
 import { useSort } from "../SortContext";
 import { ApplicationsURLs } from "@/lib/urls";
 import { preload } from "react-dom";
+import useDragScroll from "@/hooks/useDragScroll";
 
 
 // Preload data for the overview page
@@ -108,62 +109,71 @@ export default function Page() {
 }
 
 const CardSwiper = ({ cards }: { cards: React.ReactNode[] }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
+  // const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isFirst, setIsFirst] = useState(true);
+  const [isLast, setIsLast] = useState(false);
+  const [leftIndex, setLeftIndex] = useState(0);
+  const [rightIndex, setRightIndex] = useState(2);
 
-  const handleScroll = () => {
-    if (containerRef.current) {
-      // get the container’s bounding rect to compute center
-      const containerRect = containerRef.current.getBoundingClientRect();
-      const containerCenter = containerRect.left + containerRect.width / 2;
+  const { containerRef, showLeftGradient, showRightGradient } =
+    useDragScroll("horizontal", 0.96, { snap: true, snapThreshold: 0.2 });
 
-      const children = Array.from(containerRef.current.children);
-      let closestIndex = 0;
-      let closestDistance = Infinity;
-
-      children.forEach((child, index) => {
-        const rect = child.getBoundingClientRect();
-        // Calculate the center of each card
-        const childCenter = rect.left + rect.width / 2;
-        const distance = Math.abs(childCenter - containerCenter);
-        if (distance < closestDistance) {
-          closestDistance = distance;
-          closestIndex = index;
-        }
-      });
-
-      setActiveIndex(closestIndex);
-
-    }
-  };
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    container.addEventListener("scroll", handleScroll);
-    // Run once on mount to set the active index correctly.
-    handleScroll();
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, []);
+    const onScroll = () => {
+      if (containerRef.current) {
+        const containerRect = containerRef.current.getBoundingClientRect();
+        const containerCenter = containerRect.left + containerRect.width / 2;
+        const children = Array.from(containerRef.current.children);
+        let closestIndex = 0;
+        let closestDistance = Infinity;
+        children.forEach((child, index) => {
+          const rect = child.getBoundingClientRect();
+          const childCenter = rect.left + rect.width / 2;
+          const distance = Math.abs(childCenter - containerCenter);
+          if (distance < closestDistance) {
+            closestDistance = distance;
+            closestIndex = index;
+          }
+        });
+        setActiveIndex(closestIndex);
+        setLeftIndex(Math.max(0, closestIndex - 1));
+        setRightIndex(Math.min(children.length - 1, closestIndex + 1));
+        setIsFirst(closestIndex === 0);
+        setIsLast(closestIndex === children.length - 1);
+      }
+    };
+  
+    useEffect(() => {
+      const container = containerRef.current;
+      if (!container) return;
+      container.addEventListener("scroll", onScroll);
+      // Run once on mount to set the active index correctly.
+      onScroll();
+      return () => container.removeEventListener("scroll", onScroll);
+    }, []);
 
   return (
     <div
       ref={containerRef}
-      className="flex overflow-x-scroll scroll-smooth snap-x snap-mandatory touch-pan-x scrollbar-none px-[20px] -space-x-[calc(100vw/10)] touch-none"
+      className="flex overflow-x-scroll scrollbar-none px-[20px]"
     >
-      {cards.map((card, index) => (
-        <div
-          key={index}
-          className={`snap-center transition-[transform,opacity] duration-300 ease-in-out ${
-            index === activeIndex ? "scale-100 opacity-100" : "scale-[0.75] opacity-50"
-          }`}
-          style={{ 
-            minWidth: "calc(100vw - 40px)",
-          }}
-        >
-          {card}
-        </div>
-      ))}
+      {cards.map((card, index) => {
+        return (
+          <div
+            key={index}
+            className={`transition-[transform,opacity] duration-300 ease-in-out ${
+              index === activeIndex ? "scale-100 opacity-100" : "scale-[0.75] opacity-50"
+            }`}
+            style={{ 
+              minWidth: "calc(100% - 40px)",
+              marginRight: !isLast && index === leftIndex ? "-40px" : 0,
+              marginLeft: !isFirst && index === rightIndex ? "-40px" : 0,
+            }}
+          >
+            {card}
+          </div>
+        )
+      })}
     </div>
   );
 };
@@ -289,7 +299,7 @@ const ApplicationCardSwiper = () => {
 };
 
 
-const ApplicationCard = ({ application, className, width }: { application?: AggregatedDataRow, className?: string, width?: number }) => {
+const ApplicationCard = memo(({ application, className, width }: { application?: AggregatedDataRow, className?: string, width?: number }) => {
   const { AllChainsByKeys } = useMaster();
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { selectedChains, setSelectedChains, } = useApplicationsData();
@@ -427,7 +437,9 @@ const ApplicationCard = ({ application, className, width }: { application?: Aggr
       </div>
     </div>
   )
-}
+});
+
+ApplicationCard.displayName = 'ApplicationCard';
 
 const Links = memo(({ application }: { application: AggregatedDataRow }) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
@@ -701,7 +713,7 @@ const Category = ({ category }: { category: string }) => {
   );
 }
 
-const Value = ({ rank, def, value, change_pct, maxMetric }: { rank: number, def: MetricDef, value: number, change_pct: number, maxMetric: number }) => {
+const Value = memo(({ rank, def, value, change_pct, maxMetric }: { rank: number, def: MetricDef, value: number, change_pct: number, maxMetric: number }) => {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   const progressWidth = useMemo(() =>
@@ -739,7 +751,9 @@ const Value = ({ rank, def, value, change_pct, maxMetric }: { rank: number, def:
       </div>
     </div>
   )
-}
+});
+
+Value.displayName = 'Value';
 
 
 

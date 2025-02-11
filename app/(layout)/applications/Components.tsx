@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Icon from "@/components/layout/Icon";
 import { useUIContext } from "@/contexts/UIContext";
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { delay } from "lodash";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
@@ -15,6 +15,16 @@ type ApplicationIconProps = {
   owner_project: string;
   size: "sm" | "md" | "lg";
 };
+
+export const PageTitle = ({ owner_project }: { owner_project: string }) => {
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+  
+  useEffect(() => {
+    document.title = `${ownerProjectToProjectData[owner_project]?.display_name || owner_project} - growthepie`;
+  }, [ownerProjectToProjectData, owner_project]);
+
+  return null;
+}
 
 export const ApplicationIcon = ({ owner_project, size }: ApplicationIconProps) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
