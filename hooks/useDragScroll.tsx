@@ -1,6 +1,19 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 
-const useDragScroll = (direction: 'horizontal' | 'vertical' = 'horizontal') => {
+type Direction = 'horizontal' | 'vertical';
+
+interface DragScrollOptions {
+  snap?: boolean; // if true, snap when drag ends or inertia slows down
+  snapThreshold?: number; // velocity threshold under which snapping occurs (in pixels/ms)
+}
+
+export const useDragScroll = (
+  direction: Direction = 'horizontal',
+  decay = 0.96,
+  options: DragScrollOptions = {}
+) => {
+  const { snap = false, snapThreshold = 0.2 } = options; // adjust threshold as needed
+
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [scrollPos, setScrollPos] = useState({ left: 0, top: 0 });
@@ -10,7 +23,6 @@ const useDragScroll = (direction: 'horizontal' | 'vertical' = 'horizontal') => {
   const [showRightGradient, setShowRightGradient] = useState(false);
   const [velocity, setVelocity] = useState({ x: 0, y: 0 });
   const [lastMoveTime, setLastMoveTime] = useState(Date.now());
-
 
   const isMouseDownInside = useRef(false);
   const velocityHistory = useRef<{ x: number; y: number; time: number }[]>([]);
@@ -24,7 +36,6 @@ const useDragScroll = (direction: 'horizontal' | 'vertical' = 'horizontal') => {
       setStartPos({ x: event.clientX, y: event.clientY });
       setVelocity({ x: 0, y: 0 });
       velocityHistory.current = [];
-
       rafId.current && cancelAnimationFrame(rafId.current);
 
       if (containerRef.current) {
@@ -43,7 +54,6 @@ const useDragScroll = (direction: 'horizontal' | 'vertical' = 'horizontal') => {
 
     const currentTime = Date.now();
     const timeDelta = currentTime - lastMoveTime;
-
     setIsDragged(true);
 
     if (containerRef.current) {
@@ -57,19 +67,76 @@ const useDragScroll = (direction: 'horizontal' | 'vertical' = 'horizontal') => {
         velocityHistory.current.push({ x: 0, y: -dy / timeDelta, time: currentTime });
       }
     }
-
     setLastMoveTime(currentTime);
   }, [isDragging, lastMoveTime, direction, startPos.x, startPos.y, scrollPos.left, scrollPos.top]);
 
   const calculateAverageVelocity = () => {
     const now = Date.now();
-    velocityHistory.current = velocityHistory.current.filter(item => now - item.time < 100); // Only consider the last 100ms
+    // Only consider velocity entries from the last 100ms
+    velocityHistory.current = velocityHistory.current.filter(item => now - item.time < 100);
     const total = velocityHistory.current.reduce((acc, item) => ({
       x: acc.x + item.x,
-      y: acc.y + item.y
+      y: acc.y + item.y,
     }), { x: 0, y: 0 });
     const count = velocityHistory.current.length;
     return count > 0 ? { x: total.x / count, y: total.y / count } : { x: 0, y: 0 };
+  };
+  
+  // Custom smooth scroll function with an easing function.
+  const smoothScrollTo = (element: HTMLElement, target: number, duration: number) => {
+    const start = element.scrollLeft;
+    const change = target - start;
+    const startTime = performance.now();
+
+
+
+    const animateScroll = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const t = Math.min(1, elapsed / duration);
+      const easedT = 0.5 - 0.5 * Math.cos(t * Math.PI);
+      element.scrollLeft = start + change * easedT;
+
+      
+      if (t < 1) {
+        requestAnimationFrame(animateScroll);
+      }
+    };
+
+    requestAnimationFrame(animateScroll);
+  };
+
+  // A helper that snaps to the nearest element.
+  // In this example we assume that the children are equally sized,
+  // so we use the first child's size as a reference.
+  const snapToClosest = () => {
+    if (!containerRef.current) return;
+    const container = containerRef.current;
+    // Calculate the container's center in scroll coordinates.
+    const containerCenter = container.scrollLeft + container.clientWidth / 2;
+
+    let closestIndex = 0;
+    let closestDistance = Infinity;
+    Array.from(container.children).forEach((child, index) => {
+      const childEl = child as HTMLElement;
+      // Compute the child's center using its offset.
+      const childCenter = childEl.offsetLeft + childEl.offsetWidth / 2;
+      const distance = Math.abs(childCenter - containerCenter);
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIndex = index;
+      }
+    });
+
+    // Calculate the target scroll position so that the chosen child's center
+    // aligns with the container center.
+    const closestChild = container.children[closestIndex] as HTMLElement;
+    const targetScrollLeft =
+      closestChild.offsetLeft +
+      closestChild.offsetWidth / 2 -
+      container.clientWidth / 2;
+    
+    // Use custom smooth scrolling over 300ms (adjust duration as needed)
+    smoothScrollTo(container, targetScrollLeft, 300);
   };
 
   const handleMouseUp = useCallback(() => {
@@ -81,14 +148,21 @@ const useDragScroll = (direction: 'horizontal' | 'vertical' = 'horizontal') => {
     const avgVelocity = calculateAverageVelocity();
     setVelocity(avgVelocity);
 
-    if (avgVelocity.x !== 0 || avgVelocity.y !== 0) {
+    // Calculate velocity magnitude (pixels per ms)
+    const velocityMagnitude = Math.hypot(avgVelocity.x, avgVelocity.y);
+
+    // If snapping is enabled and velocity is below our threshold, snap immediately.
+    // Otherwise, continue with inertia.
+    if (snap && velocityMagnitude < snapThreshold) {
+      snapToClosest();
+    } else if (avgVelocity.x !== 0 || avgVelocity.y !== 0) {
       const startTime = Date.now();
-      const decay = 0.96; // Decay factor for the velocity
 
       const animate = () => {
         const currentTime = Date.now();
         const elapsed = currentTime - startTime;
-        const factor = Math.pow(decay, elapsed / 16); // Adjust based on 60fps (16ms per frame)
+        // Factor based on decay per frame (assuming ~16ms per frame)
+        const factor = Math.pow(decay, elapsed / 16);
 
         if (containerRef.current) {
           if (direction === 'horizontal') {
@@ -97,20 +171,23 @@ const useDragScroll = (direction: 'horizontal' | 'vertical' = 'horizontal') => {
             containerRef.current.scrollTop += avgVelocity.y * factor;
           }
 
-          if (Math.abs(avgVelocity.x * factor) > 0.5 || Math.abs(avgVelocity.y * factor) > 0.5) {
+          // If the velocity has decayed below a minimal threshold, finish the animation
+          if (!snap && Math.abs(avgVelocity.x * factor) > 0.5 || Math.abs(avgVelocity.y * factor) > 0.5) {
             rafId.current = requestAnimationFrame(animate);
+          } else if (snap) {
+            // When inertia ends, if snapping is enabled, snap to the nearest element.
+            snapToClosest();
           }
         }
       };
 
       animate();
     }
-  }, [direction, velocity.x, velocity.y]);
+  }, [decay, direction, snap, snapThreshold]);
 
   const handleWheel = useCallback((event: WheelEvent) => {
     event.preventDefault();
     if (!containerRef.current) return;
-
     if (direction === 'horizontal') {
       containerRef.current.scrollLeft += event.deltaY;
     } else {
@@ -120,7 +197,6 @@ const useDragScroll = (direction: 'horizontal' | 'vertical' = 'horizontal') => {
 
   const updateGradients = useCallback(() => {
     if (!containerRef.current) return;
-
     if (direction === 'horizontal') {
       const { scrollLeft, scrollWidth, clientWidth } = containerRef.current;
       setShowLeftGradient(scrollLeft > 0);
@@ -145,6 +221,8 @@ const useDragScroll = (direction: 'horizontal' | 'vertical' = 'horizontal') => {
     window.addEventListener('mousemove', handleGlobalMouseMove);
     window.addEventListener('mouseup', handleGlobalMouseUp);
     window.addEventListener('resize', updateGradients);
+    if(snap)
+      window.addEventListener('resize', snapToClosest);
     window.addEventListener('keydown', updateGradients);
     window.addEventListener('keyup', updateGradients);
     container.addEventListener('scroll', updateGradients);
@@ -155,27 +233,26 @@ const useDragScroll = (direction: 'horizontal' | 'vertical' = 'horizontal') => {
       window.removeEventListener('mousemove', handleGlobalMouseMove);
       window.removeEventListener('mouseup', handleGlobalMouseUp);
       window.removeEventListener('resize', updateGradients);
+      if(snap)
+        window.removeEventListener('resize', snapToClosest);
       window.removeEventListener('keydown', updateGradients);
       window.removeEventListener('keyup', updateGradients);
       container.removeEventListener('scroll', updateGradients);
       container.removeEventListener('wheel', handleWheel);
     };
-  }, [handleMouseDown, handleMouseMove, handleMouseUp, updateGradients, isDragging, handleWheel]);
+  }, [handleMouseDown, handleMouseMove, handleMouseUp, updateGradients, isDragging, handleWheel, snap, snapToClosest]);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-
     const handleClick = (event: MouseEvent) => {
       if (isDragged) {
         event.preventDefault();
         event.stopImmediatePropagation();
       }
     };
-
     container.addEventListener('click', handleClick, true);
     updateGradients();
-
     return () => {
       container.removeEventListener('click', handleClick, true);
     };

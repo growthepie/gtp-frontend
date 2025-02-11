@@ -3,12 +3,18 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Icon from "@/components/layout/Icon";
 import { useUIContext } from "@/contexts/UIContext";
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { delay } from "lodash";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import Link from "next/link";
-import { useProjectsMetadata } from "./ProjectsMetadataContext";
+import { useProjectsMetadata } from "../_contexts/ProjectsMetadataContext";
+import Heading from "@/components/layout/Heading";
+import { usePathname } from "next/navigation";
+import Search from "./Search";
+import Controls from "./Controls";
+import { useMaster } from "@/contexts/MasterContext";
+import { useApplicationsData } from "../_contexts/ApplicationsDataContext";
 
 
 type ApplicationIconProps = {
@@ -16,12 +22,22 @@ type ApplicationIconProps = {
   size: "sm" | "md" | "lg";
 };
 
+export const PageTitle = ({ owner_project }: { owner_project: string }) => {
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+  
+  useEffect(() => {
+    document.title = `${ownerProjectToProjectData[owner_project]?.display_name || owner_project} - growthepie`;
+  }, [ownerProjectToProjectData, owner_project]);
+
+  return null;
+}
+
 export const ApplicationIcon = ({ owner_project, size }: ApplicationIconProps) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const sizeClassMap = {
-    sm: "w-[15px] h-[15px]",
-    md: "w-[24px] h-[24px]",
-    lg: "w-[36px] h-[36px]",
+    sm: "size-[26px]",
+    md: "size-[36px]",
+    lg: "size-[46px]",
   };
 
   const sizePixelMap = {
@@ -31,21 +47,71 @@ export const ApplicationIcon = ({ owner_project, size }: ApplicationIconProps) =
   };
 
   return (
-    <div className={`select-none ${sizeClassMap[size]}`}>
+    <div className={`flex items-center justify-center select-none bg-[#151A19] rounded-full ${sizeClassMap[size]}`}>
       {ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].logo_path ? (
         <Image
           src={`https://api.growthepie.xyz/v1/apps/logos/${ownerProjectToProjectData[owner_project].logo_path}`}
           width={sizePixelMap[size]} height={sizePixelMap[size]}
-          className="rounded-full select-none"
+          className="select-none"
           alt={owner_project}
           onDragStart={(e) => e.preventDefault()}
           loading="eager"
           priority={true}
         />
       ) : (
-        <div className={`${sizeClassMap[size]} bg-forest-950 rounded-full`}></div>
+        <div className={`${sizeClassMap[size]} bg-[#151A19] rounded-full`}></div>
       )}
     </div>
+  );
+}
+
+export const PageTitleAndDescriptionAndControls = () => {
+  const pathname = usePathname();
+  const [urlOwnerProject, setUrlOwnerProject] = useState<string | null>(null);
+  useEffect(() => {
+    // console.log(window.location.pathname.split("/")[2]);
+    // setUrlOwnerProject(window.location.pathname.split("/")[2]);
+    setUrlOwnerProject(pathname.split("/")[2]);
+  }, [pathname]);
+
+  if(!urlOwnerProject) return (
+    <>
+      <div className="flex items-center h-[43px] gap-x-[8px] ">
+        <GTPIcon icon="gtp-project" size="lg" />
+        <Heading className="heading-large-xl" as="h1">
+          Applications
+        </Heading>
+      </div>
+      <div className="text-sm">
+        An overview of the most used applications across the Ethereum ecosystem.
+      </div>
+      <Search />
+      <Controls />
+    </>
+  );
+
+  return (
+    <>
+      <div className="flex items-end gap-x-[10px]">
+        <div className="flex flex-col flex-1 gap-y-[15px]">
+          <div className="flex items-center h-[43px] gap-x-[8px]">
+            <BackButton />
+            <ApplicationIcon owner_project={urlOwnerProject} size="md" />
+            <Heading className="heading-large-xl" as="h1">
+              <ApplicationDisplayName owner_project={urlOwnerProject} />
+            </Heading>
+          </div>
+        
+          <div className="flex-1 text-sm font-medium">
+            <ApplicationDescription owner_project={urlOwnerProject} />
+            {/* Relay is a cross-chain payment system that enables instant, low-cost bridging and transaction execution by connecting users with relayers who act on their behalf for a small fee. It aims to minimize gas costs and execution latency, making it suitable for applications like payments, bridging, NFT minting, and gas abstraction. I can add one more sentence to that and its still legible. And one more maybe so that we reach 450 characters. Let’s see.  */}
+          </div>
+        </div>
+        <ProjectDetailsLinks owner_project={urlOwnerProject} />
+      </div>
+      {/* <Search /> */}
+      <Controls />
+    </>
   );
 }
 
@@ -56,7 +122,7 @@ export const ApplicationDisplayName = ({ owner_project }: { owner_project: strin
 
 export const ApplicationDescription = ({ owner_project }: { owner_project: string }) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
-  return ownerProjectToProjectData[owner_project] ? ownerProjectToProjectData[owner_project].description : "";
+  return ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].description ? ownerProjectToProjectData[owner_project].description : "Description not available";
 }
 
 export const BackButton = () => {
@@ -195,7 +261,7 @@ export const ProjectDetailsLinks = memo(({ owner_project }: { owner_project: str
             {key === "website" ? (
               <>
                 {ownerProjectToProjectData[owner_project] && (
-                  <ApplicationIcon owner_project={owner_project} size="lg" />
+                  <ApplicationIcon owner_project={owner_project} size="md" />
                 )}
                 <div className="text-xxxs">{ownerProjectToProjectData[owner_project].display_name}</div>
                 <div className="size-[24px] rounded-full bg-[#344240] flex justify-center items-center">
@@ -216,3 +282,135 @@ export const ProjectDetailsLinks = memo(({ owner_project }: { owner_project: str
 });
 
 ProjectDetailsLinks.displayName = 'Links';
+
+export const MetricTooltip = ({ metric }: { metric: string }) => {
+  const content = {
+    gas_fees: {
+      title: "Gas Fees",
+      content: "The total gas fees paid by all contracts in the selected timeframe across the selected chains.",
+    },
+    txcount: {
+      title: "Transactions",
+      content: "The total number of transactions in the selected timeframe across the selected chains.",
+    },
+    daa: {
+      title: "Daily Active Addresses",
+      content: "The total number of unique addresses that interacted with the contracts in the selected timeframe across the selected chains.",
+    },
+  }
+
+
+  return (
+    <div
+      className="w-[238px] bg-[#1F2726] rounded-[15px] flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300"
+      style={{
+        boxShadow: "0px 0px 30px #000000",
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+      }}
+    >
+      <div className="heading-small-xs">{content[metric].title}</div>
+      <div className="text-xs">
+        {content[metric].content}
+      </div>
+    </div>
+  );
+}
+
+export const Links = memo(({ owner_project }: { owner_project: string }) => {
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+  const linkPrefixes = ["", "https://x.com/", "https://github.com/"];
+  const icons = ["feather:monitor", "ri:twitter-x-fill", "ri:github-fill"];
+  const keys = ["website", "twitter", "main_github"];
+
+  return (
+    <div className="flex items-center gap-x-[5px]">
+      {ownerProjectToProjectData[owner_project] && keys.map((key, index) => (
+        <div key={index} className="h-[15px] w-[15px]">
+          {ownerProjectToProjectData[owner_project][key] && <Link
+            href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
+            target="_blank"
+          >
+            <Icon
+              icon={icons[index]}
+              className="w-[15px] h-[15px] select-none"
+            />
+          </Link>}
+        </div>
+      ))}
+    </div>
+  );
+});
+
+Links.displayName = 'Links';
+
+export const Chains = ({ origin_keys }: { origin_keys: string[] }) => {
+  const { AllChainsByKeys } = useMaster();
+  const { selectedChains, setSelectedChains } = useApplicationsData();
+
+  return (
+    <div className="flex items-center gap-x-[5px]">
+      {origin_keys.map((chain, index) => (
+        <div
+          key={index}
+          className={`cursor-pointer ${selectedChains.includes(chain) ? '' : '!text-[#5A6462]'} hover:!text-inherit`} style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors["dark"][0] : '' }}
+          onClick={() => {
+            if (selectedChains.includes(chain)) {
+              setSelectedChains(selectedChains.filter((c) => c !== chain));
+            } else {
+              setSelectedChains([...selectedChains, chain]);
+            }
+          }}
+        >
+          {AllChainsByKeys[chain] && (
+            // <GridTableChainIcon origin_key={AllChainsByKeys[chain].key} color={AllChainsByKeys[chain].colors["dark"][0]} />
+            <Icon
+              icon={`gtp:${AllChainsByKeys[
+                chain
+              ].urlKey
+                }-logo-monochrome`}
+              className="w-[15px] h-[15px]"
+            />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export const Category = ({ category }: { category: string }) => {
+  const getGTPCategoryIcon = (category: string): GTPIconName | "" => {
+
+    switch (category) {
+      case "Cross-Chain":
+        return "gtp-crosschain";
+      case "Utility":
+        return "gtp-utilities";
+      case "Token Transfers":
+        return "gtp-tokentransfers";
+      case "DeFi":
+        return "gtp-defi";
+      case "Social":
+        return "gtp-socials";
+      case "NFT":
+        return "gtp-nft";
+      case "CeFi":
+        return "gtp-cefi";
+      default:
+        return "";
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-x-[5px] whitespace-nowrap">
+      {/* <GTPIcon icon={getGTPCategoryIcon()} size="sm" /> */}
+      {category && (
+        <>
+          <GTPIcon icon={getGTPCategoryIcon(category) as GTPIconName} size="sm" />
+          {category}
+        </>
+      )}
+    </div>
+  );
+}

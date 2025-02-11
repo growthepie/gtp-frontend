@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, ReactNode, useMemo, useRef } from "react";
+import { useEffect, useState, ReactNode, useMemo, useRef, memo } from "react";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 import useSWR, { preload } from "swr";
@@ -38,12 +38,12 @@ type SidebarProps = {
   sidebarOpen: boolean;
 };
 
-export default function SidebarMenuGroup({
+export const SidebarMenuGroup = memo(({
   item,
   onOpen,
   onClose,
   sidebarOpen,
-}: SidebarProps) {
+}: SidebarProps) => {
   const { data: master } = useSWR<MasterResponse>(MasterURL);
 
   const ChainGroups = useMemo(() => {
@@ -949,7 +949,9 @@ export default function SidebarMenuGroup({
   //     </div>
   //   </div>
   // );
-}
+});
+
+SidebarMenuGroup.displayName = "SidebarMenuGroup";
 
 type AccordionProps = {
   className?: string;
@@ -972,7 +974,7 @@ type AccordionProps = {
   rightContent?: ReactNode;
 };
 
-export const Accordion = ({
+export const Accordion = memo(({
   className = "",
   accordionClassName = "",
   icon,
@@ -1171,7 +1173,9 @@ export const Accordion = ({
       )}
     </>
   );
-};
+});
+
+Accordion.displayName = "Accordion";
 
 type DropdownIconProps = {
   size: "sm" | "md" | "lg";
@@ -1182,7 +1186,7 @@ type DropdownIconProps = {
   isOpen?: boolean;
 };
 
-export const DropdownIcon = ({
+export const DropdownIcon = memo(({
   size,
   icon,
   iconColor,
@@ -1235,30 +1239,45 @@ export const DropdownIcon = ({
         />
 
         {showArrow && (
-          <div
-            className={`absolute right-0 h-[10px] w-[5px] transition-all duration-300`}
-            style={{
-              transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
-              transformOrigin: `calc(-${GTPIconSize[iconSizeMap[size]]}/2) 50%`,
-            }}
-          >
-            <svg
-              width="5"
-              height="10"
-              viewBox="0 0 5 10"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M1.32446 1.07129L3.32446 5.07129L1.32446 9.07129"
-                stroke="#CDD8D3"
-                strokeWidth="1.5"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
+          <DropdownArrow isOpen={isOpen} size={size} />
         )}
       </div>
     </div>
   );
-};
+});
+
+
+export const DropdownArrow = ({isOpen, size}: {isOpen: boolean; size: "sm" | "md" | "lg"}) => {
+  const iconSizeMap: { [key: string]: "sm" | "md" | "lg" } = {
+    sm: "sm",
+    md: "sm",
+    lg: "md",
+  };
+
+  return (
+    <div
+      className={`absolute right-0 h-[10px] w-[5px] transition-all duration-300`}
+      style={{
+        transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
+        transformOrigin: `calc(-${GTPIconSize[iconSizeMap[size]]}/2) 50%`,
+      }}
+    >
+      <svg
+        width="5"
+        height="10"
+        viewBox="0 0 5 10"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M1.32446 1.07129L3.32446 5.07129L1.32446 9.07129"
+          stroke="#CDD8D3"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </div>
+  );
+}
+
+DropdownIcon.displayName = "DropdownIcon";

@@ -1,16 +1,20 @@
-import { TimespanProvider } from "./TimespanContext";
-import { MetricsProvider } from "./MetricsContext";
-import { ProjectsMetadataProvider } from "./ProjectsMetadataContext";
-import { SortProvider } from "./SortContext";
+import { TimespanProvider } from "./_contexts/TimespanContext";
+import { MetricsProvider } from "./_contexts/MetricsContext";
+import { ProjectsMetadataProvider } from "./_contexts/ProjectsMetadataContext";
+import { SortProvider } from "./_contexts/SortContext";
+import Container from "@/components/layout/Container";
+import { GTPIcon } from "@/components/layout/GTPIcon";
+import Heading from "@/components/layout/Heading";
+import Search from "./_components/Search";
+import Controls from "./_components/Controls";
+import { ApplicationsDataProvider } from "./_contexts/ApplicationsDataContext";
+import { PageTitleAndDescriptionAndControls } from "./_components/Components";
 
 export default async function Layout({
-  children, params
+  children
 }: {
   children: React.ReactNode;
-  params: any;
 }) {
-  const { owner_project } = params;
-
   return (
     <ProjectsMetadataProvider>
       <TimespanProvider timespans={{
@@ -53,9 +57,13 @@ export default async function Layout({
       }}>
         <MetricsProvider>
           <SortProvider defaultOrder="desc" defaultKey="gas_fees">
-          
-            
-            {children}
+            <ApplicationsDataProvider>
+              <Container className="sticky top-0 z-[10] flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px]" isPageRoot>
+                <PageTitleAndDescriptionAndControls />
+                
+              </Container>
+                {children}
+            </ApplicationsDataProvider>
           </SortProvider>
         </MetricsProvider>
       </TimespanProvider>

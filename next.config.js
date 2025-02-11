@@ -73,11 +73,11 @@ const nextConfig = {
   },
   async redirects() {
     return [
-      {
-        source: "/applications",
-        destination: "/applications/overview",
-        permanent: true,
-      },
+      // {
+      //   source: "/applications",
+      //   destination: "/applications",
+      //   permanent: false,
+      // },
       {
         source: "/data-availability/blob-producers",
         destination: "/data-availability/da-consumers",

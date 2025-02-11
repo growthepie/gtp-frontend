@@ -1,9 +1,9 @@
 import Container from "@/components/layout/Container";
 import Heading from "@/components/layout/Heading";
 import { GTPIcon } from "@/components/layout/GTPIcon";
-import Search from "../Search";
-import Controls from "../Controls";
-import { ApplicationsDataProvider } from "../ApplicationsDataContext";
+import Search from "../_components/Search";
+import Controls from "../_components/Controls";
+import { ApplicationsDataProvider } from "../_contexts/ApplicationsDataContext";
 
 export default async function Layout({
   children
