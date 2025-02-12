@@ -1,6 +1,6 @@
 "use client";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import SidebarMenuGroup from "./SidebarMenuGroup";
+import { SidebarMenuGroup } from "./SidebarMenuGroup";
 import Link from "next/link";
 import {
   navigationItems,

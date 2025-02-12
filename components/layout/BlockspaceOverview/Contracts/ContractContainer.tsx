@@ -332,7 +332,7 @@ export default function ContractContainer() {
             justify="end"
             metric={selectedMode.includes("gas_fees") ? "gas_fees" : "txcount"}
             sort={{
-              sortOrder: sortOrder ? "asc" : "desc",
+              sortOrder: sortOrder ? "desc" : "asc",
               metric: contractCategory,
             }}
             setSort={(sort: { metric: string; sortOrder: string }) => {

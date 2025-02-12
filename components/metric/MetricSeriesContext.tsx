@@ -360,7 +360,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
     }).map((chainKey, i) => {
       const chain = data.chains[chainKey];
 
-
+      console.log(selectedScale)
       const zIndex = showEthereumMainnet
         ? chainKey === "ethereum"
           ? 0
@@ -432,7 +432,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
           },
         },
         ...// @ts-ignore
-        (["area", "line"].includes(getSeriesType(chainKey))
+        ((["area", "line"].includes(getSeriesType(chainKey)) && selectedScale !== "stacked")
           ? {
             shadow: {
               color:

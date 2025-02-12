@@ -10,6 +10,7 @@ import { EmbedData, useUIContext } from "@/contexts/UIContext";
 import Link from "next/link";
 import { track } from "@vercel/analytics/react";
 import { useSessionStorage } from "usehooks-ts";
+import useCookieChange from "./layout/CookieChange";
 
 const mainEmbedPages = ["", "fundamentals"];
 const feesEmbedPages = [];
@@ -19,11 +20,10 @@ export default function Share() {
   const pathname = usePathname();
   const [openShare, setOpenShare] = useState(false);
   const [currentURL, setcurrentURL] = useState<string | null>(null);
-
   type TopSelections = "social" | "embed";
 
   const defaultTopSelection: TopSelections = "social";
-
+  const cookieConsentValue = useCookieChange("gtpCookieConsent");
   const [topSelection, setTopSelection] = useSessionStorage<TopSelections>(
     "Share.topSelection",
     defaultTopSelection,
@@ -34,6 +34,7 @@ export default function Share() {
   const [isAbsolute, setIsAbsolute] = useState(true);
   const isMobile = useMediaQuery("(max-width: 767px)");
 
+  
   const { embedData, setEmbedData } = useUIContext();
 
   function copyText(entryText) {
@@ -158,7 +159,7 @@ export default function Share() {
 
   return (
     <>
-      <div>
+      <div className={`relative z-50 flex gap-x-[15px] rounded-full bg-forest-500 p-[5px] shadow-[0px_0px_50px_0px_#00000033] dark:bg-[#5A6462] dark:shadow-[0px_0px_50px_0px_#000000] ${cookieConsentValue ? "block" : "hidden"}`}>
         <div>
           <div className="absolute inset-0 z-40 w-full h-full overflow-hidden pointer-events-none rounded-full">
             {/* Glint effect */}

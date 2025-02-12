@@ -5,17 +5,22 @@ import { useUIContext } from "@/contexts/UIContext";
 import FloatingBar from "./FloatingBar";
 import { LogoIcon } from "./Icons";
 
-// Add optional props for search query & icons count
 interface HeaderProps {
   searchQuery?: string;
   setSearchQuery?: (value: string) => void;
   iconsCount?: number;
+  onDownloadAll?: (format: "SVG" | "PNG") => void;
+  selectedFormat: "SVG" | "PNG";
+  setSelectedFormat: React.Dispatch<React.SetStateAction<"SVG" | "PNG">>;
 }
 
 export default function Header({
   searchQuery = "",
   setSearchQuery = () => {},
   iconsCount = 0,
+  onDownloadAll = () => {},
+  selectedFormat,
+  setSelectedFormat,
 }: HeaderProps) {
   const { isMobile } = useUIContext();
   return (
@@ -58,6 +63,9 @@ export default function Header({
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             iconsCount={iconsCount}
+            onDownloadAll={onDownloadAll}
+            selectedFormat={selectedFormat}
+            setSelectedFormat={setSelectedFormat}
           />
         )}
       </IconsContainer>

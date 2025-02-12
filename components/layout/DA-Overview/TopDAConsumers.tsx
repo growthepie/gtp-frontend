@@ -6,6 +6,8 @@ import { useMaster } from "@/contexts/MasterContext";
 import Icon from "@/components/layout/Icon";
 import DynamicIcon from "../DynamicIcon";
 import Link from "next/link";
+import { GTPIcon } from "../GTPIcon";
+import { GTPIconName } from "@/icons/gtp-icon-names";
 type DARowData = {
     item: string;
     value: any;
@@ -103,7 +105,7 @@ export default function TopDAConsumers({consumer_data, selectedTimespan}: {consu
                     const custom_logo_keys = Object.keys(master.custom_logos);
                     const croppedWidth = parentWidth - 122;
                     const relativeWidth = (croppedWidth * (sortedDAConsumers[item.index][4] / sortedDAConsumers[0][4])); // Avoid division by zero
-
+                    console.log(custom_logo_keys.includes(sortedDAConsumers[item.index][0]) ? `${sortedDAConsumers[item.index][0]}-logo-monochrome` : "")
                     return(
                         <animated.div
                             className="absolute w-full "
@@ -118,28 +120,24 @@ export default function TopDAConsumers({consumer_data, selectedTimespan}: {consu
                                     maxWidth: "100%",
                                 }}
                             >
-                                <div className="bg-[#1F2726] w-[122px] h-[30px] rounded-full flex items-center px-[5px] gap-x-[10px]">
-                                    {AllChainsByKeys[sortedDAConsumers[item.index][0]] ? 
+                                <div className="bg-[#1F2726] w-[122px] h-[30px] rounded-full flex items-center pl-[6px] pr-[5px] gap-x-[10px]">
+                                    {AllChainsByKeys[sortedDAConsumers[item.index][0]] || custom_logo_keys.includes(sortedDAConsumers[item.index][0]) ?
                                     
                                         (
-                                            <Icon
-                                                icon={sortedDAConsumers[item.index][0] ? `gtp:${sortedDAConsumers[item.index][3].replace("_", "-").replace("_", "-")}-logo-monochrome` : "gtp:chain-dark"}
-                                                className="w-[15px] h-[15px]"
-                                                style={{
-                                                    color: AllChainsByKeys[sortedDAConsumers[item.index][3]] ? AllChainsByKeys[sortedDAConsumers[item.index][3]].colors["dark"][0] : "#fff"
-                                                }}
+                                            // <Icon
+                                            //     icon={sortedDAConsumers[item.index][0] ? `gtp:${sortedDAConsumers[item.index][3].replace("_", "-").replace("_", "-")}-logo-monochrome` : "gtp:chain-dark"}
+                                            //     className="w-[15px] h-[15px]"
+                                            //     style={{
+                                            //         color: AllChainsByKeys[sortedDAConsumers[item.index][3]] ? AllChainsByKeys[sortedDAConsumers[item.index][3]].colors["dark"][0] : "#fff"
+                                            //     }}
 
+                                            // />
+                                            <GTPIcon icon={AllChainsByKeys[sortedDAConsumers[item.index][0]] ? `${sortedDAConsumers[item.index][3].replace("_", "-").replace("_", "-")}-logo-monochrome` as GTPIconName : `${sortedDAConsumers[item.index][0]}-custom-logo-monochrome` as GTPIconName } size="sm" className="w-[15px] h-[15px]" 
+                                                    style={{
+                                                        color: AllChainsByKeys[sortedDAConsumers[item.index][3]] ? AllChainsByKeys[sortedDAConsumers[item.index][3]].colors["dark"][0] : unlabelledDAHex[item.index]
+                                                    }}
                                             />
-                                        ) : custom_logo_keys.includes(sortedDAConsumers[item.index][0]) 
-                                        ? (                                         
-                                            <DynamicIcon 
-                                                pathString={master.custom_logos[sortedDAConsumers[item.index][0]].body}
-                                                size={12} 
-                                                className="text-forest-200"
-                                                viewBox="0 0 15 15"
-                                                color={unlabelledDAHex[item.index]}
-                                            />
-                                          ) 
+                                        ) 
                                         : (
                                             <Icon
                                                 icon={"gtp:chain-dark"}
