@@ -10,12 +10,12 @@ export default function CookieConsent() {
   const [consent, setConsent] = useState(true);
   const [copied, setCopied] = useState(false);
   useEffect(() => {
-    setConsent(hasCookie("growthepieCookieConsent"));
+    setConsent(hasCookie("gtpCookieConsent"));
   }, []);
 
   const acceptCookie = () => {
     setConsent(true);
-    setCookie("growthepieCookieConsent", "true", {
+    setCookie("gtpCookieConsent", "true", {
       maxAge: 60 * 60 * 24 * 365,
     });
 
@@ -34,7 +34,7 @@ export default function CookieConsent() {
 
   const denyCookie = () => {
     setConsent(true);
-    setCookie("growthepieCookieConsent", "false", {
+    setCookie("gtpCookieConsent", "false", {
       maxAge: 60 * 60 * 24 * 365,
     });
     console.log("denying cookies");
@@ -43,7 +43,6 @@ export default function CookieConsent() {
   if (consent === true) {
     return null;
   }
-
 
   function triggerCopy() {
     setCopied(true);
@@ -69,7 +68,7 @@ export default function CookieConsent() {
           <div className="flex items-center space-x-8 text-xxs md:text-xxs">
             <div>
               Our website uses cookies to analyze how the site is used and to ensure your experience is consistent between visits. Find our{" "}
-              <Link href="/privacy-policy" className="underline relative md:text-xxs">
+              <Link href="/privacy-policy" className="underline relative md:text-xxs text-nowrap">
                 Privacy Policy here.
               </Link>
             </div>

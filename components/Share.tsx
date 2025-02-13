@@ -23,7 +23,7 @@ export default function Share() {
   type TopSelections = "social" | "embed";
 
   const defaultTopSelection: TopSelections = "social";
-  const cookieConsentValue = useCookieChange("growthepieCookieConsent");
+  const cookieConsentValue = useCookieChange("gtpCookieConsent");
   const [topSelection, setTopSelection] = useSessionStorage<TopSelections>(
     "Share.topSelection",
     defaultTopSelection,
