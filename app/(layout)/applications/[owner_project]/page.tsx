@@ -2,14 +2,14 @@
 import Container from "@/components/layout/Container";
 import { useProjectsMetadata } from "../_contexts/ProjectsMetadataContext";
 import { MetricDef, useMetrics } from "../_contexts/MetricsContext";
-import { ContractDict, useApplicationDetailsData } from "../_contexts/ApplicationDetailsDataContext";
+import { ContractDict, MetricData, useApplicationDetailsData } from "../_contexts/ApplicationDetailsDataContext";
 import { useTimespan } from "../_contexts/TimespanContext";
 import { useMaster } from "@/contexts/MasterContext";
 import { StackedDataBar } from "../_components/GTPChart";
 import { ChartScaleProvider } from "../_contexts/ChartScaleContext";
 import ChartScaleControls from "../_components/ChartScaleControls";
 import { ApplicationDisplayName, ApplicationIcon, Category, Chains, Links, MetricTooltip } from "../_components/Components";
-import { memo, useMemo } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import { GridTableAddressCell, GridTableHeader, GridTableHeaderCell, GridTableRow } from "@/components/layout/GridTable";
@@ -19,6 +19,7 @@ import { Icon } from "@iconify/react";
 import VerticalVirtuosoScrollContainer from "@/components/VerticalVirtuosoScrollContainer";
 import Link from "next/link";
 import { SortProvider, useSort } from "../_contexts/SortContext";
+import { useUIContext } from "@/contexts/UIContext";
 
 type Props = {
   params: { owner_project: string };
@@ -32,9 +33,9 @@ export default function Page({ params: { owner_project } }: Props) {
 
   return (
     <>
-      {selectedMetrics.map((metric) => (
+      {selectedMetrics.map((metric, index) => (
         <ChartScaleProvider
-          key={metric} 
+          key={index} 
           scaleDefs={{
             absolute: {
               label: 'Absolute',
@@ -113,39 +114,142 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
   );
 }
 
+interface FloatingTooltipProps {
+  content: React.ReactNode;
+  offsetX?: number;
+  offsetY?: number;
+  children: React.ReactNode;
+}
+
+const FloatingTooltip: React.FC<FloatingTooltipProps> = ({
+  content,
+  offsetX = 20,
+  offsetY = 20,
+  children,
+}) => {
+  const [visible, setVisible] = useState(false);
+  const [coords, setCoords] = useState({ x: 0, y: 0 });
+  const [adjustedCoords, setAdjustedCoords] = useState({ x: 0, y: 0 });
+  const tooltipRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const newCoords = {
+      x: e.clientX + offsetX,
+      y: e.clientY + offsetY,
+    };
+    setCoords(newCoords);
+  };
+
+  useEffect(() => {
+    if (visible && tooltipRef.current) {
+      const tooltipRect = tooltipRef.current.getBoundingClientRect();
+      let newX = coords.x;
+      let newY = coords.y;
+      // Prevent overflow on the right edge.
+      if (coords.x + tooltipRect.width > window.innerWidth) {
+        newX = window.innerWidth - tooltipRect.width - 10;
+      }
+      // Prevent overflow on the bottom edge.
+      if (coords.y + tooltipRect.height > window.innerHeight) {
+        newY = window.innerHeight - tooltipRect.height - 10;
+      }
+      setAdjustedCoords({ x: newX, y: newY });
+    }
+  }, [coords, visible]);
+
+  return (
+    <div
+      className="relative inline-block"
+      onMouseEnter={() => setVisible(true)}
+      onMouseLeave={() => setVisible(false)}
+      onMouseMove={handleMouseMove}
+    >
+      {children}
+      {visible && (
+        <div
+          ref={tooltipRef}
+          style={{
+            left: adjustedCoords.x,
+            top: adjustedCoords.y,
+          }}
+          className="fixed mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway bg-[#2A3433EE] text-white rounded-[17px] px-3 py-2 shadow-lg pointer-events-none z-50"
+        >
+          {content}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
   const { data, owner_project} = useApplicationDetailsData();
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { selectedTimespan } = useTimespan();
   const {AllChainsByKeys} = useMaster();
   const { metricsDef } = useMetrics();
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const { isSidebarOpen } = useUIContext();
 
-  console.log("metric", metric);
-  console.log("data", data);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const metricToKey = {
-    "daa": "daa",
-    "gas_fees": "fees",
-    "txcount": "txcount",
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      setContainerWidth(containerRef.current.offsetWidth);
+    }
+  }, [containerRef.current]);
+
+  const handleResize = () => {
+    if (containerRef.current) {
+      setContainerWidth(containerRef.current.offsetWidth);
+    }
   };
 
-  const metricData = data.metrics[metricToKey[metric]];
+  useEffect(() => {
+    // on sidebar open/close (timeout to wait for sidebar animation)
+    const timeout = setTimeout(() => {
+        handleResize();
+      }, 300);
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [isSidebarOpen]);
 
-  const values = Object.values(metricData.aggregated.data).map((v) => v[metricData.aggregated.types.indexOf(selectedTimespan)]);
-  const total = values.reduce((acc, v) => acc + v, 0);
+  useEffect(() => {
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [containerRef.current]);
+
+  const metricDefinition = metricsDef[metric];
+
+  let prefix = "";
+  let valueKey = "value";
+  if(metricDefinition.units.eth) {
+    prefix = showUsd ? metricDefinition.units.usd.prefix : metricDefinition.units.eth.prefix;
+    valueKey = showUsd ? "usd" : "eth";
+  } else {
+    prefix = Object.values(metricDefinition.units)[0].prefix;
+    valueKey = Object.keys(metricDefinition.units)[0];
+  }
+
+
+
+  const metricData = data.metrics[metric] as MetricData;
+  // filter out chains with 0 value
+  const chainsData = Object.entries(metricData.aggregated.data).filter(([chain, valsByTimespan]) => valsByTimespan[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)] > 0)
+  // sort by chain asc
+  .sort(([chainA], [chainB]) => chainA.localeCompare(chainB));
+  const values = chainsData.map(([chain, valsByTimespan]) => valsByTimespan[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)]);
+  const total = Object.values(values).reduce((acc, v) => acc + v, 0);
   const percentages = values.map((v) => (v / total) * 100);
-
-  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-
-  const prefix = useMemo(() => {
-    const def = metricsDef[metric].units;
-
-    if (Object.keys(def).includes("usd")) {
-      return showUsd ? def.usd.prefix : def.eth.prefix;
-    } else {
-      return Object.values(def)[0].prefix;
-    }
-  }, [metricsDef, metric, showUsd]);
+  
+  const cumulativePercentages = percentages.reduce((acc, v, i) => {
+    const prev = acc[i - 1] || 0;
+    return [...acc, prev + v];
+  }, [] as number[]);
 
   function formatNumber(number: number, decimals?: number): string {
     if (number === 0) {
@@ -173,44 +277,93 @@ const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
     return "";
   }
 
+  console.log("cumulativePercentages", cumulativePercentages);
+
   if (!metricData) {
     return null;
   }
 
   return (
+    
     <div className="pb-[15px]">
-      <div className="flex items-center h-[30px] rounded-full overflow-hidden bg-black/60">
-        <div className="flex gap-x-[10px] items-center h-full w-[140px] bg-forest-1000 p-[2px] rounded-l-full">
-          <ApplicationIcon owner_project={owner_project} size="sm" />
-          <div className="flex flex-col -space-y-[1px]">
-            <div className="numbers-sm">{prefix}{formatNumber(values.reduce((acc, v) => acc + v, 0))}</div>
-            <div className="text-xxs">{ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].display_name || ""}</div>
-          </div>
-        </div>
-        <div className="flex flex-1 h-full">
-        {Object.entries(metricData.aggregated.data).filter(([chain, values]) => values[metricData.aggregated.types.indexOf(selectedTimespan)] > 0).map(([chain, values], i) => (
-          <div 
-          key={chain} 
-          className="h-full relative transition-[width] duration-300"
-          style={{
-            background: AllChainsByKeys[chain].colors.dark[0],
-            width: `${(values[metricData.aggregated.types.indexOf(selectedTimespan)] / total) * 100}%`,
-            minWidth: '2px',
-          }}
-
-          >
-            <div className="@container absolute inset-0 flex items-center justify-center text-[#1F2726] truncate">
-              <div className="flex items-center gap-x-[5px]">
-                <div className="text-xs font-semibold hidden @[150px]:block truncate">
-                {AllChainsByKeys[chain].label}
-                </div>
-                <div className="numbers-xs hidden @[50px]:block ">
-                  {percentages[Object.keys(metricData.aggregated.data).indexOf(chain)].toFixed(1)}%
-                </div>
-              </div>
+      <div className="flex items-center h-[34px] rounded-full bg-[#344240] p-[2px]">
+        <div className="flex items-center h-[30px] w-full rounded-full overflow-hidden bg-black/60 relative" ref={containerRef}>
+          <div className="absolute left-0 flex gap-x-[10px] items-center h-full w-[140px] bg-[#1F2726] p-[2px] rounded-full" style={{zIndex: chainsData.length + 1}}>
+            <ApplicationIcon owner_project={owner_project} size="sm" />
+            <div className="flex flex-col -space-y-[2px] mt-[2px]">
+              <div className="numbers-sm">{prefix}{formatNumber(values.reduce((acc, v) => acc + v, 0))}</div>
+              <div className="text-xxs">{ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].display_name || ""}</div>
             </div>
           </div>
-        ))}
+          <div className="flex flex-1 h-full">
+          {chainsData.map(([chain, values], i) => {
+            const zIndex = chainsData.length - i;
+            let lastPercentagesTotal = i === 0 ? 0 : percentages.slice(0, i).reduce((acc, v) => acc + v, 0);
+            let thisPercentage = percentages[i];
+            
+            
+            if(thisPercentage < 0.15) {
+              thisPercentage = 0.15;
+            }
+            let thisPercentageWidth = thisPercentage + (i === 0 ? 0 : lastPercentagesTotal);
+            const thisRenderWidth = (thisPercentageWidth/100) * (containerWidth - 140);
+
+            // Example tooltip content – adjust as needed
+            const tooltipContent = (
+              <>
+              {/* <div className="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">
+                20 Jan 2025
+              </div> */}
+              <div className="flex w-full space-x-2 items-center font-medium mb-0.5">
+                <div
+                  className="w-4 h-1.5 rounded-r-full"
+                  style={{ backgroundColor: AllChainsByKeys[chain].colors.dark[0] }}
+                ></div>
+                <div className="tooltip-point-name text-xs">{AllChainsByKeys[chain].label}</div>
+                <div className="flex-1 text-right justify-end numbers-xs flex">
+                  <div className="hidden"></div>
+                  {prefix}{values[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)].toLocaleString("en-GB", { maximumFractionDigits: 2 })}
+                  <div className="ml-0.5 hidden"></div>
+                </div>
+              </div>
+              {/* Additional lines for other points… */}
+            </>
+            );
+            
+            return (
+              <FloatingTooltip key={chain} content={tooltipContent}>
+            <div 
+              className="absolute h-full rounded-full transition-all"
+              style={{
+                background: AllChainsByKeys[chain].colors.dark[0],
+                // take containerWidth and 140px into account
+                width: `calc(${thisRenderWidth}px + 135px)`,
+                left: '5px',
+                zIndex: zIndex,
+              }}
+              >
+                <div className="@container absolute inset-0 left-[135px] right-[15px] flex items-center justify-end text-[#1F2726] truncate" 
+                style={{
+
+                  zIndex:zIndex + 1,
+                }}
+                >
+                  <div className="flex items-center gap-x-[5px]"
+                  style={{color: AllChainsByKeys[chain].darkTextOnBackground ? "#1F2726" : "#CDD8D3"}}
+                  >
+                    <div className="text-xs !font-semibold hidden @[80px]:block truncate">
+                    {AllChainsByKeys[chain].name_short}
+                    </div>
+                    <div className="numbers-xs hidden @[30px]:block ">
+                      {percentages[i].toFixed(1)}%
+                    </div>
+                  </div>
+                </div>
+              </div>
+              </FloatingTooltip>
+              )
+          })}
+          </div>
         </div>
       </div>
       </div>
@@ -235,42 +388,11 @@ const ContractsTable = () => {
     return key;
   }, [selectedMetrics, showUsd]);
 
-
-  // const maxMetrics = useMemo(() => {
-  //   return selectedMetricKeys.map((metric) => {
-  //     return applicationDataAggregated.reduce((acc, application) => {
-  //       return Math.max(acc, application[metric]);
-  //     }, 0);
-  //   });
-  // }, [applicationDataAggregated, selectedMetricKeys]);
-
-
-  // const rowData = useMemo(() => {
-  //   return applicationDataAggregated.map((application) => {
-  //     return {
-  //       logo_path: ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].logo_path : "",
-  //       owner_project: application.owner_project,
-  //       display_name: ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].display_name : application.owner_project,
-  //       origin_keys: application.origin_keys,
-  //       category: ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].main_category : "",
-  //       num_contracts: application.num_contracts,
-  //       gas_fees: application[metricKey],
-  //       gas_fees_eth: application.gas_fees_eth,
-  //       gas_fees_usd: application.gas_fees_usd,
-  //       gas_fees_change_pct: application[metricKey + "_change_pct"],
-  //       rank_gas_fees: application[`rank_${metricKey}`],
-
-
-  //     };
-  //   });
-  // }, [applicationDataAggregated, metricKey, ownerProjectToProjectData]);
-
   // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() =>
     `26px 280px 95px minmax(95px,800px) ${selectedMetricKeys.map(() => `237px`).join(" ")} 20px`,
     [selectedMetricKeys]
   );
-
 
   return (
     <HorizontalScrollContainer reduceLeftMask={true}>
@@ -316,45 +438,6 @@ const ContractsTable = () => {
               justify="end"
               sort={sort}
               setSort={setSort}
-              // extraRight={
-              //   <div className="flex items-center gap-x-[5px] pl-[5px] cursor-default z-[10]">
-              //     <div
-              //       className="cursor-pointer flex items-center rounded-full bg-[#344240] text-[#CDD8D3] gap-x-[2px] px-[5px] h-[18px]"
-              //       onClick={() => {
-              //         setSort({
-              //           metric: `${metricKey}`, //"gas_fees_change_pct",
-              //           sortOrder:
-              //             sort.metric === `${metricKey}`
-              //               ? sort.sortOrder === "asc"
-              //                 ? "desc"
-              //                 : "asc"
-              //               : "desc",
-              //         });
-              //       }}
-              //     >
-              //       <div className="text-xxxs !leading-[14px]">Change</div>
-              //       <Icon
-              //         icon={
-              //           sort.metric === `${metricKey}` && sort.sortOrder === "asc"
-              //             ? "feather:arrow-up"
-              //             : "feather:arrow-down"
-              //         }
-              //         className="w-[10px] h-[10px]"
-              //         style={{
-              //           opacity: sort.metric === `${metricKey}` ? 1 : 0.2,
-              //         }}
-              //       />
-              //     </div>
-              //     <Tooltip placement="bottom">
-              //       <TooltipTrigger>
-              //         <Icon icon="feather:info" className="w-[15px] h-[15px]" />
-              //       </TooltipTrigger>
-              //       <TooltipContent className="z-[99]">
-              //         <MetricTooltip metric={metric} />
-              //       </TooltipContent>
-              //     </Tooltip>
-              //   </div>
-              // }
             >
               {metricsDef[metric].name} {Object.keys(metricsDef[metric].units).includes("eth") && <>({showUsd ? "USD" : "ETH"})</>}
             </GridTableHeaderCell>
@@ -362,12 +445,14 @@ const ContractsTable = () => {
         })}
         <div />
       </GridTableHeader>
-      <div className="flex flex-col gap-y-[5px]">
+      <div className="flex flex-col" style={{ height: `${contracts.length * 34 + contracts.length * 5}px` }}>
         <VerticalVirtuosoScrollContainer
           height={800}
           totalCount={contracts.length}
           itemContent={(index) => (
-            <ContractsTableRow key={index} contract={contracts[index]} />
+            <div key={index} className="pb-[5px]">
+            <ContractsTableRow contract={contracts[index]} />
+            </div>
           )}
         />
       </div>
@@ -424,7 +509,7 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict}) => {
   return (
     <GridTableRow
       gridDefinitionColumns={gridColumns}
-      className={`group text-[14px] !px-[5px] !py-0 h-[34px] gap-x-[15px] mb-[5px]`}
+      className={`group text-[14px] !px-[5px] !py-0 h-[34px] gap-x-[15px]`}
       style={{
         gridTemplateColumns: gridColumns,
       }}

@@ -179,6 +179,7 @@ function aggregateProjectData(
   assignRanks(results, 'gas_fees_eth');
   assignRanks(results, 'gas_fees_usd');
   assignRanks(results, 'txcount');
+  assignRanks(results, 'daa');
 
   return results;
 }
@@ -218,7 +219,7 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
   const {ownerProjectToProjectData} = useProjectsMetadata();
   const {timespans, selectedTimespan, setSelectedTimespan, isMonthly, setIsMonthly} = useTimespan();
   const { sort, setSort } = useSort();
-  const { metricsDef } = useMetrics();
+  const { metricsDef , setSelectedMetrics, selectedMetrics} = useMetrics();
 
 
   const { fetcher } = useSWRConfig();
@@ -279,24 +280,95 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
 
   }, [applicationsTimespan, selectedTimespan, selectedChains, selectedStringFilters, ownerProjectToProjectData]);
 
+
+  // if sort.metric changes, set it as the first member of the selectedMetrics
+  // useEffect(() => {
+  //   if(Object.keys(metricsDef).includes(sort.metric))
+  //     setSelectedMetrics((prev) => {
+  //       if(prev[0] === sort.metric) return prev;
+  //       return [sort.metric, ...prev.filter((m) => m !== sort.metric)];
+  //     });
+    
+  // }, [sort.metric, metricsDef]);
+
+
+
   const applicationDataAggregated = useMemo(() => {
+    enum SortType {
+      number = "number",
+      string = "string",
+      stringArray = "stringArray",
+    }
+
     const sorted = [...applicationDataFiltered];
-    let metric = sort.metric;
-    if(metric == "gas_fees")
-      metric = showUsd ? "gas_fees_usd" : "gas_fees_eth";
+    let sortMetric = sort.metric;
+
+
+
+    if(sortMetric == "gas_fees")
+      sortMetric = showUsd ? "gas_fees_usd" : "gas_fees_eth";
     
     sorted.sort((a, b) => {
-      if(!a[metric] && !b[metric]) return 0;
+      let sortType = SortType.number;
 
-      if(!a[metric] || a[metric] == Infinity) return 1;
-      if(!b[metric] || b[metric] == Infinity) return -1;
+      let aVal = a[sortMetric];
+      let bVal = b[sortMetric];
+      if(sortMetric === "category"){
+        sortType = SortType.string;
+        aVal = ownerProjectToProjectData[a.owner_project].main_category;
+        bVal = ownerProjectToProjectData[b.owner_project].main_category;
+      }else if(sortMetric === "owner_project"){
+        sortType = SortType.string;
+        aVal = ownerProjectToProjectData[a.owner_project].display_name;
+        bVal = ownerProjectToProjectData[b.owner_project].display_name;
+      }else if(sortMetric === "origin_keys"){
+        sortType = SortType.stringArray;
+        aVal = a.origin_keys.sort().map((key) => key[0].toUpperCase()).join("");
+        bVal = b.origin_keys.sort().map((key) => key[0].toUpperCase()).join("");
+      }
 
-      if(sort.sortOrder === "asc")
-        return a[metric] - b[metric];
-      return b[metric] - a[metric];
+      if(!aVal && !bVal) return 0;
+
+      if(sortType === SortType.number){
+        if(!aVal || aVal == Infinity) return 1;
+        if(!bVal || bVal == Infinity) return -1;
+
+        if(sort.sortOrder === "asc")
+          return aVal - bVal;
+        return bVal - aVal;
+      }
+      else if(sortType === SortType.string){
+        if(!aVal) return 1;
+        if(!bVal) return -1;
+
+        if(sort.sortOrder === "asc")
+          return aVal.localeCompare(bVal);
+        return bVal.localeCompare(aVal);
+      }
+      else if(sortType === SortType.stringArray){
+        // first by length, then by first letter
+        if(!aVal) return 1;
+        if(!bVal) return -1;
+
+        let aCount = aVal.length;
+        let bCount = bVal.length;
+
+        if(sort.sortOrder === "asc"){
+          if(aCount < bCount) return -1;
+          if(aCount > bCount) return 1;
+          return aVal[0].localeCompare(bVal[0]);
+        }
+
+        if(aCount < bCount) return 1;
+        if(aCount > bCount) return -1;
+
+        return bVal[0].localeCompare(aVal[0]);
+      }
+
+      return 0;
     });
     return sorted;
-  }, [applicationDataFiltered, showUsd, sort.metric, sort.sortOrder]);
+  }, [applicationDataFiltered, ownerProjectToProjectData, showUsd, sort.metric, sort.sortOrder]);
 
   // distinct chains across all data
   const applicationsChains = useMemo(() => {

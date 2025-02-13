@@ -5,8 +5,9 @@ import { DailyData } from "@/types/api/EconomicsResponse";
 import { createContext, useContext } from "react";
 import useSWR from "swr";
 
-export interface AppplicationDetailsResponse {
+export interface ApplicationDetailsResponse {
   metrics:          Metrics;
+  first_seen:       Date;
   contracts:        Contracts;
   last_updated_utc: Date;
 }
@@ -17,7 +18,9 @@ export interface Contracts {
 }
 
 export interface Metrics {
-  [key: string]: MetricData;
+  txcount:  MetricData;
+  daa:      MetricData;
+  gas_fees: MetricData;
 }
 
 export interface MetricData {
@@ -33,7 +36,7 @@ export interface Aggregated {
 }
 
 export interface AggData {
-  [chain: string]: number[];
+  [chain: string]: {[key: string]: number[]};
 }
 
 export interface OverTime {
@@ -81,7 +84,7 @@ const getContractDictArray = (contracts: Contracts): ContractDict[] => {
 
 
 export type ApplicationDetailsDataContextType = {
-  data: AppplicationDetailsResponse;
+  data: ApplicationDetailsResponse;
   owner_project: string;
   contracts: ContractDict[];
 }
@@ -101,13 +104,13 @@ export const ApplicationDetailsDataProvider = ({
     data: applicationDetailsData,
     isLoading: applicationDetailsLoading,
     isValidating: applicationDetailsValidating 
-  } = useSWR<AppplicationDetailsResponse>(
+  } = useSWR<ApplicationDetailsResponse>(
     owner_project ? ApplicationsURLs.details.replace("{owner_project}", owner_project) : null,
   );
 
   return (
     <ApplicationDetailsDataContext.Provider value={{
-      data: applicationDetailsData || {} as AppplicationDetailsResponse,
+      data: applicationDetailsData || {} as ApplicationDetailsResponse,
       owner_project,
       contracts: applicationDetailsData ? getContractDictArray(applicationDetailsData.contracts) : [],
     }}>

@@ -188,7 +188,7 @@ export default function Search() {
         leftIconColor={AllChainsByKeys[chainKey].colors["dark"][0]}
         rightIcon="heroicons-solid:x-circle"
         rightIconColor="#FE5468"
-        showLabel={isOpen}
+        showLabel={true}
         altColoring={isOpen}
       />
     ));
@@ -337,9 +337,9 @@ export default function Search() {
         onClick={() => setIsOpen(true)}
       >
         <div className="flex items-center w-full min-h-[44px]">
-          <div className="absolute flex items-center w-full bg-[#1F2726] gap-x-[10px] rounded-[22px] pr-[10px] min-h-[44px] z-[7]" />
+          <div className="absolute flex items-center w-full bg-[#1F2726] gap-x-[10px] rounded-[22px] pr-[10px] min-h-[44px] z-[17]" />
           {/* <div className="relative w-full min-h-[44px] z-10 flex items-center bg-[#1F2726] gap-x-[10px] rounded-[22px] pr-[10px]"> */}
-          <div className="absolute inset-0 z-[8] flex items-center w-full">
+          <div className="absolute inset-0 z-[18] flex items-center w-full">
             <div className={`relative flex justify-center items-center pl-[10px]`}>
               {isOpen ? (
                 <div className="flex items-center justify-center w-[24px] h-[24px]">
@@ -384,7 +384,7 @@ export default function Search() {
                 {Filters.length > 0 && (
                   <div className={`flex items-center px-[15px] h-[24px] border border-[#CDD8D3] rounded-full`}>
                     <div className="text-[8px] text-[#CDD8D3] font-medium">
-                      {applicationsNumberFiltered.toLocaleString("en-GB")} contracts
+                      {applicationsNumberFiltered.toLocaleString("en-GB")} applications
                     </div>
                   </div>
                 )}
@@ -425,7 +425,7 @@ export default function Search() {
             </div>
           </div>
           <div
-            className={`z-[6] absolute flex flex-col-reverse md:flex-col rounded-t-[22px] md:rounded-t-none md:rounded-b-[22px] bg-[#151A19] left-0 right-0 bottom-[calc(100%-22px)] md:bottom-auto md:top-[calc(100%-22px)] shadow-[0px_0px_50px_0px_#000000] transition-all duration-300 ${isOpen ? "max-h-[650px]" : "max-h-0"
+            className={`z-[16] absolute flex flex-col-reverse md:flex-col rounded-t-[22px] md:rounded-t-none md:rounded-b-[22px] bg-[#151A19] left-0 right-0 bottom-[calc(100%-22px)] md:bottom-auto md:top-[calc(100%-22px)] shadow-[0px_0px_50px_0px_#000000] transition-all duration-300 ${isOpen ? "max-h-[650px]" : "max-h-0"
               } overflow-hidden overflow-y-auto lg:overflow-y-hidden scrollbar-thin scrollbar-thumb-forest-700 scrollbar-track-transparent`}
           >
             <div className={`flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] pb-[25px] pt-[5px] md:pb-[5px] md:pt-[25px] gap-y-[10px] text-[10px] bg-[#344240] z-[1] ${Filters.length > 0 ? "max-h-[100px]" : "max-h-[20px] opacity-0 !p-0"} transition-all duration-300 overflow-clip`}>

@@ -17,12 +17,14 @@ import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import { useLocalStorage } from "usehooks-ts";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import VerticalVirtuosoScrollContainer from "@/components/VerticalVirtuosoScrollContainer";
+import { Virtuoso } from "react-virtuoso";
 import { ApplicationDisplayName, ApplicationIcon, Category, Chains, Links, MetricTooltip } from "./_components/Components";
 import { useProjectsMetadata } from "./_contexts/ProjectsMetadataContext";
 import { useSort } from "./_contexts/SortContext";
 import { ApplicationsURLs } from "@/lib/urls";
 import { preload } from "react-dom";
 import useDragScroll from "@/hooks/useDragScroll";
+import { useRouter } from "next/navigation";
 
 
 // Preload data for the overview page
@@ -33,6 +35,7 @@ import useDragScroll from "@/hooks/useDragScroll";
 export default function Page() {
   const { applicationDataAggregated, isLoading } = useApplicationsData();
   const { selectedMetrics } = useMetrics();
+  const { metricsDef } = useMetrics();
 
   const { topGainers, topLosers } = useMemo(() => {
     let medianMetricKey = selectedMetrics[0];
@@ -66,9 +69,11 @@ export default function Page() {
 
   return (
     <>
+    <div>
+      {/* <Container className="sticky top-[230px] z-10 pt-[30px]"> */}
       <Container className="pt-[30px]">
-        <div className="flex flex-col gap-y-[10px]">
-          <div className="heading-large">Top Gainers and Losers</div>
+        <div className="flex flex-col gap-y-[10px] ">
+          <div className="heading-large">Top Gainers and Losers by {metricsDef[selectedMetrics[0]].name}</div>
           <div className="text-xs">
             Projects that saw the biggest change in the selected timeframe.
           </div>
@@ -85,6 +90,7 @@ export default function Page() {
           <ApplicationCard key={index} application={undefined} />
         ))}
       </Container>
+      </div>
       {/* <Container> */}
       <div className="block md:hidden pt-[10px]">
         <CardSwiper cards={[...topGainers.map((application) => <ApplicationCard key={application.owner_project} application={application} />), ...topLosers.map((application) => <ApplicationCard key={application.owner_project} application={application} />)]} />
@@ -93,16 +99,33 @@ export default function Page() {
       {/* {applicationDataAggregated.length > 0 && <ApplicationCardSwiper />} */}
       <Container className="pt-[30px] pb-[15px]">
         <div className="flex flex-col gap-y-[10px]">
-          <div className="heading-large">Top Ranked (Gas Fees USD)</div>
+          <div className="heading-large">Top Ranked</div>
           <div className="text-xs">
             Applications ranked by your selected metric and applied chain filter. Note that currently you apply a chain filter.
           </div>
         </div>
       </Container>
       {/* <HorizontalScrollContainer reduceLeftMask={true}> */}
-      <div className="h-[800px]">
-      <ApplicationsTable />
-      </div>
+      <HorizontalScrollContainer className="!px-0" reduceLeftMask={true}>
+        {/* <div className={`absolute inset-0`}>
+          <div
+            className="bg-[#151a19] z-[0] absolute inset-0 pointer-events-none"
+            style={{
+              // -88px if scrolled to top of page, -88px + scrollY if scrolled down (max 0)
+              top: `${Math.min(0, -88 + scrollY)}px`,
+              backgroundPosition: `top`,
+              // maskImage: isMobile ? `linear-gradient(to bottom, white 0, white 120px, transparent 150px` : `linear-gradient(to bottom, white 0, white 200px, transparent 230px`,
+              maskImage: `linear-gradient(to bottom, white 0, white 250px, transparent 260px`,
+            }}
+          >
+            <div className="background-gradient-group">
+              <div className="background-gradient-yellow"></div>
+              <div className="background-gradient-green"></div>
+            </div>
+          </div>
+        </div> */}
+        <ApplicationsTable />
+      </HorizontalScrollContainer>
       {/* </HorizontalScrollContainer> */}
     </>
   )
@@ -305,6 +328,7 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
   const { selectedChains, setSelectedChains, } = useApplicationsData();
   const { selectedMetrics, metricsDef } = useMetrics();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const router = useRouter();
 
   const numContractsString = useCallback((application: AggregatedDataRow) => {
     return application.num_contracts.toLocaleString("en-GB");
@@ -344,13 +368,20 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
 
   if (!application) {
     return (
-      <div className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] min-w-[340px] ${className || ""} transition-all duration-300`} style={{ width: width || undefined }}>
+      <div className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] min-w-[340px] ${className || ""} `} style={{ width: width || undefined }}>
       </div>
     )
   }
 
   return (
-    <div className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] ${className || ""} transition-all duration-300`} style={{ width: width || undefined }}>
+    <div 
+    className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] ${className || ""} group hover:cursor-pointer hover:bg-forest-500/10`} 
+    style={{ width: width || undefined }}
+    onClick={() => {
+      // window.location.href = `/applications/${application.owner_project}`;
+      router.push(`/applications/${application.owner_project}`);
+    }}
+    >
       <div>
         <div className="w-full flex justify-between items-end h-[20px]">
           <div className="h-[20px] flex items-center gap-x-[3px]">
@@ -390,6 +421,9 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
                     ].urlKey
                       }-logo-monochrome`}
                     className="w-[15px] h-[15px]"
+                    style={{
+                      color: AllChainsByKeys[chain].colors["dark"][0],
+                    }}
                   />
                 )}
               </div>
@@ -399,8 +433,6 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
             <div className="numbers-sm text-[#CDD8D3]">
               {prefix}
               {value?.toLocaleString("en-GB")}
-
-
             </div>
           </div>
         </div>
@@ -408,9 +440,9 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
       <div className="w-full flex items-center gap-x-[5px]">
         <ApplicationIcon owner_project={application.owner_project} size="md" />
         {ownerProjectToProjectData[application.owner_project] ? (
-          <div className="heading-large-md flex-1"><ApplicationDisplayName owner_project={application.owner_project} /></div>
+          <div className="heading-large-md flex-1 group-hover:underline"><ApplicationDisplayName owner_project={application.owner_project} /></div>
         ) : (
-          <div className="heading-large-md flex-1 opacity-60"><ApplicationDisplayName owner_project={application.owner_project} /></div>
+          <div className="heading-large-md flex-1 opacity-60 group-hover:underline"><ApplicationDisplayName owner_project={application.owner_project} /></div>
         )}
         <Link className="cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center" href={`/applications/${application.owner_project}`}>
           <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-[#CDD8D3]" />
@@ -490,16 +522,18 @@ const ApplicationsTable = () => {
 
   // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() =>
-    `26px 313px 199px minmax(135px,800px) 95px ${selectedMetricKeys.map(() => `237px`).join(" ")} 20px`,
+    `26px 255px 95px minmax(135px,800px) 95px ${selectedMetricKeys.map(() => `247px`).join(" ")} 20px`,
     [selectedMetricKeys]
   );
 
 
   return (
-    <HorizontalScrollContainer reduceLeftMask={true}>
+    <>
+    {/* <HorizontalScrollContainer reduceLeftMask={true}> */}
       <GridTableHeader
         gridDefinitionColumns={gridColumns}
-        className="group text-[14px] !px-[5px] !py-0 gap-x-[15px] !pb-[4px]"
+        // className="sticky top-[250px] group text-[14px] !px-[5px] !py-0 gap-x-[15px] !pb-[4px] !z-[10]"
+        className="group text-[14px] !px-[5px] !py-0 gap-x-[15px] !pb-[4px] !z-[10]"
         style={{
           gridTemplateColumns: gridColumns,
         }}
@@ -508,28 +542,36 @@ const ApplicationsTable = () => {
         <GridTableHeaderCell
           metric="owner_project"
           className="heading-small-xs pl-[0px]"
+          sort={sort}
+          setSort={setSort}
         >
           Application
         </GridTableHeaderCell>
         <GridTableHeaderCell
-          metric="owner_project"
+          metric="origin_keys"
           className="heading-small-xs"
+          sort={sort}
+          setSort={setSort}
         >
           Chains
         </GridTableHeaderCell>
         <GridTableHeaderCell
-          metric="owner_project"
+          metric="category"
           className="heading-small-xs"
+          sort={sort}
+          setSort={setSort}
         >
           <div className="flex items-center gap-x-[5px]">
             <GTPIcon icon="gtp-categories" size="sm" />
-            Category
+            Main Category
           </div>
         </GridTableHeaderCell>
         <GridTableHeaderCell
-          metric="owner_project"
+          metric="num_contracts"
           className="heading-small-xs"
           justify="end"
+          sort={sort}
+          setSort={setSort}
         >
           # Contracts
         </GridTableHeaderCell>
@@ -590,17 +632,27 @@ const ApplicationsTable = () => {
         })}
         <div />
       </GridTableHeader>
-      <div className="flex flex-col gap-y-[5px]">
-        <VerticalVirtuosoScrollContainer
+      <div className="flex flex-col" style={{ height: `${applicationDataAggregated.length * 34 + applicationDataAggregated.length * 5}px` }}>
+        {/* <VerticalVirtuosoScrollContainer
           height={800}
           totalCount={applicationDataAggregated.length}
           itemContent={(index) => (
             <ApplicationTableRow key={applicationDataAggregated[index].owner_project} application={applicationDataAggregated[index]} maxMetrics={maxMetrics} />
           )}
-        />
+        /> */}
+        <Virtuoso
+          totalCount={applicationDataAggregated.length}
+          itemContent={(index) => (
+            <div key={applicationDataAggregated[index].owner_project} className="pb-[5px]">
+            <ApplicationTableRow application={applicationDataAggregated[index]} maxMetrics={maxMetrics} />
+            </div>
+          )}
+          useWindowScroll
+          />
       </div>
-
-    </HorizontalScrollContainer>
+      {/* </HorizontalScrollContainer> */}
+      </>
+    
   )
 }
 
@@ -619,8 +671,16 @@ type AltApplicationTableRowProps = {
 };
 
 
-const Value = memo(({ rank, def, value, change_pct, maxMetric }: { rank: number, def: MetricDef, value: number, change_pct: number, maxMetric: number }) => {
+const Value = memo(({ rank, def, value, change_pct, maxMetric, metric}: { rank: number, def: MetricDef, value: number, change_pct: number, maxMetric: number, metric: string }) => {
+  const { sort } = useSort();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const {selectedMetrics} = useMetrics();
+
+  const isSelectedMetric = useMemo(() =>
+    sort.metric === metric,
+    [sort.metric, metric]
+  );
+  
 
   const progressWidth = useMemo(() =>
     `${(value / maxMetric) * 100}%`,
@@ -628,8 +688,8 @@ const Value = memo(({ rank, def, value, change_pct, maxMetric }: { rank: number,
   );
 
   return (
-    <div className="flex items-center justify-end gap-[5px]">
-      <div className="numbers-xs text-[#5A6462]">{rank}</div>
+    <div className="flex items-center justify-end gap-[10px]">
+      <div className="numbers-xs text-[#5A6462]">{isSelectedMetric && rank}</div>
       <div className="w-[178px] flex flex-col items-end gap-y-[2px]">
 
         <div className="flex justify-end items-center gap-x-[2px]">
@@ -666,31 +726,36 @@ Value.displayName = 'Value';
 const ApplicationTableRow = memo(({ application, maxMetrics }: { application: AggregatedDataRow, maxMetrics: number[] }) => {
   const { ownerProjectToProjectData  } = useProjectsMetadata();
   const { metricsDef, selectedMetrics, selectedMetricKeys, } = useMetrics();
+  const router = useRouter();
 
   // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() =>
-    `26px 313px 199px minmax(135px,800px) 95px ${selectedMetricKeys.map(() => `237px`).join(" ")} 20px`,
+    `26px 255px 95px minmax(135px,800px) 95px ${selectedMetricKeys.map(() => `247px`).join(" ")} 20px`,
     [selectedMetricKeys]
   );
 
   return (
     <GridTableRow
       gridDefinitionColumns={gridColumns}
-      className={`group text-[14px] !px-[5px] !py-0 h-[34px] gap-x-[15px] mb-[5px]`}
+      className={`group text-[14px] !px-[5px] !py-0 h-[34px] gap-x-[15px]`}
       style={{
         gridTemplateColumns: gridColumns,
       }}
+      onClick={() => {
+        // window.location.href = `/applications/${application.owner_project}`;
+        router.push(`/applications/${application.owner_project}`);
+      }}
     >
-      <div className="sticky z-[3] -left-[12px] md:-left-[48px] w-[26px] flex items-center justify-center overflow-visible">
+      <div className="sticky z-[100] -left-[12px] md:-left-[46px] w-[30px] flex items-center justify-center overflow-visible">
         <div
-          className="absolute z-[3] -left-[5px] h-[32px] w-[35px] pl-[5px] flex items-center justify-start rounded-l-full bg-[radial-gradient(circle_at_-32px_16px,_#151A19_0%,_#151A19_72.5%,_transparent_90%)]"
+          className="absolute z-[3] -left-[6px] h-[34px] w-[35px] pl-[5px] flex items-center justify-start bg-[radial-gradient(circle_at_-32px_16px,_#151A19_0%,_#151A19_72.5%,_transparent_90%)] group-hover:bg-[radial-gradient(circle_at_-32px_16px,_transparent_0%,_transparent_72.5%,_transparent_90%)] rounded-l-full border-[0.5px] border-r-0 border-[#5A6462]"
         >
           <ApplicationIcon owner_project={application.owner_project} size="sm" />
         </div>
       </div>
-      <div className="flex items-center gap-x-[5px] justify-between">
+      <div className="flex items-center gap-x-[5px] justify-between group-hover:underline">
         <ApplicationDisplayName owner_project={application.owner_project} />
-        <Links owner_project={application.owner_project} />
+        {/* <Links owner_project={application.owner_project} /> */}
       </div>
       <div className="flex items-center gap-x-[5px]">
         <Chains origin_keys={application.origin_keys} />
@@ -706,7 +771,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics }: { application: Ag
           key={key}
           className={`flex justify-end pr-[15px] items-center text-right h-full ${selectedMetricKeys.length == 1 || (selectedMetricKeys.length > 1 && (index + 1) % 2 == 0) ? 'bg-[#344240]/30' : ''} `}
         >
-          <Value rank={application[`rank_${key}`]} def={metricsDef[selectedMetrics[index]]} value={application[key]} change_pct={application[`${key}_change_pct`]} maxMetric={maxMetrics[index]} />
+          <Value rank={application[`rank_${key}`]} def={metricsDef[selectedMetrics[index]]} value={application[key]} change_pct={application[`${key}_change_pct`]} maxMetric={maxMetrics[index]} metric={selectedMetrics[index]} />
         </div>
       ))}
       <div className="relative flex justify-end items-center pr-[0px]">

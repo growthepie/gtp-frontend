@@ -40,10 +40,16 @@ export const ApplicationIcon = ({ owner_project, size }: ApplicationIconProps) =
     lg: "size-[46px]",
   };
 
+  // const sizePixelMap = {
+  //   sm: 15,
+  //   md: 24,
+  //   lg: 36,
+  // };
+
   const sizePixelMap = {
-    sm: 15,
-    md: 24,
-    lg: 36,
+    sm: 26,
+    md: 36,
+    lg: 46,
   };
 
   return (
@@ -52,7 +58,7 @@ export const ApplicationIcon = ({ owner_project, size }: ApplicationIconProps) =
         <Image
           src={`https://api.growthepie.xyz/v1/apps/logos/${ownerProjectToProjectData[owner_project].logo_path}`}
           width={sizePixelMap[size]} height={sizePixelMap[size]}
-          className="select-none"
+          className="select-none rounded-full"
           alt={owner_project}
           onDragStart={(e) => e.preventDefault()}
           loading="eager"
@@ -74,12 +80,43 @@ export const PageTitleAndDescriptionAndControls = () => {
     setUrlOwnerProject(pathname.split("/")[2]);
   }, [pathname]);
 
+  const [scrollY, setScrollY] = useState(0);
+
+  const scrollHandler = () => {
+    const scrollY = window.scrollY;
+    setScrollY(scrollY);
+  }
+
+  useEffect(() => {
+    window.addEventListener("scroll", scrollHandler);
+    return () => {
+      window.removeEventListener("scroll", scrollHandler);
+    }
+  }, []);
+
   if(!urlOwnerProject) return (
     <>
+      {/* <div className={`absolute inset-0 overflow-visible`}>
+        <div
+          className="bg-[#151a19] z-[-1] absolute inset-0 -bottom-[100px] pointer-events-none"
+          style={{
+            // -88px if scrolled to top of page, -88px + scrollY if scrolled down (max 0)
+            top: `${Math.min(0, -88 + scrollY)}px`,
+            backgroundPosition: `top`,
+            // maskImage: isMobile ? `linear-gradient(to bottom, white 0, white 120px, transparent 150px` : `linear-gradient(to bottom, white 0, white 200px, transparent 230px`,
+            maskImage: `linear-gradient(to bottom, white 0, white 300px, transparent 320px`,
+          }}
+        >
+          <div className="background-gradient-group">
+            <div className="background-gradient-yellow"></div>
+            <div className="background-gradient-green"></div>
+          </div>
+        </div>
+      </div> */}
       <div className="flex items-center h-[43px] gap-x-[8px] ">
         <GTPIcon icon="gtp-project" size="lg" />
         <Heading className="heading-large-xl" as="h1">
-          Applications
+          Applications {scrollY} {`${Math.min(0, -88 + scrollY)}px`}
         </Heading>
       </div>
       <div className="text-sm">
@@ -127,8 +164,19 @@ export const ApplicationDescription = ({ owner_project }: { owner_project: strin
 
 export const BackButton = () => {
   const router = useRouter();
+
+  const lastPage = document.referrer;
+
+  const handleBack = () => {
+    if (lastPage.includes("/applications")) {
+      router.back();
+    } else {
+      router.push("/applications");
+    }
+  }
+
   return (
-    <button className="size-[36px] bg-[#344240] rounded-full flex justify-center items-center" onClick={() => router.back()}>
+    <button className="size-[36px] bg-[#344240] rounded-full flex justify-center items-center" onClick={handleBack}>
       <Icon icon="feather:arrow-left" className="size-[26px]  text-[#CDD8D3]" />
     </button>
   );
@@ -147,19 +195,32 @@ export type MultipleSelectTopRowChildProps = {
 };
 export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, setSelected, options }: MultipleSelectTopRowChildProps) => {
   const { isMobile } = useUIContext();
+  const [isHovering, setIsHovering] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+
+  // open on hover after 300ms
+  useEffect(() => {
+    if (isHovering) {
+      delay(() => {
+        setIsOpen(true);
+      }, 300);
+    } else {
+      setIsOpen(false);
+    }
+  }, [isHovering]);
 
   return (
     <>
-      <div className="flex flex-col relative lg:h-[44px] w-full lg:w-[300px]">
+      <div className="group flex flex-col relative lg:h-[44px] w-full lg:w-[300px]" onMouseLeave={() => setIsHovering(false)}>
         <div
-          className={`relative flex rounded-full h-[41px] md:h-full w-full lg:z-[5] p-[5px] cursor-pointer ${isMobile ? "w-full" : "w-[271px]"}`}
+          className={`relative flex rounded-full h-[41px] md:h-full w-full lg:z-[15] p-[5px] cursor-pointer ${isMobile ? "w-full" : "w-[271px]"}`}
           style={{
             backgroundColor: "#344240",
           }}
+          onMouseEnter={() => setIsHovering(true)}
         >
           <div
-            className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[2] hover:cursor-pointer"
+            className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[12] hover:cursor-pointer"
             onClick={handlePrev}
           >
             <Icon icon="feather:arrow-left" className="w-6 h-6" />
@@ -177,7 +238,7 @@ export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, se
             </div>
           </div>
           <div
-            className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[2] hover:cursor-pointer"
+            className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[12] hover:cursor-pointer"
             onClick={handleNext}
 
           >
@@ -186,12 +247,13 @@ export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, se
         </div>
         <div
           className={`flex flex-col relative lg:absolute lg:top-1/2 bottom-auto lg:left-0 lg:right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300 ${isOpen
-              ? `lg:z-[4] overflow-hidden border-transparent rounded-b-[30px] lg:border-forest-200 lg:dark:border-forest-500 lg:rounded-b-[22px] lg:shadow-[0px_4px_46.2px_#00000066] lg:dark:shadow-[0px_4px_46.2px_#000000]`
-              : "max-h-0 z-[3] overflow-hidden border-transparent rounded-b-[22px]"
+              ? `lg:z-[14] overflow-hidden border-transparent rounded-b-[30px] lg:border-forest-200 lg:dark:border-forest-500 lg:rounded-b-[22px] lg:shadow-[0px_4px_46.2px_#00000066] lg:dark:shadow-[0px_4px_46.2px_#000000]`
+              : "max-h-0 z-[13] overflow-hidden border-transparent rounded-b-[22px]"
             } `}
           style={{
             maxHeight: isOpen ? `${options.length * 24 + (options.length - 1) * 10 + 37 + 16}px` : "0px",
           }}
+          onMouseLeave={() => setIsHovering(false)}
         >
           <div className="pb-[20px] lg:pb-[16px]">
             <div className="h-[10px] lg:h-[37px]"></div>
@@ -354,7 +416,7 @@ export const Chains = ({ origin_keys }: { origin_keys: string[] }) => {
       {origin_keys.map((chain, index) => (
         <div
           key={index}
-          className={`cursor-pointer ${selectedChains.includes(chain) ? '' : '!text-[#5A6462]'} hover:!text-inherit`} style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors["dark"][0] : '' }}
+          className={`cursor-pointer ${selectedChains.includes(chain) || selectedChains.length === 0 ? '' : '!text-[#5A6462]'} hover:!text-inherit`} style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors["dark"][0] : '' }}
           onClick={() => {
             if (selectedChains.includes(chain)) {
               setSelectedChains(selectedChains.filter((c) => c !== chain));
@@ -375,6 +437,10 @@ export const Chains = ({ origin_keys }: { origin_keys: string[] }) => {
           )}
         </div>
       ))}
+      {/* <div className="rounded-full w-[47px] border border-[#344240] flex items-center justify-center">
+        more
+
+      </div> */}
     </div>
   );
 };

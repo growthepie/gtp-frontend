@@ -73,7 +73,7 @@ const metricsDef: Metrics = {
     name: "Transaction Count",
     name_short: "Transactions",
     units: {
-      count: {
+      value: {
         currency: false,
         prefix: "",
         suffix: null,
@@ -93,7 +93,7 @@ const metricsDef: Metrics = {
     name: "Daily Active Addresses",
     name_short: "DAAs",
     units: {
-      count: {
+      value: {
         currency: false,
         prefix: "",
         suffix: null,

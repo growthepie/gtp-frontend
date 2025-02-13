@@ -22,6 +22,7 @@ export interface CustomLogo {
 
 export interface ChainInfo {
   name: string;
+  name_short: string;
   url_key: string;
   chain_type: string;
   ecosystem: string[];

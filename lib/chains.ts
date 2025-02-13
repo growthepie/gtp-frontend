@@ -3,6 +3,7 @@ import { IS_DEVELOPMENT, IS_PREVIEW } from "./helpers";
 
 export type Chain = {
   label: string;
+  name_short: string;
   icon: string | null;
   key: string;
   urlKey: string;
@@ -23,6 +24,7 @@ export const Get_AllChainsByKeys = (master: MasterResponse) => {
     let chain = master.chains[key];
     chains[key] = {
       label: chain.name,
+      name_short: chain.name_short,
       icon: chain.logo?.body ? chain.logo.body : null,
       key: key,
       urlKey: chain.url_key ? chain.url_key : key.replace(/_/g, "-"),
