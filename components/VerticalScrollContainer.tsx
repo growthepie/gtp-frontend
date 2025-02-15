@@ -20,6 +20,7 @@ type VerticalScrollContainerProps = {
   scrollThumbColor?: string;
   scrollTrackColor?: string;
   header?: React.ReactNode;
+  enableTopShadow?: boolean;
 };
 
 export default forwardRef(function VerticalScrollContainer(
@@ -37,6 +38,7 @@ export default forwardRef(function VerticalScrollContainer(
     scrollThumbColor = "rgb(136 160 157 / 0.3)", //"bg-forest-400/30",
     scrollTrackColor = "rgb(0 0 0 / 0.3)", //"bg-black/30",
     header,
+    enableTopShadow = false,
   }: VerticalScrollContainerProps,
   ref: React.Ref<HTMLDivElement>
 ) {
@@ -334,6 +336,10 @@ export default forwardRef(function VerticalScrollContainer(
     if (contentScrollAreaRef.current) {
       if (contentHeight < contentScrollAreaHeight) {
         setMaskGradient('');
+      }else if (enableTopShadow){
+        setMaskGradient(
+          'linear-gradient(to bottom, transparent, black 50px, black calc(100% - 50px), transparent)'
+        );
       }
     }
 
