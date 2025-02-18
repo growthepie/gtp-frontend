@@ -114,9 +114,9 @@ export const PageTitleAndDescriptionAndControls = () => {
           </div>
         </div>
       </div> */}
-      <div className="flex items-center h-[43px] gap-x-[8px] ">
+      <div className="flex items-center h-[43px] gap-x-[8px]">
         <GTPIcon icon="gtp-project" size="lg" />
-        <Heading className="heading-large-xl" as="h1">
+        <Heading className="heading-large-lg md:heading-large-xl h-[36px]" as="h1">
           Applications
            {/* {scrollY} {`${Math.min(0, -88 + scrollY)}px`} */}
         </Heading>
@@ -136,7 +136,7 @@ export const PageTitleAndDescriptionAndControls = () => {
           <div className="flex items-center h-[43px] gap-x-[8px]">
             <BackButton />
             <ApplicationIcon owner_project={urlOwnerProject} size="md" />
-            <Heading className="heading-large-xl" as="h1">
+            <Heading className="heading-large-lg md:heading-large-xl h-[36px]" as="h1">
               <ApplicationDisplayName owner_project={urlOwnerProject} />
             </Heading>
           </div>
@@ -146,7 +146,12 @@ export const PageTitleAndDescriptionAndControls = () => {
             {/* Relay is a cross-chain payment system that enables instant, low-cost bridging and transaction execution by connecting users with relayers who act on their behalf for a small fee. It aims to minimize gas costs and execution latency, making it suitable for applications like payments, bridging, NFT minting, and gas abstraction. I can add one more sentence to that and its still legible. And one more maybe so that we reach 450 characters. Let’s see.  */}
           </div>
         </div>
+        <div className="hidden md:block">
         <ProjectDetailsLinks owner_project={urlOwnerProject} />
+        </div>
+        <div className="block md:hidden">
+        <ProjectDetailsLinks owner_project={urlOwnerProject} mobile />
+        </div>
       </div>
       {/* <Search /> */}
       <Controls />
@@ -215,7 +220,7 @@ export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, se
     <>
       <div className="group flex flex-col relative lg:h-[44px] w-full lg:w-[300px]">
         <div
-          className={`relative flex rounded-full h-[41px] md:h-full w-full lg:z-[15] p-[5px] cursor-pointer ${isMobile ? "w-full" : "w-[271px]"}`}
+          className={`relative flex rounded-full h-[41px] lg:h-full w-full lg:z-[15] p-[5px] cursor-pointer ${isMobile ? "w-full" : "w-[271px]"}`}
           style={{
             backgroundColor: "#344240",
           }}
@@ -303,12 +308,50 @@ export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, se
   )
 }
 
-export const ProjectDetailsLinks = memo(({ owner_project }: { owner_project: string }) => {
+export const ProjectDetailsLinks = memo(({ owner_project, mobile }: { owner_project: string, mobile?: boolean }) => {
   "use client";
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const linkPrefixes = ["https://x.com/", "https://github.com/", "", ""];
   const icons = ["ri:twitter-x-fill", "ri:github-fill", "feather:monitor", "ri:discord-fill"];
   const keys = ["twitter", "main_github", "website", "discord"];
+
+  if(mobile) {
+    return (
+      <div className="flex flex-col items-center justify-start gap-y-[10px]">
+        {ownerProjectToProjectData[owner_project] && keys.filter(
+          (key) => ownerProjectToProjectData[owner_project][key]
+        ).map((key, index) => (
+          <Link
+            key={key}
+              href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
+              target="_blank"
+              className={`size-[24px] bg-[#1F2726] rounded-full flex justify-center items-center ${key=== "website" && "gap-x-[6px] px-[5px] w-fit"}`}
+            >
+              {
+              // key === "website" ? 
+              // (
+              //   <>
+              //     {ownerProjectToProjectData[owner_project] && (
+              //       <ApplicationIcon owner_project={owner_project} size="md" />
+              //     )}
+              //     <div className="text-xxxs">{ownerProjectToProjectData[owner_project].display_name}</div>
+              //     <div className="size-[24px] rounded-full bg-[#344240] flex justify-center items-center">
+              //       <Icon icon="feather:arrow-right" className="size-[15px] text-[#CDD8D3]" />
+              //     </div>
+              //   </>
+              // ) 
+              // : (
+              <Icon
+                icon={icons[index]}
+                className="size-[15px] select-none"
+              />
+            // )
+            }
+          </Link>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-x-[10px]">
@@ -389,6 +432,8 @@ export const Links = memo(({ owner_project, showUrl}: { owner_project: string, s
   const keys = ["website", "twitter", "main_github"];
   const [currentHoverKey, setCurrentHover] = useState("website");
 
+  if(!ownerProjectToProjectData[owner_project]) return null;
+  
   if(showUrl) {
     return (
     <div className="flex flex-col gap-y-[10px]">
@@ -440,12 +485,13 @@ export const Chains = ({ origin_keys }: { origin_keys: string[] }) => {
   const { selectedChains, setSelectedChains } = useApplicationsData();
 
   return (
-    <div className="flex items-center gap-x-[5px]">
+    <div className="flex items-center gap-x-[0px] group/chains">
       {origin_keys.map((chain, index) => (
         <div
           key={index}
-          className={`cursor-pointer ${selectedChains.includes(chain) || selectedChains.length === 0 ? '' : '!text-[#5A6462]'} hover:!text-inherit`} style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors["dark"][0] : '' }}
-          onClick={() => {
+          className={`group-hover/chains:opacity-50 hover:!opacity-100 cursor-pointer p-[2.5px] ${selectedChains.includes(chain) || selectedChains.length === 0 ? '' : '!text-[#5A6462]'}`} style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors["dark"][0] : '' }}
+          onClick={(e) => {
+            e.stopPropagation();
             if (selectedChains.includes(chain)) {
               setSelectedChains(selectedChains.filter((c) => c !== chain));
             } else {
@@ -507,4 +553,51 @@ export const Category = ({ category }: { category: string }) => {
       )}
     </div>
   );
+}
+
+interface ThresholdConfig {
+  value: number;
+  suffix: string;
+  decimals?: number;
+}
+
+interface FormatNumberOptions {
+  defaultDecimals?: number;
+  thresholdDecimals?: {
+    [key: string]: number;  // 'T', 'B', 'M', 'k', or 'base' for numbers < 1000
+  };
+}
+
+export function formatNumber(
+  number: number, 
+  options: FormatNumberOptions = {}
+): string {
+  // Handle special cases
+  if (!Number.isFinite(number)) return 'N/A';
+  if (number === 0) return '0';
+
+  const defaultDecimals = options.defaultDecimals ?? 2;
+  
+  // Define formatting thresholds
+  const thresholds: ThresholdConfig[] = [
+    { value: 1e12, suffix: 'T' },
+    { value: 1e9, suffix: 'B' },
+    { value: 1e6, suffix: 'M' },
+    { value: 1e3, suffix: 'k' }
+  ];
+  
+  const absNumber = Math.abs(number);
+  
+  // Find the appropriate threshold
+  const threshold = thresholds.find(t => absNumber >= t.value);
+  
+  if (threshold) {
+    const scaledNumber = number / threshold.value;
+    const decimals = options.thresholdDecimals?.[threshold.suffix] ?? defaultDecimals;
+    return scaledNumber.toFixed(decimals) + threshold.suffix;
+  }
+  
+  // For numbers less than 1000
+  const baseDecimals = options.thresholdDecimals?.['base'] ?? defaultDecimals;
+  return number.toFixed(baseDecimals);
 }

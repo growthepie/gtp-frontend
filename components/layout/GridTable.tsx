@@ -379,6 +379,7 @@ export const GridTableAddressCell = ({
 
   // size 10px font is 6px wide
   // size 20px font is 9px wide
+  
 
   const fontWidth = useMemo(() => 0.3 * fontSize + 3, [fontSize]);
 
@@ -392,7 +393,7 @@ export const GridTableAddressCell = ({
 
 
   return (
-    <div className={`flex items-center w-full font-bold gap-x-[10px] ${className || ""}`}
+    <div className={`flex items-center w-full font-normal gap-x-[10px] ${className || ""}`}
       onClick={(e) => {
         e.stopPropagation();
         handleCopyAddress(address);
@@ -411,6 +412,7 @@ export const GridTableAddressCell = ({
         // }}
         style={{
           fontSize: `${fontSize}px`,
+          fontFeatureSettings: "'tnum'",
         }}
       >
 

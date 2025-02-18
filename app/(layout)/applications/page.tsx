@@ -18,7 +18,7 @@ import { useLocalStorage } from "usehooks-ts";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import VerticalVirtuosoScrollContainer from "@/components/VerticalVirtuosoScrollContainer";
 import { Virtuoso } from "react-virtuoso";
-import { ApplicationDisplayName, ApplicationIcon, Category, Chains, Links, MetricTooltip } from "./_components/Components";
+import { ApplicationDisplayName, ApplicationIcon, Category, Chains, formatNumber, Links, MetricTooltip } from "./_components/Components";
 import { useProjectsMetadata } from "./_contexts/ProjectsMetadataContext";
 import { useSort } from "./_contexts/SortContext";
 import { ApplicationsURLs } from "@/lib/urls";
@@ -27,6 +27,7 @@ import useDragScroll from "@/hooks/useDragScroll";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MetricInfo } from "@/types/api/MasterResponse";
+import { useTimespan } from "./_contexts/TimespanContext";
 
 
 // Preload data for the overview page
@@ -39,6 +40,7 @@ export default function Page() {
   const { selectedMetrics } = useMetrics();
   const { metricsDef } = useMetrics();
   const { sort } = useSort();
+  const { selectedTimespan } = useTimespan();
 
   const [medianMetricKey, setMedianMetricKey] = useState(selectedMetrics[0]);
 
@@ -61,14 +63,14 @@ export default function Page() {
 
     const medianValue = medianMetricValues[Math.floor(medianMetricValues.length / 2)];
 
-    console.log("medianMetricKey", medianMetricKey);
-    console.log("medianValue", medianValue);
-    console.log("applicationDataAggregated", applicationDataAggregated);
+    // console.log("medianMetricKey", medianMetricKey);
+    // console.log("medianValue", medianValue);
+    // console.log("applicationDataAggregated", applicationDataAggregated);
 
     // filter out applications with < median value of selected metric and with previous value of 0
     const filteredApplications = applicationDataAggregated
       .filter((application) => application[medianMetricKey] > medianValue && application["prev_" + medianMetricKey] > 0);
-    console.log("filteredApplications", filteredApplications);
+    // console.log("filteredApplications", filteredApplications);
 
     // top 3 applications with highest change_pct
     return {
@@ -85,7 +87,7 @@ export default function Page() {
     <>
     <div>
       {/* <Container className="sticky top-[230px] z-10 pt-[30px]"> */}
-      <Container className="pt-[30px]">
+      <Container className={`pt-[30px] ${selectedTimespan === "max" && "hidden"}`}>
         <div className="flex flex-col gap-y-[10px] ">
           <div className="heading-large">Top Gainers and Losers by {metricsDef[selectedMetrics[0]].name}</div>
           <div className="text-xs">
@@ -93,7 +95,7 @@ export default function Page() {
           </div>
         </div>
       </Container>
-      <Container className="hidden md:grid md:grid-rows-3 md:grid-flow-col lg:grid-rows-2 lg:grid-flow-row pt-[10px] lg:grid-cols-3 gap-[10px]">
+      <Container className={`hidden md:grid md:grid-rows-3 md:grid-flow-col lg:grid-rows-2 lg:grid-flow-row pt-[10px] lg:grid-cols-3 gap-[10px] ${selectedTimespan === "max" && "hidden"}`}>
         {topGainers.map((application, index) => (
           <ApplicationCard key={application.owner_project} application={application} />
         ))}
@@ -106,7 +108,7 @@ export default function Page() {
       </Container>
       </div>
       {/* <Container> */}
-      <div className="block md:hidden pt-[10px]">
+      <div className={`block md:hidden pt-[10px] ${selectedTimespan === "max" && "hidden"}`}>
         <CardSwiper cards={[...topGainers.map((application) => <ApplicationCard key={application.owner_project} application={application} />), ...topLosers.map((application) => <ApplicationCard key={application.owner_project} application={application} />)]} />
         </div>
       {/* </Container> */}
@@ -215,125 +217,6 @@ const CardSwiper = ({ cards }: { cards: React.ReactNode[] }) => {
   );
 };
 
-const ApplicationCardSwiper = () => {
-  const { applicationDataAggregated } = useApplicationsData();
-  const [cardWidth, setCardWidth] = useState(340);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [scrollLeft, setScrollLeft] = useState(0);
-  const [containerWidth, setContainerWidth] = useState(0);
-
-  // Update container width on resize
-  useEffect(() => {
-    const handleResize = () => {
-      if (containerRef.current) {
-        setContainerWidth(containerRef.current.offsetWidth);
-      }
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Calculate visible applications
-  const visibleApplications = useMemo(() => {
-    return [...applicationDataAggregated.slice(0, 3), ...applicationDataAggregated.slice(-3)];
-  }, [applicationDataAggregated]);
-
-  // Dragging state
-  const [dragging, setDragging] = useState(false);
-  const [dragStartX, setDragStartX] = useState(0);
-
-  // Handle mouse down event
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setDragging(true);
-    setDragStartX(e.screenX);
-  };
-
-  // Handle mouse up event
-  const handleMouseUp = () => {
-    setDragging(false);
-  };
-
-  // Handle mouse move event
-  const handleMouseMove = (e: MouseEvent) => {
-    if (dragging && containerRef.current) {
-      const dx = e.screenX - dragStartX;
-      const newScrollLeft = scrollLeft - dx;
-      const maxScroll = containerRef.current.scrollWidth - containerRef.current.clientWidth;
-
-      // Ensure scrollLeft stays within bounds
-      const boundedScrollLeft = Math.max(0, Math.min(maxScroll, newScrollLeft));
-
-      // Update scroll position
-      containerRef.current.scrollLeft = boundedScrollLeft;
-      setScrollLeft(boundedScrollLeft);
-      setDragStartX(e.screenX);
-    }
-  };
-
-  useEffect(() => {
-    // Update container width on resize
-    const updateContainerWidth = () => {
-      setCardWidth(window.innerWidth - 40);
-    };
-
-    updateContainerWidth();
-    window.addEventListener('resize', updateContainerWidth);
-
-    // Add global event listeners
-    document.addEventListener('mouseup', handleMouseUp);
-    document.addEventListener('mousemove', handleMouseMove);
-
-    // Cleanup
-    return () => {
-      window.removeEventListener('resize', updateContainerWidth);
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.removeEventListener('mousemove', handleMouseMove);
-    };
-  }, [dragging, dragStartX, scrollLeft]); // Add dependencies
-
-  useEffect(() => {
-    setCardWidth(window.innerWidth - 40);
-  }, []);
-
-
-  return (
-    <div
-      ref={containerRef}
-      className="pt-[10px] flex md:hidden flex-nowrap select-none relative overflow-scroll scrollbar-none pl-[30px] pr-[10px]"
-      // onScroll={(e) => setScrollLeft(e.currentTarget.scrollLeft)}
-      onMouseDown={handleMouseDown}
-      onScroll={(e) => setScrollLeft(e.currentTarget.scrollLeft)}
-
-
-    >
-      {visibleApplications.map((application, index) => {
-        // Calculate scaling and translation to give a carousel effect
-        const distance = (index * cardWidth) - scrollLeft;
-        const scaleX = 0.85 + 0.15 * (1 - Math.abs(distance) / containerWidth);
-        const scaleY = 0.85 + 0.15 * (1 - Math.abs(distance) / containerWidth);
-
-        return (
-          <div
-            key={index}
-            className="relative"
-            style={{
-              overflow: 'visible',
-              width: `${cardWidth + 10}px`,
-              paddingRight: '20px',
-              marginLeft: '-20px',
-              transform: `scale(${scaleX}, ${scaleY})`,
-              transformOrigin: 'center'
-            }}
-          >
-            <ApplicationCard application={application} className="" width={cardWidth} />
-          </div>
-        );
-      })}
-    </div>
-  );
-};
 
 
 const ApplicationCard = memo(({ application, className, width }: { application?: AggregatedDataRow, className?: string, width?: number }) => {
@@ -397,23 +280,18 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
     }}
     >
       <div>
-        <div className="w-full flex justify-between items-end h-[20px]">
-          <div className="h-[20px] flex items-center gap-x-[3px]">
+        <div className="w-full h-[20px] flex justify-between items-center">
+          <div className="flex items-center gap-x-[3px]">
             <div className="numbers-xs text-[#CDD8D3]">{numContractsString(application)}</div>
             <div className="text-xs text-[#5A6462]">contracts</div>
           </div>
-          <div className="h-[20px] flex items-end gap-x-[3px]">
+          <div className="flex items-end gap-x-[3px]">
             <div className="numbers-xs text-[#5A6462]">Rank</div>
             <div className="numbers-xs text-[#CDD8D3]">{rank}</div>
-            {application[`${metricKey}_change_pct`] !== Infinity ? (
-              <div className={`flex justify-end w-[49px] numbers-xs ${application[`${metricKey}_change_pct`] < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
-                {application[`${metricKey}_change_pct`] < 0 ? '-' : '+'}{Math.abs(application[`${metricKey}_change_pct`]).toFixed(0)}%
-              </div>
-            ) : <div className="w-[49px]">&nbsp;</div>}
           </div>
-
         </div>
-        <div className="w-full flex justify-between items-center h-[20px]">
+
+        <div className="w-full flex justify-between items-start">
           <div className="h-[20px] flex items-center gap-x-[5px]">
             {/* {JSON.stringify( application)} */}
             {application.origin_keys.map((chain, index) => (
@@ -443,10 +321,20 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
               </div>
             ))}
           </div>
-          <div className="h-[20px] flex items-center gap-x-[3px]">
-            <div className="numbers-sm text-[#CDD8D3]">
-              {prefix}
-              {value?.toLocaleString("en-GB")}
+          <div className="flex flex-col items-end gap-y-[2px]">
+            <div className="flex flex-col items-end justify-start gap-y-[3px]">
+              <div className="flex justify-end numbers-sm text-[#CDD8D3] w-[100px]">
+                {prefix}
+                {value?.toLocaleString("en-GB")}
+              </div>
+              <div className="flex items-end gap-x-[3px]">
+              {application[`${metricKey}_change_pct`] !== Infinity ? (
+                <div className={`flex justify-end w-[45px] numbers-xxxs ${application[`${metricKey}_change_pct`] < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
+                  {/* {application[`${metricKey}_change_pct`] < 0 ? '-' : '+'}{formatNumber(Math.abs(application[`${metricKey}_change_pct`]), {defaultDecimals: 1, thresholdDecimals: {base:0}})}% */}
+                  {application[`${metricKey}_change_pct`] < 0 ? '-' : '+'}{Math.abs(application[`${metricKey}_change_pct`]).toLocaleString("en-GB",{maximumFractionDigits:0})}%
+                </div>
+              ) : <div className="w-[49px]">&nbsp;</div>}
+            </div>
             </div>
           </div>
         </div>
@@ -673,6 +561,8 @@ const ApplicationsTable = () => {
             </div>
           )}
           useWindowScroll
+          increaseViewportBy={{top:0, bottom: 400}}
+          overscan={50}
           />
       </div>
       {/* </HorizontalScrollContainer> */}

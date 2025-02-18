@@ -333,7 +333,7 @@ export default function Search() {
         }}
       />
       <div
-        className={`absolute -bottom-[0px] md:bottom-auto md:-top-[0px] ${isOpen ? "-left-[50px] -right-[50px] md:left-0 md:right-0" : "left-0 right-0"} transition-all duration-300 `}
+        className={`absolute -bottom-[0px] md:bottom-auto md:-top-[0px] ${isOpen ? "left-0 right-0" : "left-0 right-0"} transition-all duration-300 `}
         onClick={() => setIsOpen(true)}
       >
         <div className="flex items-center w-full min-h-[44px]">
