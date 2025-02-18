@@ -43,6 +43,7 @@ import EmbedContainer from "@/app/(embeds)/embed/EmbedContainer";
 import ChartWatermark from "@/components/layout/ChartWatermark";
 import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
+import dynamic from "next/dynamic";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -193,7 +194,42 @@ function MetricChart({
 }: MetricChartProps) {
 
   // useHighchartsWrappers();
+  let tooltipWorker: Worker | null = null;
+  let tooltipCache = new Map<string, string>();
 
+  const createSafeCacheKey = (
+    points: any[],
+    maxPoint: number,
+    maxPercentage: number,
+    theme: string | undefined,
+    metric_id: string,
+    prefix: string,
+    suffix: string,
+    decimals: number,
+    selectedScale: string,
+    showOthers: boolean
+  ) => {
+    // Create a simplified version of points without circular references
+    const safePoints = points.map(point => ({
+      name: point.series.name,
+      y: point.y,
+      percentage: point.percentage
+    }));
+  
+    return JSON.stringify({
+      safePoints,
+      maxPoint,
+      maxPercentage,
+      theme,
+      metric_id,
+      prefix,
+      suffix,
+      decimals,
+      selectedScale,
+      showOthers
+    });
+  };
+  
   const { theme } = useTheme();
   const { isSidebarOpen, isMobile, setEmbedData, embedData } = useUIContext();
   const { AllChainsByKeys, data: master, metrics, da_metrics, chains, da_layers } = useMaster();
@@ -652,20 +688,21 @@ function MetricChart({
     [metricsDict, metric_id, showUsd, seriesData, selectedScale, showGwei],
   );
 
+
+
+  
   const tooltipFormatter = useCallback(
+  
     function (this: any) {
+   
       const { x, points }: { x: number; points: any[] } = this;
       points.sort((a: any, b: any) => {
         if (reversePerformer) return a.y - b.y;
-
         return b.y - a.y;
       });
-
-      const firstTenPoints = points.slice(0, 10);
-      const afterTenPoints = points.slice(10);
-
-      const showOthers = afterTenPoints.length > 0 && metric_id !== "txcosts";
-
+  
+      const showOthers = points.length > 10 && metric_id !== "txcosts";
+  
       const date = new Date(x);
       const dateString = date.toLocaleDateString("en-GB", {
         timeZone: "UTC",
@@ -673,249 +710,206 @@ function MetricChart({
         day: selectedTimeInterval === "daily" ? "numeric" : undefined,
         year: "numeric",
       });
-
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway">
-        <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
-      const tooltipEnd = `</div>`;
-
-      let pointsSum = points.reduce((acc: number, point: any) => {
-        acc += point.y;
-        return acc;
-      }, 0);
-
-      const maxPoint = points.reduce((max: number, point: any) => {
-        if (point.y > max) max = point.y;
-        return max;
-      }, 0);
-
-      const maxPercentage = points.reduce((max: number, point: any) => {
-        if (point.percentage > max) max = point.percentage;
-        return max;
-      }, 0);
-
+  
+      const pointsSum = points.reduce((acc: number, point: any) => acc + point.y, 0);
+      
+      const maxPoint = points.reduce((max: number, point: any) => 
+        Math.max(max, point.y), 0);
+  
+      const maxPercentage = points.reduce((max: number, point: any) => 
+        Math.max(max, point.percentage), 0);
+  
       if (!master) return;
-
+  
       const units = metricsDict[metric_id].units;
       const unitKeys = Object.keys(units);
-      const unitKey =
-        unitKeys.find((unit) => unit !== "usd" && unit !== "eth") ||
+      const unitKey = unitKeys.find((unit) => unit !== "usd" && unit !== "eth") ||
         (showUsd ? "usd" : "eth");
-
-      // units.find((unit) => unit !== "usd" && unit !== "eth") ||
-      // (showUsd ? "usd" : "eth");
-      let prefix = metricsDict[metric_id].units[unitKey].prefix
-        ? metricsDict[metric_id].units[unitKey].prefix
-        : "";
-      let suffix = metricsDict[metric_id].units[unitKey].suffix
-        ? metricsDict[metric_id].units[unitKey].suffix
-        : "";
-
-      const decimals =
-        !showUsd && showGwei
-          ? 2
-          : metricsDict[metric_id].units[unitKey].decimals_tooltip;
-
-
-
-      let tooltipPoints = (showOthers ? firstTenPoints : points)
-        .map((point: any) => {
-          const { series, y, percentage } = point;
-          const { name } = series;
-          if (selectedScale === "percentage")
-            return `
-              <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${chainsDict[name].colors[theme ?? "dark"][0]
-              }"></div>
-                <div class="tooltip-point-name text-xs">${chainsDict[name].name
-              }</div>
-                <div class="flex-1 text-right numbers-xs ">${Highcharts.numberFormat(
-                percentage,
-                2,
-              )}%</div>
-              </div>
-              
-              <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-                <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
-    
-                <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
-                style="
-                  width: ${(percentage / maxPercentage) * 100}%;
-                  background-color: ${chainsDict[name].colors[theme ?? "dark"][0]
-              };
-                "></div>
-              </div>`;
-
-          let value = y;
-
-          if (!showUsd && metricsDict[metric_id].units[unitKey].currency) {
-            if (showGwei) {
-              prefix = "";
-              suffix = " Gwei";
-            }
-          }
-
-          return `
-          <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${chainsDict[name].colors[theme ?? "dark"][0]
-            }"></div>
-            <div class="tooltip-point-name text-xs">${chainsDict[name].name
-            }</div>
-            <div class="flex-1 text-right justify-end numbers-xs flex">
-                <div class="${!prefix && "hidden"
-            }">${prefix}</div>
-                ${metric_id === "fdv" || metric_id === "market_cap"
-              ? shortenNumber(value).toString()
-              : parseFloat(value).toLocaleString("en-GB", {
-                minimumFractionDigits: decimals,
-                maximumFractionDigits: decimals,
-              })
-            }
-                <div class="ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
-            </div>
-          </div>
-          <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
-
-            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
-            style="
-              width: ${(Math.max(0, value) / maxPoint) * 100}%;
-              background-color: ${chainsDict[name].colors[theme ?? "dark"][0]
-            };
-            "></div>
-          </div>`;
-        })
-        .join("");
-
-      // let prefix = valuePrefix;
-      // let suffix = "";
+  
+      let prefix = metricsDict[metric_id].units[unitKey].prefix || "";
+      let suffix = metricsDict[metric_id].units[unitKey].suffix || "";
+  
+      const decimals = !showUsd && showGwei
+        ? 2
+        : metricsDict[metric_id].units[unitKey].decimals_tooltip;
+  
+      if (!showUsd && metricsDict[metric_id].units[unitKey].currency && showGwei) {
+        prefix = "";
+        suffix = " Gwei";
+      }
+  
       if (metric_id === "throughput") {
         suffix = " Mgas/s";
       }
-
-      // add "others" with the sum of the rest of the points
-      // const rest = afterTenPoints;
-
-      if (showOthers && afterTenPoints.length > 0) {
-        const restString =
-          afterTenPoints.length > 1
-            ? `${parseFloat(afterTenPoints[0].y).toLocaleString("en-GB", {
-              minimumFractionDigits: 0,
-            })}…${parseFloat(
-              afterTenPoints[afterTenPoints.length - 1].y,
-            ).toLocaleString("en-GB", { minimumFractionDigits: 0 })}`
-            : parseFloat(afterTenPoints[0].y).toLocaleString("en-GB", {
-              minimumFractionDigits: 0,
-            });
-
-        const restSum = afterTenPoints.reduce((acc: number, point: any) => {
-          acc += point.y;
-          return acc;
-        }, 0);
-
-        const restPercentage = afterTenPoints.reduce(
-          (acc: number, point: any) => {
-            acc += point.percentage;
-            return acc;
-          },
-          0,
-        );
-
-        if (selectedScale === "percentage")
-          tooltipPoints += `
-          <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6"></div>
-            <div class="tooltip-point-name text-xs">${afterTenPoints.length > 1
-              ? `${afterTenPoints.length} Others`
-              : "1 Other"
-            }</div>
-            <div class="flex-1 text-right numbers-xs">${Highcharts.numberFormat(
-              restPercentage,
-              2,
-            )}%</div>
-          </div>
-          <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
-
-            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
-            style="
-              width: ${(restPercentage / maxPercentage) * 100}%;
-              background-color: #E0E7E699
-            ;
-            "></div>
-          </div>`;
-        else
-          tooltipPoints += `
-          <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6; "></div>
-            <div class="tooltip-point-name text-xs">${afterTenPoints.length > 1
-              ? `${afterTenPoints.length} Others`
-              : "1 Other"
-            }</div>
-            <div class="flex-1 text-right justify-end numbers-xs flex">
-                <div class="${!prefix && "hidden"
-            }">${prefix}</div>
-                ${metric_id === "fdv" || metric_id === "market_cap"
-              ? shortenNumber(restSum).toString()
-              : parseFloat(restSum).toLocaleString("en-GB", {
-                minimumFractionDigits: decimals,
-                maximumFractionDigits: decimals,
-              })
-            }
-                <div class="ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
-            </div>
-          </div>
-          <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
-
-            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
-            style="
-              width: ${(restSum / maxPoint) * 100}%;
-              background-color: #E0E7E699
-            ;
-            "></div>
-          </div>`;
+  
+      // Generate a cache key based on relevant data
+      const cacheKey = createSafeCacheKey(
+        points,
+        maxPoint,
+        maxPercentage,
+        theme,
+        metric_id,
+        prefix,
+        suffix,
+        decimals,
+        selectedScale,
+        showOthers
+      );
+  
+  
+      // Check cache first
+      if (tooltipCache.has(cacheKey)) {
+        return tooltipCache.get(cacheKey);
       }
-
-      let value = pointsSum;
-
-      const sumRow =
-        selectedScale === "stacked"
-          ? `
-        <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5">
-          <div class="w-4 h-1.5 rounded-r-full" style=""></div>
-          <div class="tooltip-point-name text-xs">Total</div>
-          <div class="flex-1 text-right justify-end numbers-xs flex">
-            <div class="${!prefix && "hidden"}">
-              ${prefix}
-            </div>
-          ${parseFloat(value).toLocaleString("en-GB", {
-            minimumFractionDigits: valuePrefix ? 2 : 0,
-            maximumFractionDigits: valuePrefix
-              ? 2
-              : metric_id === "throughput"
-                ? 2
-                : 0,
-          })}
-            <div class="ml-0.5 ${!suffix && "hidden"}">
-              ${suffix}
+  
+      // If no worker exists, create one
+      if (!tooltipWorker) {
+        tooltipWorker = new Worker(new URL('./tooltipWorker.ts', import.meta.url));
+      }
+  
+      // Process the points directly in the main thread as fallback
+      const processPointsInMainThread = () => {
+        const firstTenPoints = points.slice(0, 10);
+        const afterTenPoints = points.slice(10);
+  
+        let tooltipPoints = (showOthers ? firstTenPoints : points)
+          .map((point: any) => {
+            const { series, y, percentage } = point;
+            const { name } = series;
+  
+            if (selectedScale === "percentage") {
+              return `
+                <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${chainsDict[name].colors[theme ?? "dark"][0]}"></div>
+                  <div class="tooltip-point-name text-xs">${chainsDict[name].name}</div>
+                  <div class="flex-1 text-right numbers-xs">${percentage.toFixed(2)}%</div>
+                </div>
+                <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+                  <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+                  <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
+                  style="width: ${(percentage / maxPercentage) * 100}%; background-color: ${chainsDict[name].colors[theme ?? "dark"][0]}99;"></div>
+                </div>`;
+            }
+  
+            const value = y;
+            const formattedValue = metric_id === "fdv" || metric_id === "market_cap"
+              ? shortenNumber(value)
+              : value.toLocaleString("en-GB", {
+                  minimumFractionDigits: decimals,
+                  maximumFractionDigits: decimals,
+                });
+  
+            return `
+              <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${chainsDict[name].colors[theme ?? "dark"][0]}"></div>
+                <div class="tooltip-point-name text-xs">${chainsDict[name].name}</div>
+                <div class="flex-1 text-right justify-end numbers-xs flex">
+                  <div class="${!prefix && "hidden"}">${prefix}</div>
+                  ${formattedValue}
+                  <div class="ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
+                </div>
+              </div>
+              <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+                <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+                <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
+                style="width: ${(Math.max(0, value) / maxPoint) * 100}%; background-color: ${chainsDict[name].colors[theme ?? "dark"][0]}99;"></div>
+              </div>`;
+          })
+          .join("");
+  
+        if (showOthers && afterTenPoints.length > 0) {
+          const restSum = afterTenPoints.reduce((acc: number, point: any) => acc + point.y, 0);
+          const restPercentage = afterTenPoints.reduce((acc: number, point: any) => acc + point.percentage, 0);
+  
+          if (selectedScale === "percentage") {
+            tooltipPoints += `
+              <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6"></div>
+                <div class="tooltip-point-name text-xs">${afterTenPoints.length > 1 ? `${afterTenPoints.length} Others` : "1 Other"}</div>
+                <div class="flex-1 text-right numbers-xs">${restPercentage.toFixed(2)}%</div>
+              </div>
+              <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+                <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+                <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
+                style="width: ${(restPercentage / maxPercentage) * 100}%; background-color: #E0E7E699;"></div>
+              </div>`;
+          } else {
+            tooltipPoints += `
+              <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6"></div>
+                <div class="tooltip-point-name text-xs">${afterTenPoints.length > 1 ? `${afterTenPoints.length} Others` : "1 Other"}</div>
+                <div class="flex-1 text-right justify-end numbers-xs flex">
+                  <div class="${!prefix && "hidden"}">${prefix}</div>
+                  ${metric_id === "fdv" || metric_id === "market_cap"
+                    ? shortenNumber(restSum)
+                    : restSum.toLocaleString("en-GB", {
+                        minimumFractionDigits: decimals,
+                        maximumFractionDigits: decimals,
+                      })}
+                  <div class="ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
+                </div>
+              </div>
+              <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+                <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+                <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
+                style="width: ${(restSum / maxPoint) * 100}%; background-color: #E0E7E699;"></div>
+              </div>`;
+          }
+        }
+  
+        return tooltipPoints;
+      };
+  
+      const tooltipPoints = processPointsInMainThread();
+      
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway">
+        <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
+      
+      const sumRow = selectedScale === "stacked"
+        ? `<div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5">
+            <div class="w-4 h-1.5 rounded-r-full"></div>
+            <div class="tooltip-point-name text-xs">Total</div>
+            <div class="flex-1 text-right justify-end numbers-xs flex">
+              <div class="${!prefix && "hidden"}">${prefix}</div>
+              ${pointsSum.toLocaleString("en-GB", {
+                minimumFractionDigits: valuePrefix ? 2 : 0,
+                maximumFractionDigits: valuePrefix ? 2 : metric_id === "throughput" ? 2 : 0,
+              })}
+              <div class="ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
             </div>
           </div>
-        </div>
-        <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-          <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
-        </div>`
-          : "";
+          <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+            <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
+          </div>`
+        : "";
+  
+      const result = tooltip + tooltipPoints + sumRow + "</div>";
+      tooltipCache.set(cacheKey, result);
+      
 
-      return tooltip + tooltipPoints + sumRow + tooltipEnd;
+      return result;
     },
-    [metric_id, selectedTimeInterval, master, metricsDict, showUsd, showGwei, selectedScale, valuePrefix, reversePerformer, chainsDict, theme],
+    [
+      metric_id,
+      selectedTimeInterval,
+      master,
+      metricsDict,
+      showUsd,
+      showGwei,
+      selectedScale,
+      valuePrefix,
+      reversePerformer,
+      chainsDict,
+      theme,
+    ]
   );
+
+
 
 
   const tooltipPositioner =
     useCallback<Highcharts.TooltipPositionerCallbackFunction>(
+      
       function (this, width, height, point) {
         const chart = this.chart;
         const { plotLeft, plotTop, plotWidth, plotHeight } = chart;
