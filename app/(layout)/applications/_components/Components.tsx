@@ -15,6 +15,7 @@ import Search from "./Search";
 import Controls from "./Controls";
 import { useMaster } from "@/contexts/MasterContext";
 import { useApplicationsData } from "../_contexts/ApplicationsDataContext";
+import { useMetrics } from "../_contexts/MetricsContext";
 
 
 type ApplicationIconProps = {
@@ -116,7 +117,8 @@ export const PageTitleAndDescriptionAndControls = () => {
       <div className="flex items-center h-[43px] gap-x-[8px] ">
         <GTPIcon icon="gtp-project" size="lg" />
         <Heading className="heading-large-xl" as="h1">
-          Applications {scrollY} {`${Math.min(0, -88 + scrollY)}px`}
+          Applications
+           {/* {scrollY} {`${Math.min(0, -88 + scrollY)}px`} */}
         </Heading>
       </div>
       <div className="text-sm">
@@ -195,29 +197,28 @@ export type MultipleSelectTopRowChildProps = {
 };
 export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, setSelected, options }: MultipleSelectTopRowChildProps) => {
   const { isMobile } = useUIContext();
-  const [isHovering, setIsHovering] = useState(false);
+  // const [isHovering, setIsHovering] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  // open on hover after 300ms
-  useEffect(() => {
-    if (isHovering) {
-      delay(() => {
-        setIsOpen(true);
-      }, 300);
-    } else {
-      setIsOpen(false);
-    }
-  }, [isHovering]);
+  // // open on hover after 300ms
+  // useEffect(() => {
+  //   if (isHovering) {
+  //     delay(() => {
+  //       setIsOpen(true);
+  //     }, 300);
+  //   } else {
+  //     setIsOpen(false);
+  //   }
+  // }, [isHovering]);
 
   return (
     <>
-      <div className="group flex flex-col relative lg:h-[44px] w-full lg:w-[300px]" onMouseLeave={() => setIsHovering(false)}>
+      <div className="group flex flex-col relative lg:h-[44px] w-full lg:w-[300px]">
         <div
           className={`relative flex rounded-full h-[41px] md:h-full w-full lg:z-[15] p-[5px] cursor-pointer ${isMobile ? "w-full" : "w-[271px]"}`}
           style={{
             backgroundColor: "#344240",
           }}
-          onMouseEnter={() => setIsHovering(true)}
         >
           <div
             className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[12] hover:cursor-pointer"
@@ -253,7 +254,7 @@ export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, se
           style={{
             maxHeight: isOpen ? `${options.length * 24 + (options.length - 1) * 10 + 37 + 16}px` : "0px",
           }}
-          onMouseLeave={() => setIsHovering(false)}
+          
         >
           <div className="pb-[20px] lg:pb-[16px]">
             <div className="h-[10px] lg:h-[37px]"></div>
@@ -346,17 +347,18 @@ export const ProjectDetailsLinks = memo(({ owner_project }: { owner_project: str
 ProjectDetailsLinks.displayName = 'Links';
 
 export const MetricTooltip = ({ metric }: { metric: string }) => {
+  const {metricsDef} = useMetrics();
   const content = {
     gas_fees: {
-      title: "Gas Fees",
+      title: metricsDef["gas_fees"].name,
       content: "The total gas fees paid by all contracts in the selected timeframe across the selected chains.",
     },
     txcount: {
-      title: "Transactions",
+      title: metricsDef["txcount"].name,
       content: "The total number of transactions in the selected timeframe across the selected chains.",
     },
     daa: {
-      title: "Daily Active Addresses",
+      title: metricsDef["daa"].name,
       content: "The total number of unique addresses that interacted with the contracts in the selected timeframe across the selected chains.",
     },
   }
@@ -380,11 +382,37 @@ export const MetricTooltip = ({ metric }: { metric: string }) => {
   );
 }
 
-export const Links = memo(({ owner_project }: { owner_project: string }) => {
+export const Links = memo(({ owner_project, showUrl}: { owner_project: string, showUrl?: boolean }) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const linkPrefixes = ["", "https://x.com/", "https://github.com/"];
   const icons = ["feather:monitor", "ri:twitter-x-fill", "ri:github-fill"];
   const keys = ["website", "twitter", "main_github"];
+  const [currentHoverKey, setCurrentHover] = useState("website");
+
+  if(showUrl) {
+    return (
+    <div className="flex flex-col gap-y-[10px]">
+      <div className="flex items-center gap-x-[5px]" onMouseLeave={() => setCurrentHover("website")}>
+      {ownerProjectToProjectData[owner_project] && keys.map((key, index) => (
+        <div key={index} className="h-[15px] w-[15px]" onMouseEnter={() => setCurrentHover(key)}>
+          {ownerProjectToProjectData[owner_project][key] && <Link
+            href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
+            target="_blank"
+          >
+            <Icon
+              icon={icons[index]}
+              className="w-[15px] h-[15px] select-none"
+            />
+          </Link>}
+        </div>
+      ))}
+      </div>
+      <div className="text-xxs text-[#5A6462]">
+        {`${(linkPrefixes[keys.indexOf(currentHoverKey)]+ownerProjectToProjectData[owner_project][currentHoverKey]).replace("https://", "")}`}
+      </div>
+    </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-x-[5px]">

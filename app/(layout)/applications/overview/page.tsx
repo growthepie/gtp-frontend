@@ -3,7 +3,7 @@ import Container from "@/components/layout/Container";
 import Icon from "@/components/layout/Icon";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { AggregatedDataRow, useApplicationsData } from "../_contexts/ApplicationsDataContext";
-import { MetricDef, useMetrics } from "../_contexts/MetricsContext";
+import { useMetrics } from "../_contexts/MetricsContext";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
@@ -713,7 +713,7 @@ const Category = ({ category }: { category: string }) => {
   );
 }
 
-const Value = memo(({ rank, def, value, change_pct, maxMetric }: { rank: number, def: MetricDef, value: number, change_pct: number, maxMetric: number }) => {
+const Value = memo(({ rank, def, value, change_pct, maxMetric }: { rank: number, def: any, value: number, change_pct: number, maxMetric: number }) => {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   const progressWidth = useMemo(() =>
@@ -728,6 +728,7 @@ const Value = memo(({ rank, def, value, change_pct, maxMetric }: { rank: number,
 
         <div className="flex justify-end items-center gap-x-[2px]">
           <div className="numbers-xs">
+            {/*@ts-ignore*/}
             {Object.keys(def.units).includes("eth") ? showUsd ? def.units.usd.prefix : def.units.eth.prefix : Object.values(def.units)[0].prefix}
             {value?.toLocaleString("en-GB")}
           </div>

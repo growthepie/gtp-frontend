@@ -3,8 +3,8 @@ import Container from "@/components/layout/Container";
 import Icon from "@/components/layout/Icon";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { AggregatedDataRow, useApplicationsData } from "./_contexts/ApplicationsDataContext";
-import { MetricDef, useMetrics } from "./_contexts/MetricsContext";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMetrics } from "./_contexts/MetricsContext";
+import { memo, use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
 import {
@@ -25,6 +25,8 @@ import { ApplicationsURLs } from "@/lib/urls";
 import { preload } from "react-dom";
 import useDragScroll from "@/hooks/useDragScroll";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { MetricInfo } from "@/types/api/MasterResponse";
 
 
 // Preload data for the overview page
@@ -36,11 +38,23 @@ export default function Page() {
   const { applicationDataAggregated, isLoading } = useApplicationsData();
   const { selectedMetrics } = useMetrics();
   const { metricsDef } = useMetrics();
+  const { sort } = useSort();
+
+  const [medianMetricKey, setMedianMetricKey] = useState(selectedMetrics[0]);
+
+  useEffect(() => {
+    if(Object.keys(metricsDef).includes(sort.metric)){
+      let key = sort.metric;
+      if (sort.metric === "gas_fees")
+        key = "gas_fees_eth";
+
+      setMedianMetricKey(key);
+    }
+    
+  }, [metricsDef, sort.metric]);
 
   const { topGainers, topLosers } = useMemo(() => {
-    let medianMetricKey = selectedMetrics[0];
-    if (selectedMetrics[0] === "gas_fees")
-      medianMetricKey = "gas_fees_eth";
+    // let medianMetricKey = Object.keys(metricsDef).includes(sort.metric) ? sort.metric : "gas_fees";
 
     const medianMetricValues = applicationDataAggregated.map((application) => application[medianMetricKey])
       .sort((a, b) => a - b);
@@ -65,7 +79,7 @@ export default function Page() {
         .sort((a, b) => a[medianMetricKey + "_change_pct"] - b[medianMetricKey + "_change_pct"])
         .slice(0, 3),
     }
-  }, [applicationDataAggregated, selectedMetrics]);
+  }, [applicationDataAggregated, medianMetricKey]);
 
   return (
     <>
@@ -560,6 +574,7 @@ const ApplicationsTable = () => {
           className="heading-small-xs"
           sort={sort}
           setSort={setSort}
+          
         >
           <div className="flex items-center gap-x-[5px]">
             <GTPIcon icon="gtp-categories" size="sm" />
@@ -579,12 +594,22 @@ const ApplicationsTable = () => {
           // let key = selectedMetricKeys[index];
           return (
             <GridTableHeaderCell
-              key={metric}
+              key={index}
               metric={metric}
               className="heading-small-xs pl-[25px] pr-[15px] z-[0] whitespace-nowrap"
               justify="end"
               sort={sort}
               setSort={setSort}
+              // onSort={() => {
+              //   // if (selectedMetrics[0] !== metric) {
+              //     // reorder selectedMetrics array so that the first metric is the one that was clicked
+              //     const newSelectedMetrics = [metric, ...selectedMetrics.filter((m) => m !== metric)];
+              //     console.log("newSelectedMetrics", newSelectedMetrics);
+              //     setSelectedMetrics(newSelectedMetrics);
+                  
+              //     console.log("selectedMetrics", selectedMetrics);
+              //   // }
+              // }}
               extraRight={
                 <div className="flex items-center gap-x-[5px] pl-[5px] cursor-default z-[10]">
                   <div
@@ -671,7 +696,7 @@ type AltApplicationTableRowProps = {
 };
 
 
-const Value = memo(({ rank, def, value, change_pct, maxMetric, metric}: { rank: number, def: MetricDef, value: number, change_pct: number, maxMetric: number, metric: string }) => {
+const Value = memo(({ rank, def, value, change_pct, maxMetric, metric}: { rank: number, def: MetricInfo, value: number, change_pct: number, maxMetric: number, metric: string }) => {
   const { sort } = useSort();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const {selectedMetrics} = useMetrics();
@@ -695,16 +720,18 @@ const Value = memo(({ rank, def, value, change_pct, maxMetric, metric}: { rank: 
         <div className="flex justify-end items-center gap-x-[2px]">
           <div className="numbers-xs">
             {Object.keys(def.units).includes("eth") ? showUsd ? def.units.usd.prefix : def.units.eth.prefix : Object.values(def.units)[0].prefix}
-            {value?.toLocaleString("en-GB")}
+            {Object.keys(def.units).includes("eth") ? showUsd ? value.toLocaleString("en-GB", { minimumFractionDigits: def.units.usd.decimals, maximumFractionDigits: def.units.usd.decimals }) : value.toLocaleString("en-GB", { minimumFractionDigits: def.units.eth.decimals, maximumFractionDigits: def.units.eth.decimals }) : value.toLocaleString("en-GB", { minimumFractionDigits: Object.values(def.units)[0].decimals, maximumFractionDigits: Object.values(def.units)[0].decimals })}
           </div>
-          {change_pct !== Infinity ?
+          {change_pct !== Infinity ? (
             <div className={`numbers-xxs w-[49px] text-right ${change_pct < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
               {change_pct < 0 ? '-' : '+'}{Math.abs(change_pct).toFixed(0)}%
             </div>
-            : <div className="w-[49px]">&nbsp;</div>}
+            ) : (
+            <div className="w-[49px]">&nbsp;</div>
+          )}
         </div>
         <div className="relative w-full h-[4px] rounded-full">
-          <div className="absolute h-[4px] right-0"
+          <div className="absolute h-[4px] right-0 transition-[width]"
             style={{
               width: progressWidth,
               background: "linear-gradient(145deg, #FE5468 0%, #FFDF27 100%)",
@@ -727,6 +754,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics }: { application: Ag
   const { ownerProjectToProjectData  } = useProjectsMetadata();
   const { metricsDef, selectedMetrics, selectedMetricKeys, } = useMetrics();
   const router = useRouter();
+  
 
   // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() =>
@@ -754,8 +782,11 @@ const ApplicationTableRow = memo(({ application, maxMetrics }: { application: Ag
         </div>
       </div>
       <div className="flex items-center gap-x-[5px] justify-between group-hover:underline">
+        <div className="relative group/tooltip min-h-[32px] flex  flex-col justify-center">
         <ApplicationDisplayName owner_project={application.owner_project} />
         {/* <Links owner_project={application.owner_project} /> */}
+        <ApplicationTooltip application={application} />
+        </div>
       </div>
       <div className="flex items-center gap-x-[5px]">
         <Chains origin_keys={application.origin_keys} />
@@ -766,14 +797,16 @@ const ApplicationTableRow = memo(({ application, maxMetrics }: { application: Ag
       <div className="numbers-xs text-right">
         {application.num_contracts}
       </div>
-      {selectedMetricKeys.map((key, index) => (
+      {selectedMetrics.map((metric, index) => {
+      const metricKey = selectedMetricKeys[index];
+      return (
         <div
-          key={key}
+          key={index}
           className={`flex justify-end pr-[15px] items-center text-right h-full ${selectedMetricKeys.length == 1 || (selectedMetricKeys.length > 1 && (index + 1) % 2 == 0) ? 'bg-[#344240]/30' : ''} `}
         >
-          <Value rank={application[`rank_${key}`]} def={metricsDef[selectedMetrics[index]]} value={application[key]} change_pct={application[`${key}_change_pct`]} maxMetric={maxMetrics[index]} metric={selectedMetrics[index]} />
+          <Value rank={application[`rank_${metricKey}`]} def={metricsDef[metric]} value={application[metricKey]} change_pct={application[`${metricKey}_change_pct`]} maxMetric={maxMetrics[index]} metric={selectedMetrics[index]} />
         </div>
-      ))}
+      )})}
       <div className="relative flex justify-end items-center pr-[0px]">
         <Link className="absolute cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center" href={`/applications/${application.owner_project}`}>
           <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-[#CDD8D3]" />
@@ -785,4 +818,57 @@ const ApplicationTableRow = memo(({ application, maxMetrics }: { application: Ag
 });
 
 ApplicationTableRow.displayName = 'ApplicationTableRow';
+
+const ApplicationTooltip = memo(({application}: {application: AggregatedDataRow}) => {
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+
+  const descriptionPreview = useMemo(() => {
+    if (!application || !ownerProjectToProjectData[application.owner_project] || !ownerProjectToProjectData[application.owner_project].description) return "";
+    const chars = ownerProjectToProjectData[application.owner_project].description.length;
+    const firstPart = ownerProjectToProjectData[application.owner_project].description.slice(0, Math.min(100, chars));
+
+    return firstPart.split(" ").slice(0, -1).join(" ");
+    
+  }, [application, ownerProjectToProjectData]);
+
+  if(!application || !ownerProjectToProjectData) return null;
+
+  return (
+    <div
+      className="cursor-default z-[20] absolute p-[15px] w-[345px] top-[32px] bg-[#1F2726] rounded-[15px] transition-opacity duration-300 opacity-0 group-hover/tooltip:opacity-100 pointer-events-none group-hover/tooltip:pointer-events-auto hover:pointer-events-auto"
+      style={{
+        boxShadow: "0px 0px 30px #000000",
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+      }}
+    >
+      <div className="flex flex-col pl-[5px] gap-y-[10px]">
+        <div className="flex gap-x-[5px] items-center w-max">
+          {ownerProjectToProjectData[application.owner_project] && ownerProjectToProjectData[application.owner_project].logo_path ? (
+            <Image
+              src={`https://api.growthepie.xyz/v1/apps/logos/${ownerProjectToProjectData[application.owner_project].logo_path}`}
+              width={15} height={15}
+              className="select-none rounded-full size-[15px]"
+              alt={application.owner_project}
+              onDragStart={(e) => e.preventDefault()}
+              loading="eager"
+              priority={true}
+            />
+          ) : (
+            <div className={`size-[15px] bg-[#151A19] rounded-full`}></div>
+          )}
+          <div className="heading-small-xs whitespace-nowrap">{ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].display_name : application.owner_project}</div>
+        </div>
+        <div>
+          {descriptionPreview}...
+        </div>
+          <Links owner_project={application.owner_project} showUrl={true} />
+      </div>
+
+    </div>
+  )
+});
+
+ApplicationTooltip.displayName = 'ApplicationTooltip';
 

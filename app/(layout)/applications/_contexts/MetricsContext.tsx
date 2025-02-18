@@ -13,107 +13,120 @@ import { RefObject, createContext, useContext, useEffect, useMemo, useState } fr
 import { LogLevel } from "react-virtuoso";
 import useSWR, { useSWRConfig, preload} from "swr";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
+import { Metrics } from "@/types/api/MasterResponse";
 
-export interface Metrics {
-  [metric: string]: MetricDef;
-}
+// export interface Metrics {
+//   [metric: string]: MetricDef;
+// }
 
-export interface MetricDef {
-  name:                 string;
-  name_short:           string;
-  units:                { [key: string]: Unit };
-  category:             string;
-  currency:             boolean;
-  priority:             number;
-  invert_normalization: boolean;
-  icon:                 string;
-}
+// export interface MetricDef {
+//   name:                 string;
+//   name_short:           string;
+//   metric_keys:         string[];
+//   units:                { [key: string]: Unit };
+//   category:             string;
+//   currency:             boolean;
+//   priority:             number;
+//   invert_normalization: boolean;
+//   icon:                 string;
+// }
 
-export interface Unit {
-  currency:         boolean;
-  prefix:           string;
-  suffix:           null;
-  decimals:         number;
-  decimals_tooltip: number;
-  agg:              boolean;
-  agg_tooltip:      boolean;
-}
+// export interface Unit {
+//   currency:         boolean;
+//   prefix:           string;
+//   suffix:           null;
+//   decimals:         number;
+//   decimals_tooltip: number;
+//   agg:              boolean;
+//   agg_tooltip:      boolean;
+// }
 
-const metricsDef: Metrics = {
-  gas_fees: {
-    name: "Gas Fees",
-    name_short: "Gas Fees",
-    units: {
-      usd: {
-        currency: true,
-        prefix: "$",
-        suffix: null,
-        decimals: 0,
-        decimals_tooltip: 2,
-        agg: true,
-        agg_tooltip: true,
-      },
-      eth: {
-        currency: false,
-        prefix: "Ξ",
-        suffix: null,
-        decimals: 0,
-        decimals_tooltip: 2,
-        agg: true,
-        agg_tooltip: true,
-      },
-    },
-    icon: "gtp-metrics-transactioncosts",
-    category: "Gas Fees",
-    currency: true,
-    priority: 1,
-    invert_normalization: false,
-  },
-  txcount: {
-    name: "Transaction Count",
-    name_short: "Transactions",
-    units: {
-      value: {
-        currency: false,
-        prefix: "",
-        suffix: null,
-        decimals: 0,
-        decimals_tooltip: 0,
-        agg: true,
-        agg_tooltip: true,
-      },
-    },
-    icon: "gtp-metrics-transactioncount",
-    category: "Transactions",
-    currency: false,
-    priority: 2,
-    invert_normalization: false,
-  },
-  daa: {
-    name: "Daily Active Addresses",
-    name_short: "DAAs",
-    units: {
-      value: {
-        currency: false,
-        prefix: "",
-        suffix: null,
-        decimals: 0,
-        decimals_tooltip: 0,
-        agg: true,
-        agg_tooltip: true,
-      },
-    },
-    icon: "gtp-metrics-activeaddresses",
-    category: "Addresses",
-    currency: false,
-    priority: 3,
-    invert_normalization: false,
-  },
+// const metricsDef: Metrics = {
+//   gas_fees: {
+//     name: "Fees Paid",
+//     name_short: "Gas Fees",
+//     metric_keys: [
+//       "fees_paid_usd",
+//       "fees_paid_eth"
+//     ],
+//     units: {
+//       usd: {
+//         currency: true,
+//         prefix: "$",
+//         suffix: null,
+//         decimals: 0,
+//         decimals_tooltip: 2,
+//         agg: true,
+//         agg_tooltip: true,
+//       },
+//       eth: {
+//         currency: false,
+//         prefix: "Ξ",
+//         suffix: null,
+//         decimals: 0,
+//         decimals_tooltip: 2,
+//         agg: true,
+//         agg_tooltip: true,
+//       },
+//     },
+//     icon: "gtp-metrics-transactioncosts",
+//     category: "Gas Fees",
+//     currency: true,
+//     priority: 1,
+//     invert_normalization: false,
+//   },
+//   txcount: {
+//     name: "Transaction Count",
+//     name_short: "Transactions",
+//     units: {
+//       value: {
+//         currency: false,
+//         prefix: "",
+//         suffix: null,
+//         decimals: 0,
+//         decimals_tooltip: 0,
+//         agg: true,
+//         agg_tooltip: true,
+//       },
+//     },
+//     icon: "gtp-metrics-transactioncount",
+//     category: "Transactions",
+//     currency: false,
+//     priority: 2,
+//     invert_normalization: false,
+//   },
+//   daa: {
+//     name: "Daily Active Addresses",
+//     name_short: "DAAs",
+//     units: {
+//       value: {
+//         currency: false,
+//         prefix: "",
+//         suffix: null,
+//         decimals: 0,
+//         decimals_tooltip: 0,
+//         agg: true,
+//         agg_tooltip: true,
+//       },
+//     },
+//     icon: "gtp-metrics-activeaddresses",
+//     category: "Addresses",
+//     currency: false,
+//     priority: 3,
+//     invert_normalization: false,
+//   },
+// };
+
+const metricIcons = {
+  gas_fees: "gtp-metrics-transactioncosts",
+  txcount: "gtp-metrics-transactioncount",
+  daa: "gtp-metrics-activeaddresses",
 };
 
 
 export type MetricsContextType = {
   metricsDef: Metrics;
+  metricIcons: { [key: string]: string };
   selectedMetrics: string[];
   setSelectedMetrics: React.Dispatch<React.SetStateAction<string[]>>;
   selectedMetricKeys: string[];
@@ -122,9 +135,10 @@ export type MetricsContextType = {
 export const MetricsContext = createContext<MetricsContextType | undefined>(undefined);
 
 export const MetricsProvider = ({ children }: { children: React.ReactNode }) => {
+  const {data: masterData} = useMaster();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
-  const [selectedMetrics, setSelectedMetrics] = useState<string[]>([...Object.keys(metricsDef).slice(0,1)]);
+  const [selectedMetrics, setSelectedMetrics] = useState<string[]>(masterData ? [...Object.keys(masterData.app_metrics).slice(0,1)] : ["gas_fees"]);
 
   const selectedMetricKeys = useMemo(() => {
     return selectedMetrics.map((metric) => {
@@ -136,8 +150,9 @@ export const MetricsProvider = ({ children }: { children: React.ReactNode }) => 
 
   return (
     <MetricsContext.Provider value={{
-      metricsDef,
-      selectedMetrics: Object.keys(metricsDef).filter((metric) => selectedMetrics.includes(metric)),
+      metricsDef: masterData ? masterData.app_metrics : {},
+      metricIcons,
+      selectedMetrics: masterData ? Object.keys(masterData.app_metrics).filter((metric) => selectedMetrics.includes(metric)) : ["gas_fees"],
       setSelectedMetrics,
       selectedMetricKeys,
     }}>

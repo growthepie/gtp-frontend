@@ -7,7 +7,7 @@ import { useSort } from "../_contexts/SortContext";
 
 export default function Controls() {
   const { sort, setSort } = useSort();
-  const { metricsDef, selectedMetrics, setSelectedMetrics } = useMetrics();
+  const { metricsDef, selectedMetrics, setSelectedMetrics, metricIcons } = useMetrics();
   const { selectedTimespan, setSelectedTimespan, timespans } = useTimespan();
   //https://prod.liveshare.vsengsaas.visualstudio.com/join?2CD982ABF7BB2901EBDA7347C47AD49E3A97
 
@@ -43,7 +43,7 @@ export default function Controls() {
             return {
               key,
               name: metricsDef[key].name,
-              icon: metricsDef[key].icon,
+              icon: metricIcons[key] ? metricIcons[key] : "",
             };
           })}
           selected={selectedMetrics}

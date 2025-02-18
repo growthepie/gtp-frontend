@@ -3,6 +3,7 @@
   chains: Chains;
   custom_logos: { [key: string]: CustomLogo };
   metrics: Metrics;
+  app_metrics: Metrics;
   da_metrics: Metrics;
   fee_metrics: FeeMetrics;
   default_chain_selection: string[];

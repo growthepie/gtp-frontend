@@ -1,7 +1,7 @@
 "use client";
 import Container from "@/components/layout/Container";
 import { useProjectsMetadata } from "../_contexts/ProjectsMetadataContext";
-import { MetricDef, useMetrics } from "../_contexts/MetricsContext";
+import { useMetrics } from "../_contexts/MetricsContext";
 import { ContractDict, MetricData, useApplicationDetailsData } from "../_contexts/ApplicationDetailsDataContext";
 import { useTimespan } from "../_contexts/TimespanContext";
 import { useMaster } from "@/contexts/MasterContext";
@@ -228,10 +228,10 @@ const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
   let prefix = "";
   let valueKey = "value";
   if(metricDefinition.units.eth) {
-    prefix = showUsd ? metricDefinition.units.usd.prefix : metricDefinition.units.eth.prefix;
+    prefix = showUsd ? metricDefinition.units.usd.prefix || "" : metricDefinition.units.eth.prefix || "";
     valueKey = showUsd ? "usd" : "eth";
   } else {
-    prefix = Object.values(metricDefinition.units)[0].prefix;
+    prefix = Object.values(metricDefinition.units)[0].prefix || "";
     valueKey = Object.keys(metricDefinition.units)[0];
   }
 
