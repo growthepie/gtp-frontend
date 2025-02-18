@@ -7,6 +7,7 @@ type GTPIconProps = {
   // should be one of the strings in GTPIconNames
   icon: GTPIconName;
   className?: string;
+  containerClassName?: string;
   size?: "sm" | "md" | "lg";
 } & React.ComponentProps<typeof Icon>;
 type sizes = "sm" | "md" | "lg";
@@ -31,12 +32,12 @@ const sizeClassMap = {
   * @example
   * <GTPIcon icon="gtp:donate" size="lg" />
  */
-export const GTPIcon = ({ icon, className, ...props }: GTPIconProps) => {
+export const GTPIcon = ({ icon, className, containerClassName, ...props }: GTPIconProps) => {
   return (
-    <div className={sizeClassMap[props.size || "md"]}>
+    <div className={`${sizeClassMap[props.size || "md"]} ${containerClassName || ""}`}>
       <Icon
         icon={`gtp:${icon}`}
-        className={`${sizeClassMap[props.size || "md"] || "w-[24px] h-[24px]"} ${className}`}
+        className={`${sizeClassMap[props.size || "md"] || "w-[24px] h-[24px]"} ${className || ""}`}
         {...props}
       />
     </div>

@@ -28,43 +28,9 @@ export default function Search() {
 
   const { data: master } = useSWR<MasterResponse>(MasterURL);
 
-  // const [labelsCategoriesFilter, setLabelsCategoriesFilter] = useSessionStorage<string[]>('labelsCategoriesFilter', []);
-  // const [labelsSubcategoriesFilter, setLabelsSubcategoriesFilter] = useSessionStorage<string[]>('labelsSubcategoriesFilter', []);
-  // const [labelsChainsFilter, setLabelsChainsFilter] = useSessionStorage<string[]>('labelsChainsFilter', []);
-  // const [applicationsNumberFiltered, setApplicationsNumberFiltered] =
-  //   useSessionStorage<number>("applicationsNumberFiltered", 0);
-
   const applicationsNumberFiltered = useMemo(() => {
     return applicationDataAggregated.length;
   }, [applicationDataAggregated]);
-
-  // const [applicationsFilters, setApplicationsFilters] = useSessionStorage<{
-  //   address: string[];
-  //   origin_key: string[];
-  //   name: string[];
-  //   owner_project: { owner_project: string; owner_project_clear: string }[];
-  //   category: string[];
-  //   subcategory: string[];
-  //   txcount: number[];
-  //   txcount_change: number[];
-  //   gas_fees_usd: number[];
-  //   gas_fees_usd_change: number[];
-  //   daa: number[];
-  //   daa_change: number[];
-  // }>("applicationsFilters", {
-  //   address: [],
-  //   origin_key: [],
-  //   name: [],
-  //   owner_project: [],
-  //   category: [],
-  //   subcategory: [],
-  //   txcount: [],
-  //   txcount_change: [],
-  //   gas_fees_usd: [],
-  //   gas_fees_usd_change: [],
-  //   daa: [],
-  //   daa_change: [],
-  // });
 
   const handleFilter = useCallback(
     (
@@ -74,25 +40,6 @@ export default function Search() {
         | number
         | { owner_project: string; owner_project_clear: string },
     ) => {
-      // if (key === "owner_project" && typeof value !== "string" && typeof value !== "number" && typeof key === "string") {
-      //   setApplicationsFilters({
-      //     ...applicationsFilters,
-      //     owner_project: applicationsFilters[key].find(
-      //       (f) => f.owner_project === value['owner_project'],
-      //     )
-      //       ? applicationsFilters[key].filter(
-      //         (f) => f.owner_project !== value['owner_project'],
-      //       )
-      //       : [...applicationsFilters[key], value],
-      //   });
-      // } else {
-      //   setApplicationsFilters({
-      //     ...applicationsFilters,
-      //     [key]: applicationsFilters[key].includes(value)
-      //       ? applicationsFilters[key].filter((f) => f !== value)
-      //       : [...applicationsFilters[key], value],
-      //   });
-      // }
 
       if (key === "origin_key") {
         setSelectedChains(
@@ -159,26 +106,6 @@ export default function Search() {
   const Filters = useMemo(() => {
     if (!master) return [];
 
-    // const categorySubcategoryFilters = labelsFilters.category.length > 0 ? labelsFilters.category.reduce((acc, category) => {
-    //   return [...acc, ...master.blockspace_categories.mapping[category]];
-    // }, []) : [];
-
-    // const allSubcategoryFilters = [...labelsFilters.subcategory, ...categorySubcategoryFilters];
-
-    // const addressFilters = applicationsFilters.address.map((address) => (
-    //   <Badge
-    //     key={address}
-    //     onClick={() => handleFilter("address", address)}
-    //     label={address}
-    //     leftIcon="heroicons-solid:qrcode"
-    //     leftIconColor="#CDD8D3"
-    //     rightIcon="heroicons-solid:x-circle"
-    //     rightIconColor="#FE5468"
-    //     showLabel={true}
-    //     altColoring={isOpen}
-    //   />
-    // ));
-
     const chainFilters = selectedChains.map((chainKey) => (
       <Badge
         key={chainKey}
@@ -206,73 +133,9 @@ export default function Search() {
         altColoring={isOpen}
       />
     ));
-
-    // const categoryFilters = applicationsFilters.category.map((category) => (
-    //   <Badge
-    //     key={category}
-    //     onClick={(e) => { handleFilter("category", category); e.stopPropagation(); }}
-    //     label={master.blockspace_categories.main_categories[category]}
-    //     leftIcon="feather:tag"
-    //     leftIconColor="#CDD8D3"
-    //     rightIcon="heroicons-solid:x-circle"
-    //     rightIconColor="#FE5468"
-    //     showLabel={true}
-    //     altColoring={isOpen}
-    //   />
-    // ));
-
-    // const subcategoryFilters = applicationsFilters.subcategory.map((subcategory) => (
-    //   <Badge
-    //     key={subcategory}
-    //     onClick={(e) => { handleFilter("subcategory", subcategory); e.stopPropagation(); }}
-    //     label={master.blockspace_categories.sub_categories[subcategory]}
-    //     leftIcon="feather:tag"
-    //     leftIconColor="#CDD8D3"
-    //     rightIcon="heroicons-solid:x-circle"
-    //     rightIconColor="#FE5468"
-    //     showLabel={true}
-    //     altColoring={isOpen}
-    //   />
-    // ));
-
-    // const ownerProjectFilters = applicationDataAggregated.map(
-    //   (row, index) => (
-    //     <Badge
-    //       key={row.owner_project}
-    //       onClick={(e) => { handleFilter("owner_project", row.owner_project); e.stopPropagation(); }}
-    //       label={row.owner_project}
-    //       leftIcon="feather:tag"
-    //       leftIconColor="#CDD8D3"
-    //       rightIcon="heroicons-solid:x-circle"
-    //       rightIconColor="#FE5468"
-    //       showLabel={true}
-    //       altColoring={isOpen}
-    //     />
-    //   ),
-    // );
-
-    // const nameFilters = applicationsFilters.name.map((name) => (
-    //   <Badge
-    //     key={name}
-    //     onClick={(e) => { handleFilter("name", name); e.stopPropagation(); }}
-    //     label={name}
-    //     leftIcon={undefined}
-    //     leftIconColor="#CDD8D3"
-    //     rightIcon="heroicons-solid:x-circle"
-    //     rightIconColor="#FE5468"
-    //     showLabel={true}
-    //     altColoring={isOpen}
-    //   />
-    // ));
-
     return [
-      // ...addressFilters,
       ...chainFilters,
       ...stringFilters,
-      // ...categoryFilters,
-      // ...subcategoryFilters,
-      // ...ownerProjectFilters,
-      // ...nameFilters,
     ];
   }, [master, selectedChains, selectedStringFilters, AllChainsByKeys, isOpen, handleFilter]);
 
@@ -388,26 +251,13 @@ export default function Search() {
                     </div>
                   </div>
                 )}
-                {selectedChains.length > 0 && (
+                {Filters.length > 0 && (
                   <div
                     className="flex flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px]"
-                    onClick={() =>
-                      // setApplicationsFilters({
-                      //   address: [],
-                      //   origin_key: [],
-                      //   name: [],
-                      //   owner_project: [],
-                      //   category: [],
-                      //   subcategory: [],
-                      //   txcount: [],
-                      //   txcount_change: [],
-                      //   gas_fees_usd: [],
-                      //   gas_fees_usd_change: [],
-                      //   daa: [],
-                      //   daa_change: [],
-                      // })
+                    onClick={() => {
                       setSelectedChains([])
-                    }
+                      setSelectedStringFilters([])
+                    }}
                   >
                     <svg width="27" height="26" viewBox="0 0 27 26" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <rect x="1" y="1" width="25" height="24" rx="12" stroke="url(#paint0_linear_8794_34411)" />
@@ -445,39 +295,6 @@ export default function Search() {
               </div>
             </div>
             <div className="flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] pb-[10px] pt-[10px] gap-y-[10px] text-[10px]">
-              {/* <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start md:items-center">
-                <div className="flex gap-x-[10px] items-center">
-                  <div className="w-[15px] h-[15px]">
-                    <Icon
-                      icon="heroicons-solid:qrcode"
-                      className="w-[15px] h-[15px]"
-                    />
-                  </div>
-                  <div className="text-white leading-[150%]">Address</div>
-                  <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
-                </div>
-                <div
-                  className="flex items-center bg-[#344240] rounded-full pl-[2px] pr-[5px] gap-x-[5px] cursor-pointer"
-                  onClick={() => handleFilter("address", search)}
-                >
-                  <div className="flex items-center justify-center w-[25px] h-[25px]">
-                    <Icon
-                      icon="feather:search"
-                      className="text-[#CDD8D3] w-[15px] h-[15px]"
-                    />
-                  </div>
-                  <div className="text-[#CDD8D3] leading-[120%] text-[10px] truncate">
-                    {search}
-                  </div>
-                  <div className="flex items-center justify-center w-[15px] h-[15px]">
-                    <Icon
-                      icon="heroicons-solid:plus-circle"
-                      className="text-[#5A6462] w-[15px] h-[15px]"
-                    />
-                  </div>
-                </div>
-              </div> */}
-
               <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start md:items-center">
                 <div className="flex gap-x-[10px] items-center">
                   <div className="w-[15px] h-[15px]">
@@ -489,7 +306,6 @@ export default function Search() {
                   <div className="text-white leading-[150%]">Chain</div>
                   <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
                 </div>
-
                 {master && (
                   <FilterSelectionContainer className="w-full md:flex-1">
                     {applicationsChains
@@ -530,227 +346,6 @@ export default function Search() {
                   </FilterSelectionContainer>
                 )}
               </div>
-              {/* <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start md:items-center">
-                <div className="flex gap-x-[10px] items-start">
-                  <div className="w-[15px] h-[15px] mt-1">
-                    <Icon icon="feather:tag" className="w-[15px] h-[15px]" />
-                  </div>
-                  <div className="text-white leading-[150%] whitespace-nowrap mt-1">
-                    Categories
-                  </div>
-                  <div className="w-[6px] h-[6px] bg-[#344240] rounded-full mt-2.5" />
-                </div>
-                <div className="w-full md:flex-1">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-x-[5px] gap-y-[5px]">
-                    {master &&
-                      Object.keys(master.blockspace_categories.main_categories)
-                        .filter((categoryKey) =>
-                          search.length > 0
-                            ? master.blockspace_categories.main_categories[
-                              categoryKey
-                            ]
-                              .toLowerCase()
-                              .includes(search.toLowerCase()) ||
-                            master.blockspace_categories.mapping[
-                              categoryKey
-                            ].some((subcategoryKey) =>
-                              master.blockspace_categories.sub_categories[
-                                subcategoryKey
-                              ]
-                                .toLowerCase()
-                                .includes(search.toLowerCase()),
-                            )
-                            : master.blockspace_categories.main_categories[
-                            categoryKey
-                            ],
-                        )
-                        .map((categoryKey) => (
-                          <NestedSelection
-                            key={categoryKey}
-                            parent={
-                              <Badge
-                                key={categoryKey}
-                                size="sm"
-                                onClick={(e) => {
-                                  handleFilter("category", categoryKey);
-                                  e.stopPropagation();
-                                }}
-                                label={
-                                  applicationsAutocomplete.category.length > 0
-                                    ? boldSearch(
-                                      master.blockspace_categories
-                                        .main_categories[categoryKey],
-                                    )
-                                    : master.blockspace_categories
-                                      .main_categories[categoryKey]
-                                }
-                                leftIcon={undefined}
-                                rightIconColor={
-                                  applicationsFilters.category.includes(categoryKey)
-                                    ? "#FE5468"
-                                    : "#5A6462"
-                                }
-                                rightIcon={
-                                  applicationsFilters.category.includes(categoryKey)
-                                    ? "heroicons-solid:x-circle"
-                                    : "heroicons-solid:plus-circle"
-                                }
-                                className={`w-fit h-fit justify-between bg-transparent rounded-l-[15px] ${search.length > 0
-                                  ? applicationsAutocomplete.category.includes(
-                                    categoryKey,
-                                  )
-                                    ? "opacity-100"
-                                    : "opacity-30"
-                                  : "opacity-100"
-                                  } transition-all duration-300`}
-                              />
-                            }
-                          >
-                            {master.blockspace_categories.mapping[categoryKey]
-                              .sort((a, b) => a.localeCompare(b))
-                              .filter((subcategoryKey) =>
-                                search.length > 0
-                                  ? master.blockspace_categories.sub_categories[
-                                  subcategoryKey
-                                  ] &&
-                                  applicationsAutocomplete.subcategory.includes(
-                                    subcategoryKey,
-                                  )
-                                  : master.blockspace_categories.sub_categories[
-                                  subcategoryKey
-                                  ],
-                              )
-                              .map((subcategory, i) =>
-                                subcategory === "unlabeled" ? null : (
-                                  <Badge
-                                    key={subcategory}
-                                    size="sm"
-                                    onClick={(e) => {
-                                      handleFilter("subcategory", subcategory);
-                                      e.stopPropagation();
-                                    }}
-                                    label={
-                                      applicationsAutocomplete.subcategory.length > 0
-                                        ? boldSearch(
-                                          master.blockspace_categories
-                                            .sub_categories[subcategory],
-                                        )
-                                        : master.blockspace_categories
-                                          .sub_categories[subcategory]
-                                    }
-                                    leftIcon={undefined}
-                                    rightIconColor={
-                                      applicationsFilters.subcategory.includes(
-                                        subcategory,
-                                      )
-                                        ? "#FE5468"
-                                        : "#5A6462"
-                                    }
-                                    rightIcon={
-                                      applicationsFilters.subcategory.includes(
-                                        subcategory,
-                                      )
-                                        ? "heroicons-solid:x-circle"
-                                        : "heroicons-solid:plus-circle"
-                                    }
-                                    className={`w-fit h-fit ${search.length > 0
-                                      ? applicationsAutocomplete.subcategory.includes(
-                                        subcategory,
-                                      )
-                                        ? "opacity-100"
-                                        : "opacity-30"
-                                      : "opacity-100"
-                                      } transition-all`}
-                                  />
-                                ),
-                              )}
-                          </NestedSelection>
-                        ))}
-                  </div>
-                </div>
-              </div> */}
-              {/* <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start">
-                <div className="flex gap-x-[10px] items-start">
-                  <div className="w-[15px] h-[15px] mt-1">
-                    <Icon icon="feather:tag" className="w-[15px] h-[15px]" />
-                  </div>
-                  <div className="text-white leading-[150%] whitespace-nowrap mt-1">
-                    Owner Project
-                  </div>
-                  <div className="w-[6px] h-[6px] bg-[#344240] rounded-full mt-2.5" />
-                </div>
-                <FilterSelectionContainer className="w-full md:flex-1">
-                  {search.length > 0
-                    ? applicationsAutocomplete.owner_project.map(
-                      (ownerProjectRow) => (
-                        <Badge
-                          key={ownerProjectRow.owner_project}
-                          onClick={() =>
-                            handleFilter("owner_project", ownerProjectRow)
-                          }
-                          label={
-                            applicationsAutocomplete.owner_project.length > 0
-                              ? boldSearch(
-                                ownerProjectRow.owner_project_clear,
-                              )
-                              : ownerProjectRow.owner_project_clear
-                          }
-                          leftIcon="feather:tag"
-                          leftIconColor="#CDD8D3"
-                          rightIcon={
-                            applicationsFilters.owner_project.find(
-                              (f) =>
-                                f.owner_project ===
-                                ownerProjectRow.owner_project,
-                            )
-                              ? "heroicons-solid:x-circle"
-                              : "heroicons-solid:plus-circle"
-                          }
-                          rightIconColor={
-                            applicationsFilters.owner_project.find(
-                              (f) =>
-                                f.owner_project ===
-                                ownerProjectRow.owner_project,
-                            )
-                              ? "#FE5468"
-                              : "#5A6462"
-                          }
-                          showLabel={true}
-                        />
-                      ),
-                    )
-                    : applicationsOwnerProjects.map((ownerProjectRow) => (
-                      <Badge
-                        key={ownerProjectRow.owner_project}
-                        onClick={() =>
-                          handleFilter("owner_project", ownerProjectRow)
-                        }
-                        label={ownerProjectRow.owner_project_clear}
-                        leftIcon="feather:tag"
-                        leftIconColor="#CDD8D3"
-                        rightIcon={
-                          applicationsFilters.owner_project.find(
-                            (f) =>
-                              f.owner_project ===
-                              ownerProjectRow.owner_project,
-                          )
-                            ? "heroicons-solid:x-circle"
-                            : "heroicons-solid:plus-circle"
-                        }
-                        rightIconColor={
-                          applicationsFilters.owner_project.find(
-                            (f) =>
-                              f.owner_project ===
-                              ownerProjectRow.owner_project,
-                          )
-                            ? "#FE5468"
-                            : "#5A6462"
-                        }
-                        showLabel={true}
-                      />
-                    ))}
-                </FilterSelectionContainer>
-              </div> */}
             </div>
           </div>
         </div>

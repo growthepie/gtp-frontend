@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Icon from "@/components/layout/Icon";
 import { useUIContext } from "@/contexts/UIContext";
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { delay } from "lodash";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
@@ -16,6 +16,7 @@ import Controls from "./Controls";
 import { useMaster } from "@/contexts/MasterContext";
 import { useApplicationsData } from "../_contexts/ApplicationsDataContext";
 import { useMetrics } from "../_contexts/MetricsContext";
+import { useTimespan } from "../_contexts/TimespanContext";
 
 
 type ApplicationIconProps = {
@@ -66,7 +67,9 @@ export const ApplicationIcon = ({ owner_project, size }: ApplicationIconProps) =
           priority={true}
         />
       ) : (
-        <div className={`${sizeClassMap[size]} bg-[#151A19] rounded-full`}></div>
+        <div className={`flex items-center justify-center ${sizeClassMap[size]} bg-[#151A19] !bg-transparent rounded-full`}>
+          <GTPIcon icon="gtp-project-monochrome" size={size} className="text-[#5A6462]" />
+        </div>
       )}
     </div>
   );
@@ -389,6 +392,43 @@ export const ProjectDetailsLinks = memo(({ owner_project, mobile }: { owner_proj
 
 ProjectDetailsLinks.displayName = 'Links';
 
+export const TopGainersAndLosersTooltip = ({ metric }: { metric: string }) => {
+  const {metricsDef} = useMetrics();
+  const { timespans, selectedTimespan} = useTimespan();
+  return (
+    <div
+      className="w-[400px] bg-[#1F2726] rounded-[15px] flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300"
+      style={{
+        boxShadow: "0px 0px 30px #000000",
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+      }}
+    >
+      <div className="heading-small-xs">Top Gainers and Losers</div>
+      <div className="text-xs">
+        This section shows applications that have experienced the most significant change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label}:
+      </div>
+      <div className="text-xs">
+        <ul className="list-disc list-inside">
+          <li>3 &quot;Top Gainers&quot;</li>
+          <li>3 &quot;Top Losers&quot;</li>
+        </ul>
+      </div>
+
+      <div className="text-xxs">
+      This is calculated by comparing the change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label} to the previous {timespans[selectedTimespan].label} for each application, after filtering out applications with less than the median {metricsDef[metric].name} across all applications.
+      </div>
+
+        {/* that have experienced the most significant change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label}.
+        </div>
+        <div className="text-xs">
+           This is calculated by comparing the change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label} to the previous {timespans[selectedTimespan].label} after filtering out applications with less than the median {metricsDef[metric].name} value.
+        </div> */}
+    </div>
+  );
+}
+
 export const MetricTooltip = ({ metric }: { metric: string }) => {
   const {metricsDef} = useMetrics();
   const content = {
@@ -430,15 +470,30 @@ export const Links = memo(({ owner_project, showUrl}: { owner_project: string, s
   const linkPrefixes = ["", "https://x.com/", "https://github.com/"];
   const icons = ["feather:monitor", "ri:twitter-x-fill", "ri:github-fill"];
   const keys = ["website", "twitter", "main_github"];
-  const [currentHoverKey, setCurrentHover] = useState("website");
+  
+  // default hover key should be the first link that is not empty
+  const defaultHoverKey = useMemo(() => {
+    if (!ownerProjectToProjectData[owner_project]) return "website";
+    return keys.find((key) => ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project][key]) || "website";
+  }, [ownerProjectToProjectData, owner_project]);
+
+  const [currentHoverKey, setCurrentHover] = useState(defaultHoverKey);
+
+  const formatUrl = (url: string) => {
+    // remove https:// and trailing slash
+    return url.replace("https://", "").replace(/\/$/, "");
+  }
 
   if(!ownerProjectToProjectData[owner_project]) return null;
   
   if(showUrl) {
     return (
-    <div className="flex flex-col gap-y-[10px]">
-      <div className="flex items-center gap-x-[5px]" onMouseLeave={() => setCurrentHover("website")}>
-      {ownerProjectToProjectData[owner_project] && keys.map((key, index) => (
+    <div className="flex flex-col gap-y-[5px] pt-[10px]">
+      <div className="flex items-center gap-x-[5px]" onMouseLeave={() => setCurrentHover(defaultHoverKey)}>
+      {ownerProjectToProjectData[owner_project] && keys.map((key, index) => {
+        if(!ownerProjectToProjectData[owner_project][key]) return null;
+        
+        return (
         <div key={index} className="h-[15px] w-[15px]" onMouseEnter={() => setCurrentHover(key)}>
           {ownerProjectToProjectData[owner_project][key] && <Link
             href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
@@ -450,10 +505,11 @@ export const Links = memo(({ owner_project, showUrl}: { owner_project: string, s
             />
           </Link>}
         </div>
-      ))}
+        )
+      })}
       </div>
       <div className="text-xxs text-[#5A6462]">
-        {`${(linkPrefixes[keys.indexOf(currentHoverKey)]+ownerProjectToProjectData[owner_project][currentHoverKey]).replace("https://", "")}`}
+        {`${formatUrl(linkPrefixes[keys.indexOf(currentHoverKey)]+ownerProjectToProjectData[owner_project][currentHoverKey]).replace("https://", "")}`}
       </div>
     </div>
     );

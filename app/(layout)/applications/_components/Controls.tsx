@@ -22,9 +22,9 @@ export default function Controls() {
             const index = metrics.indexOf(selectedMetrics[0]);
             const newIndex = (index + 1) % metrics.length;
         
-            if(sort.metric === selectedMetrics[0]){
+            // if(sort.metric === selectedMetrics[0]){
               setSort({...sort, metric: metrics[newIndex]});
-            }
+            // }
         
             setSelectedMetrics([metrics[newIndex]]);
           }}
@@ -33,9 +33,9 @@ export default function Controls() {
             const index = metrics.indexOf(selectedMetrics[0]);
             const newIndex = index === 0 ? metrics.length - 1 : index - 1;
         
-            if(sort.metric === selectedMetrics[0]){
+            // if(sort.metric === selectedMetrics[0]){
               setSort({...sort, metric: metrics[newIndex]});
-            }
+            // }
         
             setSelectedMetrics([metrics[newIndex]]);
           }}

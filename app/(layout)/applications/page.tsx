@@ -18,7 +18,7 @@ import { useLocalStorage } from "usehooks-ts";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import VerticalVirtuosoScrollContainer from "@/components/VerticalVirtuosoScrollContainer";
 import { Virtuoso } from "react-virtuoso";
-import { ApplicationDisplayName, ApplicationIcon, Category, Chains, formatNumber, Links, MetricTooltip } from "./_components/Components";
+import { ApplicationDisplayName, ApplicationIcon, Category, Chains, formatNumber, Links, MetricTooltip, TopGainersAndLosersTooltip } from "./_components/Components";
 import { useProjectsMetadata } from "./_contexts/ProjectsMetadataContext";
 import { useSort } from "./_contexts/SortContext";
 import { ApplicationsURLs } from "@/lib/urls";
@@ -37,12 +37,14 @@ import { useTimespan } from "./_contexts/TimespanContext";
 
 export default function Page() {
   const { applicationDataAggregated, isLoading } = useApplicationsData();
-  const { selectedMetrics } = useMetrics();
+  const { selectedMetrics, selectedMetricKeys } = useMetrics();
   const { metricsDef } = useMetrics();
   const { sort } = useSort();
-  const { selectedTimespan } = useTimespan();
+  const { timespans, selectedTimespan } = useTimespan();
 
-  const [medianMetricKey, setMedianMetricKey] = useState(selectedMetrics[0]);
+  // const [medianMetricKey, setMedianMetricKey] = useState(selectedMetrics[0]);
+  const [lastMedianMetric, setLastMedianMetric] = useState(selectedMetrics[0]);
+  const [lastMedianMetricKey, setLastMedianMetricKey] = useState(selectedMetricKeys[0]);
 
   useEffect(() => {
     if(Object.keys(metricsDef).includes(sort.metric)){
@@ -50,7 +52,8 @@ export default function Page() {
       if (sort.metric === "gas_fees")
         key = "gas_fees_eth";
 
-      setMedianMetricKey(key);
+      setLastMedianMetric(sort.metric);
+      setLastMedianMetricKey(key);
     }
     
   }, [metricsDef, sort.metric]);
@@ -58,7 +61,7 @@ export default function Page() {
   const { topGainers, topLosers } = useMemo(() => {
     // let medianMetricKey = Object.keys(metricsDef).includes(sort.metric) ? sort.metric : "gas_fees";
 
-    const medianMetricValues = applicationDataAggregated.map((application) => application[medianMetricKey])
+    const medianMetricValues = applicationDataAggregated.map((application) => application[lastMedianMetricKey])
       .sort((a, b) => a - b);
 
     const medianValue = medianMetricValues[Math.floor(medianMetricValues.length / 2)];
@@ -69,55 +72,72 @@ export default function Page() {
 
     // filter out applications with < median value of selected metric and with previous value of 0
     const filteredApplications = applicationDataAggregated
-      .filter((application) => application[medianMetricKey] > medianValue && application["prev_" + medianMetricKey] > 0);
+      .filter((application) => application[lastMedianMetricKey] > medianValue && application["prev_" + lastMedianMetricKey] > 0);
     // console.log("filteredApplications", filteredApplications);
 
     // top 3 applications with highest change_pct
     return {
       topGainers: [...filteredApplications]
-        .sort((a, b) => b[medianMetricKey + "_change_pct"] - a[medianMetricKey + "_change_pct"])
+        .sort((a, b) => b[lastMedianMetricKey + "_change_pct"] - a[lastMedianMetricKey + "_change_pct"])
         .slice(0, 3),
       topLosers: [...filteredApplications]
-        .sort((a, b) => a[medianMetricKey + "_change_pct"] - b[medianMetricKey + "_change_pct"])
+        .sort((a, b) => a[lastMedianMetricKey + "_change_pct"] - b[lastMedianMetricKey + "_change_pct"])
         .slice(0, 3),
     }
-  }, [applicationDataAggregated, medianMetricKey]);
+  }, [applicationDataAggregated, lastMedianMetricKey]);
 
   return (
     <>
     <div>
       {/* <Container className="sticky top-[230px] z-10 pt-[30px]"> */}
-      <Container className={`pt-[30px] ${selectedTimespan === "max" && "hidden"}`}>
-        <div className="flex flex-col gap-y-[10px] ">
-          <div className="heading-large">Top Gainers and Losers by {metricsDef[selectedMetrics[0]].name}</div>
-          <div className="text-xs">
-            Projects that saw the biggest change in the selected timeframe.
+      {/* <div>{JSON.stringify(sort)}</div>
+      <div>metrics: {JSON.stringify(selectedMetrics)}</div>
+      <div>metricKeys{JSON.stringify(selectedMetricKeys)}</div> */}
+      <div className={`transition-[max-height,opacity] duration-300 ${selectedTimespan === "max" ? "overflow-hidden max-h-0 opacity-0" : "max-h-[calc(78px+150px)] md:max-h-[530px] lg:h-[380px] opacity-100"}`}>
+        <Container className={`pt-[30px]`}>
+          <div className="flex flex-col gap-y-[10px] ">
+            <div className="heading-large">Top Gainers and Losers by {metricsDef[lastMedianMetric].name}</div>
+            <div className="flex justify-between items-center gap-x-[10px]">
+            <div className="text-xs">
+              Projects that saw the biggest change in {metricsDef[lastMedianMetric].name} over the last {timespans[selectedTimespan].label}.
+            </div>
+            <Tooltip placement="left">
+              <TooltipTrigger>
+            <div className="size-[15px]">
+              <Icon icon="feather:info" className="size-[15px]" />
+            </div>
+            </TooltipTrigger>
+            <TooltipContent className="z-[99]">
+              <TopGainersAndLosersTooltip metric={selectedMetrics[0]} />
+            </TooltipContent>
+            </Tooltip>
+            </div>
           </div>
+        </Container>
+        <Container className={`hidden h-[450px] lg:h-[300px] md:grid md:grid-rows-3 md:grid-flow-col lg:grid-rows-2 lg:grid-flow-row pt-[10px] lg:grid-cols-3 gap-[10px]`}>
+          {topGainers.map((application, index) => (
+            <ApplicationCard key={application.owner_project} application={application} />
+          ))}
+          {topLosers.map((application, index) => (
+            <ApplicationCard key={application.owner_project} application={application} />
+          ))}
+          {isLoading && new Array(6).fill(0).map((_, index) => (
+            <ApplicationCard key={index} application={undefined} />
+          ))}
+        </Container>
         </div>
-      </Container>
-      <Container className={`hidden md:grid md:grid-rows-3 md:grid-flow-col lg:grid-rows-2 lg:grid-flow-row pt-[10px] lg:grid-cols-3 gap-[10px] ${selectedTimespan === "max" && "hidden"}`}>
-        {topGainers.map((application, index) => (
-          <ApplicationCard key={application.owner_project} application={application} />
-        ))}
-        {topLosers.map((application, index) => (
-          <ApplicationCard key={application.owner_project} application={application} />
-        ))}
-        {isLoading && new Array(6).fill(0).map((_, index) => (
-          <ApplicationCard key={index} application={undefined} />
-        ))}
-      </Container>
+        {/* <Container> */}
+        <div className={`block md:hidden h-[150px] pt-[10px]`}>
+          <CardSwiper cards={[...topGainers.map((application) => <ApplicationCard key={application.owner_project} application={application} />), ...topLosers.map((application) => <ApplicationCard key={application.owner_project} application={application} />)]} />
+        </div>
       </div>
-      {/* <Container> */}
-      <div className={`block md:hidden pt-[10px] ${selectedTimespan === "max" && "hidden"}`}>
-        <CardSwiper cards={[...topGainers.map((application) => <ApplicationCard key={application.owner_project} application={application} />), ...topLosers.map((application) => <ApplicationCard key={application.owner_project} application={application} />)]} />
-        </div>
       {/* </Container> */}
       {/* {applicationDataAggregated.length > 0 && <ApplicationCardSwiper />} */}
       <Container className="pt-[30px] pb-[15px]">
         <div className="flex flex-col gap-y-[10px]">
           <div className="heading-large">Top Ranked</div>
           <div className="text-xs">
-            Applications ranked by your selected metric and applied chain filter. Note that currently you apply a chain filter.
+            Applications ranked by {metricsDef[lastMedianMetric].name} and any applied chain or string filter(s). You can apply filters by clicking on the chain icons or by using the search bar.
           </div>
         </div>
       </Container>
@@ -272,12 +292,12 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
 
   return (
     <div 
-    className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] ${className || ""} group hover:cursor-pointer hover:bg-forest-500/10`} 
-    style={{ width: width || undefined }}
-    onClick={() => {
-      // window.location.href = `/applications/${application.owner_project}`;
-      router.push(`/applications/${application.owner_project}`);
-    }}
+      className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] ${className || ""} group hover:cursor-pointer hover:bg-forest-500/10`} 
+      style={{ width: width || undefined }}
+      onClick={() => {
+        // window.location.href = `/applications/${application.owner_project}`;
+        router.push(`/applications/${application.owner_project}`);
+      }}
     >
       <div>
         <div className="w-full h-[20px] flex justify-between items-center">
@@ -292,35 +312,7 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
         </div>
 
         <div className="w-full flex justify-between items-start">
-          <div className="h-[20px] flex items-center gap-x-[5px]">
-            {/* {JSON.stringify( application)} */}
-            {application.origin_keys.map((chain, index) => (
-              <div
-                key={index}
-                className={`cursor-pointer ${selectedChains.includes(chain) ? '' : '!text-[#5A6462]'} hover:!text-inherit`} style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors["dark"][0] : '' }}
-                onClick={() => {
-                  if (selectedChains.includes(chain)) {
-                    setSelectedChains(selectedChains.filter((c) => c !== chain));
-                  } else {
-                    setSelectedChains([...selectedChains, chain]);
-                  }
-                }}
-              >
-                {AllChainsByKeys[chain] && (
-                  <Icon
-                    icon={`gtp:${AllChainsByKeys[
-                      chain
-                    ].urlKey
-                      }-logo-monochrome`}
-                    className="w-[15px] h-[15px]"
-                    style={{
-                      color: AllChainsByKeys[chain].colors["dark"][0],
-                    }}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
+          <div/>
           <div className="flex flex-col items-end gap-y-[2px]">
             <div className="flex flex-col items-end justify-start gap-y-[3px]">
               <div className="flex justify-end numbers-sm text-[#CDD8D3] w-[100px]">
@@ -328,12 +320,14 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
                 {value?.toLocaleString("en-GB")}
               </div>
               <div className="flex items-end gap-x-[3px]">
-              {application[`${metricKey}_change_pct`] !== Infinity ? (
-                <div className={`flex justify-end w-[45px] numbers-xxxs ${application[`${metricKey}_change_pct`] < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
-                  {/* {application[`${metricKey}_change_pct`] < 0 ? '-' : '+'}{formatNumber(Math.abs(application[`${metricKey}_change_pct`]), {defaultDecimals: 1, thresholdDecimals: {base:0}})}% */}
-                  {application[`${metricKey}_change_pct`] < 0 ? '-' : '+'}{Math.abs(application[`${metricKey}_change_pct`]).toLocaleString("en-GB",{maximumFractionDigits:0})}%
-                </div>
-              ) : <div className="w-[49px]">&nbsp;</div>}
+                {application[`${metricKey}_change_pct`] !== Infinity ? (
+                  <div className={`h-[3px] flex justify-end w-[45px] numbers-xxxs ${application[`${metricKey}_change_pct`] < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
+                    {/* {application[`${metricKey}_change_pct`] < 0 ? '-' : '+'}{formatNumber(Math.abs(application[`${metricKey}_change_pct`]), {defaultDecimals: 1, thresholdDecimals: {base:0}})}% */}
+                    {application[`${metricKey}_change_pct`] < 0 ? '-' : '+'}{Math.abs(application[`${metricKey}_change_pct`]).toLocaleString("en-GB",{maximumFractionDigits:0})}%
+                  </div>
+                ) : (
+                  <div className="w-[49px]">&nbsp;</div>
+                )}
             </div>
             </div>
           </div>
@@ -341,33 +335,55 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
       </div>
       <div className="w-full flex items-center gap-x-[5px]">
         <ApplicationIcon owner_project={application.owner_project} size="md" />
-        {ownerProjectToProjectData[application.owner_project] ? (
+        {/* {ownerProjectToProjectData[application.owner_project] ? (
           <div className="heading-large-md flex-1 group-hover:underline"><ApplicationDisplayName owner_project={application.owner_project} /></div>
         ) : (
           <div className="heading-large-md flex-1 opacity-60 group-hover:underline"><ApplicationDisplayName owner_project={application.owner_project} /></div>
-        )}
+        )} */}
+        <div className="heading-large-md flex-1 overflow-visible">
+          <div className="relative group/tooltip heading-large-md w-fit group-hover:underline min-h-[32px] flex flex-col justify-center overflow-visible">
+          <ApplicationDisplayName owner_project={application.owner_project} />
+          <ApplicationTooltip application={application} />
+          </div>
+        </div>
         <Link className="cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center" href={`/applications/${application.owner_project}`}>
           <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-[#CDD8D3]" />
         </Link>
       </div>
       <div className="flex items-center justify-between gap-x-[5px]">
-        <div className="text-xs">{ownerProjectToProjectData[application.owner_project] && ownerProjectToProjectData[application.owner_project].main_category}</div>
-        {/* <div className="flex items-center gap-x-[5px]">
-          {getLinks(application).map((item, index) => (
-            <div key={index} className="h-[15px] w-[15px]">
-              {item.link && <Link
-                href={item.link.includes("http") ? item.link : `https://${item.link}`}
-                target="_blank"
-              >
+        <div className="text-xs">
+          <Category category={ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].main_category : ""} />
+        </div>
+        <div className="h-[20px] flex items-center gap-x-[5px]">
+          {/* {application.origin_keys.map((chain, index) => (
+            <div
+              key={index}
+              className={`cursor-pointer ${selectedChains.includes(chain) ? '' : '!text-[#5A6462]'} hover:!text-inherit`} style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors["dark"][0] : '' }}
+              onClick={() => {
+                if (selectedChains.includes(chain)) {
+                  setSelectedChains(selectedChains.filter((c) => c !== chain));
+                } else {
+                  setSelectedChains([...selectedChains, chain]);
+                }
+              }}
+            >
+              {AllChainsByKeys[chain] && (
                 <Icon
-                  icon={item.icon}
-                  className="w-[15px] h-[15px] select-none"
+                  icon={`gtp:${AllChainsByKeys[
+                    chain
+                  ].urlKey
+                    }-logo-monochrome`}
+                  className="w-[15px] h-[15px]"
+                  style={{
+                    color: AllChainsByKeys[chain].colors["dark"][0],
+                  }}
                 />
-              </Link>}
+              )}
             </div>
-          ))}
-        </div> */}
-        <Links owner_project={application.owner_project} />
+          ))} */}
+          <Chains origin_keys={application.origin_keys} />
+        </div>
+        
       </div>
     </div>
   )
@@ -672,10 +688,9 @@ const ApplicationTableRow = memo(({ application, maxMetrics }: { application: Ag
         </div>
       </div>
       <div className="flex items-center gap-x-[5px] justify-between group-hover:underline">
-        <div className="relative group/tooltip min-h-[32px] flex  flex-col justify-center">
-        <ApplicationDisplayName owner_project={application.owner_project} />
-        {/* <Links owner_project={application.owner_project} /> */}
-        <ApplicationTooltip application={application} />
+        <div className="relative group/tooltip min-h-[32px] flex flex-col justify-center">
+          <ApplicationDisplayName owner_project={application.owner_project} />
+          <ApplicationTooltip application={application} />
         </div>
       </div>
       <div className="flex items-center gap-x-[5px]">
@@ -711,6 +726,7 @@ ApplicationTableRow.displayName = 'ApplicationTableRow';
 
 const ApplicationTooltip = memo(({application}: {application: AggregatedDataRow}) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
+  const { applicationDataAggregated } = useApplicationsData();
 
   const descriptionPreview = useMemo(() => {
     if (!application || !ownerProjectToProjectData[application.owner_project] || !ownerProjectToProjectData[application.owner_project].description) return "";
@@ -721,19 +737,35 @@ const ApplicationTooltip = memo(({application}: {application: AggregatedDataRow}
     
   }, [application, ownerProjectToProjectData]);
 
+  // const [mouseOffsetX, setMouseOffsetX] = useState(0);
+
+  // // get the mouse position on mount
+  // useEffect(() => {
+  //   const handleMouseMove = (e: MouseEvent) => {
+  //     setMouseOffsetX(e.offsetX);
+  //   };
+
+  //   window.addEventListener("mousemove", handleMouseMove);
+  //   return () => window.removeEventListener("mousemove", handleMouseMove);
+  // }, []);
+
+  
+
   if(!application || !ownerProjectToProjectData) return null;
 
   return (
     <div
-      className="cursor-default z-[20] absolute p-[15px] w-[345px] top-[32px] bg-[#1F2726] rounded-[15px] transition-opacity duration-300 opacity-0 group-hover/tooltip:opacity-100 pointer-events-none group-hover/tooltip:pointer-events-auto hover:pointer-events-auto"
+      className="cursor-default z-[20] absolute p-[15px] left-[30px] w-[345px] top-[32px] bg-[#1F2726] rounded-[15px] transition-opacity duration-300 opacity-0 group-hover/tooltip:opacity-100 pointer-events-none group-hover/tooltip:pointer-events-auto hover:pointer-events-auto"
       style={{
         boxShadow: "0px 0px 30px #000000",
+        // left: `${mouseOffsetX}px`,
       }}
       onClick={(e) => {
         e.stopPropagation();
       }}
     >
       <div className="flex flex-col pl-[5px] gap-y-[10px]">
+        {/* {mouseOffsetX} */}
         <div className="flex gap-x-[5px] items-center w-max">
           {ownerProjectToProjectData[application.owner_project] && ownerProjectToProjectData[application.owner_project].logo_path ? (
             <Image
@@ -746,11 +778,13 @@ const ApplicationTooltip = memo(({application}: {application: AggregatedDataRow}
               priority={true}
             />
           ) : (
-            <div className={`size-[15px] bg-[#151A19] rounded-full`}></div>
+            <div className={`flex items-center justify-center size-[15px] bg-[#151A19] rounded-full`}>
+              <GTPIcon icon="gtp-project-monochrome" size="sm" className="!size-[12px] text-[#5A6462]" containerClassName="flex items-center justify-center" />
+            </div>
           )}
           <div className="heading-small-xs whitespace-nowrap">{ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].display_name : application.owner_project}</div>
         </div>
-        <div>
+        <div className="text-xs">
           {descriptionPreview}...
         </div>
           <Links owner_project={application.owner_project} showUrl={true} />

@@ -386,14 +386,14 @@ export const GridTableAddressCell = ({
   const [addressRef, { width: addressWidth }] = useElementSizeObserver<HTMLDivElement>();
 
   const numAddressChars = useMemo(() => {
-    return Math.min(Math.floor(addressWidth / fontWidth) - 6, 42 - 6);
+    return Math.min(Math.floor(addressWidth / fontWidth) - 9, 42 - 9);
   }, [addressWidth, fontWidth]);
 
   console.log("numAddressChars", numAddressChars);
 
 
   return (
-    <div className={`flex items-center w-full font-normal gap-x-[10px] ${className || ""}`}
+    <div className={`flex items-center w-full font-semibold gap-x-[10px] ${className || ""}`}
       onClick={(e) => {
         e.stopPropagation();
         handleCopyAddress(address);
@@ -412,7 +412,7 @@ export const GridTableAddressCell = ({
         // }}
         style={{
           fontSize: `${fontSize}px`,
-          fontFeatureSettings: "'tnum'",
+          // fontFeatureSettings: "'tnum' on, 'lnum' on",
         }}
       >
 

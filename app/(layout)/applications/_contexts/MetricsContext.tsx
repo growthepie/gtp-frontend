@@ -140,19 +140,23 @@ export const MetricsProvider = ({ children }: { children: React.ReactNode }) => 
 
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>(masterData ? [...Object.keys(masterData.app_metrics).slice(0,1)] : ["gas_fees"]);
 
+  const orderedMetrics = useMemo(() => {
+    return masterData ? Object.keys(masterData.app_metrics).filter((metric) => selectedMetrics.includes(metric)) : ["gas_fees"];
+  }, [masterData, selectedMetrics]);
+
   const selectedMetricKeys = useMemo(() => {
-    return selectedMetrics.map((metric) => {
+    return orderedMetrics.map((metric) => {
       if(metric === "gas_fees")
         return showUsd ? "gas_fees_usd" : "gas_fees_eth";
       return metric;
     });
-  }, [selectedMetrics, showUsd]);
+  }, [orderedMetrics, showUsd]);
 
   return (
     <MetricsContext.Provider value={{
       metricsDef: masterData ? masterData.app_metrics : {},
       metricIcons,
-      selectedMetrics: masterData ? Object.keys(masterData.app_metrics).filter((metric) => selectedMetrics.includes(metric)) : ["gas_fees"],
+      selectedMetrics: orderedMetrics,
       setSelectedMetrics,
       selectedMetricKeys,
     }}>
