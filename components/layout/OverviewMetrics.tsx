@@ -67,7 +67,7 @@ export default function OverviewMetrics({
   const { AllChainsByKeys } = useMaster();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [selectedMode, setSelectedMode] = useState(
-    forceSelectedChain === "imx" ? "txcount_share" : "gas_fees_share_usd",
+    "txcount_share"
   );
   const [isCategoryMenuExpanded, setIsCategoryMenuExpanded] = useState(true);
   const [allCats, setAllCats] = useState(forceSelectedChain ? true : false);

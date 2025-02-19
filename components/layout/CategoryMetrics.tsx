@@ -130,7 +130,7 @@ export default function CategoryMetrics({
   };
 
   const { isSidebarOpen } = useUIContext();
-  const [selectedMode, setSelectedMode] = useState("gas_fees_");
+  const [selectedMode, setSelectedMode] = useState("txcount_");
   const [selectedCategory, setSelectedCategory] = useState(
     queryCategory ?? "defi",
   );
