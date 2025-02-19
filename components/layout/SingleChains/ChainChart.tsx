@@ -1,7 +1,7 @@
 "use client";
 
 import HighchartsReact from "highcharts-react-official";
-import Highcharts from "highcharts";
+import Highcharts from "highcharts/highstock";
 import highchartsAnnotations from "highcharts/modules/annotations";
 import Share from "@/components/Share";
 
@@ -27,20 +27,14 @@ import Image from "next/image";
 import d3 from "d3";
 import Link from "next/link";
 import {
-  AllChains,
-  AllChainsByKeys,
-  Get_DefaultChainSelectionKeys,
+  Get_AllChainsNavigationItems,
   Get_SupportedChainKeys,
 } from "@/lib/chains";
 import { debounce, forEach } from "lodash";
 import { Splide, SplideSlide, SplideTrack } from "@splidejs/react-splide";
-import {
-  navigationItems,
-  navigationCategories,
-  getFundamentalsByKey,
-} from "@/lib/navigation";
-import { useUIContext } from "@/contexts/UIContext";
-import { ChainURLs, MasterURL } from "@/lib/urls";
+import { navigationItems } from "@/lib/navigation";
+import { useUIContext, useHighchartsWrappers } from "@/contexts/UIContext";
+import { ChainsBaseURL, MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import useSWR, { preload } from "swr";
 import ChartWatermark from "@/components/layout/ChartWatermark";
@@ -59,6 +53,12 @@ import {
   TooltipTrigger,
 } from "@/components/layout/Tooltip";
 import { useSWRConfig } from "swr";
+import { useMaster } from "@/contexts/MasterContext";
+import {
+  metricItems,
+  getFundamentalsByKey,
+  metricCategories,
+} from "@/lib/metrics";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -86,13 +86,15 @@ export default function ChainChart({
   const isMounted = useIsMounted();
 
   const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
-
+  const { AllChains, AllChainsByKeys } = useMaster();
   const [data, setData] = useState<ChainsData[]>([chainData]);
 
   const [error, setError] = useState(null);
   const [validating, setValidating] = useState(false);
   const [loading, setLoading] = useState(false);
   const [chainKey, setChainKey] = useState<string[]>([defaultChainKey]);
+
+  useHighchartsWrappers();
 
   useEffect(() => {
     Highcharts.setOptions({
@@ -129,8 +131,8 @@ export default function ChainChart({
 
     // const chainGroups = {};
 
-    const chainItemsByKey = navigationItems[3].options
-      .filter((option) => option.hide !== true)
+    const chainItemsByKey = Get_AllChainsNavigationItems(master)
+      .options.filter((option) => option.hide !== true)
       .filter(
         (option) =>
           option.key && Get_SupportedChainKeys(master).includes(option.key),
@@ -176,7 +178,7 @@ export default function ChainChart({
     try {
       const fetchPromises = chainKey.map(async (key) => {
         // check if the chain is in the cache
-        const cachedData = cache.get(ChainURLs[key]);
+        const cachedData = cache.get(`${ChainsBaseURL}${key}.json`);
 
         if (cachedData) {
           return cachedData.data;
@@ -184,12 +186,12 @@ export default function ChainChart({
 
         // if not, fetch the data
         const response = await fetch(
-          ChainURLs[key].replace("/v1/", `/${apiRoot}/`),
+          `${ChainsBaseURL}${key}.json`.replace("/v1/", `/${apiRoot}/`),
         );
         const responseData = await response.json();
 
         // store the data in the cache
-        mutate(ChainURLs[key], responseData, false);
+        mutate(`${ChainsBaseURL}${key}.json`, responseData, false);
 
         return responseData;
       });
@@ -382,18 +384,18 @@ export default function ChainChart({
         } else {
           if (showGwei(key) && showUsd) {
             // for small USD amounts, show 2 decimals
-            if (val < 1) number = prefix + val.toFixed(2) + suffix;
+            if (val < 1) number = prefix + val.toFixed(2) + " " + suffix;
             else if (val < 10)
               number =
-                prefix + d3.format(".3s")(val).replace(/G/, "B") + suffix;
+                prefix + d3.format(".3s")(val).replace(/G/, "B") + " " + suffix;
             else if (val < 100)
               number =
-                prefix + d3.format(".4s")(val).replace(/G/, "B") + suffix;
+                prefix + d3.format(".4s")(val).replace(/G/, "B") + " " + suffix;
             else
               number =
-                prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+                prefix + d3.format(".2s")(val).replace(/G/, "B") + " " + suffix;
           } else {
-            number = prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+            number = prefix + d3.format(".2s")(val).replace(/G/, "B") + " " + suffix;
           }
         }
       }
@@ -555,6 +557,14 @@ export default function ChainChart({
           showGwei(key) && !showUsd
             ? "Gwei"
             : master.metrics[key].units[unitKey].suffix;
+        let prefix =
+          showGwei(key) && !showUsd
+            ? ""
+            : master.metrics[key].units[unitKey].prefix;
+        let suffix =
+          showGwei(key) && !showUsd
+            ? "Gwei"
+            : master.metrics[key].units[unitKey].suffix;
         let valueIndex = showUsd ? 1 : 2;
         let valueMultiplier = showGwei(key) && !showUsd ? 1000000000 : 1;
 
@@ -586,7 +596,7 @@ export default function ChainChart({
 
         let value = valueFormat.format(
           item.metrics[key].daily.data[dateIndex][
-            master.metrics[key].units[unitKey].currency ? valueIndex : 1
+          master.metrics[key].units[unitKey].currency ? valueIndex : 1
           ] * valueMultiplier,
         );
 
@@ -594,8 +604,8 @@ export default function ChainChart({
 
         p[chainIndex][key] = {
           value,
-          prefix,
-          suffix,
+          prefix: prefix || "",
+          suffix: suffix || "",
         };
       });
     });
@@ -944,6 +954,8 @@ export default function ChainChart({
               ? "rgba(215, 223, 222, 0.33)"
               : "rgba(41, 51, 50, 0.33)",
           fontSize: "8px",
+          fontWeight: "300",
+          fontFamily: "Fira Sans",
         },
       },
       // gridLineColor:
@@ -1108,17 +1120,18 @@ export default function ChainChart({
 
   const getNavIcon = useCallback(
     (key: string) => {
-      const navItem = navigationItems[1].options.find(
-        (item) => item.key === key,
-      );
+      // const navItem = navigationItems[1].options.find(
+      //   (item) => item.key === key,
+      // );
 
-      if (!navItem || !navItem.category) return null;
+      const metricItem = metricItems.find((item) => item.key === key);
+      if (!metricItem || !metricItem.category) return null;
 
-      return navigationCategories[navItem.category]
-        ? navigationCategories[navItem.category].icon
+      return metricCategories[metricItem.category]
+        ? metricCategories[metricItem.category].icon
         : null;
     },
-    [navigationItems],
+    [metricItems],
   );
 
   const lastPointLines = useMemo<{
@@ -1203,21 +1216,9 @@ export default function ChainChart({
   }, [isSidebarOpen]);
 
   const enabledFundamentalsKeys = useMemo<string[]>(() => {
-    return navigationItems[1].options.map((option) => option.key ?? "");
+    // return navigationItems[1].options.map((option) => option.key ?? "");
+    return metricItems.map((item) => item.key ?? "");
   }, []);
-
-  // const enabledCategoryKeys = useMemo<string[]>(() => {
-  //   return
-  // })
-
-  const enabledChainKeys = navigationItems[3].options
-    .filter((chain) => !chain.hide)
-    .map((chain) => chain.key);
-
-  // const updateChartData = useCallback(
-  //   ,
-  //   [data, pointHover, showGwei, showUsd, theme],
-  // );
 
   useEffect(() => {
     enabledFundamentalsKeys.forEach(async (key, i) => {
@@ -1432,7 +1433,7 @@ export default function ChainChart({
     const missingData: { [key: string]: { key: string; message: string }[] } =
       {};
 
-    Object.keys(navigationCategories)
+    Object.keys(metricCategories)
       .filter((group) => {
         return (
           group !== "gtpmetrics" &&
@@ -1467,7 +1468,6 @@ export default function ChainChart({
     );
   }
 
-  console.log(master ? master : "");
   return (
     <div className="w-full flex-col relative " id="chains-content-container">
       <style>
@@ -1497,7 +1497,7 @@ export default function ChainChart({
               className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[15] hover:cursor-pointer"
               onClick={handlePrevCompChain}
               onMouseOver={() => {
-                preload(ChainURLs[prevChainKey], fetcher);
+                preload(`${ChainsBaseURL}${prevChainKey}.json`, fetcher);
               }}
             >
               <Icon icon="feather:arrow-left" className="w-6 h-6" />
@@ -1547,7 +1547,7 @@ export default function ChainChart({
               className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[15] hover:cursor-pointer"
               onClick={handleNextCompChain}
               onMouseOver={() => {
-                preload(ChainURLs[nextChainKey], fetcher);
+                preload(`${ChainsBaseURL}${nextChainKey}.json`, fetcher);
               }}
             >
               <Icon icon="feather:arrow-right" className="w-6 h-6" />
@@ -1611,7 +1611,7 @@ export default function ChainChart({
                   }}
                   key={index}
                   onMouseOver={() => {
-                    preload(ChainURLs[chain.key], fetcher);
+                    preload(`${ChainsBaseURL}${chain.key}.json`, fetcher);
                   }}
                 >
                   <Icon
@@ -1707,7 +1707,7 @@ export default function ChainChart({
       </TopRowContainer>
 
       <div className="flex flex-col gap-y-[15px]">
-        {Object.keys(navigationCategories)
+        {Object.keys(metricCategories)
           .filter((group) => {
             return (
               group !== "gtpmetrics" &&
@@ -1717,7 +1717,7 @@ export default function ChainChart({
           })
           .map((categoryKey) => (
             <ChainSectionHead
-              title={navigationCategories[categoryKey].label}
+              title={metricCategories[categoryKey].label}
               enableDropdown={true}
               defaultDropdown={true}
               key={categoryKey}
@@ -1872,7 +1872,7 @@ export default function ChainChart({
                                     />
                                   </div>
                                 </Link>
-                                <div className="relative text-[18px] leading-snug font-medium flex space-x-[2px] right-[40px]">
+                                <div className="relative numbers-lg -top-[2px] flex right-[40px]">
                                   <div>{displayValues[0][key].prefix}</div>
                                   <div>{displayValues[0][key].value}</div>
                                   <div className="text-base pl-0.5">
@@ -1907,6 +1907,7 @@ export default function ChainChart({
                                 ...options,
                                 chart: {
                                   ...options.chart,
+                                  className: "zoom-chart",
                                   animation: isAnimate
                                     ? {
                                         duration: 500,

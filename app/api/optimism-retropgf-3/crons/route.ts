@@ -309,7 +309,7 @@ const processAllProjects = async () => {
   let skip = 0;
 
   while (hasNextPage) {
-    const projectsResp = await fetchProjects(skip);
+    const projectsResp: any = await fetchProjects(skip);
     if (projectsResp.retroPGF.projects.edges.length > 0) {
       const projects = projectsResp.retroPGF.projects.edges.map(
         (edge) => edge.node,

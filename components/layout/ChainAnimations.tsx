@@ -1,10 +1,11 @@
 import { animated, useSpring } from "@react-spring/web";
 import { Icon } from "@iconify/react";
-import { AllChainsByKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
 import { useLocalStorage } from "usehooks-ts";
 import { useMemo, useState, useEffect, useRef } from "react";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import Link from "next/link";
+import { useMaster } from "@/contexts/MasterContext";
 
 export default function ChainAnimations({
   chain,
@@ -16,6 +17,7 @@ export default function ChainAnimations({
   selectedChains,
   setSelectedChains,
   selectedCategory,
+  parentContainerWidth,
   master,
 }: {
   chain: string;
@@ -27,28 +29,29 @@ export default function ChainAnimations({
   selectedChains: Object;
   setSelectedChains: (show: Object) => void;
   selectedCategory: string;
+  parentContainerWidth: number;
   master: MasterResponse;
 }) {
   const { theme } = useTheme();
+  const { AllChainsByKeys } = useMaster();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [isShaking, setIsShaking] = useState(false);
+  // const [width, setWidth] = useState(() => {
+  //   if (sortedValues && value) {
+  //     const largestValue = Math.max(
+  //       ...Object.values(sortedValues).map(([, value]) => value),
+  //     );
+  //     let minWidth = 144;
 
-  const [width, setWidth] = useState(() => {
-    if (sortedValues && value) {
-      const largestValue = Math.max(
-        ...Object.values(sortedValues).map(([, value]) => value),
-      );
-      let minWidth = 205;
+  //     const relativeWidth = 144 + (sortedValues[index][1] / largestValue) * 150;
 
-      const relativeWidth = 205 + (sortedValues[index][1] / largestValue) * 150;
-
-      const percentage = (value / largestValue) * 99;
-      const newWidth = `max(${percentage}%, ${relativeWidth}px)`;
-      return `max(${percentage}%, ${minWidth}px)`;
-    } else {
-      return "auto";
-    }
-  });
+  //     const percentage = (value / largestValue) * 99;
+  //     const newWidth = `max(${percentage}%, ${relativeWidth}px)`;
+  //     return `max(${percentage}%, ${minWidth}px)`;
+  //   } else {
+  //     return "auto";
+  //   }
+  // });
 
   const availableSelectedChains = useMemo(() => {
     let counter = 0;
@@ -69,7 +72,7 @@ export default function ChainAnimations({
     } else {
       return counter;
     }
-  }, [selectedChains, selectedMode, selectedMode]);
+  }, [selectedChains, selectedMode, sortedValues]);
 
   const changeMode = useMemo(() => {
     if (
@@ -87,7 +90,7 @@ export default function ChainAnimations({
         return updatedSelectedChains;
       });
     }
-  }, [selectedMode]);
+  }, [selectedChains, selectedMode, setSelectedChains]);
 
   const changeCategory = useMemo(() => {
     let allFalse = true;
@@ -117,143 +120,182 @@ export default function ChainAnimations({
         }));
       }
     }
-  }, [sortedValues]);
+  }, [selectedChains, setSelectedChains, sortedValues]);
 
-  useEffect(() => {
+  // useEffect(() => {
+  //   if (sortedValues && value && selectedChains) {
+  //     const valuesOfSelected = Object.values(sortedValues).filter(
+  //       ([chain, value]) => selectedChains[chain],
+  //     );
+  //     const largestValue = Math.max(
+  //       ...Object.values(valuesOfSelected).map(([, value]) => value),
+  //     );
+  //     let minWidth = 144;
+
+  //     const relativeWidth = 144 + (sortedValues[index][1] / largestValue) * 150;
+
+  //     const percentage = (value / largestValue) * 99;
+  //     const newWidth = `max(${percentage}%, ${relativeWidth}px)`;
+
+  //     // Set the width state using the setWidth function
+  //     setWidth(newWidth);
+  //   } else {
+  //     setWidth("auto");
+  //   }
+  // }, [value, sortedValues, index, selectedChains]);
+
+  const valuesOfSelected = useMemo(() => {
+    return Object.values(sortedValues).filter(
+      ([chain, value]) => selectedChains[chain],
+    );
+  }, [sortedValues, selectedChains]);
+
+  const largestValue = useMemo(() => {
+    return Math.max(
+      ...Object.values(valuesOfSelected).map(([, value]) => value),
+    );
+  }, [valuesOfSelected]);
+
+  const relativeWidth = useMemo(() => {
     if (sortedValues && value) {
-      const largestValue = Math.max(
-        ...Object.values(sortedValues).map(([, value]) => value),
-      );
-      let minWidth = 205;
-
-      const relativeWidth = 205 + (sortedValues[index][1] / largestValue) * 150;
-
-      const percentage = (value / largestValue) * 99;
-      const newWidth = `max(${percentage}%, ${relativeWidth}px)`;
-
-      // Set the width state using the setWidth function
-      setWidth(newWidth);
+      return 144 + (sortedValues[index][1] / largestValue) * 150;
     } else {
-      setWidth("auto");
+      return 144;
     }
-  }, [value, sortedValues]);
+  }, [sortedValues, value, index, largestValue]);
+
+  const percentage = useMemo(() => {
+    if (sortedValues && value) {
+      return (value / largestValue) * 100;
+    } else {
+      return 0;
+    }
+  }, [sortedValues, value, largestValue]);
 
   if (chain === "imx" && selectedMode === "gas_fees_") {
     return null;
   } else {
     return (
-      <div
-        key={chain}
-        className={`relative flex flex-row items-center rounded-full text-xs font-medium hover:cursor-pointer z-0 ${
-          AllChainsByKeys[chain].darkTextOnBackground === true
-            ? "text-white dark:text-black"
-            : "text-white"
-        } ${
-          selectedChains[chain]
-            ? AllChainsByKeys[chain].backgrounds[theme ?? "dark"][1]
-            : `${AllChainsByKeys[chain].backgrounds[theme ?? "dark"][1]} `
-        }
-        ${isShaking ? "animate-shake " : ""}`}
-        style={{
-          width: width,
-          // height: "45px",
-          // bottom: `${index * 45}px`,
-        }}
-        // style={{
-        //   zIndex: index,
-        //   ...style,
-        // }}
-        onClick={() => {
-          if (availableSelectedChains > 1 || !selectedChains[chain]) {
-            setSelectedChains((prevSelectedChains) => ({
-              ...prevSelectedChains,
-              [chain]: !prevSelectedChains[chain],
-            }));
-          } else {
-            setIsShaking(true);
-            setTimeout(() => {
-              setIsShaking(false);
-            }, 500);
-          }
-        }}
-      >
+      <>
         <div
-          key={chain + " " + value}
-          className="flex items-center h-[45px] pl-[20px] min-w-[155px] w-full "
+          key={chain}
+          className={`relative z-0 flex h-[34px] cursor-pointer select-none flex-row items-center justify-between rounded-full pl-[2px] pr-[2px] text-xs font-medium transition-all duration-500 ${
+            AllChainsByKeys[chain].darkTextOnBackground === true
+              ? "text-white dark:text-black"
+              : "text-white"
+          } ${isShaking ? "animate-shake" : ""} ${
+            selectedChains[chain] ? "opacity-100" : "opacity-30"
+          }`}
+          style={{
+            // width: `max(${percentage}%, ${relativeWidth}px)`,
+            width: `max(${percentage}%, ${relativeWidth}px)`,
+            maxWidth: "1000%",
+            backgroundColor: AllChainsByKeys[chain].colors[theme ?? "dark"][1],
+            maskImage:
+              percentage > 100
+                ? `linear-gradient(to right, white 0px, white ${parentContainerWidth - 40}px, transparent ${parentContainerWidth}px, transparent 100%)`
+                : `none`,
+            // marginRight: percentage > 100 ? "-10px" : undefined,
+            // height: "45px",
+            // bottom: `${index * 45}px`,
+          }}
+          // style={{
+          //   zIndex: index,
+          //   ...style,
+          // }}
+          onClick={() => {
+            if (availableSelectedChains > 1 || !selectedChains[chain]) {
+              setSelectedChains((prevSelectedChains) => ({
+                ...prevSelectedChains,
+                [chain]: !prevSelectedChains[chain],
+              }));
+            } else {
+              setIsShaking(true);
+              setTimeout(() => {
+                setIsShaking(false);
+              }, 500);
+            }
+          }}
         >
-          <div
-            key={chain + " " + index + value}
-            className="flex w-[155px] items-center pr-2 "
-          >
+          <div className="flex h-[30px] w-[140px] items-center gap-x-[10px] rounded-full bg-[#1F2726]">
             <div
-              key={chain + " " + index}
-              className="flex items-center w-[30px]"
+              className="z-20 flex h-full w-[30px] items-center justify-center"
+              style={{
+                color: AllChainsByKeys[chain].colors["dark"][0],
+              }}
             >
               <Icon
                 icon={`gtp:${chain.replace("_", "-")}-logo-monochrome`}
-                className="w-[15px] h-[15px]"
+                className="h-[15px] w-[15px]"
               />
             </div>
-            {width !== null && (
-              <div className="-mb-0.5 overflow-hidden text-ellipsis min-w-0 max-w-fit">
-                {width &&
-                230 > parseFloat(width.match(/(\d+(\.\d+)?)(?=px)/)?.[0] || "0")
-                  ? master.chains[chain].name_short
-                  : AllChainsByKeys[chain]?.label}
-              </div>
-            )}
-          </div>
 
-          <div
-            key={value + " " + index}
-            className="flex justify-end flex-grow "
-          >
-            <div key={index} className="text-base flex">
-              {selectedValue === "share" ? (
-                <div>{Math.round(value * 100)}%</div>
-              ) : (
-                <div className="flex gap-x-1">
-                  <div
-                    className={`${showUsd ? "static" : "relative top-[1px]"}`}
-                  >
-                    {selectedMode === "gas_fees_" ? (showUsd ? `$` : `Ξ`) : ""}
-                  </div>
-                  <div>
-                    {showUsd
-                      ? (Math.round(value * 100) / 100).toLocaleString(
-                          "en-GB",
-                          {
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 0,
-                          },
-                        )
-                      : (Math.round(value * 100) / 100).toLocaleString(
-                          "en-GB",
-                          {
-                            minimumFractionDigits: 0,
+            <div className="flex flex-col text-[#CDD8D3]">
+              <div className="-mb-[4px] mt-[1px] text-[14px] font-bold">
+                {" "}
+                {selectedValue === "share" ? (
+                  <div>{Math.round(value * 100)}%</div>
+                ) : (
+                  <div className="flex">
+                    <div
+                      className={`${showUsd ? "static" : "relative top-[1px]"}`}
+                    >
+                      {selectedMode === "gas_fees_"
+                        ? showUsd
+                          ? `$`
+                          : `Ξ`
+                        : ""}
+                    </div>
+                    <div>
+                      {showUsd
+                        ? Intl.NumberFormat(undefined, {
+                            notation: "compact",
                             maximumFractionDigits: 2,
-                          },
-                        )}
+                            minimumFractionDigits: 2,
+                          })
+                            .format(value)
+                            .replace(/K$/, "k")
+                        : Intl.NumberFormat(undefined, {
+                            notation: "compact",
+                            maximumFractionDigits: 2,
+                            minimumFractionDigits: 2,
+                          })
+                            .format(value)
+                            .replace(/K$/, "k")}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
+              <Link
+                href={`/chains/${AllChainsByKeys[chain].urlKey}/`}
+                className="text-[10px] hover:underline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                {AllChainsByKeys[chain].label}
+              </Link>
             </div>
-            <div
-              key={chain + "select"}
-              className={`relative flex left-[10px] w-[24px] h-[24px] bg-forest-700 rounded-full self-center items-center justify-center z-10 ${
-                !selectedChains[chain] ? "opacity-100" : ""
+          </div>
+          <div
+            className="absolute right-2 flex h-[17px] w-[17px] items-center justify-center rounded-full bg-[#1F2726]"
+            style={{
+              left: percentage > 100 ? parentContainerWidth - 25 : undefined,
+            }}
+          >
+            <Icon
+              icon={`feather:${
+                !selectedChains[chain] ? "circle" : "check-circle"
               }`}
-            >
-              <Icon
-                icon="feather:check-circle"
-                className={`w-[24px] h-[24px] text-white ${
-                  !selectedChains[chain] ? "opacity-0" : "opacity-100"
-                }`}
-              />
-            </div>
+              className="h-[15px] w-[15px] align-middle"
+              style={{
+                color: AllChainsByKeys[chain].colors[theme ?? "dark"][0],
+                lineHeight: 1, // Ensure the line height doesn't cause vertical misalignment
+              }}
+            />
           </div>
         </div>
-      </div>
+      </>
     );
   }
 }

@@ -2,17 +2,20 @@
 import Image from "next/image";
 import Heading from "@/components/layout/Heading";
 import useSWR from "swr";
+import { useState } from "react";
 import { EconomicsURL } from "@/lib/urls";
 import {
   EconomicsResponse,
   ChainBreakdownResponse,
   FeesBreakdown,
+  l2_data,
 } from "@/types/api/EconomicsResponse";
 import EconHeadCharts from "@/components/layout/Economics/HeadCharts";
 import ChainBreakdown from "@/components/layout/Economics/ChainBreakdown";
 import ShowLoading from "@/components/layout/ShowLoading";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { MasterURL } from "@/lib/urls";
+import Container from "@/components/layout/Container";
 
 export default function Economics() {
   const {
@@ -29,40 +32,22 @@ export default function Economics() {
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
-  if (!econData || !master) {
-    return (
+  const [selectedTimespan, setSelectedTimespan] = useState("365d");
+  const [isMonthly, setIsMonthly] = useState(false);
+
+  return (
+    <>
       <ShowLoading
         dataLoading={[econLoading, masterLoading]}
         dataValidating={[econValidating, masterValidating]}
       />
-    );
-  }
-
-  const {
-    chain_breakdown,
-    da_charts,
-  }: { chain_breakdown: ChainBreakdownResponse; da_charts: FeesBreakdown } =
-    econData.data;
-
-  return (
-    <div className="mt-[60px] flex flex-col gap-y-[60px]">
       {/*Data Availability Fee Markets */}
-      <div className="flex flex-col gap-y-[15px]">
-        <div className="flex items-center gap-x-[8px] ">
-          <Image
-            src="/GTP-Fundamentals.svg"
-            alt="GTP Chain"
-            className="object-contain w-[32px] h-[32px] "
-            height={36}
-            width={36}
-          />
-          <Heading className="text-[30px] leading-snug " as="h1">
-            Data Availability Fee Markets
-          </Heading>
+      <div className={`flex flex-col transition-[gap] duration-300 ${selectedTimespan === "1d" ? "gap-y-[15px]" : "gap-y-[30px]"}`}>
+        <div className={`flex flex-col gap-y-[15px]`}>
+          {econData && <EconHeadCharts chart_data={econData.data.all_l2s} selectedTimespan={selectedTimespan} setSelectedTimespan={setSelectedTimespan} isMonthly={isMonthly} setIsMonthly={setIsMonthly} />}
         </div>
-        <EconHeadCharts da_charts={da_charts} />
+        {econData && master && <ChainBreakdown data={Object.fromEntries(Object.entries(econData.data.chain_breakdown).filter(([key]) => key !== "totals"))} master={master} selectedTimespan={selectedTimespan} setSelectedTimespan={setSelectedTimespan} isMonthly={isMonthly} setIsMonthly={setIsMonthly} totals={econData.data.chain_breakdown["totals"]} />}
       </div>
-      <ChainBreakdown data={chain_breakdown} master={master} />
-    </div>
+    </>
   );
 }

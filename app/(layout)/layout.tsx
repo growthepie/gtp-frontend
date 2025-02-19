@@ -2,18 +2,16 @@ import "../globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import { Providers } from "../providers";
 import CookieConsent from "@/components/layout/CookieConsent";
-import { Raleway, Inter, Roboto_Mono } from "next/font/google";
+import { Raleway, Inter, Roboto_Mono, Fira_Sans, Fira_Mono } from "next/font/google";
 import Header from "@/components/layout/Header";
 import SidebarContainer from "@/components/layout/SidebarContainer";
-import Backgrounds from "@/components/layout/Backgrounds";
 import { Metadata } from "next";
 import Head from "./head";
 import { Graph } from "schema-dts";
 import Share from "@/components/Share";
-import Details from "@/components/Details";
-import BottomBanner from "@/components/BottomBanner";
 import "../background.css";
 import DeveloperTools from "@/components/development/DeveloperTools";
+import Footer from "@/components/layout/Footer";
 
 const jsonLd: Graph = {
   "@context": "https://schema.org",
@@ -91,7 +89,7 @@ const gtpFees = {
   description:
     "Fee analytics by the minute for Ethereum L2s — median transaction fees, native / ETH transfer fees, token swap fees, and more...",
 };
-const isFees = true;
+const isFees = false;
 
 const host = isFees ? "fees.growthepie.xyz" : "www.growthepie.xyz";
 
@@ -148,21 +146,29 @@ const raleway = Raleway({
   subsets: ["latin"],
   variable: "--font-raleway",
   display: "swap",
-  adjustFontFallback: false
+  adjustFontFallback: false,
 });
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
-  adjustFontFallback: false
+  adjustFontFallback: false,
 });
 
-const robotoMono = Roboto_Mono({
+const firaMono = Fira_Mono({
   subsets: ["latin"],
-  variable: "--font-roboto-mono",
+  variable: "--font-fira-mono",
+  weight: ["400", "500", "700"],
   display: "swap",
-  adjustFontFallback: false
+  adjustFontFallback: false,
+});
+
+const firaSans = Fira_Sans({
+  subsets: ["latin"],
+  variable: "--font-fira-sans",
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700", "800"],
 });
 
 export default function RootLayout({
@@ -182,11 +188,14 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${raleway.variable} ${inter.variable} ${robotoMono.variable}`}
+      className={`${raleway.variable} ${inter.variable} ${firaMono.variable} ${firaSans.variable}`}
       suppressHydrationWarning
+      style={{
+        fontFeatureSettings: "'pnum' on, 'lnum' on",
+      }}
     >
       <Head />
-      <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway !overflow-x-hidden overflow-y-scroll">
+      <body className="!overflow-x-hidden overflow-y-scroll bg-forest-50 font-raleway text-forest-900 dark:bg-[#1F2726] dark:text-forest-500">
         <script
           dangerouslySetInnerHTML={{
             __html: script,
@@ -198,29 +207,34 @@ export default function RootLayout({
         />
         <Providers>
           <div className="flex h-fit w-full justify-center">
-            <div className="flex w-full max-w-[1680px] min-h-screen">
+            <div className="flex min-h-screen w-full max-w-[1680px]">
               <SidebarContainer />
-              <div className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative min-h-full bg-white dark:bg-inherit">
-                <div className="w-full relative min-h-full">
-                  <div className="background-container !fixed">
+              <div
+                id="content-panel"
+                className="relative z-10 flex min-h-full flex-1 flex-col overflow-y-auto overflow-x-hidden bg-white dark:bg-inherit"
+              >
+                <div className="relative min-h-full w-full">
+                  <div
+                    id="background-container"
+                    className="background-container !fixed"
+                  >
                     <div className="background-gradient-group">
                       <div className="background-gradient-yellow"></div>
                       <div className="background-gradient-green"></div>
                     </div>
                   </div>
                   <Header />
-                  <main className="flex-1 w-full mx-auto z-10 pb-[165px] min-h-[calc(100vh-218px-56px)] md:min-h-[calc(100vh-207px-80px)]">
+                  <main className="z-10 mx-auto min-h-[calc(100vh-218px-56px)] w-full flex-1 pb-[165px] md:min-h-[calc(100vh-207px-80px)]">
                     {children}
                   </main>
-                  <BottomBanner />
+                  {/* <BottomBanner /> */}
+                  <Footer />
                 </div>
               </div>
-              <div className="z-50 flex fixed bottom-[20px] w-full max-w-[1680px] justify-end pointer-events-none">
-                <div className="pr-[20px] md:pr-[50px] pointer-events-auto">
-                  <div className="relative flex gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#5A6462] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
+              <div className="pointer-events-none fixed bottom-[20px] z-50 flex w-full max-w-[1680px] justify-end">
+                <div className="pointer-events-auto pr-[20px] md:pr-[50px]">
                     {/* <Details /> */}
                     <Share />
-                  </div>
                 </div>
               </div>
             </div>

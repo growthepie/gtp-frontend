@@ -6,13 +6,16 @@ export const IS_PRODUCTION =
 
 export const BASE_URLS = {
   development: `http://${process.env.NEXT_PUBLIC_VERCEL_URL}`,
-  preview: "https://dev.fees.growthepie.xyz",
-  production: `https://fees.growthepie.xyz`,
+  preview: "https://dev.growthepie.xyz",
+  production: `https://www.growthepie.xyz`,
 };
 
 export const BASE_URL =
   BASE_URLS[
-    process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL?.includes("dev-fees")
+    // IS_DEVELOPMENT added Sep 9 2024 - so notifications show up on local dev
+    IS_DEVELOPMENT
+      ? "development"
+      : process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL?.includes("dev-")
       ? "preview"
       : "production"
   ];

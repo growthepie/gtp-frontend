@@ -42,13 +42,14 @@ import {
   GradientColorStopObject,
 } from "highcharts/highstock";
 import { baseOptions } from "@/lib/chartUtils";
-import { AllChainsByKeys } from "@/lib/chains";
 import { useUIContext } from "@/contexts/UIContext";
 import { useLocalStorage } from "usehooks-ts";
 import { tooltipFormatter, tooltipPositioner } from "@/lib/chartUtils";
 import { Scrollbars } from "react-custom-scrollbars-2";
 import VerticalScrollContainer from "../VerticalScrollContainer";
 import "@/app/highcharts.axis.css";
+import { useMaster } from "@/contexts/MasterContext";
+import { Sources } from "@/lib/datasources";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -70,6 +71,7 @@ type TopHolderData = {
 };
 
 export default function StableInsights({ }: {}) {
+  const { AllChainsByKeys } = useMaster();
   const [clicked, setClicked] = useState(true);
   const [sortOrder, setSortOrder] = useState(true);
   const [sortMetric, setSortMetric] = useState("balance");
@@ -432,6 +434,27 @@ export default function StableInsights({ }: {}) {
     );
   }, []);
 
+  const SourcesDisplay = useMemo(() => {
+    if (!data) return <></>;
+    return data.source && data.source.length > 0 ? (
+      data.source
+        .map<React.ReactNode>((s) => (
+          <Link
+            key={s}
+            rel="noopener noreferrer"
+            target="_blank"
+            href={Sources[s] ?? ""}
+            className="hover:text-forest-500 dark:hover:text-forest-500 underline"
+          >
+            {s}
+          </Link>
+        ))
+        .reduce((prev, curr) => [prev, ", ", curr])
+    ) : (
+      <>Unavailable</>
+    );
+  }, [data]);
+
   const topValue = useMemo(() => {
     if (!data) return 0;
 
@@ -530,11 +553,14 @@ export default function StableInsights({ }: {}) {
 
             <div className="flex flex-col-reverse lg:flex-row w-full gap-x-[10px] gap-y-[5px]">
               <div className="w-full lg:flex-1 lg:pt-[10px] relative">
-                <GridTableHeader gridDefinitionColumns="grid-cols-[auto,100px,50px]">
-                  <div className="font-semibold text-[14px]">Holder</div>
-                  <div className="flex justify-end font-semibold text-[12px]">Amount</div>
+                <GridTableHeader
+                  gridDefinitionColumns="grid-cols-[auto,100px,50px]"
+                  className="text-[14px] !font-bold gap-x-[15px] z-[2] !pl-[15px] !pr-[44px] !pt-[10px] !pb-[3px] select-none"
+                >
+                  <div className="text-[14px]">Holder</div>
+                  <div className="flex justify-end text-[12px]">Amount</div>
                   <div className="flex justify-end">
-                    <div className="flex justify-center text-[9px] items-center bg-[#344240] rounded-full h-[16px] w-[45px] font-medium leading-tight">Share</div>
+                    <div className="flex justify-center text-[9px] items-center bg-[#344240] rounded-full h-[16px] w-[45px] font-bold leading-tight">Share</div>
                   </div>
                 </GridTableHeader>
                 <VerticalScrollContainer height={420}>
@@ -955,13 +981,15 @@ export default function StableInsights({ }: {}) {
                   </div>
                 </TooltipTrigger>
                 <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
-                  <div className="px-3 font-medium gap-x-1 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-autow-[420px] h-[80px] flex items-center">
-                    Data Sources:{" "}
-                    {data.source.map((key, index) => (
-                      <span key={index} className="font-normal">
-                        {key}
-                      </span>
-                    ))}
+                  <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
+                    <div className="flex flex-col space-y-1">
+                      <div className="font-bold text-sm leading-snug">
+                        Data Sources:
+                      </div>
+                      <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
+                        {SourcesDisplay}
+                      </div>
+                    </div>
                   </div>
                 </TooltipContent>
               </InfoToolTip>
@@ -1016,9 +1044,9 @@ const GridTableRow = ({ children, gridDefinitionColumns, style, className, datab
 
 const WorldIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path fill-rule="evenodd" clip-rule="evenodd" d="M7.52757 1.86364C4.12609 1.86364 1.36865 4.61098 1.36865 8C1.36865 11.389 4.12609 14.1364 7.52757 14.1364C10.9291 14.1364 13.6865 11.389 13.6865 8C13.6865 4.61098 10.9291 1.86364 7.52757 1.86364ZM0 8C0 3.85786 3.37021 0.5 7.52757 0.5C11.6849 0.5 15.0551 3.85786 15.0551 8C15.0551 12.1421 11.6849 15.5 7.52757 15.5C3.37021 15.5 0 12.1421 0 8Z" fill="#CDD8D3" />
-    <path fill-rule="evenodd" clip-rule="evenodd" d="M0 8C0 7.62344 0.306383 7.31818 0.684325 7.31818H14.3708C14.7488 7.31818 15.0551 7.62344 15.0551 8C15.0551 8.37656 14.7488 8.68182 14.3708 8.68182H0.684325C0.306383 8.68182 0 8.37656 0 8Z" fill="#CDD8D3" />
-    <path fill-rule="evenodd" clip-rule="evenodd" d="M5.47476 8C5.52166 10.0965 6.24532 12.1149 7.52757 13.7608C8.80982 12.1149 9.53349 10.0965 9.58039 8C9.53349 5.90352 8.80982 3.88512 7.52757 2.23918C6.24532 3.88512 5.52166 5.90352 5.47476 8ZM7.52757 1.18182L7.02231 0.721984C5.19874 2.71107 4.16242 5.2924 4.1061 7.9858C4.1059 7.99527 4.1059 8.00473 4.1061 8.0142C4.16242 10.7076 5.19874 13.2889 7.02231 15.278C7.15196 15.4194 7.33533 15.5 7.52757 15.5C7.71981 15.5 7.90319 15.4194 8.03284 15.278C9.85641 13.2889 10.8927 10.7076 10.949 8.0142C10.9492 8.00473 10.9492 7.99527 10.949 7.9858C10.8927 5.2924 9.85641 2.71107 8.03284 0.721984L7.52757 1.18182Z" fill="#CDD8D3" />
+    <path fillRule="evenodd" clipRule="evenodd" d="M7.52757 1.86364C4.12609 1.86364 1.36865 4.61098 1.36865 8C1.36865 11.389 4.12609 14.1364 7.52757 14.1364C10.9291 14.1364 13.6865 11.389 13.6865 8C13.6865 4.61098 10.9291 1.86364 7.52757 1.86364ZM0 8C0 3.85786 3.37021 0.5 7.52757 0.5C11.6849 0.5 15.0551 3.85786 15.0551 8C15.0551 12.1421 11.6849 15.5 7.52757 15.5C3.37021 15.5 0 12.1421 0 8Z" fill="#CDD8D3" />
+    <path fillRule="evenodd" clipRule="evenodd" d="M0 8C0 7.62344 0.306383 7.31818 0.684325 7.31818H14.3708C14.7488 7.31818 15.0551 7.62344 15.0551 8C15.0551 8.37656 14.7488 8.68182 14.3708 8.68182H0.684325C0.306383 8.68182 0 8.37656 0 8Z" fill="#CDD8D3" />
+    <path fillRule="evenodd" clipRule="evenodd" d="M5.47476 8C5.52166 10.0965 6.24532 12.1149 7.52757 13.7608C8.80982 12.1149 9.53349 10.0965 9.58039 8C9.53349 5.90352 8.80982 3.88512 7.52757 2.23918C6.24532 3.88512 5.52166 5.90352 5.47476 8ZM7.52757 1.18182L7.02231 0.721984C5.19874 2.71107 4.16242 5.2924 4.1061 7.9858C4.1059 7.99527 4.1059 8.00473 4.1061 8.0142C4.16242 10.7076 5.19874 13.2889 7.02231 15.278C7.15196 15.4194 7.33533 15.5 7.52757 15.5C7.71981 15.5 7.90319 15.4194 8.03284 15.278C9.85641 13.2889 10.8927 10.7076 10.949 8.0142C10.9492 8.00473 10.9492 7.99527 10.949 7.9858C10.8927 5.2924 9.85641 2.71107 8.03284 0.721984L7.52757 1.18182Z" fill="#CDD8D3" />
   </svg>
 );
 

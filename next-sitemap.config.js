@@ -1,4 +1,4 @@
-const baseUrl = "https://fees.growthepie.xyz";
+const baseUrl = "https://www.growthepie.xyz";
 
 // for www.growthepie.xyz & dev.growthepie.xyz
 const gtpMain = {
@@ -18,6 +18,8 @@ const gtpMain = {
     "/contracts",
     "/economics",
     "/scroll",
+    "/labels",
+    "/refactor",
   ],
   robotsTxtOptions: {
     exclude: ["/server-sitemap.xml"],
@@ -47,11 +49,52 @@ const gtpFees = {
     "/contracts",
     "/economics",
     "/scroll",
+    "/labels",
+    "/refactor",
   ],
   robotsTxtOptions: {
     exclude: ["/server-sitemap.xml"],
   },
 };
 
+// for labels.growthepie.xyz & dev.labels.growthepie.xyz
+const gtpLabels = {
+  siteUrl: "https://labels.growthepie.xyz",
+  generateRobotsTxt: true,
+  exclude: [
+    "/blog",
+    "/api/*",
+    "/embed/*",
+    "/embed",
+    "/trackers/*",
+    "/blockspace/*",
+    "/fees",
+    "/contracts",
+    "/contributors",
+    "/imprint",
+    "/privacy-policy",
+    "/server-sitemap.xml",
+    "/helpers",
+    "/fees-explainer",
+    "/contracts",
+    "/economics",
+    "/scroll",
+    "/labels",
+    "/refactor",
+  ],
+  robotsTxtOptions: {
+    exclude: ["/server-sitemap.xml"],
+  },
+};
+
+let exportOjb = gtpMain;
+
+if (baseUrl.includes("labels.")) {
+  exportOjb = gtpLabels;
+}
+if (baseUrl.includes("fees.")) {
+  exportOjb = gtpFees;
+}
+
 /** @type {import('next-sitemap').IConfig} */
-module.exports = baseUrl.includes("fees.") ? gtpFees : gtpMain;
+module.exports = exportOjb;

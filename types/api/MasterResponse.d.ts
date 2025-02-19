@@ -1,23 +1,47 @@
 ﻿export interface MasterResponse {
   current_version: string;
   chains: Chains;
+  custom_logos: { [key: string]: CustomLogo };
   metrics: Metrics;
+  app_metrics: Metrics;
+  da_metrics: Metrics;
   fee_metrics: FeeMetrics;
   default_chain_selection: string[];
   blockspace_categories: BlockspaceCategories;
+  da_layers: DataAvailabilityLayers;
 }
 
 export interface Chains {
   [key: string]: ChainInfo;
 }
 
+export interface CustomLogo {
+  body: string;
+  width?: number;
+  height?: number;
+}
+
 export interface ChainInfo {
   name: string;
+  name_short: string;
+  url_key: string;
+  chain_type: string;
+  ecosystem: string[];
   deployment: "PROD" | "DEV";
   name_short: string;
   description: string;
   symbol: string;
   bucket: string;
+  colors: {
+    light: [string, string];
+    dark: [string, string];
+    darkTextOnBackground: boolean;
+  };
+  logo: {
+    body: string;
+    width?: number;
+    height?: number;
+  };
   da_layer: string;
   technology: string;
   purpose: string;
@@ -25,22 +49,27 @@ export interface ChainInfo {
   website: string;
   twitter: string;
   block_explorer: string;
-  block_explorers: {
-    [key: string]: string;
-  };
+  block_explorers: BlockExplorers;
   rhino_listed: boolean;
   rhino_naming: string;
-  l2beat_stage: {
-    stage: string;
-    hex: string;
-  };
+  l2beat_stage: L2BeatStage;
   l2beat_link: string;
   raas: string;
-  stack: {
-    label: string;
-    url: string;
-  };
+  stack: Stack;
   enable_contracts: boolean;
+}
+
+export interface BlockExplorers {
+  [key: string]: string;
+}
+
+export interface L2BeatStage {
+  stage: string;
+  hex: string;
+}
+export interface Stack {
+  label: string;
+  url: string;
 }
 
 export interface Metrics {
@@ -50,9 +79,32 @@ export interface Metrics {
 export interface MetricInfo {
   name: string;
   metric_keys: string[];
-  units: string[];
+  units: { [key: string]: UnitSchema };
   avg: boolean;
   all_l2s_aggregate: string;
+  fundamental: boolean;
+  log_default: boolean;
+  max_date_fill: boolean;
+  monthly_agg: "sum" | "avg" | "maa";
+}
+
+export interface DataAvailabilityLayers {
+  [key: string]: DataAvailabilityLayerData;
+}
+
+export interface DataAvailabilityLayerData {
+  name: string;
+  name_short: string;
+  logo: {
+    body: string;
+    width?: number;
+    height?: number;
+  };
+  colors: {
+    light: [string, string];
+    dark: [string, string];
+    darkTextOnBackground: boolean;
+  };
 }
 
 export interface FeeMetrics {

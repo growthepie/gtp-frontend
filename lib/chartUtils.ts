@@ -1,6 +1,6 @@
 import * as d3 from "d3";
-import { AllChainsByKeys } from "./chains";
 import Highcharts from "highcharts";
+import { Chain, Get_AllChainsByKeysFromSessionStorage } from "./chains";
 
 export const ChartColors = {
   GRID: "rgb(215, 223, 222)",
@@ -27,6 +27,8 @@ export const tooltipFormatter = (
   const percentageFormatter = function (
     this: Highcharts.TooltipFormatterContextObject,
   ) {
+    // get AllChainsByKeys from session storage
+    const AllChainsByKeys = Get_AllChainsByKeysFromSessionStorage();
     // shared tooltip
     const { points } = this;
 
@@ -100,8 +102,8 @@ export const tooltipFormatter = (
           </div>
         
         </div>
-        <div class="tooltip-point-name">${label}</div>
-        <div class="flex-1 text-right font-inter">${value}</div>
+        <div class="tooltip-point-name text-xs">${label}</div>
+         <div class="flex-1 text-right justify-end flex numbers-xs">${value}</div>
       </div>
       <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
         <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white dark:bg-forest-1000" style="
@@ -147,6 +149,8 @@ export const tooltipFormatter = (
   const normalFormatter = function (
     this: Highcharts.TooltipFormatterContextObject,
   ) {
+    // get AllChainsByKeys from session storage
+    const AllChainsByKeys = Get_AllChainsByKeysFromSessionStorage();
     // shared tooltip
     const { points } = this;
     if (!points || points.length < 1) {
@@ -176,7 +180,7 @@ export const tooltipFormatter = (
 
     if (dataKey) {
       if (dataKey.includes("eth")) {
-        suffix = "Ξ";
+        prefix = "Ξ";
       } else if (dataKey.includes("usd")) {
         prefix = "$";
       }
@@ -236,14 +240,14 @@ export const tooltipFormatter = (
             opacity: ${fillOpacity};
           "></div>
         </div>
-        <div class="tooltip-point-name">${label}</div>
-        <div class="flex-1 text-right justify-end font-inter flex">
-          <div class="opacity-70 mr-0.5 ${!prefix && "hidden"}">${prefix}</div>
+        <div class="tooltip-point-name text-xs">${label}</div>
+         <div class="flex-1 text-right justify-end flex numbers-xs">
+          <div class="${!prefix && "hidden"}">${prefix}</div>
           ${parseFloat(value).toLocaleString("en-GB", {
             minimumFractionDigits: 0,
             maximumFractionDigits: showTime ? (name === "base" ? 4 : 3) : 2,
           })}
-          <div class="opacity-70 ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
+          <div class="ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
         </div>
       </div>
       <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -265,16 +269,16 @@ export const tooltipFormatter = (
       tooltip += `
         <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-70">
           <div class="w-4 h-1.5 rounded-r-full" style=""></div>
-          <div class="tooltip-point-name text-md">Total</div>
-          <div class="flex-1 text-right justify-end font-inter flex">
-              <div class="opacity-70 mr-0.5 ${
+          <div class="tooltip-point-name text-xs">Total</div>
+           <div class="flex-1 text-right justify-end flex numbers-xs">
+              <div class="${
                 !prefix && "hidden"
               }">${prefix}</div>
               ${parseFloat(value).toLocaleString("en-GB", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
-              <div class="opacity-70 ml-0.5 ${
+              <div class="ml-0.5 ${
                 !suffix && "hidden"
               }">${suffix}</div>
           </div>
@@ -331,7 +335,7 @@ export const tooltipPositioner = function (this, width, height, point) {
   };
 };
 
-export const baseOptions: any = {
+export const baseOptions: Highcharts.Options = {
   accessibility: { enabled: false },
   exporting: { enabled: false },
   chart: {
@@ -381,6 +385,8 @@ export const baseOptions: any = {
       y: 5,
       style: {
         color: "rgb(215, 223, 222)",
+        fontSize: "10px",
+        fontWeight: "700",
       },
       formatter: function (t: Highcharts.AxisLabelsFormatterContextObject) {
         return formatNumber(t.value, true);
@@ -559,17 +565,16 @@ export const formatNumber =
 
 type TimespanSelections = "1d" | "7d" | "30d" | "90d" | "180d" | "365d" | "max";
 
-export const getTimespans = (
-  data?,
-  isPercentageScale = false,
-): {
+export type Timespans = {
   [key in TimespanSelections]: {
     label: string;
     value: number;
     xMin: number;
     xMax: number;
   };
-} => {
+};
+
+export const getTimespans = (data?, isPercentageScale = false): Timespans => {
   const maxDate = data
     ? new Date(data.length > 0 ? data[data.length - 1][0] : 0)
     : new Date();

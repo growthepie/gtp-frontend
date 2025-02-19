@@ -1,30 +1,30 @@
 "use client";
-import { useMemo, useState, useEffect } from "react";
-import Error from "next/error";
 import { MetricsResponse } from "@/types/api/MetricsResponse";
-import Heading from "@/components/layout/Heading";
-import Subheading from "@/components/layout/Subheading";
-import ComparisonChart from "@/components/layout/ComparisonChart";
-import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import useSWR from "swr";
-import MetricsTable from "@/components/layout/MetricsTable";
 import { MetricsURLs } from "@/lib/urls";
 import {
-  AllChains,
-  Get_DefaultChainSelectionKeys,
-  Get_SupportedChainKeys,
 } from "@/lib/chains";
-import { intersection } from "lodash";
-import { Icon } from "@iconify/react";
-import QuestionAnswer from "@/components/layout/QuestionAnswer";
-import { navigationItems } from "@/lib/navigation";
-import Container from "@/components/layout/Container";
+import { PageContainer } from "@/components/layout/Container";
 import ShowLoading from "@/components/layout/ShowLoading";
-import Image from "next/image";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import { MetricDataProvider, } from "@/components/metric/MetricDataContext";
+import { MetricChartControlsProvider } from "@/components/metric/MetricChartControlsContext";
+import { MetricSeriesProvider } from "@/components/metric/MetricSeriesContext";
+import { useParams } from "next/navigation";
+import MetricChart from "@/components/metric/MetricChart";
+import MetricTable from "@/components/metric/MetricTable";
+import { MetricBottomControls, MetricTopControls } from "@/components/metric/MetricControls";
 
-const Fundamentals = ({ params }: { params: any }) => {
+const monthly_agg_labels = {
+  avg: "Average",
+  sum: "Total",
+  unique: "Distinct",
+  distinct: "Distinct",
+};
+
+const Fundamentals = ({ params: { metric } }) => {
+  const { is_og } = useParams();
   const {
     data: master,
     error: masterError,
@@ -37,7 +37,7 @@ const Fundamentals = ({ params }: { params: any }) => {
     error: metricError,
     isLoading: metricLoading,
     isValidating: metricValidating,
-  } = useSWR<MetricsResponse>(MetricsURLs[params.metric]);
+  } = useSWR<MetricsResponse>(MetricsURLs[metric]);
 
   return (
     <>
@@ -46,7 +46,7 @@ const Fundamentals = ({ params }: { params: any }) => {
         dataValidating={[masterValidating, metricValidating]}
       />
       {master && metricData ? (
-        <FundamentalsContent params={{ ...params, master, metricData }} />
+        <FundamentalsContent metric={metric} type="fundamentals" />
       ) : (
         <div className="w-full min-h-[1024px] md:min-h-[1081px] lg:min-h-[637px] xl:min-h-[736px]" />
       )}
@@ -54,130 +54,37 @@ const Fundamentals = ({ params }: { params: any }) => {
   );
 };
 
-const FundamentalsContent = ({ params }: { params: any }) => {
-  const master = params.master;
-  const metricData = params.metricData;
-  const [errorCode, setErrorCode] = useState<number | null>(null);
+type FundamentalsContentProps = {
+  metric: string;
+  type: "fundamentals" | "data-availability";
+};
 
-  const chainKeys = useMemo(() => {
-    if (!metricData)
-      return AllChains.filter((chain) =>
-        Get_SupportedChainKeys(master).includes(chain.key),
-      ).map((chain) => chain.key);
-
-    return AllChains.filter(
-      (chain) =>
-        Object.keys(metricData.data.chains).includes(chain.key) &&
-        Get_SupportedChainKeys(master).includes(chain.key),
-    ).map((chain) => chain.key);
-  }, [master, metricData]);
-
-  // const pageData = navigationItems[1]?.options.find(
-  //   (item) => item.urlKey === params.metric,
-  // )?.page ?? {
-  //   title: "",
-  //   description: "",
-  //   icon: "",
-  // };
-
-  const [selectedChains, setSelectedChains] = useSessionStorage(
-    "fundamentalsChains",
-    [...Get_DefaultChainSelectionKeys(master), "ethereum"],
-  );
-
-  const [selectedScale, setSelectedScale] = useSessionStorage(
-    "fundamentalsScale",
-    "absolute",
-  );
-
-  const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
-    "fundamentalsTimespan",
-    "365d",
-  );
-
-  const [selectedTimeInterval, setSelectedTimeInterval] = useSessionStorage(
-    "fundamentalsTimeInterval",
-    "daily",
-  );
-
-  const [showEthereumMainnet, setShowEthereumMainnet] = useSessionStorage(
-    "fundamentalsShowEthereumMainnet",
-    false,
-  );
-
-  useEffect(() => {
-    let currentURL = window.location.href;
-    if (currentURL.includes("?is_og=true")) {
-      setSelectedScale("stacked");
-    }
-  }, []);
-
-  const timeIntervalKey = useMemo(() => {
-    if (
-      metricData?.data.avg === true &&
-      ["365d", "max"].includes(selectedTimespan)
-    ) {
-      return "daily_7d_rolling";
-    }
-
-    if (selectedTimeInterval === "monthly") {
-      return "monthly";
-    }
-
-    return "daily";
-  }, [metricData, selectedTimeInterval, selectedTimespan]);
-
-  if (errorCode) {
-    return <Error statusCode={errorCode} />;
-  }
-
+const FundamentalsContent = ({ metric, type }: FundamentalsContentProps) => {
   return (
     <>
-      <div className="flex flex-col-reverse xl:flex-row space-x-0 xl:space-x-2">
-        <ComparisonChart
-          data={Object.keys(metricData.data.chains)
-            .filter((chain) => selectedChains.includes(chain))
-            .map((chain) => {
-              return {
-                name: chain,
-                // type: 'spline',
-                types: metricData.data.chains[chain][timeIntervalKey].types,
-                data: metricData.data.chains[chain][timeIntervalKey].data,
-              };
-            })}
-          metric_id={metricData.data.metric_id}
-          timeIntervals={intersection(
-            Object.keys(metricData.data.chains.arbitrum),
-            ["daily", "weekly", "monthly"],
-          )}
-          selectedTimeInterval={selectedTimeInterval}
-          setSelectedTimeInterval={setSelectedTimeInterval}
-          showTimeIntervals={true}
-          sources={metricData.data.source}
-          avg={metricData.data.avg}
-          monthly_agg={metricData.data.monthly_agg}
-          showEthereumMainnet={showEthereumMainnet}
-          setShowEthereumMainnet={setShowEthereumMainnet}
-          selectedTimespan={selectedTimespan}
-          setSelectedTimespan={setSelectedTimespan}
-          selectedScale={
-            params.metric === "transaction-costs" ? "absolute" : selectedScale
-          }
-          setSelectedScale={setSelectedScale}
-        >
-          <MetricsTable
-            data={metricData.data.chains}
-            master={master}
-            selectedChains={selectedChains}
-            setSelectedChains={setSelectedChains}
-            chainKeys={chainKeys}
-            metric_id={metricData.data.metric_id}
-            showEthereumMainnet={showEthereumMainnet}
-            setShowEthereumMainnet={setShowEthereumMainnet}
-            timeIntervalKey={timeIntervalKey}
-          />
-        </ComparisonChart>
-      </div>
+      <MetricDataProvider metric={metric} metric_type="fundamentals">
+        <MetricChartControlsProvider metric_type={type}>
+          <MetricSeriesProvider metric_type={type}>
+            <PageContainer className="" paddingY="none">
+              <MetricTopControls metric={metric} />
+            </PageContainer>
+            <div className="flex flex-col lg:flex-row-reverse gap-y-[15px] px-0 lg:px-[50px]">
+              <div className="w-full h-[434px] lg:!w-[calc(100%-503px)] lg:h-[434px] px-[20px] md:px-[50px] lg:px-0">
+                <MetricChart metric_type={type} />
+              </div>
+              <PageContainer className="block lg:hidden" paddingY="none">
+                <MetricBottomControls metric={metric} />
+              </PageContainer>
+              <div className="w-full lg:!w-[503px]">
+                <MetricTable metric_type={type} />
+              </div>
+            </div>
+            <PageContainer className="hidden md:block" paddingY="none">
+              <MetricBottomControls metric={metric} />
+            </PageContainer>
+          </MetricSeriesProvider>
+        </MetricChartControlsProvider>
+      </MetricDataProvider >
     </>
   );
 };

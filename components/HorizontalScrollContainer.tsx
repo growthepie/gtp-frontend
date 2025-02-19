@@ -3,7 +3,6 @@
 import {
   useCallback,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -12,13 +11,14 @@ import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
 type HorizontalScrollContainerProps = {
   className?: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   includeMargin?: boolean;
   paddingRight?: number;
   paddingLeft?: number;
   paddingTop?: number;
   paddingBottom?: number;
   forcedMinWidth?: number;
+  reduceLeftMask?: boolean;
 };
 
 export default function HorizontalScrollContainer({
@@ -29,10 +29,11 @@ export default function HorizontalScrollContainer({
   paddingLeft = 0,
   paddingTop = 0,
   paddingBottom = 0,
+  reduceLeftMask = false,
   forcedMinWidth,
 }: HorizontalScrollContainerProps) {
   const [currentScrollPercentage, setCurrentScrollPercentage] = useState(0);
-  const [contentSrollAreaRef, { width: contentSrollAreaWidth }] =
+  const [contentScrollAreaRef, { width: contentScrollAreaWidth }] =
     useElementSizeObserver<HTMLDivElement>();
   const [scrollerRef, { width: scrollerWidth }] =
     useElementSizeObserver<HTMLDivElement>();
@@ -40,177 +41,218 @@ export default function HorizontalScrollContainer({
     useElementSizeObserver<HTMLDivElement>();
   const grabberRef = useRef<HTMLDivElement>(null);
 
+  const isDragging = useRef(false);
+  const animationFrame = useRef<number | null>(null);
+  const startXRef = useRef<number>(0);
+  const startScrollLeftRef = useRef<number>(0);
+
+  // Update the current scroll percentage based on scrollLeft
   const updateScrollableAreaScroll = useCallback(() => {
-    const contentArea = contentSrollAreaRef.current;
+    const contentArea = contentScrollAreaRef.current;
     if (contentArea) {
       const scrollableWidth = contentArea.scrollWidth - contentArea.clientWidth;
-      const scrollPercentage = (contentArea.scrollLeft / scrollableWidth) * 100;
+      const scrollPercentage = scrollableWidth
+        ? (contentArea.scrollLeft / scrollableWidth) * 100
+        : 0;
       setCurrentScrollPercentage(scrollPercentage);
     }
-  }, [contentSrollAreaRef]);
+  }, [contentScrollAreaRef]);
 
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      if (!contentSrollAreaRef.current || !grabberRef.current) {
+  // Unified dragging handler for both mouse and touch
+  const handleDragStart = useCallback(
+    (clientX: number) => {
+      if (!contentScrollAreaRef.current || !grabberRef.current) {
         return;
       }
 
-      const startPos = {
-        left: contentSrollAreaRef.current.scrollLeft,
-        x: e.clientX,
-      };
+      isDragging.current = true;
+      startXRef.current = clientX;
+      startScrollLeftRef.current = contentScrollAreaRef.current.scrollLeft;
 
-      const handleMouseMove = (e: MouseEvent) => {
-        if (!contentSrollAreaRef.current || !grabberRef.current) {
+      const handleMove = (e: MouseEvent | TouchEvent) => {
+        if (!isDragging.current || !contentScrollAreaRef.current) {
           return;
         }
 
-        // calculate the distance moved by the mouse
-        const dx = e.clientX - startPos.x;
+        let currentX: number;
+        if (e instanceof MouseEvent) {
+          currentX = e.clientX;
+        } else if (e instanceof TouchEvent) {
+          currentX = e.touches[0].clientX;
+        } else {
+          return;
+        }
 
-        // calculate the scrollable width
+        const dx = currentX - startXRef.current;
         const scrollableWidth =
-          contentSrollAreaRef.current.scrollWidth -
-          contentSrollAreaRef.current.clientWidth;
-
-        // scale the dx value to match the scrollable width proportionately
+          contentScrollAreaRef.current.scrollWidth -
+          contentScrollAreaRef.current.clientWidth;
         const scaledDx =
-          (dx / contentSrollAreaRef.current.clientWidth) * scrollableWidth;
+          (dx / contentScrollAreaRef.current.clientWidth) * scrollableWidth;
+        const scrollLeft = startScrollLeftRef.current + scaledDx;
 
-        // calculate the new scrollLeft value
-        const scrollLeft = startPos.left + scaledDx;
-
-        // set the new scrollLeft value
-        contentSrollAreaRef.current.scrollLeft = Math.max(
-          0,
-          Math.min(scrollableWidth, scrollLeft),
-        );
-
-        updateScrollableAreaScroll();
-        updateCursor(grabberRef.current);
+        // Use requestAnimationFrame for smoother updates
+        if (animationFrame.current !== null) {
+          cancelAnimationFrame(animationFrame.current);
+        }
+        animationFrame.current = requestAnimationFrame(() => {
+          contentScrollAreaRef.current!.scrollLeft = Math.max(
+            0,
+            Math.min(scrollableWidth, scrollLeft)
+          );
+          updateScrollableAreaScroll();
+        });
       };
 
-      const handleMouseUp = () => {
-        if (!contentSrollAreaRef.current || !grabberRef.current) {
-          return;
+      const handleEnd = () => {
+        isDragging.current = false;
+        if (animationFrame.current !== null) {
+          cancelAnimationFrame(animationFrame.current);
+          animationFrame.current = null;
         }
-
-        document.removeEventListener("mousemove", handleMouseMove);
-        document.removeEventListener("mouseup", handleMouseUp);
+        document.removeEventListener("mousemove", handleMove);
+        document.removeEventListener("mouseup", handleEnd);
+        document.removeEventListener("touchmove", handleMove);
+        document.removeEventListener("touchend", handleEnd);
         resetCursor(grabberRef.current);
       };
 
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
+      // Add event listeners for both mouse and touch
+      document.addEventListener("mousemove", handleMove);
+      document.addEventListener("mouseup", handleEnd);
+      document.addEventListener("touchmove", handleMove, { passive: false });
+      document.addEventListener("touchend", handleEnd);
+      updateCursor(grabberRef.current);
     },
-    [contentSrollAreaRef, updateScrollableAreaScroll],
+    [contentScrollAreaRef, updateScrollableAreaScroll]
   );
 
-  const handleTouchStart = useCallback(
+  // Handle dragging via the thumb (mouse)
+  const handleThumbMouseDown = useCallback(
+    (e: React.MouseEvent | MouseEvent) => {
+      e.stopPropagation(); // Prevent triggering the track's onMouseDown
+      e.preventDefault(); // Prevent text selection
+      handleDragStart(e.clientX);
+    },
+    [handleDragStart]
+  );
+
+  // Handle dragging via touch on the thumb
+  const handleThumbTouchStart = useCallback(
     (e: React.TouchEvent) => {
-      if (!contentSrollAreaRef.current || !grabberRef.current) {
+      e.stopPropagation(); // Prevent triggering the track's onTouchStart
+      e.preventDefault(); // Prevent default touch behaviors
+      const touch = e.touches[0];
+      handleDragStart(touch.clientX);
+    },
+    [handleDragStart]
+  );
+
+  // Handle clicking and dragging on the track (mouse)
+  const handleBarMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      // Prevent default behavior to avoid unwanted selections
+      e.preventDefault();
+
+      if (!contentScrollAreaRef.current || !scrollerRef.current) {
         return;
       }
-      const touch = e.touches[0];
-      const startPos = {
-        left: contentSrollAreaRef.current.scrollLeft,
-        x: touch.clientX,
-      };
 
-      const handleTouchMove = (e: TouchEvent) => {
-        if (!contentSrollAreaRef.current || !grabberRef.current) {
-          return;
-        }
-        const touch = e.touches[0];
-        const dx = touch.clientX - startPos.x;
-        const scrollableWidth =
-          contentSrollAreaRef.current.scrollWidth -
-          contentSrollAreaRef.current.clientWidth;
-        const scrollLeft = startPos.left + dx;
-        contentSrollAreaRef.current.scrollLeft = Math.max(
-          0,
-          Math.min(scrollableWidth, scrollLeft),
-        );
+      const scrollableArea = contentScrollAreaRef.current;
+      const scroller = scrollerRef.current;
 
-        updateScrollableAreaScroll();
-        updateCursor(grabberRef.current);
-      };
+      const rect = scroller.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const scrollerWidthLocal = scroller.clientWidth;
+      const newScrollPercentage = (clickX / scrollerWidthLocal) * 100;
 
-      const handleTouchEnd = () => {
-        if (!contentSrollAreaRef.current || !grabberRef.current) {
-          return;
-        }
-        document.removeEventListener("touchmove", handleTouchMove);
-        document.removeEventListener("touchend", handleTouchEnd);
-        resetCursor(grabberRef.current);
-      };
+      const scrollableWidth = scrollableArea.scrollWidth - scrollableArea.clientWidth;
+      const newScrollLeft = (newScrollPercentage / 100) * scrollableWidth;
 
-      document.addEventListener("touchmove", handleTouchMove);
-      document.addEventListener("touchend", handleTouchEnd);
+      // Set the new scroll position
+      scrollableArea.scrollLeft = Math.max(0, Math.min(scrollableWidth, newScrollLeft));
+      updateScrollableAreaScroll();
+
+      // Initiate dragging
+      handleDragStart(e.clientX);
     },
-    [contentSrollAreaRef, updateScrollableAreaScroll],
+    [contentScrollAreaRef, scrollerRef, updateScrollableAreaScroll, handleDragStart]
   );
 
-  const updateCursor = (node: HTMLDivElement) => {
-    node.style.cursor = "grabbing";
+  // Handle clicking and dragging on the track (touch)
+  const handleBarTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      e.preventDefault();
+
+      if (!contentScrollAreaRef.current || !scrollerRef.current) {
+        return;
+      }
+
+      const scrollableArea = contentScrollAreaRef.current;
+      const scroller = scrollerRef.current;
+
+      const rect = scroller.getBoundingClientRect();
+      const touch = e.touches[0];
+      const clickX = touch.clientX - rect.left;
+      const scrollerWidthLocal = scroller.clientWidth;
+      const newScrollPercentage = (clickX / scrollerWidthLocal) * 100;
+
+      const scrollableWidth = scrollableArea.scrollWidth - scrollableArea.clientWidth;
+      const newScrollLeft = (newScrollPercentage / 100) * scrollableWidth;
+
+      // Set the new scroll position
+      scrollableArea.scrollLeft = Math.max(0, Math.min(scrollableWidth, newScrollLeft));
+      updateScrollableAreaScroll();
+
+      // Initiate dragging
+      handleDragStart(touch.clientX);
+    },
+    [contentScrollAreaRef, scrollerRef, updateScrollableAreaScroll, handleDragStart]
+  );
+
+  // Update cursor styles during dragging
+  const updateCursor = (node: HTMLDivElement | null) => {
+    if (node) {
+      node.style.cursor = "grabbing";
+    }
     document.body.style.userSelect = "none";
   };
 
-  const resetCursor = (node: HTMLDivElement) => {
-    node.style.cursor = "grab";
+  const resetCursor = (node: HTMLDivElement | null) => {
+    if (node) {
+      node.style.cursor = "grab";
+    }
     document.body.style.removeProperty("user-select");
   };
 
+  // Listen to scroll events to update the thumb position
   useEffect(() => {
-    const scrollableArea = contentSrollAreaRef.current;
+    const scrollableArea = contentScrollAreaRef.current;
 
     if (scrollableArea) {
       scrollableArea.addEventListener("scroll", updateScrollableAreaScroll);
     }
     return () => {
       if (scrollableArea) {
-        scrollableArea.removeEventListener(
-          "scroll",
-          updateScrollableAreaScroll,
-        );
+        scrollableArea.removeEventListener("scroll", updateScrollableAreaScroll);
       }
     };
-  }, [contentSrollAreaRef, updateScrollableAreaScroll]);
+  }, [contentScrollAreaRef, updateScrollableAreaScroll]);
 
+  // Calculate the thumb's horizontal position
   const scrollerX = useMemo(() => {
     if (scrollerWidth === 0) {
-      return "0px";
+      return "0%";
     }
-    return currentScrollPercentage * (scrollerWidth / 100) + "px";
+    return `${currentScrollPercentage}%`;
   }, [currentScrollPercentage, scrollerWidth]);
 
-  // const [showScroller, setShowScroller] = useState(false);
-
+  // Determine whether to show the custom scrollbar
   const showScroller = useMemo(() => {
-    return contentWidth > contentSrollAreaWidth;
-  }, [contentWidth, contentSrollAreaWidth]);
+    return contentWidth > contentScrollAreaWidth;
+  }, [contentWidth, contentScrollAreaWidth]);
 
-  const handleBarClick = (e: React.MouseEvent) => {
-    if (!contentSrollAreaRef.current) {
-      return;
-    }
-
-    const scrollableWidth =
-      contentSrollAreaRef.current.scrollWidth -
-      contentSrollAreaRef.current.clientWidth;
-    const dx =
-      e.clientX - contentSrollAreaRef.current.getBoundingClientRect().left;
-    const scrollLeft =
-      (dx / contentSrollAreaRef.current.clientWidth) * scrollableWidth;
-    contentSrollAreaRef.current.scrollLeft = Math.max(
-      0,
-      Math.min(scrollableWidth, scrollLeft),
-    );
-    updateScrollableAreaScroll();
-
-    handleMouseDown(e);
-  };
-
+  // Manage gradient masks based on scroll position
   const [maskGradient, setMaskGradient] = useState<string>("");
 
   const showLeftGradient = useMemo(() => {
@@ -218,21 +260,27 @@ export default function HorizontalScrollContainer({
   }, [currentScrollPercentage]);
 
   const showRightGradient = useMemo(() => {
-    return currentScrollPercentage < 100;
-  }, [currentScrollPercentage]);
+    if (!forcedMinWidth) return currentScrollPercentage < 100;
+    else
+      return (
+        currentScrollPercentage < 100 && contentScrollAreaWidth <= forcedMinWidth
+      );
+  }, [currentScrollPercentage, contentScrollAreaWidth, forcedMinWidth]);
+
+  const leftMaskWidth = reduceLeftMask ? 20 : 50;
 
   useEffect(() => {
     if (showLeftGradient && showRightGradient) {
       setMaskGradient(
-        "linear-gradient(to right, transparent, black 50px, black calc(100% - 50px), transparent)",
+        `linear-gradient(to right, transparent, black ${leftMaskWidth}px, black calc(100% - 50px), transparent)`
       );
     } else if (showLeftGradient) {
       setMaskGradient(
-        "linear-gradient(to right, transparent, black 50px, black)",
+        `linear-gradient(to right, transparent, black ${leftMaskWidth}px, black)`
       );
     } else if (showRightGradient) {
       setMaskGradient(
-        "linear-gradient(to left, transparent, black 50px, black)",
+        "linear-gradient(to left, transparent, black 50px, black)"
       );
     } else {
       setMaskGradient("");
@@ -240,23 +288,34 @@ export default function HorizontalScrollContainer({
   }, [showLeftGradient, showRightGradient]);
 
   return (
-    <div className={`relative w-full px-0 overflow-x-hidden ${className}`}>
+    <div className={`relative w-full px-0 overflow-x-hidden overflow-y-hidden ${className}`}>
+      {/* Left Gradient Mask */}
       <div
-        className={`transition-all duration-300 ${
-          showScroller && showLeftGradient ? "opacity-100" : "opacity-0"
-        } z-10 absolute top-0 bottom-0 -left-[58px] w-[125px] bg-[linear-gradient(-90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none`}
+        className={`transition-opacity duration-300 ${showScroller && showLeftGradient ? "opacity-100" : "opacity-0"
+          } z-[2] absolute top-0 bottom-0 -left-[58px] w-[125px] bg-[linear-gradient(-90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none`}
+        style={{
+          // to avoid the gradient from being cut off
+          maskImage: "linear-gradient(to bottom, transparent 0, white 30px, white calc(100% - 30px), transparent)",
+          WebkitMaskImage: "linear-gradient(to bottom, transparent 0, white 30px, white calc(100% - 30px), transparent)",
+        }}
       ></div>
+
+      {/* Right Gradient Mask */}
       <div
-        className={`transition-all duration-300 ${
-          showScroller && showRightGradient ? "opacity-100" : "opacity-0"
-        } z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none`}
+        className={`transition-opacity duration-300 ${showScroller && showRightGradient ? "opacity-100" : "opacity-0"
+          } z-[2] absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none`}
+        style={{
+          // to avoid the gradient from being cut off
+          maskImage: "linear-gradient(to bottom, transparent 0, white 30px, white calc(100% - 30px), transparent)",
+          WebkitMaskImage: "linear-gradient(to bottom, transparent 0, white 30px, white calc(100% - 30px), transparent)",
+        }}
       ></div>
+
       <div className="overflow-x-visible">
         <div
-          className={`${
-            includeMargin && "pl-[20px] md:pl-[50px]"
-          } relative overflow-x-scroll scrollbar-none max-w-full`}
-          ref={contentSrollAreaRef}
+          className={`z-[2] ${includeMargin ? "pl-[20px] md:pl-[50px]" : ""
+            } relative overflow-x-scroll scrollbar-none max-w-full`}
+          ref={contentScrollAreaRef}
           style={{
             maskClip: "padding-box",
             WebkitMaskClip: "padding-box",
@@ -276,9 +335,8 @@ export default function HorizontalScrollContainer({
             }
           >
             <div
-              className={`w-full max-w-full ${
-                includeMargin && "pr-[20px] md:pr-[50px]"
-              }`}
+              className={`w-full max-w-full overflow-y-clip ${includeMargin ? "pr-[20px] md:pr-[50px]" : ""
+                }`}
               ref={contentRef}
               style={{
                 minWidth: forcedMinWidth
@@ -291,28 +349,44 @@ export default function HorizontalScrollContainer({
           </div>
         </div>
       </div>
-      <div
-        className={`pt-[10px] px-[20px] md:px-[50px] w-full flex justify-center ${
-          showScroller ? "block" : "hidden"
-        }`}
-      >
-        <div
-          className="w-full pr-[22px] p-0.5 bg-black/30 rounded-full"
-          onMouseDown={handleBarClick}
-        >
-          <div className="w-full" ref={scrollerRef}>
-            <div
-              className="w-5 h-2 bg-forest-400/30 rounded-full"
-              style={{
-                transform: `translateX(${scrollerX})`,
-                cursor: "grab",
-              }}
-              onMouseDown={handleMouseDown}
-              ref={grabberRef}
-            ></div>
+
+      {/* Scrollbar */}
+      {showScroller && (
+        <div className="pt-[10px] px-[20px] md:px-[50px] w-full flex justify-center">
+          <div
+            className="w-full pr-[22px] p-0.5 bg-black/30 rounded-full relative"
+            onMouseDown={(e) => {
+              // Prevent scrolling the container when clicking the scrollbar
+              e.preventDefault();
+            }}
+            onTouchStart={(e) => {
+              // Prevent scrolling the container when touching the scrollbar
+              e.preventDefault();
+            }}
+            onMouseDownCapture={handleBarMouseDown}
+            onTouchStartCapture={handleBarTouchStart}
+            role="scrollbar"
+            aria-valuenow={currentScrollPercentage}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-orientation="horizontal"
+            tabIndex={0} // Make it focusable for accessibility
+          >
+            <div className="relative w-full h-2" ref={scrollerRef}>
+              <div
+                className="w-5 h-2 bg-forest-400/30 rounded-full absolute top-1/2 transform -translate-y-1/2 cursor-grab"
+                style={{
+                  left: scrollerX,
+                }}
+                onMouseDown={handleThumbMouseDown}
+                onTouchStart={handleThumbTouchStart}
+                ref={grabberRef}
+                aria-label="Scroll Thumb"
+              ></div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

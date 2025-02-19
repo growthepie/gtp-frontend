@@ -12,23 +12,24 @@ import { useEffect, useMemo, useState, useRef, useLayoutEffect } from "react";
 import { useMediaQuery } from "@react-hook/media-query";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { AllChains, AllChainsByKeys } from "@/lib/chains";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
 import { LandingURL, MasterURL } from "@/lib/urls";
 import LandingChart from "@/components/layout/LandingChart";
 import EmbedContainer from "../EmbedContainer";
 import { useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
+import { useMaster } from "@/contexts/MasterContext";
 
 // export async function generateMetadata(): Promise<Metadata> {
 //   return {
-//     title: "Growing Ethereum’s Ecosystem Together - Layer 2 User Base",
+//     title: "Growing Ethereum’s Ecosystem Together - Layer 2 Weekly Engagement",
 //     description:
 //       "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
 //   };
 // }
 
 export default function Page() {
+  const { AllChainsByKeys, AllChains } = useMaster();
   const searchParams = useSearchParams();
   const queryTheme = searchParams ? searchParams.get("theme") : null;
   const queryTimespan = searchParams ? searchParams.get("timespan") : null;

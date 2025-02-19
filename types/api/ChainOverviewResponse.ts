@@ -20,6 +20,7 @@ export interface ChainData {
   chain_name: string;
   overview: Overviews;
   daily: Daily;
+  totals: Overviews;
 }
 
 export interface Daily {

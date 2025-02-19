@@ -4,7 +4,7 @@ import Script from "next/script";
 import { MasterURL } from "@/lib/urls";
 
 export default function Head() {
-  const consent = getCookie("growthepieCookieConsent");
+  const consent = getCookie("gtpCookieConsent");
 
   return (
     <>

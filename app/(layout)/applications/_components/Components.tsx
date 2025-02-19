@@ -1,0 +1,659 @@
+"use client";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import Icon from "@/components/layout/Icon";
+import { useUIContext } from "@/contexts/UIContext";
+import { memo, useEffect, useMemo, useState } from "react";
+import { delay } from "lodash";
+import { GTPIcon } from "@/components/layout/GTPIcon";
+import { GTPIconName } from "@/icons/gtp-icon-names";
+import Link from "next/link";
+import { useProjectsMetadata } from "../_contexts/ProjectsMetadataContext";
+import Heading from "@/components/layout/Heading";
+import { usePathname } from "next/navigation";
+import Search from "./Search";
+import Controls from "./Controls";
+import { useMaster } from "@/contexts/MasterContext";
+import { useApplicationsData } from "../_contexts/ApplicationsDataContext";
+import { useMetrics } from "../_contexts/MetricsContext";
+import { useTimespan } from "../_contexts/TimespanContext";
+
+
+type ApplicationIconProps = {
+  owner_project: string;
+  size: "sm" | "md" | "lg";
+};
+
+export const PageTitle = ({ owner_project }: { owner_project: string }) => {
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+  
+  useEffect(() => {
+    document.title = `${ownerProjectToProjectData[owner_project]?.display_name || owner_project} - growthepie`;
+  }, [ownerProjectToProjectData, owner_project]);
+
+  return null;
+}
+
+export const ApplicationIcon = ({ owner_project, size }: ApplicationIconProps) => {
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+  const sizeClassMap = {
+    sm: "size-[26px]",
+    md: "size-[36px]",
+    lg: "size-[46px]",
+  };
+
+  // const sizePixelMap = {
+  //   sm: 15,
+  //   md: 24,
+  //   lg: 36,
+  // };
+
+  const sizePixelMap = {
+    sm: 26,
+    md: 36,
+    lg: 46,
+  };
+
+  return (
+    <div className={`flex items-center justify-center select-none bg-[#151A19] rounded-full ${sizeClassMap[size]}`}>
+      {ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].logo_path ? (
+        <Image
+          src={`https://api.growthepie.xyz/v1/apps/logos/${ownerProjectToProjectData[owner_project].logo_path}`}
+          width={sizePixelMap[size]} height={sizePixelMap[size]}
+          className="select-none rounded-full"
+          alt={owner_project}
+          onDragStart={(e) => e.preventDefault()}
+          loading="eager"
+          priority={true}
+        />
+      ) : (
+        <div className={`flex items-center justify-center ${sizeClassMap[size]} bg-[#151A19] !bg-transparent rounded-full`}>
+          <GTPIcon icon="gtp-project-monochrome" size={size} className="text-[#5A6462]" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+export const PageTitleAndDescriptionAndControls = () => {
+  const pathname = usePathname();
+  const [urlOwnerProject, setUrlOwnerProject] = useState<string | null>(null);
+  useEffect(() => {
+    // console.log(window.location.pathname.split("/")[2]);
+    // setUrlOwnerProject(window.location.pathname.split("/")[2]);
+    setUrlOwnerProject(pathname.split("/")[2]);
+  }, [pathname]);
+
+  const [scrollY, setScrollY] = useState(0);
+
+  const scrollHandler = () => {
+    const scrollY = window.scrollY;
+    setScrollY(scrollY);
+  }
+
+  useEffect(() => {
+    window.addEventListener("scroll", scrollHandler);
+    return () => {
+      window.removeEventListener("scroll", scrollHandler);
+    }
+  }, []);
+
+  if(!urlOwnerProject) return (
+    <>
+      {/* <div className={`absolute inset-0 overflow-visible`}>
+        <div
+          className="bg-[#151a19] z-[-1] absolute inset-0 -bottom-[100px] pointer-events-none"
+          style={{
+            // -88px if scrolled to top of page, -88px + scrollY if scrolled down (max 0)
+            top: `${Math.min(0, -88 + scrollY)}px`,
+            backgroundPosition: `top`,
+            // maskImage: isMobile ? `linear-gradient(to bottom, white 0, white 120px, transparent 150px` : `linear-gradient(to bottom, white 0, white 200px, transparent 230px`,
+            maskImage: `linear-gradient(to bottom, white 0, white 300px, transparent 320px`,
+          }}
+        >
+          <div className="background-gradient-group">
+            <div className="background-gradient-yellow"></div>
+            <div className="background-gradient-green"></div>
+          </div>
+        </div>
+      </div> */}
+      <div className="flex items-center h-[43px] gap-x-[8px]">
+        <GTPIcon icon="gtp-project" size="lg" />
+        <Heading className="heading-large-lg md:heading-large-xl h-[36px]" as="h1">
+          Applications
+           {/* {scrollY} {`${Math.min(0, -88 + scrollY)}px`} */}
+        </Heading>
+      </div>
+      <div className="text-sm">
+        An overview of the most used applications across the Ethereum ecosystem.
+      </div>
+      <Search />
+      <Controls />
+    </>
+  );
+
+  return (
+    <>
+      <div className="flex items-end gap-x-[10px]">
+        <div className="flex flex-col flex-1 gap-y-[15px]">
+          <div className="flex items-center h-[43px] gap-x-[8px]">
+            <BackButton />
+            <ApplicationIcon owner_project={urlOwnerProject} size="md" />
+            <Heading className="heading-large-lg md:heading-large-xl h-[36px]" as="h1">
+              <ApplicationDisplayName owner_project={urlOwnerProject} />
+            </Heading>
+          </div>
+        
+          <div className="flex-1 text-sm font-medium">
+            <ApplicationDescription owner_project={urlOwnerProject} />
+            {/* Relay is a cross-chain payment system that enables instant, low-cost bridging and transaction execution by connecting users with relayers who act on their behalf for a small fee. It aims to minimize gas costs and execution latency, making it suitable for applications like payments, bridging, NFT minting, and gas abstraction. I can add one more sentence to that and its still legible. And one more maybe so that we reach 450 characters. Let’s see.  */}
+          </div>
+        </div>
+        <div className="hidden md:block">
+        <ProjectDetailsLinks owner_project={urlOwnerProject} />
+        </div>
+        <div className="block md:hidden">
+        <ProjectDetailsLinks owner_project={urlOwnerProject} mobile />
+        </div>
+      </div>
+      {/* <Search /> */}
+      <Controls />
+    </>
+  );
+}
+
+export const ApplicationDisplayName = ({ owner_project }: { owner_project: string }) => {
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+  return ownerProjectToProjectData[owner_project] ? ownerProjectToProjectData[owner_project].display_name : owner_project;
+}
+
+export const ApplicationDescription = ({ owner_project }: { owner_project: string }) => {
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+  return ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].description ? ownerProjectToProjectData[owner_project].description : "Description not available";
+}
+
+export const BackButton = () => {
+  const router = useRouter();
+
+  const lastPage = document.referrer;
+
+  const handleBack = () => {
+    if (lastPage.includes("/applications")) {
+      router.back();
+    } else {
+      router.push("/applications");
+    }
+  }
+
+  return (
+    <button className="size-[36px] bg-[#344240] rounded-full flex justify-center items-center" onClick={handleBack}>
+      <Icon icon="feather:arrow-left" className="size-[26px]  text-[#CDD8D3]" />
+    </button>
+  );
+}
+
+export type MultipleSelectTopRowChildProps = {
+  handleNext: () => void;
+  handlePrev: () => void;
+  selected: string[];
+  setSelected: React.Dispatch<React.SetStateAction<string[]>>;
+  options: {
+    key: string;
+    icon?: string;
+    name: string;
+  }[];
+};
+export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, setSelected, options }: MultipleSelectTopRowChildProps) => {
+  const { isMobile } = useUIContext();
+  // const [isHovering, setIsHovering] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
+  // // open on hover after 300ms
+  // useEffect(() => {
+  //   if (isHovering) {
+  //     delay(() => {
+  //       setIsOpen(true);
+  //     }, 300);
+  //   } else {
+  //     setIsOpen(false);
+  //   }
+  // }, [isHovering]);
+
+  return (
+    <>
+      <div className="group flex flex-col relative lg:h-[44px] w-full lg:w-[300px]">
+        <div
+          className={`relative flex rounded-full h-[41px] lg:h-full w-full lg:z-[15] p-[5px] cursor-pointer ${isMobile ? "w-full" : "w-[271px]"}`}
+          style={{
+            backgroundColor: "#344240",
+          }}
+        >
+          <div
+            className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[12] hover:cursor-pointer"
+            onClick={handlePrev}
+          >
+            <Icon icon="feather:arrow-left" className="w-6 h-6" />
+          </div>
+          <div
+            className="flex flex-1 flex-col items-center justify-center  gap-y-[1px]"
+            onClick={() => {
+              setIsOpen(!isOpen);
+            }}
+          >
+            <div className={`flex font-[550] gap-x-[5px] justify-center items-center w-32`}>
+              <div className="text-sm overflow-ellipsis truncate whitespace-nowrap">
+                {selected.length > 1 ? "Multiple" : options.find((option) => option.key === selected[0])?.name}
+              </div>
+            </div>
+          </div>
+          <div
+            className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[12] hover:cursor-pointer"
+            onClick={handleNext}
+
+          >
+            <Icon icon="feather:arrow-right" className="w-6 h-6" />
+          </div>
+        </div>
+        <div
+          className={`flex flex-col relative lg:absolute lg:top-1/2 bottom-auto lg:left-0 lg:right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300 ${isOpen
+              ? `lg:z-[14] overflow-hidden border-transparent rounded-b-[30px] lg:border-forest-200 lg:dark:border-forest-500 lg:rounded-b-[22px] lg:shadow-[0px_4px_46.2px_#00000066] lg:dark:shadow-[0px_4px_46.2px_#000000]`
+              : "max-h-0 z-[13] overflow-hidden border-transparent rounded-b-[22px]"
+            } `}
+          style={{
+            maxHeight: isOpen ? `${options.length * 24 + (options.length - 1) * 10 + 37 + 16}px` : "0px",
+          }}
+          
+        >
+          <div className="pb-[20px] lg:pb-[16px]">
+            <div className="h-[10px] lg:h-[37px]"></div>
+            {options.map((opt, index) => (
+              <div
+                className="flex px-[25px] py-[5px] gap-x-[15px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
+                onClick={() => {
+                  setIsOpen(false);
+
+                  setSelected((prev) => {
+                    if (prev.includes(opt.key)) {
+                      if (prev.length === 1) return prev;
+                      return prev.filter((m) => m !== opt.key);
+                    } else {
+                      return [...prev, opt.key];
+                    }
+                  });
+                }}
+                key={index}
+              >
+                <Icon
+                  icon={selected.includes(opt.key) ? "feather:check-circle" : "feather:circle"}
+                  className="size-[15px]"
+                />
+                {opt.icon && (
+                  <GTPIcon
+                    icon={(selected.includes(opt.key) ? `${opt.icon}` : `${opt.icon}-monochrome`) as GTPIconName}
+                    className="size-[24px] text-[#5A6462]"
+                  />
+                )}
+                <div>{opt.name}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        {isOpen && (
+          <div
+            className={`hidden lg:block lg:fixed inset-0 z-[3]`}
+            onClick={() => {
+              setIsOpen(false);
+            }}
+          />
+        )}
+      </div>
+    </>
+  )
+}
+
+export const ProjectDetailsLinks = memo(({ owner_project, mobile }: { owner_project: string, mobile?: boolean }) => {
+  "use client";
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+  const linkPrefixes = ["https://x.com/", "https://github.com/", "", ""];
+  const icons = ["ri:twitter-x-fill", "ri:github-fill", "feather:monitor", "ri:discord-fill"];
+  const keys = ["twitter", "main_github", "website", "discord"];
+
+  if(mobile) {
+    return (
+      <div className="flex flex-col items-center justify-start gap-y-[10px]">
+        {ownerProjectToProjectData[owner_project] && keys.filter(
+          (key) => ownerProjectToProjectData[owner_project][key]
+        ).map((key, index) => (
+          <Link
+            key={key}
+              href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
+              target="_blank"
+              className={`size-[24px] bg-[#1F2726] rounded-full flex justify-center items-center ${key=== "website" && "gap-x-[6px] px-[5px] w-fit"}`}
+            >
+              {
+              // key === "website" ? 
+              // (
+              //   <>
+              //     {ownerProjectToProjectData[owner_project] && (
+              //       <ApplicationIcon owner_project={owner_project} size="md" />
+              //     )}
+              //     <div className="text-xxxs">{ownerProjectToProjectData[owner_project].display_name}</div>
+              //     <div className="size-[24px] rounded-full bg-[#344240] flex justify-center items-center">
+              //       <Icon icon="feather:arrow-right" className="size-[15px] text-[#CDD8D3]" />
+              //     </div>
+              //   </>
+              // ) 
+              // : (
+              <Icon
+                icon={icons[index]}
+                className="size-[15px] select-none"
+              />
+            // )
+            }
+          </Link>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-x-[10px]">
+      {ownerProjectToProjectData[owner_project] && keys.filter(
+        (key) => ownerProjectToProjectData[owner_project][key]
+      ).map((key, index) => (
+        <Link
+          key={key}
+            href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
+            target="_blank"
+            className={`size-[54px] bg-[#1F2726] rounded-full flex justify-center items-center ${key=== "website" && "gap-x-[6px] px-[5px] w-fit"}`}
+          >
+            {key === "website" ? (
+              <>
+                {ownerProjectToProjectData[owner_project] && (
+                  <ApplicationIcon owner_project={owner_project} size="md" />
+                )}
+                <div className="text-xxxs">{ownerProjectToProjectData[owner_project].display_name}</div>
+                <div className="size-[24px] rounded-full bg-[#344240] flex justify-center items-center">
+                  <Icon icon="feather:arrow-right" className="size-[17px] text-[#CDD8D3]" />
+                </div>
+              </>
+            ) : (
+            <Icon
+              icon={icons[index]}
+              className="size-[24px] select-none"
+            />
+            
+        )}
+        </Link>
+      ))}
+    </div>
+  );
+});
+
+ProjectDetailsLinks.displayName = 'Links';
+
+export const TopGainersAndLosersTooltip = ({ metric }: { metric: string }) => {
+  const {metricsDef} = useMetrics();
+  const { timespans, selectedTimespan} = useTimespan();
+  return (
+    <div
+      className="w-[400px] bg-[#1F2726] rounded-[15px] flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300"
+      style={{
+        boxShadow: "0px 0px 30px #000000",
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+      }}
+    >
+      <div className="heading-small-xs">Top Gainers and Losers</div>
+      <div className="text-xs">
+        This section shows applications that have experienced the most significant change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label}:
+      </div>
+      <div className="text-xs">
+        <ul className="list-disc list-inside">
+          <li>3 &quot;Top Gainers&quot;</li>
+          <li>3 &quot;Top Losers&quot;</li>
+        </ul>
+      </div>
+
+      <div className="text-xxs">
+      This is calculated by comparing the change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label} to the previous {timespans[selectedTimespan].label} for each application, after filtering out applications with less than the median {metricsDef[metric].name} across all applications.
+      </div>
+
+        {/* that have experienced the most significant change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label}.
+        </div>
+        <div className="text-xs">
+           This is calculated by comparing the change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label} to the previous {timespans[selectedTimespan].label} after filtering out applications with less than the median {metricsDef[metric].name} value.
+        </div> */}
+    </div>
+  );
+}
+
+export const MetricTooltip = ({ metric }: { metric: string }) => {
+  const {metricsDef} = useMetrics();
+  const content = {
+    gas_fees: {
+      title: metricsDef["gas_fees"].name,
+      content: "The total gas fees paid by all contracts in the selected timeframe across the selected chains.",
+    },
+    txcount: {
+      title: metricsDef["txcount"].name,
+      content: "The total number of transactions in the selected timeframe across the selected chains.",
+    },
+    daa: {
+      title: metricsDef["daa"].name,
+      content: "The total number of unique addresses that interacted with the contracts in the selected timeframe across the selected chains.",
+    },
+  }
+
+
+  return (
+    <div
+      className="w-[238px] bg-[#1F2726] rounded-[15px] flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300"
+      style={{
+        boxShadow: "0px 0px 30px #000000",
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+      }}
+    >
+      <div className="heading-small-xs">{content[metric].title}</div>
+      <div className="text-xs">
+        {content[metric].content}
+      </div>
+    </div>
+  );
+}
+
+export const Links = memo(({ owner_project, showUrl}: { owner_project: string, showUrl?: boolean }) => {
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+  const linkPrefixes = ["", "https://x.com/", "https://github.com/"];
+  const icons = ["feather:monitor", "ri:twitter-x-fill", "ri:github-fill"];
+  const keys = ["website", "twitter", "main_github"];
+  
+  // default hover key should be the first link that is not empty
+  const defaultHoverKey = useMemo(() => {
+    if (!ownerProjectToProjectData[owner_project]) return "website";
+    return keys.find((key) => ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project][key]) || "website";
+  }, [ownerProjectToProjectData, owner_project]);
+
+  const [currentHoverKey, setCurrentHover] = useState(defaultHoverKey);
+
+  const formatUrl = (url: string) => {
+    // remove https:// and trailing slash
+    return url.replace("https://", "").replace(/\/$/, "");
+  }
+
+  if(!ownerProjectToProjectData[owner_project]) return null;
+  
+  if(showUrl) {
+    return (
+    <div className="flex flex-col gap-y-[5px] pt-[10px]">
+      <div className="flex items-center gap-x-[5px]" onMouseLeave={() => setCurrentHover(defaultHoverKey)}>
+      {ownerProjectToProjectData[owner_project] && keys.map((key, index) => {
+        if(!ownerProjectToProjectData[owner_project][key]) return null;
+        
+        return (
+        <div key={index} className="h-[15px] w-[15px]" onMouseEnter={() => setCurrentHover(key)}>
+          {ownerProjectToProjectData[owner_project][key] && <Link
+            href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
+            target="_blank"
+          >
+            <Icon
+              icon={icons[index]}
+              className="w-[15px] h-[15px] select-none"
+            />
+          </Link>}
+        </div>
+        )
+      })}
+      </div>
+      <div className="text-xxs text-[#5A6462]">
+        {`${formatUrl(linkPrefixes[keys.indexOf(currentHoverKey)]+ownerProjectToProjectData[owner_project][currentHoverKey]).replace("https://", "")}`}
+      </div>
+    </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-x-[5px]">
+      {ownerProjectToProjectData[owner_project] && keys.map((key, index) => (
+        <div key={index} className="h-[15px] w-[15px]">
+          {ownerProjectToProjectData[owner_project][key] && <Link
+            href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
+            target="_blank"
+          >
+            <Icon
+              icon={icons[index]}
+              className="w-[15px] h-[15px] select-none"
+            />
+          </Link>}
+        </div>
+      ))}
+    </div>
+  );
+});
+
+Links.displayName = 'Links';
+
+export const Chains = ({ origin_keys }: { origin_keys: string[] }) => {
+  const { AllChainsByKeys } = useMaster();
+  const { selectedChains, setSelectedChains } = useApplicationsData();
+
+  return (
+    <div className="flex items-center gap-x-[0px] group/chains">
+      {origin_keys.map((chain, index) => (
+        <div
+          key={index}
+          className={`group-hover/chains:opacity-50 hover:!opacity-100 cursor-pointer p-[2.5px] ${selectedChains.includes(chain) || selectedChains.length === 0 ? '' : '!text-[#5A6462]'}`} style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors["dark"][0] : '' }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (selectedChains.includes(chain)) {
+              setSelectedChains(selectedChains.filter((c) => c !== chain));
+            } else {
+              setSelectedChains([...selectedChains, chain]);
+            }
+          }}
+        >
+          {AllChainsByKeys[chain] && (
+            // <GridTableChainIcon origin_key={AllChainsByKeys[chain].key} color={AllChainsByKeys[chain].colors["dark"][0]} />
+            <Icon
+              icon={`gtp:${AllChainsByKeys[
+                chain
+              ].urlKey
+                }-logo-monochrome`}
+              className="w-[15px] h-[15px]"
+            />
+          )}
+        </div>
+      ))}
+      {/* <div className="rounded-full w-[47px] border border-[#344240] flex items-center justify-center">
+        more
+
+      </div> */}
+    </div>
+  );
+};
+
+export const Category = ({ category }: { category: string }) => {
+  const getGTPCategoryIcon = (category: string): GTPIconName | "" => {
+
+    switch (category) {
+      case "Cross-Chain":
+        return "gtp-crosschain";
+      case "Utility":
+        return "gtp-utilities";
+      case "Token Transfers":
+        return "gtp-tokentransfers";
+      case "DeFi":
+        return "gtp-defi";
+      case "Social":
+        return "gtp-socials";
+      case "NFT":
+        return "gtp-nft";
+      case "CeFi":
+        return "gtp-cefi";
+      default:
+        return "";
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-x-[5px] whitespace-nowrap">
+      {/* <GTPIcon icon={getGTPCategoryIcon()} size="sm" /> */}
+      {category && (
+        <>
+          <GTPIcon icon={getGTPCategoryIcon(category) as GTPIconName} size="sm" />
+          {category}
+        </>
+      )}
+    </div>
+  );
+}
+
+interface ThresholdConfig {
+  value: number;
+  suffix: string;
+  decimals?: number;
+}
+
+interface FormatNumberOptions {
+  defaultDecimals?: number;
+  thresholdDecimals?: {
+    [key: string]: number;  // 'T', 'B', 'M', 'k', or 'base' for numbers < 1000
+  };
+}
+
+export function formatNumber(
+  number: number, 
+  options: FormatNumberOptions = {}
+): string {
+  // Handle special cases
+  if (!Number.isFinite(number)) return 'N/A';
+  if (number === 0) return '0';
+
+  const defaultDecimals = options.defaultDecimals ?? 2;
+  
+  // Define formatting thresholds
+  const thresholds: ThresholdConfig[] = [
+    { value: 1e12, suffix: 'T' },
+    { value: 1e9, suffix: 'B' },
+    { value: 1e6, suffix: 'M' },
+    { value: 1e3, suffix: 'k' }
+  ];
+  
+  const absNumber = Math.abs(number);
+  
+  // Find the appropriate threshold
+  const threshold = thresholds.find(t => absNumber >= t.value);
+  
+  if (threshold) {
+    const scaledNumber = number / threshold.value;
+    const decimals = options.thresholdDecimals?.[threshold.suffix] ?? defaultDecimals;
+    return scaledNumber.toFixed(decimals) + threshold.suffix;
+  }
+  
+  // For numbers less than 1000
+  const baseDecimals = options.thresholdDecimals?.['base'] ?? defaultDecimals;
+  return number.toFixed(baseDecimals);
+}

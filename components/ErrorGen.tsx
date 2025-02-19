@@ -5,9 +5,10 @@ import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { navigationItems } from "@/lib/navigation";
+import { navigationItems as navItemsWithoutChains } from "@/lib/navigation";
 import { useMediaQuery } from "usehooks-ts";
 import { track } from "@vercel/analytics";
+import { useMaster } from "@/contexts/MasterContext";
 
 const Error = ({
   header,
@@ -21,6 +22,18 @@ const Error = ({
   const [navIndex, setNavIndex] = useState<number | null>(null);
   const [randIndices, setRandIndices] = useState<number[] | null>(null);
   const isMobile = useMediaQuery("(max-width: 767px)");
+  const { ChainsNavigationItems } = useMaster();
+
+  const [navigationItems, setNavigationItems] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (ChainsNavigationItems) {
+      // insert chains navigation items as item 3 in the navigation items array
+      const navItems = [...navItemsWithoutChains];
+      navItems.splice(3, 0, ChainsNavigationItems);
+      setNavigationItems(navItems);
+    }
+  }, [ChainsNavigationItems]);
 
   function getRandomInt(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -162,7 +175,7 @@ const Error = ({
               className={`flex self-center items-center p-[15px] w-[299px]  bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${
                 isMobile ? "h-[50px]" : "h-[54px]"
               }`}
-              href={`/optimism-retropgf-3`}
+              href={`/trackers/optimism-retropgf-3`}
             >
               <Icon
                 icon="gtp:optimism-logo-monochrome"

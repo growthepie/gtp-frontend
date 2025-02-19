@@ -20,6 +20,7 @@ export interface RowContainerInterface {
 
 export interface RowChildrenInterface {
   data: Chains;
+  master: MasterResponse;
   selectedMode: string;
   forceSelectedChain?: string;
   isCategoryHovered: (category: string) => boolean; // Function to check if category is hovered

@@ -1,12 +1,12 @@
 "use client";
 import { Icon } from "@iconify/react";
-import { AllChainsByKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/layout/Tooltip";
+import { useMaster } from "@/contexts/MasterContext";
 
 type ContractInfo = {
   address: string;
@@ -33,6 +33,8 @@ export default function ContractLabelModal({
   contract,
 }: ContractLabelModalProps) {
   const { theme } = useTheme();
+
+  const { AllChainsByKeys } = useMaster();
 
   if (!isOpen) return null;
 

@@ -1,7 +1,7 @@
+
 import { Metadata } from "next";
 import { MasterURL } from "@/lib/urls";
-import { AllChainsByUrlKey } from "@/lib/chains";
-import { MasterResponse } from "@/types/api/MasterResponse";
+import { ChainInfo, MasterResponse } from "@/types/api/MasterResponse";
 import { notFound } from "next/navigation";
 import { track } from "@vercel/analytics/server";
 
@@ -10,21 +10,29 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  if (!params.chain || !Object.keys(AllChainsByUrlKey).includes(params.chain)) {
-    track("404 Error", {
-      location: "404 Error",
-      page: "/chains/" + params.chain,
-    });
-    return notFound();
-  }
-
-  const key = AllChainsByUrlKey[params.chain].key;
-  const replaceKey = key.replace(/_/g, "-");
-
   // fetch data from API
   const res: MasterResponse = await fetch(MasterURL, {
     cache: "no-store",
   }).then((r) => r.json());
+
+  const AllChainsByUrlKey = Object.keys(res.chains).filter((key) => !["multiple", "all_l2s"].includes(key)).reduce((acc, key) => {
+    acc[res.chains[key].url_key] = { ...res.chains[key], key: key };
+    return acc;
+  }, {} as { [key: string]: ChainInfo & { key: string } });
+
+
+  // if (!params.chain || !Object.keys(AllChainsByUrlKey).includes(params.chain)) {
+  //   track("404 Error", {
+  //     location: "404 Error",
+  //     page: "/chains/" + params.chain,
+  //   });
+  //   return notFound();
+  // }
+
+  const key = AllChainsByUrlKey[params.chain].key;
+  const urlKey = AllChainsByUrlKey[params.chain].url_key;
+
+
 
   if (res && key && res.chains[key]) {
     const currentDate = new Date();
@@ -38,7 +46,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       openGraph: {
         images: [
           {
-            url: `https://api.growthepie.xyz/v1/og_images/chains/${replaceKey}.png?date=${dateString}`,
+            url: `https://api.growthepie.xyz/v1/og_images/chains/${urlKey}.png?date=${dateString}`,
             width: 1200,
             height: 627,
             alt: "growthepie.xyz",

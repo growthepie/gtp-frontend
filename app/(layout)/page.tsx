@@ -12,12 +12,13 @@ import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
+import LandingSwiperItems from "@/components/layout/LandingSwiperItems";
 // import { LandingURL } from "@/lib/urls";
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title:
-      "Growing Ethereum’s Ecosystem Together - Layer 2 User Base - growthepie",
+      "Growing Ethereum’s Ecosystem Together - Layer 2 Weekly Engagement - growthepie",
     description:
       "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
   };
@@ -26,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Page() {
   return (
     <>
-      <Container className="flex flex-col flex-1 w-full mt-[65px] md:mt-[70px] gap-y-[10px]">
+      <Container className="flex flex-col flex-1 w-full mt-[45px] md:mt-[30px] gap-y-[10px]">
         <Heading
           className="font-bold leading-[1.2] text-[24px] sm:text-[32px] md:text-[36px] max-w-[900px]"
           as="h1"
@@ -54,12 +55,11 @@ export default async function Page() {
           <div>Aggregated daily metrics across all tracked Layer 2s.</div>
         </Subheading>
       </Container>
-      <Container className="!px-0 fade-edge-div pb-[24px] -mb-[24px]">
-        <SwiperContainer ariaId={"layer-2-traction-title"} />
-        {/* <div className="h-[145px] md:h-[183px] w-full">
-          <ShowLoading section />
-        </div> */}
-      </Container>
+      {/* <Container className="!px-0 fade-edge-div pb-[24px] -mb-[24px]"> */}
+      <SwiperContainer ariaId={"layer-2-traction-title"} size="landing">
+        <LandingSwiperItems />
+      </SwiperContainer>
+      {/* </Container> */}
 
       <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
         <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
@@ -68,7 +68,7 @@ export default async function Page() {
             className="w-[30px] h-[30px] md:w-9 md:h-9"
           />
           <Heading className="text-[20px] md:text-[30px] leading-[1.2] font-semibold">
-            Layer 2 User Base
+            Layer 2 Weekly Engagement
           </Heading>
         </div>
         <Subheading className="text-base leading-normal md:leading-snug px-[5px] lg:px-[45px]">
@@ -158,7 +158,6 @@ export default async function Page() {
         </div>
         <div className="flex flex-col space-y-[15px] my-0 md:my-[30px]">
           <QuestionAnswer
-            className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
             question="What's growthepie?"
             answer={
               <>
@@ -175,7 +174,6 @@ export default async function Page() {
             }
           />
           <QuestionAnswer
-            className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
             question="What's up with the name?"
             answer={
               <>
@@ -192,7 +190,6 @@ export default async function Page() {
             }
           />
           <QuestionAnswer
-            className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
             question='What exactly does "Active on Multiple Chains" stand for?'
             answer={
               <>
@@ -215,7 +212,6 @@ export default async function Page() {
             }
           />
           <QuestionAnswer
-            className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
             question="Why have the numbers on the landing page not been updated for a few days?"
             answer={
               <>
@@ -228,7 +224,6 @@ export default async function Page() {
             }
           />
           <QuestionAnswer
-            className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
             question="L2Beat has way more Layer 2s listed why do you not cover all of them?"
             answer={
               <>
@@ -241,7 +236,6 @@ export default async function Page() {
             }
           />
           <QuestionAnswer
-            className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
             question="Are the dates on this website my regional timezone or UTC?"
             answer={
               <>
@@ -252,7 +246,6 @@ export default async function Page() {
             }
           />
           <QuestionAnswer
-            className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
             question="Interested in collaborating with us?"
             answer={
               <>

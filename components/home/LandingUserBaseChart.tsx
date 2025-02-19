@@ -1,39 +1,25 @@
 "use client";
-import { useEffect, useMemo, useState, useRef } from "react";
-import Image from "next/image";
-import { useMediaQuery } from "@react-hook/media-query";
-import Heading from "@/components/layout/Heading";
-import Subheading from "@/components/layout/Subheading";
+import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import {
-  AllChains,
-  AllChainsByKeys,
   Get_SupportedChainKeys,
 } from "@/lib/chains";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
 import LandingChart from "@/components/layout/LandingChart";
-import LandingMetricsTable from "@/components/layout/LandingMetricsTable";
-import LandingTopContracts from "@/components/layout/LandingTopContracts";
-import Swiper from "@/components/layout/SwiperItems";
+import LandingMetricsTable, { TableRankingProvider } from "@/components/layout/LandingMetricsTable";
 import { Icon } from "@iconify/react";
-import TopAnimation from "@/components/TopAnimation";
 import { LandingURL, MasterURL } from "@/lib/urls";
-import Link from "next/link";
-import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import Container from "@/components/layout/Container";
 import ShowLoading from "@/components/layout/ShowLoading";
 import HorizontalScrollContainer from "../HorizontalScrollContainer";
 import { isMobile } from "react-device-detect";
+import { useMaster } from "@/contexts/MasterContext";
 
 export default function LandingUserBaseChart() {
-  // const isLargeScreen = useMediaQuery("(min-width: 1280px)");
-
   const [isSidebarOpen] = useState(false);
 
-  // useEffect(() => {
-  //   setIsSidebarOpen(isLargeScreen);
-  // }, [isLargeScreen]);
+  const { AllChains, AllChainsByKeys } = useMaster();
 
   const {
     data: landing,
@@ -70,7 +56,7 @@ export default function LandingUserBaseChart() {
         .filter((chainKey) => AllChainsByKeys.hasOwnProperty(chainKey))
         .map((chain) => chain),
     );
-  }, [data, landing, selectedMetric, selectedTimeInterval]);
+  }, [AllChainsByKeys, data, landing, selectedMetric, selectedTimeInterval]);
 
   const chains = useMemo(() => {
     if (!data || !master) return [];
@@ -81,7 +67,7 @@ export default function LandingUserBaseChart() {
         Get_SupportedChainKeys(master) &&
         chain.key != "ethereum",
     );
-  }, [data, master]);
+  }, [AllChains, data, master]);
 
   const [selectedChains, setSelectedChains] = useState(
     AllChains.map((chain) => chain.key),
@@ -94,14 +80,13 @@ export default function LandingUserBaseChart() {
         dataValidating={[masterValidating, landingValidating]}
         fullScreen={true}
       />
-      {data && landing && master ? (
+      {data && landing && master && AllChainsByKeys ? (
         <>
           <Container
-            className={`w-full ${isMobile ? "h-[620px]" : "h-[600px]"} ${
-              isSidebarOpen
-                ? "md:h-[718px] lg:h-[626px]"
-                : "md:h-[718px] lg:h-[657px]"
-            } rounded-[15px] pb-[15px] md:pb-[42px]`}
+            className={`w-full ${isMobile ? "h-[620px]" : "h-[600px]"} ${isSidebarOpen
+              ? "md:h-[718px] lg:h-[626px]"
+              : "md:h-[718px] lg:h-[657px]"
+              } rounded-[15px] pb-[15px] md:pb-[42px]`}
           >
             <LandingChart
               data={Object.keys(data.chains)
@@ -127,17 +112,15 @@ export default function LandingUserBaseChart() {
               setSelectedMetric={setSelectedMetric}
             />
           </Container>
-          <HorizontalScrollContainer>
-            <LandingMetricsTable
-              data={{ chains: landing.data.metrics.table_visual }}
-              selectedChains={selectedChains}
-              setSelectedChains={setSelectedChains}
-              chains={chains}
-              metric={selectedTimeInterval}
-              master={master}
-              // interactable={selectedMetric !== "Total Users"}
-              interactable={false}
-            />
+          <HorizontalScrollContainer reduceLeftMask={true}>
+            <TableRankingProvider>
+              <LandingMetricsTable
+                data={{ chains: landing.data.metrics.table_visual }}
+                master={master}
+                // interactable={selectedMetric !== "Total Users"}
+                interactable={false}
+              />
+            </TableRankingProvider>
           </HorizontalScrollContainer>
         </>
       ) : (

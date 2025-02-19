@@ -25,10 +25,10 @@ import {
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import Icon from "@/components/layout/Icon";
-import { AllChainsByKeys } from "@/lib/chains";
 import Link from "next/link";
 import { uniq } from "lodash";
 import { useTheme } from "next-themes";
+import { useMaster } from "@/contexts/MasterContext";
 
 // import { theme as customTheme } from "../../tailwind.config";
 
@@ -61,6 +61,8 @@ import { useTheme } from "next-themes";
 // ];
 
 export default function ContractsPage({ params }: { params: any }) {
+  const { AllChainsByKeys } = useMaster();
+
   const {
     data: contracts,
     error: contractsError,

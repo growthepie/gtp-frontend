@@ -4,6 +4,7 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 export interface ContractContainerInterface {
   data: Chains;
   selectedMode: string;
+  forceSelectedChain: string;
   selectedCategory: string;
   selectedChain: string | null;
   selectedTimespan: string;

@@ -18,7 +18,32 @@ export interface TableVisual {
     purpose: string;
     technology: string;
     users: number;
+    ranking: { [key in RankingType]: EthUsdRanking };
   };
+}
+
+export type RankingType =
+  | "daa"
+  | "stables_mcap"
+  | "fees"
+  | "profit"
+  | "txcosts"
+  | "fdv"
+  | "throughput";
+
+export interface ValueRanking {
+  rank: number | null;
+  out_of: number | null;
+  color_scale: number | null;
+  value?: number;
+}
+
+export interface EthUsdRanking {
+  rank: number;
+  out_of: number;
+  color_scale: number;
+  value_usd: number;
+  value_eth: number;
 }
 
 export interface UserBase {

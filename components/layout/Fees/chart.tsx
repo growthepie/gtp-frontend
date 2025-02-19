@@ -13,9 +13,9 @@ import {
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useUIContext } from "@/contexts/UIContext";
 import ChartWatermark from "@/components/layout/ChartWatermark";
-import { AllChainsByKeys } from "@/lib/chains";
 import * as d3 from "d3";
 import { useLocalStorage } from "usehooks-ts";
+import { useMaster } from "@/contexts/MasterContext";
 
 export const ChartColors = {
   GRID: "rgb(215, 223, 222)",
@@ -69,6 +69,7 @@ export default function FeesChart({
 }) {
   type TimespanSelections = "1d" | "7d" | "max";
   const { theme } = useTheme();
+  const { AllChainsByKeys } = useMaster();
   const chartRef = useRef<Highcharts.Chart | null | undefined>(undefined);
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
   const { isSidebarOpen } = useUIContext();
@@ -533,6 +534,7 @@ export default function FeesChart({
         },
       },
       events: {
+        //@ts-ignore
         selection: function (event) {
           setZoomed(true);
         },
@@ -544,6 +546,7 @@ export default function FeesChart({
     },
     yAxis: {
       ...baseOptions.yAxis,
+      //@ts-ignore
       type: yScale,
       title: undefined,
       min: yScale === "percentage" ? 0 : undefined,
@@ -564,6 +567,7 @@ export default function FeesChart({
         },
       ],
       labels: {
+        //@ts-ignore
         ...baseOptions.yAxis.labels,
         formatter: function (t: Highcharts.AxisLabelsFormatterContextObject) {
           const isPercentage =
