@@ -235,8 +235,8 @@ export default function FeesChart({
           });
       }
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway">
-        <div class="w-full font-bold text-[13px] md:text-[16px] ml-6 mb-1">${master.fee_metrics[selectedMetric].name}</div>
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xxs font-raleway">
+        <div class="w-full font-bold text-[13px] md:text-[12px] ml-6 mb-1">${master.fee_metrics[selectedMetric].name}</div>
         <div class="w-full font-semibold text-[9px] md:text-[12px] ml-6 mb-2">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
@@ -276,14 +276,16 @@ export default function FeesChart({
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-              }"></div>
-                <div class="tooltip-point-name">${AllChainsByKeys[name].label
-              }</div>
-                <div class="flex-1 text-right numbers-xs ">${Highcharts.numberFormat(
-                percentage,
-                2,
-              )}%</div>
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+                  AllChainsByKeys[name].colors[theme ?? "dark"][0]
+                }"></div>
+                <div class="tooltip-point-name">${
+                  AllChainsByKeys[name].label
+                }</div>
+                <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
+                  percentage,
+                  2,
+                )}%</div>
               </div>
               
               <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -292,8 +294,9 @@ export default function FeesChart({
                 <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
                 style="
                   width: ${(percentage / maxPercentage) * 100}%;
-                  background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-              };
+                  background-color: ${
+                    AllChainsByKeys[name].colors[theme ?? "dark"][0]
+                  };
                 "></div>
               </div>`;
           let valueIndex = 1;
@@ -302,7 +305,7 @@ export default function FeesChart({
           }
           const typeString =
             data.chain_data[name][selectedMetric][selectedTimeframe].types[
-            valueIndex
+              valueIndex
             ];
           const unitKey = typeString.replace("value_", "");
 
@@ -353,22 +356,27 @@ export default function FeesChart({
 
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+              AllChainsByKeys[name].colors[theme ?? "dark"][0]
             }"></div>
-            <div class="tooltip-point-name text-md">${AllChainsByKeys[name].label
+            <div class="tooltip-point-name text-xs">${
+              AllChainsByKeys[name].label
             }</div>
-            <div class="flex-1 text-right justify-end numbers-sm flex">
-                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-            }">${prefix}</div>
-                ${selectedMetric === "fdv" || selectedMetric === "market_cap"
-              ? shortenNumber(displayValue).toString()
-              : parseFloat(displayValue).toLocaleString("en-GB", {
-                minimumFractionDigits: decimals,
-                maximumFractionDigits: decimals,
-              })
-            }
-                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
+            <div class="flex-1 text-right justify-end font-inter flex numbers-xs">
+                <div class="opacity-70 mr-0.5 ${
+                  !prefix && "hidden"
+                }">${prefix}</div>
+                ${
+                  selectedMetric === "fdv" || selectedMetric === "market_cap"
+                    ? shortenNumber(displayValue).toString()
+                    : parseFloat(displayValue).toLocaleString("en-GB", {
+                        minimumFractionDigits: decimals,
+                        maximumFractionDigits: decimals,
+                      })
+                }
+                <div class="opacity-70 ml-0.5 ${
+                  !suffix && "hidden"
+                }">${suffix}</div>
             </div>
           </div>
           <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -377,8 +385,9 @@ export default function FeesChart({
             <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
             style="
               width: ${(Math.max(0, value) / maxPoint) * 100}%;
-              background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-            };
+              background-color: ${
+                AllChainsByKeys[name].colors[theme ?? "dark"][0]
+              };
             "></div>
           </div>`;
         })
@@ -394,16 +403,18 @@ export default function FeesChart({
         <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-70">
           <div class="w-4 h-1.5 rounded-r-full" style=""></div>
           <div class="tooltip-point-name text-md">Total</div>
-           <div class="flex-1 text-right justify-end flex numbers-xs">
+          <div class="flex-1 text-right justify-end font-inter flex">
 
-              <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-          }">${prefix}</div>
+              <div class="opacity-70 mr-0.5 ${
+                !prefix && "hidden"
+              }">${prefix}</div>
               ${parseFloat(value).toLocaleString("en-GB", {
-            minimumFractionDigits: valuePrefix ? 2 : 0,
-            maximumFractionDigits: valuePrefix ? 2 : 0,
-          })}
-              <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-          }">${suffix}</div>
+                minimumFractionDigits: valuePrefix ? 2 : 0,
+                maximumFractionDigits: valuePrefix ? 2 : 0,
+              })}
+              <div class="opacity-70 ml-0.5 ${
+                !suffix && "hidden"
+              }">${suffix}</div>
           </div>
         </div>
         <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
