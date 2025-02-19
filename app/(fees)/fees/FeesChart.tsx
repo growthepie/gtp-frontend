@@ -29,7 +29,7 @@ import { useUIContext } from "@/contexts/UIContext";
 import d3 from "d3";
 import { FeesLineChart } from "@/types/api/Fees/LineChart";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import "../../highcharts.axis.css";
+import "@/app/highcharts.axis.css";
 import { useMaster } from "@/contexts/MasterContext";
 
 const COLORS = {
@@ -280,7 +280,7 @@ export default function FeesChart({
               }"></div>
                 <div class="tooltip-point-name">${AllChainsByKeys[name].label
               }</div>
-                <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
+                <div class="flex-1 text-right numbers-xs ">${Highcharts.numberFormat(
                 percentage,
                 2,
               )}%</div>
@@ -357,7 +357,7 @@ export default function FeesChart({
             }"></div>
             <div class="tooltip-point-name text-md">${AllChainsByKeys[name].label
             }</div>
-            <div class="flex-1 text-right justify-end font-inter flex">
+            <div class="flex-1 text-right justify-end numbers-sm flex">
                 <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
             }">${prefix}</div>
                 ${selectedMetric === "fdv" || selectedMetric === "market_cap"
@@ -654,13 +654,18 @@ export default function FeesChart({
           showLastLabel={false}
           labels={{
             align: "left",
-            y: 11,
-            x: 3,
+            y: -1,
+            x: 2,
+            useHTML: true,
+            
             style: {
-              color: "rgb(215, 223, 222)",
-              fontSize: "10px",
-              fontWeight: "700",
-              fontFamily: "Fira Sans",
+                backgroundColor: "transparent",
+                whiteSpace: "nowrap",
+                color: "rgb(215, 223, 222)",
+                fontSize: "10px",
+                fontWeight: "700",
+                fontFamily: "var(--font-raleway), sans-serif",
+                
             },
             formatter: function (
               t: Highcharts.AxisLabelsFormatterContextObject,

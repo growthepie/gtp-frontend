@@ -256,7 +256,7 @@ export default function FeesPage() {
   const [sortOrder, setSortOrder] = useState(true);
   //True is default descending false ascending
   const [hoverSettings, setHoverSettings] = useState<boolean>(false);
-  const [showCents, setShowCents] = useLocalStorage("showCents", true);
+  const [showCents, setShowCents] = useLocalStorage("showCents", false);
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [allChainsSelect, setAllChainsSelect] = useState(false);
   const { theme } = useTheme();
@@ -1045,7 +1045,7 @@ export default function FeesPage() {
             }}
           >
             {lessThanOverride && (
-              <div className="h-[12px] w-[12px]">
+              <div className="h-[12px] w-[12px] relative top-[2px]">
                 <Icon
                   icon="feather:chevron-left"
                   className="h-[12px] w-[12px]"
@@ -1063,10 +1063,8 @@ export default function FeesPage() {
               </div>
             )}
             <div
-              className="flex items-center self-center text-[12px] md:text-[12px]"
-              style={{
-                fontFeatureSettings: "'pnum' on, 'lnum' on",
-              }}
+              className="flex items-center self-center numbers-xs "
+
             >
               {lessThanOverride
                 ? lessThanValue
@@ -1144,10 +1142,8 @@ export default function FeesPage() {
             </div>
           )}
           <div
-            className="flex items-center self-center text-[12px] md:text-[12px]"
-            style={{
-              fontFeatureSettings: "'pnum' on, 'lnum' on",
-            }}
+            className="flex items-center self-center numbers-xs"
+
           >
             {lessThanOverride
               ? lessThanValue

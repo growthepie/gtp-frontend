@@ -60,6 +60,7 @@ import {
   metricCategories,
 } from "@/lib/metrics";
 
+
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
   PLOT_LINE: "rgb(215, 223, 222)",
@@ -557,14 +558,7 @@ export default function ChainChart({
           showGwei(key) && !showUsd
             ? "Gwei"
             : master.metrics[key].units[unitKey].suffix;
-        let prefix =
-          showGwei(key) && !showUsd
-            ? ""
-            : master.metrics[key].units[unitKey].prefix;
-        let suffix =
-          showGwei(key) && !showUsd
-            ? "Gwei"
-            : master.metrics[key].units[unitKey].suffix;
+
         let valueIndex = showUsd ? 1 : 2;
         let valueMultiplier = showGwei(key) && !showUsd ? 1000000000 : 1;
 
@@ -1489,7 +1483,7 @@ export default function ChainChart({
           <div
             className={`relative flex rounded-full h-full w-full lg:z-30 p-[5px] cursor-pointer ${
               compChain
-                ? AllChainsByKeys[compChain].backgrounds[theme ?? "dark"][0]
+                ? AllChainsByKeys[compChain].colors[theme ?? "dark"][0]
                 : "bg-white dark:bg-[#151A19]"
             } ${isMobile ? "w-full" : "w-[271px]"} `}
           >
