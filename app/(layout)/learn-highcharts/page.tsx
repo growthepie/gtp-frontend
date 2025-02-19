@@ -27,7 +27,7 @@ import {
     getTickPositions,
     getXAxisLabels,
     decimalToPercent,
-    tooltipFormatter, // maybe I need to use this 
+    tooltipFormatter, 
     formatNumber,
     tooltipPositioner,
   } from "@/lib/chartUtils";
@@ -63,10 +63,17 @@ export default function Page(){
 
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
-    const [selectedTimespan, setSelectedTimespan] = useSessionStorage( //is this setting to max by default?
+    const [selectedTimespan, setSelectedTimespan] = useSessionStorage( //setting to max by default?
         "blockspaceTimespan",
         "max",
     );
+    const [selectedMode, setSelectedMode] = useState(
+      "tx_count" // changes preselected mode on page load "Bookmarked" for later
+    );
+    const [selectedScale, setSelectedScale] = useState(
+      "absolute"
+    );
+
     const [selectedCategory, setSelectedCategory] = useState("defi");
     useEffect(() => { // not sure if this is needed? if defualt is max?
         if (selectedTimespan === "1d") {
@@ -216,7 +223,16 @@ export default function Page(){
       <>{chainOverviewData && master && ( 
         <Container>
             <TopRowContainer>
-                <div // Why did I have to add a div why couldnt I do this in parent?
+            <TopRowParent>
+              <TopRowChild onClick = {() => {
+                setSelectedMode("gas_fees")
+              }}isSelected = {selectedMode === "gas_fees"}>Gas Fees</TopRowChild>
+              <TopRowChild onClick = {() => {
+                setSelectedMode("tx_count")
+              }}
+              isSelected = {selectedMode === "tx_count"}>Transaction Count</TopRowChild>
+            </TopRowParent>
+                <div
                     className= "flex justify-end"
                 >
                 </div>
@@ -248,7 +264,27 @@ export default function Page(){
               selectedCategory={selectedCategory}
               selectedTimespan={selectedTimespan}
               timespans={timespans} 
+              selectedMode={selectedMode}
+              selectedScale={selectedScale}
             />
+        </div>
+        <div className="flex items-center gap-x-2 h-[40px] rounded-full bg-[#1F2726] justify-end px-2">
+          <div
+            onClick={() => {
+              setSelectedScale("absolute");
+            }}
+            className={`px-4 py-1 rounded-full ${selectedScale === "absolute" ? "bg-[#151A19]" : "bg-transparent  hover:bg-forest-500/10"}`}
+          >
+            Absolute
+          </div>
+          <div
+            onClick={() => {
+              setSelectedScale("percentage");
+            }}
+            className={`px-4 py-1 rounded-full ${selectedScale === "percentage" ? "bg-[#151A19]" : "bg-transparent hover:bg-forest-500/10"}`}
+          >
+            Share of Chain Usage
+          </div>
         </div>
         </Container>
       )}</>

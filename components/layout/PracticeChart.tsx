@@ -25,19 +25,26 @@ export default function PracticeChart({
     showUsd, 
     selectedCategory,
     timespans,
-    selectedTimespan
+    selectedTimespan,
+    selectedMode,
+    selectedScale
     }: {
     data: ChainOverviewResponse,
     master: MasterResponse,
     showUsd: boolean,
     selectedCategory: string,
     timespans: Object,
-    selectedTimespan: string
+    selectedTimespan: string,
+    selectedMode: string,
+    selectedScale: string
     }) {
+        const types = data.data.chains["all_l2s"].daily.types
+        
         const tooltipFormatter = useCallback(
             function (this: any) {
                 const { x, points } = this;
-
+                const prefix = selectedMode === "gas_fees" && selectedScale === "absolute" ? (showUsd ? '$' : 'Ξ') : '';
+                const suffix = selectedScale === "percentage" ? "%" : "";
                 const date = new Date(x);
                 let dateString = date.toLocaleDateString("en-GB", {
                 month: "short",
@@ -77,8 +84,7 @@ export default function PracticeChart({
                     const nameString = name;
                     
                     const color = series.color;
-        
-                    let prefix = isFees ? "" : "";
+
                     let suffix = "";
                     let value = y;
                     let displayValue = y;
@@ -114,7 +120,7 @@ export default function PracticeChart({
         
                 return tooltip + tooltipPoints + tooltipEnd;
             },
-            [showUsd],
+            [showUsd, selectedMode, selectedScale],
             );
   return (
     <div>
@@ -161,8 +167,8 @@ export default function PracticeChart({
                                   color: 'rgb(215, 223, 222)'
                               },
                               formatter: function (this: any) {
-                                const prefix = showUsd ? '$' : 'Ξ';
-                                let value = this.value;
+                                const prefix = selectedMode === "gas_fees" && selectedScale === "absolute" ? (showUsd ? '$' : 'Ξ') : '';
+                                let value = selectedScale === "absolute" ? this.value : this.value * 100;
                                 let suffix = '';
                                 if (value >= 1000 && value < 10000) {
                                     value = value / 1000;
@@ -171,6 +177,7 @@ export default function PracticeChart({
                                     value = value / 1000000;
                                     suffix = 'M';
                                 }
+                                suffix = selectedScale === "percentage" ? "%" : suffix
                                 return `${prefix}${value}${suffix}`;
                             }
                             }
@@ -208,8 +215,15 @@ export default function PracticeChart({
                            
                               data={data.data.chains["all_l2s"].daily[selectedCategory].data.map(
                               (d: any) => [
-                              d[0],
-                              showUsd ? d[2] : d[1], // 1 = ETH 2 = USD
+                              d[types.indexOf("unix")], // unix time stamp
+                              
+                              selectedScale === "absolute"
+                                ? ( selectedMode === "gas_fees"
+                                    ? (showUsd ? d[types.indexOf("gas_fees_usd_absolute")] : d[types.indexOf("gas_fees_eth_absolute")]) 
+                                    : d[types.indexOf("txcount_absolute")])
+                                : ( selectedMode === "gas_fees"
+                                    ? (showUsd ? d[types.indexOf("gas_fees_share_usd")] : d[types.indexOf("gas_fees_share_eth")]) 
+                                    : d[types.indexOf("txcount_share")])
                               ],
                           )} />
                           </YAxis>
