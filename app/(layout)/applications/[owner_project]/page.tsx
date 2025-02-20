@@ -659,7 +659,7 @@ const ContractsTable = () => {
           metric="name"
           className="heading-small-xs pl-[0px]"
         >
-          Application
+          Contract Name
         </GridTableHeaderCell>
         <GridTableHeaderCell
           metric="main_category_key"
