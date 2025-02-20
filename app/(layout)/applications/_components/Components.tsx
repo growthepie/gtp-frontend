@@ -100,23 +100,6 @@ export const PageTitleAndDescriptionAndControls = () => {
 
   if(!urlOwnerProject) return (
     <>
-      {/* <div className={`absolute inset-0 overflow-visible`}>
-        <div
-          className="bg-[#151a19] z-[-1] absolute inset-0 -bottom-[100px] pointer-events-none"
-          style={{
-            // -88px if scrolled to top of page, -88px + scrollY if scrolled down (max 0)
-            top: `${Math.min(0, -88 + scrollY)}px`,
-            backgroundPosition: `top`,
-            // maskImage: isMobile ? `linear-gradient(to bottom, white 0, white 120px, transparent 150px` : `linear-gradient(to bottom, white 0, white 200px, transparent 230px`,
-            maskImage: `linear-gradient(to bottom, white 0, white 300px, transparent 320px`,
-          }}
-        >
-          <div className="background-gradient-group">
-            <div className="background-gradient-yellow"></div>
-            <div className="background-gradient-green"></div>
-          </div>
-        </div>
-      </div> */}
       <div className="flex items-center h-[43px] gap-x-[8px]">
         <GTPIcon icon="gtp-project" size="lg" />
         <Heading className="heading-large-lg md:heading-large-xl h-[36px]" as="h1">
@@ -136,12 +119,14 @@ export const PageTitleAndDescriptionAndControls = () => {
     <>
       <div className="flex items-end gap-x-[10px]">
         <div className="flex flex-col flex-1 gap-y-[15px]">
-          <div className="flex items-center h-[43px] gap-x-[8px]">
+          <div className="flex items-center min-h-[43px] gap-x-[8px]">
             <BackButton />
+            <div className="flex-1 flex items-center min-h-[43px] gap-x-[8px]">
             <ApplicationIcon owner_project={urlOwnerProject} size="md" />
-            <Heading className="heading-large-lg md:heading-large-xl h-[36px]" as="h1">
+            <Heading className="heading-large-lg lg:heading-large-xl min-h-[36px]" as="h1">
               <ApplicationDisplayName owner_project={urlOwnerProject} />
             </Heading>
+            </div>
           </div>
         
           <div className="flex-1 text-sm font-medium">
@@ -149,10 +134,10 @@ export const PageTitleAndDescriptionAndControls = () => {
             {/* Relay is a cross-chain payment system that enables instant, low-cost bridging and transaction execution by connecting users with relayers who act on their behalf for a small fee. It aims to minimize gas costs and execution latency, making it suitable for applications like payments, bridging, NFT minting, and gas abstraction. I can add one more sentence to that and its still legible. And one more maybe so that we reach 450 characters. Let’s see.  */}
           </div>
         </div>
-        <div className="hidden md:block">
+        <div className="hidden lg:block">
         <ProjectDetailsLinks owner_project={urlOwnerProject} />
         </div>
-        <div className="block md:hidden">
+        <div className="block lg:hidden">
         <ProjectDetailsLinks owner_project={urlOwnerProject} mobile />
         </div>
       </div>
@@ -186,9 +171,9 @@ export const BackButton = () => {
   }
 
   return (
-    <button className="size-[36px] bg-[#344240] rounded-full flex justify-center items-center" onClick={handleBack}>
+    <div className="size-[36px] bg-[#344240] rounded-full flex justify-center items-center" onClick={handleBack}>
       <Icon icon="feather:arrow-left" className="size-[26px]  text-[#CDD8D3]" />
-    </button>
+    </div>
   );
 }
 
@@ -315,7 +300,7 @@ export const ProjectDetailsLinks = memo(({ owner_project, mobile }: { owner_proj
   "use client";
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const linkPrefixes = ["https://x.com/", "https://github.com/", "", ""];
-  const icons = ["ri:twitter-x-fill", "ri:github-fill", "feather:monitor", "ri:discord-fill"];
+  const icons = ["gtp:x", "gtp:github", "feather:monitor", "gtp:discord"];
   const keys = ["twitter", "main_github", "website", "discord"];
 
   if(mobile) {
@@ -328,28 +313,9 @@ export const ProjectDetailsLinks = memo(({ owner_project, mobile }: { owner_proj
             key={key}
               href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
               target="_blank"
-              className={`size-[24px] bg-[#1F2726] rounded-full flex justify-center items-center ${key=== "website" && "gap-x-[6px] px-[5px] w-fit"}`}
+              className={`flex !size-[36px] bg-[#1F2726] rounded-full justify-center items-center ${key=== "website" && "gap-x-[6px] px-[5px] w-fit"}`}
             >
-              {
-              // key === "website" ? 
-              // (
-              //   <>
-              //     {ownerProjectToProjectData[owner_project] && (
-              //       <ApplicationIcon owner_project={owner_project} size="md" />
-              //     )}
-              //     <div className="text-xxxs">{ownerProjectToProjectData[owner_project].display_name}</div>
-              //     <div className="size-[24px] rounded-full bg-[#344240] flex justify-center items-center">
-              //       <Icon icon="feather:arrow-right" className="size-[15px] text-[#CDD8D3]" />
-              //     </div>
-              //   </>
-              // ) 
-              // : (
-              <Icon
-                icon={icons[index]}
-                className="size-[15px] select-none"
-              />
-            // )
-            }
+              {<Icon icon={icons[index]} className="size-[15px] select-none" />}
           </Link>
         ))}
       </div>
@@ -372,7 +338,7 @@ export const ProjectDetailsLinks = memo(({ owner_project, mobile }: { owner_proj
                 {ownerProjectToProjectData[owner_project] && (
                   <ApplicationIcon owner_project={owner_project} size="md" />
                 )}
-                <div className="text-xxxs">{ownerProjectToProjectData[owner_project].display_name}</div>
+                <div className="text-xxxs">Website</div>
                 <div className="size-[24px] rounded-full bg-[#344240] flex justify-center items-center">
                   <Icon icon="feather:arrow-right" className="size-[17px] text-[#CDD8D3]" />
                 </div>
@@ -492,7 +458,7 @@ export const Links = memo(({ owner_project, showUrl}: { owner_project: string, s
       <div className="flex items-center gap-x-[5px]" onMouseLeave={() => setCurrentHover(defaultHoverKey)}>
       {ownerProjectToProjectData[owner_project] && keys.map((key, index) => {
         if(!ownerProjectToProjectData[owner_project][key]) return null;
-        
+
         return (
         <div key={index} className="h-[15px] w-[15px]" onMouseEnter={() => setCurrentHover(key)}>
           {ownerProjectToProjectData[owner_project][key] && <Link

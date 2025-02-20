@@ -36,7 +36,7 @@ import { useTimespan } from "./_contexts/TimespanContext";
 });
 
 export default function Page() {
-  const { applicationDataAggregated, isLoading } = useApplicationsData();
+  const { applicationDataAggregated, isLoading, selectedStringFilters } = useApplicationsData();
   const { selectedMetrics, selectedMetricKeys } = useMetrics();
   const { metricsDef } = useMetrics();
   const { sort } = useSort();
@@ -86,6 +86,10 @@ export default function Page() {
     }
   }, [applicationDataAggregated, lastMedianMetricKey]);
 
+  const hideTopGainersAndLosers = useMemo(() => {
+    return selectedTimespan === "max" || selectedStringFilters.length > 0;
+  }, [selectedTimespan, selectedStringFilters]);
+
   return (
     <>
     <div>
@@ -93,7 +97,7 @@ export default function Page() {
       {/* <div>{JSON.stringify(sort)}</div>
       <div>metrics: {JSON.stringify(selectedMetrics)}</div>
       <div>metricKeys{JSON.stringify(selectedMetricKeys)}</div> */}
-      <div className={`transition-[max-height,opacity] duration-300 ${selectedTimespan === "max" ? "overflow-hidden max-h-0 opacity-0" : "max-h-[calc(78px+150px)] md:max-h-[530px] lg:h-[380px] opacity-100"}`}>
+      <div className={`transition-[max-height,opacity] duration-300 ${hideTopGainersAndLosers === true ? "overflow-hidden max-h-0 opacity-0" : "max-h-[calc(78px+150px)] md:max-h-[530px] lg:h-[380px] opacity-100"}`}>
         <Container className={`pt-[30px]`}>
           <div className="flex flex-col gap-y-[10px] ">
             <div className="heading-large">Top Gainers and Losers by {metricsDef[lastMedianMetric].name}</div>
@@ -300,7 +304,30 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
       }}
     >
       <div>
-        <div className="w-full h-[20px] flex justify-between items-center">
+        <div className="flex flex-col">
+        <div className="w-full flex justify-between items-end h-[20px]">
+          <div className="h-[20px] flex items-center gap-x-[3px]">
+            <div className="numbers-xs text-[#CDD8D3]">{numContractsString(application)}</div>
+            <div className="text-xs text-[#5A6462]">contracts</div>
+          </div>
+          <div className="h-[20px] flex items-center gap-x-[3px]">
+            <div className="numbers-xs text-[#5A6462]">Rank</div>
+            <div className="numbers-xs text-[#CDD8D3]">{rank}</div>
+            {application[`${metricKey}_change_pct`] !== Infinity ? (
+              <div className={`flex justify-end w-[60px] numbers-xs ${application[`${metricKey}_change_pct`] < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
+                {application[`${metricKey}_change_pct`] < 0 ? '-' : '+'}{formatNumber(Math.abs(application[`${metricKey}_change_pct`]), {defaultDecimals: 1, thresholdDecimals: {base: 1}})}%
+              </div>
+            ) : <div className="w-[49px]">&nbsp;</div>}
+          </div>
+        </div>
+        <div className="h-[20px] w-full flex items-center justify-end gap-x-[3px]">
+          <div className="numbers-sm text-[#CDD8D3]">
+            {prefix}
+            {value?.toLocaleString("en-GB")}
+          </div>
+        </div>
+        </div>
+        {/* <div className="w-full h-[20px] flex justify-between items-center">
           <div className="flex items-center gap-x-[3px]">
             <div className="numbers-xs text-[#CDD8D3]">{numContractsString(application)}</div>
             <div className="text-xs text-[#5A6462]">contracts</div>
@@ -309,9 +336,9 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
             <div className="numbers-xs text-[#5A6462]">Rank</div>
             <div className="numbers-xs text-[#CDD8D3]">{rank}</div>
           </div>
-        </div>
+        </div> */}
 
-        <div className="w-full flex justify-between items-start">
+        {/* <div className="w-full flex justify-between items-start">
           <div/>
           <div className="flex flex-col items-end gap-y-[2px]">
             <div className="flex flex-col items-end justify-start gap-y-[3px]">
@@ -322,7 +349,6 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
               <div className="flex items-end gap-x-[3px]">
                 {application[`${metricKey}_change_pct`] !== Infinity ? (
                   <div className={`h-[3px] flex justify-end w-[45px] numbers-xxxs ${application[`${metricKey}_change_pct`] < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
-                    {/* {application[`${metricKey}_change_pct`] < 0 ? '-' : '+'}{formatNumber(Math.abs(application[`${metricKey}_change_pct`]), {defaultDecimals: 1, thresholdDecimals: {base:0}})}% */}
                     {application[`${metricKey}_change_pct`] < 0 ? '-' : '+'}{Math.abs(application[`${metricKey}_change_pct`]).toLocaleString("en-GB",{maximumFractionDigits:0})}%
                   </div>
                 ) : (
@@ -331,8 +357,9 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
             </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
+      
       <div className="w-full flex items-center gap-x-[5px]">
         <ApplicationIcon owner_project={application.owner_project} size="md" />
         {/* {ownerProjectToProjectData[application.owner_project] ? (
@@ -340,11 +367,19 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
         ) : (
           <div className="heading-large-md flex-1 opacity-60 group-hover:underline"><ApplicationDisplayName owner_project={application.owner_project} /></div>
         )} */}
-        <div className="heading-large-md flex-1 overflow-visible">
-          <div className="relative group/tooltip heading-large-md w-fit group-hover:underline min-h-[32px] flex flex-col justify-center overflow-visible">
+        <div className="heading-large-md flex-1 overflow-visible truncate">
+          {/* <div className="relative group/tooltip heading-large-md w-fit group-hover:underline min-h-[32px] flex flex-col justify-center overflow-visible">
           <ApplicationDisplayName owner_project={application.owner_project} />
           <ApplicationTooltip application={application} />
-          </div>
+          </div> */}
+          <Tooltip placement="bottom-start" allowInteract>
+            <TooltipTrigger className="group-hover:underline ">
+              <ApplicationDisplayName owner_project={application.owner_project} />
+            </TooltipTrigger>
+            <TooltipContent className="z-[99] left-0 ml-[20px]">
+              <ApplicationTooltip application={application} />
+            </TooltipContent>
+          </Tooltip>
         </div>
         <Link className="cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center" href={`/applications/${application.owner_project}`}>
           <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-[#CDD8D3]" />
@@ -618,6 +653,12 @@ const Value = memo(({ rank, def, value, change_pct, maxMetric, metric}: { rank: 
     [value, maxMetric]
   );
 
+  const displayValue = useMemo(() => {
+    let prefix = Object.keys(def.units).includes("usd") ? showUsd ? def.units.usd.prefix : def.units.eth.prefix : Object.values(def.units)[0].prefix || "";
+    let decimals = Object.keys(def.units).includes("usd") ? showUsd ? def.units.usd.decimals : def.units.eth.decimals : Object.values(def.units)[0].decimals;
+    return prefix + value.toLocaleString("en-GB", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  }, [def, showUsd, value]);
+
   return (
     <div className="flex items-center justify-end gap-[10px]">
       <div className="numbers-xs text-[#5A6462]">{isSelectedMetric && rank}</div>
@@ -625,15 +666,16 @@ const Value = memo(({ rank, def, value, change_pct, maxMetric, metric}: { rank: 
 
         <div className="flex justify-end items-center gap-x-[2px]">
           <div className="numbers-xs">
-            {Object.keys(def.units).includes("eth") ? showUsd ? def.units.usd.prefix : def.units.eth.prefix : Object.values(def.units)[0].prefix}
-            {Object.keys(def.units).includes("eth") ? showUsd ? value.toLocaleString("en-GB", { minimumFractionDigits: def.units.usd.decimals, maximumFractionDigits: def.units.usd.decimals }) : value.toLocaleString("en-GB", { minimumFractionDigits: def.units.eth.decimals, maximumFractionDigits: def.units.eth.decimals }) : value.toLocaleString("en-GB", { minimumFractionDigits: Object.values(def.units)[0].decimals, maximumFractionDigits: Object.values(def.units)[0].decimals })}
+            {displayValue}
+            {/* {Object.keys(def.units).includes("eth") ? showUsd ? def.units.usd.prefix : def.units.eth.prefix : Object.values(def.units)[0].prefix}
+            {Object.keys(def.units).includes("eth") ? showUsd ? value.toLocaleString("en-GB", { minimumFractionDigits: def.units.usd.decimals, maximumFractionDigits: def.units.usd.decimals }) : value.toLocaleString("en-GB", { minimumFractionDigits: def.units.eth.decimals, maximumFractionDigits: def.units.eth.decimals }) : value.toLocaleString("en-GB", { minimumFractionDigits: Object.values(def.units)[0].decimals, maximumFractionDigits: Object.values(def.units)[0].decimals })} */}
           </div>
           {change_pct !== Infinity ? (
             <div className={`numbers-xxs w-[49px] text-right ${change_pct < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
               {change_pct < 0 ? '-' : '+'}{Math.abs(change_pct).toFixed(0)}%
             </div>
             ) : (
-            <div className="w-[49px]">&nbsp;</div>
+            <div className="w-[49px] h-[10px]">&nbsp;</div>
           )}
         </div>
         <div className="relative w-full h-[4px] rounded-full">
@@ -687,11 +729,15 @@ const ApplicationTableRow = memo(({ application, maxMetrics }: { application: Ag
           <ApplicationIcon owner_project={application.owner_project} size="sm" />
         </div>
       </div>
-      <div className="flex items-center gap-x-[5px] justify-between group-hover:underline">
-        <div className="relative group/tooltip min-h-[32px] flex flex-col justify-center">
-          <ApplicationDisplayName owner_project={application.owner_project} />
-          <ApplicationTooltip application={application} />
-        </div>
+      <div className="flex items-center gap-x-[5px] group-hover:underline truncate">
+        <Tooltip placement="bottom-start" allowInteract>
+          <TooltipTrigger className="truncate">
+            <ApplicationDisplayName owner_project={application.owner_project} />
+          </TooltipTrigger>
+          <TooltipContent className="z-[99] left-0 ml-[20px]">
+            <ApplicationTooltip application={application} />
+          </TooltipContent>
+        </Tooltip>
       </div>
       <div className="flex items-center gap-x-[5px]">
         <Chains origin_keys={application.origin_keys} />
@@ -735,27 +781,13 @@ const ApplicationTooltip = memo(({application}: {application: AggregatedDataRow}
 
     return firstPart.split(" ").slice(0, -1).join(" ");
     
-  }, [application, ownerProjectToProjectData]);
-
-  // const [mouseOffsetX, setMouseOffsetX] = useState(0);
-
-  // // get the mouse position on mount
-  // useEffect(() => {
-  //   const handleMouseMove = (e: MouseEvent) => {
-  //     setMouseOffsetX(e.offsetX);
-  //   };
-
-  //   window.addEventListener("mousemove", handleMouseMove);
-  //   return () => window.removeEventListener("mousemove", handleMouseMove);
-  // }, []);
-
-  
+  }, [application, ownerProjectToProjectData]);  
 
   if(!application || !ownerProjectToProjectData) return null;
 
   return (
     <div
-      className="cursor-default z-[20] absolute p-[15px] left-[30px] w-[345px] top-[32px] bg-[#1F2726] rounded-[15px] transition-opacity duration-300 opacity-0 group-hover/tooltip:opacity-100 pointer-events-none group-hover/tooltip:pointer-events-auto hover:pointer-events-auto"
+      className="cursor-default z-[99] p-[15px] left-[20px] w-[345px] top-[32px] bg-[#1F2726] rounded-[15px] transition-opacity duration-300"
       style={{
         boxShadow: "0px 0px 30px #000000",
         // left: `${mouseOffsetX}px`,
@@ -766,7 +798,7 @@ const ApplicationTooltip = memo(({application}: {application: AggregatedDataRow}
     >
       <div className="flex flex-col pl-[5px] gap-y-[10px]">
         {/* {mouseOffsetX} */}
-        <div className="flex gap-x-[5px] items-center w-max">
+        <div className="flex gap-x-[5px] items-center">
           {ownerProjectToProjectData[application.owner_project] && ownerProjectToProjectData[application.owner_project].logo_path ? (
             <Image
               src={`https://api.growthepie.xyz/v1/apps/logos/${ownerProjectToProjectData[application.owner_project].logo_path}`}
@@ -782,7 +814,7 @@ const ApplicationTooltip = memo(({application}: {application: AggregatedDataRow}
               <GTPIcon icon="gtp-project-monochrome" size="sm" className="!size-[12px] text-[#5A6462]" containerClassName="flex items-center justify-center" />
             </div>
           )}
-          <div className="heading-small-xs whitespace-nowrap">{ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].display_name : application.owner_project}</div>
+          <div className="heading-small-xs">{ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].display_name : application.owner_project}</div>
         </div>
         <div className="text-xs">
           {descriptionPreview}...

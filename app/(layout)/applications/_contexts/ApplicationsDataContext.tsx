@@ -1,24 +1,18 @@
 "use client";
 import ShowLoading from "@/components/layout/ShowLoading";
-import { DALayerWithKey, useMaster } from "@/contexts/MasterContext";
-import { Chain, Get_SupportedChainKeys } from "@/lib/chains";
-import { IS_PRODUCTION } from "@/lib/helpers";
-import { ApplicationsURLs, DAMetricsURLs, DAOverviewURL, LabelsURLS, MasterURL, MetricsURLs } from "@/lib/urls";
-import { DAOverviewResponse } from "@/types/api/DAOverviewResponse";
+import { ApplicationsURLs, MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { ChainData, MetricData, MetricsResponse } from "@/types/api/MetricsResponse";
-import { AppDatum, AppOverviewResponse, AppOverviewResponseHelper, ParsedDatum } from "@/types/applications/AppOverviewResponse";
-import { intersection } from "lodash";
-import { RefObject, createContext, useContext, useEffect, useMemo, useState } from "react";
-import { LogLevel } from "react-virtuoso";
-import useSWR, { useSWRConfig, preload} from "swr";
-import { useLocalStorage, useSessionStorage } from "usehooks-ts";
+import { AppDatum } from "@/types/applications/AppOverviewResponse";
+import { createContext, useContext, useMemo, useState } from "react";
+import useSWR, { useSWRConfig } from "swr";
+import { useLocalStorage } from "usehooks-ts";
 import { useTimespan } from "./TimespanContext";
 import { useMetrics } from "./MetricsContext";
 import { useProjectsMetadata } from "./ProjectsMetadataContext";
 import { useSort } from "./SortContext";
-
-
+import { SortConfig, sortItems, SortOrder, SortType } from "@/lib/sorter";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
+import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 function calculatePercentageChange(current, previous) {
   if (previous === 0) return current === 0 ? 0 : Infinity;
@@ -65,7 +59,6 @@ function ownerProjectToOriginKeysMap(data: AppDatum[]): { [key: string]: string[
     return acc;
   }, {});
 }
-
 
 function aggregateProjectData(
   data: AppDatum[], typesArr: string[], ownerProjectToProjectData: {[key: string]: any}, filters: { [key: string]: string[] } = { origin_key: [], owner_project: [], category: [] }
@@ -120,7 +113,6 @@ function aggregateProjectData(
       if(!filters.owner_project.some((filter) => ownerProjectDisplay.includes(filter.toLowerCase()))) continue;
     }
 
-
     // Initialize the group if it doesn't exist
     if (!aggregation.has(owner)) {
       aggregation.set(owner, {
@@ -171,8 +163,7 @@ function aggregateProjectData(
     daa_change_pct: calculatePercentageChange(
       metrics.daa,
       metrics.prev_daa
-    ),
-    };
+    )};
   });
 
   // Calculate ranks in a single pass for all metrics
@@ -202,7 +193,6 @@ const devMiddleware = (useSWRNext) => {
   };
 };
 
-
 export type ApplicationsDataContextType = {
   selectedChains: string[];
   setSelectedChains: (value: string[]) => void;
@@ -210,7 +200,7 @@ export type ApplicationsDataContextType = {
   isLoading: boolean;
   applicationsChains: string[];
   selectedStringFilters: string[];
-  setSelectedStringFilters: React.Dispatch<React.SetStateAction<string[]>>;
+  setSelectedStringFilters: (value: string[]) => void;
 }
 
 export const ApplicationsDataContext = createContext<ApplicationsDataContextType | undefined>(undefined);
@@ -221,7 +211,6 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
   const { sort, setSort } = useSort();
   const { metricsDef , setSelectedMetrics, selectedMetrics} = useMetrics();
 
-
   const { fetcher } = useSWRConfig();
   const fallbackFetcher = (url) => fetch(url).then((r) => r.json());
 
@@ -231,6 +220,55 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
   const [selectedChains, setSelectedChains] = useState<string[]>([]);
   const [selectedStringFilters, setSelectedStringFilters] = useState<string[]>([]);
 
+  /* < Query Params > */
+  
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const selectedChainsParam = searchParams.get("origin_key")?.split(",") || [];
+  const selectedStringFiltersParam = useMemo(() => 
+    searchParams.get("owner_project")?.split(",") || [],
+    [searchParams]
+  );
+
+  enum FilterType {
+    SEARCH = "owner_project",
+    CHAIN = "origin_key",
+  }
+  const handleFilters = (type: FilterType, value: string[]) => {
+    if (type === FilterType.CHAIN) 
+      setSelectedChains(value);
+
+    if (type === FilterType.SEARCH) 
+      setSelectedStringFilters(value);
+
+    updateSearchQuery({
+      origin_key: selectedChains,
+      owner_project: selectedStringFilters,
+      [type]: value,
+    });
+  };
+
+  const updateSearchQuery = (updatedQuery: { [key: string]: string[] }) => {
+    // get existing query params
+    let searchParams = new URLSearchParams(window.location.search)
+        
+    // update existing query params
+    for (const key in updatedQuery) {
+      if (updatedQuery[key].length === 0) {
+        searchParams.delete(key);
+        continue;
+      }
+      searchParams.set(key, updatedQuery[key].join(","));
+    }
+
+    // create new url
+    let url = `${pathname}?${decodeURIComponent(searchParams.toString())}`;
+    
+    router.push(url, {scroll: false});
+  };
+  /* </ Query Params > */
 
   const {
     data: master,
@@ -239,17 +277,11 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
-
-
-
-
-
   const multiFetcher = (urls) => {
     if(!fetcher) return Promise.all(urls.map(url => fallbackFetcher(url)));
 
     return Promise.all(urls.map(url => fetcher(url)));
   }
-
 
   const {
     data: applicationsTimespan,
@@ -274,101 +306,47 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
     
     return aggregateProjectData(applicationsDataTimespan[selectedTimespan].data.data, applicationsDataTimespan[selectedTimespan].data.types, ownerProjectToProjectData, {
       origin_key: selectedChains,
-      owner_project: selectedStringFilters,
-      category: selectedStringFilters,
+      owner_project: selectedStringFiltersParam,
+      category: selectedStringFiltersParam,
     })
+  }, [applicationsTimespan, selectedTimespan, selectedChains, selectedStringFiltersParam, ownerProjectToProjectData]);
 
-  }, [applicationsTimespan, selectedTimespan, selectedChains, selectedStringFilters, ownerProjectToProjectData]);
+  const createApplicationDataSorter = (
+    ownerProjectToProjectData: Record<string, { main_category: string; display_name: string }>,
+    showUsd: boolean
+  ) => {
+    return (items: AggregatedDataRow[], metric: string, sortOrder: SortOrder): AggregatedDataRow[] => {
+      let actualMetric = metric === "gas_fees" ? (showUsd ? "gas_fees_usd" : "gas_fees_eth") : metric;
+      
+      const config: SortConfig<AggregatedDataRow> = {
+        metric: actualMetric as keyof AggregatedDataRow,
+        sortOrder,
+        type: SortType.NUMBER,
+        valueAccessor: (item, met) => {
+          if (met === "category") {
+            return ownerProjectToProjectData[item.owner_project].main_category;
+          }
+          if (met === "owner_project") {
+            return ownerProjectToProjectData[item.owner_project].display_name;
+          }
+          return item[met];
+        }
+      };
+      // Set correct sort type based on metric
+      if (metric === "category" || metric === "owner_project") {
+        config.type = SortType.STRING;
+      } else if (metric === "origin_keys") {
+        config.type = SortType.STRING_ARRAY;
+      }
+      return sortItems(items, config);
+    };
+  };
 
-
-  // if sort.metric changes, set it as the first member of the selectedMetrics
-  // useEffect(() => {
-  //   if(Object.keys(metricsDef).includes(sort.metric))
-  //     setSelectedMetrics((prev) => {
-  //       if(prev[0] === sort.metric) return prev;
-  //       return [sort.metric, ...prev.filter((m) => m !== sort.metric)];
-  //     });
-    
-  // }, [sort.metric, metricsDef]);
-
-
+  const applicationDataSorter = createApplicationDataSorter(ownerProjectToProjectData, showUsd);
 
   const applicationDataAggregated = useMemo(() => {
-    enum SortType {
-      number = "number",
-      string = "string",
-      stringArray = "stringArray",
-    }
-
-    const sorted = [...applicationDataFiltered];
-    let sortMetric = sort.metric;
-
-
-
-    if(sortMetric == "gas_fees")
-      sortMetric = showUsd ? "gas_fees_usd" : "gas_fees_eth";
-    
-    sorted.sort((a, b) => {
-      let sortType = SortType.number;
-
-      let aVal = a[sortMetric];
-      let bVal = b[sortMetric];
-      if(sortMetric === "category"){
-        sortType = SortType.string;
-        aVal = ownerProjectToProjectData[a.owner_project].main_category;
-        bVal = ownerProjectToProjectData[b.owner_project].main_category;
-      }else if(sortMetric === "owner_project"){
-        sortType = SortType.string;
-        aVal = ownerProjectToProjectData[a.owner_project].display_name;
-        bVal = ownerProjectToProjectData[b.owner_project].display_name;
-      }else if(sortMetric === "origin_keys"){
-        sortType = SortType.stringArray;
-        aVal = a.origin_keys.sort().map((key) => key[0].toUpperCase()).join("");
-        bVal = b.origin_keys.sort().map((key) => key[0].toUpperCase()).join("");
-      }
-
-      if(!aVal && !bVal) return 0;
-
-      if(sortType === SortType.number){
-        if(!aVal || aVal == Infinity) return 1;
-        if(!bVal || bVal == Infinity) return -1;
-
-        if(sort.sortOrder === "asc")
-          return aVal - bVal;
-        return bVal - aVal;
-      }
-      else if(sortType === SortType.string){
-        if(!aVal) return 1;
-        if(!bVal) return -1;
-
-        if(sort.sortOrder === "asc")
-          return aVal.localeCompare(bVal);
-        return bVal.localeCompare(aVal);
-      }
-      else if(sortType === SortType.stringArray){
-        // first by length, then by first letter
-        if(!aVal) return 1;
-        if(!bVal) return -1;
-
-        let aCount = aVal.length;
-        let bCount = bVal.length;
-
-        if(sort.sortOrder === "asc"){
-          if(aCount < bCount) return -1;
-          if(aCount > bCount) return 1;
-          return aVal[0].localeCompare(bVal[0]);
-        }
-
-        if(aCount < bCount) return 1;
-        if(aCount > bCount) return -1;
-
-        return bVal[0].localeCompare(aVal[0]);
-      }
-
-      return 0;
-    });
-    return sorted;
-  }, [applicationDataFiltered, ownerProjectToProjectData, showUsd, sort.metric, sort.sortOrder]);
+    return applicationDataSorter(applicationDataFiltered, sort.metric, sort.sortOrder as SortOrder);
+  }, [applicationDataFiltered, applicationDataSorter, sort.metric, sort.sortOrder]);
 
   // distinct chains across all data
   const applicationsChains = useMemo(() => {
@@ -381,23 +359,21 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
     return Array.from(chains);
   }, [applicationDataFiltered]);
 
-
   return (
     <ApplicationsDataContext.Provider
       value={{
-        selectedChains, setSelectedChains,
+        selectedChains:selectedChainsParam,
+        setSelectedChains: (value) => handleFilters(FilterType.CHAIN, value),
         applicationDataAggregated,
         isLoading: applicationsTimespanLoading || masterLoading,
 
         applicationsChains,
-        selectedStringFilters,
-        setSelectedStringFilters,
+        selectedStringFilters: selectedStringFiltersParam,
+        setSelectedStringFilters: (value) => handleFilters(FilterType.SEARCH, value),
       }}
     >
       <ShowLoading
         dataLoading={[masterLoading]}
-        // dataValidating={[masterValidating]}
-        // fullScreen={true}
       />
       {children}
     </ApplicationsDataContext.Provider>

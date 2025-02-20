@@ -13,6 +13,7 @@ import { RefObject, createContext, useContext, useEffect, useMemo, useState } fr
 import { LogLevel } from "react-virtuoso";
 import useSWR, { useSWRConfig, preload} from "swr";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
 
 export type TimespanContextType = {
@@ -44,107 +45,56 @@ type TimespanProviderProps = {
       // xMax: number;
     };
   };
+  defaultTimespan?: string;
 }
 
-export const TimespanProvider = ({ children, timespans }: TimespanProviderProps) => {
+export const TimespanProvider = ({ children, timespans, defaultTimespan = "7d" }: TimespanProviderProps) => {
   const [selectedTimespan, setSelectedTimespan] = useState<string>("7d");
   const [isMonthly, setIsMonthly] = useState<boolean>(false);
 
-  // const timespans = useMemo(() => {
-  //   let xMax = Date.now();
+  /* < Query Params > */
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
 
-  //   if (!isMonthly) {
-  //     return {
-  //       "1d": {
-  //         shortLabel: "1d",
-  //         label: "1 day",
-  //         value: 1,
-  //         xMin: xMax - 1 * 24 * 60 * 60 * 1000,
-  //         xMax: xMax,
-  //       },
-  //       "7d": {
-  //         shortLabel: "7d",
-  //         label: "7 days",
-  //         value: 7,
-  //         xMin: xMax - 7 * 24 * 60 * 60 * 1000,
-  //         xMax: xMax,
-  //       },
-  //       "30d": {
-  //         shortLabel: "30d",
-  //         label: "30 days",
-  //         value: 30,
-  //         xMin: xMax - 30 * 24 * 60 * 60 * 1000,
-  //         xMax: xMax,
-  //       },
-  //       "90d": {
-  //         shortLabel: "90d",
-  //         label: "90 days",
-  //         value: 90,
-  //         xMin: xMax - 90 * 24 * 60 * 60 * 1000,
-  //         xMax: xMax,
-  //       },
-  //       "365d": {
-  //         shortLabel: "1y",
-  //         label: "1 year",
-  //         value: 365,
-  //         xMin: xMax - 365 * 24 * 60 * 60 * 1000,
-  //         xMax: xMax,
-  //       },
-  //       max: {
-  //         shortLabel: "Max",
-  //         label: "Max",
-  //         value: 0,
-  //         xMin: xMax - 365 * 24 * 60 * 60 * 1000,
-  //         xMax: xMax,
-  //       },
-  //     } as {
-  //       [key: string]: {
-  //         label: string;
-  //         shortLabel: string;
-  //         value: number;
-  //         xMin: number;
-  //         xMax: number;
-  //       };
-  //     };
-  //   } else {
-  //     return {
-  //       "90d": {
-  //         shortLabel: "3m",
-  //         label: "3 months",
-  //         value: 90,
-  //         xMin: xMax - 90 * 24 * 60 * 60 * 1000,
-  //         xMax: xMax,
-  //       },
-  //       "365d": {
-  //         shortLabel: "1y",
-  //         label: "1 year",
-  //         value: 365,
-  //         xMin: xMax - 365 * 24 * 60 * 60 * 1000,
-  //         xMax: xMax,
-  //       },
-  //       max: {
-  //         shortLabel: "Max",
-  //         label: "Max",
-  //         value: 0,
-  //         xMin: xMax - 365 * 24 * 60 * 60 * 1000,
-  //         xMax: xMax,
-  //       },
-  //     } as {
-  //       [key: string]: {
-  //         label: string;
-  //         shortLabel: string;
-  //         value: number;
-  //         xMin: number;
-  //         xMax: number;
-  //       };
-  //     };
-  //   }
-  // }, [isMonthly]);
+  const selectedTimespanParam = searchParams.get("timespan") || defaultTimespan;
+  
+  enum FilterType {
+    TIMESPAN = "timespan",
+    CHAIN = "origin_key",
+  }
+  const handleTimepan = (type: FilterType, value: string) => {
+    if (type === FilterType.TIMESPAN) {
+      setSelectedTimespan(value);
+    }
+
+    updateSearchQuery({
+      [type]: value
+    });
+  };
+
+  const updateSearchQuery = (updatedQuery: { [key: string]: string }) => {
+    // get existing query params
+    let searchParams = new URLSearchParams(window.location.search)
+    
+    // update existing query params
+    for (const key in updatedQuery) {
+      searchParams.set(key, updatedQuery[key]);
+    }
+
+    // create new url
+    let url = `${pathname}?${decodeURIComponent(searchParams.toString())}`;
+
+    // update query params
+    router.push(url, {scroll: false});
+  };
+  /* </ Query Params > */
 
   return (
     <TimespanContext.Provider value={{
       timespans,
-      selectedTimespan, setSelectedTimespan,
+      selectedTimespan: selectedTimespanParam,
+      setSelectedTimespan: (value: string) => handleTimepan(FilterType.TIMESPAN, value),
       isMonthly, setIsMonthly,
     }}>
       {children}

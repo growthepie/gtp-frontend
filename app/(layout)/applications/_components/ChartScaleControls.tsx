@@ -18,7 +18,7 @@ export default function ChartScaleControls() {
           {Object.keys(scaleDefs).map((key) => (
                 <TopRowChild
                   key={key}
-                  className="flex items-center justify-center h-[28px] md:h-[44px]"
+                  className="flex items-center justify-center h-[28px] md:h-[34px]"
                   onClick={() => {
                     setSelectedScale(key);
                   }}

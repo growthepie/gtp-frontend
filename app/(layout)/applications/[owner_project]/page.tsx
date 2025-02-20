@@ -94,7 +94,7 @@ export default function Page({ params: { owner_project } }: Props) {
 }
 
 const MetricSection = ({ metric, owner_project }: { metric: string; owner_project: string }) => {
-  const { metricsDef } = useMetrics();
+  const { metricsDef, metricIcons} = useMetrics();
   const { ownerProjectToProjectData } = useProjectsMetadata();
 
   const def = metricsDef[metric];
@@ -107,7 +107,12 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
     <>
       <Container className="pt-[30px] pb-[15px]">
         <div className="flex flex-col gap-y-[10px]">
-          <div className="heading-large">{def.name} across different chains</div>
+          <div className="flex gap-x-[10px] items-center">
+            <GTPIcon icon={metricIcons[metric] as GTPIconName} size="md" />
+            <div className="text-xl">
+              <span className="heading-large-md">{def.name}</span> across different chains
+            </div>
+          </div>
           <div className="text-xs">
             {ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].display_name} is available on multiple chains. Here you see how much usage is on each based on the respective metric.
           </div>
@@ -234,13 +239,22 @@ const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
 
   let prefix = "";
   let valueKey = "value";
+  let decimals = 0;
   if(metricDefinition.units.eth) {
     prefix = showUsd ? metricDefinition.units.usd.prefix || "" : metricDefinition.units.eth.prefix || "";
     valueKey = showUsd ? "usd" : "eth";
+    decimals = showUsd ? metricDefinition.units.usd.decimals : metricDefinition.units.eth.decimals;
   } else {
     prefix = Object.values(metricDefinition.units)[0].prefix || "";
     valueKey = Object.keys(metricDefinition.units)[0];
+    decimals = Object.values(metricDefinition.units)[0].decimals || 0;
   }
+
+  //   const displayValue = useMemo(() => {
+  //   let prefix = Object.keys(def.units).includes("usd") ? showUsd ? def.units.usd.prefix : def.units.eth.prefix : Object.values(def.units)[0].prefix || "";
+  //   let decimals = Object.keys(def.units).includes("usd") ? showUsd ? def.units.usd.decimals : def.units.eth.decimals : Object.values(def.units)[0].decimals;
+  //   return prefix + value.toLocaleString("en-GB", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  // }, [def, showUsd, value]);
 
 
 
@@ -269,11 +283,11 @@ const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
     <div className="pb-[15px]">
       <div className="flex items-center h-[34px] rounded-full bg-[#344240] p-[2px]">
         <div className="flex items-center h-[30px] w-full rounded-full overflow-hidden bg-black/60 relative" ref={containerRef}>
-          <div className="absolute left-0 flex gap-x-[10px] items-center h-full w-[140px] bg-[#1F2726] p-[2px] rounded-full" style={{zIndex: chainsData.length + 1}}>
+          <div className="absolute left-0 flex gap-x-[10px] items-center h-full w-[200px] bg-[#1F2726] p-[2px] rounded-full" style={{zIndex: chainsData.length + 1}}>
             <ApplicationIcon owner_project={owner_project} size="sm" />
-            <div className="flex flex-col -space-y-[2px] mt-[2px]">
-              <div className="numbers-sm">{prefix}{formatNumber(values.reduce((acc, v) => acc + v, 0), {defaultDecimals: 2, thresholdDecimals: {base:5}})}</div>
-              <div className="text-xxs">{ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].display_name || ""}</div>
+            <div className="flex flex-1 flex-col -space-y-[2px] mt-[2px] truncate pr-[10px]">
+              <div className="numbers-sm">{prefix}{total.toLocaleString("en-GB", { maximumFractionDigits: decimals })}</div>
+              <div className="text-xxs truncate ">{ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].display_name || ""}</div>
             </div>
           </div>
           <div className="flex flex-1 h-full">
@@ -287,7 +301,7 @@ const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
               thisPercentage = 0.15;
             }
             let thisPercentageWidth = thisPercentage + (i === 0 ? 0 : lastPercentagesTotal);
-            const thisRenderWidth = (thisPercentageWidth/100) * (containerWidth - 140);
+            const thisRenderWidth = (thisPercentageWidth/100) * (containerWidth - 200);
 
             // Example tooltip content – adjust as needed
             const tooltipContent = (
@@ -318,7 +332,7 @@ const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
               style={{
                 background: AllChainsByKeys[chain].colors.dark[0],
                 // take containerWidth and 140px into account
-                width: `calc(${thisRenderWidth}px + 135px)`,
+                width: `calc(${thisRenderWidth}px + 195px)`,
                 left: '5px',
                 zIndex: zIndex,
               }}
@@ -329,11 +343,12 @@ const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
                   zIndex:zIndex + 1,
                 }}
                 >
-                  <div className="flex items-center gap-x-[5px]"
-                  style={{color: AllChainsByKeys[chain].darkTextOnBackground ? "#1F2726" : "#CDD8D3"}}
+                  <div 
+                    className="flex items-center gap-x-[5px]"
+                    style={{color: AllChainsByKeys[chain].darkTextOnBackground ? "#1F2726" : "#CDD8D3"}}
                   >
                     <div className="text-xs !font-semibold hidden @[80px]:block truncate">
-                    {AllChainsByKeys[chain].name_short}
+                      {AllChainsByKeys[chain].name_short}
                     </div>
                     <div className="numbers-xs hidden @[30px]:block ">
                       {percentages[i].toFixed(1)}%
@@ -527,7 +542,7 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict}) => {
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-x-[5px] justify-between">
+      <div className="flex items-center gap-x-[5px] justify-between w-full truncate">
         {/* <ApplicationDisplayName owner_project={application.owner_project} /> */}
         {contract.name || (<GridTableAddressCell address={contract.address as string} />)}
         {/* <Links owner_project={owner_project} /> */}

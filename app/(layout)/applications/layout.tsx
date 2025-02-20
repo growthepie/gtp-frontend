@@ -56,7 +56,7 @@ export default async function Layout({
         };
       }}>
         <MetricsProvider>
-          <SortProvider defaultOrder="desc" defaultKey="gas_fees">
+          <SortProvider defaultOrder="desc" defaultKey="txcount">
             <ApplicationsDataProvider>
               {/* <Container className="sticky top-0 z-[10] flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] overflow-visible" isPageRoot> */}
               <Container className="flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] overflow-visible" isPageRoot>

@@ -61,10 +61,10 @@ export default function Controls() {
                   }}
                   isSelected={selectedTimespan === key}
                 >
-                  {/* {selectedTimespan === key
+                  {selectedTimespan === key
                     ? timespans[key].label
-                    : timespans[key].shortLabel} */}
-                    {timespans[key].shortLabel}
+                    : timespans[key].shortLabel}
+                    {/* {timespans[key].shortLabel} */}
                 </TopRowChild>
               )
           )}

@@ -20,6 +20,7 @@ export default function Search() {
 
   const inputRef = useRef<HTMLInputElement>(null);
 
+
   useEffect(() => {
     if (isOpen) {
       inputRef.current?.focus();

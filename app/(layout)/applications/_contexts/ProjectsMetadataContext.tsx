@@ -75,7 +75,7 @@ export const ProjectsMetadataProvider = ({ children }: { children: React.ReactNo
     <ProjectsMetadataContext.Provider value={{
       ownerProjectToProjectData,
     }}>
-      {children}
+      {projectsData && children}
     </ProjectsMetadataContext.Provider>
   );
 }
