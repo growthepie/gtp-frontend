@@ -427,24 +427,13 @@ const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
 
   // show all chains in the tooltip
   const allTooltipContent = useMemo(() => {
-    const maxDate = moment.unix(maxUnix/1000).utc().toDate().toLocaleString("en-GB", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    console.log("maxUnix", maxUnix, maxUnix/1000, moment.unix(maxUnix/1000).utc().locale("en-GB").format("DD MMM YYYY"));
+    const maxDate = moment.unix(maxUnix/1000).utc().locale("en-GB").format("DD MMM YYYY")
 
-    let minDate = moment.unix(maxUnix/1000).subtract(timespans[selectedTimespan].value, "days").utc().toDate().toLocaleString("en-GB", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    let minDate = moment.unix(maxUnix/1000).subtract(timespans[selectedTimespan].value, "days").utc().locale("en-GB").format("DD MMM YYYY");
 
     if(selectedTimespan === "max"){
-      minDate = moment.unix(minUnix/1000).utc(false).toDate().toLocaleString("en-GB", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      });
+      minDate = moment.unix(minUnix/1000).utc().locale("en-GB").format("DD MMM YYYY");
     }
 
     return (
@@ -535,24 +524,12 @@ const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
 
               //convert incoming date (UTC) to timestamp
               const firstSeen = moment.utc(firstSeenOn[chain]);
-              const maxDate = moment.unix(maxUnix/1000).utc().toDate().toLocaleString("en-GB", {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              });
+              const maxDate = moment.unix(maxUnix/1000).utc().locale("en-GB").format("DD MMM YYYY");
 
-              let minDate = (moment.unix(maxUnix/1000).subtract(timespans[selectedTimespan].value, "days")).utc().toDate().toLocaleString("en-GB", {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              });
+              let minDate = (moment.unix(maxUnix/1000).subtract(timespans[selectedTimespan].value, "days")).utc().locale("en-GB").format("DD MMM YYYY");
 
               if(selectedTimespan === "max"){
-                minDate = moment.unix(minUnix/1000).utc().toDate().toLocaleString("en-GB", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                });
+                minDate = moment.unix(minUnix/1000).utc().locale("en-GB").format("DD MMM YYYY");
               }
 
               const tooltipContent = (

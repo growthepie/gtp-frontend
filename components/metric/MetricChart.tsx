@@ -44,6 +44,7 @@ import ChartWatermark from "@/components/layout/ChartWatermark";
 import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import dynamic from "next/dynamic";
+import moment from "moment";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -703,13 +704,7 @@ function MetricChart({
   
       const showOthers = points.length > 10 && metric_id !== "txcosts";
   
-      const date = new Date(x);
-      const dateString = date.toLocaleDateString("en-GB", {
-        timeZone: "UTC",
-        month: "short",
-        day: selectedTimeInterval === "daily" ? "numeric" : undefined,
-        year: "numeric",
-      });
+      const dateString = moment.utc(x).utc().locale("en-GB").format("DD MMM YYYY");
   
       const pointsSum = points.reduce((acc: number, point: any) => acc + point.y, 0);
       
@@ -862,8 +857,8 @@ function MetricChart({
   
       const tooltipPoints = processPointsInMainThread();
       
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway">
-        <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
+      const tooltip = `<div class="mt-3 mr-3 mb-3 min-w-52 md:min-w-60 text-xs font-raleway">
+        <div class="flex justify-between items-center font-bold text-[13px] md:text-[1rem] ml-6 mb-2"><div>${dateString}</div><div class="text-xs">${metricsDict[metric_id].name}</div></div>`;
       
       const sumRow = selectedScale === "stacked"
         ? `<div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5">

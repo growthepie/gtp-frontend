@@ -502,8 +502,10 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
           ...plotOptions,
         }
       }} 
-
       chartProps={{
+        time: {
+          timezone: "UTC",
+        },
         marginLeft: 40,
       }} 
     >
@@ -870,14 +872,14 @@ const GTPChartTooltip = ({props, metric_id} : {props?: TooltipProps, metric_id: 
   
       const showOthers = points.length > 10 && metric_id !== "txcosts";
   
-      const date = moment.utc(x).utc().toDate();
-      const dateString = date.toLocaleDateString("en-GB", {
-        timeZone: "UTC",
-        month: "short",
-        // day: selectedTimeInterval === "daily" ? "numeric" : undefined,
-        day: "numeric",
-        year: "numeric",
-      });
+      const dateString = moment.utc(x).utc().locale("en-GB").format("DD MMM YYYY");
+      // const dateString = date.toLocaleDateString("en-GB", {
+      //   timeZone: "UTC",
+      //   month: "short",
+      //   // day: selectedTimeInterval === "daily" ? "numeric" : undefined,
+      //   day: "numeric",
+      //   year: "numeric",
+      // });
   
       const pointsSum = points.reduce((acc: number, point: any) => acc + point.y, 0);
       
@@ -1029,8 +1031,8 @@ const GTPChartTooltip = ({props, metric_id} : {props?: TooltipProps, metric_id: 
   
       const tooltipPoints = processPointsInMainThread();
       
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway">
-        <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
+      const tooltip = `<div class="mt-3 mr-3 mb-3 min-w-52 md:min-w-60 text-xs font-raleway">
+        <div class="flex justify-between items-center font-bold text-[13px] md:text-[1rem] ml-6 mb-2"><div>${dateString}</div><div class="text-xs">${metricsDef[metric_id].name}</div></div>`;
       
       const sumRow = selectedScale === "stacked"
         ? `<div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5">
