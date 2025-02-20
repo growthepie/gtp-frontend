@@ -403,6 +403,16 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
     }
   }, [metricsDef, selectedMetrics, showUsd]);
 
+  const decimals = useMemo(() => {
+    const def = metricsDef[selectedMetrics[0]].units;
+
+    if (Object.keys(def).includes("usd")) {
+      return showUsd ? def.usd.decimals : def.eth.decimals;
+    } else {
+      return Object.values(def)[0].decimals;
+    }
+  }, [metricsDef, selectedMetrics, showUsd]);
+
   if (!application) {
     return (
       <div className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] min-w-[340px] ${className || ""} `} style={{ width: width || undefined }}>
@@ -439,7 +449,7 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
         <div className="h-[20px] w-full flex items-center justify-end gap-x-[3px]">
           <div className="numbers-sm text-[#CDD8D3]">
             {prefix}
-            {value?.toLocaleString("en-GB")}
+            {value?.toLocaleString("en-GB", { maximumFractionDigits: decimals })}
           </div>
         </div>
         </div>
