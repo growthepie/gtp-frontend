@@ -9,9 +9,8 @@ import Container from "@/components/layout/Container";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import Icon from "@/components/layout/Icon";
 
-export default function ChartScaleControls() {
+export default function ChartScaleControls({sources}: React.PropsWithChildren<{sources?: string[]}>) {
   const { scaleDefs, setSelectedScale, selectedScale } = useChartScale();
-
 
   return (
     <Container>
@@ -48,7 +47,7 @@ export default function ChartScaleControls() {
                     Data Sources:
                   </div>
                   <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
-                    sadasd
+                    {sources}
                   </div>
                 </div>
               </div>

@@ -86,6 +86,7 @@ export interface MetricInfo {
   log_default: boolean;
   max_date_fill: boolean;
   monthly_agg: "sum" | "avg" | "maa";
+  source: string[];
 }
 
 export interface DataAvailabilityLayers {

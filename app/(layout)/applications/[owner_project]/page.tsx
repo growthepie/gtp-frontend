@@ -9,7 +9,7 @@ import { ApplicationDetailsChart } from "../_components/GTPChart";
 import { ChartScaleProvider } from "../_contexts/ChartScaleContext";
 import ChartScaleControls from "../_components/ChartScaleControls";
 import { ApplicationCard, ApplicationDisplayName, ApplicationIcon, Category, Chains, formatNumber, Links, MetricTooltip } from "../_components/Components";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import { GridTableAddressCell, GridTableHeader, GridTableHeaderCell, GridTableRow } from "@/components/layout/GridTable";
@@ -25,6 +25,7 @@ import { Virtuoso } from "react-virtuoso";
 import { useRouter } from "next/navigation";
 import { AggregatedDataRow, useApplicationsData } from "../_contexts/ApplicationsDataContext";
 import useDragScroll from "@/hooks/useDragScroll";
+import { Sources } from "@/lib/datasources";
 
 type Props = {
   params: { owner_project: string };
@@ -32,9 +33,36 @@ type Props = {
 
 export default function Page({ params: { owner_project } }: Props) {
   const { ownerProjectToProjectData } = useProjectsMetadata();
+  const { data: master } = useMaster();
   const { selectedMetrics } = useMetrics();
 
-  // const projectData = ownerProjectToProjectData[owner_project];
+  const SourcesDisplay = useMemo(() => {
+    if (!master)
+      return null;
+    let sourcesByMetric = {};
+    selectedMetrics.forEach((metric) => {
+      const sources = master.app_metrics[metric].source;
+      sourcesByMetric[metric] = sources && sources.length > 0 ? (
+        sources
+          .map<ReactNode>((s) => (
+            <Link
+              key={s}
+              rel="noopener noreferrer"
+              target="_blank"
+              href={Sources[s] ?? ""}
+              className="hover:text-forest-500 dark:hover:text-forest-500 underline"
+            >
+              {s}
+            </Link>
+          ))
+          .reduce((prev, curr) => [prev, ", ", curr])
+      ) : (
+        <>Unavailable</>
+      );
+    })
+
+    return sourcesByMetric;
+  }, [master, selectedMetrics]);
 
   return (
     <>
@@ -58,7 +86,7 @@ export default function Page({ params: { owner_project } }: Props) {
           }}
         >
           <MetricSection metric={metric} owner_project={owner_project} />
-          <ChartScaleControls />
+          <ChartScaleControls sources={SourcesDisplay && SourcesDisplay[metric]} />
         </ChartScaleProvider>
       ))}
       <Container>
@@ -136,7 +164,7 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
     valueIndex = Object.values(data.metrics[metric].over_time)[0].daily.types.indexOf(valueKey);
     decimals = Object.values(metricDefinition.units)[0].decimals || 0;
   }
-    
+
 
   if (!def) {
     return null;
@@ -170,7 +198,7 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
               name: chain,
               data: data.metrics[metric].over_time[chain].daily.data.map((d: number[]) => [d[0], d[valueIndex]])
             })
-          )}
+            )}
         />
 
 
