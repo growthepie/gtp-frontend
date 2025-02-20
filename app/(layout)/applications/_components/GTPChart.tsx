@@ -69,7 +69,10 @@ type SeriesData = {
 
 export const ApplicationDetailsChart = ({ seriesData, metric }: { seriesData: SeriesData[], metric: string }) => {
   const { selectedScale } = useChartScale();
+  const [showUsd] = useLocalStorage("showUsd", true);
+  const [showGwei] = useLocalStorage("showGwei", false);
 
+  
   const getPlotOptions: (scale: string) => Highcharts.PlotOptions = (scale) => {
     switch (scale) {
       case "absolute":
@@ -144,6 +147,215 @@ export const ApplicationDetailsChart = ({ seriesData, metric }: { seriesData: Se
     },
     ...getPlotOptions(selectedScale),
   };
+
+  const { data: master, AllChainsByKeys } = useMaster();
+  
+  const MetadataByKeys = useMemo(() => {
+    if (!master) return {};
+    return master.chains;
+  }, [master]);
+
+  const getSeriesType = useCallback(
+    (name: string) => {
+      if (name === "ethereum") {
+        // show column chart for ethereum if monthly and stacked
+        if (selectedScale === "stacked")
+          return "column";
+        // else show area
+        return "area";
+      }
+      if (selectedScale === "percentage") return "area";
+      if (selectedScale === "stacked")
+        return "area";
+
+      return "line";
+    },
+    [selectedScale,],
+  );
+
+  const getSeriesData = useCallback(
+    (name: string) => {
+      if (name === "")
+        return {
+          // data: [],
+          zoneAxis: undefined,
+          zones: undefined,
+          fillColor: undefined,
+          fillOpacity: undefined,
+          color: undefined,
+        };
+
+      const timeIndex = 0;
+      let valueIndex = 1;
+      let valueMulitplier = 1;
+
+      let zones: any[] | undefined = undefined;
+      let zoneAxis: string | undefined = undefined;
+
+      const isLineChart = getSeriesType(name) === "line";
+      const isColumnChart = getSeriesType(name) === "column";
+
+      const isAreaChart = getSeriesType(name) === "area";
+
+      let fillOpacity = undefined;
+
+      let seriesFill = "transparent";
+
+      if (isAreaChart) {
+        seriesFill = MetadataByKeys[name]?.colors.dark[0] + "33";
+      }
+
+      if (isAreaChart) {
+        seriesFill = MetadataByKeys[name]?.colors.dark[0] + "33";
+      }
+
+      let fillColor = MetadataByKeys[name]?.colors.dark[0];
+      let color =MetadataByKeys[name]?.colors.dark[0];
+
+      // if (types.includes("usd")) {
+      //   if (showUsd) {
+      //     valueIndex = types.indexOf("usd");
+      //   } else {
+      //     valueIndex = types.indexOf("eth");
+      //     if (showGwei) valueMulitplier = 1000000000;
+      //   }
+      // }
+
+      // const seriesData = data.map((d) => {
+      //   return [d[timeIndex], d[valueIndex] * valueMulitplier];
+      // });
+
+      let marker = {
+        lineColor: MetadataByKeys[name].colors.dark[0],
+        radius: 0,
+        symbol: "circle",
+      }
+
+      // if (selectedTimeInterval === "daily") {
+      return {
+        // data: seriesData,
+        zoneAxis,
+        zones,
+        fillColor: seriesFill,
+        fillOpacity,
+        color,
+        marker,
+      };
+      // }
+
+      const columnFillColor = {
+        linearGradient: {
+          x1: 0,
+          y1: 0,
+          x2: 0,
+          y2: 1,
+        },
+        stops: [
+          [0, MetadataByKeys[name]?.colors.dark[0] + "FF"],
+          // [0.349, MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "88"],
+          [1, MetadataByKeys[name]?.colors.dark[0] + "00"],
+        ],
+      };
+
+      const columnColor = {
+        linearGradient: {
+          x1: 0,
+          y1: 0,
+          x2: 0,
+          y2: 1,
+        },
+        stops: [
+          [0, MetadataByKeys[name]?.colors.dark[0] + "FF"],
+          // [0.349, MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "88"],
+          [1, MetadataByKeys[name]?.colors.dark[0] + "00"],
+        ],
+      };
+
+      const dottedColumnColor = {
+        pattern: {
+          path: {
+            d: "M 0 0 L 10 10 M 9 -1 L 11 1 M -1 9 L 1 11",
+            "stroke-width": 3,
+          },
+          width: 10,
+          height: 10,
+          opacity: 1,
+          color: MetadataByKeys[name].colors.dark[0] + "CC",
+        },
+      };
+
+      const todaysDateUTC = new Date().getUTCDate();
+
+      const secondZoneDottedColumnColor =
+        todaysDateUTC === 1 ? columnColor : dottedColumnColor;
+
+      const secondZoneDashStyle = todaysDateUTC === 1 ? "Solid" : "Dot";
+
+
+
+      // if it is not the last day of the month, add a zone to the chart to indicate that the data is incomplete
+      // if (selectedTimeInterval === "monthly") {
+
+      //   if (seriesData.length > 1 && todaysDateUTC !== 1) {
+      //     zoneAxis = "x";
+      //     zones = [
+      //       {
+      //         value: seriesData[seriesData.length - 2][0] + 1,
+      //         dashStyle: "Solid",
+      //         fillColor: isColumnChart ? columnFillColor : seriesFill,
+      //         color: isColumnChart
+      //           ? columnColor
+      //           : MetadataByKeys[name].colors["dark"][0],
+      //       },
+      //       {
+      //         // value: monthlyData[monthlyData.length - 2][0],
+      //         dashStyle: secondZoneDashStyle,
+      //         fillColor: isColumnChart ? columnFillColor : seriesFill,
+      //         color: isColumnChart
+      //           ? secondZoneDottedColumnColor
+      //           : MetadataByKeys[name].colors["dark"][0],
+      //       },
+      //     ];
+      //   } else if (todaysDateUTC !== 1) {
+      //     zoneAxis = "x";
+      //     zones = [
+      //       {
+      //         // value: monthlyData[monthlyData.length - 2][0],
+      //         dashStyle: secondZoneDashStyle,
+      //         fillColor: isColumnChart ? columnFillColor : seriesFill,
+      //         color: isColumnChart
+      //           ? secondZoneDottedColumnColor
+      //           : MetadataByKeys[name].colors["dark"][0],
+      //       }
+      //     ];
+      //     marker.radius = 2;
+      //   } else {
+      //     zoneAxis = "x";
+      //     zones = [
+      //       {
+      //         // value: monthlyData[monthlyData.length - 2][0],
+      //         dashStyle: secondZoneDashStyle,
+      //         fillColor: isColumnChart ? columnFillColor : seriesFill,
+      //         color: isColumnChart
+      //           ? secondZoneDottedColumnColor
+      //           : MetadataByKeys[name].colors["dark"][0],
+      //       }
+      //     ];
+      //   }
+      // }
+
+      return {
+        data: seriesData,
+        zoneAxis,
+        zones,
+        fillColor,
+        fillOpacity,
+        color,
+        marker,
+      };
+    },
+    [getSeriesType, MetadataByKeys, showUsd, showGwei],
+  );
 
   useEffect(() => {
     Highcharts.setOptions({
@@ -225,15 +437,87 @@ export const ApplicationDetailsChart = ({ seriesData, metric }: { seriesData: Se
         }}
       >
 
-        {seriesData.map((series, i) => (
-          <AreaSeries
-            key={i}
-            type="column"
-            name={series.name}
-            data={series.data}
-            // color={metricItems[series.name].color}
-          />
-        ))}
+        {seriesData.sort(
+          (a, b) => a.data[a.data.length - 1][1] - b.data[b.data.length - 1][1]
+        ).map((series, i) => {
+          const pointsSettings = {
+            pointPlacement: 0.5,
+          };
+
+          return (
+            <AreaSeries
+              key={i}
+              // type="column"
+              name={series.name}
+              data={series.data}
+              zoneAxis={getSeriesData(series.name).zoneAxis}
+              zones={getSeriesData(series.name).zones}
+              pointPlacement={pointsSettings.pointPlacement}
+              type={getSeriesType(series.name)}
+              clip={true}
+              dataGrouping={{}}
+              fillOpacity={getSeriesData(series.name).fillOpacity}
+              fillColor={getSeriesData(series.name).fillColor}
+              color={getSeriesData(series.name).color}
+              borderColor={["area", "line"].includes(getSeriesType(series.name)) && selectedScale !== "stacked" ? MetadataByKeys[series.name]?.colors.dark[0] : undefined}
+              borderWidth={1}
+              lineWidth={2}
+              marker={getSeriesData(series.name).marker}
+              states={{
+                hover: {
+                  enabled: true,
+                  halo: {
+                    size: 5,
+                    opacity: 1,
+                    attributes: {
+                      fill:
+                        MetadataByKeys[series.name]?.colors.dark[0] + "99",
+                      stroke:
+                        MetadataByKeys[series.name]?.colors.dark[0] + "66",
+                      "stroke-width": 0,
+                    },
+                  },
+                  brightness: 0.3,
+                },
+                inactive: {
+                  enabled: true,
+                  opacity: 0.6,
+                },
+                //@ts-ignore
+                selection: {
+                  enabled: false,
+                },
+              }}
+              shadow={["area", "line"].includes(getSeriesType(series.name)) && selectedScale !== "stacked" ? 
+                {
+                  color:
+                    MetadataByKeys[series.name]?.colors.dark[1] + "FF",
+                  width: 7,
+                } : 
+                undefined 
+              }
+              // borderColor={MetadataByKeys[series.name]?.colors.dark[0]}
+                
+              // type: getSeriesType(chainKey),
+              // clip: true,
+              // dataGrouping: dataGrouping,
+              // // borderRadiusTopLeft: borderRadius,
+              // // borderRadiusTopRight: borderRadius,
+              // fillOpacity: getSeriesData(chainKey, chain[timeIntervalKey].types, chain[timeIntervalKey].data)
+              //   .fillOpacity,
+              // fillColor: getSeriesData(chainKey, chain[timeIntervalKey].types, chain[timeIntervalKey].data)
+              //   .fillColor,
+              // color: getSeriesData(chainKey, chain[timeIntervalKey].types, chain[timeIntervalKey].data)
+              //   .color,
+              // borderColor:
+              //   MetadataByKeys[chainKey]?.colors[theme ?? "dark"][0],
+              // borderWidth: 1,
+              // lineWidth: 2,
+              // marker: getSeriesData(chainKey, chain[timeIntervalKey].types, chain[timeIntervalKey].data).marker,
+              // color={metricItems[series.name].color}
+            />
+          )
+        })}
         
       </GTPYAxis>
     </GTPChart>
