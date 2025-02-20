@@ -120,10 +120,10 @@ export default function Page() {
         </Container>
         <Container className={`hidden h-[450px] lg:h-[300px] md:grid md:grid-rows-3 md:grid-flow-col lg:grid-rows-2 lg:grid-flow-row pt-[10px] lg:grid-cols-3 gap-[10px]`}>
           {topGainers.map((application, index) => (
-            <ApplicationCard key={application.owner_project} application={application} />
+            <ApplicationCard key={index} application={application} />
           ))}
           {topLosers.map((application, index) => (
-            <ApplicationCard key={application.owner_project} application={application} />
+            <ApplicationCard key={index} application={application} />
           ))}
           {isLoading && new Array(6).fill(0).map((_, index) => (
             <ApplicationCard key={index} application={undefined} />
@@ -132,7 +132,7 @@ export default function Page() {
         </div>
         {/* <Container> */}
         <div className={`block md:hidden h-[150px] pt-[10px]`}>
-          <CardSwiper cards={[...topGainers.map((application) => <ApplicationCard key={application.owner_project} application={application} />), ...topLosers.map((application) => <ApplicationCard key={application.owner_project} application={application} />)]} />
+          <CardSwiper cards={[...topGainers.map((application, index) => <ApplicationCard key={index} application={application} />), ...topLosers.map((application, index) => <ApplicationCard key={3 + index} application={application} />)]} />
         </div>
       </div>
       {/* </Container> */}
@@ -250,6 +250,7 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
   const { selectedMetrics, metricsDef } = useMetrics();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const router = useRouter();
+  const { selectedTimespan } = useTimespan();
 
   const numContractsString = useCallback((application: AggregatedDataRow) => {
     return application.num_contracts.toLocaleString("en-GB");
@@ -295,13 +296,13 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
   }
 
   return (
-    <div 
+    <Link href={{ pathname: `/applications/${application.owner_project}`, query: { timespan: selectedTimespan } }}
       className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] ${className || ""} group hover:cursor-pointer hover:bg-forest-500/10`} 
       style={{ width: width || undefined }}
-      onClick={() => {
-        // window.location.href = `/applications/${application.owner_project}`;
-        router.push(`/applications/${application.owner_project}`);
-      }}
+      // onClick={() => {
+      //   // window.location.href = `/applications/${application.owner_project}`;
+      //   router.push(`/applications/${application.owner_project}`);
+      // }}
     >
       <div>
         <div className="flex flex-col">
@@ -381,7 +382,7 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
             </TooltipContent>
           </Tooltip>
         </div>
-        <Link className="cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center" href={`/applications/${application.owner_project}`}>
+        <Link className="cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center" href={{ pathname: `/applications/${application.owner_project}`, query: { timespan: selectedTimespan } }}>
           <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-[#CDD8D3]" />
         </Link>
       </div>
@@ -420,7 +421,7 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
         </div>
         
       </div>
-    </div>
+    </Link>
   )
 });
 
@@ -607,7 +608,7 @@ const ApplicationsTable = () => {
         <Virtuoso
           totalCount={applicationDataAggregated.length}
           itemContent={(index) => (
-            <div key={applicationDataAggregated[index].owner_project} className="pb-[5px]">
+            <div key={index} className="pb-[5px]">
             <ApplicationTableRow application={applicationDataAggregated[index]} maxMetrics={maxMetrics} />
             </div>
           )}
@@ -701,6 +702,7 @@ Value.displayName = 'Value';
 const ApplicationTableRow = memo(({ application, maxMetrics }: { application: AggregatedDataRow, maxMetrics: number[] }) => {
   const { ownerProjectToProjectData  } = useProjectsMetadata();
   const { metricsDef, selectedMetrics, selectedMetricKeys, } = useMetrics();
+  const { selectedTimespan } = useTimespan();
   const router = useRouter();
   
 
@@ -711,6 +713,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics }: { application: Ag
   );
 
   return (
+    <Link href={{ pathname: `/applications/${application.owner_project}`, query: { timespan: selectedTimespan } }}>
     <GridTableRow
       gridDefinitionColumns={gridColumns}
       className={`group text-[14px] !px-[5px] !py-0 h-[34px] gap-x-[15px]`}
@@ -759,12 +762,13 @@ const ApplicationTableRow = memo(({ application, maxMetrics }: { application: Ag
         </div>
       )})}
       <div className="relative flex justify-end items-center pr-[0px]">
-        <Link className="absolute cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center" href={`/applications/${application.owner_project}`}>
+        <Link className="absolute cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center" href={{ pathname: `/applications/${application.owner_project}`, query: { timespan: selectedTimespan } }}>
           <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-[#CDD8D3]" />
         </Link>
       </div>
       {/* #344240/30 */}
     </GridTableRow>
+    </Link>
   )
 });
 

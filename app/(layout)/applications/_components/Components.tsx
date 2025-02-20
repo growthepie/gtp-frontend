@@ -158,20 +158,15 @@ export const ApplicationDescription = ({ owner_project }: { owner_project: strin
 }
 
 export const BackButton = () => {
-  const router = useRouter();
-
-  const lastPage = document.referrer;
-
+  const {selectedTimespan} = useTimespan();
   const handleBack = () => {
-    if (lastPage.includes("/applications")) {
-      router.back();
-    } else {
-      router.push("/applications");
-    }
+    window.history.scrollRestoration = "auto";
+    // go back to /applications and keep the current timespan as query param
+    window.location.href = `/applications${selectedTimespan !== "30d" ? `?timespan=${selectedTimespan}` : ""}`;
   }
 
   return (
-    <div className="size-[36px] bg-[#344240] rounded-full flex justify-center items-center" onClick={handleBack}>
+    <div className="size-[36px] bg-[#344240] rounded-full flex justify-center items-center cursor-pointer" onClick={handleBack}>
       <Icon icon="feather:arrow-left" className="size-[26px]  text-[#CDD8D3]" />
     </div>
   );
@@ -192,17 +187,6 @@ export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, se
   const { isMobile } = useUIContext();
   // const [isHovering, setIsHovering] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-
-  // // open on hover after 300ms
-  // useEffect(() => {
-  //   if (isHovering) {
-  //     delay(() => {
-  //       setIsOpen(true);
-  //     }, 300);
-  //   } else {
-  //     setIsOpen(false);
-  //   }
-  // }, [isHovering]);
 
   return (
     <>
@@ -514,6 +498,7 @@ export const Chains = ({ origin_keys }: { origin_keys: string[] }) => {
           className={`group-hover/chains:opacity-50 hover:!opacity-100 cursor-pointer p-[2.5px] ${selectedChains.includes(chain) || selectedChains.length === 0 ? '' : '!text-[#5A6462]'}`} style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors["dark"][0] : '' }}
           onClick={(e) => {
             e.stopPropagation();
+            e.preventDefault();
             if (selectedChains.includes(chain)) {
               setSelectedChains(selectedChains.filter((c) => c !== chain));
             } else {

@@ -21,6 +21,7 @@ export interface Metrics {
   txcount:  MetricData;
   daa:      MetricData;
   gas_fees: MetricData;
+  [key: string]: MetricData;
 }
 
 export interface MetricData {
@@ -49,7 +50,7 @@ export interface OverTimeData {
 
 export interface Daily {
   types: string[];
-  data:  number[];
+  data:  number[][]; // [timestamp, value]
 }
 
 type ContractKeys = [

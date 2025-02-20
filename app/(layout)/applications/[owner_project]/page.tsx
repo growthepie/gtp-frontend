@@ -5,7 +5,7 @@ import { useMetrics } from "../_contexts/MetricsContext";
 import { ContractDict, MetricData, useApplicationDetailsData } from "../_contexts/ApplicationDetailsDataContext";
 import { useTimespan } from "../_contexts/TimespanContext";
 import { useMaster } from "@/contexts/MasterContext";
-import { StackedDataBar } from "../_components/GTPChart";
+import { ApplicationDetailsChart } from "../_components/GTPChart";
 import { ChartScaleProvider } from "../_contexts/ChartScaleContext";
 import ChartScaleControls from "../_components/ChartScaleControls";
 import { ApplicationDisplayName, ApplicationIcon, Category, Chains, formatNumber, Links, MetricTooltip } from "../_components/Components";
@@ -40,7 +40,7 @@ export default function Page({ params: { owner_project } }: Props) {
     <>
       {selectedMetrics.map((metric, index) => (
         <ChartScaleProvider
-          key={index} 
+          key={index}
           scaleDefs={{
             absolute: {
               label: 'Absolute',
@@ -62,30 +62,30 @@ export default function Page({ params: { owner_project } }: Props) {
         </ChartScaleProvider>
       ))}
       <Container>
-      <div className="pt-[30px] pb-[15px]">
-        <div className="flex flex-col gap-y-[10px]">
-          <div className="heading-large">Most Active Contracts</div>
-          <div className="text-xs">
-            See the most active contracts within the selected timeframe (Maximum) for 1inch.
+        <div className="pt-[30px] pb-[15px]">
+          <div className="flex flex-col gap-y-[10px]">
+            <div className="heading-large">Most Active Contracts</div>
+            <div className="text-xs">
+              See the most active contracts within the selected timeframe (Maximum) for 1inch.
+            </div>
           </div>
+
+
         </div>
-        
-          
-      </div>
       </Container>
       <ContractsTable />
       <Container>
-      {/* <div className="rounded-md bg-forest-1000/60 h-[152px] w-full"></div> */}
-      <div className="pt-[30px] pb-[15px]">
-        <div className="flex flex-col gap-y-[10px]">
-          <div className="heading-large">Similar Applications</div>
-          <div className="text-xs">
-            See other applications similar to 1inch sorted by their performance in terms of gas fees.
+        {/* <div className="rounded-md bg-forest-1000/60 h-[152px] w-full"></div> */}
+        <div className="pt-[30px] pb-[15px]">
+          <div className="flex flex-col gap-y-[10px]">
+            <div className="heading-large">Similar Applications</div>
+            <div className="text-xs">
+              See other applications similar to 1inch sorted by their performance in terms of gas fees.
+            </div>
           </div>
+
         </div>
-        
-      </div>
-      {/* <div className="rounded-md bg-forest-1000/60 h-[140px] w-full"></div> */}
+        {/* <div className="rounded-md bg-forest-1000/60 h-[140px] w-full"></div> */}
       </Container>
       <SimilarApplications owner_project={owner_project} />
 
@@ -94,8 +94,9 @@ export default function Page({ params: { owner_project } }: Props) {
 }
 
 const MetricSection = ({ metric, owner_project }: { metric: string; owner_project: string }) => {
-  const { metricsDef, metricIcons} = useMetrics();
+  const { metricsDef, metricIcons } = useMetrics();
   const { ownerProjectToProjectData } = useProjectsMetadata();
+  const { data } = useApplicationDetailsData();
 
   const def = metricsDef[metric];
 
@@ -119,8 +120,18 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
         </div>
       </Container>
       <Container>
-      <MetricChainBreakdownBar metric={metric} />
-        <div className="rounded-md bg-forest-1000/60 h-[163px] w-full"></div>
+        <MetricChainBreakdownBar metric={metric} />
+        <ApplicationDetailsChart
+          metric={metric}
+          seriesData={
+            Object.keys(data.metrics[metric].over_time).map((chain) => ({
+              name: chain,
+              data: data.metrics[metric].over_time[chain].daily.data.map((d: number[]) => [d[0], d[1]])
+            })
+          )}
+        />
+
+
       </Container>
     </>
   );
@@ -193,11 +204,41 @@ const FloatingTooltip: React.FC<FloatingTooltipProps> = ({
   );
 };
 
+const blendColors = (color1: string, color2: string, percentage: number): string => {
+  // Ensure the percentage is clamped between 0 and 1
+  percentage = Math.max(0, Math.min(1, percentage));
+
+  // Convert hex to RGB
+  const hexToRgb = (hex: string) => {
+    hex = hex.replace(/^#/, "");
+    if (hex.length === 3) {
+      hex = hex.split("").map((char) => char + char).join(""); // Expand shorthand hex
+    }
+    const bigint = parseInt(hex, 16);
+    return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
+  };
+
+  // Convert RGB to hex
+  const rgbToHex = (r: number, g: number, b: number) =>
+    `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
+
+  const [r1, g1, b1] = hexToRgb(color1);
+  const [r2, g2, b2] = hexToRgb(color2);
+
+  // Interpolate between the two colors
+  const r = Math.round(r1 + (r2 - r1) * percentage);
+  const g = Math.round(g1 + (g2 - g1) * percentage);
+  const b = Math.round(b1 + (b2 - b1) * percentage);
+
+  return rgbToHex(r, g, b);
+};
+
+
 const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
-  const { data, owner_project} = useApplicationDetailsData();
+  const { data, owner_project } = useApplicationDetailsData();
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { selectedTimespan } = useTimespan();
-  const {AllChainsByKeys} = useMaster();
+  const { AllChainsByKeys } = useMaster();
   const { metricsDef } = useMetrics();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { isSidebarOpen } = useUIContext();
@@ -221,8 +262,8 @@ const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
   useEffect(() => {
     // on sidebar open/close (timeout to wait for sidebar animation)
     const timeout = setTimeout(() => {
-        handleResize();
-      }, 300);
+      handleResize();
+    }, 300);
     return () => {
       clearTimeout(timeout);
     };
@@ -233,14 +274,14 @@ const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, [containerRef.current]);
+  }, []);
 
   const metricDefinition = metricsDef[metric];
 
   let prefix = "";
   let valueKey = "value";
   let decimals = 0;
-  if(metricDefinition.units.eth) {
+  if (metricDefinition.units.eth) {
     prefix = showUsd ? metricDefinition.units.usd.prefix || "" : metricDefinition.units.eth.prefix || "";
     valueKey = showUsd ? "usd" : "eth";
     decimals = showUsd ? metricDefinition.units.usd.decimals : metricDefinition.units.eth.decimals;
@@ -250,27 +291,44 @@ const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
     decimals = Object.values(metricDefinition.units)[0].decimals || 0;
   }
 
-  //   const displayValue = useMemo(() => {
-  //   let prefix = Object.keys(def.units).includes("usd") ? showUsd ? def.units.usd.prefix : def.units.eth.prefix : Object.values(def.units)[0].prefix || "";
-  //   let decimals = Object.keys(def.units).includes("usd") ? showUsd ? def.units.usd.decimals : def.units.eth.decimals : Object.values(def.units)[0].decimals;
-  //   return prefix + value.toLocaleString("en-GB", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-  // }, [def, showUsd, value]);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+
 
 
 
   const metricData = data.metrics[metric] as MetricData;
   // filter out chains with 0 value
   const chainsData = Object.entries(metricData.aggregated.data).filter(([chain, valsByTimespan]) => valsByTimespan[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)] > 0)
-  // sort by chain asc
-  .sort(([chainA], [chainB]) => chainA.localeCompare(chainB));
+    // sort by chain asc
+    .sort(([chainA], [chainB]) => chainA.localeCompare(chainB));
   const values = chainsData.map(([chain, valsByTimespan]) => valsByTimespan[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)]);
   const total = Object.values(values).reduce((acc, v) => acc + v, 0);
   const percentages = values.map((v) => (v / total) * 100);
-  
+
   const cumulativePercentages = percentages.reduce((acc, v, i) => {
     const prev = acc[i - 1] || 0;
     return [...acc, prev + v];
   }, [] as number[]);
+
+
+
+  const getBarColor = useCallback((chain: string) => {
+    const index = chainsData.findIndex(([c]) => c === chain);
+    const isHovered = hoveredIndex === index;
+    const isHoveredOrNone = isHovered || hoveredIndex === null;
+
+    const color = AllChainsByKeys[chain].colors.dark[0];
+
+    if (isHoveredOrNone) {
+      return color;
+    }
+
+    const blendPercentage = 0.9;
+    return blendColors(color, "#1F2726", blendPercentage);
+
+  }, [hoveredIndex, chainsData, AllChainsByKeys]);
+
 
   console.log("cumulativePercentages", cumulativePercentages);
 
@@ -279,11 +337,10 @@ const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
   }
 
   return (
-    
     <div className="pb-[15px]">
       <div className="flex items-center h-[34px] rounded-full bg-[#344240] p-[2px]">
         <div className="flex items-center h-[30px] w-full rounded-full overflow-hidden bg-black/60 relative" ref={containerRef}>
-          <div className="absolute left-0 flex gap-x-[10px] items-center h-full w-[200px] bg-[#1F2726] p-[2px] rounded-full" style={{zIndex: chainsData.length + 1}}>
+          <div className="absolute left-0 flex gap-x-[10px] items-center h-full w-[200px] bg-[#1F2726] p-[2px] rounded-full" style={{ zIndex: chainsData.length + 1 }}>
             <ApplicationIcon owner_project={owner_project} size="sm" />
             <div className="flex flex-1 flex-col -space-y-[2px] mt-[2px] truncate pr-[10px]">
               <div className="numbers-sm">{prefix}{total.toLocaleString("en-GB", { maximumFractionDigits: decimals })}</div>
@@ -291,90 +348,106 @@ const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
             </div>
           </div>
           <div className="flex flex-1 h-full">
-          {chainsData.map(([chain, values], i) => {
-            const zIndex = chainsData.length - i;
-            let lastPercentagesTotal = i === 0 ? 0 : percentages.slice(0, i).reduce((acc, v) => acc + v, 0);
-            let thisPercentage = percentages[i];
-            
-            
-            if(thisPercentage < 0.15) {
-              thisPercentage = 0.15;
-            }
-            let thisPercentageWidth = thisPercentage + (i === 0 ? 0 : lastPercentagesTotal);
-            const thisRenderWidth = (thisPercentageWidth/100) * (containerWidth - 200);
+            {chainsData.map(([chain, values], i) => {
+              // Determine whether this bar is hovered.
+              const isHovered = hoveredIndex === i;
+              // If any bar is hovered and this one isn’t, reduce its opacity.
+              const barOpacity = hoveredIndex !== null && !isHovered ? 0.4 : 1;
+              // Bump the hovered bar to the top.
+              // const computedZIndex = isHovered ? chainsData.length + 1 : chainsData.length - i;
+              const computedZIndex = chainsData.length - i;
 
-            // Example tooltip content – adjust as needed
-            const tooltipContent = (
-              <>
-              {/* <div className="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">
-                20 Jan 2025
-              </div> */}
-              <div className="flex w-full space-x-2 items-center font-medium mb-0.5">
-                <div
-                  className="w-4 h-1.5 rounded-r-full"
-                  style={{ backgroundColor: AllChainsByKeys[chain].colors.dark[0] }}
-                ></div>
-                <div className="tooltip-point-name text-xs">{AllChainsByKeys[chain].label}</div>
-                <div className="flex-1 text-right justify-end numbers-xs flex">
-                  <div className="hidden"></div>
-                  {prefix}{values[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)].toLocaleString("en-GB", { maximumFractionDigits: 2 })}
-                  <div className="ml-0.5 hidden"></div>
-                </div>
-              </div>
-              {/* Additional lines for other points… */}
-            </>
-            );
-            
-            return (
-              <FloatingTooltip key={chain} content={tooltipContent}>
-            <div 
-              className="absolute h-full rounded-full transition-all"
-              style={{
-                background: AllChainsByKeys[chain].colors.dark[0],
-                // take containerWidth and 140px into account
-                width: `calc(${thisRenderWidth}px + 195px)`,
-                left: '5px',
-                zIndex: zIndex,
-              }}
-              >
-                <div className="@container absolute inset-0 left-[135px] right-[15px] flex items-center justify-end text-[#1F2726] truncate" 
-                style={{
+              const barColor = isHovered || hoveredIndex === null ? AllChainsByKeys[chain].colors.dark[0] : "#1F2726";
+              const textColor = isHovered || hoveredIndex === null ? AllChainsByKeys[chain].darkTextOnBackground ? "#1F2726" : "#CDD8D3" : "#1F2726";
 
-                  zIndex:zIndex + 1,
-                }}
-                >
-                  <div 
-                    className="flex items-center gap-x-[5px]"
-                    style={{color: AllChainsByKeys[chain].darkTextOnBackground ? "#1F2726" : "#CDD8D3"}}
-                  >
-                    <div className="text-xs !font-semibold hidden @[80px]:block truncate">
-                      {AllChainsByKeys[chain].name_short}
-                    </div>
-                    <div className="numbers-xs hidden @[30px]:block ">
-                      {percentages[i].toFixed(1)}%
+              let lastPercentagesTotal = i === 0 ? 0 : percentages.slice(0, i).reduce((acc, v) => acc + v, 0);
+              let thisPercentage = percentages[i];
+
+
+              if (thisPercentage < 0.15) {
+                thisPercentage = 0.15;
+              }
+              let thisPercentageWidth = thisPercentage + (i === 0 ? 0 : lastPercentagesTotal);
+              const thisRenderWidth = (thisPercentageWidth / 100) * (containerWidth - 200);
+
+              const tooltipContent = (
+                <>
+                  <div className="flex w-full space-x-2 items-center font-medium mb-0.5">
+                    <div
+                      className="w-4 h-1.5 rounded-r-full"
+                      style={{ backgroundColor: AllChainsByKeys[chain].colors.dark[0] }}
+                    ></div>
+                    <div className="tooltip-point-name text-xs">{AllChainsByKeys[chain].label}</div>
+                    <div className="flex-1 text-right justify-end numbers-xs flex">
+                      <div className="hidden"></div>
+                      {prefix}{values[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)].toLocaleString("en-GB", { maximumFractionDigits: 2 })}
+                      <div className="ml-0.5 hidden"></div>
                     </div>
                   </div>
-                </div>
-              </div>
-              </FloatingTooltip>
+                </>
+              );
+
+              return (
+                <FloatingTooltip key={chain} content={tooltipContent}>
+                  <div
+                    className="absolute h-full rounded-full transition-all"
+                    onMouseEnter={() => setHoveredIndex(i)}
+                    onMouseLeave={() => setHoveredIndex(null)}
+                    style={{
+                      // background: isHovered || isHovered === null ? AllChainsByKeys[chain].colors.dark[0] : "#1F2726",
+                      background: getBarColor(chain),
+                      // take containerWidth and 140px into account
+                      width: `calc(${thisRenderWidth}px + 195px)`,
+                      left: '5px',
+                      zIndex: computedZIndex,
+                      // add inner glow to hovered bar
+                      boxShadow: isHovered ? `0 0 10px ${AllChainsByKeys[chain].colors.dark[0]}66` : "none",
+
+                    }}
+                  >
+                    <div
+                      className="@container absolute inset-0 left-[135px] right-[15px] flex items-center justify-end text-[#1F2726] truncate"
+                      style={{
+                        zIndex: computedZIndex + 1,
+                      }}
+                    >
+                      <div
+                        className="flex items-center gap-x-[5px]"
+                        style={{
+                          color: AllChainsByKeys[chain].darkTextOnBackground ? "#1F2726" : "#CDD8D3",
+                          opacity: barOpacity,
+                          // color: textColor,
+                        }}
+                      >
+                        <div className="text-xs !font-semibold hidden @[80px]:block truncate">
+                          {AllChainsByKeys[chain].name_short}
+                        </div>
+                        <div className="numbers-xs hidden @[30px]:block ">
+                          {percentages[i].toFixed(1)}%
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </FloatingTooltip>
               )
-          })}
+            })
+            }
           </div>
         </div>
       </div>
-      </div>
+    </div>
   );
 }
 
 
 const ContractsTable = () => {
-  const { data, owner_project, contracts} = useApplicationDetailsData();
+  const { data, owner_project, contracts } = useApplicationDetailsData();
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { selectedTimespan } = useTimespan();
-  const {AllChainsByKeys} = useMaster();
+  const { AllChainsByKeys } = useMaster();
   const { metricsDef, selectedMetrics, setSelectedMetrics, selectedMetricKeys, } = useMetrics();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const {sort, setSort} = useSort();
+  const { sort, setSort } = useSort();
   const [showMore, setShowMore] = useState(false);
 
   const metricKey = useMemo(() => {
@@ -421,12 +494,12 @@ const ContractsTable = () => {
           Subcategory
         </GridTableHeaderCell>
         {selectedMetrics.map((metric, index) => {
-            const metricMap = {
-              "gas_fees": "fees_paid_",
-              "txcount": "txcount",
-              "daa": "daa",
-            }
-            const metricKey = `${metricMap[metric]}${metric === "gas_fees" && (showUsd ? "usd" : "eth")}`;
+          const metricMap = {
+            "gas_fees": "fees_paid_",
+            "txcount": "txcount",
+            "daa": "daa",
+          }
+          const metricKey = `${metricMap[metric]}${metric === "gas_fees" && (showUsd ? "usd" : "eth")}`;
           return (
             <GridTableHeaderCell
               key={metric}
@@ -453,18 +526,18 @@ const ContractsTable = () => {
           )}
         />
       </div> */}
-      <div className="flex flex-col" style={{ height: `${contracts.slice(0,showMore ? contracts.length : 5).length * 34 + contracts.slice(0,showMore ? contracts.length : 5).length * 5}px` }}>
+      <div className="flex flex-col" style={{ height: `${contracts.slice(0, showMore ? contracts.length : 5).length * 34 + contracts.slice(0, showMore ? contracts.length : 5).length * 5}px` }}>
         <Virtuoso
-          totalCount={contracts.slice(0,showMore ? contracts.length : 5).length}
+          totalCount={contracts.slice(0, showMore ? contracts.length : 5).length}
           itemContent={(index) => (
             <div key={index} className="pb-[5px]">
-            <ContractsTableRow contract={contracts.slice(0,showMore ? contracts.length : 5)[index]} />
+              <ContractsTableRow contract={contracts.slice(0, showMore ? contracts.length : 5)[index]} />
             </div>
           )}
           useWindowScroll
-          increaseViewportBy={{top:0, bottom: 400}}
+          increaseViewportBy={{ top: 0, bottom: 400 }}
           overscan={50}
-          />
+        />
       </div>
       <div className="flex items-center justify-center pt-[21px]">
         <div className="flex items-center justify-center rounded-full h-[36px] w-[117px] border border-[#CDD8D3] text-[#CDD8D3] cursor-pointer text-md" onClick={() => setShowMore(!showMore)}>
@@ -476,7 +549,7 @@ const ContractsTable = () => {
 }
 
 
-const ContractValue = memo(({ contract, metric } : { contract: ContractDict, metric: string }) => {
+const ContractValue = memo(({ contract, metric }: { contract: ContractDict, metric: string }) => {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { metricsDef } = useMetrics();
 
@@ -485,7 +558,7 @@ const ContractValue = memo(({ contract, metric } : { contract: ContractDict, met
     "txcount": "txcount",
     "daa": "daa",
   }
-    
+
   const prefix = useMemo(() => {
     const def = metricsDef[metric].units;
 
@@ -509,9 +582,9 @@ ContractValue.displayName = 'Value';
 
 
 
-const ContractsTableRow = memo(({ contract }: { contract: ContractDict}) => {
+const ContractsTableRow = memo(({ contract }: { contract: ContractDict }) => {
   const { owner_project } = useApplicationDetailsData();
-  const { ownerProjectToProjectData  } = useProjectsMetadata();
+  const { ownerProjectToProjectData } = useProjectsMetadata();
   const { metricsDef, selectedMetrics, selectedMetricKeys, } = useMetrics();
   const { AllChainsByKeys, data: masterData } = useMaster();
 
@@ -521,7 +594,7 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict}) => {
     [selectedMetricKeys]
   );
 
-  if(!masterData)
+  if (!masterData)
     return null;
 
   return (
@@ -538,7 +611,7 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict}) => {
         >
           {/* <ApplicationIcon owner_project={owner_project} size="sm" /> */}
           <div className="size-[26px] flex items-center justify-center">
-          <GTPIcon icon={`${contract.origin_key}-logo-monochrome` as GTPIconName} size="sm" style={{color: AllChainsByKeys[contract.origin_key].colors.dark[0]}} />
+            <GTPIcon icon={`${contract.origin_key}-logo-monochrome` as GTPIconName} size="sm" style={{ color: AllChainsByKeys[contract.origin_key].colors.dark[0] }} />
           </div>
         </div>
       </div>
@@ -576,7 +649,7 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict}) => {
 ContractsTableRow.displayName = 'ApplicationTableRow';
 
 const SimilarApplications = ({ owner_project }: { owner_project: string }) => {
-  const {ownerProjectToProjectData} = useProjectsMetadata();
+  const { ownerProjectToProjectData } = useProjectsMetadata();
   const { applicationDataAggregated, isLoading } = useApplicationsData();
   const { selectedMetrics } = useMetrics();
   const { metricsDef } = useMetrics();
@@ -585,19 +658,19 @@ const SimilarApplications = ({ owner_project }: { owner_project: string }) => {
   const [medianMetricKey, setMedianMetricKey] = useState(selectedMetrics[0]);
 
   useEffect(() => {
-    if(Object.keys(metricsDef).includes(sort.metric)){
+    if (Object.keys(metricsDef).includes(sort.metric)) {
       let key = sort.metric;
       if (sort.metric === "gas_fees")
         key = "gas_fees_eth";
 
       setMedianMetricKey(key);
     }
-    
+
   }, [metricsDef, sort.metric]);
 
   const { topGainers, topLosers } = useMemo(() => {
 
-    if(!ownerProjectToProjectData || !ownerProjectToProjectData[owner_project] || !applicationDataAggregated || !applicationDataAggregated.length)
+    if (!ownerProjectToProjectData || !ownerProjectToProjectData[owner_project] || !applicationDataAggregated || !applicationDataAggregated.length)
       return { topGainers: [], topLosers: [] };
     // let medianMetricKey = Object.keys(metricsDef).includes(sort.metric) ? sort.metric : "gas_fees";
 
@@ -660,38 +733,38 @@ const CardSwiper = ({ cards }: { cards: React.ReactNode[] }) => {
   const { containerRef, showLeftGradient, showRightGradient } =
     useDragScroll("horizontal", 0.96, { snap: true, snapThreshold: 0.2 });
 
-    const onScroll = () => {
-      if (containerRef.current) {
-        const containerRect = containerRef.current.getBoundingClientRect();
-        const containerCenter = containerRect.left + containerRect.width / 2;
-        const children = Array.from(containerRef.current.children);
-        let closestIndex = 0;
-        let closestDistance = Infinity;
-        children.forEach((child, index) => {
-          const rect = child.getBoundingClientRect();
-          const childCenter = rect.left + rect.width / 2;
-          const distance = Math.abs(childCenter - containerCenter);
-          if (distance < closestDistance) {
-            closestDistance = distance;
-            closestIndex = index;
-          }
-        });
-        setActiveIndex(closestIndex);
-        setLeftIndex(Math.max(0, closestIndex - 1));
-        setRightIndex(Math.min(children.length - 1, closestIndex + 1));
-        setIsFirst(closestIndex === 0);
-        setIsLast(closestIndex === children.length - 1);
-      }
-    };
-  
-    useEffect(() => {
-      const container = containerRef.current;
-      if (!container) return;
-      container.addEventListener("scroll", onScroll);
-      // Run once on mount to set the active index correctly.
-      onScroll();
-      return () => container.removeEventListener("scroll", onScroll);
-    }, []);
+  const onScroll = () => {
+    if (containerRef.current) {
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const containerCenter = containerRect.left + containerRect.width / 2;
+      const children = Array.from(containerRef.current.children);
+      let closestIndex = 0;
+      let closestDistance = Infinity;
+      children.forEach((child, index) => {
+        const rect = child.getBoundingClientRect();
+        const childCenter = rect.left + rect.width / 2;
+        const distance = Math.abs(childCenter - containerCenter);
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestIndex = index;
+        }
+      });
+      setActiveIndex(closestIndex);
+      setLeftIndex(Math.max(0, closestIndex - 1));
+      setRightIndex(Math.min(children.length - 1, closestIndex + 1));
+      setIsFirst(closestIndex === 0);
+      setIsLast(closestIndex === children.length - 1);
+    }
+  };
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    container.addEventListener("scroll", onScroll);
+    // Run once on mount to set the active index correctly.
+    onScroll();
+    return () => container.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
     <div
@@ -702,10 +775,9 @@ const CardSwiper = ({ cards }: { cards: React.ReactNode[] }) => {
         return (
           <div
             key={index}
-            className={`transition-[transform,opacity] duration-300 ease-in-out ${
-              index === activeIndex ? "scale-100 opacity-100" : "scale-[0.75] opacity-50"
-            }`}
-            style={{ 
+            className={`transition-[transform,opacity] duration-300 ease-in-out ${index === activeIndex ? "scale-100 opacity-100" : "scale-[0.75] opacity-50"
+              }`}
+            style={{
               minWidth: "calc(100% - 40px)",
               marginRight: !isLast && index === leftIndex ? "-40px" : 0,
               marginLeft: !isFirst && index === rightIndex ? "-40px" : 0,
@@ -773,13 +845,13 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
   }
 
   return (
-    <div 
-    className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] ${className || ""} group hover:cursor-pointer hover:bg-forest-500/10`} 
-    style={{ width: width || undefined }}
-    onClick={() => {
-      // window.location.href = `/applications/${application.owner_project}`;
-      router.push(`/applications/${application.owner_project}`);
-    }}
+    <div
+      className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] ${className || ""} group hover:cursor-pointer hover:bg-forest-500/10`}
+      style={{ width: width || undefined }}
+      onClick={() => {
+        // window.location.href = `/applications/${application.owner_project}`;
+        router.push(`/applications/${application.owner_project}`);
+      }}
     >
       <div>
         <div className="w-full h-[20px] flex justify-between items-center">
@@ -830,13 +902,13 @@ const ApplicationCard = memo(({ application, className, width }: { application?:
                 {value?.toLocaleString("en-GB")}
               </div>
               <div className="flex items-end gap-x-[3px]">
-              {application[`${metricKey}_change_pct`] !== Infinity ? (
-                <div className={`flex justify-end w-[45px] numbers-xxxs ${application[`${metricKey}_change_pct`] < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
-                  {/* {application[`${metricKey}_change_pct`] < 0 ? '-' : '+'}{formatNumber(Math.abs(application[`${metricKey}_change_pct`]), {defaultDecimals: 1, thresholdDecimals: {base:0}})}% */}
-                  {application[`${metricKey}_change_pct`] < 0 ? '-' : '+'}{Math.abs(application[`${metricKey}_change_pct`]).toLocaleString("en-GB",{maximumFractionDigits:0})}%
-                </div>
-              ) : <div className="w-[49px]">&nbsp;</div>}
-            </div>
+                {application[`${metricKey}_change_pct`] !== Infinity ? (
+                  <div className={`flex justify-end w-[45px] numbers-xxxs ${application[`${metricKey}_change_pct`] < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
+                    {/* {application[`${metricKey}_change_pct`] < 0 ? '-' : '+'}{formatNumber(Math.abs(application[`${metricKey}_change_pct`]), {defaultDecimals: 1, thresholdDecimals: {base:0}})}% */}
+                    {application[`${metricKey}_change_pct`] < 0 ? '-' : '+'}{Math.abs(application[`${metricKey}_change_pct`]).toLocaleString("en-GB", { maximumFractionDigits: 0 })}%
+                  </div>
+                ) : <div className="w-[49px]">&nbsp;</div>}
+              </div>
             </div>
           </div>
         </div>
