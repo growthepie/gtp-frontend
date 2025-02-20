@@ -81,7 +81,6 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
   const [EnabledChainsByKeys, setEnabledChainsByKeys] = useState<{ [key: string]: Chain }>({});
   const [ChainsNavigationItems, setChainsNavigationItems] = useState<any>({});
   const [ChainsNavigationItemsByKeys, setChainsNavigationItemsByKeys] = useState<any>({});
-  const { data: glo_dollar_data } = useSWR(GloHolderURL);
 
   useEffect(() => {
     if (data) {
