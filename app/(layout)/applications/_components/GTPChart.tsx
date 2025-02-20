@@ -50,6 +50,8 @@ import { baseOptions, tooltipFormatter } from "@/lib/chartUtils";
 import { useTimespan } from "../_contexts/TimespanContext";
 import { useChartScale } from "../_contexts/ChartScaleContext";
 import { useMetrics } from "../_contexts/MetricsContext";
+import { MetricData, useApplicationDetailsData } from "../_contexts/ApplicationDetailsDataContext";
+import moment from "moment";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -72,84 +74,94 @@ type SeriesData = {
 
 export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, prefix, suffix, decimals}: { seriesData: SeriesData[], seriesTypes: string[], metric: string, prefix: string, suffix: string, decimals: number }) => {
   const { selectedScale, selectedYAxisScale } = useChartScale();
+  const { data } = useApplicationDetailsData();
   const { metricsDef } = useMetrics();
   const [showUsd] = useLocalStorage("showUsd", true);
   const [showGwei] = useLocalStorage("showGwei", false);
+  const { selectedTimespan, timespans } = useTimespan();
 
   
-const formatNumber = useCallback((value: number | string, options: {
-  isAxis: boolean;
-  // prefix: string;
-  // suffix: string
-  // seriesTypes: string[];
-  selectedScale: string;
-}) => {
-  const { isAxis, selectedScale } = options;
-  // let prefix = valuePrefix;
-  // let suffix = "";
-  let val = parseFloat(value as string);
-  const metricDef = metricsDef[metric];
-  const units = metricDef.units;
-  const unitKeys = Object.keys(units);
-  const unitKey =
-    unitKeys.find((unit) => unit !== "usd" && unit !== "eth") ||
-    (showUsd ? "usd" : "eth");
+  // const metricData = data.metrics[metric] as MetricData;
+  
+  // const chainsData = Object.entries(metricData.aggregated.data);
+  // const maxUnix = Math.max(...Object.values(metricData.over_time).map((chainData) => chainData.daily.data[chainData.daily.data.length - 1][0]));
+  // const minUnix = Math.min(...Object.values(metricData.over_time).map((chainData) => chainData.daily.data[0][0]));
 
-  let prefix = metricDef.units[unitKey].prefix
-    ? metricDef.units[unitKey].prefix
-    : "";
-  let suffix = metricDef.units[unitKey].suffix
-    ? metricDef.units[unitKey].suffix
-    : "";
+  const maxUnix = Math.max(...seriesData.map((series) => series.data[series.data.length - 1][0]))
+  
+  const formatNumber = useCallback((value: number | string, options: {
+    isAxis: boolean;
+    // prefix: string;
+    // suffix: string
+    // seriesTypes: string[];
+    selectedScale: string;
+  }) => {
+    const { isAxis, selectedScale } = options;
+    // let prefix = valuePrefix;
+    // let suffix = "";
+    let val = parseFloat(value as string);
+    const metricDef = metricsDef[metric];
+    const units = metricDef.units;
+    const unitKeys = Object.keys(units);
+    const unitKey =
+      unitKeys.find((unit) => unit !== "usd" && unit !== "eth") ||
+      (showUsd ? "usd" : "eth");
 
-  if (
-    !showUsd &&
-    seriesTypes.includes("eth") &&
-    selectedScale !== "percentage"
-  ) {
-    if (showGwei) {
-      prefix = "";
-      suffix = " Gwei";
-    }
-  }
+    let prefix = metricDef.units[unitKey].prefix
+      ? metricDef.units[unitKey].prefix
+      : "";
+    let suffix = metricDef.units[unitKey].suffix
+      ? metricDef.units[unitKey].suffix
+      : "";
 
-  let number = d3Format(`.2~s`)(val).replace(/G/, "B");
-
-  let absVal = Math.abs(val);
-
-  // let formatStringPrefix = units[unitKey].currency ? "." : "~."
-
-  if (isAxis) {
-    if (selectedScale === "percentage") {
-      number = d3Format(".2~s")(val).replace(/G/, "B") + "%";
-    } else {
-      if (prefix || suffix) {
-        // for small USD amounts, show 2 decimals
-        if (absVal === 0) number = "0";
-        else if (absVal < 1) number = val.toFixed(2);
-        else if (absVal < 10)
-          number = units[unitKey].currency ? val.toFixed(2) :
-            d3Format(`~.3s`)(val).replace(/G/, "B");
-        else if (absVal < 100)
-          number = units[unitKey].currency ? d3Format(`s`)(val).replace(/G/, "B") :
-            d3Format(`~.4s`)(val).replace(/G/, "B")
-        else
-          number = units[unitKey].currency ? d3Format(`s`)(val).replace(/G/, "B") :
-            d3Format(`~.2s`)(val).replace(/G/, "B");
-      } else {
-        if (absVal === 0) number = "0";
-        else if (absVal < 1) number = val.toFixed(2);
-        else if (absVal < 10)
-          d3Format(`.2s`)(val).replace(/G/, "B")
-        else number = d3Format(`s`)(val).replace(/G/, "B");
+    if (
+      !showUsd &&
+      seriesTypes.includes("eth") &&
+      selectedScale !== "percentage"
+    ) {
+      if (showGwei) {
+        prefix = "";
+        suffix = " Gwei";
       }
-      // for negative values, add a minus sign before the prefix
-      number = `${prefix}${number} ${suffix}`.replace(`${prefix}-`, `\u2212${prefix}`);
     }
-  }
 
-  return number;
-}, [showUsd, showGwei, seriesTypes]);
+    let number = d3Format(`.2~s`)(val).replace(/G/, "B");
+
+    let absVal = Math.abs(val);
+
+    // let formatStringPrefix = units[unitKey].currency ? "." : "~."
+
+    if (isAxis) {
+      if (selectedScale === "percentage") {
+        number = d3Format(".2~s")(val).replace(/G/, "B") + "%";
+      } else {
+        if (prefix || suffix) {
+          // for small USD amounts, show 2 decimals
+          if (absVal === 0) number = "0";
+          else if (absVal < 1) number = val.toFixed(2);
+          else if (absVal < 10)
+            number = units[unitKey].currency ? val.toFixed(2) :
+              d3Format(`~.3s`)(val).replace(/G/, "B");
+          else if (absVal < 100)
+            number = units[unitKey].currency ? d3Format(`s`)(val).replace(/G/, "B") :
+              d3Format(`~.4s`)(val).replace(/G/, "B")
+          else
+            number = units[unitKey].currency ? d3Format(`s`)(val).replace(/G/, "B") :
+              d3Format(`~.2s`)(val).replace(/G/, "B");
+        } else {
+          if (absVal === 0) number = "0";
+          else if (absVal < 1) number = val.toFixed(2);
+          else if (absVal < 10)
+            d3Format(`.2s`)(val).replace(/G/, "B")
+          else number = d3Format(`s`)(val).replace(/G/, "B");
+        }
+        // for negative values, add a minus sign before the prefix
+        number = `${prefix}${number} ${suffix}`.replace(`${prefix}-`, `\u2212${prefix}`);
+      }
+    }
+
+    return number;
+  }, [showUsd, showGwei, seriesTypes]);
 
   
   const getPlotOptions: (scale: string) => Highcharts.PlotOptions = (scale) => {
@@ -503,6 +515,8 @@ const formatNumber = useCallback((value: number | string, options: {
             color: "rgb(215, 223, 222)",
           },
         }}
+        min={(maxUnix - timespans[selectedTimespan].value * 24 * 3600 * 1000) / 1000}
+        max={maxUnix/1000}
       />
       <GTPYAxis
         type={selectedYAxisScale === "logarithmic" && selectedScale === "absolute" ? "logarithmic" : "linear"}
@@ -544,6 +558,7 @@ const formatNumber = useCallback((value: number | string, options: {
             });
           },
         }}
+
       >
 
         {seriesData.map((series, i) => {
@@ -855,7 +870,7 @@ const GTPChartTooltip = ({props, metric_id} : {props?: TooltipProps, metric_id: 
   
       const showOthers = points.length > 10 && metric_id !== "txcosts";
   
-      const date = new Date(x);
+      const date = moment.utc(x).utc().toDate();
       const dateString = date.toLocaleDateString("en-GB", {
         timeZone: "UTC",
         month: "short",

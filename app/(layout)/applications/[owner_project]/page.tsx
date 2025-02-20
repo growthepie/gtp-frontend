@@ -26,6 +26,7 @@ import { useRouter } from "next/navigation";
 import { AggregatedDataRow, useApplicationsData } from "../_contexts/ApplicationsDataContext";
 import useDragScroll from "@/hooks/useDragScroll";
 import { Sources } from "@/lib/datasources";
+import moment from "moment";
 
 type Props = {
   params: { owner_project: string };
@@ -35,6 +36,7 @@ export default function Page({ params: { owner_project } }: Props) {
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { data: master } = useMaster();
   const { selectedMetrics } = useMetrics();
+  const { selectedTimespan, timespans } = useTimespan();
 
   const SourcesDisplay = useMemo(() => {
     if (!master)
@@ -94,7 +96,7 @@ export default function Page({ params: { owner_project } }: Props) {
           <div className="flex flex-col gap-y-[10px]">
             <div className="heading-large">Most Active Contracts</div>
             <div className="text-xs">
-              See the most active contracts within the selected timeframe (Maximum) for 1inch.
+              See the most active contracts within the selected timeframe ({timespans[selectedTimespan].label}){ownerProjectToProjectData[owner_project] ? ` for ${ownerProjectToProjectData[owner_project].display_name}` : ""}.
             </div>
           </div>
 
@@ -209,6 +211,8 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
 
 interface FloatingTooltipProps {
   content: React.ReactNode;
+  containerClassName?: string;
+  // width?: number;
   offsetX?: number;
   offsetY?: number;
   children: React.ReactNode;
@@ -216,8 +220,10 @@ interface FloatingTooltipProps {
 
 const FloatingTooltip: React.FC<FloatingTooltipProps> = ({
   content,
-  offsetX = 20,
-  offsetY = 20,
+  containerClassName,
+  // width = 280,
+  offsetX = 10,
+  offsetY = 10,
   children,
 }) => {
   const [visible, setVisible] = useState(false);
@@ -240,19 +246,30 @@ const FloatingTooltip: React.FC<FloatingTooltipProps> = ({
       let newY = coords.y;
       // Prevent overflow on the right edge.
       if (coords.x + tooltipRect.width > window.innerWidth) {
-        newX = window.innerWidth - tooltipRect.width - 10;
+        newX = window.innerWidth - tooltipRect.width - 20;
       }
       // Prevent overflow on the bottom edge.
       if (coords.y + tooltipRect.height > window.innerHeight) {
-        newY = window.innerHeight - tooltipRect.height - 10;
+        newY = window.innerHeight - tooltipRect.height - 20;
       }
+
+      // Prevent overflow on the left edge.
+      if (coords.x < 0) {
+        newX = 0 + 20;
+      }
+
+      // Prevent overflow on the top edge.
+      if (coords.y < 0) {
+        newY = 0 + 20;
+      }
+
       setAdjustedCoords({ x: newX, y: newY });
     }
   }, [coords, visible]);
 
   return (
     <div
-      className="relative inline-block"
+      className={"relative inline-block " + containerClassName || ""}
       onMouseEnter={() => setVisible(true)}
       onMouseLeave={() => setVisible(false)}
       onMouseMove={handleMouseMove}
@@ -264,8 +281,9 @@ const FloatingTooltip: React.FC<FloatingTooltipProps> = ({
           style={{
             left: adjustedCoords.x,
             top: adjustedCoords.y,
+            // width: width,
           }}
-          className="fixed mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway bg-[#2A3433EE] text-white rounded-[17px] px-3 py-2 shadow-lg pointer-events-none z-50"
+          className="fixed mt-3 mr-3 mb-3 text-xs font-raleway bg-[#2A3433EE] text-white rounded-[17px] shadow-lg pointer-events-none z-50"
         >
           {content}
         </div>
@@ -307,7 +325,7 @@ const blendColors = (color1: string, color2: string, percentage: number): string
 const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
   const { data, owner_project } = useApplicationDetailsData();
   const { ownerProjectToProjectData } = useProjectsMetadata();
-  const { selectedTimespan } = useTimespan();
+  const { selectedTimespan, timespans } = useTimespan();
   const { AllChainsByKeys } = useMaster();
   const { metricsDef } = useMetrics();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
@@ -368,6 +386,7 @@ const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
 
 
   const metricData = data.metrics[metric] as MetricData;
+  const firstSeenOn = data.first_seen;
   // filter out chains with 0 value
   const chainsData = Object.entries(metricData.aggregated.data).filter(([chain, valsByTimespan]) => valsByTimespan[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)] > 0)
     // sort by chain asc
@@ -380,6 +399,10 @@ const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
     const prev = acc[i - 1] || 0;
     return [...acc, prev + v];
   }, [] as number[]);
+
+  const maxUnix = Math.max(...Object.values(metricData.over_time).map((chainData) => chainData.daily.data[chainData.daily.data.length - 1][0]));
+  const minUnix = Math.min(...Object.values(metricData.over_time).map((chainData) => chainData.daily.data[0][0]));
+  const maxAggValue = Math.max(...Object.values(metricData.aggregated.data).map((chainData) => chainData[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)]));
 
 
 
@@ -402,6 +425,74 @@ const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
 
   console.log("cumulativePercentages", cumulativePercentages);
 
+  // show all chains in the tooltip
+  const allTooltipContent = useMemo(() => {
+    const maxDate = moment.unix(maxUnix/1000).utc().toDate().toLocaleString("en-GB", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+
+    let minDate = moment.unix(maxUnix/1000).subtract(timespans[selectedTimespan].value, "days").utc().toDate().toLocaleString("en-GB", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+
+    if(selectedTimespan === "max"){
+      minDate = moment.unix(minUnix/1000).utc(false).toDate().toLocaleString("en-GB", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    }
+
+    return (
+      <div className="flex flex-col gap-y-[5px] w-fit h-full pr-[15px] py-[15px] text-[#CDD8D3]">
+        <div className="pl-[20px] h-[18px] flex items-center justify-between gap-x-[15px] whitespace-nowrap">
+          {/* <div className="heading-small-xs h-[20px]">On {AllChainsByKeys[chain].label}</div> */}
+          <div className="heading-small-xs">{minDate} - {maxDate}</div>
+          <div className="text-xs">{metricsDef[metric].name}</div>
+        </div>
+        <div className="flex flex-col">
+          {[...chainsData].sort(
+            ([, a], [, b]) => b[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)] - a[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)]
+          ).map(([chain, valsByTimespan], i) => {
+            const value = valsByTimespan[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)];
+            
+            return (
+              <>
+                <div key={chain} className="h-[20px] flex w-full space-x-[5px] items-center font-medium mb-[0.5]">
+                  <div
+                    className="w-[15px] h-[10px] rounded-r-full"
+                    style={{ backgroundColor: AllChainsByKeys[chain].colors.dark[0] }}
+                  ></div>
+                  <div className="tooltip-point-name text-xs">{AllChainsByKeys[chain].label}</div>
+                  <div className="flex-1 text-right justify-end numbers-xs flex">
+                    {prefix}{valsByTimespan[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)].toLocaleString("en-GB", { maximumFractionDigits: decimals })}
+                  </div>
+                </div>
+                <div className="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+                  <div className="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+                  <div className="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50"
+                    style={{ width: `${(value/ maxAggValue) * 100}%`, backgroundColor: `${AllChainsByKeys[chain].colors.dark[0]}` }}></div>
+                </div>
+              </>
+            )
+          })}
+          <div className="h-[20px] flex w-full space-x-[5px] items-center font-medium mt-1.5 mb-0.5">
+            <div className="w-[15px] h-[10px] rounded-r-full" />
+            <div className="tooltip-point-name text-xs">Total</div>
+            <div className="flex-1 text-right justify-end numbers-xs flex">
+              {prefix}{total.toLocaleString("en-GB", { maximumFractionDigits: decimals })}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+    
+  }, [chainsData, metricData, selectedTimespan, valueKey, prefix, decimals, ownerProjectToProjectData, maxUnix, AllChainsByKeys]);
+
   if (!metricData) {
     return null;
   }
@@ -410,6 +501,7 @@ const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
     <div className="pb-[15px]">
       <div className="flex items-center h-[34px] rounded-full bg-[#344240] p-[2px]">
         <div className="flex items-center h-[30px] w-full rounded-full overflow-hidden bg-black/60 relative" ref={containerRef}>
+          <FloatingTooltip content={allTooltipContent} containerClassName="h-full">
           <div className="absolute left-0 flex gap-x-[10px] items-center h-full w-[200px] bg-[#1F2726] p-[2px] rounded-full" style={{ zIndex: chainsData.length + 1 }}>
             <ApplicationIcon owner_project={owner_project} size="sm" />
             <div className="flex flex-1 flex-col -space-y-[2px] mt-[2px] truncate pr-[10px]">
@@ -417,6 +509,7 @@ const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
               <div className="text-xxs truncate ">{ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].display_name || ""}</div>
             </div>
           </div>
+          </FloatingTooltip>
           <div className="flex flex-1 h-full">
             {chainsData.map(([chain, values], i) => {
               // Determine whether this bar is hovered.
@@ -440,21 +533,62 @@ const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
               let thisPercentageWidth = thisPercentage + (i === 0 ? 0 : lastPercentagesTotal);
               const thisRenderWidth = (thisPercentageWidth / 100) * (containerWidth - 200);
 
+              //convert incoming date (UTC) to timestamp
+              const firstSeen = moment.utc(firstSeenOn[chain]);
+              const maxDate = moment.unix(maxUnix/1000).utc().toDate().toLocaleString("en-GB", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              });
+
+              let minDate = (moment.unix(maxUnix/1000).subtract(timespans[selectedTimespan].value, "days")).utc().toDate().toLocaleString("en-GB", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              });
+
+              if(selectedTimespan === "max"){
+                minDate = moment.unix(minUnix/1000).utc().toDate().toLocaleString("en-GB", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                });
+              }
+
               const tooltipContent = (
-                <>
-                  <div className="flex w-full space-x-2 items-center font-medium mb-0.5">
-                    <div
-                      className="w-4 h-1.5 rounded-r-full"
-                      style={{ backgroundColor: AllChainsByKeys[chain].colors.dark[0] }}
-                    ></div>
-                    <div className="tooltip-point-name text-xs">{AllChainsByKeys[chain].label}</div>
-                    <div className="flex-1 text-right justify-end numbers-xs flex">
-                      <div className="hidden"></div>
-                      {prefix}{values[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)].toLocaleString("en-GB", { maximumFractionDigits: 2 })}
-                      <div className="ml-0.5 hidden"></div>
+                <div className="flex flex-col gap-y-[5px] w-fit h-full pr-[15px] py-[15px] text-[#CDD8D3]">
+                  <div className="pl-[20px] h-[18px] flex items-center justify-between gap-x-[15px] whitespace-nowrap">
+                    {/* <div className="heading-small-xs h-[20px]">On {AllChainsByKeys[chain].label}</div> */}
+                    <div className="heading-small-xs">{minDate} - {maxDate}</div>
+                    <div className="text-xs">{metricsDef[metric].name}</div>
+                  </div>
+                  <div className="flex flex-col">
+                    {/* <div className="pl-[20px] text-xs">Timeframe: <span className="numbers-xs">{minDate} - {maxDate}</span></div> */}
+                    <div className="h-[20px] flex w-full space-x-[5px] items-center font-medium mb-0.5">
+                      <div
+                        className="w-[15px] h-[10px] rounded-r-full"
+                        style={{ backgroundColor: AllChainsByKeys[chain].colors.dark[0] }}
+                      ></div>
+                      <div className="tooltip-point-name text-xs">{AllChainsByKeys[chain].label}</div>
+                      <div className="flex-1 text-right justify-end numbers-xs flex">
+                        {prefix}{values[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)].toLocaleString("en-GB", { maximumFractionDigits: 2 })}
+                      </div>
                     </div>
                   </div>
-                </>
+                  <div className="pl-[20px] flex flex-col items-start flex-1">
+                    {/* <div className="heading-small-xs h-[20px]">On {AllChainsByKeys[chain].label}</div> */}
+                    <div className=" text-xxxs">
+                      First seen on {firstSeen.utc().toDate().toLocaleString("en-GB", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                        // hour: "numeric",
+                        // minute: "numeric",
+                        // second: "numeric",
+                      })}
+                    </div>
+                  </div>
+                </div>
               );
 
               return (
