@@ -67,6 +67,16 @@ export default function Page() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const referrer = document.referrer;
+    if (referrer.includes("/applications/")) {
+      const savedScrollPos = sessionStorage.getItem('applicationsScrollPos');
+      if (savedScrollPos) {
+        window.scrollTo(0, Number(savedScrollPos));
+      }
+    }
+  }, []);
+
   const { topGainers, topLosers } = useMemo(() => {
     // let medianMetricKey = Object.keys(metricsDef).includes(sort.metric) ? sort.metric : "gas_fees";
 

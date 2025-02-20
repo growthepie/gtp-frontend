@@ -86,7 +86,7 @@ export const TimespanProvider = ({ children, timespans, defaultTimespan = "7d" }
     let url = `${pathname}?${decodeURIComponent(searchParams.toString())}`;
 
     // update query params
-    router.push(url, {scroll: false});
+    router.replace(url, {scroll: false});
   };
   /* </ Query Params > */
 

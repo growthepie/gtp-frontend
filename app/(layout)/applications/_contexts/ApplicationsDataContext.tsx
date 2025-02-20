@@ -266,7 +266,7 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
     // create new url
     let url = `${pathname}?${decodeURIComponent(searchParams.toString())}`;
     
-    router.push(url, {scroll: false});
+    router.replace(url, {scroll: false});
   };
   /* </ Query Params > */
 

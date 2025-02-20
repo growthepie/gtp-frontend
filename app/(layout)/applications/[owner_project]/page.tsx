@@ -19,7 +19,7 @@ import { Icon } from "@iconify/react";
 import VerticalVirtuosoScrollContainer from "@/components/VerticalVirtuosoScrollContainer";
 import Link from "next/link";
 import { SortProvider, useSort } from "../_contexts/SortContext";
-import { useUIContext } from "@/contexts/UIContext";
+import { useHighchartsWrappers, useUIContext } from "@/contexts/UIContext";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { Virtuoso } from "react-virtuoso";
 import { useRouter } from "next/navigation";
@@ -99,6 +99,8 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
   const { data } = useApplicationDetailsData();
   const { selectedTimespan } = useTimespan();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+
+  useHighchartsWrappers();
 
   const def = metricsDef[metric];
 
