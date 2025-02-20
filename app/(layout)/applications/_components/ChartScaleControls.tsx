@@ -6,6 +6,8 @@ import { useMetrics } from "../_contexts/MetricsContext";
 import { useSort } from "../_contexts/SortContext";
 import { useChartScale } from "../_contexts/ChartScaleContext";
 import Container from "@/components/layout/Container";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
+import Icon from "@/components/layout/Icon";
 
 export default function ChartScaleControls() {
   const { scaleDefs, setSelectedScale, selectedScale } = useChartScale();
@@ -32,6 +34,27 @@ export default function ChartScaleControls() {
               )
           )}
         </TopRowParent>
+        <div className="flex">
+          <Tooltip placement="left" allowInteract>
+            <TooltipTrigger>
+              <div className="p-1 z-10 ml-[5px]">
+                <Icon icon="feather:info" className="w-6 h-6" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
+              <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
+                <div className="flex flex-col space-y-1">
+                  <div className="font-bold text-sm leading-snug">
+                    Data Sources:
+                  </div>
+                  <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
+                    sadasd
+                  </div>
+                </div>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </TopRowContainer>
       
       </Container>

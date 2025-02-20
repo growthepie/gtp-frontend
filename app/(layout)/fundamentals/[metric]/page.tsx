@@ -84,7 +84,7 @@ const FundamentalsContent = ({ metric, type }: FundamentalsContentProps) => {
             </PageContainer>
           </MetricSeriesProvider>
         </MetricChartControlsProvider>
-      </MetricDataProvider >
+      </MetricDataProvider>
     </>
   );
 };

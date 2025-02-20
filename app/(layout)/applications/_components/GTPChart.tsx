@@ -46,7 +46,7 @@ import ChartWatermark from "@/components/layout/ChartWatermark";
 import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import dynamic from "next/dynamic";
-import { baseOptions, formatNumber, tooltipFormatter } from "@/lib/chartUtils";
+import { baseOptions, tooltipFormatter } from "@/lib/chartUtils";
 import { useTimespan } from "../_contexts/TimespanContext";
 import { useChartScale } from "../_contexts/ChartScaleContext";
 import { useMetrics } from "../_contexts/MetricsContext";
@@ -67,10 +67,89 @@ type SeriesData = {
   data: number[][]; // [timestamp, value]
 }
 
-export const ApplicationDetailsChart = ({ seriesData, metric }: { seriesData: SeriesData[], metric: string }) => {
-  const { selectedScale } = useChartScale();
+
+
+
+export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, prefix, suffix, decimals}: { seriesData: SeriesData[], seriesTypes: string[], metric: string, prefix: string, suffix: string, decimals: number }) => {
+  const { selectedScale, selectedYAxisScale } = useChartScale();
+  const { metricsDef } = useMetrics();
   const [showUsd] = useLocalStorage("showUsd", true);
   const [showGwei] = useLocalStorage("showGwei", false);
+
+  
+const formatNumber = useCallback((value: number | string, options: {
+  isAxis: boolean;
+  // prefix: string;
+  // suffix: string
+  // seriesTypes: string[];
+  selectedScale: string;
+}) => {
+  const { isAxis, selectedScale } = options;
+  // let prefix = valuePrefix;
+  // let suffix = "";
+  let val = parseFloat(value as string);
+  const metricDef = metricsDef[metric];
+  const units = metricDef.units;
+  const unitKeys = Object.keys(units);
+  const unitKey =
+    unitKeys.find((unit) => unit !== "usd" && unit !== "eth") ||
+    (showUsd ? "usd" : "eth");
+
+  let prefix = metricDef.units[unitKey].prefix
+    ? metricDef.units[unitKey].prefix
+    : "";
+  let suffix = metricDef.units[unitKey].suffix
+    ? metricDef.units[unitKey].suffix
+    : "";
+
+  if (
+    !showUsd &&
+    seriesTypes.includes("eth") &&
+    selectedScale !== "percentage"
+  ) {
+    if (showGwei) {
+      prefix = "";
+      suffix = " Gwei";
+    }
+  }
+
+  let number = d3Format(`.2~s`)(val).replace(/G/, "B");
+
+  let absVal = Math.abs(val);
+
+  // let formatStringPrefix = units[unitKey].currency ? "." : "~."
+
+  if (isAxis) {
+    if (selectedScale === "percentage") {
+      number = d3Format(".2~s")(val).replace(/G/, "B") + "%";
+    } else {
+      if (prefix || suffix) {
+        // for small USD amounts, show 2 decimals
+        if (absVal === 0) number = "0";
+        else if (absVal < 1) number = val.toFixed(2);
+        else if (absVal < 10)
+          number = units[unitKey].currency ? val.toFixed(2) :
+            d3Format(`~.3s`)(val).replace(/G/, "B");
+        else if (absVal < 100)
+          number = units[unitKey].currency ? d3Format(`s`)(val).replace(/G/, "B") :
+            d3Format(`~.4s`)(val).replace(/G/, "B")
+        else
+          number = units[unitKey].currency ? d3Format(`s`)(val).replace(/G/, "B") :
+            d3Format(`~.2s`)(val).replace(/G/, "B");
+      } else {
+        if (absVal === 0) number = "0";
+        else if (absVal < 1) number = val.toFixed(2);
+        else if (absVal < 10)
+          d3Format(`.2s`)(val).replace(/G/, "B")
+        else number = d3Format(`s`)(val).replace(/G/, "B");
+      }
+      // for negative values, add a minus sign before the prefix
+      number = `${prefix}${number} ${suffix}`.replace(`${prefix}-`, `\u2212${prefix}`);
+    }
+  }
+
+  return number;
+}, [showUsd, showGwei, seriesTypes]);
 
   
   const getPlotOptions: (scale: string) => Highcharts.PlotOptions = (scale) => {
@@ -412,7 +491,9 @@ export const ApplicationDetailsChart = ({ seriesData, metric }: { seriesData: Se
         }
       }} 
 
-      chartProps={{}} 
+      chartProps={{
+        marginLeft: 40,
+      }} 
     >
       <GTPChartTooltip metric_id={metric} />
       <GTPXAxis
@@ -424,22 +505,48 @@ export const ApplicationDetailsChart = ({ seriesData, metric }: { seriesData: Se
         }}
       />
       <GTPYAxis
-        title={{
-          text: "Transactions",
-          style: {
-            color: "rgb(215, 223, 222)",
-          },
-        }}
+        type={selectedYAxisScale === "logarithmic" && selectedScale === "absolute" ? "logarithmic" : "linear"}
+        // title={{
+        //   text: "Transactions",
+        //   style: {
+        //     color: "rgb(215, 223, 222)",
+        //   },
+        // }}
+        // labels={{
+        //   style: {
+        //     color: "rgb(215, 223, 222)",
+        //   },
+        // }}
         labels={{
+          // y: 5,
+          // x: 0,
+          distance: 9,
+          // justify: false,
+          align: "right",
+          // overflow: "justify",
+          // allowOverlap: true,
+          useHTML: true,
           style: {
+            whiteSpace: "nowrap",
+            textAlign: "right",
             color: "rgb(215, 223, 222)",
+            fontSize: "10px",
+            fontWeight: "700",
+            fontFamily: "Fira Sans",
+          },
+          formatter: function (t: AxisLabelsFormatterContextObject) {
+            return formatNumber(t.value, {
+              isAxis: true,
+              // prefix: prefix,
+              // suffix: suffix,
+              // seriesTypes: ["eth", "usd"],
+              selectedScale: selectedScale,
+            });
           },
         }}
       >
 
-        {seriesData.sort(
-          (a, b) => a.data[a.data.length - 1][1] - b.data[b.data.length - 1][1]
-        ).map((series, i) => {
+        {seriesData.map((series, i) => {
           const pointsSettings = {
             pointPlacement: 0.5,
           };
@@ -535,14 +642,56 @@ type AxisProps<TAxisOptions> = {
 
 const GTPXAxis = (props: AxisProps<Highcharts.XAxisOptions>) => {
   const { timespans, selectedTimespan} = useTimespan();
+
+  const [zoomed, setZoomed] = useState(false);
+  const [zoomMin, setZoomMin] = useState<number | undefined>(undefined);
+  const [zoomMax, setZoomMax] = useState<number | undefined>(undefined);
+
   // start of yesterday in UTC is the last data point we have
   const startOfYesterdayUTC = new Date(new Date().setUTCHours(0, 0, 0, 0) - 24 * 3600 * 1000).getTime();
   const xMax = startOfYesterdayUTC;
   const xMin = timespans[selectedTimespan].value > 0 ? startOfYesterdayUTC - timespans[selectedTimespan].value * 24 * 3600 * 1000 : undefined;
+
+  const onXAxisSetExtremes =
+    useCallback<Highcharts.AxisSetExtremesEventCallbackFunction>(
+      function (e) {
+        if (e.trigger === "pan") return;
+        const { min, max } = e;
+        const numDays = (max - min) / (24 * 60 * 60 * 1000);
+
+        // setIntervalShown({
+        //   min,
+        //   max,
+        //   num: numDays,
+        //   label: `${Math.round(numDays)} day${numDays > 1 ? "s" : ""}`,
+        // });
+
+        if (
+          e.trigger === "zoom" ||
+          // e.trigger === "pan" ||
+          e.trigger === "navigator" ||
+          e.trigger === "rangeSelectorButton"
+        ) {
+          // const { xMin, xMax } = timespans[selectedTimespan];
+
+          if (min === xMin && max === xMax) {
+            setZoomed(false);
+          } else {
+            setZoomed(true);
+          }
+          setZoomMin(min);
+          setZoomMax(max);
+        }
+      },
+      [xMax, xMin],
+    );
+
+  
   return (
     <XAxis
       {...props}
-      // {...baseOptions.xAxis}
+
+      {...baseOptions.xAxis}
       title={undefined}
       // events={{
       //   afterSetExtremes: onXAxisSetExtremes,
@@ -630,7 +779,7 @@ const GTPXAxis = (props: AxisProps<Highcharts.XAxisOptions>) => {
 const GTPYAxis = (props: AxisProps<Highcharts.YAxisOptions>) => {
   return (
     <YAxis
-      {...props}
+      
       {...baseOptions.yAxis}
       title={undefined}
       opposite={false}
@@ -673,10 +822,11 @@ const GTPYAxis = (props: AxisProps<Highcharts.YAxisOptions>) => {
           fontWeight: "700",
           fontFamily: "Fira Sans",
         },
-        formatter: function (t: AxisLabelsFormatterContextObject) {
-          return formatNumber(t.value, true);
-        },
+        // formatter: function (t: AxisLabelsFormatterContextObject) {
+        //   return formatNumber(t.value, true);
+        // },
       }}
+      {...props}
     >
       {props.children}
     </YAxis>
@@ -952,19 +1102,20 @@ export const GTPChart = ({ children, providerProps, highchartsChartProps, chartP
               // width={width}
               // height={height}
               // className="zoom-chart" zoom not working
-              marginTop={5}
-              marginBottom={37}
-              marginRight={5}
-              marginLeft={60}
+              marginTop={chartProps?.marginTop || 5}
+              marginBottom={chartProps?.marginBottom || 37}
+              marginRight={chartProps?.marginRight || 5}
+              marginLeft={chartProps?.marginLeft || 60}
               
               zooming={{
+                ...chartProps?.zooming,
                 mouseWheel: {
                   enabled: false,
                 },
               }}
               
               options={{
-                
+                ...chartProps?.options,
                 chartComponent: chartComponent.current,
               }}
             />

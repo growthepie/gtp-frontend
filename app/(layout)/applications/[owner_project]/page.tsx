@@ -8,7 +8,7 @@ import { useMaster } from "@/contexts/MasterContext";
 import { ApplicationDetailsChart } from "../_components/GTPChart";
 import { ChartScaleProvider } from "../_contexts/ChartScaleContext";
 import ChartScaleControls from "../_components/ChartScaleControls";
-import { ApplicationDisplayName, ApplicationIcon, Category, Chains, formatNumber, Links, MetricTooltip } from "../_components/Components";
+import { ApplicationCard, ApplicationDisplayName, ApplicationIcon, Category, Chains, formatNumber, Links, MetricTooltip } from "../_components/Components";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
@@ -97,8 +97,44 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
   const { metricsDef, metricIcons } = useMetrics();
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { data } = useApplicationDetailsData();
+  const { selectedTimespan } = useTimespan();
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   const def = metricsDef[metric];
+
+  // create a list of the chain keys sorted by the aggregate value for the selected timespan
+  const sortedChainKeys = Object.keys(data.metrics[metric].aggregated.data).sort((a, b) => {
+    const hasUsd = data.metrics[metric].aggregated.types.includes("usd");
+    let metricKey = "value";
+    if (hasUsd) {
+      metricKey = showUsd ? "usd" : "eth";
+    }
+
+    const aVal = data.metrics[metric].aggregated.data[a][selectedTimespan][data.metrics[metric].aggregated.types.indexOf(metricKey)];
+    const bVal = data.metrics[metric].aggregated.data[b][selectedTimespan][data.metrics[metric].aggregated.types.indexOf(metricKey)];
+    return aVal - bVal;
+  });
+
+  const metricDefinition = metricsDef[metric];
+  let prefix = "";
+  let suffix = "";
+  let valueKey = "value";
+  let valueIndex = 1;
+  let decimals = 0;
+  if (metricDefinition.units.eth) {
+    prefix = showUsd ? metricDefinition.units.usd.prefix || "" : metricDefinition.units.eth.prefix || "";
+    suffix = showUsd ? metricDefinition.units.usd.suffix || "" : metricDefinition.units.eth.suffix || "";
+    valueKey = showUsd ? "usd" : "eth";
+    valueIndex = Object.values(data.metrics[metric].over_time)[0].daily.types.indexOf(valueKey);
+    decimals = metricDefinition.units[valueKey].decimals || 0;
+  } else {
+    prefix = Object.values(metricDefinition.units)[0].prefix || "";
+    suffix = Object.values(metricDefinition.units)[0].suffix || "";
+    valueKey = Object.keys(metricDefinition.units)[0];
+    valueIndex = Object.values(data.metrics[metric].over_time)[0].daily.types.indexOf(valueKey);
+    decimals = Object.values(metricDefinition.units)[0].decimals || 0;
+  }
+    
 
   if (!def) {
     return null;
@@ -123,10 +159,14 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
         <MetricChainBreakdownBar metric={metric} />
         <ApplicationDetailsChart
           metric={metric}
+          prefix={prefix}
+          suffix={suffix}
+          decimals={decimals}
+          seriesTypes={data.metrics[metric].over_time[sortedChainKeys[0]].daily.types}
           seriesData={
-            Object.keys(data.metrics[metric].over_time).map((chain) => ({
+            sortedChainKeys.map((chain) => ({
               name: chain,
-              data: data.metrics[metric].over_time[chain].daily.data.map((d: number[]) => [d[0], d[1]])
+              data: data.metrics[metric].over_time[chain].daily.data.map((d: number[]) => [d[0], d[valueIndex]])
             })
           )}
         />
@@ -790,161 +830,3 @@ const CardSwiper = ({ cards }: { cards: React.ReactNode[] }) => {
     </div>
   );
 };
-
-
-
-const ApplicationCard = memo(({ application, className, width }: { application?: AggregatedDataRow, className?: string, width?: number }) => {
-  const { AllChainsByKeys } = useMaster();
-  const { ownerProjectToProjectData } = useProjectsMetadata();
-  const { selectedChains, setSelectedChains, } = useApplicationsData();
-  const { selectedMetrics, metricsDef } = useMetrics();
-  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const router = useRouter();
-
-  const numContractsString = useCallback((application: AggregatedDataRow) => {
-    return application.num_contracts.toLocaleString("en-GB");
-  }, []);
-
-
-  const metricKey = useMemo(() => {
-    let key = selectedMetrics[0];
-    if (selectedMetrics[0] === "gas_fees")
-      key = showUsd ? "gas_fees_usd" : "gas_fees_eth";
-
-    return key;
-  }, [selectedMetrics, showUsd]);
-
-  const rank = useMemo(() => {
-    if (!application) return null;
-
-    return application[`rank_${metricKey}`];
-
-  }, [application, metricKey]);
-
-  const value = useMemo(() => {
-    if (!application) return null;
-
-    return application[metricKey];
-  }, [application, metricKey]);
-
-  const prefix = useMemo(() => {
-    const def = metricsDef[selectedMetrics[0]].units;
-
-    if (Object.keys(def).includes("usd")) {
-      return showUsd ? def.usd.prefix : def.eth.prefix;
-    } else {
-      return Object.values(def)[0].prefix;
-    }
-  }, [metricsDef, selectedMetrics, showUsd]);
-
-  if (!application) {
-    return (
-      <div className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] min-w-[340px] ${className || ""} `} style={{ width: width || undefined }}>
-      </div>
-    )
-  }
-
-  return (
-    <div
-      className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] ${className || ""} group hover:cursor-pointer hover:bg-forest-500/10`}
-      style={{ width: width || undefined }}
-      onClick={() => {
-        // window.location.href = `/applications/${application.owner_project}`;
-        router.push(`/applications/${application.owner_project}`);
-      }}
-    >
-      <div>
-        <div className="w-full h-[20px] flex justify-between items-center">
-          <div className="flex items-center gap-x-[3px]">
-            <div className="numbers-xs text-[#CDD8D3]">{numContractsString(application)}</div>
-            <div className="text-xs text-[#5A6462]">contracts</div>
-          </div>
-          <div className="flex items-end gap-x-[3px]">
-            <div className="numbers-xs text-[#5A6462]">Rank</div>
-            <div className="numbers-xs text-[#CDD8D3]">{rank}</div>
-          </div>
-        </div>
-
-        <div className="w-full flex justify-between items-start">
-          <div className="h-[20px] flex items-center gap-x-[5px]">
-            {/* {JSON.stringify( application)} */}
-            {application.origin_keys.map((chain, index) => (
-              <div
-                key={index}
-                className={`cursor-pointer ${selectedChains.includes(chain) ? '' : '!text-[#5A6462]'} hover:!text-inherit`} style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors["dark"][0] : '' }}
-                onClick={() => {
-                  if (selectedChains.includes(chain)) {
-                    setSelectedChains(selectedChains.filter((c) => c !== chain));
-                  } else {
-                    setSelectedChains([...selectedChains, chain]);
-                  }
-                }}
-              >
-                {AllChainsByKeys[chain] && (
-                  <Icon
-                    icon={`gtp:${AllChainsByKeys[
-                      chain
-                    ].urlKey
-                      }-logo-monochrome`}
-                    className="w-[15px] h-[15px]"
-                    style={{
-                      color: AllChainsByKeys[chain].colors["dark"][0],
-                    }}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-col items-end gap-y-[2px]">
-            <div className="flex flex-col items-end justify-start gap-y-[3px]">
-              <div className="flex justify-end numbers-sm text-[#CDD8D3] w-[100px]">
-                {prefix}
-                {value?.toLocaleString("en-GB")}
-              </div>
-              <div className="flex items-end gap-x-[3px]">
-                {application[`${metricKey}_change_pct`] !== Infinity ? (
-                  <div className={`flex justify-end w-[45px] numbers-xxxs ${application[`${metricKey}_change_pct`] < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
-                    {/* {application[`${metricKey}_change_pct`] < 0 ? '-' : '+'}{formatNumber(Math.abs(application[`${metricKey}_change_pct`]), {defaultDecimals: 1, thresholdDecimals: {base:0}})}% */}
-                    {application[`${metricKey}_change_pct`] < 0 ? '-' : '+'}{Math.abs(application[`${metricKey}_change_pct`]).toLocaleString("en-GB", { maximumFractionDigits: 0 })}%
-                  </div>
-                ) : <div className="w-[49px]">&nbsp;</div>}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="w-full flex items-center gap-x-[5px]">
-        <ApplicationIcon owner_project={application.owner_project} size="md" />
-        {ownerProjectToProjectData[application.owner_project] ? (
-          <div className="heading-large-md flex-1 group-hover:underline"><ApplicationDisplayName owner_project={application.owner_project} /></div>
-        ) : (
-          <div className="heading-large-md flex-1 opacity-60 group-hover:underline"><ApplicationDisplayName owner_project={application.owner_project} /></div>
-        )}
-        <Link className="cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center" href={`/applications/${application.owner_project}`}>
-          <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-[#CDD8D3]" />
-        </Link>
-      </div>
-      <div className="flex items-center justify-between gap-x-[5px]">
-        <div className="text-xs">{ownerProjectToProjectData[application.owner_project] && ownerProjectToProjectData[application.owner_project].main_category}</div>
-        {/* <div className="flex items-center gap-x-[5px]">
-          {getLinks(application).map((item, index) => (
-            <div key={index} className="h-[15px] w-[15px]">
-              {item.link && <Link
-                href={item.link.includes("http") ? item.link : `https://${item.link}`}
-                target="_blank"
-              >
-                <Icon
-                  icon={item.icon}
-                  className="w-[15px] h-[15px] select-none"
-                />
-              </Link>}
-            </div>
-          ))}
-        </div> */}
-        <Links owner_project={application.owner_project} />
-      </div>
-    </div>
-  )
-});
-
-ApplicationCard.displayName = 'ApplicationCard';

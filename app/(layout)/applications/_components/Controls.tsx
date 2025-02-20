@@ -4,6 +4,8 @@ import { MultipleSelectTopRowChild } from "./Components";
 import { useTimespan } from "../_contexts/TimespanContext";
 import { useMetrics } from "../_contexts/MetricsContext";
 import { useSort } from "../_contexts/SortContext";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
+import Icon from "@/components/layout/Icon";
 
 export default function Controls() {
   const { sort, setSort } = useSort();
@@ -52,6 +54,7 @@ export default function Controls() {
 
         </TopRowParent>
         <TopRowParent className="-py-[10px]">
+          <>
           {Object.keys(timespans).map((key) => (
                 <TopRowChild
                   key={key}
@@ -68,6 +71,7 @@ export default function Controls() {
                 </TopRowChild>
               )
           )}
+            </>
         </TopRowParent>
       </TopRowContainer>
       

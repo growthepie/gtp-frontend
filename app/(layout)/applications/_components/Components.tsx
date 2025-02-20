@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Icon from "@/components/layout/Icon";
 import { useUIContext } from "@/contexts/UIContext";
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { delay } from "lodash";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
@@ -14,9 +14,11 @@ import { usePathname } from "next/navigation";
 import Search from "./Search";
 import Controls from "./Controls";
 import { useMaster } from "@/contexts/MasterContext";
-import { useApplicationsData } from "../_contexts/ApplicationsDataContext";
+import { AggregatedDataRow, useApplicationsData } from "../_contexts/ApplicationsDataContext";
 import { useMetrics } from "../_contexts/MetricsContext";
 import { useTimespan } from "../_contexts/TimespanContext";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
+import { useLocalStorage } from "usehooks-ts";
 
 
 type ApplicationIconProps = {
@@ -158,19 +160,33 @@ export const ApplicationDescription = ({ owner_project }: { owner_project: strin
 }
 
 export const BackButton = () => {
-  const {selectedTimespan} = useTimespan();
+  const router = useRouter();
+
   const handleBack = () => {
-    window.history.scrollRestoration = "auto";
-    // go back to /applications and keep the current timespan as query param
-    window.location.href = `/applications${selectedTimespan !== "30d" ? `?timespan=${selectedTimespan}` : ""}`;
-  }
+    // Check for a history entry from our app.
+    // One method is to check if a scroll position was saved
+    const savedScrollPos = sessionStorage.getItem('applicationsScrollPos');
+
+    // You might also check window.history.state.idx (if available) to decide.
+    if (savedScrollPos || (window.history.state && window.history.state.idx > 0)) {
+      // If we know the user came from /applications,
+      // use router.back() so that the browser restores the scroll position.
+      router.back();
+    } else {
+      // Otherwise, push to /applications (scroll will be at the top)
+      router.push('/applications');
+    }
+  };
 
   return (
-    <div className="size-[36px] bg-[#344240] rounded-full flex justify-center items-center cursor-pointer" onClick={handleBack}>
-      <Icon icon="feather:arrow-left" className="size-[26px]  text-[#CDD8D3]" />
+    <div
+      className="size-[36px] bg-[#344240] rounded-full flex justify-center items-center cursor-pointer"
+      onClick={handleBack}
+    >
+      <Icon icon="feather:arrow-left" className="size-[26px] text-[#CDD8D3]" />
     </div>
   );
-}
+};
 
 export type MultipleSelectTopRowChildProps = {
   handleNext: () => void;
@@ -341,6 +357,249 @@ export const ProjectDetailsLinks = memo(({ owner_project, mobile }: { owner_proj
 });
 
 ProjectDetailsLinks.displayName = 'Links';
+
+export const ApplicationCard = memo(({ application, className, width }: { application?: AggregatedDataRow, className?: string, width?: number }) => {
+  const { AllChainsByKeys } = useMaster();
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+  const { selectedChains, setSelectedChains, } = useApplicationsData();
+  const { selectedMetrics, metricsDef } = useMetrics();
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const router = useRouter();
+  const { selectedTimespan } = useTimespan();
+
+  const numContractsString = useCallback((application: AggregatedDataRow) => {
+    return application.num_contracts.toLocaleString("en-GB");
+  }, []);
+
+
+  const metricKey = useMemo(() => {
+    let key = selectedMetrics[0];
+    if (selectedMetrics[0] === "gas_fees")
+      key = showUsd ? "gas_fees_usd" : "gas_fees_eth";
+
+    return key;
+  }, [selectedMetrics, showUsd]);
+
+  const rank = useMemo(() => {
+    if (!application) return null;
+
+    return application[`rank_${metricKey}`];
+
+  }, [application, metricKey]);
+
+  const value = useMemo(() => {
+    if (!application) return null;
+
+    return application[metricKey];
+  }, [application, metricKey]);
+
+  const prefix = useMemo(() => {
+    const def = metricsDef[selectedMetrics[0]].units;
+
+    if (Object.keys(def).includes("usd")) {
+      return showUsd ? def.usd.prefix : def.eth.prefix;
+    } else {
+      return Object.values(def)[0].prefix;
+    }
+  }, [metricsDef, selectedMetrics, showUsd]);
+
+  if (!application) {
+    return (
+      <div className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] min-w-[340px] ${className || ""} `} style={{ width: width || undefined }}>
+      </div>
+    )
+  }
+
+  return (
+    <Link href={{ pathname: `/applications/${application.owner_project}`, query: { timespan: selectedTimespan } }}
+      className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] ${className || ""} group hover:cursor-pointer hover:bg-forest-500/10`} 
+      style={{ width: width || undefined }}
+      // onClick={() => {
+      //   // window.location.href = `/applications/${application.owner_project}`;
+      //   router.push(`/applications/${application.owner_project}`);
+      // }}
+    >
+      <div>
+        <div className="flex flex-col">
+        <div className="w-full flex justify-between items-end h-[20px]">
+          <div className="h-[20px] flex items-center gap-x-[3px]">
+            <div className="numbers-xs text-[#CDD8D3]">{numContractsString(application)}</div>
+            <div className="text-xs text-[#5A6462]">contracts</div>
+          </div>
+          <div className="h-[20px] flex items-center gap-x-[3px]">
+            <div className="numbers-xs text-[#5A6462]">Rank</div>
+            <div className="numbers-xs text-[#CDD8D3]">{rank}</div>
+            {application[`${metricKey}_change_pct`] !== Infinity ? (
+              <div className={`flex justify-end w-[60px] numbers-xs ${application[`${metricKey}_change_pct`] < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
+                {application[`${metricKey}_change_pct`] < 0 ? '-' : '+'}{formatNumber(Math.abs(application[`${metricKey}_change_pct`]), {defaultDecimals: 1, thresholdDecimals: {base: 1}})}%
+              </div>
+            ) : <div className="w-[49px]">&nbsp;</div>}
+          </div>
+        </div>
+        <div className="h-[20px] w-full flex items-center justify-end gap-x-[3px]">
+          <div className="numbers-sm text-[#CDD8D3]">
+            {prefix}
+            {value?.toLocaleString("en-GB")}
+          </div>
+        </div>
+        </div>
+        {/* <div className="w-full h-[20px] flex justify-between items-center">
+          <div className="flex items-center gap-x-[3px]">
+            <div className="numbers-xs text-[#CDD8D3]">{numContractsString(application)}</div>
+            <div className="text-xs text-[#5A6462]">contracts</div>
+          </div>
+          <div className="flex items-end gap-x-[3px]">
+            <div className="numbers-xs text-[#5A6462]">Rank</div>
+            <div className="numbers-xs text-[#CDD8D3]">{rank}</div>
+          </div>
+        </div> */}
+
+        {/* <div className="w-full flex justify-between items-start">
+          <div/>
+          <div className="flex flex-col items-end gap-y-[2px]">
+            <div className="flex flex-col items-end justify-start gap-y-[3px]">
+              <div className="flex justify-end numbers-sm text-[#CDD8D3] w-[100px]">
+                {prefix}
+                {value?.toLocaleString("en-GB")}
+              </div>
+              <div className="flex items-end gap-x-[3px]">
+                {application[`${metricKey}_change_pct`] !== Infinity ? (
+                  <div className={`h-[3px] flex justify-end w-[45px] numbers-xxxs ${application[`${metricKey}_change_pct`] < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
+                    {application[`${metricKey}_change_pct`] < 0 ? '-' : '+'}{Math.abs(application[`${metricKey}_change_pct`]).toLocaleString("en-GB",{maximumFractionDigits:0})}%
+                  </div>
+                ) : (
+                  <div className="w-[49px]">&nbsp;</div>
+                )}
+            </div>
+            </div>
+          </div>
+        </div> */}
+      </div>
+      
+      <div className="w-full flex items-center gap-x-[5px]">
+        <ApplicationIcon owner_project={application.owner_project} size="md" />
+        {/* {ownerProjectToProjectData[application.owner_project] ? (
+          <div className="heading-large-md flex-1 group-hover:underline"><ApplicationDisplayName owner_project={application.owner_project} /></div>
+        ) : (
+          <div className="heading-large-md flex-1 opacity-60 group-hover:underline"><ApplicationDisplayName owner_project={application.owner_project} /></div>
+        )} */}
+        <div className="heading-large-md flex-1 overflow-visible truncate">
+          {/* <div className="relative group/tooltip heading-large-md w-fit group-hover:underline min-h-[32px] flex flex-col justify-center overflow-visible">
+          <ApplicationDisplayName owner_project={application.owner_project} />
+          <ApplicationTooltip application={application} />
+          </div> */}
+          <Tooltip placement="bottom-start" allowInteract>
+            <TooltipTrigger className="group-hover:underline ">
+              <ApplicationDisplayName owner_project={application.owner_project} />
+            </TooltipTrigger>
+            <TooltipContent className="z-[99] left-0 ml-[20px]">
+              <ApplicationTooltip application={application} />
+            </TooltipContent>
+          </Tooltip>
+        </div>
+        <Link className="cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center" href={{ pathname: `/applications/${application.owner_project}`, query: { timespan: selectedTimespan } }}>
+          <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-[#CDD8D3]" />
+        </Link>
+      </div>
+      <div className="flex items-center justify-between gap-x-[5px]">
+        <div className="text-xs">
+          <Category category={ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].main_category : ""} />
+        </div>
+        <div className="h-[20px] flex items-center gap-x-[5px]">
+          {/* {application.origin_keys.map((chain, index) => (
+            <div
+              key={index}
+              className={`cursor-pointer ${selectedChains.includes(chain) ? '' : '!text-[#5A6462]'} hover:!text-inherit`} style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors["dark"][0] : '' }}
+              onClick={() => {
+                if (selectedChains.includes(chain)) {
+                  setSelectedChains(selectedChains.filter((c) => c !== chain));
+                } else {
+                  setSelectedChains([...selectedChains, chain]);
+                }
+              }}
+            >
+              {AllChainsByKeys[chain] && (
+                <Icon
+                  icon={`gtp:${AllChainsByKeys[
+                    chain
+                  ].urlKey
+                    }-logo-monochrome`}
+                  className="w-[15px] h-[15px]"
+                  style={{
+                    color: AllChainsByKeys[chain].colors["dark"][0],
+                  }}
+                />
+              )}
+            </div>
+          ))} */}
+          <Chains origin_keys={application.origin_keys} />
+        </div>
+        
+      </div>
+    </Link>
+  )
+});
+
+ApplicationCard.displayName = 'ApplicationCard';
+
+
+export const ApplicationTooltip = memo(({application}: {application: AggregatedDataRow}) => {
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+  const { applicationDataAggregated } = useApplicationsData();
+
+  const descriptionPreview = useMemo(() => {
+    if (!application || !ownerProjectToProjectData[application.owner_project] || !ownerProjectToProjectData[application.owner_project].description) return "";
+    const chars = ownerProjectToProjectData[application.owner_project].description.length;
+    const firstPart = ownerProjectToProjectData[application.owner_project].description.slice(0, Math.min(100, chars));
+
+    return firstPart.split(" ").slice(0, -1).join(" ");
+    
+  }, [application, ownerProjectToProjectData]);  
+
+  if(!application || !ownerProjectToProjectData) return null;
+
+  return (
+    <div
+      className="cursor-default z-[99] p-[15px] left-[20px] w-[345px] top-[32px] bg-[#1F2726] rounded-[15px] transition-opacity duration-300"
+      style={{
+        boxShadow: "0px 0px 30px #000000",
+        // left: `${mouseOffsetX}px`,
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+      }}
+    >
+      <div className="flex flex-col pl-[5px] gap-y-[10px]">
+        {/* {mouseOffsetX} */}
+        <div className="flex gap-x-[5px] items-center">
+          {ownerProjectToProjectData[application.owner_project] && ownerProjectToProjectData[application.owner_project].logo_path ? (
+            <Image
+              src={`https://api.growthepie.xyz/v1/apps/logos/${ownerProjectToProjectData[application.owner_project].logo_path}`}
+              width={15} height={15}
+              className="select-none rounded-full size-[15px]"
+              alt={application.owner_project}
+              onDragStart={(e) => e.preventDefault()}
+              loading="eager"
+              priority={true}
+            />
+          ) : (
+            <div className={`flex items-center justify-center size-[15px] bg-[#151A19] rounded-full`}>
+              <GTPIcon icon="gtp-project-monochrome" size="sm" className="!size-[12px] text-[#5A6462]" containerClassName="flex items-center justify-center" />
+            </div>
+          )}
+          <div className="heading-small-xs">{ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].display_name : application.owner_project}</div>
+        </div>
+        <div className="text-xs">
+          {descriptionPreview}...
+        </div>
+          <Links owner_project={application.owner_project} showUrl={true} />
+      </div>
+
+    </div>
+  )
+});
+
+ApplicationTooltip.displayName = 'ApplicationTooltip';
 
 export const TopGainersAndLosersTooltip = ({ metric }: { metric: string }) => {
   const {metricsDef} = useMetrics();
