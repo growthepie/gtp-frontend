@@ -39,7 +39,34 @@ export default function PracticeChart({
     selectedScale: string
     }) {
         const types = data.data.chains["all_l2s"].daily.types
-        
+        const tooltipPositioner =
+            useCallback<Highcharts.TooltipPositionerCallbackFunction>(
+            function (this, width, height, point) {
+            const chart = this.chart;
+            const { plotLeft, plotTop, plotWidth, plotHeight } = chart;
+            const tooltipWidth = width;
+            const tooltipHeight = height;
+
+            const distance = 40;
+            const pointX = point.plotX + plotLeft;
+            const pointY = point.plotY + plotTop;
+            let tooltipX =
+                pointX - distance - tooltipWidth < plotLeft
+                ? pointX + distance
+                : pointX - tooltipWidth - distance;
+
+            const tooltipY =
+                pointY - tooltipHeight / 2 < plotTop
+                ? pointY + distance
+                : pointY - tooltipHeight / 2;
+
+            return {
+                x: tooltipX,
+                y: tooltipY,
+            };
+            },
+            [],
+            );
         const tooltipFormatter = useCallback(
             function (this: any) {
                 const { x, points } = this;
@@ -157,6 +184,11 @@ export default function PracticeChart({
                               panKey="shift"
                               zooming={{ type: undefined }}
                               style={{ borderRadius: 15 }}
+                              margin={[30, 10, 50, 50]}
+                            spacingBottom={30}
+                            spacingTop={40}
+                            spacingLeft={10}
+                            spacingRight={10}
                           />
                           <YAxis
                             gridLineColor="#2d3532"
@@ -285,6 +317,7 @@ export default function PracticeChart({
                                 color: "rgb(215, 223, 222)",
                             }}
                             formatter={tooltipFormatter}
+                            positioner={tooltipPositioner}
                             // ensure tooltip is always above the chart
                             //positioner={tooltipPositioner}
                           />
