@@ -54,6 +54,14 @@ const COLORS = {
   TOOLTIP_BG: "#1b2135",
   ANNOTATION_BG: "rgb(215, 223, 222)",
 };
+
+const METRIC_COLORS = {
+  cross_layer: "#FFD700",
+  single_l2: "#FFA500",
+  multiple_l2s: "#FF6347",
+  only_l1: "#FF4500",
+}
+
 const isArray = (obj: any) =>
   Object.prototype.toString.call(obj) === "[object Array]";
 const splat = (obj: any) => (isArray(obj) ? obj : [obj]);
@@ -666,28 +674,42 @@ export default function LandingChart({
     );
 
   const [showTotalUsers, setShowTotalUsers] = useState(
-    selectedMetric === "Total Users",
+    selectedMetric === "Total Ethereum Ecosystem",
   );
 
   const filteredData = useMemo(() => {
-    if (!data) return null;
+    if (!data) return [];
+    const compositions = data.timechart.compositions;
+    const cross_layer = compositions.cross_layer;
+    const single_l2 = compositions.single_l2;
+    const multiple_l2s = compositions.multiple_l2s;
+    const only_l1 = compositions.only_l1;
+    const types = data.timechart.types;
+    let retData: any = [];
+   
 
-    const l2s = data.filter((d) => "all_l2s" === d.name)[0];
+    if(selectedMetric === "Total Ethereum Ecosystem"){
+      let sumData: number[][] = []
 
-    setTotalUsersIncrease(
-      (l2s.data[l2s.data.length - 1][1] - l2s.data[l2s.data.length - 2][1]) /
-      l2s.data[l2s.data.length - 2][1],
-    );
+      compositions.cross_layer.forEach((element, index) => {
+        const sum = cross_layer[index][types.indexOf("value")] + single_l2[index][types.indexOf("value")] + multiple_l2s[index][types.indexOf("value")] + only_l1[index][types.indexOf("value")];
+      
+        sumData.push([element[types.indexOf("unix")], sum])
+      });
 
-    if (showTotalUsers)
-      return showEthereumMainnet
-        ? data.filter((d) => ["all_l2s", "ethereum"].includes(d.name))
-        : [l2s];
+      retData.push({name: "all_l2s", data: sumData, types: types});
+    }else{
+      retData.push({name: "cross_layer", data: cross_layer, types: types});
+      retData.push({name: "single_l2", data: single_l2, types: types});
+      retData.push({name: "multiple_l2s", data: multiple_l2s, types: types});
+      retData.push({name: "only_l1", data: only_l1, types: types});
+    }
 
-    return showEthereumMainnet
-      ? data.filter((d) => !["all_l2s"].includes(d.name))
-      : data.filter((d) => !["all_l2s", "ethereum"].includes(d.name));
+    return retData;
+
+
   }, [data, showEthereumMainnet, showTotalUsers]);
+  
 
   const maxDate = useMemo(() => {
     if (embed_end_timestamp) return new Date(embed_end_timestamp);
@@ -1026,22 +1048,7 @@ export default function LandingChart({
       },
       series: [
         ...filteredData
-          .sort((a, b) => {
-            const aValue =
-              a.data && a.data[a.data.length - 1]
-                ? a.data[a.data.length - 1][1]
-                : 0;
-            const bValue =
-              b.data && b.data[b.data.length - 1]
-                ? b.data[b.data.length - 1][1]
-                : 0;
-
-            if (selectedScale === "percentage") {
-              return aValue - bValue;
-            } else {
-              return bValue - aValue;
-            }
-          })
+          
           .map((series: any, i: number) => {
             const zIndex = showEthereumMainnet
               ? series.name === "ethereum"
@@ -1079,7 +1086,6 @@ export default function LandingChart({
               zIndex: zIndex,
               step: "center",
               data: series.data.map((d: any) => [d[0], d[1]]),
-              ...pointsSettings,
               clip: true,
               borderRadiusTopLeft: borderRadius,
               borderRadiusTopRight: borderRadius,
@@ -1099,7 +1105,7 @@ export default function LandingChart({
                       ? EnabledChainsByKeys[series.name]?.colors[
                       theme ?? "dark"
                       ][0] + "33"
-                      : [],
+                      : METRIC_COLORS[series.name] + "33",
                   ],
 
                   [
@@ -1108,7 +1114,7 @@ export default function LandingChart({
                       ? EnabledChainsByKeys[series.name]?.colors[
                       theme ?? "dark"
                       ][1] + "33"
-                      : [],
+                      : METRIC_COLORS[series.name],
                   ],
                 ],
               },
@@ -1142,7 +1148,7 @@ export default function LandingChart({
                           theme &&
                           EnabledChainsByKeys[series.name]
                           ? EnabledChainsByKeys[series.name]?.colors[theme][0]
-                          : [],
+                          : METRIC_COLORS[series.name],
                       ],
                       // [0.33, AllChainsByKeys[series.name].colors[1]],
                       [
@@ -1151,7 +1157,7 @@ export default function LandingChart({
                           theme &&
                           EnabledChainsByKeys[series.name]
                           ? EnabledChainsByKeys[series.name]?.colors[theme][1]
-                          : [],
+                          : METRIC_COLORS[series.name],
                       ],
                     ],
                   },
@@ -1261,7 +1267,7 @@ export default function LandingChart({
                                 ? EnabledChainsByKeys[series.name]?.colors[
                                 theme
                                 ][0] + "FF"
-                                : [],
+                                : METRIC_COLORS[series.name],
                             ],
                             // [
                             //   0.349,
@@ -1282,7 +1288,7 @@ export default function LandingChart({
                                 ? EnabledChainsByKeys[series.name]?.colors[
                                 theme
                                 ][0] + "00"
-                                : [],
+                                : METRIC_COLORS[series.name],
                             ],
                           ]
                           : [
@@ -1294,7 +1300,7 @@ export default function LandingChart({
                                 ? EnabledChainsByKeys[series.name]?.colors[
                                 theme
                                 ][0] + "FF"
-                                : [],
+                                : METRIC_COLORS[series.name],
                             ],
                             // [
                             //   0.349,
@@ -1315,7 +1321,7 @@ export default function LandingChart({
                                 ? EnabledChainsByKeys[series.name]?.colors[
                                 theme
                                 ][0] + "00"
-                                : [],
+                                : METRIC_COLORS[series.name],
                             ],
                           ],
                     },
@@ -1530,10 +1536,13 @@ export default function LandingChart({
               onClick={() => {
                 setShowTotalUsers(true);
                 setSelectedScale("absolute");
-                setSelectedMetric("Total Users");
+                setSelectedMetric("Total Ethereum Ecosystem");
               }}
             >
-              Active Addresses
+              <div className="flex items-center gap-x-[5px]">
+                <GTPIcon icon="gtp-metrics-ethereum-ecosystem" className="w-4 h-4" />
+                <div>Total Ethereum Ecosystem</div>
+              </div>
             </TopRowChild>
             <TopRowChild
               isSelected={"absolute" === selectedScale && !showTotalUsers}
@@ -1541,10 +1550,14 @@ export default function LandingChart({
               onClick={() => {
                 setShowTotalUsers(false);
                 setSelectedScale("absolute");
-                setSelectedMetric("Users per Chain");
+                setSelectedMetric("Composition");
               }}
             >
-              Active Addresses per Chain
+              <div className="flex items-center gap-x-[5px]">
+                <GTPIcon icon="gtp-metrics-chains-grouping" className="w-4 h-4" />
+                <div>Composition</div>
+              </div>
+             
             </TopRowChild>
 
             <TopRowChild
@@ -1553,10 +1566,14 @@ export default function LandingChart({
               onClick={() => {
                 setShowTotalUsers(false);
                 setSelectedScale("percentage");
-                setSelectedMetric("Percentage");
+                setSelectedMetric("Composition Split");
               }}
             >
-              Percentage
+              <div className="flex items-center gap-x-[5px]">
+                <GTPIcon icon="gtp-metrics-chains-percentage" size="md" />
+                <div>Composition Split</div>
+              </div>
+           
             </TopRowChild>
           </TopRowParent>
           <div className="block 2xl:hidden w-[70%] mx-auto my-[10px]">
@@ -1654,21 +1671,40 @@ export default function LandingChart({
         </div>
       </div>
       <div className="h-[32px] lg:h-[80px] flex flex-col justify-start ">
-        <div className="flex justify-between items-center rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative">
+        <div className="flex justify-between items-center rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative h-[44px]">
           {/* toggle ETH */}
-          <div className="flex z-10">
-            <Switch
-              checked={showEthereumMainnet}
-              onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
-            />
-            <div className="ml-2 block md:hidden xl:block leading-[1.75]">
-              Show Ethereum
-            </div>
-            <div className="ml-2 hidden md:block xl:hidden leading-[1.75]">
-              Show ETH
-            </div>
-          </div>
-          <div className="flex justify-end items-center absolute top-[56px] lg:-top-[15px] right-[-1px] rounded-full z-10">
+          <Tooltip placement="left" allowInteract>
+            <TooltipTrigger>
+              <div className="bottom-[28px] right-[8px] p-0 -mr-0.5 lg:p-1.5 z-10 lg:mr-0 absolute lg:static lg:mb-0.5">
+                <Icon icon="feather:info" className="w-6 h-6" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent className="-mt-10 pr-10 lg:mt-0 z-50 flex items-center justify-center lg:pr-[3px]">
+              <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto md:w-[435px] h-[80px] flex items-center">
+                <div className="flex flex-col space-y-1">
+                  <div className="font-bold text-sm leading-snug">
+                    Data Sources:
+                  </div>
+                  <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
+                    {sources
+                      .map<React.ReactNode>((s) => (
+                        <Link
+                          key={s}
+                          rel="noopener noreferrer"
+                          target="_blank"
+                          href={Sources[s] ?? ""}
+                          className="hover:text-forest-500 dark:hover:text-forest-500 underline"
+                        >
+                          {s}
+                        </Link>
+                      ))
+                      .reduce((prev, curr) => [prev, ", ", curr])}
+                  </div>
+                </div>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+          <div className="flex justify-end items-center absolute top-[56px] lg:-top-[10px] right-[20px] rounded-full z-10">
             <div className="flex justify-center items-center">
               <div className="flex items-center justify-center gap-x-[20px] pr-[10px]">
                 <MetricCard
@@ -1697,37 +1733,7 @@ export default function LandingChart({
                 />
               </div>
 
-              <Tooltip placement="left" allowInteract>
-                <TooltipTrigger>
-                  <div className="bottom-[28px] right-[8px] p-0 -mr-0.5 lg:p-1.5 z-10 lg:mr-0 absolute lg:static lg:mb-0.5">
-                    <Icon icon="feather:info" className="w-6 h-6" />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent className="-mt-10 pr-10 lg:mt-0 z-50 flex items-center justify-center lg:pr-[3px]">
-                  <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto md:w-[435px] h-[80px] flex items-center">
-                    <div className="flex flex-col space-y-1">
-                      <div className="font-bold text-sm leading-snug">
-                        Data Sources:
-                      </div>
-                      <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
-                        {sources
-                          .map<React.ReactNode>((s) => (
-                            <Link
-                              key={s}
-                              rel="noopener noreferrer"
-                              target="_blank"
-                              href={Sources[s] ?? ""}
-                              className="hover:text-forest-500 dark:hover:text-forest-500 underline"
-                            >
-                              {s}
-                            </Link>
-                          ))
-                          .reduce((prev, curr) => [prev, ", ", curr])}
-                      </div>
-                    </div>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
+
             </div>
           </div>
         </div>

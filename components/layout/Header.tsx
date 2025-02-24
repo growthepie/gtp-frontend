@@ -9,6 +9,7 @@ import SupportUsBanner from "./SupportUsBanner";
 import Notification from "@/components/Notification";
 import HeaderLinks from "./HeaderLinks";
 import { track } from "@vercel/analytics";
+import FocusSwitch from "./FocusSwitch";
 
 export default function Header() {
   return (
@@ -111,8 +112,9 @@ export default function Header() {
         </div>
       </div>
       <div className="items-center z-10 hidden md:flex md:space-x-[34px] ">
+        <FocusSwitch />
         <EthUsdSwitch />
-
+        
         {/* <div className="flex space-x-[22px] items-center ">
           <HeaderLinks />
         </div> */}
