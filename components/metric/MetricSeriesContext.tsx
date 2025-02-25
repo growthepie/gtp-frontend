@@ -421,10 +421,11 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
                 "stroke-width": 0,
               },
             },
-            brightness: 0.3,
+            brightness: 0.0,
+            lineWidthPlus: 0,
           },
           inactive: {
-            enabled: true,
+            enabled: false,
             opacity: 0.6,
           },
           selection: {
