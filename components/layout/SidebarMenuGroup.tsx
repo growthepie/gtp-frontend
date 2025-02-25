@@ -35,7 +35,7 @@ export const SidebarMenuLink = memo(({
   const pathname = usePathname();
 
   const isActive = useMemo(() => {
-    if (item.href) return pathname === item.href;
+    if (item.href) return pathname.startsWith(item.href);
     return false;
   }, [item.href, pathname]);
 
