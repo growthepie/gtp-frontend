@@ -74,13 +74,13 @@ export default function Layout({
         </div>
         <Controls />
       </Container> */}
-      <SortProvider defaultOrder="desc" defaultKey={"gas_fees"}>
+      {/* <SortProvider defaultOrder="desc" defaultKey={"gas_fees"}> */}
         <ApplicationDetailsDataProvider owner_project={owner_project}>
           <GTPChartSyncProvider>
             {children}
           </GTPChartSyncProvider>
         </ApplicationDetailsDataProvider>
-      </SortProvider>
+      {/* </SortProvider> */}
     </>
   )
 }

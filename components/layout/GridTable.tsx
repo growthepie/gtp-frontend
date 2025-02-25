@@ -362,6 +362,7 @@ type GridTableAddressCellProps = {
   iconClassName?: string;
   iconContainerClassName?: string;
   fontSize?: number;
+  showCopyIcon?: boolean;
 };
 export const GridTableAddressCell = ({
   address,
@@ -369,6 +370,7 @@ export const GridTableAddressCell = ({
   iconClassName,
   iconContainerClassName,
   fontSize = 12,
+  showCopyIcon = true,
 }: GridTableAddressCellProps) => {
 
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
@@ -438,16 +440,18 @@ export const GridTableAddressCell = ({
         </div>
 
       </span>
-      <div
-        className={`flex items-center justify-center size-[15px] ${iconContainerClassName || ""}`}
+      {showCopyIcon && (
+        <div
+          className={`flex items-center justify-center size-[15px] ${iconContainerClassName || ""}`}
 
-      >
-        <Icon
-          icon={copiedAddress === address ? "feather:check-circle" : "feather:copy"}
-          className={`size-[15px] cursor-pointer ${iconClassName || ""}`}
+        >
+          <Icon
+            icon={copiedAddress === address ? "feather:check-circle" : "feather:copy"}
+            className={`size-[15px] cursor-pointer ${iconClassName || ""}`}
 
-        />
-      </div>
+          />
+        </div>
+      )}
     </div>
   )
 };

@@ -182,9 +182,9 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
               <span className="heading-large-md">{def.name}</span> across different chains
             </div>
           </div>
-          <div className="text-xs">
+          {/* <div className="text-xs">
             {ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].display_name} is available on multiple chains. Here you see how much usage is on each based on the respective metric.
-          </div>
+          </div> */}
         </div>
       </Container>
       <Container>
@@ -619,13 +619,12 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
 
 
 const ContractsTable = () => {
-  const { data, owner_project, contracts } = useApplicationDetailsData();
+  const { data, owner_project, contracts, sort, setSort } = useApplicationDetailsData();
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { selectedTimespan } = useTimespan();
   const { AllChainsByKeys } = useMaster();
   const { metricsDef, selectedMetrics, setSelectedMetrics, selectedMetricKeys, } = useMetrics();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const { sort, setSort } = useSort();
   const [showMore, setShowMore] = useState(false);
 
   const metricKey = useMemo(() => {
@@ -638,7 +637,7 @@ const ContractsTable = () => {
 
   // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() =>
-    `26px 280px 95px minmax(135px,800px) ${selectedMetricKeys.map(() => `237px`).join(" ")} 20px`,
+    `26px 280px 95px minmax(135px,800px) ${selectedMetricKeys.map(() => `140px`).join(" ")}`,
     [selectedMetricKeys]
   );
 
@@ -646,7 +645,7 @@ const ContractsTable = () => {
     <HorizontalScrollContainer reduceLeftMask={true}>
       <GridTableHeader
         gridDefinitionColumns={gridColumns}
-        className="group text-[14px] !px-[5px] !py-0 gap-x-[15px] !pb-[4px]"
+        className="group text-[14px] !pl-[5px] !pr-[30px] !py-0 gap-x-[15px] !pb-[4px]"
         style={{
           gridTemplateColumns: gridColumns,
         }}
@@ -655,19 +654,24 @@ const ContractsTable = () => {
         <GridTableHeaderCell
           metric="name"
           className="heading-small-xs pl-[0px]"
+          sort={sort}
+          setSort={setSort}
         >
           Contract Name
         </GridTableHeaderCell>
         <GridTableHeaderCell
           metric="main_category_key"
           className="heading-small-xs"
+          sort={sort}
+          setSort={setSort}
         >
           Category
         </GridTableHeaderCell>
         <GridTableHeaderCell
           metric="sub_category_key"
           className="heading-small-xs"
-          justify="end"
+          sort={sort}
+          setSort={setSort}
         >
           Subcategory
         </GridTableHeaderCell>
@@ -682,7 +686,7 @@ const ContractsTable = () => {
             <GridTableHeaderCell
               key={metric}
               metric={metric}
-              className="heading-small-xs pl-[25px] pr-[15px] z-[0] whitespace-nowrap"
+              className="heading-small-xs z-[0] whitespace-nowrap"
               justify="end"
               sort={sort}
               setSort={setSort}
@@ -691,7 +695,6 @@ const ContractsTable = () => {
             </GridTableHeaderCell>
           )
         })}
-        <div />
       </GridTableHeader>
       {/* <div className="flex flex-col" style={{ height: `${contracts.length * 34 + contracts.length * 5}px` }}>
         <VerticalVirtuosoScrollContainer
@@ -765,10 +768,19 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict }) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { metricsDef, selectedMetrics, selectedMetricKeys, } = useMetrics();
   const { AllChainsByKeys, data: masterData } = useMaster();
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+
+  const handleCopyAddress = (address: string) => {
+    navigator.clipboard.writeText(address);
+    setCopiedAddress(address);
+    setTimeout(() => {
+      setCopiedAddress(null);
+    }, 1000);
+  };
 
   // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() =>
-    `26px 280px 95px minmax(135px,800px) ${selectedMetricKeys.map(() => `237px`).join(" ")} 20px`,
+    `26px 280px 95px minmax(135px,800px) ${selectedMetricKeys.map(() => `140px`).join(" ")}`,
     [selectedMetricKeys]
   );
 
@@ -778,7 +790,7 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict }) => {
   return (
     <GridTableRow
       gridDefinitionColumns={gridColumns}
-      className={`group text-[14px] !px-[5px] !py-0 h-[34px] gap-x-[15px]`}
+      className={`group text-[14px] !pl-[5px] !pr-[30px] !py-0 h-[34px] gap-x-[15px]`}
       style={{
         gridTemplateColumns: gridColumns,
       }}
@@ -787,24 +799,42 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict }) => {
         <div
           className="absolute z-[3] -left-[5px] h-[32px] w-[35px] pl-[5px] flex items-center justify-start rounded-l-full bg-[radial-gradient(circle_at_-32px_16px,_#151A19_0%,_#151A19_72.5%,_transparent_90%)]"
         >
-          {/* <ApplicationIcon owner_project={owner_project} size="sm" /> */}
           <div className="size-[26px] flex items-center justify-center">
             <GTPIcon icon={`${contract.origin_key}-logo-monochrome` as GTPIconName} size="sm" style={{ color: AllChainsByKeys[contract.origin_key].colors.dark[0] }} />
           </div>
         </div>
       </div>
       <div className="flex items-center gap-x-[5px] justify-between w-full truncate">
-        {/* <ApplicationDisplayName owner_project={application.owner_project} /> */}
-        {contract.name || (<GridTableAddressCell address={contract.address as string} />)}
-        {/* <Links owner_project={owner_project} /> */}
+        {contract.name || (<GridTableAddressCell address={contract.address as string} showCopyIcon={false} />)}
+        <div className="flex items-center gap-x-[5px]">
+          <div className="h-[15px] w-[15px]">
+            <div
+              className="group flex items-center cursor-pointer gap-x-[5px] text-xs"
+              onClick={() => handleCopyAddress(contract.address as string)}
+            >
+              <Icon
+                icon={copiedAddress ? "feather:check" : "feather:copy"}
+                className="w-[15px] h-[15px]"
+              />
+            </div>
+          </div>
+          <Link
+            href={`${masterData.chains[contract.origin_key].block_explorer
+              }address/${contract.address}`}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <Icon
+              icon="gtp:gtp-block-explorer-alt"
+              className="w-[15px] h-[15px]"
+            />
+          </Link>
+        </div>
       </div>
-      {/* <div className="flex items-center gap-x-[5px]">
-        <Chains origin_keys={application.origin_keys} />
-      </div> */}
       <div className="text-xs">
         <Category category={ownerProjectToProjectData[owner_project] ? ownerProjectToProjectData[owner_project].main_category : ""} />
       </div>
-      <div className="text-xs text-right">
+      <div className="text-xs">
         {masterData.blockspace_categories.sub_categories[contract.sub_category_key] ? masterData.blockspace_categories.sub_categories[contract.sub_category_key] : contract.sub_category_key}
       </div>
       {selectedMetrics.map((key, index) => (
@@ -814,12 +844,6 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict }) => {
           <ContractValue contract={contract} metric={selectedMetrics[index]} />
         </div>
       ))}
-      <div className="relative flex justify-end items-center pr-[0px]">
-        <Link className="absolute cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center" href={`/applications/${owner_project}`}>
-          <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-[#CDD8D3]" />
-        </Link>
-      </div>
-      {/* #344240/30 */}
     </GridTableRow>
   )
 });

@@ -461,7 +461,7 @@ const ChainBar = memo(({
         }}
       >
         <div
-          className="@container absolute inset-0 left-[135px] right-[15px] flex items-center justify-end text-[#1F2726]"
+          className="@container absolute inset-0 left-[135px] right-[15px] flex items-center justify-end text-[#1F2726] select-none"
           style={{ zIndex: computedZIndex + 1 }}
         >
           <div
