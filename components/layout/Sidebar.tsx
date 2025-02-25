@@ -1,6 +1,6 @@
 "use client";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import { SidebarMenuGroup } from "./SidebarMenuGroup";
+import { SidebarMenuGroup, SidebarMenuLink } from "./SidebarMenuGroup";
 import Link from "next/link";
 import {
   navigationItems,
@@ -285,13 +285,21 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
             <div ref={mobileRef} className="z-[999] mt-[30px] h-[calc(100vh-100px)] w-full flex flex-col justify-between overflow-hidden relative pointer-events-auto">
               {/* <div className="flex-1 w-full overflow-x-hidden relative overflow-y-auto scrollbar-thin scrollbar-thumb-forest-1000/50 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller"> */}
               <VerticalScrollContainer height={mobileHeight - 150} scrollbarPosition="right" scrollbarAbsolute={false} scrollbarWidth="6px">
-                {navigationItemsWithChains.map((item) => (
-                  <SidebarMenuGroup
-                    key={item.name + "_item"}
-                    item={item}
-                    sidebarOpen={isMobileSidebarOpen}
-                  />
-                ))}
+                {navigationItemsWithChains.map((item) => 
+                  item.href ? (
+                    <SidebarMenuLink
+                      key={item.name + "_link"}
+                      item={item}
+                      sidebarOpen={isSidebarOpen}
+                    />
+                  ) : (
+                    <SidebarMenuGroup
+                      key={item.name + "_item"}
+                      item={item}
+                      sidebarOpen={isSidebarOpen}
+                    />
+                  )
+                )}
               </VerticalScrollContainer>
               {/* </div> */}
 
@@ -343,13 +351,21 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
       {/* <div className="flex-1 flex flex-col gap-y-[10px] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-forest-800/30 scrollbar-track-forest-800/10"> */}
       <VerticalScrollContainer height={height - 36} scrollbarPosition="left" scrollbarAbsolute={true} scrollbarWidth="6px">
         <div className="pl-[20px] w-[270px]">
-          {navigationItemsWithChains.map((item) => (
-            <SidebarMenuGroup
-              key={item.name + "_item"}
-              item={item}
-              sidebarOpen={isSidebarOpen}
-            />
-          ))}
+          {navigationItemsWithChains.map((item) => 
+            item.href ? (
+              <SidebarMenuLink
+                key={item.name + "_link"}
+                item={item}
+                sidebarOpen={isSidebarOpen}
+              />
+            ) : (
+              <SidebarMenuGroup
+                key={item.name + "_item"}
+                item={item}
+                sidebarOpen={isSidebarOpen}
+              />
+            )
+          )}
         </div>
       </VerticalScrollContainer>
 

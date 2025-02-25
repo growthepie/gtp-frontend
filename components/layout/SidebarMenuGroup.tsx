@@ -27,6 +27,55 @@ type SidebarProps = {
   sidebarOpen: boolean;
 };
 
+export const SidebarMenuLink = memo(({
+  item,
+  sidebarOpen,
+}: SidebarProps) => {
+
+  const pathname = usePathname();
+
+  const isActive = useMemo(() => {
+    if (item.href) return pathname === item.href;
+    return false;
+  }, [item.href, pathname]);
+
+  return (
+    <>
+    <Accordion
+      icon={item.icon as GTPIconName}
+      size="lg"
+      background="none"
+      iconBackground="none"
+      label={item.label}
+      link={item.href}
+      hideLabel={!sidebarOpen}
+      isActive={isActive}
+      onToggle={() => {}}
+      rightContent={
+        item.newChild && (
+          <div className="pointer-events-none absolute bottom-[8px] right-[0px] top-[8px] flex items-center justify-center overflow-hidden text-xs font-bold transition-all duration-300 md:right-[20px]">
+            <div
+              className={`h-full w-[50px] rounded-full bg-gradient-to-t from-[#FFDF27] to-[#FE5468] transition-all duration-300 md:rounded-br-none md:rounded-tr-none ${
+                !sidebarOpen || isActive
+                  ? "translate-x-[60px] opacity-0 ease-in-out"
+                  : "translate-x-0 opacity-100 delay-300 ease-in-out"
+              }`}
+            >
+              <div className="hard-shine-2 absolute inset-0 flex items-center justify-end rounded-full pr-[8px] text-xs font-bold text-forest-900 transition-all duration-300 md:rounded-br-none md:rounded-tr-none">
+                NEW!
+              </div>
+            </div>
+          </div>
+        )
+      }
+    />
+    <div className="mb-[10px]"/>
+    </>
+  );
+});
+
+SidebarMenuLink.displayName = "SidebarMenuLink";
+
 export const SidebarMenuGroup = memo(({
   item,
   onOpen,

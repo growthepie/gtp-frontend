@@ -495,7 +495,8 @@ export const navigationItems: NavigationItem[] = [
         // showNew: true,
       },
     ],
-    // href: "",
+    href: "/applications",
+    newChild: true,
   },
   {
     name: "Blockspace",
@@ -532,20 +533,20 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "category-comparison",
         url: "/blockspace/category-comparison",
       },
-      {
-        label: "Applications",
-        category: "blockspace-applications",
-        page: {
-          title: "Applications",
-          description:
-            "The top applications on a chain, ranked by the amount of gas fees spent and transactions sent to their smart contracts.",
-        },
-        icon: "gtp-project",
-        key: "applications",
-        rootKey: "applications",
-        urlKey: "applications",
-        url: "/applications",
-      },
+      // {
+      //   label: "Applications",
+      //   category: "blockspace-applications",
+      //   page: {
+      //     title: "Applications",
+      //     description:
+      //       "The top applications on a chain, ranked by the amount of gas fees spent and transactions sent to their smart contracts.",
+      //   },
+      //   icon: "gtp-project",
+      //   key: "applications",
+      //   rootKey: "applications",
+      //   urlKey: "applications",
+      //   url: "/applications",
+      // },
       {
         label: "Contracts",
         category: "contracts",

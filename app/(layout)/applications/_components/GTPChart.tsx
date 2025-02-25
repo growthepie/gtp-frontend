@@ -563,6 +563,7 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
             });
           },
         }}
+        tickAmount={3}
 
       >
 

@@ -216,9 +216,11 @@ export const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
 
     return (
       <div className="flex flex-col gap-y-[5px] w-fit h-full pr-[15px] py-[15px] text-[#CDD8D3]">
-        <div className="pl-[20px] h-[18px] flex items-center justify-between gap-x-[15px] whitespace-nowrap">
-          <div className="heading-small-xs">{minDate} - {maxDate}</div>
-          <div className="text-xs">{metricsDef[metric].name}</div>
+        <div className="pl-[20px] h-[24px] flex items-center gap-x-[5px] whitespace-nowrap">
+          <ApplicationIcon owner_project={owner_project} size="sm" />
+          <div className='heading-small-xs !font-normal'>
+            <span className='!font-bold'>{ownerProjectToProjectData[owner_project]?.display_name || ""}</span>
+          </div>
         </div>
         <div className="flex flex-col">
           {[...chainsData]
@@ -230,8 +232,8 @@ export const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
             .map(([chain, valsByTimespan]) => {
               const value = valsByTimespan[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)];
               return (
-                <div key={chain}>
-                  <div className="h-[20px] flex w-full space-x-[5px] items-center font-medium mb-[0.5]">
+                <div className="h-[20px] flex flex-col justify-between" key={chain}>
+                  <div className="h-[18px] flex w-full space-x-[5px] items-center font-medium">
                     <div
                       className="w-[15px] h-[10px] rounded-r-full"
                       style={{ backgroundColor: AllChainsByKeys[chain].colors.dark[0] }}
@@ -242,10 +244,10 @@ export const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
                         .toLocaleString("en-GB", { maximumFractionDigits: decimals })}
                     </div>
                   </div>
-                  <div className="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-                    <div className="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+                  <div className="h-[2px] flex ml-[20px] w-[calc(100% - 1rem)] relative">
+                    <div className="h-[2px] rounded-none absolute right-0 top-0 w-full bg-white/0"></div>
                     <div
-                      className="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50"
+                      className="h-[2px] rounded-none absolute right-0 top-0 bg-forest-900 dark:bg-forest-50"
                       style={{
                         width: `${(value / Math.max(...Object.values(metricData.aggregated.data)
                           .map((chainData) => chainData[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)]))) * 100}%`,
@@ -256,13 +258,21 @@ export const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
                 </div>
               );
             })}
-          <div className="h-[20px] flex w-full space-x-[5px] items-center font-medium mt-1.5 mb-0.5">
+          <div className="pl-[20px] flex-1 flex items-center justify-between gap-x-[15px] whitespace-nowrap">
+            <div className="text-xs">
+              Metric: 
+            </div>
+            <div className="numbers-xs">
+              {metricsDef[metric].name}
+            </div>
+          </div>
+          {/* <div className="h-[20px] flex w-full space-x-[5px] items-center font-medium mt-1.5 mb-0.5">
             <div className="w-[15px] h-[10px] rounded-r-full" />
             <div className="tooltip-point-name text-xs">Total</div>
             <div className="flex-1 text-right justify-end numbers-xs flex">
               {prefix}{total.toLocaleString("en-GB", { maximumFractionDigits: decimals })}
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     );
@@ -358,6 +368,7 @@ const ChainBar = memo(({
   decimals: number;
 }) => {
   const { hoveredSeriesName, setHoveredSeriesName } = useGTPChartSyncProvider();
+  const { owner_project } = useApplicationDetailsData();
 
   // const hoveredSeriesName = null;
 
@@ -395,31 +406,60 @@ const ChainBar = memo(({
   }
 
   const tooltipContent = (
-    <div className="flex flex-col gap-y-[5px] w-fit h-full pr-[15px] py-[15px] text-[#CDD8D3]">
-      <div className="pl-[20px] h-[18px] flex items-center justify-between gap-x-[15px] whitespace-nowrap">
-        <div className="heading-small-xs">{minDate} - {maxDate}</div>
-        <div className="text-xs">{metricsDef[metric].name}</div>
+    <div className="min-w-[245px] flex flex-col gap-y-[5px] w-fit h-full pr-[15px] py-[15px] text-[#CDD8D3]">
+      <div className="pl-[20px] h-[24px] flex items-center gap-x-[5px] whitespace-nowrap">
+        <ApplicationIcon owner_project={owner_project} size="sm" />
+        <div className='heading-small-xs !font-normal'>
+          on <span className='!font-bold'>{AllChainsByKeys[chain].label}</span>
+        </div>
       </div>
       <div className="flex flex-col">
-        <div className="h-[20px] flex w-full space-x-[5px] items-center font-medium mb-0.5">
-          <div
-            className="w-[15px] h-[10px] rounded-r-full"
-            style={{ backgroundColor: AllChainsByKeys[chain].colors.dark[0] }}
-          ></div>
-          <div className="tooltip-point-name text-xs">{AllChainsByKeys[chain].label}</div>
-          <div className="flex-1 text-right justify-end numbers-xs flex">
-            {prefix}{metricData.aggregated.data[chain][selectedTimespan][metricData.aggregated.types.indexOf(valueKey)]
-              .toLocaleString("en-GB", { maximumFractionDigits: 2 })}
+        <div className="h-[20px] flex flex-col justify-between">
+          <div className="h-[18px] flex w-full space-x-[5px] items-center font-medium">
+            <div
+              className="w-[15px] h-[10px] rounded-r-full"
+              style={{ backgroundColor: AllChainsByKeys[chain].colors.dark[0] }}
+            ></div>
+            <div className="tooltip-point-name text-xs">{AllChainsByKeys[chain].label}</div>
+            <div className="flex-1 text-right justify-end numbers-xs flex">
+              {prefix}{metricData.aggregated.data[chain][selectedTimespan][metricData.aggregated.types.indexOf(valueKey)]
+                .toLocaleString("en-GB", { maximumFractionDigits: decimals })}
+            </div>
+          </div>
+          <div className="h-[2px] flex ml-[20px] w-[calc(100% - 1rem)] relative">
+            <div className="h-[2px] rounded-none absolute right-0 top-0 w-full bg-white/0"></div>
+            <div
+              className="h-[2px] rounded-none absolute right-0 top-0 bg-forest-900 dark:bg-forest-50"
+              style={{
+                width: `${(metricData.aggregated.data[chain][selectedTimespan][metricData.aggregated.types.indexOf(valueKey)] / total) * 100}%`,
+                  
+                backgroundColor: AllChainsByKeys[chain].colors.dark[0]
+              }}
+            ></div>
           </div>
         </div>
-        <div className="pl-[20px] flex flex-col items-start flex-1">
-          <div className="text-xxxs">
-            First activity seen on {firstSeen.utc().toDate().toLocaleString("en-GB", {
+      </div>
+      <div>
+        <div className="pl-[20px] flex-1 flex items-center justify-between gap-x-[15px] whitespace-nowrap">
+          <div className="text-xs">
+            Metric: 
+          </div>
+          <div className="numbers-xs">
+            {metricsDef[metric].name}
+          </div>
+        </div>
+        <div className="pl-[20px] flex-1 flex items-center justify-between gap-x-[15px] whitespace-nowrap">
+          <div className="text-xs">
+            First seen contract: 
+          </div>
+          <div className="numbers-xs">
+            {firstSeen.utc().toDate().toLocaleString("en-GB", {
               year: "numeric",
               month: "short",
               day: "numeric",
             })}
           </div>
+          {/* </div> */}
         </div>
       </div>
     </div>
