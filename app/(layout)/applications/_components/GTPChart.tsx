@@ -1,13 +1,10 @@
 "use client";
-import { DurationData, DailyData } from "@/types/api/EconomicsResponse";
 import React, {
   useState,
   useEffect,
   useMemo,
   useCallback,
   useRef,
-  use,
-  useLayoutEffect,
   ReactNode,
 } from "react";
 import Highcharts, {
@@ -17,8 +14,7 @@ import highchartsAnnotations from "highcharts/modules/annotations";
 import highchartsPatternFill from "highcharts/modules/pattern-fill";
 import highchartsRoundedCorners from "highcharts-rounded-corners";
 import addHighchartsMore from "highcharts/highcharts-more";
-import { useLocalStorage, useSessionStorage } from "usehooks-ts";
-import { AxisTickPositionerCallbackFunction } from "highcharts";
+import { useLocalStorage } from "usehooks-ts";
 import {
   HighchartsProvider,
   HighchartsChart,
@@ -32,26 +28,22 @@ import {
   ChartProps,
   AreaSeries,
 } from "react-jsx-highcharts";
-import { useUIContext, useHighchartsWrappers } from "@/contexts/UIContext";
+import { useHighchartsWrappers } from "@/contexts/UIContext";
 import { useMaster } from "@/contexts/MasterContext";
-import { debounce, over, times } from "lodash";
+import { times } from "lodash";
 import "@/app/highcharts.axis.css";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
-import { daMetricItems, metricItems } from "@/lib/metrics";
 import { format as d3Format } from "d3"
-import { useTheme } from "next-themes";
-import { BASE_URL } from "@/lib/helpers";
 import EmbedContainer from "@/app/(embeds)/embed/EmbedContainer";
 import ChartWatermark from "@/components/layout/ChartWatermark";
-import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
-import dynamic from "next/dynamic";
 import { baseOptions, tooltipFormatter } from "@/lib/chartUtils";
 import { useTimespan } from "../_contexts/TimespanContext";
 import { useChartScale } from "../_contexts/ChartScaleContext";
 import { useMetrics } from "../_contexts/MetricsContext";
-import { MetricData, useApplicationDetailsData } from "../_contexts/ApplicationDetailsDataContext";
+import { useApplicationDetailsData } from "../_contexts/ApplicationDetailsDataContext";
 import moment from "moment";
+import { useGTPChartSyncProvider } from "../_contexts/GTPChartSyncContext";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -79,6 +71,8 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
   const [showUsd] = useLocalStorage("showUsd", true);
   const [showGwei] = useLocalStorage("showGwei", false);
   const { selectedTimespan, timespans } = useTimespan();
+  const { hoveredSeriesName, setHoveredSeriesName, onChartCreated, onChartDestroyed } = useGTPChartSyncProvider();
+  useHighchartsWrappers();
 
   
   // const metricData = data.metrics[metric] as MetricData;
@@ -496,7 +490,13 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
     <GTPChart 
       highchartsChartProps={{
         chart: {
-          height: 168
+          height: 168,
+          events: {
+            load: function () {
+              console.log("chart loaded");
+              onChartCreated(this);
+            },
+          },
         },
         plotOptions: {
           ...plotOptions,
@@ -507,6 +507,8 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
           timezone: "UTC",
         },
         marginLeft: 40,
+        type: "area",
+        
       }} 
     >
       <GTPChartTooltip metric_id={metric} />
@@ -572,6 +574,8 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
             <AreaSeries
               key={i}
               // type="column"
+              connectNulls={true}
+              connectEnds={true}
               name={series.name}
               data={series.data}
               zoneAxis={getSeriesData(series.name).zoneAxis}
@@ -610,6 +614,14 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
                 //@ts-ignore
                 selection: {
                   enabled: false,
+                },
+              }}
+              events={{
+                mouseOver: function (e) {
+                  setHoveredSeriesName(series.name);
+                },
+                mouseOut: function (e) {
+                  setHoveredSeriesName(null);
                 },
               }}
               shadow={["area", "line"].includes(getSeriesType(series.name)) && selectedScale !== "stacked" ? 
@@ -781,8 +793,8 @@ const GTPXAxis = (props: AxisProps<Highcharts.XAxisOptions>) => {
       minorTickWidth={2}
       minorGridLineWidth={0}
       // tickInterval={}
-      // tickInterval={tickInterval}
-      // minorTickInterval={timespans[selectedTimespan].xMax - timespans[selectedTimespan].xMin <= 40 * 24 * 3600 * 1000 ? 30 * 3600 * 1000 : 30 * 24 * 3600 * 1000}
+      tickInterval={30 * 24 * 3600 * 1000}
+      // minorTickInterval={xMax - xMin <= 40 * 24 * 3600 * 1000 ? 30 * 3600 * 1000 : 30 * 24 * 3600 * 1000}
       minPadding={0}
       maxPadding={0}
       // min={zoomed ? zoomMin : timespans[selectedTimespan].xMin} // don't include the last day
@@ -863,7 +875,6 @@ const GTPChartTooltip = ({props, metric_id} : {props?: TooltipProps, metric_id: 
   const tooltipFormatter = useCallback(
   
     function (this: any) {
-   
       const { x, points }: { x: number; points: any[] } = this;
       points.sort((a: any, b: any) => {
         // if (reversePerformer) return a.y - b.y;
@@ -873,13 +884,6 @@ const GTPChartTooltip = ({props, metric_id} : {props?: TooltipProps, metric_id: 
       const showOthers = points.length > 10 && metric_id !== "txcosts";
   
       const dateString = moment.utc(x).utc().locale("en-GB").format("DD MMM YYYY");
-      // const dateString = date.toLocaleDateString("en-GB", {
-      //   timeZone: "UTC",
-      //   month: "short",
-      //   // day: selectedTimeInterval === "daily" ? "numeric" : undefined,
-      //   day: "numeric",
-      //   year: "numeric",
-      // });
   
       const pointsSum = points.reduce((acc: number, point: any) => acc + point.y, 0);
       
@@ -1096,25 +1100,37 @@ const GTPChartTooltip = ({props, metric_id} : {props?: TooltipProps, metric_id: 
 
 export const GTPChart = ({ children, providerProps, highchartsChartProps, chartProps }: { children?: ReactNode , providerProps?: HighchartsProviderProps, highchartsChartProps?: HighchartsChartProps, chartProps?: ChartProps }) => {
   const [containerRef, { width, height }] = useElementSizeObserver();
+  // const { onChartCreated, onChartDestroyed } = useGTPChartSyncProvider();
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
+
+  // useEffect(() => {
+  //   return () => {
+  //     if (chartComponent.current) {
+  //       onChartDestroyed();
+  //     }
+  //   };
+  // }, [onChartDestroyed]);
 
   return (
     <HighchartsProvider 
-      {...providerProps}
+      
       Highcharts={Highcharts}
+      {...providerProps}
     >
       <HighchartsChart
-        {...highchartsChartProps}
-        {...baseOptions.chart}
+        chart={{
+          ...baseOptions.chart, 
+          
+        }}
+
         containerProps={{
           style: {
             overflow: "visible",
           }
         }}
-        
+        {...highchartsChartProps}
       >
           <Chart
-              {...chartProps}
               {...baseOptions.chart}
               // width={width}
               // height={height}
@@ -1130,11 +1146,17 @@ export const GTPChart = ({ children, providerProps, highchartsChartProps, chartP
                   enabled: false,
                 },
               }}
-              
+              // events={{
+              //   // load: function (this: Highcharts.Chart) {
+              //   //   chartComponent.current = this;
+              //   //   onChartCreated(this);
+              //   // },
+              // }}
               options={{
                 ...chartProps?.options,
                 chartComponent: chartComponent.current,
               }}
+              {...chartProps}
             />
         {children}
       </HighchartsChart>

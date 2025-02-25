@@ -6,6 +6,8 @@ import { ApplicationDisplayName, ApplicationIcon, BackButton, PageTitle, Project
 import { Metadata, ResolvingMetadata } from "next";
 import { ApplicationDetailsDataProvider } from "../_contexts/ApplicationDetailsDataContext";
 import { SortProvider } from "../_contexts/SortContext";
+import { GTPChart } from "../_components/GTPChart";
+import { GTPChartSyncProvider } from "../_contexts/GTPChartSyncContext";
 
 // // fetch data
 // const projectsData = await fetch(LabelsURLS.projects).then((res) => res.json());
@@ -74,7 +76,9 @@ export default function Layout({
       </Container> */}
       <SortProvider defaultOrder="desc" defaultKey={"gas_fees"}>
         <ApplicationDetailsDataProvider owner_project={owner_project}>
-          {children}
+          <GTPChartSyncProvider>
+            {children}
+          </GTPChartSyncProvider>
         </ApplicationDetailsDataProvider>
       </SortProvider>
     </>

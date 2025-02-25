@@ -7,7 +7,7 @@ import React from "react";
 import { useWindowSize } from "usehooks-ts";
 
 export type GridTableProps = {
-  gridDefinitionColumns: string;
+  gridDefinitionColumns?: string;
   className?: string;
   children: React.ReactNode;
   style?: React.CSSProperties;
@@ -27,7 +27,7 @@ export const GridTableHeader = ({
 }: GridTableProps) => {
   return (
     <div
-      className={`select-none gap-x-[10px] pl-[10px] pr-[32px] pt-[30px] text-[11px] items-center font-semibold grid ${gridDefinitionColumns} ${className}`}
+      className={`select-none gap-x-[10px] pl-[10px] pr-[32px] pt-[30px] text-[11px] items-center font-semibold grid ${gridDefinitionColumns || ""} ${className || ""}`}
       style={style}
     >
       {children}
@@ -36,7 +36,7 @@ export const GridTableHeader = ({
 };
 
 export type GridTableRowProps = {
-  gridDefinitionColumns: string;
+  gridDefinitionColumns?: string;
   className?: string;
   children: React.ReactNode;
   style?: React.CSSProperties;
@@ -78,7 +78,7 @@ export const GridTableRow = ({
 
     return (
       <div
-        className={`select-text gap-x-[10px] pl-[10px] pr-[32px] py-[5px] text-xs items-center rounded-full border-[0.5px] border-[#5A6462] grid ${gridDefinitionColumns} ${className} ${onClick ? "cursor-pointer hover:bg-forest-500/10" : ""}`}
+        className={`select-text gap-x-[10px] pl-[10px] pr-[32px] py-[5px] text-xs items-center rounded-full border-[0.5px] border-[#5A6462] grid ${gridDefinitionColumns || ""} ${className || ""} ${onClick ? "cursor-pointer hover:bg-forest-500/10" : ""}`}
         style={style}
         onClick={onClick}
       >
@@ -183,6 +183,7 @@ export const GridTableHeaderCell = ({ children, className, justify, metric, sort
         >
           {children}
           {metric && sort && (
+            <div className="size-[10px]">
             <Icon
               icon={
                 sort.metric === metric && sort.sortOrder === "asc"
@@ -194,6 +195,7 @@ export const GridTableHeaderCell = ({ children, className, justify, metric, sort
                 opacity: sort.metric === metric ? 1 : 0.2,
               }}
             />
+            </div>
           )}
         </div>
         {extraRight}
@@ -219,17 +221,19 @@ export const GridTableHeaderCell = ({ children, className, justify, metric, sort
     >
       {children}
       {metric && sort && (
-        <Icon
-          icon={
-            sort.metric === metric && sort.sortOrder === "asc"
-              ? "feather:arrow-up"
-              : "feather:arrow-down"
-          }
-          className="w-[10px] h-[10px]"
-          style={{
-            opacity: sort.metric === metric ? 1 : 0.2,
-          }}
-        />
+        <div className="size-[10px]">
+          <Icon
+            icon={
+              sort.metric === metric && sort.sortOrder === "asc"
+                ? "feather:arrow-up"
+                : "feather:arrow-down"
+            }
+            className="w-[10px] h-[10px]"
+            style={{
+              opacity: sort.metric === metric ? 1 : 0.2,
+            }}
+          />
+        </div>
       )}
     </div>
   );

@@ -50,6 +50,10 @@ export default function Controls() {
           })}
           selected={selectedMetrics}
           setSelected={setSelectedMetrics}
+          onSelect={(selected) => {
+            console.log("selected", selected);
+            setSort({...sort, metric: selected[selected.length - 1]});
+          }}
           />
 
         </TopRowParent>

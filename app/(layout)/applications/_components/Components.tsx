@@ -193,13 +193,14 @@ export type MultipleSelectTopRowChildProps = {
   handlePrev: () => void;
   selected: string[];
   setSelected: React.Dispatch<React.SetStateAction<string[]>>;
+  onSelect?: ( selected: string[] ) => void;
   options: {
     key: string;
     icon?: string;
     name: string;
   }[];
 };
-export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, setSelected, options }: MultipleSelectTopRowChildProps) => {
+export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, setSelected, onSelect, options }: MultipleSelectTopRowChildProps) => {
   const { isMobile } = useUIContext();
   // const [isHovering, setIsHovering] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -256,15 +257,11 @@ export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, se
                 className="flex px-[25px] py-[5px] gap-x-[15px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
                 onClick={() => {
                   setIsOpen(false);
+                  
+                  const newSelected = selected.includes(opt.key) ? selected.filter((m) => m !== opt.key) : [...selected, opt.key];
+                  setSelected(newSelected);
 
-                  setSelected((prev) => {
-                    if (prev.includes(opt.key)) {
-                      if (prev.length === 1) return prev;
-                      return prev.filter((m) => m !== opt.key);
-                    } else {
-                      return [...prev, opt.key];
-                    }
-                  });
+                  onSelect && onSelect(newSelected);
                 }}
                 key={index}
               >
@@ -358,27 +355,20 @@ export const ProjectDetailsLinks = memo(({ owner_project, mobile }: { owner_proj
 
 ProjectDetailsLinks.displayName = 'Links';
 
-export const ApplicationCard = memo(({ application, className, width }: { application?: AggregatedDataRow, className?: string, width?: number }) => {
-  const { AllChainsByKeys } = useMaster();
+export const ApplicationCard = memo(({ application, className, width, metric }: { application?: AggregatedDataRow, className?: string, width?: number, metric: string }) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
-  const { selectedChains, setSelectedChains, } = useApplicationsData();
-  const { selectedMetrics, metricsDef } = useMetrics();
+  const { metricsDef } = useMetrics();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const router = useRouter();
   const { selectedTimespan } = useTimespan();
 
-  const numContractsString = useCallback((application: AggregatedDataRow) => {
-    return application.num_contracts.toLocaleString("en-GB");
-  }, []);
-
-
   const metricKey = useMemo(() => {
-    let key = selectedMetrics[0];
-    if (selectedMetrics[0] === "gas_fees")
+    let key = metric;
+    if (metric === "gas_fees")
       key = showUsd ? "gas_fees_usd" : "gas_fees_eth";
 
     return key;
-  }, [selectedMetrics, showUsd]);
+  }, [metric, showUsd]);
 
   const rank = useMemo(() => {
     if (!application) return null;
@@ -394,24 +384,24 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
   }, [application, metricKey]);
 
   const prefix = useMemo(() => {
-    const def = metricsDef[selectedMetrics[0]].units;
+    const def = metricsDef[metric].units;
 
     if (Object.keys(def).includes("usd")) {
       return showUsd ? def.usd.prefix : def.eth.prefix;
     } else {
       return Object.values(def)[0].prefix;
     }
-  }, [metricsDef, selectedMetrics, showUsd]);
+  }, [metricsDef, metric, showUsd]);
 
   const decimals = useMemo(() => {
-    const def = metricsDef[selectedMetrics[0]].units;
+    const def = metricsDef[metric].units;
 
     if (Object.keys(def).includes("usd")) {
       return showUsd ? def.usd.decimals : def.eth.decimals;
     } else {
       return Object.values(def)[0].decimals;
     }
-  }, [metricsDef, selectedMetrics, showUsd]);
+  }, [metricsDef, metric, showUsd]);
 
   if (!application) {
     return (
@@ -433,8 +423,8 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
         <div className="flex flex-col">
         <div className="w-full flex justify-between items-end h-[20px]">
           <div className="h-[20px] flex items-center gap-x-[3px]">
-            <div className="numbers-xs text-[#CDD8D3]">{numContractsString(application)}</div>
-            <div className="text-xs text-[#5A6462]">contracts</div>
+            <div className="numbers-xs text-[#CDD8D3]">{application.num_contracts.toLocaleString("en-GB")}</div>
+            <div className="text-xs text-[#5A6462]">{application.num_contracts === 1 ? 'contract' : 'contracts'}</div>
           </div>
           <div className="h-[20px] flex items-center gap-x-[3px]">
             <div className="numbers-xs text-[#5A6462]">Rank</div>
@@ -653,7 +643,7 @@ export const MetricTooltip = ({ metric }: { metric: string }) => {
   const content = {
     gas_fees: {
       title: metricsDef["gas_fees"].name,
-      content: "The total gas fees paid by all contracts in the selected timeframe across the selected chains.",
+      content: "The total gas fees paid by users who interacted with contracts associated with this application within the selected timeframe and across the selected chains.",
     },
     txcount: {
       title: metricsDef["txcount"].name,

@@ -27,6 +27,8 @@ import { AggregatedDataRow, useApplicationsData } from "../_contexts/Application
 import useDragScroll from "@/hooks/useDragScroll";
 import { Sources } from "@/lib/datasources";
 import moment from "moment";
+// import { useGTPChartSyncProvider } from "../_contexts/GTPChartSyncContext";
+import { MetricChainBreakdownBar } from "../_components/MetricChainBreakdownBar";
 
 type Props = {
   params: { owner_project: string };
@@ -99,8 +101,6 @@ export default function Page({ params: { owner_project } }: Props) {
               See the most active contracts within the selected timeframe ({timespans[selectedTimespan].label}){ownerProjectToProjectData[owner_project] ? ` for ${ownerProjectToProjectData[owner_project].display_name}` : ""}.
             </div>
           </div>
-
-
         </div>
       </Container>
       <ContractsTable />
@@ -209,416 +209,413 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
   );
 }
 
-interface FloatingTooltipProps {
-  content: React.ReactNode;
-  containerClassName?: string;
-  // width?: number;
-  offsetX?: number;
-  offsetY?: number;
-  children: React.ReactNode;
-}
+// interface FloatingTooltipProps {
+//   content: React.ReactNode;
+//   containerClassName?: string;
+//   // width?: number;
+//   offsetX?: number;
+//   offsetY?: number;
+//   children: React.ReactNode;
+// }
 
-const FloatingTooltip: React.FC<FloatingTooltipProps> = ({
-  content,
-  containerClassName,
-  // width = 280,
-  offsetX = 10,
-  offsetY = 10,
-  children,
-}) => {
-  const [visible, setVisible] = useState(false);
-  const [coords, setCoords] = useState({ x: 0, y: 0 });
-  const [adjustedCoords, setAdjustedCoords] = useState({ x: 0, y: 0 });
-  const tooltipRef = useRef<HTMLDivElement>(null);
+// const FloatingTooltip: React.FC<FloatingTooltipProps> = ({
+//   content,
+//   containerClassName,
+//   // width = 280,
+//   offsetX = 10,
+//   offsetY = 10,
+//   children,
+// }) => {
+//   const [visible, setVisible] = useState(false);
+//   const [coords, setCoords] = useState({ x: 0, y: 0 });
+//   const [adjustedCoords, setAdjustedCoords] = useState({ x: 0, y: 0 });
+//   const tooltipRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    const newCoords = {
-      x: e.clientX + offsetX,
-      y: e.clientY + offsetY,
-    };
-    setCoords(newCoords);
-  };
+//   const handleMouseMove = (e: React.MouseEvent) => {
+//     const newCoords = {
+//       x: e.clientX + offsetX,
+//       y: e.clientY + offsetY,
+//     };
+//     setCoords(newCoords);
+//   };
 
-  useEffect(() => {
-    if (visible && tooltipRef.current) {
-      const tooltipRect = tooltipRef.current.getBoundingClientRect();
-      let newX = coords.x;
-      let newY = coords.y;
-      // Prevent overflow on the right edge.
-      if (coords.x + tooltipRect.width > window.innerWidth) {
-        newX = window.innerWidth - tooltipRect.width - 20;
-      }
-      // Prevent overflow on the bottom edge.
-      if (coords.y + tooltipRect.height > window.innerHeight) {
-        newY = window.innerHeight - tooltipRect.height - 20;
-      }
+//   useEffect(() => {
+//     if (visible && tooltipRef.current) {
+//       const tooltipRect = tooltipRef.current.getBoundingClientRect();
+//       let newX = coords.x;
+//       let newY = coords.y;
+//       // Prevent overflow on the right edge.
+//       if (coords.x + tooltipRect.width > window.innerWidth) {
+//         newX = window.innerWidth - tooltipRect.width - 20;
+//       }
+//       // Prevent overflow on the bottom edge.
+//       if (coords.y + tooltipRect.height > window.innerHeight) {
+//         newY = window.innerHeight - tooltipRect.height - 20;
+//       }
 
-      // Prevent overflow on the left edge.
-      if (coords.x < 0) {
-        newX = 0 + 20;
-      }
+//       // Prevent overflow on the left edge.
+//       if (coords.x < 0) {
+//         newX = 0 + 20;
+//       }
 
-      // Prevent overflow on the top edge.
-      if (coords.y < 0) {
-        newY = 0 + 20;
-      }
+//       // Prevent overflow on the top edge.
+//       if (coords.y < 0) {
+//         newY = 0 + 20;
+//       }
 
-      setAdjustedCoords({ x: newX, y: newY });
-    }
-  }, [coords, visible]);
+//       setAdjustedCoords({ x: newX, y: newY });
+//     }
+//   }, [coords, visible]);
 
-  return (
-    <div
-      className={"relative inline-block " + containerClassName || ""}
-      onMouseEnter={() => setVisible(true)}
-      onMouseLeave={() => setVisible(false)}
-      onMouseMove={handleMouseMove}
-    >
-      {children}
-      {visible && (
-        <div
-          ref={tooltipRef}
-          style={{
-            left: adjustedCoords.x,
-            top: adjustedCoords.y,
-            // width: width,
-          }}
-          className="fixed mt-3 mr-3 mb-3 text-xs font-raleway bg-[#2A3433EE] text-white rounded-[17px] shadow-lg pointer-events-none z-50"
-        >
-          {content}
-        </div>
-      )}
-    </div>
-  );
-};
+//   return (
+//     <div
+//       className={"relative inline-block " + containerClassName || ""}
+//       onMouseEnter={() => setVisible(true)}
+//       onMouseLeave={() => setVisible(false)}
+//       onMouseMove={handleMouseMove}
+//     >
+//       {children}
+//       {visible && (
+//         <div
+//           ref={tooltipRef}
+//           style={{
+//             left: adjustedCoords.x,
+//             top: adjustedCoords.y,
+//             // width: width,
+//           }}
+//           className="fixed mt-3 mr-3 mb-3 text-xs font-raleway bg-[#2A3433EE] text-white rounded-[17px] shadow-lg pointer-events-none z-50"
+//         >
+//           {content}
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
 
-const blendColors = (color1: string, color2: string, percentage: number): string => {
-  // Ensure the percentage is clamped between 0 and 1
-  percentage = Math.max(0, Math.min(1, percentage));
+// const blendColors = (color1: string, color2: string, percentage: number): string => {
+//   // Ensure the percentage is clamped between 0 and 1
+//   percentage = Math.max(0, Math.min(1, percentage));
 
-  // Convert hex to RGB
-  const hexToRgb = (hex: string) => {
-    hex = hex.replace(/^#/, "");
-    if (hex.length === 3) {
-      hex = hex.split("").map((char) => char + char).join(""); // Expand shorthand hex
-    }
-    const bigint = parseInt(hex, 16);
-    return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
-  };
+//   // Convert hex to RGB
+//   const hexToRgb = (hex: string) => {
+//     hex = hex.replace(/^#/, "");
+//     if (hex.length === 3) {
+//       hex = hex.split("").map((char) => char + char).join(""); // Expand shorthand hex
+//     }
+//     const bigint = parseInt(hex, 16);
+//     return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
+//   };
 
-  // Convert RGB to hex
-  const rgbToHex = (r: number, g: number, b: number) =>
-    `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
+//   // Convert RGB to hex
+//   const rgbToHex = (r: number, g: number, b: number) =>
+//     `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
 
-  const [r1, g1, b1] = hexToRgb(color1);
-  const [r2, g2, b2] = hexToRgb(color2);
+//   const [r1, g1, b1] = hexToRgb(color1);
+//   const [r2, g2, b2] = hexToRgb(color2);
 
-  // Interpolate between the two colors
-  const r = Math.round(r1 + (r2 - r1) * percentage);
-  const g = Math.round(g1 + (g2 - g1) * percentage);
-  const b = Math.round(b1 + (b2 - b1) * percentage);
+//   // Interpolate between the two colors
+//   const r = Math.round(r1 + (r2 - r1) * percentage);
+//   const g = Math.round(g1 + (g2 - g1) * percentage);
+//   const b = Math.round(b1 + (b2 - b1) * percentage);
 
-  return rgbToHex(r, g, b);
-};
+//   return rgbToHex(r, g, b);
+// };
 
+// const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
+//   const { data, owner_project } = useApplicationDetailsData();
+//   const { ownerProjectToProjectData } = useProjectsMetadata();
+//   const { selectedTimespan, timespans } = useTimespan();
+//   const { AllChainsByKeys } = useMaster();
+//   const { metricsDef } = useMetrics();
+//   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+//   const { isSidebarOpen } = useUIContext();
+//   const { hoveredSeriesName, setHoveredSeriesName } = useGTPChartSyncProvider();
 
-const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
-  const { data, owner_project } = useApplicationDetailsData();
-  const { ownerProjectToProjectData } = useProjectsMetadata();
-  const { selectedTimespan, timespans } = useTimespan();
-  const { AllChainsByKeys } = useMaster();
-  const { metricsDef } = useMetrics();
-  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const { isSidebarOpen } = useUIContext();
+//   const containerRef = useRef<HTMLDivElement>(null);
 
-  const containerRef = useRef<HTMLDivElement>(null);
+//   const [containerWidth, setContainerWidth] = useState(0);
 
-  const [containerWidth, setContainerWidth] = useState(0);
+//   useEffect(() => {
+//     if (containerRef.current) {
+//       setContainerWidth(containerRef.current.offsetWidth);
+//     }
+//   }, [containerRef.current]);
 
-  useEffect(() => {
-    if (containerRef.current) {
-      setContainerWidth(containerRef.current.offsetWidth);
-    }
-  }, [containerRef.current]);
+//   const handleResize = () => {
+//     if (containerRef.current) {
+//       setContainerWidth(containerRef.current.offsetWidth);
+//     }
+//   };
 
-  const handleResize = () => {
-    if (containerRef.current) {
-      setContainerWidth(containerRef.current.offsetWidth);
-    }
-  };
+//   useEffect(() => {
+//     // on sidebar open/close (timeout to wait for sidebar animation)
+//     const timeout = setTimeout(() => {
+//       handleResize();
+//     }, 300);
+//     return () => {
+//       clearTimeout(timeout);
+//     };
+//   }, [isSidebarOpen]);
 
-  useEffect(() => {
-    // on sidebar open/close (timeout to wait for sidebar animation)
-    const timeout = setTimeout(() => {
-      handleResize();
-    }, 300);
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, [isSidebarOpen]);
+//   useEffect(() => {
+//     window.addEventListener("resize", handleResize);
+//     return () => {
+//       window.removeEventListener("resize", handleResize);
+//     };
+//   }, []);
 
-  useEffect(() => {
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
+//   const metricDefinition = metricsDef[metric];
 
-  const metricDefinition = metricsDef[metric];
+//   let prefix = "";
+//   let valueKey = "value";
+//   let decimals = 0;
+//   if (metricDefinition.units.eth) {
+//     prefix = showUsd ? metricDefinition.units.usd.prefix || "" : metricDefinition.units.eth.prefix || "";
+//     valueKey = showUsd ? "usd" : "eth";
+//     decimals = showUsd ? metricDefinition.units.usd.decimals : metricDefinition.units.eth.decimals;
+//   } else {
+//     prefix = Object.values(metricDefinition.units)[0].prefix || "";
+//     valueKey = Object.keys(metricDefinition.units)[0];
+//     decimals = Object.values(metricDefinition.units)[0].decimals || 0;
+//   }
 
-  let prefix = "";
-  let valueKey = "value";
-  let decimals = 0;
-  if (metricDefinition.units.eth) {
-    prefix = showUsd ? metricDefinition.units.usd.prefix || "" : metricDefinition.units.eth.prefix || "";
-    valueKey = showUsd ? "usd" : "eth";
-    decimals = showUsd ? metricDefinition.units.usd.decimals : metricDefinition.units.eth.decimals;
-  } else {
-    prefix = Object.values(metricDefinition.units)[0].prefix || "";
-    valueKey = Object.keys(metricDefinition.units)[0];
-    decimals = Object.values(metricDefinition.units)[0].decimals || 0;
-  }
+//   const metricData = data.metrics[metric] as MetricData;
+//   const firstSeenOn = data.first_seen;
+//   // filter out chains with 0 value
+//   const chainsData = Object.entries(metricData.aggregated.data).filter(([chain, valsByTimespan]) => valsByTimespan[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)] > 0)
+//     // sort by chain asc
+//     .sort(([chainA], [chainB]) => chainA.localeCompare(chainB));
+//   const values = chainsData.map(([chain, valsByTimespan]) => valsByTimespan[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)]);
+//   const total = Object.values(values).reduce((acc, v) => acc + v, 0);
+//   const percentages = values.map((v) => (v / total) * 100);
 
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+//   const cumulativePercentages = percentages.reduce((acc, v, i) => {
+//     const prev = acc[i - 1] || 0;
+//     return [...acc, prev + v];
+//   }, [] as number[]);
 
-
-
-
-
-  const metricData = data.metrics[metric] as MetricData;
-  const firstSeenOn = data.first_seen;
-  // filter out chains with 0 value
-  const chainsData = Object.entries(metricData.aggregated.data).filter(([chain, valsByTimespan]) => valsByTimespan[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)] > 0)
-    // sort by chain asc
-    .sort(([chainA], [chainB]) => chainA.localeCompare(chainB));
-  const values = chainsData.map(([chain, valsByTimespan]) => valsByTimespan[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)]);
-  const total = Object.values(values).reduce((acc, v) => acc + v, 0);
-  const percentages = values.map((v) => (v / total) * 100);
-
-  const cumulativePercentages = percentages.reduce((acc, v, i) => {
-    const prev = acc[i - 1] || 0;
-    return [...acc, prev + v];
-  }, [] as number[]);
-
-  const maxUnix = Math.max(...Object.values(metricData.over_time).map((chainData) => chainData.daily.data[chainData.daily.data.length - 1][0]));
-  const minUnix = Math.min(...Object.values(metricData.over_time).map((chainData) => chainData.daily.data[0][0]));
-  const maxAggValue = Math.max(...Object.values(metricData.aggregated.data).map((chainData) => chainData[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)]));
+//   const maxUnix = Math.max(...Object.values(metricData.over_time).map((chainData) => chainData.daily.data[chainData.daily.data.length - 1][0]));
+//   const minUnix = Math.min(...Object.values(metricData.over_time).map((chainData) => chainData.daily.data[0][0]));
+//   const maxAggValue = Math.max(...Object.values(metricData.aggregated.data).map((chainData) => chainData[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)]));
 
 
 
-  const getBarColor = useCallback((chain: string) => {
-    const index = chainsData.findIndex(([c]) => c === chain);
-    const isHovered = hoveredIndex === index;
-    const isHoveredOrNone = isHovered || hoveredIndex === null;
+//   const getBarColor = useCallback((chain: string) => {
+//     // const index = chainsData.findIndex(([c]) => c === chain);
+//     const isHovered = hoveredSeriesName === chain;
+//     const isHoveredOrNone = isHovered || hoveredSeriesName === null;
 
-    const color = AllChainsByKeys[chain].colors.dark[0];
+//     const color = AllChainsByKeys[chain].colors.dark[0];
 
-    if (isHoveredOrNone) {
-      return color;
-    }
+//     if (isHoveredOrNone) {
+//       return color;
+//     }
 
-    const blendPercentage = 0.9;
-    return blendColors(color, "#1F2726", blendPercentage);
+//     const blendPercentage = 0.9;
+//     return blendColors(color, "#1F2726", blendPercentage);
 
-  }, [hoveredIndex, chainsData, AllChainsByKeys]);
+//   }, [hoveredSeriesName, AllChainsByKeys]);
 
 
-  console.log("cumulativePercentages", cumulativePercentages);
 
-  // show all chains in the tooltip
-  const allTooltipContent = useMemo(() => {
-    console.log("maxUnix", maxUnix, maxUnix/1000, moment.unix(maxUnix/1000).utc().locale("en-GB").format("DD MMM YYYY"));
-    const maxDate = moment.unix(maxUnix/1000).utc().locale("en-GB").format("DD MMM YYYY")
+//   // show all chains in the tooltip
+//   const allTooltipContent = useMemo(() => {
+//     const maxDate = moment.unix(maxUnix/1000).utc().locale("en-GB").format("DD MMM YYYY")
 
-    let minDate = moment.unix(maxUnix/1000).subtract(timespans[selectedTimespan].value, "days").utc().locale("en-GB").format("DD MMM YYYY");
+//     let minDate = moment.unix(maxUnix/1000).subtract(timespans[selectedTimespan].value, "days").utc().locale("en-GB").format("DD MMM YYYY");
 
-    if(selectedTimespan === "max"){
-      minDate = moment.unix(minUnix/1000).utc().locale("en-GB").format("DD MMM YYYY");
-    }
+//     if(selectedTimespan === "max"){
+//       minDate = moment.unix(minUnix/1000).utc().locale("en-GB").format("DD MMM YYYY");
+//     }
 
-    return (
-      <div className="flex flex-col gap-y-[5px] w-fit h-full pr-[15px] py-[15px] text-[#CDD8D3]">
-        <div className="pl-[20px] h-[18px] flex items-center justify-between gap-x-[15px] whitespace-nowrap">
-          {/* <div className="heading-small-xs h-[20px]">On {AllChainsByKeys[chain].label}</div> */}
-          <div className="heading-small-xs">{minDate} - {maxDate}</div>
-          <div className="text-xs">{metricsDef[metric].name}</div>
-        </div>
-        <div className="flex flex-col">
-          {[...chainsData].sort(
-            ([, a], [, b]) => b[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)] - a[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)]
-          ).map(([chain, valsByTimespan], i) => {
-            const value = valsByTimespan[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)];
+//     return (
+//       <div className="flex flex-col gap-y-[5px] w-fit h-full pr-[15px] py-[15px] text-[#CDD8D3]">
+//         <div className="pl-[20px] h-[18px] flex items-center justify-between gap-x-[15px] whitespace-nowrap">
+//           {/* <div className="heading-small-xs h-[20px]">On {AllChainsByKeys[chain].label}</div> */}
+//           <div className="heading-small-xs">{minDate} - {maxDate}</div>
+//           <div className="text-xs">{metricsDef[metric].name}</div>
+//         </div>
+//         <div className="flex flex-col">
+//           {[...chainsData].sort(
+//             ([, a], [, b]) => b[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)] - a[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)]
+//           ).map(([chain, valsByTimespan], i) => {
+//             const value = valsByTimespan[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)];
             
-            return (
-              <>
-                <div key={chain} className="h-[20px] flex w-full space-x-[5px] items-center font-medium mb-[0.5]">
-                  <div
-                    className="w-[15px] h-[10px] rounded-r-full"
-                    style={{ backgroundColor: AllChainsByKeys[chain].colors.dark[0] }}
-                  ></div>
-                  <div className="tooltip-point-name text-xs">{AllChainsByKeys[chain].label}</div>
-                  <div className="flex-1 text-right justify-end numbers-xs flex">
-                    {prefix}{valsByTimespan[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)].toLocaleString("en-GB", { maximumFractionDigits: decimals })}
-                  </div>
-                </div>
-                <div className="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-                  <div className="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
-                  <div className="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50"
-                    style={{ width: `${(value/ maxAggValue) * 100}%`, backgroundColor: `${AllChainsByKeys[chain].colors.dark[0]}` }}></div>
-                </div>
-              </>
-            )
-          })}
-          <div className="h-[20px] flex w-full space-x-[5px] items-center font-medium mt-1.5 mb-0.5">
-            <div className="w-[15px] h-[10px] rounded-r-full" />
-            <div className="tooltip-point-name text-xs">Total</div>
-            <div className="flex-1 text-right justify-end numbers-xs flex">
-              {prefix}{total.toLocaleString("en-GB", { maximumFractionDigits: decimals })}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+//             return (
+//               <>
+//                 <div key={chain} className="h-[20px] flex w-full space-x-[5px] items-center font-medium mb-[0.5]">
+//                   <div
+//                     className="w-[15px] h-[10px] rounded-r-full"
+//                     style={{ backgroundColor: AllChainsByKeys[chain].colors.dark[0] }}
+//                   ></div>
+//                   <div className="tooltip-point-name text-xs">{AllChainsByKeys[chain].label}</div>
+//                   <div className="flex-1 text-right justify-end numbers-xs flex">
+//                     {prefix}{valsByTimespan[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)].toLocaleString("en-GB", { maximumFractionDigits: decimals })}
+//                   </div>
+//                 </div>
+//                 <div className="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+//                   <div className="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+//                   <div className="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50"
+//                     style={{ width: `${(value/ maxAggValue) * 100}%`, backgroundColor: `${AllChainsByKeys[chain].colors.dark[0]}` }}></div>
+//                 </div>
+//               </>
+//             )
+//           })}
+//           <div className="h-[20px] flex w-full space-x-[5px] items-center font-medium mt-1.5 mb-0.5">
+//             <div className="w-[15px] h-[10px] rounded-r-full" />
+//             <div className="tooltip-point-name text-xs">Total</div>
+//             <div className="flex-1 text-right justify-end numbers-xs flex">
+//               {prefix}{total.toLocaleString("en-GB", { maximumFractionDigits: decimals })}
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     );
     
-  }, [chainsData, metricData, selectedTimespan, valueKey, prefix, decimals, ownerProjectToProjectData, maxUnix, AllChainsByKeys]);
+//   }, [maxUnix, timespans, selectedTimespan, metricsDef, metric, chainsData, prefix, total, decimals, minUnix, metricData.aggregated.types, valueKey, AllChainsByKeys, maxAggValue]);
 
-  if (!metricData) {
-    return null;
-  }
+//   if (!metricData) {
+//     return null;
+//   }
 
-  return (
-    <div className="pb-[15px]">
-      <div className="flex items-center h-[34px] rounded-full bg-[#344240] p-[2px]">
-        <div className="flex items-center h-[30px] w-full rounded-full overflow-hidden bg-black/60 relative" ref={containerRef}>
-          <FloatingTooltip content={allTooltipContent} containerClassName="h-full">
-          <div className="absolute left-0 flex gap-x-[10px] items-center h-full w-[200px] bg-[#1F2726] p-[2px] rounded-full" style={{ zIndex: chainsData.length + 1 }}>
-            <ApplicationIcon owner_project={owner_project} size="sm" />
-            <div className="flex flex-1 flex-col -space-y-[2px] mt-[2px] truncate pr-[10px]">
-              <div className="numbers-sm">{prefix}{total.toLocaleString("en-GB", { maximumFractionDigits: decimals })}</div>
-              <div className="text-xxs truncate ">{ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].display_name || ""}</div>
-            </div>
-          </div>
-          </FloatingTooltip>
-          <div className="flex flex-1 h-full">
-            {chainsData.map(([chain, values], i) => {
-              // Determine whether this bar is hovered.
-              const isHovered = hoveredIndex === i;
-              // If any bar is hovered and this one isn’t, reduce its opacity.
-              const barOpacity = hoveredIndex !== null && !isHovered ? 0.4 : 1;
-              // Bump the hovered bar to the top.
-              // const computedZIndex = isHovered ? chainsData.length + 1 : chainsData.length - i;
-              const computedZIndex = chainsData.length - i;
+//   return (
+//     <div className="pb-[15px]">
+//       <div className="flex items-center h-[34px] rounded-full bg-[#344240] p-[2px]">
+//         <div className="flex items-center h-[30px] w-full rounded-full overflow-hidden bg-black/60 relative" ref={containerRef}>
+//           <FloatingTooltip content={allTooltipContent} containerClassName="h-full">
+//           <div className="absolute left-0 flex gap-x-[10px] items-center h-full w-[200px] bg-[#1F2726] p-[2px] rounded-full" style={{ zIndex: chainsData.length + 1 }}>
+//             <ApplicationIcon owner_project={owner_project} size="sm" />
+//             <div className="flex flex-1 flex-col -space-y-[2px] mt-[2px] truncate pr-[10px]">
+//               <div className="numbers-sm">{prefix}{total.toLocaleString("en-GB", { maximumFractionDigits: decimals })}</div>
+//               <div className="text-xxs truncate ">{ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].display_name || ""}</div>
+//             </div>
+//           </div>
+//           </FloatingTooltip>
+//           <div className="flex flex-1 h-full">
+//             {chainsData.map(([chain, values], i) => {
+//               // Determine whether this bar is hovered.
+//               const isHovered = hoveredSeriesName === chain;
+//               // If any bar is hovered and this one isn’t, reduce its opacity.
+//               const barOpacity = hoveredSeriesName !== null && !isHovered ? 0.4 : 1;
+//               // Bump the hovered bar to the top.
+//               // const computedZIndex = isHovered ? chainsData.length + 1 : chainsData.length - i;
+//               const computedZIndex = chainsData.length - i;
 
-              const barColor = isHovered || hoveredIndex === null ? AllChainsByKeys[chain].colors.dark[0] : "#1F2726";
-              const textColor = isHovered || hoveredIndex === null ? AllChainsByKeys[chain].darkTextOnBackground ? "#1F2726" : "#CDD8D3" : "#1F2726";
+//               const barColor = isHovered || hoveredSeriesName === null ? AllChainsByKeys[chain].colors.dark[0] : "#1F2726";
+//               const textColor = isHovered || hoveredSeriesName === null ? AllChainsByKeys[chain].darkTextOnBackground ? "#1F2726" : "#CDD8D3" : "#1F2726";
 
-              let lastPercentagesTotal = i === 0 ? 0 : percentages.slice(0, i).reduce((acc, v) => acc + v, 0);
-              let thisPercentage = percentages[i];
+//               let lastPercentagesTotal = i === 0 ? 0 : percentages.slice(0, i).reduce((acc, v) => acc + v, 0);
+//               let thisPercentage = percentages[i];
 
 
-              if (thisPercentage < 0.15) {
-                thisPercentage = 0.15;
-              }
-              let thisPercentageWidth = thisPercentage + (i === 0 ? 0 : lastPercentagesTotal);
-              const thisRenderWidth = (thisPercentageWidth / 100) * (containerWidth - 200);
+//               if (thisPercentage < 0.15) {
+//                 thisPercentage = 0.15;
+//               }
+//               let thisPercentageWidth = thisPercentage + (i === 0 ? 0 : lastPercentagesTotal);
+//               const thisRenderWidth = (thisPercentageWidth / 100) * (containerWidth - 200);
 
-              //convert incoming date (UTC) to timestamp
-              const firstSeen = moment.utc(firstSeenOn[chain]);
-              const maxDate = moment.unix(maxUnix/1000).utc().locale("en-GB").format("DD MMM YYYY");
+//               //convert incoming date (UTC) to timestamp
+//               const firstSeen = moment.utc(firstSeenOn[chain]);
+              
+//               const maxDate = moment.unix(maxUnix/1000).utc().locale("en-GB").format("DD MMM YYYY");
 
-              let minDate = (moment.unix(maxUnix/1000).subtract(timespans[selectedTimespan].value, "days")).utc().locale("en-GB").format("DD MMM YYYY");
+//               let min = selectedTimespan === "max" ? moment.unix(minUnix/1000) : moment.unix(maxUnix/1000).subtract(timespans[selectedTimespan].value, "days");
+              
 
-              if(selectedTimespan === "max"){
-                minDate = moment.unix(minUnix/1000).utc().locale("en-GB").format("DD MMM YYYY");
-              }
+//               let minDate = min.utc().locale("en-GB").format("DD MMM YYYY");
+//               if(firstSeen.isAfter(min)){
+//                 minDate = firstSeen.utc().locale("en-GB").format("DD MMM YYYY");
+//               }
 
-              const tooltipContent = (
-                <div className="flex flex-col gap-y-[5px] w-fit h-full pr-[15px] py-[15px] text-[#CDD8D3]">
-                  <div className="pl-[20px] h-[18px] flex items-center justify-between gap-x-[15px] whitespace-nowrap">
-                    {/* <div className="heading-small-xs h-[20px]">On {AllChainsByKeys[chain].label}</div> */}
-                    <div className="heading-small-xs">{minDate} - {maxDate}</div>
-                    <div className="text-xs">{metricsDef[metric].name}</div>
-                  </div>
-                  <div className="flex flex-col">
-                    {/* <div className="pl-[20px] text-xs">Timeframe: <span className="numbers-xs">{minDate} - {maxDate}</span></div> */}
-                    <div className="h-[20px] flex w-full space-x-[5px] items-center font-medium mb-0.5">
-                      <div
-                        className="w-[15px] h-[10px] rounded-r-full"
-                        style={{ backgroundColor: AllChainsByKeys[chain].colors.dark[0] }}
-                      ></div>
-                      <div className="tooltip-point-name text-xs">{AllChainsByKeys[chain].label}</div>
-                      <div className="flex-1 text-right justify-end numbers-xs flex">
-                        {prefix}{values[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)].toLocaleString("en-GB", { maximumFractionDigits: 2 })}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="pl-[20px] flex flex-col items-start flex-1">
-                    {/* <div className="heading-small-xs h-[20px]">On {AllChainsByKeys[chain].label}</div> */}
-                    <div className=" text-xxxs">
-                      First seen on {firstSeen.utc().toDate().toLocaleString("en-GB", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                        // hour: "numeric",
-                        // minute: "numeric",
-                        // second: "numeric",
-                      })}
-                    </div>
-                  </div>
-                </div>
-              );
+//               // let minDate = (moment.unix(maxUnix/1000).subtract(timespans[selectedTimespan].value, "days")).utc().locale("en-GB").format("DD MMM YYYY");
 
-              return (
-                <FloatingTooltip key={chain} content={tooltipContent}>
-                  <div
-                    className="absolute h-full rounded-full transition-all"
-                    onMouseEnter={() => setHoveredIndex(i)}
-                    onMouseLeave={() => setHoveredIndex(null)}
-                    style={{
-                      // background: isHovered || isHovered === null ? AllChainsByKeys[chain].colors.dark[0] : "#1F2726",
-                      background: getBarColor(chain),
-                      // take containerWidth and 140px into account
-                      width: `calc(${thisRenderWidth}px + 195px)`,
-                      left: '5px',
-                      zIndex: computedZIndex,
-                      // add inner glow to hovered bar
-                      boxShadow: isHovered ? `0 0 10px ${AllChainsByKeys[chain].colors.dark[0]}66` : "none",
+//               const tooltipContent = (
+//                 <div className="flex flex-col gap-y-[5px] w-fit h-full pr-[15px] py-[15px] text-[#CDD8D3]">
+//                   <div className="pl-[20px] h-[18px] flex items-center justify-between gap-x-[15px] whitespace-nowrap">
+//                     {/* <div className="heading-small-xs h-[20px]">On {AllChainsByKeys[chain].label}</div> */}
+//                     <div className="heading-small-xs">{minDate} - {maxDate}</div>
+//                     <div className="text-xs">{metricsDef[metric].name}</div>
+//                   </div>
+//                   <div className="flex flex-col">
+//                     {/* <div className="pl-[20px] text-xs">Timeframe: <span className="numbers-xs">{minDate} - {maxDate}</span></div> */}
+//                     <div className="h-[20px] flex w-full space-x-[5px] items-center font-medium mb-0.5">
+//                       <div
+//                         className="w-[15px] h-[10px] rounded-r-full"
+//                         style={{ backgroundColor: AllChainsByKeys[chain].colors.dark[0] }}
+//                       ></div>
+//                       <div className="tooltip-point-name text-xs">{AllChainsByKeys[chain].label}</div>
+//                       <div className="flex-1 text-right justify-end numbers-xs flex">
+//                         {prefix}{values[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)].toLocaleString("en-GB", { maximumFractionDigits: 2 })}
+//                       </div>
+//                     </div>
+//                   </div>
+//                   <div className="pl-[20px] flex flex-col items-start flex-1">
+//                     {/* <div className="heading-small-xs h-[20px]">On {AllChainsByKeys[chain].label}</div> */}
+//                     <div className=" text-xxxs">
+//                       First seen on {firstSeen.utc().toDate().toLocaleString("en-GB", {
+//                         year: "numeric",
+//                         month: "short",
+//                         day: "numeric",
+//                         // hour: "numeric",
+//                         // minute: "numeric",
+//                         // second: "numeric",
+//                       })}
+//                     </div>
+//                   </div>
+//                 </div>
+//               );
 
-                    }}
-                  >
-                    <div
-                      className="@container absolute inset-0 left-[135px] right-[15px] flex items-center justify-end text-[#1F2726] truncate"
-                      style={{
-                        zIndex: computedZIndex + 1,
-                      }}
-                    >
-                      <div
-                        className="flex items-center gap-x-[5px]"
-                        style={{
-                          color: AllChainsByKeys[chain].darkTextOnBackground ? "#1F2726" : "#CDD8D3",
-                          opacity: barOpacity,
-                          // color: textColor,
-                        }}
-                      >
-                        <div className="text-xs !font-semibold hidden @[80px]:block truncate">
-                          {AllChainsByKeys[chain].name_short}
-                        </div>
-                        <div className="numbers-xs hidden @[30px]:block ">
-                          {percentages[i].toFixed(1)}%
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </FloatingTooltip>
-              )
-            })
-            }
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+//               return (
+//                 <FloatingTooltip key={chain} content={tooltipContent}>
+//                   <div
+//                     className="absolute h-full rounded-full transition-all"
+//                     onMouseEnter={() => setHoveredSeriesName(chain)}
+//                     onMouseLeave={() => setHoveredSeriesName(null)}
+//                     style={{
+//                       // background: isHovered || isHovered === null ? AllChainsByKeys[chain].colors.dark[0] : "#1F2726",
+//                       background: getBarColor(chain),
+//                       // take containerWidth and 140px into account
+//                       width: `calc(${thisRenderWidth}px + 195px)`,
+//                       left: '5px',
+//                       zIndex: computedZIndex,
+//                       // add inner glow to hovered bar
+//                       boxShadow: isHovered ? `0 0 10px ${AllChainsByKeys[chain].colors.dark[0]}66` : "none",
+
+//                     }}
+//                   >
+//                     <div
+//                       className="@container absolute inset-0 left-[135px] right-[15px] flex items-center justify-end text-[#1F2726] truncate"
+//                       style={{
+//                         zIndex: computedZIndex + 1,
+//                       }}
+//                     >
+//                       <div
+//                         className="flex items-center gap-x-[5px]"
+//                         style={{
+//                           color: AllChainsByKeys[chain].darkTextOnBackground ? "#1F2726" : "#CDD8D3",
+//                           opacity: barOpacity,
+//                           // color: textColor,
+//                         }}
+//                       >
+//                         <div className="text-xs !font-semibold hidden @[80px]:block truncate">
+//                           {AllChainsByKeys[chain].name_short}
+//                         </div>
+//                         <div className="numbers-xs hidden @[30px]:block ">
+//                           {percentages[i].toFixed(1)}%
+//                         </div>
+//                       </div>
+//                     </div>
+//                   </div>
+//                 </FloatingTooltip>
+//               )
+//             })
+//             }
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
 
 
 const ContractsTable = () => {
@@ -860,14 +857,9 @@ const SimilarApplications = ({ owner_project }: { owner_project: string }) => {
 
     const medianValue = medianMetricValues[Math.floor(medianMetricValues.length / 2)];
 
-    // console.log("medianMetricKey", medianMetricKey);
-    // console.log("medianValue", medianValue);
-    // console.log("applicationDataAggregated", applicationDataAggregated);
-
     // filter out applications with < median value of selected metric and with previous value of 0
     const filteredApplications = applicationDataAggregated
       .filter((application) => application[medianMetricKey] > medianValue && application["prev_" + medianMetricKey] > 0 && ownerProjectToProjectData[application.owner_project].main_category === ownerProjectToProjectData[owner_project].main_category)
-    // console.log("filteredApplications", filteredApplications);
 
     // top 3 applications with highest change_pct
     return {
@@ -885,18 +877,18 @@ const SimilarApplications = ({ owner_project }: { owner_project: string }) => {
       <div>
         <Container className="hidden md:grid md:grid-rows-3 md:grid-flow-col lg:grid-rows-2 lg:grid-flow-row pt-[10px] lg:grid-cols-3 gap-[10px]">
           {topGainers.map((application, index) => (
-            <ApplicationCard key={application.owner_project} application={application} />
+            <ApplicationCard key={application.owner_project} application={application} metric={sort.metric} />
           ))}
           {topLosers.map((application, index) => (
-            <ApplicationCard key={application.owner_project} application={application} />
+            <ApplicationCard key={application.owner_project} application={application} metric={sort.metric} />
           ))}
           {isLoading && new Array(6).fill(0).map((_, index) => (
-            <ApplicationCard key={index} application={undefined} />
+            <ApplicationCard key={index} application={undefined} metric={sort.metric} />
           ))}
         </Container>
       </div>
       <div className="block md:hidden pt-[10px]">
-        <CardSwiper cards={[...topGainers.map((application) => <ApplicationCard key={application.owner_project} application={application} />), ...topLosers.map((application) => <ApplicationCard key={application.owner_project} application={application} />)]} />
+        <CardSwiper cards={[...topGainers.map((application) => <ApplicationCard key={application.owner_project} application={application} metric={sort.metric} />), ...topLosers.map((application) => <ApplicationCard key={application.owner_project} application={application} metric={sort.metric} />)]} />
       </div>
     </>
   )

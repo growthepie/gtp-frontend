@@ -20,8 +20,8 @@ export async function generateMetadata(): Promise<Metadata> {
     const dateString = currentDate.toISOString().slice(0, 10).replace(/-/g, "");
     
     return {
-        title: "Data Availability Overview",
-        description: "Overview of Data Availability Metrics",
+        title: "Ethereum Layer 2 - Data Availability Metrics",
+        description: "Comprehensive analytics on Layer 2 data availability solutions, tracking posted data volumes, fees, and costs across Celestia, Ethereum Blobs, and other DA providers. Compare Layer 2 networks by DA consumption, monitor historical trends, and analyze cost efficiency with up-to-date metrics and visualizations for Ethereum scaling solutions.",
         openGraph: {
             images: [
                 {

@@ -71,6 +71,11 @@ export const navigationCategories = {
     icon: "package",
     group: "blockspace",
   },
+  "blockspace-applications": {
+    label: "Applications",
+    icon: "gtp-project",
+    group: "blockspace",
+  },
   contracts: {
     label: "Contracts",
     icon: "package",
@@ -471,6 +476,28 @@ export const navigationItems: NavigationItem[] = [
     ],
   },
   {
+    name: "Applications",
+    label: "Applications",
+    icon: "gtp-project",
+    options: [
+      {
+        label: "Overview",
+        page: {
+          title: "Overview",
+          description: `Applications are the lifeblood of any blockchain ecosystem. They drive user engagement, transaction volume, and overall network activity. By analyzing the top applications on a chain, we can gain insights into the most popular use cases and the types of users that are attracted to the platform. This information is crucial for developers, investors, and anyone interested in understanding the dynamics of a blockchain ecosystem.`,
+          icon: "gtp-overview",
+        },
+        icon: "gtp-overview",
+        key: "applications-overview",
+        rootKey: "applications",
+        urlKey: "applications",
+        url: "/applications",
+        // showNew: true,
+      },
+    ],
+    // href: "",
+  },
+  {
     name: "Blockspace",
     label: "Blockspace",
     icon: "gtp-blockspace",
@@ -504,6 +531,20 @@ export const navigationItems: NavigationItem[] = [
         rootKey: "categoryComparison",
         urlKey: "category-comparison",
         url: "/blockspace/category-comparison",
+      },
+      {
+        label: "Applications",
+        category: "blockspace-applications",
+        page: {
+          title: "Applications",
+          description:
+            "The top applications on a chain, ranked by the amount of gas fees spent and transactions sent to their smart contracts.",
+        },
+        icon: "gtp-project",
+        key: "applications",
+        rootKey: "applications",
+        urlKey: "applications",
+        url: "/applications",
       },
       {
         label: "Contracts",

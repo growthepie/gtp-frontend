@@ -858,7 +858,7 @@ function MetricChart({
       const tooltipPoints = processPointsInMainThread();
       
       const tooltip = `<div class="mt-3 mr-3 mb-3 min-w-52 md:min-w-60 text-xs font-raleway">
-        <div class="flex justify-between items-center font-bold text-[13px] md:text-[1rem] ml-6 mb-2"><div>${dateString}</div><div class="text-xs">${metricsDict[metric_id].name}</div></div>`;
+        <div class="flex justify-between items-center font-bold text-[13px] md:text-[1rem] ml-6 mb-2 gap-x-[15px]"><div>${dateString}</div><div class="text-xs">${metricsDict[metric_id].name}</div></div>`;
       
       const sumRow = selectedScale === "stacked"
         ? `<div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5">

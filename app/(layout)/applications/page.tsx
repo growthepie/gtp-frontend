@@ -43,8 +43,8 @@ export default function Page() {
   const { timespans, selectedTimespan } = useTimespan();
 
   // const [medianMetricKey, setMedianMetricKey] = useState(selectedMetrics[0]);
-  const [lastMedianMetric, setLastMedianMetric] = useState(selectedMetrics[0]);
-  const [lastMedianMetricKey, setLastMedianMetricKey] = useState(selectedMetricKeys[0]);
+  const [lastMedianMetric, setLastMedianMetric] = useState(sort.metric);
+  const [lastMedianMetricKey, setLastMedianMetricKey] = useState(sort.metric === "gas_fees" ? "gas_fees_eth" : sort.metric);
 
   useEffect(() => {
     if(Object.keys(metricsDef).includes(sort.metric)){
@@ -117,6 +117,7 @@ export default function Page() {
       <div>metrics: {JSON.stringify(selectedMetrics)}</div>
       <div>metricKeys{JSON.stringify(selectedMetricKeys)}</div> */}
       <div className={`transition-[max-height,opacity] duration-300 ${hideTopGainersAndLosers === true ? "overflow-hidden max-h-0 opacity-0" : "max-h-[calc(78px+150px)] md:max-h-[530px] lg:h-[380px] opacity-100"}`}>
+        {/* {sort.metric} {lastMedianMetric} {lastMedianMetricKey} */}
         <Container className={`pt-[30px]`}>
           <div className="flex flex-col gap-y-[10px] ">
             <div className="heading-large">Top Gainers and Losers by {metricsDef[lastMedianMetric].name}</div>
@@ -139,19 +140,19 @@ export default function Page() {
         </Container>
         <Container className={`hidden h-[450px] lg:h-[300px] md:grid md:grid-rows-3 md:grid-flow-col lg:grid-rows-2 lg:grid-flow-row pt-[10px] lg:grid-cols-3 gap-[10px]`}>
           {topGainers.map((application, index) => (
-            <ApplicationCard key={index} application={application} />
+            <ApplicationCard key={index} application={application} metric={lastMedianMetric} />
           ))}
           {topLosers.map((application, index) => (
-            <ApplicationCard key={index} application={application} />
+            <ApplicationCard key={index} application={application} metric={lastMedianMetric} />
           ))}
           {isLoading && new Array(6).fill(0).map((_, index) => (
-            <ApplicationCard key={index} application={undefined} />
+            <ApplicationCard key={index} application={undefined} metric={lastMedianMetric} />
           ))}
         </Container>
         </div>
         {/* <Container> */}
         <div className={`block md:hidden h-[150px] pt-[10px]`}>
-          <CardSwiper cards={[...topGainers.map((application, index) => <ApplicationCard key={index} application={application} />), ...topLosers.map((application, index) => <ApplicationCard key={3 + index} application={application} />)]} />
+          <CardSwiper cards={[...topGainers.map((application, index) => <ApplicationCard key={index} application={application} metric={lastMedianMetric} />), ...topLosers.map((application, index) => <ApplicationCard key={3 + index} application={application} metric={lastMedianMetric} />)]} />
         </div>
       </div>
       {/* </Container> */}
@@ -267,14 +268,7 @@ const ApplicationsTable = () => {
   const { metricsDef, selectedMetrics, setSelectedMetrics, selectedMetricKeys, } = useMetrics();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
-  const metricKey = useMemo(() => {
-    let key = selectedMetrics[0];
-    if (selectedMetrics[0] === "gas_fees")
-      key = showUsd ? "gas_fees_usd" : "gas_fees_eth";
-
-    return key;
-  }, [selectedMetrics, showUsd]);
-
+  const numTotalMetrics = Object.keys(metricsDef).length;
 
   const maxMetrics = useMemo(() => {
     return selectedMetricKeys.map((metric) => {
@@ -284,41 +278,23 @@ const ApplicationsTable = () => {
     });
   }, [applicationDataAggregated, selectedMetricKeys]);
 
-
-  const rowData = useMemo(() => {
-    return applicationDataAggregated.map((application) => {
-      return {
-        logo_path: ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].logo_path : "",
-        owner_project: application.owner_project,
-        display_name: ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].display_name : application.owner_project,
-        origin_keys: application.origin_keys,
-        category: ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].main_category : "",
-        num_contracts: application.num_contracts,
-        gas_fees: application[metricKey],
-        gas_fees_eth: application.gas_fees_eth,
-        gas_fees_usd: application.gas_fees_usd,
-        gas_fees_change_pct: application[metricKey + "_change_pct"],
-        rank_gas_fees: application[`rank_${metricKey}`],
-
-
-      };
-    });
-  }, [applicationDataAggregated, metricKey, ownerProjectToProjectData]);
-
   // Memoize gridColumns to prevent recalculations
-  const gridColumns = useMemo(() =>
-    `26px 255px 95px minmax(135px,800px) 95px ${selectedMetricKeys.map(() => `247px`).join(" ")} 20px`,
-    [selectedMetricKeys]
+  const gridColumns = useMemo(() => {
+      const applicationColumnWidth = selectedMetricKeys.length > 2 ? 165 : 285;
+      const metricColumnWidth = selectedMetricKeys.length > 2 ? 242 : 262;
+      return `26px ${applicationColumnWidth}px 110px minmax(135px,800px) 95px ${selectedMetricKeys.map(() => `${metricColumnWidth}px`).join(" ")} ${(new Array(numTotalMetrics - selectedMetricKeys.length).fill(0).map(() => "0px").join(" "))} 29px`;
+    },[numTotalMetrics, selectedMetricKeys]
   );
 
 
   return (
     <>
+    {/* <div>{numTotalMetrics} {selectedMetricKeys.length} {(new Array(numTotalMetrics - selectedMetricKeys.length).fill(0).map(() => "0px").join(" "))}</div> */}
     {/* <HorizontalScrollContainer reduceLeftMask={true}> */}
       <GridTableHeader
-        gridDefinitionColumns={gridColumns}
+        // gridDefinitionColumns={gridColumns}
         // className="sticky top-[250px] group text-[14px] !px-[5px] !py-0 gap-x-[15px] !pb-[4px] !z-[10]"
-        className="group text-[14px] !px-[5px] !py-0 gap-x-[15px] !pb-[4px] !z-[10]"
+        className="group text-[14px] !px-[5px] !py-0 !gap-x-0 !pb-[4px] !z-[10] !items-start transition-all duration-300"
         style={{
           gridTemplateColumns: gridColumns,
         }}
@@ -326,7 +302,7 @@ const ApplicationsTable = () => {
         <div />
         <GridTableHeaderCell
           metric="owner_project"
-          className="heading-small-xs pl-[0px]"
+          className="heading-small-xs pl-[15px] pr-[15px]"
           sort={sort}
           setSort={setSort}
         >
@@ -334,7 +310,7 @@ const ApplicationsTable = () => {
         </GridTableHeaderCell>
         <GridTableHeaderCell
           metric="origin_keys"
-          className="heading-small-xs"
+          className="heading-small-xs pl-[5px] pr-[15px]"
           sort={sort}
           setSort={setSort}
         >
@@ -342,7 +318,7 @@ const ApplicationsTable = () => {
         </GridTableHeaderCell>
         <GridTableHeaderCell
           metric="category"
-          className="heading-small-xs"
+          className="heading-small-xs pr-[15px] pl-[2.5px]"
           sort={sort}
           setSort={setSort}
           
@@ -354,7 +330,7 @@ const ApplicationsTable = () => {
         </GridTableHeaderCell>
         <GridTableHeaderCell
           metric="num_contracts"
-          className="heading-small-xs"
+          className="heading-small-xs pr-[15px]"
           justify="end"
           sort={sort}
           setSort={setSort}
@@ -364,10 +340,11 @@ const ApplicationsTable = () => {
         {selectedMetrics.map((metric, index) => {
           // let key = selectedMetricKeys[index];
           return (
+            <div key={index} className="flex justify-end pr-[15px]">
             <GridTableHeaderCell
-              key={index}
+              
               metric={metric}
-              className="heading-small-xs pl-[25px] pr-[15px] z-[0] whitespace-nowrap"
+              className="heading-small-xs z-[0] flex whitespace-nowrap"
               justify="end"
               sort={sort}
               setSort={setSort}
@@ -382,7 +359,7 @@ const ApplicationsTable = () => {
               //   // }
               // }}
               extraRight={
-                <div className="flex items-center gap-x-[5px] pl-[5px] cursor-default z-[10]">
+                <div className="flex items-end gap-x-[5px] pl-[5px] cursor-default z-[10]">
                   <div
                     className="cursor-pointer flex items-center rounded-full bg-[#344240] text-[#CDD8D3] gap-x-[2px] px-[5px] h-[18px]"
                     onClick={() => {
@@ -424,8 +401,12 @@ const ApplicationsTable = () => {
             >
               {metricsDef[metric].name} {Object.keys(metricsDef[metric].units).includes("eth") && <>({showUsd ? "USD" : "ETH"})</>}
             </GridTableHeaderCell>
+            </div>
           )
         })}
+        {selectedMetricKeys.length < numTotalMetrics && (new Array(numTotalMetrics - selectedMetricKeys.length).fill(0).map((_, index) => (
+          <div key={index} className="w-[0px]" />
+        )))}
         <div />
       </GridTableHeader>
       <div className="flex flex-col" style={{ height: `${applicationDataAggregated.length * 34 + applicationDataAggregated.length * 5}px` }}>
@@ -440,7 +421,7 @@ const ApplicationsTable = () => {
           totalCount={applicationDataAggregated.length}
           itemContent={(index) => (
             <div key={index} className="pb-[5px]">
-            <ApplicationTableRow application={applicationDataAggregated[index]} maxMetrics={maxMetrics} />
+            <ApplicationTableRow rowIndex={index} application={applicationDataAggregated[index]} maxMetrics={maxMetrics} />
             </div>
           )}
           useWindowScroll
@@ -469,7 +450,7 @@ type AltApplicationTableRowProps = {
 };
 
 
-const Value = memo(({ rank, def, value, change_pct, maxMetric, metric}: { rank: number, def: MetricInfo, value: number, change_pct: number, maxMetric: number, metric: string }) => {
+const Value = memo(({ rowIndex, rank, def, value, change_pct, maxMetric, metric}: { rowIndex: number; rank: number, def: MetricInfo, value: number, change_pct: number, maxMetric: number, metric: string }) => {
   const { sort } = useSort();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const {selectedMetrics} = useMetrics();
@@ -492,15 +473,13 @@ const Value = memo(({ rank, def, value, change_pct, maxMetric, metric}: { rank: 
   }, [def, showUsd, value]);
 
   return (
-    <div className="flex items-center justify-end gap-[10px]">
-      <div className="numbers-xs text-[#5A6462]">{isSelectedMetric && rank}</div>
-      <div className="w-[178px] flex flex-col items-end gap-y-[2px]">
+    <div className="w-full flex items-center justify-end gap-[10px]">
+      <div className="numbers-xs text-[#5A6462] w-[calc(7.33*4px+10px)] pl-[10px]">{isSelectedMetric && rank}</div>
+      <div className="w-full flex flex-col items-end gap-y-[2px]">
 
         <div className="flex justify-end items-center gap-x-[2px]">
           <div className="numbers-xs">
             {displayValue}
-            {/* {Object.keys(def.units).includes("eth") ? showUsd ? def.units.usd.prefix : def.units.eth.prefix : Object.values(def.units)[0].prefix}
-            {Object.keys(def.units).includes("eth") ? showUsd ? value.toLocaleString("en-GB", { minimumFractionDigits: def.units.usd.decimals, maximumFractionDigits: def.units.usd.decimals }) : value.toLocaleString("en-GB", { minimumFractionDigits: def.units.eth.decimals, maximumFractionDigits: def.units.eth.decimals }) : value.toLocaleString("en-GB", { minimumFractionDigits: Object.values(def.units)[0].decimals, maximumFractionDigits: Object.values(def.units)[0].decimals })} */}
           </div>
           {change_pct !== Infinity ? (
             <div className={`numbers-xxs w-[49px] text-right ${change_pct < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
@@ -530,24 +509,29 @@ Value.displayName = 'Value';
 
 
 
-const ApplicationTableRow = memo(({ application, maxMetrics }: { application: AggregatedDataRow, maxMetrics: number[] }) => {
+const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { application: AggregatedDataRow, maxMetrics: number[], rowIndex: number }) => {
   const { ownerProjectToProjectData  } = useProjectsMetadata();
   const { metricsDef, selectedMetrics, selectedMetricKeys, } = useMetrics();
   const { selectedTimespan } = useTimespan();
+  const { sort } = useSort();
   const router = useRouter();
-  
 
+  const numTotalMetrics = Object.keys(metricsDef).length;
+  
   // Memoize gridColumns to prevent recalculations
-  const gridColumns = useMemo(() =>
-    `26px 255px 95px minmax(135px,800px) 95px ${selectedMetricKeys.map(() => `247px`).join(" ")} 20px`,
-    [selectedMetricKeys]
+  // Memoize gridColumns to prevent recalculations
+  const gridColumns = useMemo(() => {
+      const applicationColumnWidth = selectedMetricKeys.length > 2 ? 165 : 285;
+      const metricColumnWidth = selectedMetricKeys.length > 2 ? 242 : 262;
+      return `26px ${applicationColumnWidth}px 110px minmax(135px,800px) 95px ${selectedMetricKeys.map(() => `${metricColumnWidth}px`).join(" ")} ${(new Array(numTotalMetrics - selectedMetricKeys.length).fill(0).map(() => "0px").join(" "))} 29px`;
+    },[numTotalMetrics, selectedMetricKeys]
   );
 
   return (
     <Link href={{ pathname: `/applications/${application.owner_project}`, query: selectedTimespan !== "7d" ?{ timespan: selectedTimespan } : {}}}>
     <GridTableRow
-      gridDefinitionColumns={gridColumns}
-      className={`group text-[14px] !px-[5px] !py-0 h-[34px] gap-x-[15px]`}
+      // gridDefinitionColumns={gridColumns}
+      className={`group text-[14px] !px-[5px] !py-0 h-[34px] !gap-x-0 transition-all duration-300`}
       style={{
         gridTemplateColumns: gridColumns,
       }}
@@ -563,7 +547,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics }: { application: Ag
           <ApplicationIcon owner_project={application.owner_project} size="sm" />
         </div>
       </div>
-      <div className="flex items-center gap-x-[5px] group-hover:underline truncate">
+      <div className="flex items-center gap-x-[5px] group-hover:underline truncate pl-[15px] pr-[15px]">
         <Tooltip placement="bottom-start" allowInteract>
           <TooltipTrigger className="truncate">
             <ApplicationDisplayName owner_project={application.owner_project} />
@@ -573,25 +557,45 @@ const ApplicationTableRow = memo(({ application, maxMetrics }: { application: Ag
           </TooltipContent>
         </Tooltip>
       </div>
-      <div className="flex items-center gap-x-[5px]">
+      <div className="flex items-center gap-x-[5px] pr-[15px]">
         <Chains origin_keys={application.origin_keys} />
       </div>
-      <div className="text-xs">
+      <div className="text-xs pr-[15px]">
         <Category category={ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].main_category : ""} />
       </div>
-      <div className="numbers-xs text-right">
+      <div className="numbers-xs text-right pr-[15px]">
         {application.num_contracts}
       </div>
       {selectedMetrics.map((metric, index) => {
-      const metricKey = selectedMetricKeys[index];
-      return (
-        <div
-          key={index}
-          className={`flex justify-end pr-[15px] items-center text-right h-full ${selectedMetricKeys.length == 1 || (selectedMetricKeys.length > 1 && (index + 1) % 2 == 0) ? 'bg-[#344240]/30' : ''} `}
-        >
-          <Value rank={application[`rank_${metricKey}`]} def={metricsDef[metric]} value={application[metricKey]} change_pct={application[`${metricKey}_change_pct`]} maxMetric={maxMetrics[index]} metric={selectedMetrics[index]} />
-        </div>
-      )})}
+        const metricKey = selectedMetricKeys[index];
+        let bgColor = "bg-transparent";
+        
+        // starting from the last metric column, the bg should be bg-[#344240]/30 and every other column should be bg-transparent
+        if (index === selectedMetrics.length - 1) {
+          bgColor = "bg-[#344240]/30";
+        } else if (selectedMetrics.length % 2 === 0) {
+          bgColor = index % 2 === 1 ? "bg-[#344240]/30" : "bg-transparent";
+        }else{
+          bgColor = index % 2 === 0 ? "bg-[#344240]/30" : "bg-transparent";
+        }
+
+        // if(metric === sort.metric){
+        //   bgColor = "bg-[#151A19]";
+        // }
+
+
+        return (
+          <div
+            key={index}
+            className={`flex justify-end items-center text-right h-full pr-[15px] transition-colors duration-300 ${bgColor}`}
+          >
+            <Value rowIndex={rowIndex} rank={application[`rank_${metricKey}`]} def={metricsDef[metric]} value={application[metricKey]} change_pct={application[`${metricKey}_change_pct`]} maxMetric={maxMetrics[index]} metric={selectedMetrics[index]} />
+          </div>
+        )
+      })}
+      {selectedMetricKeys.length < numTotalMetrics && (new Array(numTotalMetrics - selectedMetricKeys.length).fill(0).map((_, index) => (
+          <div key={index} className="w-[0px]" />
+        )))}
       <div className="relative flex justify-end items-center pr-[0px]">
         <Link className="absolute cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center" href={{ pathname: `/applications/${application.owner_project}`, query: selectedTimespan !== "7d" ?{ timespan: selectedTimespan } : {}}}>
           <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-[#CDD8D3]" />

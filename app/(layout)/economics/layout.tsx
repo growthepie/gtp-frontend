@@ -10,8 +10,8 @@ import { Metadata } from "next";
 export async function generateMetadata(): Promise<Metadata> {  
   
   return {
-    title: "Layer 2 Fees - Real-time Data",
-    description: "Aggregated economics metrics across layer2 chains.",
+    title: "Ethereum Layer 2 - Onchain Economics",
+    description: "Compare Layer 2 blockchain profitability with analytics on revenue, costs, and profit margins. Track Ethereum L2 economic performance across Base, Arbitrum, Linea and more, with detailed breakdowns of L1 settlement costs and data availability expenses.",
   };
 }
 
