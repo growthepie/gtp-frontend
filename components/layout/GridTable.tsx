@@ -395,7 +395,6 @@ export const GridTableAddressCell = ({
     return Math.min(Math.floor(addressWidth / fontWidth) - 9, 42 - 9);
   }, [addressWidth, fontWidth]);
 
-  console.log("numAddressChars", numAddressChars);
 
 
   return (

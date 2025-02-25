@@ -199,8 +199,9 @@ export type MultipleSelectTopRowChildProps = {
     icon?: string;
     name: string;
   }[];
+  canSelectNone?: boolean;
 };
-export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, setSelected, onSelect, options }: MultipleSelectTopRowChildProps) => {
+export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, setSelected, onSelect, options, canSelectNone = false}: MultipleSelectTopRowChildProps) => {
   const { isMobile } = useUIContext();
   // const [isHovering, setIsHovering] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -258,9 +259,12 @@ export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, se
                 onClick={() => {
                   setIsOpen(false);
                   
-                  const newSelected = selected.includes(opt.key) ? selected.filter((m) => m !== opt.key) : [...selected, opt.key];
-                  setSelected(newSelected);
 
+                  const newSelected = selected.includes(opt.key) ? selected.filter((m) => m !== opt.key) : [...selected, opt.key];
+                  if(newSelected.length === 0 && !canSelectNone)
+                    return;
+
+                  setSelected(newSelected);
                   onSelect && onSelect(newSelected);
                 }}
                 key={index}

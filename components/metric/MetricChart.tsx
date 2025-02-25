@@ -1153,7 +1153,7 @@ function MetricChart({
                   }
                   else {
                     // if Jan 1st, show year
-                    if (new Date(this.value).getUTCMonth() === 0) {
+                    if (new Date(this.value).getUTCMonth() === 0 && new Date(this.value).getUTCDate() === 1) {
                       return new Date(this.value).toLocaleDateString("en-GB", {
                         timeZone: "UTC",
                         year: "numeric",

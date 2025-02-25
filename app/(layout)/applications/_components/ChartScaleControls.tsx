@@ -13,7 +13,7 @@ export default function ChartScaleControls({sources}: React.PropsWithChildren<{s
   const { scaleDefs, setSelectedScale, selectedScale } = useChartScale();
 
   return (
-    <Container>
+    <>
       <TopRowContainer className="md:!rounded-[24px] !justify-end">
         <TopRowParent className="-py-[10px]">
           {Object.keys(scaleDefs).map((key) => (
@@ -56,6 +56,6 @@ export default function ChartScaleControls({sources}: React.PropsWithChildren<{s
         </div>
       </TopRowContainer>
       
-      </Container>
+      </>
   )
 }

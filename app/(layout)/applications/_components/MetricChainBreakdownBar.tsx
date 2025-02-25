@@ -357,9 +357,9 @@ const ChainBar = memo(({
   prefix: string;
   decimals: number;
 }) => {
-  const { setHoveredSeriesName } = useGTPChartSyncProvider();
+  const { hoveredSeriesName, setHoveredSeriesName } = useGTPChartSyncProvider();
 
-  const hoveredSeriesName = null;
+  // const hoveredSeriesName = null;
 
   // Determine if this bar is hovered
   const isHovered = hoveredSeriesName === chain;
@@ -414,7 +414,7 @@ const ChainBar = memo(({
         </div>
         <div className="pl-[20px] flex flex-col items-start flex-1">
           <div className="text-xxxs">
-            First seen on {firstSeen.utc().toDate().toLocaleString("en-GB", {
+            First activity seen on {firstSeen.utc().toDate().toLocaleString("en-GB", {
               year: "numeric",
               month: "short",
               day: "numeric",
@@ -450,14 +450,16 @@ const ChainBar = memo(({
     <FloatingTooltip key={chain} content={tooltipContent}>
       <div
         className="absolute h-full rounded-full transition-[box-shadow, background, width] duration-300"
-        onMouseEnter={() => hoveredSeriesName != chain && setHoveredSeriesName(chain)}
-        onMouseLeave={() => hoveredSeriesName != null && setHoveredSeriesName(null)}
+        onMouseEnter={() => setHoveredSeriesName(chain)}
+        onMouseLeave={() => setHoveredSeriesName(null)}
         style={{
           background: barColor,
           width: `calc(${thisRenderWidth}px + 195px)`,
           left: '5px',
           zIndex: computedZIndex,
           boxShadow: boxShadow,
+          // opacity: opacity,
+          // transition: "width 0.3s ease-in-out",
         }}
       >
         <div

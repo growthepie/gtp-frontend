@@ -24,20 +24,16 @@ interface ChartConfig {
 }
 
 const updateChart = (chart: Highcharts.Chart, seriesName: string | null): void => {
-  console.log('Updating chart with series name:', seriesName);
   if (!chart?.options?.chart?.type) return;
 
   const chartType = chart.options.chart.type as SupportedChartType;
-  console.log('Chart type:', chartType);
   
   // Early return if chart type isn't supported
   if (!['pie', 'area', 'line'].includes(chartType)) return;
 
   if (chartType === 'pie') {
-    console.log('Handling pie chart update');
     handlePieChartUpdate(chart, seriesName);
   } else {
-    console.log('Handling area/line chart update');
     handleAreaLineChartUpdate(chart, seriesName);
   }
 
@@ -247,7 +243,6 @@ export const GTPChartSyncProvider: React.FC<PropsWithChildren> = memo(({ childre
   // Create stable debounced function that won't change on every render
   const debouncedFn = useMemo(
     () => debounce((name: string | null, charts: MutableRefObject<Highcharts.Chart | null>[]) => {
-      console.log('Debounced update executing after delay:', name, charts);
       setHoveredSeriesNameState(name);
       
       charts
@@ -272,7 +267,6 @@ export const GTPChartSyncProvider: React.FC<PropsWithChildren> = memo(({ childre
       debouncedFn.cancel();
       return;
     }
-    console.log('Hover state changing to!:', name);
     
     debouncedFn(name, chartsMutableRef.current);
   }, [debouncedFn, hoveredSeriesNameState]);
@@ -313,12 +307,10 @@ export const useGTPChartSyncProvider = () => {
   const chartIdRef = useRef<string | null>(null);
 
   const handleChartCreated = useCallback((chart: Highcharts.Chart) => {
-    console.log('Chart created:', chart);
     chartIdRef.current = registerChart(chart);
   }, [registerChart]);
 
   const handleChartDestroyed = useCallback(() => {
-    console.log('Chart destroyed:', chartIdRef.current);
     if (chartIdRef.current) {
       unregisterChart(chartIdRef.current);
       chartIdRef.current = null;

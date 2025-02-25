@@ -36,37 +36,9 @@ type Props = {
 
 export default function Page({ params: { owner_project } }: Props) {
   const { ownerProjectToProjectData } = useProjectsMetadata();
-  const { data: master } = useMaster();
   const { selectedMetrics } = useMetrics();
   const { selectedTimespan, timespans } = useTimespan();
 
-  const SourcesDisplay = useMemo(() => {
-    if (!master)
-      return null;
-    let sourcesByMetric = {};
-    selectedMetrics.forEach((metric) => {
-      const sources = master.app_metrics[metric].source;
-      sourcesByMetric[metric] = sources && sources.length > 0 ? (
-        sources
-          .map<ReactNode>((s) => (
-            <Link
-              key={s}
-              rel="noopener noreferrer"
-              target="_blank"
-              href={Sources[s] ?? ""}
-              className="hover:text-forest-500 dark:hover:text-forest-500 underline"
-            >
-              {s}
-            </Link>
-          ))
-          .reduce((prev, curr) => [prev, ", ", curr])
-      ) : (
-        <>Unavailable</>
-      );
-    })
-
-    return sourcesByMetric;
-  }, [master, selectedMetrics]);
 
   return (
     <>
@@ -90,7 +62,6 @@ export default function Page({ params: { owner_project } }: Props) {
           }}
         >
           <MetricSection metric={metric} owner_project={owner_project} />
-          <ChartScaleControls sources={SourcesDisplay && SourcesDisplay[metric]} />
         </ChartScaleProvider>
       ))}
       <Container>
@@ -127,8 +98,38 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
   const { metricsDef, metricIcons } = useMetrics();
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { data } = useApplicationDetailsData();
-  const { selectedTimespan } = useTimespan();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const { data: master } = useMaster();
+  const { selectedMetrics } = useMetrics();
+  const { selectedTimespan } = useTimespan();
+
+  const SourcesDisplay = useMemo(() => {
+    if (!master)
+      return null;
+    let sourcesByMetric = {};
+    selectedMetrics.forEach((metric) => {
+      const sources = master.app_metrics[metric].source;
+      sourcesByMetric[metric] = sources && sources.length > 0 ? (
+        sources
+          .map<ReactNode>((s) => (
+            <Link
+              key={s}
+              rel="noopener noreferrer"
+              target="_blank"
+              href={Sources[s] ?? ""}
+              className="hover:text-forest-500 dark:hover:text-forest-500 underline"
+            >
+              {s}
+            </Link>
+          ))
+          .reduce((prev, curr) => [prev, ", ", curr])
+      ) : (
+        <>Unavailable</>
+      );
+    })
+
+    return sourcesByMetric;
+  }, [master, selectedMetrics]);
 
   useHighchartsWrappers();
 
@@ -174,7 +175,7 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
 
   return (
     <>
-      <Container className="pt-[30px] pb-[15px]">
+      <Container className="pt-[30px] pb-[10px]">
         <div className="flex flex-col gap-y-[10px]">
           <div className="flex gap-x-[10px] items-center">
             <GTPIcon icon={metricIcons[metric] as GTPIconName} size="md" />
@@ -189,21 +190,22 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
       </Container>
       <Container>
         <MetricChainBreakdownBar metric={metric} />
-        <ApplicationDetailsChart
-          metric={metric}
-          prefix={prefix}
-          suffix={suffix}
-          decimals={decimals}
-          seriesTypes={data.metrics[metric].over_time[sortedChainKeys[0]].daily.types}
-          seriesData={
-            sortedChainKeys.map((chain) => ({
-              name: chain,
-              data: data.metrics[metric].over_time[chain].daily.data.map((d: number[]) => [d[0], d[valueIndex]])
-            })
-            )}
-        />
-
-
+        <div className={`${selectedTimespan === "1d" ? "max-h-0" : "max-h-[400px]"} transition-all duration-300 overflow-hidden`}>
+          <ApplicationDetailsChart
+            metric={metric}
+            prefix={prefix}
+            suffix={suffix}
+            decimals={decimals}
+            seriesTypes={data.metrics[metric].over_time[sortedChainKeys[0]].daily.types}
+            seriesData={
+              sortedChainKeys.map((chain) => ({
+                name: chain,
+                data: data.metrics[metric].over_time[chain].daily.data.map((d: number[]) => [d[0], d[valueIndex]])
+              })
+              )}
+          />
+          <ChartScaleControls sources={SourcesDisplay && SourcesDisplay[metric]} />
+        </div>
       </Container>
     </>
   );

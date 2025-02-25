@@ -30,7 +30,7 @@ import {
 } from "react-jsx-highcharts";
 import { useHighchartsWrappers } from "@/contexts/UIContext";
 import { useMaster } from "@/contexts/MasterContext";
-import { times } from "lodash";
+import { min, times } from "lodash";
 import "@/app/highcharts.axis.css";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import { format as d3Format } from "d3"
@@ -71,7 +71,7 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
   const [showUsd] = useLocalStorage("showUsd", true);
   const [showGwei] = useLocalStorage("showGwei", false);
   const { selectedTimespan, timespans } = useTimespan();
-  const { hoveredSeriesName, setHoveredSeriesName, onChartCreated, onChartDestroyed } = useGTPChartSyncProvider();
+  // const { hoveredSeriesName, setHoveredSeriesName, onChartCreated, onChartDestroyed } = useGTPChartSyncProvider();
   useHighchartsWrappers();
 
   
@@ -79,8 +79,7 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
   
   // const chainsData = Object.entries(metricData.aggregated.data);
   // const maxUnix = Math.max(...Object.values(metricData.over_time).map((chainData) => chainData.daily.data[chainData.daily.data.length - 1][0]));
-  // const minUnix = Math.min(...Object.values(metricData.over_time).map((chainData) => chainData.daily.data[0][0]));
-
+  const minUnix = Math.min(...seriesData.map((series) => series.data[0][0]));
   const maxUnix = Math.max(...seriesData.map((series) => series.data[series.data.length - 1][0]))
   
   const formatNumber = useCallback((value: number | string, options: {
@@ -155,7 +154,7 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
     }
 
     return number;
-  }, [showUsd, showGwei, seriesTypes]);
+  }, [metricsDef, metric, showUsd, seriesTypes, showGwei]);
 
   
   const getPlotOptions: (scale: string) => Highcharts.PlotOptions = (scale) => {
@@ -439,7 +438,7 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
         marker,
       };
     },
-    [getSeriesType, MetadataByKeys, showUsd, showGwei],
+    [getSeriesType, MetadataByKeys, seriesData],
   );
 
   useEffect(() => {
@@ -491,12 +490,12 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
       highchartsChartProps={{
         chart: {
           height: 168,
-          events: {
-            load: function () {
-              console.log("chart loaded");
-              onChartCreated(this);
-            },
-          },
+          // events: {
+          //   load: function () {
+          //     console.log("chart loaded");
+          //     onChartCreated(this);
+          //   },
+          // },
         },
         plotOptions: {
           ...plotOptions,
@@ -519,6 +518,8 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
             color: "rgb(215, 223, 222)",
           },
         }}
+        minDataUnix={minUnix}
+        maxDataUnix={maxUnix}
         min={(maxUnix - timespans[selectedTimespan].value * 24 * 3600 * 1000) / 1000}
         max={maxUnix/1000}
       />
@@ -617,12 +618,12 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
                 },
               }}
               events={{
-                mouseOver: function (e) {
-                  setHoveredSeriesName(series.name);
-                },
-                mouseOut: function (e) {
-                  setHoveredSeriesName(null);
-                },
+                // mouseOver: function (e) {
+                //   setHoveredSeriesName(series.name);
+                // },
+                // mouseOut: function (e) {
+                //   setHoveredSeriesName(null);
+                // },
               }}
               shadow={["area", "line"].includes(getSeriesType(series.name)) && selectedScale !== "stacked" ? 
                 {
@@ -660,6 +661,11 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
   )
 }
 
+type ExtraAxisProps = {
+  minDataUnix?: number;
+  maxDataUnix?: number;
+}
+
 type AxisProps<TAxisOptions> = {
   children?: ReactNode;
   onAfterBreaks?: Highcharts.AxisEventCallbackFunction;
@@ -667,7 +673,7 @@ type AxisProps<TAxisOptions> = {
   onPointBreak?: Highcharts.AxisPointBreakEventCallbackFunction;
   onPointInBreak?: Highcharts.AxisPointBreakEventCallbackFunction;
   onSetExtremes?: Highcharts.AxisSetExtremesEventCallbackFunction;
-} & Partial<TAxisOptions>;
+} & Partial<TAxisOptions> & ExtraAxisProps;
 
 const GTPXAxis = (props: AxisProps<Highcharts.XAxisOptions>) => {
   const { timespans, selectedTimespan} = useTimespan();
@@ -715,16 +721,38 @@ const GTPXAxis = (props: AxisProps<Highcharts.XAxisOptions>) => {
       [xMax, xMin],
     );
 
+  const tickInterval = useMemo(() => {
+    let min = xMin || props.minDataUnix || 0;
+    let max = xMax || props.maxDataUnix || 0;
+    
+
+    let days = (max - min) / (24 * 3600 * 1000);
+    if (days <= 1) {
+      return 12 * 3600 * 1000;
+    } else if (days <= 7) {
+      return 24 * 3600 * 1000;
+    } else if (days <= 30) {
+      return 7 * 24 * 3600 * 1000;
+    } else if (days <= 90) {
+      return 30 * 24 * 3600 * 1000;
+    } else if (days <= 365) {
+      return 90 * 24 * 3600 * 1000;
+    }else if (days <= 365 * 2) {
+      return 3 * 30 * 24 * 3600 * 1000;
+    }else {
+      return 365 * 24 * 3600 * 1000;
+    }
+  }, [xMin, props.minDataUnix, props.maxDataUnix, xMax]);
   
   return (
     <XAxis
-      {...props}
+      // {...props}
 
-      {...baseOptions.xAxis}
+      // {...baseOptions.xAxis}
       title={undefined}
-      // events={{
-      //   afterSetExtremes: onXAxisSetExtremes,
-      // }}
+      events={{
+        afterSetExtremes: onXAxisSetExtremes,
+      }}
       type="datetime"
       labels={{
         align: undefined,
@@ -735,10 +763,10 @@ const GTPXAxis = (props: AxisProps<Highcharts.XAxisOptions>) => {
         overflow: "justify",
         useHTML: true,
         formatter: function (this: AxisLabelsFormatterContextObject) {
-          if (xMin && xMax - xMin <= 40 * 24 * 3600 * 1000) {
-            let isBeginningOfWeek = new Date(this.value).getUTCDay() === 1;
-            let showMonth = this.isFirst || new Date(this.value).getUTCDate() === 1;
+          let max = xMax || props.maxDataUnix || 0;
+          let min = xMin || props.minDataUnix || 0;
 
+          if (max - min <= 40 * 24 * 3600 * 1000) {
             return new Date(this.value).toLocaleDateString("en-GB", {
               timeZone: "UTC",
               month: "short",
@@ -748,7 +776,7 @@ const GTPXAxis = (props: AxisProps<Highcharts.XAxisOptions>) => {
           }
           else {
             // if Jan 1st, show year
-            if (new Date(this.value).getUTCMonth() === 0) {
+            if (new Date(this.value).getUTCMonth() === 0 && new Date(this.value).getUTCDate() === 1) {
               return new Date(this.value).toLocaleDateString("en-GB", {
                 timeZone: "UTC",
                 year: "numeric",
@@ -793,7 +821,7 @@ const GTPXAxis = (props: AxisProps<Highcharts.XAxisOptions>) => {
       minorTickWidth={2}
       minorGridLineWidth={0}
       // tickInterval={}
-      tickInterval={30 * 24 * 3600 * 1000}
+      tickInterval={tickInterval}
       // minorTickInterval={xMax - xMin <= 40 * 24 * 3600 * 1000 ? 30 * 3600 * 1000 : 30 * 24 * 3600 * 1000}
       minPadding={0}
       maxPadding={0}
