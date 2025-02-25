@@ -28,8 +28,9 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { useRouter } from 'next/navigation'
 import { getFundamentalsByKey } from "@/lib/navigation";
 import { metricItems } from "@/lib/metrics";
-import { GTPMetricIcon, RankIcon } from "./GTPIcon";
+import { GTPIcon, GTPMetricIcon, RankIcon } from "./GTPIcon";
 import { useUIContext } from "@/contexts/UIContext";
+import { GTPIconName } from "@/icons/gtp-icon-names";
 
 function formatNumber(number: number, decimals?: number): string {
   if (number === 0) {
@@ -56,7 +57,6 @@ function formatNumber(number: number, decimals?: number): string {
   // Default return if none of the conditions are met
   return "";
 }
-
 
 
 export default function LandingMetricsTable({
@@ -171,17 +171,36 @@ export default function LandingMetricsTable({
     return result;
   }, [master]);
 
+
   return (
     <>
       <>
         <GridTableHeader
-          gridDefinitionColumns="grid-cols-[26px_125px_190px_minmax(285px,800px)_140px_125px_71px]"
+          gridDefinitionColumns="grid-cols-[26px_125px_190px_95px_minmax(285px,800px)_140px_125px_71px]"
           className="text-[14px] !font-bold gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] !pt-[15px] pb-[5px] select-none overflow-visible"
 
         >
           <GridTableHeaderCell><></></GridTableHeaderCell>
           <GridTableHeaderCell>Chain</GridTableHeaderCell>
           <GridTableHeaderCell>Purpose</GridTableHeaderCell>
+          <GridTableHeaderCell justify="end" className="flex justify-end items-center w-full">
+            <div className="w-[65px] text-left flex gap-x-[5px] items-center relative">
+              <div>Stage</div>
+              <Tooltip placement="right">
+                <TooltipTrigger className="absolute  z-[1] right-[5px] top-0 bottom-0">
+                  <Icon icon="feather:info" className="w-[15px] h-[15px]" />
+                </TooltipTrigger>
+                <TooltipContent className="z-[110]">
+                  <div className="p-3 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex flex-col">
+                    <div>
+                      I'm happy youre here
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            
+          </GridTableHeaderCell>
           <GridTableHeaderCell justify="center">
             <ChainRankHeader />
           </GridTableHeaderCell>
@@ -225,6 +244,9 @@ export default function LandingMetricsTable({
         </GridTableHeader>
         <div className="w-full relative" style={{ height }}>
           {transitions((style, item, t, index) => {
+            let maturityExists = master.chains[item.chain.key].maturity !== "NA" && master.chains[item.chain.key].maturity !== undefined;
+            let maturityName = maturityExists ? master.maturity_levels[master.chains[item.chain.key].maturity].name.toLowerCase() : "NA";
+           
             return (
               <animated.div
                 className="absolute w-full"
@@ -234,7 +256,7 @@ export default function LandingMetricsTable({
                 }}
               >
                 <GridTableRow
-                  gridDefinitionColumns="grid-cols-[26px_125px_190px_minmax(285px,800px)_140px_125px_71px]"
+                  gridDefinitionColumns="grid-cols-[26px_125px_190px_95px_minmax(285px,800px)_140px_125px_71px]"
                   className="relative group text-[14px] gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] select-none h-[34px] !pb-0 !pt-0"
                   bar={{
                     origin_key: item.chain.key,
@@ -263,12 +285,18 @@ export default function LandingMetricsTable({
                   <div className="text-xs group-hover:underline">
                     {data.chains[item.chain.key].chain_name}
                   </div>
-                  <div className="text-xs">
+                  <div className="text-xs w-full ">
                     {data.chains[item.chain.key].purpose && (
                       <>{data.chains[item.chain.key].purpose}</>
                     )}
                   </div>
+                  <div className="flex justify-end w-full items-center">
+                    <div className="w-[67px] text-left">
+                      <GTPIcon  icon={`gtp-layer2-maturity-${maturityName}` as GTPIconName} size="md" />
+                    </div>
+                  </div>
                   <ChainRankCell item={item} />
+                  
                   <div className="flex justify-end items-center">
                     <div className="flex gap-[5px] items-center text-[12px] w-[98px]">
                       <div className="w-1/2 flex justify-end text-right numbers-xs text-[#5A6462]">

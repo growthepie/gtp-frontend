@@ -309,6 +309,7 @@ export default function LandingChart({
   const { theme } = useTheme();
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const [focusEnabled] = useLocalStorage("focusEnabled", true);
 
   const [selectedTimespan, setSelectedTimespan] = useState(
     embed_timespan ?? "max",
@@ -474,7 +475,7 @@ export default function LandingChart({
       const tooltip = `<div class="mt-3 mr-3 mb-3 w-60 md:w-60 text-xs font-raleway"><div class="flex-1 font-bold text-[13px] md:text-[1rem] ml-6 mb-2 flex justify-between">${dateString}</div>`;
       let tooltipEnd = `</div>`;
 
-      if (selectedMetric === "Users per Chain")
+      if (selectedMetric === "Total Ethereum Ecosystem")
         tooltipEnd = `
           <div class="text-0.55rem] flex flex-col items-start pl-[24px] pt-3 gap-x-1 w-full text-forest-900/60 dark:text-forest-500/60">
             <div class="font-medium">Note:</div>
@@ -498,25 +499,18 @@ export default function LandingChart({
       }, 0);
 
       let tooltipPoints = firstTenPoints
-        .filter((point: any) => {
-          const { series, y, percentage } = point;
-          const { name } = series;
-          const supportedChainKeys = Get_SupportedChainKeys(master, [
-            "all_l2s",
-            "multiple",
-          ]);
 
-          return supportedChainKeys.includes(name);
-        })
-        .map((point: any) => {
+        .map((point: any, index: number) => {
           const { series, y, percentage } = point;
           const { name } = series;
+          const validChainKeys = selectedMetric === "Total Ethereum Ecosystem" ? true : false
+
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${validChainKeys ? AllChainsByKeys[name].colors[theme ?? "dark"][0] : METRIC_COLORS[name]
               }"></div>
-                <div class="tooltip-point-name text-xs">${AllChainsByKeys[name].label
+                <div class="tooltip-point-name text-xs">${validChainKeys ? AllChainsByKeys[name].label : name
               }</div>
                 <div class="flex-1 text-right numbers-xs">${Highcharts.numberFormat(
                 percentage,
@@ -529,7 +523,7 @@ export default function LandingChart({
                 <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
                 style="
                   width: ${(percentage / maxPercentage) * 100}%;
-                  background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+                  background-color: ${validChainKeys ? AllChainsByKeys[name].colors[theme ?? "dark"][0] : METRIC_COLORS[name]
               };
                 "></div>
               </div>`;
@@ -537,9 +531,9 @@ export default function LandingChart({
           const value = formatNumber(y);
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${validChainKeys ? AllChainsByKeys[name].colors[theme ?? "dark"][0] : METRIC_COLORS[name]
             }"></div>
-            <div class="tooltip-point-name text-xs">${AllChainsByKeys[name].label
+            <div class="tooltip-point-name text-xs">${validChainKeys ? AllChainsByKeys[name].label : name
             }</div>
              <div class="flex-1 text-right justify-end flex numbers-xs">
               <div class="inline-block">${parseFloat(y).toLocaleString(
@@ -556,7 +550,7 @@ export default function LandingChart({
             <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
             style="
               width: ${(y / maxPoint) * 100}%;
-              background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+              background-color: ${validChainKeys ? AllChainsByKeys[name].colors[theme ?? "dark"][0] : METRIC_COLORS[name]
             };
             "></div>
           </div>`;
@@ -680,10 +674,6 @@ export default function LandingChart({
   const filteredData = useMemo(() => {
     if (!data) return [];
     const compositions = data.timechart.compositions;
-    const cross_layer = compositions.cross_layer;
-    const single_l2 = compositions.single_l2;
-    const multiple_l2s = compositions.multiple_l2s;
-    const only_l1 = compositions.only_l1;
     const types = data.timechart.types;
     let retData: any = [];
    
@@ -692,23 +682,26 @@ export default function LandingChart({
       let sumData: number[][] = []
 
       compositions.cross_layer.forEach((element, index) => {
-        const sum = cross_layer[index][types.indexOf("value")] + single_l2[index][types.indexOf("value")] + multiple_l2s[index][types.indexOf("value")] + only_l1[index][types.indexOf("value")];
+        let sum = 0;
+        Object.keys(compositions).filter((key) => !("only_l1" === key && focusEnabled)).forEach((key) => {
+          sum += compositions[key][index][types.indexOf("value")]
+        })
       
         sumData.push([element[types.indexOf("unix")], sum])
       });
 
       retData.push({name: "all_l2s", data: sumData, types: types});
     }else{
-      retData.push({name: "cross_layer", data: cross_layer, types: types});
-      retData.push({name: "single_l2", data: single_l2, types: types});
-      retData.push({name: "multiple_l2s", data: multiple_l2s, types: types});
-      retData.push({name: "only_l1", data: only_l1, types: types});
+      Object.keys(compositions).filter((key) => !("only_l1" === key && focusEnabled)).forEach((key) => {
+        retData.push({name: key, data: compositions[key], types: types});
+      })
+
     }
 
     return retData;
 
 
-  }, [data, showEthereumMainnet, showTotalUsers]);
+  }, [data, showEthereumMainnet, showTotalUsers, focusEnabled]);
   
 
   const maxDate = useMemo(() => {

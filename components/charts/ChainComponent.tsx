@@ -1419,7 +1419,7 @@ export default function ChainComponent({
         </div>
       </div>
       <div className="absolute -bottom-[2px] right-[6px]">
-        <Tooltip placement="left" allowInteract>
+        {/* <Tooltip placement="left" allowInteract>
           <TooltipTrigger>
             <div className="p-0 -mr-0.5 z-30 opacity-40 hover:opacity-80">
               <Icon icon="feather:info" className="w-6 h-6" />
@@ -1440,7 +1440,7 @@ export default function ChainComponent({
               </div>
             </div>
           </TooltipContent>
-        </Tooltip>
+        </Tooltip> */}
       </div>
     </div>
   );
