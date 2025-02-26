@@ -885,16 +885,16 @@ const SimilarApplications = ({ owner_project }: { owner_project: string }) => {
 
     // filter out applications with < median value of selected metric and with previous value of 0
     const filteredApplications = applicationDataAggregated
-      .filter((application) => application[medianMetricKey] > medianValue && application["prev_" + medianMetricKey] > 0 && ownerProjectToProjectData[application.owner_project].main_category === ownerProjectToProjectData[owner_project].main_category)
+      .filter((application) => application[medianMetricKey] > medianValue && ownerProjectToProjectData[application.owner_project].main_category === ownerProjectToProjectData[owner_project].main_category)
 
     // top 3 applications with highest change_pct
     return {
       topGainers: [...filteredApplications]
         .sort((a, b) => b[medianMetricKey + "_change_pct"] - a[medianMetricKey + "_change_pct"])
-        .slice(0, 3),
-      topLosers: [...filteredApplications]
-        .sort((a, b) => a[medianMetricKey + "_change_pct"] - b[medianMetricKey + "_change_pct"])
-        .slice(0, 3),
+        .slice(0, 6),
+      // topLosers: [...filteredApplications]
+      //   .sort((a, b) => a[medianMetricKey + "_change_pct"] - b[medianMetricKey + "_change_pct"])
+      //   .slice(0, 3),
     }
   }, [applicationDataAggregated, medianMetricKey, ownerProjectToProjectData, owner_project]);
 
@@ -905,16 +905,16 @@ const SimilarApplications = ({ owner_project }: { owner_project: string }) => {
           {topGainers.map((application, index) => (
             <ApplicationCard key={application.owner_project} application={application} metric={sort.metric} />
           ))}
-          {topLosers.map((application, index) => (
+          {/* {topLosers.map((application, index) => (
             <ApplicationCard key={application.owner_project} application={application} metric={sort.metric} />
-          ))}
+          ))} */}
           {isLoading && new Array(6).fill(0).map((_, index) => (
             <ApplicationCard key={index} application={undefined} metric={sort.metric} />
           ))}
         </Container>
       </div>
       <div className="block md:hidden pt-[10px]">
-        <CardSwiper cards={[...topGainers.map((application) => <ApplicationCard key={application.owner_project} application={application} metric={sort.metric} />), ...topLosers.map((application) => <ApplicationCard key={application.owner_project} application={application} metric={sort.metric} />)]} />
+        <CardSwiper cards={[...topGainers.map((application) => <ApplicationCard key={application.owner_project} application={application} metric={sort.metric} />)]} />
       </div>
     </>
   )
