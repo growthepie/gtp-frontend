@@ -829,7 +829,8 @@ const GTPXAxis = (props: AxisProps<Highcharts.XAxisOptions>) => {
       // min={zoomed ? zoomMin : timespans[selectedTimespan].xMin} // don't include the last day
       // max={zoomed ? zoomMax : timespans[selectedTimespan].xMax}
       min={xMin}
-      max={xMax}
+      max={props.maxDataUnix || xMax}
+      // max={xMax}
     />
   )
 }
