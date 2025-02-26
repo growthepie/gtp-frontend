@@ -385,7 +385,7 @@ const ChainBar = memo(({
   const thisRenderWidth = (thisPercentageWidth / 100) * (containerWidth - 200);
 
   // Compute tooltip data – e.g., first seen, min/max dates
-  const firstSeen = moment.utc(chainFirstSeen);
+  const firstSeen = moment(chainFirstSeen);
   const maxUnix = Math.max(
     ...Object.values(metricData.over_time).map((chainData) =>
       chainData.daily.data[chainData.daily.data.length - 1][0]
