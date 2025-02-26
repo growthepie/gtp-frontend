@@ -516,6 +516,13 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
   const { sort } = useSort();
   const router = useRouter();
 
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  useEffect(() => {
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    setIsTouchDevice(isTouch);
+  }, []);
+
   const numTotalMetrics = Object.keys(metricsDef).length;
   
   // Memoize gridColumns to prevent recalculations
@@ -547,12 +554,22 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
           <ApplicationIcon owner_project={application.owner_project} size="sm" />
         </div>
       </div>
-      <div className="flex items-center gap-x-[5px] group-hover:underline truncate pl-[15px] pr-[15px]">
+      <div
+        className="flex items-center gap-x-[5px] group-hover:underline truncate pl-[15px] pr-[15px]"
+      >
         <Tooltip placement="bottom-start" allowInteract>
-          <TooltipTrigger className="truncate">
+          <TooltipTrigger 
+          className="z-[10] truncate h-[32px]" 
+            onClick={(e) => {
+              if(isTouchDevice) {
+                e.stopPropagation();
+                e.preventDefault();
+              }
+            }}
+          >
             <ApplicationDisplayName owner_project={application.owner_project} />
           </TooltipTrigger>
-          <TooltipContent className="z-[99] left-0 ml-[20px]">
+          <TooltipContent className="z-[99] left-0 ml-[20px] -mt-[5px]">
             <ApplicationTooltip application={application} />
           </TooltipContent>
         </Tooltip>

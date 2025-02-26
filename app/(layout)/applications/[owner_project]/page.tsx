@@ -806,8 +806,9 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict }) => {
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-x-[5px] justify-between w-full truncate">
-        {contract.name || (<GridTableAddressCell address={contract.address as string} showCopyIcon={false} />)}
+      <div className="flex items-center gap-x-[15px] justify-between w-full truncate">
+        
+        {contract.name ? (<div>{contract.name}</div>) : (<GridTableAddressCell address={contract.address as string} showCopyIcon={false} />)}
         <div className="flex items-center gap-x-[5px]">
           <div className="h-[15px] w-[15px]">
             <div
@@ -860,6 +861,7 @@ const SimilarApplications = ({ owner_project }: { owner_project: string }) => {
   const { sort } = useSort();
 
   const [medianMetricKey, setMedianMetricKey] = useState(selectedMetrics[0]);
+  const [medianMetric, setMedianMetric] = useState(selectedMetrics[0]);
 
   useEffect(() => {
     if (Object.keys(metricsDef).includes(sort.metric)) {
@@ -868,6 +870,7 @@ const SimilarApplications = ({ owner_project }: { owner_project: string }) => {
         key = "gas_fees_eth";
 
       setMedianMetricKey(key);
+      setMedianMetric(sort.metric);
     }
 
   }, [metricsDef, sort.metric]);
@@ -903,18 +906,18 @@ const SimilarApplications = ({ owner_project }: { owner_project: string }) => {
       <div>
         <Container className="hidden md:grid md:grid-rows-3 md:grid-flow-col lg:grid-rows-2 lg:grid-flow-row pt-[10px] lg:grid-cols-3 gap-[10px]">
           {topGainers.map((application, index) => (
-            <ApplicationCard key={application.owner_project} application={application} metric={sort.metric} />
+            <ApplicationCard key={application.owner_project} application={application} metric={medianMetric} />
           ))}
           {/* {topLosers.map((application, index) => (
             <ApplicationCard key={application.owner_project} application={application} metric={sort.metric} />
           ))} */}
           {isLoading && new Array(6).fill(0).map((_, index) => (
-            <ApplicationCard key={index} application={undefined} metric={sort.metric} />
+            <ApplicationCard key={index} application={undefined} metric={medianMetric} />
           ))}
         </Container>
       </div>
       <div className="block md:hidden pt-[10px]">
-        <CardSwiper cards={[...topGainers.map((application) => <ApplicationCard key={application.owner_project} application={application} metric={sort.metric} />)]} />
+        <CardSwiper cards={[...topGainers.map((application) => <ApplicationCard key={application.owner_project} application={application} metric={medianMetric} />)]} />
       </div>
     </>
   )

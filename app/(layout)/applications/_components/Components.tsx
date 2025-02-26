@@ -366,6 +366,8 @@ export const ApplicationCard = memo(({ application, className, width, metric }: 
   const router = useRouter();
   const { selectedTimespan } = useTimespan();
 
+  console.log("ApplicationCard::metric", metric);
+
   const metricKey = useMemo(() => {
     let key = metric;
     if (metric === "gas_fees")
@@ -550,6 +552,7 @@ ApplicationCard.displayName = 'ApplicationCard';
 export const ApplicationTooltip = memo(({application}: {application: AggregatedDataRow}) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { applicationDataAggregated } = useApplicationsData();
+  const { selectedTimespan } = useTimespan();
 
   const descriptionPreview = useMemo(() => {
     if (!application || !ownerProjectToProjectData[application.owner_project] || !ownerProjectToProjectData[application.owner_project].description) return "";
@@ -564,7 +567,7 @@ export const ApplicationTooltip = memo(({application}: {application: AggregatedD
 
   return (
     <div
-      className="cursor-default z-[99] p-[15px] left-[20px] w-[345px] top-[32px] bg-[#1F2726] rounded-[15px] transition-opacity duration-300"
+      className="cursor-default z-[99] p-[15px] left-[20px] w-[300px] md:w-[345px] top-[32px] bg-[#1F2726] rounded-[15px] transition-opacity duration-300"
       style={{
         boxShadow: "0px 0px 30px #000000",
         // left: `${mouseOffsetX}px`,
@@ -574,24 +577,28 @@ export const ApplicationTooltip = memo(({application}: {application: AggregatedD
       }}
     >
       <div className="flex flex-col pl-[5px] gap-y-[10px]">
-        {/* {mouseOffsetX} */}
-        <div className="flex gap-x-[5px] items-center">
-          {ownerProjectToProjectData[application.owner_project] && ownerProjectToProjectData[application.owner_project].logo_path ? (
-            <Image
-              src={`https://api.growthepie.xyz/v1/apps/logos/${ownerProjectToProjectData[application.owner_project].logo_path}`}
-              width={15} height={15}
-              className="select-none rounded-full size-[15px]"
-              alt={application.owner_project}
-              onDragStart={(e) => e.preventDefault()}
-              loading="eager"
-              priority={true}
-            />
-          ) : (
-            <div className={`flex items-center justify-center size-[15px] bg-[#151A19] rounded-full`}>
-              <GTPIcon icon="gtp-project-monochrome" size="sm" className="!size-[12px] text-[#5A6462]" containerClassName="flex items-center justify-center" />
-            </div>
-          )}
-          <div className="heading-small-xs">{ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].display_name : application.owner_project}</div>
+        <div className="flex gap-x-[5px] items-center justify-between">
+          <div className="flex gap-x-[5px] items-center">
+            {ownerProjectToProjectData[application.owner_project] && ownerProjectToProjectData[application.owner_project].logo_path ? (
+              <Image
+                src={`https://api.growthepie.xyz/v1/apps/logos/${ownerProjectToProjectData[application.owner_project].logo_path}`}
+                width={15} height={15}
+                className="select-none rounded-full size-[15px]"
+                alt={application.owner_project}
+                onDragStart={(e) => e.preventDefault()}
+                loading="eager"
+                priority={true}
+              />
+            ) : (
+              <div className={`flex items-center justify-center size-[15px] bg-[#151A19] rounded-full`}>
+                <GTPIcon icon="gtp-project-monochrome" size="sm" className="!size-[12px] text-[#5A6462]" containerClassName="flex items-center justify-center" />
+              </div>
+            )}
+            <div className="heading-small-xs">{ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].display_name : application.owner_project}</div>
+          </div>
+          <Link className="cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center" href={{ pathname: `/applications/${application.owner_project}`, query: { timespan: selectedTimespan } }}>
+            <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-[#CDD8D3]" />
+          </Link>
         </div>
         <div className="text-xs">
           {descriptionPreview}...

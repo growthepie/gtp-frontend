@@ -241,7 +241,7 @@ export const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
                     <div className="tooltip-point-name text-xs">{AllChainsByKeys[chain].label}</div>
                     <div className="flex-1 text-right justify-end numbers-xs flex">
                       {prefix}{valsByTimespan[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)]
-                        .toLocaleString("en-GB", { maximumFractionDigits: decimals })}
+                        .toLocaleString("en-GB", { maximumFractionDigits: decimals, minimumFractionDigits: decimals })}
                     </div>
                   </div>
                   <div className="h-[2px] flex ml-[20px] w-[calc(100% - 1rem)] relative">
@@ -290,7 +290,7 @@ export const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
             <div className="absolute left-0 flex gap-x-[10px] items-center h-full w-[200px] bg-[#1F2726] p-[2px] rounded-full" style={{ zIndex: chainsData.length + 1 }}>
               <ApplicationIcon owner_project={owner_project} size="sm" />
               <div className="flex flex-1 flex-col -space-y-[2px] mt-[2px] truncate pr-[10px]">
-                <div className="numbers-sm">{prefix}{total.toLocaleString("en-GB", { maximumFractionDigits: decimals })}</div>
+                <div className="numbers-sm">{prefix}{total.toLocaleString("en-GB", { maximumFractionDigits: decimals, minimumFractionDigits: decimals })}</div>
                 <div className="text-xxs truncate">
                   {ownerProjectToProjectData[owner_project]?.display_name || ""}
                 </div>
@@ -410,7 +410,7 @@ const ChainBar = memo(({
       <div className="pl-[20px] h-[24px] flex items-center gap-x-[5px] whitespace-nowrap">
         <ApplicationIcon owner_project={owner_project} size="sm" />
         <div className='heading-small-xs !font-normal'>
-          on <span className='!font-bold'>{AllChainsByKeys[chain].label}</span>
+          <span className='numbers-sm'>{((metricData.aggregated.data[chain][selectedTimespan][metricData.aggregated.types.indexOf(valueKey)] / total) * 100).toFixed(1)}%</span> on <span className='!font-bold'>{AllChainsByKeys[chain].label}</span>
         </div>
       </div>
       <div className="flex flex-col">
@@ -423,11 +423,11 @@ const ChainBar = memo(({
             <div className="tooltip-point-name text-xs">{AllChainsByKeys[chain].label}</div>
             <div className="flex-1 text-right justify-end numbers-xs flex">
               {prefix}{metricData.aggregated.data[chain][selectedTimespan][metricData.aggregated.types.indexOf(valueKey)]
-                .toLocaleString("en-GB", { maximumFractionDigits: decimals })}
+                .toLocaleString("en-GB", { maximumFractionDigits: decimals, minimumFractionDigits: decimals })}
             </div>
           </div>
           <div className="h-[2px] flex ml-[20px] w-[calc(100% - 1rem)] relative">
-            <div className="h-[2px] rounded-none absolute right-0 top-0 w-full bg-white/0"></div>
+            <div className="h-[2px] rounded-none absolute right-0 top-0 w-full bg-black/30"></div>
             <div
               className="h-[2px] rounded-none absolute right-0 top-0 bg-forest-900 dark:bg-forest-50"
               style={{

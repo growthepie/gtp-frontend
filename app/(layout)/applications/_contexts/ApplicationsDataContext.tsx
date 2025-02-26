@@ -373,7 +373,8 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
       }}
     >
       <ShowLoading
-        dataLoading={[masterLoading]}
+        dataLoading={[masterLoading, applicationsTimespanLoading]}
+        dataValidating={[masterValidating, applicationsTimespanValidating]}
       />
       {children}
     </ApplicationsDataContext.Provider>
