@@ -676,32 +676,37 @@ export default function LandingChart({
     const compositions = data.timechart.compositions;
     const types = data.timechart.types;
     let retData: any = [];
-   
-
-    if(selectedMetric === "Total Ethereum Ecosystem"){
-      let sumData: number[][] = []
-
+  
+    // Define explicit order for the keys
+    const orderedKeys = ["l1_only", "cross_layer", "multiple_l2s", "single_l2"]; // Adjust as needed
+  
+    // Filter keys and apply custom ordering
+    const compositionKeys = Object.keys(compositions)
+      .filter((key) => !(key === "only_l1" && focusEnabled))
+      .sort((a, b) => orderedKeys.indexOf(a) - orderedKeys.indexOf(b)); // Sort based on explicit order
+  
+    if (selectedMetric === "Total Ethereum Ecosystem") {
+      let sumData: number[][] = [];
+  
       compositions.cross_layer.forEach((element, index) => {
         let sum = 0;
-        Object.keys(compositions).filter((key) => !("only_l1" === key && focusEnabled)).forEach((key) => {
-          sum += compositions[key][index][types.indexOf("value")]
-        })
-      
-        sumData.push([element[types.indexOf("unix")], sum])
+        compositionKeys.forEach((key) => {
+          sum += compositions[key][index][types.indexOf("value")];
+        });
+  
+        sumData.push([element[types.indexOf("unix")], sum]);
       });
-
-      retData.push({name: "all_l2s", data: sumData, types: types});
-    }else{
-      Object.keys(compositions).filter((key) => !("only_l1" === key && focusEnabled)).forEach((key) => {
-        retData.push({name: key, data: compositions[key], types: types});
-      })
-
+  
+      retData.push({ name: "all_l2s", data: sumData, types: types });
+    } else {
+      compositionKeys.forEach((key) => {
+        retData.push({ name: key, data: compositions[key], types: types });
+      });
     }
-
+  
     return retData;
-
-
   }, [data, showEthereumMainnet, showTotalUsers, focusEnabled]);
+  
   
 
   const maxDate = useMemo(() => {

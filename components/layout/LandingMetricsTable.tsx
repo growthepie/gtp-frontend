@@ -115,7 +115,7 @@ export default function LandingMetricsTable({
     return Object.keys(data.chains)
       .filter((chain) => {
         return (
-          Object.keys(EnabledChainsByKeys).includes(chain) &&
+          (Object.keys(EnabledChainsByKeys).includes(chain) || chain === "ethereum") &&
           data.chains[chain].users > 0
         );
       })
@@ -127,7 +127,7 @@ export default function LandingMetricsTable({
         };
       })
       .filter(
-        (row) => row.chain.chainType != null && row.chain.chainType != "L1",
+        (row) => row.chain.chainType != null,
       )
       .sort((a, b) => {
 
@@ -142,6 +142,7 @@ export default function LandingMetricsTable({
       .filter((row) => {
         const name = row.chain.key;
         const supportedChainKeys = Get_SupportedChainKeys(master);
+        
         return supportedChainKeys.includes(name);
       })
       .map((data) => ({
@@ -184,8 +185,8 @@ export default function LandingMetricsTable({
           <GridTableHeaderCell>Chain</GridTableHeaderCell>
           <GridTableHeaderCell>Purpose</GridTableHeaderCell>
           <GridTableHeaderCell justify="end" className="flex justify-end items-center w-full">
-            <div className="w-[65px] text-left flex gap-x-[5px] items-center relative">
-              <div>Stage</div>
+            <div className="w-[80px] text-left flex gap-x-[5px] items-center relative">
+              <div>Maturity</div>
               <Tooltip placement="right">
                 <TooltipTrigger className="absolute  z-[1] right-[5px] top-0 bottom-0">
                   <Icon icon="feather:info" className="w-[15px] h-[15px]" />
@@ -193,7 +194,7 @@ export default function LandingMetricsTable({
                 <TooltipContent className="z-[110]">
                   <div className="p-3 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex flex-col">
                     <div>
-                      I'm happy youre here
+                      
                     </div>
                   </div>
                 </TooltipContent>
@@ -291,7 +292,7 @@ export default function LandingMetricsTable({
                     )}
                   </div>
                   <div className="flex justify-end w-full items-center">
-                    <div className="w-[67px] text-left">
+                    <div className="w-[82px] text-left">
                       <GTPIcon  icon={`gtp-layer2-maturity-${maturityName}` as GTPIconName} size="md" />
                     </div>
                   </div>
