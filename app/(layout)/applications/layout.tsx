@@ -9,6 +9,12 @@ import Search from "./_components/Search";
 import Controls from "./_components/Controls";
 import { ApplicationsDataProvider } from "./_contexts/ApplicationsDataContext";
 import { PageTitleAndDescriptionAndControls } from "./_components/Components";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Ethereum Layer 2 - Applications",
+  description: "An overview of applications across the Ethereum ecosystem with metrics including transactions, gas used, active addresses, and more.",
+}
 
 export default async function Layout({
   children

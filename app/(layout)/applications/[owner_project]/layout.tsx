@@ -2,7 +2,7 @@ import Container from "@/components/layout/Container";
 import Heading from "@/components/layout/Heading";
 import Controls from "../_components/Controls";
 import { LabelsURLS } from "@/lib/urls";
-import { ApplicationDisplayName, ApplicationIcon, BackButton, PageTitle, ProjectDetailsLinks } from "../_components/Components";
+import { ApplicationDisplayName, ApplicationIcon, BackButton, PageMetadata, ProjectDetailsLinks } from "../_components/Components";
 import { Metadata, ResolvingMetadata } from "next";
 import { ApplicationDetailsDataProvider } from "../_contexts/ApplicationDetailsDataContext";
 import { SortProvider } from "../_contexts/SortContext";
@@ -56,7 +56,7 @@ export default function Layout({
 
   return (
     <>
-      <PageTitle owner_project={owner_project} />
+      <PageMetadata owner_project={owner_project} />
       {/* <Container className="flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px]" isPageRoot>
         <div className="flex items-center h-[43px] gap-x-[8px] ">
         <BackButton />

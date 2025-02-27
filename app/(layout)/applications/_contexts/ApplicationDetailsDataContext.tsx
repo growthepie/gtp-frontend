@@ -9,6 +9,7 @@ import { useMetrics } from "./MetricsContext";
 import { SortConfig, sortItems, SortOrder, SortType } from "@/lib/sorter";
 import { useMaster } from "@/contexts/MasterContext";
 import { useLocalStorage } from "usehooks-ts";
+import { notFound } from "next/navigation";
 
 export interface ApplicationDetailsResponse {
   metrics:          Metrics;
@@ -111,7 +112,8 @@ export const ApplicationDetailsDataProvider = ({
   const { 
     data: applicationDetailsData,
     isLoading: applicationDetailsLoading,
-    isValidating: applicationDetailsValidating 
+    isValidating: applicationDetailsValidating,
+    error: applicationDetailsError,
   } = useSWR<ApplicationDetailsResponse>(
     owner_project ? ApplicationsURLs.details.replace("{owner_project}", owner_project) : null,
   );
@@ -167,7 +169,9 @@ export const ApplicationDetailsDataProvider = ({
     return contractsSorter(getContractDictArray(applicationDetailsData.contracts), sort.metric, sort.sortOrder as SortOrder);
   }, [applicationDetailsData, contractsSorter, sort]);
 
-
+  if( applicationDetailsError ) {
+    return notFound();
+  }
 
   return (
     <ApplicationDetailsDataContext.Provider value={{

@@ -26,11 +26,14 @@ type ApplicationIconProps = {
   size: "sm" | "md" | "lg";
 };
 
-export const PageTitle = ({ owner_project }: { owner_project: string }) => {
+export const PageMetadata = ({ owner_project }: { owner_project: string }) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
   
   useEffect(() => {
-    document.title = `${ownerProjectToProjectData[owner_project]?.display_name || owner_project} - growthepie`;
+    // update the document title
+    document.title = `${ownerProjectToProjectData[owner_project]?.display_name || owner_project} Application Metrics on Ethereum Layer 2 - growthepie`;
+    // update the meta description - if not found, set to general description about application metrics for this app name
+    document.querySelector('meta[name="description"]')?.setAttribute("content", ownerProjectToProjectData[owner_project]?.description || "Application metrics for " + owner_project + " on Ethereum Layer 2s.");
   }, [ownerProjectToProjectData, owner_project]);
 
   return null;

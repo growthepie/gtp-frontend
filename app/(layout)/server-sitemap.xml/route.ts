@@ -1,61 +1,32 @@
 // @ts-ignore
 import { ISitemapField, getServerSideSitemap } from "next-sitemap";
 import { navigationItems } from "@/lib/navigation";
-import { MasterURL } from "@/lib/urls";
-import { MasterResponse } from "@/types/api/MasterResponse";
-import {
-  Get_AllChainsNavigationItems,
-  Get_SupportedChainKeys,
-} from "@/lib/chains";
+import { ApplicationsURLs, MasterURL } from "@/lib/urls";
+import { AppOverviewResponse } from "@/types/applications/AppOverviewResponse";
+
+
 
 export async function GET(request: Request) {
-  const master = await fetch(MasterURL);
-  const masterData: MasterResponse = await master.json();
+  // ["1d", "7d", "30d", "90d", "365d", "max"].map((timeframe) => ApplicationsURLs.overview.replace('{timespan}', `${timeframe}`))
 
-  const fundamentals = navigationItems[1];
-  const blockspace = navigationItems[2];
-  const dataAvailability = navigationItems[3];
-  const trackers = navigationItems[4];
+  const apps = new Set<string>();
+  // we need to fetch all the apps for each timespan and get a SET of the owner_projects
+  const timespans = ["1d", "7d", "30d", "90d", "365d", "max"];
+  for (const timespan of timespans) {
+    const appsResp = await fetch(ApplicationsURLs.overview.replace('{timespan}', `${timespan}`));
+    const appsData = await appsResp.json() as AppOverviewResponse;
+    const appsTypes = appsData.data.types;
+    const owner_project_index = appsTypes.indexOf("owner_project");
+    const appsPages = appsData.data.data.map((app) => {
+      return `https://www.growthepie.xyz/applications/${app[owner_project_index]}`;
+    });
+    appsPages.forEach((app) => apps.add(app));
+  }
 
-  const chains = Get_AllChainsNavigationItems(masterData);
 
-  const masterChainKeys = Object.keys(masterData.chains);
 
-  // const pages = [
-  //   ...fundamentals.options
-  //     .filter((c) => c.excludeFromSitemap !== true)
-  //     .map(
-  //       (option) => `https://www.growthepie.xyz/fundamentals/${option.urlKey}`,
-  //     ),
-  //   ...blockspace.options
-  //     .filter((c) => c.excludeFromSitemap !== true)
-  //     .map(
-  //       (option) => `https://www.growthepie.xyz/blockspace/${option.urlKey}`,
-  //     ),
-  //   ...Object.keys(masterData.blockspace_categories.main_categories).map(
-  //     (category) =>
-  //       `https://www.growthepie.xyz/blockspace/chain-overview/${category}`,
-  //   ),
-  //   ...chains.options
-  //     .filter(
-  //       (c) =>
-  //         c.key &&
-  //         Get_SupportedChainKeys(masterData).includes(c.key) &&
-  //         c.excludeFromSitemap !== true,
-  //     )
-  //     .map((option) => `https://www.growthepie.xyz/chains/${option.urlKey}`),
-  //   ...dataAvailability.options
-  //     .filter((c) => c.excludeFromSitemap !== true)
-  //     .map(
-  //       (option) =>
-  //         `https://www.growthepie.xyz/data-availability/${option.urlKey}`,
-  //     ),
-  //   ...trackers.options
-  //     .filter((c) => c.hide !== true && c.excludeFromSitemap !== true)
-  //     .map((option) => `https://www.growthepie.xyz/trackers/${option.urlKey}`),
-  // ];
 
-  const pages = navigationItems
+  const pages = [...navigationItems
     .map((item) => {
       return item.options
         .filter(
@@ -66,7 +37,10 @@ export async function GET(request: Request) {
         )
         .map((option) => `https://www.growthepie.xyz${option.url}`);
     })
-    .flat();
+    .flat(),
+    ...apps,
+  ];
+  
 
   const getDate = () => {
     const date = new Date();
