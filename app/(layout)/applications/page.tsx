@@ -67,20 +67,19 @@ export default function Page() {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { topGainers, topLosers } = useMemo(() => {
     // let medianMetricKey = Object.keys(metricsDef).includes(sort.metric) ? sort.metric : "gas_fees";
-    
+
     const medianMetricValues = applicationDataAggregated.map((application) => application[medianMetricKey])
       .sort((a, b) => a - b);
 
     const medianValue = medianMetricValues[Math.floor(medianMetricValues.length / 2)];
-    const showAsETH = medianMetricKey.includes("gas_fees") ? true : false;
-   
+    const convertToETH = showUsd ? true : false;
     // console.log("medianMetricKey", medianMetricKey);
     // console.log("medianValue", medianValue);
     // console.log("applicationDataAggregated", applicationDataAggregated);
 
     // filter out applications with < median value of selected metric and with previous value of 0
     const filteredApplications = applicationDataAggregated
-      .filter((application) => application[medianMetricKey] > medianValue && application["prev_" + showAsETH ? "gas_fees_eth"  : medianMetricKey] > 0);
+      .filter((application) => application[medianMetricKey] > medianValue && application["prev_" + (convertToETH ? "gas_fees_eth" : medianMetricKey)] > 0);
     // console.log("filteredApplications", filteredApplications);
 
     // top 3 applications with highest change_pct
