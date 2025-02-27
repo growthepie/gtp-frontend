@@ -207,10 +207,7 @@ export type ApplicationsDataContextType = {
   setMedianMetricKey: (value: string) => void;
 }
 
-const getMetricKeyFromMetric = (metric: string) => {
-  if (metric === "gas_fees") return "gas_fees_eth";
-  return metric;
-}
+
 
 export const ApplicationsDataContext = createContext<ApplicationsDataContextType | undefined>(undefined);
 
@@ -219,6 +216,11 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
   const {timespans, selectedTimespan, setSelectedTimespan, isMonthly, setIsMonthly} = useTimespan();
   const { sort, setSort } = useSort();
   const { metricsDef , setSelectedMetrics, selectedMetrics} = useMetrics();
+  const getMetricKeyFromMetric = (metric: string) => {
+
+    if (metric === "gas_fees") return showUsd ? "gas_fees_usd" : "gas_fees_eth";
+    return metric;
+  }
 
   const { fetcher } = useSWRConfig();
   const fallbackFetcher = (url) => fetch(url).then((r) => r.json());
@@ -235,15 +237,17 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
   useEffect(() => {
     if(Object.keys(metricsDef).includes(sort.metric)){
       const key = getMetricKeyFromMetric(sort.metric);
-
+     
+      
       setMedianMetric(sort.metric);
       setMedianMetricKey(key);
     }
     
-  }, [metricsDef, sort.metric]);
+  }, [metricsDef, sort.metric, showUsd]);
 
   /* < Query Params > */
-  
+
+
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();

@@ -64,22 +64,23 @@ export default function Page() {
       }
     }
   }, []);
-
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { topGainers, topLosers } = useMemo(() => {
     // let medianMetricKey = Object.keys(metricsDef).includes(sort.metric) ? sort.metric : "gas_fees";
-
+    
     const medianMetricValues = applicationDataAggregated.map((application) => application[medianMetricKey])
       .sort((a, b) => a - b);
 
     const medianValue = medianMetricValues[Math.floor(medianMetricValues.length / 2)];
-
+    const showAsETH = medianMetricKey.includes("gas_fees") ? true : false;
+   
     // console.log("medianMetricKey", medianMetricKey);
     // console.log("medianValue", medianValue);
     // console.log("applicationDataAggregated", applicationDataAggregated);
 
     // filter out applications with < median value of selected metric and with previous value of 0
     const filteredApplications = applicationDataAggregated
-      .filter((application) => application[medianMetricKey] > medianValue && application["prev_" + medianMetricKey] > 0);
+      .filter((application) => application[medianMetricKey] > medianValue && application["prev_" + showAsETH ? "gas_fees_eth"  : medianMetricKey] > 0);
     // console.log("filteredApplications", filteredApplications);
 
     // top 3 applications with highest change_pct
@@ -91,7 +92,9 @@ export default function Page() {
         .sort((a, b) => a[medianMetricKey + "_change_pct"] - b[medianMetricKey + "_change_pct"])
         .slice(0, 3),
     }
-  }, [applicationDataAggregated, medianMetricKey]);
+  }, [applicationDataAggregated, medianMetricKey, showUsd]);
+
+ 
 
   const hideTopGainersAndLosers = useMemo(() => {
     return selectedTimespan === "max" || selectedStringFilters.length > 0;

@@ -38,8 +38,8 @@ export default function Page({ params: { owner_project } }: Props) {
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { selectedMetrics } = useMetrics();
   const { selectedTimespan, timespans } = useTimespan();
-
-  console.log(owner_project)
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+ 
   return (
     <>
       {selectedMetrics.map((metric, index) => (
@@ -862,18 +862,20 @@ const SimilarApplications = ({ owner_project }: { owner_project: string }) => {
 
   const [medianMetricKey, setMedianMetricKey] = useState(selectedMetrics[0]);
   const [medianMetric, setMedianMetric] = useState(selectedMetrics[0]);
-
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   useEffect(() => {
     if (Object.keys(metricsDef).includes(sort.metric)) {
       let key = sort.metric;
       if (sort.metric === "gas_fees")
-        key = "gas_fees_eth";
+        key = showUsd ? "gas_fees_usd" : "gas_fees_eth";
 
       setMedianMetricKey(key);
       setMedianMetric(sort.metric);
     }
 
-  }, [metricsDef, sort.metric]);
+  }, [metricsDef, sort.metric, showUsd]);
+
+  
 
   const { topGainers, topLosers } = useMemo(() => {
 

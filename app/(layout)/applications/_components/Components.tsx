@@ -383,6 +383,8 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
     return application[medianMetricKey];
   }, [application, medianMetricKey]);
 
+  
+
   const prefix = useMemo(() => {
     const def = metricsDef[medianMetric].units;
 
