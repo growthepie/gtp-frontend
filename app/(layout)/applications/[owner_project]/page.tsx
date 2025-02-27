@@ -39,7 +39,7 @@ export default function Page({ params: { owner_project } }: Props) {
   const { selectedMetrics } = useMetrics();
   const { selectedTimespan, timespans } = useTimespan();
 
-
+  console.log(owner_project)
   return (
     <>
       {selectedMetrics.map((metric, index) => (
@@ -69,7 +69,7 @@ export default function Page({ params: { owner_project } }: Props) {
           <div className="flex flex-col gap-y-[10px]">
             <div className="heading-large">Most Active Contracts</div>
             <div className="text-xs">
-              See the most active contracts within the selected timeframe ({timespans[selectedTimespan].label}){ownerProjectToProjectData[owner_project] ? ` for ${ownerProjectToProjectData[owner_project].display_name}` : ""}.
+              See the most active contracts for {ownerProjectToProjectData[owner_project] ? ` for ${ownerProjectToProjectData[owner_project].display_name}` : ""} (All Time).
             </div>
           </div>
         </div>
