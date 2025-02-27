@@ -261,7 +261,7 @@ export default function ContractCard({
                   ]
                   : copied
                     ? "Address Copied to Clipboard"
-                    : "Category Not Assigned"}{" "}
+                    : "No Category Assigned"}{" "}
                 {!data[types.indexOf("main_category_key")] ? null : (
                   <span className="mx-1">&gt;</span>
                 )}

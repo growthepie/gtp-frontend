@@ -838,7 +838,7 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict }) => {
         <Category category={ownerProjectToProjectData[owner_project] ? ownerProjectToProjectData[owner_project].main_category : ""} />
       </div>
       <div className="text-xs">
-        {masterData.blockspace_categories.sub_categories[contract.sub_category_key] ? masterData.blockspace_categories.sub_categories[contract.sub_category_key] : contract.sub_category_key}
+        {contract.sub_category_key ? (masterData.blockspace_categories.sub_categories[contract.sub_category_key] ? masterData.blockspace_categories.sub_categories[contract.sub_category_key] : contract.sub_category_key) : <span className="text-[#5A6462]">Unknown</span>}
       </div>
       {selectedMetrics.map((key, index) => (
         <div

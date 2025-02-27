@@ -789,7 +789,6 @@ export const Chains = ({ origin_keys }: { origin_keys: string[] }) => {
 
 export const Category = ({ category }: { category: string }) => {
   const getGTPCategoryIcon = (category: string): GTPIconName | "" => {
-
     switch (category) {
       case "Cross-Chain":
         return "gtp-crosschain";
@@ -811,15 +810,21 @@ export const Category = ({ category }: { category: string }) => {
   }
 
   return (
-    <div className="flex items-center gap-x-[5px] whitespace-nowrap">
+    <>
       {/* <GTPIcon icon={getGTPCategoryIcon()} size="sm" /> */}
-      {category && (
-        <>
+      {category ? (
+        <div className="flex items-center gap-x-[5px] whitespace-nowrap">
           <GTPIcon icon={getGTPCategoryIcon(category) as GTPIconName} size="sm" />
-          {category}
-        </>
+          <div className="text-xs">{category}</div>
+        </div>
+      ): (
+        <div className="flex items-center gap-x-[5px] whitespace-nowrap">
+          {/* <Icon icon="carbon:unknown-filled" className="size-[15px] text-[#5A6462]/50" /> */}
+          <div className="size-[15px] text-black/90 rounded-sm bg-[#5A6462]/50 flex justify-center items-center font-bold text-xs pt-[2px]">?</div>
+          <div className="text-xs text-[#5A6462]">Unknown</div>
+        </div>
       )}
-    </div>
+    </>
   );
 }
 
