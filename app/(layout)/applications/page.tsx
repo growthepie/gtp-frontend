@@ -36,27 +36,15 @@ import { useTimespan } from "./_contexts/TimespanContext";
 });
 
 export default function Page() {
-  const { applicationDataAggregated, isLoading, selectedStringFilters } = useApplicationsData();
+  const { applicationDataAggregated, isLoading, selectedStringFilters, medianMetric, medianMetricKey } = useApplicationsData();
   const { selectedMetrics, selectedMetricKeys } = useMetrics();
   const { metricsDef } = useMetrics();
   const { sort } = useSort();
   const { timespans, selectedTimespan } = useTimespan();
 
   // const [medianMetricKey, setMedianMetricKey] = useState(selectedMetrics[0]);
-  const [lastMedianMetric, setLastMedianMetric] = useState(sort.metric);
-  const [lastMedianMetricKey, setLastMedianMetricKey] = useState(sort.metric === "gas_fees" ? "gas_fees_eth" : sort.metric);
-
-  useEffect(() => {
-    if(Object.keys(metricsDef).includes(sort.metric)){
-      let key = sort.metric;
-      if (sort.metric === "gas_fees")
-        key = "gas_fees_eth";
-
-      setLastMedianMetric(sort.metric);
-      setLastMedianMetricKey(key);
-    }
-    
-  }, [metricsDef, sort.metric]);
+  // const [lastMedianMetric, setLastMedianMetric] = useState(sort.metric);
+  // const [lastMedianMetricKey, setLastMedianMetricKey] = useState(sort.metric === "gas_fees" ? "gas_fees_eth" : sort.metric);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -80,7 +68,7 @@ export default function Page() {
   const { topGainers, topLosers } = useMemo(() => {
     // let medianMetricKey = Object.keys(metricsDef).includes(sort.metric) ? sort.metric : "gas_fees";
 
-    const medianMetricValues = applicationDataAggregated.map((application) => application[lastMedianMetricKey])
+    const medianMetricValues = applicationDataAggregated.map((application) => application[medianMetricKey])
       .sort((a, b) => a - b);
 
     const medianValue = medianMetricValues[Math.floor(medianMetricValues.length / 2)];
@@ -91,19 +79,19 @@ export default function Page() {
 
     // filter out applications with < median value of selected metric and with previous value of 0
     const filteredApplications = applicationDataAggregated
-      .filter((application) => application[lastMedianMetricKey] > medianValue && application["prev_" + lastMedianMetricKey] > 0);
+      .filter((application) => application[medianMetricKey] > medianValue && application["prev_" + medianMetricKey] > 0);
     // console.log("filteredApplications", filteredApplications);
 
     // top 3 applications with highest change_pct
     return {
       topGainers: [...filteredApplications]
-        .sort((a, b) => b[lastMedianMetricKey + "_change_pct"] - a[lastMedianMetricKey + "_change_pct"])
+        .sort((a, b) => b[medianMetricKey + "_change_pct"] - a[medianMetricKey + "_change_pct"])
         .slice(0, 3),
       topLosers: [...filteredApplications]
-        .sort((a, b) => a[lastMedianMetricKey + "_change_pct"] - b[lastMedianMetricKey + "_change_pct"])
+        .sort((a, b) => a[medianMetricKey + "_change_pct"] - b[medianMetricKey + "_change_pct"])
         .slice(0, 3),
     }
-  }, [applicationDataAggregated, lastMedianMetricKey]);
+  }, [applicationDataAggregated, medianMetricKey]);
 
   const hideTopGainersAndLosers = useMemo(() => {
     return selectedTimespan === "max" || selectedStringFilters.length > 0;
@@ -120,10 +108,10 @@ export default function Page() {
         {/* {sort.metric} {lastMedianMetric} {lastMedianMetricKey} */}
         <Container className={`pt-[30px]`}>
           <div className="flex flex-col gap-y-[10px] ">
-            <div className="heading-large">Top Gainers and Losers by {metricsDef[lastMedianMetric].name}</div>
+            <div className="heading-large">Top Gainers and Losers by {metricsDef[medianMetric].name}</div>
             <div className="flex justify-between items-center gap-x-[10px]">
             <div className="text-xs">
-              Projects that saw the biggest change in {metricsDef[lastMedianMetric].name} over the last {timespans[selectedTimespan].label}.
+              Projects that saw the biggest change in {metricsDef[medianMetric].name} over the last {timespans[selectedTimespan].label}.
             </div>
             <Tooltip placement="left">
               <TooltipTrigger>
@@ -140,19 +128,19 @@ export default function Page() {
         </Container>
         <Container className={`hidden h-[450px] lg:h-[300px] md:grid md:grid-rows-3 md:grid-flow-col lg:grid-rows-2 lg:grid-flow-row pt-[10px] lg:grid-cols-3 gap-[10px]`}>
           {topGainers.map((application, index) => (
-            <ApplicationCard key={index} application={application} metric={lastMedianMetric} />
+            <ApplicationCard key={index} application={application} />
           ))}
           {topLosers.map((application, index) => (
-            <ApplicationCard key={index} application={application} metric={lastMedianMetric} />
+            <ApplicationCard key={index} application={application} />
           ))}
           {isLoading && new Array(6).fill(0).map((_, index) => (
-            <ApplicationCard key={index} application={undefined} metric={lastMedianMetric} />
+            <ApplicationCard key={index} application={undefined} />
           ))}
         </Container>
         </div>
         {/* <Container> */}
         <div className={`block md:hidden h-[150px] pt-[10px]`}>
-          <CardSwiper cards={[...topGainers.map((application, index) => <ApplicationCard key={index} application={application} metric={lastMedianMetric} />), ...topLosers.map((application, index) => <ApplicationCard key={3 + index} application={application} metric={lastMedianMetric} />)]} />
+          <CardSwiper cards={[...topGainers.map((application, index) => <ApplicationCard key={index} application={application} />), ...topLosers.map((application, index) => <ApplicationCard key={3 + index} application={application} />)]} />
         </div>
       </div>
       {/* </Container> */}
@@ -161,7 +149,7 @@ export default function Page() {
         <div className="flex flex-col gap-y-[10px]">
           <div className="heading-large">Top Ranked</div>
           <div className="text-xs">
-            Applications ranked by {metricsDef[lastMedianMetric].name} and any applied chain or string filter(s). You can apply filters by clicking on the chain icons or by using the search bar.
+            Applications ranked by {metricsDef[medianMetric].name} and any applied chain or string filter(s). You can apply filters by clicking on the chain icons or by using the search bar.
           </div>
         </div>
       </Container>

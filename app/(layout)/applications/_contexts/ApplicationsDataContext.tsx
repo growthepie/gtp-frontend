@@ -3,7 +3,7 @@ import ShowLoading from "@/components/layout/ShowLoading";
 import { ApplicationsURLs, MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { AppDatum } from "@/types/applications/AppOverviewResponse";
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { useLocalStorage } from "usehooks-ts";
 import { useTimespan } from "./TimespanContext";
@@ -201,6 +201,15 @@ export type ApplicationsDataContextType = {
   applicationsChains: string[];
   selectedStringFilters: string[];
   setSelectedStringFilters: (value: string[]) => void;
+  medianMetric: string;
+  medianMetricKey: string;
+  setMedianMetric: (value: string) => void;
+  setMedianMetricKey: (value: string) => void;
+}
+
+const getMetricKeyFromMetric = (metric: string) => {
+  if (metric === "gas_fees") return "gas_fees_eth";
+  return metric;
 }
 
 export const ApplicationsDataContext = createContext<ApplicationsDataContextType | undefined>(undefined);
@@ -219,6 +228,19 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
   
   const [selectedChains, setSelectedChains] = useState<string[]>([]);
   const [selectedStringFilters, setSelectedStringFilters] = useState<string[]>([]);
+
+  const [medianMetric, setMedianMetric] = useState<string>(getMetricKeyFromMetric(sort.metric));
+  const [medianMetricKey, setMedianMetricKey] = useState<string>(sort.metric);
+
+  useEffect(() => {
+    if(Object.keys(metricsDef).includes(sort.metric)){
+      const key = getMetricKeyFromMetric(sort.metric);
+
+      setMedianMetric(sort.metric);
+      setMedianMetricKey(key);
+    }
+    
+  }, [metricsDef, sort.metric]);
 
   /* < Query Params > */
   
@@ -370,6 +392,10 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
         applicationsChains,
         selectedStringFilters: selectedStringFiltersParam,
         setSelectedStringFilters: (value) => handleFilters(FilterType.SEARCH, value),
+        medianMetric,
+        medianMetricKey,
+        setMedianMetric: (value) => setMedianMetric(value),
+        setMedianMetricKey: (value) => setMedianMetricKey(value),
       }}
     >
       <ShowLoading

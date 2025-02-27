@@ -359,55 +359,46 @@ export const ProjectDetailsLinks = memo(({ owner_project, mobile }: { owner_proj
 
 ProjectDetailsLinks.displayName = 'Links';
 
-export const ApplicationCard = memo(({ application, className, width, metric }: { application?: AggregatedDataRow, className?: string, width?: number, metric: string }) => {
+export const ApplicationCard = memo(({ application, className, width }: { application?: AggregatedDataRow, className?: string, width?: number}) => {
+  const { medianMetric, medianMetricKey } = useApplicationsData();
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { metricsDef } = useMetrics();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const router = useRouter();
   const { selectedTimespan } = useTimespan();
 
-  console.log("ApplicationCard::metric", metric);
-
-  const metricKey = useMemo(() => {
-    let key = metric;
-    if (metric === "gas_fees")
-      key = showUsd ? "gas_fees_usd" : "gas_fees_eth";
-
-    return key;
-  }, [metric, showUsd]);
-
   const rank = useMemo(() => {
     if (!application) return null;
 
-    return application[`rank_${metricKey}`];
+    return application[`rank_${medianMetricKey}`];
 
-  }, [application, metricKey]);
+  }, [application, medianMetricKey]);
 
   const value = useMemo(() => {
     if (!application) return null;
 
-    return application[metricKey];
-  }, [application, metricKey]);
+    return application[medianMetricKey];
+  }, [application, medianMetricKey]);
 
   const prefix = useMemo(() => {
-    const def = metricsDef[metric].units;
+    const def = metricsDef[medianMetric].units;
 
     if (Object.keys(def).includes("usd")) {
       return showUsd ? def.usd.prefix : def.eth.prefix;
     } else {
       return Object.values(def)[0].prefix;
     }
-  }, [metricsDef, metric, showUsd]);
+  }, [metricsDef, medianMetric, showUsd]);
 
   const decimals = useMemo(() => {
-    const def = metricsDef[metric].units;
+    const def = metricsDef[medianMetric].units;
 
     if (Object.keys(def).includes("usd")) {
       return showUsd ? def.usd.decimals : def.eth.decimals;
     } else {
       return Object.values(def)[0].decimals;
     }
-  }, [metricsDef, metric, showUsd]);
+  }, [metricsDef, medianMetric, showUsd]);
 
   if (!application) {
     return (
@@ -435,9 +426,9 @@ export const ApplicationCard = memo(({ application, className, width, metric }: 
           <div className="h-[20px] flex items-center gap-x-[3px]">
             <div className="numbers-xs text-[#5A6462]">Rank</div>
             <div className="numbers-xs text-[#CDD8D3]">{rank}</div>
-            {application[`${metricKey}_change_pct`] !== Infinity ? (
-              <div className={`flex justify-end w-[60px] numbers-xs ${application[`${metricKey}_change_pct`] < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
-                {application[`${metricKey}_change_pct`] < 0 ? '-' : '+'}{formatNumber(Math.abs(application[`${metricKey}_change_pct`]), {defaultDecimals: 1, thresholdDecimals: {base: 1}})}%
+            {application[`${medianMetricKey}_change_pct`] !== Infinity ? (
+              <div className={`flex justify-end w-[60px] numbers-xs ${application[`${medianMetricKey}_change_pct`] < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
+                {application[`${medianMetricKey}_change_pct`] < 0 ? '-' : '+'}{formatNumber(Math.abs(application[`${medianMetricKey}_change_pct`]), {defaultDecimals: 1, thresholdDecimals: {base: 1}})}%
               </div>
             ) : <div className="w-[49px]">&nbsp;</div>}
           </div>
