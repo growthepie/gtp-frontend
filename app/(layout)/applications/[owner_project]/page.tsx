@@ -639,7 +639,7 @@ const ContractsTable = () => {
 
   // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() =>
-    `26px 280px 95px minmax(135px,800px) ${selectedMetricKeys.map(() => `140px`).join(" ")}`,
+    `26px 280px 110px minmax(135px,800px) ${selectedMetricKeys.map(() => `140px`).join(" ")}`,
     [selectedMetricKeys]
   );
 
@@ -782,7 +782,7 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict }) => {
 
   // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() =>
-    `26px 280px 95px minmax(135px,800px) ${selectedMetricKeys.map(() => `140px`).join(" ")}`,
+    `26px 280px 110px minmax(135px,800px) ${selectedMetricKeys.map(() => `140px`).join(" ")}`,
     [selectedMetricKeys]
   );
 
