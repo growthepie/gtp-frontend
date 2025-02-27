@@ -906,18 +906,18 @@ const SimilarApplications = ({ owner_project }: { owner_project: string }) => {
       <div>
         <Container className="hidden md:grid md:grid-rows-3 md:grid-flow-col lg:grid-rows-2 lg:grid-flow-row pt-[10px] lg:grid-cols-3 gap-[10px]">
           {topGainers.map((application, index) => (
-            <ApplicationCard key={application.owner_project} application={application} metric={medianMetric} />
+            <ApplicationCard key={application.owner_project} application={application} />
           ))}
           {/* {topLosers.map((application, index) => (
             <ApplicationCard key={application.owner_project} application={application} metric={sort.metric} />
           ))} */}
           {isLoading && new Array(6).fill(0).map((_, index) => (
-            <ApplicationCard key={index} application={undefined} metric={medianMetric} />
+            <ApplicationCard key={index} application={undefined} />
           ))}
         </Container>
       </div>
       <div className="block md:hidden pt-[10px]">
-        <CardSwiper cards={[...topGainers.map((application) => <ApplicationCard key={application.owner_project} application={application} metric={medianMetric} />)]} />
+        <CardSwiper cards={[...topGainers.map((application) => <ApplicationCard key={application.owner_project} application={application} />)]} />
       </div>
     </>
   )
