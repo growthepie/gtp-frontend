@@ -13,7 +13,7 @@ import { MasterURL } from "@/lib/urls";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { SplideSlide, SplideTrack } from "@splidejs/react-splide";
-
+import { useLocalStorage } from "usehooks-ts";
 
 export default function LandingSwiperItems() {
   const {
@@ -22,7 +22,7 @@ export default function LandingSwiperItems() {
     isLoading: landingLoading,
     isValidating: landingValidating,
   } = useSWR<any>(LandingURL);
-  
+  const [focusEnabled] = useLocalStorage("focusEnabled", true);
 
   const { data: master, error: masterError } =
     useSWR<MasterResponse>(MasterURL);
@@ -34,9 +34,11 @@ export default function LandingSwiperItems() {
 
     return (
     <>
-      {master && (
+      {master && landing && (
         <ChainComponent
           data={landing.data.all_l2s}
+          ethData={landing.data.ethereum}
+          focusEnabled={focusEnabled}
           chain={"all_l2s"}
           category={metric_id}
           selectedTimespan={"max"}

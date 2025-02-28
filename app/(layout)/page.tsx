@@ -13,6 +13,7 @@ import Link from "next/link";
 import Image from "next/image";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import LandingSwiperItems from "@/components/layout/LandingSwiperItems";
+import { GTPIcon } from "@/components/layout/GTPIcon";
 // import { LandingURL } from "@/lib/urls";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -32,27 +33,31 @@ export default async function Page() {
           className="font-bold leading-[1.2] text-[24px] sm:text-[32px] md:text-[36px] max-w-[900px]"
           as="h1"
         >
-          Mastering Ethereum Layer 2s
+          Understand every slice of Ethereum
         </Heading>
-        <Subheading className="text-xs sm:text-sm md:text-[20px] font-semibold leading-[1.2]">
-          Your Gateway to Curated Analytics and Knowledge
-        </Subheading>
+        <div className="flex items-center gap-x-[10px]">
+          <Subheading className="text-xs sm:text-sm md:text-xl font-semibold leading-[1.2]">
+            Ethereum is more than one blockchain. It's many.
+          </Subheading>
+          <a className="flex p-[3px] bg-[#344240] rounded-full items-center gap-x-[4px] relative top-[1px]" href="https://ethereum.org/" target="_blank">
+              <GTPIcon icon={"ethereum-logo-monochrome"} size="sm" className="" />
+              <div className="text-xs">What is Ethereum?</div>
+              <Icon icon="feather:arrow-right" className="w-[12px] h-[12px]" />
+          </a>
+        </div>
       </Container>
       <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[30px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
         <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
-          <Icon
-            icon="gtp:fundamentals"
-            className="w-[30px] h-[30px] md:w-9 md:h-9"
-          />
+          <GTPIcon icon={"gtp-ethereumlogo"} size="lg" />
           <Heading
             id="layer-2-traction-title"
-            className="text-[20px] md:text-[30px] leading-[1.2] font-semibold"
+            className="heading-large-lg"
           >
-            Layer 2 Traction
+            Ethereum Ecosystem Traction
           </Heading>
         </div>
-        <Subheading className="text-base leading-normal md:leading-snug px-[5px] lg:px-[45px]">
-          <div>Aggregated daily metrics across all tracked Layer 2s.</div>
+        <Subheading className="text-md px-[5px] ">
+          <div>These aggregated metrics across Ethereum Mainnet and all tracked Layer 2s give you a glimpse of the entire ecosystem.</div>
         </Subheading>
       </Container>
       {/* <Container className="!px-0 fade-edge-div pb-[24px] -mb-[24px]"> */}
@@ -63,17 +68,13 @@ export default async function Page() {
 
       <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
         <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
-          <Icon
-            icon="gtp:gtp-pie"
-            className="w-[30px] h-[30px] md:w-9 md:h-9"
-          />
-          <Heading className="text-[20px] md:text-[30px] leading-[1.2] font-semibold">
-            Layer 2 Weekly Engagement
+          <GTPIcon icon={"gtp-ethereum-weekly"} size="lg" />
+          <Heading className="heading-large-lg">
+            Ethereum Layer 2 User Base
           </Heading>
         </div>
         <Subheading className="text-base leading-normal md:leading-snug px-[5px] lg:px-[45px]">
-          Number of distinct addresses interacting with one or multiple Layer 2s
-          in a given week.
+          Number of unique addresses interacting with one or multiple chains in the Ethereum ecosystem in a given week.
         </Subheading>
       </Container>
       <LandingUserBaseChart />

@@ -9,6 +9,21 @@
   default_chain_selection: string[];
   blockspace_categories: BlockspaceCategories;
   da_layers: DataAvailabilityLayers;
+  maturity_levels: { [key: string]: MaturityLevels};
+}
+
+
+export interface MaturityLevels {
+  name: string;
+  description: string;
+  conditions: {
+    [key: string]: {
+      tvs: number;
+      stage: string;
+      risks: number,
+      age: number,
+    }
+  }
 }
 
 export interface Chains {
@@ -42,6 +57,7 @@ export interface ChainInfo {
     width?: number;
     height?: number;
   };
+  maturity: string;
   da_layer: string;
   technology: string;
   purpose: string;

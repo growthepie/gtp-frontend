@@ -15,6 +15,7 @@ import ShowLoading from "@/components/layout/ShowLoading";
 import HorizontalScrollContainer from "../HorizontalScrollContainer";
 import { isMobile } from "react-device-detect";
 import { useMaster } from "@/contexts/MasterContext";
+import { useLocalStorage } from "usehooks-ts";
 
 export default function LandingUserBaseChart() {
   const [isSidebarOpen] = useState(false);
@@ -40,39 +41,18 @@ export default function LandingUserBaseChart() {
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("weekly");
 
-  const [selectedMetric, setSelectedMetric] = useState("Total Users");
+  const [selectedMetric, setSelectedMetric] = useState("Total Ethereum Ecosystem");
 
+  
   useEffect(() => {
     if (landing) {
-      setData(landing.data.metrics.user_base[selectedTimeInterval]);
+      setData(landing.data.metrics.engagement[selectedTimeInterval]);
     }
   }, [landing, selectedTimeInterval]);
 
-  useEffect(() => {
-    if (!data) return;
+  
 
-    setSelectedChains(
-      Object.keys(data.chains)
-        .filter((chainKey) => AllChainsByKeys.hasOwnProperty(chainKey))
-        .map((chain) => chain),
-    );
-  }, [AllChainsByKeys, data, landing, selectedMetric, selectedTimeInterval]);
-
-  const chains = useMemo(() => {
-    if (!data || !master) return [];
-
-    return AllChains.filter(
-      (chain) =>
-        Object.keys(data.chains).includes(chain.key) &&
-        Get_SupportedChainKeys(master) &&
-        chain.key != "ethereum",
-    );
-  }, [AllChains, data, master]);
-
-  const [selectedChains, setSelectedChains] = useState(
-    AllChains.map((chain) => chain.key),
-  );
-
+  
   return (
     <>
       <ShowLoading
@@ -89,16 +69,7 @@ export default function LandingUserBaseChart() {
               } rounded-[15px] pb-[15px] md:pb-[42px]`}
           >
             <LandingChart
-              data={Object.keys(data.chains)
-                .filter((chain) => selectedChains.includes(chain))
-                .map((chain) => {
-                  return {
-                    name: chain,
-                    // type: 'spline',
-                    types: data.chains[chain].data.types,
-                    data: data.chains[chain].data.data,
-                  };
-                })}
+              data={data}
               master={master}
               sources={landing.data.metrics.user_base.source}
               cross_chain_users={data.cross_chain_users}
