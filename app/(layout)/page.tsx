@@ -37,7 +37,7 @@ export default async function Page() {
         </Heading>
         <div className="flex items-center gap-x-[10px]">
           <Subheading className="text-xs sm:text-sm md:text-xl font-semibold leading-[1.2]">
-            Ethereum is more than one blockchain. It's many.
+            Ethereum is more than one blockchain. It&apos;s many.
           </Subheading>
           <a className="flex p-[3px] bg-[#344240] rounded-full items-center gap-x-[4px] relative top-[1px]" href="https://ethereum.org/" target="_blank">
               <GTPIcon icon={"ethereum-logo-monochrome"} size="sm" className="" />
