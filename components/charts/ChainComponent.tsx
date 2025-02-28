@@ -446,7 +446,7 @@ export default function ChainComponent({
   const tooltipFormatter = useCallback(
     function (this: Highcharts.TooltipFormatterContextObject) {
       const { x, points } = this;
-      console.log(this)
+
 
       if (!points || !x) return;
 
@@ -480,7 +480,7 @@ export default function ChainComponent({
           const { series, y, percentage } = point;
           const { name } = series;
 
-          console.log(name)
+  
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-1 ">
