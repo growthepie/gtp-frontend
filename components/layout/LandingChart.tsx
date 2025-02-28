@@ -1657,7 +1657,7 @@ export default function LandingChart({
               </div>
             </div>
           )}
-          <div className="absolute bottom-[53.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50">
+          <div className="absolute bottom-[56.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50">
             <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
           </div>
           {filteredData.length === 0 && (
@@ -1671,37 +1671,53 @@ export default function LandingChart({
       <div className="h-[32px] lg:h-[80px] flex flex-col justify-start ">
         <div className="flex justify-between items-center rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative h-[44px]">
           {/* toggle ETH */}
-          <Tooltip placement="left" allowInteract>
-            <TooltipTrigger>
-              <div className="bottom-[28px] right-[8px] p-0 -mr-0.5 lg:p-1.5 z-10 lg:mr-0 absolute lg:static lg:mb-0.5">
-                <Icon icon="feather:info" className="w-6 h-6" />
+          <div>
+            <div className={`z-10 pl-2 ${focusEnabled ? "flex" : "hidden"}`} >
+              <Switch
+                checked={showEthereumMainnet}
+                onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
+              />
+              <div className="ml-2 block md:hidden xl:block leading-[1.75]">
+                Show Ethereum
               </div>
-            </TooltipTrigger>
-            <TooltipContent className="-mt-10 pr-10 lg:mt-0 z-50 flex items-center justify-center lg:pr-[3px]">
-              <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto md:w-[435px] h-[80px] flex items-center">
-                <div className="flex flex-col space-y-1">
-                  <div className="font-bold text-sm leading-snug">
-                    Data Sources:
-                  </div>
-                  <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
-                    {sources
-                      .map<React.ReactNode>((s) => (
-                        <Link
-                          key={s}
-                          rel="noopener noreferrer"
-                          target="_blank"
-                          href={Sources[s] ?? ""}
-                          className="hover:text-forest-500 dark:hover:text-forest-500 underline"
-                        >
-                          {s}
-                        </Link>
-                      ))
-                      .reduce((prev, curr) => [prev, ", ", curr])}
-                  </div>
-                </div>
+              <div className="ml-2 hidden md:block xl:hidden leading-[1.75]">
+                Show ETH
               </div>
-            </TooltipContent>
-          </Tooltip>
+            </div>
+            <div className={`${focusEnabled ? "hidden" : "flex"} items-center`}>
+              <Tooltip placement="left" allowInteract >
+                <TooltipTrigger>
+                  <div className={`bottom-[28px] right-[8px] p-0 -mr-0.5 lg:p-1.5 z-10 lg:mr-0 absolute lg:static lg:mb-0.5`}>
+                    <Icon icon="feather:info" className="w-6 h-6" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="-mt-10 pr-10 lg:mt-0 z-50 flex items-center justify-center lg:pr-[3px]">
+                  <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto md:w-[435px] h-[80px] flex items-center">
+                    <div className="flex flex-col space-y-1">
+                      <div className="font-bold text-sm leading-snug">
+                        Data Sources:
+                      </div>
+                      <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
+                        {sources
+                          .map<React.ReactNode>((s) => (
+                            <Link
+                              key={s}
+                              rel="noopener noreferrer"
+                              target="_blank"
+                              href={Sources[s] ?? ""}
+                              className="hover:text-forest-500 dark:hover:text-forest-500 underline"
+                            >
+                              {s}
+                            </Link>
+                          ))
+                          .reduce((prev, curr) => [prev, ", ", curr])}
+                      </div>
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
           <div className="flex justify-end items-center absolute top-[56px] lg:-top-[10px] right-[20px] rounded-full z-10">
             <div className="flex justify-center items-center">
               <div className="flex items-center justify-center gap-x-[20px] pr-[10px]">
