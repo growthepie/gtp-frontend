@@ -234,7 +234,7 @@ function MetricChart({
   const { theme } = useTheme();
   const { isSidebarOpen, isMobile, setEmbedData, embedData } = useUIContext();
   const { AllChainsByKeys, data: master, metrics, da_metrics, chains, da_layers } = useMaster();
-
+  const [focusEnabled] = useLocalStorage("focusEnabled", false);
   const metricsDict = metric_type === "fundamentals" ? metrics : da_metrics;
   const chainsDict = metric_type === "fundamentals" ? chains : da_layers;
 

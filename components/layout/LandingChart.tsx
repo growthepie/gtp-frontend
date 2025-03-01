@@ -337,6 +337,9 @@ export default function LandingChart({
     embed_show_mainnet ?? false,
   );
 
+
+
+
   const [totalUsersIncrease, setTotalUsersIncrease] = useState(0);
 
   const isMobile = useMediaQuery("(max-width: 767px)");
@@ -698,10 +701,16 @@ export default function LandingChart({
       });
   
       retData.push({ name: "all_l2s", data: sumData, types: types });
+      if(focusEnabled && showEthereumMainnet){
+        retData.push({ name: "ethereum", data: compositions.only_l1, types: types });
+      }
     } else {
       compositionKeys.forEach((key) => {
         retData.push({ name: key, data: compositions[key], types: types });
       });
+      if(focusEnabled && showEthereumMainnet){
+        retData.push({ name: "ethereum", data: compositions.only_l1, types: types });
+      }
     }
   
     return retData;
