@@ -299,27 +299,50 @@ export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, se
     </>
   )
 }
+type SocialLink = {
+  key: string;
+  icon: string;
+  prefix: string;
+};
 
-export const ProjectDetailsLinks = memo(({ owner_project, mobile }: { owner_project: string, mobile?: boolean }) => {
+const SOCIAL_LINKS: SocialLink[] = [
+  { key: "twitter", icon: "gtp:x", prefix: "https://x.com/" },
+  { key: "main_github", icon: "gtp:github", prefix: "https://github.com/" },
+  { key: "website", icon: "feather:monitor", prefix: "" },
+  // { key: "discord", icon: "gtp:discord", prefix: "" }
+];
+
+interface ProjectDetailsLinksProps {
+  owner_project: string;
+  mobile?: boolean;
+}
+
+export const ProjectDetailsLinks = memo(({ owner_project, mobile }: ProjectDetailsLinksProps) => {
   "use client";
   const { ownerProjectToProjectData } = useProjectsMetadata();
-  const linkPrefixes = ["https://x.com/", "https://github.com/", "", ""];
-  const icons = ["gtp:x", "gtp:github", "feather:monitor", "gtp:discord"];
-  const keys = ["twitter", "main_github", "website", "discord"];
+  const projectData = ownerProjectToProjectData[owner_project];
 
-  if(mobile) {
+  if (!projectData) {
+    return null;
+  }
+
+  // Filter valid links (not null or empty string)
+  const validLinks = SOCIAL_LINKS.filter(link => 
+    projectData[link.key] !== null && projectData[link.key] !== ""
+  );
+
+  if (mobile) {
     return (
       <div className="flex flex-col items-center justify-start gap-y-[10px]">
-        {ownerProjectToProjectData[owner_project] && keys.filter(
-          (key) => ownerProjectToProjectData[owner_project][key]
-        ).map((key, index) => (
+        {validLinks.map(({ key, icon, prefix }) => (
           <Link
             key={key}
-              href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
-              target="_blank"
-              className={`flex !size-[36px] bg-[#1F2726] rounded-full justify-center items-center ${key=== "website" && "gap-x-[6px] px-[5px] w-fit"}`}
-            >
-              {<Icon icon={icons[index]} className="size-[15px] select-none" />}
+            href={`${prefix}${projectData[key]}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex !size-[36px] bg-[#1F2726] rounded-full justify-center items-center"
+          >
+            <Icon icon={icon} className="size-[15px] select-none" />
           </Link>
         ))}
       </div>
@@ -328,39 +351,32 @@ export const ProjectDetailsLinks = memo(({ owner_project, mobile }: { owner_proj
 
   return (
     <div className="flex items-center gap-x-[10px]">
-      {ownerProjectToProjectData[owner_project] && keys.filter(
-        (key) => ownerProjectToProjectData[owner_project][key]
-      ).map((key, index) => (
+      {validLinks.map(({ key, icon, prefix }) => (
         <Link
           key={key}
-            href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
-            target="_blank"
-            className={`size-[54px] bg-[#1F2726] rounded-full flex justify-center items-center ${key=== "website" && "gap-x-[6px] px-[5px] w-fit"}`}
-          >
-            {key === "website" ? (
-              <>
-                {ownerProjectToProjectData[owner_project] && (
-                  <ApplicationIcon owner_project={owner_project} size="md" />
-                )}
-                <div className="text-xxxs">Website</div>
-                <div className="size-[24px] rounded-full bg-[#344240] flex justify-center items-center">
-                  <Icon icon="feather:arrow-right" className="size-[17px] text-[#CDD8D3]" />
-                </div>
-              </>
-            ) : (
-            <Icon
-              icon={icons[index]}
-              className="size-[24px] select-none"
-            />
-            
-        )}
+          href={`${prefix}${projectData[key]}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`${key === "website" ? "gap-x-[6px] px-[5px] w-fit h-[54px]" : "size-[54px]"} bg-[#1F2726] rounded-full flex justify-center items-center`}
+        >
+          {key === "website" ? (
+            <>
+              <ApplicationIcon owner_project={owner_project} size="md" />
+              <div className="text-xxxs">Website</div>
+              <div className="size-[24px] rounded-full bg-[#344240] flex justify-center items-center">
+                <Icon icon="feather:arrow-right" className="size-[17px] text-[#CDD8D3]" />
+              </div>
+            </>
+          ) : (
+            <Icon icon={icon} className="size-[24px] select-none" />
+          )}
         </Link>
       ))}
     </div>
   );
 });
 
-ProjectDetailsLinks.displayName = 'Links';
+ProjectDetailsLinks.displayName = "ProjectDetailsLinks";
 
 export const ApplicationCard = memo(({ application, className, width }: { application?: AggregatedDataRow, className?: string, width?: number}) => {
   const { medianMetric, medianMetricKey } = useApplicationsData();
