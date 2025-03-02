@@ -385,6 +385,13 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const router = useRouter();
   const { selectedTimespan } = useTimespan();
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  useEffect(() => {
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    setIsTouchDevice(isTouch);
+  }, []);
+
 
   const rank = useMemo(() => {
     if (!application) return null;
@@ -461,53 +468,21 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
           </div>
         </div>
         </div>
-        {/* <div className="w-full h-[20px] flex justify-between items-center">
-          <div className="flex items-center gap-x-[3px]">
-            <div className="numbers-xs text-[#CDD8D3]">{numContractsString(application)}</div>
-            <div className="text-xs text-[#5A6462]">contracts</div>
-          </div>
-          <div className="flex items-end gap-x-[3px]">
-            <div className="numbers-xs text-[#5A6462]">Rank</div>
-            <div className="numbers-xs text-[#CDD8D3]">{rank}</div>
-          </div>
-        </div> */}
-
-        {/* <div className="w-full flex justify-between items-start">
-          <div/>
-          <div className="flex flex-col items-end gap-y-[2px]">
-            <div className="flex flex-col items-end justify-start gap-y-[3px]">
-              <div className="flex justify-end numbers-sm text-[#CDD8D3] w-[100px]">
-                {prefix}
-                {value?.toLocaleString("en-GB")}
-              </div>
-              <div className="flex items-end gap-x-[3px]">
-                {application[`${metricKey}_change_pct`] !== Infinity ? (
-                  <div className={`h-[3px] flex justify-end w-[45px] numbers-xxxs ${application[`${metricKey}_change_pct`] < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
-                    {application[`${metricKey}_change_pct`] < 0 ? '-' : '+'}{Math.abs(application[`${metricKey}_change_pct`]).toLocaleString("en-GB",{maximumFractionDigits:0})}%
-                  </div>
-                ) : (
-                  <div className="w-[49px]">&nbsp;</div>
-                )}
-            </div>
-            </div>
-          </div>
-        </div> */}
       </div>
       
       <div className="w-full flex items-center gap-x-[5px]">
         <ApplicationIcon owner_project={application.owner_project} size="md" />
-        {/* {ownerProjectToProjectData[application.owner_project] ? (
-          <div className="heading-large-md flex-1 group-hover:underline"><ApplicationDisplayName owner_project={application.owner_project} /></div>
-        ) : (
-          <div className="heading-large-md flex-1 opacity-60 group-hover:underline"><ApplicationDisplayName owner_project={application.owner_project} /></div>
-        )} */}
         <div className="heading-large-md flex-1 overflow-visible truncate">
-          {/* <div className="relative group/tooltip heading-large-md w-fit group-hover:underline min-h-[32px] flex flex-col justify-center overflow-visible">
-          <ApplicationDisplayName owner_project={application.owner_project} />
-          <ApplicationTooltip application={application} />
-          </div> */}
           <Tooltip placement="bottom-start" allowInteract>
-            <TooltipTrigger className="group-hover:underline ">
+            <TooltipTrigger
+              className="group-hover:underline"
+              onClick={(e) => {
+                if(isTouchDevice) {
+                  e.stopPropagation();
+                  e.preventDefault();
+                }
+              }}
+            >
               <ApplicationDisplayName owner_project={application.owner_project} />
             </TooltipTrigger>
             <TooltipContent className="z-[99] left-0 ml-[20px]">
@@ -524,32 +499,6 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
           <Category category={ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].main_category : ""} />
         </div>
         <div className="h-[20px] flex items-center gap-x-[5px]">
-          {/* {application.origin_keys.map((chain, index) => (
-            <div
-              key={index}
-              className={`cursor-pointer ${selectedChains.includes(chain) ? '' : '!text-[#5A6462]'} hover:!text-inherit`} style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors["dark"][0] : '' }}
-              onClick={() => {
-                if (selectedChains.includes(chain)) {
-                  setSelectedChains(selectedChains.filter((c) => c !== chain));
-                } else {
-                  setSelectedChains([...selectedChains, chain]);
-                }
-              }}
-            >
-              {AllChainsByKeys[chain] && (
-                <Icon
-                  icon={`gtp:${AllChainsByKeys[
-                    chain
-                  ].urlKey
-                    }-logo-monochrome`}
-                  className="w-[15px] h-[15px]"
-                  style={{
-                    color: AllChainsByKeys[chain].colors["dark"][0],
-                  }}
-                />
-              )}
-            </div>
-          ))} */}
           <Chains origin_keys={application.origin_keys} />
         </div>
         

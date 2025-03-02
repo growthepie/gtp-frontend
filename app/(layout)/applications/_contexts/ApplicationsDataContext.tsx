@@ -3,7 +3,7 @@ import ShowLoading from "@/components/layout/ShowLoading";
 import { ApplicationsURLs, MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { AppDatum } from "@/types/applications/AppOverviewResponse";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { useLocalStorage } from "usehooks-ts";
 import { useTimespan } from "./TimespanContext";
@@ -215,12 +215,7 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
   const {ownerProjectToProjectData} = useProjectsMetadata();
   const {timespans, selectedTimespan, setSelectedTimespan, isMonthly, setIsMonthly} = useTimespan();
   const { sort, setSort } = useSort();
-  const { metricsDef , setSelectedMetrics, selectedMetrics} = useMetrics();
-  const getMetricKeyFromMetric = (metric: string) => {
 
-    if (metric === "gas_fees") return showUsd ? "gas_fees_usd" : "gas_fees_eth";
-    return metric;
-  }
 
   const { fetcher } = useSWRConfig();
   const fallbackFetcher = (url) => fetch(url).then((r) => r.json());
@@ -231,19 +226,24 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
   const [selectedChains, setSelectedChains] = useState<string[]>([]);
   const [selectedStringFilters, setSelectedStringFilters] = useState<string[]>([]);
 
+  const { metricsDef , setSelectedMetrics, selectedMetrics} = useMetrics();
+  
+  const getMetricKeyFromMetric = useCallback((metric: string) => {
+    if (metric === "gas_fees") return showUsd ? "gas_fees_usd" : "gas_fees_eth";
+    return metric;
+  }, [showUsd]);
+
   const [medianMetric, setMedianMetric] = useState<string>(getMetricKeyFromMetric(sort.metric));
   const [medianMetricKey, setMedianMetricKey] = useState<string>(sort.metric);
 
   useEffect(() => {
     if(Object.keys(metricsDef).includes(sort.metric)){
       const key = getMetricKeyFromMetric(sort.metric);
-     
-      
       setMedianMetric(sort.metric);
       setMedianMetricKey(key);
     }
     
-  }, [metricsDef, sort.metric, showUsd]);
+  }, [metricsDef, sort.metric, showUsd, getMetricKeyFromMetric]);
 
   /* < Query Params > */
 
@@ -258,16 +258,31 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
     [searchParams]
   );
 
+  // Update state when query params change
+  useEffect(() => {
+    const chainsFromUrl = searchParams.get("origin_key")?.split(",").filter(Boolean) || [];
+    const filtersFromUrl = searchParams.get("owner_project")?.split(",").filter(Boolean) || [];
+    
+    // Only update state if the values have changed
+    if (JSON.stringify(chainsFromUrl) !== JSON.stringify(selectedChains)) {
+      setSelectedChains(chainsFromUrl);
+    }
+    
+    if (JSON.stringify(filtersFromUrl) !== JSON.stringify(selectedStringFilters)) {
+      setSelectedStringFilters(filtersFromUrl);
+    }
+  }, [searchParams]);
+
   enum FilterType {
     SEARCH = "owner_project",
     CHAIN = "origin_key",
   }
   const handleFilters = (type: FilterType, value: string[]) => {
-    if (type === FilterType.CHAIN) 
-      setSelectedChains(value);
+    // if (type === FilterType.CHAIN) 
+    //   setSelectedChains(value);
 
-    if (type === FilterType.SEARCH) 
-      setSelectedStringFilters(value);
+    // if (type === FilterType.SEARCH) 
+    //   setSelectedStringFilters(value);
 
     updateSearchQuery({
       origin_key: selectedChains,
@@ -392,7 +407,6 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
         setSelectedChains: (value) => handleFilters(FilterType.CHAIN, value),
         applicationDataAggregated,
         isLoading: applicationsTimespanLoading || masterLoading,
-
         applicationsChains,
         selectedStringFilters: selectedStringFiltersParam,
         setSelectedStringFilters: (value) => handleFilters(FilterType.SEARCH, value),

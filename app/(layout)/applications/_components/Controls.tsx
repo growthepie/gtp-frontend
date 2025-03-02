@@ -68,9 +68,13 @@ export default function Controls() {
                   isSelected={selectedTimespan === key}
                 >
                   {selectedTimespan === key
-                    ? timespans[key].label
+                    ? (
+                      <>
+                        <div className="hidden md:block">{timespans[key].label}</div>
+                        <div className="block md:hidden">{timespans[key].shortLabel}</div>
+                      </>
+                      )
                     : timespans[key].shortLabel}
-                    {/* {timespans[key].shortLabel} */}
                 </TopRowChild>
               )
           )}
