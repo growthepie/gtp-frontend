@@ -39,12 +39,7 @@ export default function Page() {
   const { applicationDataAggregated, isLoading, selectedStringFilters, medianMetric, medianMetricKey } = useApplicationsData();
   const { selectedMetrics, selectedMetricKeys } = useMetrics();
   const { metricsDef } = useMetrics();
-  const { sort } = useSort();
   const { timespans, selectedTimespan } = useTimespan();
-
-  // const [medianMetricKey, setMedianMetricKey] = useState(selectedMetrics[0]);
-  // const [lastMedianMetric, setLastMedianMetric] = useState(sort.metric);
-  // const [lastMedianMetricKey, setLastMedianMetricKey] = useState(sort.metric === "gas_fees" ? "gas_fees_eth" : sort.metric);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -66,21 +61,15 @@ export default function Page() {
   }, []);
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { topGainers, topLosers } = useMemo(() => {
-    // let medianMetricKey = Object.keys(metricsDef).includes(sort.metric) ? sort.metric : "gas_fees";
-
     const medianMetricValues = applicationDataAggregated.map((application) => application[medianMetricKey])
       .sort((a, b) => a - b);
 
     const medianValue = medianMetricValues[Math.floor(medianMetricValues.length / 2)];
     const convertToETH = showUsd ? true : false;
-    // console.log("medianMetricKey", medianMetricKey);
-    // console.log("medianValue", medianValue);
-    // console.log("applicationDataAggregated", applicationDataAggregated);
 
     // filter out applications with < median value of selected metric and with previous value of 0
     const filteredApplications = applicationDataAggregated
       .filter((application) => application[medianMetricKey] > medianValue && application["prev_" + (convertToETH ? "gas_fees_eth" : medianMetricKey)] > 0);
-    // console.log("filteredApplications", filteredApplications);
 
     // top 3 applications with highest change_pct
     return {
@@ -102,12 +91,7 @@ export default function Page() {
   return (
     <>
     <div>
-      {/* <Container className="sticky top-[230px] z-10 pt-[30px]"> */}
-      {/* <div>{JSON.stringify(sort)}</div>
-      <div>metrics: {JSON.stringify(selectedMetrics)}</div>
-      <div>metricKeys{JSON.stringify(selectedMetricKeys)}</div> */}
       <div className={`transition-[max-height,opacity] duration-300 ${hideTopGainersAndLosers === true ? "overflow-hidden max-h-0 opacity-0" : "max-h-[calc(78px+150px)] md:max-h-[530px] lg:h-[380px] opacity-100"}`}>
-        {/* {sort.metric} {lastMedianMetric} {lastMedianMetricKey} */}
         <Container className={`pt-[30px]`}>
           <div className="flex flex-col gap-y-[10px] ">
             <div className="heading-large">Top Gainers and Losers by {metricsDef[medianMetric].name}</div>
@@ -140,13 +124,10 @@ export default function Page() {
           ))}
         </Container>
         </div>
-        {/* <Container> */}
         <div className={`block md:hidden h-[150px] pt-[10px]`}>
           <CardSwiper cards={[...topGainers.map((application, index) => <ApplicationCard key={index} application={application} />), ...topLosers.map((application, index) => <ApplicationCard key={3 + index} application={application} />)]} />
         </div>
       </div>
-      {/* </Container> */}
-      {/* {applicationDataAggregated.length > 0 && <ApplicationCardSwiper />} */}
       <Container className="pt-[30px] pb-[15px]">
         <div className="flex flex-col gap-y-[10px]">
           <div className="heading-large">Top Ranked</div>
@@ -155,28 +136,9 @@ export default function Page() {
           </div>
         </div>
       </Container>
-      {/* <HorizontalScrollContainer reduceLeftMask={true}> */}
       <HorizontalScrollContainer className="!px-0" reduceLeftMask={true}>
-        {/* <div className={`absolute inset-0`}>
-          <div
-            className="bg-[#151a19] z-[0] absolute inset-0 pointer-events-none"
-            style={{
-              // -88px if scrolled to top of page, -88px + scrollY if scrolled down (max 0)
-              top: `${Math.min(0, -88 + scrollY)}px`,
-              backgroundPosition: `top`,
-              // maskImage: isMobile ? `linear-gradient(to bottom, white 0, white 120px, transparent 150px` : `linear-gradient(to bottom, white 0, white 200px, transparent 230px`,
-              maskImage: `linear-gradient(to bottom, white 0, white 250px, transparent 260px`,
-            }}
-          >
-            <div className="background-gradient-group">
-              <div className="background-gradient-yellow"></div>
-              <div className="background-gradient-green"></div>
-            </div>
-          </div>
-        </div> */}
         <ApplicationsTable />
       </HorizontalScrollContainer>
-      {/* </HorizontalScrollContainer> */}
     </>
   )
 }
@@ -549,7 +511,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
       >
         <Tooltip placement="bottom-start" allowInteract>
           <TooltipTrigger 
-          className="z-[10] truncate h-[32px]" 
+            className="z-[10] truncate h-[32px]" 
             onClick={(e) => {
               if(isTouchDevice) {
                 e.stopPropagation();

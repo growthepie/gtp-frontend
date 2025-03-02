@@ -299,27 +299,50 @@ export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, se
     </>
   )
 }
+type SocialLink = {
+  key: string;
+  icon: string;
+  prefix: string;
+};
 
-export const ProjectDetailsLinks = memo(({ owner_project, mobile }: { owner_project: string, mobile?: boolean }) => {
+const SOCIAL_LINKS: SocialLink[] = [
+  { key: "twitter", icon: "gtp:x", prefix: "https://x.com/" },
+  { key: "main_github", icon: "gtp:github", prefix: "https://github.com/" },
+  { key: "website", icon: "feather:monitor", prefix: "" },
+  // { key: "discord", icon: "gtp:discord", prefix: "" }
+];
+
+interface ProjectDetailsLinksProps {
+  owner_project: string;
+  mobile?: boolean;
+}
+
+export const ProjectDetailsLinks = memo(({ owner_project, mobile }: ProjectDetailsLinksProps) => {
   "use client";
   const { ownerProjectToProjectData } = useProjectsMetadata();
-  const linkPrefixes = ["https://x.com/", "https://github.com/", "", ""];
-  const icons = ["gtp:x", "gtp:github", "feather:monitor", "gtp:discord"];
-  const keys = ["twitter", "main_github", "website", "discord"];
+  const projectData = ownerProjectToProjectData[owner_project];
 
-  if(mobile) {
+  if (!projectData) {
+    return null;
+  }
+
+  // Filter valid links (not null or empty string)
+  const validLinks = SOCIAL_LINKS.filter(link => 
+    projectData[link.key] !== null && projectData[link.key] !== ""
+  );
+
+  if (mobile) {
     return (
       <div className="flex flex-col items-center justify-start gap-y-[10px]">
-        {ownerProjectToProjectData[owner_project] && keys.filter(
-          (key) => ownerProjectToProjectData[owner_project][key]
-        ).map((key, index) => (
+        {validLinks.map(({ key, icon, prefix }) => (
           <Link
             key={key}
-              href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
-              target="_blank"
-              className={`flex !size-[36px] bg-[#1F2726] rounded-full justify-center items-center ${key=== "website" && "gap-x-[6px] px-[5px] w-fit"}`}
-            >
-              {<Icon icon={icons[index]} className="size-[15px] select-none" />}
+            href={`${prefix}${projectData[key]}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex !size-[36px] bg-[#1F2726] rounded-full justify-center items-center"
+          >
+            <Icon icon={icon} className="size-[15px] select-none" />
           </Link>
         ))}
       </div>
@@ -328,39 +351,32 @@ export const ProjectDetailsLinks = memo(({ owner_project, mobile }: { owner_proj
 
   return (
     <div className="flex items-center gap-x-[10px]">
-      {ownerProjectToProjectData[owner_project] && keys.filter(
-        (key) => ownerProjectToProjectData[owner_project][key]
-      ).map((key, index) => (
+      {validLinks.map(({ key, icon, prefix }) => (
         <Link
           key={key}
-            href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
-            target="_blank"
-            className={`size-[54px] bg-[#1F2726] rounded-full flex justify-center items-center ${key=== "website" && "gap-x-[6px] px-[5px] w-fit"}`}
-          >
-            {key === "website" ? (
-              <>
-                {ownerProjectToProjectData[owner_project] && (
-                  <ApplicationIcon owner_project={owner_project} size="md" />
-                )}
-                <div className="text-xxxs">Website</div>
-                <div className="size-[24px] rounded-full bg-[#344240] flex justify-center items-center">
-                  <Icon icon="feather:arrow-right" className="size-[17px] text-[#CDD8D3]" />
-                </div>
-              </>
-            ) : (
-            <Icon
-              icon={icons[index]}
-              className="size-[24px] select-none"
-            />
-            
-        )}
+          href={`${prefix}${projectData[key]}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`${key === "website" ? "gap-x-[6px] px-[5px] w-fit h-[54px]" : "size-[54px]"} bg-[#1F2726] rounded-full flex justify-center items-center`}
+        >
+          {key === "website" ? (
+            <>
+              <ApplicationIcon owner_project={owner_project} size="md" />
+              <div className="text-xxxs">Website</div>
+              <div className="size-[24px] rounded-full bg-[#344240] flex justify-center items-center">
+                <Icon icon="feather:arrow-right" className="size-[17px] text-[#CDD8D3]" />
+              </div>
+            </>
+          ) : (
+            <Icon icon={icon} className="size-[24px] select-none" />
+          )}
         </Link>
       ))}
     </div>
   );
 });
 
-ProjectDetailsLinks.displayName = 'Links';
+ProjectDetailsLinks.displayName = "ProjectDetailsLinks";
 
 export const ApplicationCard = memo(({ application, className, width }: { application?: AggregatedDataRow, className?: string, width?: number}) => {
   const { medianMetric, medianMetricKey } = useApplicationsData();
@@ -369,6 +385,13 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const router = useRouter();
   const { selectedTimespan } = useTimespan();
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  useEffect(() => {
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    setIsTouchDevice(isTouch);
+  }, []);
+
 
   const rank = useMemo(() => {
     if (!application) return null;
@@ -445,53 +468,21 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
           </div>
         </div>
         </div>
-        {/* <div className="w-full h-[20px] flex justify-between items-center">
-          <div className="flex items-center gap-x-[3px]">
-            <div className="numbers-xs text-[#CDD8D3]">{numContractsString(application)}</div>
-            <div className="text-xs text-[#5A6462]">contracts</div>
-          </div>
-          <div className="flex items-end gap-x-[3px]">
-            <div className="numbers-xs text-[#5A6462]">Rank</div>
-            <div className="numbers-xs text-[#CDD8D3]">{rank}</div>
-          </div>
-        </div> */}
-
-        {/* <div className="w-full flex justify-between items-start">
-          <div/>
-          <div className="flex flex-col items-end gap-y-[2px]">
-            <div className="flex flex-col items-end justify-start gap-y-[3px]">
-              <div className="flex justify-end numbers-sm text-[#CDD8D3] w-[100px]">
-                {prefix}
-                {value?.toLocaleString("en-GB")}
-              </div>
-              <div className="flex items-end gap-x-[3px]">
-                {application[`${metricKey}_change_pct`] !== Infinity ? (
-                  <div className={`h-[3px] flex justify-end w-[45px] numbers-xxxs ${application[`${metricKey}_change_pct`] < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
-                    {application[`${metricKey}_change_pct`] < 0 ? '-' : '+'}{Math.abs(application[`${metricKey}_change_pct`]).toLocaleString("en-GB",{maximumFractionDigits:0})}%
-                  </div>
-                ) : (
-                  <div className="w-[49px]">&nbsp;</div>
-                )}
-            </div>
-            </div>
-          </div>
-        </div> */}
       </div>
       
       <div className="w-full flex items-center gap-x-[5px]">
         <ApplicationIcon owner_project={application.owner_project} size="md" />
-        {/* {ownerProjectToProjectData[application.owner_project] ? (
-          <div className="heading-large-md flex-1 group-hover:underline"><ApplicationDisplayName owner_project={application.owner_project} /></div>
-        ) : (
-          <div className="heading-large-md flex-1 opacity-60 group-hover:underline"><ApplicationDisplayName owner_project={application.owner_project} /></div>
-        )} */}
         <div className="heading-large-md flex-1 overflow-visible truncate">
-          {/* <div className="relative group/tooltip heading-large-md w-fit group-hover:underline min-h-[32px] flex flex-col justify-center overflow-visible">
-          <ApplicationDisplayName owner_project={application.owner_project} />
-          <ApplicationTooltip application={application} />
-          </div> */}
           <Tooltip placement="bottom-start" allowInteract>
-            <TooltipTrigger className="group-hover:underline ">
+            <TooltipTrigger
+              className="group-hover:underline"
+              onClick={(e) => {
+                if(isTouchDevice) {
+                  e.stopPropagation();
+                  e.preventDefault();
+                }
+              }}
+            >
               <ApplicationDisplayName owner_project={application.owner_project} />
             </TooltipTrigger>
             <TooltipContent className="z-[99] left-0 ml-[20px]">
@@ -508,32 +499,6 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
           <Category category={ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].main_category : ""} />
         </div>
         <div className="h-[20px] flex items-center gap-x-[5px]">
-          {/* {application.origin_keys.map((chain, index) => (
-            <div
-              key={index}
-              className={`cursor-pointer ${selectedChains.includes(chain) ? '' : '!text-[#5A6462]'} hover:!text-inherit`} style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors["dark"][0] : '' }}
-              onClick={() => {
-                if (selectedChains.includes(chain)) {
-                  setSelectedChains(selectedChains.filter((c) => c !== chain));
-                } else {
-                  setSelectedChains([...selectedChains, chain]);
-                }
-              }}
-            >
-              {AllChainsByKeys[chain] && (
-                <Icon
-                  icon={`gtp:${AllChainsByKeys[
-                    chain
-                  ].urlKey
-                    }-logo-monochrome`}
-                  className="w-[15px] h-[15px]"
-                  style={{
-                    color: AllChainsByKeys[chain].colors["dark"][0],
-                  }}
-                />
-              )}
-            </div>
-          ))} */}
           <Chains origin_keys={application.origin_keys} />
         </div>
         
