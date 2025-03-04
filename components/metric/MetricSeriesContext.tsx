@@ -38,9 +38,10 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
 
   const { theme } = useTheme();
   const { data: master, AllChainsByKeys, AllDALayersByKeys, SupportedChainKeys, EnabledChainsByKeys } = useMaster();
-
+  const [focusEnabled] = useLocalStorage("focusEnabled", false);
   const { data, chainKeys, metric_id, avg } = useMetricData();
   const { selectedChains, selectedTimeInterval, selectedTimespan, timeIntervalKey, selectedScale, showEthereumMainnet } = useMetricChartControls();
+
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
@@ -360,7 +361,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
     }).map((chainKey, i) => {
       const chain = data.chains[chainKey];
 
-      console.log(selectedScale)
+      
       const zIndex = showEthereumMainnet
         ? chainKey === "ethereum"
           ? 0
@@ -372,7 +373,8 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
       } else if (i === 0) {
         borderRadius = "8%";
       }
-
+      console.log(getSeriesData(chainKey, chain[timeIntervalKey].types, chain[timeIntervalKey].data))
+      console.log(chainKey)
       return {
         name: chainKey,
         types: chain[timeIntervalKey].types,
@@ -394,7 +396,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
         // borderRadiusTopRight: borderRadius,
         fillOpacity: getSeriesData(chainKey, chain[timeIntervalKey].types, chain[timeIntervalKey].data)
           .fillOpacity,
-        fillColor: getSeriesData(chainKey, chain[timeIntervalKey].types, chain[timeIntervalKey].data)
+        fillColor: (!focusEnabled && chainKey === "ethereum") ? "transparent" : getSeriesData(chainKey, chain[timeIntervalKey].types, chain[timeIntervalKey].data)
           .fillColor,
         color: getSeriesData(chainKey, chain[timeIntervalKey].types, chain[timeIntervalKey].data)
           .color,
@@ -456,7 +458,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
     });
 
     return d;
-  }, [data, selectedTimeInterval, selectedScale, chainKeys, metric_type, selectedChains, SupportedChainKeys, showEthereumMainnet, timeIntervalKey, getSeriesData, getSeriesType, dataGrouping, MetadataByKeys, theme]);
+  }, [data, selectedTimeInterval, selectedScale, chainKeys, metric_type, selectedChains, SupportedChainKeys, showEthereumMainnet, timeIntervalKey, getSeriesData, getSeriesType, dataGrouping, MetadataByKeys, focusEnabled, theme]);
 
   return (
     <MetricSeriesContext.Provider

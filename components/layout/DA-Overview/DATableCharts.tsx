@@ -421,7 +421,12 @@ const DATableChartsComponent = ({
                 acc += point.y;
                 return acc;
             }, 0);
+
+            let largestPoint = points.reduce((max: number, point: any) => {
+                return point.y > max ? point.y : max;
+            }, 0);
     
+            console.log(largestPoint)
             let pointSumNonNegative = points.reduce((acc: number, point: any) => {
                 if (point.y > 0) acc += point.y;
                 return acc;
@@ -450,7 +455,7 @@ const DATableChartsComponent = ({
                     const realIndex = Object.keys(data[selectedTimespan].da_consumers).findIndex((k) => k === nameToKey[name]);
                     const color = AllChainsByKeys[nameToKey[name]] ? AllChainsByKeys[nameToKey[name]].colors["dark"][0] : UNLISTED_CHAIN_COLORS[realIndex];
                     const nameString = name;
-                    let percentSize = (y / pointsSum) * 175;
+                    let percentSize = (y / largestPoint) * 175;
                     let suffix = "";
                     let value = y;
                     let displayValue = y;
