@@ -12,23 +12,6 @@ import { useProjectsMetadata } from "./ProjectsMetadataContext";
 import { useSort } from "./SortContext";
 import { SortConfig, sortItems, SortOrder, SortType } from "@/lib/sorter";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
-import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
-
-function calculatePercentageChange(current, previous) {
-  if (previous === 0) return current === 0 ? 0 : Infinity;
-  return ((current - previous) / previous) * 100;
-}
-
-function assignRanks(items, metric) {
-  // Sort items by the specified metric in descending order
-  items.sort((a, b) => b[metric] - a[metric]);
-  // Assign ranks, handling ties
-  let rank = 1;
-  items.forEach((item, index) => {
-    if (index > 0 && item[metric] < items[index - 1][metric]) rank = index + 1;
-    item[`rank_${metric}`] = rank;
-  });
-}
 
 export type AggregatedDataRow = {
   owner_project: string;
@@ -51,29 +34,74 @@ export type AggregatedDataRow = {
   rank_daa: number;
 }
 
+const memoizedResults = new Map();
+const MAX_CACHE_SIZE = 20;
+
+function getCacheKey(timespan: string, filters: { [key: string]: string[] }) {
+  return `${timespan}-${JSON.stringify(filters)}`;
+}
+
 function ownerProjectToOriginKeysMap(data: AppDatum[]): { [key: string]: string[] } {
-  return data.reduce((acc, entry) => {
+  // Create cache key for this specific function
+  const cacheKey = `ownerProjectToOriginKeysMap-${data.length}`;
+  if (memoizedResults.has(cacheKey)) {
+    return memoizedResults.get(cacheKey);
+  }
+
+  const result = data.reduce((acc, entry) => {
     const [owner, origin]: [string, string] = [entry[0] as string, entry[1] as string];
     if (!acc[owner]) acc[owner] = [];
     if (!acc[owner].includes(origin)) acc[owner].push(origin);
     return acc;
   }, {});
+
+  memoizedResults.set(cacheKey, result);
+  return result;
+}
+
+// Function to handle sorting and rank assignment - extracted for clarity
+function assignRanks(items: AggregatedDataRow[], metric: string) {
+  // Sort items by the specified metric in descending order
+  items.sort((a, b) => b[metric] - a[metric]);
+  
+  // Assign ranks, handling ties
+  let rank = 1;
+  items.forEach((item, index) => {
+    if (index > 0 && item[metric] < items[index - 1][metric]) rank = index + 1;
+    item[`rank_${metric}`] = rank;
+  });
+}
+
+// Improved calculation function with better type safety
+function calculatePercentageChange(current: number, previous: number): number {
+  if (previous === 0) return current === 0 ? 0 : Infinity;
+  return ((current - previous) / previous) * 100;
 }
 
 function aggregateProjectData(
-  data: AppDatum[], typesArr: string[], ownerProjectToProjectData: {[key: string]: any}, filters: { [key: string]: string[] } = { origin_key: [], owner_project: [], category: [] }
+  data: AppDatum[], 
+  typesArr: string[], 
+  ownerProjectToProjectData: { [key: string]: any }, 
+  filters: { [key: string]: string[] } = { origin_key: [], owner_project: [], category: [] }, 
+  timespan: string
 ): AggregatedDataRow[] {
-  // const data = AppOverviewResponseHelper.fromResponse(rawData).response.data.data;
-  // get Mapping of owner_project to origin_keys
+  // Generate cache key
+  const cacheKey = getCacheKey(timespan, filters);
+  
+  // Check if we have cached results
+  if (memoizedResults.has(cacheKey)) {
+    return memoizedResults.get(cacheKey);
+  }
+
+  // Pre-process: get mapping of owner_project to origin_keys
   const ownerProjectToOriginKeys = ownerProjectToOriginKeysMap(data);
 
   // Convert chain filter to Set for O(1) lookups
   const chainFilter = new Set(filters.origin_key);
+  const stringFilters = filters.owner_project;
 
-  // Group data by owner_project in a single pass
-  const aggregation = new Map();
-
-  const typesInexes = {
+  // Create a lookup object for faster type index access
+  const typeIndexes = {
     owner_project: typesArr.indexOf("owner_project"),
     origin_key: typesArr.indexOf("origin_key"),
     num_contracts: typesArr.indexOf("num_contracts"),
@@ -86,37 +114,29 @@ function aggregateProjectData(
     prev_daa: typesArr.indexOf("prev_daa"),
   };
 
-  for (const entry of data) {
-    const [
-      owner, 
-      origin, 
-      numContracts, 
-      gasEth, prevGasEth, gasUsd, 
-      txCount, prevTxCount, 
-      daa, prevDaa
-    ] = [
-      entry[typesInexes.owner_project] as string, 
-      entry[typesInexes.origin_key] as string, 
-      entry[typesInexes.num_contracts] as number, 
-      entry[typesInexes.gas_fees_eth] as number, entry[typesInexes.prev_gas_fees_eth] as number, entry[typesInexes.gas_fees_usd] as number, 
-      entry[typesInexes.txcount] as number, entry[typesInexes.prev_txcount] as number,
-      entry[typesInexes.daa] as number, entry[typesInexes.prev_daa] as number
-    ];
+  // Pre-filter data if possible to avoid processing unnecessary entries
+  const filteredData = filters.origin_key.length > 0 
+    ? data.filter(entry => chainFilter.has(entry[typeIndexes.origin_key] as string))
+    : data;
 
-    // Skip if not matching the filter
-    if (chainFilter.size > 0 && !chainFilter.has(origin)) continue;
+  // Group data by owner_project in a single pass with reduced operations
+  const aggregation = new Map();
 
-    // Skip if not matching the filter
-    if(filters.owner_project.length > 0){
-      // allow partial matches
-      const ownerProjectDisplay = ownerProjectToProjectData[owner].display_name.toLowerCase();
-      if(!filters.owner_project.some((filter) => ownerProjectDisplay.includes(filter.toLowerCase()))) continue;
+  for (const entry of filteredData) {
+    const owner = entry[typeIndexes.owner_project] as string;
+    
+    // Skip if not matching string filters (early bailout)
+    if (stringFilters.length > 0) {
+      const ownerProjectDisplay = ownerProjectToProjectData[owner]?.display_name?.toLowerCase();
+      if (!ownerProjectDisplay || !stringFilters.some(filter => 
+        ownerProjectDisplay.includes(filter.toLowerCase()))) {
+        continue;
+      }
     }
 
     // Initialize the group if it doesn't exist
     if (!aggregation.has(owner)) {
       aggregation.set(owner, {
-        // origin_keys: new Set(),  // Use Set for unique keys
         num_contracts: 0,
         gas_fees_eth: 0,
         prev_gas_fees_eth: 0,
@@ -128,9 +148,18 @@ function aggregateProjectData(
       });
     }
 
+    // Extract values once for performance
+    const numContracts = entry[typeIndexes.num_contracts] as number || 0;
+    const gasEth = entry[typeIndexes.gas_fees_eth] as number || 0;
+    const prevGasEth = entry[typeIndexes.prev_gas_fees_eth] as number || 0;
+    const gasUsd = entry[typeIndexes.gas_fees_usd] as number || 0;
+    const txCount = entry[typeIndexes.txcount] as number || 0;
+    const prevTxCount = entry[typeIndexes.prev_txcount] as number || 0;
+    const daa = entry[typeIndexes.daa] as number || 0;
+    const prevDaa = entry[typeIndexes.prev_daa] as number || 0;
+
     // Aggregate metrics
     const acc = aggregation.get(owner);
-    // acc.origin_keys.add(origin);
     acc.num_contracts += numContracts;
     acc.gas_fees_eth += gasEth;
     acc.prev_gas_fees_eth += prevGasEth;
@@ -143,34 +172,37 @@ function aggregateProjectData(
 
   // Convert to final array format and calculate percentage changes
   const results = Array.from(aggregation.entries()).map(([owner, metrics]) => {
-    const { origin_keys, ...otherMetrics} = metrics;
+    // Pre-calculate percentage changes
+    const gasEthChangePct = calculatePercentageChange(metrics.gas_fees_eth, metrics.prev_gas_fees_eth);
+    const txCountChangePct = calculatePercentageChange(metrics.txcount, metrics.prev_txcount);
+    const daaChangePct = calculatePercentageChange(metrics.daa, metrics.prev_daa);
+
     return {
-    owner_project: owner,
-    origin_keys: ownerProjectToOriginKeys[owner].sort(),  // Sort origin_keys
-    ...otherMetrics,
-    gas_fees_eth_change_pct: calculatePercentageChange(
-      metrics.gas_fees_eth,
-      metrics.prev_gas_fees_eth
-    ),
-    gas_fees_usd_change_pct: calculatePercentageChange(
-      metrics.gas_fees_eth,
-      metrics.prev_gas_fees_eth
-    ),
-    txcount_change_pct: calculatePercentageChange(
-      metrics.txcount,
-      metrics.prev_txcount
-    ),
-    daa_change_pct: calculatePercentageChange(
-      metrics.daa,
-      metrics.prev_daa
-    )};
+      owner_project: owner,
+      origin_keys: ownerProjectToOriginKeys[owner]?.sort() || [],
+      ...metrics,
+      gas_fees_eth_change_pct: gasEthChangePct,
+      gas_fees_usd_change_pct: gasEthChangePct, // These are the same in your code
+      txcount_change_pct: txCountChangePct,
+      daa_change_pct: daaChangePct
+    };
   });
 
-  // Calculate ranks in a single pass for all metrics
+  // Calculate ranks in a single pass for all metrics - do this separately for clarity
   assignRanks(results, 'gas_fees_eth');
   assignRanks(results, 'gas_fees_usd');
   assignRanks(results, 'txcount');
   assignRanks(results, 'daa');
+
+  // Cache the results
+  memoizedResults.set(cacheKey, results);
+
+  // Limit cache size to avoid memory leaks
+  if (memoizedResults.size > MAX_CACHE_SIZE) {
+    // Remove the oldest entry using iterator
+    const firstKey = memoizedResults.keys().next().value;
+    memoizedResults.delete(firstKey);
+  }
 
   return results;
 }
@@ -203,8 +235,6 @@ export type ApplicationsDataContextType = {
   setSelectedStringFilters: (value: string[]) => void;
   medianMetric: string;
   medianMetricKey: string;
-  setMedianMetric: (value: string) => void;
-  setMedianMetricKey: (value: string) => void;
 }
 
 
@@ -212,104 +242,101 @@ export type ApplicationsDataContextType = {
 export const ApplicationsDataContext = createContext<ApplicationsDataContextType | undefined>(undefined);
 
 export const ApplicationsDataProvider = ({ children }: { children: React.ReactNode }) => {
-  const {ownerProjectToProjectData} = useProjectsMetadata();
-  const {timespans, selectedTimespan, setSelectedTimespan, isMonthly, setIsMonthly} = useTimespan();
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+  const { timespans, selectedTimespan, setSelectedTimespan, isMonthly, setIsMonthly } = useTimespan();
   const { sort, setSort } = useSort();
 
+  // bypass AWS rate limiting in development
+  const headers = new Headers();
+  headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
+  headers.set("Pragma", "no-cache");
+  headers.set("Expires", "0");
+
+  if (process.env.NEXT_PUBLIC_X_DEVELOPER_TOKEN)
+    headers.set("X-Developer-Token", process.env.NEXT_PUBLIC_X_DEVELOPER_TOKEN);
+
+  const requestOptions = {
+    method: "GET",
+    headers: headers,
+  };
 
   const { fetcher } = useSWRConfig();
-  const fallbackFetcher = (url) => fetch(url).then((r) => r.json());
+  const fallbackFetcher = (url) => fetch(url, requestOptions).then((r) => r.json());
+
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
+
+  const { metricsDef, setSelectedMetrics, selectedMetrics } = useMetrics();
   
-  const [selectedChains, setSelectedChains] = useState<string[]>([]);
-  const [selectedStringFilters, setSelectedStringFilters] = useState<string[]>([]);
-
-  const { metricsDef , setSelectedMetrics, selectedMetrics} = useMetrics();
-  
-  const getMetricKeyFromMetric = useCallback((metric: string) => {
-    if (metric === "gas_fees") return showUsd ? "gas_fees_usd" : "gas_fees_eth";
-    return metric;
-  }, [showUsd]);
-
-  const [medianMetric, setMedianMetric] = useState<string>(getMetricKeyFromMetric(sort.metric));
-  const [medianMetricKey, setMedianMetricKey] = useState<string>(sort.metric);
-
-  useEffect(() => {
-    if(Object.keys(metricsDef).includes(sort.metric)){
-      const key = getMetricKeyFromMetric(sort.metric);
-      setMedianMetric(sort.metric);
-      setMedianMetricKey(key);
-    }
-    
-  }, [metricsDef, sort.metric, showUsd, getMetricKeyFromMetric]);
-
   /* < Query Params > */
-
-
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
 
-  const selectedChainsParam = searchParams.get("origin_key")?.split(",") || [];
-  const selectedStringFiltersParam = useMemo(() => 
+  const selectedChainsParam = useMemo(() =>
+    searchParams.get("origin_key")?.split(",") || [],
+    [searchParams]
+  );
+
+  const selectedStringFiltersParam = useMemo(() =>
     searchParams.get("owner_project")?.split(",") || [],
     [searchParams]
   );
 
-  // Update state when query params change
-  useEffect(() => {
-    const chainsFromUrl = searchParams.get("origin_key")?.split(",").filter(Boolean) || [];
-    const filtersFromUrl = searchParams.get("owner_project")?.split(",").filter(Boolean) || [];
-    
-    // Only update state if the values have changed
-    if (JSON.stringify(chainsFromUrl) !== JSON.stringify(selectedChains)) {
-      setSelectedChains(chainsFromUrl);
-    }
-    
-    if (JSON.stringify(filtersFromUrl) !== JSON.stringify(selectedStringFilters)) {
-      setSelectedStringFilters(filtersFromUrl);
-    }
-  }, [searchParams]);
 
   enum FilterType {
     SEARCH = "owner_project",
     CHAIN = "origin_key",
   }
   const handleFilters = (type: FilterType, value: string[]) => {
-    // if (type === FilterType.CHAIN) 
-    //   setSelectedChains(value);
-
-    // if (type === FilterType.SEARCH) 
-    //   setSelectedStringFilters(value);
-
+    // update the params
     updateSearchQuery({
-      origin_key: selectedChains,
-      owner_project: selectedStringFilters,
       [type]: value,
     });
   };
 
   const updateSearchQuery = (updatedQuery: { [key: string]: string[] }) => {
     // get existing query params
-    let searchParams = new URLSearchParams(window.location.search)
-        
+    let newSearchParams = new URLSearchParams(window.location.search)
+
     // update existing query params
     for (const key in updatedQuery) {
       if (updatedQuery[key].length === 0) {
-        searchParams.delete(key);
+        newSearchParams.delete(key);
         continue;
       }
-      searchParams.set(key, updatedQuery[key].join(","));
+      newSearchParams.set(key, updatedQuery[key].join(","));
     }
 
     // create new url
-    let url = `${pathname}?${decodeURIComponent(searchParams.toString())}`;
-    
-    router.replace(url, {scroll: false});
+    let url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
+    // router.replace(url, { scroll: false });
+    window.history.replaceState(null, "", url);
   };
   /* </ Query Params > */
+
+
+  const getMetricKeyFromMetric = useCallback((metric: string) => {
+    if (metric === "gas_fees") return showUsd ? "gas_fees_usd" : "gas_fees_eth";
+    return metric;
+  }, [showUsd]);
+
+  const medianMetric = useMemo(() => {
+    if (Object.keys(metricsDef).includes(sort.metric)) {
+      return sort.metric;
+    }
+    return "txcount";
+  }, [metricsDef, sort.metric]);
+
+  const medianMetricKey = useMemo(() => {
+    if (Object.keys(metricsDef).includes(sort.metric)) {
+      return getMetricKeyFromMetric(sort.metric);
+    }
+    return "txcount";
+  }, [getMetricKeyFromMetric, metricsDef, sort.metric]);
+  
+
 
   const {
     data: master,
@@ -319,7 +346,7 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
   } = useSWR<MasterResponse>(MasterURL);
 
   const multiFetcher = (urls) => {
-    if(!fetcher) return Promise.all(urls.map(url => fallbackFetcher(url)));
+    if (!fetcher) return Promise.all(urls.map(url => fallbackFetcher(url)));
 
     return Promise.all(urls.map(url => fetcher(url)));
   }
@@ -344,13 +371,16 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
     };
 
     if (!applicationsDataTimespan || !applicationsDataTimespan[selectedTimespan]) return [];
-    
-    return aggregateProjectData(applicationsDataTimespan[selectedTimespan].data.data, applicationsDataTimespan[selectedTimespan].data.types, ownerProjectToProjectData, {
-      origin_key: selectedChains,
-      owner_project: selectedStringFiltersParam,
-      category: selectedStringFiltersParam,
-    })
-  }, [applicationsTimespan, selectedTimespan, selectedChains, selectedStringFiltersParam, ownerProjectToProjectData]);
+
+    return aggregateProjectData(
+      applicationsDataTimespan[selectedTimespan].data.data, applicationsDataTimespan[selectedTimespan].data.types, ownerProjectToProjectData, {
+        origin_key: selectedChainsParam,
+        owner_project: selectedStringFiltersParam,
+        category: selectedStringFiltersParam,
+      },
+      selectedTimespan // Use timespan as part of cache key
+    )
+  }, [applicationsTimespan, selectedTimespan, selectedChainsParam, selectedStringFiltersParam, ownerProjectToProjectData]);
 
   const createApplicationDataSorter = (
     ownerProjectToProjectData: Record<string, { main_category: string; display_name: string }>,
@@ -358,7 +388,7 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
   ) => {
     return (items: AggregatedDataRow[], metric: string, sortOrder: SortOrder): AggregatedDataRow[] => {
       let actualMetric = metric === "gas_fees" ? (showUsd ? "gas_fees_usd" : "gas_fees_eth") : metric;
-      
+
       const config: SortConfig<AggregatedDataRow> = {
         metric: actualMetric as keyof AggregatedDataRow,
         sortOrder,
@@ -403,7 +433,7 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
   return (
     <ApplicationsDataContext.Provider
       value={{
-        selectedChains:selectedChainsParam,
+        selectedChains: selectedChainsParam,
         setSelectedChains: (value) => handleFilters(FilterType.CHAIN, value),
         applicationDataAggregated,
         isLoading: applicationsTimespanLoading || masterLoading,
@@ -412,8 +442,6 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
         setSelectedStringFilters: (value) => handleFilters(FilterType.SEARCH, value),
         medianMetric,
         medianMetricKey,
-        setMedianMetric: (value) => setMedianMetric(value),
-        setMedianMetricKey: (value) => setMedianMetricKey(value),
       }}
     >
       <ShowLoading

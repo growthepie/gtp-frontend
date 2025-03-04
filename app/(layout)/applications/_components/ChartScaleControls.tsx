@@ -14,7 +14,7 @@ export default function ChartScaleControls({sources}: React.PropsWithChildren<{s
 
   return (
     <>
-      <TopRowContainer className="md:!rounded-[24px] !justify-end">
+      <TopRowContainer className="!flex md:!rounded-[24px] !justify-end">
         <TopRowParent className="-py-[10px]">
           {Object.keys(scaleDefs).map((key) => (
                 <TopRowChild
@@ -32,16 +32,12 @@ export default function ChartScaleControls({sources}: React.PropsWithChildren<{s
                 </TopRowChild>
               )
           )}
-        </TopRowParent>
-        <div className="flex">
           <Tooltip placement="left" allowInteract>
-            <TooltipTrigger>
-              <div className="p-1 z-10 ml-[5px]">
-                <Icon icon="feather:info" className="w-6 h-6" />
-              </div>
+            <TooltipTrigger className="pl-[5px] md:pl-[15px]">
+                <Icon icon="feather:info" className="size-[24px]" />
             </TooltipTrigger>
             <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
-              <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
+              <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-[300px] md:w-[420px] h-[80px] flex items-center">
                 <div className="flex flex-col space-y-1">
                   <div className="font-bold text-sm leading-snug">
                     Data Sources:
@@ -53,7 +49,8 @@ export default function ChartScaleControls({sources}: React.PropsWithChildren<{s
               </div>
             </TooltipContent>
           </Tooltip>
-        </div>
+        </TopRowParent>
+        
       </TopRowContainer>
       
       </>

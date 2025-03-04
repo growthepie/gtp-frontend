@@ -1,174 +1,117 @@
 "use client";
-import ShowLoading from "@/components/layout/ShowLoading";
-import { DALayerWithKey, useMaster } from "@/contexts/MasterContext";
-import { Chain, Get_SupportedChainKeys } from "@/lib/chains";
-import { IS_PRODUCTION } from "@/lib/helpers";
-import { ApplicationsURLs, DAMetricsURLs, DAOverviewURL, LabelsURLS, MasterURL, MetricsURLs } from "@/lib/urls";
-import { DAOverviewResponse } from "@/types/api/DAOverviewResponse";
-import { MasterResponse } from "@/types/api/MasterResponse";
-import { ChainData, MetricData, MetricsResponse } from "@/types/api/MetricsResponse";
-import { AppDatum, AppOverviewResponse, AppOverviewResponseHelper, ParsedDatum } from "@/types/applications/AppOverviewResponse";
-import { intersection } from "lodash";
-import { RefObject, createContext, useContext, useEffect, useMemo, useState } from "react";
-import { LogLevel } from "react-virtuoso";
-import useSWR, { useSWRConfig, preload} from "swr";
-import { useLocalStorage, useSessionStorage } from "usehooks-ts";
+import { useMaster } from "@/contexts/MasterContext";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useLocalStorage } from "usehooks-ts";
 import { Metrics } from "@/types/api/MasterResponse";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-// export interface Metrics {
-//   [metric: string]: MetricDef;
-// }
-
-// export interface MetricDef {
-//   name:                 string;
-//   name_short:           string;
-//   metric_keys:         string[];
-//   units:                { [key: string]: Unit };
-//   category:             string;
-//   currency:             boolean;
-//   priority:             number;
-//   invert_normalization: boolean;
-//   icon:                 string;
-// }
-
-// export interface Unit {
-//   currency:         boolean;
-//   prefix:           string;
-//   suffix:           null;
-//   decimals:         number;
-//   decimals_tooltip: number;
-//   agg:              boolean;
-//   agg_tooltip:      boolean;
-// }
-
-// const metricsDef: Metrics = {
-//   gas_fees: {
-//     name: "Fees Paid",
-//     name_short: "Gas Fees",
-//     metric_keys: [
-//       "fees_paid_usd",
-//       "fees_paid_eth"
-//     ],
-//     units: {
-//       usd: {
-//         currency: true,
-//         prefix: "$",
-//         suffix: null,
-//         decimals: 0,
-//         decimals_tooltip: 2,
-//         agg: true,
-//         agg_tooltip: true,
-//       },
-//       eth: {
-//         currency: false,
-//         prefix: "Ξ",
-//         suffix: null,
-//         decimals: 0,
-//         decimals_tooltip: 2,
-//         agg: true,
-//         agg_tooltip: true,
-//       },
-//     },
-//     icon: "gtp-metrics-transactioncosts",
-//     category: "Gas Fees",
-//     currency: true,
-//     priority: 1,
-//     invert_normalization: false,
-//   },
-//   txcount: {
-//     name: "Transaction Count",
-//     name_short: "Transactions",
-//     units: {
-//       value: {
-//         currency: false,
-//         prefix: "",
-//         suffix: null,
-//         decimals: 0,
-//         decimals_tooltip: 0,
-//         agg: true,
-//         agg_tooltip: true,
-//       },
-//     },
-//     icon: "gtp-metrics-transactioncount",
-//     category: "Transactions",
-//     currency: false,
-//     priority: 2,
-//     invert_normalization: false,
-//   },
-//   daa: {
-//     name: "Daily Active Addresses",
-//     name_short: "DAAs",
-//     units: {
-//       value: {
-//         currency: false,
-//         prefix: "",
-//         suffix: null,
-//         decimals: 0,
-//         decimals_tooltip: 0,
-//         agg: true,
-//         agg_tooltip: true,
-//       },
-//     },
-//     icon: "gtp-metrics-activeaddresses",
-//     category: "Addresses",
-//     currency: false,
-//     priority: 3,
-//     invert_normalization: false,
-//   },
-// };
-
+// Define metric icons
 const metricIcons = {
   gas_fees: "gtp-metrics-transactioncosts",
   txcount: "gtp-metrics-transactioncount",
   daa: "gtp-metrics-activeaddresses",
 };
 
+// Default metric to use if none is specified
+const DEFAULT_METRIC = "txcount";
 
 export type MetricsContextType = {
   metricsDef: Metrics;
   metricIcons: { [key: string]: string };
   selectedMetrics: string[];
-  setSelectedMetrics: React.Dispatch<React.SetStateAction<string[]>>;
+  setSelectedMetrics: (metrics: string[]) => void;
   selectedMetricKeys: string[];
-}
+};
 
 export const MetricsContext = createContext<MetricsContextType | undefined>(undefined);
 
 export const MetricsProvider = ({ children }: { children: React.ReactNode }) => {
-  const {data: masterData} = useMaster();
+  const { data: masterData } = useMaster();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  
+  // Get URL utilities from Next.js
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+  
+  // Get the metric from URL params or use default
+  const metricsFromParams = searchParams.get("metric") || DEFAULT_METRIC;
 
-  const [selectedMetrics, setSelectedMetrics] = useState<string[]>(masterData ? [...Object.keys(masterData.app_metrics).slice(0,1)] : ["gas_fees"]);
+  
+  // Update URL when selected metrics change
+  const setSelectedMetrics = useCallback((metrics: string[]) => {
+    if (!metrics.length || !metrics[0] || JSON.stringify(metrics) === metricsFromParams) {
+      return;
+    }
 
+    if (!masterData) return;
+    
+    // Create a new URLSearchParams object
+    const newSearchParams = new URLSearchParams(searchParams.toString());
+    
+    const validMetrics = Object.keys(masterData.app_metrics);
+
+    const newMetrics = metrics.filter(metric => validMetrics.includes(metric));
+    
+    if(newMetrics.length === 1 && newMetrics[0] === DEFAULT_METRIC) {
+      newSearchParams.delete("metric");
+    } else {
+      newSearchParams.set("metric", metrics.join(","));
+    }
+
+    setTimeout(() => {
+      // create new url and update url
+      let url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
+      // router.replace(url, { scroll: false });
+      window.history.replaceState(null, "", url);
+    }, 10);
+  }, [metricsFromParams, masterData, searchParams, pathname]);
+  
+  
+  // Filter selected metrics to only include valid ones
   const orderedMetrics = useMemo(() => {
-    return masterData ? Object.keys(masterData.app_metrics).filter((metric) => selectedMetrics.includes(metric)) : ["gas_fees"];
-  }, [masterData, selectedMetrics]);
-
+    if (!masterData) return [DEFAULT_METRIC];
+    
+    const validMetrics = Object.keys(masterData.app_metrics);
+    const metrics = metricsFromParams.split(',');
+    return metrics.filter(metric => validMetrics.includes(metric));
+  }, [masterData, metricsFromParams]);
+  
+  // Map metrics to their actual data keys
   const selectedMetricKeys = useMemo(() => {
     return orderedMetrics.map((metric) => {
-      if(metric === "gas_fees")
+      if (metric === "gas_fees") {
         return showUsd ? "gas_fees_usd" : "gas_fees_eth";
+      }
       return metric;
     });
   }, [orderedMetrics, showUsd]);
-
+  
+  // Create the context value
+  const contextValue = useMemo(() => ({
+    metricsDef: masterData ? masterData.app_metrics : {},
+    metricIcons,
+    selectedMetrics: orderedMetrics,
+    setSelectedMetrics,
+    selectedMetricKeys,
+  }), [
+    masterData, 
+    orderedMetrics, 
+    setSelectedMetrics, 
+    selectedMetricKeys,
+  ]);
+  
   return (
-    <MetricsContext.Provider value={{
-      metricsDef: masterData ? masterData.app_metrics : {},
-      metricIcons,
-      selectedMetrics: orderedMetrics,
-      setSelectedMetrics,
-      selectedMetricKeys,
-    }}>
+    <MetricsContext.Provider value={contextValue}>
       {children}
     </MetricsContext.Provider>
   );
-}
+};
 
 export const useMetrics = () => {
   const context = useContext(MetricsContext);
   if (context === undefined) {
-    throw new Error("useApplicationsData must be used within a ApplicationsDataProvider");
+    throw new Error("useMetrics must be used within a MetricsProvider");
   }
   return context;
-}
+};
