@@ -179,14 +179,15 @@ export default function ChainComponent({
 
 
   const formatNumber = useCallback(
-    (key: string, value: number | string, isAxis = false) => {
+    (key: string, value: number | string, isAxis = false, isMetric = true) => {
       let prefix = prefixes[key];
       let suffix = "";
       let val = parseFloat(value as string);
-
+      
+      
       if (
         !showUsd &&
-        data.metrics[key].daily.types.includes("eth") &&
+        (isMetric ? data.metrics[key].daily.types.includes("eth") : true) &&
         selectedScale !== "percentage"
       ) {
         if (showGwei(key)) {
@@ -448,6 +449,7 @@ export default function ChainComponent({
       const { x, points } = this;
 
 
+
       if (!points || !x) return;
 
       const series = points[0].series;
@@ -554,6 +556,8 @@ export default function ChainComponent({
             <div class="h-[2px] rounded-full absolute right-0 top-0" style="width: ${formatNumber(
               name,
               (y / pointsSum) * 100,
+              false,
+              false,
             )}%; background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
             }33;"></div>
           </div> -->`;

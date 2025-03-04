@@ -272,7 +272,7 @@ const MetricTable = ({
           allChainsByKeys[chain],
       )
       .map((chain: any) => {
-        console.log(chain)
+       
         return {
           data: data.chains[chain],
           chain: allChainsByKeys[chain],
@@ -416,7 +416,7 @@ const MetricTable = ({
       if(!focusEnabled && item.chain.key !== "ethereum") {
         value = formatNumber(lastValues[item.chain.key]);
       }else if(lastValues[item.chain.key] !== undefined) {
-        console.log(lastValues[item.chain.key])
+      
         value = formatNumber(lastValues[item.chain.key]);
       }else {
         value = lastValues[item.chain.key];
