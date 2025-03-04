@@ -235,8 +235,6 @@ export type ApplicationsDataContextType = {
   setSelectedStringFilters: (value: string[]) => void;
   medianMetric: string;
   medianMetricKey: string;
-  setMedianMetric: (value: string) => void;
-  setMedianMetricKey: (value: string) => void;
 }
 
 
@@ -269,31 +267,9 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
 
-  // const [selectedChains, setSelectedChains] = useState<string[]>([]);
-  // const [selectedStringFilters, setSelectedStringFilters] = useState<string[]>([]);
-
   const { metricsDef, setSelectedMetrics, selectedMetrics } = useMetrics();
-
-  const getMetricKeyFromMetric = useCallback((metric: string) => {
-    if (metric === "gas_fees") return showUsd ? "gas_fees_usd" : "gas_fees_eth";
-    return metric;
-  }, [showUsd]);
-
-  const [medianMetric, setMedianMetric] = useState<string>(getMetricKeyFromMetric(sort.metric));
-  const [medianMetricKey, setMedianMetricKey] = useState<string>(sort.metric);
-
-  useEffect(() => {
-    if (Object.keys(metricsDef).includes(sort.metric)) {
-      const key = getMetricKeyFromMetric(sort.metric);
-      setMedianMetric(sort.metric);
-      setMedianMetricKey(key);
-    }
-
-  }, [metricsDef, sort.metric, showUsd, getMetricKeyFromMetric]);
-
+  
   /* < Query Params > */
-
-
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -339,6 +315,28 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
     window.history.replaceState(null, "", url);
   };
   /* </ Query Params > */
+
+
+  const getMetricKeyFromMetric = useCallback((metric: string) => {
+    if (metric === "gas_fees") return showUsd ? "gas_fees_usd" : "gas_fees_eth";
+    return metric;
+  }, [showUsd]);
+
+  const medianMetric = useMemo(() => {
+    if (Object.keys(metricsDef).includes(sort.metric)) {
+      return sort.metric;
+    }
+    return "txcount";
+  }, [metricsDef, sort.metric]);
+
+  const medianMetricKey = useMemo(() => {
+    if (Object.keys(metricsDef).includes(sort.metric)) {
+      return getMetricKeyFromMetric(sort.metric);
+    }
+    return "txcount";
+  }, [getMetricKeyFromMetric, metricsDef, sort.metric]);
+  
+
 
   const {
     data: master,
@@ -444,8 +442,6 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
         setSelectedStringFilters: (value) => handleFilters(FilterType.SEARCH, value),
         medianMetric,
         medianMetricKey,
-        setMedianMetric: (value) => setMedianMetric(value),
-        setMedianMetricKey: (value) => setMedianMetricKey(value),
       }}
     >
       <ShowLoading

@@ -4,7 +4,7 @@ import Icon from "@/components/layout/Icon";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { AggregatedDataRow, useApplicationsData } from "./_contexts/ApplicationsDataContext";
 import { useMetrics } from "./_contexts/MetricsContext";
-import { memo, use, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, use, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
 import {
@@ -35,6 +35,8 @@ import { useTimespan } from "./_contexts/TimespanContext";
   preload(ApplicationsURLs.overview.replace('{timespan}', timespan), { as: 'fetch' });
 });
 
+const SCROLL_POS_KEY = 'scrollPos-applications';
+
 export default function Page() {
   const { applicationDataAggregated, isLoading, selectedStringFilters, medianMetric, medianMetricKey } = useApplicationsData();
   const { selectedMetrics, selectedMetricKeys } = useMetrics();
@@ -43,22 +45,62 @@ export default function Page() {
 
   useEffect(() => {
     const handleScroll = () => {
-      sessionStorage.setItem('applicationsScrollPos', window.scrollY.toString());
+      sessionStorage.setItem(SCROLL_POS_KEY, window.scrollY.toString());
     };
   
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    const referrer = document.referrer;
-    if (referrer.includes("/applications/")) {
-      const savedScrollPos = sessionStorage.getItem('applicationsScrollPos');
-      if (savedScrollPos) {
-        window.scrollTo(0, Number(savedScrollPos));
+  useLayoutEffect(() => {
+    const restoreScroll = () => {
+      const savedScroll = sessionStorage.getItem(SCROLL_POS_KEY);
+      
+      if (!savedScroll) {
+        return;
       }
+      
+      console.log("Attempting to restore scroll with scroll position:", savedScroll);
+      const scrollY = parseInt(savedScroll);
+      
+      // Track start time for the 1-second attempt window
+      const startTime = Date.now();
+      const maxDuration = 1000; // 1 second in milliseconds
+      
+      // Function to attempt scrolling with retries
+      const attemptScroll = () => {
+        const pageHeight = document.documentElement.scrollHeight;
+        const currentTime = Date.now();
+        const timeElapsed = currentTime - startTime;
+        
+        if (scrollY < pageHeight) {
+          // Page is tall enough, perform scroll
+          window.scrollTo(0, scrollY);
+          sessionStorage.removeItem(SCROLL_POS_KEY);
+          return true; // Success
+        } else if (timeElapsed < maxDuration) {
+          // Still within time window, retry soon
+          setTimeout(attemptScroll, 50); // Check every 50ms
+          return false; // Still trying
+        } else {
+          // Time's up, couldn't scroll
+          sessionStorage.removeItem(SCROLL_POS_KEY);
+          return false; // Failed
+        }
+      };
+      
+      // Start the attempt cycle
+      attemptScroll();
+    };
+  
+    const referrer = document.referrer;
+    // if the referrer is the applications page, restore the scroll
+    if (referrer.includes("/applications/")) {
+      restoreScroll();
     }
+    
   }, []);
+
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { topGainers, topLosers } = useMemo(() => {
     const medianMetricValues = applicationDataAggregated.map((application) => application[medianMetricKey])

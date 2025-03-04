@@ -19,7 +19,7 @@ import { useMetrics } from "../_contexts/MetricsContext";
 import { useTimespan } from "../_contexts/TimespanContext";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import { useLocalStorage } from "usehooks-ts";
-
+import { debounce } from "lodash";
 
 type ApplicationIconProps = {
   owner_project: string;
@@ -164,22 +164,49 @@ export const ApplicationDescription = ({ owner_project }: { owner_project: strin
 
 export const BackButton = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const handleBack = () => {
-    // Check for a history entry from our app.
-    // One method is to check if a scroll position was saved
-    const savedScrollPos = sessionStorage.getItem('applicationsScrollPos');
+//   const handleBack = () => {
+//     // Check for a history entry from our app.
+//     // One method is to check if a scroll position was saved
+//     const savedScrollPos = sessionStorage.getItem('applicationsScrollPos');
 
-    // You might also check window.history.state.idx (if available) to decide.
-    if (savedScrollPos || (window.history.state && window.history.state.idx > 0)) {
-      // If we know the user came from /applications,
-      // use router.back() so that the browser restores the scroll position.
-      router.back();
-    } else {
-      // Otherwise, push to /applications (scroll will be at the top)
-      router.push('/applications');
-    }
-  };
+//     // You might also check window.history.state.idx (if available) to decide.
+//     if (savedScrollPos || (window.history.state && window.history.state.idx > 0)) {
+//       // If we know the user came from /applications,
+//       // use router.back() so that the browser restores the scroll position.
+//       router.back();
+//     } else {
+//       // Otherwise, push to /applications (scroll will be at the top)
+//       router.push('/applications');
+//     }
+//   };
+
+const handleBack = () => {
+  let backUrl = window.history.state?.prev;
+  let newSearchParams = searchParams.toString().replace(/%2C/g, ",");
+  
+  if (backUrl) {
+    // Instead of pushing a new state and going back,
+    // replace the current state and navigate directly
+    backUrl = `${backUrl.split("?")[0]}?${newSearchParams}`;
+    
+    // Option 1: Navigate to the URL directly
+    // window.location.href = backUrl;
+    
+    // Option 2: Replace current state and use history.back()
+    // This preserves scroll position better in many browsers
+    window.history.replaceState(null, "", window.location.href);
+    window.history.pushState(null, "", backUrl);
+    window.history.back();
+    
+    return;
+  }
+  
+  // Fallback: Navigate to applications with search params
+  backUrl = `/applications?${newSearchParams}`;
+  window.location.href = backUrl;
+};
 
   return (
     <div
@@ -190,6 +217,8 @@ export const BackButton = () => {
     </div>
   );
 };
+
+
 
 export type MultipleSelectTopRowChildProps = {
   handleNext: () => void;
@@ -209,13 +238,27 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
   // const [isHovering, setIsHovering] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
+  const debouncedSetIsOpen = debounce((value: boolean) => {
+    setIsOpen(value);
+  }, 100);
+
   return (
     <>
-      <div className="group flex flex-col relative lg:h-[44px] w-full lg:w-[300px]">
+      <div 
+        className="group flex flex-col relative lg:h-[44px] w-full lg:w-[300px]" 
+        
+      >
         <div
           className={`relative flex rounded-full h-[41px] lg:h-full w-full lg:z-[15] p-[5px] cursor-pointer ${isMobile ? "w-full" : "w-[271px]"}`}
           style={{
             backgroundColor: "#344240",
+          }}
+          onMouseEnter={() => {
+            if(debouncedSetIsOpen.cancel) debouncedSetIsOpen.cancel();
+          }}
+          onMouseLeave={() => {
+            if(!isOpen) return;
+            debouncedSetIsOpen(false);
           }}
         >
           <div
@@ -252,7 +295,13 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
           style={{
             maxHeight: isOpen ? `${options.length * 24 + (options.length - 1) * 10 + 37 + 16}px` : "0px",
           }}
-          
+          onMouseEnter={() => {
+            if(debouncedSetIsOpen.cancel) debouncedSetIsOpen.cancel();
+          }}
+          onMouseLeave={() => {
+            if(!isOpen) return;
+            debouncedSetIsOpen(false);
+          }}
         >
           <div className="pb-[20px] lg:pb-[16px]">
             <div className="h-[10px] lg:h-[37px]"></div>
@@ -260,7 +309,7 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
               <div
                 className="flex px-[25px] py-[5px] gap-x-[15px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
                 onClick={() => {
-                  setIsOpen(false);
+                  // setIsOpen(false);
                   
 
                   const newSelected = selected.includes(opt.key) ? selected.filter((m) => m !== opt.key) : [...selected, opt.key];
