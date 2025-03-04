@@ -24,7 +24,7 @@ import { useSort } from "./_contexts/SortContext";
 import { ApplicationsURLs } from "@/lib/urls";
 import { preload } from "react-dom";
 import useDragScroll from "@/hooks/useDragScroll";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { MetricInfo } from "@/types/api/MasterResponse";
 import { useTimespan } from "./_contexts/TimespanContext";
@@ -90,42 +90,44 @@ export default function Page() {
 
   return (
     <>
-    <div>
-      <div className={`transition-[max-height,opacity] duration-300 ${hideTopGainersAndLosers === true ? "overflow-hidden max-h-0 opacity-0" : "max-h-[calc(78px+150px)] md:max-h-[530px] lg:h-[380px] opacity-100"}`}>
-        <Container className={`pt-[30px]`}>
-          <div className="flex flex-col gap-y-[10px] ">
-            <div className="heading-large">Top Gainers and Losers by {metricsDef[medianMetric].name}</div>
-            <div className="flex justify-between items-center gap-x-[10px]">
-            <div className="text-xs">
-              Projects that saw the biggest change in {metricsDef[medianMetric].name} over the last {timespans[selectedTimespan].label}.
+      <div>
+        <div className={`transition-[max-height,opacity] duration-300 ${hideTopGainersAndLosers === true ? "overflow-hidden max-h-0 opacity-0" : "max-h-[calc(78px+150px)] md:max-h-[530px] lg:h-[380px] opacity-100"}`}>
+          <Container className={`pt-[30px]`}>
+            <div className="flex flex-col gap-y-[10px] ">
+              <div className="heading-large">Top Gainers and Losers by {metricsDef[medianMetric].name}</div>
+              <div className="flex justify-between items-center gap-x-[10px]">
+                <div className="text-xs">
+                  Projects that saw the biggest change in {metricsDef[medianMetric].name} over the last {timespans[selectedTimespan].label}.
+                </div>
+                <Tooltip placement="left">
+                  <TooltipTrigger>
+                    <div className="size-[15px]">
+                      <Icon icon="feather:info" className="size-[15px]" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="z-[99]">
+                    <TopGainersAndLosersTooltip metric={selectedMetrics[0]} />
+                  </TooltipContent>
+                </Tooltip>
+              </div>
             </div>
-            <Tooltip placement="left">
-              <TooltipTrigger>
-            <div className="size-[15px]">
-              <Icon icon="feather:info" className="size-[15px]" />
-            </div>
-            </TooltipTrigger>
-            <TooltipContent className="z-[99]">
-              <TopGainersAndLosersTooltip metric={selectedMetrics[0]} />
-            </TooltipContent>
-            </Tooltip>
-            </div>
-          </div>
-        </Container>
-        <Container className={`hidden h-[450px] lg:h-[300px] md:grid md:grid-rows-3 md:grid-flow-col lg:grid-rows-2 lg:grid-flow-row pt-[10px] lg:grid-cols-3 gap-[10px]`}>
-          {topGainers.map((application, index) => (
-            <ApplicationCard key={index} application={application} />
-          ))}
-          {topLosers.map((application, index) => (
-            <ApplicationCard key={index} application={application} />
-          ))}
-          {isLoading && new Array(6).fill(0).map((_, index) => (
-            <ApplicationCard key={index} application={undefined} />
-          ))}
-        </Container>
+          </Container>
+          <Container className={`hidden h-[450px] lg:h-[300px] md:grid md:grid-rows-3 md:grid-flow-col lg:grid-rows-2 lg:grid-flow-row pt-[10px] lg:grid-cols-3 gap-[10px]`}>
+            {topGainers.map((application, index) => (
+              <ApplicationCard key={index} application={application} />
+            ))}
+            {topLosers.map((application, index) => (
+              <ApplicationCard key={index} application={application} />
+            ))}
+            {isLoading && new Array(6).fill(0).map((_, index) => (
+              <ApplicationCard key={index} application={undefined} />
+            ))}
+          </Container>
         </div>
-        <div className={`block md:hidden h-[150px] pt-[10px]`}>
-          <CardSwiper cards={[...topGainers.map((application, index) => <ApplicationCard key={index} application={application} />), ...topLosers.map((application, index) => <ApplicationCard key={3 + index} application={application} />)]} />
+        <div className={`block md:hidden transition-[max-height,opacity] duration-300 ${hideTopGainersAndLosers === true ? "overflow-hidden max-h-0 opacity-0" : "max-h-[150px]"}`}>
+          <div className="pt-[10px]">
+            <CardSwiper cards={[...topGainers.map((application, index) => <ApplicationCard key={index} application={application} />), ...topLosers.map((application, index) => <ApplicationCard key={3 + index} application={application} />)]} />
+          </div>
         </div>
       </div>
       <Container className="pt-[30px] pb-[15px]">
@@ -213,7 +215,7 @@ const CardSwiper = ({ cards }: { cards: React.ReactNode[] }) => {
   );
 };
 
-const ApplicationsTable = () => {
+const ApplicationsTable = memo(() => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { applicationDataAggregated} = useApplicationsData();
   const { sort, setSort } = useSort();
@@ -238,6 +240,18 @@ const ApplicationsTable = () => {
     },[numTotalMetrics, selectedMetricKeys]
   );
 
+ // Optimize row rendering with a memoized item renderer
+ const renderItem = useCallback((index) => {
+  return (
+    <div key={index} className="pb-[5px]">
+      <ApplicationTableRow 
+        rowIndex={index} 
+        application={applicationDataAggregated[index]} 
+        maxMetrics={maxMetrics} 
+      />
+    </div>
+  );
+}, [applicationDataAggregated, maxMetrics]);
 
   return (
     <>
@@ -371,94 +385,181 @@ const ApplicationsTable = () => {
         /> */}
         <Virtuoso
           totalCount={applicationDataAggregated.length}
-          itemContent={(index) => (
-            <div key={index} className="pb-[5px]">
-            <ApplicationTableRow rowIndex={index} application={applicationDataAggregated[index]} maxMetrics={maxMetrics} />
-            </div>
-          )}
+          itemContent={renderItem}
           useWindowScroll
-          increaseViewportBy={{top:0, bottom: 400}}
-          overscan={50}
-          />
+          increaseViewportBy={{ top: 200, bottom: 400 }}
+          overscan={100}
+        />
       </div>
       {/* </HorizontalScrollContainer> */}
       </>
     
   )
+});
+
+ApplicationsTable.displayName = 'ApplicationsTable';
+
+
+interface ValueProps {
+  rowIndex: number;
+  rank: number;
+  def: MetricInfo;
+  value: number;
+  change_pct: number;
+  maxMetric: number;
+  metric: string;
 }
 
-type AltApplicationTableRowProps = {
-  logo_path: string;
-  owner_project: string;
-  display_name: string;
-  origin_keys: string[];
-  category: string;
-  num_contracts: number;
-  gas_fees: number;
-  gas_fees_eth: number;
-  gas_fees_usd: number;
-  gas_fees_change_pct: number;
-  rank_gas_fees: number;
+// Create areEqual function for memo optimization
+const areValuePropsEqual = (prevProps: ValueProps, nextProps: ValueProps) => {
+  return (
+    prevProps.rowIndex === nextProps.rowIndex &&
+    prevProps.rank === nextProps.rank &&
+    prevProps.value === nextProps.value &&
+    prevProps.change_pct === nextProps.change_pct &&
+    prevProps.maxMetric === nextProps.maxMetric &&
+    prevProps.metric === nextProps.metric &&
+    // For def, we don't need deep comparison if it's the same reference
+    prevProps.def === nextProps.def
+  );
 };
 
-
-const Value = memo(({ rowIndex, rank, def, value, change_pct, maxMetric, metric}: { rowIndex: number; rank: number, def: MetricInfo, value: number, change_pct: number, maxMetric: number, metric: string }) => {
+const Value = memo(({ 
+  rowIndex, 
+  rank, 
+  def, 
+  value, 
+  change_pct, 
+  maxMetric, 
+  metric 
+}: ValueProps) => {
   const { sort } = useSort();
-  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const {selectedMetrics} = useMetrics();
+  const [showUsd] = useLocalStorage("showUsd", true);
+  const { selectedMetrics } = useMetrics();
 
+  // Determine if this metric is the currently selected sort metric
   const isSelectedMetric = useMemo(() =>
     sort.metric === metric,
     [sort.metric, metric]
   );
-  
 
+  // Calculate progress bar width once
   const progressWidth = useMemo(() =>
-    `${(value / maxMetric) * 100}%`,
+    maxMetric > 0 ? `${(value / maxMetric) * 100}%` : '0%',
     [value, maxMetric]
   );
 
+  // Format displayed value once
   const displayValue = useMemo(() => {
-    let prefix = Object.keys(def.units).includes("usd") ? showUsd ? def.units.usd.prefix : def.units.eth.prefix : Object.values(def.units)[0].prefix || "";
-    let decimals = Object.keys(def.units).includes("usd") ? showUsd ? def.units.usd.decimals : def.units.eth.decimals : Object.values(def.units)[0].decimals;
-    return prefix + value.toLocaleString("en-GB", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    // Get the appropriate unit from the metric definition
+    const unitType = Object.keys(def.units).includes("usd") 
+      ? showUsd ? "usd" : "eth" 
+      : Object.keys(def.units)[0];
+    
+    const unit = def.units[unitType];
+    const prefix = unit.prefix || "";
+    const decimals = unit.decimals;
+    
+    return prefix + value.toLocaleString("en-GB", { 
+      minimumFractionDigits: decimals, 
+      maximumFractionDigits: decimals 
+    });
   }, [def, showUsd, value]);
+
+  // Format percentage change once
+  const changePctDisplayValue = useMemo(() => {
+    if (change_pct === Infinity) return " ";
+
+    return `${change_pct < 0 ? '-' : '+'}${formatNumber(Math.abs(change_pct), {
+      defaultDecimals: 1, 
+      thresholdDecimals: {base: 0}
+    })}%`;
+  }, [change_pct]);
 
   return (
     <div className="w-full flex items-center justify-end gap-[10px]">
-      <div className="numbers-xs text-[#5A6462] w-[calc(7.33*4px+10px)] pl-[10px]">{isSelectedMetric && rank}</div>
+      {/* Rank display (only show if this metric is the current sort metric) */}
+      <div className="numbers-xs text-[#5A6462] w-[calc(7.33*4px+10px)] pl-[10px]">
+        {isSelectedMetric && rank}
+      </div>
+      
+      {/* Value container */}
       <div className="w-full flex flex-col items-end gap-y-[2px]">
-
+        {/* Value display */}
         <div className="flex justify-end items-center gap-x-[2px]">
           <div className="numbers-xs">
             {displayValue}
           </div>
-          {change_pct !== Infinity ? (
-            <div className={`numbers-xxs w-[49px] text-right ${change_pct < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
-              {change_pct < 0 ? '-' : '+'}{Math.abs(change_pct).toFixed(0)}%
-            </div>
-            ) : (
-            <div className="w-[49px] h-[10px]">&nbsp;</div>
-          )}
+          <div className={`numbers-xxs w-[49px] text-right ${
+            change_pct < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'
+          }`}>
+            {changePctDisplayValue}
+          </div>
         </div>
+        
+        {/* Progress bar */}
         <div className="relative w-full h-[4px] rounded-full">
-          <div className="absolute h-[4px] right-0 transition-[width]"
+          <div 
+            className="absolute h-[4px] right-0 transition-[width]"
             style={{
               width: progressWidth,
               background: "linear-gradient(145deg, #FE5468 0%, #FFDF27 100%)",
               borderRadius: "999px",
             }}
           />
-
-          {/* {maxMetric} */}
         </div>
       </div>
     </div>
-  )
-});
+  );
+}, areValuePropsEqual);
 
 Value.displayName = 'Value';
 
+
+// Create a separate areEqual function for the memo optimization
+const areTableRowPropsEqual = (
+  prevProps: { application: AggregatedDataRow, maxMetrics: number[], rowIndex: number },
+  nextProps: { application: AggregatedDataRow, maxMetrics: number[], rowIndex: number }
+) => {
+  // Compare rowIndex
+  if (prevProps.rowIndex !== nextProps.rowIndex) return false;
+  
+  // Compare maxMetrics array
+  if (prevProps.maxMetrics.length !== nextProps.maxMetrics.length) return false;
+  for (let i = 0; i < prevProps.maxMetrics.length; i++) {
+    if (prevProps.maxMetrics[i] !== nextProps.maxMetrics[i]) return false;
+  }
+  
+  // Compare relevant application properties (avoid deep comparison of the entire object)
+  const prevApp = prevProps.application;
+  const nextApp = nextProps.application;
+  
+  if (
+    prevApp.owner_project !== nextApp.owner_project ||
+    prevApp.num_contracts !== nextApp.num_contracts ||
+    // Compare metrics (this list would need to include all possible metrics you display)
+    prevApp.gas_fees_eth !== nextApp.gas_fees_eth ||
+    prevApp.gas_fees_usd !== nextApp.gas_fees_usd ||
+    prevApp.txcount !== nextApp.txcount ||
+    prevApp.daa !== nextApp.daa ||
+    // Compare change percentages
+    prevApp.gas_fees_eth_change_pct !== nextApp.gas_fees_eth_change_pct ||
+    prevApp.gas_fees_usd_change_pct !== nextApp.gas_fees_usd_change_pct ||
+    prevApp.txcount_change_pct !== nextApp.txcount_change_pct ||
+    prevApp.daa_change_pct !== nextApp.daa_change_pct
+  ) {
+    return false;
+  }
+  
+  // Compare origin_keys arrays
+  if (prevApp.origin_keys.length !== nextApp.origin_keys.length) return false;
+  for (let i = 0; i < prevApp.origin_keys.length; i++) {
+    if (prevApp.origin_keys[i] !== nextApp.origin_keys[i]) return false;
+  }
+  
+  // If we got here, the props are considered equal
+  return true;
+};
 
 
 const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { application: AggregatedDataRow, maxMetrics: number[], rowIndex: number }) => {
@@ -467,6 +568,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
   const { selectedTimespan } = useTimespan();
   const { sort } = useSort();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [isTouchDevice, setIsTouchDevice] = useState(false);
 
@@ -487,94 +589,94 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
   );
 
   return (
-    <Link href={{ pathname: `/applications/${application.owner_project}`, query: selectedTimespan !== "7d" ?{ timespan: selectedTimespan } : {}}}>
-    <GridTableRow
-      // gridDefinitionColumns={gridColumns}
-      className={`group text-[14px] !px-[5px] !py-0 h-[34px] !gap-x-0 transition-all duration-300`}
-      style={{
-        gridTemplateColumns: gridColumns,
-      }}
-      onClick={() => {
-        // window.location.href = `/applications/${application.owner_project}`;
-        router.push(`/applications/${application.owner_project}`);
-      }}
-    >
-      <div className="sticky z-[100] -left-[12px] md:-left-[46px] w-[30px] flex items-center justify-center overflow-visible">
-        <div
-          className="absolute z-[3] -left-[6px] h-[34px] w-[35px] pl-[5px] flex items-center justify-start bg-[radial-gradient(circle_at_-32px_16px,_#151A19_0%,_#151A19_72.5%,_transparent_90%)] group-hover:bg-[radial-gradient(circle_at_-32px_16px,_transparent_0%,_transparent_72.5%,_transparent_90%)] rounded-l-full border-[0.5px] border-r-0 border-[#5A6462]"
-        >
-          <ApplicationIcon owner_project={application.owner_project} size="sm" />
-        </div>
-      </div>
-      <div
-        className="flex items-center gap-x-[5px] group-hover:underline truncate pl-[15px] pr-[15px]"
+    <Link href={{ pathname: `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",")}}>
+      <GridTableRow
+        // gridDefinitionColumns={gridColumns}
+        className={`group text-[14px] !px-[5px] !py-0 h-[34px] !gap-x-0 transition-all duration-300`}
+        style={{
+          gridTemplateColumns: gridColumns,
+        }}
+        onClick={() => {
+          // must define onclick so we have hover effect from GridTableRow component
+          return;
+        }}
       >
-        <Tooltip placement="bottom-start" allowInteract>
-          <TooltipTrigger 
-            className="z-[10] truncate h-[32px]" 
-            onClick={(e) => {
-              if(isTouchDevice) {
-                e.stopPropagation();
-                e.preventDefault();
-              }
-            }}
-          >
-            <ApplicationDisplayName owner_project={application.owner_project} />
-          </TooltipTrigger>
-          <TooltipContent className="z-[99] left-0 ml-[20px] -mt-[5px]">
-            <ApplicationTooltip application={application} />
-          </TooltipContent>
-        </Tooltip>
-      </div>
-      <div className="flex items-center gap-x-[5px] pr-[15px]">
-        <Chains origin_keys={application.origin_keys} />
-      </div>
-      <div className="text-xs pr-[15px]">
-        <Category category={ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].main_category : ""} />
-      </div>
-      <div className="numbers-xs text-right pr-[15px]">
-        {application.num_contracts}
-      </div>
-      {selectedMetrics.map((metric, index) => {
-        const metricKey = selectedMetricKeys[index];
-        let bgColor = "bg-transparent";
-        
-        // starting from the last metric column, the bg should be bg-[#344240]/30 and every other column should be bg-transparent
-        if (index === selectedMetrics.length - 1) {
-          bgColor = "bg-[#344240]/30";
-        } else if (selectedMetrics.length % 2 === 0) {
-          bgColor = index % 2 === 1 ? "bg-[#344240]/30" : "bg-transparent";
-        }else{
-          bgColor = index % 2 === 0 ? "bg-[#344240]/30" : "bg-transparent";
-        }
-
-        // if(metric === sort.metric){
-        //   bgColor = "bg-[#151A19]";
-        // }
-
-
-        return (
+        <div className="sticky z-[100] -left-[12px] md:-left-[46px] w-[30px] flex items-center justify-center overflow-visible">
           <div
-            key={index}
-            className={`flex justify-end items-center text-right h-full pr-[15px] transition-colors duration-300 ${bgColor}`}
+            className="absolute z-[3] -left-[6px] h-[34px] w-[35px] pl-[5px] flex items-center justify-start bg-[radial-gradient(circle_at_-32px_16px,_#151A19_0%,_#151A19_72.5%,_transparent_90%)] group-hover:bg-[radial-gradient(circle_at_-32px_16px,_transparent_0%,_transparent_72.5%,_transparent_90%)] rounded-l-full border-[0.5px] border-r-0 border-[#5A6462]"
           >
-            <Value rowIndex={rowIndex} rank={application[`rank_${metricKey}`]} def={metricsDef[metric]} value={application[metricKey]} change_pct={application[`${metricKey}_change_pct`]} maxMetric={maxMetrics[index]} metric={selectedMetrics[index]} />
+            <ApplicationIcon owner_project={application.owner_project} size="sm" />
           </div>
-        )
-      })}
-      {selectedMetricKeys.length < numTotalMetrics && (new Array(numTotalMetrics - selectedMetricKeys.length).fill(0).map((_, index) => (
-          <div key={index} className="w-[0px]" />
-        )))}
-      <div className="relative flex justify-end items-center pr-[0px]">
-        <Link className="absolute cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center" href={{ pathname: `/applications/${application.owner_project}`, query: selectedTimespan !== "7d" ?{ timespan: selectedTimespan } : {}}}>
-          <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-[#CDD8D3]" />
-        </Link>
-      </div>
-      {/* #344240/30 */}
-    </GridTableRow>
+        </div>
+        <div
+          className="flex items-center gap-x-[5px] group-hover:underline truncate pl-[15px] pr-[15px]"
+        >
+          <Tooltip placement="bottom-start" allowInteract>
+            <TooltipTrigger 
+              className="z-[10] truncate h-[32px]" 
+              onClick={(e) => {
+                if(isTouchDevice) {
+                  e.stopPropagation();
+                  e.preventDefault();
+                }
+              }}
+            >
+              <ApplicationDisplayName owner_project={application.owner_project} />
+            </TooltipTrigger>
+            <TooltipContent className="z-[99] left-0 ml-[20px] -mt-[5px]">
+              <ApplicationTooltip application={application} />
+            </TooltipContent>
+          </Tooltip>
+        </div>
+        <div className="flex items-center gap-x-[5px] pr-[15px]">
+          <Chains origin_keys={application.origin_keys} />
+        </div>
+        <div className="text-xs pr-[15px]">
+          <Category category={ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].main_category : ""} />
+        </div>
+        <div className="numbers-xs text-right pr-[15px]">
+          {application.num_contracts}
+        </div>
+        {selectedMetrics.map((metric, index) => {
+          const metricKey = selectedMetricKeys[index];
+          let bgColor = "bg-transparent";
+          
+          // starting from the last metric column, the bg should be bg-[#344240]/30 and every other column should be bg-transparent
+          if (index === selectedMetrics.length - 1) {
+            bgColor = "bg-[#344240]/30";
+          } else if (selectedMetrics.length % 2 === 0) {
+            bgColor = index % 2 === 1 ? "bg-[#344240]/30" : "bg-transparent";
+          }else{
+            bgColor = index % 2 === 0 ? "bg-[#344240]/30" : "bg-transparent";
+          }
+
+          // if(metric === sort.metric){
+          //   bgColor = "bg-[#151A19]";
+          // }
+
+
+          return (
+            <div
+              key={index}
+              className={`flex justify-end items-center text-right h-full pr-[15px] transition-colors duration-300 ${bgColor}`}
+            >
+              <Value rowIndex={rowIndex} rank={application[`rank_${metricKey}`]} def={metricsDef[metric]} value={application[metricKey]} change_pct={application[`${metricKey}_change_pct`]} maxMetric={maxMetrics[index]} metric={selectedMetrics[index]} />
+            </div>
+          )
+        })}
+        {selectedMetricKeys.length < numTotalMetrics && (new Array(numTotalMetrics - selectedMetricKeys.length).fill(0).map((_, index) => (
+            <div key={index} className="w-[0px]" />
+          )))}
+        <div className="relative flex justify-end items-center pr-[0px]">
+          <div className="absolute cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center">
+            <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-[#CDD8D3]" />
+          </div>
+        </div>
+        {/* #344240/30 */}
+      </GridTableRow>
     </Link>
   )
-});
+}, areTableRowPropsEqual);
 
 ApplicationTableRow.displayName = 'ApplicationTableRow';
 

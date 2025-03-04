@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Icon from "@/components/layout/Icon";
 import { useUIContext } from "@/contexts/UIContext";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
@@ -204,7 +204,7 @@ export type MultipleSelectTopRowChildProps = {
   }[];
   canSelectNone?: boolean;
 };
-export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, setSelected, onSelect, options, canSelectNone = false}: MultipleSelectTopRowChildProps) => {
+export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selected, setSelected, onSelect, options, canSelectNone = false}: MultipleSelectTopRowChildProps) => {
   const { isMobile } = useUIContext();
   // const [isHovering, setIsHovering] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -298,7 +298,10 @@ export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, se
       </div>
     </>
   )
-}
+});
+
+MultipleSelectTopRowChild.displayName = "MultipleSelectTopRowChild";
+
 type SocialLink = {
   key: string;
   icon: string;
@@ -386,6 +389,7 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
   const router = useRouter();
   const { selectedTimespan } = useTimespan();
   const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -436,7 +440,7 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
   }
 
   return (
-    <Link href={{ pathname: `/applications/${application.owner_project}`, query: { timespan: selectedTimespan } }}
+    <Link href={{ pathname: `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",")}}
       className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] ${className || ""} group hover:cursor-pointer hover:bg-forest-500/10`} 
       style={{ width: width || undefined }}
       // onClick={() => {
@@ -490,9 +494,9 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
             </TooltipContent>
           </Tooltip>
         </div>
-        <Link className="cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center" href={{ pathname: `/applications/${application.owner_project}`, query: { timespan: selectedTimespan } }}>
+        <div className="cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center">
           <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-[#CDD8D3]" />
-        </Link>
+        </div>
       </div>
       <div className="flex items-center justify-between gap-x-[5px]">
         <div className="text-xs">
@@ -514,6 +518,7 @@ export const ApplicationTooltip = memo(({application}: {application: AggregatedD
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { applicationDataAggregated } = useApplicationsData();
   const { selectedTimespan } = useTimespan();
+  const searchParams = useSearchParams();
 
   const descriptionPreview = useMemo(() => {
     if (!application || !ownerProjectToProjectData[application.owner_project] || !ownerProjectToProjectData[application.owner_project].description) return "";
@@ -538,7 +543,7 @@ export const ApplicationTooltip = memo(({application}: {application: AggregatedD
       }}
     >
       <div className="flex flex-col pl-[5px] gap-y-[10px]">
-        <div className="flex gap-x-[5px] items-center justify-between">
+        <Link className="flex gap-x-[5px] items-center justify-between" href={{ pathname: `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",")}}>
           <div className="flex gap-x-[5px] items-center">
             {ownerProjectToProjectData[application.owner_project] && ownerProjectToProjectData[application.owner_project].logo_path ? (
               <Image
@@ -557,10 +562,10 @@ export const ApplicationTooltip = memo(({application}: {application: AggregatedD
             )}
             <div className="heading-small-xs">{ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].display_name : application.owner_project}</div>
           </div>
-          <Link className="cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center" href={{ pathname: `/applications/${application.owner_project}`, query: { timespan: selectedTimespan } }}>
-            <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-[#CDD8D3]" />
-          </Link>
-        </div>
+          <div className="cursor-pointer size-[20px] bg-[#344240] rounded-full flex justify-center items-center">
+            <Icon icon="feather:arrow-right" className="w-[13px] h-[13px] text-[#CDD8D3]" />
+          </div>
+        </Link>
         <div className="text-xs">
           {descriptionPreview}...
         </div>
