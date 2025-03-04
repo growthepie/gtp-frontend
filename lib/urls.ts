@@ -61,6 +61,7 @@ export const ChainBlockspaceURLs = {
   blast: "https://api.growthepie.xyz/v1/chains/blockspace/blast.json",
   mode: "https://api.growthepie.xyz/v1/chains/blockspace/mode.json",
   taiko: "https://api.growthepie.xyz/v1/chains/blockspace/taiko.json",
+  swell: "https://api.growthepie.xyz/v1/chains/blockspace/swell.json",
   redstone: "https://api.growthepie.xyz/v1/chains/blockspace/redstone.json",
 };
 
