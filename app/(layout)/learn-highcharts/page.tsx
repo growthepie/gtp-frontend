@@ -85,13 +85,6 @@ export default function Page(){
 
     
         return {
-        "1d": {
-            shortLabel: "1d",
-            label: "1 day",
-            value: 1,
-            xMin: xMax - 1 * 24 * 60 * 60 * 1000,
-            xMax: xMax,
-        },
         "7d": {
             shortLabel: "7d",
             label: "7 days",
@@ -106,24 +99,16 @@ export default function Page(){
             xMin: xMax - 30 * 24 * 60 * 60 * 1000,
             xMax: xMax,
         },
-        "90d": {
-            shortLabel: "90d",
-            label: "90 days",
-            value: 90,
-            xMin: xMax - 90 * 24 * 60 * 60 * 1000,
+        "180d": {
+            shortLabel: "180d",
+            label: "180 days",
+            value: 180,
+            xMin: xMax - 180 * 24 * 60 * 60 * 1000,
             xMax: xMax,
         },
-        "365d": {
-            shortLabel: "1y",
-            label: "1 year",
-            value: 365,
-            xMin: xMax - 365 * 24 * 60 * 60 * 1000,
-            xMax: xMax,
-        },
-
         max: {
             shortLabel: "Max",
-            label: "Max",
+            label: "All Time",
             value: 0,
             xMin: xMax - 365 * 24 * 60 * 60 * 1000,
             xMax: xMax,
@@ -232,10 +217,7 @@ export default function Page(){
               }}
               isSelected = {selectedMode === "tx_count"}>Transaction Count</TopRowChild>
             </TopRowParent>
-                <div
-                    className= "flex justify-end"
-                >
-                </div>
+              <div className="mt-1 h-1 w-2/3 border-t border-dotted border-[rgb(136,160,157)] mx-auto lg:hidden"></div>
                 <TopRowParent>
                    {Object.keys(timespans).map((timespan) => (
                         <TopRowChild
@@ -244,16 +226,17 @@ export default function Page(){
                             onClick={() => setSelectedTimespan(timespan)}
                             className={`${selectedTimespan === timespan ? "selected" : ""}`}
                         >
-                            {timespans[timespan].shortLabel}
+                            <span className="block lg:hidden">{timespans[timespan].shortLabel}</span>
+                            <span className="hidden lg:block">{timespans[timespan].label}</span>
                         </TopRowChild>
                     ))}
                 </TopRowParent>
             </TopRowContainer>
-            <div className="flex gap-x-2 my-[15px] cursor-pointer">{Object.keys(master.blockspace_categories.main_categories).map((key) => {
+            <div className="mt-5 mb-5 flex flex-wrap gap-x-2 gap-y-2 my-[15px] cursor-pointer">{Object.keys(master.blockspace_categories.main_categories).map((key) => {
                 return (
                     <div key={key} className={`flex items-center gap-x-1 rounded-full justify-center px-2 ${selectedCategory === key ? "bg-[#151A19] border border-white" : "bg-[#344240]"}`} 
                     onClick={() => setSelectedCategory(key)}>
-                        <div className="text-xs">{master.blockspace_categories.main_categories[key]}</div>
+                        <div className="text-xxs truncate lg:text-xs">{master.blockspace_categories.main_categories[key]}</div>
                     </div>)
             })}</div>
             <div className="relative ">
@@ -268,7 +251,7 @@ export default function Page(){
               selectedScale={selectedScale}
             />
         </div>
-        <div className="flex items-center gap-x-2 h-[40px] rounded-full bg-[#1F2726] justify-end px-2">
+        <div className="mt-2 flex items-center gap-x-2 h-[40px] rounded-full bg-[#1F2726] justify-center md:justify-end px-1">
           <div
             onClick={() => {
               setSelectedScale("absolute");
