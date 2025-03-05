@@ -70,7 +70,7 @@ export default async function Page() {
         <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
           <GTPIcon icon={"gtp-ethereum-weekly"} size="lg" />
           <Heading className="heading-large-lg">
-            Ethereum Layer 2 User Base
+            Ethereum Weekly Engagement
           </Heading>
         </div>
         <Subheading className="text-base leading-normal md:leading-snug px-[5px] lg:px-[45px]">

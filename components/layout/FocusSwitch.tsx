@@ -38,18 +38,21 @@ export default function FocusSwitch({ isMobile }: EthUsdSwitchProps) {
     return null;
   }
 
+  // onClick={() => {
+  //   setFocusEnabled(focusEnabled ? false : true);
+  // }}
   return (
     <div className="select-none flex justify-between">
       <div className="flex items-center">
-        {/* <input id="focus-toggle" type="checkbox" className="hidden" checked={focusEnabled} onChange={handleToggle} /> */}
-        <label htmlFor="focus-toggle" className="flex items-center cursor-pointer gap-x-[10px]">
+        <input type="checkbox" className="hidden" />
+        <label htmlFor="toggle" className="flex items-center cursor-pointer">
           {/* <div
             className="mr-2 font-medium"
             onClick={() => {
-              setShowUsd(focusEnabled ? false : true);
+              setShowUsd(showUsd ? false : true);
             }}
           >
-            {focusEnabled === true ? <>USD</> : <>ETH</>}
+            {showUsd === true ? <>USD</> : <>ETH</>}
           </div> */}
           <div
             className="relative text-sm md:text-base font-medium"
@@ -58,41 +61,42 @@ export default function FocusSwitch({ isMobile }: EthUsdSwitchProps) {
             }}
           >
             <div
-              className={`${isMobile ? "w-[80px] h-[20px] text-[13px]" : "w-[50px] h-[28px] heading-small"
-                } flex justify-between  items-center px-2 md:px-3 rounded-full transition-all duration-300 ease-in-out text-forest-900 ${focusEnabled ? " bg-[#5A6462]" : "bg-forest-500"}`}
+              className={`${isMobile ? "w-[80px] h-[22px] text-[13px]" : "w-[203px] h-[28px] heading-small"
+                } flex justify-between  items-center px-2 md:pl-3 md:pr-8 rounded-full transition duration-200 ease-in-out text-forest-900 bg-[#344240]`}
             >
-              <div className="-mb-0.5"></div>
-              <div className="-mb-0.5"></div>
+              <div className="heading-small-xxs text-forest-500">Total Ecosystem</div>
+              <div className="heading-small-xxs text-forest-500">L2 Focus</div>
+              <div className="absolute top-[6px] z-20 right-[5px]">
+                <Tooltip placement="left">
+                    <TooltipTrigger>
+                    <Icon icon="feather:info" className="text-forest-500" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                    <div className="flex flex-col items-center">
+                        <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex flex-col z-50">
+                        <div>
+                            <strong>L2 Focus</strong> is a feature that allows you to focus on the scaling solutions for Ethereum.
+                        </div>
+                        </div>
+                    </div>
+                    </TooltipContent>
+                </Tooltip>
+              </div>
             </div>
             <div
-              className={`absolute left-[2px] top-[2px] md:left-0.5 md:top-0.5 
+              className={`absolute flex justify-center items-center  left-[2px] top-[2px] md:-left-[46px] md:top-0.5
               ${isMobile
-                  ? "w-[24px] h-[24px] leading-[14px] text-[12px]"
-                  : "w-[24px] h-[24px] heading-small leading-[20px]"
+                  ? "h-[18px] leading-[14px] text-[12px]"
+                  : "w-full h-[24px] heading-small-xxs leading-[20px]"
                 } 
-              rounded-full transition-transform duration-200 ease-in-out text-forest-500 bg-[#1F2726] pt-[7px] px-1.5 text-center ${focusEnabled ? "transform translate-x-[96%]" : "translate-x-0"
+              rounded-full transition-transform duration-200 ease-in-out text-forest-500  px-1.5 text-center ${focusEnabled ? "transform translate-x-[46%]" : "translate-x-0"
                 }`}
             >
+              
+              <div className="bg-[#1F2726] px-[5px] rounded-full h-[24px] flex items-center">
+                {focusEnabled === true ? <>L2 Focus</> : <>Total Ecosystem</>}
+              </div>
             </div>
-          </div>
-          <div className="heading-small-sm whitespace-nowrap">
-            L2 Focus
-          </div>
-          <div className="relative top-[3px]">
-            <Tooltip placement="left">
-                <TooltipTrigger>
-                <Icon icon="feather:info" className="text-forest-500" />
-                </TooltipTrigger>
-                <TooltipContent>
-                <div className="flex flex-col items-center">
-                    <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex flex-col z-50">
-                    <div>
-                        <strong>L2 Focus</strong> is a feature that allows you to focus on the scaling solutions for Ethereum.
-                    </div>
-                    </div>
-                </div>
-                </TooltipContent>
-            </Tooltip>
           </div>
         </label>
       </div>

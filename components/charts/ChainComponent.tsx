@@ -1298,111 +1298,7 @@ export default function ChainComponent({
               },
 
               series: [
-                ((category !== "rent_paid")) && {
-                  visible: focusEnabled ? false : true,
-                  name: ethData.chain_id,
-                  crisp: true,
-                  data: ethData.metrics[category].daily.types.includes("eth")
-                    ? showUsd
-                      ? ethData.metrics[category].daily.data.map((d) => [
-                        d[0],
-                        d[ethData.metrics[category].daily.types.indexOf("usd")],
-                      ])
-                      : ethData.metrics[category].daily.data.map((d) => [
-                        d[0],
-                        showGwei(category)
-                          ? d[
-                          ethData.metrics[category].daily.types.indexOf(
-                            "eth",
-                          )
-                          ] * 1000000000
-                          : d[
-                          ethData.metrics[category].daily.types.indexOf(
-                            "eth",
-                          )
-                          ],
-                      ])
-                    : ethData.metrics[category].daily.data.map((d) => [
-                      d[0],
-                      d[1],
-                    ]),
-                  showInLegend: false,
-                  marker: {
-                    enabled: false,
-                  },
-                  dataGrouping: {
-                    enabled: false,
-                  },
-                  color: AllChainsByKeys[ethData.chain_id]?.colors[theme ?? "dark"][0],
-                  fillColor: {
-                    linearGradient: {
-                      x1: 0,
-                      y1: 0,
-                      x2: 0,
-                      y2: 1,
-                    },
-                    stops: [
-                      [
-                        0,
-                        AllChainsByKeys[ethData.chain_id].colors[theme ?? "dark"][0] +
-                        "33",
-                      ],
-                      [
-                        1,
-                        AllChainsByKeys[ethData.chain_id].colors[theme ?? "dark"][1] +
-                        "33",
-                      ],
-                    ],
-                  },
-                  // states: {
-                  //   marker: {
-                  //     hover: {
-                  //       enabled: true,
-                  //     },
-                  //   },
-                  // },
-                  point: {
-                    events: {
-                      mouseOver: pointHover,
-                      mouseOut: pointHover,
-                    },
-                  },
-                  // step: "center",
-                  // dataGrouping: {
-                  //   enabled: true,
-                  //   forced: true,
-                  //   approximation: "sum",
-                  //   anchor: "middle",
-                  //   units: [["week", [1]]],
-                  // },
-                  states: {
-                    hover: {
-                      enabled: true,
-                      halo: {
-                        size: 5,
-                        opacity: 1,
-                        attributes: {
-                          fill:
-                            AllChainsByKeys[ethData.chain_id]?.colors[
-                            theme ?? "dark"
-                            ][0] + "99",
-                          stroke:
-                            AllChainsByKeys[ethData.chain_id]?.colors[
-                            theme ?? "dark"
-                            ][0] + "66",
-                        },
-                      },
-                      brightness: 0.3,
-                    },
-                    inactive: {
-                      enabled: true,
-                      opacity: 0.6,
-                    },
-                    selection: {
-                      enabled: false,
-                    },
-                  },
-                },
+
                 {
                   
                   name: data.chain_id,
@@ -1507,7 +1403,112 @@ export default function ChainComponent({
                       enabled: false,
                     },
                   },
-                }
+                },
+                ((category !== "rent_paid")) && {
+                  visible: !focusEnabled ? false : true,
+                  name: ethData.chain_id,
+                  crisp: true,
+                  data: ethData.metrics[category].daily.types.includes("eth")
+                    ? showUsd
+                      ? ethData.metrics[category].daily.data.map((d) => [
+                        d[0],
+                        d[ethData.metrics[category].daily.types.indexOf("usd")],
+                      ])
+                      : ethData.metrics[category].daily.data.map((d) => [
+                        d[0],
+                        showGwei(category)
+                          ? d[
+                          ethData.metrics[category].daily.types.indexOf(
+                            "eth",
+                          )
+                          ] * 1000000000
+                          : d[
+                          ethData.metrics[category].daily.types.indexOf(
+                            "eth",
+                          )
+                          ],
+                      ])
+                    : ethData.metrics[category].daily.data.map((d) => [
+                      d[0],
+                      d[1],
+                    ]),
+                  showInLegend: false,
+                  marker: {
+                    enabled: false,
+                  },
+                  dataGrouping: {
+                    enabled: false,
+                  },
+                  color: AllChainsByKeys[ethData.chain_id]?.colors[theme ?? "dark"][0],
+                  fillColor: {
+                    linearGradient: {
+                      x1: 0,
+                      y1: 0,
+                      x2: 0,
+                      y2: 1,
+                    },
+                    stops: [
+                      [
+                        0,
+                        AllChainsByKeys[ethData.chain_id].colors[theme ?? "dark"][0] +
+                        "33",
+                      ],
+                      [
+                        1,
+                        AllChainsByKeys[ethData.chain_id].colors[theme ?? "dark"][1] +
+                        "33",
+                      ],
+                    ],
+                  },
+                  // states: {
+                  //   marker: {
+                  //     hover: {
+                  //       enabled: true,
+                  //     },
+                  //   },
+                  // },
+                  point: {
+                    events: {
+                      mouseOver: pointHover,
+                      mouseOut: pointHover,
+                    },
+                  },
+                  // step: "center",
+                  // dataGrouping: {
+                  //   enabled: true,
+                  //   forced: true,
+                  //   approximation: "sum",
+                  //   anchor: "middle",
+                  //   units: [["week", [1]]],
+                  // },
+                  states: {
+                    hover: {
+                      enabled: true,
+                      halo: {
+                        size: 5,
+                        opacity: 1,
+                        attributes: {
+                          fill:
+                            AllChainsByKeys[ethData.chain_id]?.colors[
+                            theme ?? "dark"
+                            ][0] + "99",
+                          stroke:
+                            AllChainsByKeys[ethData.chain_id]?.colors[
+                            theme ?? "dark"
+                            ][0] + "66",
+                        },
+                      },
+                      brightness: 0.3,
+                    },
+                    inactive: {
+                      enabled: true,
+                      opacity: 0.6,
+                    },
+                    selection: {
+                      enabled: false,
+                    },
+                  },
+                },
                 
               ],
             }}
