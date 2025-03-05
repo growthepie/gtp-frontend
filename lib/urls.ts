@@ -47,7 +47,7 @@ export const ChainBlockspaceURLs = {
   imx: "https://api.growthepie.xyz/v1/chains/blockspace/imx.json",
   zksync_era: "https://api.growthepie.xyz/v1/chains/blockspace/zksync_era.json",
   base: "https://api.growthepie.xyz/v1/chains/blockspace/base.json",
-  swell: "https://api.growthepie.xyz/v1/chains/blockspace/swell.json",
+
   gitcoin_pgn:
     "https://api.growthepie.xyz/v1/chains/blockspace/gitcoin_pgn.json",
   zora: "https://api.growthepie.xyz/v1/chains/blockspace/zora.json",
