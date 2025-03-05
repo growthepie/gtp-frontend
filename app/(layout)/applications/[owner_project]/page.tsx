@@ -179,8 +179,8 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
         <div className="flex flex-col gap-y-[10px]">
           <div className="flex gap-x-[10px] items-center">
             <GTPIcon icon={metricIcons[metric] as GTPIconName} size="md" />
-            <div className="text-xl">
-              <span className="heading-large-md">{def.name}</span> across different chains
+            <div className="text-sm md:text-xl">
+              <span className="heading-large-sm md:heading-large-md">{def.name}</span> across different chains
             </div>
           </div>
           {/* <div className="text-xs">
@@ -644,6 +644,7 @@ const ContractsTable = () => {
   );
 
   return (
+    <>
     <HorizontalScrollContainer reduceLeftMask={true}>
       <GridTableHeader
         gridDefinitionColumns={gridColumns}
@@ -709,12 +710,13 @@ const ContractsTable = () => {
           )}
         />
       </div> */}
-      <div className="flex flex-col" style={{ height: `${contracts.slice(0, showMore ? contracts.length : 5).length * 34 + contracts.slice(0, showMore ? contracts.length : 5).length * 5}px` }}>
+      <div className="flex flex-col transition-[max-height] duration-300 overflow-hidden" style={{ maxHeight: showMore ? contracts.length * 34 + (contracts.length - 1) * 5 : 5 * 34 + 5 * 4 }}>
+
         <Virtuoso
-          totalCount={contracts.slice(0, showMore ? contracts.length : 5).length}
+          totalCount={contracts.length}
           itemContent={(index) => (
-            <div key={index} className="pb-[5px]">
-              <ContractsTableRow contract={contracts.slice(0, showMore ? contracts.length : 5)[index]} />
+            <div key={index} className={index < contracts.length - 1 ? "pb-[5px]" : ""}>
+              <ContractsTableRow contract={contracts[index]} />
             </div>
           )}
           useWindowScroll
@@ -722,12 +724,16 @@ const ContractsTable = () => {
           overscan={50}
         />
       </div>
+      
+    </HorizontalScrollContainer>
+    {contracts.length > 5 && (
       <div className="flex items-center justify-center pt-[21px]">
         <div className="flex items-center justify-center rounded-full h-[36px] w-[117px] border border-[#CDD8D3] text-[#CDD8D3] cursor-pointer text-md" onClick={() => setShowMore(!showMore)}>
           {showMore ? "Show less" : "Show more"}
         </div>
       </div>
-    </HorizontalScrollContainer>
+    )}
+    </>
   )
 }
 
@@ -792,7 +798,7 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict }) => {
   return (
     <GridTableRow
       gridDefinitionColumns={gridColumns}
-      className={`group text-[14px] !pl-[5px] !pr-[30px] !py-0 h-[34px] gap-x-[15px]`}
+      className={`group text-[14px] !pl-[5px] !pr-[30px] !py-0 h-[34px] gap-x-[15px] whitespace-nowrap`}
       style={{
         gridTemplateColumns: gridColumns,
       }}

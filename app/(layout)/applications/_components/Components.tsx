@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Icon from "@/components/layout/Icon";
 import { useUIContext } from "@/contexts/UIContext";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
@@ -19,7 +19,7 @@ import { useMetrics } from "../_contexts/MetricsContext";
 import { useTimespan } from "../_contexts/TimespanContext";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import { useLocalStorage } from "usehooks-ts";
-
+import { debounce } from "lodash";
 
 type ApplicationIconProps = {
   owner_project: string;
@@ -164,22 +164,49 @@ export const ApplicationDescription = ({ owner_project }: { owner_project: strin
 
 export const BackButton = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const handleBack = () => {
-    // Check for a history entry from our app.
-    // One method is to check if a scroll position was saved
-    const savedScrollPos = sessionStorage.getItem('applicationsScrollPos');
+//   const handleBack = () => {
+//     // Check for a history entry from our app.
+//     // One method is to check if a scroll position was saved
+//     const savedScrollPos = sessionStorage.getItem('applicationsScrollPos');
 
-    // You might also check window.history.state.idx (if available) to decide.
-    if (savedScrollPos || (window.history.state && window.history.state.idx > 0)) {
-      // If we know the user came from /applications,
-      // use router.back() so that the browser restores the scroll position.
-      router.back();
-    } else {
-      // Otherwise, push to /applications (scroll will be at the top)
-      router.push('/applications');
-    }
-  };
+//     // You might also check window.history.state.idx (if available) to decide.
+//     if (savedScrollPos || (window.history.state && window.history.state.idx > 0)) {
+//       // If we know the user came from /applications,
+//       // use router.back() so that the browser restores the scroll position.
+//       router.back();
+//     } else {
+//       // Otherwise, push to /applications (scroll will be at the top)
+//       router.push('/applications');
+//     }
+//   };
+
+const handleBack = () => {
+  let backUrl = window.history.state?.prev;
+  let newSearchParams = searchParams.toString().replace(/%2C/g, ",");
+  
+  if (backUrl) {
+    // Instead of pushing a new state and going back,
+    // replace the current state and navigate directly
+    backUrl = `${backUrl.split("?")[0]}?${newSearchParams}`;
+    
+    // Option 1: Navigate to the URL directly
+    // window.location.href = backUrl;
+    
+    // Option 2: Replace current state and use history.back()
+    // This preserves scroll position better in many browsers
+    window.history.replaceState(null, "", window.location.href);
+    window.history.pushState(null, "", backUrl);
+    window.history.back();
+    
+    return;
+  }
+  
+  // Fallback: Navigate to applications with search params
+  backUrl = `/applications?${newSearchParams}`;
+  window.location.href = backUrl;
+};
 
   return (
     <div
@@ -190,6 +217,8 @@ export const BackButton = () => {
     </div>
   );
 };
+
+
 
 export type MultipleSelectTopRowChildProps = {
   handleNext: () => void;
@@ -204,18 +233,32 @@ export type MultipleSelectTopRowChildProps = {
   }[];
   canSelectNone?: boolean;
 };
-export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, setSelected, onSelect, options, canSelectNone = false}: MultipleSelectTopRowChildProps) => {
+export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selected, setSelected, onSelect, options, canSelectNone = false}: MultipleSelectTopRowChildProps) => {
   const { isMobile } = useUIContext();
   // const [isHovering, setIsHovering] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
+  const debouncedSetIsOpen = debounce((value: boolean) => {
+    setIsOpen(value);
+  }, 100);
+
   return (
     <>
-      <div className="group flex flex-col relative lg:h-[44px] w-full lg:w-[300px]">
+      <div 
+        className="group flex flex-col relative lg:h-[44px] w-full lg:w-[300px]" 
+        
+      >
         <div
           className={`relative flex rounded-full h-[41px] lg:h-full w-full lg:z-[15] p-[5px] cursor-pointer ${isMobile ? "w-full" : "w-[271px]"}`}
           style={{
             backgroundColor: "#344240",
+          }}
+          onMouseEnter={() => {
+            if(debouncedSetIsOpen.cancel) debouncedSetIsOpen.cancel();
+          }}
+          onMouseLeave={() => {
+            if(!isOpen) return;
+            debouncedSetIsOpen(false);
           }}
         >
           <div
@@ -252,7 +295,13 @@ export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, se
           style={{
             maxHeight: isOpen ? `${options.length * 24 + (options.length - 1) * 10 + 37 + 16}px` : "0px",
           }}
-          
+          onMouseEnter={() => {
+            if(debouncedSetIsOpen.cancel) debouncedSetIsOpen.cancel();
+          }}
+          onMouseLeave={() => {
+            if(!isOpen) return;
+            debouncedSetIsOpen(false);
+          }}
         >
           <div className="pb-[20px] lg:pb-[16px]">
             <div className="h-[10px] lg:h-[37px]"></div>
@@ -260,7 +309,7 @@ export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, se
               <div
                 className="flex px-[25px] py-[5px] gap-x-[15px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
                 onClick={() => {
-                  setIsOpen(false);
+                  // setIsOpen(false);
                   
 
                   const newSelected = selected.includes(opt.key) ? selected.filter((m) => m !== opt.key) : [...selected, opt.key];
@@ -298,7 +347,10 @@ export const MultipleSelectTopRowChild = ({ handleNext, handlePrev, selected, se
       </div>
     </>
   )
-}
+});
+
+MultipleSelectTopRowChild.displayName = "MultipleSelectTopRowChild";
+
 type SocialLink = {
   key: string;
   icon: string;
@@ -386,6 +438,7 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
   const router = useRouter();
   const { selectedTimespan } = useTimespan();
   const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -436,7 +489,7 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
   }
 
   return (
-    <Link href={{ pathname: `/applications/${application.owner_project}`, query: { timespan: selectedTimespan } }}
+    <Link href={{ pathname: `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",")}}
       className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] ${className || ""} group hover:cursor-pointer hover:bg-forest-500/10`} 
       style={{ width: width || undefined }}
       // onClick={() => {
@@ -490,9 +543,9 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
             </TooltipContent>
           </Tooltip>
         </div>
-        <Link className="cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center" href={{ pathname: `/applications/${application.owner_project}`, query: { timespan: selectedTimespan } }}>
+        <div className="cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center">
           <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-[#CDD8D3]" />
-        </Link>
+        </div>
       </div>
       <div className="flex items-center justify-between gap-x-[5px]">
         <div className="text-xs">
@@ -514,6 +567,7 @@ export const ApplicationTooltip = memo(({application}: {application: AggregatedD
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { applicationDataAggregated } = useApplicationsData();
   const { selectedTimespan } = useTimespan();
+  const searchParams = useSearchParams();
 
   const descriptionPreview = useMemo(() => {
     if (!application || !ownerProjectToProjectData[application.owner_project] || !ownerProjectToProjectData[application.owner_project].description) return "";
@@ -538,7 +592,7 @@ export const ApplicationTooltip = memo(({application}: {application: AggregatedD
       }}
     >
       <div className="flex flex-col pl-[5px] gap-y-[10px]">
-        <div className="flex gap-x-[5px] items-center justify-between">
+        <Link className="flex gap-x-[5px] items-center justify-between" href={{ pathname: `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",")}}>
           <div className="flex gap-x-[5px] items-center">
             {ownerProjectToProjectData[application.owner_project] && ownerProjectToProjectData[application.owner_project].logo_path ? (
               <Image
@@ -557,10 +611,10 @@ export const ApplicationTooltip = memo(({application}: {application: AggregatedD
             )}
             <div className="heading-small-xs">{ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].display_name : application.owner_project}</div>
           </div>
-          <Link className="cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center" href={{ pathname: `/applications/${application.owner_project}`, query: { timespan: selectedTimespan } }}>
-            <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-[#CDD8D3]" />
-          </Link>
-        </div>
+          <div className="cursor-pointer size-[20px] bg-[#344240] rounded-full flex justify-center items-center">
+            <Icon icon="feather:arrow-right" className="w-[13px] h-[13px] text-[#CDD8D3]" />
+          </div>
+        </Link>
         <div className="text-xs">
           {descriptionPreview}...
         </div>

@@ -10,15 +10,22 @@ import { SortConfig, sortItems, SortOrder, SortType } from "@/lib/sorter";
 import { useMaster } from "@/contexts/MasterContext";
 import { useLocalStorage } from "usehooks-ts";
 import { notFound } from "next/navigation";
+import { useTimespan } from "./TimespanContext";
 
 export interface ApplicationDetailsResponse {
   metrics:          Metrics;
   first_seen:       Date;
-  contracts:        Contracts;
+  // contracts:        Contracts;
+  contracts_table:  {[timespan: string]: ContractsTable};
   last_updated_utc: Date;
 }
 
 export interface Contracts {
+  types: string[];
+  data:  Array<Array<number | null | string>>;
+}
+
+export interface ContractsTable {
   types: string[];
   data:  Array<Array<number | null | string>>;
 }
@@ -118,7 +125,7 @@ export const ApplicationDetailsDataProvider = ({
     owner_project ? ApplicationsURLs.details.replace("{owner_project}", owner_project) : null,
   );
   const {data:master} = useMaster();
-
+  const { selectedTimespan } = useTimespan();
   const { sort: overviewSort } = useSort();
   const { selectedMetrics } = useMetrics();
   const [showUsd] = useLocalStorage("showUsd", false);
@@ -166,8 +173,8 @@ export const ApplicationDetailsDataProvider = ({
 
   const contracts = useMemo(() => {
     if (!applicationDetailsData) return [];
-    return contractsSorter(getContractDictArray(applicationDetailsData.contracts), sort.metric, sort.sortOrder as SortOrder);
-  }, [applicationDetailsData, contractsSorter, sort]);
+    return contractsSorter(getContractDictArray(applicationDetailsData.contracts_table[selectedTimespan]), sort.metric, sort.sortOrder as SortOrder);
+  }, [applicationDetailsData, contractsSorter, selectedTimespan, sort.metric, sort.sortOrder]);
 
   if( applicationDetailsError ) {
     return notFound();
