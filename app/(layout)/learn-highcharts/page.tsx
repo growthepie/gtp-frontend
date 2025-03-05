@@ -89,7 +89,7 @@ export default function Page(){
             shortLabel: "7d",
             label: "7 days",
             value: 7,
-            xMin: xMax - 7 * 24 * 60 * 60 * 1000,
+            xMin: xMax - 8 * 24 * 60 * 60 * 1000,
             xMax: xMax,
         },
         "30d": {

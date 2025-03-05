@@ -264,54 +264,39 @@ export default function PracticeChart({
                             style: {
                                 color: 'rgb(215, 223, 222)'
                             },
-                            formatter: function () {
+                            formatter: function (this: { value: string | number | Date; isFirst: boolean }): string {
                                 const date = new Date(this.value);
-                                const isSmallScreen = window.innerWidth < 1024; // Define small screen as < 1024px
-                                const fontSizeClass = isSmallScreen ? "text-xs" : ""; // Apply text-xxs on small screens
-                            
-                                // Special case for January 1st: show only the year in bold
+                                const isSmallScreen = window.innerWidth < 1024; // small screen
+                                const fontSizeClass = isSmallScreen ? "text-xs" : ""; // font size for small screens
+                                
+                                // Handle Jan 1st
                                 if (date.getDate() === 1 && date.getMonth() === 0) {
                                     return `<span class="font-bold ${fontSizeClass}">${date.getFullYear()}</span>`;
-                                } else {
-                                    // For other dates, determine formatting based on screen size and timespan
-                                    const isShortRange = selectedTimespan !== "max" && timespans[selectedTimespan].value < 90;
-                                    let formattedDate;
-                            
-                                    if (isSmallScreen && isShortRange) {
-                                        if (this.isFirst) {
-                                            // Small screen, short range, first tick: full date
-                                            formattedDate = date.toLocaleDateString("en-GB", {
-                                                day: "2-digit",
-                                                month: "short",
-                                                year: "numeric"
-                                            });
-                                        } else {
-                                            // Small screen, short range, other ticks: day and month
-                                            formattedDate = date.toLocaleDateString("en-GB", {
-                                                day: "2-digit",
-                                                month: "short"
-                                            });
-                                        }
-                                    } else {
-                                        // Large screens or long ranges
-                                        if (isShortRange) {
-                                            // Short range: day and month
-                                            formattedDate = date.toLocaleDateString("en-GB", {
-                                                day: "2-digit",
-                                                month: "short"
-                                            });
-                                        } else {
-                                            // Long range: month and year
-                                            formattedDate = date.toLocaleDateString("en-GB", {
-                                                month: "short",
-                                                year: "numeric"
-                                            });
-                                        }
-                                    }
-                            
-                                    // Apply semibold styling and font size class to other dates
-                                    return `<span class="font-semibold ${fontSizeClass}">${formattedDate}</span>`;
                                 }
+                                
+                                // Ranges
+                                const isShortRange = selectedTimespan !== "max" && timespans[selectedTimespan].value < 31;
+                                
+                                const includeDay = isShortRange;
+                                const includeYear = isSmallScreen
+                                    ? (isShortRange && this.isFirst) || !isShortRange // Small screen logic
+                                    : (isShortRange && this.isFirst) || !isShortRange; // Large screen logic
+                                
+                                // Date layouts
+                                const dateOptions: Intl.DateTimeFormatOptions = {
+                                    month: "short", // always include month
+                                };
+                                if (includeDay) {
+                                    dateOptions.day = "2-digit"; // include day
+                                }
+                                if (includeYear) {
+                                    dateOptions.year = "numeric"; // include year
+                                }
+                                
+                                // Format the date
+                                const formattedDate = date.toLocaleDateString("en-GB", dateOptions);
+                                
+                                return `<span class="font-semibold ${fontSizeClass}">${formattedDate}</span>`;
                             }
                           }}
                               type="datetime"
