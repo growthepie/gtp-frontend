@@ -38,7 +38,7 @@ import { useTimespan } from "./_contexts/TimespanContext";
 const SCROLL_POS_KEY = 'scrollPos-applications';
 
 export default function Page() {
-  const { applicationDataAggregated, isLoading, selectedStringFilters, medianMetric, medianMetricKey } = useApplicationsData();
+  const { applicationDataAggregatedAndFiltered, isLoading, selectedStringFilters, medianMetric, medianMetricKey } = useApplicationsData();
   const { selectedMetrics, selectedMetricKeys } = useMetrics();
   const { metricsDef } = useMetrics();
   const { timespans, selectedTimespan } = useTimespan();
@@ -103,14 +103,14 @@ export default function Page() {
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { topGainers, topLosers } = useMemo(() => {
-    const medianMetricValues = applicationDataAggregated.map((application) => application[medianMetricKey])
+    const medianMetricValues = applicationDataAggregatedAndFiltered.map((application) => application[medianMetricKey])
       .sort((a, b) => a - b);
 
     const medianValue = medianMetricValues[Math.floor(medianMetricValues.length / 2)];
     const convertToETH = showUsd ? true : false;
 
     // filter out applications with < median value of selected metric and with previous value of 0
-    const filteredApplications = applicationDataAggregated
+    const filteredApplications = applicationDataAggregatedAndFiltered
       .filter((application) => application[medianMetricKey] > medianValue && application["prev_" + (convertToETH ? "gas_fees_eth" : medianMetricKey)] > 0);
 
     // top 3 applications with highest change_pct
@@ -122,7 +122,7 @@ export default function Page() {
         .sort((a, b) => a[medianMetricKey + "_change_pct"] - b[medianMetricKey + "_change_pct"])
         .slice(0, 3),
     }
-  }, [applicationDataAggregated, medianMetricKey, showUsd]);
+  }, [applicationDataAggregatedAndFiltered, medianMetricKey, showUsd]);
 
  
 
@@ -259,7 +259,7 @@ const CardSwiper = ({ cards }: { cards: React.ReactNode[] }) => {
 
 const ApplicationsTable = memo(() => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
-  const { applicationDataAggregated} = useApplicationsData();
+  const { applicationDataAggregatedAndFiltered} = useApplicationsData();
   const { sort, setSort } = useSort();
   const { metricsDef, selectedMetrics, setSelectedMetrics, selectedMetricKeys, } = useMetrics();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
@@ -268,11 +268,11 @@ const ApplicationsTable = memo(() => {
 
   const maxMetrics = useMemo(() => {
     return selectedMetricKeys.map((metric) => {
-      return applicationDataAggregated.reduce((acc, application) => {
+      return applicationDataAggregatedAndFiltered.reduce((acc, application) => {
         return Math.max(acc, application[metric]);
       }, 0);
     });
-  }, [applicationDataAggregated, selectedMetricKeys]);
+  }, [applicationDataAggregatedAndFiltered, selectedMetricKeys]);
 
   // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() => {
@@ -288,12 +288,12 @@ const ApplicationsTable = memo(() => {
     <div key={index} className="pb-[5px]">
       <ApplicationTableRow 
         rowIndex={index} 
-        application={applicationDataAggregated[index]} 
+        application={applicationDataAggregatedAndFiltered[index]} 
         maxMetrics={maxMetrics} 
       />
     </div>
   );
-}, [applicationDataAggregated, maxMetrics]);
+}, [applicationDataAggregatedAndFiltered, maxMetrics]);
 
   return (
     <>
@@ -417,16 +417,16 @@ const ApplicationsTable = memo(() => {
         )))}
         <div />
       </GridTableHeader>
-      <div className="flex flex-col" style={{ height: `${applicationDataAggregated.length * 34 + applicationDataAggregated.length * 5}px` }}>
+      <div className="flex flex-col" style={{ height: `${applicationDataAggregatedAndFiltered.length * 34 + applicationDataAggregatedAndFiltered.length * 5}px` }}>
         {/* <VerticalVirtuosoScrollContainer
           height={800}
-          totalCount={applicationDataAggregated.length}
+          totalCount={applicationDataAggregatedAndFiltered.length}
           itemContent={(index) => (
-            <ApplicationTableRow key={applicationDataAggregated[index].owner_project} application={applicationDataAggregated[index]} maxMetrics={maxMetrics} />
+            <ApplicationTableRow key={applicationDataAggregatedAndFiltered[index].owner_project} application={applicationDataAggregatedAndFiltered[index]} maxMetrics={maxMetrics} />
           )}
         /> */}
         <Virtuoso
-          totalCount={applicationDataAggregated.length}
+          totalCount={applicationDataAggregatedAndFiltered.length}
           itemContent={renderItem}
           useWindowScroll
           increaseViewportBy={{ top: 200, bottom: 400 }}

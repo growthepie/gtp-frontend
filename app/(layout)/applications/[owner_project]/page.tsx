@@ -881,51 +881,41 @@ const SimilarApplications = ({ owner_project }: { owner_project: string }) => {
 
   }, [metricsDef, sort.metric, showUsd]);
 
-  
 
-  const { topGainers, topLosers } = useMemo(() => {
 
+  const similarApps = useMemo(() => {
     if (!ownerProjectToProjectData || !ownerProjectToProjectData[owner_project] || !applicationDataAggregated || !applicationDataAggregated.length)
-      return { topGainers: [], topLosers: [] };
-    // let medianMetricKey = Object.keys(metricsDef).includes(sort.metric) ? sort.metric : "gas_fees";
+      return [];
+    // filter out applications with previous value of 0 and that are not the same owner project
+    const filteredApplications = applicationDataAggregated
+      .filter((application) => ownerProjectToProjectData[application.owner_project].main_category === ownerProjectToProjectData[owner_project].main_category && application.owner_project !== owner_project);
 
-    const medianMetricValues = applicationDataAggregated.map((application) => application[medianMetricKey])
+    const medianMetricValues = filteredApplications.map((application) => application[medianMetricKey])
       .sort((a, b) => a - b);
-
+      
     const medianValue = medianMetricValues[Math.floor(medianMetricValues.length / 2)];
 
-    // filter out applications with < median value of selected metric and with previous value of 0
-    const filteredApplications = applicationDataAggregated
-      .filter((application) => application[medianMetricKey] > medianValue && ownerProjectToProjectData[application.owner_project].main_category === ownerProjectToProjectData[owner_project].main_category)
-
-    // top 3 applications with highest change_pct
-    return {
-      topGainers: [...filteredApplications]
-        .sort((a, b) => b[medianMetricKey + "_change_pct"] - a[medianMetricKey + "_change_pct"])
-        .slice(0, 6),
-      // topLosers: [...filteredApplications]
-      //   .sort((a, b) => a[medianMetricKey + "_change_pct"] - b[medianMetricKey + "_change_pct"])
-      //   .slice(0, 3),
-    }
+    // top 3 applications with highest change_pct after filtering out applications with < median value
+    return filteredApplications
+      .filter((application) => application[medianMetricKey] >= medianValue)
+      .sort((a, b) => b[medianMetricKey + "_change_pct"] - a[medianMetricKey + "_change_pct"])
+      .slice(0, 6);
   }, [applicationDataAggregated, medianMetricKey, ownerProjectToProjectData, owner_project]);
 
   return (
     <>
       <div>
         <Container className="hidden md:grid md:grid-rows-3 md:grid-flow-col lg:grid-rows-2 lg:grid-flow-row pt-[10px] lg:grid-cols-3 gap-[10px]">
-          {topGainers.map((application, index) => (
+          {similarApps.map((application, index) => (
             <ApplicationCard key={application.owner_project} application={application} />
           ))}
-          {/* {topLosers.map((application, index) => (
-            <ApplicationCard key={application.owner_project} application={application} metric={sort.metric} />
-          ))} */}
           {isLoading && new Array(6).fill(0).map((_, index) => (
             <ApplicationCard key={index} application={undefined} />
           ))}
         </Container>
       </div>
       <div className="block md:hidden pt-[10px]">
-        <CardSwiper cards={[...topGainers.map((application) => <ApplicationCard key={application.owner_project} application={application} />)]} />
+        <CardSwiper cards={[...similarApps.map((application) => <ApplicationCard key={application.owner_project} application={application} />)]} />
       </div>
     </>
   )

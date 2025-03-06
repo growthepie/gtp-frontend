@@ -16,7 +16,7 @@ import { GTPIcon } from "@/components/layout/GTPIcon";
 export default function Search() {
   const { AllChainsByKeys } = useMaster();
   const { isMobile } = useUIContext();
-  const { applicationDataAggregated, applicationsChains } = useApplicationsData();
+  const { applicationDataAggregatedAndFiltered, applicationsChains } = useApplicationsData();
   
   // Get Next.js URL utilities
   const searchParams = useSearchParams();
@@ -72,8 +72,8 @@ export default function Search() {
   const { data: master } = useSWR<MasterResponse>(MasterURL);
 
   const applicationsNumberFiltered = useMemo(() => {
-    return applicationDataAggregated.length;
-  }, [applicationDataAggregated]);
+    return applicationDataAggregatedAndFiltered.length;
+  }, [applicationDataAggregatedAndFiltered]);
 
   // Update URL params when filters change
   const updateURLParams = useCallback((filterType: 'origin_key' | 'owner_project', newValues: string[]) => {
