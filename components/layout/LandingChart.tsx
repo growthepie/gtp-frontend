@@ -508,7 +508,7 @@ export default function LandingChart({
         .map((point: any, index: number) => {
           const { series, y, percentage } = point;
           const { name } = series;
-          const validChainKeys = selectedMetric === "Total Ethereum Ecosystem" ? true : false
+          const validChainKeys = selectedMetric === "Total Ethereum Ecosystem" && !focusEnabled ? true : false
 
           if (selectedScale === "percentage")
             return `
@@ -683,7 +683,7 @@ export default function LandingChart({
     let retData: any = [];
   
     // Define explicit order for the keys
-    const orderedKeys = ["only_l1", "cross_layer", "multiple_l2s", "single_l2"]; // Adjust as needed
+    const orderedKeys = ["single_l2", "multiple_l2s", "cross_layer", "only_l1"]; // Adjust as needed
   
     // Filter keys and apply custom ordering
     const compositionKeys = Object.keys(compositions)
@@ -691,42 +691,48 @@ export default function LandingChart({
       .sort((a, b) => orderedKeys.indexOf(a) - orderedKeys.indexOf(b)); // Sort based on explicit order
   
     if (selectedMetric === "Total Ethereum Ecosystem") {
-      let sumData: number[][] = [];
-  
-      compositions.cross_layer.forEach((element, index) => {
-        let sum = 0;
-        compositionKeys.forEach((key) => {
-          sum += compositions[key][index][types.indexOf("value")];
+      if(!focusEnabled){
+        let sumData: number[][] = [];
+    
+        compositions.cross_layer.forEach((element, index) => {
+          let sum = 0;
+          compositionKeys.forEach((key) => {
+            sum += compositions[key][index][types.indexOf("value")];
+          });
+    
+          sumData.push([element[types.indexOf("unix")], sum]);
         });
-  
-        sumData.push([element[types.indexOf("unix")], sum]);
-      });
-  
-      retData.push({ name: "all_l2s", data: sumData, types: types });
-      if(focusEnabled && showEthereumMainnet){
-        retData.push({ name: "ethereum", data: compositions.only_l1, types: types });
+    
+        retData.push({ name: "all_l2s", data: sumData, types: types });
+        if(focusEnabled && showEthereumMainnet){
+          retData.push({ name: "ethereum", data: compositions.only_l1, types: types });
+        }
+      } else {
+        let onlySumData: number[][] = [];
+        let onlyL2SumData: number[][] = [];
+        compositions.only_l1.forEach((element, index) => {
+          let sum = 0;
+          sum += compositions.only_l1[index][types.indexOf("value")];
+          sum +- compositions.cross_layer[index][types.indexOf("value")];
+
+          onlySumData.push([element[types.indexOf("unix")], sum]);
+        });
+
+        compositions.multiple_l2s.forEach((element, index) => {
+          let sum = 0;
+          sum += compositions.multiple_l2s[index][types.indexOf("value")];
+          sum +- compositions.single_l2[index][types.indexOf("value")];
+
+          onlyL2SumData.push([element[types.indexOf("unix")], sum]);
+        });
+        retData.push({ name: "main_l2", data: onlyL2SumData, types: types });
+        retData.push({ name: "main_l1", data: onlySumData, types: types });
       }
     } else {
-      let onlySumData: number[][] = [];
-      let onlyL2SumData: number[][] = [];
-      compositions.only_l1.forEach((element, index) => {
-         let sum = 0;
-         sum += compositions.only_l1[index][types.indexOf("value")];
-         sum +- compositions.cross_layer[index][types.indexOf("value")];
 
-         onlySumData.push([element[types.indexOf("unix")], sum]);
+      compositionKeys.forEach((key) => {
+        retData.push({ name: key, data: compositions[key], types: types });
       });
-
-      compositions.multiple_l2s.forEach((element, index) => {
-        let sum = 0;
-        sum += compositions.multiple_l2s[index][types.indexOf("value")];
-        sum +- compositions.single_l2[index][types.indexOf("value")];
-
-        onlyL2SumData.push([element[types.indexOf("unix")], sum]);
-      });
-      retData.push({ name: "main_l2", data: onlyL2SumData, types: types });
-      retData.push({ name: "main_l1", data: onlySumData, types: types });
-      
       if(focusEnabled && showEthereumMainnet){
         retData.push({ name: "ethereum", data: compositions.only_l1, types: types });
       }
