@@ -724,8 +724,9 @@ export default function LandingChart({
 
         onlyL2SumData.push([element[types.indexOf("unix")], sum]);
       });
-      retData.push({ name: "main_l1", data: onlySumData, types: types });
       retData.push({ name: "main_l2", data: onlyL2SumData, types: types });
+      retData.push({ name: "main_l1", data: onlySumData, types: types });
+      
       if(focusEnabled && showEthereumMainnet){
         retData.push({ name: "ethereum", data: compositions.only_l1, types: types });
       }
