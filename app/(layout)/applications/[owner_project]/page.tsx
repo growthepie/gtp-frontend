@@ -758,11 +758,15 @@ const ContractValue = memo(({ contract, metric }: { contract: ContractDict, metr
     }
   }, [metricsDef, metric, showUsd]);
 
+  const decimals = metricsDef[metric].units[Object.keys(metricsDef[metric].units).includes("usd") ? showUsd ? "usd": "eth" : Object.keys(metricsDef[metric].units)[0]].decimals;
+
   const metricKey = `${metricMap[metric]}${metric === "gas_fees" ? (showUsd ? "usd" : "eth") : ""}`;
+
+  
 
   return (
     <div className="flex items-center justify-end gap-[5px] numbers-xs">
-      {prefix}{contract[metricKey].toLocaleString("en-GB", { maximumFractionDigits: metric === "gas_fees" ? 2 : 0 })}
+      {prefix}{contract[metricKey].toLocaleString("en-GB", { maximumFractionDigits: decimals, minimumFractionDigits: decimals })}
     </div>
   )
 });
