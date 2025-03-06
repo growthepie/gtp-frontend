@@ -703,38 +703,36 @@ export default function LandingChart({
           sumData.push([element[types.indexOf("unix")], sum]);
         });
     
-        retData.push({ name: "all_l2s", data: sumData, types: types });
+        retData.push({ name: "all_l2s", data: sumData, types: types , stacked: false});
         if(focusEnabled && showEthereumMainnet){
-          retData.push({ name: "ethereum", data: compositions.only_l1, types: types });
+          retData.push({ name: "ethereum", data: compositions.only_l1, types: types, stacked: false });
+          
         }
       } else {
         let onlySumData: number[][] = [];
         let onlyL2SumData: number[][] = [];
         compositions.only_l1.forEach((element, index) => {
-          let sum = 0;
-          sum += compositions.only_l1[index][types.indexOf("value")];
-          sum +- compositions.cross_layer[index][types.indexOf("value")];
+          let sum_l1 = 0;
+          let sum_l2 = 0;
+          sum_l1 += compositions.only_l1[index][types.indexOf("value")];
+          sum_l1 += compositions.cross_layer[index][types.indexOf("value")];
+          sum_l2 += compositions.multiple_l2s[index][types.indexOf("value")];
+          sum_l2 += compositions.single_l2[index][types.indexOf("value")];
 
-          onlySumData.push([element[types.indexOf("unix")], sum]);
+          onlySumData.push([element[types.indexOf("unix")], sum_l1]);
+          onlyL2SumData.push([element[types.indexOf("unix")], sum_l2]);
         });
 
-        compositions.multiple_l2s.forEach((element, index) => {
-          let sum = 0;
-          sum += compositions.multiple_l2s[index][types.indexOf("value")];
-          sum +- compositions.single_l2[index][types.indexOf("value")];
-
-          onlyL2SumData.push([element[types.indexOf("unix")], sum]);
-        });
         retData.push({ name: "main_l2", data: onlyL2SumData, types: types });
         retData.push({ name: "main_l1", data: onlySumData, types: types });
       }
     } else {
 
       compositionKeys.forEach((key) => {
-        retData.push({ name: key, data: compositions[key], types: types });
+        retData.push({ name: key, data: compositions[key], types: types, stacked: key === "single_l2" ? false : true });
       });
       if(focusEnabled && showEthereumMainnet){
-        retData.push({ name: "ethereum", data: compositions.only_l1, types: types });
+        retData.push({ name: "ethereum", data: compositions.only_l1, types: types, stacked: false, });
       }
     }
   
@@ -1079,9 +1077,48 @@ export default function LandingChart({
         enabled: isDragging ? false : true,
       },
       series: [
-        ...filteredData
-          
+        ...filteredData      
           .map((series: any, i: number) => {
+
+            let color =                     series.name && theme && EnabledChainsByKeys[series.name]
+            ? EnabledChainsByKeys[series.name]?.colors[
+              theme ?? "dark"
+              ][0]
+            : METRIC_COLORS[series.name]
+
+            const columnColor = {
+
+
+              linearGradient: {
+                  x1: 0,
+                  y1: 0,
+                  x2: 0,
+                  y2: 1,
+              },
+              stops: [
+                    [0,color + "FF"],
+                    // [0.349, daColor + "88"],
+                    [1, color + "00"],
+                ],
+            };
+
+            const dottedColumnColor = {
+              pattern: {
+                  path: {
+                      d: "M 0 0 L 10 10 M 9 -1 L 11 1 M -1 9 L 1 11",
+                      "stroke-width": 3,
+                  },
+                  width: 10,
+                  height: 10,
+                  opacity: 1,
+                  color: color + "CC",
+              },
+          };
+
+          const todaysDateUTC = new Date().getUTCDate();
+          const secondZoneDottedColumnColor = todaysDateUTC === 1 ? columnColor : dottedColumnColor;
+
+          const secondZoneDashStyle = todaysDateUTC === 1 ? "Solid" : "Dot";
             const zIndex = showEthereumMainnet
               ? series.name === "ethereum"
                 ? 0
@@ -1123,6 +1160,7 @@ export default function LandingChart({
               borderRadiusTopRight: borderRadius,
               type: getSeriesType(series.name),
               fillOpacity: series.name === "ethereum" ? 1 : 0,
+              stacking: series.stacked ? "normal" : "overlap",
               fillColor: {
                 linearGradient: {
                   x1: 0,

@@ -186,7 +186,7 @@ export default function LandingMetricsTable({
           <GridTableHeaderCell><></></GridTableHeaderCell>
           <GridTableHeaderCell>Chain</GridTableHeaderCell>
           <GridTableHeaderCell>Purpose</GridTableHeaderCell>
-          <GridTableHeaderCell justify="end" className="flex justify-end items-center w-full">
+          <GridTableHeaderCell justify="start" className="flex justify-start items-center w-full">
             <div className="w-[80px] text-left flex gap-x-[5px] items-center relative">
               <div>Maturity</div>
               <Tooltip placement="right">
@@ -293,7 +293,7 @@ export default function LandingMetricsTable({
                       <>{data.chains[item.chain.key].purpose}</>
                     )}
                   </div>
-                  <div className="flex justify-end w-full items-center">
+                  <div className="flex justify-start w-full items-center">
                     <div className="w-[82px] text-left">
                       <GTPIcon  icon={`gtp-layer2-maturity-${maturityName}` as GTPIconName} size="md" />
                     </div>
@@ -376,7 +376,7 @@ const ChainRankHeader = memo(function ChainRankHeader(
               <div className={`absolute -inset-[10.5px] bg-[#151A19] border border-[#5A6462] rounded-full z-[1] ${hoveredMetric === metric ? "opacity-100" : "opacity-0"}`} />
               <div className={`absolute -top-[44px] z-[11] w-[200px] h-[30px] flex items-end justify-center pointer-events-none ${hoveredMetric === metric ? "opacity-100" : "opacity-0"}`}>
                 <div
-                  className="text-[10px] leading-[120%] text-center font-bold"
+                  className="text-[10px] leading-[120%] text-center font-bold text-nowrap"
                   style={{
                     textTransform: "uppercase",
                   }}
@@ -542,13 +542,13 @@ const ChainRankCell = memo(function ChainRankIcon(
                       <div
                         className={`absolute inset-0 bg-transparent rounded-full flex items-center justify-end pointer-events-none`}
                       >
-                        <div className={`h-[36px] left-[-3px] absolute rounded-full flex items-center justify-center bg-[#151A19] border border-[#5A6462]  ${hoveredMetric === metric ? "opacity-100" : "opacity-0"}`}
+                        <div className={`h-[36px] left-[-3px] absolute rounded-full flex items-center justify-center bg-[#151A19] border border-[#5A6462] px-[5px]  ${hoveredMetric === metric ? "opacity-100" : "opacity-0"}`}
                           style={{
                             zIndex: hoveredMetric === metric ? 3 : 0,
                           }}
                         >
                           <div
-                            className={`flex w-full items-end justify-end numbers-sm pr-[15px] pl-[37px] ${getDisplayValue(metric, values, valueKeys).suffix ? "min-w-[145px]" : "min-w-[115px]"} `}
+                            className={`flex w-full items-end justify-end numbers-sm pr-[15px] pl-[37px] text-nowrap ${getDisplayValue(metric, values, valueKeys).suffix ? "min-w-[145px]" : "min-w-[115px]"} `}
                           >
                             {getDisplayValue(metric, values, valueKeys).isNegative && (
                               <div className="">
