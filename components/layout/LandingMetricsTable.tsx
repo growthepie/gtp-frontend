@@ -70,6 +70,7 @@ export default function LandingMetricsTable({
 }) {
   const { AllChainsByKeys, EnabledChainsByKeys } = useMaster();
   const { data: landing } = useSWR<LandingPageMetricsResponse>(LandingURL);
+  const [focusEnabled] = useLocalStorage("focusEnabled", false);
 
   const [maxVal, setMaxVal] = useState(0);
 
@@ -114,8 +115,9 @@ export default function LandingMetricsTable({
     if (!data) return [];
     return Object.keys(data.chains)
       .filter((chain) => {
+
         return (
-          (Object.keys(EnabledChainsByKeys).includes(chain) || chain === "ethereum") &&
+          (Object.keys(EnabledChainsByKeys).includes(chain) && (chain !== "ethereum" || !focusEnabled)) &&
           data.chains[chain].users > 0
         );
       })
@@ -134,7 +136,7 @@ export default function LandingMetricsTable({
         return b.lastVal - a.lastVal;
 
       });
-  }, [data]);
+  }, [data, focusEnabled]);
 
   let height = 0;
   const transitions = useTransition(

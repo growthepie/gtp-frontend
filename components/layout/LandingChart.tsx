@@ -60,6 +60,8 @@ const METRIC_COLORS = {
   single_l2: "#FFA500",
   multiple_l2s: "#FF6347",
   only_l1: "#FF4500",
+  main_l1: "#F8F8F8",
+  main_l2: "#D14A24"
 }
 
 const isArray = (obj: any) =>
@@ -681,7 +683,7 @@ export default function LandingChart({
     let retData: any = [];
   
     // Define explicit order for the keys
-    const orderedKeys = ["l1_only", "cross_layer", "multiple_l2s", "single_l2"]; // Adjust as needed
+    const orderedKeys = ["only_l1", "cross_layer", "multiple_l2s", "single_l2"]; // Adjust as needed
   
     // Filter keys and apply custom ordering
     const compositionKeys = Object.keys(compositions)
@@ -705,9 +707,25 @@ export default function LandingChart({
         retData.push({ name: "ethereum", data: compositions.only_l1, types: types });
       }
     } else {
-      compositionKeys.forEach((key) => {
-        retData.push({ name: key, data: compositions[key], types: types });
+      let onlySumData: number[][] = [];
+      let onlyL2SumData: number[][] = [];
+      compositions.only_l1.forEach((element, index) => {
+         let sum = 0;
+         sum += compositions.only_l1[index][types.indexOf("value")];
+         sum +- compositions.cross_layer[index][types.indexOf("value")];
+
+         onlySumData.push([element[types.indexOf("unix")], sum]);
       });
+
+      compositions.multiple_l2s.forEach((element, index) => {
+        let sum = 0;
+        sum += compositions.multiple_l2s[index][types.indexOf("value")];
+        sum +- compositions.single_l2[index][types.indexOf("value")];
+
+        onlyL2SumData.push([element[types.indexOf("unix")], sum]);
+      });
+      retData.push({ name: "main_l1", data: onlySumData, types: types });
+      retData.push({ name: "main_l2", data: onlyL2SumData, types: types });
       if(focusEnabled && showEthereumMainnet){
         retData.push({ name: "ethereum", data: compositions.only_l1, types: types });
       }
