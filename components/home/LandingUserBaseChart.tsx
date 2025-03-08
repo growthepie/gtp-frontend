@@ -19,7 +19,7 @@ import { useLocalStorage } from "usehooks-ts";
 
 export default function LandingUserBaseChart() {
   const [isSidebarOpen] = useState(false);
-
+  const [focusEnabled] = useLocalStorage("focusEnabled", false)
   const { AllChains, AllChainsByKeys } = useMaster();
 
   const {
@@ -74,8 +74,8 @@ export default function LandingUserBaseChart() {
               sources={landing.data.metrics.user_base.source}
               cross_chain_users={data.cross_chain_users}
               cross_chain_users_comparison={data.cross_chain_users_comparison}
-              latest_total={data.latest_total}
-              latest_total_comparison={data.latest_total_comparison}
+              latest_total={focusEnabled ? data.latest_total_l2 : data.latest_total}
+              latest_total_comparison={focusEnabled ? data.latest_total_comparison_l2 : data.latest_total_comparison}
               l2_dominance={data.l2_dominance}
               l2_dominance_comparison={data.l2_dominance_comparison}
               selectedMetric={selectedMetric}

@@ -62,9 +62,10 @@ export default function FocusSwitch({ isMobile }: EthUsdSwitchProps) {
           >
             <div
               className={`${isMobile ? "w-[80px] h-[22px] text-[13px]" : "w-[203px] h-[28px] heading-small"
-                } flex gap-x-[12px]  items-center px-2 md:pl-3 md:pr-8 rounded-full transition duration-200 ease-in-out text-forest-900 bg-[#344240]`}
+                } flex gap-x-[12px]  items-center pl-[12px] md:pr-[24px] rounded-full transition duration-200 ease-in-out text-forest-900 bg-[#344240]`}
             >
-              <div className="heading-small-xxs text-forest-500">Total Ecosystem</div>
+              
+              <div className="heading-small-xxs text-forest-500 ">Total Ecosystem</div>
               <div className="heading-small-xxs text-forest-500">L2 Focus</div>
               <div className="absolute top-[6px] z-20 right-[5px]">
                 <Tooltip placement="left">
@@ -83,17 +84,18 @@ export default function FocusSwitch({ isMobile }: EthUsdSwitchProps) {
                 </Tooltip>
               </div>
             </div>
+          
             <div
-              className={`absolute flex justify-center items-center  left-[2px] top-[2px] md:-left-[46px] md:top-0.5
+              className={`absolute flex justify-center items-center  left-[2px] top-[2px] md:-left-[45px] md:top-0.5
               ${isMobile
                   ? "h-[18px] leading-[14px] text-[12px]"
                   : "w-full h-[24px] heading-small-xxs leading-[20px]"
                 } 
-              rounded-full transition-transform duration-200 ease-in-out text-forest-500  px-1.5 text-center ${focusEnabled ? "transform translate-x-[45%]" : "translate-x-0"
+              rounded-full transition-transform duration-200 ease-in-out text-forest-500  px-1.5 text-center ${focusEnabled ? "transform translate-x-[44%]" : "translate-x-0"
                 }`}
             >
               
-              <div className="bg-[#1F2726] px-[6px] rounded-full h-[24px] flex items-center">
+              <div className="bg-[#1F2726] px-[8px] rounded-full h-[24px] flex items-center">
                 {focusEnabled === true ? <>L2 Focus</> : <>Total Ecosystem</>}
               </div>
             </div>

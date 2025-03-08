@@ -426,7 +426,7 @@ const DATableChartsComponent = ({
                 return point.y > max ? point.y : max;
             }, 0);
     
-            console.log(largestPoint)
+          
             let pointSumNonNegative = points.reduce((acc: number, point: any) => {
                 if (point.y > 0) acc += point.y;
                 return acc;
@@ -580,7 +580,7 @@ const DATableChartsComponent = ({
                     // if (showGwei) valueMulitplier = 1000000000;
                 }
             }
-            console.log(data)
+    
             const seriesData = data.map((d) => {
                 return [d[timeIndex], d[valueIndex] * valueMulitplier];
             });
@@ -590,7 +590,7 @@ const DATableChartsComponent = ({
                 radius: 0,
                 symbol: "circle",
             }
-            console.log(color)
+           
             if (selectedTimeInterval === "daily") {
                 return {
                     data: seriesData,
@@ -651,8 +651,6 @@ const DATableChartsComponent = ({
 
             const secondZoneDashStyle = todaysDateUTC === 1 ? "Solid" : "Dot";
 
-            console.log(isColumnChart)
-            console.log(seriesData)
 
             // if it is not the last day of the month, add a zone to the chart to indicate that the data is incomplete
             if (selectedTimeInterval === "monthly") {

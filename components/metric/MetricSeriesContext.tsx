@@ -373,8 +373,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
       } else if (i === 0) {
         borderRadius = "8%";
       }
-      console.log(getSeriesData(chainKey, chain[timeIntervalKey].types, chain[timeIntervalKey].data))
-      console.log(chainKey)
+
       return {
         name: chainKey,
         types: chain[timeIntervalKey].types,
