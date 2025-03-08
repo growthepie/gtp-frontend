@@ -62,7 +62,7 @@ export default function FocusSwitch({ isMobile }: EthUsdSwitchProps) {
           >
             <div
               className={`${isMobile ? "w-[80px] h-[22px] text-[13px]" : "w-[203px] h-[28px] heading-small"
-                } flex gap-x-[12px]  items-center pl-[12px] md:pr-[24px] rounded-full transition duration-200 ease-in-out text-forest-900 bg-[#344240]`}
+                } flex gap-x-[15px]  items-center pl-[12px] md:pr-[24px] rounded-full transition duration-200 ease-in-out text-forest-900 bg-[#344240]`}
             >
               
               <div className="heading-small-xxs text-forest-500 ">Total Ecosystem</div>
@@ -70,7 +70,7 @@ export default function FocusSwitch({ isMobile }: EthUsdSwitchProps) {
               <div className="absolute top-[6px] z-20 right-[5px]">
                 <Tooltip placement="left">
                     <TooltipTrigger>
-                    <Icon icon="feather:info" className="text-forest-500" />
+                    <Icon icon="feather:info" className="text-forest-500 w-[15px] h-[15px]" />
                     </TooltipTrigger>
                     <TooltipContent>
                     <div className="flex flex-col items-center">
