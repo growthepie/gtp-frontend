@@ -18,6 +18,7 @@ import ChartWatermark from "@/components/layout/ChartWatermark";
 import "@/app/highcharts.axis.css";
 import { ChainOverviewResponse } from "@/types/api/ChainOverviewResponse";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import { useLocalStorage, useSessionStorage, useMediaQuery } from "usehooks-ts";
 
 export default function PracticeChart({
     data, 
@@ -38,6 +39,7 @@ export default function PracticeChart({
     selectedMode: string,
     selectedScale: string
     }) {
+        const isMobile = useMediaQuery("(max-width: 767px)");
         const types = data.data.chains["all_l2s"].daily.types
         const tooltipPositioner =
             useCallback<Highcharts.TooltipPositionerCallbackFunction>(
@@ -184,7 +186,7 @@ export default function PracticeChart({
                               panKey="shift"
                               zooming={{ type: undefined }}
                               style={{ borderRadius: 15 }}
-                              margin={[30, 10, 50, 50]}
+                              margin={[30, 10, 50, isMobile ? 35 : 50]}
                             spacingBottom={30}
                             spacingTop={40}
                             spacingLeft={10}

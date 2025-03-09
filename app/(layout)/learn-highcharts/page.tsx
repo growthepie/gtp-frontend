@@ -17,7 +17,7 @@ import Highcharts from "highcharts/highstock";
 import useSWR from "swr";
 import { BlockspaceURLs } from "@/lib/urls";
 import { ChainOverviewResponse } from "@/types/api/ChainOverviewResponse";
-import { useLocalStorage, useSessionStorage } from "usehooks-ts";
+import { useLocalStorage, useSessionStorage, useMediaQuery } from "usehooks-ts";
 import { useEffect, useCallback } from "react";
 import { TopRowContainer, TopRowParent, TopRowChild } from "@/components/layout/TopRow";
 import { time } from "console";
@@ -38,6 +38,7 @@ import { max } from "lodash";
 import { white } from "tailwindcss/colors";
 import PracticeChart from "@/components/layout/PracticeChart";
 
+
 const COLORS = {
     GRID: "rgb(215, 223, 222)",
     PLOT_LINE: "rgb(215, 223, 222)",
@@ -52,6 +53,7 @@ const COLORS = {
 
 
 export default function Page(){
+    const isMobile = useMediaQuery("(max-width: 767px)");
     const { data: master } = useMaster();
     const { data: chainOverviewData, 
             error: chainOverviewError, 
@@ -80,126 +82,168 @@ export default function Page(){
           setSelectedTimespan("7d");
         }
       }, []);
-    const timespans = useMemo(() => {
-    let xMax = Date.now();
-
-    
-        return {
-        "7d": {
-            shortLabel: "7d",
-            label: "7 days",
-            value: 7,
-            xMin: xMax - 8 * 24 * 60 * 60 * 1000,
-            xMax: xMax,
-        },
-        "30d": {
-            shortLabel: "30d",
-            label: "30 days",
-            value: 30,
-            xMin: xMax - 30 * 24 * 60 * 60 * 1000,
-            xMax: xMax,
-        },
-        "180d": {
-            shortLabel: "180d",
-            label: "180 days",
-            value: 180,
-            xMin: xMax - 180 * 24 * 60 * 60 * 1000,
-            xMax: xMax,
-        },
-        max: {
-            shortLabel: "Max",
-            label: "All Time",
-            value: 0,
-            xMin: xMax - 365 * 24 * 60 * 60 * 1000,
-            xMax: xMax,
-        },
-        };
-        
-      }, []);
-
-
-      const tooltipFormatter = useCallback(
-        function (this: any) {
-          const { x, points } = this;
-
-          const date = new Date(x);
-          let dateString = date.toLocaleDateString("en-GB", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          });
-          const chartTitle = this.series.chart.title.textStr;
-    
-          // check if data steps are less than 1 day
-          // if so, add the time to the tooltip
-          const timeDiff = points[0].series.xData[1] - points[0].series.xData[0];
-          if (timeDiff < 1000 * 60 * 60 * 24) {
-            dateString +=
-              " " +
-              date.toLocaleTimeString("en-GB", {
-                hour: "numeric",
-                minute: "2-digit",
-              });
+      const timespans = useMemo(() => {
+        let xMax;
+        if (!chainOverviewData) {
+          xMax = Date.now();
+            return {
+                "7d": {
+                    shortLabel: "7d",
+                    label: "7 days",
+                    value: 7,
+                    xMin: xMax - 7 * 24 * 60 * 60 * 1000,
+                    xMax: xMax,
+                },
+                "30d": {
+                    shortLabel: "30d",
+                    label: "30 days",
+                    value: 30,
+                    xMin: xMax - 30 * 24 * 60 * 60 * 1000,
+                    xMax: xMax,
+                },
+                "180d": {
+                    shortLabel: "180d",
+                    label: "180 days",
+                    value: 180,
+                    xMin: xMax - 180 * 24 * 60 * 60 * 1000,
+                    xMax: xMax,
+                },
+                max: {
+                    shortLabel: "Max",
+                    label: "All Time",
+                    value: 0,
+                    xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+                    xMax: xMax,
+                },
+            };
+        } else {
+          let types = chainOverviewData.data.chains['all_l2s'].daily.types
+          xMax = 0;
+          for (let i=0; i<chainOverviewData.data.chains['all_l2s'].daily[selectedCategory].data.length; i++) {
+            if (chainOverviewData.data.chains['all_l2s'].daily[selectedCategory].data[i][types.indexOf('unix')] > xMax) {
+              xMax = chainOverviewData.data.chains['all_l2s'].daily[selectedCategory].data[i][types.indexOf('unix')]
+            }
           }
-    
-          const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-52 text-xs font-raleway">
-            <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2 ">${dateString}</div>`;
-          const tooltipEnd = `</div>`;
-    
-          // let pointsSum = 0;
-          // if (selectedScale !== "percentage")
-    
-          const tooltipPoints = points
-    
-            .map((point: any, index: number) => {
-              const { series, y, percentage } = point;
-              const { name } = series;
-              let blob_value;
-              let blob_index;
-    
-              const isFees = true;
-              const nameString = name;
-              
-              const color = series.color;
-    
-              let prefix = isFees ? "" : "";
-              let suffix = "";
-              let value = y;
-              let displayValue = y;
-    
-              return `
-              <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${color}"></div>
-                <div class="tooltip-point-name text-xs">${nameString}</div>
-                <div class="flex-1 text-right justify-end flex numbers-xs">
-                  <div class="flex justify-end text-right w-full">
-                      <div class="${!prefix && "hidden"
-                }">${prefix}</div>
-                  ${isFees
-                  ? parseFloat(displayValue).toLocaleString(
-                    "en-GB",
-                    {
-                      minimumFractionDigits: 2,
-    
-                      maximumFractionDigits: 2,
-                    },
-                  )
-                  : ""
-                }
-                   
-                    </div>
-                    <div class="ml-0.5 ${!suffix && "hidden"
-                }">${suffix}</div>
-                </div>
+          console.log(new Date(xMax));
+
+            // Handle the case when chainOverviewData is available
+            // Example: Adjust xMin and xMax based on chainOverviewData
+            return {
+                "7d": {
+                    shortLabel: "7d",
+                    label: "7 days",
+                    value: 7,
+                    xMin: xMax - 7 * 24 * 60 * 60 * 1000,
+                    xMax: xMax,
+                },
+                "30d": {
+                    shortLabel: "30d",
+                    label: "30 days",
+                    value: 30,
+                    xMin: xMax - 30 * 24 * 60 * 60 * 1000,
+                    xMax: xMax,
+                },
+                "180d": {
+                    shortLabel: "180d",
+                    label: "180 days",
+                    value: 180,
+                    xMin: xMax - 180 * 24 * 60 * 60 * 1000,
+                    xMax: xMax,
+                },
+                max: {
+                    shortLabel: "Max",
+                    label: "All Time",
+                    value: 0,
+                    xMin: xMax - 365 * 24 * 60 * 60 * 1000,
+                    xMax: xMax,
+                },
+            };
+        }
+    }, [chainOverviewData, selectedCategory]);
+
+    console.log(timespans);
+    const tooltipFormatter = useCallback(
+      function (this: any) {
+        const { x, points } = this;
+
+        const date = new Date(x);
+        let dateString = date.toLocaleDateString("en-GB", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
+        const chartTitle = this.series.chart.title.textStr;
+  
+        // check if data steps are less than 1 day
+        // if so, add the time to the tooltip
+        const timeDiff = points[0].series.xData[1] - points[0].series.xData[0];
+        if (timeDiff < 1000 * 60 * 60 * 24) {
+          dateString +=
+            " " +
+            date.toLocaleTimeString("en-GB", {
+              hour: "numeric",
+              minute: "2-digit",
+            });
+        }
+  
+        const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-52 text-xs font-raleway">
+          <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2 ">${dateString}</div>`;
+        const tooltipEnd = `</div>`;
+  
+        // let pointsSum = 0;
+        // if (selectedScale !== "percentage")
+  
+        const tooltipPoints = points
+  
+          .map((point: any, index: number) => {
+            const { series, y, percentage } = point;
+            const { name } = series;
+            let blob_value;
+            let blob_index;
+  
+            const isFees = true;
+            const nameString = name;
+            
+            const color = series.color;
+  
+            let prefix = isFees ? "" : "";
+            let suffix = "";
+            let value = y;
+            let displayValue = y;
+  
+            return `
+            <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+              <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${color}"></div>
+              <div class="tooltip-point-name text-xs">${nameString}</div>
+              <div class="flex-1 text-right justify-end flex numbers-xs">
+                <div class="flex justify-end text-right w-full">
+                    <div class="${!prefix && "hidden"
+              }">${prefix}</div>
+                ${isFees
+                ? parseFloat(displayValue).toLocaleString(
+                  "en-GB",
+                  {
+                    minimumFractionDigits: 2,
+  
+                    maximumFractionDigits: 2,
+                  },
+                )
+                : ""
+              }
+                  
+                  </div>
+                  <div class="ml-0.5 ${!suffix && "hidden"
+              }">${suffix}</div>
               </div>
-             `;
-            })
-            .join("");
-    
-          return tooltip + tooltipPoints + tooltipEnd;
-        },
-        [showUsd],
-      );
+            </div>
+            `;
+          })
+          .join("");
+  
+        return tooltip + tooltipPoints + tooltipEnd;
+      },
+      [showUsd],
+    );
     
 
 
@@ -251,7 +295,7 @@ export default function Page(){
               selectedScale={selectedScale}
             />
         </div>
-        <div className="mt-2 flex items-center gap-x-2 h-[40px] rounded-full bg-[#1F2726] justify-center md:justify-end px-1">
+        <div className="mt-2 flex items-center gap-x-2 h-[40px] rounded-full bg-[#1F2726] justify-between md:justify-end px-1">
           <div
             onClick={() => {
               setSelectedScale("absolute");
