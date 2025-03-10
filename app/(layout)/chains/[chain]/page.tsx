@@ -10,7 +10,6 @@ import { Icon } from "@iconify/react";
 import { ChainResponse } from "@/types/api/ChainResponse";
 import {
   BlockspaceURLs,
-  ChainBlockspaceURLs,
   ChainsBaseURL,
   FeesURLs,
   MasterURL,
@@ -109,7 +108,7 @@ const Chain = ({ params }: { params: any }) => {
     error: usageError,
     isLoading: usageLoading,
     isValidating: usageValidating,
-  } = useSWR<ChainData>(ChainBlockspaceURLs[chainKey]);
+  } = useSWR<ChainData>(`https://api.growthepie.xyz/v1/chains/blockspace/${chainKey}.json`);
 
   const {
     data: feeData,
