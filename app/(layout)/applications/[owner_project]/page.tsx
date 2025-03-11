@@ -39,12 +39,39 @@ export default function Page({ params: { owner_project } }: Props) {
   const { selectedMetrics } = useMetrics();
   const { selectedTimespan, timespans } = useTimespan();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const { data: master } = useMaster();
+
+  const SourcesDisplay = useMemo(() => {
+    if (!master)
+      return null;
+    let sourcesByMetric = {};
+    selectedMetrics.forEach((metric) => {
+      const sources = master.app_metrics[metric].source;
+      sourcesByMetric[metric] = sources && sources.length > 0 ? (
+        sources
+          .map<ReactNode>((s) => (
+            <Link
+              key={s}
+              rel="noopener noreferrer"
+              target="_blank"
+              href={Sources[s] ?? ""}
+              className="hover:text-forest-500 dark:hover:text-forest-500 underline"
+            >
+              {s}
+            </Link>
+          ))
+          .reduce((prev, curr) => [prev, ", ", curr])
+      ) : (
+        <>Unavailable</>
+      );
+    })
+
+    return sourcesByMetric;
+  }, [master, selectedMetrics]);
  
   return (
     <>
-      {selectedMetrics.map((metric, index) => (
-        <ChartScaleProvider
-          key={index}
+    <ChartScaleProvider
           scaleDefs={{
             absolute: {
               label: 'Absolute',
@@ -61,9 +88,15 @@ export default function Page({ params: { owner_project } }: Props) {
 
           }}
         >
-          <MetricSection metric={metric} owner_project={owner_project} />
-        </ChartScaleProvider>
+      {selectedMetrics.map((metric, index) => (
+          <MetricSection metric={metric} owner_project={owner_project} key={index} />
       ))}
+      <Container className="pt-[30px]">
+        
+          <ChartScaleControls sources={SourcesDisplay && SourcesDisplay["gas_fees"]} />
+      </Container>
+      </ChartScaleProvider>
+
       <Container>
         <div className="pt-[30px] pb-[15px]">
           <div className="flex flex-col gap-y-[10px]">
@@ -103,33 +136,7 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
   const { selectedMetrics } = useMetrics();
   const { selectedTimespan } = useTimespan();
 
-  const SourcesDisplay = useMemo(() => {
-    if (!master)
-      return null;
-    let sourcesByMetric = {};
-    selectedMetrics.forEach((metric) => {
-      const sources = master.app_metrics[metric].source;
-      sourcesByMetric[metric] = sources && sources.length > 0 ? (
-        sources
-          .map<ReactNode>((s) => (
-            <Link
-              key={s}
-              rel="noopener noreferrer"
-              target="_blank"
-              href={Sources[s] ?? ""}
-              className="hover:text-forest-500 dark:hover:text-forest-500 underline"
-            >
-              {s}
-            </Link>
-          ))
-          .reduce((prev, curr) => [prev, ", ", curr])
-      ) : (
-        <>Unavailable</>
-      );
-    })
-
-    return sourcesByMetric;
-  }, [master, selectedMetrics]);
+  
 
   useHighchartsWrappers();
 
@@ -204,7 +211,6 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
               })
               )}
           />
-          <ChartScaleControls sources={SourcesDisplay && SourcesDisplay[metric]} />
         </div>
       </Container>
     </>

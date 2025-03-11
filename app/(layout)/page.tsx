@@ -88,11 +88,11 @@ export default async function Page() {
             id="layer-2-traction-title"
             className="text-[20px] md:text-[30px] leading-[1.2] font-semibold"
           >
-            Blockspace
+            Applications
           </Heading>
         </div>
         <Subheading className="text-base leading-normal md:leading-snug px-[5px] lg:px-[45px]">
-          <div>Top 6 gas-consuming contracts across all tracked Layer 2s.</div>
+          <div>Top gainers and losers in the Ethereum ecosystem.</div>
         </Subheading>
       </Container>
 
