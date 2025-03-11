@@ -88,14 +88,14 @@ export default async function Page() {
             />
             <Heading
               id="layer-2-traction-title"
-              className="text-[20px] md:text-[30px] leading-[1.2] font-semibold"
+              className="heading-large-lg"
             >
               Top Applications
             </Heading>
           </div>
           <SectionButtonLink href="/applications" label="See more applications" shortLabel="More apps" />
         </div>
-        <Subheading className="text-base leading-normal md:leading-snug px-[5px] lg:px-[45px]">
+        <Subheading className="text-md px-[5px] lg:px-[45px]">
         Top 6 gainers and losers across the Layer 2s based on gas fees paid in the last 7 days.
         </Subheading>
       </Container>
@@ -104,13 +104,13 @@ export default async function Page() {
       </Container>
       <Container>
         <div className="flex mt-[25px] md:mt-[60px] mb-[25px] md:mb-[30px] ml-1.5 md:ml-0 space-x-2 items-center">
-          <Icon
-            icon="gtp:gtp-faq"
-            className="w-[30px] h-[30px] md:w-9 md:h-9"
+          <GTPIcon
+            icon="gtp-faq"
+            size="lg"
           />
           <Heading
             id="layer-2-traction-title"
-            className="text-[20px] md:text-[30px] leading-[1.2] font-semibold"
+            className="heading-large-lg"
           >
             <div>Frequently Asked Questions</div>
           </Heading>
