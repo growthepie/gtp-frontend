@@ -379,6 +379,89 @@ export default function ChainComponent({
     [metricItems],
   );
 
+  const filteredData = useMemo(() => {
+    // Check if datasets exist
+    if (!data?.metrics?.[category]?.daily) {
+      return [];
+    }
+   
+    // Get data from first source
+    const firstDataset = data.metrics[category].daily.types.includes("eth")
+      ? showUsd
+        ? data.metrics[category].daily.data.map((d) => [
+            d[0],
+            d[data.metrics[category].daily.types.indexOf("usd")],
+            0, // placeholder for the second dataset
+          ])
+        : data.metrics[category].daily.data.map((d) => [
+            d[0],
+            showGwei(category)
+              ? d[data.metrics[category].daily.types.indexOf("eth")] * 1000000000
+              : d[data.metrics[category].daily.types.indexOf("eth")],
+            0, // placeholder for the second dataset
+          ])
+      : data.metrics[category].daily.data.map((d) => [
+          d[0],
+          d[1],
+          0, // placeholder for the second dataset
+        ]);
+     
+    // If focusEnabled is true or second dataset doesn't exist, just return the first dataset
+    if (focusEnabled || !ethData?.metrics?.[category]?.daily) {
+      return firstDataset.sort((a, b) => a[0] - b[0]);
+    }
+     
+    // Get data from second source (ethData)
+    const secondDataset = ethData.metrics[category].daily.types.includes("eth")
+      ? showUsd
+        ? ethData.metrics[category].daily.data.map((d) => [
+            d[0],
+            0, // placeholder for the first dataset
+            d[ethData.metrics[category].daily.types.indexOf("usd")],
+          ])
+        : ethData.metrics[category].daily.data.map((d) => [
+            d[0],
+            0, // placeholder for the first dataset
+            showGwei(category)
+              ? d[ethData.metrics[category].daily.types.indexOf("eth")] * 1000000000
+              : d[ethData.metrics[category].daily.types.indexOf("eth")],
+          ])
+      : ethData.metrics[category].daily.data.map((d) => [
+          d[0],
+          0, // placeholder for the first dataset
+          d[1],
+        ]);
+     
+    // Combine both datasets, keeping separate values
+    const combinedMap = new Map();
+     
+    // Add first dataset to map
+    firstDataset.forEach(([timestamp, value1]) => {
+      combinedMap.set(timestamp, { value1: value1 || 0, value2: 0 });
+    });
+     
+    // Add or update with second dataset
+    secondDataset.forEach(([timestamp, _, value2]) => {
+      if (combinedMap.has(timestamp)) {
+        // Set the second value
+        combinedMap.get(timestamp).value2 = value2 || 0;
+      } else {
+        combinedMap.set(timestamp, { value1: 0, value2: value2 || 0 });
+      }
+    });
+     
+    // Convert map back to array format [timestamp, value1, value2]
+    const result = Array.from(combinedMap.entries())
+      .map(([timestamp, { value1, value2 }]) => [
+        timestamp,
+        value1,
+        value2
+      ])
+      .sort((a, b) => a[0] - b[0]);
+     
+    return result;
+  }, [data, ethData, category, showUsd, showGwei, focusEnabled]);
+  
   const displayValues = useMemo(() => {
     const p: {
       [key: string]: {
@@ -387,6 +470,7 @@ export default function ChainComponent({
         suffix: string;
       };
     } = {};
+    
     Object.keys(data.metrics).forEach((key) => {
       const units = Object.keys(master.metrics[key].units);
       const unitKey =
@@ -400,15 +484,13 @@ export default function ChainComponent({
         : "";
       let valueIndex = 1;
       let valueMultiplier = 1;
-
       let valueFormat = Intl.NumberFormat("en-GB", {
         notation: "compact",
         maximumFractionDigits: 2,
         minimumFractionDigits: 2,
       });
-
       let navItem = metricItems[metric_index];
-
+      
       if (master.metrics[key].units[unitKey].currency) {
         if (!showUsd) {
           valueIndex = data.metrics[key].daily.types.indexOf("eth");
@@ -420,29 +502,49 @@ export default function ChainComponent({
         } else {
           valueIndex = data.metrics[key].daily.types.indexOf("usd");
         }
+      }
+      
+      // Use filteredData for the current category, otherwise use original data
+      let dataArray;
+      let dateIndex;
+      let valueToDisplay;
+      
+      if (key === category && filteredData.length > 0) {
+        dataArray = filteredData;
+        dateIndex = dataArray.length - 1;
+        
+        if (intervalShown) {
+          const intervalMaxIndex = dataArray.findIndex(
+            (d) => d[0] >= intervalShown?.max
+          );
+          if (intervalMaxIndex !== -1) dateIndex = intervalMaxIndex;
+        }
+        
+        // Sum value1 and value2 for the combined value
+        const value1 = dataArray[dateIndex][1] || 0;
+        const value2 = !focusEnabled ? dataArray[dateIndex][2]  || 0 : 0;
+        
+        valueToDisplay = focusEnabled ? value1 : (value1 + value2);
       } else {
+        dataArray = data.metrics[key].daily.data;
+        dateIndex = dataArray.length - 1;
+        
+        if (intervalShown) {
+          const intervalMaxIndex = dataArray.findIndex(
+            (d) => d[0] >= intervalShown?.max
+          );
+          if (intervalMaxIndex !== -1) dateIndex = intervalMaxIndex;
+        }
+        
+        valueToDisplay = dataArray[dateIndex][valueIndex];
       }
-
-      let dateIndex = data.metrics[key].daily.data.length - 1;
-
-      const latestUnix =
-        data.metrics[key].daily.data[data.metrics[key].daily.data.length - 1];
-
-      if (intervalShown) {
-        const intervalMaxIndex = data.metrics[key].daily.data.findIndex(
-          (d) => d[0] >= intervalShown?.max,
-        );
-        if (intervalMaxIndex !== -1) dateIndex = intervalMaxIndex;
-      }
-
-      let value = valueFormat.format(
-        data.metrics[key].daily.data[dateIndex][valueIndex] * valueMultiplier,
-      );
-
+      
+      let value = valueFormat.format(valueToDisplay * valueMultiplier);
       p[key] = { value, prefix, suffix };
     });
+    
     return p;
-  }, [data.metrics, showUsd, intervalShown]);
+  }, [data.metrics, filteredData, category, showUsd, intervalShown, focusEnabled, master.metrics, metricItems, metric_index]);
 
   const tooltipFormatter = useCallback(
     function (this: Highcharts.TooltipFormatterContextObject) {
@@ -1065,6 +1167,7 @@ export default function ChainComponent({
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
   const delayPromises = [];
+ 
 
   const onChartRender = (chart: Highcharts.Chart) => {
     if (!chart || !chart.series) return;
@@ -1135,7 +1238,17 @@ export default function ChainComponent({
       });
       lastPointLines[i] = [];
     }
-
+    
+    if (index === -1) {
+      console.warn("Series 'all_l2s' not found in chart");
+      return;
+    }
+    
+    // Add safety check for series
+    if (!chart.series[index] || !chart.series[index].points || chart.series[index].points.length === 0) {
+      console.warn("No points found in series 'all_l2s'");
+      return;
+    }
     // calculate the fraction that 15px is in relation to the pixel width of the chart
     const fraction = 15 / chart.chartWidth;
 
@@ -1252,6 +1365,8 @@ export default function ChainComponent({
 
  
 
+
+
   return (
     <div
       key={category}
@@ -1304,30 +1419,7 @@ export default function ChainComponent({
                   name: data.chain_id,
         
                   crisp: true,
-                  data: data.metrics[category].daily.types.includes("eth")
-                    ? showUsd
-                      ? data.metrics[category].daily.data.map((d) => [
-                        d[0],
-                        d[data.metrics[category].daily.types.indexOf("usd")],
-                      ])
-                      : data.metrics[category].daily.data.map((d) => [
-                        d[0],
-                        showGwei(category)
-                          ? d[
-                          data.metrics[category].daily.types.indexOf(
-                            "eth",
-                          )
-                          ] * 1000000000
-                          : d[
-                          data.metrics[category].daily.types.indexOf(
-                            "eth",
-                          )
-                          ],
-                      ])
-                    : data.metrics[category].daily.data.map((d) => [
-                      d[0],
-                      d[1],
-                    ]),
+                  data: filteredData.map(d => [d[0], d[1]]),
                   showInLegend: false,
                   fillColor: {
                     linearGradient: {
@@ -1403,35 +1495,13 @@ export default function ChainComponent({
                       enabled: false,
                     },
                   },
+                  
                 },
                 ((category !== "rent_paid")) && {
-                  visible: !focusEnabled ? false : true,
+                  visible: focusEnabled ? false : true,
                   name: ethData.chain_id,
                   crisp: true,
-                  data: ethData.metrics[category].daily.types.includes("eth")
-                    ? showUsd
-                      ? ethData.metrics[category].daily.data.map((d) => [
-                        d[0],
-                        d[ethData.metrics[category].daily.types.indexOf("usd")],
-                      ])
-                      : ethData.metrics[category].daily.data.map((d) => [
-                        d[0],
-                        showGwei(category)
-                          ? d[
-                          ethData.metrics[category].daily.types.indexOf(
-                            "eth",
-                          )
-                          ] * 1000000000
-                          : d[
-                          ethData.metrics[category].daily.types.indexOf(
-                            "eth",
-                          )
-                          ],
-                      ])
-                    : ethData.metrics[category].daily.data.map((d) => [
-                      d[0],
-                      d[1],
-                    ]),
+                  data: filteredData.map(d => [d[0], d[2]]),
                   showInLegend: false,
                   marker: {
                     enabled: false,

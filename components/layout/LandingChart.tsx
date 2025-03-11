@@ -9,6 +9,23 @@ import Highcharts, {
   chart,
 } from "highcharts/highstock";
 import {
+  HighchartsProvider,
+  HighchartsChart,
+  Chart,
+  XAxis,
+  YAxis,
+  Title,
+  Tooltip as HighchartsTooltip,
+  PlotBand,
+  AreaSeries,
+  ColumnSeries,
+  LineSeries,
+  PieSeries,
+  
+  Series,
+  
+} from "react-jsx-highcharts";
+import {
   useState,
   useEffect,
   useMemo,
@@ -60,8 +77,8 @@ const METRIC_COLORS = {
   single_l2: ["#FE5468", "#FFDF27"],
   multiple_l2s: ["#FE5468", "#FFDF27"],
   only_l1: ["#C1C1C1", "#5B5B5B"],
-  main_l1: ["#F8F8F8", "#F8F8F8"],
-  main_l2: ["#D14A24", "#D14A24"],
+  main_l1: ["#C1C1C1", "#5B5B5B"],
+  main_l2: ["#FE5468", "#FFDF27"],
 }
 
 const isArray = (obj: any) =>
@@ -508,7 +525,7 @@ export default function LandingChart({
         .map((point: any, index: number) => {
           const { series, y, percentage } = point;
           const { name } = series;
-          const validChainKeys = selectedMetric === "Total Ethereum Ecosystem" && !focusEnabled ? true : false
+          const validChainKeys = ((selectedMetric === "Total Ethereum Ecosystem") && !focusEnabled) || AllChainsByKeys[name] ? true : false
 
           if (selectedScale === "percentage")
             return `
@@ -633,7 +650,7 @@ export default function LandingChart({
 
       return tooltip + tooltipPoints + tooltipEnd;
     },
-    [formatNumber, master, selectedMetric, selectedScale, theme],
+    [formatNumber, master, selectedMetric, selectedScale, theme, focusEnabled, showEthereumMainnet],
   );
 
   const tooltipPositioner =
@@ -1541,6 +1558,10 @@ export default function LandingChart({
           )}
           {/* </div> */}
         </div>
+
+      </div>
+      <div className="relative h-[200px] w-full mt-[100px]">
+      
       </div>
       <div className="h-[32px] lg:h-[80px] flex flex-col justify-start ">
         <div className="flex justify-between items-center rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative h-[44px]">
@@ -1559,36 +1580,23 @@ export default function LandingChart({
               </div>
             </div>
             <div className={`${focusEnabled ? "hidden" : "flex"} items-center`}>
-              <Tooltip placement="left" allowInteract >
+
+              <Tooltip placement="right" allowInteract >
                 <TooltipTrigger>
                   <div className={`bottom-[28px] right-[8px] p-0 -mr-0.5 lg:p-1.5 z-10 lg:mr-0 absolute lg:static lg:mb-0.5`}>
                     <Icon icon="feather:info" className="w-6 h-6" />
                   </div>
                 </TooltipTrigger>
-                <TooltipContent className="-mt-10 pr-10 lg:mt-0 z-50 flex items-center justify-center lg:pr-[3px]">
-                  <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto md:w-[435px] h-[80px] flex items-center">
-                    <div className="flex flex-col space-y-1">
-                      <div className="font-bold text-sm leading-snug">
-                        Data Sources:
-                      </div>
-                      <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
-                        {sources
-                          .map<React.ReactNode>((s) => (
-                            <Link
-                              key={s}
-                              rel="noopener noreferrer"
-                              target="_blank"
-                              href={Sources[s] ?? ""}
-                              className="hover:text-forest-500 dark:hover:text-forest-500 underline"
-                            >
-                              {s}
-                            </Link>
-                          ))
-                          .reduce((prev, curr) => [prev, ", ", curr])}
-                      </div>
+                <TooltipContent>
+                    <div className="flex flex-col items-center">
+                        <div className="p-[15px] text-sm bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
+                          <div className="heading-small-xs">Ethereum showing vs Not</div>
+                          <div className="text-xxs text-wrap">
+                              Something something something ..... admo
+                          </div>
+                        </div>
                     </div>
-                  </div>
-                </TooltipContent>
+                  </TooltipContent>
               </Tooltip>
             </div>
           </div>
@@ -1620,8 +1628,6 @@ export default function LandingChart({
                   is_multiple
                 />
               </div>
-
-
             </div>
           </div>
         </div>
