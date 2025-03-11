@@ -14,6 +14,7 @@ import Image from "next/image";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import LandingSwiperItems from "@/components/layout/LandingSwiperItems";
 import { GTPIcon } from "@/components/layout/GTPIcon";
+import { SectionButtonLink } from "@/components/layout/TextHeadingComponents";
 // import { LandingURL } from "@/lib/urls";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -79,6 +80,7 @@ export default async function Page() {
       </Container>
       <LandingUserBaseChart />
       <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
+        <div className="flex justify-between items-center">
         <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
           <Icon
             icon="gtp:package"
@@ -88,63 +90,19 @@ export default async function Page() {
             id="layer-2-traction-title"
             className="text-[20px] md:text-[30px] leading-[1.2] font-semibold"
           >
-            Applications
+            Top Applications
           </Heading>
         </div>
+        <SectionButtonLink href="/applications" label="See more applications" shortLabel="More apps" />
+        </div>
         <Subheading className="text-base leading-normal md:leading-snug px-[5px] lg:px-[45px]">
-          <div>Top gainers and losers in the Ethereum ecosystem.</div>
+        Top 6 gainers and losers across the Layer 2s based on gas fees paid in the last 7 days.
         </Subheading>
       </Container>
-
       <Container className="">
         <LandingTopContracts />
       </Container>
       <Container>
-        {/* <div className="flex gap-x-0 md:gap-x-12 w-full ml-0 mt-[30px] md:mt-[60px]">
-          <div className="flex flex-col md:w-1/2 lg:w-2/3 ">
-            <div className="flex items-center mb-[15px] md:mb-[15px] gap-x-[8px] py-[10px] md:py-0 ">
-              <Icon
-                icon="gtp:gtp-about"
-                className="w-[30px] h-[30px] md:w-9 md:h-9"
-              />
-              <Heading
-                id="layer-2-traction-title"
-                className="text-[20px] md:text-[30px] leading-[1.2] font-semibold"
-              >
-                About growthepie
-              </Heading>
-            </div>
-            <div className="block md:hidden relative mt-[0px] lg:mt-[15px] mb-[30px] lg:-mb-[30px] h-[190px]">
-              <Image
-                src="/GTP-Data-Kraken.png"
-                fill={true}
-                alt="About growthepie"
-                className="object-contain"
-                sizes="25vw"
-              />
-            </div>
-            <div className="text-base md:text-sm lg:text-base">
-              At growthepie, our mission is to provide comprehensive and
-              accurate analytics Ethereum scaling solutions, acting as a trusted
-              data aggregator from reliable sources such as L2Beat and
-              DefiLlama, while also developing our own metrics. Through our
-              analytics interface, we aim to educate and increase transparency.
-              Our goal is to be one of the go-to resources for those seeking to
-              learn more about the potential of layer 2 technologies and their
-              impact on the future of the Ethereum ecosystem.
-            </div>
-          </div>
-          <div className="hidden md:flex md:flex-1 relative mt-[5px] lg:mt-[15px] -mb-[10px] lg:-mb-[30px]">
-            <Image
-              src="/GTP-Data-Kraken.png"
-              fill={true}
-              alt="About growthepie"
-              className="object-contain"
-              sizes="25vw"
-            />
-          </div>
-        </div> */}
-
         <div className="flex mt-[25px] md:mt-[60px] mb-[25px] md:mb-[30px] ml-1.5 md:ml-0 space-x-2 items-center">
           <Icon
             icon="gtp:gtp-faq"
