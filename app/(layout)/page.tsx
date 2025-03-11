@@ -81,19 +81,19 @@ export default async function Page() {
       <LandingUserBaseChart />
       <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
         <div className="flex justify-between items-center">
-        <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
-          <Icon
-            icon="gtp:package"
-            className="w-[30px] h-[30px] md:w-9 md:h-9"
-          />
-          <Heading
-            id="layer-2-traction-title"
-            className="text-[20px] md:text-[30px] leading-[1.2] font-semibold"
-          >
-            Top Applications
-          </Heading>
-        </div>
-        <SectionButtonLink href="/applications" label="See more applications" shortLabel="More apps" />
+          <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
+            <GTPIcon
+              icon="gtp-project"
+              size="lg"
+            />
+            <Heading
+              id="layer-2-traction-title"
+              className="text-[20px] md:text-[30px] leading-[1.2] font-semibold"
+            >
+              Top Applications
+            </Heading>
+          </div>
+          <SectionButtonLink href="/applications" label="See more applications" shortLabel="More apps" />
         </div>
         <Subheading className="text-base leading-normal md:leading-snug px-[5px] lg:px-[45px]">
         Top 6 gainers and losers across the Layer 2s based on gas fees paid in the last 7 days.
