@@ -1,7 +1,6 @@
 "use client";
 import {
   BlockspaceURLs,
-  ChainBlockspaceURLs,
   ChainsBaseURL,
   MasterURL,
 } from "@/lib/urls";
@@ -110,11 +109,15 @@ export const ChainsProvider = ({
   const { data: chainData, isLoading: chainLoading } = useSWR<ChainResponse>(
     `${ChainsBaseURL}${chainKey}.json`,
   );
+
+  // const chainKey = chainKey;
+  
   const { data: feeData, isLoading: feeLoading } = useSWR<FeesTableResponse>(
     "https://api.growthepie.xyz/v1/fees/table.json",
   );
+
   const { data: overviewData, isLoading: overviewLoading } = useSWR<ChainData>(
-    ChainBlockspaceURLs[chainKey],
+    `https://api.growthepie.xyz/v1/chains/blockspace/${chainKey}.json`
   );
 
   const [sectionHead, setSectionHead] = useState<SectionHead | undefined>(

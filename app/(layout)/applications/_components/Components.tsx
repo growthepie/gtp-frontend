@@ -565,7 +565,7 @@ ApplicationCard.displayName = 'ApplicationCard';
 
 export const ApplicationTooltip = memo(({application}: {application: AggregatedDataRow}) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
-  const { applicationDataAggregated } = useApplicationsData();
+  const { applicationDataAggregatedAndFiltered } = useApplicationsData();
   const { selectedTimespan } = useTimespan();
   const searchParams = useSearchParams();
 

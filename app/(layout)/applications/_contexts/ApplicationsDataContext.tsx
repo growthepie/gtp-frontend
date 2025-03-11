@@ -229,6 +229,7 @@ export type ApplicationsDataContextType = {
   selectedChains: string[];
   setSelectedChains: (value: string[]) => void;
   applicationDataAggregated: AggregatedDataRow[];
+  applicationDataAggregatedAndFiltered: AggregatedDataRow[];
   isLoading: boolean;
   applicationsChains: string[];
   selectedStringFilters: string[];
@@ -382,6 +383,29 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
     )
   }, [applicationsTimespan, selectedTimespan, selectedChainsParam, selectedStringFiltersParam, ownerProjectToProjectData]);
 
+  const applicationDataAggregated = useMemo(() => {
+    if (!applicationsTimespan) return [];
+    const applicationsDataTimespan = {
+      "1d": applicationsTimespan[0],
+      "7d": applicationsTimespan[1],
+      "30d": applicationsTimespan[2],
+      "90d": applicationsTimespan[3],
+      "365d": applicationsTimespan[4],
+      "max": applicationsTimespan[5],
+    };
+
+    if (!applicationsDataTimespan || !applicationsDataTimespan[selectedTimespan]) return [];
+
+    return aggregateProjectData(
+      applicationsDataTimespan[selectedTimespan].data.data, applicationsDataTimespan[selectedTimespan].data.types, ownerProjectToProjectData, {
+        origin_key: [],
+        owner_project: [],
+        category: [],
+      },
+      selectedTimespan // Use timespan as part of cache key
+    )
+  }, [applicationsTimespan, selectedTimespan, ownerProjectToProjectData]);
+
   const createApplicationDataSorter = (
     ownerProjectToProjectData: Record<string, { main_category: string; display_name: string }>,
     showUsd: boolean
@@ -415,7 +439,7 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
 
   const applicationDataSorter = createApplicationDataSorter(ownerProjectToProjectData, showUsd);
 
-  const applicationDataAggregated = useMemo(() => {
+  const applicationDataAggregatedAndFiltered = useMemo(() => {
     return applicationDataSorter(applicationDataFiltered, sort.metric, sort.sortOrder as SortOrder);
   }, [applicationDataFiltered, applicationDataSorter, sort.metric, sort.sortOrder]);
 
@@ -435,7 +459,8 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
       value={{
         selectedChains: selectedChainsParam,
         setSelectedChains: (value) => handleFilters(FilterType.CHAIN, value),
-        applicationDataAggregated,
+        applicationDataAggregated: applicationDataAggregated,
+        applicationDataAggregatedAndFiltered,
         isLoading: applicationsTimespanLoading || masterLoading,
         applicationsChains,
         selectedStringFilters: selectedStringFiltersParam,
