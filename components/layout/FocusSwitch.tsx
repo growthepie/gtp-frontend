@@ -68,16 +68,17 @@ export default function FocusSwitch({ isMobile }: EthUsdSwitchProps) {
               <div className="heading-small-xxs text-forest-500 ">Total Ecosystem</div>
               <div className="heading-small-xxs text-forest-500">L2 Focus</div>
               <div className="absolute top-[6px] z-20 right-[5px]">
-                <Tooltip placement="left">
+                <Tooltip placement="top">
                     <TooltipTrigger>
-                    <Icon icon="feather:info" className="text-forest-500 w-[15px] h-[15px]" />
+                      <Icon icon="feather:info" className="text-forest-500 w-[15px] h-[15px]" />
                     </TooltipTrigger>
                     <TooltipContent>
                     <div className="flex flex-col items-center">
-                        <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex flex-col z-50">
-                        <div>
-                            <strong>L2 Focus</strong> is a feature that allows you to focus on the scaling solutions for Ethereum.
-                        </div>
+                        <div className="p-[15px] text-sm bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
+                          <div className="heading-small-xs">Total Ecosystem vs L2 Focus</div>
+                          <div className="text-xxs text-wrap">
+                              <strong>L2 Focus</strong> is a feature that allows you to focus on the scaling solutions for Ethereum. Bla bla blaaa blaa blab blabba blba
+                          </div>
                         </div>
                     </div>
                     </TooltipContent>
