@@ -88,51 +88,9 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
     [showUsd],
   );
 
-  const timespans = {
-    "1d": {
-      label: "Yesterday",
-    },
-    "7d": {
-      label: "7 Days",
-    },
-    "30d": {
-      label: "30 Days",
-    },
-    "90d": {
-      label: "90 Days",
-    },
-    // "180d": {
-    //   label: "180 Days",
-    // },
-    // "365d": {
-    //   label: "1 Year",
-    // },
-  };
-
-  const sortedContracts = useMemo(() => {
-    if (landing) {
-      const originalData = landing.data.top_contracts[selectedTimespan].data;
-
-      // Create an array of indices from 0 to the length of the original data
-      const indices = Array.from(
-        { length: originalData.length },
-        (_, index) => index,
-      );
-
-      // Sort the indices based on the values at the 7th index of the original data in descending order
-      indices.sort((a, b) => originalData[b][7] - originalData[a][7]);
-
-      return indices;
-    }
-
-    // Return a default value if landing is falsy
-    return [];
-  }, [landing, selectedTimespan, selectedMetric]);
-
   return (
     <>
       <ProjectsMetadataProvider>
-       
       {landing ? (
         <div className={`h-fit md:h-[450px] lg:h-[300px] grid md:grid-rows-3 md:grid-flow-col lg:grid-rows-2 lg:grid-flow-row pt-[10px] lg:grid-cols-3 gap-[10px]`}>
             {landing.data.top_applications.gainers.data.map((application, index) => (
@@ -158,14 +116,12 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
 }
 
 export const ApplicationCard = memo(({ application, className, width }: { application?: AggregatedDataRow, className?: string, width?: number}) => {
-  // const { medianMetric, medianMetricKey } = useApplicationsData();
-  
+  const medianMetricKey = "txcount";
+  const medianMetric = "txcount";
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { data: masterData } = useMaster();
   const metricsDef = masterData!.app_metrics;
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const medianMetric = "gas_fees";
-  const medianMetricKey = showUsd ? "gas_fees_usd" : "gas_fees_eth";
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const searchParams = useSearchParams();
 
@@ -221,10 +177,6 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
     <Link href={{ pathname: `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",")}}
       className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] ${className || ""} group hover:cursor-pointer hover:bg-forest-500/10`} 
       style={{ width: width || undefined }}
-      // onClick={() => {
-      //   // window.location.href = `/applications/${application.owner_project}`;
-      //   router.push(`/applications/${application.owner_project}`);
-      // }}
     >
       <div>
         <div className="flex flex-col">
@@ -234,8 +186,8 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
             <div className="text-xs text-[#5A6462]">{application.num_contracts === 1 ? 'contract' : 'contracts'}</div>
           </div>
           <div className="h-[20px] flex items-center gap-x-[3px]">
-            <div className="numbers-xs text-[#5A6462]">Rank</div>
-            <div className="numbers-xs text-[#CDD8D3]">{rank}</div>
+            {/* <div className="numbers-xs text-[#5A6462]">Rank</div>
+            <div className="numbers-xs text-[#CDD8D3]">{rank}</div> */}
             {application[`${medianMetricKey}_change_pct`] !== Infinity ? (
               <div className={`flex justify-end w-[60px] numbers-xs ${application[`${medianMetricKey}_change_pct`] < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
                 {application[`${medianMetricKey}_change_pct`] < 0 ? '-' : '+'}{formatNumber(Math.abs(application[`${medianMetricKey}_change_pct`]), {defaultDecimals: 1, thresholdDecimals: {base: 1}})}%
@@ -303,16 +255,10 @@ export const Chains = ({ origin_keys }: { origin_keys: string[] }) => {
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
-            // if (selectedChains.includes(chain)) {
-            //   setSelectedChains(selectedChains.filter((c) => c !== chain));
-            // } else {
-            //   setSelectedChains([...selectedChains, chain]);
-            // }
             router.push(`/applications/?origin_key=${chain}`);
           }}
         >
           {AllChainsByKeys[chain] && (
-            // <GridTableChainIcon origin_key={AllChainsByKeys[chain].key} color={AllChainsByKeys[chain].colors["dark"][0]} />
             <Icon
               icon={`gtp:${AllChainsByKeys[
                 chain
@@ -323,10 +269,6 @@ export const Chains = ({ origin_keys }: { origin_keys: string[] }) => {
           )}
         </div>
       ))}
-      {/* <div className="rounded-full w-[47px] border border-[#344240] flex items-center justify-center">
-        more
-
-      </div> */}
     </div>
   );
 };

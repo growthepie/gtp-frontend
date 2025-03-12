@@ -163,10 +163,8 @@ export const SectionButtonLink = ({
             {label}
           </div>}
           <div className="w-[24px] h-[24px] bg-[#344240] rounded-full flex items-center justify-center">
-
             <Icon icon="feather:arrow-right" className="w-[16px] h-[16px]" />
           </div>
-
         </div>
       </div>
     </Link>

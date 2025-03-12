@@ -96,7 +96,7 @@ export default async function Page() {
           <SectionButtonLink href="/applications" label="See more applications" shortLabel="More apps" />
         </div>
         <Subheading className="text-md px-[5px] lg:px-[45px]">
-        Top 6 gainers and losers across the Layer 2s based on gas fees paid in the last 7 days.
+          Top 6 gainers and loosers across Layer 2s based on transaction count in the last 7 days.
         </Subheading>
       </Container>
       <Container className="">
