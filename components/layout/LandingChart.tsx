@@ -35,7 +35,7 @@ import {
 } from "react";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
-import { debounce, merge } from "lodash";
+import { debounce, fill, merge } from "lodash";
 import { Switch } from "../Switch";
 import {
   // AllChainsByKeys,
@@ -62,6 +62,9 @@ import {
 import { useMaster } from "@/contexts/MasterContext";
 import { GTPIcon } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import highchartsPatternFill from "highcharts/modules/pattern-fill";
+import { transparent } from "tailwindcss/colors";
+
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -287,7 +290,7 @@ export default function LandingChart({
     });
     highchartsRoundedCorners(Highcharts);
     highchartsAnnotations(Highcharts);
-
+    highchartsPatternFill(Highcharts);
     // loadHighchartsWrappers();
 
     // update x-axis label sizes if it is a 4 digit number
@@ -525,7 +528,7 @@ export default function LandingChart({
         .map((point: any, index: number) => {
           const { series, y, percentage } = point;
           const { name } = series;
-          const validChainKeys = ((selectedMetric === "Total Ethereum Ecosystem") && !focusEnabled) || AllChainsByKeys[name] ? true : false
+          const validChainKeys = ((selectedMetric === "Total Ethereum Ecosystem") && focusEnabled) || AllChainsByKeys[name] ? true : false
 
           if (selectedScale === "percentage")
             return `
@@ -709,23 +712,6 @@ export default function LandingChart({
   
     if (selectedMetric === "Total Ethereum Ecosystem") {
       if(!focusEnabled){
-        let sumData: number[][] = [];
-    
-        compositions.cross_layer.forEach((element, index) => {
-          let sum = 0;
-          compositionKeys.forEach((key) => {
-            sum += compositions[key][index][types.indexOf("value")];
-          });
-    
-          sumData.push([element[types.indexOf("unix")], sum]);
-        });
-    
-        retData.push({ name: "all_l2s", data: sumData, types: types , stacked: false});
-        if(focusEnabled && showEthereumMainnet){
-          retData.push({ name: "ethereum", data: compositions.only_l1, types: types, stacked: false });
-          
-        }
-      } else {
         let onlySumData: number[][] = [];
         let onlyL2SumData: number[][] = [];
         compositions.only_l1.forEach((element, index) => {
@@ -742,6 +728,24 @@ export default function LandingChart({
 
         retData.push({ name: "main_l2", data: onlyL2SumData, types: types });
         retData.push({ name: "main_l1", data: onlySumData, types: types });
+
+      } else {
+        let sumData: number[][] = [];
+    
+        compositions.cross_layer.forEach((element, index) => {
+          let sum = 0;
+          compositionKeys.forEach((key) => {
+            sum += compositions[key][index][types.indexOf("value")];
+          });
+    
+          sumData.push([element[types.indexOf("unix")], sum]);
+        });
+    
+        retData.push({ name: "all_l2s", data: sumData, types: types , stacked: false});
+        if(focusEnabled && showEthereumMainnet){
+          retData.push({ name: "ethereum", data: compositions.only_l1, types: types, stacked: false });
+          
+        }
       }
     } else {
 
@@ -944,6 +948,7 @@ export default function LandingChart({
 
     const dynamicOptions: Highcharts.Options = {
       chart: {
+
         height: getChartHeight(),
         className: "zoom-chart",
         animation: true,
@@ -981,7 +986,7 @@ export default function LandingChart({
             },
           },
         },
-        events: {},
+
         // height: isMobile ? 200 : 400,
       },
 
@@ -1115,11 +1120,11 @@ export default function LandingChart({
               },
               stops: [
                 [0, color[hasChainData ? 0 : 1] + "FF"],
-                // [0.349, MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "88"],
                 [1, color[hasChainData ? 1 : 0] + "CC"],
               ],
             };
-
+            
+            // Create a striped pattern with transparent background and solid lines
             const dottedColumnColor = {
               pattern: {
                   path: {
@@ -1129,19 +1134,18 @@ export default function LandingChart({
                   width: 10,
                   height: 10,
                   opacity: 1,
-                  color: color[hasChainData ? 1 : 0] + "CC",
+                  color: color[0],
               },
-            };
-
+          };
            
 
             const todaysDateUTC = new Date().getUTCDate();
-            const secondZoneDottedColumnColor = todaysDateUTC === 1 ? columnColor : dottedColumnColor;
+            const secondZoneDottedColumnColor = !(series.name === "cross_layer" || series.name === "single_l2")  ? columnColor : dottedColumnColor;
             const isColumnChart = getSeriesType(series.name) === "column";
             
 
             
-            const secondZoneDashStyle = todaysDateUTC === 1 ? "Solid" : "Dot";
+            const secondZoneDashStyle = !(series.name === "cross_layer" || series.name === "single_l2") ? "Solid" : "Dot";
             const zIndex = showEthereumMainnet
               ? series.name === "ethereum"
                 ? 0
@@ -1187,22 +1191,10 @@ export default function LandingChart({
               fillOpacity: series.name === "ethereum" ? 1 : 0,
               stacking: "normal",
               zoneAxis: "x",
-              
-              zones: [
-                {
-                  
-                  dashStyle: "Solid",
-                  color: isColumnChart ? columnColor : color[0]
-                },
-                {
-                  
-                  dashStyle: secondZoneDashStyle,
-                  fillColor: columnColor,
-                  color: isColumnChart
-                    ? secondZoneDottedColumnColor
-                    : columnColor,
-                }
-              ],
+              color: secondZoneDottedColumnColor,
+              fillColor: secondZoneDottedColumnColor,
+              dashStyle: secondZoneDashStyle,
+
               // borderColor:
               //   series.name && theme && EnabledChainsByKeys[series.name]
               //     ? EnabledChainsByKeys[series.name]?.colors[theme ?? "dark"][0]
@@ -1567,15 +1559,15 @@ export default function LandingChart({
         <div className="flex justify-between items-center rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative h-[44px]">
           {/* toggle ETH */}
           <div>
-            <div className={`z-10 pl-2 ${focusEnabled ? "flex" : "hidden"}`} >
+            <div className={`z-10 pl-2 ${focusEnabled ? "flex items-center" : "hidden"}`} >
               <Switch
                 checked={showEthereumMainnet}
                 onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
               />
-              <div className="ml-2 block md:hidden xl:block leading-[1.75]">
+              <div className="ml-2 block md:hidden xl:block heading-small-xs">
                 Compare Ethereum
               </div>
-              <div className="ml-2 hidden md:block xl:hidden leading-[1.75]">
+              <div className={`ml-2 hidden md:block xl:hidden heading-small-xs`}>
                 Compare ETH
               </div>
             </div>
