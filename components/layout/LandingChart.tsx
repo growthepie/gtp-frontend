@@ -77,11 +77,11 @@ const COLORS = {
 
 const METRIC_COLORS = {
   cross_layer: ["#C1C1C1", "#FE5468"],
-  single_l2: ["#FE5468", "#FFDF27"],
-  multiple_l2s: ["#FE5468", "#FFDF27"],
+  single_l2: ["#FFDF27", "#FE5468"],
+  multiple_l2s: ["#FFDF27", "#FE5468"],
   only_l1: ["#C1C1C1", "#5B5B5B"],
   main_l1: ["#C1C1C1", "#5B5B5B"],
-  main_l2: ["#FE5468", "#FFDF27"],
+  main_l2: ["#FFDF27", "#FE5468"],
 }
 
 const isArray = (obj: any) =>
@@ -338,9 +338,9 @@ export default function LandingChart({
   );
 
   const [selectedScale, setSelectedScale] = useState(
-    selectedMetric === "Percentage" ? "percentage" : "absolute",
+    selectedMetric === "Compsoition Split" ? "percentage" : "absolute",
   );
-
+  console.log(selectedScale)
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
 
   const [zoomed, setZoomed] = useState(false);
@@ -758,7 +758,7 @@ export default function LandingChart({
     }
   
     return retData;
-  }, [data, showEthereumMainnet, showTotalUsers, focusEnabled]);
+  }, [data, showEthereumMainnet, showTotalUsers, focusEnabled, selectedMetric]);
   
   
 
@@ -948,7 +948,6 @@ export default function LandingChart({
 
     const dynamicOptions: Highcharts.Options = {
       chart: {
-
         height: getChartHeight(),
         className: "zoom-chart",
         animation: true,
@@ -986,7 +985,7 @@ export default function LandingChart({
             },
           },
         },
-
+        events: {},
         // height: isMobile ? 200 : 400,
       },
 
@@ -1099,53 +1098,24 @@ export default function LandingChart({
         enabled: isDragging ? false : true,
       },
       series: [
-        ...filteredData      
+        ...filteredData
+          .sort((a, b) => {
+            const aValue =
+              a.data && a.data[a.data.length - 1]
+                ? a.data[a.data.length - 1][1]
+                : 0;
+            const bValue =
+              b.data && b.data[b.data.length - 1]
+                ? b.data[b.data.length - 1][1]
+                : 0;
+
+            if (selectedScale === "percentage") {
+              return aValue - bValue;
+            } else {
+              return bValue - aValue;
+            }
+          })
           .map((series: any, i: number) => {
-
-            let color = series.name && theme && EnabledChainsByKeys[series.name]
-                ? EnabledChainsByKeys[series.name]?.colors[
-                  theme ?? "dark"
-                  ]
-                : METRIC_COLORS[series.name]
-            let hasChainData =  AllChainsByKeys[series.name] ? true : false
-
-
-
-            const columnColor = {
-              linearGradient: {
-                x1: 0,
-                y1: 0,
-                x2: 0,
-                y2: 1,
-              },
-              stops: [
-                [0, color[hasChainData ? 0 : 1] + "FF"],
-                [1, color[hasChainData ? 1 : 0] + "CC"],
-              ],
-            };
-            
-            // Create a striped pattern with transparent background and solid lines
-            const dottedColumnColor = {
-              pattern: {
-                  path: {
-                      d: "M 0 0 L 10 10 M 9 -1 L 11 1 M -1 9 L 1 11",
-                      "stroke-width": 3,
-                  },
-                  width: 10,
-                  height: 10,
-                  opacity: 1,
-                  color: color[0],
-              },
-          };
-           
-
-            const todaysDateUTC = new Date().getUTCDate();
-            const secondZoneDottedColumnColor = !(series.name === "cross_layer" || series.name === "single_l2")  ? columnColor : dottedColumnColor;
-            const isColumnChart = getSeriesType(series.name) === "column";
-            
-
-            
-            const secondZoneDashStyle = !(series.name === "cross_layer" || series.name === "single_l2") ? "Solid" : "Dot";
             const zIndex = showEthereumMainnet
               ? series.name === "ethereum"
                 ? 0
@@ -1176,37 +1146,254 @@ export default function LandingChart({
                   pointPlacement: 0.5,
                 };
 
-            
-
             return {
               name: series.name,
               // always show ethereum on the bottom
               zIndex: zIndex,
               step: "center",
               data: series.data.map((d: any) => [d[0], d[1]]),
+              ...pointsSettings,
               clip: true,
               borderRadiusTopLeft: borderRadius,
               borderRadiusTopRight: borderRadius,
               type: getSeriesType(series.name),
               fillOpacity: series.name === "ethereum" ? 1 : 0,
-              stacking: "normal",
-              zoneAxis: "x",
-              color: secondZoneDottedColumnColor,
-              fillColor: secondZoneDottedColumnColor,
-              dashStyle: secondZoneDashStyle,
+              dashStyle: "Dash",
+              fillColor: {
+                linearGradient: {
+                  x1: 0,
+                  y1: 0,
+                  x2: 0,
+                  y2: 1,
+                },
+                stops: [
+                  [
+                    0,
+                    series.name && theme && EnabledChainsByKeys[series.name]
+                      ? EnabledChainsByKeys[series.name]?.colors[
+                      theme ?? "dark"
+                      ][0] + "33"
+                      : METRIC_COLORS[series.name][0],
+                  ],
 
+                  [
+                    1,
+                    series.name && theme && EnabledChainsByKeys[series.name]
+                      ? EnabledChainsByKeys[series.name]?.colors[
+                      theme ?? "dark"
+                      ][1] + "33"
+                      : METRIC_COLORS[series.name][1],
+                  ],
+                ],
+              },
               // borderColor:
               //   series.name && theme && EnabledChainsByKeys[series.name]
               //     ? EnabledChainsByKeys[series.name]?.colors[theme ?? "dark"][0]
               //     : "transparent",
               // borderWidth: 1,
               lineWidth: 1,
-              shadow: {
-
-                color: color[hasChainData ? 1 : 0] + "CC",
-                width: 5,
-              },
-
+              ...(getSeriesType(series.name) !== "column"
+                ? {
+                  shadow: {
+                    color:
+                      series.name && theme && EnabledChainsByKeys[series.name]
+                        ? EnabledChainsByKeys[series.name]?.colors[theme][1] +
+                        "FF"
+                        : "transparent",
+                    width: 10,
+                  },
+                  color: {
+                    linearGradient: {
+                      x1: 0,
+                      y1: 0,
+                      x2: 1,
+                      y2: 0,
+                    },
+                    stops: [
+                      [
+                        0,
+                        series.name &&
+                          theme &&
+                          EnabledChainsByKeys[series.name]
+                          ? EnabledChainsByKeys[series.name]?.colors[theme][0]
+                          : METRIC_COLORS[series.name][0],
+                      ],
+                      // [0.33, AllChainsByKeys[series.name].colors[1]],
+                      [
+                        1,
+                        series.name &&
+                          theme &&
+                          EnabledChainsByKeys[series.name]
+                          ? EnabledChainsByKeys[series.name]?.colors[theme][1]
+                          : METRIC_COLORS[series.name][1],
+                      ],
+                    ],
+                  },
+                }
+                : series.name === "all_l2s"
+                  ? {
+                    borderColor: "transparent",
+                    borderWidth: 0,
+                    // shadow: {
+                    //   color: "#CDD8D3",
+                    //   offsetX: 0,
+                    //   offsetY: 0,
+                    //   width: 0,
+                    // },
+                    color: {
+                      linearGradient: {
+                        x1: 0,
+                        y1: 0,
+                        x2: 0,
+                        y2: 1,
+                      },
+                      stops:
+                        theme === "dark"
+                          ? [
+                            [
+                              0,
+                              series.name &&
+                                theme &&
+                                EnabledChainsByKeys[series.name]
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][0] + "FF"
+                                : [],
+                            ],
+                            // [
+                            //   0.3,
+                            //   //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
+                            //   AllChainsByKeys[series.name].colors[theme][0] +
+                            //     "FF",
+                            // ],
+                            [
+                              1,
+                              series.name &&
+                                theme &&
+                                EnabledChainsByKeys[series.name]
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][1] + "FF"
+                                : [],
+                            ],
+                          ]
+                          : [
+                            [
+                              0,
+                              series.name &&
+                                theme &&
+                                EnabledChainsByKeys[series.name]
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][0] + "FF"
+                                : [],
+                            ],
+                            // [
+                            //   0.7,
+                            //   AllChainsByKeys[series.name].colors[theme][0] +
+                            //     "88",
+                            // ],
+                            [
+                              1,
+                              series.name &&
+                                theme &&
+                                EnabledChainsByKeys[series.name]
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][1] + "FF"
+                                : [],
+                            ],
+                          ],
+                    },
+                  }
+                  : {
+                    borderColor: theme == "dark" ? "#2A3433" : "#EAECEB",
+                    borderWidth: 0,
+                    //  series.name &&
+                    //   theme &&
+                    //   EnabledChainsByKeys[series.name]
+                    //   ? EnabledChainsByKeys[series.name]?.colors[
+                    //   theme
+                    //   ][0] + "33"
+                    //   : [],
+                    shadow: null,
+                    color: {
+                      linearGradient: {
+                        x1: 0,
+                        y1: 0,
+                        x2: 0,
+                        y2: 1,
+                      },
+                      stops:
+                        theme === "dark"
+                          ? [
+                            [
+                              0,
+                              series.name &&
+                                theme &&
+                                EnabledChainsByKeys[series.name]
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][0] + "FF"
+                                : METRIC_COLORS[series.name][0] + "FF",
+                            ],
+                            // [
+                            //   0.349,
+                            //   series.name &&
+                            //     theme &&
+                            //     EnabledChainsByKeys[series.name]
+                            //     ? EnabledChainsByKeys[series.name]?.colors[
+                            //     theme
+                            //     ][0] + "88"
+                            //     : [],
+                            // ],
+                            [
+                              1,
+                              // "#151a19FF"
+                              series.name &&
+                                theme &&
+                                EnabledChainsByKeys[series.name]
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][0] + "CC"
+                                : METRIC_COLORS[series.name][1] + "CC",
+                            ],
+                          ]
+                          : [
+                            [
+                              0,
+                              series.name &&
+                                theme &&
+                                EnabledChainsByKeys[series.name]
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][0] + "FF"
+                                : METRIC_COLORS[series.name][0] + "FF",
+                            ],
+                            // [
+                            //   0.349,
+                            //   series.name &&
+                            //     theme &&
+                            //     EnabledChainsByKeys[series.name]
+                            //     ? EnabledChainsByKeys[series.name]?.colors[
+                            //     theme
+                            //     ][0] + "88"
+                            //     : [],
+                            // ],
+                            [
+                              1,
+                              // "#FFFFFFFF"
+                              series.name &&
+                                theme &&
+                                EnabledChainsByKeys[series.name]
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][0] + "00"
+                                : METRIC_COLORS[series.name][0] + "00",
+                            ],
+                          ],
+                    },
+                  }),
               states: {
                 hover: {
                   enabled: true,
@@ -1286,6 +1473,7 @@ export default function LandingChart({
     zoomed,
     is_embed,
   ]);
+
 
   // const resituateChart = debounce(() => {
   //   chartComponent.current && chartComponent.current.reflow();

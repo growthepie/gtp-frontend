@@ -71,7 +71,10 @@ export default function LandingMetricsTable({
   const { AllChainsByKeys, EnabledChainsByKeys } = useMaster();
   const { data: landing } = useSWR<LandingPageMetricsResponse>(LandingURL);
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
-
+  const [sort, setSort] = useState({
+    metric: "weekly_active_addresses",
+    sortOrder: "desc",
+  });
   const [maxVal, setMaxVal] = useState(0);
 
   const { theme } = useTheme();
@@ -113,30 +116,49 @@ export default function LandingMetricsTable({
 
   const rows = useCallback(() => {
     if (!data) return [];
-    return Object.keys(data.chains)
+    
+    // Filter chains
+    const filteredChains = Object.keys(data.chains)
       .filter((chain) => {
-
         return (
           (Object.keys(EnabledChainsByKeys).includes(chain) && (chain !== "ethereum" || !focusEnabled)) &&
           data.chains[chain].users > 0
         );
       })
-      .map((chain: any) => {
+      // Map to row format
+      .map((chain) => {
         return {
-          data: data[chain],
+          data: data.chains[chain],  // Changed from data[chain] to data.chains[chain]
           chain: EnabledChainsByKeys[chain],
           lastVal: data.chains[chain].users,
         };
       })
-      .filter(
-        (row) => row.chain.chainType != null,
-      )
-      .sort((a, b) => {
-
-        return b.lastVal - a.lastVal;
-
+      // Filter by chain type
+      .filter((row) => row.chain.chainType != null);
+    
+    // Sort based on sortState
+    if (sort.metric === 'weekly_active_addresses') {
+      
+      return filteredChains.sort((a, b) => {
+        const multiplier = sort.sortOrder === 'asc' ? 1 : -1;
+        return multiplier * (a.data.users - b.data.users);
       });
-  }, [data, focusEnabled]);
+    }else if (sort.metric === 'cross_chain_activity') {
+      return filteredChains.sort((a, b) => {
+        const multiplier = sort.sortOrder === 'asc' ? 1 : -1;
+        return multiplier * (a.data.cross_chain_activity - b.data.cross_chain_activity);
+      });
+    }else if (sort.metric === 'age') {
+      return filteredChains.sort((a, b) => {
+        const multiplier = sort.sortOrder === 'asc' ? 1 : -1;
+        return multiplier * (moment().diff(moment(master.chains[a.chain.key].launch_date)) - moment().diff(moment(master.chains[b.chain.key].launch_date)));
+      });
+    }
+    // Default sort (descending by user count)
+    else {
+      return filteredChains.sort((a, b) => b.lastVal - a.lastVal);
+    }
+  }, [data, focusEnabled, sort]);
 
   let height = 0;
   const transitions = useTransition(
@@ -179,7 +201,7 @@ export default function LandingMetricsTable({
     <>
       <>
         <GridTableHeader
-          gridDefinitionColumns="grid-cols-[26px_125px_190px_95px_minmax(285px,800px)_140px_125px_71px]"
+          gridDefinitionColumns="grid-cols-[26px_125px_190px_95px_minmax(285px,800px)_140px_125px_80px]"
           className="text-[14px] !font-bold gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] !pt-[15px] pb-[5px] select-none overflow-visible"
 
         >
@@ -207,12 +229,32 @@ export default function LandingMetricsTable({
           <GridTableHeaderCell justify="center">
             <ChainRankHeader />
           </GridTableHeaderCell>
-          <GridTableHeaderCell className="relative" justify="end">
-            <div className="flex flex-col items-end">
-              <div className="whitespace-nowrap">Weekly Active</div>Addresses
+          <GridTableHeaderCell className="relative pl-[10px]" justify="start">
+            <div className="flex items-center gap-x-[5px] relative group"
+              onClick={() => {
+                setSort(prevSort => ({
+                  metric: "weekly_active_addresses",
+                  sortOrder: prevSort.metric === "weekly_active_addresses" 
+                    ? (prevSort.sortOrder === "asc" ? "desc" : "asc")
+                    : "desc" // Default sort order when changing metrics
+                }));
+              }}
+            >
+              <div className="flex flex-col items-end">
+                <div className="whitespace-nowrap">Weekly Active</div>Addresses
+              </div>
+              <Icon
+                  icon={
+                    sort.metric === "weekly_active_addresses" && sort.sortOrder === "asc"
+                      ? "feather:arrow-up"
+                      : "feather:arrow-down"
+                  }
+                  className={`w-[12px] h-[12px]  -right-[15px] absolute ${sort.metric === "weekly_active_addresses" ? "opacity-100" : "opacity-20"} group-hover:opacity-100`}
+                  
+                />
             </div>
             <Tooltip placement="left">
-              <TooltipTrigger className="absolute z-[1] -right-[25px] top-0 bottom-0">
+              <TooltipTrigger className="absolute z-[1] -right-[0px] top-0 bottom-0">
                 <Icon icon="feather:info" className="w-[15px] h-[15px]" />
               </TooltipTrigger>
               <TooltipContent className="z-[110]">
@@ -225,12 +267,31 @@ export default function LandingMetricsTable({
               </TooltipContent>
             </Tooltip>
           </GridTableHeaderCell>
-          <GridTableHeaderCell className="relative" justify="end">
-            <div className="flex flex-col items-end">
-              <div className="whitespace-nowrap">Cross-Chain</div>Activity
+          <GridTableHeaderCell className="relative pl-[10px]" justify="start">
+            <div className="flex items-center gap-x-[5px] relative group"
+              onClick={() => {
+                setSort(prevSort => ({
+                  metric: "cross_chain_activity",
+                  sortOrder: prevSort.metric === "cross_chain_activity" 
+                    ? (prevSort.sortOrder === "asc" ? "desc" : "asc")
+                    : "desc" // Default sort order when changing metrics
+                }));
+              }}
+            >
+              <div className="flex flex-col items-end">
+                <div className="whitespace-nowrap">Cross-Chain</div>Activity
+              </div>
+              <Icon
+                icon={
+                  sort.metric === "cross_chain_activity" && sort.sortOrder === "asc"
+                    ? "feather:arrow-up"
+                    : "feather:arrow-down"
+                }
+                className={`w-[12px] h-[12px] -right-[15px] absolute ${sort.metric === "cross_chain_activity" ? "opacity-100" : "opacity-20"} group-hover:opacity-100`}
+              />
             </div>
             <Tooltip placement="left">
-              <TooltipTrigger className="absolute  z-[1] -right-[25px] top-0 bottom-0">
+              <TooltipTrigger className="absolute  z-[1] -right-[0px] top-0 bottom-0">
                 <Icon icon="feather:info" className="w-[15px] h-[15px]" />
               </TooltipTrigger>
               <TooltipContent className="z-[110]">
@@ -243,7 +304,28 @@ export default function LandingMetricsTable({
               </TooltipContent>
             </Tooltip>
           </GridTableHeaderCell>
-          <GridTableHeaderCell justify="end">Age</GridTableHeaderCell>
+          <GridTableHeaderCell justify="end">
+            <div className="w-full justify-end flex items-center gap-x-[5px] group"
+              onClick={() => {
+                setSort(prevSort => ({
+                  metric: "age",
+                  sortOrder: prevSort.metric === "age" 
+                    ? (prevSort.sortOrder === "asc" ? "desc" : "asc")
+                    : "desc" // Default sort order when changing metrics
+                }));
+              }}
+            >
+              <div>Age</div>               
+              <Icon
+                icon={
+                  sort.metric === "age" && sort.sortOrder === "asc"
+                    ? "feather:arrow-up"
+                    : "feather:arrow-down"
+                }
+                className={`w-[12px] h-[12px]  ${sort.metric === "age" ? "opacity-100" : "opacity-20"} group-hover:opacity-100`}
+              />
+            </div>
+          </GridTableHeaderCell>
         </GridTableHeader>
         <div className="w-full relative" style={{ height }}>
           {transitions((style, item, t, index) => {
@@ -293,10 +375,30 @@ export default function LandingMetricsTable({
                       <>{data.chains[item.chain.key].purpose}</>
                     )}
                   </div>
-                  <div className="flex justify-start w-full items-center">
-                    <div className="w-[82px] text-left">
-                      <GTPIcon  icon={`gtp-layer2-maturity-${maturityName}` as GTPIconName} size="md" />
-                    </div>
+                  <div className={`justify-start  w-full items-center group rounded-full`}>
+
+                    <Tooltip placement="bottom" allowInteract >
+                      <TooltipTrigger>
+                        <div className={``}>
+                          <GTPIcon  icon={`gtp-layer2-maturity-${maturityName}` as GTPIconName} size="md" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                          <div className="flex flex-col gap-y-[5px] items-center relative left-[220px]">
+                              <div className="p-[15px] text-sm bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50">
+                                <div className="flex items-center gap-x-[15px]">
+                                  <GTPIcon  icon={`gtp-layer2-maturity-${maturityName}` as GTPIconName} size="sm" />
+                                  <div className="heading-small-xs">{maturityExists ? master.maturity_levels[master.chains[item.chain.key].maturity].name : ""}</div>
+                                </div>
+                                <div className="text-xxs text-wrap">
+                                  Total Ethereum Ecosystem represents the weekly distinct active wallets across Ethereum Layer 1 and all tracked Layer 2 networks. 
+                                  This metric provides a comprehensive view of wallet activity within the Ethereum ecosystem by aggregating active wallets 
+                                  interacting with smart contracts or making transactions on different chains.
+                                </div>
+                              </div>
+                          </div>
+                        </TooltipContent>
+                  </Tooltip>
                   </div>
                   <ChainRankCell item={item} />
                   
@@ -327,16 +429,27 @@ export default function LandingMetricsTable({
                   </div>
                   <div className="flex justify-end items-center">
                     {/* {monthsSinceLaunch[item.chain.key][0] && monthsSinceLaunch[item.chain.key][1] % 12 > 0 ? <div className="text-[#5A6462] text-[16px]">+</div> : ""} */}
-                    <div className=" numbers-xs">
-                      {moment(master.chains[item.chain.key].launch_date).fromNow(
-                        true,
-                      ).split(" ")[0] === "a" ? "1" : moment(master.chains[item.chain.key].launch_date).fromNow(true).split(" ")[0]}
-                      {" "}
-                      <span className="numbers-xxs">
-                        {moment(master.chains[item.chain.key].launch_date).fromNow(
-                          true,
-                        ).split(" ")[1]}
-                      </span>
+                    <div className="numbers-xs">
+                      {(() => {
+                        // Get the date difference in milliseconds
+                        const launchDate = moment(master.chains[item.chain.key].launch_date);
+                        const now = moment();
+                        
+                        // Calculate total months difference
+                        const totalMonths = now.diff(launchDate, 'months');
+                        
+                        // Calculate years and remaining months
+                        const years = Math.floor(totalMonths / 12);
+                        const months = totalMonths % 12;
+                        
+                        // Format the output
+                        return (
+                          <>
+                             <span className="numbers-xxs">{years > 0 && years}{years > 0 ? 'yr' : ''}{years > 1 ? 's' : ''}</span>{' '}
+                             <span className="numbers-xxs">{months}mos</span>
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 </GridTableRow>
@@ -405,7 +518,7 @@ const ChainRankCell = memo(function ChainRankIcon(
 
   const router = useRouter();
   const { isMobile } = useUIContext();
-
+  const [focusEnabled] = useLocalStorage("focusEnabled", false);
   const [selectedFundamentalsChains, setSelectedFundamentalsChains] = useSessionStorage(
     "fundamentalsChains",
     master ? [...Get_DefaultChainSelectionKeys(master), "ethereum"] : [],
@@ -490,11 +603,11 @@ const ChainRankCell = memo(function ChainRankIcon(
             const valueKeys = landing ? Object.keys(landing.data.metrics.table_visual[item.chain.key].ranking[metric]).filter((key) => key.includes("value")) : [];
             const values = landing ? valueKeys.map((key) => landing.data.metrics.table_visual[item.chain.key].ranking[metric][key]) : [];
 
-            const colorScale = landing ? landing.data.metrics.table_visual[item.chain.key].ranking[metric].color_scale : 0;
+            const colorScale = landing ? landing.data.metrics.table_visual[item.chain.key][focusEnabled ? "ranking" : "ranking_w_eth"][metric].color_scale : 0;
             return (
               <div
                 key={metric}
-                className={`relative flex items-start justify-center size-[25px] ${landing.data.metrics.table_visual[item.chain.key].ranking[metric].rank !== null && "cursor-pointer"}`}
+                className={`relative flex items-start justify-center size-[25px] ${landing.data.metrics.table_visual[item.chain.key][focusEnabled ? "ranking" : "ranking_w_eth"][metric].rank !== null && "cursor-pointer"}`}
 
               >
                 <div
@@ -520,14 +633,14 @@ const ChainRankCell = memo(function ChainRankIcon(
                   }}
 
                 >
-                  {landing.data.metrics.table_visual[item.chain.key].ranking[metric].rank !== null ? (
+                  {landing.data.metrics.table_visual[item.chain.key][focusEnabled ? "ranking" : "ranking_w_eth"][metric].rank !== null ? (
                     <div className="relative h-full w-full">
                       <div
                         className="absolute inset-0 rounded-full flex items-center justify-center pointer-events-none"
                         style={{
                           transform:
                             hoveredMetric === metric ?
-                              `scale(${GetRankingScale(landing.data.metrics.table_visual[item.chain.key].ranking[metric].rank, [minRank, maxRank], [7.33 / 11, 15 / 11].reverse() as [number, number])})`
+                              `scale(${GetRankingScale(landing.data.metrics.table_visual[item.chain.key][focusEnabled ? "ranking" : "ranking_w_eth"][metric].rank, [minRank, maxRank], [7.33 / 11, 15 / 11].reverse() as [number, number])})`
                               : "scale(1)",
                           zIndex: hoveredMetric !== metric ? 2 : 4,
                         }}>
@@ -535,7 +648,7 @@ const ChainRankCell = memo(function ChainRankIcon(
                           colorScale={colorScale}
                           size="sm"
                         >
-                          <span className="font-mono text-[9px] font-bold text-[#1F2726]">{landing.data.metrics.table_visual[item.chain.key].ranking[metric].rank}</span>
+                          <span className="font-mono text-[9px] font-bold text-[#1F2726]">{landing.data.metrics.table_visual[item.chain.key][focusEnabled ? "ranking" : "ranking_w_eth"][metric].rank}</span>
                         </RankIcon>
 
                       </div>
@@ -578,7 +691,7 @@ const ChainRankCell = memo(function ChainRankIcon(
                         colorScale={-1}
                         size="sm"
                       >
-                        {landing.data.metrics.table_visual[item.chain.key].ranking[metric].rank}
+                        {landing.data.metrics.table_visual[item.chain.key][focusEnabled ? "ranking" : "ranking_w_eth"][metric].rank}
                       </RankIcon>
                     </div>
                   )}
