@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import React from "react";
 import { useWindowSize } from "usehooks-ts";
+import { GTPIcon } from "./GTPIcon";
+import { GTPIconName } from "@/icons/gtp-icon-names";
 
 export type GridTableProps = {
   gridDefinitionColumns?: string;
@@ -119,12 +121,13 @@ export const GridTableChainIcon = ({ origin_key, className, color }: { origin_ke
   return (
     <div className={`flex h-full items-center ${className || ""}`}>
       {AllChainsByKeys[origin_key] && (
-        <Icon
-          icon={`gtp:${AllChainsByKeys[
+        <GTPIcon
+          icon={`${AllChainsByKeys[
             origin_key
           ].urlKey
-            }-logo-monochrome`}
+            }-logo-monochrome` as GTPIconName}
           className="w-[15px] h-[15px]"
+          size="sm"
           style={{
             color: color ||
               AllChainsByKeys[
