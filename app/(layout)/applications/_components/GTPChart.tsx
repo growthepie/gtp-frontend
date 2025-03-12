@@ -506,6 +506,7 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
           timezone: "UTC",
         },
         marginLeft: 40,
+        marginBottom: 30,
         type: "area",
         
       }} 

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { GTPIcon } from "./GTPIcon";
 import Heading from "./Heading";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import Icon from "./Icon";
 
 type TitleProps = {
   icon: GTPIconName;
@@ -75,8 +76,11 @@ export const Title = ({
 type TitleButtonProps = {
   href: string;
   newTab?: boolean;
-  icon: GTPIconName;
+  icon?: GTPIconName;
+  leftIcon?: GTPIconName;
+  rightIcon?: GTPIconName;
   label: string;
+  shortLabel?: string;
   width?: string;
 };
 
@@ -84,6 +88,8 @@ export const TitleButtonLink = ({
   href,
   newTab,
   icon,
+  leftIcon,
+  rightIcon,
   label,
   width,
 }: TitleButtonProps) => {
@@ -101,18 +107,66 @@ export const TitleButtonLink = ({
               width: width,
             }}
           >
-            <div className="w-[24px] h-[24px] bg-[#151A19] rounded-full flex items-center justify-center">
-              <GTPIcon
+            {(icon || leftIcon) && (<div className="w-[24px] h-[24px] bg-[#151A19] rounded-full flex items-center justify-center">
+              {leftIcon && <GTPIcon icon={leftIcon} size="sm" />}
+              {icon && <GTPIcon
                 icon={icon}
                 size="sm"
-              />
+              />}
+              {rightIcon && <GTPIcon icon={rightIcon} size="sm" />}
             </div>
+            )}
             <div className="transition-all duration-300 whitespace-nowrap overflow-hidden text-[14px] font-semibold">
               {label}
             </div>
+            {rightIcon && (<div className="w-[24px] h-[24px] bg-[#151A19] rounded-full flex items-center justify-center">
+
+              <GTPIcon icon={rightIcon} size="sm" />
+            </div>
+            )}
           </div>
         </div>
       </Link>
     </div>
+  );
+}
+
+export const SectionButtonLink = ({
+  href,
+  newTab,
+  label,
+  shortLabel,
+  width,
+}: TitleButtonProps) => {
+  return (
+    <Link
+      href={href}
+      rel={newTab ? "noreferrer" : ""}
+      target={newTab ? "_blank" : ""}
+    >
+      <div className="select-none flex items-center justify-center p-[1px] bg-[linear-gradient(144.58deg,#FE5468_20.78%,#FFDF27_104.18%)] rounded-full">
+        <div
+          className="flex items-center py-[5px] pl-[15px] pr-[5px] gap-x-[8px] font-semibold bg-[#263130] rounded-full transition-all duration-300"
+          style={{
+            width: width,
+          }}
+        >
+          {shortLabel ? (
+            <>
+              <div className="hidden md:block heading-small-xs whitespace-nowrap overflow-hidden">
+                {label}
+              </div>
+              <div className="block md:hidden heading-small-xs whitespace-nowrap overflow-hidden">
+                {shortLabel}
+              </div>
+            </>) : <div className="heading-small-xs whitespace-nowrap overflow-hidden">
+            {label}
+          </div>}
+          <div className="w-[24px] h-[24px] bg-[#344240] rounded-full flex items-center justify-center">
+            <Icon icon="feather:arrow-right" className="w-[16px] h-[16px]" />
+          </div>
+        </div>
+      </div>
+    </Link>
   );
 }

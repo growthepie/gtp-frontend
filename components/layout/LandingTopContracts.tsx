@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, memo } from "react";
 import useSWR from "swr";
 import ChainComponent from "@/components/charts/ChainComponent";
 import Link from "next/link";
@@ -10,6 +10,13 @@ import { useUIContext } from "@/contexts/UIContext";
 import ContractCard from "@/components/layout/ContractCard";
 import { useLocalStorage } from "usehooks-ts";
 import { LandingURL } from "@/lib/urls";
+import { ApplicationDisplayName, ApplicationIcon, ApplicationTooltip, Category, formatNumber } from "@/app/(layout)/applications/_components/Components";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
+import { useMaster } from "@/contexts/MasterContext";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ProjectsMetadataProvider, useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
+import { AggregatedDataRow } from "@/app/(layout)/applications/_contexts/ApplicationsDataContext";
+import Container from "./Container";
 
 export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
   const {
@@ -23,6 +30,45 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
 
   const [selectedTimespan, setSelectedTimespan] = useState("1d");
   const [selectedMetric, setSelectedMetric] = useState("gas_fees");
+
+
+  // Convert the data into the expected format for AggregatedDataRow
+  const transformDataToAggregatedRow = (item) => {
+    const [
+      owner_project,
+      origin_key,
+      num_contracts,
+      gas_fees_eth,
+      prev_gas_fees_eth,
+      gas_fees_usd,
+      txcount,
+      prev_txcount,
+      gas_fees_change_pct,
+      txcount_change_pct,
+      rank
+    ] = item;
+
+    return {
+      owner_project,
+      origin_keys: origin_key.split(', '),
+      num_contracts,
+      gas_fees_eth,
+      prev_gas_fees_eth,
+      gas_fees_usd,
+      txcount,
+      prev_txcount,
+      daa: 0, // Not provided in original data
+      prev_daa: 0, // Not provided in original data
+      gas_fees_eth_change_pct: gas_fees_change_pct,
+      gas_fees_usd_change_pct: gas_fees_change_pct, // Assuming same as ETH change
+      txcount_change_pct,
+      daa_change_pct: 0, // Not provided in original data
+      rank_gas_fees_eth: rank,
+      rank_gas_fees_usd: rank,
+      rank_txcount: rank,
+      rank_daa: rank
+    };
+  };
 
   const metrics = useMemo(
     () => ({
@@ -42,146 +88,187 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
     [showUsd],
   );
 
-  const timespans = {
-    "1d": {
-      label: "Yesterday",
-    },
-    "7d": {
-      label: "7 Days",
-    },
-    "30d": {
-      label: "30 Days",
-    },
-    "90d": {
-      label: "90 Days",
-    },
-    // "180d": {
-    //   label: "180 Days",
-    // },
-    // "365d": {
-    //   label: "1 Year",
-    // },
-  };
-
-  const sortedContracts = useMemo(() => {
-    if (landing) {
-      const originalData = landing.data.top_contracts[selectedTimespan].data;
-
-      // Create an array of indices from 0 to the length of the original data
-      const indices = Array.from(
-        { length: originalData.length },
-        (_, index) => index,
-      );
-
-      // Sort the indices based on the values at the 7th index of the original data in descending order
-      indices.sort((a, b) => originalData[b][7] - originalData[a][7]);
-
-      return indices;
-    }
-
-    // Return a default value if landing is falsy
-    return [];
-  }, [landing, selectedTimespan, selectedMetric]);
-
   return (
     <>
+      <ProjectsMetadataProvider>
       {landing ? (
-        <div className="xl:-mt-[72px] flex flex-col">
-          <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base justify-end items-center ml-0 xl:ml-auto lg:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px] mb-4">
-            {/* <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center space-x-[4px] xl:space-x-1">
-              <button
-                className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-                  "gas_fees" === selectedMetric
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                }`}
-                onClick={() => {
-                  setSelectedMetric("gas_fees");
-                }}
-              >
-                Gas Fees
-              </button>
-              <button
-                className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-                  "txcount" === selectedMetric
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                }`}
-                onClick={() => {
-                  setSelectedMetric("txcount");
-                }}
-              >
-                Transactions
-              </button>
-              <button
-                className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-                  "daa" === selectedMetric
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                }`}
-                onClick={() => {
-                  setSelectedMetric("daa");
-                }}
-              >
-                Daily Users
-              </button>
-            </div>
-            <div className="block xl:hidden w-[70%] mx-auto my-[10px]">
-              <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
-            </div> */}
-            <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center mx-4 xl:mx-0 space-x-[4px] xl:space-x-1">
-              {Object.keys(landing.data.top_contracts)
-                .filter((timespan) => Object.keys(timespans).includes(timespan))
-                .map((timespan) => (
-                  <button
-                    key={timespan}
-                    //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
-                    className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${selectedTimespan === timespan
-                      ? "bg-forest-500 dark:bg-forest-1000"
-                      : "hover:bg-forest-500/10"
-                      }`}
-                    onClick={() => {
-                      setSelectedTimespan(timespan);
-                    }}
-                  >
-                    {timespans[timespan].label}
-                  </button>
-                ))}
-            </div>
-          </div>
-
-          <div className="grid grid-rows-6 grid-cols-1 lg:grid-rows-3 lg:grid-cols-2 xl:grid-rows-2 xl:grid-cols-3 gap-x-[10px] gap-y-[15px]">
-            {sortedContracts.map((contractIndex, i) => (
-              <ContractCard
-                key={i}
-                data={
-                  landing.data.top_contracts[selectedTimespan].data[
-                  contractIndex
-                  ]
-                }
-                types={landing.data.top_contracts[selectedTimespan].types}
-                metric={metrics[selectedMetric].key}
-                changeSuffix={`in last ${selectedTimespan === "1d"
-                  ? "1 day"
-                  : `${parseInt(selectedTimespan)} days`
-                  }`}
-              />
+        <div className={`h-fit md:h-[450px] lg:h-[300px] grid md:grid-rows-3 md:grid-flow-col lg:grid-rows-2 lg:grid-flow-row pt-[10px] lg:grid-cols-3 gap-[10px]`}>
+            {landing.data.top_applications.gainers.data.map((application, index) => (
+              <ApplicationCard key={index} application={transformDataToAggregatedRow(application)} />
             ))}
-          </div>
-        </div>
-      ) : (
-        <div className="flex flex-col">
-          <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base lg:flex lg:flex-row justify-end items-center ml-0 lg:ml-auto lg:rounded-full md:py-[2px] mb-4 animate-pulse bg-forest-50 dark:bg-[#1F2726]"></div>
-          <div className="grid grid-rows-6 grid-cols-1 lg:grid-rows-3 lg:grid-cols-2 xl:grid-rows-2 xl:grid-cols-3 gap-x-[10px] gap-y-[15px]">
-            {new Array(6).fill(0).map((_, i) => (
-              <div
-                key={i}
-                className="group flex flex-col w-full h-[156.19px] rounded-[15px] animate-pulse bg-forest-50 dark:bg-[#1F2726]"
-              ></div>
+            {landing.data.top_applications.losers.data.map((application, index) => (
+              <ApplicationCard key={index} application={transformDataToAggregatedRow(application)} />
             ))}
+            
           </div>
-        </div>
+          ) : (
+            <div className={`h-fit md:h-[450px] lg:h-[300px] grid md:grid-rows-3 md:grid-flow-col lg:grid-rows-2 lg:grid-flow-row pt-[10px] lg:grid-cols-3 gap-[10px]`}>
+            {new Array(6).fill(0).map((_, index) => (
+              <ApplicationCard key={index} application={undefined} />
+            ))}
+            <></>
+          </div>
       )}
+
+      </ProjectsMetadataProvider>
     </>
   );
 }
+
+export const ApplicationCard = memo(({ application, className, width }: { application?: AggregatedDataRow, className?: string, width?: number}) => {
+  const medianMetricKey = "txcount";
+  const medianMetric = "txcount";
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+  const { data: masterData } = useMaster();
+  const metricsDef = masterData!.app_metrics;
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    setIsTouchDevice(isTouch);
+  }, []);
+
+
+  const rank = useMemo(() => {
+    if (!application) return null;
+
+    return application[`rank_${medianMetricKey}`];
+
+  }, [application, medianMetricKey]);
+
+  const value = useMemo(() => {
+    if (!application) return null;
+
+    return application[medianMetricKey];
+  }, [application, medianMetricKey]);
+
+  
+
+  const prefix = useMemo(() => {
+    const def = metricsDef[medianMetric].units;
+
+    if (Object.keys(def).includes("usd")) {
+      return showUsd ? def.usd.prefix : def.eth.prefix;
+    } else {
+      return Object.values(def)[0].prefix;
+    }
+  }, [metricsDef, medianMetric, showUsd]);
+
+  const decimals = useMemo(() => {
+    const def = metricsDef[medianMetric].units;
+
+    if (Object.keys(def).includes("usd")) {
+      return showUsd ? def.usd.decimals : def.eth.decimals;
+    } else {
+      return Object.values(def)[0].decimals;
+    }
+  }, [metricsDef, medianMetric, showUsd]);
+
+  if (!application) {
+    return (
+      <div className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] min-w-[340px] ${className || ""} `} style={{ width: width || undefined }}>
+      </div>
+    )
+  }
+
+  return (
+    <Link href={{ pathname: `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",")}}
+      className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] ${className || ""} group hover:cursor-pointer hover:bg-forest-500/10`} 
+      style={{ width: width || undefined }}
+    >
+      <div>
+        <div className="flex flex-col">
+        <div className="w-full flex justify-between items-end h-[20px]">
+          <div className="h-[20px] flex items-center gap-x-[3px]">
+            <div className="numbers-xs text-[#CDD8D3]">{application.num_contracts.toLocaleString("en-GB")}</div>
+            <div className="text-xs text-[#5A6462]">{application.num_contracts === 1 ? 'contract' : 'contracts'}</div>
+          </div>
+          <div className="h-[20px] flex items-center gap-x-[3px]">
+            {/* <div className="numbers-xs text-[#5A6462]">Rank</div>
+            <div className="numbers-xs text-[#CDD8D3]">{rank}</div> */}
+            {application[`${medianMetricKey}_change_pct`] !== Infinity ? (
+              <div className={`flex justify-end w-[60px] numbers-xs ${application[`${medianMetricKey}_change_pct`] < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
+                {application[`${medianMetricKey}_change_pct`] < 0 ? '-' : '+'}{formatNumber(Math.abs(application[`${medianMetricKey}_change_pct`]), {defaultDecimals: 1, thresholdDecimals: {base: 1}})}%
+              </div>
+            ) : <div className="w-[49px]">&nbsp;</div>}
+          </div>
+        </div>
+        <div className="h-[20px] w-full flex items-center justify-end gap-x-[3px]">
+          <div className="numbers-sm text-[#CDD8D3]">
+            {prefix}
+            {value?.toLocaleString("en-GB", { maximumFractionDigits: decimals })}
+          </div>
+        </div>
+        </div>
+      </div>
+      
+      <div className="w-full flex items-center gap-x-[5px]">
+        <ApplicationIcon owner_project={application.owner_project} size="md" />
+        <div className="heading-large-md flex-1 overflow-visible truncate">
+          <Tooltip placement="bottom-start" allowInteract>
+            <TooltipTrigger
+              className="group-hover:underline"
+              onClick={(e) => {
+                if(isTouchDevice) {
+                  e.stopPropagation();
+                  e.preventDefault();
+                }
+              }}
+            >
+              <ApplicationDisplayName owner_project={application.owner_project} />
+            </TooltipTrigger>
+            <TooltipContent className="z-[99] left-0 ml-[20px]">
+              <ApplicationTooltip application={application} />
+            </TooltipContent>
+          </Tooltip>
+        </div>
+        <div className="cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center">
+          <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-[#CDD8D3]" />
+        </div>
+      </div>
+      <div className="flex items-center justify-between gap-x-[5px]">
+        <div className="text-xs">
+          <Category category={ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].main_category : ""} />
+        </div>
+        <div className="h-[20px] flex items-center gap-x-[5px]">
+          <Chains origin_keys={application.origin_keys} />
+        </div>
+      </div>
+    </Link>
+  )
+});
+
+ApplicationCard.displayName = 'ApplicationCard';
+
+export const Chains = ({ origin_keys }: { origin_keys: string[] }) => {
+  const { AllChainsByKeys } = useMaster();
+  const router = useRouter();
+
+  return (
+    <div className="flex items-center gap-x-[0px] group/chains">
+      {origin_keys.map((chain, index) => (
+        <div
+          key={index}
+          className={`group-hover/chains:opacity-50 hover:!opacity-100 cursor-pointer p-[2.5px]`} style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors["dark"][0] : '' }}
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            router.push(`/applications/?origin_key=${chain}`);
+          }}
+        >
+          {AllChainsByKeys[chain] && (
+            <Icon
+              icon={`gtp:${AllChainsByKeys[
+                chain
+              ].urlKey
+                }-logo-monochrome`}
+              className="w-[15px] h-[15px]"
+            />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
