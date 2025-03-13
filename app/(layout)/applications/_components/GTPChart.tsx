@@ -28,7 +28,7 @@ import {
   ChartProps,
   AreaSeries,
 } from "react-jsx-highcharts";
-import { useHighchartsWrappers } from "@/contexts/UIContext";
+import { useHighchartsWrappers, useUIContext } from "@/contexts/UIContext";
 import { useMaster } from "@/contexts/MasterContext";
 import { min, times } from "lodash";
 import "@/app/highcharts.axis.css";
@@ -43,7 +43,7 @@ import { useChartScale } from "../_contexts/ChartScaleContext";
 import { useMetrics } from "../_contexts/MetricsContext";
 import { useApplicationDetailsData } from "../_contexts/ApplicationDetailsDataContext";
 import moment from "moment";
-import { useGTPChartSyncProvider } from "../_contexts/GTPChartSyncContext";
+import { useChartSync } from "../_contexts/GTPChartSyncContext";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -54,14 +54,12 @@ const COLORS = {
   ANNOTATION_BG: "rgb(215, 223, 222)",
 };
 
-highchartsRoundedCorners(Highcharts);
+
 
 type SeriesData = {
   name: string;
   data: number[][]; // [timestamp, value]
 }
-
-
 
 
 export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, prefix, suffix, decimals}: { seriesData: SeriesData[], seriesTypes: string[], metric: string, prefix: string, suffix: string, decimals: number }) => {
@@ -71,7 +69,7 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
   const [showUsd] = useLocalStorage("showUsd", true);
   const [showGwei] = useLocalStorage("showGwei", false);
   const { selectedTimespan, timespans } = useTimespan();
-  // const { hoveredSeriesName, setHoveredSeriesName, onChartCreated, onChartDestroyed } = useGTPChartSyncProvider();
+  const { hoveredSeriesName, selectedSeriesName } = useChartSync();
   useHighchartsWrappers();
 
   
@@ -79,8 +77,21 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
   
   // const chainsData = Object.entries(metricData.aggregated.data);
   // const maxUnix = Math.max(...Object.values(metricData.over_time).map((chainData) => chainData.daily.data[chainData.daily.data.length - 1][0]));
-  const minUnix = Math.min(...seriesData.map((series) => series.data[0][0]));
-  const maxUnix = Math.max(...seriesData.map((series) => series.data[series.data.length - 1][0]))
+  const { minUnix, maxUnix } = useMemo(() => {
+    return {
+      minUnix: Math.min(...seriesData.map((series) => series.data[0][0])),
+      maxUnix: Math.max(...seriesData.map((series) => series.data[series.data.length - 1][0]))
+    };
+  }, [seriesData]);
+  
+  // Calculate the visible range based on selectedTimespan
+  const visibleRange = useMemo(() => {
+    const end = maxUnix;
+    const start = timespans[selectedTimespan].value > 0 
+      ? end - (timespans[selectedTimespan].value * 24 * 3600 * 1000)
+      : minUnix;
+    return { start, end };
+  }, [maxUnix, minUnix, selectedTimespan, timespans]);
   
   const formatNumber = useCallback((value: number | string, options: {
     isAxis: boolean;
@@ -326,119 +337,8 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
         marker,
       };
       // }
-
-      const columnFillColor = {
-        linearGradient: {
-          x1: 0,
-          y1: 0,
-          x2: 0,
-          y2: 1,
-        },
-        stops: [
-          [0, MetadataByKeys[name]?.colors.dark[0] + "FF"],
-          // [0.349, MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "88"],
-          [1, MetadataByKeys[name]?.colors.dark[0] + "00"],
-        ],
-      };
-
-      const columnColor = {
-        linearGradient: {
-          x1: 0,
-          y1: 0,
-          x2: 0,
-          y2: 1,
-        },
-        stops: [
-          [0, MetadataByKeys[name]?.colors.dark[0] + "FF"],
-          // [0.349, MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "88"],
-          [1, MetadataByKeys[name]?.colors.dark[0] + "00"],
-        ],
-      };
-
-      const dottedColumnColor = {
-        pattern: {
-          path: {
-            d: "M 0 0 L 10 10 M 9 -1 L 11 1 M -1 9 L 1 11",
-            "stroke-width": 3,
-          },
-          width: 10,
-          height: 10,
-          opacity: 1,
-          color: MetadataByKeys[name].colors.dark[0] + "CC",
-        },
-      };
-
-      const todaysDateUTC = new Date().getUTCDate();
-
-      const secondZoneDottedColumnColor =
-        todaysDateUTC === 1 ? columnColor : dottedColumnColor;
-
-      const secondZoneDashStyle = todaysDateUTC === 1 ? "Solid" : "Dot";
-
-
-
-      // if it is not the last day of the month, add a zone to the chart to indicate that the data is incomplete
-      // if (selectedTimeInterval === "monthly") {
-
-      //   if (seriesData.length > 1 && todaysDateUTC !== 1) {
-      //     zoneAxis = "x";
-      //     zones = [
-      //       {
-      //         value: seriesData[seriesData.length - 2][0] + 1,
-      //         dashStyle: "Solid",
-      //         fillColor: isColumnChart ? columnFillColor : seriesFill,
-      //         color: isColumnChart
-      //           ? columnColor
-      //           : MetadataByKeys[name].colors["dark"][0],
-      //       },
-      //       {
-      //         // value: monthlyData[monthlyData.length - 2][0],
-      //         dashStyle: secondZoneDashStyle,
-      //         fillColor: isColumnChart ? columnFillColor : seriesFill,
-      //         color: isColumnChart
-      //           ? secondZoneDottedColumnColor
-      //           : MetadataByKeys[name].colors["dark"][0],
-      //       },
-      //     ];
-      //   } else if (todaysDateUTC !== 1) {
-      //     zoneAxis = "x";
-      //     zones = [
-      //       {
-      //         // value: monthlyData[monthlyData.length - 2][0],
-      //         dashStyle: secondZoneDashStyle,
-      //         fillColor: isColumnChart ? columnFillColor : seriesFill,
-      //         color: isColumnChart
-      //           ? secondZoneDottedColumnColor
-      //           : MetadataByKeys[name].colors["dark"][0],
-      //       }
-      //     ];
-      //     marker.radius = 2;
-      //   } else {
-      //     zoneAxis = "x";
-      //     zones = [
-      //       {
-      //         // value: monthlyData[monthlyData.length - 2][0],
-      //         dashStyle: secondZoneDashStyle,
-      //         fillColor: isColumnChart ? columnFillColor : seriesFill,
-      //         color: isColumnChart
-      //           ? secondZoneDottedColumnColor
-      //           : MetadataByKeys[name].colors["dark"][0],
-      //       }
-      //     ];
-      //   }
-      // }
-
-      return {
-        data: seriesData,
-        zoneAxis,
-        zones,
-        fillColor,
-        fillOpacity,
-        color,
-        marker,
-      };
     },
-    [getSeriesType, MetadataByKeys, seriesData],
+    [getSeriesType, MetadataByKeys],
   );
 
   useEffect(() => {
@@ -485,17 +385,18 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
 
   }, []);
 
+  // 
+
   return (
     <GTPChart 
       highchartsChartProps={{
         chart: {
           height: 168,
-          // events: {
-          //   load: function () {
-          //     console.log("chart loaded");
-          //     onChartCreated(this);
-          //   },
-          // },
+          events: {
+            // load: function () {
+            //   onChartCreated(this);
+            // },
+          },
         },
         plotOptions: {
           ...plotOptions,
@@ -504,47 +405,31 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
       chartProps={{
         time: {
           timezone: "UTC",
+          useUTC: true,
         },
         marginLeft: 40,
         marginBottom: 30,
         type: "area",
-        
+        className: "shared-crosshair-app-details shared-hover-app-details",
       }} 
     >
       <GTPChartTooltip metric_id={metric} />
       <GTPXAxis
         categories={times(24, (i) => `${i}:00`)}
-        labels={{
-          style: {
-            color: "rgb(215, 223, 222)",
-          },
-        }}
+        
         minDataUnix={minUnix}
         maxDataUnix={maxUnix}
-        min={(maxUnix - timespans[selectedTimespan].value * 24 * 3600 * 1000) / 1000}
-        max={maxUnix/1000}
+        min={visibleRange.start}
+        max={visibleRange.end}
+        ordinal={false}
+        startOnTick={false}
+        endOnTick={false}
       />
       <GTPYAxis
         type={selectedYAxisScale === "logarithmic" && selectedScale === "absolute" ? "logarithmic" : "linear"}
-        // title={{
-        //   text: "Transactions",
-        //   style: {
-        //     color: "rgb(215, 223, 222)",
-        //   },
-        // }}
-        // labels={{
-        //   style: {
-        //     color: "rgb(215, 223, 222)",
-        //   },
-        // }}
         labels={{
-          // y: 5,
-          // x: 0,
           distance: 9,
-          // justify: false,
           align: "right",
-          // overflow: "justify",
-          // allowOverlap: true,
           useHTML: true,
           style: {
             whiteSpace: "nowrap",
@@ -557,26 +442,22 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
           formatter: function (t: AxisLabelsFormatterContextObject) {
             return formatNumber(t.value, {
               isAxis: true,
-              // prefix: prefix,
-              // suffix: suffix,
-              // seriesTypes: ["eth", "usd"],
               selectedScale: selectedScale,
             });
           },
         }}
         tickAmount={3}
-
       >
-
         {seriesData.map((series, i) => {
           const pointsSettings = {
             pointPlacement: 0.5,
           };
 
+          const isVisible = !selectedSeriesName || series.name === selectedSeriesName;
+
           return (
             <AreaSeries
               key={i}
-              // type="column"
               connectNulls={true}
               connectEnds={true}
               name={series.name}
@@ -594,6 +475,7 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
               borderWidth={1}
               lineWidth={2}
               marker={getSeriesData(series.name).marker}
+              visible={isVisible}
               states={{
                 hover: {
                   enabled: true,
@@ -601,10 +483,8 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
                     size: 5,
                     opacity: 1,
                     attributes: {
-                      fill:
-                        MetadataByKeys[series.name]?.colors.dark[0] + "99",
-                      stroke:
-                        MetadataByKeys[series.name]?.colors.dark[0] + "66",
+                      fill: MetadataByKeys[series.name]?.colors.dark[0] + "99",
+                      stroke: MetadataByKeys[series.name]?.colors.dark[0] + "66",
                       "stroke-width": 0,
                     },
                   },
@@ -614,50 +494,20 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
                   enabled: true,
                   opacity: 0.6,
                 },
-                //@ts-ignore
-                selection: {
+                select: {
                   enabled: false,
                 },
               }}
-              events={{
-                // mouseOver: function (e) {
-                //   setHoveredSeriesName(series.name);
-                // },
-                // mouseOut: function (e) {
-                //   setHoveredSeriesName(null);
-                // },
-              }}
               shadow={["area", "line"].includes(getSeriesType(series.name)) && selectedScale !== "stacked" ? 
                 {
-                  color:
-                    MetadataByKeys[series.name]?.colors.dark[1] + "FF",
+                  color: MetadataByKeys[series.name]?.colors.dark[1] + "FF",
                   width: 7,
                 } : 
                 undefined 
               }
-              // borderColor={MetadataByKeys[series.name]?.colors.dark[0]}
-                
-              // type: getSeriesType(chainKey),
-              // clip: true,
-              // dataGrouping: dataGrouping,
-              // // borderRadiusTopLeft: borderRadius,
-              // // borderRadiusTopRight: borderRadius,
-              // fillOpacity: getSeriesData(chainKey, chain[timeIntervalKey].types, chain[timeIntervalKey].data)
-              //   .fillOpacity,
-              // fillColor: getSeriesData(chainKey, chain[timeIntervalKey].types, chain[timeIntervalKey].data)
-              //   .fillColor,
-              // color: getSeriesData(chainKey, chain[timeIntervalKey].types, chain[timeIntervalKey].data)
-              //   .color,
-              // borderColor:
-              //   MetadataByKeys[chainKey]?.colors[theme ?? "dark"][0],
-              // borderWidth: 1,
-              // lineWidth: 2,
-              // marker: getSeriesData(chainKey, chain[timeIntervalKey].types, chain[timeIntervalKey].data).marker,
-              // color={metricItems[series.name].color}
             />
           )
         })}
-        
       </GTPYAxis>
     </GTPChart>
   )
@@ -686,8 +536,8 @@ const GTPXAxis = (props: AxisProps<Highcharts.XAxisOptions>) => {
 
   // start of yesterday in UTC is the last data point we have
   const startOfYesterdayUTC = new Date(new Date().setUTCHours(0, 0, 0, 0) - 24 * 3600 * 1000).getTime();
-  const xMax = startOfYesterdayUTC;
-  const xMin = timespans[selectedTimespan].value > 0 ? startOfYesterdayUTC - timespans[selectedTimespan].value * 24 * 3600 * 1000 : undefined;
+  const xMax = props.maxDataUnix || startOfYesterdayUTC;
+  const xMin = props.minDataUnix || (timespans[selectedTimespan].value > 0 ? startOfYesterdayUTC - timespans[selectedTimespan].value * 24 * 3600 * 1000 : undefined);
 
   const onXAxisSetExtremes =
     useCallback<Highcharts.AxisSetExtremesEventCallbackFunction>(
@@ -696,21 +546,11 @@ const GTPXAxis = (props: AxisProps<Highcharts.XAxisOptions>) => {
         const { min, max } = e;
         const numDays = (max - min) / (24 * 60 * 60 * 1000);
 
-        // setIntervalShown({
-        //   min,
-        //   max,
-        //   num: numDays,
-        //   label: `${Math.round(numDays)} day${numDays > 1 ? "s" : ""}`,
-        // });
-
         if (
           e.trigger === "zoom" ||
-          // e.trigger === "pan" ||
           e.trigger === "navigator" ||
           e.trigger === "rangeSelectorButton"
         ) {
-          // const { xMin, xMax } = timespans[selectedTimespan];
-
           if (min === xMin && max === xMax) {
             setZoomed(false);
           } else {
@@ -727,7 +567,6 @@ const GTPXAxis = (props: AxisProps<Highcharts.XAxisOptions>) => {
     let min = xMin || props.minDataUnix || 0;
     let max = xMax || props.maxDataUnix || 0;
     
-
     let days = (max - min) / (24 * 3600 * 1000);
     if (days <= 1) {
       return 12 * 3600 * 1000;
@@ -748,19 +587,18 @@ const GTPXAxis = (props: AxisProps<Highcharts.XAxisOptions>) => {
   
   return (
     <XAxis
-      // {...props}
-
-      // {...baseOptions.xAxis}
       title={undefined}
       events={{
         afterSetExtremes: onXAxisSetExtremes,
       }}
       type="datetime"
+      // ordinal={false}
+      // startOnTick={false}
+      // endOnTick={false}
       labels={{
         align: undefined,
         rotation: 0,
         allowOverlap: false,
-        // staggerLines: 1,
         reserveSpace: true,
         overflow: "justify",
         useHTML: true,
@@ -822,16 +660,12 @@ const GTPXAxis = (props: AxisProps<Highcharts.XAxisOptions>) => {
       minorTickLength={3}
       minorTickWidth={2}
       minorGridLineWidth={0}
-      // tickInterval={}
       tickInterval={tickInterval}
-      // minorTickInterval={xMax - xMin <= 40 * 24 * 3600 * 1000 ? 30 * 3600 * 1000 : 30 * 24 * 3600 * 1000}
       minPadding={0}
       maxPadding={0}
-      // min={zoomed ? zoomMin : timespans[selectedTimespan].xMin} // don't include the last day
-      // max={zoomed ? zoomMax : timespans[selectedTimespan].xMax}
       min={xMin}
-      max={props.maxDataUnix || xMax}
-      // max={xMax}
+      max={xMax}
+      {...props}
     />
   )
 }
@@ -900,9 +734,47 @@ const GTPChartTooltip = ({props, metric_id} : {props?: TooltipProps, metric_id: 
   const {metricsDef} = useMetrics();
   const [showUsd] = useLocalStorage("showUsd", true);
   const [showGwei] = useLocalStorage("showGwei", false);
+  const {isMobile} = useUIContext();
   
   const valuePrefix = Object.keys(metricsDef[metric_id].units).includes("usd") ? showUsd ? metricsDef[metric_id].units.usd.prefix : metricsDef[metric_id].units.eth.prefix : Object.values(metricsDef[metric_id].units)[0].prefix;
+  const tooltipPositioner =
+  useCallback<Highcharts.TooltipPositionerCallbackFunction>(
+    
+    function (this, width, height, point) {
+      const chart = this.chart;
+      const { plotLeft, plotTop, plotWidth, plotHeight } = chart;
+      const tooltipWidth = width;
+      const tooltipHeight = height;
 
+      const distance = 20;
+      const pointX = point.plotX + plotLeft;
+      const pointY = point.plotY + plotTop;
+      let tooltipX =
+        pointX - distance - tooltipWidth < plotLeft
+          ? pointX + distance
+          : pointX - tooltipWidth - distance;
+
+      const tooltipY = pointY - tooltipHeight / 2 > plotHeight/2
+        ? 0
+        : pointY - tooltipHeight / 2;
+
+      if (isMobile) {
+        if (tooltipX + tooltipWidth > plotLeft + plotWidth) {
+          tooltipX = plotLeft + plotWidth - tooltipWidth;
+        }
+        return {
+          x: tooltipX,
+          y: 0,
+        };
+      }
+
+      return {
+        x: tooltipX,
+        y: tooltipY,
+      };
+    },
+    [isMobile],
+  );
   const tooltipFormatter = useCallback(
   
     function (this: any) {
@@ -986,7 +858,7 @@ const GTPChartTooltip = ({props, metric_id} : {props?: TooltipProps, metric_id: 
                 <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
                   <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors.dark[0]}"></div>
                   <div class="tooltip-point-name text-xs">${AllChainsByKeys[name].label}</div>
-                  <div class="flex-1 text-right numbers-xs">${percentage.toFixed(2)}%</div>
+                  <div class="flex-1 text-right numbers-xs">${percentage ? percentage.toFixed(2) : 0}%</div>
                 </div>
                 <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
                   <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
@@ -1100,6 +972,7 @@ const GTPChartTooltip = ({props, metric_id} : {props?: TooltipProps, metric_id: 
     <HighchartsTooltip
       {...props}
       formatter={tooltipFormatter}
+      positioner={tooltipPositioner}
       useHTML={true}
       shared={true}
       split={false}
@@ -1128,19 +1001,222 @@ const GTPChartTooltip = ({props, metric_id} : {props?: TooltipProps, metric_id: 
   );
 }
 
+// Cache for shared group names
+const chartGroupCache = new Map();
+  
+function getCachedGroupName(chart, className) {
+  if (!chart) return null;
+  const chartId = chart.container.id;
+  if (!chartGroupCache.has(chartId)) {
+    chartGroupCache.set(chartId, getSharedChartGroupName(chart, className));
+  }
+  return chartGroupCache.get(chartId);
+}
+
+// Throttle function to improve performance
+function throttle(func, limit = 16) {
+  let lastCall = 0;
+  return function(...args) {
+    const now = Date.now();
+    if (now - lastCall >= limit) {
+      lastCall = now;
+      func.apply(this, args);
+    }
+  };
+}
+
+// Use a throttled handler for mousemove
+const handleMouseMove = throttle(function(e) {
+  if (!(e instanceof MouseEvent || e instanceof TouchEvent)) return;
+
+  const target = e.target as HTMLElement;
+  const chartContainer = target.closest(".highcharts-container");
+  if (!chartContainer) return;
+  
+  const thisChartId = chartContainer.id;
+  
+  // Find the current chart
+  const sourceChart = Highcharts.charts.find(chart => 
+    chart && chart.container.id === thisChartId);
+  
+  if (!sourceChart) return;
+  
+  // Get normalized position in the chart
+  const event = sourceChart.pointer.normalize(e);
+  const sourceX = event.chartX;
+  const sourceGroupName = getCachedGroupName(sourceChart, SHARE_CROSSHAIR_CLASS);
+  const hoveredSourcePoint = sourceChart.pointer.findNearestKDPoint(sourceChart.series, true, event);
+  const hoveredSourcePointX = hoveredSourcePoint ? hoveredSourcePoint.x : null;
+  
+  if (!sourceGroupName) return;
+  
+  // Update all charts in the same group
+  Highcharts.charts.forEach(chart => {
+    if (!chart || chart === sourceChart) return;
+    
+    const targetGroupName = getCachedGroupName(chart, SHARE_CROSSHAIR_CLASS);
+    if (targetGroupName !== sourceGroupName) return;
+    
+    // Convert to x-axis value in source chart
+    const xValue = sourceChart.xAxis[0].toValue(sourceX);
+    
+    // Find the corresponding x position in target chart
+    const targetX = chart.xAxis[0].toPixels(xValue);
+    
+    // Create a simulated event at this position
+    const fakeEvent = {
+      chartX: targetX,
+      chartY: event.chartY, // Use the same Y position
+      target: chart.container
+    } as any;
+    
+    // Find points near this position in target chart
+    const points: Highcharts.Point[] = [];
+    chart.series.forEach(series => {
+      if (series.visible && hoveredSourcePointX) {
+        const point = series.points.find(p =>  p.x === hoveredSourcePointX);
+        if (point !== undefined) points.push(point);
+      }
+    });
+
+    // Highlight the points if found
+    if (points.length > 0) {
+      points.forEach(p => p.onMouseOver());
+      chart.tooltip.refresh(points.length > 1 ? points : points[0]);
+      chart.xAxis[0].drawCrosshair(fakeEvent, points[0]);
+    }
+  });
+}, 16); // ~60fps throttle
+
+// Handle mouseout events
+const handleMouseOut = function(e) {
+  if (!(e instanceof MouseEvent || e instanceof TouchEvent)) return;
+  
+  Highcharts.charts.forEach(function(chart) {
+    if (!chart) return;
+    const groupName = getCachedGroupName(chart, SHARE_CROSSHAIR_CLASS);
+    if (!groupName) return;
+    
+    chart.tooltip.hide();
+    chart.xAxis[0].hideCrosshair();
+  });
+};
+
+// shared crosshair class names are like shared-crosshair-1, shared-crosshair-2, etc. to group charts together for shared interactions
+const SHARE_CROSSHAIR_CLASS = "shared-crosshair";
+
+const getSharedChartGroupName = (chart: Highcharts.Chart, SHARE_CROSSHAIR_CLASS: string) => {
+  const classList =  chart.container.className?.split(" ");
+  const sharedGroupName = classList.find((className) => className.startsWith(SHARE_CROSSHAIR_CLASS));
+  if(sharedGroupName) {
+    // get last part of the class name
+    return sharedGroupName.split("-").pop();
+  }
+  return null;
+}
+
 
 export const GTPChart = ({ children, providerProps, highchartsChartProps, chartProps }: { children?: ReactNode , providerProps?: HighchartsProviderProps, highchartsChartProps?: HighchartsChartProps, chartProps?: ChartProps }) => {
   const [containerRef, { width, height }] = useElementSizeObserver();
   // const { onChartCreated, onChartDestroyed } = useGTPChartSyncProvider();
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
 
-  // useEffect(() => {
-  //   return () => {
-  //     if (chartComponent.current) {
-  //       onChartDestroyed();
-  //     }
-  //   };
-  // }, [onChartDestroyed]);
+  useEffect(() => {
+    highchartsRoundedCorners(Highcharts);
+
+    // Override the reset function to maintain tooltip and crosshair visibility
+    Highcharts.Pointer.prototype.reset = function () {
+      return undefined;
+    };
+
+    // Handle mouse/touch events for synchronized charts
+    ['mousemove', 'touchmove', 'touchstart'].forEach(function (eventType) {
+      document.addEventListener(eventType, handleMouseMove);
+    });
+
+    ['mouseout', 'touchend'].forEach(function (eventType) {
+      document.addEventListener(eventType, handleMouseOut);
+    });
+
+    // Synchronize extremes (zooming) within shared groups
+    function syncExtremes(e: Highcharts.AxisSetExtremesEventObject) {
+      const thisChart = this.chart;
+      const sharedGroupName = getSharedChartGroupName(thisChart, SHARE_CROSSHAIR_CLASS);
+      
+      if (!sharedGroupName || e.trigger === 'syncExtremes') return; // Prevent feedback loop
+      
+      Highcharts.charts.forEach(chart => {
+        if (!chart || chart === thisChart) return;
+        
+        const otherGroupName = getSharedChartGroupName(chart, SHARE_CROSSHAIR_CLASS);
+        if (otherGroupName !== sharedGroupName) return;
+        
+        chart.xAxis[0].setExtremes(
+          e.min,
+          e.max,
+          undefined,
+          false,
+          { trigger: 'syncExtremes' }
+        );
+      });
+    }
+
+    // Reset zoom across shared group charts
+    function resetZoom(e: Highcharts.SelectEventObject): boolean {
+      if (e.resetSelection) return false; // Prevent feedback loop
+      
+      // The chart that triggered the selection event is available directly on the event
+      const thisChart = (e as any).detail?.chart || (e as any).target?.chart;
+      if (!thisChart) return false;
+      
+      const sharedGroupName = getSharedChartGroupName(thisChart, SHARE_CROSSHAIR_CLASS);
+      if (!sharedGroupName) return false;
+      
+      Highcharts.charts.forEach(chart => {
+        if (!chart || chart === thisChart) return;
+        
+        const otherGroupName = getSharedChartGroupName(chart, SHARE_CROSSHAIR_CLASS);
+        if (otherGroupName === sharedGroupName) {
+          chart.zoomOut();
+        }
+      });
+
+      return false;
+    }
+
+    // Add the event handlers to Highcharts options
+    const defaultOptions = Highcharts.getOptions() || {};
+    const xAxisOptions = defaultOptions.xAxis as Highcharts.XAxisOptions || {};
+    const chartOptions = defaultOptions.chart as Highcharts.ChartOptions || {};
+    
+    xAxisOptions.events = {
+      ...xAxisOptions.events,
+      setExtremes: syncExtremes
+    };
+    
+    chartOptions.events = {
+      ...chartOptions.events,
+      selection: resetZoom
+    };
+    
+    Highcharts.setOptions({
+      ...defaultOptions,
+      xAxis: xAxisOptions,
+      chart: chartOptions
+    });
+
+
+    // Remove the event listeners
+    return () => {
+      ['mousemove', 'touchmove', 'touchstart'].forEach(eventType => {
+        document.removeEventListener(eventType, handleMouseMove);
+      });
+      ['mouseout', 'touchend'].forEach(eventType => {
+        document.removeEventListener(eventType, handleMouseOut);
+      });
+    }
+    
+  }, []);
 
   return (
     <HighchartsProvider 
@@ -1151,13 +1227,13 @@ export const GTPChart = ({ children, providerProps, highchartsChartProps, chartP
       <HighchartsChart
         chart={{
           ...baseOptions.chart, 
-          
         }}
 
         containerProps={{
           style: {
             overflow: "visible",
-          }
+          },
+          ...highchartsChartProps?.containerProps,
         }}
         {...highchartsChartProps}
       >
@@ -1193,4 +1269,11 @@ export const GTPChart = ({ children, providerProps, highchartsChartProps, chartP
       </HighchartsChart>
     </HighchartsProvider>
   )
+}
+
+// Add type declarations for our Highcharts extensions
+declare module 'highcharts' {
+  interface Point {
+    highlight(event: PointerEvent | TouchEvent | MouseEvent): void;
+  }
 }

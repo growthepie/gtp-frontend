@@ -1,4 +1,5 @@
 // MetricHeader.tsx
+"use client";
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import moment from 'moment';
 import { MetricData, useApplicationDetailsData } from '../_contexts/ApplicationDetailsDataContext';
@@ -9,7 +10,7 @@ import { useMaster } from '@/contexts/MasterContext';
 import { useMetrics } from '../_contexts/MetricsContext';
 import { useLocalStorage } from 'usehooks-ts';
 import { useUIContext } from '@/contexts/UIContext';
-import { useGTPChartSyncProvider } from '../_contexts/GTPChartSyncContext';
+import { useChartSync } from '../_contexts/GTPChartSyncContext';
 
 interface FloatingTooltipProps {
   content: React.ReactNode;
@@ -29,9 +30,11 @@ const FloatingTooltip: React.FC<FloatingTooltipProps> = ({
   children,
 }) => {
   const [visible, setVisible] = useState(false);
+  const [opacity, setOpacity] = useState(0);
   const [coords, setCoords] = useState({ x: 0, y: 0 });
   const [adjustedCoords, setAdjustedCoords] = useState({ x: 0, y: 0 });
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const fadeTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const newCoords = {
@@ -40,6 +43,48 @@ const FloatingTooltip: React.FC<FloatingTooltipProps> = ({
     };
     setCoords(newCoords);
   };
+  
+  const handleMouseEnter = (e: React.MouseEvent) => {
+    // Clear any existing fade out timeout
+    if (fadeTimeout.current) {
+      clearTimeout(fadeTimeout.current);
+      fadeTimeout.current = null;
+    }
+    
+    // Set initial coordinates from the mouse enter event before showing tooltip
+    const initialCoords = {
+      x: e.clientX + offsetX,
+      y: e.clientY + offsetY,
+    };
+    setCoords(initialCoords);
+    
+    // Make tooltip visible first with opacity 0
+    setVisible(true);
+    
+    // Then animate opacity in next frame for smooth transition
+    requestAnimationFrame(() => {
+      setOpacity(1);
+    });
+  };
+  
+  const handleMouseLeave = () => {
+    // Start fade out animation
+    setOpacity(0);
+    
+    // Remove from DOM after animation completes
+    fadeTimeout.current = setTimeout(() => {
+      setVisible(false);
+    }, 150); // Match transition duration
+  };
+
+  useEffect(() => {
+    // Clean up timeout on unmount
+    return () => {
+      if (fadeTimeout.current) {
+        clearTimeout(fadeTimeout.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (visible && tooltipRef.current) {
@@ -72,8 +117,8 @@ const FloatingTooltip: React.FC<FloatingTooltipProps> = ({
   return (
     <div
       className={"relative inline-block " + containerClassName || ""}
-      onMouseEnter={() => setVisible(true)}
-      onMouseLeave={() => setVisible(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       onMouseMove={handleMouseMove}
     >
       {children}
@@ -84,6 +129,8 @@ const FloatingTooltip: React.FC<FloatingTooltipProps> = ({
             left: adjustedCoords.x,
             top: adjustedCoords.y,
             // width: width,
+            opacity: opacity,
+            transition: 'opacity 150ms ease-in-out',
           }}
           className="fixed mt-3 mr-3 mb-3 text-xs font-raleway bg-[#2A3433EE] text-white rounded-[17px] shadow-lg pointer-events-none z-50"
         >
@@ -91,6 +138,153 @@ const FloatingTooltip: React.FC<FloatingTooltipProps> = ({
         </div>
       )}
     </div>
+  );
+};
+
+// Create a new shared tooltip provider component
+interface TooltipContextType {
+  showTooltip: (e: React.MouseEvent, content: React.ReactNode) => void;
+  hideTooltip: () => void;
+}
+
+const TooltipContext = React.createContext<TooltipContextType | null>(null);
+
+const useTooltip = () => {
+  const context = React.useContext(TooltipContext);
+  if (!context) {
+    throw new Error('useTooltip must be used within a TooltipProvider');
+  }
+  return context;
+};
+
+const TooltipProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [visible, setVisible] = useState(false);
+  const [opacity, setOpacity] = useState(0);
+  const [coords, setCoords] = useState({ x: 0, y: 0 });
+  const [adjustedCoords, setAdjustedCoords] = useState({ x: 0, y: 0 });
+  const [content, setContent] = useState<React.ReactNode>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const fadeTimeout = useRef<NodeJS.Timeout | null>(null);
+  const lastUpdateTime = useRef<number>(0);
+  const lastCoords = useRef<{ x: number, y: number }>({ x: 0, y: 0 });
+  const offsetX = 10;
+  const offsetY = 10;
+
+  const showTooltip = useCallback((e: React.MouseEvent, newContent: React.ReactNode) => {
+    // Clear any existing fade out timeout
+    if (fadeTimeout.current) {
+      clearTimeout(fadeTimeout.current);
+      fadeTimeout.current = null;
+    }
+    
+    // Set initial coordinates from the mouse event
+    const initialCoords = {
+      x: e.clientX + offsetX,
+      y: e.clientY + offsetY,
+    };
+    setCoords(initialCoords);
+    lastCoords.current = initialCoords;
+    setContent(newContent);
+    
+    // Make tooltip visible first with opacity 0
+    setVisible(true);
+    
+    // Then animate opacity in next frame for smooth transition
+    requestAnimationFrame(() => {
+      setOpacity(1);
+    });
+  }, []);
+  
+  const hideTooltip = useCallback(() => {
+    // Start fade out animation
+    setOpacity(0);
+    
+    // Remove from DOM after animation completes
+    fadeTimeout.current = setTimeout(() => {
+      setVisible(false);
+    }, 150); // Match transition duration
+  }, []);
+
+  // Update position when mouse moves, but throttle updates
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!visible) return;
+    
+    // Throttle updates to every 16ms (roughly 60fps)
+    const now = Date.now();
+    if (now - lastUpdateTime.current < 16) return;
+    
+    const newCoords = {
+      x: e.clientX + offsetX,
+      y: e.clientY + offsetY,
+    };
+    
+    // Only update if the mouse has moved at least 2 pixels
+    const dx = Math.abs(newCoords.x - lastCoords.current.x);
+    const dy = Math.abs(newCoords.y - lastCoords.current.y);
+    if (dx < 2 && dy < 2) return;
+    
+    lastCoords.current = newCoords;
+    lastUpdateTime.current = now;
+    setCoords(newCoords);
+  }, [visible, offsetX, offsetY]);
+
+  useEffect(() => {
+    // Add global mouse move listener
+    window.addEventListener('mousemove', handleMouseMove);
+    
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (fadeTimeout.current) {
+        clearTimeout(fadeTimeout.current);
+      }
+    };
+  }, [handleMouseMove]);
+
+  useEffect(() => {
+    if (visible && tooltipRef.current) {
+      const tooltipRect = tooltipRef.current.getBoundingClientRect();
+      let newX = coords.x;
+      let newY = coords.y;
+      
+      // Prevent overflow on edges
+      if (coords.x + tooltipRect.width > window.innerWidth) {
+        newX = window.innerWidth - tooltipRect.width - 20;
+      }
+      if (coords.y + tooltipRect.height > window.innerHeight) {
+        newY = window.innerHeight - tooltipRect.height - 20;
+      }
+      if (coords.x < 0) {
+        newX = 0 + 20;
+      }
+      if (coords.y < 0) {
+        newY = 0 + 20;
+      }
+
+      // Only update adjusted coords if they've actually changed
+      if (Math.abs(newX - adjustedCoords.x) > 1 || Math.abs(newY - adjustedCoords.y) > 1) {
+        setAdjustedCoords({ x: newX, y: newY });
+      }
+    }
+  }, [coords, visible, adjustedCoords.x, adjustedCoords.y]);
+
+  return (
+    <TooltipContext.Provider value={{ showTooltip, hideTooltip }}>
+      {children}
+      {visible && (
+        <div
+          ref={tooltipRef}
+          style={{
+            left: adjustedCoords.x,
+            top: adjustedCoords.y,
+            opacity: opacity,
+            transition: 'opacity 150ms ease-in-out',
+          }}
+          className="fixed mt-3 mr-3 mb-3 text-xs font-raleway bg-[#2A3433EE] text-white rounded-[17px] shadow-lg pointer-events-none z-50"
+        >
+          {content}
+        </div>
+      )}
+    </TooltipContext.Provider>
   );
 };
 
@@ -215,7 +409,7 @@ export const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
     }
 
     return (
-      <div className="flex flex-col gap-y-[5px] w-fit h-full pr-[15px] py-[15px] text-[#CDD8D3]">
+      <div className="flex flex-col gap-y-[5px] min-w-[240px] h-full pr-[15px] py-[15px] text-[#CDD8D3]">
         <div className="pl-[20px] h-[24px] flex items-center gap-x-[5px] whitespace-nowrap">
           <ApplicationIcon owner_project={owner_project} size="sm" />
           <div className='heading-small-xs !font-normal'>
@@ -266,68 +460,90 @@ export const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
               {metricsDef[metric].name}
             </div>
           </div>
-          {/* <div className="h-[20px] flex w-full space-x-[5px] items-center font-medium mt-1.5 mb-0.5">
-            <div className="w-[15px] h-[10px] rounded-r-full" />
-            <div className="tooltip-point-name text-xs">Total</div>
-            <div className="flex-1 text-right justify-end numbers-xs flex">
-              {prefix}{total.toLocaleString("en-GB", { maximumFractionDigits: decimals })}
-            </div>
-          </div> */}
         </div>
       </div>
     );
-  }, [maxUnix, timespans, selectedTimespan, metricsDef, metric, chainsData, prefix, total, decimals, minUnix, metricData.aggregated.types, metricData.aggregated.data, valueKey, AllChainsByKeys]);
+  }, [maxUnix, timespans, selectedTimespan, owner_project, ownerProjectToProjectData, chainsData, metricsDef, metric, minUnix, metricData.aggregated.types, metricData.aggregated.data, valueKey, AllChainsByKeys, prefix, decimals]);
 
   
   if (!metricData) return null;
 
-
   return (
-    <div className="pb-[15px]">
-      <div className="flex items-center h-[34px] rounded-full bg-[#344240] p-[2px]">
-        <div className="flex items-center h-[30px] w-full rounded-full overflow-hidden bg-black/60 relative" ref={containerRef}>
-          <FloatingTooltip content={allTooltipContent} containerClassName="h-full">
-            <div className="absolute left-0 flex gap-x-[10px] items-center h-full w-[200px] bg-[#1F2726] p-[2px] rounded-full" style={{ zIndex: chainsData.length + 1 }}>
-              <ApplicationIcon owner_project={owner_project} size="sm" />
-              <div className="flex flex-1 flex-col -space-y-[2px] mt-[2px] truncate pr-[10px]">
-                <div className="numbers-sm">{prefix}{total.toLocaleString("en-GB", { maximumFractionDigits: decimals, minimumFractionDigits: decimals })}</div>
-                <div className="text-xxs truncate">
-                  {ownerProjectToProjectData[owner_project]?.display_name || ""}
-                </div>
-              </div>
+    <TooltipProvider>
+      <div className="pb-[15px]">
+        <div className="flex items-center h-[34px] rounded-full bg-[#344240] p-[2px]">
+          <div className="flex items-center h-[30px] w-full rounded-full overflow-hidden bg-black/60 relative" ref={containerRef}>
+            <BarHeaderSection 
+              owner_project={owner_project} 
+              total={total} 
+              ownerProjectToProjectData={ownerProjectToProjectData} 
+              prefix={prefix} 
+              decimals={decimals}
+              tooltipContent={allTooltipContent}
+            />
+            <div className="flex flex-1 h-full">
+              {chainsData.map(([chain, chainValues], i) => (
+                <ChainBar 
+                  key={chain}
+                  chain={chain}
+                  index={i}
+                  total={total}
+                  chainFirstSeen={data.first_seen[chain]}
+                  metricData={metricData}
+                  selectedTimespan={selectedTimespan}
+                  timespans={timespans}
+                  valueKey={valueKey}
+                  percentages={percentages}
+                  containerWidth={containerWidth}
+                  AllChainsByKeys={AllChainsByKeys}
+                  metricsDef={metricsDef}
+                  metric={metric}
+                  prefix={prefix}
+                  decimals={decimals}
+                />
+              ))}
             </div>
-          </FloatingTooltip>
-          <div className="flex flex-1 h-full">
-            {chainsData.map(([chain, chainValues], i) => (
-              <ChainBar 
-                key={chain}
-                chain={chain}
-                index={i}
-                total={total}
-                chainFirstSeen={data.first_seen[chain]}
-                metricData={metricData}
-                selectedTimespan={selectedTimespan}
-                timespans={timespans}
-                valueKey={valueKey}
-                percentages={percentages}
-                containerWidth={containerWidth}
-                AllChainsByKeys={AllChainsByKeys}
-                metricsDef={metricsDef}
-                metric={metric}
-                // setHoveredSeriesName={setHoveredSeriesName}
-                // hoveredSeriesName={hoveredSeriesName}
-                prefix={prefix}
-                decimals={decimals}
-              />
-            ))}
           </div>
+        </div>
+      </div>
+    </TooltipProvider>
+  );
+};
+
+const BarHeaderSection = ({ 
+  owner_project, 
+  total, 
+  ownerProjectToProjectData, 
+  prefix, 
+  decimals,
+  tooltipContent
+}: { 
+  owner_project: string;
+  total: number;
+  ownerProjectToProjectData: any;
+  prefix: string;
+  decimals: number;
+  tooltipContent: React.ReactNode;
+}) => {
+  const { showTooltip, hideTooltip } = useTooltip();
+  
+  return (
+    <div 
+      className="absolute left-0 flex gap-x-[10px] items-center h-full w-[160px] bg-[#1F2726] p-[2px] rounded-full pr-[10px]" 
+      style={{ zIndex: 1000 }}
+      onMouseEnter={(e) => showTooltip(e, tooltipContent)}
+      onMouseLeave={hideTooltip}
+    >
+      <ApplicationIcon owner_project={owner_project} size="sm" />
+      <div className="flex flex-1 flex-col -space-y-[2px] mt-[2px] truncate pr-[10px]">
+        <div className="numbers-sm">{prefix}{total.toLocaleString("en-GB", { maximumFractionDigits: decimals, minimumFractionDigits: decimals })}</div>
+        <div className="text-xxs truncate">
+          {ownerProjectToProjectData[owner_project]?.display_name || ""}
         </div>
       </div>
     </div>
   );
 };
-
-
 
 
 const ChainBar = memo(({
@@ -344,8 +560,6 @@ const ChainBar = memo(({
   AllChainsByKeys,
   metricsDef,
   metric,
-  // setHoveredSeriesName,
-  // hoveredSeriesName,
   prefix,
   decimals,
 }: {
@@ -362,19 +576,16 @@ const ChainBar = memo(({
   AllChainsByKeys: Record<string, any>;
   metricsDef: Record<string, any>;
   metric: string;
-  // setHoveredSeriesName: (name: string | null) => void;
-  // hoveredSeriesName: string | null;
   prefix: string;
   decimals: number;
 }) => {
-  const { hoveredSeriesName, setHoveredSeriesName } = useGTPChartSyncProvider();
+  const { hoveredSeriesName, setHoveredSeriesName, selectedSeriesName, setSelectedSeriesName } = useChartSync();
   const { owner_project } = useApplicationDetailsData();
+  const { showTooltip, hideTooltip } = useTooltip();
 
-  // const hoveredSeriesName = null;
-
-  // Determine if this bar is hovered
+  // Determine if this bar is hovered or selected
   const isHovered = hoveredSeriesName === chain;
-  // const barOpacity = hoveredSeriesName !== null && !isHovered ? 0.4 : 1;
+  const isSelected = selectedSeriesName === chain;
   const computedZIndex = percentages.length - index;
 
   // Calculate the width of the bar based on its percentage (with a minimum threshold)
@@ -405,7 +616,7 @@ const ChainBar = memo(({
     minDate = firstSeen.utc().locale("en-GB").format("DD MMM YYYY");
   }
 
-  const tooltipContent = (
+  const tooltipContent = useMemo(() => (
     <div className="min-w-[245px] flex flex-col gap-y-[5px] w-fit h-full pr-[15px] py-[15px] text-[#CDD8D3]">
       <div className="pl-[20px] h-[24px] flex items-center gap-x-[5px] whitespace-nowrap">
         <ApplicationIcon owner_project={owner_project} size="sm" />
@@ -459,70 +670,82 @@ const ChainBar = memo(({
               day: "numeric",
             })}
           </div>
-          {/* </div> */}
         </div>
       </div>
     </div>
-  );
+  ), [chain, owner_project, metricData, selectedTimespan, valueKey, total, AllChainsByKeys, prefix, decimals, metricsDef, metric, firstSeen]);
 
   const barColor = useMemo(() => {
-    const isHoveredOrNone = isHovered || hoveredSeriesName === null;
+    const isActiveOrNone = isHovered || isSelected || (hoveredSeriesName === null && selectedSeriesName === null);
     const color = AllChainsByKeys[chain].colors.dark[0];
-    if (isHoveredOrNone) {
+    if (isActiveOrNone) {
       return color;
     }
     return blendColors(color, "#1F2726", 0.9);
-  }, [isHovered, hoveredSeriesName, chain, AllChainsByKeys]);
+  }, [isHovered, isSelected, hoveredSeriesName, selectedSeriesName, AllChainsByKeys, chain]);
 
   const textColor = useMemo(() => {
     return AllChainsByKeys[chain].darkTextOnBackground ? "#1F2726" : "#CDD8D3";
   }, [chain, AllChainsByKeys]);
 
   const boxShadow = useMemo(() => {
-    return isHovered ? `0 0 10px ${AllChainsByKeys[chain].colors.dark[0]}66` : "none";
-  }, [isHovered, chain, AllChainsByKeys]);
+    return (isHovered || isSelected) ? `0 0 10px ${AllChainsByKeys[chain].colors.dark[0]}66` : "none";
+  }, [isHovered, isSelected, chain, AllChainsByKeys]);
 
   const opacity = useMemo(() => {
-    return hoveredSeriesName !== null && !isHovered ? 0.4 : 1;
-  }, [hoveredSeriesName, isHovered]);
+    const isActiveOrNone = isHovered || isSelected || (hoveredSeriesName === null && selectedSeriesName === null);
+    if(isActiveOrNone) return 1;
+    if(hoveredSeriesName === chain){
+      return 0.8;
+    }else{
+      return 0.4;
+    }
+  }, [chain, hoveredSeriesName, isHovered, isSelected, selectedSeriesName]);
+
+  const handleClick = useCallback(() => {
+    setSelectedSeriesName(isSelected ? null : chain);
+  }, [chain, isSelected, setSelectedSeriesName]);
 
   return (
-    <FloatingTooltip key={chain} content={tooltipContent}>
+    <div
+      className="absolute h-full rounded-full transition-[box-shadow, background, width] duration-300 cursor-pointer"
+      onMouseEnter={(e) => {
+        setHoveredSeriesName(chain);
+        showTooltip(e, tooltipContent);
+      }}
+      onMouseLeave={() => {
+        setHoveredSeriesName(null);
+        hideTooltip();
+      }}
+      onClick={handleClick}
+      style={{
+        background: barColor,
+        width: `calc(${thisRenderWidth}px + 195px)`,
+        left: '5px',
+        zIndex: computedZIndex,
+        boxShadow: boxShadow,
+      }}
+    >
       <div
-        className="absolute h-full rounded-full transition-[box-shadow, background, width] duration-300"
-        onMouseEnter={() => setHoveredSeriesName(chain)}
-        onMouseLeave={() => setHoveredSeriesName(null)}
-        style={{
-          background: barColor,
-          width: `calc(${thisRenderWidth}px + 195px)`,
-          left: '5px',
-          zIndex: computedZIndex,
-          boxShadow: boxShadow,
-          // opacity: opacity,
-          // transition: "width 0.3s ease-in-out",
-        }}
+        className="@container absolute inset-0 left-[135px] right-[15px] flex items-center justify-end text-[#1F2726] select-none"
+        style={{ zIndex: computedZIndex + 1 }}
       >
         <div
-          className="@container absolute inset-0 left-[135px] right-[15px] flex items-center justify-end text-[#1F2726] select-none"
-          style={{ zIndex: computedZIndex + 1 }}
+          className="flex items-center gap-x-[5px]"
+          style={{
+            color: AllChainsByKeys[chain].darkTextOnBackground ? "#1F2726" : "#CDD8D3",
+            opacity: opacity,
+          }}
         >
-          <div
-            className="flex items-center gap-x-[5px]"
-            style={{
-              color: AllChainsByKeys[chain].darkTextOnBackground ? "#1F2726" : "#CDD8D3",
-              opacity: opacity,
-            }}
-          >
-            <div className="text-xs !font-semibold hidden @[80px]:block truncate">
-              {AllChainsByKeys[chain].name_short}
-            </div>
-            <div className="numbers-xs hidden @[30px]:block">
-              {percentages[index].toFixed(1)}%
-            </div>
+          <div className="text-xs !font-semibold hidden @[80px]:block truncate">
+            {AllChainsByKeys[chain].name_short}
+          </div>
+          <div className="numbers-xs hidden @[30px]:block">
+            {percentages[index].toFixed(1)}%
           </div>
         </div>
       </div>
-    </FloatingTooltip>
+    </div>
   );
 });
 

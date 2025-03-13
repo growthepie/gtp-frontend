@@ -29,6 +29,7 @@ import { Sources } from "@/lib/datasources";
 import moment from "moment";
 // import { useGTPChartSyncProvider } from "../_contexts/GTPChartSyncContext";
 import { MetricChainBreakdownBar } from "../_components/MetricChainBreakdownBar";
+import { useChartSync } from "../_contexts/GTPChartSyncContext";
 
 type Props = {
   params: { owner_project: string };
@@ -135,6 +136,8 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
   const { data: master } = useMaster();
   const { selectedMetrics } = useMetrics();
   const { selectedTimespan } = useTimespan();
+  const { selectedSeriesName } = useChartSync();
+  const { AllChainsByKeys } = useMaster();
 
   
 
@@ -187,7 +190,7 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
           <div className="flex gap-x-[10px] items-center">
             <GTPIcon icon={metricIcons[metric] as GTPIconName} size="md" />
             <div className="text-sm md:text-xl">
-              <span className="heading-large-sm md:heading-large-md">{def.name}</span> across different chains
+              <span className="heading-large-sm md:heading-large-md">{def.name}</span> {selectedSeriesName ? `on ${AllChainsByKeys[selectedSeriesName].label}` : "across different chains"}
             </div>
           </div>
           {/* <div className="text-xs">
