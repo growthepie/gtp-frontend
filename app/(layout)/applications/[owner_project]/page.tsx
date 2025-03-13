@@ -185,17 +185,17 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
 
   return (
     <>
-      <Container className="pt-[30px] pb-[10px]">
-        <div className="flex flex-col gap-y-[10px]">
+      <Container className="pt-[30px] pb-[15px]">
+        <div className="flex flex-col gap-y-[15px]">
           <div className="flex gap-x-[10px] items-center">
             <GTPIcon icon={metricIcons[metric] as GTPIconName} size="md" />
             <div className="text-sm md:text-xl">
               <span className="heading-large-sm md:heading-large-md">{def.name}</span> {selectedSeriesName ? `on ${AllChainsByKeys[selectedSeriesName].label}` : "across different chains"}
             </div>
           </div>
-          {/* <div className="text-xs">
+          <div className="text-xs">
             {ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].display_name} is available on multiple chains. Here you see how much usage is on each based on the respective metric.
-          </div> */}
+          </div>
         </div>
       </Container>
       <Container>

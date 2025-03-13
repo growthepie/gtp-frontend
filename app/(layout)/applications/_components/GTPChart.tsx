@@ -415,8 +415,6 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
     >
       <GTPChartTooltip metric_id={metric} />
       <GTPXAxis
-        categories={times(24, (i) => `${i}:00`)}
-        
         minDataUnix={minUnix}
         maxDataUnix={maxUnix}
         min={visibleRange.start}
@@ -536,8 +534,18 @@ const GTPXAxis = (props: AxisProps<Highcharts.XAxisOptions>) => {
 
   // start of yesterday in UTC is the last data point we have
   const startOfYesterdayUTC = new Date(new Date().setUTCHours(0, 0, 0, 0) - 24 * 3600 * 1000).getTime();
-  const xMax = props.maxDataUnix || startOfYesterdayUTC;
-  const xMin = props.minDataUnix || (timespans[selectedTimespan].value > 0 ? startOfYesterdayUTC - timespans[selectedTimespan].value * 24 * 3600 * 1000 : undefined);
+  
+  // Data min/max - the full range of available data
+  const dataMax = props.maxDataUnix || startOfYesterdayUTC;
+  const dataMin = props.minDataUnix || (timespans[selectedTimespan].value > 0 ? startOfYesterdayUTC - timespans[selectedTimespan].value * 24 * 3600 * 1000 : undefined);
+  
+  // Visible min/max - what's actually shown on the chart
+  const visibleMax = props.max || dataMax;
+  const visibleMin = props.min || dataMin;
+  
+  // For X axis min/max props - use the data range
+  const xMax = dataMax;
+  const xMin = dataMin;
 
   const onXAxisSetExtremes =
     useCallback<Highcharts.AxisSetExtremesEventCallbackFunction>(
@@ -563,27 +571,42 @@ const GTPXAxis = (props: AxisProps<Highcharts.XAxisOptions>) => {
       [xMax, xMin],
     );
 
-  const tickInterval = useMemo(() => {
-    let min = xMin || props.minDataUnix || 0;
-    let max = xMax || props.maxDataUnix || 0;
-    
-    let days = (max - min) / (24 * 3600 * 1000);
-    if (days <= 1) {
-      return 12 * 3600 * 1000;
-    } else if (days <= 7) {
-      return 24 * 3600 * 1000;
-    } else if (days <= 30) {
-      return 7 * 24 * 3600 * 1000;
-    } else if (days <= 90) {
-      return 30 * 24 * 3600 * 1000;
-    } else if (days <= 365) {
-      return 90 * 24 * 3600 * 1000;
-    }else if (days <= 365 * 2) {
-      return 3 * 30 * 24 * 3600 * 1000;
-    }else {
-      return 365 * 24 * 3600 * 1000;
+  // This function calculates the appropriate tick interval based on the time range
+  function calculateTickInterval(rangeInDays: number): number {
+    // Define time constants in milliseconds for better readability
+    const HOUR_MS = 3600 * 1000;
+    const DAY_MS = 24 * HOUR_MS;
+    const WEEK_MS = 7 * DAY_MS;
+    const MONTH_MS = 30 * DAY_MS;  // Approximating month as 30 days
+  
+    // Select appropriate interval based on the date range
+    if (rangeInDays <= 1) {
+      return 12 * HOUR_MS;       // 12 hours for ranges up to 1 day
+    } else if (rangeInDays <= 7) {
+      return DAY_MS;             // 1 day for ranges up to 1 week
+    } else if (rangeInDays <= 30) {
+      return WEEK_MS;            // 1 week for ranges up to 1 month
+    } else if (rangeInDays <= 90) {
+      return MONTH_MS;           // 1 month for ranges up to 3 months
+    } else if (rangeInDays <= 365) {
+      return 2 * MONTH_MS;       // 2 months for ranges up to 1 year
+    } else if (rangeInDays <= 730) {
+      return 3 * MONTH_MS;       // 3 months for ranges up to 2 years
+    } else {
+      return 6 * MONTH_MS;       // 6 months for ranges beyond 2 years
     }
-  }, [xMin, props.minDataUnix, props.maxDataUnix, xMax]);
+  }
+  
+  // Get effective min and max timestamps for calculations - USE VISIBLE RANGE
+  const effectiveMin = zoomed && zoomMin !== undefined ? zoomMin : (visibleMin || 0);
+  const effectiveMax = zoomed && zoomMax !== undefined ? zoomMax : (visibleMax || Date.now());
+  
+  // Calculate range in days based on the VISIBLE range, not the data range
+  const rangeInMilliseconds = effectiveMax - effectiveMin;
+  const rangeInDays = rangeInMilliseconds / (24 * 3600 * 1000);
+  
+  // Determine appropriate tick interval
+  const computedTickInterval = calculateTickInterval(rangeInDays);
   
   return (
     <XAxis
@@ -603,10 +626,7 @@ const GTPXAxis = (props: AxisProps<Highcharts.XAxisOptions>) => {
         overflow: "justify",
         useHTML: true,
         formatter: function (this: AxisLabelsFormatterContextObject) {
-          let max = xMax || props.maxDataUnix || 0;
-          let min = xMin || props.minDataUnix || 0;
-
-          if (max - min <= 40 * 24 * 3600 * 1000) {
+          if (effectiveMax - effectiveMin <= 40 * 24 * 3600 * 1000) {
             return new Date(this.value).toLocaleDateString("en-GB", {
               timeZone: "UTC",
               month: "short",
@@ -660,7 +680,7 @@ const GTPXAxis = (props: AxisProps<Highcharts.XAxisOptions>) => {
       minorTickLength={3}
       minorTickWidth={2}
       minorGridLineWidth={0}
-      tickInterval={tickInterval}
+      tickInterval={computedTickInterval}
       minPadding={0}
       maxPadding={0}
       min={xMin}
@@ -754,9 +774,7 @@ const GTPChartTooltip = ({props, metric_id} : {props?: TooltipProps, metric_id: 
           ? pointX + distance
           : pointX - tooltipWidth - distance;
 
-      const tooltipY = pointY - tooltipHeight / 2 > plotHeight/2
-        ? 0
-        : pointY - tooltipHeight / 2;
+      const tooltipY = 10;
 
       if (isMobile) {
         if (tooltipX + tooltipWidth > plotLeft + plotWidth) {
@@ -764,7 +782,7 @@ const GTPChartTooltip = ({props, metric_id} : {props?: TooltipProps, metric_id: 
         }
         return {
           x: tooltipX,
-          y: 0,
+          y: 10,
         };
       }
 

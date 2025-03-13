@@ -480,6 +480,7 @@ export const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
               prefix={prefix} 
               decimals={decimals}
               tooltipContent={allTooltipContent}
+              zIndex={chainsData.length + 1}
             />
             <div className="flex flex-1 h-full">
               {chainsData.map(([chain, chainValues], i) => (
@@ -516,7 +517,8 @@ const BarHeaderSection = ({
   ownerProjectToProjectData, 
   prefix, 
   decimals,
-  tooltipContent
+  tooltipContent,
+  zIndex
 }: { 
   owner_project: string;
   total: number;
@@ -524,13 +526,14 @@ const BarHeaderSection = ({
   prefix: string;
   decimals: number;
   tooltipContent: React.ReactNode;
+  zIndex: number;
 }) => {
   const { showTooltip, hideTooltip } = useTooltip();
   
   return (
     <div 
       className="absolute left-0 flex gap-x-[10px] items-center h-full w-[160px] bg-[#1F2726] p-[2px] rounded-full pr-[10px]" 
-      style={{ zIndex: 1000 }}
+      style={{ zIndex: zIndex }}
       onMouseEnter={(e) => showTooltip(e, tooltipContent)}
       onMouseLeave={hideTooltip}
     >
