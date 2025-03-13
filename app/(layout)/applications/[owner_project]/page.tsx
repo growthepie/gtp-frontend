@@ -901,7 +901,7 @@ const SimilarApplications = ({ owner_project }: { owner_project: string }) => {
       return [];
     // filter out applications with previous value of 0 and that are not the same owner project
     const filteredApplications = applicationDataAggregated
-      .filter((application) => ownerProjectToProjectData[application.owner_project].main_category === ownerProjectToProjectData[owner_project].main_category && application.owner_project !== owner_project);
+      .filter((application) => ownerProjectToProjectData[application.owner_project] && ownerProjectToProjectData[application.owner_project].main_category === ownerProjectToProjectData[owner_project].main_category && application.owner_project !== owner_project);
 
     const medianMetricValues = filteredApplications.map((application) => application[medianMetricKey])
       .sort((a, b) => a - b);
