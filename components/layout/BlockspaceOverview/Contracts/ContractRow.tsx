@@ -360,12 +360,12 @@ export default function ContractRow({
 
       <GridTableRow
         key={rowKey + "" + sortOrder}
-        gridDefinitionColumns="grid-cols-[20px,225px,280px,95px,minmax(135px,800px),115px] relative"
+        gridDefinitionColumns="grid-cols-[20px,225px,280px,95px,minmax(215px,800px),115px] relative"
         className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] mb-[3px]"
       >
         <GridTableChainIcon origin_key={sortedContracts[rowKey].chain} />
         <div className="flex justify-between">
-          <div>
+          <div className="truncate">
             {sortedContracts[rowKey].project_name ? (
               sortedContracts[rowKey].project_name
             ) : (
@@ -377,16 +377,7 @@ export default function ContractRow({
           {ownerProjectDisplayNameToProjectData[
             sortedContracts[rowKey].project_name
           ] && (
-              <div className="flex gap-x-[5px] ">
-                {/* <div className="flex 3xl:hidden">
-                                <Icon
-                                  icon={copiedAddress === sortedContracts[key].project_name.address ? "feather:check-circle" : "feather:copy"}
-                                  className="w-[14px] h-[14px] cursor-pointer"
-                                  onClick={() => {
-                                    handleCopyAddress(filteredLabelsData[item.index].address);
-                                  }}
-                                />
-                              </div> */}
+              <div className="flex gap-x-[5px] pl-[15px]">
                 <div className="flex items-center gap-x-[5px]">
                   <div className="h-[15px] w-[15px]">
                     {ownerProjectDisplayNameToProjectData[
@@ -495,14 +486,14 @@ export default function ContractRow({
           </div>
         </div>
 
-        <div>
+        <div className="truncate">
           {
             master.blockspace_categories.main_categories[
             sortedContracts[rowKey].main_category_key
             ]
           }
         </div>
-        <div>
+        <div className="truncate">
           {
             master.blockspace_categories.sub_categories[
             sortedContracts[rowKey].sub_category_key
