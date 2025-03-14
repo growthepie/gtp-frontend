@@ -178,6 +178,12 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
     decimals = Object.values(metricDefinition.units)[0].decimals || 0;
   }
 
+  // Filter out chains with no data
+  const chainsWithData = sortedChainKeys.filter(chain => {
+    const valueTypeIndex = data.metrics[metric].aggregated.types.indexOf(valueKey);
+    const value = data.metrics[metric].aggregated.data[chain][selectedTimespan][valueTypeIndex];
+    return value !== null && value !== undefined && value !== 0;
+  });
 
   if (!def) {
     return null;
@@ -194,7 +200,10 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
             </div>
           </div>
           <div className="text-xs">
-            {ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].display_name} is available on multiple chains. Here you see how much usage is on each based on the respective metric.
+            {ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].display_name}{' '}
+            {chainsWithData.length === 1 
+              ? `is available on ${AllChainsByKeys[chainsWithData[0]]?.label || chainsWithData[0]}. Here you see the usage based on the respective metric.` 
+              : "is available on multiple chains. Here you see how much usage is on each based on the respective metric."}
           </div>
         </div>
       </Container>
@@ -506,7 +515,7 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
 //             {chainsData.map(([chain, values], i) => {
 //               // Determine whether this bar is hovered.
 //               const isHovered = hoveredSeriesName === chain;
-//               // If any bar is hovered and this one isn’t, reduce its opacity.
+//               // If any bar is hovered and this one isn't, reduce its opacity.
 //               const barOpacity = hoveredSeriesName !== null && !isHovered ? 0.4 : 1;
 //               // Bump the hovered bar to the top.
 //               // const computedZIndex = isHovered ? chainsData.length + 1 : chainsData.length - i;
