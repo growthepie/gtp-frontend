@@ -194,7 +194,7 @@ export const MetricDataProvider = ({ children, metric, metric_type }: MetricData
         xMax: maxPlusBuffer,
       },
       maxM: {
-        label: "Maximum",
+        label: "Max",
         shortLabel: "Max",
         value: 0,
         xMin: minMinusBuffer,
@@ -202,7 +202,7 @@ export const MetricDataProvider = ({ children, metric, metric_type }: MetricData
         xMax: maxPlusBuffer,
       },
       max: {
-        label: "Maximum",
+        label: "Max",
         shortLabel: "Max",
         value: 0,
         xMin: minMinusBuffer,

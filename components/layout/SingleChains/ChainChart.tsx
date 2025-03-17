@@ -265,7 +265,7 @@ export default function ChainChart({
         daysDiff: 365,
       },
       max: {
-        label: "Maximum",
+        label: "Max",
         shortLabel: "Max",
         value: 0,
         xMin: min,

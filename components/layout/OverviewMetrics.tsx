@@ -237,7 +237,7 @@ export default function OverviewMetrics({
           xMax: Date.now(),
         },
         max: {
-          label: "All Time",
+          label: "Max",
           shortLabel: "Max",
           value: 0,
         },
@@ -266,7 +266,7 @@ export default function OverviewMetrics({
           xMax: Date.now(),
         },
         max: {
-          label: "All Time",
+          label: "Max",
           shortLabel: "Max",
           value: 0,
         },

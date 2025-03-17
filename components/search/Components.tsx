@@ -6,6 +6,7 @@ import { GTPIcon } from "../layout/GTPIcon"
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Icon from "../layout/Icon";
 import { Badge, FilterSelectionContainer } from "@/app/(layout)/applications/_components/Search";
+import { useMaster } from "@/contexts/MasterContext";
 
 const setDocumentScroll = (showScroll: boolean) => {
   if (showScroll) {
@@ -72,8 +73,8 @@ export const SearchComponent = () => {
 
 const SearchBar = () => {
   const [internalSearch, setInternalSearch] = useState<string>("");
-  // const [isOpen, setIsOpen] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { AllChainsByKeys } = useMaster();
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInternalSearch(e.target.value);
@@ -128,7 +129,35 @@ const SearchBar = () => {
               {internalSearch.length > 0 && (
                 <div className={`flex items-center px-[15px] h-[24px] border border-[#CDD8D3] rounded-full`}>
                   <div className="text-[8px] text-[#CDD8D3] font-medium">
-                    {internalSearch.length.toLocaleString("en-GB")} letters
+                    {["Chains", "Fundamentals"].reduce((total, type) => {
+                      let typeData: Array<{ label: string; urlKey: string; color?: string; name_short?: string }> = [];
+                      if (type === "Chains") {
+                        typeData = Object.entries(AllChainsByKeys)
+                          .filter(([key]) => key !== "all_l2s" && key !== "multiple")
+                          .map(([_, chain]) => ({
+                            label: chain.label,
+                            urlKey: chain.urlKey,
+                            color: chain.colors.dark[0],
+                            name_short: chain.name_short
+                          }));
+                      } else if (type === "Fundamentals") {
+                        typeData = ["Total Value Secured", "Total Value Locked", "Total Value Locked (USD)", "Total Value Locked (USD) (24h)", "Total Value Locked (USD) (7d)", "Total Value Locked (USD) (30d)", "Total Value Locked (USD) (90d)", "Total Value Locked (USD) (180d)", "Total Value Locked (USD) (365d)"]
+                          .map(item => ({ label: item, urlKey: "" }));
+                      }
+
+                      const matchCount = typeData.filter(item => {
+                        const searchTerm = internalSearch.toLowerCase();
+                        const itemLabel = item.label.toLowerCase();
+                        const itemShortName = item.name_short?.toLowerCase() || "";
+                        
+                        if (searchTerm.length === 1) {
+                          return itemLabel.startsWith(searchTerm) || itemShortName.startsWith(searchTerm);
+                        }
+                        return itemLabel.includes(searchTerm) || itemShortName.includes(searchTerm);
+                      }).length;
+
+                      return total + matchCount;
+                    }, 0).toLocaleString("en-GB")} results
                   </div>
                 </div>
               )}
@@ -158,9 +187,9 @@ const SearchBar = () => {
         {/* Only render dropdown content when open */}
         {/* {isOpen && ( */}
         <div
-          className={`${internalSearch ? "max-h-[100px]" : "max-h-0"} transition-[max-height] z-[116] absolute flex flex-col-reverse md:flex-col rounded-t-[22px] md:rounded-t-none md:rounded-b-[22px] bg-[#151A19] left-0 right-0 bottom-[calc(100%-22px)] md:bottom-auto md:top-[calc(100%-22px)] shadow-[0px_0px_50px_0px_#000000] duration-300  overflow-hidden overflow-y-auto lg:overflow-y-hidden scrollbar-thin scrollbar-thumb-forest-700 scrollbar-track-transparent`}
+          className={`${internalSearch ? "max-h-[500px]" : "max-h-0"} transition-[max-height] z-[116] absolute flex flex-col-reverse md:flex-col rounded-t-[22px] md:rounded-t-none md:rounded-b-[22px] bg-[#151A19] left-0 right-0 bottom-[calc(100%-22px)] md:bottom-auto md:top-[calc(100%-22px)] shadow-[0px_0px_50px_0px_#000000] duration-300 overflow-y-auto scrollbar-thin scrollbar-thumb-forest-700 scrollbar-track-transparent`}
         >
-          <div className={`flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] pb-[25px] pt-[5px] md:pb-[5px] md:pt-[25px] gap-y-[10px] text-[10px] bg-[#344240] z-[11] max-h-[20px] opacity-0 !p-0 transition-all duration-300 overflow-clip`}>
+          <div className={`flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] pb-[25px] pt-[5px] md:pb-[5px] md:pt-[25px] gap-y-[10px] text-[10px] bg-[#344240] z-[11] ${internalSearch ? "max-h-none" : "max-h-[20px]"} opacity-0 !p-0 transition-all duration-300 overflow-visible`}>
             <div className="flex flex-col md:flex-row h-[50px] md:h-[30px] gap-x-[10px] gap-y-[10px] items-start md:items-center z-[150]">
               <div className="flex gap-x-[10px] items-center">
                 <div className="w-[15px] h-[15px]">
@@ -178,42 +207,87 @@ const SearchBar = () => {
           </div>
 
           <div className="flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] pb-[10px] pt-[10px] gap-y-[10px] text-[10px]">
-            {["Chain", "Fundamentals"].map((type) => {
+            {(() => {
+              // Calculate all filtered data once
+              const allFilteredData = ["Chains", "Fundamentals"].map(type => {
+                let data: Array<{ label: string; urlKey: string; color?: string; name_short?: string }> = [];
+                if (type === "Chains") {
+                  // Get chains from master data, excluding All L2s
+                  data = Object.entries(AllChainsByKeys)
+                    .filter(([key]) => key !== "all_l2s" && key !== "multiple")
+                    .map(([_, chain]) => ({
+                      label: chain.label,
+                      urlKey: chain.urlKey,
+                      color: chain.colors.dark[0],
+                      name_short: chain.name_short
+                    }));
+                } else if (type === "Fundamentals") {
+                  // get from actual data source (master?)
+                  data = ["Total Value Secured", "Total Value Locked", "Total Value Locked (USD)", "Total Value Locked (USD) (24h)", "Total Value Locked (USD) (7d)", "Total Value Locked (USD) (30d)", "Total Value Locked (USD) (90d)", "Total Value Locked (USD) (180d)", "Total Value Locked (USD) (365d)"]
+                    .map(item => ({ label: item, urlKey: "" }));
+                }
 
-              let data: string[] = [];
-              if (type === "Chain") {
-                // get from actual data source (master?)
-                data = ["Optimism", "Arbitrum", "Base", "Polygon", "Ethereum", "BNB Chain", "Avalanche", "Fantom", "Cronos", "Moonbeam", "Moonriver", "Klaytn", "Kusama", "Polkadot", "Solana", "Terra", "Tron", "VeChain", "Zilliqa"];
-              } else if (type === "Fundamentals") {
-                // get from actual data source (master?)
-                data = ["Total Value Secured", "Total Value Locked", "Total Value Locked (USD)", "Total Value Locked (USD) (24h)", "Total Value Locked (USD) (7d)", "Total Value Locked (USD) (30d)", "Total Value Locked (USD) (90d)", "Total Value Locked (USD) (180d)", "Total Value Locked (USD) (365d)"];
-              }
+                // Filter data based on search input
+                const filteredData = data.filter(item => {
+                  if (!internalSearch) return true;
+                  
+                  const searchTerm = internalSearch.toLowerCase();
+                  const itemLabel = item.label.toLowerCase();
+                  const itemShortName = item.name_short?.toLowerCase() || "";
+                  
+                  // For single character, match start of label or short name
+                  if (searchTerm.length === 1) {
+                    return itemLabel.startsWith(searchTerm) || itemShortName.startsWith(searchTerm);
+                  }
+                  // For multiple characters, search within label or short name
+                  return itemLabel.includes(searchTerm) || itemShortName.includes(searchTerm);
+                });
+
+                return {
+                  type,
+                  filteredData
+                };
+              });
+
+              // Calculate total matches for the counter
+              const totalMatches = allFilteredData.reduce((total, { filteredData }) => total + filteredData.length, 0);
+
               return (
-                <div key={type} className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start md:items-center">
-                  <div className="flex gap-x-[10px] items-center">
-                    <div className="w-[15px] h-[15px]">
-                      <Icon
-                        icon="gtp:gtp-chain-alt"
-                        className="w-[15px] h-[15px] text-white"
-                      />
-                    </div>
-                    <div className="text-white leading-[150%]">Chain</div>
-                    <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
-                  </div>
-                  <FilterSelectionContainer className="w-full md:flex-1">
-                    {data.map((page) => (
-                      <Badge
-                        key={page}
-                        onClick={() => { }}
-                        label={page}
-                        rightIcon="gtp:gtp-chain-alt"
-                        rightIconColor="white"
-                        rightIconSize="sm"
-                      />))}
-                  </FilterSelectionContainer>
-                </div>
+                <>
+                  {allFilteredData.map(({ type, filteredData }) => {
+                    // Only render section if there are matching items
+                    if (internalSearch && filteredData.length === 0) return null;
+
+                    return (
+                      <div key={type} className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start">
+                        <div className="flex gap-x-[10px] items-center shrink-0 pt-[2px]">
+                          <div className="w-[24px] h-[24px]">
+                            <Icon
+                              icon="gtp:gtp-chain-alt"
+                              className="w-[24px] h-[24px] text-white"
+                            />
+                          </div>
+                          <div className="text-white text-sm leading-[150%] w-[120px]">{type}</div>
+                          <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
+                        </div>
+                        <FilterSelectionContainer className="w-full flex-wrap gap-[10px]">
+                          {filteredData.map((item) => (
+                            <Badge
+                              key={item.label}
+                              onClick={() => { }}
+                              label={item.label}
+                              leftIcon={type === "Chains" ? `gtp:${item.urlKey}-logo-monochrome` : "gtp:gtp-chain-alt"}
+                              leftIconColor={item.color || "white"}
+                              rightIcon=""
+                            />
+                          ))}
+                        </FilterSelectionContainer>
+                      </div>
+                    );
+                  })}
+                </>
               );
-            })}
+            })()}
           </div>
 
         </div>
