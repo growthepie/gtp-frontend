@@ -70,6 +70,7 @@ export default function LandingMetricsTable({
 }) {
   const { AllChainsByKeys, EnabledChainsByKeys } = useMaster();
   const { data: landing } = useSWR<LandingPageMetricsResponse>(LandingURL);
+  const [centerMetric, setCenterMetric] = useState("daa");
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
   const [sort, setSort] = useState({
     metric: "weekly_active_addresses",
@@ -115,7 +116,7 @@ export default function LandingMetricsTable({
   }, [data]);
 
   const rows = useCallback(() => {
-    if (!data) return [];
+    if (!data || !landing) return [];
     
     // Filter chains
     const filteredChains = Object.keys(data.chains)
@@ -137,27 +138,31 @@ export default function LandingMetricsTable({
       .filter((row) => row.chain.chainType != null);
     
     // Sort based on sortState
-    if (sort.metric === 'weekly_active_addresses') {
+    if (sort.metric === 'age') {
       
-      return filteredChains.sort((a, b) => {
-        const multiplier = sort.sortOrder === 'asc' ? 1 : -1;
-        return multiplier * (a.data.users - b.data.users);
-      });
-    }else if (sort.metric === 'cross_chain_activity') {
-      return filteredChains.sort((a, b) => {
-        const multiplier = sort.sortOrder === 'asc' ? 1 : -1;
-        return multiplier * (a.data.cross_chain_activity - b.data.cross_chain_activity);
-      });
-    }else if (sort.metric === 'age') {
       return filteredChains.sort((a, b) => {
         const multiplier = sort.sortOrder === 'asc' ? 1 : -1;
         return multiplier * (moment().diff(moment(master.chains[a.chain.key].launch_date)) - moment().diff(moment(master.chains[b.chain.key].launch_date)));
       });
+    }else if (sort.metric === "table_visual") {
+      return filteredChains.sort((a, b) => {
+        const multiplier = sort.sortOrder === 'asc' ? 1 : -1;
+      
+        const rankA = landing.data.metrics.table_visual[a.chain.key]?.ranking[centerMetric]?.rank ?? Infinity;
+        const rankB = landing.data.metrics.table_visual[b.chain.key]?.ranking[centerMetric]?.rank ?? Infinity;
+      
+        return multiplier * (rankA - rankB);
+      });
+      
+    
+    }else{
+      return filteredChains.sort((a, b) => {
+        const multiplier = sort.sortOrder === 'asc' ? 1 : -1;
+        return multiplier * (a.data[sort.metric] - b.data[sort.metric]);
+      });
     }
     // Default sort (descending by user count)
-    else {
-      return filteredChains.sort((a, b) => b.lastVal - a.lastVal);
-    }
+    
   }, [data, focusEnabled, sort]);
 
   let height = 0;
@@ -227,14 +232,14 @@ export default function LandingMetricsTable({
             
           </GridTableHeaderCell>
           <GridTableHeaderCell justify="center">
-            <ChainRankHeader />
+            <ChainRankHeader setCenterMetric={setCenterMetric} centerMetric={centerMetric} setSort={setSort} sort={sort} />
           </GridTableHeaderCell>
           <GridTableHeaderCell className="relative pl-[10px]" justify="start">
             <div className="flex items-center gap-x-[5px] relative group"
               onClick={() => {
                 setSort(prevSort => ({
-                  metric: "weekly_active_addresses",
-                  sortOrder: prevSort.metric === "weekly_active_addresses" 
+                  metric: "users",
+                  sortOrder: prevSort.metric === "users" 
                     ? (prevSort.sortOrder === "asc" ? "desc" : "asc")
                     : "desc" // Default sort order when changing metrics
                 }));
@@ -245,11 +250,11 @@ export default function LandingMetricsTable({
               </div>
               <Icon
                   icon={
-                    sort.metric === "weekly_active_addresses" && sort.sortOrder === "asc"
+                    sort.metric === "users" && sort.sortOrder === "asc"
                       ? "feather:arrow-up"
                       : "feather:arrow-down"
                   }
-                  className={`w-[12px] h-[12px]  -right-[15px] absolute ${sort.metric === "weekly_active_addresses" ? "opacity-100" : "opacity-20"} group-hover:opacity-100`}
+                  className={`w-[12px] h-[12px]  -right-[15px] absolute ${sort.metric === "users" ? "opacity-100" : "opacity-20"} group-hover:opacity-100`}
                   
                 />
             </div>
@@ -345,7 +350,7 @@ export default function LandingMetricsTable({
                   className="relative group text-[14px] gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] select-none h-[34px] !pb-0 !pt-0"
                   bar={{
                     origin_key: item.chain.key,
-                    width: lastValsByChainKey[item.chain.key] / maxVal,
+                    width: sort.metric === "users" ? lastValsByChainKey[item.chain.key] / maxVal : 0,
                     containerStyle: {
                       left: 22,
                       right: 1,
@@ -400,7 +405,7 @@ export default function LandingMetricsTable({
                         </TooltipContent>
                   </Tooltip>
                   </div>
-                  <ChainRankCell item={item} />
+                  <ChainRankCell item={item} setCenterMetric={setCenterMetric} centerMetric={centerMetric} setSort={setSort} sort={sort} />
                   
                   <div className="flex justify-end items-center">
                     <div className="flex gap-[5px] items-center text-[12px] w-[98px]">
@@ -463,9 +468,19 @@ export default function LandingMetricsTable({
   );
 }
 
-const ChainRankHeader = memo(function ChainRankHeader(
+const ChainRankHeader = memo(function ChainRankHeader({
 
-) {
+  setCenterMetric,
+  centerMetric,
+  sort,
+  setSort,
+}: {
+
+  setCenterMetric: (metric: string) => void;
+  centerMetric: string;
+  sort,
+  setSort: (sort: { metric: string; sortOrder: string }) => void;
+}) {
   {
     const { hoveredMetric, setHoveredMetric, rankingKeys } = useTableRanking();
     const { data: master } = useMaster();
@@ -484,10 +499,27 @@ const ChainRankHeader = memo(function ChainRankHeader(
               onMouseLeave={() => {
                 setHoveredMetric(null)
               }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setCenterMetric(metric);
+                setSort({
+                  metric: "table_visual",
+                  sortOrder:
+                    sort.metric === "table_visual" && centerMetric === metric
+                      ? sort.sortOrder === "desc"
+                        ? "asc"
+                        : "desc"
+                      : "asc", // Default sort order when changing metrics
+                });
+              }}
+              
             >
               <GTPMetricIcon key={metric} icon={metric} size={hoveredMetric === metric ? "md" : "sm"} className="absolute z-[2]" />
+              <GTPIcon icon="chevron-down" size={"sm"}  className={`absolute z-[3] w-[10px] h-[4px] top-[18px] ${(centerMetric === metric && sort.sortOrder === "asc" ) ? "opacity-100" : "opacity-0"}`} />
+              <GTPIcon icon="chevron-down" size={"sm"}  className={`absolute z-[3] w-[10px] right-[0px] h-[4px] bottom-[18px] rotate-180 ${(centerMetric === metric && sort.sortOrder === "desc" ) ? "opacity-100" : "opacity-0"}`} />
+
               <div className={`absolute -inset-[10.5px] bg-[#151A19] border border-[#5A6462] rounded-full z-[1] ${hoveredMetric === metric ? "opacity-100" : "opacity-0"}`} />
-              <div className={`absolute -top-[44px] z-[11] w-[200px] h-[30px] flex items-end justify-center pointer-events-none ${hoveredMetric === metric ? "opacity-100" : "opacity-0"}`}>
+              <div className={`absolute -top-[44px] z-[11] w-[200px] h-[30px] flex items-end justify-center pointer-events-none ${hoveredMetric === metric || (centerMetric === metric && hoveredMetric === null) ? "opacity-100" : "opacity-0"}`}>
                 <div
                   className="text-[10px] leading-[120%] text-center font-bold text-nowrap"
                   style={{
@@ -506,11 +538,21 @@ const ChainRankHeader = memo(function ChainRankHeader(
 });
 
 
-const ChainRankCell = memo(function ChainRankIcon(
-  { item }: {
-    item: any,
-  }
-) {
+const ChainRankCell = memo(function ChainRankCell({
+  item,
+  setCenterMetric,
+  centerMetric,
+  sort,
+  setSort,
+}: {
+  item: any;
+  setCenterMetric: (metric: string) => void;
+  centerMetric: string;
+  sort,
+  setSort: (sort: { metric: string; sortOrder: string }) => void;
+}) {
+  // component logic here...
+
   const { hoveredMetric, setHoveredMetric, rankingKeys } = useTableRanking();
 
   const { data: landing } = useSWR<LandingPageMetricsResponse>(LandingURL);
@@ -591,6 +633,7 @@ const ChainRankCell = memo(function ChainRankIcon(
   if (!landing)
     return null;
 
+
   return (
     <div className="flex justify-center items-center select-none h-full">
       {landing && landing.data.metrics.table_visual[item.chain.key].ranking && (
@@ -618,19 +661,34 @@ const ChainRankCell = memo(function ChainRankIcon(
                   onMouseLeave={() => setHoveredMetric(null)}
                   onClick={(e) => {
                     e.stopPropagation();
-
-                    if (isMobile && hoveredMetric !== metric) return;
-
-                    setSelectedFundamentalsChains((prev: string[]) => {
-                      if (!prev.includes(item.chain.key)) {
-                        return [...prev, item.chain.key];
-                      }
-                      return prev;
+                    setCenterMetric(metric);
+                    setSort({
+                      metric: "table_visual",
+                      sortOrder:
+                        sort.metric === "table_visual"
+                          ? sort.sortOrder === "desc"
+                            ? "asc"
+                            : "desc"
+                          : "asc", // Default sort order when changing metrics
                     });
-
-                    // navigate to fundamentals page
-                    router.push(`/fundamentals/${getFundamentalsByKey[metric].urlKey}`);
                   }}
+
+                  // }}
+                  // onClick={(e) => {
+                  //   e.stopPropagation();
+
+                  //   if (isMobile && hoveredMetric !== metric) return;
+
+                  //   setSelectedFundamentalsChains((prev: string[]) => {
+                  //     if (!prev.includes(item.chain.key)) {
+                  //       return [...prev, item.chain.key];
+                  //     }
+                  //     return prev;
+                  //   });
+
+                  //   // navigate to fundamentals page
+                  //   router.push(`/fundamentals/${getFundamentalsByKey[metric].urlKey}`);
+                  // }}
 
                 >
                   {landing.data.metrics.table_visual[item.chain.key][focusEnabled ? "ranking" : "ranking_w_eth"][metric].rank !== null ? (
