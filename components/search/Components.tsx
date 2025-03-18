@@ -49,6 +49,7 @@ export const HeaderSearchButton = () => {
     let newSearchParams = new URLSearchParams(window.location.search)
 
     newSearchParams.delete("search");
+    newSearchParams.delete("query");
 
     // create new url
     let url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
@@ -103,7 +104,7 @@ export const SearchComponent = () => {
     let newSearchParams = new URLSearchParams(window.location.search)
 
     newSearchParams.delete("search");
-
+    newSearchParams.delete("query");
     // create new url
     let url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
 
