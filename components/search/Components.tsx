@@ -182,6 +182,8 @@ const SearchBar = () => {
             <input
               ref={inputRef}
               autoFocus={true}
+              autoComplete="off"
+              spellCheck={false}
               className={`flex-1 h-full bg-transparent text-white placeholder-[#CDD8D3] border-none outline-none overflow-x-clip`}
               placeholder="Search & Filter"
               value={query}
@@ -279,10 +281,11 @@ const useSearchBuckets = () => {
 
   // we'll bring this outside of the return statement so we can use it more flexibly
   const allFilteredData = useMemo(() => searchBuckets.map(bucket => {
+  
     return {
       type: bucket.label,
       icon: bucket.icon,
-      filteredData: bucket.options.filter(option => option.label.toLowerCase().includes(query?.toLowerCase() || ""))
+      filteredData: bucket.options.filter(option => query?.length === 1 ? option.label.toLowerCase().startsWith(query?.toLowerCase() || "") : option.label.toLowerCase().includes(query?.toLowerCase() || ""))
     };
   }).filter(bucket => bucket.filteredData.length > 0), [query, searchBuckets]);
 
