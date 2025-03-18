@@ -515,11 +515,11 @@ const ChainRankHeader = memo(function ChainRankHeader({
               
             >
               <GTPMetricIcon key={metric} icon={metric} size={hoveredMetric === metric ? "md" : "sm"} className="absolute z-[2]" />
-              <GTPIcon icon="chevron-down" size={"sm"}  className={`absolute z-[3] w-[10px] h-[4px] top-[18px] ${(centerMetric === metric && sort.sortOrder === "asc" ) ? "opacity-100" : "opacity-0"}`} />
-              <GTPIcon icon="chevron-down" size={"sm"}  className={`absolute z-[3] w-[10px] right-[0px] h-[4px] bottom-[18px] rotate-180 ${(centerMetric === metric && sort.sortOrder === "desc" ) ? "opacity-100" : "opacity-0"}`} />
+              <GTPIcon icon="chevron-down" size={"sm"}  className={`absolute z-[3] w-[10px] h-[4px] top-[18px] ${(centerMetric === metric && sort.sortOrder === "asc" && sort.metric === "table_visual" && hoveredMetric !== centerMetric ) ? "opacity-100" : "opacity-0"}`} />
+              <GTPIcon icon="chevron-down" size={"sm"}  className={`absolute z-[3] w-[10px] right-[0px] h-[4px] bottom-[17px] rotate-180 ${(centerMetric === metric && sort.sortOrder === "desc" && sort.metric === "table_visual" && hoveredMetric !== centerMetric ) ? "opacity-100" : "opacity-0"}`} />
 
               <div className={`absolute -inset-[10.5px] bg-[#151A19] border border-[#5A6462] rounded-full z-[1] ${hoveredMetric === metric ? "opacity-100" : "opacity-0"}`} />
-              <div className={`absolute -top-[44px] z-[11] w-[200px] h-[30px] flex items-end justify-center pointer-events-none ${hoveredMetric === metric || (centerMetric === metric && hoveredMetric === null) ? "opacity-100" : "opacity-0"}`}>
+              <div className={`absolute -top-[44px] z-[11] w-[200px] h-[30px] flex items-end justify-center pointer-events-none ${(hoveredMetric === metric || (centerMetric === metric && hoveredMetric === null && sort.metric === "table_visual")) ? "opacity-100" : "opacity-0"}`}>
                 <div
                   className="text-[10px] leading-[120%] text-center font-bold text-nowrap"
                   style={{
