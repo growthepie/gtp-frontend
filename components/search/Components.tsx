@@ -29,6 +29,7 @@ export const HeaderSearchButton = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isOpen = searchParams.get("search") === "true";
+  const query = searchParams.get("query") || "";
 
   // read state from url
   const handleOpenSearch = useCallback(() => {
@@ -58,6 +59,17 @@ export const HeaderSearchButton = () => {
     setDocumentScroll(true);
   }, [pathname]);
   
+  const handleClearQuery = useCallback(() => {
+    // get existing query params
+    let newSearchParams = new URLSearchParams(window.location.search)
+
+    newSearchParams.delete("query");
+
+    // create new url
+    let url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
+
+    window.history.replaceState(null, "", url);
+  }, [pathname]);
 
   
   useEffect(() => {
@@ -77,15 +89,19 @@ export const HeaderSearchButton = () => {
       // on 'esc' press, close search
       if (e.key === "Escape") {
         e.preventDefault();
-      e.stopPropagation();
-        handleCloseSearch();
+        e.stopPropagation();
+        if(query !== ""){
+          handleClearQuery();
+        } else {
+          handleCloseSearch();
+        }
       }
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     }
-  }, [handleCloseSearch, handleOpenSearch, isOpen]);
+  }, [handleClearQuery, handleCloseSearch, handleOpenSearch, isOpen, query]);
   
   return (
     <>
