@@ -226,7 +226,7 @@ const useSearchBuckets = () => {
         .filter(([key]) => key !== "all_l2s" && key !== "multiple")
         .map(([_, chain]) => ({
           label: chain.label,
-          url: chain.urlKey,
+          url: `/chains/${chain.urlKey}`,
           icon: `gtp:${chain.urlKey}-logo-monochrome`,
           color: chain.colors.dark[0]
         }))
@@ -404,13 +404,14 @@ const Filters = () => {
                 <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
                   {filteredData.map((item) => (
                     <Link href={item.url} key={item.label}>
-                    <SearchBadge
-                      // onClick={() => { router.push(item.url) }}
-                      label={item.label}
-                      leftIcon={`${item.icon}` as GTPIconName}
-                      leftIconColor={item.color || "white"}
-                      rightIcon=""
-                    />
+                      <SearchBadge
+                        // onClick={() => { router.push(item.url) }}
+                        className="!cursor-pointer"
+                        label={item.label}
+                        leftIcon={`${item.icon}` as GTPIconName}
+                        leftIconColor={item.color || "white"}
+                        rightIcon=""
+                      />
                     </Link>
                   )).slice(0, 30)}
                 </div>
