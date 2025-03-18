@@ -20,6 +20,7 @@ export interface TableVisual {
     technology: string;
     users: number;
     ranking: { [key in RankingType]: EthUsdRanking };
+    ranking_w_eth: { [key in RankingType]: EthUsdRanking };
   };
 }
 

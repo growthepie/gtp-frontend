@@ -95,27 +95,27 @@ type RankIconProps = {
 }
 export const RankIcon = ({ colorScale, size = "md", children }: RankIconProps) => {
   const color = colorScale == -1 ? "#CDD8D322" : GetRankingColor(colorScale * 100);
-  const borderColor = colorScale == -1 ? "#CDD8D333" : color + "22";
+  const borderColor = colorScale == -1 ? "#CDD8D333" : color + "AA";
   // const borderColor = "#CDD8D322";
 
   const borderSizeClassMap = {
-    sm: "size-[15px]",
+    sm: "size-[16px]",
     md: "size-[24px]",
     lg: "size-[36px]",
   };
 
   const bgSizeClassMap = {
-    sm: "size-[11px]",
+    sm: "size-[12px]",
     md: "size-[20px]",
     lg: "size-[32px]",
   };
 
   return (
-    <div className={`rounded-full flex items-center justify-center border-2 transition-colors text-forest-500 ${borderSizeClassMap[size]}`}
+    <div className={`rounded-full p-[1px] flex items-center justify-center border-[1px] transition-colors text-forest-500 ${borderSizeClassMap[size]}`}
       style={{
         borderColor: borderColor,
       }}>
-      <div className={`relative rounded-full flex items-center justify-center transition-colors ${bgSizeClassMap[size]}`}
+      <div className={`relative rounded-full flex items-center justify-center transition-colors w-full h-full`}
         style={{
           background: color,
         }}>
