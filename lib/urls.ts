@@ -53,6 +53,7 @@ export const LabelsURLS = {
   full: "https://api.growthepie.xyz/v1/labels/full.json",
   sparkline: "https://api.growthepie.xyz/v1/labels/sparkline.json",
   projects: "https://api.growthepie.xyz/v1/labels/projects.json",
+  projectsFiltered: "https://api.growthepie.xyz/v1/labels/projects_filtered.json",
 };
 export const LabelsParquetURLS = {
   quick: "https://api.growthepie.xyz/v1/labels/quick.parquet",

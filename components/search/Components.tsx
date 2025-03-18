@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useMemo, useRef, useState } from "react"
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { GrayOverlay } from "../layout/Backgrounds"
 import { GTPIcon } from "../layout/GTPIcon"
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
@@ -12,6 +12,8 @@ import { GTPIconName } from "@/icons/gtp-icon-names";
 import { AnimatePresence, motion } from "framer-motion";
 import { ProjectsMetadataProvider, useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import Image from "next/image";
+import VerticalScrollContainer from "../VerticalScrollContainer";
+import Link from "next/link";
 
 const setDocumentScroll = (showScroll: boolean) => {
   if (showScroll) {
@@ -25,9 +27,11 @@ const setDocumentScroll = (showScroll: boolean) => {
 
 export const HeaderSearchButton = () => {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const isOpen = searchParams.get("search") === "true";
 
   // read state from url
-  const handleOpenSearch = () => {
+  const handleOpenSearch = useCallback(() => {
     // get existing query params
     let newSearchParams = new URLSearchParams(window.location.search)
 
@@ -38,8 +42,50 @@ export const HeaderSearchButton = () => {
 
     window.history.replaceState(null, "", url);
     setDocumentScroll(false);
-  }
+  }, [pathname]);
 
+  const handleCloseSearch = useCallback(() => {
+    // get existing query params
+    let newSearchParams = new URLSearchParams(window.location.search)
+
+    newSearchParams.delete("search");
+
+    // create new url
+    let url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
+
+    window.history.replaceState(null, "", url);
+    setDocumentScroll(true);
+  }, [pathname]);
+  
+
+  
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      
+      // on '/' press, open search if not already open, otherwise close it
+      if (e.key === "/") {
+        e.preventDefault();
+      e.stopPropagation();
+        if (isOpen) {
+          handleCloseSearch();
+        } else {
+          handleOpenSearch();
+        }
+      }
+
+      // on 'esc' press, close search
+      if (e.key === "Escape") {
+        e.preventDefault();
+      e.stopPropagation();
+        handleCloseSearch();
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    }
+  }, [handleCloseSearch, handleOpenSearch, isOpen]);
+  
   return (
     <>
       <GTPIcon icon="gtp-search" size="lg" className="cursor-pointer" onClick={() => handleOpenSearch()} />
@@ -68,7 +114,7 @@ export const SearchComponent = () => {
   if (!isOpen) return null;
 
   return (
-    <ProjectsMetadataProvider>
+    <ProjectsMetadataProvider useFilteredProjects={true}>
       <SearchBar />
       {/* <SearchContainer>
         <SearchBar />
@@ -106,9 +152,9 @@ const SearchBar = () => {
       {/* SearchContainer includes the thick border with rounded corners along with the main dark background */}
       <SearchContainer>
         {/* flex-col to make it so the children are stacked vertically */}
-        <div className="flex w-full flex-col gap-y-[10px]">
+        <div className="flex w-full flex-col">
           {/* first child: the search bar w/ Icon and input */}
-          <div className="flex w-full gap-x-[10px] items-center">
+          <div className="flex w-full gap-x-[10px] items-center bg-[#1F2726] rounded-[22px] h-[44px] p-2.5">
             {query.length > 0 ? (
               <div className="flex items-center justify-center w-[24px] h-[24px]">
                 <Icon icon="feather:chevron-down" className="w-[16px] h-[16px]" />
@@ -235,7 +281,7 @@ const useSearchBuckets = () => {
 
 // These components remain the same
 type SearchBadgeProps = {
-  onClick: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
   label: string | React.ReactNode;
   leftIcon?: string;
   leftIconColor?: string;
@@ -265,7 +311,7 @@ export const SearchBadge = memo(({
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation(); // Stop event from bubbling to parent elements
     e.preventDefault(); // Prevent any default behaviors
-    onClick(e); // Call the provided onClick handler
+    onClick?.(e); // Call the provided onClick handler
   };
 
   const getLeftIcon = () => {
@@ -290,8 +336,8 @@ export const SearchBadge = memo(({
 
   return (
     <div
-      className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} text-[10px] rounded-full h-[24px] pl-[5px] pr-[10px] gap-x-[4px] cursor-pointer ${className}`}
-      onClick={handleClick}
+      className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} text-[10px] rounded-full h-[24px] pl-[5px] pr-[10px] gap-x-[4px] ${onClick ? "cursor-pointer" : "cursor-default"} ${className}`}
+      onClick={onClick ? handleClick : undefined}
     >
       {getLeftIcon()}
       {showLabel && (
@@ -316,6 +362,18 @@ SearchBadge.displayName = 'SearchBadge';
 
 const Filters = () => {
   const { AllChainsByKeys } = useMaster();
+  const [viewportHeight, setViewportHeight] = useState<number>(0);
+
+  useEffect(() => {
+    const handleResize = () =>{
+      setViewportHeight(window.innerHeight);
+    }
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    }
+  }, []);
+
   const searchParams = useSearchParams();
   const query = searchParams.get("query");
 
@@ -323,48 +381,51 @@ const Filters = () => {
 
   const router = useRouter();
 
+
+
   // if (!query || totalMatches === 0) return null;
 
   return (
-    <div className="flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] pb-[10px] pt-[10px] gap-y-[10px] text-[10px]">
-
+    <div className="flex flex-col-reverse md:flex-col !pt-0 !pb-0 pl-[12px] pr-[25px] gap-y-[10px] text-[10px] max-h-[calc(100vh-180px)] overflow-y-auto">
+      {query && allFilteredData.length > 0 && <div className="flex flex-col-reverse md:flex-col pt-[10px] pb-[20px] pl-[12px] pr-[25px] gap-y-[10px] text-[10px]">
           {allFilteredData.map(({ type, icon, filteredData }) => {
             // Only render section if there are matching items
-            if (query && filteredData.length === 0) return null;
-
             return (
               <div key={type} className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start">
-                <div className="flex gap-x-[10px] items-center shrink-0 pt-[2px]">
+                <div className="flex gap-x-[10px] items-center shrink-0">
                     <GTPIcon
                       icon={icon as GTPIconName}
                       size="md"
                     />
-                  <div className="text-white text-sm leading-[150%] w-[120px]">{type}</div>
+                  <div className="text-white text-sm w-[120px]">{type}</div>
                   <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
                 </div>
                 <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
                   {filteredData.map((item) => (
+                    <Link href={item.url} key={item.label}>
                     <SearchBadge
-                      key={item.label }
-                      onClick={() => { router.push(item.url) }}
+                      // onClick={() => { router.push(item.url) }}
                       label={item.label}
                       leftIcon={`${item.icon}` as GTPIconName}
                       leftIconColor={item.color || "white"}
                       rightIcon=""
                     />
+                    </Link>
                   )).slice(0, 30)}
                 </div>
               </div>
         );
       })}
+      </div>
+    }
     </div>
   )
 }
 
 const SearchContainer = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="fixed top-[33px] left-[50%] translate-x-[-50%] z-[101] w-[660px] p-2.5 bg-[#344240] rounded-[32px] shadow-[0px_0px_50px_0px_rgba(0,0,0,1.00)] inline-flex justify-start items-center gap-[15px]">
-      <div className="flex-1 p-2.5 bg-[#1f2726] rounded-[22px] flex justify-start items-center gap-2.5">
+    <div className="fixed top-[80px] md:top-[33px] left-[50%] translate-x-[-50%] z-[111] w-[calc(100vw-20px)] md:w-[660px] max-h-[calc(100vh-100px)] p-2.5 bg-[#344240] rounded-[32px] shadow-[0px_0px_50px_0px_rgba(0,0,0,1.00)] inline-flex justify-start items-center gap-[15px]">
+      <div className="flex-1 bg-[#151A19] rounded-[22px] flex justify-start items-center gap-2.5">
         {children}
       </div>
     </div>
