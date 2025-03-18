@@ -414,7 +414,7 @@ export default function CategoryMetrics({
       //   value: 365,
       // },
       max: {
-        label: "All Time",
+        label: "Max",
         shortLabel: "Max",
         value: 0,
       },

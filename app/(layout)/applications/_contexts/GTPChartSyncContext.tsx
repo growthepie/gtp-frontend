@@ -4,7 +4,6 @@ import {
   useEffect,
   useCallback,
   useRef,
-  MutableRefObject,
   createContext,
   useContext,
   PropsWithChildren,
@@ -12,320 +11,181 @@ import {
   memo,
 } from "react";
 import Highcharts from "highcharts/highstock";
-import { debounce } from "lodash";
+import { throttle } from "lodash";
 
-// Define supported chart types to avoid magic strings
+// Define supported chart types
 type SupportedChartType = 'pie' | 'area' | 'line';
 
-// Define chart configuration interface
-interface ChartConfig {
-  chart: Highcharts.Chart | null;
-  getNameFromKey?: Record<string, string>;
-}
-
-const updateChart = (chart: Highcharts.Chart, seriesName: string | null): void => {
+// Simple chart update function - consolidated to a single approach
+const updateChart = (chart: Highcharts.Chart, seriesName: string | null, isHover: boolean): void => {
   if (!chart?.options?.chart?.type) return;
 
   const chartType = chart.options.chart.type as SupportedChartType;
   
-  // Early return if chart type isn't supported
   if (!['pie', 'area', 'line'].includes(chartType)) return;
 
-  if (chartType === 'pie') {
-    handlePieChartUpdate(chart, seriesName);
-  } else {
-    handleAreaLineChartUpdate(chart, seriesName);
+  // Disable animation during updates for better performance
+  const originalAnimation = chart.options?.chart?.animation;
+  if (chart.options?.chart) {
+    chart.options.chart.animation = false;
   }
 
-  // chart.redraw();
-};
-
-const handlePieChartUpdate = (chart: Highcharts.Chart, seriesName: string | null): void => {
-  const series = chart.series[0];
-  if (!series?.points) return;
-
-  // Reset all points
-  series.points.forEach(point => point.setState(''));
-
-  if (!seriesName) {
-    chart.tooltip.hide();
-    return;
-  }
-
-  const matchedPoint = series.points.find(point => point.name === seriesName);
-  if (matchedPoint) {
-    matchedPoint.setState('hover');
-    chart.tooltip.refresh(matchedPoint);
-  }
-};
-
-const handleAreaLineChartUpdate = (chart: Highcharts.Chart, seriesName: string | null): void => {
-  chart.series.forEach(series => {
-    const opacity = !seriesName || series.name === seriesName ? 1.0 : 0.5;
-    series.update({ opacity } as Highcharts.SeriesOptionsType);
-  });
-};
-
-interface GTPChartSyncConfig {
-  charts: MutableRefObject<Highcharts.Chart | null>[];
-  initialHoveredName?: string | null;
-  debounceDelay?: number;
-}
-
-export const useGTPChartSync = ({ 
-  charts, 
-  initialHoveredName = null,
-  debounceDelay = 150
-}: GTPChartSyncConfig) => {
-  const [hoveredSeriesNameState, setHoveredSeriesNameState] = useState<string | null>(initialHoveredName);
-
-  // Create stable debounced function that won't change on every render
-  const debouncedFn = useMemo(
-    () => debounce((name: string | null, charts: MutableRefObject<Highcharts.Chart | null>[]) => {
-      // console.log('Debounced update executing after delay:', name);
-      setHoveredSeriesNameState(name);
-      // charts
-      //   .filter(chart => chart.current)
-      //   .forEach(chart => updateChart(chart.current!, name));
-    }, debounceDelay),
-    [debounceDelay]
-  );
-
-  const hoveredSeriesName = useMemo(() => hoveredSeriesNameState, [hoveredSeriesNameState]);
-
-
-  // Cleanup debounced function on unmount
-  useEffect(() => {
-    return () => {
-      debouncedFn.cancel();
-    };
-  }, [debouncedFn]);
-
-  const setHoveredSeriesName = useCallback((name: string | null) => {
-    // console.log('Hover state changing to:', name);
-    
-    debouncedFn(name, charts);
-  }, [charts, debouncedFn]);
-
-  return {
-    hoveredSeriesName,
-    setHoveredSeriesName,
-  };
-};
-
-interface GTPChartContextValue {
-  registerChart: (chart: Highcharts.Chart) => string;
-  unregisterChart: (chartId: string) => void;
-  hoveredSeriesName: string | null;
-  setHoveredSeriesName: (name: string | null) => void;
-}
-
-// const GTPChartContext = createContext<GTPChartContextValue | null>(null);
-
-// export const useGTPChartContext = () => {
-//   const context = useContext(GTPChartContext);
-//   if (!context) {
-//     throw new Error('useChartContext must be used within a ChartProvider');
-//   }
-//   return context;
-// };
-
-// export const GTPChartSyncProvider: React.FC<PropsWithChildren> = ({ children }) => {
-//   const [hoveredSeriesNameState, setHoveredSeriesNameState] = useState<string | null>(initialHoveredName);
-
-//   // Create stable debounced function that won't change on every render
-//   const debouncedFn = useMemo(
-//     () => debounce((name: string | null, charts: MutableRefObject<Highcharts.Chart | null>[]) => {
-//       console.log('Debounced update executing after delay:', name);
-//       setHoveredSeriesNameState(name, charts);
-//       charts
-//         .filter(chart => chart.current)
-//         .forEach(chart => updateChart(chart.current!, name));
-//     }, debounceDelay),
-//     [debounceDelay]
-//   );
-
-//   const hoveredSeriesName = useMemo(() => hoveredSeriesNameState, [hoveredSeriesNameState]);
-
-
-//   // Cleanup debounced function on unmount
-//   useEffect(() => {
-//     return () => {
-//       debouncedFn.cancel();
-//     };
-//   }, [debouncedFn]);
-
-//   const setHoveredSeriesName = useCallback((name: string | null) => {
-//     console.log('Hover state changing to:', name);
-    
-//     debouncedFn(name, charts);
-//   }, [charts, debouncedFn]);
-
-//   return {
-//     hoveredSeriesName,
-//     setHoveredSeriesName,
-//   };
-// };
-
-interface GTPChartContextValue {
-  registerChart: (chart: Highcharts.Chart) => string;
-  unregisterChart: (chartId: string) => void;
-  hoveredSeriesName: string | null;
-  setHoveredSeriesName: (name: string | null) => void;
-}
-
-const GTPChartContext = createContext<GTPChartContextValue | null>(null);
-
-export const useGTPChartContext = () => {
-  const context = useContext(GTPChartContext);
-  if (!context) {
-    throw new Error('useChartContext must be used within a ChartProvider');
-  }
-  return context;
-};
-
-export const GTPChartSyncProvider: React.FC<PropsWithChildren> = memo(({ children }) => {
-  // Store charts in a Map to maintain order and allow easy removal
-  const chartsRef = useRef(new Map<string, Highcharts.Chart>());
-  
-  // Create stable mutable refs array
-  const chartsMutableRef = useRef<MutableRefObject<Highcharts.Chart | null>[]>([]);
-
-  // Helper function to update the chartRefsArray
-  const updateChartRefsArray = useCallback(() => {
-    const charts = Array.from(chartsRef.current.values());
-    chartsMutableRef.current = charts.map(chart => ({ current: chart }));
-  }, []);
-
-  // const { hoveredSeriesName, setHoveredSeriesName } = useGTPChartSync({
-  //   charts: chartsMutableRef.current,
-  //   initialHoveredName: null,
-  //   debounceDelay: 0,
-  // });
-
-  const registerChart = useCallback((chart: Highcharts.Chart): string => {
-    const chartId = generateChartId();
-    chartsRef.current.set(chartId, chart);
-    updateChartRefsArray();
-    return chartId;
-  }, [updateChartRefsArray]);
-
-  const unregisterChart = useCallback((chartId: string): void => {
-    chartsRef.current.delete(chartId);
-    updateChartRefsArray();
-  }, [updateChartRefsArray]);
-
-
-
-  // const value = useMemo(() => ({
-  //   registerChart,
-  //   unregisterChart,
-  //   hoveredSeriesName,
-  //   setHoveredSeriesName,
-  // }), [registerChart, unregisterChart, hoveredSeriesName, setHoveredSeriesName]);
-  // // Store charts in a Map to maintain order and allow easy removal
-  // const chartsRef = useRef(new Map<string, Highcharts.Chart>());
-  
-  // // Create stable mutable refs array
-  // const chartsMutableRef = useRef<MutableRefObject<Highcharts.Chart | null>[]>([]);
-
-  // // Helper function to update the chartRefsArray
-  // const updateChartRefsArray = useCallback(() => {
-  //   const charts = Array.from(chartsRef.current.values());
-  //   chartsMutableRef.current = charts.map(chart => ({ current: chart }));
-  // }, []);
-
-  const initialHoveredName = null;
-  const debounceDelay = 150;
-
-  const [hoveredSeriesNameState, setHoveredSeriesNameState] = useState<string | null>(initialHoveredName);
-
-  // Create stable debounced function that won't change on every render
-  const debouncedFn = useMemo(
-    () => debounce((name: string | null, charts: MutableRefObject<Highcharts.Chart | null>[]) => {
-      setHoveredSeriesNameState(name);
+  try {
+    if (chartType === 'pie') {
+      const series = chart.series[0];
+      if (!series?.points) return;
       
-      charts
-        .filter(chart => chart.current)
-        .forEach(chart => updateChart(chart.current!, name));
-    }, debounceDelay),
-    [debounceDelay]
+      // Reset all points
+      series.points.forEach(point => point.setState(''));
+      
+      if (seriesName) {
+        const matchedPoint = series.points.find(point => point.name === seriesName);
+        if (matchedPoint) {
+          matchedPoint.setState('hover');
+          chart.tooltip.refresh(matchedPoint);
+        }
+      } else {
+        chart.tooltip.hide();
+      }
+    } else {
+      // For area/line charts
+      const selectedName = (chart as any).selectedSeriesName;
+      
+      chart.series.forEach(series => {
+        let opacity = 1.0;
+        
+        if (isHover) {
+          // Hovering behavior
+          if (selectedName) {
+            opacity = series.name === selectedName ? 1.0 : 
+                     series.name === seriesName ? 0.7 : 0.2;
+          } else {
+            opacity = !seriesName || series.name === seriesName ? 1.0 : 0.4;
+          }
+        } else {
+          // Selection behavior
+          const visible = !seriesName || series.name === seriesName;
+          opacity = visible ? 1.0 : 0.2;
+          (chart as any).selectedSeriesName = seriesName;
+        }
+        
+        series.update({
+          opacity: opacity as number,
+          type: chartType
+        }, false);
+      });
+    }
+  } finally {
+    // Restore animation setting and redraw once
+    if (chart.options?.chart) {
+      chart.options.chart.animation = originalAnimation;
+    }
+    chart.redraw();
+  }
+};
+
+// Context interface
+interface ChartContextValue {
+  charts: Map<string, Highcharts.Chart>;
+  hoveredSeriesName: string | null;
+  setHoveredSeriesName: (name: string | null) => void;
+  selectedSeriesName: string | null;
+  setSelectedSeriesName: (name: string | null) => void;
+}
+
+const ChartContext = createContext<ChartContextValue | null>(null);
+
+// Simplified provider that manages both hovering and selection
+export const ChartSyncProvider: React.FC<PropsWithChildren> = memo(({ children }) => {
+  const chartsRef = useRef(new Map<string, Highcharts.Chart>());
+  const [hoveredSeriesName, setHoveredSeriesNameState] = useState<string | null>(null);
+  const [selectedSeriesName, setSelectedSeriesNameState] = useState<string | null>(null);
+  
+  // Use throttle instead of debounce for smoother updates
+  const throttledHoverUpdate = useMemo(
+    () => throttle((name: string | null) => {
+      setHoveredSeriesNameState(name);
+      chartsRef.current.forEach(chart => updateChart(chart, name, true));
+    }, 40),  // 25fps is usually sufficient for smooth animations
+    []
   );
-
-  const hoveredSeriesName = useMemo(() => hoveredSeriesNameState, [hoveredSeriesNameState]);
-
-
-  // Cleanup debounced function on unmount
+  
   useEffect(() => {
     return () => {
-      debouncedFn.cancel();
+      throttledHoverUpdate.cancel();
     };
-  }, [debouncedFn]);
-
+  }, [throttledHoverUpdate]);
+  
   const setHoveredSeriesName = useCallback((name: string | null) => {
-    if(hoveredSeriesNameState === name){
-      debouncedFn.cancel();
+    if (!name) {
+      throttledHoverUpdate.cancel();
+      setHoveredSeriesNameState(null);
+      chartsRef.current.forEach(chart => updateChart(chart, null, true));
       return;
     }
-    
-    debouncedFn(name, chartsMutableRef.current);
-  }, [debouncedFn, hoveredSeriesNameState]);
-
-  // // const registerChart = useCallback((chart: Highcharts.Chart): string => {
-  // //   const chartId = generateChartId();
-  // //   chartsRef.current.set(chartId, chart);
-  // //   updateChartRefsArray();
-  // //   return chartId;
-  // // }, [updateChartRefsArray]);
-
-  // // const unregisterChart = useCallback((chartId: string): void => {
-  // //   chartsRef.current.delete(chartId);
-  // //   updateChartRefsArray();
-  // // }, [updateChartRefsArray]);
-
-
-
+    throttledHoverUpdate(name);
+  }, [throttledHoverUpdate]);
+  
+  const setSelectedSeriesName = useCallback((name: string | null) => {
+    setSelectedSeriesNameState(name);
+    chartsRef.current.forEach(chart => updateChart(chart, name, false));
+  }, []);
+  
   const value = useMemo(() => ({
-    registerChart,
-    unregisterChart,
+    charts: chartsRef.current,
     hoveredSeriesName,
     setHoveredSeriesName,
-  }), [registerChart, unregisterChart, hoveredSeriesName, setHoveredSeriesName]);
+    selectedSeriesName,
+    setSelectedSeriesName
+  }), [hoveredSeriesName, setHoveredSeriesName, selectedSeriesName, setSelectedSeriesName]);
   
   return (
-    <GTPChartContext.Provider value={value}>
+    <ChartContext.Provider value={value}>
       {children}
-    </GTPChartContext.Provider>
+    </ChartContext.Provider>
   );
 });
 
-GTPChartSyncProvider.displayName = "GTPChartSyncProvider";
+ChartSyncProvider.displayName = "ChartSyncProvider";
 
-// Helper hook for individual charts to use
-export const useGTPChartSyncProvider = () => {
-  const { registerChart, unregisterChart, hoveredSeriesName, setHoveredSeriesName } = useGTPChartContext();
+// Simplified hook for chart components to use
+export const useChartSync = () => {
+  const context = useContext(ChartContext);
+  if (!context) {
+    throw new Error('useChartSync must be used within a ChartSyncProvider');
+  }
+  
   const chartIdRef = useRef<string | null>(null);
-
-  const handleChartCreated = useCallback((chart: Highcharts.Chart) => {
-    chartIdRef.current = registerChart(chart);
-  }, [registerChart]);
-
-  const handleChartDestroyed = useCallback(() => {
+  
+  const registerChart = useCallback((chart: Highcharts.Chart) => {
+    const chartId = Math.random().toString(36).substring(2, 9);
+    context.charts.set(chartId, chart);
+    chartIdRef.current = chartId;
+    
+    // Apply current states on registration
+    if (context.hoveredSeriesName) {
+      updateChart(chart, context.hoveredSeriesName, true);
+    }
+    if (context.selectedSeriesName) {
+      updateChart(chart, context.selectedSeriesName, false);
+    }
+    
+    return chartId;
+  }, [context]);
+  
+  const unregisterChart = useCallback(() => {
     if (chartIdRef.current) {
-      unregisterChart(chartIdRef.current);
+      context.charts.delete(chartIdRef.current);
       chartIdRef.current = null;
     }
-  }, [unregisterChart]);
-
+  }, [context]);
+  
   return {
-    onChartCreated: handleChartCreated,
-    onChartDestroyed: handleChartDestroyed,
-    hoveredSeriesName,
-    setHoveredSeriesName,
+    registerChart,
+    unregisterChart,
+    hoveredSeriesName: context.hoveredSeriesName,
+    setHoveredSeriesName: context.setHoveredSeriesName,
+    selectedSeriesName: context.selectedSeriesName,
+    setSelectedSeriesName: context.setSelectedSeriesName
   };
-};
-
-// Utility function to generate unique chart IDs
-const generateChartId = (): string => {
-  return Math.random().toString(36).substring(2, 9);
 };

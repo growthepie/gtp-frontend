@@ -122,7 +122,7 @@ export default function StableInsights({ }: {}) {
         xMax: Date.now(),
       },
       max: {
-        label: "Maximum",
+        label: "Max",
         shortLabel: "Max",
         value: 0,
       },
