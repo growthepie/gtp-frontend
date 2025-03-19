@@ -6,7 +6,7 @@ import {
     XAxis,
     YAxis,
     Title,
-    Tooltip,
+    Tooltip as HighchartsTooltip,
     PlotBand,
     AreaSeries,
     ColumnSeries,
@@ -33,13 +33,19 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import DynamicIcon from "../DynamicIcon";
 import { match } from "assert";
 import useChartSync from "./components/ChartHandler";
-import { get } from "lodash";
+import { filter, get, set } from "lodash";
 import { locale } from "moment";
 import ChartWatermark from "../ChartWatermark";
 import { Badge } from "@/app/(labels)/labels/Search";
 import highchartsPatternFill from "highcharts/modules/pattern-fill";
 // import highchartsAnnotations from "highcharts/modules/annotations";
 import highchartsRoundedCorners from "highcharts-rounded-corners";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/layout/Tooltip";
+import { ConsoleView } from "react-device-detect";
 
 const COLORS = {
     GRID: "rgb(215, 223, 222)",
@@ -79,6 +85,7 @@ const DATableChartsComponent = ({
   // const [hoverChain, setHoverChain] = useState<string | null>(null);
     const pieChartComponent = useRef<Highcharts.Chart | null>(null);
     const chartComponent = useRef<Highcharts.Chart | null>(null);
+    const [selectedScale, setSelectedScale] = useState<string>("absolute");
 
     useEffect(() => {
         Highcharts.setOptions({
@@ -255,6 +262,89 @@ const DATableChartsComponent = ({
         })
     }, [data]);    
 
+
+
+
+    const filteredChains = useMemo(() => {
+        const baseData = data[selectedTimespan].da_consumers;
+        const sumDataDaily = new Map<number, number>();
+        const sumDataMonthly = new Map<number, number>();
+        if (selectedChain === "all") {
+            return baseData;
+        } else {
+            const filteredData: any = {};
+            filteredData[selectedChain] = baseData[selectedChain];
+            const dataWOChain = Object.keys(baseData)
+            .filter((key) => key !== selectedChain)
+            .reduce((result, key) => {
+              result[key] = baseData[key];
+              return result;
+            }, {});
+          
+            Object.values(dataWOChain).forEach((entries: any) => {
+               
+                entries.daily.values.forEach((entry) => {
+                    const unix = entry[4];
+                    const dataPosted = entry[3];
+                    
+                    if (sumDataDaily.has(unix)) {
+                        sumDataDaily.set(unix, sumDataDaily.get(unix)! + dataPosted);
+                    } else {
+                        sumDataDaily.set(unix, dataPosted);
+                    }
+                });
+
+                entries.monthly.values.forEach((entry) => {
+                    const unix = entry[4];
+                    const dataPosted = entry[3];
+                    
+                    if (sumDataMonthly.has(unix)) {
+                        sumDataMonthly.set(unix, sumDataMonthly.get(unix)! + dataPosted);
+                    } else {
+                        sumDataMonthly.set(unix, dataPosted);
+                    }
+                });
+            });
+            const types = baseData[selectedChain].daily.types;
+            const dailyValues = Array.from(sumDataDaily.entries()).map(([unix, sum], index) => [
+                
+                
+                  "Total",
+                  "Total",
+                  "Total",
+                  sum,
+                  unix
+                
+              ]);
+            const monthlyValues = Array.from(sumDataMonthly.entries()).map(([unix, sum], index) => [
+                
+                
+                    "Total",
+                    "Total",
+                    "Total",
+                    sum,
+                    unix
+                
+              ]);
+
+            filteredData["Total"] = {
+                daily: {
+                    types,
+                    values: dailyValues,
+                },
+                monthly: {
+                    types,
+                    values: monthlyValues,
+                },
+            }
+
+          
+            
+            return filteredData;
+        }
+    }, [data, selectedChain, selectedTimespan]);
+
+
     const formattedPieData = useMemo(() => {
         let pieRetData: PieData = []; // Correctly define the type as an array of [string, number] tuples
     
@@ -278,20 +368,35 @@ const DATableChartsComponent = ({
             ])
         );
     
-        // Add selected chains in order
-        if(selectedChain !== "all"){
         
+        if(selectedChain !== "all"){
+            let y: number = 0;
+            let name = "Total";
+            let color = UNLISTED_CHAIN_COLORS[0];
+           
+            pieDataMap.forEach((value, key) => {
+                
+                if(key !== selectedChain){
+                    y += value.y;
+                }
+            });
+            //Adding total and selected chain   
             if (pieDataMap.has(selectedChain)) {
-                pieRetData.push(pieDataMap.get(selectedChain)!); // Add data in selected order
+                pieRetData.push(pieDataMap.get(selectedChain)!); 
+                pieRetData.push({
+                    name: name,
+                    y: y,
+                    color: color,
+                });
             }
         
         }else{
-        // Add non-selected chains
+            //Add all chains if not selectedChain
             pie_data.data.forEach((d, index) => {
                 
                     pieRetData.push({
                         name: d[1] ? d[1] : d[0],
-                        y: d[4] / pieTotal,
+                        y: d[4],
                         color: AllChainsByKeys[d[0]] 
                             ? AllChainsByKeys[d[0]].colors["dark"][0] 
                             : UNLISTED_CHAIN_COLORS[index],
@@ -301,21 +406,8 @@ const DATableChartsComponent = ({
         }
     
         return pieRetData;
-    }, [pie_data, selectedChain, AllChainsByKeys]);
+    }, [pie_data, selectedChain, AllChainsByKeys, filteredChains]);
     
-
-
-    const filteredChains = useMemo(() => {
-        const baseData = data[selectedTimespan].da_consumers;
-
-        if (selectedChain === "all") {
-            return baseData;
-        } else {
-            const filteredData: any = {};
-            filteredData[selectedChain] = baseData[selectedChain];
-            return filteredData;
-        }
-    }, [data, selectedChain, selectedTimespan]);
 
     function formatBytes(bytes: number, decimals = 2) {
         if (!+bytes) return "0 Bytes";
@@ -451,8 +543,9 @@ const DATableChartsComponent = ({
                 .sort((a: any, b: any) => b.y - a.y)
                 .map((point: any, index: number) => {
                     const { series, y, percentage } = point;
+                   
                     const { name } = series;
-                    const realIndex = Object.keys(data[selectedTimespan].da_consumers).findIndex((k) => k === nameToKey[name]);
+                    const realIndex = name !== "Total" ?  Object.keys(data[selectedTimespan].da_consumers).findIndex((k) => k === nameToKey[name]) : 0;
                     const color = AllChainsByKeys[nameToKey[name]] ? AllChainsByKeys[nameToKey[name]].colors["dark"][0] : UNLISTED_CHAIN_COLORS[realIndex];
                     const nameString = name;
                     let percentSize = (y / largestPoint) * 175;
@@ -468,7 +561,11 @@ const DATableChartsComponent = ({
                         <div class="tooltip-point-name text-xs">${nameString}</div>
                         <div class="flex-1 text-right justify-end flex numbers-xs w-full">
                             <div class="flex justify-end text-right w-full">
-                                <div class="flex justify-end w-full">${formatBytes(displayValue)}</div>
+                                <div class="flex justify-end w-full">${selectedScale === "absolute" ? formatBytes(displayValue) : Intl.NumberFormat(undefined, {
+                                    notation: "compact",
+                                    maximumFractionDigits: 2,
+                                    minimumFractionDigits: 2,
+                                  }).format(percentage) + "%"} </div>
                                 
                                 
                             </div>
@@ -490,7 +587,7 @@ const DATableChartsComponent = ({
             `
             return scrollbarStyles + tooltip + tooltipPoints + tooltipEnd + totalString;
         },
-        [AllChainsByKeys, data, getNameFromKey, isMonthly, selectedTimespan],
+        [AllChainsByKeys, data, getNameFromKey, isMonthly, selectedTimespan, selectedScale],
     );
 
 
@@ -498,18 +595,18 @@ const DATableChartsComponent = ({
     const pieTooltipFormatter = useCallback(
         function (this: any) {
             
-
+            console.log(this);
           
             return `<div class="mt-3 mr-3 mb-3 w-40 text-xs font-raleway justify-between gap-x-[5px] flex items-center">
                 <div class="flex gap-x-[5px] items-center ">
                     <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${this.color}"></div>
                     <div class="tooltip-point-name text-xs">${this.key}</div>
                 </div>
-                <div class="tooltip-point-name numbers-xs">${selectedChain === "all" ? Intl.NumberFormat("en-GB", {
+                <div class="tooltip-point-name numbers-xs">${selectedScale === "percentage" ? Intl.NumberFormat("en-GB", {
                     notation: "standard",
                     maximumFractionDigits: 2,
                     minimumFractionDigits: 2,
-                }).format((this.y * 100)) + " %" 
+                }).format((this.percentage)) + " %" 
                 
                 :
                 (formatBytes(this.y))
@@ -518,7 +615,7 @@ const DATableChartsComponent = ({
             </div>`;
 
 
-    }, [showUsd, selectedChain])
+    }, [showUsd, selectedChain, selectedScale])
 
 
 
@@ -718,32 +815,41 @@ const DATableChartsComponent = ({
     
     
 
-    
+
 
 
     return(
+        <>
+
         <div className="flex h-full w-full gap-x-[10px]">
-            <div className="heading-large-xs w-[250px] absolute left-[45px] h-[39px] flex items-center -top-[0px]">
-                    Data Posted {selectedChain !== "all" ? `(${getNameFromKey[selectedChain]})` : ""}
-            </div>
-            <div className="min-w-[450px] w-full mt-[39px] flex flex-1 h-[217px] relative px-[5px] overflow-hidden  pr-[5px]">
-                <div className="absolute left-[calc(50%-85px)] top-[calc(39%-29.5px)] z-0 opacity-20">
+
+            <div className="min-w-[450px] w-full flex flex-1 h-[254px] relative px-[10px] overflow-hidden  pr-[5px]">
+                <div className="relative h-[48px] min-w-[450px] w-full py-[10px]">
+                    <div className="heading-large-xs w-[250px] absolute left-[5px] h-[39px] flex items-center -top-[0px]">
+                            Data Posted {selectedChain !== "all" ? `(${getNameFromKey[selectedChain]})` : ""}
+                    </div>
+                    <div className="w-[100px] h-[20px] absolute right-[75px]">
+                        <YAxisScaleControls selectedScale={selectedScale} setSelectedScale={setSelectedScale} />
+                    </div>
+                </div>
+                <div className="absolute left-[calc(50%-85px)] top-[calc(39%-4.5px)] z-0 opacity-20">
                     <ChartWatermark className="w-[225px] h-[45px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
                     <div className="w-[225px] h-[15px] flex items-center justify-center "><div className=" text-[10px] leading-[120%] font-semibold ">DA: {da_name === "da_celestia" ? "CELESTIA" : "ETHEREUM BLOBS"}</div></div>
                 </div>
                 
 
-                <hr className="absolute w-[92.5%] border-t-[2px] left-[55px] top-[4px] border-[#5A64624F] border-dotted " />
-                <hr className="absolute w-[92.5%] border-t-[2px] left-[55px] top-[97px] border-[#5A64624F] border-dotted " />
-                <hr className="absolute w-[92.5%] border-t-[2px] left-[55px] top-[190px] border-[#5A64624F] border-dotted " />
+                <hr className="absolute w-[99.5%] border-t-[2px] left-[55px] top-[52px] border-[#5A64624F] border-dotted " />
+                <hr className="absolute w-[99.5%] border-t-[2px] left-[55px] top-[137px] border-[#5A64624F] border-dotted " />
+                <hr className="absolute w-[99.5%] border-t-[2px] left-[55px] top-[225px] border-[#5A64624F] border-dotted " />
                 
                 <HighchartsProvider Highcharts={Highcharts}>
                     <HighchartsChart                             
                         containerProps={{
                             style: {
-                                height: "222px",
+                                height: "209px",
                                 width: "100%",
                                 position: "absolute",
+                                marginTop: "48px",
                                 
 
                                 overflow: "visible",
@@ -755,11 +861,12 @@ const DATableChartsComponent = ({
 
                         plotOptions={{
                             area: {
-                                stacking: "normal",
+                                stacking: selectedScale === "absolute" ? "normal" : "percent",
                                 lineWidth: 2,
                                 marker: {
                                     enabled: false,
                                 },
+
                                 
                             },
                             column: {
@@ -811,7 +918,7 @@ const DATableChartsComponent = ({
 
                         
                     />
-                    <Tooltip
+                    <HighchartsTooltip
                         useHTML={true}
                         shared={true}
                         split={false}
@@ -945,7 +1052,7 @@ const DATableChartsComponent = ({
                     ></XAxis>
                     <YAxis
                     opposite={false}
-                    type="linear"
+                    type={"linear"}
                     gridLineWidth={0}
                     gridLineColor={"#5A64624F"}
                     showFirstLabel={true}
@@ -970,16 +1077,17 @@ const DATableChartsComponent = ({
                         formatter: function (
                         t: Highcharts.AxisLabelsFormatterContextObject,
                         ) {
-                          return formatBytes(t.value as number, 1);
+                          return selectedScale === "absolute" ? formatBytes(t.value as number, 1) : t.value + "%";
                         },
                     }}
                     min={0}
                     
                     >
-                        {Object.keys(filteredChains).filter((key) => {return data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0]}).map((key, index) => {
-                            const realIndex = Object.keys(data[selectedTimespan].da_consumers).findIndex((k) => k === key);
-                            const types = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].types;
-                            const name = data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1];
+                        {Object.keys(filteredChains).filter((key) => {return filteredChains[key][isMonthly ? "monthly" : "daily"].values[0]}).map((key, index) => {
+                            const realIndex = key !== "Total" ? Object.keys(data[selectedTimespan].da_consumers).findIndex((k) => k === key) : 0;
+                            const types = filteredChains[key][isMonthly ? "monthly" : "daily"].types;
+                            const name = filteredChains[key][isMonthly ? "monthly" : "daily"].values[0][1];
+                          
                             
                             const daColor = AllChainsByKeys[key] ? AllChainsByKeys[key].colors["dark"][0] : UNLISTED_CHAIN_COLORS[realIndex];
                             
@@ -988,11 +1096,11 @@ const DATableChartsComponent = ({
                             const seriesData = getSeriesData(
                                 name,
                                 types,
-                                data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values,
+                                filteredChains[key][isMonthly ? "monthly" : "daily"].values,
                                 isMonthly ? "column" : "area",
                                 AllChainsByKeys[key] ? AllChainsByKeys[key].colors["dark"][0] : UNLISTED_CHAIN_COLORS[realIndex],
                             );
-
+                           
                             
 
                             const color = seriesData.color;
@@ -1020,16 +1128,15 @@ const DATableChartsComponent = ({
 
                             
 
-                            
                             return (
                                 <Series
                                     type={isMonthly ? "column" : "area"}
                                     key={key + "-DATableCharts" + da_name}
                                     name={name}
 
-                                    visible={data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values.length > 0}
+                                    visible={filteredChains[key][isMonthly ? "monthly" : "daily"].values.length > 0}
 
-                                    data={data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values.map((d) => [
+                                    data={filteredChains[key][isMonthly ? "monthly" : "daily"].values.map((d) => [
                                         d[types.indexOf("unix")],
                                         d[types.indexOf("data_posted")]
                                     ])}
@@ -1059,7 +1166,7 @@ const DATableChartsComponent = ({
                                           enabled: false,
                                         },
                                       }}
-                                    pointPlacement={pointsSettings.pointPlacement}
+                                    pointPlacement={isMonthly ? pointsSettings.pointPlacement : undefined}
                                     fillColor={fillColor}
                                     fillOpacity={fillOpacity}
                                     zones={zones}
@@ -1177,7 +1284,7 @@ const DATableChartsComponent = ({
                             
                             
                         />
-                        <Tooltip
+                        <HighchartsTooltip
                             useHTML={true}
                             shared={true}
                             split={false}
@@ -1306,6 +1413,8 @@ const DATableChartsComponent = ({
                         gridLineColor={"#5A64624F"}
                         showFirstLabel={false}
                         showLastLabel={false}
+                       
+                        max={selectedScale === "percentage" ? 100 : undefined}
                         tickAmount={5}
                         labels={{
                             align: "right",
@@ -1368,7 +1477,7 @@ const DATableChartsComponent = ({
                 </div>
             </div>
         </div>
-    
+    </>
     )
 }
 
@@ -1446,7 +1555,8 @@ const ChartLegend = (
                 rightIconColor="#FE5468"
                 label={data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1]}
                 size="sm"
-                onClick={() => {
+                onClick={(e) => {
+                    e.stopPropagation();
                     setSelectedChain((prev) => {
                         if (selectedChain === key) {
                             return "all";
@@ -1454,6 +1564,7 @@ const ChartLegend = (
                             return key
                         }
                     });
+                 
                 }}     
                 onMouseEnter={() => {
                     setHoverChain(key);
@@ -1518,6 +1629,80 @@ const ChartLegend = (
     </div>
   )
 };
+
+
+const YAxisScaleControls = ({selectedScale, setSelectedScale}: {selectedScale: string, setSelectedScale: React.Dispatch<React.SetStateAction<string>>;}) => {
+ 
+  const [selectedYAxisScale, setSelectedYAxisScale] = useState<string>("linear");
+
+  const handleScaleChange = (scale: string) => {
+    setSelectedYAxisScale(scale);
+  };
+
+  
+
+  return (
+    <div className="select-none flex justify-between">
+      <div className="flex items-center">
+        <input type="checkbox" className="hidden" />
+        <label htmlFor="toggle" className="flex items-center cursor-pointer">
+          {/* <div
+            className="mr-2 font-medium"
+            onClick={() => {
+              setShowUsd(showUsd ? false : true);
+            }}
+          >
+            {showUsd === true ? <>USD</> : <>ETH</>}
+          </div> */}
+          <div
+            className="relative text-sm md:text-base font-medium"
+            onClick={() => {
+              
+              setSelectedScale(selectedScale === "absolute" ? "percentage" : "absolute");
+            
+            }}
+          >
+            <div
+              className={`w-[176px] h-[28px] heading-small flex gap-x-[15px]  items-center pl-[10px] md:pr-[24px] rounded-full transition duration-200 ease-in-out text-forest-900 bg-[#344240]`}
+            >
+              
+              <div className="heading-small-xxs text-forest-500 ">Absolute</div>
+              <div className="heading-small-xxs text-forest-500">Percentage</div>
+              <div className="absolute top-[6px] z-20 right-[5px]">
+                <Tooltip placement="bottom">
+                    <TooltipTrigger>
+                      <Icon icon="feather:info" className="text-forest-500 w-[15px] h-[15px]" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                    <div className="flex flex-col items-center">
+                        <div className="p-[15px] text-sm bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
+                          <div className="heading-small-xs">Absolute/Percentage</div>
+                          <div className="text-xxs text-wrap">
+                              This text is a description of the absolute percentage toggle
+                          </div>
+                        </div>
+                    </div>
+                    </TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
+          
+            <div
+              className={`absolute flex justify-center items-center  left-[2px] top-[2px] md:-left-[52px] md:top-0.5
+               w-full h-[24px] heading-small-xxs leading-[20px] rounded-full transition-transform duration-200 ease-in-out text-forest-500  px-1.5 text-center ${selectedScale === "percentage" ? "transform translate-x-[42%]" : "translate-x-0"
+             }`}
+            >
+              
+              <div className="bg-[#1F2726] px-[8px] rounded-full h-[24px] flex items-center">
+                {selectedScale === "percentage" ? <>Percentage</> : <>Absolute</>}
+              </div>
+            </div>
+          </div>
+        </label>
+      </div>
+    </div>
+  );
+}
 
 
 const DATableCharts = memo(DATableChartsComponent, (prevProps, nextProps) => {

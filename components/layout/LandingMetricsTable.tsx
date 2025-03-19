@@ -658,8 +658,8 @@ const ChainRankCell = memo(function ChainRankCell({
             const maxRank = Math.max(...metricRanks)
             const minRank = Math.min(...metricRanks)
 
-            const valueKeys = landing ? Object.keys(landing.data.metrics.table_visual[item.chain.key].ranking[metric]).filter((key) => key.includes("value")) : [];
-            const values = landing ? valueKeys.map((key) => landing.data.metrics.table_visual[item.chain.key].ranking[metric][key]) : [];
+            const valueKeys = landing ? Object.keys(landing.data.metrics.table_visual[item.chain.key][focusEnabled ? "ranking" : "ranking_w_eth"][metric]).filter((key) => key.includes("value")) : [];
+            const values = landing ? valueKeys.map((key) => landing.data.metrics.table_visual[item.chain.key][focusEnabled ? "ranking" : "ranking_w_eth"][metric][key]) : [];
 
             const colorScale = landing ? landing.data.metrics.table_visual[item.chain.key][focusEnabled ? "ranking" : "ranking_w_eth"][metric].color_scale : 0;
             return (

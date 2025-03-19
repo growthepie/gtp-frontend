@@ -1,3 +1,4 @@
+import { set } from 'lodash';
 import { useEffect, useCallback, useState, MutableRefObject } from 'react';
 
 // Separate the chart update logic into reusable functions
@@ -26,16 +27,18 @@ const updateAreaChart = (chart, matchedName) => {
     
     const series = chart.series;
     if (!series?.length) return;
-
+    
+    // Instead of updating the series type, just update the opacity via CSS
     series.forEach(s => {
         const opacity = !matchedName || s.name === matchedName ? 1.0 : 0.5;
-        s.update({ type: s.type, opacity }, false); // Batch updates
-        
-
+        if (s.group) {
+            s.group.css({
+                opacity: opacity
+            });
+        }
     });
     
-    // Single redraw after all updates
-    chart.redraw();
+    // No need to redraw the entire chart
 };
 
 // Custom hook for chart synchronization
@@ -61,6 +64,7 @@ const useChartSync = (pieChartRef:MutableRefObject<Highcharts.Chart | null>, cha
                 chartRef.current.tooltip.hide();
             }
         };
+       
     }, [hoverChain]);
 
     return { setHoverChain, hoverChain };

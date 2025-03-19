@@ -280,6 +280,12 @@ export default function LandingChart({
   //     }));
   // }, [embedData]);
 
+  const  textToggles = {
+    "toggle": {
+      "total": "Total Ethereum Ecosystem",
+     "l2": "Layer 2 Ecosystem"
+}
+  }
   useHighchartsWrappers();
 
   useEffect(() => {
@@ -1608,9 +1614,9 @@ export default function LandingChart({
                 setSelectedMetric("Total Ethereum Ecosystem");
               }}
             >
-              <div className="flex items-center gap-x-[5px]">
+              <div className="flex items-center justify-center gap-x-[5px]">
                 <GTPIcon icon="gtp-metrics-ethereum-ecosystem" className="w-4 h-4" />
-                <div>Total Ethereum Ecosystem</div>
+                <div>{textToggles.toggle[focusEnabled ? "l2" : "total"]}</div>
               </div>
             </TopRowChild>
             <TopRowChild
@@ -1622,7 +1628,7 @@ export default function LandingChart({
                 setSelectedMetric("Composition");
               }}
             >
-              <div className="flex items-center gap-x-[5px]">
+              <div className="flex items-center justify-center gap-x-[5px]">
                 <GTPIcon icon="gtp-metrics-chains-grouping" className="w-4 h-4" />
                 <div>Composition</div>
               </div>
@@ -1638,7 +1644,7 @@ export default function LandingChart({
                 setSelectedMetric("Composition Split");
               }}
             >
-              <div className="flex items-center gap-x-[5px]">
+              <div className="flex items-center justify-center gap-x-[5px]">
                 <GTPIcon icon="gtp-metrics-chains-percentage" size="md" />
                 <div>Composition Split</div>
               </div>
