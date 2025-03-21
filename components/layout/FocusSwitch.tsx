@@ -77,7 +77,7 @@ export default function FocusSwitch({ isMobile }: EthUsdSwitchProps) {
                         <div className="p-[15px] text-sm bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
                           <div className="heading-small-xs">Total Ecosystem vs L2 Focus</div>
                           <div className="text-xxs text-wrap">
-                              <strong>L2 Focus</strong> is a feature that allows you to focus on the scaling solutions for Ethereum. Bla bla blaaa blaa blab blabba blba
+                            Toggling between "Total Ecosystem" and "L2 focus" allows you to include Ethereum Mainnet on our pages or to focus solely on Layer 2s.
                           </div>
                         </div>
                     </div>

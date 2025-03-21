@@ -46,6 +46,7 @@ import {
     TooltipTrigger,
 } from "@/components/layout/Tooltip";
 import { ConsoleView } from "react-device-detect";
+import { Background } from "@/components/types/common";
 
 const COLORS = {
     GRID: "rgb(215, 223, 222)",
@@ -85,7 +86,7 @@ const DATableChartsComponent = ({
   // const [hoverChain, setHoverChain] = useState<string | null>(null);
     const pieChartComponent = useRef<Highcharts.Chart | null>(null);
     const chartComponent = useRef<Highcharts.Chart | null>(null);
-    const [selectedScale, setSelectedScale] = useState<string>("absolute");
+    const [selectedScale, setSelectedScale] = useState<string>("stacked");
 
     useEffect(() => {
         Highcharts.setOptions({
@@ -309,9 +310,9 @@ const DATableChartsComponent = ({
             const dailyValues = Array.from(sumDataDaily.entries()).map(([unix, sum], index) => [
                 
                 
-                  "Total",
-                  "Total",
-                  "Total",
+                  "Other DA Consumers",
+                  "Other DA Consumers",
+                  "Other DA Consumers",
                   sum,
                   unix
                 
@@ -319,15 +320,15 @@ const DATableChartsComponent = ({
             const monthlyValues = Array.from(sumDataMonthly.entries()).map(([unix, sum], index) => [
                 
                 
-                    "Total",
-                    "Total",
-                    "Total",
+                    "Other DA Consumers",
+                    "Other DA Consumers",
+                    "Other DA Consumers",
                     sum,
                     unix
                 
               ]);
 
-            filteredData["Total"] = {
+            filteredData["Other DA Consumers"] = {
                 daily: {
                     types,
                     values: dailyValues,
@@ -371,7 +372,7 @@ const DATableChartsComponent = ({
         
         if(selectedChain !== "all"){
             let y: number = 0;
-            let name = "Total";
+            let name = "Other DA Consumers";
             let color = UNLISTED_CHAIN_COLORS[0];
            
             pieDataMap.forEach((value, key) => {
@@ -545,7 +546,7 @@ const DATableChartsComponent = ({
                     const { series, y, percentage } = point;
                    
                     const { name } = series;
-                    const realIndex = name !== "Total" ?  Object.keys(data[selectedTimespan].da_consumers).findIndex((k) => k === nameToKey[name]) : 0;
+                    const realIndex = name !== "Other DA Consumers" ?  Object.keys(data[selectedTimespan].da_consumers).findIndex((k) => k === nameToKey[name]) : 0;
                     const color = AllChainsByKeys[nameToKey[name]] ? AllChainsByKeys[nameToKey[name]].colors["dark"][0] : UNLISTED_CHAIN_COLORS[realIndex];
                     const nameString = name;
                     let percentSize = (y / largestPoint) * 175;
@@ -561,7 +562,7 @@ const DATableChartsComponent = ({
                         <div class="tooltip-point-name text-xs">${nameString}</div>
                         <div class="flex-1 text-right justify-end flex numbers-xs w-full">
                             <div class="flex justify-end text-right w-full">
-                                <div class="flex justify-end w-full">${selectedScale === "absolute" ? formatBytes(displayValue) : Intl.NumberFormat(undefined, {
+                                <div class="flex justify-end w-full">${selectedScale === "stacked" ? formatBytes(displayValue) : Intl.NumberFormat(undefined, {
                                     notation: "compact",
                                     maximumFractionDigits: 2,
                                     minimumFractionDigits: 2,
@@ -817,18 +818,30 @@ const DATableChartsComponent = ({
 
 
 
+    const centerY = 50;
+    const amplitude = 3; 
 
     return(
         <>
 
         <div className="flex h-full w-full gap-x-[10px]">
 
-            <div className="min-w-[450px] w-full flex flex-1 h-[254px] relative px-[10px] overflow-hidden  pr-[5px]">
-                <div className="relative h-[48px] min-w-[450px] w-full py-[10px]">
-                    <div className="heading-large-xs w-[250px] absolute left-[5px] h-[39px] flex items-center -top-[0px]">
+            <div className="min-w-[450px] w-full flex flex-1 h-[264px] relative px-[10px] overflow-hidden  pr-[5px]">
+                <div className="relative flex items-center pl-[5px] justify-between h-[48px]  w-full py-[10px]">
+                    <div className="heading-large-xs  h-[39px] flex items-center text-nowrap -top-[0px]">
                             Data Posted {selectedChain !== "all" ? `(${getNameFromKey[selectedChain]})` : ""}
                     </div>
-                    <div className="w-[100px] h-[20px] absolute right-[75px]">
+                    <div className="px-[10px] w-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 12" preserveAspectRatio="none">
+                            <polyline points="0,6 5,3 10,6 15,9 20,6 25,3 30,6 35,9 40,6 45,3 50,6 55,9 60,6 65,3 70,6 75,9 80,6 85,3 90,6 95,9 100,6 105,3 110,6 115,9 120,6 125,3 130,6 135,9 140,6 145,3 150,6 155,9 160,6 165,3 170,6 175,9 180,6 185,3 190,6 195,9 200,6 205,3 210,6 215,9 220,6 225,3 230,6 235,9 240,6 245,3 250,6 255,9 260,6 265,3 270,6 275,9 280,6 285,3 290,6 295,9 300,6 305,3 310,6 315,9 320,6 325,3 330,6 335,9 340,6 345,3 350,6 355,9 360,6 365,3 370,6 375,9 380,6 385,3 390,6 395,9 400,6" 
+                            fill="none" 
+                            stroke="#5A6462" 
+                            strokeWidth="1" 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" />
+                        </svg>
+                    </div>
+                    <div className=" h-[20px]  relative bottom-[5px]">
                         <YAxisScaleControls selectedScale={selectedScale} setSelectedScale={setSelectedScale} />
                     </div>
                 </div>
@@ -838,15 +851,15 @@ const DATableChartsComponent = ({
                 </div>
                 
 
-                <hr className="absolute w-[99.5%] border-t-[2px] left-[55px] top-[52px] border-[#5A64624F] border-dotted " />
-                <hr className="absolute w-[99.5%] border-t-[2px] left-[55px] top-[137px] border-[#5A64624F] border-dotted " />
-                <hr className="absolute w-[99.5%] border-t-[2px] left-[55px] top-[225px] border-[#5A64624F] border-dotted " />
+                <hr className="absolute w-[99.5%] border-t-[2px] left-[55px] top-[51px] border-[#5A64624F] border-dotted " />
+                <hr className="absolute w-[99.5%] border-t-[2px] left-[55px] top-[142px] border-[#5A64624F] border-dotted " />
+                <hr className="absolute w-[99.5%] border-t-[2px] left-[55px] top-[236px] border-[#5A64624F] border-dotted " />
                 
                 <HighchartsProvider Highcharts={Highcharts}>
                     <HighchartsChart                             
                         containerProps={{
                             style: {
-                                height: "209px",
+                                height: "220px",
                                 width: "100%",
                                 position: "absolute",
                                 marginTop: "48px",
@@ -861,7 +874,7 @@ const DATableChartsComponent = ({
 
                         plotOptions={{
                             area: {
-                                stacking: selectedScale === "absolute" ? "normal" : "percent",
+                                stacking: selectedScale === "stacked" ? "normal" : "percent",
                                 lineWidth: 2,
                                 marker: {
                                     enabled: false,
@@ -1077,14 +1090,14 @@ const DATableChartsComponent = ({
                         formatter: function (
                         t: Highcharts.AxisLabelsFormatterContextObject,
                         ) {
-                          return selectedScale === "absolute" ? formatBytes(t.value as number, 1) : t.value + "%";
+                          return selectedScale === "stacked" ? formatBytes(t.value as number, 1) : t.value + "%";
                         },
                     }}
                     min={0}
                     
                     >
                         {Object.keys(filteredChains).filter((key) => {return filteredChains[key][isMonthly ? "monthly" : "daily"].values[0]}).map((key, index) => {
-                            const realIndex = key !== "Total" ? Object.keys(data[selectedTimespan].da_consumers).findIndex((k) => k === key) : 0;
+                            const realIndex = key !== "Other DA Consumers" ? Object.keys(data[selectedTimespan].da_consumers).findIndex((k) => k === key) : 0;
                             const types = filteredChains[key][isMonthly ? "monthly" : "daily"].types;
                             const name = filteredChains[key][isMonthly ? "monthly" : "daily"].values[0][1];
                           
@@ -1658,15 +1671,15 @@ const YAxisScaleControls = ({selectedScale, setSelectedScale}: {selectedScale: s
             className="relative text-sm md:text-base font-medium"
             onClick={() => {
               
-              setSelectedScale(selectedScale === "absolute" ? "percentage" : "absolute");
+              setSelectedScale(selectedScale === "stacked" ? "percentage" : "stacked");
             
             }}
           >
             <div
-              className={`w-[176px] h-[28px] heading-small flex gap-x-[15px]  items-center pl-[10px] md:pr-[24px] rounded-full transition duration-200 ease-in-out text-forest-900 bg-[#344240]`}
+              className={`w-[176px] h-[28px] heading-small flex gap-x-[20px]  items-center pl-[10px] md:pr-[24px] rounded-full transition duration-200 ease-in-out text-forest-900 bg-[#344240]`}
             >
               
-              <div className="heading-small-xxs text-forest-500 ">Absolute</div>
+              <div className="heading-small-xxs text-forest-500 ">Stacked</div>
               <div className="heading-small-xxs text-forest-500">Percentage</div>
               <div className="absolute top-[6px] z-20 right-[5px]">
                 <Tooltip placement="bottom">
@@ -1676,9 +1689,9 @@ const YAxisScaleControls = ({selectedScale, setSelectedScale}: {selectedScale: s
                     <TooltipContent>
                     <div className="flex flex-col items-center">
                         <div className="p-[15px] text-sm bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
-                          <div className="heading-small-xs">Absolute/Percentage</div>
+                          <div className="heading-small-xs">Stacked/Percentage</div>
                           <div className="text-xxs text-wrap">
-                              This text is a description of the absolute percentage toggle
+                            Toggle between "Stacked" view, which shows the total values by all DA consumers or "Percentage" view which shows relative values.
                           </div>
                         </div>
                     </div>
@@ -1688,13 +1701,13 @@ const YAxisScaleControls = ({selectedScale, setSelectedScale}: {selectedScale: s
             </div>
           
             <div
-              className={`absolute flex justify-center items-center  left-[2px] top-[2px] md:-left-[52px] md:top-0.5
+              className={`absolute flex justify-center items-center  left-[2px] top-[2px] md:-left-[54px] md:top-0.5
                w-full h-[24px] heading-small-xxs leading-[20px] rounded-full transition-transform duration-200 ease-in-out text-forest-500  px-1.5 text-center ${selectedScale === "percentage" ? "transform translate-x-[42%]" : "translate-x-0"
              }`}
             >
               
               <div className="bg-[#1F2726] px-[8px] rounded-full h-[24px] flex items-center">
-                {selectedScale === "percentage" ? <>Percentage</> : <>Absolute</>}
+                {selectedScale === "percentage" ? <>Percentage</> : <>Stacked</>}
               </div>
             </div>
           </div>

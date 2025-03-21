@@ -225,17 +225,23 @@ export default function LandingMetricsTable({
           <GridTableHeaderCell justify="start" className="flex justify-start items-center w-full">
             <div className="w-[80px] text-left flex gap-x-[5px] items-center relative">
               <div>Maturity</div>
-              <Tooltip placement="right">
+              <Tooltip placement="right" allowInteract={true} >
                 <TooltipTrigger className="absolute  z-[1] right-[5px] top-0 bottom-0">
                   <Icon icon="feather:info" className="w-[15px] h-[15px]" />
                 </TooltipTrigger>
-                <TooltipContent className="z-[110]">
-                  <div className="p-3 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex flex-col">
-                    <div>
-                      
-                    </div>
+                <TooltipContent>
+                  <div className="flex flex-col gap-y-[5px] items-center relative">
+                      <div className="p-[15px] text-xs bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50">
+                        <div>
+                          <span>Network maturity as introduced by ethereum.org. We review the network’s progress towards Ethereum alignment (rollup stages 0-2), 
+                          total value secured (TVS), time live in production, and risk considerations. 
+                          These levels help track network development and provide a standardized way for the community to evaluate progress.
+                          </span>
+                          <span> Find out more <a className="underline font-semibold" href="https://ethereum.org/en/layer-2/networks/" target="blankspace" rel="_noopener">here.</a> </span>
+                        </div>
+                      </div>
                   </div>
-                </TooltipContent>
+               </TooltipContent>
               </Tooltip>
             </div>
             
@@ -276,12 +282,11 @@ export default function LandingMetricsTable({
                   <div className="flex flex-col gap-y-[5px] items-center relative">
                       <div className="p-[15px] text-xs bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50">
                         <div>
-                        Number of distinct active addresses in last 7 days and share
-                        of total L2 addresses.
+                          Number of distinct active addresses in the last 7 days and share of total Ethereum ecosystem addresses.
                         </div>
                       </div>
                   </div>
-                </TooltipContent>
+              </TooltipContent>
             </Tooltip>
           </GridTableHeaderCell>
           <GridTableHeaderCell className="relative pl-[10px]" justify="start">
@@ -411,9 +416,7 @@ export default function LandingMetricsTable({
                                   <div className="heading-small-xs">{maturityExists ? master.maturity_levels[master.chains[item.chain.key].maturity].name : ""}</div>
                                 </div>
                                 <div className="text-xxs text-wrap">
-                                  Total Ethereum Ecosystem represents the weekly distinct active wallets across Ethereum Layer 1 and all tracked Layer 2 networks. 
-                                  This metric provides a comprehensive view of wallet activity within the Ethereum ecosystem by aggregating active wallets 
-                                  interacting with smart contracts or making transactions on different chains.
+                                  {maturityExists  ? master.maturity_levels[master.chains[item.chain.key].maturity].description : ""}
                                 </div>
                               </div>
                           </div>
