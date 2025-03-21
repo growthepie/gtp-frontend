@@ -14,6 +14,7 @@ import { ProjectsMetadataProvider, useProjectsMetadata } from "@/app/(layout)/ap
 import Image from "next/image";
 import VerticalScrollContainer from "../VerticalScrollContainer";
 import Link from "next/link";
+import { HeaderButton } from "../layout/HeaderButton";
 
 const setDocumentScroll = (showScroll: boolean) => {
   if (showScroll) {
@@ -104,9 +105,14 @@ export const HeaderSearchButton = () => {
   }, [handleClearQuery, handleCloseSearch, handleOpenSearch, isOpen, query]);
   
   return (
-    <>
-      <GTPIcon icon="gtp-search" size="lg" className="cursor-pointer" onClick={() => handleOpenSearch()} />
-    </>
+    <HeaderButton size="xl" className="cursor-pointer group" onClick={() => handleOpenSearch()} ariaLabel="Search">
+      <div className="flex items-center">
+      <GTPIcon icon="gtp-search" size="md" />
+      <div className={`flex items-center justify-end overflow-hidden w-0 group-hover:w-[28px] transition-all duration-200 ${isOpen ? "!w-[28px]" : "w-0"}`}>
+      <div className="size-[18px] heading-small-xs font-black rounded-[4px] text-[#344240] bg-[#1F2726] flex items-center justify-center">/</div>
+      </div>
+      </div>
+    </HeaderButton>
   )
 }
 
