@@ -42,6 +42,7 @@ export default function SwiperContainer({
   //   }
   // }, []);
 
+  return null;
   return (
     <Container className="!px-0 fade-edge-div pb-[24px] -mb-[24px]">
       <div className={`relative wrapper w-full ${sizeClassMap[size]}`}>
