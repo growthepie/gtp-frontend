@@ -12,7 +12,7 @@ type FocusSwitchProps = {
 
 export default function FocusSwitch({ isMobile }: FocusSwitchProps) {
   const [mounted, setMounted] = useState(false);
-  const [focusEnabled, setFocusEnabled] = useAsyncStorage("focusEnabled", true);
+  const [focusEnabled, setFocusEnabled] = useAsyncStorage("focusEnabled", false);
 
   useEffect(() => {
     setMounted(true);
@@ -49,7 +49,7 @@ export default function FocusSwitch({ isMobile }: FocusSwitchProps) {
           label: "L2 Focus"
         }
       }}
-      value={focusEnabled ? "totalEcosystem" : "l2Focus"}
+      value={focusEnabled ? "l2Focus" : "totalEcosystem"}
       onChange={handleChange}
       size={isMobile ? "sm" : "md"}
       rightComponent={
