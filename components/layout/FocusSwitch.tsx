@@ -20,10 +20,12 @@ export default function FocusSwitch({ isMobile }: FocusSwitchProps) {
 
   const handleChange = (newValue: string) => {
     if (newValue === "totalEcosystem") {
-      setFocusEnabled(true);
-    } else {
       setFocusEnabled(false);
     }
+    if (newValue === "l2Focus") {
+      setFocusEnabled(true);
+    }
+    // Track the change in focus mode
     track(
       newValue === "totalEcosystem" ? "changed to Total Ecosystem" : "changed to L2 Focus",
       {
