@@ -74,7 +74,7 @@ export const viewport = {
 const gtpMain = {
   title: {
     absolute:
-      "Growing Ethereum’s Ecosystem Together - Layer 2 User Base - growthepie",
+      "Growing Ethereum - growthepie",
     template: "%s - growthepie",
   },
   description:
@@ -83,7 +83,7 @@ const gtpMain = {
 
 const gtpFees = {
   title: {
-    absolute: "Ethereum Layer 2 Fees - Real-Time Data - growthepie",
+    absolute: "Ethereum Layer 2 Fees - growthepie",
     template: "%s - growthepie",
   },
   description:
@@ -104,7 +104,6 @@ export const metadata: Metadata = {
     title: "growthepie",
     description: "Growing Ethereum’s Ecosystem Together",
     url: "https://www.growthepie.xyz",
-
     images: [
       {
         url: "https://www.growthepie.xyz/gtp_og.png",
