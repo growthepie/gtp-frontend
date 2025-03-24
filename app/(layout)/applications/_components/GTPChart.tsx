@@ -347,7 +347,8 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
         numericSymbols: ["K", " M", "B", "T", "P", "E"],
       },
     });
-    highchartsRoundedCorners(Highcharts);
+    // addHighchartsMore(Highcharts);
+    // highchartsRoundedCorners(Highcharts); !!-- causing error on server side --!!
     highchartsAnnotations(Highcharts);
     highchartsPatternFill(Highcharts);
 

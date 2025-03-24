@@ -1,108 +1,76 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { track } from "@vercel/analytics";
 import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import useAsyncStorage from "@/hooks/useAsyncStorage";
+import { ToggleSwitch } from "./ToggleSwitch";
 
-type EthUsdSwitchProps = {
+type FocusSwitchProps = {
   isMobile?: boolean;
 };
 
-export default function FocusSwitch({ isMobile }: EthUsdSwitchProps) {
+export default function FocusSwitch({ isMobile }: FocusSwitchProps) {
   const [mounted, setMounted] = useState(false);
-  const [focusEnabled, setFocusEnabled] = useAsyncStorage("focusEnabled", true);
+  const [focusEnabled, setFocusEnabled] = useAsyncStorage("focusEnabled", false);
 
-  // useEffect only runs on the client, so now we can safely show the UI
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const handleToggle = () => {
-    if (focusEnabled === true) {
-      track("changed to ETH", {
-        location: isMobile ? "mobile Menu" : "desktop Header",
-        page: window.location.pathname,
-      });
-    } else {
-      track("changed to USD", {
-        location: isMobile ? "mobile Menu" : "desktop Header",
-        page: window.location.pathname,
-      });
+  const handleChange = (newValue: string) => {
+    if (newValue === "totalEcosystem") {
+      setFocusEnabled(false);
     }
-    setFocusEnabled(!focusEnabled);
+    if (newValue === "l2Focus") {
+      setFocusEnabled(true);
+    }
+    // Track the change in focus mode
+    track(
+      newValue === "totalEcosystem" ? "changed to Total Ecosystem" : "changed to L2 Focus",
+      {
+        location: isMobile ? "mobile Menu" : "desktop Header",
+        page: window.location.pathname,
+      }
+    );
   };
 
   if (!mounted) {
     return null;
   }
 
-  // onClick={() => {
-  //   setFocusEnabled(focusEnabled ? false : true);
-  // }}
   return (
-    <div className="select-none flex justify-between">
-      <div className="flex items-center">
-        <input type="checkbox" className="hidden" />
-        <label htmlFor="toggle" className="flex items-center cursor-pointer">
-          {/* <div
-            className="mr-2 font-medium"
-            onClick={() => {
-              setShowUsd(showUsd ? false : true);
-            }}
-          >
-            {showUsd === true ? <>USD</> : <>ETH</>}
-          </div> */}
-          <div
-            className="relative text-sm md:text-base font-medium"
-            onClick={() => {
-              setFocusEnabled(focusEnabled ? false : true);
-            }}
-          >
-            <div
-              className={`${isMobile ? "w-[80px] h-[22px] text-[13px]" : "w-[203px] h-[28px] heading-small"
-                } flex gap-x-[15px]  items-center pl-[12px] md:pr-[24px] rounded-full transition duration-200 ease-in-out text-forest-900 bg-[#344240]`}
-            >
-              
-              <div className="heading-small-xxs text-forest-500 ">Total Ecosystem</div>
-              <div className="heading-small-xxs text-forest-500">L2 Focus</div>
-              <div className="absolute top-[6px] z-20 right-[5px]">
-                <Tooltip placement="top">
-                    <TooltipTrigger>
-                      <Icon icon="feather:info" className="text-forest-500 w-[15px] h-[15px]" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                    <div className="flex flex-col items-center">
-                        <div className="p-[15px] text-sm bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
-                          <div className="heading-small-xs">Total Ecosystem vs L2 Focus</div>
-                          <div className="text-xxs text-wrap">
-                              <strong>L2 Focus</strong> is a feature that allows you to focus on the scaling solutions for Ethereum. Bla bla blaaa blaa blab blabba blba
-                          </div>
-                        </div>
-                    </div>
-                    </TooltipContent>
-                </Tooltip>
+    <ToggleSwitch
+      values={{
+        left: {
+          value: "totalEcosystem",
+          label: "Total Ecosystem"
+        },
+        right: {
+          value: "l2Focus",
+          label: "L2 Focus"
+        }
+      }}
+      value={focusEnabled ? "l2Focus" : "totalEcosystem"}
+      onChange={handleChange}
+      size={isMobile ? "sm" : "md"}
+      rightComponent={
+        <Tooltip>
+          <TooltipTrigger>
+            <Icon icon="feather:info" className="w-4 h-4" />
+          </TooltipTrigger>
+          <TooltipContent>
+            <div className="flex flex-col items-center">
+              <div className="p-[15px] text-sm bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
+                <div className="heading-small-xs">Total Ecosystem vs L2 Focus</div>
+                <div className="text-xxs text-wrap">
+                  Toggling between "Total Ecosystem" and "L2 focus" allows you to include Ethereum Mainnet on our pages or to focus solely on Layer 2s.
+                </div>
               </div>
             </div>
-          
-            <div
-              className={`absolute flex justify-center items-center  left-[2px] top-[2px] md:-left-[45px] md:top-0.5
-              ${isMobile
-                  ? "h-[18px] leading-[14px] text-[12px]"
-                  : "w-full h-[24px] heading-small-xxs leading-[20px]"
-                } 
-              rounded-full transition-transform duration-200 ease-in-out text-forest-500  px-1.5 text-center ${focusEnabled ? "transform translate-x-[44%]" : "translate-x-0"
-                }`}
-            >
-              
-              <div className="bg-[#1F2726] px-[8px] rounded-full h-[24px] flex items-center">
-                {focusEnabled === true ? <>L2 Focus</> : <>Total Ecosystem</>}
-              </div>
-            </div>
-          </div>
-        </label>
-      </div>
-    </div>
+          </TooltipContent>
+        </Tooltip>
+      }
+    />
   );
 }

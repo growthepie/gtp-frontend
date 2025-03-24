@@ -16,6 +16,7 @@ import { track } from "@vercel/analytics";
 import { useMaster } from "@/contexts/MasterContext";
 import VerticalScrollContainer from "../VerticalScrollContainer";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+import FocusSwitch from "./FocusSwitch";
 
 type SidebarProps = {
   className?: string;
@@ -322,6 +323,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                   </Link>
                 </div>
                 <div className="items-end justify-center z-[999] flex space-x-[15px] mt-[2px] mb-[17px]">
+                  <FocusSwitch isMobile />
                   <EthUsdSwitch isMobile />
                 </div>
               </div>

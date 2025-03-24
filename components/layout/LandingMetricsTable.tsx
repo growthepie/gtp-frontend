@@ -147,14 +147,23 @@ export default function LandingMetricsTable({
     }else if (sort.metric === "table_visual") {
       return filteredChains.sort((a, b) => {
         const multiplier = sort.sortOrder === 'asc' ? 1 : -1;
-      
-        const rankA = landing.data.metrics.table_visual[a.chain.key]?.ranking[centerMetric]?.rank ?? Infinity;
-        const rankB = landing.data.metrics.table_visual[b.chain.key]?.ranking[centerMetric]?.rank ?? Infinity;
-      
+        let rankA;
+        let rankB;
+        if (focusEnabled) {
+          rankA = landing.data.metrics.table_visual[a.chain.key]?.ranking[centerMetric]?.rank ?? Infinity;
+          rankB = landing.data.metrics.table_visual[b.chain.key]?.ranking[centerMetric]?.rank ?? Infinity;
+        } else {
+          rankA = landing.data.metrics.table_visual[a.chain.key]?.ranking_w_eth[centerMetric]?.rank ?? Infinity;
+          rankB = landing.data.metrics.table_visual[b.chain.key]?.ranking_w_eth[centerMetric]?.rank ?? Infinity;
+        }
+    
+        // Handle Infinity values explicitly
+        if (rankA === Infinity && rankB === Infinity) return 0;
+        if (rankA === Infinity) return 1; // Push rankA to end
+        if (rankB === Infinity) return -1; // Push rankB to end
+    
         return multiplier * (rankA - rankB);
       });
-      
-    
     }else{
       return filteredChains.sort((a, b) => {
         const multiplier = sort.sortOrder === 'asc' ? 1 : -1;
@@ -216,17 +225,23 @@ export default function LandingMetricsTable({
           <GridTableHeaderCell justify="start" className="flex justify-start items-center w-full">
             <div className="w-[80px] text-left flex gap-x-[5px] items-center relative">
               <div>Maturity</div>
-              <Tooltip placement="right">
+              <Tooltip placement="right" allowInteract={true} >
                 <TooltipTrigger className="absolute  z-[1] right-[5px] top-0 bottom-0">
                   <Icon icon="feather:info" className="w-[15px] h-[15px]" />
                 </TooltipTrigger>
-                <TooltipContent className="z-[110]">
-                  <div className="p-3 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex flex-col">
-                    <div>
-                      
-                    </div>
+                <TooltipContent>
+                  <div className="flex flex-col gap-y-[5px] items-center relative">
+                      <div className="p-[15px] text-xs bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50">
+                        <div>
+                          <span>Network maturity as introduced by ethereum.org. We review the network’s progress towards Ethereum alignment (rollup stages 0-2), 
+                          total value secured (TVS), time live in production, and risk considerations. 
+                          These levels help track network development and provide a standardized way for the community to evaluate progress.
+                          </span>
+                          <span> Find out more <a className="underline font-semibold" href="https://ethereum.org/en/layer-2/networks/" target="blankspace" rel="_noopener">here.</a> </span>
+                        </div>
+                      </div>
                   </div>
-                </TooltipContent>
+               </TooltipContent>
               </Tooltip>
             </div>
             
@@ -258,17 +273,19 @@ export default function LandingMetricsTable({
                   
                 />
             </div>
-            <Tooltip placement="left">
-              <TooltipTrigger className="absolute z-[1] -right-[0px] top-0 bottom-0">
+
+            <Tooltip placement="left" allowInteract={false} >
+              <TooltipTrigger className="absolute  z-[1] -right-[0px] top-0 bottom-0">
                 <Icon icon="feather:info" className="w-[15px] h-[15px]" />
               </TooltipTrigger>
-              <TooltipContent className="z-[110]">
-                <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex flex-col">
-                  <div>
-                    Number of distinct active addresses in last 7 days and share
-                    of total L2 addresses.
+              <TooltipContent>
+                  <div className="flex flex-col gap-y-[5px] items-center relative">
+                      <div className="p-[15px] text-xs bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50">
+                        <div>
+                          Number of distinct active addresses in the last 7 days and share of total Ethereum ecosystem addresses.
+                        </div>
+                      </div>
                   </div>
-                </div>
               </TooltipContent>
             </Tooltip>
           </GridTableHeaderCell>
@@ -295,18 +312,21 @@ export default function LandingMetricsTable({
                 className={`w-[12px] h-[12px] -right-[15px] absolute ${sort.metric === "cross_chain_activity" ? "opacity-100" : "opacity-20"} group-hover:opacity-100`}
               />
             </div>
-            <Tooltip placement="left">
+
+            <Tooltip placement="left" allowInteract={false} >
               <TooltipTrigger className="absolute  z-[1] -right-[0px] top-0 bottom-0">
                 <Icon icon="feather:info" className="w-[15px] h-[15px]" />
               </TooltipTrigger>
-              <TooltipContent className="z-[110]">
-                <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex flex-col">
-                  <div>
-                    Percentage of active addresses that also interacted with
-                    other chains in the last 7 days.
+              <TooltipContent>
+                  <div className="flex flex-col gap-y-[5px] items-center relative">
+                      <div className="p-[15px] text-xs bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50">
+                        <div>
+                          Percentage of active addresses that also interacted with
+                          other chains in the last 7 days.
+                        </div>
+                      </div>
                   </div>
-                </div>
-              </TooltipContent>
+                </TooltipContent>
             </Tooltip>
           </GridTableHeaderCell>
           <GridTableHeaderCell justify="end">
@@ -382,28 +402,26 @@ export default function LandingMetricsTable({
                   </div>
                   <div className={`justify-start  w-full items-center group rounded-full`}>
 
-                    <Tooltip placement="bottom" allowInteract >
+                    <Tooltip placement="bottom" allowInteract={false} >
                       <TooltipTrigger>
                         <div className={``}>
                           <GTPIcon  icon={`gtp-layer2-maturity-${maturityName}` as GTPIconName} size="md" />
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
-                          <div className="flex flex-col gap-y-[5px] items-center relative left-[220px]">
+                          <div className="flex flex-col gap-y-[5px] items-center relative left-[245px]">
                               <div className="p-[15px] text-sm bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50">
                                 <div className="flex items-center gap-x-[15px]">
                                   <GTPIcon  icon={`gtp-layer2-maturity-${maturityName}` as GTPIconName} size="sm" />
                                   <div className="heading-small-xs">{maturityExists ? master.maturity_levels[master.chains[item.chain.key].maturity].name : ""}</div>
                                 </div>
                                 <div className="text-xxs text-wrap">
-                                  Total Ethereum Ecosystem represents the weekly distinct active wallets across Ethereum Layer 1 and all tracked Layer 2 networks. 
-                                  This metric provides a comprehensive view of wallet activity within the Ethereum ecosystem by aggregating active wallets 
-                                  interacting with smart contracts or making transactions on different chains.
+                                  {maturityExists  ? master.maturity_levels[master.chains[item.chain.key].maturity].description : ""}
                                 </div>
                               </div>
                           </div>
                         </TooltipContent>
-                  </Tooltip>
+                    </Tooltip>
                   </div>
                   <ChainRankCell item={item} setCenterMetric={setCenterMetric} centerMetric={centerMetric} setSort={setSort} sort={sort} />
                   
@@ -450,8 +468,8 @@ export default function LandingMetricsTable({
                         // Format the output
                         return (
                           <>
-                             <span className="numbers-xxs">{years > 0 && years}{years > 0 ? 'yr' : ''}{years > 1 ? 's' : ''}</span>{' '}
-                             <span className="numbers-xxs">{months}mos</span>
+                             <span className="numbers-xs">{years > 0 && years}{years > 0 ? 'yr' : ''}{years > 1 ? 's' : ''}</span>{' '}
+                             <span className="numbers-xs">{months}mos</span>
                           </>
                         );
                       })()}
@@ -488,10 +506,10 @@ const ChainRankHeader = memo(function ChainRankHeader({
     if (!master) return null;
 
     return (
-      <div className="flex items-center gap-x-[10px] px-[10px] h-[36px] rounded-full bg-[#1F2726] z-[1] relative overflow-visible">
+      <div className="flex items-center gap-x-[10px] px-[5px] h-[36px] rounded-full bg-[#1F2726] z-[1] relative overflow-visible">
         {rankingKeys.map((metric) => {
           return (
-            <div className="relative flex items-center justify-center size-[15px] cursor-pointer"
+            <div className="relative flex items-center justify-center size-[16px] cursor-pointer"
               key={metric}
               onMouseEnter={() => {
                 setHoveredMetric(metric)
@@ -516,7 +534,7 @@ const ChainRankHeader = memo(function ChainRankHeader({
             >
               <GTPMetricIcon key={metric} icon={metric} size={hoveredMetric === metric ? "md" : "sm"} className="absolute z-[2]" />
               <GTPIcon icon="chevron-down" size={"sm"}  className={`absolute z-[3] w-[10px] h-[4px] top-[18px] ${(centerMetric === metric && sort.sortOrder === "asc" && sort.metric === "table_visual" && hoveredMetric !== centerMetric ) ? "opacity-100" : "opacity-0"}`} />
-              <GTPIcon icon="chevron-down" size={"sm"}  className={`absolute z-[3] w-[10px] right-[0px] h-[4px] bottom-[17px] rotate-180 ${(centerMetric === metric && sort.sortOrder === "desc" && sort.metric === "table_visual" && hoveredMetric !== centerMetric ) ? "opacity-100" : "opacity-0"}`} />
+              <GTPIcon icon="chevron-down" size={"sm"}  className={`absolute z-[3] w-[10px] -right-[0px] h-[4px] bottom-[17px] rotate-180 ${(centerMetric === metric && sort.sortOrder === "desc" && sort.metric === "table_visual" && hoveredMetric !== centerMetric ) ? "opacity-100" : "opacity-0"}`} />
 
               <div className={`absolute -inset-[10.5px] bg-[#151A19] border border-[#5A6462] rounded-full z-[1] ${hoveredMetric === metric ? "opacity-100" : "opacity-0"}`} />
               <div className={`absolute -top-[44px] z-[11] w-[200px] h-[30px] flex items-end justify-center pointer-events-none ${(hoveredMetric === metric || (centerMetric === metric && hoveredMetric === null && sort.metric === "table_visual")) ? "opacity-100" : "opacity-0"}`}>
@@ -637,20 +655,20 @@ const ChainRankCell = memo(function ChainRankCell({
   return (
     <div className="flex justify-center items-center select-none h-full">
       {landing && landing.data.metrics.table_visual[item.chain.key].ranking && (
-        <div className="flex items-center justify-end px-[10px] h-full">
+        <div className="flex items-center justify-end pl-[2px] pr-[10px] h-full  gap-x-[10px]">
           {rankingKeys.map((metric) => {
             const metricRanks = landing ? Object.values(landing.data.metrics.table_visual).map((chain) => chain.ranking[metric].rank).filter((rank) => rank !== null) : [];
             const maxRank = Math.max(...metricRanks)
             const minRank = Math.min(...metricRanks)
 
-            const valueKeys = landing ? Object.keys(landing.data.metrics.table_visual[item.chain.key].ranking[metric]).filter((key) => key.includes("value")) : [];
-            const values = landing ? valueKeys.map((key) => landing.data.metrics.table_visual[item.chain.key].ranking[metric][key]) : [];
+            const valueKeys = landing ? Object.keys(landing.data.metrics.table_visual[item.chain.key][focusEnabled ? "ranking" : "ranking_w_eth"][metric]).filter((key) => key.includes("value")) : [];
+            const values = landing ? valueKeys.map((key) => landing.data.metrics.table_visual[item.chain.key][focusEnabled ? "ranking" : "ranking_w_eth"][metric][key]) : [];
 
             const colorScale = landing ? landing.data.metrics.table_visual[item.chain.key][focusEnabled ? "ranking" : "ranking_w_eth"][metric].color_scale : 0;
             return (
               <div
                 key={metric}
-                className={`relative flex items-start justify-center size-[25px] ${landing.data.metrics.table_visual[item.chain.key][focusEnabled ? "ranking" : "ranking_w_eth"][metric].rank !== null && "cursor-pointer"}`}
+                className={`relative flex items-start justify-center size-[16px] ${landing.data.metrics.table_visual[item.chain.key][focusEnabled ? "ranking" : "ranking_w_eth"][metric].rank !== null && "cursor-pointer"}`}
 
               >
                 <div
@@ -665,7 +683,7 @@ const ChainRankCell = memo(function ChainRankCell({
                     setSort({
                       metric: "table_visual",
                       sortOrder:
-                        sort.metric === "table_visual"
+                        sort.metric === "table_visual" && centerMetric === metric
                           ? sort.sortOrder === "desc"
                             ? "asc"
                             : "desc"
@@ -706,7 +724,7 @@ const ChainRankCell = memo(function ChainRankCell({
                           colorScale={colorScale}
                           size="sm"
                         >
-                          <span className="font-mono text-[9px] font-bold text-[#1F2726]">{landing.data.metrics.table_visual[item.chain.key][focusEnabled ? "ranking" : "ranking_w_eth"][metric].rank}</span>
+                          <span className="font-mono text-[7px] font-bold text-[#1F2726]">{landing.data.metrics.table_visual[item.chain.key][focusEnabled ? "ranking" : "ranking_w_eth"][metric].rank}</span>
                         </RankIcon>
 
                       </div>
