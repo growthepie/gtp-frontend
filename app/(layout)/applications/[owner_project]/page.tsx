@@ -5,7 +5,6 @@ import { useMetrics } from "../_contexts/MetricsContext";
 import { ContractDict, useApplicationDetailsData } from "../_contexts/ApplicationDetailsDataContext";
 import { useTimespan } from "../_contexts/TimespanContext";
 import { useMaster } from "@/contexts/MasterContext";
-import { ApplicationDetailsChart } from "../_components/GTPChart";
 import { ChartScaleProvider } from "../_contexts/ChartScaleContext";
 import ChartScaleControls from "../_components/ChartScaleControls";
 import { ApplicationCard, Category } from "../_components/Components";
@@ -23,6 +22,10 @@ import { useApplicationsData } from "../_contexts/ApplicationsDataContext";
 import useDragScroll from "@/hooks/useDragScroll";
 import { Sources } from "@/lib/datasources";
 import { MetricChainBreakdownBar } from "../_components/MetricChainBreakdownBar";
+import dynamic from "next/dynamic";
+
+// dynamic import to prevent server-side rendering of the chart component
+const ApplicationDetailsChart = dynamic(() => import("../_components/GTPChart").then((mod) => mod.GTPChart), { ssr: false });
 
 type Props = {
   params: { owner_project: string };
