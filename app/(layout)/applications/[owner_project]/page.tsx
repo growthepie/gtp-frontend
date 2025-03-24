@@ -2,34 +2,31 @@
 import Container from "@/components/layout/Container";
 import { useProjectsMetadata } from "../_contexts/ProjectsMetadataContext";
 import { useMetrics } from "../_contexts/MetricsContext";
-import { ContractDict, MetricData, useApplicationDetailsData } from "../_contexts/ApplicationDetailsDataContext";
+import { ContractDict, useApplicationDetailsData } from "../_contexts/ApplicationDetailsDataContext";
 import { useTimespan } from "../_contexts/TimespanContext";
 import { useMaster } from "@/contexts/MasterContext";
-import { ApplicationDetailsChart } from "../_components/GTPChart";
 import { ChartScaleProvider } from "../_contexts/ChartScaleContext";
 import ChartScaleControls from "../_components/ChartScaleControls";
-import { ApplicationCard, ApplicationDisplayName, ApplicationIcon, Category, Chains, formatNumber, Links, MetricTooltip } from "../_components/Components";
-import { memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ApplicationCard, Category } from "../_components/Components";
+import { memo, ReactNode, useEffect, useMemo, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import { GridTableAddressCell, GridTableHeader, GridTableHeaderCell, GridTableRow } from "@/components/layout/GridTable";
 import { GTPIcon } from "@/components/layout/GTPIcon";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import { Icon } from "@iconify/react";
-import VerticalVirtuosoScrollContainer from "@/components/VerticalVirtuosoScrollContainer";
 import Link from "next/link";
-import { SortProvider, useSort } from "../_contexts/SortContext";
-import { useHighchartsWrappers, useUIContext } from "@/contexts/UIContext";
+import { useSort } from "../_contexts/SortContext";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { Virtuoso } from "react-virtuoso";
-import { useRouter } from "next/navigation";
-import { AggregatedDataRow, useApplicationsData } from "../_contexts/ApplicationsDataContext";
+import { useApplicationsData } from "../_contexts/ApplicationsDataContext";
 import useDragScroll from "@/hooks/useDragScroll";
 import { Sources } from "@/lib/datasources";
-import moment from "moment";
-// import { useGTPChartSyncProvider } from "../_contexts/GTPChartSyncContext";
 import { MetricChainBreakdownBar } from "../_components/MetricChainBreakdownBar";
 import { useChartSync } from "../_contexts/GTPChartSyncContext";
+import dynamic from "next/dynamic";
+
+// dynamic import to prevent server-side rendering of the chart component
+const ApplicationDetailsChart = dynamic(() => import("../_components/GTPChart").then((mod) => mod.ApplicationDetailsChart), { ssr: false });
 
 type Props = {
   params: { owner_project: string };
@@ -141,7 +138,7 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
 
   
 
-  useHighchartsWrappers();
+  
 
   const def = metricsDef[metric];
 
