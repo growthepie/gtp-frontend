@@ -25,7 +25,7 @@ import { MetricChainBreakdownBar } from "../_components/MetricChainBreakdownBar"
 import dynamic from "next/dynamic";
 
 // dynamic import to prevent server-side rendering of the chart component
-const ApplicationDetailsChart = dynamic(() => import("../_components/GTPChart").then((mod) => mod.GTPChart), { ssr: false });
+const ApplicationDetailsChart = dynamic(() => import("../_components/GTPChart").then((mod) => mod.ApplicationDetailsChart), { ssr: false });
 
 type Props = {
   params: { owner_project: string };
