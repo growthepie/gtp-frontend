@@ -328,22 +328,25 @@ const DATableChartsComponent = ({
                 
               ]);
 
-            filteredData["Other DA Consumers"] = {
-                daily: {
-                    types,
-                    values: dailyValues,
-                },
-                monthly: {
-                    types,
-                    values: monthlyValues,
-                },
-            }
 
-          
+            if(selectedScale === "percentage"){
+
+                filteredData["Other DA Consumers"] = {
+                    daily: {
+                        types,
+                        values: dailyValues,
+                    },
+                    monthly: {
+                        types,
+                        values: monthlyValues,
+                    },
+                }
+
+            }
             
             return filteredData;
         }
-    }, [data, selectedChain, selectedTimespan]);
+    }, [data, selectedChain, selectedTimespan, selectedScale]);
 
 
     const formattedPieData = useMemo(() => {

@@ -215,7 +215,7 @@ export default function LandingMetricsTable({
     <>
       <>
         <GridTableHeader
-          gridDefinitionColumns="grid-cols-[26px_125px_190px_95px_minmax(285px,800px)_140px_125px_80px]"
+          gridDefinitionColumns="grid-cols-[26px_125px_190px_95px_minmax(300px,800px)_140px_125px_80px]"
           className="text-[14px] !font-bold gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] !pt-[15px] pb-[5px] select-none overflow-visible"
 
         >
@@ -247,7 +247,24 @@ export default function LandingMetricsTable({
             
           </GridTableHeaderCell>
           <GridTableHeaderCell justify="center">
-            <ChainRankHeader setCenterMetric={setCenterMetric} centerMetric={centerMetric} setSort={setSort} sort={sort} />
+            <div className="flex gap-x-[5px] relative">
+              <ChainRankHeader setCenterMetric={setCenterMetric} centerMetric={centerMetric} setSort={setSort} sort={sort} />
+              <Tooltip placement="right" allowInteract={true} >
+                  <TooltipTrigger className="absolute  z-[50] top-[10px] -right-[20px]">
+                    <Icon icon="feather:info" className="w-[15px] h-[15px]" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="flex flex-col gap-y-[5px] items-center relative">
+                        <div className="p-[15px] text-xs bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50">
+                          <div>
+                            Chain ranking based on values of the last complete day of data. 
+                            The number in the medals represents the ranking (i.e. 1 means that this chain is currently the leader for the selected metric).
+                          </div>
+                        </div>
+                    </div>
+                </TooltipContent>
+              </Tooltip>
+            </div>
           </GridTableHeaderCell>
           <GridTableHeaderCell className="relative pl-[10px]" justify="start">
             <div className="flex items-center gap-x-[5px] relative group"
@@ -366,7 +383,7 @@ export default function LandingMetricsTable({
                 }}
               >
                 <GridTableRow
-                  gridDefinitionColumns="grid-cols-[26px_125px_190px_95px_minmax(285px,800px)_140px_125px_71px]"
+                  gridDefinitionColumns="grid-cols-[26px_125px_190px_95px_minmax(300px,800px)_140px_125px_71px]"
                   className="relative group text-[14px] gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] select-none h-[34px] !pb-0 !pt-0"
                   bar={{
                     origin_key: item.chain.key,
