@@ -57,7 +57,7 @@ export default function LandingSwiperItems() {
           });
         }}
       >
-        Compare{" "}
+        Breakdown{" "}
         <Icon icon="feather:chevron-right" className="w-4 h-4 md:w-6 md:h-6" />{" "}
       </Link>
     </>
