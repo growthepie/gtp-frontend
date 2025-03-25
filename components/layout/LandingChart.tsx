@@ -634,39 +634,37 @@ export default function LandingChart({
     label: string;
   } | null>(null);
 
-  const onXAxisSetExtremes =
-    useCallback<Highcharts.AxisSetExtremesEventCallbackFunction>(
-      function (e) {
-        if (e.trigger === "pan") return;
-        const { min, max } = e;
-        const numDays = (max - min) / (24 * 60 * 60 * 1000);
+  const handleAfterSetExtremes = useCallback((e: any) => {
+    console.log("handleAfterSetExtremes called", e.trigger);
+    if (e.trigger === "pan") return;
+    
+    const { min, max } = e;
+    const numDays = (max - min) / (24 * 60 * 60 * 1000);
 
-        setIntervalShown({
-          min,
-          max,
-          num: numDays,
-          label: `${Math.round(numDays)} day${numDays > 1 ? "s" : ""}`,
-        });
+    setIntervalShown({
+      min,
+      max,
+      num: numDays,
+      label: `${Math.round(numDays)} day${numDays > 1 ? "s" : ""}`,
+    });
 
-        if (
-          e.trigger === "zoom" ||
-          // e.trigger === "pan" ||
-          e.trigger === "navigator" ||
-          e.trigger === "rangeSelectorButton"
-        ) {
-          const { xMin, xMax } = timespans[selectedTimespan];
+    if (
+      e.trigger === "zoom" ||
+      // e.trigger === "pan" ||
+      e.trigger === "navigator" ||
+      e.trigger === "rangeSelectorButton"
+    ) {
+      const { xMin, xMax } = timespans[selectedTimespan];
 
-          if (min === xMin && max === xMax) {
-            setZoomed(false);
-          } else {
-            setZoomed(true);
-          }
-          setZoomMin(min);
-          setZoomMax(max);
-        }
-      },
-      [selectedTimespan, timespans],
-    );
+      if (min === xMin && max === xMax) {
+        setZoomed(false);
+      } else {
+        setZoomed(true);
+      }
+      setZoomMin(min);
+      setZoomMax(max);
+    }
+  }, [selectedTimespan, timespans]);
 
   // const containerRef = useRef<HTMLDivElement>(null);
 
@@ -1074,33 +1072,7 @@ export default function LandingChart({
               }
             });
           },
-          afterSetExtremes: function(e: any) {
-
-            const registry = this.options['patternRegistry'] as PatternRegistry;
-            if(!registry) return;
-            
-            const series = this.series;
-            
-            series.forEach((series: any, index: number) => {
-              const seriesOptions = series.options;
-              const compositionType = seriesOptions.custom?.compositionType;
-              
-              if (!compositionType) return;
-              
-              const typeConfig = BACKEND_SIMULATION_CONFIG.compositionTypes[compositionType];
-              console.log("series", series.name, "typeConfig", typeConfig);
-              if(typeConfig.fill.type === "gradient" || typeConfig.fill.type === "pattern") {
-                registry.applyFillToSeries(index, `${series.name}_fill`);
-              }
-
-              if(typeConfig.mask) {
-                registry.applyMaskToSeries(index, `${series.name}_mask`);
-              }
-            });
-
-            onXAxisSetExtremes.call(this, e);
-            
-          },
+          afterSetExtremes: handleAfterSetExtremes,
         },
         min: zoomed ? zoomMin : timespans[selectedTimespan].xMin,
         max: zoomed ? zoomMax : timespans[selectedTimespan].xMax,
@@ -1292,7 +1264,7 @@ export default function LandingChart({
 
     return merge({}, baseChartOptions, dynamicOptions);
     // return { ...baseOptions };
-  }, [getChartHeight, selectedScale, is_embed, theme, onXAxisSetExtremes, zoomed, zoomMin, timespans, selectedTimespan, zoomMax, customTooltipFormatter, tooltipPositioner, isDragging, filteredData, isMobile, showEthereumMainnet, getSeriesType, metric, getSeriesData, AllChainsByKeys]);
+  }, [getChartHeight, selectedScale, is_embed, theme, handleAfterSetExtremes, zoomed, zoomMin, timespans, selectedTimespan, zoomMax, customTooltipFormatter, tooltipPositioner, isDragging, filteredData, isMobile, showEthereumMainnet, getSeriesType, metric]);
 
   useEffect(() => {
     if (chartComponent.current) {
@@ -1476,10 +1448,6 @@ export default function LandingChart({
                 <button
                   className={`rounded-full flex items-center justify-center space-x-3 px-4 py-1.5 2xl:py-3 text-md w-full 2xl:w-auto 2xl:px-4 2xl:text-md font-medium border-[1px] border-forest-800`}
                   onClick={() => {
-                    // chartComponent?.current?.xAxis[0].setExtremes(
-                    //   timespans[selectedTimespan].xMin,
-                    //   timespans[selectedTimespan].xMax,
-                    // );
                     setZoomed(false);
                   }}
                 >
