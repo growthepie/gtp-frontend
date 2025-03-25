@@ -389,7 +389,7 @@ export default function LandingChart({
   const [focusEnabled] = useLocalStorage("focusEnabled", true);
 
   const [selectedTimespan, setSelectedTimespan] = useState(
-    embed_timespan ?? "180d",
+    embed_timespan ?? "max",
   );
 
   const [selectedScale, setSelectedScale] = useState(
@@ -723,7 +723,7 @@ export default function LandingChart({
   const getChartHeight = useCallback(() => {
     if (is_embed) return height;
     if (isMobile) return 264;
-    return 360;
+    return 400;
   }, [isMobile, is_embed, height]);
 
   const options = useMemo((): Highcharts.Options => {
@@ -866,7 +866,7 @@ export default function LandingChart({
         minorTickWidth: 2,
         minorGridLineWidth: 0,
         tickColor: "#CDD8D34C",
-        tickLength: 25,
+        tickLength: 15,
         tickWidth: 1,
         offset: 0,
         minTickInterval: 30 * 24 * 3600 * 1000,
@@ -894,7 +894,7 @@ export default function LandingChart({
               year: "numeric",
             });
           },
-          y: 40,
+          y: 30,
           style: {
             fontSize: "10px",
             color: "#CDD8D3",
@@ -1319,7 +1319,7 @@ export default function LandingChart({
           </TopRowParent>
         </TopRowContainer>
       </div>
-      <div className="flex-1 min-h-0 w-full pt-8 pb-4 md:pt-[52px] md:pb-4 2xl:pt-[52px] 2xl:pb-16 ">
+      <div className="flex-1 min-h-0 w-full pb-4 pt-[30px] md:pt-[15px] xl:pt-[5px] md:pb-[5px] ">
         <div
           className="relative h-[284px] md:h-[400px] w-full rounded-xl"
           ref={containerRef}
@@ -1356,70 +1356,72 @@ export default function LandingChart({
         </div>
 
       </div>
-      <div className="h-[32px] lg:h-[80px] flex flex-col justify-start ">
-        <div className="flex justify-between items-center rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative h-[44px]">
-          {/* toggle ETH */}
-          <div>
-            <div className={`z-10 pl-2 ${focusEnabled ? "flex items-center" : "hidden"}`} >
-              <Switch
-                checked={showEthereumMainnet}
-                onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
-              />
-              <div className="ml-2 block md:hidden xl:block heading-small-xs">
-                Compare Ethereum
+      <div className="pb-[69px]">
+        <div className="h-[32px] lg:h-[44px] flex flex-col justify-start ">
+          <div className="flex justify-between items-center rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative h-[44px]">
+            {/* toggle ETH */}
+            <div>
+              <div className={`z-10 pl-0 lg:pl-[10px] ${focusEnabled ? "flex items-center" : "hidden"}`} >
+                <Switch
+                  checked={showEthereumMainnet}
+                  onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
+                />
+                <div className="ml-2 block md:hidden xl:block heading-small-xs">
+                  Compare Ethereum
+                </div>
+                <div className={`ml-2 hidden md:block xl:hidden heading-small-xs`}>
+                  Compare ETH
+                </div>
               </div>
-              <div className={`ml-2 hidden md:block xl:hidden heading-small-xs`}>
-                Compare ETH
-              </div>
-            </div>
-            <div className={`${focusEnabled ? "hidden" : "flex"} items-center`}>
+              <div className={`${focusEnabled ? "hidden" : "flex"} items-center`}>
 
-              <Tooltip placement="right" allowInteract >
-                <TooltipTrigger>
-                  <div className={`bottom-[28px] right-[8px] p-0 -mr-0.5 lg:p-1.5 z-10 lg:mr-0 absolute lg:static lg:mb-0.5`}>
-                    <Icon icon="feather:info" className="w-6 h-6" />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <div className="flex flex-col items-center">
-                        <div className="p-[15px] text-sm bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
-                          <div className="heading-small-xs">Ethereum showing vs Not</div>
-                          <div className="text-xxs text-wrap">
-                              Something something something ..... admo
-                          </div>
-                        </div>
+                <Tooltip placement="right" allowInteract >
+                  <TooltipTrigger>
+                    <div className={`bottom-[28px] right-[8px] p-0 -mr-0.5 lg:p-1.5 z-10 lg:mr-0 absolute lg:static lg:mb-0.5`}>
+                      <Icon icon="feather:info" className="w-6 h-6" />
                     </div>
-                  </TooltipContent>
-              </Tooltip>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                      <div className="flex flex-col items-center">
+                          <div className="p-[15px] text-sm bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
+                            <div className="heading-small-xs">Ethereum showing vs Not</div>
+                            <div className="text-xxs text-wrap">
+                                Something something something ..... admo
+                            </div>
+                          </div>
+                      </div>
+                    </TooltipContent>
+                </Tooltip>
+              </div>
             </div>
-          </div>
-          <div className="flex justify-end items-center absolute top-[56px] lg:-top-[10px] right-[20px] rounded-full z-10">
-            <div className="flex justify-center items-center">
-              <div className="flex items-center justify-center gap-x-[20px] pr-[10px]">
-                <MetricCard
-                  icon="gtp-users"
-                  metric_name="Active Addresses"
-                  metric_value={latest_total}
-                  metric_comparison={latest_total_comparison}
-                  theme={theme || "dark"}
-                />
-                <MetricCard
-                  icon="gtp-walletsmultiplechains"
-                  metric_name="Active on Multiple Chains"
-                  metric_value={cross_chain_users}
-                  metric_comparison={cross_chain_users_comparison}
-                  theme={theme || "dark"}
-                />
-                <MetricCard
-                  icon="gtp-layers"
-                  metric_name="Layer 2 Dominance"
-                  metric_value={(Math.round(l2_dominance * 100) / 100).toFixed(
-                    2,
-                  )}
-                  metric_comparison={l2_dominance_comparison}
-                  theme={theme || "dark"}
-                  is_multiple
-                />
+            <div className="flex justify-end items-center absolute top-[56px] lg:-top-[10px] right-[20px] rounded-full z-10">
+              <div className="flex justify-center items-center">
+                <div className="flex items-center justify-center gap-x-[20px] pr-[10px]">
+                  <MetricCard
+                    icon="gtp-users"
+                    metric_name="Active Addresses"
+                    metric_value={latest_total}
+                    metric_comparison={latest_total_comparison}
+                    theme={theme || "dark"}
+                  />
+                  <MetricCard
+                    icon="gtp-walletsmultiplechains"
+                    metric_name="Active on Multiple Chains"
+                    metric_value={cross_chain_users}
+                    metric_comparison={cross_chain_users_comparison}
+                    theme={theme || "dark"}
+                  />
+                  <MetricCard
+                    icon="gtp-layers"
+                    metric_name="Layer 2 Dominance"
+                    metric_value={(Math.round(l2_dominance * 100) / 100).toFixed(
+                      2,
+                    )}
+                    metric_comparison={l2_dominance_comparison}
+                    theme={theme || "dark"}
+                    is_multiple
+                  />
+                </div>
               </div>
             </div>
           </div>

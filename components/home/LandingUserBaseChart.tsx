@@ -43,6 +43,8 @@ export default function LandingUserBaseChart() {
 
   const [selectedMetric, setSelectedMetric] = useState("Total Ethereum Ecosystem");
 
+  const [sort, setSort] = useState<{ metric: string; sortOrder: "asc" | "desc" }>({ metric: "chain_name", sortOrder: "asc" });
+
   
   useEffect(() => {
     if (landing) {
@@ -63,10 +65,7 @@ export default function LandingUserBaseChart() {
       {data && landing && master && AllChainsByKeys ? (
         <>
           <Container
-            className={`w-full ${isMobile ? "h-[620px]" : "h-[600px]"} ${isSidebarOpen
-              ? "md:h-[718px] lg:h-[626px]"
-              : "md:h-[718px] lg:h-[657px]"
-              } rounded-[15px] pb-[15px] md:pb-[42px]`}
+            className={`w-full`}
           >
             <LandingChart
               data={data}
@@ -85,12 +84,16 @@ export default function LandingUserBaseChart() {
           </Container>
           <HorizontalScrollContainer reduceLeftMask={true}>
             <TableRankingProvider>
+              <div className="flex flex-col gap-y-[5px]">
               <LandingMetricsTable
                 data={{ chains: landing.data.metrics.table_visual }}
                 master={master}
                 // interactable={selectedMetric !== "Total Users"}
                 interactable={false}
+                sort={sort}
+                setSort={setSort}
               />
+              </div>
             </TableRankingProvider>
           </HorizontalScrollContainer>
         </>

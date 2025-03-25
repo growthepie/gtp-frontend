@@ -170,7 +170,7 @@ export const GridTableHeaderCell = ({ children, className, justify, metric, sort
       <div className={`flex items-center ${alignClass || "justify-start"} gap-x-[12px]  ${className}`}>
         {extraLeft}
         <div
-          className={`flex items-center ${alignClass || "justify-start"} ${(onSort || setSort) && "cursor-pointer"}`}
+          className={`flex items-center gap-x-[2px] ${alignClass || "justify-start"} ${(onSort || setSort) && "cursor-pointer"}`}
           onClick={() => {
             if(onSort) onSort();
             (metric && sort && setSort) && setSort({
