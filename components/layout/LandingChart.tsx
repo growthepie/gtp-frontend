@@ -1066,15 +1066,14 @@ export default function LandingChart({
               states: {
                 hover: {
                   enabled: true,
-                  halo: {
+                    halo: {
                       size: 5,
                       opacity: 1,
                       attributes: {
                         fill:
-                          primaryColor,
+                          primaryColor + "99",
                         stroke:
-                          primaryColor,
-                        "stroke-width": 0,
+                          primaryColor + "66",
                       },
                     },
                     brightness: 0.3,

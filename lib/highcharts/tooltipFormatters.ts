@@ -337,14 +337,14 @@ export const createTooltipFormatter = (options: TooltipFormatterOptions) => {
     
     // Add any special notes/footer for specific metrics
     let tooltipEnd = `</div>`;
-    if (selectedMetric === 'Total Ethereum Ecosystem') {
-      tooltipEnd = `
-        <div class="text-[0.55rem] flex flex-col items-start pl-[24px] pt-3 gap-x-1 w-full text-forest-900/60 dark:text-forest-500/60">
-          <div class="font-medium">Note:</div>
-          Addresses exclusively interacting with<br/>respective chain.
-        </div>
-      </div>`;
-    }
+    // if (selectedMetric === 'Total Ethereum Ecosystem') {
+    //   tooltipEnd = `
+    //     <div class="flex flex-col items-start pl-[24px] pt-3 gap-x-1 w-full text-forest-900/60 dark:text-forest-500/60">
+    //       <div class="font-medium">Note:</div>
+    //       Addresses exclusively interacting with<br>respective chain.
+    //     </div>
+    //   </div>`;
+    // }
     
     return tooltip + tooltipEnd;
   };
