@@ -3,10 +3,12 @@
 import highchartsAnnotations from "highcharts/modules/annotations";
 import highchartsRoundedCorners from "highcharts-rounded-corners";
 import HighchartsReact from "highcharts-react-official";
+import HighchartsColumnSeries from "highcharts/es-modules/Series/Column/ColumnSeries"
 import Highcharts, {
   AxisLabelsFormatterContextObject,
   Tick,
   chart,
+  color,
 } from "highcharts/highstock";
 import {
   HighchartsProvider,
@@ -64,6 +66,9 @@ import { GTPIcon } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import highchartsPatternFill from "highcharts/modules/pattern-fill";
 import { transparent } from "tailwindcss/colors";
+import { createTooltipFormatter, formatNumber } from "@/lib/highcharts/tooltipFormatters";
+import { baseChartOptions } from "@/lib/highcharts/chartUtils";
+import { PatternRegistry, initializePatterns } from "@/lib/highcharts/svgPatterns";
 
 
 const COLORS = {
@@ -84,140 +89,147 @@ const METRIC_COLORS = {
   main_l2: ["#FFDF27", "#FE5468"],
 }
 
+export type GradientConfig = {
+  type: "linearGradient" | "radialGradient";
+  linearGradient?: { x1: number; y1: number; x2: number; y2: number };
+  radialGradient?: { cx: number; cy: number; r: number; fx: number; fy: number };
+  stops: [number, string][];
+}
+
+export type PatternConfig = {
+  type: string;
+  direction: string;
+  color: string;
+  backgroundFill: string;
+}
+
+export type MaskConfig = {
+  direction: string;
+}
+
+export type BACKEND_SIMULATION_CONFIG = {
+  defs: {
+    gradients: {
+      id: string;
+      config: GradientConfig
+    }[];
+    patterns: {
+      id: string;
+      type: string;
+      config: {
+        type: string;
+        direction: string;  
+      };
+    }[];
+  };
+  compositionTypes: {
+    [key: string]: {
+      order: number;
+      fill: {
+        type: string;
+        config: GradientConfig | PatternConfig;
+      };
+      mask?: {
+        config: MaskConfig;
+      };
+    };
+  };
+}
+
+const BACKEND_SIMULATION_CONFIG: BACKEND_SIMULATION_CONFIG = {
+  defs: {
+    gradients: [
+      {
+        id: "cross_layer_background_gradient",
+        config: {
+          type: "linearGradient",
+          linearGradient: { x1: 1.5, y1: 1.5, x2: -1, y2: -1 },
+          stops: [[0, "#FE5468"], [1, "#FFDF27"]]
+        }
+      }
+    ],
+    patterns: []
+  },
+  compositionTypes: {
+    main_l1: {
+      order: 0,
+      fill: {
+        type: "gradient",
+        config: {
+          type: "linearGradient",
+          linearGradient: { x1: 0, y1: 1, x2: 0, y2: 0 },
+          stops: [[0, "#94ABD3"], [1, "#596780"]]
+        }
+      }
+    },
+    main_l2: {
+      order: 1,
+      fill: {
+        type: "gradient",
+        config: {
+          type: "linearGradient",
+          linearGradient: { x1: 0, y1: 1, x2: 0, y2: 0 },
+          stops: [[0, "#FE5468"], [1, "#FFDF27"]]
+        }
+      }
+    },
+    only_l1: {
+      order: 0,
+      fill: {
+        type: "gradient",
+        config: {
+          type: "linearGradient",
+          linearGradient: { x1: 0, y1: 1, x2: 0, y2: 0 },
+          stops: [[0, "#94ABD3"], [1, "#596780"]]
+        }
+      }
+    },
+    cross_layer: {
+      order: 1,
+      fill: {
+        type: "pattern",
+        config: {
+          type: "colored-hash",
+          direction: "right",
+          color: "#94ABD3",
+          backgroundFill: "url(#cross_layer_background_gradient)"
+        }
+      }
+    },
+    multiple_l2s: {
+      order: 2,
+      fill: {
+        type: "gradient",
+        config: {
+          type: "linearGradient",
+          linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
+          stops: [[0, "#FE5468"], [1, "#FFDF27"]]
+        }
+      }
+    },
+    single_l2: {
+      order: 3,
+      fill: {
+        type: "gradient",
+        config: {
+          type: "linearGradient",
+          linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
+          stops: [[0, "#FE5468"], [1, "#FFDF27"]]
+        }
+      },
+      mask: {
+        config: {
+          direction: "right"
+        }
+      }
+    }
+  }
+};
+
 const isArray = (obj: any) =>
   Object.prototype.toString.call(obj) === "[object Array]";
 const splat = (obj: any) => (isArray(obj) ? obj : [obj]);
 
-const baseOptions: Highcharts.Options = {
-  accessibility: { enabled: false },
-  exporting: { enabled: false },
-  chart: {
-    backgroundColor: "transparent",
-    showAxes: false,
-    panKey: "shift",
-    zooming: {
-      resetButton: {
-        position: {
-          x: 0,
-          y: 10,
-        },
-        theme: {
-          fill: "transparent",
-          style: {
-            opacity: 1,
-            fontSize: "12",
-            fontFamily: "Inter",
-            fontWeight: "300",
-            color: "#fff",
-            textTransform: "lowercase",
-            border: "1px solid #fff",
-          },
-          borderRadius: 4,
-          padding: 8,
-          borderWidth: 2,
-          r: 16,
-          states: { hover: { fill: "#fff", style: { color: "#000" } } },
-        },
-      },
-    },
-  },
-  title: undefined,
-  yAxis: {
-    title: { text: undefined },
-    labels: {
-      enabled: true,
-    },
-    gridLineWidth: 1,
-    gridLineColor: COLORS.GRID,
-  },
-  xAxis: {
-    type: "datetime",
-    lineWidth: 0,
-    crosshair: {
-      width: 0.5,
-      color: COLORS.PLOT_LINE,
-      snap: false,
-    },
-    // labels: {
-    //   style: { color: COLORS.LABEL },
-    //   enabled: true,
-    //   formatter: (item) => {
-    //     const date = new Date(item.value);
-    //     const isMonthStart = date.getDate() === 1;
-    //     const isYearStart = isMonthStart && date.getMonth() === 0;
-
-    //     if (isYearStart) {
-    //       return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
-    //     } else {
-    //       return `<span style="">${date.toLocaleDateString("en-GB", {
-    //         timeZone: "UTC",
-    //         month: "short",
-    //       })}</span>`;
-    //     }
-    //   },
-    // },
-
-    gridLineWidth: 0,
-  },
-  legend: {
-    enabled: false,
-    useHTML: false,
-    symbolWidth: 0,
-  },
-  tooltip: {
-    // backgroundColor: 'transparent',
-    useHTML: true,
-    shadow: false,
-    shared: true,
-  },
-  plotOptions: {
-    area: {
-      stacking: "normal",
-      events: {
-        legendItemClick: function () {
-          return false;
-        },
-      },
-      marker: {
-        radius: 0,
-      },
-      shadow: false,
-      animation: false,
-    },
-    column: {
-      grouping: true,
-      stacking: "normal",
-      events: {
-        legendItemClick: function () {
-          return false;
-        },
-      },
-      groupPadding: 0,
-      animation: true,
-    },
-    series: {
-      stacking: "normal",
-      events: {
-        legendItemClick: function () {
-          return false;
-        },
-      },
-      marker: {
-        radius: 0,
-      },
-      shadow: false,
-      animation: false,
-    },
-  },
-  credits: {
-    enabled: false,
-  },
-  navigation: {
-    buttonOptions: {
-      enabled: false,
-    },
-  },
-};
 
 export default function LandingChart({
   data,
@@ -280,13 +292,11 @@ export default function LandingChart({
   //     }));
   // }, [embedData]);
 
-  const  textToggles = {
-    "toggle": {
-      "total": "Total Ethereum Ecosystem",
-     "l2": "Layer 2 Ecosystem"
-}
-  }
   useHighchartsWrappers();
+
+  const [maskIds, setMaskIds] = useState<{ rightMaskId: string; leftMaskId: string } | null>(null);
+
+
 
   useEffect(() => {
     Highcharts.setOptions({
@@ -295,7 +305,7 @@ export default function LandingChart({
       },
     });
     highchartsRoundedCorners(Highcharts);
-    highchartsAnnotations(Highcharts);
+    // highchartsAnnotations(Highcharts);
     highchartsPatternFill(Highcharts);
     // loadHighchartsWrappers();
 
@@ -330,7 +340,6 @@ export default function LandingChart({
       },
     );
 
-
     setHighchartsLoaded(true);
   }, []);
 
@@ -340,13 +349,12 @@ export default function LandingChart({
   const [focusEnabled] = useLocalStorage("focusEnabled", true);
 
   const [selectedTimespan, setSelectedTimespan] = useState(
-    embed_timespan ?? "max",
+    embed_timespan ?? "180d",
   );
 
   const [selectedScale, setSelectedScale] = useState(
-    selectedMetric === "Composition Split" ? "percentage" : "absolute",
+    selectedMetric === "Compsoition Split" ? "percentage" : "absolute",
   );
-  console.log(selectedScale)
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
 
   const [zoomed, setZoomed] = useState(false);
@@ -365,77 +373,9 @@ export default function LandingChart({
     embed_show_mainnet ?? false,
   );
 
-
-
-
   const [totalUsersIncrease, setTotalUsersIncrease] = useState(0);
 
   const isMobile = useMediaQuery("(max-width: 767px)");
-
-  // const getTickPositions = useCallback(
-  //   (xMin: any, xMax: any): number[] => {
-  //     const tickPositions: number[] = [];
-  //     const xMinDate = new Date(xMin);
-  //     const xMaxDate = new Date(xMax);
-  //     const xMinMonth = xMinDate.getUTCMonth();
-  //     const xMaxMonth = xMaxDate.getUTCMonth();
-
-  //     const xMinYear = xMinDate.getUTCFullYear();
-  //     const xMaxYear = xMaxDate.getUTCFullYear();
-
-  //     // if (selectedTimespan === "max") {
-  //     //   for (let year = xMinYear; year <= xMaxYear; year++) {
-  //     //     for (let month = 0; month < 12; month = month + 4) {
-  //     //       // if (year === xMinYear && month < xMinMonth) continue;
-  //     //       // if (year === xMaxYear && month > xMaxMonth) continue;
-  //     //       tickPositions.push(Date.UTC(year, month, 1).valueOf());
-  //     //     }
-  //     //   }
-  //     //   return tickPositions;
-  //     // }
-  //     // for (let year = xMinYear; year <= xMaxYear; year++) {
-
-  //     //   for (let month = 0; month <= 12; month++) {
-  //     //     // if (year === xMinYear && month < xMinMonth) continue;
-  //     //     // if (year === xMaxYear && month > xMaxMonth) continue;
-  //     //     tickPositions.push(Date.UTC(year, month, 1).valueOf());
-  //     //   }
-  //     // }
-
-  //     const daysDiff = daysShown;
-
-  //     if (daysShown < 365) {
-  //       for (let year = xMinYear; year <= xMaxYear; year++) {
-  //         for (let month = 0; month < 12; month = month + 1) {
-  //           // if (year === xMinYear && month < xMinMonth) continue;
-  //           // if (year === xMaxYear && month > xMaxMonth) continue;
-  //           tickPositions.push(Date.UTC(year, month, 1).valueOf());
-  //         }
-  //       }
-  //     }
-
-  //     if (daysShown >= 365) {
-  //       for (let year = xMinYear; year <= xMaxYear; year++) {
-  //         for (let month = 0; month < 12; month = month + 3) {
-  //           // if (year === xMinYear && month < xMinMonth) continue;
-  //           // if (year === xMaxYear && month > xMaxMonth) continue;
-  //           tickPositions.push(Date.UTC(year, month, 1).valueOf());
-  //         }
-  //       }
-  //     }
-
-  //     // for (let i = xMinMonth; i <= xMaxMonth; i++) {
-  //     //   tickPositions.push(Date.UTC(xMinYear, i, 1).valueOf());
-  //     // }
-
-  //     // // remove the last tick if its an embed
-  //     // if (is_embed)
-  //     //   tickPositions.pop();
-
-  //     return tickPositions;
-  //   },
-  //   [selectedTimespan, is_embed, daysShown],
-  // );
 
   const getSeriesType = useCallback(
     (name: string) => {
@@ -449,218 +389,16 @@ export default function LandingChart({
   );
 
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
-  // daysShown based on minX and maxX on chart X axis
-  // const daysShown = useMemo(a() => {
-  //   if (!chartComponent.current) return parseInt(selectedTimespan);
-  //   if (zoomed) return Math.round((zoomMax - zoomMin) / (24 * 60 * 60 * 1000));
-  //   const minX = chartComponent.current?.xAxis[0].getExtremes().min;
-  //   const maxX = chartComponent.current?.xAxis[0].getExtremes().max;
-  //   if (minX && maxX)
-  //     return Math.round((maxX - minX) / (24 * 60 * 60 * 1000));
-  //   if (selectedTimespan === "max") return 365 * 5;
-  //   return parseInt(selectedTimespan);
-  // }, [selectedTimespan, zoomed, zoomMax, zoomMin, chartComponent.current]);
 
   const [daysShown, setDaysShown] = useState(900);
 
-  const formatNumber = useCallback(
-    (value: number | string, isAxis = false) => {
-      return isAxis
-        ? selectedScale !== "percentage"
-          ? d3.format(".2s")(value)
-          : d3.format(".2s")(value) + "%"
-        : d3.format(",.2~s")(value);
-    },
-    [selectedScale],
-  );
-
-  const tooltipFormatter = useCallback(
-    function (this: any) {
-      const { x, points }: { x: number; points: any[] } = this;
-      const firstTenPoints = points.sort((a: any, b: any) => b.y - a.y).slice(0, 10);
-      const afterTenPoints = points.sort((a: any, b: any) => b.y - a.y).slice(10);
-      const date = new Date(x);
-      const dateString = `
-      <div>
-        ${date.toLocaleDateString("en-GB", {
-        timeZone: "UTC",
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })}
-      </div>
-      <div>-</div>
-      <div>
-        ${new Date(date.valueOf() + 6 * 24 * 60 * 60 * 1000).toLocaleDateString(
-        //add 7 days to the date
-        undefined,
-        {
-          timeZone: "UTC",
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        },
-      )}
-      </div>`;
-
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-60 md:w-60 text-xs font-raleway"><div class="flex-1 font-bold text-[13px] md:text-[1rem] ml-6 mb-2 flex justify-between">${dateString}</div>`;
-      let tooltipEnd = `</div>`;
-
-      if (selectedMetric === "Total Ethereum Ecosystem")
-        tooltipEnd = `
-          <div class="text-0.55rem] flex flex-col items-start pl-[24px] pt-3 gap-x-1 w-full text-forest-900/60 dark:text-forest-500/60">
-            <div class="font-medium">Note:</div>
-            Addresses exclusively interacting with<br/>respective chain.
-          </div>
-        </div>`;
-
-      let pointsSum = points.reduce((acc: number, point: any) => {
-        acc += point.y;
-        return acc;
-      }, 0);
-
-      let maxPoint = points.reduce((acc: number, point: any) => {
-        acc = Math.max(acc, point.y);
-        return acc;
-      }, 0);
-
-      let maxPercentage = points.reduce((acc: number, point: any) => {
-        acc = Math.max(acc, point.percentage);
-        return acc;
-      }, 0);
-
-      let tooltipPoints = firstTenPoints
-
-        .map((point: any, index: number) => {
-          const { series, y, percentage } = point;
-          const { name } = series;
-          const validChainKeys = ((selectedMetric === "Total Ethereum Ecosystem") && focusEnabled) || AllChainsByKeys[name] ? true : false
-
-          if (selectedScale === "percentage")
-            return `
-              <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${validChainKeys ? AllChainsByKeys[name].colors[theme ?? "dark"][0] : METRIC_COLORS[name][1]
-              }"></div>
-                <div class="tooltip-point-name text-xs">${validChainKeys ? AllChainsByKeys[name].label : name
-              }</div>
-                <div class="flex-1 text-right numbers-xs">${Highcharts.numberFormat(
-                percentage,
-                2,
-              )}%</div>
-              </div>
-              <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-                <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
-    
-                <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
-                style="
-                  width: ${(percentage / maxPercentage) * 100}%;
-                  background-color: ${validChainKeys ? AllChainsByKeys[name].colors[theme ?? "dark"][0] : METRIC_COLORS[name][1]
-              };
-                "></div>
-              </div>`;
-
-          const value = formatNumber(y);
-          return `
-          <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${validChainKeys ? AllChainsByKeys[name].colors[theme ?? "dark"][0] : METRIC_COLORS[name][1]
-            }"></div>
-            <div class="tooltip-point-name text-xs">${validChainKeys ? AllChainsByKeys[name].label : name
-            }</div>
-             <div class="flex-1 text-right justify-end flex numbers-xs">
-              <div class="inline-block">${parseFloat(y).toLocaleString(
-              "en-GB",
-              {
-                minimumFractionDigits: 0,
-              },
-            )}</div>
-            </div>
-          </div>
-          <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
-
-            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
-            style="
-              width: ${(y / maxPoint) * 100}%;
-              background-color: ${validChainKeys ? AllChainsByKeys[name].colors[theme ?? "dark"][0] : METRIC_COLORS[name][1]
-            };
-            "></div>
-          </div>`;
-        })
-        .join("");
-
-      // add "others" with the sum of the rest of the points
-      const rest = afterTenPoints
-        .filter((point: any) => {
-          const { series, y, percentage } = point;
-          const { name } = series;
-          const supportedChainKeys = Get_SupportedChainKeys(master, [
-            "all_l2s",
-            "multiple",
-          ]);
-
-          return supportedChainKeys.includes(name);
-        })
-
-      if (rest.length === 0) return tooltip + tooltipPoints + tooltipEnd;
-
-      const restString = rest.length > 1 ? `${parseFloat(rest[0].y).toLocaleString("en-GB", { minimumFractionDigits: 0 })}…${parseFloat(rest[rest.length - 1].y).toLocaleString("en-GB", { minimumFractionDigits: 0 })}` :
-        parseFloat(rest[0].y).toLocaleString("en-GB", { minimumFractionDigits: 0 });
-
-      const restSum = rest.reduce((acc: number, point: any) => {
-        acc += point.y;
-        return acc;
-      }, 0);
-
-      const restPercentage = rest.reduce((acc: number, point: any) => {
-        acc += point.percentage;
-        return acc;
-      }, 0);
-
-      if (selectedScale === "percentage")
-        tooltipPoints += `
-          <div class="flex w-full space-x-2 items-center font-medium mb-0.5 opacity-60">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6"></div>
-            <div class="tooltip-point-name">${rest.length > 1 ? `${rest.length} Others` : "1 Other"}</div>
-            <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-          restPercentage,
-          2,
-        )}%</div>
-          </div>
-          <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
-
-            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
-            style="
-              width: ${(restPercentage / maxPercentage) * 100}%;
-              background-color: #E0E7E699
-            ;
-            "></div>
-          </div>`;
-
-      else
-        tooltipPoints += `
-          <div class="flex w-full space-x-2 items-center font-medium mb-0.5 opacity-60">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6"></div>
-            <div class="tooltip-point-name">${rest.length > 1 ? `${rest.length} Others` : "1 Other"}</div>
-             <div class="flex-1 text-right justify-end flex numbers-xs">
-              <div class="inline-block">${restSum.toLocaleString("en-GB", { minimumFractionDigits: 0, })}</div>
-            </div>
-          </div>
-          <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
-
-            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
-            style="
-              width: ${(restSum / maxPoint) * 100}%;
-              background-color: #E0E7E699
-            ;
-            "></div>
-          </div>`;
-
-      return tooltip + tooltipPoints + tooltipEnd;
-    },
-    [formatNumber, master, selectedMetric, selectedScale, theme, focusEnabled, showEthereumMainnet],
-  );
+  const customTooltipFormatter = useMemo(() => createTooltipFormatter({
+    selectedScale: selectedScale as "percentage" | "absolute",
+    selectedMetric: selectedMetric,
+    theme: theme as "dark" | "light",
+    focusEnabled: focusEnabled,
+    showEthereumMainnet: showEthereumMainnet,
+  }), [selectedScale, selectedMetric, theme, focusEnabled, showEthereumMainnet]);
 
   const tooltipPositioner =
     useCallback<Highcharts.TooltipPositionerCallbackFunction>(
@@ -934,6 +672,202 @@ export default function LandingChart({
 
   const [containerRef, { width, height }] = useElementSizeObserver();
 
+  const getSeriesData = useCallback(
+    (name: string, types: string[], data: number[][], chartType: string, gradient: {linearGradient: {x1: number, y1: number, x2: number, y2: number}, stops: [number, string][]}) => {
+        if (name === "")
+            return {
+                data: [],
+                zoneAxis: undefined,
+                zones: undefined,
+                fillColor: undefined,
+                fillOpacity: undefined,
+                color: ["", ""],
+                gradient: gradient
+            };
+        // const selectedTimeInterval = isMonthly ? "monthly" : "daily";
+        const selectedTimeInterval = "weekly";
+
+        const colors = gradient.stops.map((stop) => stop[1]);
+        const firstColor = colors[0];
+        const secondColor = colors[1];
+
+        const timeIndex = types.findIndex((type) => type === "unix");
+        let valueIndex = 1;
+        let valueMulitplier = 1;
+
+        let zones: any[] | undefined = undefined;
+        let zoneAxis: string | undefined = undefined;
+
+        const isLineChart = chartType === "line";
+        const isColumnChart = chartType === "column";
+
+        const isAreaChart = chartType === "area";
+
+        let fillOpacity = undefined;
+
+        let seriesFill: string | {linearGradient: {x1: number, y1: number, x2: number, y2: number}, stops: [number, string][]} = "transparent";
+
+        if (isAreaChart) {
+            seriesFill = gradient;
+        }
+
+        let fillColor =
+            selectedTimeInterval === "weekly"
+                ? firstColor
+                : undefined;
+        let lineColor =
+            selectedTimeInterval === "weekly"
+                ? firstColor
+                : undefined;
+
+        
+        const dottedColumnColor = {
+            pattern: {
+                path: {
+                    d: "M 0 0 L 10 10 M 9 -1 L 11 1 M -1 9 L 1 11",
+                    "stroke-width": 3,
+                },
+                width: 10,
+                height: 10,
+                opacity: 1,
+                color: firstColor + "CC",
+            },
+        };
+
+        if (types.includes("usd")) {
+            if (showUsd) {
+                valueIndex = types.indexOf("usd");
+            } else {
+                valueIndex = types.indexOf("eth");
+                // if (showGwei) valueMulitplier = 1000000000;
+            }
+        }
+
+        const seriesData = data.map((d) => {
+            return [d[timeIndex], d[valueIndex] * valueMulitplier];
+        });
+
+        let marker = {
+            lineColor: firstColor,
+            radius: 0,
+            symbol: "circle",
+        }
+       
+        if (selectedTimeInterval === "weekly") {
+            return {
+                data: seriesData,
+                zoneAxis,
+                zones,
+                fillColor: seriesFill,
+                fillOpacity,
+                color,
+                gradient: gradient,
+                marker,
+            };
+        }
+
+        const columnFillColor = {
+            linearGradient: {
+                x1: 0,
+                y1: 0,
+                x2: 0,
+                y2: 1,
+            },
+            stops: [
+                [0, firstColor + "FF"],
+                // [0.349, daColor + "88"],
+                [1, secondColor + "00"],
+            ],
+        };
+
+        const columnColor = {
+            linearGradient: {
+                x1: 0,
+                y1: 0,
+                x2: 1,
+                y2: 1,
+            },
+            stops: [
+                [0, firstColor + "FF"],
+                // [0.349, daColor + "88"],
+                [1, secondColor + "00"],
+            ],
+        };
+
+
+        const todaysDateUTC = new Date().getUTCDate();
+
+        const secondZoneDottedColumnColor =
+            todaysDateUTC === 1 ? columnColor : dottedColumnColor;
+
+        const secondZoneDashStyle = todaysDateUTC === 1 ? "Solid" : "Dot";
+
+
+        // if it is not the last day of the month, add a zone to the chart to indicate that the data is incomplete
+        if (selectedTimeInterval === "weekly") {
+
+            if (seriesData.length > 1 && todaysDateUTC !== 1) {
+                zoneAxis = "x";
+                zones = [
+                    {
+                        value: seriesData[seriesData.length - 2][0] + 1,
+                        dashStyle: "Solid",
+                        fillColor: isColumnChart ? columnFillColor : seriesFill,
+                        color: isColumnChart
+                            ? columnColor
+                            : firstColor,
+                    },
+                    {
+                        // value: monthlyData[monthlyData.length - 2][0],
+                        dashStyle: secondZoneDashStyle,
+                        fillColor: isColumnChart ? columnFillColor : seriesFill,
+                        color: isColumnChart
+                            ? secondZoneDottedColumnColor
+                            : secondColor,
+                    },
+                ];
+            } else if (todaysDateUTC !== 1) {
+                zoneAxis = "x";
+                zones = [
+                    {
+                        // value: monthlyData[monthlyData.length - 2][0],
+                        dashStyle: secondZoneDashStyle,
+                        fillColor: isColumnChart ? columnFillColor : seriesFill,
+                        color: isColumnChart
+                            ? secondZoneDottedColumnColor
+                            : secondColor,
+                    }
+                ];
+                marker.radius = 2;
+            } else {
+                zoneAxis = "x";
+                zones = [
+                    {
+                        // value: monthlyData[monthlyData.length - 2][0],
+                        dashStyle: secondZoneDashStyle,
+                        fillColor: isColumnChart ? columnFillColor : seriesFill,
+                        color: isColumnChart
+                            ? secondZoneDottedColumnColor
+                            : secondColor,
+                    }
+                ];
+            }
+        }
+
+        return {
+            data: seriesData,
+            zoneAxis,
+            zones,
+            fillColor: undefined,
+            fillOpacity,
+            color,
+            gradient: gradient,
+            marker,
+        };
+    },
+    [showUsd],
+  );
+
   const getChartHeight = useCallback(() => {
     if (is_embed) return height;
     if (isMobile) return 264;
@@ -941,17 +875,6 @@ export default function LandingChart({
   }, [isMobile, is_embed, height]);
 
   const options = useMemo((): Highcharts.Options => {
-    // let units: [string, Array<number> | null][] = [["month", [6]], ["year", [1]]];
-    // if (daysShown <= 365) {
-    //   units = [["month", [3]], ["year", [1]]];
-    // }
-    // if (daysShown <= 180) {
-    //   units = [["month", [2]], ["year", [1]]];
-    // }
-    // if (daysShown <= 90) {
-    //   units = [["month", [1]], ["year", [1]]];
-    // }
-
     const dynamicOptions: Highcharts.Options = {
       chart: {
         height: getChartHeight(),
@@ -991,10 +914,62 @@ export default function LandingChart({
             },
           },
         },
-        events: {},
+        events: {
+          load: function() {
+            const registry = initializePatterns(this, BACKEND_SIMULATION_CONFIG);
+
+            this.options['patternRegistry'] = registry;
+          },
+          render: function() {
+            const registry = this.options['patternRegistry'] as PatternRegistry;
+            if(!registry) return;
+
+            const series = this.series;
+
+            series.forEach((series: any, index: number) => {
+              const seriesOptions = series.options;
+              const compositionType = seriesOptions.custom?.compositionType;
+              
+              if (!compositionType) return;
+              
+              const typeConfig = BACKEND_SIMULATION_CONFIG.compositionTypes[compositionType];
+              console.log("series", series.name, "typeConfig", typeConfig);
+              if(typeConfig.fill.type === "gradient" || typeConfig.fill.type === "pattern") {
+                registry.applyFillToSeries(index, `${series.name}_fill`);
+              }
+
+              if(typeConfig.mask) {
+                registry.applyMaskToSeries(index, `${series.name}_mask`);
+              }
+            });
+          },
+          redraw: function() {
+            const registry = this.options['patternRegistry'] as PatternRegistry;
+            if(!registry) return;
+
+            
+            const series = this.series;
+
+            series.forEach((series: any, index: number) => {
+              const seriesOptions = series.options;
+              const compositionType = seriesOptions.custom?.compositionType;
+              
+              if (!compositionType) return;
+              
+              const typeConfig = BACKEND_SIMULATION_CONFIG.compositionTypes[compositionType];
+              console.log("series", series.name, "typeConfig", typeConfig);
+              if(typeConfig.fill.type === "gradient" || typeConfig.fill.type === "pattern") {
+                registry.applyFillToSeries(index, `${series.name}_fill`);
+              }
+
+              if(typeConfig.mask) {
+                registry.applyMaskToSeries(index, `${series.name}_mask`);
+              }
+            });
+          },
+        },
         // height: isMobile ? 200 : 400,
       },
-
       plotOptions: {
         area: {
           stacking: selectedScale === "percentage" ? "percent" : "normal",
@@ -1076,13 +1051,62 @@ export default function LandingChart({
           },
         },
         events: {
-          afterSetExtremes: onXAxisSetExtremes,
+          setExtremes: function(e: any) {
+            const registry = this.options['patternRegistry'] as PatternRegistry;
+            if(!registry) return;
+            
+            const series = this.series;
+
+            series.forEach((series: any, index: number) => {
+              const seriesOptions = series.options;
+              const compositionType = seriesOptions.custom?.compositionType;
+              
+              if (!compositionType) return;
+              
+              const typeConfig = BACKEND_SIMULATION_CONFIG.compositionTypes[compositionType];
+              console.log("series", series.name, "typeConfig", typeConfig);
+              if(typeConfig.fill.type === "gradient" || typeConfig.fill.type === "pattern") {
+                registry.applyFillToSeries(index, `${series.name}_fill`);
+              }
+
+              if(typeConfig.mask) {
+                registry.applyMaskToSeries(index, `${series.name}_mask`);
+              }
+            });
+          },
+          afterSetExtremes: function(e: any) {
+
+            const registry = this.options['patternRegistry'] as PatternRegistry;
+            if(!registry) return;
+            
+            const series = this.series;
+            
+            series.forEach((series: any, index: number) => {
+              const seriesOptions = series.options;
+              const compositionType = seriesOptions.custom?.compositionType;
+              
+              if (!compositionType) return;
+              
+              const typeConfig = BACKEND_SIMULATION_CONFIG.compositionTypes[compositionType];
+              console.log("series", series.name, "typeConfig", typeConfig);
+              if(typeConfig.fill.type === "gradient" || typeConfig.fill.type === "pattern") {
+                registry.applyFillToSeries(index, `${series.name}_fill`);
+              }
+
+              if(typeConfig.mask) {
+                registry.applyMaskToSeries(index, `${series.name}_mask`);
+              }
+            });
+
+            onXAxisSetExtremes.call(this, e);
+            
+          },
         },
         min: zoomed ? zoomMin : timespans[selectedTimespan].xMin,
         max: zoomed ? zoomMax : timespans[selectedTimespan].xMax,
       },
       tooltip: {
-        formatter: tooltipFormatter,
+        formatter: customTooltipFormatter,
         positioner: tooltipPositioner,
         split: false,
         followPointer: true,
@@ -1106,6 +1130,9 @@ export default function LandingChart({
       series: [
         ...filteredData
           .sort((a, b) => {
+            if(!["main_l1", "main_l2"].includes(a.name)) {
+              return BACKEND_SIMULATION_CONFIG.compositionTypes[b.name]!.order - BACKEND_SIMULATION_CONFIG.compositionTypes[a.name]!.order;
+            }
             const aValue =
               a.data && a.data[a.data.length - 1]
                 ? a.data[a.data.length - 1][1]
@@ -1141,6 +1168,7 @@ export default function LandingChart({
               monthly: 30 * 24 * 60 * 60 * 1000,
             };
 
+            
             const pointsSettings =
               getSeriesType(series.name) === "column"
                 ? {
@@ -1152,289 +1180,96 @@ export default function LandingChart({
                   pointPlacement: 0.5,
                 };
 
+            let color: any = {
+              linearGradient: {x1: 0, y1: 0, x2: 0, y2: 0},
+              stops: [
+                [0, "#000000"],
+                [1, "#000000"],
+              ],
+              pattern: undefined,
+            }
+            let primaryColor = color.stops[0][1];
+
+            let fill: any = undefined;
+
+            // if gradient, get the color from the gradient
+            if(BACKEND_SIMULATION_CONFIG.compositionTypes[series.name]?.fill?.config?.type === "linearGradient") {
+              const config = BACKEND_SIMULATION_CONFIG.compositionTypes[series.name]?.fill?.config as GradientConfig;
+              color.linearGradient = config.linearGradient;
+              color.stops = config.stops;
+              primaryColor = config.stops.map((stop: [number, string]) => stop[1])[0];
+              fill = {
+                linearGradient: config.linearGradient,
+                stops: config.stops,
+              }
+            }
+            // if pattern, get the color from the pattern
+            if(BACKEND_SIMULATION_CONFIG.compositionTypes[series.name]?.fill?.config?.type === "colored-hash") {
+              const config = BACKEND_SIMULATION_CONFIG.compositionTypes[series.name]?.fill?.config as PatternConfig;
+              primaryColor = config.color;
+              
+            }
+
+            // if(color !== undefined && fill === undefined) {
+            //   fill = color;
+            // }
+            fill = undefined; //`url(#${series.name}_fill)`;
+            color = `url(#${series.name}_fill)`;
+            
+
+            // console.log("series", series.name,"color", color, "fillColor", fillColor, "fillOpacity", fillOpacity, "marker", marker, "gradient", gradient)
+
             return {
               name: series.name,
+              custom: {
+                compositionType: series.name, // Reference to COMPOSITION_TYPES
+              },
               // always show ethereum on the bottom
               zIndex: zIndex,
               step: "center",
               data: series.data.map((d: any) => [d[0], d[1]]),
               ...pointsSettings,
               clip: true,
+              lineWidth: 1,
               borderRadiusTopLeft: borderRadius,
               borderRadiusTopRight: borderRadius,
               type: getSeriesType(series.name),
-              fillOpacity: series.name === "ethereum" ? 1 : 0,
-              dashStyle: "Dash",
-              fillColor: {
-                linearGradient: {
-                  x1: 0,
-                  y1: 0,
-                  x2: 0,
-                  y2: 1,
-                },
-                stops: [
-                  [
-                    0,
-                    series.name && theme && EnabledChainsByKeys[series.name]
-                      ? EnabledChainsByKeys[series.name]?.colors[
-                      theme ?? "dark"
-                      ][0] + "33"
-                      : METRIC_COLORS[series.name][0],
-                  ],
-
-                  [
-                    1,
-                    series.name && theme && EnabledChainsByKeys[series.name]
-                      ? EnabledChainsByKeys[series.name]?.colors[
-                      theme ?? "dark"
-                      ][1] + "33"
-                      : METRIC_COLORS[series.name][1],
-                  ],
-                ],
-              },
-              // borderColor:
-              //   series.name && theme && EnabledChainsByKeys[series.name]
-              //     ? EnabledChainsByKeys[series.name]?.colors[theme ?? "dark"][0]
-              //     : "transparent",
-              // borderWidth: 1,
-              lineWidth: 1,
-              ...(getSeriesType(series.name) !== "column"
-                ? {
-                  shadow: {
-                    color:
-                      series.name && theme && EnabledChainsByKeys[series.name]
-                        ? EnabledChainsByKeys[series.name]?.colors[theme][1] +
-                        "FF"
-                        : "transparent",
-                    width: 10,
-                  },
-                  color: {
-                    linearGradient: {
-                      x1: 0,
-                      y1: 0,
-                      x2: 1,
-                      y2: 0,
-                    },
-                    stops: [
-                      [
-                        0,
-                        series.name &&
-                          theme &&
-                          EnabledChainsByKeys[series.name]
-                          ? EnabledChainsByKeys[series.name]?.colors[theme][0]
-                          : METRIC_COLORS[series.name][0],
-                      ],
-                      // [0.33, AllChainsByKeys[series.name].colors[1]],
-                      [
-                        1,
-                        series.name &&
-                          theme &&
-                          EnabledChainsByKeys[series.name]
-                          ? EnabledChainsByKeys[series.name]?.colors[theme][1]
-                          : METRIC_COLORS[series.name][1],
-                      ],
-                    ],
-                  },
-                }
-                : series.name === "all_l2s"
-                  ? {
-                    borderColor: "transparent",
-                    borderWidth: 0,
-                    // shadow: {
-                    //   color: "#CDD8D3",
-                    //   offsetX: 0,
-                    //   offsetY: 0,
-                    //   width: 0,
-                    // },
-                    color: {
-                      linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 0,
-                        y2: 1,
-                      },
-                      stops:
-                        theme === "dark"
-                          ? [
-                            [
-                              0,
-                              series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][0] + "FF"
-                                : [],
-                            ],
-                            // [
-                            //   0.3,
-                            //   //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
-                            //   AllChainsByKeys[series.name].colors[theme][0] +
-                            //     "FF",
-                            // ],
-                            [
-                              1,
-                              series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][1] + "FF"
-                                : [],
-                            ],
-                          ]
-                          : [
-                            [
-                              0,
-                              series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][0] + "FF"
-                                : [],
-                            ],
-                            // [
-                            //   0.7,
-                            //   AllChainsByKeys[series.name].colors[theme][0] +
-                            //     "88",
-                            // ],
-                            [
-                              1,
-                              series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][1] + "FF"
-                                : [],
-                            ],
-                          ],
-                    },
-                  }
-                  : {
-                    borderColor: theme == "dark" ? "#2A3433" : "#EAECEB",
-                    borderWidth: 0,
-                    //  series.name &&
-                    //   theme &&
-                    //   EnabledChainsByKeys[series.name]
-                    //   ? EnabledChainsByKeys[series.name]?.colors[
-                    //   theme
-                    //   ][0] + "33"
-                    //   : [],
-                    shadow: null,
-                    color: {
-                      linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 0,
-                        y2: 1,
-                      },
-                      stops:
-                        theme === "dark"
-                          ? [
-                            [
-                              0,
-                              series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][0] + "FF"
-                                : METRIC_COLORS[series.name][0] + "FF",
-                            ],
-                            // [
-                            //   0.349,
-                            //   series.name &&
-                            //     theme &&
-                            //     EnabledChainsByKeys[series.name]
-                            //     ? EnabledChainsByKeys[series.name]?.colors[
-                            //     theme
-                            //     ][0] + "88"
-                            //     : [],
-                            // ],
-                            [
-                              1,
-                              // "#151a19FF"
-                              series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][0] + "CC"
-                                : METRIC_COLORS[series.name][1] + "CC",
-                            ],
-                          ]
-                          : [
-                            [
-                              0,
-                              series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][0] + "FF"
-                                : METRIC_COLORS[series.name][0] + "FF",
-                            ],
-                            // [
-                            //   0.349,
-                            //   series.name &&
-                            //     theme &&
-                            //     EnabledChainsByKeys[series.name]
-                            //     ? EnabledChainsByKeys[series.name]?.colors[
-                            //     theme
-                            //     ][0] + "88"
-                            //     : [],
-                            // ],
-                            [
-                              1,
-                              // "#FFFFFFFF"
-                              series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][0] + "00"
-                                : METRIC_COLORS[series.name][0] + "00",
-                            ],
-                          ],
-                    },
-                  }),
+              // color: undefined, // Use gradient from composition type
+              // fillColor: undefined, // Use gradient from composition type
+              color: color,
+              fillColor: fill,
               states: {
                 hover: {
                   enabled: true,
                   halo: {
-                    size: 5,
-                    opacity: 1,
-                    attributes: {
-                      fill:
-                        series.name && theme && EnabledChainsByKeys[series.name]
-                          ? EnabledChainsByKeys[series.name]?.colors[
-                          theme ?? "dark"
-                          ][0] + "99"
-                          : "transparent",
-                      stroke:
-                        series.name && theme && EnabledChainsByKeys[series.name]
-                          ? EnabledChainsByKeys[series.name]?.colors[
-                          theme ?? "dark"
-                          ][0] + "66"
-                          : "transparent",
-                      "stroke-width": 0,
+                      size: 5,
+                      opacity: 1,
+                      attributes: {
+                        fill:
+                          primaryColor,
+                        stroke:
+                          primaryColor,
+                        "stroke-width": 0,
+                      },
                     },
+                    brightness: 0.3,
                   },
-                  // lineWidth: 4,
-                  // lineWidthPlus: 4,
-                  brightness: 0.3,
+                  inactive: {
+                    enabled: true,
+                    opacity: 0.6,
+                  },
+                  selection: {
+                    enabled: false,
+                  },
                 },
-                inactive: {
-                  enabled: true,
-                  opacity: 0.6,
-                },
-                selection: {
-                  enabled: false,
-                },
-              },
-              showInNavigator: false,
+              pointPlacement: pointsSettings.pointPlacement,
+              // marker: {
+              //   lineColor: primaryColor,
+              //   radius: 2,
+              //   symbol: "circle",
+              // },
+              // fillColor: series.name === "cross_layer" ? {pattern: seriesPattern} : fillColor,
+              // fillOpacity: fillOpacity,
             };
           }),
       ],
@@ -1455,54 +1290,9 @@ export default function LandingChart({
       },
     };
 
-    return merge({}, baseOptions, dynamicOptions);
+    return merge({}, baseChartOptions, dynamicOptions);
     // return { ...baseOptions };
-  }, [
-    getChartHeight,
-    filteredData,
-    formatNumber,
-    getSeriesType,
-    // getTickPositions,
-    isDragging,
-    isMobile,
-    metric,
-    onXAxisSetExtremes,
-    selectedScale,
-    showEthereumMainnet,
-    theme,
-    selectedTimespan,
-    timespans,
-    tooltipFormatter,
-    tooltipPositioner,
-    zoomMax,
-    zoomMin,
-    zoomed,
-    is_embed,
-  ]);
-
-
-  // const resituateChart = debounce(() => {
-  //   chartComponent.current && chartComponent.current.reflow();
-  // }, 300);
-
-  // useEffect(() => {
-  //   resituateChart();
-
-  //   // cancel the debounced function on component unmount
-  //   return () => {
-  //     resituateChart.cancel();
-  //   };
-  // }, [chartComponent, selectedTimespan, timespans, resituateChart]);
-
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     resituateChart();
-  //   }, 300);
-
-  //   return () => {
-  //     resituateChart.cancel();
-  //   };
-  // }, [isSidebarOpen, resituateChart]);
+  }, [getChartHeight, selectedScale, is_embed, theme, onXAxisSetExtremes, zoomed, zoomMin, timespans, selectedTimespan, zoomMax, customTooltipFormatter, tooltipPositioner, isDragging, filteredData, isMobile, showEthereumMainnet, getSeriesType, metric, getSeriesData, AllChainsByKeys]);
 
   useEffect(() => {
     if (chartComponent.current) {
@@ -1604,32 +1394,32 @@ export default function LandingChart({
           </div>
         </div>
         <TopRowContainer className="!flex-col !rounded-[15px] !py-[3px] !px-[3px] !text-xs  2xl:!gap-y-0 2xl:!text-base 2xl:!flex 2xl:!flex-row 2xl:!rounded-full">
-          <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 2xl:!mx-0 !gap-x-[2px] 2xl:!gap-x-[5px]">
+          <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 2xl:!mx-0 !gap-x-[4px] 2xl:!gap-x-[5px]">
             <TopRowChild
               isSelected={showTotalUsers}
-              className={"!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
+              className={"!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
               onClick={() => {
                 setShowTotalUsers(true);
                 setSelectedScale("absolute");
                 setSelectedMetric("Total Ethereum Ecosystem");
               }}
             >
-              <div className="flex items-center justify-center gap-x-[5px]">
-                <GTPIcon icon="gtp-metrics-ethereum-ecosystem" size={isMobile ? "sm" : "md"} />
-                <div>{!isMobile ? textToggles.toggle[focusEnabled ? "l2" : "total"] : focusEnabled ? "Total L2 Ecosystem" : "Total ETH Ecosystem"}</div>
+              <div className="flex items-center gap-x-[5px]">
+                <GTPIcon icon="gtp-metrics-ethereum-ecosystem" className="w-4 h-4" />
+                <div>Total Ethereum Ecosystem</div>
               </div>
             </TopRowChild>
             <TopRowChild
               isSelected={"absolute" === selectedScale && !showTotalUsers}
-              className={"!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
+              className={"!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
               onClick={() => {
                 setShowTotalUsers(false);
                 setSelectedScale("absolute");
                 setSelectedMetric("Composition");
               }}
             >
-              <div className="flex items-center justify-center gap-x-[5px]">
-                <GTPIcon icon="gtp-metrics-chains-grouping" size={isMobile ? "sm" : "md"}/>
+              <div className="flex items-center gap-x-[5px]">
+                <GTPIcon icon="gtp-metrics-chains-grouping" className="w-4 h-4" />
                 <div>Composition</div>
               </div>
              
@@ -1637,22 +1427,22 @@ export default function LandingChart({
 
             <TopRowChild
               isSelected={"percentage" === selectedScale}
-              className={"!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
+              className={"!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
               onClick={() => {
                 setShowTotalUsers(false);
                 setSelectedScale("percentage");
                 setSelectedMetric("Composition Split");
               }}
             >
-              <div className="flex items-center justify-center  gap-x-[5px]">
-                <GTPIcon icon="gtp-metrics-chains-percentage" size={isMobile ? "sm" : "md"} />
-                <div>{isMobile ? "Comp. Split" : "Composition Split"}</div>
+              <div className="flex items-center gap-x-[5px]">
+                <GTPIcon icon="gtp-metrics-chains-percentage" size="md" />
+                <div>Composition Split</div>
               </div>
            
             </TopRowChild>
           </TopRowParent>
-          <div className="block 2xl:hidden w-[80%] mx-auto my-[10px] h-[2px]">
-            <hr className="border-dashed border-t-[1px] w-full h-[1px] border-forest-400" />
+          <div className="block 2xl:hidden w-[70%] mx-auto my-[10px]">
+            <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
           </div>
           <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 2xl:!mx-0 !gap-x-[4px] 2xl:!gap-x-[5px]">
             {!zoomed ? (
@@ -1750,16 +1540,16 @@ export default function LandingChart({
       
       </div>
       <div className="h-[32px] lg:h-[80px] flex flex-col justify-start ">
-        <div className="flex justify-between items-center rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative h-[34px]">
+        <div className="flex justify-between items-center rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative h-[44px]">
           {/* toggle ETH */}
           <div>
-            <div className={`z-10 pl-0.5 ${focusEnabled ? "flex items-center" : "hidden"}`} >
+            <div className={`z-10 pl-2 ${focusEnabled ? "flex items-center" : "hidden"}`} >
               <Switch
                 checked={showEthereumMainnet}
                 onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
               />
               <div className="ml-2 block md:hidden xl:block heading-small-xs">
-                Compare Ethereum Mainnet
+                Compare Ethereum
               </div>
               <div className={`ml-2 hidden md:block xl:hidden heading-small-xs`}>
                 Compare ETH
@@ -1767,18 +1557,18 @@ export default function LandingChart({
             </div>
             <div className={`${focusEnabled ? "hidden" : "flex"} items-center`}>
 
-              <Tooltip placement={isMobile ? "left" : "right"} allowInteract >
+              <Tooltip placement="right" allowInteract >
                 <TooltipTrigger>
-                  <div className={`bottom-[5px] lg:bottom-[28px] right-[8px] p-0 -mr-0.5 lg:p-1.5 z-10 lg:mr-0 absolute lg:static lg:mb-0.5`}>
+                  <div className={`bottom-[28px] right-[8px] p-0 -mr-0.5 lg:p-1.5 z-10 lg:mr-0 absolute lg:static lg:mb-0.5`}>
                     <Icon icon="feather:info" className="w-6 h-6" />
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
                     <div className="flex flex-col items-center">
                         <div className="p-[15px] text-sm bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
-                          
+                          <div className="heading-small-xs">Ethereum showing vs Not</div>
                           <div className="text-xxs text-wrap">
-                              Compare Ethereum toggle is no long needed as it is included in Total Ethereum Ecosystem.
+                              Something something something ..... admo
                           </div>
                         </div>
                     </div>
@@ -1786,7 +1576,7 @@ export default function LandingChart({
               </Tooltip>
             </div>
           </div>
-          <div className="flex justify-end items-center absolute top-[50px] lg:-top-[15px] right-[20px] rounded-full z-10">
+          <div className="flex justify-end items-center absolute top-[56px] lg:-top-[10px] right-[20px] rounded-full z-10">
             <div className="flex justify-center items-center">
               <div className="flex items-center justify-center gap-x-[20px] pr-[10px]">
                 <MetricCard
