@@ -121,17 +121,17 @@ export const renderPointRow = (
 
   // Create the SVG marker - for the dot
   const markerSvg = `
-    <svg width="16" height="6" viewBox="0 0 16 6" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-      <rect width="16" height="6" fill="url(#${fillId})" />
+    <svg width="16px" height="6px" viewBox="0 0 16 6" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+      <rect width="16px" height="6px" fill="url(#${fillId})" />
       ${maskId ? `<rect width="16" height="6" mask="url(#${maskId})" />` : ''}
     </svg>
   `;
 
   // Create the bar SVG
   const barSvg = `
-    <svg width="100" height="2" viewBox="0 0 100 2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-      <rect width="100" height="2" fill="url(#${fillId})" />
-      ${maskId ? `<rect width="100" height="2" mask="url(#${maskId})" />` : ''}
+    <svg width="100%" height="2px" viewBox="0 0 100 2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+      <rect width="100%" height="2px" fill="url(#${fillId})" />
+      ${maskId ? `<rect width="100%" height="2px" mask="url(#${maskId})" />` : ''}
     </svg>
   `;
 

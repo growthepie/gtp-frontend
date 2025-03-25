@@ -731,7 +731,6 @@ export default function LandingChart({
       chart: {
         height: getChartHeight(),
         className: "zoom-chart",
-        animation: true,
         type: selectedScale === "percentage" ? "area" : "column",
         plotBorderColor: "transparent",
         panning: {
@@ -1357,9 +1356,6 @@ export default function LandingChart({
           {/* </div> */}
         </div>
 
-      </div>
-      <div className="relative h-[200px] w-full mt-[100px]">
-      
       </div>
       <div className="h-[32px] lg:h-[80px] flex flex-col justify-start ">
         <div className="flex justify-between items-center rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative h-[44px]">

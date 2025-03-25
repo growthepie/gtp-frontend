@@ -11,6 +11,7 @@ export const baseChartOptions: Highcharts.Options = {
     backgroundColor: "transparent",
     showAxes: false,
     panKey: "shift",
+    animation: false,
     zooming: {
       resetButton: {
         position: {
@@ -89,7 +90,7 @@ export const baseChartOptions: Highcharts.Options = {
         },
       },
       groupPadding: 0,
-      animation: true,
+      animation: false,
     },
     series: {
       stacking: "normal",
