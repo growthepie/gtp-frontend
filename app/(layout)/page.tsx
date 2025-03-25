@@ -45,14 +45,14 @@ export default async function Page() {
         >
           Understand every slice of Ethereum
         </Heading>
-        <div className="flex items-center gap-x-[10px]">
+        <div className="flex items-start md:items-center gap-x-[10px]">
           <Subheading className="text-xs sm:text-sm md:text-xl font-semibold leading-[1.2]">
             Ethereum is more than one blockchain. It&apos;s many.
           </Subheading>
-          <a className="flex p-[3px] bg-[#344240] rounded-full items-center gap-x-[4px] relative top-[1px]" href="https://ethereum.org/" target="_blank">
+          <a className="flex p-[3px] bg-[#344240] rounded-full items-center gap-x-[2px] md:gap-x-[4px] relative top-[1px]" href="https://ethereum.org/" target="_blank">
               <GTPIcon icon={"ethereum-logo-monochrome"} size="sm" className="" />
-              <div className="text-xs">What is Ethereum?</div>
-              <Icon icon="feather:arrow-right" className="w-[12px] h-[12px]" />
+              <div className="text-xxs md:text-xs text-nowrap">What is Ethereum?</div>
+              <Icon icon="feather:arrow-right" className="w-[9px] h-[9px]" />
           </a>
         </div>
       </Container>

@@ -344,7 +344,7 @@ export default function LandingChart({
   );
 
   const [selectedScale, setSelectedScale] = useState(
-    selectedMetric === "Compsoition Split" ? "percentage" : "absolute",
+    selectedMetric === "Composition Split" ? "percentage" : "absolute",
   );
   console.log(selectedScale)
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
@@ -1604,10 +1604,10 @@ export default function LandingChart({
           </div>
         </div>
         <TopRowContainer className="!flex-col !rounded-[15px] !py-[3px] !px-[3px] !text-xs  2xl:!gap-y-0 2xl:!text-base 2xl:!flex 2xl:!flex-row 2xl:!rounded-full">
-          <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 2xl:!mx-0 !gap-x-[4px] 2xl:!gap-x-[5px]">
+          <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 2xl:!mx-0 !gap-x-[2px] 2xl:!gap-x-[5px]">
             <TopRowChild
               isSelected={showTotalUsers}
-              className={"!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
+              className={"!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
               onClick={() => {
                 setShowTotalUsers(true);
                 setSelectedScale("absolute");
@@ -1615,13 +1615,13 @@ export default function LandingChart({
               }}
             >
               <div className="flex items-center justify-center gap-x-[5px]">
-                <GTPIcon icon="gtp-metrics-ethereum-ecosystem" className="w-4 h-4" />
-                <div>{textToggles.toggle[focusEnabled ? "l2" : "total"]}</div>
+                <GTPIcon icon="gtp-metrics-ethereum-ecosystem" size={isMobile ? "sm" : "md"} />
+                <div>{!isMobile ? textToggles.toggle[focusEnabled ? "l2" : "total"] : focusEnabled ? "Total L2 Ecosystem" : "Total ETH Ecosystem"}</div>
               </div>
             </TopRowChild>
             <TopRowChild
               isSelected={"absolute" === selectedScale && !showTotalUsers}
-              className={"!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
+              className={"!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
               onClick={() => {
                 setShowTotalUsers(false);
                 setSelectedScale("absolute");
@@ -1629,7 +1629,7 @@ export default function LandingChart({
               }}
             >
               <div className="flex items-center justify-center gap-x-[5px]">
-                <GTPIcon icon="gtp-metrics-chains-grouping" className="w-4 h-4" />
+                <GTPIcon icon="gtp-metrics-chains-grouping" size={isMobile ? "sm" : "md"}/>
                 <div>Composition</div>
               </div>
              
@@ -1637,22 +1637,22 @@ export default function LandingChart({
 
             <TopRowChild
               isSelected={"percentage" === selectedScale}
-              className={"!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
+              className={"!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
               onClick={() => {
                 setShowTotalUsers(false);
                 setSelectedScale("percentage");
                 setSelectedMetric("Composition Split");
               }}
             >
-              <div className="flex items-center justify-center gap-x-[5px]">
-                <GTPIcon icon="gtp-metrics-chains-percentage" size="md" />
-                <div>Composition Split</div>
+              <div className="flex items-center justify-center  gap-x-[5px]">
+                <GTPIcon icon="gtp-metrics-chains-percentage" size={isMobile ? "sm" : "md"} />
+                <div>{isMobile ? "Comp. Split" : "Composition Split"}</div>
               </div>
            
             </TopRowChild>
           </TopRowParent>
-          <div className="block 2xl:hidden w-[70%] mx-auto my-[10px]">
-            <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
+          <div className="block 2xl:hidden w-[80%] mx-auto my-[10px] h-[2px]">
+            <hr className="border-dashed border-t-[1px] w-full h-[1px] border-forest-400" />
           </div>
           <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 2xl:!mx-0 !gap-x-[4px] 2xl:!gap-x-[5px]">
             {!zoomed ? (
@@ -1750,16 +1750,16 @@ export default function LandingChart({
       
       </div>
       <div className="h-[32px] lg:h-[80px] flex flex-col justify-start ">
-        <div className="flex justify-between items-center rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative h-[44px]">
+        <div className="flex justify-between items-center rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative h-[34px]">
           {/* toggle ETH */}
           <div>
-            <div className={`z-10 pl-2 ${focusEnabled ? "flex items-center" : "hidden"}`} >
+            <div className={`z-10 pl-0.5 ${focusEnabled ? "flex items-center" : "hidden"}`} >
               <Switch
                 checked={showEthereumMainnet}
                 onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
               />
               <div className="ml-2 block md:hidden xl:block heading-small-xs">
-                Compare Ethereum
+                Compare Ethereum Mainnet
               </div>
               <div className={`ml-2 hidden md:block xl:hidden heading-small-xs`}>
                 Compare ETH
@@ -1767,18 +1767,18 @@ export default function LandingChart({
             </div>
             <div className={`${focusEnabled ? "hidden" : "flex"} items-center`}>
 
-              <Tooltip placement="right" allowInteract >
+              <Tooltip placement={isMobile ? "left" : "right"} allowInteract >
                 <TooltipTrigger>
-                  <div className={`bottom-[28px] right-[8px] p-0 -mr-0.5 lg:p-1.5 z-10 lg:mr-0 absolute lg:static lg:mb-0.5`}>
+                  <div className={`bottom-[5px] lg:bottom-[28px] right-[8px] p-0 -mr-0.5 lg:p-1.5 z-10 lg:mr-0 absolute lg:static lg:mb-0.5`}>
                     <Icon icon="feather:info" className="w-6 h-6" />
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
                     <div className="flex flex-col items-center">
                         <div className="p-[15px] text-sm bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
-                          <div className="heading-small-xs">Ethereum showing vs Not</div>
+                          
                           <div className="text-xxs text-wrap">
-                              Something something something ..... admo
+                              Compare Ethereum toggle is no long needed as it is included in Total Ethereum Ecosystem.
                           </div>
                         </div>
                     </div>
@@ -1786,7 +1786,7 @@ export default function LandingChart({
               </Tooltip>
             </div>
           </div>
-          <div className="flex justify-end items-center absolute top-[56px] lg:-top-[10px] right-[20px] rounded-full z-10">
+          <div className="flex justify-end items-center absolute top-[50px] lg:-top-[15px] right-[20px] rounded-full z-10">
             <div className="flex justify-center items-center">
               <div className="flex items-center justify-center gap-x-[20px] pr-[10px]">
                 <MetricCard

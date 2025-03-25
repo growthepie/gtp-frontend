@@ -331,7 +331,7 @@ export const MetricBottomControls = ({ metric, is_embed = false }: { metric: str
                   onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
                 />
                 <div className="ml-2 block md:hidden lg:block">
-                  Show Ethereum
+                  Compare Ethereum Mainnet
                 </div>
                 <div className="ml-2 hidden md:block lg:hidden">ETH</div>
               </div>
