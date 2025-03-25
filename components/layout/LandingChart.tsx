@@ -161,7 +161,7 @@ export const BACKEND_SIMULATION_CONFIG: BACKEND_SIMULATION_CONFIG = {
         type: "gradient",
         config: {
           type: "linearGradient",
-          linearGradient: { x1: 0, y1: 1, x2: 0, y2: 0 },
+          linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
           stops: [[0, "#94ABD3"], [1, "#596780"]]
         }
       }
@@ -187,7 +187,7 @@ export const BACKEND_SIMULATION_CONFIG: BACKEND_SIMULATION_CONFIG = {
         type: "gradient",
         config: {
           type: "linearGradient",
-          linearGradient: { x1: 0, y1: 1, x2: 0, y2: 0 },
+          linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
           stops: [[0, "#94ABD3"], [1, "#596780"]]
         }
       }
@@ -249,8 +249,20 @@ export const BACKEND_SIMULATION_CONFIG: BACKEND_SIMULATION_CONFIG = {
           stops: [[0, "#FE5468"], [1, "#FFDF27"]]
         }
       }
+    },
+    ethereum: {
+      order: 5,
+      name: "Ethereum Mainnet",
+      description: "Users that interacted with Ethereum Mainnet.",
+      fill: {
+        type: "gradient",
+        config: {
+          type: "linearGradient",
+          linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+          stops: [[0, "#94ABD3"], [1, "#596780"]]
+        }
+      }
     }
-    
   }
 };
 
