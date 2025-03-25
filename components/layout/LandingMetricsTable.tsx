@@ -70,31 +70,34 @@ interface LandingRow {
 const createLandingDataSorter = (master: MasterResponse, landing: LandingPageMetricsResponse | undefined, focusEnabled: boolean, centerMetric: string) => {
   return (items: LandingRow[], metric: string, sortOrder: SortOrder): LandingRow[] => {
     const config: SortConfig<LandingRow> = {
-      metric,
+      metric: metric as keyof LandingRow,
       sortOrder,
       type: SortType.NUMBER, // Default type, will be overridden as needed
-      valueAccessor: (item, met) => {
-        if (met === "chain_name") {
+      valueAccessor: (item, met: any) => {
+        // Cast 'met' to string to allow comparison with string literals
+        const metricKey = met as string;
+        
+        if (metricKey === "chain_name") {
           return item.data.chain_name;
-        } else if (met === "purpose") {
+        } else if (metricKey === "purpose") {
           return item.data.purpose || "";
-        } else if (met === "maturity") {
+        } else if (metricKey === "maturity") {
           const maturityExists = master.chains[item.chain.key].maturity !== "NA" && master.chains[item.chain.key].maturity !== undefined;
           return maturityExists ? parseInt(master.chains[item.chain.key].maturity[0]) : undefined;
-        } else if (met === "table_visual") {
+        } else if (metricKey === "table_visual") {
           return focusEnabled
             ? landing?.data.metrics.table_visual[item.chain.key]?.ranking[centerMetric]?.rank ?? Infinity
             : landing?.data.metrics.table_visual[item.chain.key]?.ranking_w_eth[centerMetric]?.rank ?? Infinity;
-        } else if (met === "users") {
+        } else if (metricKey === "users") {
           return item.data.users;
-        } else if (met === "user_share") {
+        } else if (metricKey === "user_share") {
           return item.data.user_share;
-        } else if (met === "cross_chain_activity") {
+        } else if (metricKey === "cross_chain_activity") {
           return item.data.cross_chain_activity;
-        } else if (met === "age") {
+        } else if (metricKey === "age") {
           return moment(master.chains[item.chain.key].launch_date);
         }
-        return item.data[met];
+        return item.data[metricKey];
       },
     };
 

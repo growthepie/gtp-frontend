@@ -12,6 +12,7 @@ import {
   useCallback,
   useLayoutEffect,
   ReactNode,
+  memo,
 } from "react";
 import { useLocalStorage, useWindowSize, useIsMounted } from "usehooks-ts";
 import fullScreen from "highcharts/modules/full-screen";
@@ -47,7 +48,7 @@ const COLORS = {
   ANNOTATION_BG: "rgb(215, 223, 222)",
 };
 
-export default function ChainComponent({
+const ChainComponent = memo(function ChainComponent({
   data,
   ethData,
   focusEnabled,
@@ -379,12 +380,31 @@ export default function ChainComponent({
     [metricItems],
   );
 
+  const filteredDataCache = useRef<{[key: string]: any[]}>({});
+
+  // Disable animations when focus is changing
+  const forceNoAnimation = useRef(false);
+  
   const filteredData = useMemo(() => {
     // Check if datasets exist
     if (!data?.metrics?.[category]?.daily) {
       return [];
     }
-   
+    
+    // Create a lightweight cache key to prevent unnecessary recalculations
+    const cacheKey = `${category}-${showUsd}-${focusEnabled}`;
+    
+    // If we've already calculated this data combination, return from cache
+    if (filteredDataCache.current[cacheKey]) {
+      return filteredDataCache.current[cacheKey];
+    }
+    
+    // Before heavy computation, disable animations
+    forceNoAnimation.current = true;
+    setTimeout(() => {
+      forceNoAnimation.current = false;
+    }, 600);
+    
     // Get data from first source
     const firstDataset = data.metrics[category].daily.types.includes("eth")
       ? showUsd
@@ -408,7 +428,9 @@ export default function ChainComponent({
      
     // If focusEnabled is true or second dataset doesn't exist, just return the first dataset
     if (focusEnabled || !ethData?.metrics?.[category]?.daily) {
-      return firstDataset.sort((a, b) => a[0] - b[0]);
+      const result = firstDataset.sort((a, b) => a[0] - b[0]);
+      filteredDataCache.current[cacheKey] = result;
+      return result;
     }
      
     // Get data from second source (ethData)
@@ -458,10 +480,12 @@ export default function ChainComponent({
         value2
       ])
       .sort((a, b) => a[0] - b[0]);
-     
+    
+    // Store in cache
+    filteredDataCache.current[cacheKey] = result;
     return result;
   }, [data, ethData, category, showUsd, showGwei, focusEnabled]);
-  
+
   const displayValues = useMemo(() => {
     const p: {
       [key: string]: {
@@ -544,7 +568,7 @@ export default function ChainComponent({
     });
     
     return p;
-  }, [data.metrics, filteredData, category, showUsd, intervalShown, focusEnabled, master.metrics, metricItems, metric_index]);
+  }, [data.metrics, filteredData, category, showUsd, intervalShown, focusEnabled, master.metrics, metric_index]);
 
   const tooltipFormatter = useCallback(
     function (this: Highcharts.TooltipFormatterContextObject) {
@@ -940,7 +964,7 @@ export default function ChainComponent({
         spacingBottom: 0,
         panning: { enabled: false },
         panKey: "shift",
-        animation: isAnimate,
+        animation: forceNoAnimation.current ? false : isAnimate,
         zooming: {
           type: undefined,
           mouseWheel: {
@@ -1163,6 +1187,7 @@ export default function ChainComponent({
     zoomMax,
     zoomMin,
     zoomed,
+    forceNoAnimation.current,
   ]);
 
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
@@ -1364,9 +1389,155 @@ export default function ChainComponent({
     );
   }, [category, data.metrics]);
 
- 
+  const seriesConfig = useMemo(() => {
+    return [
+      {
+        name: data.chain_id,
+        crisp: true,
+        data: filteredData.map(d => [d[0], d[1]]),
+        showInLegend: false,
+        fillColor: {
+          linearGradient: {
+            x1: 0,
+            y1: 0,
+            x2: 0,
+            y2: 1,
+          },
+          stops: [
+            [
+              0,
+              AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0] +
+              "33",
+            ],
+            [
+              1,
+              AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1] +
+              "33",
+            ],
+          ],
+        },
+        marker: {
+          enabled: false,
+        },
+        dataGrouping: {
+          enabled: false,
+        },
+        point: {
+          events: {
+            mouseOver: pointHover,
+            mouseOut: pointHover,
+          },
+        },
+        states: {
+          hover: {
+            enabled: true,
+            halo: {
+              size: 5,
+              opacity: 1,
+              attributes: {
+                fill:
+                  AllChainsByKeys[data.chain_id]?.colors[
+                  theme ?? "dark"
+                  ][0] + "99",
+                stroke:
+                  AllChainsByKeys[data.chain_id]?.colors[
+                  theme ?? "dark"
+                  ][0] + "66",
+              },
+            },
+            brightness: 0.3,
+          },
+          inactive: {
+            enabled: true,
+            opacity: 0.6,
+          },
+          selection: {
+            enabled: false,
+          },
+        },
+      },
+      ((category !== "rent_paid")) && {
+        visible: focusEnabled ? false : true,
+        name: ethData.chain_id,
+        crisp: true,
+        data: filteredData.map(d => [d[0], d[2]]),
+        showInLegend: false,
+        marker: {
+          enabled: false,
+        },
+        dataGrouping: {
+          enabled: false,
+        },
+        color: AllChainsByKeys[ethData.chain_id]?.colors[theme ?? "dark"][0],
+        fillColor: {
+          linearGradient: {
+            x1: 0,
+            y1: 0,
+            x2: 0,
+            y2: 1,
+          },
+          stops: [
+            [
+              0,
+              AllChainsByKeys[ethData.chain_id].colors[theme ?? "dark"][0] +
+              "33",
+            ],
+            [
+              1,
+              AllChainsByKeys[ethData.chain_id].colors[theme ?? "dark"][1] +
+              "33",
+            ],
+          ],
+        },
+        point: {
+          events: {
+            mouseOver: pointHover,
+            mouseOut: pointHover,
+          },
+        },
+        states: {
+          hover: {
+            enabled: true,
+            halo: {
+              size: 5,
+              opacity: 1,
+              attributes: {
+                fill:
+                  AllChainsByKeys[ethData.chain_id]?.colors[
+                  theme ?? "dark"
+                  ][0] + "99",
+                stroke:
+                  AllChainsByKeys[ethData.chain_id]?.colors[
+                  theme ?? "dark"
+                  ][0] + "66",
+              },
+            },
+            brightness: 0.3,
+          },
+          inactive: {
+            enabled: true,
+            opacity: 0.6,
+          },
+          selection: {
+            enabled: false,
+          },
+        },
+      },
+    ].filter(Boolean);
+  }, [data.chain_id, filteredData, AllChainsByKeys, theme, pointHover, category, focusEnabled, ethData.chain_id]);
 
-
+  // Add this effect to detect focus changes and temporarily disable animations
+  useEffect(() => {
+    // When focusEnabled changes, disable animations temporarily
+    forceNoAnimation.current = true;
+    
+    // Re-enable animations after data has been processed
+    const timer = setTimeout(() => {
+      forceNoAnimation.current = false;
+    }, 600);
+    
+    return () => clearTimeout(timer);
+  }, [focusEnabled]);
 
   return (
     <div
@@ -1413,175 +1584,7 @@ export default function ChainComponent({
                 },
               },
 
-              series: [
-
-                {
-                  
-                  name: data.chain_id,
-        
-                  crisp: true,
-                  data: filteredData.map(d => [d[0], d[1]]),
-                  showInLegend: false,
-                  fillColor: {
-                    linearGradient: {
-                      x1: 0,
-                      y1: 0,
-                      x2: 0,
-                      y2: 1,
-                    },
-                    stops: [
-                      [
-                        0,
-                        AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0] +
-                        "33",
-                      ],
-                      [
-                        1,
-                        AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1] +
-                        "33",
-                      ],
-                    ],
-                  },
-                  marker: {
-                    enabled: false,
-                  },
-                  dataGrouping: {
-                    enabled: false,
-                  },
-                  // states: {
-                  //   marker: {
-                  //     hover: {
-                  //       enabled: true,
-                  //     },
-                  //   },
-                  // },
-                  point: {
-                    events: {
-                      mouseOver: pointHover,
-                      mouseOut: pointHover,
-                    },
-                  },
-                  // step: "center",
-                  // dataGrouping: {
-                  //   enabled: true,
-                  //   forced: true,
-                  //   approximation: "sum",
-                  //   anchor: "middle",
-                  //   units: [["week", [1]]],
-                  // },
-                  states: {
-                    hover: {
-                      enabled: true,
-                      halo: {
-                        size: 5,
-                        opacity: 1,
-                        attributes: {
-                          fill:
-                            AllChainsByKeys[data.chain_id]?.colors[
-                            theme ?? "dark"
-                            ][0] + "99",
-                          stroke:
-                            AllChainsByKeys[data.chain_id]?.colors[
-                            theme ?? "dark"
-                            ][0] + "66",
-                        },
-                      },
-                      brightness: 0.3,
-                    },
-                    inactive: {
-                      enabled: true,
-                      opacity: 0.6,
-                    },
-                    selection: {
-                      enabled: false,
-                    },
-                  },
-                  
-                },
-                ((category !== "rent_paid")) && {
-                  visible: focusEnabled ? false : true,
-                  name: ethData.chain_id,
-                  crisp: true,
-                  data: filteredData.map(d => [d[0], d[2]]),
-                  showInLegend: false,
-                  marker: {
-                    enabled: false,
-                  },
-                  dataGrouping: {
-                    enabled: false,
-                  },
-                  color: AllChainsByKeys[ethData.chain_id]?.colors[theme ?? "dark"][0],
-                  fillColor: {
-                    linearGradient: {
-                      x1: 0,
-                      y1: 0,
-                      x2: 0,
-                      y2: 1,
-                    },
-                    stops: [
-                      [
-                        0,
-                        AllChainsByKeys[ethData.chain_id].colors[theme ?? "dark"][0] +
-                        "33",
-                      ],
-                      [
-                        1,
-                        AllChainsByKeys[ethData.chain_id].colors[theme ?? "dark"][1] +
-                        "33",
-                      ],
-                    ],
-                  },
-                  // states: {
-                  //   marker: {
-                  //     hover: {
-                  //       enabled: true,
-                  //     },
-                  //   },
-                  // },
-                  point: {
-                    events: {
-                      mouseOver: pointHover,
-                      mouseOut: pointHover,
-                    },
-                  },
-                  // step: "center",
-                  // dataGrouping: {
-                  //   enabled: true,
-                  //   forced: true,
-                  //   approximation: "sum",
-                  //   anchor: "middle",
-                  //   units: [["week", [1]]],
-                  // },
-                  states: {
-                    hover: {
-                      enabled: true,
-                      halo: {
-                        size: 5,
-                        opacity: 1,
-                        attributes: {
-                          fill:
-                            AllChainsByKeys[ethData.chain_id]?.colors[
-                            theme ?? "dark"
-                            ][0] + "99",
-                          stroke:
-                            AllChainsByKeys[ethData.chain_id]?.colors[
-                            theme ?? "dark"
-                            ][0] + "66",
-                        },
-                      },
-                      brightness: 0.3,
-                    },
-                    inactive: {
-                      enabled: true,
-                      opacity: 0.6,
-                    },
-                    selection: {
-                      enabled: false,
-                    },
-                  },
-                },
-                
-              ],
+              series: seriesConfig,
             }}
             ref={(chart) => {
               if (chart) {
@@ -1647,4 +1650,8 @@ export default function ChainComponent({
       </div>
     </div>
   );
-}
+});
+
+ChainComponent.displayName = "ChainComponent";
+
+export default ChainComponent;

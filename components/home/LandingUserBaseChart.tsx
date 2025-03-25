@@ -43,7 +43,7 @@ export default function LandingUserBaseChart() {
 
   const [selectedMetric, setSelectedMetric] = useState("Total Ethereum Ecosystem");
 
-  const [sort, setSort] = useState<{ metric: string; sortOrder: "asc" | "desc" }>({ metric: "chain_name", sortOrder: "asc" });
+  const [sort, setSort] = useState<{ metric: string; sortOrder: "asc" | "desc" }>({ metric: "users", sortOrder: "desc" });
 
   
   useEffect(() => {
