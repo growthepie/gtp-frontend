@@ -7,6 +7,7 @@ export function TopRowChild({
   className,
   ref,
   style,
+  roundedClassName = "rounded-full",
   onClick,
 }: {
   children: React.ReactNode;
@@ -14,11 +15,12 @@ export function TopRowChild({
   className?: string;
   ref?: React.Ref<HTMLButtonElement>;
   style?: React.CSSProperties;
+  roundedClassName?: string;
   onClick?: () => void;
 }) {
   return (
     <button
-      className={`select-none rounded-full px-[16px] py-[4px] grow text-sm lg:text-base lg:px-4 lg:py-[14px] xl:px-6 xl:py-4 font-medium  ${isSelected
+      className={`select-none ${roundedClassName} px-[16px] py-[4px] grow text-sm lg:text-base lg:px-4 lg:py-[14px] xl:px-6 xl:py-4 font-medium  ${isSelected
         ? "bg-forest-500 dark:bg-forest-1000"
         : "hover:bg-forest-500/10"
         } ${className} `}
