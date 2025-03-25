@@ -417,7 +417,7 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
         metric: actualMetric as keyof AggregatedDataRow,
         sortOrder,
         type: SortType.NUMBER,
-        valueAccessor: (item, met) => {
+        valueAccessor: (item, met: any) => {
           if (met === "category") {
             return ownerProjectToProjectData[item.owner_project].main_category;
           }
