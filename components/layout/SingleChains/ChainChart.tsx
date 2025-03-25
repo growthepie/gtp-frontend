@@ -373,7 +373,7 @@ export default function ChainChart({
       if (showGwei(key) && !showUsd) {
         suffix = " Gwei";
       }
-
+    
       let val = parseFloat(value as string);
 
       let number = d3.format(`.2~s`)(val).replace(/G/, "B");
@@ -384,6 +384,7 @@ export default function ChainChart({
         } else {
           if (showGwei(key) && showUsd) {
             // for small USD amounts, show 2 decimals
+            console.log(val + " " + suffix);
             if (val < 1) number = prefix + val.toFixed(2) + " " + suffix;
             else if (val < 10)
               number =
@@ -395,7 +396,12 @@ export default function ChainChart({
               number =
                 prefix + d3.format(".2s")(val).replace(/G/, "B") + " " + suffix;
           } else {
-            number = prefix + d3.format(".2s")(val).replace(/G/, "B") + " " + suffix;
+            if(val < 1 && val > -1){
+              number = prefix + val.toFixed(2) + " " + suffix;
+            }else{
+              number = prefix + d3.format(".2s")(val).replace(/G/, "B") + " " + suffix;
+            }
+
           }
         }
       }
@@ -2229,6 +2235,7 @@ export default function ChainChart({
                                     formatter: function (
                                       t: Highcharts.AxisLabelsFormatterContextObject,
                                     ) {
+
                                       return formatNumber(key, t.value, true);
                                     },
                                   },
