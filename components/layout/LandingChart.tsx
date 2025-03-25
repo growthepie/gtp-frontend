@@ -1339,7 +1339,7 @@ export default function LandingChart({
           </TopRowParent>
         </TopRowContainer>
       </div>
-      <div className="flex-1 min-h-0 w-full pb-4 pt-[30px] md:pt-[15px] xl:pt-[5px] md:pb-[5px] ">
+      <div className="flex-1 min-h-0 w-full pb-4 pt-[30px] md:pt-[15px] xl:pt-[5px] md:pb-[10px] ">
         <div
           className="relative h-[284px] md:h-[400px] w-full rounded-xl"
           ref={containerRef}
