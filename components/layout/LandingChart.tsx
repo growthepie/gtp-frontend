@@ -125,6 +125,8 @@ export type BACKEND_SIMULATION_CONFIG = {
   compositionTypes: {
     [key: string]: {
       order: number;
+      name?: string;
+      description?: string;
       fill: {
         type: string;
         config: GradientConfig | PatternConfig;
@@ -136,7 +138,7 @@ export type BACKEND_SIMULATION_CONFIG = {
   };
 }
 
-const BACKEND_SIMULATION_CONFIG: BACKEND_SIMULATION_CONFIG = {
+export const BACKEND_SIMULATION_CONFIG: BACKEND_SIMULATION_CONFIG = {
   defs: {
     gradients: [
       {
@@ -153,6 +155,8 @@ const BACKEND_SIMULATION_CONFIG: BACKEND_SIMULATION_CONFIG = {
   compositionTypes: {
     main_l1: {
       order: 0,
+      name: "Ethereum Mainnet",
+      description: "Ethereum Mainnet data",
       fill: {
         type: "gradient",
         config: {
@@ -164,6 +168,8 @@ const BACKEND_SIMULATION_CONFIG: BACKEND_SIMULATION_CONFIG = {
     },
     main_l2: {
       order: 1,
+      name: "Layer 2",
+      description: "Layer 2 scaling solutions",
       fill: {
         type: "gradient",
         config: {
@@ -175,6 +181,8 @@ const BACKEND_SIMULATION_CONFIG: BACKEND_SIMULATION_CONFIG = {
     },
     only_l1: {
       order: 0,
+      name: "Ethereum Mainnet",
+      description: "Only users that interacted with Ethereum Mainnet but not with any L2.",
       fill: {
         type: "gradient",
         config: {
@@ -186,6 +194,8 @@ const BACKEND_SIMULATION_CONFIG: BACKEND_SIMULATION_CONFIG = {
     },
     cross_layer: {
       order: 1,
+      name: "Cross-Layer",
+      description: "Users that interacted with Ethereum Mainnet and at least one L2.",
       fill: {
         type: "pattern",
         config: {
@@ -198,6 +208,8 @@ const BACKEND_SIMULATION_CONFIG: BACKEND_SIMULATION_CONFIG = {
     },
     multiple_l2s: {
       order: 2,
+      name: "Multiple Layer 2s",
+      description: "Users that interacted with multiple L2s but not Ethereum Mainnet.",
       fill: {
         type: "gradient",
         config: {
@@ -209,6 +221,8 @@ const BACKEND_SIMULATION_CONFIG: BACKEND_SIMULATION_CONFIG = {
     },
     single_l2: {
       order: 3,
+      name: "Single Layer 2",
+      description: "Users that interacted with a single L2 but not Ethereum Mainnet.",
       fill: {
         type: "gradient",
         config: {
@@ -222,7 +236,21 @@ const BACKEND_SIMULATION_CONFIG: BACKEND_SIMULATION_CONFIG = {
           direction: "right"
         }
       }
+    },
+    all_l2s: {
+      order: 4,
+      name: "All Layer 2s",
+      description: "Users that interacted with all L2s.",
+      fill: {
+        type: "gradient",
+        config: {
+          type: "linearGradient",
+          linearGradient: { x1: 0, y1: 1, x2: 0, y2: 0 },
+          stops: [[0, "#FE5468"], [1, "#FFDF27"]]
+        }
+      }
     }
+    
   }
 };
 
@@ -392,13 +420,23 @@ export default function LandingChart({
 
   const [daysShown, setDaysShown] = useState(900);
 
+  const chartConfig = useMemo(() => {
+    if (!data) return null;
+    return {
+      compositions: data.timechart.compositions,
+      types: data.timechart.types,
+      compositionTypes: BACKEND_SIMULATION_CONFIG.compositionTypes,
+    };
+  }, [data]);
+
   const customTooltipFormatter = useMemo(() => createTooltipFormatter({
     selectedScale: selectedScale as "percentage" | "absolute",
     selectedMetric: selectedMetric,
     theme: theme as "dark" | "light",
     focusEnabled: focusEnabled,
     showEthereumMainnet: showEthereumMainnet,
-  }), [selectedScale, selectedMetric, theme, focusEnabled, showEthereumMainnet]);
+    compositionTypes: chartConfig?.compositionTypes,
+  }), [selectedScale, selectedMetric, theme, focusEnabled, showEthereumMainnet, chartConfig?.compositionTypes]);
 
   const tooltipPositioner =
     useCallback<Highcharts.TooltipPositionerCallbackFunction>(
@@ -670,202 +708,6 @@ export default function LandingChart({
 
   const [containerRef, { width, height }] = useElementSizeObserver();
 
-  const getSeriesData = useCallback(
-    (name: string, types: string[], data: number[][], chartType: string, gradient: {linearGradient: {x1: number, y1: number, x2: number, y2: number}, stops: [number, string][]}) => {
-        if (name === "")
-            return {
-                data: [],
-                zoneAxis: undefined,
-                zones: undefined,
-                fillColor: undefined,
-                fillOpacity: undefined,
-                color: ["", ""],
-                gradient: gradient
-            };
-        // const selectedTimeInterval = isMonthly ? "monthly" : "daily";
-        const selectedTimeInterval = "weekly";
-
-        const colors = gradient.stops.map((stop) => stop[1]);
-        const firstColor = colors[0];
-        const secondColor = colors[1];
-
-        const timeIndex = types.findIndex((type) => type === "unix");
-        let valueIndex = 1;
-        let valueMulitplier = 1;
-
-        let zones: any[] | undefined = undefined;
-        let zoneAxis: string | undefined = undefined;
-
-        const isLineChart = chartType === "line";
-        const isColumnChart = chartType === "column";
-
-        const isAreaChart = chartType === "area";
-
-        let fillOpacity = undefined;
-
-        let seriesFill: string | {linearGradient: {x1: number, y1: number, x2: number, y2: number}, stops: [number, string][]} = "transparent";
-
-        if (isAreaChart) {
-            seriesFill = gradient;
-        }
-
-        let fillColor =
-            selectedTimeInterval === "weekly"
-                ? firstColor
-                : undefined;
-        let lineColor =
-            selectedTimeInterval === "weekly"
-                ? firstColor
-                : undefined;
-
-        
-        const dottedColumnColor = {
-            pattern: {
-                path: {
-                    d: "M 0 0 L 10 10 M 9 -1 L 11 1 M -1 9 L 1 11",
-                    "stroke-width": 3,
-                },
-                width: 10,
-                height: 10,
-                opacity: 1,
-                color: firstColor + "CC",
-            },
-        };
-
-        if (types.includes("usd")) {
-            if (showUsd) {
-                valueIndex = types.indexOf("usd");
-            } else {
-                valueIndex = types.indexOf("eth");
-                // if (showGwei) valueMulitplier = 1000000000;
-            }
-        }
-
-        const seriesData = data.map((d) => {
-            return [d[timeIndex], d[valueIndex] * valueMulitplier];
-        });
-
-        let marker = {
-            lineColor: firstColor,
-            radius: 0,
-            symbol: "circle",
-        }
-       
-        if (selectedTimeInterval === "weekly") {
-            return {
-                data: seriesData,
-                zoneAxis,
-                zones,
-                fillColor: seriesFill,
-                fillOpacity,
-                color,
-                gradient: gradient,
-                marker,
-            };
-        }
-
-        const columnFillColor = {
-            linearGradient: {
-                x1: 0,
-                y1: 0,
-                x2: 0,
-                y2: 1,
-            },
-            stops: [
-                [0, firstColor + "FF"],
-                // [0.349, daColor + "88"],
-                [1, secondColor + "00"],
-            ],
-        };
-
-        const columnColor = {
-            linearGradient: {
-                x1: 0,
-                y1: 0,
-                x2: 1,
-                y2: 1,
-            },
-            stops: [
-                [0, firstColor + "FF"],
-                // [0.349, daColor + "88"],
-                [1, secondColor + "00"],
-            ],
-        };
-
-
-        const todaysDateUTC = new Date().getUTCDate();
-
-        const secondZoneDottedColumnColor =
-            todaysDateUTC === 1 ? columnColor : dottedColumnColor;
-
-        const secondZoneDashStyle = todaysDateUTC === 1 ? "Solid" : "Dot";
-
-
-        // if it is not the last day of the month, add a zone to the chart to indicate that the data is incomplete
-        if (selectedTimeInterval === "weekly") {
-
-            if (seriesData.length > 1 && todaysDateUTC !== 1) {
-                zoneAxis = "x";
-                zones = [
-                    {
-                        value: seriesData[seriesData.length - 2][0] + 1,
-                        dashStyle: "Solid",
-                        fillColor: isColumnChart ? columnFillColor : seriesFill,
-                        color: isColumnChart
-                            ? columnColor
-                            : firstColor,
-                    },
-                    {
-                        // value: monthlyData[monthlyData.length - 2][0],
-                        dashStyle: secondZoneDashStyle,
-                        fillColor: isColumnChart ? columnFillColor : seriesFill,
-                        color: isColumnChart
-                            ? secondZoneDottedColumnColor
-                            : secondColor,
-                    },
-                ];
-            } else if (todaysDateUTC !== 1) {
-                zoneAxis = "x";
-                zones = [
-                    {
-                        // value: monthlyData[monthlyData.length - 2][0],
-                        dashStyle: secondZoneDashStyle,
-                        fillColor: isColumnChart ? columnFillColor : seriesFill,
-                        color: isColumnChart
-                            ? secondZoneDottedColumnColor
-                            : secondColor,
-                    }
-                ];
-                marker.radius = 2;
-            } else {
-                zoneAxis = "x";
-                zones = [
-                    {
-                        // value: monthlyData[monthlyData.length - 2][0],
-                        dashStyle: secondZoneDashStyle,
-                        fillColor: isColumnChart ? columnFillColor : seriesFill,
-                        color: isColumnChart
-                            ? secondZoneDottedColumnColor
-                            : secondColor,
-                    }
-                ];
-            }
-        }
-
-        return {
-            data: seriesData,
-            zoneAxis,
-            zones,
-            fillColor: undefined,
-            fillOpacity,
-            color,
-            gradient: gradient,
-            marker,
-        };
-    },
-    [showUsd],
-  );
-
   const getChartHeight = useCallback(() => {
     if (is_embed) return height;
     if (isMobile) return 264;
@@ -915,7 +757,6 @@ export default function LandingChart({
         events: {
           load: function() {
             const registry = initializePatterns(this, BACKEND_SIMULATION_CONFIG);
-
             this.options['patternRegistry'] = registry;
           },
           render: function() {
@@ -928,10 +769,11 @@ export default function LandingChart({
               const seriesOptions = series.options;
               const compositionType = seriesOptions.custom?.compositionType;
               
-              if (!compositionType) return;
+              if (!compositionType || !BACKEND_SIMULATION_CONFIG.compositionTypes[compositionType]) return;
+
+              console.log("series", series.name, "compositionType", compositionType);
               
               const typeConfig = BACKEND_SIMULATION_CONFIG.compositionTypes[compositionType];
-              console.log("series", series.name, "typeConfig", typeConfig);
               if(typeConfig.fill.type === "gradient" || typeConfig.fill.type === "pattern") {
                 registry.applyFillToSeries(index, `${series.name}_fill`);
               }
@@ -952,10 +794,9 @@ export default function LandingChart({
               const seriesOptions = series.options;
               const compositionType = seriesOptions.custom?.compositionType;
               
-              if (!compositionType) return;
+              if (!compositionType || !BACKEND_SIMULATION_CONFIG.compositionTypes[compositionType]) return;
               
               const typeConfig = BACKEND_SIMULATION_CONFIG.compositionTypes[compositionType];
-              console.log("series", series.name, "typeConfig", typeConfig);
               if(typeConfig.fill.type === "gradient" || typeConfig.fill.type === "pattern") {
                 registry.applyFillToSeries(index, `${series.name}_fill`);
               }
@@ -1088,6 +929,7 @@ export default function LandingChart({
         borderWidth: 0,
         padding: 0,
         outside: true,
+        useHTML: true,
         shadow: {
           color: "black",
           opacity: 0.015,

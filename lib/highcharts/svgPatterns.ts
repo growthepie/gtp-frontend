@@ -32,20 +32,22 @@ function createGradientDef(id: string, config: GradientConfig): PatternResult {
   if (type === "linearGradient" && linearGradient) {
     const { x1, y1, x2, y2 } = linearGradient;
     svgDef = `
-      <linearGradient id="${id}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}">
+      <linearGradient id="${id}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" gradientUnits="objectBoundingBox">
         ${stops
         .map((stop) => `<stop offset="${stop[0]}" stop-color="${stop[1]}" />`)
         .join("")}
       </linearGradient>
+      <rect id="${id}_rect" width="100%" height="100%" fill="url(#${id})" />
     `;
   } else if (type === "radialGradient" && radialGradient) {
     const { cx, cy, r} = radialGradient;
     svgDef = `
-      <radialGradient id="${id}" cx="${cx}" cy="${cy}" r="${r}">
+      <radialGradient id="${id}" cx="${cx}" cy="${cy}" r="${r}" gradientUnits="objectBoundingBox">
         ${stops
           .map((stop) => `<stop offset="${stop[0]}" stop-color="${stop[1]}" />`)
           .join("")}
       </radialGradient>
+      <rect id="${id}_rect" width="100%" height="100%" fill="url(#${id})" />
     `;
   } else {
     throw new Error(`Unsupported gradient type: ${type}`);
@@ -54,7 +56,7 @@ function createGradientDef(id: string, config: GradientConfig): PatternResult {
   return {
     patternId: id,
     svgDef: svgDef,
-    fillUrl: `url(#${id})`,
+    fillUrl: `url(#${id}_rect)`,
   }
 }
 
@@ -83,21 +85,21 @@ function createHashMaskDef(
       <path d="M0 5.29289L0.589256 6H0L0 5.29289Z" fill="white"/>
     `;
   const svgDef = `
-    <pattern id="${patternId}" patternUnits="userSpaceOnUse" width="${width}" height="${height}">
+    <pattern id="${patternId}" patternUnits="userSpaceOnUse" width="${width}" height="${height}" patternTransform="scale(${scale})">
       ${pathsContent}
     </pattern>
     <mask id="${maskId}">
-      <rect x="0" y="0" width="100%" height="100%" fill="url(#${patternId})" transform="scale(${scale})" />
+      <rect x="0" y="0" width="100%" height="100%" fill="url(#${patternId})" />
     </mask>
+    <rect id="${maskId}_rect" width="100%" height="100%" mask="url(#${maskId})" />
   `;
 
   return {
     patternId,
     maskId,
     svgDef,
-    fillUrl: `url(#${patternId})`,
+    fillUrl: `url(#${maskId}_rect)`,
   }
-
 }
 
 function createColoredHashPattern(
@@ -134,12 +136,13 @@ function createColoredHashPattern(
       <rect x="0" y="0" width="100%" height="100%" fill="${backgroundFill}" />
       <rect x="0" y="0" width="100%" height="100%" fill="url(#${patternContentId})" />
     </pattern>
+    <rect id="${id}_rect" width="100%" height="100%" fill="url(#${id})" />
   `;
 
   return {
     patternId: id,
     svgDef,
-    fillUrl: `url(#${id})`,
+    fillUrl: `url(#${id}_rect)`,
   }
 }
 
@@ -158,6 +161,14 @@ export class PatternRegistry {
     const result = createGradientDef(id, config);
     this.defs.element.innerHTML += result.svgDef;
     this.registeredDefs.set(id, result);
+
+    // Create tooltip-specific gradient
+    const tooltipId = `${id}_tooltip`;
+    if (!this.registeredDefs.has(tooltipId)) {
+      const tooltipResult = createGradientDef(tooltipId, config);
+      this.defs.element.innerHTML += tooltipResult.svgDef;
+      this.registeredDefs.set(tooltipId, tooltipResult);
+    }
   }
 
   registerPattern(id: string, config: PatternConfig): void {
@@ -173,6 +184,19 @@ export class PatternRegistry {
           config.backgroundFill
         );
         svgDef = result.svgDef;
+
+        // Create tooltip-specific pattern
+        const tooltipId = `${id}_tooltip`;
+        if (!this.registeredDefs.has(tooltipId)) {
+          const tooltipResult = createColoredHashPattern(
+            tooltipId,
+            config.direction as PatternDirection,
+            config.color,
+            config.backgroundFill
+          );
+          this.defs.element.innerHTML += tooltipResult.svgDef;
+          this.registeredDefs.set(tooltipId, tooltipResult);
+        }
         break;
       // Add cases for 'hash' or 'gradient-hash' if needed
       default:
@@ -188,6 +212,14 @@ export class PatternRegistry {
     const svgDef = result.svgDef;
     this.defs.element.innerHTML += svgDef;
     this.registeredDefs.set(id, result);
+
+    // Create tooltip-specific mask
+    const tooltipId = `${id}_tooltip`;
+    if (!this.registeredDefs.has(tooltipId)) {
+      const tooltipResult = createHashMaskDef(tooltipId, config.direction as PatternDirection);
+      this.defs.element.innerHTML += tooltipResult.svgDef;
+      this.registeredDefs.set(tooltipId, tooltipResult);
+    }
   }
 
   hasDef(id: string): boolean {
@@ -243,7 +275,7 @@ export class PatternRegistry {
 export function initializePatterns(chart: Highcharts.Chart, config: BACKEND_SIMULATION_CONFIG): PatternRegistry {
   const registry = new PatternRegistry(chart);
 
-  // Register predefined gradients
+  // Register predefined gradients and their tooltip versions
   config.defs.gradients.forEach((gradient) => {
     registry.registerGradient(gradient.id, gradient.config);
   });
