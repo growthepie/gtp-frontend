@@ -583,15 +583,16 @@ export default function ChainComponent({
         .map((point: any) => {
           const { series, y, percentage } = point;
           const { name } = series;
-
-  
+          
+          const label = name === "ethereum" ? AllChainsByKeys[name].name_short : AllChainsByKeys[name].label;
+    
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-1 ">
                 <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
               }"></div>
                 <!--
-                <div class="tooltip-point-name">${AllChainsByKeys[data.chain_id].label
+                <div class="tooltip-point-name">${label
               }</div>
                 -->
                 <div class="flex-1 text-right numbers-xs">${Highcharts.numberFormat(
@@ -638,7 +639,7 @@ export default function ChainComponent({
               <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
               }"></div>
               
-              <div class="tooltip-point-name text-xs">${AllChainsByKeys[name].label
+              <div class="tooltip-point-name text-xs">${label
               }</div>
             </div>
             <div class="flex-1 text-right justify-end numbers-xs flex">
