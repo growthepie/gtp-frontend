@@ -25,6 +25,7 @@ export default function ContractContainer() {
   );
   const [showMore, setShowMore] = useState(false);
   const [contractCategory, setContractCategory] = useState("gas_fees");
+  const [focusEnabled] = useLocalStorage("focusEnabled", false);
 
   const {
     data,
@@ -147,12 +148,12 @@ export default function ContractContainer() {
           AllChainsByKeys[contract.chain].ecosystem.includes(
             chainEcosystemFilter,
           );
-
+        const passETH = contract.chain === "ethereum" ? !focusEnabled : true;
         const needsChainMatch = selectedChain
           ? selectedChain === contract.chain
           : true;
 
-        return isCategoryMatched && filterChains && needsChainMatch;
+        return isCategoryMatched && filterChains && needsChainMatch && passETH;
       })
       .reduce((filtered, [key, contract]) => {
         filtered[key] = contract;
