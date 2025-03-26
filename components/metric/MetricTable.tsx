@@ -90,13 +90,13 @@ const MetricTable = ({
   const onChainSelectToggle = useCallback(() => {
     // if all chains are selected, unselect all
     if (chainSelectToggleState === "all") {
-      if (showEthereumMainnet) setSelectedChains(["ethereum"]);
+      if (showEthereumMainnet && focusEnabled) setSelectedChains(["ethereum"]);
       else setSelectedChains([]);
     }
 
     // if no chains are selected, select last selected chains
     if (chainSelectToggleState === "none") {
-      if (showEthereumMainnet)
+      if (showEthereumMainnet && focusEnabled)
         setSelectedChains([...lastSelectedChains, "ethereum"]);
       else setSelectedChains([...lastSelectedChains]);
     }
@@ -115,7 +115,7 @@ const MetricTable = ({
 
   const handleChainClick = useCallback(
     (chainKey: string) => {
-      if (chainKey === "ethereum") {
+      if (chainKey === "ethereum" && focusEnabled) {
         if (showEthereumMainnet) {
           setShowEthereumMainnet(false);
         } else {
@@ -841,11 +841,7 @@ const MetricTable = ({
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       className={`h-6 w-6 ${
-                        item.chain.key === "ethereum"
-                          ? showEthereumMainnet
-                            ? "opacity-0"
-                            : "opacity-100"
-                          : selectedChains.includes(item.chain.key)
+                           selectedChains.includes(item.chain.key)
                             ? "opacity-0"
                             : "opacity-100"
                       }`}
@@ -868,11 +864,7 @@ const MetricTable = ({
                     <Icon
                       icon="feather:check-circle"
                       className={`h-[24px] w-[24px] ${
-                        item.chain.key === "ethereum"
-                          ? showEthereumMainnet
-                            ? "opacity-100"
-                            : "opacity-0"
-                          : selectedChains.includes(item.chain.key)
+                         selectedChains.includes(item.chain.key)
                             ? "opacity-100"
                             : "opacity-0"
                       }`}
