@@ -83,7 +83,7 @@ const createLandingDataSorter = (master: MasterResponse, landing: LandingPageMet
           return item.data.purpose || "";
         } else if (metricKey === "maturity") {
           const maturityExists = master.chains[item.chain.key].maturity !== "NA" && master.chains[item.chain.key].maturity !== undefined;
-          return maturityExists ? parseInt(master.chains[item.chain.key].maturity[0]) : undefined;
+          return maturityExists ? parseInt(master.chains[item.chain.key].maturity.split("_")[0]) : undefined;
         } else if (metricKey === "table_visual") {
           return focusEnabled
             ? landing?.data.metrics.table_visual[item.chain.key]?.ranking[centerMetric]?.rank ?? Infinity
