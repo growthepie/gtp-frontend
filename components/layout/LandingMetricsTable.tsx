@@ -28,7 +28,7 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { useRouter } from 'next/navigation'
 import { getFundamentalsByKey } from "@/lib/navigation";
 import { metricItems } from "@/lib/metrics";
-import { GTPIcon, GTPMetricIcon, RankIcon } from "./GTPIcon";
+import { GTPIcon, GTPMaturityIcon, GTPMetricIcon, RankIcon } from "./GTPIcon";
 import { useUIContext } from "@/contexts/UIContext";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { SortConfig, sortItems, SortOrder, SortType } from "@/lib/sorter";
@@ -216,8 +216,6 @@ export default memo(function LandingMetricsTable({
   return (
     <>
       <GridTableHeader
-        // gridDefinitionColumns="grid-cols-[26px_125px_190px_95px_minmax(300px,800px)_140px_125px_80px]"
-        // className="text-[14px] !font-bold gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] !pt-0 !pb-0 !items-center h-[40px] select-none overflow-visible"
         gridDefinitionColumns="grid-cols-[26px_125px_190px_95px_minmax(300px,800px)_140px_125px_117px]"
         className="mt-[30px] md:mt-[69px] group heading-small-xs gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] select-none h-[34px] !pb-0 !pt-0"
       >
@@ -315,7 +313,7 @@ export default memo(function LandingMetricsTable({
           .filter((row) => Get_SupportedChainKeys(master).includes(row.chain.key))
           .map((item, index) => {
             const maturityExists = master.chains[item.chain.key].maturity !== "NA" && master.chains[item.chain.key].maturity !== undefined;
-            const maturityName = maturityExists ? master.maturity_levels[master.chains[item.chain.key].maturity].name.toLowerCase() : "NA";
+            const maturityKey = maturityExists ? master.chains[item.chain.key].maturity : "0_early_phase";
 
             return (
               <GridTableRow
@@ -324,7 +322,7 @@ export default memo(function LandingMetricsTable({
                 className="relative group text-[14px] gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] select-none h-[34px] !pb-0 !pt-0"
                 bar={{
                   origin_key: item.chain.key,
-                  width:lastValsByChainKey[item.chain.key] / maxVal,
+                  width: lastValsByChainKey[item.chain.key] / maxVal,
                   transitionClass: sort.metric === "users" ? "transition-[width] duration-300" : "transition-opacity duration-[100ms]",
                   containerStyle: {
                     left: 22,
@@ -347,25 +345,7 @@ export default memo(function LandingMetricsTable({
                 <div className="text-xs group-hover:underline">{data.chains[item.chain.key].chain_name}</div>
                 <div className="text-xs w-full">{data.chains[item.chain.key].purpose || ""}</div>
                 <div className="justify-start w-full items-center group rounded-full">
-                  {
-                    maturityExists && (
-                      <Tooltip placement="bottom" allowInteract={false}>
-                        <TooltipTrigger>
-                          <GTPIcon icon={`gtp-layer2-maturity-${maturityName}` as GTPIconName} size="md" />
-                        </TooltipTrigger>
-                    <TooltipContent>
-                      <div className="flex flex-col gap-y-[5px] items-center relative left-[245px]">
-                        <div className="p-[15px] text-sm bg-[#1F2726] text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50">
-                          <div className="flex items-center gap-x-[10px] h-[18px]">
-                            <GTPIcon icon={`gtp-layer2-maturity-${maturityName}` as GTPIconName} size="sm" />
-                            <div className="heading-small-xs">{master.maturity_levels[master.chains[item.chain.key].maturity].name}</div>
-                          </div>
-                          <div className="text-xs font-normal text-wrap">{master.maturity_levels[master.chains[item.chain.key].maturity].description}</div>
-                        </div>
-                      </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
+                  <MaturityWithTooltip maturityKey={maturityKey} />
                 </div>
                 <ChainRankCell item={item} setCenterMetric={setCenterMetric} centerMetric={centerMetric} setSort={setSort} sort={sort} />
                 <div className="flex justify-end items-center">
@@ -392,10 +372,43 @@ export default memo(function LandingMetricsTable({
   );
 });
 
+export const useMaturityNameAndDescription = (maturityKey: string) => {
+  const { data: master } = useMaster();
+  if (!master) return { maturityName: "", maturityDescription: "" };
+  const maturityName = master.maturity_levels[maturityKey].name;
+  const maturityDescription = master.maturity_levels[maturityKey].description;
+  return { maturityName, maturityDescription };
+}
+
+type MaturityWithTooltipProps = {
+  maturityKey: string;
+  size?: "sm" | "md";
+}
+export const MaturityWithTooltip = memo(function MaturityWithTooltip({ maturityKey, size = "md" }: MaturityWithTooltipProps) {
+  const { maturityName, maturityDescription } = useMaturityNameAndDescription(maturityKey);
+  return (
+    <Tooltip placement="bottom" allowInteract={false}>
+      <TooltipTrigger>
+        <GTPMaturityIcon maturityKey={maturityKey} size={size} /> 
+      </TooltipTrigger>
+      <TooltipContent>
+        <div className="flex flex-col gap-y-[5px] items-center relative left-[245px]">
+          <div className="p-[15px] text-sm bg-[#1F2726] text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50">
+            <div className="flex items-center gap-x-[10px] h-[18px]">
+              <GTPMaturityIcon maturityKey={maturityKey} size="sm" />
+              <div className="heading-small-xs">{maturityName}</div>
+            </div>
+            <div className="text-xs font-normal text-wrap">{maturityDescription}</div>
+          </div>
+        </div>
+      </TooltipContent>
+    </Tooltip>
+  )
+});
+
 
 
 const ChainRankHeader = memo(function ChainRankHeader({
-
   setCenterMetric,
   centerMetric,
   sort,

@@ -59,12 +59,9 @@ export default async function Page() {
       <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[30px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
           <LandingFirstHeaders />
       </Container>
-      {/* <Container className="!px-0 fade-edge-div pb-[24px] -mb-[24px]"> */}
       <SwiperContainer ariaId={"layer-2-traction-title"} size="landing">
         <LandingSwiperItems />
       </SwiperContainer>
-      {/* </Container> */}
-
       <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
         <LandingSecondHeaders />
       </Container>
