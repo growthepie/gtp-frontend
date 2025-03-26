@@ -71,6 +71,15 @@ export const GTPMaturityIcon = memo(({ maturityKey, className, containerClassNam
     icon = `gtp:gtp-layer2-maturity-${name}`;
   }
 
+  if(maturityKey === "10_foundational" || maturityKey === "0_early_phase"){
+    // return N/A text
+   return (
+    <div className={`${sizeClassMap[props.size || "md"]} ${containerClassName || ""} flex items-center justify-center`}>
+      <div className="text-xs text-[#5A6462]">N/A</div>
+    </div>
+   )
+  }
+
   return (
     <div className={`${sizeClassMap[props.size || "md"]} ${containerClassName || ""} flex items-center justify-center`}>
       <Icon icon={icon} className={`${sizeClass} ${className || ""} ${opacityClass}`} {...props} />

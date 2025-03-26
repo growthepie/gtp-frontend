@@ -313,7 +313,8 @@ export default memo(function LandingMetricsTable({
           .filter((row) => Get_SupportedChainKeys(master).includes(row.chain.key))
           .map((item, index) => {
             const maturityExists = master.chains[item.chain.key].maturity !== "NA" && master.chains[item.chain.key].maturity !== undefined;
-            const maturityKey = maturityExists ? master.chains[item.chain.key].maturity : "0_early_phase";
+            const maturityKey = maturityExists ? master.chains[item.chain.key].maturity : "";
+            const showMaturityTooltip = data.chains[item.chain.key].show_maturity_tooltip || true;
 
             return (
               <GridTableRow
@@ -345,7 +346,7 @@ export default memo(function LandingMetricsTable({
                 <div className="text-xs group-hover:underline">{data.chains[item.chain.key].chain_name}</div>
                 <div className="text-xs w-full">{data.chains[item.chain.key].purpose || ""}</div>
                 <div className="justify-start w-full items-center group rounded-full">
-                  <MaturityWithTooltip maturityKey={maturityKey} />
+                  <MaturityWithTooltip maturityKey={maturityKey} showTooltip={showMaturityTooltip} />
                 </div>
                 <ChainRankCell item={item} setCenterMetric={setCenterMetric} centerMetric={centerMetric} setSort={setSort} sort={sort} />
                 <div className="flex justify-end items-center">
@@ -375,20 +376,23 @@ export default memo(function LandingMetricsTable({
 export const useMaturityNameAndDescription = (maturityKey: string) => {
   const { data: master } = useMaster();
   if (!master) return { maturityName: "", maturityDescription: "" };
-  const maturityName = master.maturity_levels[maturityKey].name;
-  const maturityDescription = master.maturity_levels[maturityKey].description;
+  const maturityName = master.maturity_levels[maturityKey] ? master.maturity_levels[maturityKey].name : "";
+  const maturityDescription = master.maturity_levels[maturityKey] ? master.maturity_levels[maturityKey].description : "";
   return { maturityName, maturityDescription };
 }
 
 type MaturityWithTooltipProps = {
   maturityKey: string;
   size?: "sm" | "md";
+  showTooltip?: boolean;
 }
-export const MaturityWithTooltip = memo(function MaturityWithTooltip({ maturityKey, size = "md" }: MaturityWithTooltipProps) {
+export const MaturityWithTooltip = memo(function MaturityWithTooltip({ maturityKey, size = "md", showTooltip = true }: MaturityWithTooltipProps) {
   const { maturityName, maturityDescription } = useMaturityNameAndDescription(maturityKey);
   return (
-    <Tooltip placement="bottom" allowInteract={false}>
-      <TooltipTrigger>
+    <>
+      {showTooltip && maturityName !== "" ? (
+        <Tooltip placement="bottom" allowInteract={false}>
+          <TooltipTrigger>
         <GTPMaturityIcon maturityKey={maturityKey} size={size} /> 
       </TooltipTrigger>
       <TooltipContent>
@@ -403,8 +407,13 @@ export const MaturityWithTooltip = memo(function MaturityWithTooltip({ maturityK
         </div>
       </TooltipContent>
     </Tooltip>
-  )
+    ) : (
+        <GTPMaturityIcon maturityKey={maturityKey} size={size} />
+      )}
+    </>
+  );
 });
+
 
 
 
