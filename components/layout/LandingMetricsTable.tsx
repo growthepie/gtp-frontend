@@ -656,7 +656,7 @@ const ChainRankCell = memo(function ChainRankCell({
                               : "scale(1)",
                           zIndex: hoveredMetric !== metric ? 2 : 4,
                         }}>
-                        <RankIcon colorScale={colorScale} size="sm">
+                        <RankIcon colorScale={colorScale} size="sm" isIcon={false}>
                           {landing.data.metrics.table_visual[item.chain.key][focusEnabled ? "ranking" : "ranking_w_eth"][metric].rank}
                         </RankIcon>
 
@@ -699,6 +699,7 @@ const ChainRankCell = memo(function ChainRankCell({
                       <RankIcon
                         colorScale={-1}
                         size="sm"
+                        isIcon={false}
                       >
                         {landing.data.metrics.table_visual[item.chain.key][focusEnabled ? "ranking" : "ranking_w_eth"][metric].rank}
                       </RankIcon>

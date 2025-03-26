@@ -136,8 +136,9 @@ type RankIconProps = {
   colorScale: number;
   size?: sizes;
   children?: React.ReactNode;
+  isIcon?: boolean;
 }
-export const RankIcon = ({ colorScale, size = "md", children }: RankIconProps) => {
+export const RankIcon = ({ colorScale, size = "md", children, isIcon = true}: RankIconProps) => {
   const color = colorScale == -1 ? "#CDD8D322" : GetRankingColor(colorScale * 100);
   const borderColor = colorScale == -1 ? "#CDD8D333" : color + "AA";
   // const borderColor = "#CDD8D322";
@@ -183,26 +184,32 @@ export const RankIcon = ({ colorScale, size = "md", children }: RankIconProps) =
       style={{ borderColor }}
     >
       <div
-        className={`rounded-full flex items-center justify-center transition-all duration-100 ${bgSizeClassMap[size]}`}
+        className={`relative rounded-full flex items-center justify-center transition-all duration-100 ${bgSizeClassMap[size]}`}
         style={{ background: color }}
       >
-        <svg
-          width={svgSizeMap[size]}
-          height={svgSizeMap[size]}
-          viewBox={`0 0 ${svgSizeMap[size]} ${svgSizeMap[size]}`}
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          shapeRendering="geometricPrecision"
-          
-        >
-          <foreignObject x="0" y="0" width="12" height="12">
-            <div
-              className={`flex items-center justify-center h-full w-full font-extrabold text-[#1F2726] font-source-code-pro ${fontSizeClassMap[size]}`}
-            >
-              {rankNumber}
-            </div>
-          </foreignObject>
-        </svg>
+        {isIcon ? (
+          <div className="absolute inset-0 flex items-center justify-center">
+            {children}
+          </div>
+        ) : (
+          <svg
+            width={svgSizeMap[size]}
+            height={svgSizeMap[size]}
+            viewBox={`0 0 ${svgSizeMap[size]} ${svgSizeMap[size]}`}
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            shapeRendering="geometricPrecision"
+
+          >
+            <foreignObject x="0" y="0" width={svgSizeMap[size]} height={svgSizeMap[size]}>
+              <div
+                className={`flex items-center justify-center h-full w-full font-extrabold text-[#1F2726] font-source-code-pro ${fontSizeClassMap[size]}`}
+              >
+                {rankNumber}
+              </div>
+            </foreignObject>
+          </svg>
+        )}
       </div>
     </div>
   );
