@@ -99,30 +99,67 @@ export const RankIcon = ({ colorScale, size = "md", children }: RankIconProps) =
   // const borderColor = "#CDD8D322";
 
   const borderSizeClassMap = {
-    sm: "size-[16px]",
+    sm: "size-[18px]",
     md: "size-[24px]",
     lg: "size-[36px]",
   };
 
   const bgSizeClassMap = {
-    sm: "size-[12px]",
+    sm: "size-[14px]",
     md: "size-[20px]",
     lg: "size-[32px]",
   };
 
+  // Font size mapping for rank numbers to ensure readability
+  const fontSizeClassMap = {
+    sm: "text-[9px]",  // Small numbers look nice with slight adjustment
+    md: "text-[10px]",
+    lg: "text-[14px]",
+  };
+
+  // SVG size matches background size
+  const svgSizeMap = {
+    sm: 12,
+    md: 20,
+    lg: 32,
+  };
+
+  const svgFontSizeMap = {
+    sm: 9,
+    md: 10,
+    lg: 14,
+  };
+
+  // Convert children to a string (e.g., rank number)
+  const rankNumber = children?.toString() || "";
+
   return (
-    <div className={`rounded-full p-[1px] flex items-center justify-center border-[1px] transition-colors text-forest-500 ${borderSizeClassMap[size]}`}
-      style={{
-        borderColor: borderColor,
-      }}>
-      <div className={`relative rounded-full flex items-center justify-center transition-colors w-full h-full`}
-        style={{
-          background: color,
-        }}>
-        <div className="absolute inset-0 flex items-center justify-center">
-          {children}
-        </div>
+    <div
+      className={`rounded-full flex items-center justify-center border-[1px] transition-all duration-100 text-forest-500 ${borderSizeClassMap[size]}`}
+      style={{ borderColor }}
+    >
+      <div
+        className={`rounded-full flex items-center justify-center transition-all duration-100 ${bgSizeClassMap[size]}`}
+        style={{ background: color }}
+      >
+        <svg
+          width={svgSizeMap[size]}
+          height={svgSizeMap[size]}
+          viewBox={`0 0 ${svgSizeMap[size]} ${svgSizeMap[size]}`}
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          shapeRendering="geometricPrecision"
+          
+        >
+          <foreignObject x="0" y="0" width="12" height="12">
+            <div
+              className={`flex items-center justify-center h-full w-full font-extrabold text-[#1F2726] font-source-code-pro ${fontSizeClassMap[size]}`}
+            >
+              {rankNumber}
+            </div>
+          </foreignObject>
+        </svg>
       </div>
     </div>
   );
-}
+};

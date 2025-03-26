@@ -219,7 +219,7 @@ export default memo(function LandingMetricsTable({
         // gridDefinitionColumns="grid-cols-[26px_125px_190px_95px_minmax(300px,800px)_140px_125px_80px]"
         // className="text-[14px] !font-bold gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] !pt-0 !pb-0 !items-center h-[40px] select-none overflow-visible"
         gridDefinitionColumns="grid-cols-[26px_125px_190px_95px_minmax(300px,800px)_140px_125px_117px]"
-        className="relative group heading-small-xs gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] select-none h-[34px] !pb-0 !pt-0"
+        className="mt-[30px] md:mt-[69px] group heading-small-xs gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] select-none h-[34px] !pb-0 !pt-0"
       >
         <GridTableHeaderCell><></></GridTableHeaderCell>
         <GridTableHeaderCell
@@ -247,7 +247,7 @@ export default memo(function LandingMetricsTable({
         >
           Maturity
         </GridTableHeaderCell>
-        <GridTableHeaderCell justify="center">
+        <GridTableHeaderCell justify="center" className="">
           <ChainRankHeader setCenterMetric={setCenterMetric} centerMetric={centerMetric} setSort={setSort} sort={sort} />
         </GridTableHeaderCell>
         <GridTableHeaderCell
@@ -316,26 +316,27 @@ export default memo(function LandingMetricsTable({
           .map((item, index) => {
             const maturityExists = master.chains[item.chain.key].maturity !== "NA" && master.chains[item.chain.key].maturity !== undefined;
             const maturityName = maturityExists ? master.maturity_levels[master.chains[item.chain.key].maturity].name.toLowerCase() : "NA";
-            const barWidth = sort.metric === "users" ? (lastValsByChainKey[item.chain.key] / maxVal) * 100 : 0;
 
             return (
               <GridTableRow
-                key={item.chain.key}
+                key={index}
                 gridDefinitionColumns="grid-cols-[26px_125px_190px_95px_minmax(300px,800px)_140px_125px_117px]"
                 className="relative group text-[14px] gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] select-none h-[34px] !pb-0 !pt-0"
-                // bar={{
-                //   origin_key: item.chain.key,
-                //   width: 0,
-                //   containerStyle: {
-                //     left: 22,
-                //     right: 1,
-                //     top: 0,
-                //     bottom: 0,
-                //     borderRadius: "0 9999px 9999px 0",
-                //     zIndex: -1,
-                //     overflow: "hidden",
-                //   }
-                // }}
+                bar={{
+                  origin_key: item.chain.key,
+                  width:lastValsByChainKey[item.chain.key] / maxVal,
+                  transitionClass: sort.metric === "users" ? "transition-[width] duration-300" : "transition-opacity duration-[100ms]",
+                  containerStyle: {
+                    left: 22,
+                    right: 1,
+                    top: 0,
+                    bottom: 0,
+                    borderRadius: "0 9999px 9999px 0",
+                    zIndex: -1,
+                    overflow: "hidden",
+                    opacity: sort.metric === "users" ? 1 : 0,
+                  },
+                }}
                 onClick={() => router.push(`/chains/${item.chain.urlKey}`)}
               >
                 <div className="sticky z-[3] -left-[12px] md:-left-[48px] w-[26px] flex items-center justify-center overflow-visible">
@@ -343,7 +344,7 @@ export default memo(function LandingMetricsTable({
                     <GridTableChainIcon origin_key={item.chain.key} />
                   </div>
                 </div>
-                <div className="text-xs group-hover:underlines">{data.chains[item.chain.key].chain_name}</div>
+                <div className="text-xs group-hover:underline">{data.chains[item.chain.key].chain_name}</div>
                 <div className="text-xs w-full">{data.chains[item.chain.key].purpose || ""}</div>
                 <div className="justify-start w-full items-center group rounded-full">
                   {
@@ -627,11 +628,8 @@ const ChainRankCell = memo(function ChainRankCell({
                               : "scale(1)",
                           zIndex: hoveredMetric !== metric ? 2 : 4,
                         }}>
-                        <RankIcon
-                          colorScale={colorScale}
-                          size="sm"
-                        >
-                          <span className="font-mono text-[7px] font-bold text-[#1F2726]">{landing.data.metrics.table_visual[item.chain.key][focusEnabled ? "ranking" : "ranking_w_eth"][metric].rank}</span>
+                        <RankIcon colorScale={colorScale} size="sm">
+                          {landing.data.metrics.table_visual[item.chain.key][focusEnabled ? "ranking" : "ranking_w_eth"][metric].rank}
                         </RankIcon>
 
                       </div>

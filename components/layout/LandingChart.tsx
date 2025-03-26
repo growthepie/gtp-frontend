@@ -1376,7 +1376,7 @@ export default function LandingChart({
         </div>
 
       </div>
-      <div className="pb-[30px] md:pb-[69px]">
+      <div className="pb-0">
         <div className="h-[34px] flex flex-col justify-start ">
             <div className="flex justify-between items-center rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative h-[34px]">
               {/* toggle ETH */}

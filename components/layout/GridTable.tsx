@@ -47,6 +47,7 @@ export type GridTableRowProps = {
     color?: string;
     width: number;
     containerStyle: React.CSSProperties;
+    transitionClass?: string;
   };
   onClick?: () => void;
 };
@@ -76,8 +77,10 @@ export const GridTableRow = ({
   }
 
 
-  if (bar)
-
+  if (bar) {
+    if(!bar.transitionClass) {
+      bar.transitionClass = "all 0.3s ease-in-out";
+    }
     return (
       <div
         className={`select-text gap-x-[10px] pl-[10px] pr-[32px] py-[5px] text-xs items-center rounded-full border-[0.5px] border-[#5A6462] grid ${gridDefinitionColumns || ""} ${className || ""} ${onClick ? "cursor-pointer hover:bg-forest-500/10" : ""}`}
@@ -92,7 +95,7 @@ export const GridTableRow = ({
           }}
         >
           <div
-            className={`z-20 transition-all duration-300`}
+            className={`z-20 ${bar.transitionClass} duration-300`}
             style={{
               background: getBarColor(),
               width: bar.width * 100 + "%",
@@ -102,6 +105,7 @@ export const GridTableRow = ({
         </div>
       </div >
     );
+  }
 
   return (
     <div

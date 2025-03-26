@@ -31,8 +31,9 @@ module.exports = {
         inter: ["var(--font-inter)", "sans-serif"],
         raleway: ["var(--font-raleway)", "sans-serif"],
         sans: ["var(--font-raleway)", ...defaultTheme.fontFamily.sans],
-        mono: ["var(--font-fira-mono)", ...defaultTheme.fontFamily.mono],
+        mono: ["var(--font-fira-mono)", ...defaultTheme.fontFamily.mono], 
         num: ["var(--font-fira-sans)", "sans-serif"],
+        "source-code-pro": ["var(--font-source-code-pro)", "sans-serif"],
       },
       fontSize: {
         'xxxs': '9px',
