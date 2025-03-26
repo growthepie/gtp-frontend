@@ -1243,10 +1243,10 @@ export default function LandingChart({
                 <DynamicLabel 
                   className="whitespace-nowrap text-sm"
                   labels={isLessThan2xl ? {
-                    total: "Total ETH Ecosystem",
+                    total: "ETH Ecosystem",
                     l2: "L2 Ecosystem",
                   } : {
-                    total: "Total ETH Ecosystem",
+                    total: "Total Ethereum Ecosystem",
                     l2: "Layer 2 Ecosystem",
                   }} 
                   selectedLabel={focusEnabled ? "l2" : "total"} 
