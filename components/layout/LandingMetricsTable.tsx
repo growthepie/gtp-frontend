@@ -312,9 +312,8 @@ export default memo(function LandingMetricsTable({
         {rows
           .filter((row) => Get_SupportedChainKeys(master).includes(row.chain.key))
           .map((item, index) => {
-            const maturityExists = master.chains[item.chain.key].maturity !== "NA" && master.chains[item.chain.key].maturity !== undefined;
-            const maturityKey = maturityExists ? master.chains[item.chain.key].maturity : "";
-            const showMaturityTooltip = data.chains[item.chain.key].show_maturity_tooltip || true;
+            const maturityKey = master.chains[item.chain.key].maturity || "NA";
+            const showMaturityTooltip = maturityKey !== "NA" && maturityKey !== "";
 
             return (
               <GridTableRow
@@ -376,6 +375,11 @@ export default memo(function LandingMetricsTable({
 export const useMaturityNameAndDescription = (maturityKey: string) => {
   const { data: master } = useMaster();
   if (!master) return { maturityName: "", maturityDescription: "" };
+
+  if(maturityKey === "NA" || maturityKey === "" || maturityKey === undefined || maturityKey === "0_early_phase" || maturityKey === "10_foundational"){
+    return { maturityName: "N/A", maturityDescription: "N/A" };
+  }
+
   const maturityName = master.maturity_levels[maturityKey] ? master.maturity_levels[maturityKey].name : "";
   const maturityDescription = master.maturity_levels[maturityKey] ? master.maturity_levels[maturityKey].description : "";
   return { maturityName, maturityDescription };
@@ -388,28 +392,30 @@ type MaturityWithTooltipProps = {
 }
 export const MaturityWithTooltip = memo(function MaturityWithTooltip({ maturityKey, size = "md", showTooltip = true }: MaturityWithTooltipProps) {
   const { maturityName, maturityDescription } = useMaturityNameAndDescription(maturityKey);
+
+  if(maturityName === "N/A"){
+    return <GTPMaturityIcon maturityKey={maturityKey} size={size} />
+  }
+
   return (
     <>
-      {showTooltip && maturityName !== "" ? (
         <Tooltip placement="bottom" allowInteract={false}>
           <TooltipTrigger>
-        <GTPMaturityIcon maturityKey={maturityKey} size={size} /> 
-      </TooltipTrigger>
-      <TooltipContent>
-        <div className="flex flex-col gap-y-[5px] items-center relative left-[245px]">
-          <div className="p-[15px] text-sm bg-[#1F2726] text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50">
-            <div className="flex items-center gap-x-[10px] h-[18px]">
-              <GTPMaturityIcon maturityKey={maturityKey} size="sm" />
-              <div className="heading-small-xs">{maturityName}</div>
+            <GTPMaturityIcon maturityKey={maturityKey} size={size} /> 
+          </TooltipTrigger>
+          <TooltipContent>
+            <div className="flex flex-col gap-y-[5px] items-center relative left-[245px]">
+              <div className="p-[15px] text-sm bg-[#1F2726] text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50">
+                <div className="flex items-center gap-x-[10px] h-[18px]">
+                  <GTPMaturityIcon maturityKey={maturityKey} size="sm" />
+                  <div className="heading-small-xs">{maturityName}</div>
+                </div>
+                <div className="text-xs font-normal text-wrap">{maturityDescription}</div>
+              </div>
             </div>
-            <div className="text-xs font-normal text-wrap">{maturityDescription}</div>
-          </div>
-        </div>
-      </TooltipContent>
-    </Tooltip>
-    ) : (
-        <GTPMaturityIcon maturityKey={maturityKey} size={size} />
-      )}
+          </TooltipContent>
+        </Tooltip>
+
     </>
   );
 });
