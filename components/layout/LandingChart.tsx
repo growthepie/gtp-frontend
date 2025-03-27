@@ -146,8 +146,8 @@ export const BACKEND_SIMULATION_CONFIG: BACKEND_SIMULATION_CONFIG = {
         id: "cross_layer_background_gradient",
         config: {
           type: "linearGradient",
-          linearGradient: { x1: 1.5, y1: 1.5, x2: -1, y2: -1 },
-          stops: [[0, "#FE5468"], [1, "#FFDF27"]]
+          linearGradient: { x1: 1, y1: 1, x2: 0, y2: 0 },
+          stops: [[0, "#fe7557"], [1, "#fe7557"]]
         }
       }
     ],
@@ -1189,8 +1189,6 @@ export default function LandingChart({
         </div>
       </EmbedContainer>
     );
-
-  console.log(focusEnabled, "focusEnabled");
 
   return (
     <div

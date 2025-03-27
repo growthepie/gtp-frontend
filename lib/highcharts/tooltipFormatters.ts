@@ -85,6 +85,28 @@ export const formatDateHeader = (
     </div>`;
 };
 
+function injectTooltipMaskStyles(maskId: string) {
+  if (document.getElementById('tooltip-mask')) return;
+  const style = document.createElement('style');
+  style.id = 'tooltip-mask';
+  style.innerHTML = `
+    .diagonal-mask-right {
+      --pattern-width: 5px;
+      --pattern-height: 6px;
+      --pattern-scale: 2;
+      
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%'%3E%3Cdefs%3E%3Cpattern id='diagonalPattern' patternUnits='userSpaceOnUse' width='5' height='6' patternTransform='scale(2)'%3E%3Cpath d='M0 0V0.707108L0.589256 0H0Z' fill='white'%3E%3C/path%3E%3Cpath d='M1.91074 0L0 2.29289V3.70711L3.08926 0H1.91074Z' fill='white'%3E%3C/path%3E%3Cpath d='M4.41074 0L0 5.29289V6H0.589256L5 0.707108V0H4.41074Z' fill='white'%3E%3C/path%3E%3Cpath d='M1.91074 6H3.08926L5 3.70711V2.29289L1.91074 6Z' fill='white'%3E%3C/path%3E%3Cpath d='M5 5.29289L4.41074 6H5L5 5.29289Z' fill='white'%3E%3C/path%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23diagonalPattern)'%3E%3C/rect%3E%3C/svg%3E");
+      
+      -webkit-mask-size: calc(var(--pattern-width) * var(--pattern-scale)) calc(var(--pattern-height) * var(--pattern-scale));
+      mask-size: calc(var(--pattern-width) * var(--pattern-scale)) calc(var(--pattern-height) * var(--pattern-scale));
+      
+      -webkit-mask-repeat: repeat;
+      mask-repeat: repeat;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 /**
  * Renders an individual point row in the tooltip
  */
@@ -115,30 +137,35 @@ export const renderPointRow = (
   const [seriesKey, typeConfig] = compositionType;
   const displayName = typeConfig.name || name;
 
-  // Get the tooltip-specific pattern IDs
   const fillId = `${seriesKey}_fill_tooltip`;
+  const randomId = Math.random().toString(36).substring(2, 15);
   const maskId = typeConfig.mask ? `${seriesKey}_mask_tooltip` : '';
 
-  // Create the SVG marker - for the dot
+  injectTooltipMaskStyles(maskId);
+
+  console.log(`[Tooltip] Series: ${name}, Key: ${seriesKey}, HasMaskConfig: ${!!typeConfig.mask}, Generated maskId: ${maskId}`);
+
+
+  // Create the SVG marker
   const markerSvg = `
     <svg width="16px" height="6px" viewBox="0 0 16 6" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-      <rect width="16px" height="6px" fill="url(#${fillId})" />
-      ${maskId ? `<rect width="16" height="6" mask="url(#${maskId})" />` : ''}
+      <rect ${maskId ? 'class="diagonal-mask-right"' : ''}  width="16" height="6" fill="url(#${fillId})"></rect>
     </svg>
   `;
 
   // Create the bar SVG
   const barSvg = `
-    <svg width="100%" height="2px" viewBox="0 0 100 2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-      <rect width="100%" height="2px" fill="url(#${fillId})" />
-      ${maskId ? `<rect width="100%" height="2px" mask="url(#${maskId})" />` : ''}
+    <svg width="100%" height="2px" viewBox="0 0 100 2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+      <rect ${maskId ? 'class="diagonal-mask-right"' : ''} id="${randomId}" width="100%" height="2px" fill="url(#${fillId})"></rect>
     </svg>
   `;
 
+
   if (selectedScale === 'percentage') {
     const barWidth = (percentage / maxPercentage) * 100;
-    
+
     return `
+      
       <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
         <div class="w-4 h-1.5 rounded-r-full overflow-hidden" style="position: relative;">
           ${markerSvg}
@@ -157,6 +184,10 @@ export const renderPointRow = (
   const barWidth = (y / maxValue) * 100;
 
   return `
+    <pre class="h-[100px] overflow-auto hidden">
+      barSVG: ${barSvg.replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace('\'', '&apos;').replace("\\", '\\\\')}
+      maskId: ${maskId}
+    </pre>
     <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
       <div class="w-4 h-1.5 rounded-r-full overflow-hidden" style="position: relative;">
         ${markerSvg}
@@ -316,7 +347,7 @@ export const createTooltipFormatter = (options: TooltipFormatterOptions) => {
     const maxPercentage = Math.max(...points.map(point => point.percentage));
     
     // Start building the tooltip HTML
-    let tooltip = `<div class="mt-3 mr-3 mb-3 w-60 md:w-60 text-xs font-raleway highcharts-tooltip-container">
+    let tooltip = `<div class="mt-3 mr-3 mb-3 w-60 md:w-fit text-xs font-raleway highcharts-tooltip-container">
       <div class="flex-1 font-bold text-[13px] md:text-[1rem] ml-6 mb-2 flex justify-between">${dateString}</div>`;
     
     // Add points

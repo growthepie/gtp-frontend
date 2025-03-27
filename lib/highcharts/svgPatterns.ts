@@ -60,6 +60,7 @@ function createGradientDef(id: string, config: GradientConfig): PatternResult {
   }
 }
 
+
 function createHashMaskDef(
   maskId: string,
   direction: PatternDirection = "right",
