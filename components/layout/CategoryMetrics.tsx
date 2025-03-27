@@ -69,6 +69,7 @@ export default function CategoryMetrics({
     LabelsURLS.projects,
   );
 
+  const [focusEnabled] = useLocalStorage("focusEnabled", false);
   const ownerProjectDisplayNameToProjectData = useMemo(() => {
     if (!projectsData) return {};
 
@@ -307,6 +308,8 @@ export default function CategoryMetrics({
         const isSupported =
           item === "all_l2s" ? true : supportedChainKeys.includes(item);
         const isMaster = master?.chains[item] ? true : false;
+       
+        const passETH = item === "ethereum" ? !focusEnabled : true;
         const passEcosystem =
           item === "all_l2s"
             ? true
@@ -316,7 +319,7 @@ export default function CategoryMetrics({
                 : AllChainsByKeys[item].ecosystem.includes(chainEcosystemFilter)
               : false;
 
-        return item !== "types" && isSupported && passEcosystem;
+        return item !== "types" && isSupported && passEcosystem && passETH;
       })
       .sort((a, b) => b[1] - a[1])
       .sort(([itemA], [itemB]) =>
@@ -326,7 +329,7 @@ export default function CategoryMetrics({
             ? -1
             : 1,
       );
-  }, [chainValues, selectedChains, chainEcosystemFilter]);
+  }, [chainValues, selectedChains, chainEcosystemFilter, focusEnabled]);
 
   const sortedChainValuesWithPlaceholder = useMemo<
     [string, number, number][] | null
@@ -339,6 +342,7 @@ export default function CategoryMetrics({
         const isSupported =
           item === "all_l2s" ? true : supportedChainKeys.includes(item);
         const isMaster = master?.chains[item] ? true : false;
+        const passETH = item === "ethereum" ? !focusEnabled : true;
         const passEcosystem =
           item === "all_l2s"
             ? true
@@ -348,7 +352,7 @@ export default function CategoryMetrics({
                 : AllChainsByKeys[item].ecosystem.includes(chainEcosystemFilter)
               : false;
 
-        return item !== "types" && isSupported && passEcosystem;
+        return item !== "types" && isSupported && passEcosystem && passETH;
       })
       .sort((a, b) => b[1] - a[1])
       .sort(([itemA], [itemB]) =>
@@ -382,6 +386,7 @@ export default function CategoryMetrics({
     master,
     chainEcosystemFilter,
     AllChainsByKeys,
+    focusEnabled,
   ]);
 
   const timespans = useMemo(() => {
@@ -414,7 +419,7 @@ export default function CategoryMetrics({
       //   value: 365,
       // },
       max: {
-        label: "All Time",
+        label: "Max",
         shortLabel: "Max",
         value: 0,
       },
@@ -524,6 +529,7 @@ export default function CategoryMetrics({
       const isSupported =
         currChain === "all_l2s" ? true : supportedChainKeys.includes(currChain);
       const isMaster = master?.chains[currChain] ? true : false;
+      const passETH = currChain === "ethereum" ? !focusEnabled : true;
       const passEcosystem =
         currChain === "all_l2s"
           ? true
@@ -538,7 +544,8 @@ export default function CategoryMetrics({
         isSupported &&
         passEcosystem &&
         selectedChains[currChain] === true &&
-        data[selectedCategory][dailyKey][String(currChain)]
+        data[selectedCategory][dailyKey][String(currChain)] &&
+        passETH
       ) {
         if (selectedMode.includes("gas_fees") && String(currChain) === "imx") {
           // Skip this iteration
@@ -636,13 +643,17 @@ export default function CategoryMetrics({
     showUsd,
     selectedType,
     chainEcosystemFilter,
+    focusEnabled,
   ]);
 
   const chartSeries = useMemo(() => {
     const today = new Date().getTime();
 
     if (selectedCategory && data) return chartReturn;
-    return Object.keys(data["native_transfers"][dailyKey]).map((chain) => ({
+    return Object.keys(data["native_transfers"][dailyKey]).filter((chain) => {
+      const passETH = chain === "ethereum" ? !focusEnabled : true;
+      return passETH;
+    }).map((chain) => ({
       id: [chain, "native_transfers", selectedType].join("||"),
       name: chain,
       unixKey: "unix",
@@ -657,6 +668,7 @@ export default function CategoryMetrics({
     dailyKey,
     selectedType,
     selectedChartType,
+    focusEnabled
   ]);
 
   const [isCategoryHovered, setIsCategoryHovered] = useState<{
@@ -838,12 +850,14 @@ export default function CategoryMetrics({
           AllChainsByKeys[contract.chain].ecosystem.includes(
             chainEcosystemFilter,
           );
+        const passETH = contract.chain === "ethereum" ? !focusEnabled : true;
 
         return (
           isChainSelected &&
           isSubcategorySelected &&
           isCategoryMatched &&
-          filterChains
+          filterChains &&
+          passETH
         );
       })
       .reduce((filtered, [key, contract]) => {
@@ -922,6 +936,7 @@ export default function CategoryMetrics({
     showUsd,
     chainEcosystemFilter,
     AllChainsByKeys,
+    focusEnabled
   ]);
 
   const largestContractValue = useMemo(() => {

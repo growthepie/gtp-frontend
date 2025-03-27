@@ -16,6 +16,7 @@ import { track } from "@vercel/analytics";
 import { useMaster } from "@/contexts/MasterContext";
 import VerticalScrollContainer from "../VerticalScrollContainer";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+import FocusSwitch from "./FocusSwitch";
 
 type SidebarProps = {
   className?: string;
@@ -124,6 +125,9 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
           className={`fixed top-0 right-0 z-[998] flex justify-end transform transition-transform duration-300 ease-in-out will-change-transform ${isMobileSidebarOpen ? "translate-x-0" : "translate-x-full"
             }`}
           aria-hidden={!isMobileSidebarOpen}
+          style={{
+            height: `100dvh`,
+          }}
         >
           {/* Overlay */}
           {/* <div
@@ -322,6 +326,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                   </Link>
                 </div>
                 <div className="items-end justify-center z-[999] flex space-x-[15px] mt-[2px] mb-[17px]">
+                  <FocusSwitch isMobile />
                   <EthUsdSwitch isMobile />
                 </div>
               </div>

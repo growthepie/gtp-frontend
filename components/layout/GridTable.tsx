@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import React from "react";
 import { useWindowSize } from "usehooks-ts";
+import { GTPIcon } from "./GTPIcon";
+import { GTPIconName } from "@/icons/gtp-icon-names";
 
 export type GridTableProps = {
   gridDefinitionColumns?: string;
@@ -45,6 +47,7 @@ export type GridTableRowProps = {
     color?: string;
     width: number;
     containerStyle: React.CSSProperties;
+    transitionClass?: string;
   };
   onClick?: () => void;
 };
@@ -74,8 +77,10 @@ export const GridTableRow = ({
   }
 
 
-  if (bar)
-
+  if (bar) {
+    if(!bar.transitionClass) {
+      bar.transitionClass = "all 0.3s ease-in-out";
+    }
     return (
       <div
         className={`select-text gap-x-[10px] pl-[10px] pr-[32px] py-[5px] text-xs items-center rounded-full border-[0.5px] border-[#5A6462] grid ${gridDefinitionColumns || ""} ${className || ""} ${onClick ? "cursor-pointer hover:bg-forest-500/10" : ""}`}
@@ -90,7 +95,7 @@ export const GridTableRow = ({
           }}
         >
           <div
-            className={`z-20 transition-all duration-300`}
+            className={`z-20 ${bar.transitionClass} duration-300`}
             style={{
               background: getBarColor(),
               width: bar.width * 100 + "%",
@@ -100,6 +105,7 @@ export const GridTableRow = ({
         </div>
       </div >
     );
+  }
 
   return (
     <div
@@ -119,12 +125,13 @@ export const GridTableChainIcon = ({ origin_key, className, color }: { origin_ke
   return (
     <div className={`flex h-full items-center ${className || ""}`}>
       {AllChainsByKeys[origin_key] && (
-        <Icon
-          icon={`gtp:${AllChainsByKeys[
+        <GTPIcon
+          icon={`${AllChainsByKeys[
             origin_key
           ].urlKey
-            }-logo-monochrome`}
+            }-logo-monochrome` as GTPIconName}
           className="w-[15px] h-[15px]"
+          size="sm"
           style={{
             color: color ||
               AllChainsByKeys[
@@ -167,7 +174,7 @@ export const GridTableHeaderCell = ({ children, className, justify, metric, sort
       <div className={`flex items-center ${alignClass || "justify-start"} gap-x-[12px]  ${className}`}>
         {extraLeft}
         <div
-          className={`flex items-center ${alignClass || "justify-start"} ${(onSort || setSort) && "cursor-pointer"}`}
+          className={`flex items-center gap-x-[2px] ${alignClass || "justify-start"} ${(onSort || setSort) && "cursor-pointer"}`}
           onClick={() => {
             if(onSort) onSort();
             (metric && sort && setSort) && setSort({

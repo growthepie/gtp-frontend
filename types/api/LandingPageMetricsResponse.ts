@@ -8,6 +8,7 @@ export interface Data {
 
 export interface Metrics {
   user_base: UserBase;
+  engagement: Engagement;
   table_visual: TableVisual;
 }
 
@@ -19,7 +20,36 @@ export interface TableVisual {
     technology: string;
     users: number;
     ranking: { [key in RankingType]: EthUsdRanking };
+    ranking_w_eth: { [key in RankingType]: EthUsdRanking };
   };
+}
+
+export interface Engagement {
+  metric_name: string;
+  source: string[];
+  weekly: EngagementWeekly;
+}
+
+export interface EngagementWeekly {
+  latest_total: number;
+  latest_total_comparison: number;
+  l2_dominance: number;
+  l2_dominance_comparison: number;
+  cross_chain_users: number;
+  cross_chain_users_comparison: number;
+  timechart: Timechart;
+}
+
+export interface Timechart {
+  types: string[];
+  compositions: Composition;
+}
+
+export interface Composition {
+  cross_layer: number[][];
+  single_l2: number[][];
+  multiple_l2s: number[][];
+  only_l1: number[][];
 }
 
 export type RankingType =

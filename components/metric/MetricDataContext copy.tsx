@@ -204,7 +204,7 @@ const MetricDataProvider = ({ children, metric_id, metric_type }: MetricDataProv
         xMax: maxPlusBuffer,
       },
       maxM: {
-        label: "Maximum",
+        label: "Max",
         shortLabel: "Max",
         value: 0,
         xMin: minMinusBuffer,
@@ -212,7 +212,7 @@ const MetricDataProvider = ({ children, metric_id, metric_type }: MetricDataProv
         xMax: maxPlusBuffer,
       },
       max: {
-        label: "Maximum",
+        label: "Max",
         shortLabel: "Max",
         value: 0,
         xMin: minMinusBuffer,

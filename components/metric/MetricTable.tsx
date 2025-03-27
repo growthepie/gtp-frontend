@@ -58,6 +58,7 @@ const MetricTable = ({
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [maxVal, setMaxVal] = useState<number | null>(null);
+  const [focusEnabled] = useLocalStorage("focusEnabled", false);
 
   const chainSelectToggleState = useMemo(() => {
     if (
@@ -89,13 +90,13 @@ const MetricTable = ({
   const onChainSelectToggle = useCallback(() => {
     // if all chains are selected, unselect all
     if (chainSelectToggleState === "all") {
-      if (showEthereumMainnet) setSelectedChains(["ethereum"]);
+      if (showEthereumMainnet && focusEnabled) setSelectedChains(["ethereum"]);
       else setSelectedChains([]);
     }
 
     // if no chains are selected, select last selected chains
     if (chainSelectToggleState === "none") {
-      if (showEthereumMainnet)
+      if (showEthereumMainnet && focusEnabled)
         setSelectedChains([...lastSelectedChains, "ethereum"]);
       else setSelectedChains([...lastSelectedChains]);
     }
@@ -114,7 +115,7 @@ const MetricTable = ({
 
   const handleChainClick = useCallback(
     (chainKey: string) => {
-      if (chainKey === "ethereum") {
+      if (chainKey === "ethereum" && focusEnabled) {
         if (showEthereumMainnet) {
           setShowEthereumMainnet(false);
         } else {
@@ -212,7 +213,7 @@ const MetricTable = ({
     if (!data) return null;
 
     return chainKeys
-      .filter((chain) => chain !== "ethereum")
+      .filter((chain) => (chain !== "ethereum" ? true : !focusEnabled))
       .reduce((acc, chain) => {
         let types = data.chains[chain][lastValueTimeIntervalKey].types;
         let values =
@@ -243,7 +244,7 @@ const MetricTable = ({
           [chain]: lastVal,
         };
       }, {});
-  }, [chainKeys, data, valueIndex, lastValueTimeIntervalKey, showUsd]);
+  }, [chainKeys, data, valueIndex, lastValueTimeIntervalKey, showUsd, focusEnabled]);
 
   // set maxVal
   useEffect(() => {
@@ -266,11 +267,12 @@ const MetricTable = ({
     return chainKeys
       .filter(
         (chain) =>
-          chain !== "ethereum" &&
+          (chain !== "ethereum" ? true : !focusEnabled ) &&
           Object.keys(allChainsByKeys).includes(chain) &&
           allChainsByKeys[chain],
       )
       .map((chain: any) => {
+       
         return {
           data: data.chains[chain],
           chain: allChainsByKeys[chain],
@@ -280,8 +282,7 @@ const MetricTable = ({
       })
       .sort((a, b) => {
         // always show ethereum at the bottom
-        if (a.chain.key === "ethereum") return 1;
-        if (b.chain.key === "ethereum") return -1;
+
 
         // sort by last value in daily data array and keep unselected chains at the bottom in descending order
         if (reversePerformer) {
@@ -321,6 +322,7 @@ const MetricTable = ({
     lastValues,
     reversePerformer,
     selectedChains,
+    focusEnabled
   ]);
 
   let height = 0;
@@ -342,6 +344,7 @@ const MetricTable = ({
   );
 
   function formatNumber(number: number, decimals?: number): string {
+    
     if (number === 0) {
       return "0";
     } else if (Math.abs(number) >= 1e9) {
@@ -409,7 +412,15 @@ const MetricTable = ({
         // value = formatNumber(values[0]);
       }
 
-      let value = formatNumber(lastValues[item.chain.key], decimals);
+      let value;
+      if(!focusEnabled && item.chain.key !== "ethereum") {
+        value = formatNumber(lastValues[item.chain.key]);
+      }else if(lastValues[item.chain.key] !== undefined) {
+      
+        value = formatNumber(lastValues[item.chain.key]);
+      }else {
+        value = lastValues[item.chain.key];
+      }
 
       if (types.includes("eth")) {
         if (!showUsd) {
@@ -437,6 +448,7 @@ const MetricTable = ({
       showUsd,
       showGwei,
       lastValueTimeIntervalKey,
+      focusEnabled
     ],
   );
 
@@ -829,11 +841,7 @@ const MetricTable = ({
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       className={`h-6 w-6 ${
-                        item.chain.key === "ethereum"
-                          ? showEthereumMainnet
-                            ? "opacity-0"
-                            : "opacity-100"
-                          : selectedChains.includes(item.chain.key)
+                           selectedChains.includes(item.chain.key)
                             ? "opacity-0"
                             : "opacity-100"
                       }`}
@@ -856,11 +864,7 @@ const MetricTable = ({
                     <Icon
                       icon="feather:check-circle"
                       className={`h-[24px] w-[24px] ${
-                        item.chain.key === "ethereum"
-                          ? showEthereumMainnet
-                            ? "opacity-100"
-                            : "opacity-0"
-                          : selectedChains.includes(item.chain.key)
+                         selectedChains.includes(item.chain.key)
                             ? "opacity-100"
                             : "opacity-0"
                       }`}

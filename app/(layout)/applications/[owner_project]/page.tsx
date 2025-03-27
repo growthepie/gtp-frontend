@@ -22,6 +22,7 @@ import { useApplicationsData } from "../_contexts/ApplicationsDataContext";
 import useDragScroll from "@/hooks/useDragScroll";
 import { Sources } from "@/lib/datasources";
 import { MetricChainBreakdownBar } from "../_components/MetricChainBreakdownBar";
+import { useChartSync } from "../_contexts/GTPChartSyncContext";
 import dynamic from "next/dynamic";
 
 // dynamic import to prevent server-side rendering of the chart component
@@ -36,12 +37,39 @@ export default function Page({ params: { owner_project } }: Props) {
   const { selectedMetrics } = useMetrics();
   const { selectedTimespan, timespans } = useTimespan();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const { data: master } = useMaster();
+
+  const SourcesDisplay = useMemo(() => {
+    if (!master)
+      return null;
+    let sourcesByMetric = {};
+    selectedMetrics.forEach((metric) => {
+      const sources = master.app_metrics[metric].source;
+      sourcesByMetric[metric] = sources && sources.length > 0 ? (
+        sources
+          .map<ReactNode>((s) => (
+            <Link
+              key={s}
+              rel="noopener noreferrer"
+              target="_blank"
+              href={Sources[s] ?? ""}
+              className="hover:text-forest-500 dark:hover:text-forest-500 underline"
+            >
+              {s}
+            </Link>
+          ))
+          .reduce((prev, curr) => [prev, ", ", curr])
+      ) : (
+        <>Unavailable</>
+      );
+    })
+
+    return sourcesByMetric;
+  }, [master, selectedMetrics]);
  
   return (
     <>
-      {selectedMetrics.map((metric, index) => (
-        <ChartScaleProvider
-          key={index}
+    <ChartScaleProvider
           scaleDefs={{
             absolute: {
               label: 'Absolute',
@@ -58,9 +86,15 @@ export default function Page({ params: { owner_project } }: Props) {
 
           }}
         >
-          <MetricSection metric={metric} owner_project={owner_project} />
-        </ChartScaleProvider>
+      {selectedMetrics.map((metric, index) => (
+          <MetricSection metric={metric} owner_project={owner_project} key={index} />
       ))}
+      <Container className="pt-[30px]">
+        
+          <ChartScaleControls sources={SourcesDisplay && SourcesDisplay["gas_fees"]} />
+      </Container>
+      </ChartScaleProvider>
+
       <Container>
         <div className="pt-[30px] pb-[15px]">
           <div className="flex flex-col gap-y-[10px]">
@@ -99,34 +133,10 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
   const { data: master } = useMaster();
   const { selectedMetrics } = useMetrics();
   const { selectedTimespan } = useTimespan();
+  const { selectedSeriesName } = useChartSync();
+  const { AllChainsByKeys } = useMaster();
 
-  const SourcesDisplay = useMemo(() => {
-    if (!master)
-      return null;
-    let sourcesByMetric = {};
-    selectedMetrics.forEach((metric) => {
-      const sources = master.app_metrics[metric].source;
-      sourcesByMetric[metric] = sources && sources.length > 0 ? (
-        sources
-          .map<ReactNode>((s) => (
-            <Link
-              key={s}
-              rel="noopener noreferrer"
-              target="_blank"
-              href={Sources[s] ?? ""}
-              className="hover:text-forest-500 dark:hover:text-forest-500 underline"
-            >
-              {s}
-            </Link>
-          ))
-          .reduce((prev, curr) => [prev, ", ", curr])
-      ) : (
-        <>Unavailable</>
-      );
-    })
-
-    return sourcesByMetric;
-  }, [master, selectedMetrics]);
+  
 
   
 
@@ -165,6 +175,12 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
     decimals = Object.values(metricDefinition.units)[0].decimals || 0;
   }
 
+  // Filter out chains with no data
+  const chainsWithData = sortedChainKeys.filter(chain => {
+    const valueTypeIndex = data.metrics[metric].aggregated.types.indexOf(valueKey);
+    const value = data.metrics[metric].aggregated.data[chain][selectedTimespan][valueTypeIndex];
+    return value !== null && value !== undefined && value !== 0;
+  });
 
   if (!def) {
     return null;
@@ -172,17 +188,20 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
 
   return (
     <>
-      <Container className="pt-[30px] pb-[10px]">
-        <div className="flex flex-col gap-y-[10px]">
+      <Container className="pt-[30px] pb-[15px]">
+        <div className="flex flex-col gap-y-[15px]">
           <div className="flex gap-x-[10px] items-center">
             <GTPIcon icon={metricIcons[metric] as GTPIconName} size="md" />
             <div className="text-sm md:text-xl">
-              <span className="heading-large-sm md:heading-large-md">{def.name}</span> across different chains
+              <span className="heading-large-sm md:heading-large-md">{def.name}</span> {selectedSeriesName ? `on ${AllChainsByKeys[selectedSeriesName].label}` : "across different chains"}
             </div>
           </div>
-          {/* <div className="text-xs">
-            {ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].display_name} is available on multiple chains. Here you see how much usage is on each based on the respective metric.
-          </div> */}
+          <div className="text-xs">
+            {ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].display_name}{' '}
+            {chainsWithData.length === 1 
+              ? `is available on ${AllChainsByKeys[chainsWithData[0]]?.label || chainsWithData[0]}. Here you see the usage based on the respective metric.` 
+              : "is available on multiple chains. Here you see how much usage is on each based on the respective metric."}
+          </div>
         </div>
       </Container>
       <Container>
@@ -201,7 +220,6 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
               })
               )}
           />
-          <ChartScaleControls sources={SourcesDisplay && SourcesDisplay[metric]} />
         </div>
       </Container>
     </>
@@ -494,7 +512,7 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
 //             {chainsData.map(([chain, values], i) => {
 //               // Determine whether this bar is hovered.
 //               const isHovered = hoveredSeriesName === chain;
-//               // If any bar is hovered and this one isn’t, reduce its opacity.
+//               // If any bar is hovered and this one isn't, reduce its opacity.
 //               const barOpacity = hoveredSeriesName !== null && !isHovered ? 0.4 : 1;
 //               // Bump the hovered bar to the top.
 //               // const computedZIndex = isHovered ? chainsData.length + 1 : chainsData.length - i;

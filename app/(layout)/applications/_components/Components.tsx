@@ -166,52 +166,40 @@ export const BackButton = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-//   const handleBack = () => {
-//     // Check for a history entry from our app.
-//     // One method is to check if a scroll position was saved
-//     const savedScrollPos = sessionStorage.getItem('applicationsScrollPos');
-
-//     // You might also check window.history.state.idx (if available) to decide.
-//     if (savedScrollPos || (window.history.state && window.history.state.idx > 0)) {
-//       // If we know the user came from /applications,
-//       // use router.back() so that the browser restores the scroll position.
-//       router.back();
-//     } else {
-//       // Otherwise, push to /applications (scroll will be at the top)
-//       router.push('/applications');
-//     }
-//   };
-
-const handleBack = () => {
-  let backUrl = window.history.state?.prev;
-  let newSearchParams = searchParams.toString().replace(/%2C/g, ",");
+// const handleBack = () => {
+//   let backUrl = window.history.state?.prev;
+//   let newSearchParams = searchParams.toString().replace(/%2C/g, ",");
   
-  if (backUrl) {
-    // Instead of pushing a new state and going back,
-    // replace the current state and navigate directly
-    backUrl = `${backUrl.split("?")[0]}?${newSearchParams}`;
+//   if (backUrl) {
+//     // Instead of pushing a new state and going back,
+//     // replace the current state and navigate directly
+//     backUrl = `${backUrl.split("?")[0]}?${newSearchParams}`;
     
-    // Option 1: Navigate to the URL directly
-    // window.location.href = backUrl;
+//     // Option 1: Navigate to the URL directly
+//     // window.location.href = backUrl;
     
-    // Option 2: Replace current state and use history.back()
-    // This preserves scroll position better in many browsers
-    window.history.replaceState(null, "", window.location.href);
-    window.history.pushState(null, "", backUrl);
-    window.history.back();
+//     // Option 2: Replace current state and use history.back()
+//     // This preserves scroll position better in many browsers
+//     window.history.replaceState(null, "", window.location.href);
+//     window.history.pushState(null, "", backUrl);
+//     window.history.back();
     
-    return;
-  }
+//     return;
+//   }
   
-  // Fallback: Navigate to applications with search params
-  backUrl = `/applications?${newSearchParams}`;
-  window.location.href = backUrl;
-};
+//   // Fallback: Navigate to applications with search params
+//   backUrl = `/applications${newSearchParams ? `?${newSearchParams}` : ""}`;
+//   window.location.href = backUrl;
+// };
 
   return (
     <div
       className="size-[36px] bg-[#344240] rounded-full flex justify-center items-center cursor-pointer"
-      onClick={handleBack}
+      onClick={() => {
+        // go back
+        router.back();
+      }}
+
     >
       <Icon icon="feather:arrow-left" className="size-[26px] text-[#CDD8D3]" />
     </div>
@@ -565,8 +553,6 @@ ApplicationCard.displayName = 'ApplicationCard';
 
 export const ApplicationTooltip = memo(({application}: {application: AggregatedDataRow}) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
-  const { applicationDataAggregatedAndFiltered } = useApplicationsData();
-  const { selectedTimespan } = useTimespan();
   const searchParams = useSearchParams();
 
   const descriptionPreview = useMemo(() => {

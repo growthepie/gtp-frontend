@@ -105,7 +105,6 @@ export default function TopDAConsumers({consumer_data, selectedTimespan}: {consu
                     const custom_logo_keys = Object.keys(master.custom_logos);
                     const croppedWidth = parentWidth - 122;
                     const relativeWidth = (croppedWidth * (sortedDAConsumers[item.index][4] / sortedDAConsumers[0][4])); // Avoid division by zero
-                    console.log(custom_logo_keys.includes(sortedDAConsumers[item.index][0]) ? `${sortedDAConsumers[item.index][0]}-logo-monochrome` : "")
                     return(
                         <animated.div
                             className="absolute w-full "

@@ -1,3 +1,4 @@
+
 import Home from "@/components/home/Home";
 import LandingUserBaseChart from "@/components/home/LandingUserBaseChart";
 import Container from "@/components/layout/Container";
@@ -13,7 +14,11 @@ import Link from "next/link";
 import Image from "next/image";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import LandingSwiperItems from "@/components/layout/LandingSwiperItems";
+import { GTPIcon } from "@/components/layout/GTPIcon";
+import { SectionButtonLink } from "@/components/layout/TextHeadingComponents";
+import { useLocalStorage } from "usehooks-ts";
 // import { LandingURL } from "@/lib/urls";
+import {LandingFirstHeaders, LandingSecondHeaders} from "@/components/home/LandingHeaders";
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -23,135 +28,76 @@ export async function generateMetadata(): Promise<Metadata> {
       "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
   };
 }
-
+/** */
 export default async function Page() {
+
+
+
+
+
+
   return (
     <>
-      <Container className="flex flex-col flex-1 w-full mt-[45px] md:mt-[30px] gap-y-[10px]">
+      <Container className="flex flex-col flex-1 w-full pt-[65px] md:pt-[30px] gap-y-[10px]">
         <Heading
-          className="font-bold leading-[1.2] text-[24px] sm:text-[32px] md:text-[36px] max-w-[900px]"
+          className="heading-large-lg max-w-[900px]"
           as="h1"
         >
-          Mastering Ethereum Layer 2s
+          Understand every slice of Ethereum
         </Heading>
-        <Subheading className="text-xs sm:text-sm md:text-[20px] font-semibold leading-[1.2]">
-          Your Gateway to Curated Analytics and Knowledge
-        </Subheading>
+        <div className="flex items-center gap-[10px]">
+          <Subheading className="text-lg md:text-xl">
+            Ethereum is more than one blockchain. It&apos;s many.
+          </Subheading>
+          <a className="flex p-[3px] bg-[#344240] rounded-full items-center gap-x-[2px] md:gap-x-[4px] relative top-[1px]" href="https://ethereum.org/" target="_blank">
+              <GTPIcon icon={"ethereum-logo-monochrome"} size="sm" className="" />
+              <div className="text-xxs md:text-xs text-nowrap">What is Ethereum?</div>
+              <Icon icon="feather:arrow-right" className="w-[9px] h-[9px]" />
+          </a>
+        </div>
       </Container>
       <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[30px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
-        <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
-          <Icon
-            icon="gtp:fundamentals"
-            className="w-[30px] h-[30px] md:w-9 md:h-9"
-          />
-          <Heading
-            id="layer-2-traction-title"
-            className="text-[20px] md:text-[30px] leading-[1.2] font-semibold"
-          >
-            Layer 2 Traction
-          </Heading>
-        </div>
-        <Subheading className="text-base leading-normal md:leading-snug px-[5px] lg:px-[45px]">
-          <div>Aggregated daily metrics across all tracked Layer 2s.</div>
-        </Subheading>
+          <LandingFirstHeaders />
       </Container>
-      {/* <Container className="!px-0 fade-edge-div pb-[24px] -mb-[24px]"> */}
       <SwiperContainer ariaId={"layer-2-traction-title"} size="landing">
         <LandingSwiperItems />
       </SwiperContainer>
-      {/* </Container> */}
-
       <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
-        <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
-          <Icon
-            icon="gtp:gtp-pie"
-            className="w-[30px] h-[30px] md:w-9 md:h-9"
-          />
-          <Heading className="text-[20px] md:text-[30px] leading-[1.2] font-semibold">
-            Layer 2 Weekly Engagement
-          </Heading>
-        </div>
-        <Subheading className="text-base leading-normal md:leading-snug px-[5px] lg:px-[45px]">
-          Number of distinct addresses interacting with one or multiple Layer 2s
-          in a given week.
-        </Subheading>
+        <LandingSecondHeaders />
       </Container>
       <LandingUserBaseChart />
       <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
-        <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
-          <Icon
-            icon="gtp:package"
-            className="w-[30px] h-[30px] md:w-9 md:h-9"
-          />
-          <Heading
-            id="layer-2-traction-title"
-            className="text-[20px] md:text-[30px] leading-[1.2] font-semibold"
-          >
-            Blockspace
-          </Heading>
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
+            <GTPIcon
+              icon="gtp-project"
+              size="lg"
+            />
+            <Heading
+              id="layer-2-traction-title"
+              className="heading-large-lg"
+            >
+              Top Applications
+            </Heading>
+          </div>
+          <SectionButtonLink href="/applications" label="See more applications" shortLabel="More apps" />
         </div>
-        <Subheading className="text-base leading-normal md:leading-snug px-[5px] lg:px-[45px]">
-          <div>Top 6 gas-consuming contracts across all tracked Layer 2s.</div>
+        <Subheading className="text-md px-[5px] lg:px-[45px]">
+          Top 6 gainers and loosers across Layer 2s based on transaction count in the last 7 days.
         </Subheading>
       </Container>
-
       <Container className="">
         <LandingTopContracts />
       </Container>
       <Container>
-        {/* <div className="flex gap-x-0 md:gap-x-12 w-full ml-0 mt-[30px] md:mt-[60px]">
-          <div className="flex flex-col md:w-1/2 lg:w-2/3 ">
-            <div className="flex items-center mb-[15px] md:mb-[15px] gap-x-[8px] py-[10px] md:py-0 ">
-              <Icon
-                icon="gtp:gtp-about"
-                className="w-[30px] h-[30px] md:w-9 md:h-9"
-              />
-              <Heading
-                id="layer-2-traction-title"
-                className="text-[20px] md:text-[30px] leading-[1.2] font-semibold"
-              >
-                About growthepie
-              </Heading>
-            </div>
-            <div className="block md:hidden relative mt-[0px] lg:mt-[15px] mb-[30px] lg:-mb-[30px] h-[190px]">
-              <Image
-                src="/GTP-Data-Kraken.png"
-                fill={true}
-                alt="About growthepie"
-                className="object-contain"
-                sizes="25vw"
-              />
-            </div>
-            <div className="text-base md:text-sm lg:text-base">
-              At growthepie, our mission is to provide comprehensive and
-              accurate analytics Ethereum scaling solutions, acting as a trusted
-              data aggregator from reliable sources such as L2Beat and
-              DefiLlama, while also developing our own metrics. Through our
-              analytics interface, we aim to educate and increase transparency.
-              Our goal is to be one of the go-to resources for those seeking to
-              learn more about the potential of layer 2 technologies and their
-              impact on the future of the Ethereum ecosystem.
-            </div>
-          </div>
-          <div className="hidden md:flex md:flex-1 relative mt-[5px] lg:mt-[15px] -mb-[10px] lg:-mb-[30px]">
-            <Image
-              src="/GTP-Data-Kraken.png"
-              fill={true}
-              alt="About growthepie"
-              className="object-contain"
-              sizes="25vw"
-            />
-          </div>
-        </div> */}
-
         <div className="flex mt-[25px] md:mt-[60px] mb-[25px] md:mb-[30px] ml-1.5 md:ml-0 space-x-2 items-center">
-          <Icon
-            icon="gtp:gtp-faq"
-            className="w-[30px] h-[30px] md:w-9 md:h-9"
+          <GTPIcon
+            icon="gtp-faq"
+            size="lg"
           />
           <Heading
             id="layer-2-traction-title"
-            className="text-[20px] md:text-[30px] leading-[1.2] font-semibold"
+            className="heading-large-lg"
           >
             <div>Frequently Asked Questions</div>
           </Heading>

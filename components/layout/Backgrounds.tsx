@@ -109,3 +109,20 @@ export default function Backgrounds({ isMobileMenu }: BackgroundsProps) {
     </div>
   );
 }
+
+type GrayOverlayProps = {
+  onClick: () => void;
+  zIndex?: number;
+}
+
+export const GrayOverlay = ({ onClick, zIndex = 100 }: GrayOverlayProps) => {
+  return (
+    <div
+        className="fixed inset-0 bg-[#1F2726]/90"
+        style={{ 
+          zIndex: zIndex
+        }}
+        onClick={onClick}
+      />
+  )
+}

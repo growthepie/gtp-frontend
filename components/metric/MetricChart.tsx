@@ -234,7 +234,7 @@ function MetricChart({
   const { theme } = useTheme();
   const { isSidebarOpen, isMobile, setEmbedData, embedData } = useUIContext();
   const { AllChainsByKeys, data: master, metrics, da_metrics, chains, da_layers } = useMaster();
-
+  const [focusEnabled] = useLocalStorage("focusEnabled", false);
   const metricsDict = metric_type === "fundamentals" ? metrics : da_metrics;
   const chainsDict = metric_type === "fundamentals" ? chains : da_layers;
 
@@ -1109,12 +1109,7 @@ function MetricChart({
               borderRadius={17}
               borderWidth={0}
               outside={true}
-              shadow={{
-                color: "black",
-                opacity: 0.015,
-                offsetX: 2,
-                offsetY: 2,
-              }}
+
               style={{
                 color: "rgb(215, 223, 222)",
               }}
@@ -1253,11 +1248,26 @@ function MetricChart({
                 },
               }}
             >
-              {seriesData.filter(series => !showEthereumMainnet ? series.name !== "ethereum" : true).map((series, i) => {
+              {seriesData.filter(series => !showEthereumMainnet && focusEnabled ? series.name !== "ethereum" : true).map((series, i) => {
                 return (
                   <Series
                     key={i}
                     {...series}
+                    shadow={["area", "line"].includes(getSeriesType(series.name)) && selectedScale !== "stacked" ? 
+ 
+                      {
+       
+                        color:
+       
+                          AllChainsByKeys[series.name]?.colors.dark[1] + "FF",
+       
+                        width: 9,
+       
+                      } : 
+       
+                      undefined 
+       
+                    }
                   />
                 );
               })}

@@ -11,15 +11,25 @@ export enum SortType {
 
 export type SortOrder = "asc" | "desc";
 
-export type SortMetric<T> = keyof T | string;
+export type SortMetric<T> = keyof T;
 
 export type SortConfig<T> = {
   metric: SortMetric<T>;
   sortOrder: SortOrder;
   type: SortType;
+  /**
+   * Optional function to access nested or computed values
+   * @param item The current item being sorted
+   * @param metric The metric key to sort by
+   * @returns The value to use for sorting
+   */
   valueAccessor?: (item: T, metric: SortMetric<T>) => any;
   mixedArrayConfig?: {
-    priorityOrder: SortType[];  // Order of types for mixed array sorting
+    /**
+     * Defines the priority order of different types when sorting mixed arrays
+     * Types listed first have higher priority
+     */
+    priorityOrder: SortType[];
   };
 };
 
@@ -89,6 +99,12 @@ const sortVersion = (a: string | null | undefined, b: string | null | undefined,
   if (!a && !b) return 0;
   if (!a) return 1;
   if (!b) return -1;
+
+  // Validate version string format
+  const isValidVersion = (v: string) => /^\d+(\.\d+)*$/.test(v);
+  if (!isValidVersion(a) || !isValidVersion(b)) {
+    throw new Error(`Invalid version format. Expected format: x.y.z (e.g., 1.2.3). Got: ${!isValidVersion(a) ? a : b}`);
+  }
 
   const aParts = a.split('.').map(Number);
   const bParts = b.split('.').map(Number);
@@ -164,13 +180,28 @@ const sortMixedArray = (
   return 0;
 };
 
-// Main sorting function
+/**
+ * Sorts an array of items based on the provided configuration.
+ * @param items The array of items to sort
+ * @param config The sorting configuration including metric, order, and type
+ * @returns A new sorted array of items
+ * @throws {Error} If valueAccessor throws or if invalid data is provided
+ */
 export const sortItems = <T extends Record<string, any>>(
   items: T[],
   config: SortConfig<T>
 ): T[] => {
   type MetricType = SortMetric<T>;
   const { metric, sortOrder, type, valueAccessor, mixedArrayConfig } = config;
+
+  // Validate inputs
+  if (!Array.isArray(items)) {
+    throw new Error('Items must be an array');
+  }
+
+  if (type === SortType.MIXED_ARRAY && !mixedArrayConfig?.priorityOrder?.length) {
+    throw new Error('Priority order must be provided for mixed array sorting');
+  }
 
   return [...items].sort((a, b) => {
     let aVal = valueAccessor ? valueAccessor(a, metric) : a[metric];
