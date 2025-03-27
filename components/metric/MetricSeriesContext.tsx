@@ -432,7 +432,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
         borderColor:
           MetadataByKeys[chainKey]?.colors[theme ?? "dark"][0],
         borderWidth: 0,
-        lineWidth: 1.5,
+        lineWidth: 2,
         marker: getSeriesData(chainKey, chain[timeIntervalKey].types, chain[timeIntervalKey].data).marker,
         states: {
           hover: {
