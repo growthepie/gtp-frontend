@@ -11,6 +11,7 @@ import HeaderLinks from "./HeaderLinks";
 import { track } from "@vercel/analytics";
 import FocusSwitch from "./FocusSwitch";
 import { HeaderSearchButton, SearchComponent } from "../search/Components";
+import { IS_DEVELOPMENT } from "@/lib/helpers";
 
 export default function Header() {
   // const [isOpen, setIsOpen] = useState<boolean>(false)
@@ -95,10 +96,10 @@ export default function Header() {
         <div className="items-center z-10 hidden md:flex md:gap-x-[20px]">
           <FocusSwitch />
           <EthUsdSwitch />
-          <HeaderSearchButton />
+          {IS_DEVELOPMENT && <HeaderSearchButton />}
         </div>
       </header>
-      <SearchComponent />
+      {IS_DEVELOPMENT && <SearchComponent /> }
     </>
   );
 }
