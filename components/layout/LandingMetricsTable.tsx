@@ -145,6 +145,8 @@ export default memo(function LandingMetricsTable({
   const { theme } = useTheme();
   const router = useRouter();
 
+
+
   useEffect(() => {
     if (!data) return;
     setMaxVal(

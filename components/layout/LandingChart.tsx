@@ -393,7 +393,7 @@ export default function LandingChart({
   const { theme } = useTheme();
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const [focusEnabled] = useLocalStorage("focusEnabled", true);
+  const [focusEnabled] = useLocalStorage("focusEnabled", false);
 
   const [selectedTimespan, setSelectedTimespan] = useState(
     embed_timespan ?? "max",
@@ -1192,6 +1192,8 @@ export default function LandingChart({
         </div>
       </EmbedContainer>
     );
+
+  console.log(focusEnabled, "focusEnabled");
 
   return (
     <div

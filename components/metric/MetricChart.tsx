@@ -1253,7 +1253,7 @@ function MetricChart({
                 },
               }}
             >
-              {seriesData.filter(series => !showEthereumMainnet ? series.name !== "ethereum" : true).map((series, i) => {
+              {seriesData.filter(series => !showEthereumMainnet && focusEnabled ? series.name !== "ethereum" : true).map((series, i) => {
                 return (
                   <Series
                     key={i}

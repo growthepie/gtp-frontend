@@ -16,6 +16,7 @@ import VerticalScrollContainer from "../VerticalScrollContainer";
 import Link from "next/link";
 import { HeaderButton } from "../layout/HeaderButton";
 
+
 const setDocumentScroll = (showScroll: boolean) => {
   if (showScroll) {
     document.body.classList.add("overflow-y-scroll");
@@ -231,7 +232,7 @@ const SearchBar = () => {
 const useSearchBuckets = () => {
   const { AllChainsByKeys } = useMaster();
   const searchParams = useSearchParams();
-  const query = searchParams.get("query");
+  const query = searchParams.get("query")?.trim();
   const { ownerProjectToProjectData } = useProjectsMetadata();
   
   // lets get our search buckets in order by figuring out the structure first
@@ -293,6 +294,23 @@ const useSearchBuckets = () => {
       icon: bucket.icon,
       filteredData: bucket.options.filter(option => query?.length === 1 ? option.label.toLowerCase().startsWith(query?.toLowerCase() || "") : option.label.toLowerCase().includes(query?.toLowerCase() || ""))
     };
+  }).sort((a, b) => {
+    // First, prioritize buckets with startsWith matches
+    const aStartsWithCount = a.filteredData.filter(item => 
+      item.label.toLowerCase().startsWith(query?.toLowerCase() || "")
+    ).length;
+
+    const bStartsWithCount = b.filteredData.filter(item => 
+      item.label.toLowerCase().startsWith(query?.toLowerCase() || "")
+    ).length;
+    
+    // If startsWith counts differ, sort by that
+    if (aStartsWithCount !== bStartsWithCount) {
+      return bStartsWithCount - aStartsWithCount;
+    }
+    
+    // If startsWith counts are the same, sort by total filtered data length
+    return b.filteredData.length - a.filteredData.length;
   }).filter(bucket => bucket.filteredData.length > 0), [query, searchBuckets]);
 
   // Calculate total matches for the counter

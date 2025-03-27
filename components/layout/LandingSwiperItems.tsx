@@ -33,7 +33,7 @@ const FocusContext = createContext<FocusContextType>({
 
 // Provider component to manage staggered updates
 function FocusProvider({ children }: { children: React.ReactNode }) {
-  const [focusEnabled] = useAsyncStorage("focusEnabled", true);
+  const [focusEnabled] = useAsyncStorage("focusEnabled", false);
   const [currentUpdateIndex, setCurrentUpdateIndex] = useState(-1);
   const [lastFocusValue, setLastFocusValue] = useState(focusEnabled);
   const chartCallbacks = React.useRef<Map<number, () => void>>(new Map());
@@ -90,7 +90,7 @@ function FocusProvider({ children }: { children: React.ReactNode }) {
 function useFocusUpdate(chartId: number) {
   const context = useContext(FocusContext);
   const [shouldUpdate, setShouldUpdate] = useState(true);
-  const [focusEnabled] = useAsyncStorage("focusEnabled", true);
+  const [focusEnabled] = useAsyncStorage("focusEnabled", false);
   
   useEffect(() => {
     const updateCallback = () => {
