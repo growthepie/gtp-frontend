@@ -58,7 +58,7 @@ export default function FocusSwitch({ isMobile }: FocusSwitchProps) {
       
       updateTimeoutRef.current = setTimeout(() => {
         setIsUpdating(false);
-      }, 800); // Allow enough time for charts to update
+      }, 300); // Allow enough time for charts to update
     }, 100);
   }, [isMobile, setFocusEnabled, isChanging, isUpdating]);
 

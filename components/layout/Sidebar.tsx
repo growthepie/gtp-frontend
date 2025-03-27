@@ -125,6 +125,9 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
           className={`fixed top-0 right-0 z-[998] flex justify-end transform transition-transform duration-300 ease-in-out will-change-transform ${isMobileSidebarOpen ? "translate-x-0" : "translate-x-full"
             }`}
           aria-hidden={!isMobileSidebarOpen}
+          style={{
+            height: `100dvh`,
+          }}
         >
           {/* Overlay */}
           {/* <div

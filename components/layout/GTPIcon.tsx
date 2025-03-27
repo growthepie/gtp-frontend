@@ -2,6 +2,7 @@
 import { Icon } from "@iconify/react";
 import { GTPIconName } from "@/icons/gtp-icon-names"; // array of strings that are the names of the icons
 import { GetRankingColor } from "@/lib/chains";
+import { memo } from "react";
 
 type GTPIconProps = {
   // should be one of the strings in GTPIconNames
@@ -44,6 +45,49 @@ export const GTPIcon = ({ icon, className, containerClassName, ...props }: GTPIc
   );
 };
 
+type GTPMaturityIconProps = {
+  maturityKey: string;
+  className?: string;
+  containerClassName?: string;
+  size?: "sm" | "md" | "lg";
+};
+
+const ethIcon = "gtp:gtp-ethereumlogo";
+export const GTPMaturityIcon = memo(({ maturityKey, className, containerClassName, ...props }: GTPMaturityIconProps) => {
+  
+  let icon = `gtp:gtp-layer2-maturity-${maturityKey}`;
+  let opacityClass = "";
+  let sizeClass = sizeClassMap[props.size || "md"];
+
+  if (maturityKey === "0_early_phase") {
+    icon = "feather:circle";
+    opacityClass = "opacity-[0.05]";
+    sizeClass = "w-[15px] h-[15px]";
+  }else if (maturityKey === "10_foundational") {
+    icon = ethIcon;
+  }else{
+    const split = maturityKey.split("_");
+    const name = split.slice(1).join("-");  
+    icon = `gtp:gtp-layer2-maturity-${name}`;
+  }
+
+  if(maturityKey === "10_foundational" || maturityKey === "0_early_phase" || maturityKey === "NA"){
+    // return N/A text
+   return (
+    <div className={`${sizeClassMap[props.size || "md"]} ${containerClassName || ""} flex items-center justify-center`}>
+      <div className="text-xs text-[#5A6462]">N/A</div>
+    </div>
+   )
+  }
+
+  return (
+    <div className={`${sizeClassMap[props.size || "md"]} ${containerClassName || ""} flex items-center justify-center`}>
+      <Icon icon={icon} className={`${sizeClass} ${className || ""} ${opacityClass}`} {...props} />
+    </div>
+  );
+});
+
+GTPMaturityIcon.displayName = "GTPMaturityIcon";
 
 // map metric keys to icon names
 const MetricIconMap = {
@@ -92,8 +136,9 @@ type RankIconProps = {
   colorScale: number;
   size?: sizes;
   children?: React.ReactNode;
+  isIcon?: boolean;
 }
-export const RankIcon = ({ colorScale, size = "md", children }: RankIconProps) => {
+export const RankIcon = ({ colorScale, size = "md", children, isIcon = true}: RankIconProps) => {
   const color = colorScale == -1 ? "#CDD8D322" : GetRankingColor(colorScale * 100);
   const borderColor = colorScale == -1 ? "#CDD8D333" : color + "AA";
   // const borderColor = "#CDD8D322";
@@ -139,26 +184,32 @@ export const RankIcon = ({ colorScale, size = "md", children }: RankIconProps) =
       style={{ borderColor }}
     >
       <div
-        className={`rounded-full flex items-center justify-center transition-all duration-100 ${bgSizeClassMap[size]}`}
+        className={`relative rounded-full flex items-center justify-center transition-all duration-100 ${bgSizeClassMap[size]}`}
         style={{ background: color }}
       >
-        <svg
-          width={svgSizeMap[size]}
-          height={svgSizeMap[size]}
-          viewBox={`0 0 ${svgSizeMap[size]} ${svgSizeMap[size]}`}
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          shapeRendering="geometricPrecision"
-          
-        >
-          <foreignObject x="0" y="0" width="12" height="12">
-            <div
-              className={`flex items-center justify-center h-full w-full font-extrabold text-[#1F2726] font-source-code-pro ${fontSizeClassMap[size]}`}
-            >
-              {rankNumber}
-            </div>
-          </foreignObject>
-        </svg>
+        {isIcon ? (
+          <div className="absolute inset-0 flex items-center justify-center">
+            {children}
+          </div>
+        ) : (
+          <svg
+            width={svgSizeMap[size]}
+            height={svgSizeMap[size]}
+            viewBox={`0 0 ${svgSizeMap[size]} ${svgSizeMap[size]}`}
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            shapeRendering="geometricPrecision"
+
+          >
+            <foreignObject x="0" y="0" width={svgSizeMap[size]} height={svgSizeMap[size]}>
+              <div
+                className={`flex items-center justify-center h-full w-full font-extrabold text-[#1F2726] font-source-code-pro ${fontSizeClassMap[size]}`}
+              >
+                {rankNumber}
+              </div>
+            </foreignObject>
+          </svg>
+        )}
       </div>
     </div>
   );

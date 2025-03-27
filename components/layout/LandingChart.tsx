@@ -69,6 +69,7 @@ import { transparent } from "tailwindcss/colors";
 import { createTooltipFormatter, formatNumber } from "@/lib/highcharts/tooltipFormatters";
 import { baseChartOptions } from "@/lib/highcharts/chartUtils";
 import { PatternRegistry, initializePatterns } from "@/lib/highcharts/svgPatterns";
+import { DynamicLabel } from "../home/LandingHeaders";
 
 
 const COLORS = {
@@ -325,8 +326,8 @@ export default function LandingChart({
   const  textToggles = {
     "toggle": {
       "total": "Total Ethereum Ecosystem",
-     "l2": "Layer 2 Ecosystem"
-    }
+      "l2": "Layer 2 Ecosystem"
+      }
   }
 
 
@@ -423,6 +424,8 @@ export default function LandingChart({
   const [totalUsersIncrease, setTotalUsersIncrease] = useState(0);
 
   const isMobile = useMediaQuery("(max-width: 767px)");
+  // 2xl breakpoint
+  const isLessThan2xl = useMediaQuery("(max-width: 1536px)");
 
   const getSeriesType = useCallback(
     (name: string) => {
@@ -696,7 +699,6 @@ export default function LandingChart({
   } | null>(null);
 
   const handleAfterSetExtremes = useCallback((e: any) => {
-    console.log("handleAfterSetExtremes called", e.trigger);
     if (e.trigger === "pan") return;
     
     const { min, max } = e;
@@ -793,8 +795,6 @@ export default function LandingChart({
               
               if (!compositionType || !BACKEND_SIMULATION_CONFIG.compositionTypes[compositionType]) return;
 
-              console.log("series", series.name, "compositionType", compositionType);
-              
               const typeConfig = BACKEND_SIMULATION_CONFIG.compositionTypes[compositionType];
               if(typeConfig.fill.type === "gradient" || typeConfig.fill.type === "pattern") {
                 registry.applyFillToSeries(index, `${series.name}_fill`);
@@ -925,7 +925,6 @@ export default function LandingChart({
               if (!compositionType) return;
               
               const typeConfig = BACKEND_SIMULATION_CONFIG.compositionTypes[compositionType];
-              console.log("series", series.name, "typeConfig", typeConfig);
               if(typeConfig.fill.type === "gradient" || typeConfig.fill.type === "pattern") {
                 registry.applyFillToSeries(index, `${series.name}_fill`);
               }
@@ -1052,8 +1051,6 @@ export default function LandingChart({
             fill = undefined; //`url(#${series.name}_fill)`;
             color = `url(#${series.name}_fill)`;
             
-
-            // console.log("series", series.name,"color", color, "fillColor", fillColor, "fillOpacity", fillOpacity, "marker", marker, "gradient", gradient)
 
             return {
               name: series.name,
@@ -1243,8 +1240,19 @@ export default function LandingChart({
               }}
             >
               <div className="flex items-center justify-center gap-x-[5px]">
-                <GTPIcon icon="gtp-metrics-ethereum-ecosystem" size={isMobile ? "sm" : "md"} />
-                <div>{!isMobile ? textToggles.toggle[focusEnabled ? "l2" : "total"] : focusEnabled ? "Total L2 Ecosystem" : "Total ETH Ecosystem"}</div>
+                <GTPIcon icon="gtp-metrics-ethereum-ecosystem" size={isLessThan2xl ? "sm" : "md"} />
+                {/* <div>{!isMobile ? textToggles.toggle[focusEnabled ? "l2" : "total"] : focusEnabled ? "Total L2 Ecosystem" : "Total ETH Ecosystem"}</div> */}
+                <DynamicLabel 
+                  className="whitespace-nowrap text-sm"
+                  labels={isLessThan2xl ? {
+                    total: "ETH Ecosystem",
+                    l2: "L2 Ecosystem",
+                  } : {
+                    total: "Total Ethereum Ecosystem",
+                    l2: "Layer 2 Ecosystem",
+                  }} 
+                  selectedLabel={focusEnabled ? "l2" : "total"} 
+                />
               </div>
             </TopRowChild>
             <TopRowChild
@@ -1258,7 +1266,7 @@ export default function LandingChart({
               }}
             >
               <div className="flex items-center justify-center gap-x-[5px]">
-                <GTPIcon icon="gtp-metrics-chains-grouping" size={isMobile ? "sm" : "md"}/>
+                <GTPIcon icon="gtp-metrics-chains-grouping" size={isLessThan2xl ? "sm" : "md"}/>
                 <div>Composition</div>
               </div>
             </TopRowChild>
@@ -1273,8 +1281,8 @@ export default function LandingChart({
               }}
             >
               <div className="flex items-center justify-center  gap-x-[5px]">
-                <GTPIcon icon="gtp-metrics-chains-percentage" size={isMobile ? "sm" : "md"} />
-                <div>{isMobile ? "Comp. Split" : "Composition Split"}</div>
+                <GTPIcon icon="gtp-metrics-chains-percentage" size={isLessThan2xl ? "sm" : "md"} />
+                <div>{isLessThan2xl ? "Comp. Split" : "Composition Split"}</div>
               </div>
             </TopRowChild>
           </TopRowParent>

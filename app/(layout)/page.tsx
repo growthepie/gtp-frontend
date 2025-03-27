@@ -38,15 +38,15 @@ export default async function Page() {
 
   return (
     <>
-      <Container className="flex flex-col flex-1 w-full mt-[45px] md:mt-[30px] gap-y-[10px]">
+      <Container className="flex flex-col flex-1 w-full pt-[65px] md:pt-[30px] gap-y-[10px]">
         <Heading
-          className="font-bold leading-[1.2] text-[24px] sm:text-[32px] md:text-[36px] max-w-[900px]"
+          className="heading-large-lg max-w-[900px]"
           as="h1"
         >
           Understand every slice of Ethereum
         </Heading>
-        <div className="flex items-start md:items-center gap-x-[10px]">
-          <Subheading className="text-xs sm:text-sm md:text-xl font-semibold leading-[1.2]">
+        <div className="flex items-center gap-[10px]">
+          <Subheading className="text-lg md:text-xl">
             Ethereum is more than one blockchain. It&apos;s many.
           </Subheading>
           <a className="flex p-[3px] bg-[#344240] rounded-full items-center gap-x-[2px] md:gap-x-[4px] relative top-[1px]" href="https://ethereum.org/" target="_blank">
@@ -59,12 +59,9 @@ export default async function Page() {
       <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[30px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
           <LandingFirstHeaders />
       </Container>
-      {/* <Container className="!px-0 fade-edge-div pb-[24px] -mb-[24px]"> */}
       <SwiperContainer ariaId={"layer-2-traction-title"} size="landing">
         <LandingSwiperItems />
       </SwiperContainer>
-      {/* </Container> */}
-
       <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
         <LandingSecondHeaders />
       </Container>
