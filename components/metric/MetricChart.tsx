@@ -1258,6 +1258,21 @@ function MetricChart({
                   <Series
                     key={i}
                     {...series}
+                    shadow={["area", "line"].includes(getSeriesType(series.name)) && selectedScale !== "stacked" ? 
+ 
+                      {
+       
+                        color:
+       
+                          AllChainsByKeys[series.name]?.colors.dark[1] + "FF",
+       
+                        width: 9,
+       
+                      } : 
+       
+                      undefined 
+       
+                    }
                   />
                 );
               })}
