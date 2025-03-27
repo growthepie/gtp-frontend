@@ -1109,12 +1109,7 @@ function MetricChart({
               borderRadius={17}
               borderWidth={0}
               outside={true}
-              shadow={{
-                color: "black",
-                opacity: 0.015,
-                offsetX: 2,
-                offsetY: 2,
-              }}
+
               style={{
                 color: "rgb(215, 223, 222)",
               }}

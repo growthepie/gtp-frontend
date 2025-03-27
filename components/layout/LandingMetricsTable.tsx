@@ -240,14 +240,46 @@ export default memo(function LandingMetricsTable({
         </GridTableHeaderCell>
         <GridTableHeaderCell
           justify="start"
-          className="group cursor-pointer"
+          className="relative group cursor-pointer mr-0"
           metric="maturity"
           sort={sort}
           setSort={setSort}
+          extraRight={
+            <Tooltip placement="right" allowInteract={false}>
+              <TooltipTrigger className="absolute right-[10px]">
+                <Icon icon="feather:info" className="size-[15px]" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="flex flex-col gap-y-[5px] items-center relative ">
+                  <div className="p-[15px] text-xs bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50">
+                    <span>Network maturity as introduced by ethereum.org. We review the network’s progress towards Ethereum alignment (rollup stages 0-2), 
+                    total value secured (TVS), time live in production, and risk considerations. 
+                    These levels help track network development and provide a standardized way for the community to evaluate progress.
+                    </span>
+                    <span> Find out more <a className="underline font-semibold" href="https://ethereum.org/en/layer-2/networks/" target="blankspace" rel="_noopener">here.</a> </span>
+                  </div>
+                </div>
+              </TooltipContent>
+          </Tooltip>
+          }
         >
           Maturity
         </GridTableHeaderCell>
-        <GridTableHeaderCell justify="center" className="">
+        <GridTableHeaderCell justify="center" className="relative " extraRight={
+          <Tooltip placement="right" allowInteract={false}>
+              <TooltipTrigger className="absolute right-[25px]">
+                <Icon icon="feather:info" className="size-[15px]" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="flex flex-col gap-y-[5px] items-center relative ">
+                  <div className="p-[15px] text-xs bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50">
+                    Chain ranking based on values of the last complete day of data. 
+                    The number in the medals represents the ranking (i.e. 1 means that this chain is currently the leader for the selected metric).
+                  </div>
+                </div>
+              </TooltipContent>
+          </Tooltip>
+        }>
           <ChainRankHeader setCenterMetric={setCenterMetric} centerMetric={centerMetric} setSort={setSort} sort={sort} />
         </GridTableHeaderCell>
         <GridTableHeaderCell
