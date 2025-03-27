@@ -138,13 +138,9 @@ export const renderPointRow = (
   const displayName = typeConfig.name || name;
 
   const fillId = `${seriesKey}_fill_tooltip`;
-  const randomId = Math.random().toString(36).substring(2, 15);
   const maskId = typeConfig.mask ? `${seriesKey}_mask_tooltip` : '';
 
   injectTooltipMaskStyles(maskId);
-
-  console.log(`[Tooltip] Series: ${name}, Key: ${seriesKey}, HasMaskConfig: ${!!typeConfig.mask}, Generated maskId: ${maskId}`);
-
 
   // Create the SVG marker
   const markerSvg = `
@@ -156,7 +152,7 @@ export const renderPointRow = (
   // Create the bar SVG
   const barSvg = `
     <svg width="100%" height="2px" viewBox="0 0 100 2" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-      <rect ${maskId ? 'class="diagonal-mask-right"' : ''} id="${randomId}" width="100%" height="2px" fill="url(#${fillId})"></rect>
+      <rect ${maskId ? 'class="diagonal-mask-right"' : ''} width="100%" height="2px" fill="url(#${fillId})"></rect>
     </svg>
   `;
 
@@ -184,10 +180,6 @@ export const renderPointRow = (
   const barWidth = (y / maxValue) * 100;
 
   return `
-    <pre class="h-[100px] overflow-auto hidden">
-      barSVG: ${barSvg.replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace('\'', '&apos;').replace("\\", '\\\\')}
-      maskId: ${maskId}
-    </pre>
     <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
       <div class="w-4 h-1.5 rounded-r-full overflow-hidden" style="position: relative;">
         ${markerSvg}
@@ -347,7 +339,7 @@ export const createTooltipFormatter = (options: TooltipFormatterOptions) => {
     const maxPercentage = Math.max(...points.map(point => point.percentage));
     
     // Start building the tooltip HTML
-    let tooltip = `<div class="mt-3 mr-3 mb-3 w-60 md:w-fit text-xs font-raleway highcharts-tooltip-container">
+    let tooltip = `<div class="mt-3 mr-3 mb-3 min-w-60 md:min-w-60 text-xs font-raleway highcharts-tooltip-container">
       <div class="flex-1 font-bold text-[13px] md:text-[1rem] ml-6 mb-2 flex justify-between">${dateString}</div>`;
     
     // Add points
