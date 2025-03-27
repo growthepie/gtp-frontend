@@ -2,7 +2,6 @@
 
 import HighchartsReact from "highcharts-react-official";
 import Highcharts from "highcharts";
-import highchartsAnnotations from "highcharts/modules/annotations";
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import {
@@ -11,7 +10,7 @@ import {
   useIsMounted,
   useMediaQuery,
 } from "usehooks-ts";
-import fullScreen from "highcharts/modules/full-screen";
+import "highcharts/modules/full-screen";
 import _merge from "lodash/merge";
 import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
@@ -97,8 +96,6 @@ export default function ChainChart({
         numericSymbols: ["K", "M", "B", "T", "P", "E"],
       },
     });
-    highchartsAnnotations(Highcharts);
-    fullScreen(Highcharts);
   }, []);
 
   const { theme } = useTheme();
@@ -459,7 +456,7 @@ export default function ChainChart({
   }, [data, master, showUsd, intervalShown]);
 
   const tooltipFormatter = useCallback(
-    function (this: Highcharts.TooltipFormatterContextObject) {
+    function (this: any) {
       if (!master) return;
       const { x, points } = this;
 

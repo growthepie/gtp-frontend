@@ -2,7 +2,6 @@
 
 import HighchartsReact from "highcharts-react-official";
 import Highcharts from "highcharts/highstock";
-import highchartsAnnotations from "highcharts/modules/annotations";
 import Share from "@/components/Share";
 
 import {
@@ -19,7 +18,6 @@ import {
   useIsMounted,
   useMediaQuery,
 } from "usehooks-ts";
-import fullScreen from "highcharts/modules/full-screen";
 import _merge from "lodash/merge";
 import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
@@ -33,7 +31,8 @@ import {
 import { debounce, forEach } from "lodash";
 import { Splide, SplideSlide, SplideTrack } from "@splidejs/react-splide";
 import { navigationItems } from "@/lib/navigation";
-import { useUIContext, useHighchartsWrappers } from "@/contexts/UIContext";
+import { useUIContext } from "@/contexts/UIContext";
+import useHighchartsWrappers from "@/hooks/useHighchartsWrappers";
 import { ChainsBaseURL, MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import useSWR, { preload } from "swr";
@@ -102,8 +101,6 @@ export default function ChainChart({
         numericSymbols: ["K", "M", "B", "T", "P", "E"],
       },
     });
-    highchartsAnnotations(Highcharts);
-    fullScreen(Highcharts);
   }, []);
 
   const { theme } = useTheme();
@@ -611,7 +608,7 @@ export default function ChainChart({
   }, [data, master, showUsd, intervalShown]);
 
   const tooltipFormatter = useCallback(
-    function (this: Highcharts.TooltipFormatterContextObject) {
+    function (this: any) {
       if (!master) return;
       const { x, points } = this;
 

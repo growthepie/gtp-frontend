@@ -10,8 +10,7 @@ import React, {
 import Highcharts, {
   AxisLabelsFormatterContextObject,
 } from "highcharts/highstock";
-import highchartsAnnotations from "highcharts/modules/annotations";
-import highchartsPatternFill from "highcharts/modules/pattern-fill";
+import "highcharts/modules/pattern-fill";
 import highchartsRoundedCorners from "highcharts-rounded-corners";
 import addHighchartsMore from "highcharts/highcharts-more";
 import { useLocalStorage } from "usehooks-ts";
@@ -28,7 +27,7 @@ import {
   ChartProps,
   AreaSeries,
 } from "react-jsx-highcharts";
-import { useHighchartsWrappers, useUIContext } from "@/contexts/UIContext";
+import { useUIContext } from "@/contexts/UIContext";
 import { useMaster } from "@/contexts/MasterContext";
 import { min, times } from "lodash";
 import "@/app/highcharts.axis.css";
@@ -44,6 +43,7 @@ import { useMetrics } from "../_contexts/MetricsContext";
 import { useApplicationDetailsData } from "../_contexts/ApplicationDetailsDataContext";
 import moment from "moment";
 import { useChartSync } from "../_contexts/GTPChartSyncContext";
+import useHighchartsWrappers from "@/hooks/useHighchartsWrappers";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -349,8 +349,7 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
     });
     // addHighchartsMore(Highcharts);
     // highchartsRoundedCorners(Highcharts); !!-- causing error on server side --!!
-    highchartsAnnotations(Highcharts);
-    highchartsPatternFill(Highcharts);
+    // highchartsPatternFill(Highcharts);
 
     // update x-axis label sizes if it is a 4 digit number
     Highcharts.wrap(

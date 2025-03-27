@@ -1,10 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import highchartsAnnotations from "highcharts/modules/annotations";
 import highchartsRoundedCorners from "highcharts-rounded-corners";
 import HighchartsReact from "highcharts-react-official";
-import highchartsPatternFill from "highcharts/modules/pattern-fill";
+import "highcharts/modules/pattern-fill";
 import Highcharts, {
   AxisLabelsFormatterContextObject,
   GradientColorStopObject,
@@ -131,8 +130,6 @@ export const Chart = ({
       },
     });
     highchartsRoundedCorners(Highcharts);
-    highchartsAnnotations(Highcharts);
-    highchartsPatternFill(Highcharts);
 
     // update x-axis label sizes if it is a 4 digit number
     Highcharts.wrap(

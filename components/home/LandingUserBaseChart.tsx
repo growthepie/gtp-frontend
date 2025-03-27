@@ -6,7 +6,7 @@ import {
   Get_SupportedChainKeys,
 } from "@/lib/chains";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
-import LandingChart from "@/components/layout/LandingChart";
+// import LandingChart from "@/components/layout/LandingChart";
 import LandingMetricsTable, { TableRankingProvider } from "@/components/layout/LandingMetricsTable";
 import { Icon } from "@iconify/react";
 import { LandingURL, MasterURL } from "@/lib/urls";
@@ -16,6 +16,9 @@ import HorizontalScrollContainer from "../HorizontalScrollContainer";
 import { isMobile } from "react-device-detect";
 import { useMaster } from "@/contexts/MasterContext";
 import { useLocalStorage } from "usehooks-ts";
+import dynamic from "next/dynamic";
+
+const LandingChart = dynamic(() => import("@/components/layout/LandingChart"), { ssr: false });
 
 export default function LandingUserBaseChart() {
   const [isSidebarOpen] = useState(false);

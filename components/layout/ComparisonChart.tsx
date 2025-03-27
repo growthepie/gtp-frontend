@@ -2,8 +2,7 @@ import HighchartsReact from "highcharts-react-official";
 import Highcharts, {
   AxisLabelsFormatterContextObject,
 } from "highcharts/highstock";
-import highchartsAnnotations from "highcharts/modules/annotations";
-import highchartsPatternFill from "highcharts/modules/pattern-fill";
+import "highcharts/modules/pattern-fill";
 import highchartsRoundedCorners from "highcharts-rounded-corners";
 import {
   useState,
@@ -25,7 +24,8 @@ import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import Link from "next/link";
 import { Sources } from "@/lib/datasources";
-import { useUIContext, useHighchartsWrappers } from "@/contexts/UIContext";
+import { useUIContext } from "@/contexts/UIContext";
+import useHighchartsWrappers from "@/hooks/useHighchartsWrappers";
 import { useMediaQuery } from "usehooks-ts";
 import Container from "./Container";
 import ChartWatermark from "./ChartWatermark";
@@ -914,8 +914,6 @@ export default function ComparisonChart({
       },
     });
     highchartsRoundedCorners(Highcharts);
-    highchartsAnnotations(Highcharts);
-    highchartsPatternFill(Highcharts);
 
     // update x-axis label sizes if it is a 4 digit number
     Highcharts.wrap(

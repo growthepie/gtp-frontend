@@ -2,8 +2,6 @@
 
 import HighchartsReact from "highcharts-react-official";
 import Highcharts from "highcharts/highstock";
-import highchartsAnnotations from "highcharts/modules/annotations";
-// import highchartsDebug from "highcharts/modules/debugger";
 import {
   useState,
   useEffect,
@@ -15,7 +13,6 @@ import {
   memo,
 } from "react";
 import { useLocalStorage, useWindowSize, useIsMounted } from "usehooks-ts";
-import fullScreen from "highcharts/modules/full-screen";
 import _merge from "lodash/merge";
 import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";

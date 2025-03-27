@@ -37,7 +37,7 @@ import {
 
 import { useUIContext } from "@/contexts/UIContext";
 import Highcharts from "highcharts/highstock";
-import highchartsPatternFill from "highcharts/modules/pattern-fill";
+import "highcharts/modules/pattern-fill";
 import { fill } from "lodash";
 import { useMaster } from "@/contexts/MasterContext";
 import { fullBrowserVersion } from "react-device-detect";
@@ -791,8 +791,6 @@ export default function OverviewChart({
         numericSymbols: ["K", " M", "B", "T", "P", "E"],
       },
     });
-    // apply highcharts pattern fill module
-    highchartsPatternFill(Highcharts);
   }, []);
 
 

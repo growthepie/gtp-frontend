@@ -1,24 +1,16 @@
 "use client";
-import Home from "@/components/home/Home";
-import LandingUserBaseChart from "@/components/home/LandingUserBaseChart";
-import Container from "@/components/layout/Container";
-import Heading from "@/components/layout/Heading";
-import LandingTopContracts from "@/components/layout/LandingTopContracts";
-import Icon from "@/components/layout/ServerIcon";
-// import ShowLoading from "@/components/layout/ShowLoading";
-import Subheading from "@/components/layout/Subheading";
-import { Metadata } from "next";
-import { useEffect, useMemo, useState, useRef, useLayoutEffect } from "react";
-import { useMediaQuery } from "@react-hook/media-query";
+import { useEffect, useMemo, useState,  useLayoutEffect } from "react";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
 import { LandingURL, MasterURL } from "@/lib/urls";
-import LandingChart from "@/components/layout/LandingChart";
-import EmbedContainer from "../EmbedContainer";
 import { useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useMaster } from "@/contexts/MasterContext";
+import dynamic from "next/dynamic";
+
+const LandingChart = dynamic(() => import("@/components/layout/LandingChart"), { ssr: false });
+
 
 // export async function generateMetadata(): Promise<Metadata> {
 //   return {
@@ -38,6 +30,7 @@ export default function Page() {
   const queryZoomed = searchParams ? searchParams.get("zoomed") : null;
   const queryStartTimestamp = searchParams ? searchParams.get("startTimestamp") : null;
   const queryEndTimestamp = searchParams ? searchParams.get("endTimestamp") : null;
+  const queryFocusEnabled = searchParams ? searchParams.get("focusEnabled") : null;
 
   const { theme, setTheme } = useTheme();
   useLayoutEffect(() => {
@@ -50,21 +43,12 @@ export default function Page() {
     }, 1000);
   }, []);
 
-  // const isLargeScreen = useMediaQuery("(min-width: 1280px)");
-
-  // const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  // useEffect(() => {
-  //   setIsSidebarOpen(isLargeScreen);
-  // }, [isLargeScreen]);
-
   const {
     data: landing,
     error: landingError,
     isLoading: landingLoading,
     isValidating: landingValidating,
   } = useSWR<LandingPageMetricsResponse>(LandingURL);
-  // } = useSWR<LandingPageMetricsResponse>("/mock/landing_page.json");
 
   const {
     data: master,
@@ -77,50 +61,21 @@ export default function Page() {
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("weekly");
 
-  const [selectedMetric, setSelectedMetric] = useState(queryMetric ?? "Total Users");
+  const [selectedMetric, setSelectedMetric] = useState(queryMetric ?? "Total Ethereum Ecosystem");
 
   useEffect(() => {
     if (landing) {
-      setData(landing.data.metrics.user_base[selectedTimeInterval]);
+      setData(landing.data.metrics.engagement[selectedTimeInterval]);
     }
   }, [landing, selectedTimeInterval]);
 
-  useEffect(() => {
-    if (!data) return;
 
-    setSelectedChains(
-      Object.keys(data.chains)
-        .filter((chainKey) => AllChainsByKeys.hasOwnProperty(chainKey))
-        .map((chain) => chain),
-    );
-  }, [data, landing, selectedMetric, selectedTimeInterval]);
 
-  const chains = useMemo(() => {
-    if (!data) return [];
-
-    return AllChains.filter(
-      (chain) =>
-        Object.keys(data.chains).includes(chain.key) && chain.key != "ethereum",
-    );
-  }, [data]);
-
-  const [selectedChains, setSelectedChains] = useState(
-    AllChains.map((chain) => chain.key),
-  );
   return (
     <>
-      {data && landing && master ? (
+      {data && landing && master && AllChainsByKeys ? (
         <LandingChart
-          data={Object.keys(data.chains)
-            .filter((chain) => selectedChains.includes(chain))
-            .map((chain) => {
-              return {
-                name: chain,
-                // type: 'spline',
-                types: data.chains[chain].data.types,
-                data: data.chains[chain].data.data,
-              };
-            })}
+          data={data}
           master={master}
           sources={landing.data.metrics.user_base.source}
           cross_chain_users={data.cross_chain_users}
@@ -138,6 +93,7 @@ export default function Page() {
           embed_zoomed={queryZoomed === "true"}
           embed_start_timestamp={queryStartTimestamp ? parseInt(queryStartTimestamp) : undefined}
           embed_end_timestamp={queryEndTimestamp ? parseInt(queryEndTimestamp) : undefined}
+          embed_focus_enabled={queryFocusEnabled === "true"}
         />
       ) : null}
     </>

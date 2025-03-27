@@ -1,6 +1,5 @@
 "use client";
 
-import highchartsAnnotations from "highcharts/modules/annotations";
 import highchartsRoundedCorners from "highcharts-rounded-corners";
 import HighchartsReact from "highcharts-react-official";
 import HighchartsColumnSeries from "highcharts/es-modules/Series/Column/ColumnSeries"
@@ -49,7 +48,7 @@ import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import Link from "next/link";
 import { Sources } from "@/lib/datasources";
-import { useUIContext, useHighchartsWrappers } from "@/contexts/UIContext";
+import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import ChartWatermark from "./ChartWatermark";
@@ -64,12 +63,14 @@ import {
 import { useMaster } from "@/contexts/MasterContext";
 import { GTPIcon } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
-import highchartsPatternFill from "highcharts/modules/pattern-fill";
+import "highcharts/modules/pattern-fill";
 import { transparent } from "tailwindcss/colors";
 import { createTooltipFormatter, formatNumber } from "@/lib/highcharts/tooltipFormatters";
 import { baseChartOptions } from "@/lib/highcharts/chartUtils";
 import { PatternRegistry, initializePatterns } from "@/lib/highcharts/svgPatterns";
 import { DynamicLabel } from "../home/LandingHeaders";
+import useHighchartsWrappers from "@/hooks/useHighchartsWrappers";
+
 
 
 const COLORS = {
@@ -291,6 +292,7 @@ export default function LandingChart({
   embed_end_timestamp,
   embed_show_mainnet,
   embed_zoomed,
+  embed_focus_enabled,
 }: // timeIntervals,
   // onTimeIntervalChange,
   // showTimeIntervals = true,
@@ -313,6 +315,7 @@ export default function LandingChart({
     embed_end_timestamp?: number;
     embed_show_mainnet?: boolean;
     embed_zoomed?: boolean;
+    embed_focus_enabled?: boolean;
     // timeIntervals: string[];
     // onTimeIntervalChange: (interval: string) => void;
     // showTimeIntervals: boolean;
@@ -340,7 +343,7 @@ export default function LandingChart({
   //     }));
   // }, [embedData]);
 
-  useHighchartsWrappers();
+
 
   const [maskIds, setMaskIds] = useState<{ rightMaskId: string; leftMaskId: string } | null>(null);
 
@@ -353,48 +356,49 @@ export default function LandingChart({
       },
     });
     highchartsRoundedCorners(Highcharts);
-    // highchartsAnnotations(Highcharts);
-    highchartsPatternFill(Highcharts);
     // loadHighchartsWrappers();
 
     // update x-axis label sizes if it is a 4 digit number
-    Highcharts.wrap(
-      Highcharts.Axis.prototype,
-      "renderTick",
-      function (proceed) {
-        proceed.apply(this, Array.prototype.slice.call(arguments, 1));
+    // Highcharts.wrap(
+    //   Highcharts.Axis.prototype,
+    //   "renderTick",
+    //   function (proceed) {
+    //     proceed.apply(this, Array.prototype.slice.call(arguments, 1));
 
-        const axis: Highcharts.Axis = this;
-        const ticks: Highcharts.Dictionary<Tick> = axis.ticks;
-        if (
-          axis.isXAxis &&
-          axis.options.labels &&
-          axis.options.labels.enabled
-        ) {
-          Object.keys(ticks).forEach((tick) => {
-            const tickLabel = ticks[tick].label;
-            if (!tickLabel) return;
-            const tickValue = tickLabel.element.textContent;
-            if (tickValue) {
-              if (tickValue.length === 4) {
-                tickLabel.css({
-                  transform: "scale(1.4)",
-                  fontWeight: "600",
-                });
-              }
-            }
-          });
-        }
-      },
-    );
+    //     const axis: Highcharts.Axis = this;
+    //     const ticks: Highcharts.Dictionary<Tick> = axis.ticks;
+    //     if (
+    //       axis.isXAxis &&
+    //       axis.options.labels &&
+    //       axis.options.labels.enabled
+    //     ) {
+    //       Object.keys(ticks).forEach((tick) => {
+    //         const tickLabel = ticks[tick].label;
+    //         if (!tickLabel) return;
+    //         const tickValue = tickLabel.element.textContent;
+    //         if (tickValue) {
+    //           if (tickValue.length === 4) {
+    //             tickLabel.css({
+    //               transform: "scale(1.4)",
+    //               fontWeight: "600",
+    //             });
+    //           }
+    //         }
+    //       });
+    //     }
+    //   },
+    // );
 
     setHighchartsLoaded(true);
   }, []);
 
+  useHighchartsWrappers();
+
+
   const { theme } = useTheme();
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const [focusEnabled] = useLocalStorage("focusEnabled", false);
+  const [focusEnabled] = useLocalStorage("focusEnabled", embed_focus_enabled ?? false);
 
   const [selectedTimespan, setSelectedTimespan] = useState(
     embed_timespan ?? "max",
@@ -641,6 +645,7 @@ export default function LandingChart({
       // interval: selectedTimeInterval,
       showMainnet: showEthereumMainnet ? "true" : "false",
       metric: selectedMetric,
+      focusEnabled: focusEnabled ? "true" : "false",
     };
 
     const absoluteVars = {
@@ -664,6 +669,7 @@ export default function LandingChart({
       src: src,
       zoomed: zoomed,
       timeframe: zoomed ? "absolute" : embedData.timeframe,
+      focusEnabled: focusEnabled,
     }));
   }, [
     embedData.timeframe,
@@ -884,12 +890,13 @@ export default function LandingChart({
         minPadding: 0,
         maxPadding: 0,
         labels: {
-          align: undefined,
+          align: "center",
           rotation: 0,
-          allowOverlap: false,
+          
+          // allowOverlap: true,
           // staggerLines: 1,
-          reserveSpace: true,
-          overflow: "justify",
+          // reserveSpace: true,
+          // overflow: "justify",
           useHTML: true,
           formatter: function (this: AxisLabelsFormatterContextObject) {
             // if Jan 1st, show year

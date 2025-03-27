@@ -19,7 +19,7 @@
 .highcharts-axis-labels span,
 .highcharts-axis-labels > span,
 .highcharts-axis-labels text {
-  @apply !font-raleway;
+  @apply !font-raleway !block !whitespace-nowrap;
 }
 
 .highcharts-axis-labels.highcharts-yaxis-labels text, .highcharts-axis-labels.highcharts-yaxis-labels span {

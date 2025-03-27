@@ -12,10 +12,8 @@ import React, {
 import Highcharts, {
   AxisLabelsFormatterContextObject,
 } from "highcharts/highstock";
-import highchartsAnnotations from "highcharts/modules/annotations";
-import highchartsPatternFill from "highcharts/modules/pattern-fill";
+import "highcharts/modules/pattern-fill";
 import highchartsRoundedCorners from "highcharts-rounded-corners";
-import addHighchartsMore from "highcharts/highcharts-more";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { AxisTickPositionerCallbackFunction } from "highcharts";
 import {
@@ -27,7 +25,8 @@ import {
   Tooltip as HighchartsTooltip,
   Series,
 } from "react-jsx-highcharts";
-import { useUIContext, useHighchartsWrappers } from "@/contexts/UIContext";
+import { useUIContext } from "@/contexts/UIContext";
+import useHighchartsWrappers from "@/hooks/useHighchartsWrappers";
 import { useMaster } from "@/contexts/MasterContext";
 import { debounce, over, times } from "lodash";
 import { useMetricSeries } from "./MetricSeriesContext";
@@ -194,7 +193,7 @@ function MetricChart({
 
 }: MetricChartProps) {
 
-  // useHighchartsWrappers();
+  useHighchartsWrappers();
   let tooltipWorker: Worker | null = null;
   let tooltipCache = new Map<string, string>();
 
@@ -503,8 +502,6 @@ function MetricChart({
       },
     });
     highchartsRoundedCorners(Highcharts);
-    highchartsAnnotations(Highcharts);
-    highchartsPatternFill(Highcharts);
 
     // update x-axis label sizes if it is a 4 digit number
     Highcharts.wrap(

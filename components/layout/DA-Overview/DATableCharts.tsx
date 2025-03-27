@@ -37,8 +37,7 @@ import { filter, get, set } from "lodash";
 import { locale } from "moment";
 import ChartWatermark from "../ChartWatermark";
 import { Badge } from "@/app/(labels)/labels/Search";
-import highchartsPatternFill from "highcharts/modules/pattern-fill";
-// import highchartsAnnotations from "highcharts/modules/annotations";
+import "highcharts/modules/pattern-fill";
 import highchartsRoundedCorners from "highcharts-rounded-corners";
 import {
     Tooltip,
@@ -95,8 +94,6 @@ const DATableChartsComponent = ({
           },
         });
         highchartsRoundedCorners(Highcharts);
-        // highchartsAnnotations(Highcharts);
-        highchartsPatternFill(Highcharts);
     
         // update x-axis label sizes if it is a 4 digit number
         Highcharts.wrap(

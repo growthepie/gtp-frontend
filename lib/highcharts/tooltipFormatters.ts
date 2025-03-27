@@ -107,6 +107,11 @@ function injectTooltipMaskStyles(maskId: string) {
   document.head.appendChild(style);
 }
 
+// const hasMaskBeenInjected = false; make this a global variable
+let hasMaskBeenInjected = false;
+
+
+
 /**
  * Renders an individual point row in the tooltip
  */
@@ -140,7 +145,10 @@ export const renderPointRow = (
   const fillId = `${seriesKey}_fill_tooltip`;
   const maskId = typeConfig.mask ? `${seriesKey}_mask_tooltip` : '';
 
-  injectTooltipMaskStyles(maskId);
+  if (maskId && !hasMaskBeenInjected) {
+    injectTooltipMaskStyles(maskId);
+    hasMaskBeenInjected = true;
+  }
 
   // Create the SVG marker
   const markerSvg = `

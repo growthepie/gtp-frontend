@@ -2,11 +2,9 @@
 
 import HighchartsReact from "highcharts-react-official";
 import Highcharts, { chart } from "highcharts";
-import highchartsAnnotations from "highcharts/modules/annotations";
 import { useEffect, useMemo, useRef } from "react";
 // import { Card } from "@/components/Card";
 // import { useLocalStorage } from "usehooks-ts";
-import fullScreen from "highcharts/modules/full-screen";
 import _merge from "lodash/merge";
 import { zinc, red, blue, amber } from "tailwindcss/colors";
 import { useTheme } from "next-themes";
@@ -149,8 +147,6 @@ export default function MainChart({ data }: { data: any }) {
         numericSymbols: ["K", " M", "B", "T", "P", "E"],
       },
     });
-    highchartsAnnotations(Highcharts);
-    fullScreen(Highcharts);
   }, []);
 
   // const [darkMode, setDarkMode] = useLocalStorage("darkMode", true);
