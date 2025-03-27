@@ -325,15 +325,17 @@ export const MetricBottomControls = ({ metric, is_embed = false }: { metric: str
             className={`flex justify-between w-full md:w-auto pt-0 md:pt-0 h-[35px] md:h-auto`}
           >
             <div className="flex z-10 items-center">
-              <div className={` ${focusEnabled ? "flex" : "hidden"}`}>
+              <div className={` ${focusEnabled ? "flex items-center" : "hidden"}`}>
                 <Switch
                   checked={showEthereumMainnet}
                   onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
                 />
-                <div className="ml-2 block md:hidden lg:block">
-                  Compare Ethereum Mainnet
-                </div>
-                <div className="ml-2 hidden md:block lg:hidden">ETH</div>
+                  <div className="ml-2 block md:hidden xl:block heading-small-xs">
+                    Compare Ethereum Mainnet
+                  </div>
+                  <div className={`ml-2 hidden md:block xl:hidden heading-small-xs`}>
+                    Compare ETH
+                  </div>
               </div>
             </div>
             <div className="block md:hidden z-10">
