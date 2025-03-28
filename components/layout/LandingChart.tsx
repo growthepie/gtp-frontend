@@ -75,6 +75,8 @@ const METRIC_COLORS = {
   main_l2: ["#FFDF27", "#FE5468"],
 }
 
+
+
 export type GradientConfig = {
   type: "linearGradient" | "radialGradient";
   linearGradient?: { x1: number; y1: number; x2: number; y2: number };
@@ -1349,7 +1351,7 @@ export default function LandingChart({
                               exit={{ opacity: 0 }}
                               transition={{ duration: 0.3, ease: "easeInOut" }}
                             >
-                              Composition
+                              <div>{isLessThan2xl ? "Comp. Split" : "Composition Split"}</div>
                             </motion.span>
                           </Heading>
                           }
@@ -1366,6 +1368,7 @@ export default function LandingChart({
           <div className="block 2xl:hidden w-[80%] mx-auto my-[10px] h-[2px]">
             <hr className="border-dashed border-t-[1px] w-full h-[1px] border-forest-400" />
           </div>
+
           <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 2xl:!mx-0 !gap-x-[4px] 2xl:!gap-x-[5px]">
             {!zoomed ? (
               Object.keys(timespans).map((timespan) => (
@@ -1537,6 +1540,9 @@ export default function LandingChart({
     </div>
   );
 }
+
+
+
 
 const MobileMetricCard = ({
   icon,
