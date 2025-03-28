@@ -10,23 +10,8 @@ import Highcharts, {
   chart,
   color,
 } from "highcharts/highstock";
-import {
-  HighchartsProvider,
-  HighchartsChart,
-  Chart,
-  XAxis,
-  YAxis,
-  Title,
-  Tooltip as HighchartsTooltip,
-  PlotBand,
-  AreaSeries,
-  ColumnSeries,
-  LineSeries,
-  PieSeries,
-  
-  Series,
-  
-} from "react-jsx-highcharts";
+import { motion, useAnimation, AnimatePresence } from "framer-motion";
+import Heading from "@/components/layout/Heading";
 import {
   useState,
   useEffect,
@@ -1242,17 +1227,47 @@ export default function LandingChart({
               <div className="flex items-center justify-center gap-x-[5px]">
                 <GTPIcon icon="gtp-metrics-ethereum-ecosystem" size={isLessThan2xl ? "sm" : "md"} />
                 {/* <div>{!isMobile ? textToggles.toggle[focusEnabled ? "l2" : "total"] : focusEnabled ? "Total L2 Ecosystem" : "Total ETH Ecosystem"}</div> */}
-                <DynamicLabel 
-                  className="whitespace-nowrap text-sm"
-                  labels={isLessThan2xl ? {
-                    total: "ETH Ecosystem",
-                    l2: "L2 Ecosystem",
-                  } : {
-                    total: "Total Ethereum Ecosystem",
-                    l2: "Layer 2 Ecosystem",
-                  }} 
-                  selectedLabel={focusEnabled ? "l2" : "total"} 
-                />
+                <Tooltip placement="bottom" allowInteract={false}>
+                  <TooltipTrigger>
+                    <DynamicLabel 
+                      className="whitespace-nowrap text-sm"
+                      labels={isLessThan2xl ? {
+                        total: "ETH Ecosystem",
+                        l2: "L2 Ecosystem",
+                      } : {
+                        total: "Total Ethereum Ecosystem",
+                        l2: "Layer 2 Ecosystem",
+                      }} 
+                      selectedLabel={focusEnabled ? "l2" : "total"} 
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="flex flex-col gap-y-[5px] items-center relative left-[100px]">
+                      <div className="p-[15px] text-sm bg-[#1F2726] text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50">
+                        <div className="flex items-center gap-x-[10px] py-[5px]">
+                          <GTPIcon icon="gtp-metrics-ethereum-ecosystem" size={isLessThan2xl ? "sm" : "md"} />
+                          <div className="heading-small-xs">{                    
+                            <DynamicLabel 
+                              className="whitespace-nowrap "
+                              labels={isLessThan2xl ? {
+                                total: "ETH Ecosystem",
+                                l2: "L2 Ecosystem",
+                              } : {
+                                total: "Total Ethereum Ecosystem",
+                                l2: "Layer 2 Ecosystem",
+                              }} 
+                              selectedLabel={focusEnabled ? "l2" : "total"} 
+                            />
+                          }
+                          </div>
+                        </div>
+                        <div className="text-xs font-normal text-wrap">{"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."}</div>
+                       
+                      </div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+
               </div>
             </TopRowChild>
             <TopRowChild
@@ -1265,10 +1280,44 @@ export default function LandingChart({
                 setSelectedMetric("Composition");
               }}
             >
-              <div className="flex items-center justify-center gap-x-[5px]">
-                <GTPIcon icon="gtp-metrics-chains-grouping" size={isLessThan2xl ? "sm" : "md"}/>
-                <div>Composition</div>
+             <div className="flex items-center justify-center gap-x-[5px] relative w-full">
+                {/* <div>{!isMobile ? textToggles.toggle[focusEnabled ? "l2" : "total"] : focusEnabled ? "Total L2 Ecosystem" : "Total ETH Ecosystem"}</div> */}
+                <Tooltip placement="bottom" allowInteract={false}>
+                  <TooltipTrigger className="">
+                    <div className="flex items-center justify-center  gap-x-[5px]">
+                      <GTPIcon icon="gtp-metrics-chains-grouping" size={isLessThan2xl ? "sm" : "md"}/>
+                      <div>Composition</div>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="flex flex-col gap-y-[5px] items-center  right-[10px] top-[5px]  px-[5px]">
+                      <div className="p-[15px] text-sm bg-[#1F2726] text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50  shadow-black ">
+                        <div className="flex items-center gap-x-[10px] py-[5px]">
+                          <GTPIcon icon="gtp-metrics-chains-grouping" size={isLessThan2xl ? "sm" : "md"}/>
+                          <div className="heading-small-xs">{                    
+                          <Heading id="layer-2-traction-title" className={"heading-small-xs"}>
+                            <motion.span
+                              key={"Composition"} // Unique key forces animation on change
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              transition={{ duration: 0.3, ease: "easeInOut" }}
+                            >
+                              Composition
+                            </motion.span>
+                          </Heading>
+                          }
+                          </div>
+                        </div>
+                        <div className="text-xs font-normal text-wrap">{"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."}</div>
+                       
+                      </div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+
               </div>
+
             </TopRowChild>
             <TopRowChild
               isSelected={"percentage" === selectedScale}
@@ -1280,10 +1329,40 @@ export default function LandingChart({
                 setSelectedMetric("Composition Split");
               }}
             >
-              <div className="flex items-center justify-center  gap-x-[5px]">
-                <GTPIcon icon="gtp-metrics-chains-percentage" size={isLessThan2xl ? "sm" : "md"} />
-                <div>{isLessThan2xl ? "Comp. Split" : "Composition Split"}</div>
-              </div>
+
+              <Tooltip placement="bottom" allowInteract={false}>
+                  <TooltipTrigger className="">
+                    <div className="flex items-center justify-center  gap-x-[5px]">
+                      <GTPIcon icon="gtp-metrics-chains-percentage" size={isLessThan2xl ? "sm" : "md"} />
+                      <div>{isLessThan2xl ? "Comp. Split" : "Composition Split"}</div>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="flex flex-col gap-y-[5px] items-center  right-[10px] top-[5px]  px-[5px]">
+                      <div className="p-[15px] text-sm bg-[#1F2726] text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50  shadow-black ">
+                        <div className="flex items-center gap-x-[10px] py-[5px]">
+                          <GTPIcon icon="gtp-metrics-chains-percentage" size={isLessThan2xl ? "sm" : "md"} />
+                          <div className="heading-small-xs">{                    
+                          <Heading id="layer-2-traction-title" className={"heading-small-xs"}>
+                            <motion.span
+                              key={isLessThan2xl ? "Comp. Split" : "Composition Split"} // Unique key forces animation on change
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              transition={{ duration: 0.3, ease: "easeInOut" }}
+                            >
+                              Composition
+                            </motion.span>
+                          </Heading>
+                          }
+                          </div>
+                        </div>
+                        <div className="text-xs font-normal text-wrap">{"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."}</div>
+                       
+                      </div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
             </TopRowChild>
           </TopRowParent>
           <div className="block 2xl:hidden w-[80%] mx-auto my-[10px] h-[2px]">
