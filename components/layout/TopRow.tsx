@@ -9,6 +9,8 @@ export function TopRowChild({
   style,
   roundedClassName = "rounded-full",
   onClick,
+  onMouseEnter,
+  onMouseLeave,
 }: {
   children: React.ReactNode;
   isSelected: boolean;
@@ -17,6 +19,8 @@ export function TopRowChild({
   style?: React.CSSProperties;
   roundedClassName?: string;
   onClick?: () => void;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
 }) {
   return (
     <button
@@ -25,6 +29,8 @@ export function TopRowChild({
         : "hover:bg-forest-500/10"
         } ${className} `}
       onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       ref={ref ?? null}
       style={style}
     >

@@ -245,7 +245,7 @@ export default memo(function LandingMetricsTable({
           sort={sort}
           setSort={setSort}
           extraRight={
-            <Tooltip placement="right" allowInteract={false}>
+            <Tooltip placement="right" allowInteract={true}>
               <TooltipTrigger className="absolute right-[10px]">
                 <Icon icon="feather:info" className="size-[15px]" />
               </TooltipTrigger>
