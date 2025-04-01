@@ -108,14 +108,11 @@ export default async function Page() {
             answer={
               <>
                 At growthepie, our mission is to provide comprehensive and
-                accurate analytics Ethereum scaling solutions, acting as a
-                trusted data aggregator from reliable sources such as L2Beat and
-                DefiLlama, while also developing our own metrics. Through our
+                accurate analytics for the Ethereum ecosystem. Through our
                 analytics interface, we aim to educate and increase
                 transparency. Our goal is to be one of the go-to resources for
-                those seeking to learn more about the potential of layer 2
-                technologies and their impact on the future of the Ethereum
-                ecosystem.
+                those seeking to learn more about Ethereum Mainnet, Layer 2s,
+                and their impact on the future of the Ethereum ecosystem.
               </>
             }
           />
@@ -123,15 +120,30 @@ export default async function Page() {
             question="What's up with the name?"
             answer={
               <>
-                We view the different layer 2 solutions for the Ethereum
+                We view the different scaling solutions for the Ethereum
                 ecosystem as complementary technologies that enable more use
                 cases, rather than competitors vying for market share. We
                 believe that the space is a positive-sum game, where each unique
                 flavor of layer 2 technology brings its own benefits to the
                 table. Through collaboration and innovation, the Ethereum
-                community can unlock the full potential of layer 2 solutions and
+                community can unlock the full potential and
                 continue to expand it&apos;s user-base and evolve in exciting
                 ways.
+              </>
+            }
+          />
+          <QuestionAnswer
+            question="What's the difference between Ethereum Mainnet and the Ethereum ecosystem?"
+            answer={
+              <>
+                Ethereum Mainnet, also called Ethereum L1, is the Ethereum blockchain
+                that launched in 2015. The Ethereum ecosystem, however, includes many
+                blockchains that are built on top of Ethereum Mainnet (Layer 2s). These
+                blockchains settle to Ethereum Mainnet and therefore can benefit from
+                some of its security guarantees. Not all of these chains necessarily run
+                the EVM (Ethereum Virtual Machine) - Layer 2s can also use other VMs 
+                (i.e. CairoVM, SVM, FuelVM, etc.). The VM doesn't define the Ethereum 
+                ecosystem - settling to Ethereum Mainnet defines it.
               </>
             }
           />
@@ -140,11 +152,10 @@ export default async function Page() {
             answer={
               <>
                 The &quot;multiple&quot; category denotes addresses that were
-                active on multiple Layer 2 (L2) networks within a given week.
-                This implies that if an address was active on different L2
-                networks, such as Arbitrum and OP Mainnet, in the same week, it
-                would be included in the &quot;multiple&quot; category, but not
-                attributed to either Arbitrum or OP Mainnet. For a more detailed
+                active on multiple networks (Ethereum Mainnet OR Layer 2) within a given week.
+                This implies that if an address was active on different networks,
+                such as Arbitrum and OP Mainnet, in the same week, it would
+                be included in the &quot;multiple&quot; category. For a more detailed
                 breakdown of active addresses on each individual chain, please
                 refer to the{" "}
                 <Link
@@ -161,7 +172,7 @@ export default async function Page() {
             question="Why have the numbers on the landing page not been updated for a few days?"
             answer={
               <>
-                The numbers in the User Base chart use a weekly aggregation. In
+                The numbers in the Weekly Engagement chart use a weekly aggregation. In
                 order to avoid confusion we only show completed weeks and no
                 partial weeks. The date that you can see in the chart is always
                 the start of the week (Monday). These numbers will update every
