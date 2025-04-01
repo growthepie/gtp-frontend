@@ -1219,7 +1219,7 @@ export default function LandingChart({
             <TopRowChild
               isSelected={showTotalUsers}
               roundedClassName="rounded-[12px] sm:rounded-full"
-              className={"!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
+              className={"!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4 group/ecosystem relative"}
               onClick={() => {
                 setShowTotalUsers(true);
                 setSelectedScale("absolute");
@@ -1233,37 +1233,25 @@ export default function LandingChart({
               }}
             >
               <div className="flex items-center justify-center gap-x-[5px]  ">
-                
-                {/* <div>{!isMobile ? textToggles.toggle[focusEnabled ? "l2" : "total"] : focusEnabled ? "Total L2 Ecosystem" : "Total ETH Ecosystem"}</div> */}
-                <Tooltip placement="bottom" allowInteract={false} open={hoveredMetric === "Total Ethereum Ecosystem"}>
-                  <TooltipTrigger>
-                    <div className="flex items-center gap-x-[5px]">
-                      <GTPIcon icon="gtp-metrics-ethereum-ecosystem" size={isLessThan2xl ? "sm" : "md"} />
-                      <div className="">{isLessThan2xl ? focusEnabled ? "L2 Ecosystem" : "ETH Ecosystem" : focusEnabled ? "Layer 2 Ecosystem" : "Total Ethereum Ecosystem"}</div>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <div className="flex flex-col  items-center relative  2xl:top-[15px] 2xl:left-[100px]">
-                      <div className="p-[15px] text-sm bg-[#1F2726] text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50">
-                        <div className="flex items-center gap-x-[10px]">
-                          
-                          <GTPIcon icon="gtp-metrics-ethereum-ecosystem" size={isLessThan2xl ? "sm" : "md"} />
-                          <div className="heading-small-xs">{isLessThan2xl ? focusEnabled ? "L2 Ecosystem" : "ETH Ecosystem" : focusEnabled ? "Layer 2 Ecosystem" : "Total Ethereum Ecosystem"}</div>
-                          
-                        </div>
-                        <div className="text-xs font-normal text-wrap">The total number of unique addresses interacting with one or multiple chains in the Ethereum ecosystem in a given week. When "Total Ecosystem" is toggled on you can see the number of addresses that are active only on on Ethereum Mainnet in blue.</div>
-                       
-                      </div>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-
+                <div className="flex items-center gap-x-[5px]">
+                  <GTPIcon icon="gtp-metrics-ethereum-ecosystem" size={isLessThan2xl ? "sm" : "md"} />
+                  <div className="">{isLessThan2xl ? focusEnabled ? "L2 Ecosystem" : "ETH Ecosystem" : focusEnabled ? "Layer 2 Ecosystem" : "Total Ethereum Ecosystem"}</div>
+                </div>
+              </div>
+              <div className="bg-[#1F2726] z-10 p-[15px] absolute rounded-[15px] shadow-2xl transition-all opacity-0 group-hover/ecosystem:opacity-100 flex-col gap-y-[5px] min-w-[300px] sm:min-w-[400px] left-0 top-[86px] 2xl:top-[57px] flex">
+                <div className="flex items-center gap-x-[10px]">
+                  <GTPIcon icon="gtp-metrics-ethereum-ecosystem" size={"sm"} />
+                  <div className="heading-small-xs">{focusEnabled ? "Layer 2 Ecosystem" : "Total Ethereum Ecosystem"}</div>
+                </div>
+                <div className="text-xs text-left ">
+                  The total number of unique addresses interacting with one or multiple chains in the Ethereum ecosystem in a given week. When "Total Ecosystem" is toggled on you can see the number of addresses that are active only on on Ethereum Mainnet in blue.
+                </div>
               </div>
             </TopRowChild>
             <TopRowChild
               isSelected={"absolute" === selectedScale && !showTotalUsers}
               roundedClassName="rounded-[12px] sm:rounded-full"
-              className={"!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
+              className={"!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4 group/composition relative"}
               onClick={() => {
                 setShowTotalUsers(false);
                 setSelectedScale("absolute");
@@ -1276,65 +1264,38 @@ export default function LandingChart({
                 setHoveredMetric(null);
               }}
             >
+              {/*Title Area */}
              <div className="flex items-center justify-center gap-x-[5px] relative w-full">
                 {/* <div>{!isMobile ? textToggles.toggle[focusEnabled ? "l2" : "total"] : focusEnabled ? "Total L2 Ecosystem" : "Total ETH Ecosystem"}</div> */}
-                <Tooltip placement="bottom" allowInteract={false} open={hoveredMetric === "Composition"}>
-                  <TooltipTrigger className="">
-                    <div className="flex items-center justify-center  gap-x-[5px]">
-                      <GTPIcon icon="gtp-metrics-chains-grouping" size={isLessThan2xl ? "sm" : "md"}/>
-                      <div>Composition</div>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <div className="flex flex-col  items-center relative 2xl:-right-[150px] 2xl:top-[15px]  px-[5px]">
-                      <div className="p-[15px] text-sm bg-[#1F2726] text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50  shadow-black ">
-                        <div className="flex items-center gap-x-[10px] ">
-                          <GTPIcon icon="gtp-metrics-chains-grouping" size={isLessThan2xl ? "sm" : "md"}/>
-                          <div className="heading-small-xs">{                    
-                          <Heading id="layer-2-traction-title" className={"heading-small-xs"}>
-                            <motion.span
-                              key={"Composition"} // Unique key forces animation on change
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              exit={{ opacity: 0 }}
-                              transition={{ duration: 0.3, ease: "easeInOut" }}
-                            >
-                              Composition
-                            </motion.span>
-                          </Heading>
-                          }
-                          </div>
-                        </div>
-                        <div className="text-xs font-normal flex flex-col gap-y-[10px] text-wrap">
-                          <div>You can see where most addresses are active:</div>
-                          <ul className="list-disc pl-3 space-y-2">
-                            <li>
-                              Ethereum Mainnet: Addresses that only interacted with the L1 ("Total Ecosystem" needs to be toggled)
-                            </li>
-                            <li>
-                              Cross-Layer: Addresses that interacted with L1 and at least one L2
-                            </li>
-                            <li>
-                              Multiple L2s: Addresses that interacted with multiple L2s
-                            </li>
-                            <li>
-                              Single L2: Addresses that interacted with a single L2
-                            </li>
-                          </ul>
-                        </div>
-                       
-                      </div>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
+                  <div className="flex items-center justify-center  gap-x-[5px]">
+                    <GTPIcon icon="gtp-metrics-chains-grouping" size={isLessThan2xl ? "sm" : "md"}/>
+                    <div className="">Composition</div>
+                  </div>
 
               </div>
+              {/*Tooltip area: */}
+              <div className="bg-[#1F2726] z-10 p-[15px] absolute rounded-[15px] shadow-2xl transition-all flex-col gap-y-[5px] min-w-[300px] opacity-0 group-hover/composition:opacity-100 duration-200 sm:min-w-[420px] left-0 right-0 2xl:right-auto 2xl:left-0 top-[86px] 2xl:top-[57px]">
+                <div className="flex items-center gap-x-[10px]">
+                  <GTPIcon icon="gtp-metrics-chains-grouping" size={"sm"} />
+                  <div className="heading-small-xs">Composition</div>
+                </div>
+                <div className="text-xs text-left ">
+                  <span>You can see where most addresses are active.</span>
+                  <ul className="list-disc list-inside -indent-3 pl-3">
+                    <li>Ethereum Mainnet: addresses that only interacted with the L1 ("Total Ecosystem" needs to be toggled)</li>
+                    <li>Cross-Layer: addresses that interacted with L1 and at least one L2</li>
+                    <li>Multiple L2s: addresses that interacted with multiple L2s</li>
+                    <li>Single L2: addresses that interacted with a single L2</li>
+                  </ul>
+                </div>
+              </div>
+         
 
             </TopRowChild>
             <TopRowChild
               isSelected={"percentage" === selectedScale}
               roundedClassName="rounded-[12px] sm:rounded-full"
-              className={"!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
+              className={"!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4 relative group/compositionsplit"}
               onClick={() => {
                 setShowTotalUsers(false);
                 setSelectedScale("percentage");
@@ -1347,41 +1308,22 @@ export default function LandingChart({
                 setHoveredMetric(null);
               }}
             >
+              {/*Title Area */}
              <div className="flex items-center justify-center gap-x-[5px] relative w-full">
-                {/* <div>{!isMobile ? textToggles.toggle[focusEnabled ? "l2" : "total"] : focusEnabled ? "Total L2 Ecosystem" : "Total ETH Ecosystem"}</div> */}
-                <Tooltip placement="bottom" allowInteract={false} open={hoveredMetric === "Composition Split"}>
-                  <TooltipTrigger className="">
-                    <div className="flex items-center justify-center  gap-x-[5px]">
+                  <div className="flex items-center justify-center  gap-x-[5px]">
                       <GTPIcon icon="gtp-metrics-chains-percentage" size={isLessThan2xl ? "sm" : "md"} />
-                      <div>{isLessThan2xl ? "Comp. Split" : "Composition Split"}</div>
+                      <div className="">{isLessThan2xl ? "Comp. Split" : "Composition Split"}</div>
                     </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <div className="flex flex-col  items-center relative md:top-[75px] top-[10px] -right-[0px] md:-right-[140px] lg:top-[75px] lg:-right-[225px] 2xl:-right-[135px] 2xl:top-[15px] ">
-                      <div className="p-[15px] text-sm bg-[#1F2726] text-forest-100 rounded-xl shadow-lg flex max-w-fit lg:max-w-[460px] flex-col z-50  shadow-black ">
-                        <div className="flex items-center gap-x-[10px] ">
-                          <GTPIcon icon="gtp-metrics-chains-percentage" size={isLessThan2xl ? "sm" : "md"} />
-                          <div className="heading-small-xs">{                    
-                          <Heading id="layer-2-traction-title" className={"heading-small-xs"}>
-                            <motion.span
-                              key={isLessThan2xl ? "Comp. Split" : "Composition Split"} // Unique key forces animation on change
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              exit={{ opacity: 0 }}
-                              transition={{ duration: 0.3, ease: "easeInOut" }}
-                            >
-                              <div>{isLessThan2xl ? "Comp. Split" : "Composition Split"}</div>
-                            </motion.span>
-                          </Heading>
-                          }
-                          </div>
-                        </div>
-                        <div className="text-xs font-normal text-wrap mt-[5px]">You can see the composition breakdown relative to each other which allows you to gain an understanding of where activity in the Ethereum ecosystem is taking place and how it shifts over time.</div>
-                       
-                      </div>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
+              </div>
+              {/*Tooltip area: */}
+              <div className="bg-[#1F2726] z-10 p-[15px] absolute rounded-[15px] shadow-2xl transition-all flex-col gap-y-[5px] min-w-[300px] opacity-0 group-hover/compositionsplit:opacity-100 duration-200 sm:min-w-[420px] right-0 2xl:right-auto 2xl:left-0 top-[86px] 2xl:top-[57px]">
+                <div className="flex items-center gap-x-[10px]">
+                  <GTPIcon icon="gtp-metrics-chains-percentage" size={"sm"} />
+                  <div className="heading-small-xs">Composition Split</div>
+                </div>
+                <div className="text-xs text-left ">
+                  You can see the composition breakdown relative to each other which allows you to gain an understanding of where activity in the Ethereum ecosystem is taking place and how it shifts over time.
+                </div>
               </div>
             </TopRowChild>
           </TopRowParent>
