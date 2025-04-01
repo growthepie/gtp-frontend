@@ -8,4 +8,5 @@ export const Sources = {
   Chainbase: "https://chainbase.com/",
   RPC: "https://www.growthepie.xyz/",
   OLI: "https://www.openlabelsinitiative.org/",
+  growthepie: "https://www.growthepie.xyz/",
 };

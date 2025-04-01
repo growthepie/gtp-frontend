@@ -428,7 +428,7 @@ const Notification = () => {
                           target="_blank"
                         >
                           <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[8px]">
-                            <div className="h-[17px] font-bold text-[16px]">
+                            <div className="min-h-[17px] font-bold text-[16px]">
                               {item.desc}
                             </div>
                             <div className="h-auto text-[14px] leading-snug">

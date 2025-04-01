@@ -28,7 +28,7 @@ export default function QuestionAnswer({
   return (
     <div className={`rounded-[40px] bg-forest-50 dark:bg-[#1F2726] px-[30px] py-[23px] flex flex-col ${className}`}>
       <div
-        className={`flex items-center cursor-pointer space-x-[10px] leading-[133%] ${questionClassName}`}
+        className={`flex items-center cursor-pointer space-x-[10px] ${questionClassName}`}
         onClick={() => setOpen(!open)}
       >
         <div className={`flex w-[24px] h-[24px] md:w-[24px] md:h-[24px] items-center justify-center  transform rotate-0 transition-transform duration-300 ${open ? "rotate-90" : "rotate-0"
@@ -46,10 +46,10 @@ export default function QuestionAnswer({
 
 
         </div>
-        <div className={`font-semibold text-[16px] md:text-[24px]`}>{question}</div>
+        <div className={`font-semibold leading-[133%] heading-small-sm md:heading-small-md`}>{question}</div>
       </div>
       <div
-        className={`transition-height duration-300 overflow-hidden text-[16px] ${answerClassName}`}
+        className={`transition-height duration-300 overflow-hidden text-md ${answerClassName}`}
         style={{
           height: open ? height : 0,
         }}
@@ -61,7 +61,7 @@ export default function QuestionAnswer({
       {
         note && (
           <div
-            className={`transition-height duration-300 overflow-hidden text-[16px] ${answerClassName}`}
+            className={`transition-height duration-300 overflow-hidden text-md ${answerClassName}`}
             style={{
               maxHeight: open ? 300 : 0,
             }
