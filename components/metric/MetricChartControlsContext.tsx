@@ -196,8 +196,7 @@ export const MetricChartControlsProvider = ({
         (chain.ecosystem.includes("all-chains") &&
           ["arbitrum", "optimism", "base", "linea", "zksync_era"].includes(
             chain.key,
-          )) ||
-        chain.key === "ethereum",
+          ))
     ).map((chain) => chain.key) : allChains.map((chain) => chain.key),
   );
 
@@ -262,7 +261,7 @@ export const MetricChartControlsProvider = ({
     if (showEthereumMainnet) {
       setSelectedChains([...selectedChains, "ethereum"]);
     } else {
-      setSelectedChains(selectedChains.filter((chain) => chain !== "ethereum"));
+      setSelectedChains(selectedChains);
     }
   }, [metric_type, showEthereumMainnet]);
 

@@ -96,6 +96,7 @@ export const MetricDataProvider = ({ children, metric, metric_type }: MetricData
   } = useSWR<MetricsResponse>(UrlsMap[metric_type][metric]);
 
   const chainKeys = useMemo(() => {
+   
     if (metric_type === "fundamentals") {
       if (!data)
         return AllChains.filter((chain) =>
