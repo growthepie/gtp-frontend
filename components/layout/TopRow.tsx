@@ -19,8 +19,8 @@ export function TopRowChild({
   style?: React.CSSProperties;
   roundedClassName?: string;
   onClick?: () => void;
-  onMouseEnter?: () => void;
-  onMouseLeave?: () => void;
+  onMouseEnter?: React.MouseEventHandler<HTMLButtonElement>; // Updated type
+  onMouseLeave?: React.MouseEventHandler<HTMLButtonElement>; // Updated type
 }) {
   return (
     <button
