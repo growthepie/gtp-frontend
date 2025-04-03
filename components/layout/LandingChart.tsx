@@ -447,6 +447,7 @@ export default function LandingChart({
     focusEnabled: focusEnabled,
     showEthereumMainnet: showEthereumMainnet,
     compositionTypes: chartConfig?.compositionTypes,
+    enableTotal: selectedMetric !== "Composition Split",
   }), [selectedScale, selectedMetric, theme, focusEnabled, showEthereumMainnet, chartConfig?.compositionTypes]);
 
   const tooltipPositioner =
@@ -1238,7 +1239,7 @@ export default function LandingChart({
                   <div className="">{isLessThan2xl ? focusEnabled ? "L2 Ecosystem" : "ETH Ecosystem" : focusEnabled ? "Layer 2 Ecosystem" : "Total Ethereum Ecosystem"}</div>
                 </div>
               </div>
-              <div className="bg-[#1F2726] z-10 p-[15px] absolute rounded-[15px] shadow-2xl transition-all opacity-0 group-hover/ecosystem:opacity-100 flex-col gap-y-[5px] min-w-[300px] sm:min-w-[400px] left-0 top-[86px] 2xl:top-[57px] flex">
+              <div className="bg-[#1F2726] group-hover:pointer-events-auto pointer-events-none  z-10 p-[15px] absolute rounded-[15px] shadow-2xl transition-all opacity-0 group-hover/ecosystem:opacity-100 flex-col gap-y-[5px] min-w-[300px] sm:min-w-[400px] left-0 top-[86px] 2xl:top-[57px] flex">
                 <div className="flex items-center gap-x-[10px]">
                   <GTPIcon icon="gtp-metrics-ethereum-ecosystem" size={"sm"} />
                   <div className="heading-small-xs">{focusEnabled ? "Layer 2 Ecosystem" : "Total Ethereum Ecosystem"}</div>
@@ -1274,7 +1275,7 @@ export default function LandingChart({
 
               </div>
               {/*Tooltip area: */}
-              <div className="bg-[#1F2726] z-10 p-[15px] absolute rounded-[15px] shadow-2xl transition-all flex-col gap-y-[5px] min-w-[300px] opacity-0 group-hover/composition:opacity-100 duration-200 sm:min-w-[420px] left-0 right-0 2xl:right-auto 2xl:left-0 top-[86px] 2xl:top-[57px]">
+              <div className="bg-[#1F2726] group-hover:pointer-events-auto pointer-events-none  z-10 p-[15px] absolute rounded-[15px] shadow-2xl transition-all flex-col gap-y-[5px] min-w-[300px] opacity-0 group-hover/composition:opacity-100 duration-200 sm:min-w-[420px] left-0 right-0 2xl:right-auto 2xl:left-0 top-[86px] 2xl:top-[57px]">
                 <div className="flex items-center gap-x-[10px]">
                   <GTPIcon icon="gtp-metrics-chains-grouping" size={"sm"} />
                   <div className="heading-small-xs">Composition</div>
@@ -1309,14 +1310,14 @@ export default function LandingChart({
               }}
             >
               {/*Title Area */}
-             <div className="flex items-center justify-center gap-x-[5px] relative w-full">
+             <div className="flex items-center justify-center gap-x-[5px] relative w-full ">
                   <div className="flex items-center justify-center  gap-x-[5px]">
                       <GTPIcon icon="gtp-metrics-chains-percentage" size={isLessThan2xl ? "sm" : "md"} />
                       <div className="">{isLessThan2xl ? "Comp. Split" : "Composition Split"}</div>
                     </div>
               </div>
               {/*Tooltip area: */}
-              <div className="bg-[#1F2726] z-10 p-[15px] absolute rounded-[15px] shadow-2xl transition-all flex-col gap-y-[5px] min-w-[300px] opacity-0 group-hover/compositionsplit:opacity-100 duration-200 sm:min-w-[420px] right-0 2xl:right-auto 2xl:left-0 top-[86px] 2xl:top-[57px]">
+              <div className="bg-[#1F2726] group-hover:pointer-events-auto pointer-events-none z-10 p-[15px] absolute rounded-[15px] shadow-2xl transition-all flex-col gap-y-[5px] min-w-[300px] opacity-0 group-hover/compositionsplit:opacity-100 duration-200 sm:min-w-[420px] right-0 2xl:right-auto 2xl:left-0 top-[86px] 2xl:top-[57px]">
                 <div className="flex items-center gap-x-[10px]">
                   <GTPIcon icon="gtp-metrics-chains-percentage" size={"sm"} />
                   <div className="heading-small-xs">Composition Split</div>
