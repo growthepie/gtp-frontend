@@ -11,7 +11,6 @@ const fetchProjectName = async (owner_project: string): Promise<string> => {
     return owner_project;
   }
   const projectName = projectsData[owner_project].displayName;
-  console.log(projectName);
   return projectName;
 }
 

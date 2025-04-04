@@ -1,6 +1,3 @@
-// lib/metadata.ts
-import { unstable_noStore as noStore } from 'next/cache';
-
 const hardcodedMetadataArray = [
   {
     "Path": "/",
@@ -219,7 +216,6 @@ hardcodedMetadataArray.forEach((record) => {
   }
 });
 
-console.log(`Processed ${allMetadataMap.size} hardcoded metadata records.`);
 
 // --- Function to Get the Processed Map ---
 export async function getAllMetadata(): Promise<MetadataMap> {
