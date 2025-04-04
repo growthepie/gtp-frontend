@@ -1,32 +1,10 @@
 // @ts-ignore
 import { ISitemapField, getServerSideSitemap } from "next-sitemap";
 import { navigationItems } from "@/lib/navigation";
-import { ApplicationsURLs, MasterURL } from "@/lib/urls";
-import { AppOverviewResponse } from "@/types/applications/AppOverviewResponse";
-
-
+import { MasterURL } from "@/lib/urls";
 
 export async function GET(request: Request) {
-  // ["1d", "7d", "30d", "90d", "365d", "max"].map((timeframe) => ApplicationsURLs.overview.replace('{timespan}', `${timeframe}`))
-
-  const apps = new Set<string>();
-  // we need to fetch all the apps for each timespan and get a SET of the owner_projects
-  const timespans = ["1d", "7d", "30d", "90d", "365d", "max"];
-  for (const timespan of timespans) {
-    const appsResp = await fetch(ApplicationsURLs.overview.replace('{timespan}', `${timespan}`));
-    const appsData = await appsResp.json() as AppOverviewResponse;
-    const appsTypes = appsData.data.types;
-    const owner_project_index = appsTypes.indexOf("owner_project");
-    const appsPages = appsData.data.data.map((app) => {
-      return `https://www.growthepie.xyz/applications/${app[owner_project_index]}`;
-    });
-    appsPages.forEach((app) => apps.add(app));
-  }
-
-
-
-
-  const pages = [...navigationItems
+  const pages = navigationItems
     .map((item) => {
       return item.options
         .filter(
@@ -37,10 +15,7 @@ export async function GET(request: Request) {
         )
         .map((option) => `https://www.growthepie.xyz${option.url}`);
     })
-    .flat(),
-    ...apps,
-  ];
-  
+    .flat();
 
   const getDate = () => {
     const date = new Date();
@@ -58,7 +33,8 @@ export async function GET(request: Request) {
           !page.includes("/api/") &&
           !page.includes("/[") &&
           !page.includes("/_") &&
-          !page.includes("404"),
+          !page.includes("404") &&
+          !page.includes("/applications/"), // Exclude applications routes
       )
       .map(
         (page): ISitemapField => ({
