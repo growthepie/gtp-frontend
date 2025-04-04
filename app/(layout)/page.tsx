@@ -19,23 +19,17 @@ import { SectionButtonLink } from "@/components/layout/TextHeadingComponents";
 import { useLocalStorage } from "usehooks-ts";
 // import { LandingURL } from "@/lib/urls";
 import {LandingFirstHeaders, LandingSecondHeaders} from "@/components/home/LandingHeaders";
+import { getPageMetadata } from "@/lib/metadata";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return {
-    title:
-      "Ethereum Layer 2 Engagement - growthepie",
-    description:
-      "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
-  };
+  const metadata = await getPageMetadata(
+    "/",
+    {}
+  );
+  return metadata;
 }
-/** */
+
 export default async function Page() {
-
-
-
-
-
-
   return (
     <>
       <Container className="flex flex-col flex-1 w-full pt-[65px] md:pt-[30px] gap-y-[10px]">

@@ -3,12 +3,16 @@ import Container from "@/components/layout/Container";
 import Heading from "@/components/layout/Heading";
 import { Metadata } from "next";
 import { OctantProviders } from "./OctantDataProvider";
+import { getPageMetadata } from "@/lib/metadata";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const metadata = await getPageMetadata(
+    "/trackers/octant",
+    {}
+  );
   return {
-    title: "Octant Epoch Tracker",
-    description:
-      "Track donations and rewards for the projects in current and past Octant epochs.",
+    title: metadata.title,
+    description: metadata.description,
   };
 }
 
