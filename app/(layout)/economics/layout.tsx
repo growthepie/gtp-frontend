@@ -5,13 +5,16 @@ import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import Image from "next/image";
 import Link from "next/link";
 import { Metadata } from "next";
-
+import { getPageMetadata } from "@/lib/metadata";
 
 export async function generateMetadata(): Promise<Metadata> {  
-  
+  const metadata = await getPageMetadata(
+    '/economics',
+    {}
+  );
   return {
-    title: "Ethereum Layer 2 - Onchain Economics",
-    description: "Compare Layer 2 blockchain profitability with analytics on revenue, costs, and profit margins. Track Ethereum L2 economic performance across Base, Arbitrum, Linea and more, with detailed breakdowns of L1 settlement costs and data availability expenses.",
+    title: metadata.title,
+    description: metadata.description,
   };
 }
 

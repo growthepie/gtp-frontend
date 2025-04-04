@@ -73,11 +73,6 @@ const nextConfig = {
   },
   async redirects() {
     return [
-      // {
-      //   source: "/applications",
-      //   destination: "/applications",
-      //   permanent: false,
-      // },
       {
         source: "/data-availability/blob-producers",
         destination: "/data-availability/da-consumers",
@@ -91,6 +86,11 @@ const nextConfig = {
       {
         source: "/labels",
         destination: "https://labels.growthepie.xyz/",
+        permanent: true,
+      },
+      {
+        source: "/icons",
+        destination: "https://icons.growthepie.xyz/",
         permanent: true,
       },
       {

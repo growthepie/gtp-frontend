@@ -72,13 +72,9 @@ export const viewport = {
 };
 
 const gtpMain = {
-  title: {
-    absolute:
-      "Growing Ethereum - growthepie",
-    template: "%s - growthepie",
-  },
+  title: "growthepie – Ethereum Ecosystem Analytics",
   description:
-    "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
+    "Comprehensive data and insights across Ethereum Layer 1 and Layer 2 networks. Visualize usage, economics, and growth of the entire Ethereum ecosystem.",
 };
 
 const gtpFees = {
