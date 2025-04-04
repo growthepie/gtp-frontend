@@ -6,6 +6,7 @@ const gtpMain = {
   generateRobotsTxt: true,
   exclude: [
     "/server-sitemap.xml",
+    "/applications-sitemap.xml",
     "/blog",
     "/api/*",
     "/embed/*",
@@ -22,8 +23,11 @@ const gtpMain = {
     "/refactor",
   ],
   robotsTxtOptions: {
-    exclude: ["/server-sitemap.xml"],
-    additionalSitemaps: [`https://www.growthepie.xyz/server-sitemap.xml`],
+    exclude: ["/server-sitemap.xml", "/server-applications-sitemap.xml"],
+    additionalSitemaps: [
+      `https://www.growthepie.xyz/server-sitemap.xml`,
+      `https://www.growthepie.xyz/server-applications-sitemap.xml`
+    ],
   },
 };
 
