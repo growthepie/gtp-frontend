@@ -469,9 +469,39 @@ const Filters = () => {
 
 const SearchContainer = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="fixed top-[80px] md:top-[33px] left-[50%] translate-x-[-50%] z-[111] w-[calc(100vw-20px)] md:w-[660px] max-h-[calc(100vh-100px)] p-2.5 bg-[#344240] rounded-[32px] shadow-[0px_0px_50px_0px_rgba(0,0,0,1.00)] inline-flex justify-start items-center gap-[15px]">
-      <div className="flex-1 bg-[#151A19] rounded-[22px] flex justify-start items-center gap-2.5">
+    <div className="fixed top-[80px] md:top-[33px] left-[50%] translate-x-[-50%] z-[111] w-[calc(100vw-20px)] md:w-[660px] max-h-[calc(100vh-100px)] p-2.5 bg-[#344240] rounded-[32px] shadow-[0px_0px_50px_0px_rgba(0,0,0,1.00)] flex flex-col justify-start items-center gap-[0px]">
+      <div className="flex-1 w-full bg-[#151A19] rounded-[22px] flex justify-start items-center gap-2.5">
         {children}
+      </div>
+      <div className="flex px-[10px] pt-[7px] pb-[5px] items-start gap-[15px] self-stretch">
+        <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px]">
+          <svg xmlns="http://www.w3.org/2000/svg" width="70" height="21" viewBox="0 0 70 21" fill="none">
+            <rect x="24" width="22" height="10" rx="2" fill="#151A19"/>
+            <path d="M32.6708 6.77639L34.5528 3.01246C34.737 2.64394 35.263 2.64394 35.4472 3.01246L37.3292 6.77639C37.4954 7.10884 37.2537 7.5 36.882 7.5H33.118C32.7463 7.5 32.5046 7.10884 32.6708 6.77639Z" fill="#CDD8D3" stroke="#CDD8D3"/>
+            <rect y="11" width="22" height="10" rx="2" fill="#151A19"/>
+            <path d="M12.8336 18.0581L8.33821 16.4715C7.89343 16.3145 7.89343 15.6855 8.33822 15.5285L12.8336 13.9419C13.1589 13.8271 13.5 14.0684 13.5 14.4134L13.5 17.5866C13.5 17.9316 13.1589 18.1729 12.8336 18.0581Z" fill="#CDD8D3" stroke="#CDD8D3"/>
+            <rect x="48" y="11" width="22" height="10" rx="2" fill="#151A19"/>
+            <path d="M57.1664 13.9419L61.6618 15.5285C62.1066 15.6855 62.1066 16.3145 61.6618 16.4715L57.1664 18.0581C56.8411 18.1729 56.5 17.9316 56.5 17.5866L56.5 14.4134C56.5 14.0684 56.8411 13.8271 57.1664 13.9419Z" fill="#CDD8D3" stroke="#CDD8D3"/>
+            <rect x="24" y="11" width="22" height="10" rx="2" fill="#151A19"/>
+            <path d="M37.3292 14.2236L35.4472 17.9875C35.263 18.3561 34.737 18.3561 34.5528 17.9875L32.6708 14.2236C32.5046 13.8912 32.7463 13.5 33.118 13.5L36.882 13.5C37.2537 13.5 37.4954 13.8912 37.3292 14.2236Z" fill="#CDD8D3" stroke="#CDD8D3"/>
+          </svg>
+          <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional">Move</div>
+        </div>
+        <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px] flex-[1_0_0]">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="21" viewBox="0 0 22 21" fill="none">
+            <rect y="0.5" width="22" height="20" rx="2" fill="#151A19"/>
+            <path d="M16 5.5V12.5C16 13.0523 15.5523 13.5 15 13.5H9" stroke="#CDD8D3" stroke-width="2"/>
+            <path d="M10.3336 15.5581L5.83821 13.9715C5.39343 13.8145 5.39343 13.1855 5.83822 13.0285L10.3336 11.4419C10.6589 11.3271 11 11.5684 11 11.9134L11 15.0866C11 15.4316 10.6589 15.6729 10.3336 15.5581Z" fill="#CDD8D3" stroke="#CDD8D3"/>
+          </svg>
+          <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional">Select</div>
+        </div>
+        <div className="w-[7px] h-[8px]"></div>
+        <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px]">
+          <div className="w-[22px] h-[20px] shrink-0 br-[2px] bg-[#151A19] flex items-center justify-center">
+            <div className="text-[#CDD8D3] font-['Fira_Sans'] text-[9px] font-medium leading-[100%] tracking-[0.45px] font-feature-lining font-feature-tabular">ESC</div>
+          </div>
+          <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional">Close</div>
+        </div>
       </div>
     </div>
   )

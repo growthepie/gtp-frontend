@@ -96,10 +96,10 @@ export default function Header() {
         <div className="items-center z-10 hidden md:flex md:gap-x-[20px]">
           <FocusSwitch />
           <EthUsdSwitch />
-          {IS_DEVELOPMENT && <HeaderSearchButton />}
+          <HeaderSearchButton />
         </div>
       </header>
-      {IS_DEVELOPMENT && <SearchComponent /> }
+      <SearchComponent />
     </>
   );
 }
