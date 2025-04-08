@@ -278,7 +278,7 @@ const ApplicationsTable = memo(() => {
   const gridColumns = useMemo(() => {
       const applicationColumnWidth = selectedMetricKeys.length > 2 ? 165 : 285;
       const metricColumnWidth = selectedMetricKeys.length > 2 ? 242 : 262;
-      return `26px ${applicationColumnWidth}px 110px minmax(150px,800px) 95px ${selectedMetricKeys.map(() => `${metricColumnWidth}px`).join(" ")} ${(new Array(numTotalMetrics - selectedMetricKeys.length).fill(0).map(() => "0px").join(" "))} 29px`;
+      return `26px ${applicationColumnWidth}px 166px minmax(150px,800px) 95px ${selectedMetricKeys.map(() => `${metricColumnWidth}px`).join(" ")} ${(new Array(numTotalMetrics - selectedMetricKeys.length).fill(0).map(() => "0px").join(" "))} 29px`;
     },[numTotalMetrics, selectedMetricKeys]
   );
 
@@ -626,7 +626,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
   const gridColumns = useMemo(() => {
       const applicationColumnWidth = selectedMetricKeys.length > 2 ? 165 : 285;
       const metricColumnWidth = selectedMetricKeys.length > 2 ? 242 : 262;
-      return `26px ${applicationColumnWidth}px 110px minmax(150px,800px) 95px ${selectedMetricKeys.map(() => `${metricColumnWidth}px`).join(" ")} ${(new Array(numTotalMetrics - selectedMetricKeys.length).fill(0).map(() => "0px").join(" "))} 29px`;
+      return `26px ${applicationColumnWidth}px 166px minmax(150px,800px) 95px ${selectedMetricKeys.map(() => `${metricColumnWidth}px`).join(" ")} ${(new Array(numTotalMetrics - selectedMetricKeys.length).fill(0).map(() => "0px").join(" "))} 29px`;
     },[numTotalMetrics, selectedMetricKeys]
   );
 
