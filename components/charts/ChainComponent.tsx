@@ -695,8 +695,8 @@ const ChainComponent = memo(function ChainComponent({
         let tooltipTotal = points.reduce((acc: number, point: any) => acc + (point.y || 0), 0);        
         
         tooltipPoints += `
-          <div class="flex w-full space-x-2 items-center font-medium mb-1">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${"#E0E7E6"
+          <div class="flex w-full h-[15px] mt-[5px] space-x-2 items-center font-medium mb-1">
+            <div class="w-3.5 h-1.5 rounded-r-full" style="background-color: ${"transparent"
             }"></div>
             <div class="tooltip-point-name text-xs">${"Total"
             }</div>
