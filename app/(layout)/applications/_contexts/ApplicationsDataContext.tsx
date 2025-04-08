@@ -358,7 +358,7 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
     isLoading: applicationsTimespanLoading,
     isValidating: applicationsTimespanValidating,
   } = useSWR(
-    ["1d", "7d", "30d", "90d", "365d", "max"].map((timeframe) => ApplicationsURLs.overview.replace('{timespan}', `${timeframe}`)), multiFetcher);
+    ["1d", "7d", "30d", "90d", "365d", "max"].map((timeframe) => ApplicationsURLs.overview.replace('{timespan}', `${timeframe}`)), fetcher || multiFetcher);
 
   const applicationDataFiltered = useMemo(() => {
     if (!applicationsTimespan) return [];
