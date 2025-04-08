@@ -33,17 +33,35 @@ const requestOptions = {
   headers: headers,
 };
 
+const singleOrMultiFetcher = (urlOrUrls) => {
+  if (Array.isArray(urlOrUrls)) {
+    return Promise.all(urlOrUrls.map(url => fetch(url, requestOptions).then((r) => r.json())));
+  }
+  return fetch(urlOrUrls, requestOptions).then((r) => r.json());
+};
+
 const devMiddleware = (useSWRNext) => {
   return (key, fetcher, config) => {
+    console.log("devMiddleware", key, fetcher, config);
     return useSWRNext(
       key,
-      (url) => {
-        if (url.includes("api.growthepie.xyz")) {
-          // replace /v1/ with /dev/ to get JSON files from the dev folder in S3
-          let newUrl = url.replace("/v1/", "/dev/");
-          return fetch(newUrl, requestOptions).then((r) => r.json());
+      (urlOrUrls) => {
+        if (Array.isArray(urlOrUrls)) {
+          return Promise.all(urlOrUrls.map(url => {
+            if (url.includes("api.growthepie.xyz")) {
+              // replace /v1/ with /dev/ to get JSON files from the dev folder in S3
+              let newUrl = url.replace("/v1/", "/dev/");
+              return fetcher(newUrl);
+            }
+            return fetcher(url);
+          }));
         } else {
-          return fetch(url, requestOptions).then((r) => r.json());
+          if (urlOrUrls.includes("api.growthepie.xyz")) {
+            // replace /v1/ with /dev/ to get JSON files from the dev folder in S3
+            let newUrl = urlOrUrls.replace("/v1/", "/dev/");
+            return fetcher(newUrl);
+          }
+          return fetcher(urlOrUrls);
         }
       },
       config,
@@ -63,7 +81,7 @@ export function Providers({ children, forcedTheme }: ProvidersProps) {
     >
       <SWRConfig
         value={{
-          fetcher: (url) => fetch(url, requestOptions).then((r) => r.json()),
+          fetcher: singleOrMultiFetcher,
           use: apiRoot === "dev" && !IS_PRODUCTION ? [devMiddleware] : [],
           // refreshInterval: 1000 * 60 * 60, // 1 hour
         }}

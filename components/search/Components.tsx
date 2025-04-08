@@ -430,8 +430,8 @@ const Filters = () => {
   // if (!query || totalMatches === 0) return null;
 
   return (
-    <div className="flex flex-col-reverse md:flex-col !pt-0 !pb-0 pl-[12px] pr-[25px] gap-y-[10px] text-[10px] max-h-[calc(100vh-180px)] overflow-y-auto">
-      {query && allFilteredData.length > 0 && <div className="flex flex-col-reverse md:flex-col pt-[10px] pb-[20px] pl-[12px] pr-[25px] gap-y-[10px] text-[10px]">
+    <div className="flex flex-col-reverse md:flex-col !pt-0 !pb-0 pl-[12px] pr-[25px] gap-y-[10px] text-[10px] max-h-[calc(100vh-220px)] overflow-y-auto">
+      {query && allFilteredData.length > 0 && <div className="flex flex-col-reverse md:flex-col pt-[10px] pb-[10px] pl-[12px] pr-[25px] gap-y-[10px] text-[10px]">
           {allFilteredData.map(({ type, icon, filteredData }) => {
             // Only render section if there are matching items
             return (
@@ -468,12 +468,51 @@ const Filters = () => {
 }
 
 const SearchContainer = ({ children }: { children: React.ReactNode }) => {
+  const { allFilteredData } = useSearchBuckets();
+  const searchParams = useSearchParams();
+  const query = searchParams.get("query");
+  const [hasOverflow, setHasOverflow] = useState(false);
+  const [isScreenTall, setIsScreenTall] = useState(false);
+  
+  const showKeyboardShortcuts = query && allFilteredData.length > 0 && isScreenTall;
+
+  // Add a ref to check for overflow
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Check for overflow when content changes
+  useEffect(() => {
+    if (contentRef.current) {
+      const hasVerticalOverflow = contentRef.current.scrollHeight > contentRef.current.clientHeight;
+      setHasOverflow(hasVerticalOverflow);
+    }
+  }, [allFilteredData, query]);
+
+  // Add effect to check screen height
+  useEffect(() => {
+    const checkScreenHeight = () => {
+      setIsScreenTall(window.innerHeight >= 500);
+    };
+    
+    // Initial check
+    checkScreenHeight();
+    
+    // Add listener for resize events
+    window.addEventListener('resize', checkScreenHeight);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkScreenHeight);
+  }, []);
+
   return (
-    <div className="fixed top-[80px] md:top-[33px] left-[50%] translate-x-[-50%] z-[111] w-[calc(100vw-20px)] md:w-[660px] max-h-[calc(100vh-100px)] p-2.5 bg-[#344240] rounded-[32px] shadow-[0px_0px_50px_0px_rgba(0,0,0,1.00)] flex flex-col justify-start items-center gap-[0px]">
-      <div className="flex-1 w-full bg-[#151A19] rounded-[22px] flex justify-start items-center gap-2.5">
-        {children}
+    <div className="fixed top-[80px] md:top-[33px] left-[50%] translate-x-[-50%] z-[111] w-[calc(100vw-20px)] md:w-[660px] max-h-[calc(100vh-100px)] p-2.5 bg-[#344240] rounded-[32px] shadow-[0px_0px_50px_0px_rgba(0,0,0,1.00)] flex flex-col justify-start items-center">
+      {/* Add a wrapper div that will handle the overflow */}
+      <div ref={contentRef} className="w-full flex-1 overflow-hidden flex flex-col min-h-0">
+        <div className={`w-full bg-[#151A19] rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>
+          {children}
+        </div>
       </div>
-      <div className="flex px-[10px] pt-[7px] pb-[5px] items-start gap-[15px] self-stretch">
+      {/* The keyboard shortcuts will now stay at the bottom */}
+      <div className={`flex px-[10px] pt-2 pb-[5px] items-start gap-[15px] self-stretch flex-shrink-0 ${!showKeyboardShortcuts ? 'hidden' : ''}`}>
         <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px]">
           <svg xmlns="http://www.w3.org/2000/svg" width="70" height="21" viewBox="0 0 70 21" fill="none">
             <rect x="24" width="22" height="10" rx="2" fill="#151A19"/>
@@ -497,8 +536,8 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
         </div>
         <div className="w-[7px] h-[8px]"></div>
         <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px]">
-          <div className="w-[22px] h-[20px] shrink-0 br-[2px] bg-[#151A19] flex items-center justify-center">
-            <div className="text-[#CDD8D3] font-['Fira_Sans'] text-[9px] font-medium leading-[100%] tracking-[0.45px] font-feature-lining font-feature-tabular">ESC</div>
+          <div className="w-[22px] h-[20px] shrink-0 rounded-[2px] bg-[#151A19] flex items-center justify-center">
+            <div className="w-[22px] h-[20px] shrink-0 rounded-[2px] bg-[#151A19] flex items-center justify-center mt-[1px] text-[#CDD8D3] numbers-xxxs">ESC</div>
           </div>
           <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional">Close</div>
         </div>

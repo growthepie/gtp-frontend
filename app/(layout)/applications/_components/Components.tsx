@@ -20,6 +20,7 @@ import { useTimespan } from "../_contexts/TimespanContext";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import { useLocalStorage } from "usehooks-ts";
 import { debounce } from "lodash";
+import { useSearchParamState } from "@/hooks/useSearchParamState";
 
 type ApplicationIconProps = {
   owner_project: string;
@@ -759,14 +760,31 @@ Links.displayName = 'Links';
 
 export const Chains = ({ origin_keys }: { origin_keys: string[] }) => {
   const { AllChainsByKeys } = useMaster();
+  const [focusEnabled] = useLocalStorage("focusEnabled", false)
   const { selectedChains, setSelectedChains } = useApplicationsData();
+  
+  // Number of chains to display initially
+  const [visibleCount, setVisibleCount] = useSearchParamState<number>("maxChains", {
+    defaultValue: 5,
+  });
+  const hiddenCount = origin_keys.length - visibleCount;
+
+  const hasEthereum = origin_keys.includes("ethereum");
+
+  const origin_keys_filtered = !focusEnabled && hasEthereum ? ["ethereum", ...origin_keys.filter((key) => key !== "ethereum")] : origin_keys.filter((key) => key !== "ethereum");
+
+  // Create visible and hidden chains arrays
+  const visibleChains = origin_keys_filtered.slice(0, visibleCount);
+  const hiddenChains = origin_keys_filtered.slice(visibleCount);
 
   return (
-    <div className="flex items-center gap-x-[0px] group/chains">
-      {origin_keys.map((chain, index) => (
+    <div className="flex items-center gap-x-[5px] group/chains">
+      <div className="flex items-center gap-x-[0px]">
+      {visibleChains.map((chain, index) => (
         <div
           key={index}
-          className={`group-hover/chains:opacity-50 hover:!opacity-100 cursor-pointer p-[2.5px] ${selectedChains.includes(chain) || selectedChains.length === 0 ? '' : '!text-[#5A6462]'}`} style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors["dark"][0] : '' }}
+          className={`group-hover/chains:opacity-50 hover:!opacity-100 cursor-pointer p-[2.5px] ${selectedChains.includes(chain) || selectedChains.length === 0 ? '' : '!text-[#5A6462]'}`} 
+          style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors["dark"][0] : '' }}
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
@@ -778,25 +796,26 @@ export const Chains = ({ origin_keys }: { origin_keys: string[] }) => {
           }}
         >
           {AllChainsByKeys[chain] && (
-            // <GridTableChainIcon origin_key={AllChainsByKeys[chain].key} color={AllChainsByKeys[chain].colors["dark"][0]} />
             <Icon
-              icon={`gtp:${AllChainsByKeys[
-                chain
-              ].urlKey
-                }-logo-monochrome`}
+              icon={`gtp:${AllChainsByKeys[chain].urlKey}-logo-monochrome`}
               className="w-[15px] h-[15px]"
             />
           )}
         </div>
       ))}
-      {/* <div className="rounded-full w-[47px] border border-[#344240] flex items-center justify-center">
-        more
-
-      </div> */}
+      </div>
+      {hiddenCount > 0 && (
+        <div 
+          className="h-[18px] px-[5px] py-0.5 rounded-[999px] outline outline-1 outline-offset-[-1px] outline-[#344240] flex justify-center items-center cursor-pointer"
+        >
+          <div className="text-[#5a6462] text-[10px] font-medium leading-[15px]">
+            +{hiddenCount} more
+          </div>
+        </div>
+      )}
     </div>
   );
 };
-
 export const Category = ({ category }: { category: string }) => {
   const getGTPCategoryIcon = (category: string): GTPIconName | "" => {
     switch (category) {
