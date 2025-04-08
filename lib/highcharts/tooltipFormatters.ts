@@ -367,7 +367,7 @@ export const createTooltipFormatter = (options: TooltipFormatterOptions) => {
       let visibleSum = visiblePoints.reduce((acc: number, point: TooltipPoint) => acc + point.y, 0);
 
       tooltip += `
-        <div class="flex w-full h-[15px] mt-[5px]  space-x-2 items-center font-medium mb-0.5 ">
+        <div class="flex w-full h-[15px] mt-[5px]  space-x-2 items-end font-medium mb-0.5 ">
           <div class="w-4 h-1.5 rounded-r-full" style="background-color: transparent"></div>
           <div class="tooltip-point-name ">Total</div>
           <div class="flex-1 text-right justify-end flex numbers-xs"> 
