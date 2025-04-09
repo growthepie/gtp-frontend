@@ -1279,7 +1279,7 @@ export default function LandingChart({
 
               </div>
               {/*Tooltip area: */}
-              <div className="bg-[#1F2726] group-hover:pointer-events-auto pointer-events-none  z-10 p-[15px] pl-[20px] absolute rounded-[15px] shadow-2xl transition-all flex-col gap-y-[5px] min-w-[300px] opacity-0 group-hover/composition:opacity-100 duration-200 sm:min-w-[420px] left-0 right-0 2xl:right-auto 2xl:left-0 top-[86px] 2xl:top-[57px]"
+              <div className="bg-background group-hover:pointer-events-auto pointer-events-none  z-10 p-[15px] pl-[20px] absolute rounded-[15px] shadow-2xl transition-all flex-col gap-y-[5px] min-w-[300px] opacity-0 group-hover/composition:opacity-100 duration-200 sm:min-w-[420px] left-0 right-0 2xl:right-auto 2xl:left-0 top-[86px] 2xl:top-[57px]"
                 style={{
                   boxShadow: "0px 0px 30px rgba(0, 0, 0, 1)",
                 }}
