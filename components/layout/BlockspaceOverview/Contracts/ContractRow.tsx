@@ -19,6 +19,8 @@ import {
   GridTableHeaderCell,
   GridTableRow,
 } from "@/components/layout/GridTable";
+import { GTPApplicationTooltip, GTPTooltipNew, OLIContractTooltip } from "@/components/tooltip/GTPTooltip";
+import { GTPIconName } from "@/icons/gtp-icon-names";
 
 export default function ContractRow({
   rowKey,
@@ -367,14 +369,37 @@ export default function ContractRow({
         <div className="flex justify-between">
           <div className="truncate">
             {sortedContracts[rowKey].project_name ? (
-              sortedContracts[rowKey].project_name
+            
+                <GTPTooltipNew
+                  placement="bottom-start"
+                  allowInteract={true}
+                  trigger={
+                    <div className="flex h-full items-center hover:underline cursor-pointer">
+                      {sortedContracts[rowKey].project_name}
+                    </div>
+                  }
+                  containerClass="flex flex-col gap-y-[10px]"
+                  positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+                >
+                    <GTPApplicationTooltip project_name={sortedContracts[rowKey].project_name} />
+                </GTPTooltipNew>
             ) : (
-              <div className="flex h-full items-center gap-x-[3px] text-[#5A6462] text-[10px]">
-                Not Available
-              </div>
+                <GTPTooltipNew
+                  placement="bottom-start"
+                  allowInteract={true}
+                  trigger={
+                    <div className="flex h-full items-center gap-x-[3px] text-[#5A6462] text-[10px] cursor-pointer select-none">
+                      Not Available
+                    </div>
+                  }
+                  containerClass="flex flex-col gap-y-[10px]"
+                  positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+                >
+                  <OLIContractTooltip icon="gtp-project-monochrome" iconClassName="text-[#5A6462]" project_name="Not Available" />
+                </GTPTooltipNew>
             )}
           </div>
-          {ownerProjectDisplayNameToProjectData[
+          {/* {ownerProjectDisplayNameToProjectData[
             sortedContracts[rowKey].project_name
           ] && (
               <div className="flex gap-x-[5px] pl-[15px]">
@@ -442,7 +467,7 @@ export default function ContractRow({
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
         </div>
         <div className="flex justify-between gap-x-[10px]">
           {sortedContracts[rowKey].name ? (

@@ -25,5 +25,13 @@
           - Footer (div)
             - styles: flex flex-col w-full
             - children - most will have pl-[15px] or pl-[20px], we'll leave lots of room for flexibility here
+    - Create prototype component
+      - defined prop types
+      - created tooltip container, header, body, footer
+    - Tested out on a couple real cases from Figma
+      - No changes needed (yet)
+    - positioning
+      - looked into libraries - floating-ui, popperjs
+        
             
           

@@ -21,6 +21,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Too
 import { useLocalStorage } from "usehooks-ts";
 import { debounce } from "lodash";
 import { useSearchParamState } from "@/hooks/useSearchParamState";
+import { Title, TitleButtonLink } from "@/components/layout/TextHeadingComponents";
 
 type ApplicationIconProps = {
   owner_project: string;
@@ -104,17 +105,52 @@ export const PageTitleAndDescriptionAndControls = () => {
     }
   }, []);
 
+  
   if(!urlOwnerProject) return (
     <>
       <div className="flex items-center h-[43px] gap-x-[8px]">
-        <GTPIcon icon="gtp-project" size="lg" />
-        <Heading className="heading-large-lg md:heading-large-xl h-[36px]" as="h1">
+        {/* <GTPIcon icon="gtp-project" size="lg" /> */}
+        {/* <Heading className="heading-large-lg md:heading-large-xl h-[36px]" as="h1">
           Applications
-           {/* {scrollY} {`${Math.min(0, -88 + scrollY)}px`} */}
-        </Heading>
+        </Heading> */}
+        <Title
+            icon="gtp-project"
+            title="Applications"
+            containerClassName="flex md:w-full md:items-center md:justify-between"
+            button={
+              <>
+                <TitleButtonLink
+                  label="Don’t see your app? Label here."
+                  icon="gtp-oli-logo"
+                  iconSize="md"
+                  iconBackground="bg-transparent"
+                  rightIcon={"feather:arrow-right" as GTPIconName}
+                  href="https://www.openlabelsinitiative.org/?gtp.applications"
+                  newTab
+                  gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
+                  className="w-fit hidden md:block"
+                />
+                
+                </>
+            }
+          />
       </div>
-      <div className="text-sm">
-        An overview of the most used applications across the Ethereum ecosystem.
+      <div className="flex items-end justify-between gap-x-[10px]">
+        <div className="text-sm">
+          An overview of the most used applications across the Ethereum ecosystem.
+        </div>
+        <div className="flex md:hidden">
+          <Link
+            href="https://www.openlabelsinitiative.org/?gtp.applications"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex !size-[36px] bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)] rounded-full justify-center items-center"
+          >
+            <div className="size-[34px] bg-[#1F2726] rounded-full flex justify-center items-center">
+              <GTPIcon icon="gtp-oli-logo" size="md" />
+            </div>
+          </Link>
+        </div>
       </div>
       <Search />
       <Controls />
@@ -767,6 +803,7 @@ export const Chains = ({ origin_keys }: { origin_keys: string[] }) => {
   const [visibleCount, setVisibleCount] = useSearchParamState<number>("maxChains", {
     defaultValue: 5,
   });
+  
   const hiddenCount = origin_keys.length - visibleCount;
 
   const hasEthereum = origin_keys.includes("ethereum");
