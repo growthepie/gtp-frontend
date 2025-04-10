@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import Icon from "@/components/layout/Icon";
 import { useUIContext } from "@/contexts/UIContext";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { delay } from "lodash";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
@@ -22,8 +22,14 @@ import { useLocalStorage } from "usehooks-ts";
 import { debounce } from "lodash";
 import { useSearchParamState } from "@/hooks/useSearchParamState";
 import { Title, TitleButtonLink } from "@/components/layout/TextHeadingComponents";
-import { OLIContractTooltip, TooltipBody } from "@/components/tooltip/GTPTooltip";
+import { OLIContractTooltip, TooltipBody, TooltipHeader } from "@/components/tooltip/GTPTooltip";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
+import VerticalScrollContainer from "@/components/VerticalScrollContainer";
+import { Badge } from "@/app/(labels)/labels/Search";
+import { Chain } from "@/lib/chains";
+import useSWR from "swr";
+import { ApplicationsURLs } from "@/lib/urls";
+import { ApplicationDetailsResponse } from "../_contexts/ApplicationDetailsDataContext";
 
 type ApplicationIconProps = {
   owner_project: string;
@@ -886,75 +892,251 @@ export const Chains = ({ origin_keys }: { origin_keys: string[] }) => {
         ))}
       </div>
       {hiddenCount > 0 && (
-        <GTPTooltipNew
-          placement="bottom-start"
-          size="fit"
-          allowInteract={true}
-          trigger={
-            <div
-              className="h-[18px] px-[5px] py-0.5 rounded-[999px] outline outline-1 outline-offset-[-1px] outline-[#344240] flex justify-center items-center cursor-pointer select-none"
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-              }}
-            >
-              <div className="text-[#5a6462] text-[10px] font-medium leading-[15px]">
-                +{hiddenCount} more
-              </div>
-            </div>
-          }
-          containerClass="flex flex-col gap-y-[10px]"
-          positionOffset={{ mainAxis: 5, crossAxis: 20 }}
-        >
-          <TooltipBody className="group/chains pl-[15px] flex !flex-row">
-            {hiddenChains.map((chain, index) => (
-              <div
-                key={index}
-                className={`group-hover/chains:opacity-50 hover:!opacity-100 cursor-pointer p-[2.5px] ${selectedChains.includes(chain) || selectedChains.length === 0 ? '' : '!text-[#5A6462]'}`}
-                style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors["dark"][0] : '' }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  updateSelectedChain(chain, !selectedChains.includes(chain));
-                }}
-              >
-                {AllChainsByKeys[chain] && (
-                  <Icon
-                    icon={`gtp:${AllChainsByKeys[chain].urlKey}-logo-monochrome`}
-                    className="w-[15px] h-[15px]"
-                  />
-                )}
-              </div>
-            ))}
-          </TooltipBody>
-        </GTPTooltipNew>
-
+        <ChainsTooltip
+          visibleChains={visibleChains}
+          hiddenChains={hiddenChains}
+          selectedChains={selectedChains}
+          updateSelectedChain={updateSelectedChain}
+          AllChainsByKeys={AllChainsByKeys}
+        />
       )}
     </div>
   );
 };
 
-export const Category = ({ category }: { category: string }) => {
-  const getGTPCategoryIcon = (category: string): GTPIconName | "" => {
-    switch (category) {
-      case "Cross-Chain":
-        return "gtp-crosschain";
-      case "Utility":
-        return "gtp-utilities";
-      case "Token Transfers":
-        return "gtp-tokentransfers";
-      case "DeFi":
-        return "gtp-defi";
-      case "Social":
-        return "gtp-socials";
-      case "NFT":
-        return "gtp-nft";
-      case "CeFi":
-        return "gtp-cefi";
-      default:
-        return "";
+export const ChainsTooltip = ({
+  visibleChains,
+  hiddenChains,
+  selectedChains,
+  updateSelectedChain,
+  AllChainsByKeys,
+}: {
+  visibleChains: string[];
+  hiddenChains: string[];
+  selectedChains: string[];
+  updateSelectedChain: (chain: string, isSelected: boolean) => void;
+  AllChainsByKeys: Record<string, Chain>;
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerHeight, setContainerHeight] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isContentReady, setIsContentReady] = useState(false);
+
+  const hiddenCount = hiddenChains.length;
+
+  // Delay the height calculation until after tooltip is open and rendered
+  useEffect(() => {
+    if (!isOpen) {
+      setIsContentReady(false);
+      return;
     }
+    
+    // Use a small delay to ensure the tooltip content is fully rendered
+    const timer = setTimeout(() => {
+      if (containerRef.current) {
+        setContainerHeight(containerRef.current.clientHeight);
+        setIsContentReady(true);
+      }
+    }, 50);
+    
+    return () => clearTimeout(timer);
+  }, [isOpen]);
+  
+  // Use ResizeObserver to detect size changes after initial render
+  useEffect(() => {
+    if (!containerRef.current || !isOpen || !isContentReady) return;
+    
+    const resizeObserver = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        if (entry.target === containerRef.current) {
+          // When the container size changes, update the height state
+          setContainerHeight(entry.contentRect.height);
+        }
+      }
+    });
+
+    // Start observing the container
+    resizeObserver.observe(containerRef.current);
+
+    // Clean up on unmount or when dependencies change
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [isOpen, isContentReady]);
+
+  if (hiddenCount === 0) return null;
+  
+  // Calculate a safe default height before measurement
+  // For smoother UX, we can estimate based on typical badge height and count
+  const estimatedHeight = Math.min(
+    (Math.ceil((visibleChains.length + hiddenChains.length) / 3) * 30) + 10, // Rough estimate: rows * badge height + padding
+    110 // Max height limit
+  );
+
+  return (
+    <GTPTooltipNew
+      placement="bottom-start"
+      size="sm"
+      allowInteract={true}
+      onOpenChange={(open) => setIsOpen(open)} // Track when tooltip opens
+      trigger={
+        <div
+          className="h-[18px] px-[5px] py-0.5 rounded-[999px] outline outline-1 outline-offset-[-1px] outline-[#344240] flex justify-center items-center cursor-pointer select-none"
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+          }}
+        >
+          <div className="text-[#5a6462] text-[10px] font-medium leading-[15px]">
+            +{hiddenCount} more
+          </div>
+        </div>
+      }
+      containerClass="flex flex-col gap-y-[10px]"
+      positionOffset={{ mainAxis: 5, crossAxis: 20 }}
+    >
+      <TooltipHeader title={`Chain Selection`} />
+      <TooltipBody className="group/chains pl-[15px] flex !flex-row">
+        <VerticalScrollContainer 
+          height={isContentReady ? Math.min(Math.max(containerHeight, 50), 110) : estimatedHeight}
+          className="w-full !h-fit !max-h-[110px]" 
+          scrollThumbColor="#1F2726" 
+          scrollTrackColor="#151A19"
+        >
+          <div 
+            ref={containerRef} 
+            className="flex flex-row flex-wrap gap-[5px]"
+          >
+            {[...visibleChains, ...hiddenChains].filter((chain) => AllChainsByKeys[chain]).map((chain, index) => {
+              const baseBgClass = "bg-[#344240]";
+              const baseBorderClass = "border border-[#344240]";
+              const hoverBgClass = "hover:bg-[#5A6462]";
+              const hoverBorderClass = "hover:border hover:border-[#5A6462]";
+
+              const baseClass = `${baseBgClass} ${baseBorderClass}`;
+              const hoverClass = `${hoverBgClass} ${hoverBorderClass}`;
+
+              const areChainsSelected = selectedChains.length > 0;
+              const isChainSelected = selectedChains.includes(chain);
+
+              const rightIcon = isChainSelected ? "heroicons-solid:x-circle" : undefined;
+              const rightIconColor = isChainSelected ? "#FE5468" : undefined;
+              const altColoring = areChainsSelected && !isChainSelected;
+
+              const leftIcon = `gtp:${AllChainsByKeys[chain].urlKey}-logo-monochrome`;
+              const leftIconColor = AllChainsByKeys[chain].colors["dark"][0];
+
+              let className = `${baseClass} ${hoverClass}`;
+              if (areChainsSelected) {
+                if (isChainSelected) {
+                  className = `${baseClass} ${hoverClass}`;
+                } else {
+                  className = `${baseBorderClass} ${hoverClass}`;
+                }
+              }
+
+              return (
+                <Badge
+                  key={chain}
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    updateSelectedChain(chain, !selectedChains.includes(chain));
+                  }}
+                  label={AllChainsByKeys[chain].label}
+                  leftIcon={leftIcon}
+                  leftIconColor={leftIconColor}
+                  rightIcon={rightIcon}
+                  rightIconColor={rightIconColor}
+                  showLabel={true}
+                  altColoring={altColoring}
+                  className={className}
+                />
+              )
+            })}
+          </div>
+        </VerticalScrollContainer>
+      </TooltipBody>
+    </GTPTooltipNew>
+  )
+}
+
+const getGTPCategoryIcon = (category: string): GTPIconName | "" => {
+  switch (category) {
+    case "Cross-Chain":
+      return "gtp-crosschain";
+    case "Utility":
+      return "gtp-utilities";
+    case "Token Transfers":
+      return "gtp-tokentransfers";
+    case "DeFi":
+      return "gtp-defi";
+    case "Social":
+      return "gtp-socials";
+    case "NFT":
+      return "gtp-nft";
+    case "CeFi":
+      return "gtp-cefi";
+    default:
+      return "";
   }
+}
+
+
+export const SubcategoriesList = ({application}: {application: AggregatedDataRow}) => {
+  const {
+    data: applicationDetails,
+    isLoading: applicationDetailsLoading,
+  } = useSWR<ApplicationDetailsResponse>(ApplicationsURLs.details.replace("{owner_project}", application.owner_project));
+
+  const {data: masterData} = useMaster();
+  
+  if(!applicationDetails || !masterData){
+    return (
+        <div className="flex flex-col gap-[5px] animate-pulse w-full">
+          <div className="h-[15px] w-full rounded-[5px] bg-gray-200/10"></div>
+        </div>
+    )
+  }
+
+  const contractsTable = applicationDetails.contracts_table["max"];
+  const types = contractsTable.types;
+  const rows = contractsTable.data;
+
+  const subcategories = rows.map((row) => {
+    return row[types.indexOf("sub_category_key")];
+  });
+
+  const subcategoriesSet = new Set(subcategories);
+
+  return (
+    <div className="flex flex-col gap-[5px]">
+      {Array.from(subcategoriesSet).map((subcategory) => (
+        <div key={subcategory} className="text-xs">{masterData.blockspace_categories.sub_categories[subcategory as keyof typeof masterData.blockspace_categories.sub_categories]}</div>
+      ))}
+    </div>
+  )
+}
+
+export const CategoryTooltipContent = ({ application }: { application: AggregatedDataRow }) => {
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+
+  return (
+    <>
+      <TooltipHeader title={`Category`} icon={<GTPIcon icon={getGTPCategoryIcon(ownerProjectToProjectData[application.owner_project].main_category) as GTPIconName} size="sm" />} />
+      <TooltipBody className="pl-[15px] !flex-col gap-[5px]">
+        <div className="heading-small-xs">Subcategories</div>
+        <div className="flex flex-col gap-[5px] max-h-[400px] transition-all duration-300 overflow-y-auto">
+          <SubcategoriesList application={application} />
+        </div>
+      </TooltipBody>
+    </>
+  )
+}
+
+export const Category = ({ category }: { category: string }) => {
+
 
   return (
     <>

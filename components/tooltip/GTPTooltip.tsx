@@ -29,6 +29,7 @@ interface GTPTooltipNewProps {
   containerClass?: string;
   // New animation props
   animationDuration?: number;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const GTPTooltipSizeClassMap = {
@@ -51,6 +52,7 @@ export const GTPTooltipNew = ({
   portalId = "tooltip-portal",
   enableHover = true,
   allowInteract = true,
+  onOpenChange,
 }: GTPTooltipNewProps) => {
   const [uncontrolledIsOpen, setUncontrolledIsOpen] = useState(defaultOpen);
   const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : uncontrolledIsOpen;
@@ -61,6 +63,12 @@ export const GTPTooltipNew = ({
   const tooltipNodeRef = useRef<HTMLDivElement | null>(null); // <-- Add ref for tooltip node
 
   const handleOpenChange = (nextOpen: boolean) => {
+    // call onOpenChange if it is defined
+    if (onOpenChange) {
+      onOpenChange(nextOpen);
+    }
+    
+    // if controlledIsOpen is undefined, update uncontrolledIsOpen
     if (controlledIsOpen === undefined) {
       setUncontrolledIsOpen(nextOpen);
     }
@@ -259,7 +267,7 @@ export default Tooltip;
 
 type TooltipHeaderProps = {
   title: string;
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   className?: string;
   rightIcon?: React.ReactNode;
   href?: string;

@@ -18,7 +18,7 @@ import { useLocalStorage } from "usehooks-ts";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import VerticalVirtuosoScrollContainer from "@/components/VerticalVirtuosoScrollContainer";
 import { Virtuoso } from "react-virtuoso";
-import { ApplicationCard, ApplicationDisplayName, ApplicationIcon, ApplicationTooltip, Category, Chains, formatNumber, Links, MetricTooltip, TopGainersAndLosersTooltip } from "./_components/Components";
+import { ApplicationCard, ApplicationDisplayName, ApplicationIcon, ApplicationTooltip, Category, CategoryTooltipContent, Chains, formatNumber, Links, MetricTooltip, TopGainersAndLosersTooltip } from "./_components/Components";
 import { useProjectsMetadata } from "./_contexts/ProjectsMetadataContext";
 import { useSort } from "./_contexts/SortContext";
 import { ApplicationsURLs } from "@/lib/urls";
@@ -668,28 +668,25 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
           >
             <ApplicationTooltip application={application} />
           </GTPTooltipNew>
-          {/* <Tooltip placement="bottom-start" allowInteract>
-            <TooltipTrigger 
-              className="z-[10] truncate h-[32px]" 
-              onClick={(e) => {
-                if(isTouchDevice) {
-                  e.stopPropagation();
-                  e.preventDefault();
-                }
-              }}
-            >
-              <ApplicationDisplayName owner_project={application.owner_project} />
-            </TooltipTrigger>
-            <TooltipContent className="z-[99] left-0 ml-[20px] -mt-[5px]">
-              <ApplicationTooltip application={application} />
-            </TooltipContent>
-          </Tooltip> */}
         </div>
         <div className="flex items-center gap-x-[5px] pr-[15px]">
           <Chains origin_keys={application.origin_keys} />
         </div>
         <div className="text-xs pr-[15px]">
-          <Category category={ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].main_category : ""} />
+          <GTPTooltipNew
+            placement="bottom-start"
+            allowInteract={true}
+            size="md"
+            trigger={
+              <div className="z-[10] truncate h-[32px] flex items-center">
+                <Category category={ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].main_category : ""} />
+              </div>
+            }
+            containerClass="flex flex-col gap-y-[10px] !w-[230px]"
+            positionOffset={{ mainAxis: 0, crossAxis: 78 }}
+          >
+            <CategoryTooltipContent application={application} />
+          </GTPTooltipNew>
         </div>
         <div className="numbers-xs text-right pr-[15px]">
           {application.num_contracts}

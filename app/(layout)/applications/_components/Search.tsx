@@ -432,7 +432,7 @@ type BadgeProps = {
   label: string | React.ReactNode;
   leftIcon?: string;
   leftIconColor?: string;
-  rightIcon: string;
+  rightIcon?: string;
   rightIconColor?: string;
   rightIconSize?: "sm" | "base";
   size?: "sm" | "base";
@@ -477,18 +477,20 @@ export const Badge = memo(({
         <div className="text-[#CDD8D3] leading-[120%] text-[10px] truncate">
           {label}
         </div>
+        {rightIcon && (
         <div
           className={`flex items-center justify-center ${rightIconSize == "sm" ? "pr-[3px]" : "w-[14px] h-[14px]"
             }`}
         >
-          <Icon
-            icon={rightIcon}
-            className={
-              rightIconSize == "sm" ? "w-[10px] h-[10px]" : "w-[14px] h-[14px]"
-            }
-            style={{ color: rightIconColor }}
-          />
-        </div>
+            <Icon
+              icon={rightIcon}
+              className={
+                rightIconSize == "sm" ? "w-[10px] h-[10px]" : "w-[14px] h-[14px]"
+              }
+              style={{ color: rightIconColor }}
+            />
+          </div>
+        )}
       </div>
     );
 
@@ -515,13 +517,15 @@ export const Badge = memo(({
           {label}
         </div>
       )}
-      <div className="flex items-center justify-center w-[15px] h-[15px]">
-        <Icon
-          icon={rightIcon}
-          className="w-[15px] h-[15px]"
-          style={{ color: rightIconColor }}
-        />
-      </div>
+      {rightIcon && (
+        <div className="flex items-center justify-center w-[15px] h-[15px]">
+          <Icon
+            icon={rightIcon}
+            className="w-[15px] h-[15px]"
+            style={{ color: rightIconColor }}
+          />
+        </div>
+      )}
     </div>
   );
 });

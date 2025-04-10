@@ -433,6 +433,7 @@ export const MaturityWithTooltip = memo(function MaturityWithTooltip({ maturityK
     <>
       <GTPTooltipNew
         placement="bottom-start"
+        size="lg"
         allowInteract={true}
         trigger={
           <div>
