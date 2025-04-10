@@ -81,28 +81,21 @@ export default function Page() {
 
   useEffect(() => {
     if (landing) {
-      setData(landing.data.metrics.user_base[selectedTimeInterval]);
+      setData(landing.data.metrics.engagement[selectedTimeInterval]);
     }
   }, [landing, selectedTimeInterval]);
 
   useEffect(() => {
-    if (!data) return;
+    if (!data || !landing) return;
 
     setSelectedChains(
-      Object.keys(data.chains)
+      Object.keys(landing.data.metrics.table_visual)
         .filter((chainKey) => AllChainsByKeys.hasOwnProperty(chainKey))
         .map((chain) => chain),
     );
   }, [data, landing, selectedMetric, selectedTimeInterval]);
 
-  const chains = useMemo(() => {
-    if (!data) return [];
 
-    return AllChains.filter(
-      (chain) =>
-        Object.keys(data.chains).includes(chain.key) && chain.key != "ethereum",
-    );
-  }, [data]);
 
   const [selectedChains, setSelectedChains] = useState(
     AllChains.map((chain) => chain.key),
@@ -122,7 +115,7 @@ export default function Page() {
               };
             })}
           master={master}
-          sources={landing.data.metrics.user_base.source}
+          sources={landing.data.metrics.engagement.source}
           cross_chain_users={data.cross_chain_users}
           cross_chain_users_comparison={data.cross_chain_users_comparison}
           latest_total={data.latest_total}
