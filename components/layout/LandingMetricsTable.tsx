@@ -23,15 +23,13 @@ import { GridTableChainIcon, GridTableHeader, GridTableHeaderCell, GridTableRow 
 import { LandingURL } from "@/lib/urls";
 import useSWR from "swr";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
-import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { useRouter } from 'next/navigation'
-import { getFundamentalsByKey } from "@/lib/navigation";
 import { metricItems } from "@/lib/metrics";
 import { GTPIcon, GTPMaturityIcon, GTPMetricIcon, RankIcon } from "./GTPIcon";
 import { useUIContext } from "@/contexts/UIContext";
-import { GTPIconName } from "@/icons/gtp-icon-names";
 import { SortConfig, sortItems, SortOrder, SortType } from "@/lib/sorter";
+import { GTPTooltipNew, TooltipBody, TooltipHeader } from "../tooltip/GTPTooltip";
 
 function formatNumber(number: number, decimals?: number): string {
   if (number === 0) {
@@ -427,28 +425,28 @@ type MaturityWithTooltipProps = {
 export const MaturityWithTooltip = memo(function MaturityWithTooltip({ maturityKey, size = "md", showTooltip = true }: MaturityWithTooltipProps) {
   const { maturityName, maturityDescription } = useMaturityNameAndDescription(maturityKey);
 
-  if(maturityName === "N/A"){
+  if (maturityName === "N/A") {
     return <GTPMaturityIcon maturityKey={maturityKey} size={size} />
   }
 
   return (
     <>
-        <Tooltip placement="bottom" allowInteract={false}>
-          <TooltipTrigger>
-            <GTPMaturityIcon maturityKey={maturityKey} size={size} /> 
-          </TooltipTrigger>
-          <TooltipContent>
-            <div className="flex flex-col gap-y-[5px] items-center relative left-[245px]">
-              <div className="p-[15px] text-sm bg-[#1F2726] text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50">
-                <div className="flex items-center gap-x-[10px] h-[18px]">
-                  <GTPMaturityIcon maturityKey={maturityKey} size="sm" />
-                  <div className="heading-small-xs">{maturityName}</div>
-                </div>
-                <div className="text-xs font-normal text-wrap">{maturityDescription}</div>
-              </div>
-            </div>
-          </TooltipContent>
-        </Tooltip>
+      <GTPTooltipNew
+        placement="bottom-start"
+        allowInteract={true}
+        trigger={
+          <div>
+          <GTPMaturityIcon maturityKey={maturityKey} size={size} />
+          </div>
+        }
+        containerClass="flex flex-col gap-y-[10px]"
+        positionOffset={{ mainAxis: 0, crossAxis: 10 }}
+      >
+        <TooltipHeader title={maturityName} icon={<GTPMaturityIcon maturityKey={maturityKey} size="sm" />} />
+        <TooltipBody className="pl-[20px]">
+          {maturityDescription}
+        </TooltipBody>
+      </GTPTooltipNew>
 
     </>
   );
