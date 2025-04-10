@@ -191,9 +191,15 @@ function aggregateProjectData(
     const txCountChangePct = calculatePercentageChange(metrics.txcount, metrics.prev_txcount);
     const daaChangePct = calculatePercentageChange(metrics.daa, metrics.prev_daa);
 
+    let originKeys: string[] = [];
+
+    if(ownerProjectToOriginKeys[owner]){
+      originKeys = focusEnabled ? ownerProjectToOriginKeys[owner].filter(key => key !== "ethereum").sort() : ownerProjectToOriginKeys[owner].sort();
+    }
+
     return {
       owner_project: owner,
-      origin_keys: ownerProjectToOriginKeys[owner]?.sort() || [],
+      origin_keys: originKeys,
       ...metrics,
       gas_fees_eth_change_pct: gasEthChangePct,
       gas_fees_usd_change_pct: gasEthChangePct, // These are the same in your code
