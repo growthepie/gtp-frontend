@@ -24,28 +24,23 @@ export default function Home() {
 
   useEffect(() => {
     if (landing) {
-      setData(landing.data.metrics.user_base[selectedTimeInterval]);
+
+      setData(landing.data.metrics.engagement[selectedTimeInterval]);
     }
   }, [landing, selectedTimeInterval]);
 
   useEffect(() => {
-    if (!data) return;
+    if (!data || !landing) return;
+
 
     setSelectedChains(
-      Object.keys(data.chains)
+      Object.keys(landing.data.metrics.table_visual)
         .filter((chainKey) => AllChainsByKeys.hasOwnProperty(chainKey))
         .map((chain) => chain),
     );
   }, [AllChainsByKeys, data, landing, selectedMetric, selectedTimeInterval]);
 
-  const chains = useMemo(() => {
-    if (!data) return [];
 
-    return AllChains.filter(
-      (chain) =>
-        Object.keys(data.chains).includes(chain.key) && chain.key != "ethereum",
-    );
-  }, [AllChains, data]);
 
   const [selectedChains, setSelectedChains] = useState(
     AllChains.map((chain) => chain.key),

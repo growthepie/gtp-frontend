@@ -192,7 +192,7 @@ const SearchBar = () => {
               autoComplete="off"
               spellCheck={false}
               className={`flex-1 h-full bg-transparent text-white placeholder-[#CDD8D3] border-none outline-none overflow-x-clip`}
-              placeholder="Search & Filter"
+              placeholder="Search"
               value={query}
               onChange={handleSearchChange}
             />
@@ -295,22 +295,25 @@ const useSearchBuckets = () => {
       filteredData: bucket.options.filter(option => query?.length === 1 ? option.label.toLowerCase().startsWith(query?.toLowerCase() || "") : option.label.toLowerCase().includes(query?.toLowerCase() || ""))
     };
   }).sort((a, b) => {
-    // First, prioritize buckets with startsWith matches
-    const aStartsWithCount = a.filteredData.filter(item => 
-      item.label.toLowerCase().startsWith(query?.toLowerCase() || "")
-    ).length;
-
-    const bStartsWithCount = b.filteredData.filter(item => 
-      item.label.toLowerCase().startsWith(query?.toLowerCase() || "")
-    ).length;
+    // First, prioritize Chains bucket
+    if (a.type === "Chains" && b.type !== "Chains") return -1;
+    if (b.type === "Chains" && a.type !== "Chains") return 1;
     
-    // If startsWith counts differ, sort by that
-    if (aStartsWithCount !== bStartsWithCount) {
-      return bStartsWithCount - aStartsWithCount;
+    // For non-chain buckets, maintain the order from navigationItems
+    // Get the indices from navigationItems
+    const aIndex = navigationItems.findIndex(item => item.name === a.type);
+    const bIndex = navigationItems.findIndex(item => item.name === b.type);
+    
+    // If both items are found in navigationItems, sort by their order
+    if (aIndex !== -1 && bIndex !== -1) {
+      return aIndex - bIndex;
     }
     
-    // If startsWith counts are the same, sort by total filtered data length
-    return b.filteredData.length - a.filteredData.length;
+    // If one item is not in navigationItems (like Applications), put it last
+    if (aIndex === -1) return 1;
+    if (bIndex === -1) return -1;
+    
+    return 0;
   }).filter(bucket => bucket.filteredData.length > 0), [query, searchBuckets]);
 
   // Calculate total matches for the counter
@@ -380,7 +383,7 @@ export const SearchBadge = memo(({
 
   return (
     <div
-      className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} text-[10px] rounded-full h-[24px] pl-[5px] pr-[10px] gap-x-[4px] ${onClick ? "cursor-pointer" : "cursor-default"} ${className}`}
+      className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} hover:bg-[#5A6462] active:bg-[#5A6462] text-xs rounded-full h-[24px] pl-[5px] pr-[10px] gap-x-[4px] ${onClick ? "cursor-pointer" : "cursor-default"} ${className}`}
       onClick={onClick ? handleClick : undefined}
     >
       {getLeftIcon()}
@@ -430,8 +433,8 @@ const Filters = () => {
   // if (!query || totalMatches === 0) return null;
 
   return (
-    <div className="flex flex-col-reverse md:flex-col !pt-0 !pb-0 pl-[12px] pr-[25px] gap-y-[10px] text-[10px] max-h-[calc(100vh-220px)] overflow-y-auto">
-      {query && allFilteredData.length > 0 && <div className="flex flex-col-reverse md:flex-col pt-[10px] pb-[10px] pl-[12px] pr-[25px] gap-y-[10px] text-[10px]">
+    <div className="flex flex-col-reverse md:flex-col !pt-0 !pb-[0px] pl-[0px] pr-[0px] gap-y-[10px] max-h-[calc(100vh-220px)] overflow-y-auto">
+      {query && allFilteredData.length > 0 && <div className="flex flex-col-reverse md:flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px] text-[10px]">
           {allFilteredData.map(({ type, icon, filteredData }) => {
             // Only render section if there are matching items
             return (
@@ -474,7 +477,13 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
   const [hasOverflow, setHasOverflow] = useState(false);
   const [isScreenTall, setIsScreenTall] = useState(false);
   
-  const showKeyboardShortcuts = query && allFilteredData.length > 0 && isScreenTall;
+  // Calculate total number of results
+  const totalResults = allFilteredData.reduce((total, { filteredData }) => total + filteredData.length, 0);
+  
+  const showKeyboardShortcuts = query && 
+    allFilteredData.length > 0 && 
+    isScreenTall && 
+    totalResults >= 10;
 
   // Add a ref to check for overflow
   const contentRef = useRef<HTMLDivElement>(null);
