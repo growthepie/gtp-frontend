@@ -52,7 +52,7 @@ import { TitleButtonLink } from "./TextHeadingComponents";
 import { GTPApplicationTooltip } from "../tooltip/GTPTooltip";
 import { GTPTooltipNew } from "../tooltip/GTPTooltip";
 import { OLIContractTooltip } from "../tooltip/GTPTooltip";
-
+import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 export default function CategoryMetrics({
   data,
   master,
@@ -69,7 +69,7 @@ export default function CategoryMetrics({
   setSelectedTimespan: (timespan: string) => void;
 }) {
   const { AllChainsByKeys } = useMaster();
-
+  const { projectNameToProjectData } = useProjectsMetadata();
   const { data: projectsData } = useSWR<LabelsProjectsResponse>(
     LabelsURLS.projects,
   );
@@ -1877,9 +1877,18 @@ export default function CategoryMetrics({
                                 placement="bottom-start"
                                 allowInteract={true}
                                 trigger={
-                                  <div className="flex h-[30px] items-center hover:underline cursor-pointer">
-                                    {sortedContracts[key].project_name}
-                                  </div>
+                                  projectNameToProjectData[sortedContracts[key].project_name] && projectNameToProjectData[sortedContracts[key].project_name].on_apps_page ? (
+                                    <Link 
+                                      href={`/applications/${projectNameToProjectData[sortedContracts[key].project_name].owner_project}`} 
+                                      className="flex h-[30px] items-center hover:underline cursor-pointer select-none"
+                                    >
+                                      {sortedContracts[key].project_name}
+                                    </Link>
+                                  ) : (
+                                    <div className="flex h-[30px] items-center cursor-normal select-none">
+                                      {sortedContracts[key].project_name}
+                                    </div>
+                                  )
                                 }
                                 containerClass="flex flex-col gap-y-[10px]"
                                 positionOffset={{ mainAxis: 0, crossAxis: 20 }}

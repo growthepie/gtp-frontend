@@ -374,13 +374,12 @@ type GTPApplicationTooltipProps = {
 }
 
 
-export const GTPApplicationTooltip = memo(({owner_project, project_name}: GTPApplicationTooltipProps) => {
+export const GTPApplicationTooltip = memo(({ owner_project, project_name }: GTPApplicationTooltipProps) => {
   const { ownerProjectToProjectData, projectNameToProjectData } = useProjectsMetadata();
-  const searchParams = useSearchParams();
 
   const projectData = useMemo(() => {
-    if(owner_project) return ownerProjectToProjectData[owner_project];
-    if(project_name) return projectNameToProjectData[project_name];
+    if (owner_project) return ownerProjectToProjectData[owner_project];
+    if (project_name) return projectNameToProjectData[project_name];
     return null;
   }, [owner_project, project_name, ownerProjectToProjectData, projectNameToProjectData]);
 
@@ -390,33 +389,31 @@ export const GTPApplicationTooltip = memo(({owner_project, project_name}: GTPApp
     const firstPart = projectData.description.slice(0, Math.min(100, chars));
 
     return firstPart.split(" ").slice(0, -1).join(" ");
-    
-  }, [projectData]);  
+
+  }, [projectData]);
 
   console.log(projectData, owner_project, project_name);
 
-  if(!projectData) return null;
+  if (!projectData) return null;
 
   return (
     <>
-      
       <TooltipHeader
-
         title={projectData.display_name}
         icon={
           projectData.logo_path ? (
             <Image
               src={`https://api.growthepie.xyz/v1/apps/logos/${projectData.logo_path}`}
-              width={15} // Adjust size if needed based on TooltipHeader styling
+              width={15}
               height={15}
-              className="select-none rounded-full" // TooltipHeader might apply its own size/styles
+              className="select-none rounded-full"
               alt={projectData.display_name}
               onDragStart={(e) => e.preventDefault()}
               loading="eager"
               priority={true}
             />
           ) : (
-            <div className={`flex items-center justify-center size-[15px] bg-[#151A19] rounded-full`}> {/* Adjust size if needed */}
+            <div className={`flex items-center justify-center size-[15px] bg-[#151A19] rounded-full`}>
               <GTPIcon icon="gtp-project-monochrome" size="sm" className="!size-[12px] text-[#5A6462]" containerClassName="flex items-center justify-center" />
             </div>
           )
@@ -425,28 +422,25 @@ export const GTPApplicationTooltip = memo(({owner_project, project_name}: GTPApp
           projectData.on_apps_page ? (
             <div className="flex flex-1 items-center justify-end">
               <div className="size-[18px] bg-[#344240] rounded-full flex items-center justify-center">
-                  <GTPIcon icon={"feather:arrow-right" as GTPIconName} size="sm" />
+                <GTPIcon icon={"feather:arrow-right" as GTPIconName} size="sm" />
               </div>
             </div>
           ) : null
         }
-        href={`/applications/${projectData.owner_project}`}
+        href={projectData.on_apps_page ? `/applications/${projectData.owner_project}` : undefined}
       />
       <TooltipBody className="pl-[20px]">
-         {/* Replicate original inner padding/gap if needed */}
         <div className="flex flex-col gap-y-[10px]">
-            <div className="text-xs">
-              {descriptionPreview}...
-            </div>
-            
+          <div className="text-xs">
+            {descriptionPreview}...
+          </div>
         </div>
       </TooltipBody>
-      <TooltipFooter className="flex items-start pl-[20px]"> {/* Added flex items-center for alignment */}
+      <TooltipFooter className="flex items-start pl-[20px]">
         <GTPApplicationLinks owner_project={projectData.owner_project} showUrl={true} />
       </TooltipFooter>
     </>
   );
-
 });
 
 GTPApplicationTooltip.displayName = 'GTPApplicationTooltip';

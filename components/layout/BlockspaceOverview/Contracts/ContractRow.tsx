@@ -21,6 +21,7 @@ import {
 } from "@/components/layout/GridTable";
 import { GTPApplicationTooltip, GTPTooltipNew, OLIContractTooltip } from "@/components/tooltip/GTPTooltip";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 
 export default function ContractRow({
   rowKey,
@@ -40,6 +41,7 @@ export default function ContractRow({
   setSelectedContract: (contract: ContractInfo | null) => void;
 }) {
   const { AllChainsByKeys } = useMaster();
+  const { projectNameToProjectData } = useProjectsMetadata();
   const [copyContract, setCopyContract] = useState(false);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [labelFormMainCategoryKey, setLabelFormMainCategoryKey] = useState<
@@ -373,9 +375,18 @@ export default function ContractRow({
                   placement="bottom-start"
                   allowInteract={true}
                   trigger={
-                    <div className="flex h-[30px] items-center hover:underline cursor-pointer">
-                      {sortedContracts[rowKey].project_name}
-                    </div>
+                    projectNameToProjectData[sortedContracts[rowKey].project_name] && projectNameToProjectData[sortedContracts[rowKey].project_name].on_apps_page ? (
+                      <Link 
+                        href={`/applications/${projectNameToProjectData[sortedContracts[rowKey].project_name].owner_project}`} 
+                        className="flex h-[30px] items-center hover:underline cursor-pointer select-none"
+                      >
+                        {sortedContracts[rowKey].project_name}
+                      </Link>
+                    ) : (
+                      <div className="flex h-[30px] items-center cursor-normal select-none">
+                        {sortedContracts[rowKey].project_name}
+                      </div>
+                    )
                   }
                   containerClass="flex flex-col gap-y-[10px]"
                   positionOffset={{ mainAxis: 0, crossAxis: 20 }}
