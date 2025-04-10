@@ -24,6 +24,8 @@ import { Sources } from "@/lib/datasources";
 import { MetricChainBreakdownBar } from "../_components/MetricChainBreakdownBar";
 import { useChartSync } from "../_contexts/GTPChartSyncContext";
 import dynamic from "next/dynamic";
+import { TitleButtonLink } from "@/components/layout/TextHeadingComponents";
+import { GTPTooltipNew, OLIContractTooltip } from "@/components/tooltip/GTPTooltip";
 
 // dynamic import to prevent server-side rendering of the chart component
 const ApplicationDetailsChart = dynamic(() => import("../_components/GTPChart").then((mod) => mod.ApplicationDetailsChart), { ssr: false });
@@ -98,7 +100,35 @@ export default function Page({ params: { owner_project } }: Props) {
       <Container>
         <div className="pt-[30px] pb-[15px]">
           <div className="flex flex-col gap-y-[10px]">
-            <div className="heading-large">Most Active Contracts</div>
+          <div className="flex items-start justify-between">
+                <h2 className="heading-large-md">Most Active Contracts</h2>
+                <div className="hidden md:block">
+                <TitleButtonLink
+                  label="Label more using OLI"
+                  icon="gtp-oli-logo"
+                  iconSize="md"
+                  iconBackground="bg-transparent"
+                  rightIcon={"feather:arrow-right" as GTPIconName}
+                  href="https://www.openlabelsinitiative.org/?gtp.applications"
+                  newTab
+                  gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
+                  className="w-fit hidden md:block"
+                  />
+                </div>
+                <div className="block md:hidden">
+                  <TitleButtonLink
+                    label={<div className="heading-small-xxs">Label here.</div>}
+                    icon="gtp-oli-logo"
+                    iconSize="md"
+                    iconBackground="bg-transparent"
+                    href="https://www.openlabelsinitiative.org/?gtp.applications"
+                    newTab
+                    gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
+                    className="w-fit"
+                    containerClassName=""
+                  />
+                </div>
+              </div>
             <div className="text-xs">
               See the most active contracts for {ownerProjectToProjectData[owner_project] ? ` for ${ownerProjectToProjectData[owner_project].display_name}` : ""} (All Time).
             </div>
@@ -790,7 +820,7 @@ ContractValue.displayName = 'Value';
 
 
 
-const ContractsTableRow = memo(({ contract }: { contract: ContractDict }) => {
+const ContractsTableRow = memo(({ contract}: { contract: ContractDict }) => {
   const { owner_project } = useApplicationDetailsData();
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { metricsDef, selectedMetrics, selectedMetricKeys, } = useMetrics();
@@ -833,7 +863,15 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict }) => {
       </div>
       <div className="flex items-center gap-x-[15px] justify-between w-full truncate">
         
-        {contract.name ? (<div>{contract.name}</div>) : (<GridTableAddressCell address={contract.address as string} showCopyIcon={false} />)}
+        {contract.name ? (<div>{contract.name}</div>) : (
+          <GTPTooltipNew
+            placement="bottom-start"
+            allowInteract={true}
+            trigger={<div className="w-full h-[30px] flex items-center"><GridTableAddressCell address={contract.address as string} showCopyIcon={false} /></div>}
+          >
+            <OLIContractTooltip icon="gtp-project-monochrome" iconClassName="text-[#5A6462]" project_name={owner_project} href="https://www.openlabelsinitiative.org/attest" message="Contract information not available." />
+          </GTPTooltipNew>
+        )}
         <div className="flex items-center gap-x-[5px]">
           <div className="h-[15px] w-[15px]">
             <div

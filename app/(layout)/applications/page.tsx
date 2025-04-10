@@ -28,6 +28,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { MetricInfo } from "@/types/api/MasterResponse";
 import { useTimespan } from "./_contexts/TimespanContext";
+import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 
 
 // Preload data for the overview page
@@ -624,7 +625,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
   // Memoize gridColumns to prevent recalculations
   // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() => {
-      const applicationColumnWidth = selectedMetricKeys.length > 2 ? 165 : 285;
+      const applicationColumnWidth = selectedMetricKeys.length > 2 ? 156 : 285;
       const metricColumnWidth = selectedMetricKeys.length > 2 ? 242 : 262;
       return `26px ${applicationColumnWidth}px 166px minmax(150px,800px) 95px ${selectedMetricKeys.map(() => `${metricColumnWidth}px`).join(" ")} ${(new Array(numTotalMetrics - selectedMetricKeys.length).fill(0).map(() => "0px").join(" "))} 29px`;
     },[numTotalMetrics, selectedMetricKeys]
@@ -653,7 +654,21 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
         <div
           className="flex items-center gap-x-[5px] group-hover:underline truncate pl-[15px] pr-[15px]"
         >
-          <Tooltip placement="bottom-start" allowInteract>
+          <GTPTooltipNew
+            placement="bottom-start"
+            allowInteract={true}
+            size="md"
+            trigger={
+              <div className="z-[10] truncate h-[32px] flex items-center">
+                <ApplicationDisplayName owner_project={application.owner_project} />
+              </div>
+            }
+            containerClass="flex flex-col gap-y-[10px]"
+            positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+          >
+            <ApplicationTooltip application={application} />
+          </GTPTooltipNew>
+          {/* <Tooltip placement="bottom-start" allowInteract>
             <TooltipTrigger 
               className="z-[10] truncate h-[32px]" 
               onClick={(e) => {
@@ -668,7 +683,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
             <TooltipContent className="z-[99] left-0 ml-[20px] -mt-[5px]">
               <ApplicationTooltip application={application} />
             </TooltipContent>
-          </Tooltip>
+          </Tooltip> */}
         </div>
         <div className="flex items-center gap-x-[5px] pr-[15px]">
           <Chains origin_keys={application.origin_keys} />

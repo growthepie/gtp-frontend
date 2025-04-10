@@ -34,6 +34,8 @@ import {
 } from "@/components/layout/TopRow";
 import HorizontalScrollContainer from "../HorizontalScrollContainer";
 import { useMaster } from "@/contexts/MasterContext";
+import { TitleButtonLink } from "./TextHeadingComponents";
+import { GTPIconName } from "@/icons/gtp-icon-names";
 
 // object which contains the allowed modes for chains with mode exceptions
 const AllowedModes: {
@@ -529,7 +531,35 @@ export default function OverviewMetrics({
           {/*Contracts Header */}
           <Container>
             <div className="w-[100%] mx-auto mt-[30px] flex flex-col">
-              <h1 className="text-lg font-bold">Most Active Contracts</h1>
+              <div className="flex items-start justify-between">
+                <h2 className="heading-large-md">Most Active Contracts</h2>
+                <div className="hidden md:block">
+                <TitleButtonLink
+                  label="Don’t see your app? Label here."
+                  icon="gtp-oli-logo"
+                  iconSize="md"
+                  iconBackground="bg-transparent"
+                  rightIcon={"feather:arrow-right" as GTPIconName}
+                  href="https://www.openlabelsinitiative.org/?gtp.applications"
+                  newTab
+                  gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
+                  className="w-fit hidden md:block"
+                  />
+                </div>
+                <div className="block md:hidden">
+                  <TitleButtonLink
+                    label={<div className="heading-small-xxs">Label here.</div>}
+                    icon="gtp-oli-logo"
+                    iconSize="md"
+                    iconBackground="bg-transparent"
+                    href="https://www.openlabelsinitiative.org/?gtp.applications"
+                    newTab
+                    gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
+                    className="w-fit"
+                    containerClassName=""
+                  />
+                </div>
+              </div>
               <p className="text-sm mt-[15px]">
                 See the most active contracts within the selected timeframe (
                 {timespans[selectedTimespan].label}) and for your selected

@@ -362,19 +362,18 @@ export default function ContractRow({
 
       <GridTableRow
         key={rowKey + "" + sortOrder}
-        gridDefinitionColumns="grid-cols-[20px,225px,280px,95px,minmax(215px,800px),115px] relative"
-        className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] mb-[3px]"
+        gridDefinitionColumns="grid-cols-[20px,150px,280px,95px,minmax(215px,800px),115px] relative"
+        className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] mb-[3px] !py-0"
       >
         <GridTableChainIcon origin_key={sortedContracts[rowKey].chain} />
         <div className="flex justify-between">
           <div className="truncate">
             {sortedContracts[rowKey].project_name ? (
-            
                 <GTPTooltipNew
                   placement="bottom-start"
                   allowInteract={true}
                   trigger={
-                    <div className="flex h-full items-center hover:underline cursor-pointer">
+                    <div className="flex h-[30px] items-center hover:underline cursor-pointer">
                       {sortedContracts[rowKey].project_name}
                     </div>
                   }
@@ -388,86 +387,17 @@ export default function ContractRow({
                   placement="bottom-start"
                   allowInteract={true}
                   trigger={
-                    <div className="flex h-full items-center gap-x-[3px] text-[#5A6462] text-[10px] cursor-pointer select-none">
+                    <div className="flex h-[30px] items-center gap-x-[3px] text-[#5A6462] text-[10px] cursor-pointer select-none">
                       Not Available
                     </div>
                   }
                   containerClass="flex flex-col gap-y-[10px]"
                   positionOffset={{ mainAxis: 0, crossAxis: 20 }}
                 >
-                  <OLIContractTooltip icon="gtp-project-monochrome" iconClassName="text-[#5A6462]" project_name="Not Available" />
+                  <OLIContractTooltip icon="gtp-project-monochrome" iconClassName="text-[#5A6462]" project_name="Not Available" message="Project information not available." />
                 </GTPTooltipNew>
             )}
           </div>
-          {/* {ownerProjectDisplayNameToProjectData[
-            sortedContracts[rowKey].project_name
-          ] && (
-              <div className="flex gap-x-[5px] pl-[15px]">
-                <div className="flex items-center gap-x-[5px]">
-                  <div className="h-[15px] w-[15px]">
-                    {ownerProjectDisplayNameToProjectData[
-                      sortedContracts[rowKey].project_name
-                    ][5] && (
-                        <a
-                          href={
-                            ownerProjectDisplayNameToProjectData[
-                            sortedContracts[rowKey].project_name
-                            ][5]
-                          }
-                          target="_blank"
-                          className="group flex items-center  gap-x-[5px] text-xs"
-                        >
-                          <Icon
-                            icon="feather:monitor"
-                            className="w-[15px] h-[15px]"
-                          />
-                        </a>
-                      )}
-                  </div>
-                  <div className="h-[15px] w-[15px]">
-                    {ownerProjectDisplayNameToProjectData[
-                      sortedContracts[rowKey].project_name
-                    ][4] && (
-                        <a
-                          href={
-                            `https://x.com/${ownerProjectDisplayNameToProjectData[
-                            sortedContracts[rowKey].project_name
-                            ][4]}`
-
-                          }
-                          target="_blank"
-                          className="group flex items-center gap-x-[5px] text-xs"
-                        >
-                          <Icon
-                            icon="ri:twitter-x-fill"
-                            className="w-[15px] h-[15px]"
-                          />
-                        </a>
-                      )}
-                  </div>
-                  <div className="h-[15px] w-[15px]">
-                    {ownerProjectDisplayNameToProjectData[
-                      sortedContracts[rowKey].project_name
-                    ][3] && (
-                        <a
-                          href={
-                            `https://github.com/${ownerProjectDisplayNameToProjectData[
-                            sortedContracts[rowKey].project_name
-                            ][3]}`
-                          }
-                          target="_blank"
-                          className="group flex items-center gap-x-[5px] text-xs"
-                        >
-                          <Icon
-                            icon="ri:github-fill"
-                            className="w-[15px] h-[15px]"
-                          />
-                        </a>
-                      )}
-                  </div>
-                </div>
-              </div>
-            )} */}
         </div>
         <div className="flex justify-between gap-x-[10px]">
           {sortedContracts[rowKey].name ? (

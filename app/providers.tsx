@@ -42,7 +42,6 @@ const singleOrMultiFetcher = (urlOrUrls) => {
 
 const devMiddleware = (useSWRNext) => {
   return (key, fetcher, config) => {
-    console.log("devMiddleware", key, fetcher, config);
     return useSWRNext(
       key,
       (urlOrUrls) => {

@@ -13,7 +13,7 @@ import { CSSTransition } from "react-transition-group";
 
 interface GTPTooltipNewProps {
   children: ReactNode;
-  size?: "sm" | "md" | "lg";
+  size?: "fit" | "sm" | "md" | "lg";
   triggerElement?: HTMLElement | null;
   positionOffset?: {
     mainAxis: number;
@@ -32,6 +32,7 @@ interface GTPTooltipNewProps {
 }
 
 const GTPTooltipSizeClassMap = {
+  fit: "w-fit",
   sm: "w-[245px]",
   md: "w-[350px]",
   lg: "w-[350px] md:w-[460px]",
@@ -245,7 +246,7 @@ const TooltipSizeClassMap = {
   lg: "w-[350px] md:w-[460px]",
 }
 
-const Tooltip = ({ children, size = "sm" }: TooltipProps) => {
+export const Tooltip = ({ children, size = "sm" }: TooltipProps) => {
   return (
     <div className={`flex flex-col gap-y-[5px] ${TooltipSizeClassMap[size]} py-[15px] pr-[15px] rounded-[15px] bg-[#1F2726] text-[#CDD8D3] text-xs shadow-[0px_0px_4px_0px_rgba(0,_0,_0,_0.25)]`}>
       {children}
@@ -264,7 +265,7 @@ type TooltipHeaderProps = {
   href?: string;
 }
 
-const TooltipHeader = ({ title, icon, className, rightIcon, href }: TooltipHeaderProps) => {
+export const TooltipHeader = ({ title, icon, className, rightIcon, href }: TooltipHeaderProps) => {
   if(href) {
     return (
       <Link href={href} className={`flex w-full gap-x-[10px] pl-[20px] h-[18px] items-center ${className}`}>
@@ -288,7 +289,7 @@ type TooltipBodyProps = {
   className?: string;
 }
 
-const TooltipBody = ({ children, className }: TooltipBodyProps) => {
+export const TooltipBody = ({ children, className }: TooltipBodyProps) => {
   return <div className={`flex flex-col w-full ${className}`}>{children}</div>;
 };
 
@@ -298,7 +299,7 @@ type TooltipFooterProps = {
   className?: string;
 }
 
-const TooltipFooter = ({ children, className }: TooltipFooterProps) => {
+export const TooltipFooter = ({ children, className }: TooltipFooterProps) => {
   return <div className={`flex flex-col w-full ${className}`}>{children}</div>;
 };
 
@@ -324,9 +325,11 @@ type OLIContractTooltipProps = {
   iconClassName?: string;
   iconStyle?: React.CSSProperties;
   project_name: string;
+  message?: string | React.ReactNode;
+  href?: string;
 }
 
-export const OLIContractTooltip = ({ icon, project_name, iconClassName, iconStyle }: OLIContractTooltipProps) => {
+export const OLIContractTooltip = ({ icon, project_name, iconClassName, iconStyle, message="Contract information not available.", href="https://www.openlabelsinitiative.org/" }: OLIContractTooltipProps) => {
   return (
     <>
       <TooltipHeader title={project_name} icon={
@@ -335,13 +338,13 @@ export const OLIContractTooltip = ({ icon, project_name, iconClassName, iconStyl
         </div>
         } />
       <TooltipBody>
-        <div className="pl-[20px]">No application metrics available.</div>
+        <div className="pl-[20px]">{message}</div>
       </TooltipBody>
       <TooltipFooter className="h-[64px] flex flex-col justify-end">
         <div className="pl-[20px] flex flex-col gap-y-[5px]">
           <div className="text-xxs">Are you the developer or you know the project's contracts?</div>
           {/* OLI Button */}
-          <Link href="https://www.openlabelsinitiative.org/?gtp.blockspace.chain-overview" target="_blank" className="mx-auto flex items-center justify-center p-[1px] rounded-full bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)] w-fit h-[24px]">
+          <Link href={href} target="_blank" className="mx-auto flex items-center justify-center p-[1px] rounded-full bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)] w-fit h-[24px]">
             <div className="flex items-center pl-[15px] pr-[5px] gap-x-[8px] h-full bg-forest-50 dark:bg-forest-900 rounded-full transition-all duration-300" style={{ width: "fit-content" }}>
               <div className="whitespace-nowrap overflow-hidden heading-small-xxs">See more here.</div>
               <div className="size-[15px] bg-[#344240] rounded-full flex items-center justify-center">

@@ -47,6 +47,11 @@ import {
 import { LabelsProjectsResponse } from "@/types/Labels/ProjectsResponse";
 import "@/app/highcharts.axis.css";
 import VerticalScrollContainer from "../VerticalScrollContainer";
+import { GTPIconName } from "@/icons/gtp-icon-names";
+import { TitleButtonLink } from "./TextHeadingComponents";
+import { GTPApplicationTooltip } from "../tooltip/GTPTooltip";
+import { GTPTooltipNew } from "../tooltip/GTPTooltip";
+import { OLIContractTooltip } from "../tooltip/GTPTooltip";
 
 export default function CategoryMetrics({
   data,
@@ -1356,7 +1361,35 @@ export default function CategoryMetrics({
           </Container>
           <Container>
             <div className="mx-auto mt-[5px] flex w-[97%] flex-col lg:mt-[30px]">
-              <h1 className="text-lg font-bold">Most Active Contracts</h1>
+            <div className="flex items-start justify-between">
+                <h2 className="heading-large-md">Most Active Contracts</h2>
+                <div className="hidden md:block">
+                <TitleButtonLink
+                  label="Don’t see your app? Label here."
+                  icon="gtp-oli-logo"
+                  iconSize="md"
+                  iconBackground="bg-transparent"
+                  rightIcon={"feather:arrow-right" as GTPIconName}
+                  href="https://www.openlabelsinitiative.org/?gtp.applications"
+                  newTab
+                  gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
+                  className="w-fit hidden md:block"
+                  />
+                </div>
+                <div className="block md:hidden">
+                  <TitleButtonLink
+                    label={<div className="heading-small-xxs">Label here.</div>}
+                    icon="gtp-oli-logo"
+                    iconSize="md"
+                    iconBackground="bg-transparent"
+                    href="https://www.openlabelsinitiative.org/?gtp.applications"
+                    newTab
+                    gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
+                    className="w-fit"
+                    containerClassName=""
+                  />
+                </div>
+              </div>
               <p className="mt-[15px] text-sm">
                 See the most active contracts within the selected timeframe (
                 {timespans[selectedTimespan].label}) and for your selected
@@ -1379,7 +1412,7 @@ export default function CategoryMetrics({
             </div>
             <div className="mx-auto flex w-[99%] min-w-[880px] flex-col">
               <GridTableHeader
-                gridDefinitionColumns="grid-cols-[20px,225px,280px,95px,minmax(135px,800px),115px]"
+                gridDefinitionColumns="grid-cols-[20px,150px,280px,95px,minmax(135px,800px),115px]"
                 className="z-[2] gap-x-[15px] pb-[4px] text-[12px]"
               >
                 <div></div>
@@ -1831,8 +1864,8 @@ export default function CategoryMetrics({
                     return (
                       <GridTableRow
                         key={key + "" + sortOrder}
-                        gridDefinitionColumns="grid-cols-[20px,225px,280px,95px,minmax(135px,800px),115px] relative"
-                        className="group mb-[3px] inline-grid h-[34px] gap-x-[15px] text-[12px] transition-all duration-300"
+                        gridDefinitionColumns="grid-cols-[20px,150px,280px,95px,minmax(135px,800px),115px] relative"
+                        className="group mb-[3px] inline-grid h-[34px] gap-x-[15px] text-[12px] transition-all duration-300 !py-0"
                       >
                         <GridTableChainIcon
                           origin_key={sortedContracts[key].chain}
@@ -1840,90 +1873,36 @@ export default function CategoryMetrics({
                         <div className="flex justify-between">
                           <div>
                             {sortedContracts[key].project_name ? (
-                              sortedContracts[key].project_name
+                              <GTPTooltipNew
+                                placement="bottom-start"
+                                allowInteract={true}
+                                trigger={
+                                  <div className="flex h-[30px] items-center hover:underline cursor-pointer">
+                                    {sortedContracts[key].project_name}
+                                  </div>
+                                }
+                                containerClass="flex flex-col gap-y-[10px]"
+                                positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+                              >
+                                <GTPApplicationTooltip project_name={sortedContracts[key].project_name} />
+                              </GTPTooltipNew>
                             ) : (
-                              <div className="flex h-full items-center gap-x-[3px] text-[10px] text-[#5A6462]">
-                                Not Available
-                              </div>
+                              <GTPTooltipNew
+                                placement="bottom-start"
+                                allowInteract={true}
+                                trigger={
+                                  <div className="flex h-[30px] items-center gap-x-[3px] text-[#5A6462] text-[10px] cursor-pointer select-none">
+                                    Not Available
+                                  </div>
+                                }
+                                containerClass="flex flex-col gap-y-[10px]"
+                                positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+                              >
+                                <OLIContractTooltip icon="gtp-project-monochrome" iconClassName="text-[#5A6462]" project_name="Not Available" message="Project information not available." />
+                              </GTPTooltipNew>
                             )}
                           </div>
-                          {ownerProjectDisplayNameToProjectData[
-                            sortedContracts[key].project_name
-                          ] && (
-                            <div className="flex gap-x-[5px]">
-                              {/* <div className="flex 3xl:hidden">
-                                <Icon
-                                  icon={copiedAddress === sortedContracts[key].project_name.address ? "feather:check-circle" : "feather:copy"}
-                                  className="w-[14px] h-[14px] cursor-pointer"
-                                  onClick={() => {
-                                    handleCopyAddress(filteredLabelsData[item.index].address);
-                                  }}
-                                />
-                              </div> */}
-                              <div className="flex items-center gap-x-[5px]">
-                                <div className="h-[15px] w-[15px]">
-                                  {ownerProjectDisplayNameToProjectData[
-                                    sortedContracts[key].project_name
-                                  ][5] && (
-                                    <a
-                                      href={
-                                        ownerProjectDisplayNameToProjectData[
-                                          sortedContracts[key].project_name
-                                        ][5]
-                                      }
-                                      target="_blank"
-                                      className="group flex items-center gap-x-[5px] text-xs"
-                                    >
-                                      <Icon
-                                        icon="feather:monitor"
-                                        className="h-[15px] w-[15px]"
-                                      />
-                                    </a>
-                                  )}
-                                </div>
-                                <div className="h-[15px] w-[15px]">
-                                  {ownerProjectDisplayNameToProjectData[
-                                    sortedContracts[key].project_name
-                                  ][4] && (
-                                    <a
-                                      href={`https://x.com/${
-                                        ownerProjectDisplayNameToProjectData[
-                                          sortedContracts[key].project_name
-                                        ][4]
-                                      }`}
-                                      target="_blank"
-                                      className="group flex items-center gap-x-[5px] text-xs"
-                                    >
-                                      <Icon
-                                        icon="ri:twitter-x-fill"
-                                        className="h-[15px] w-[15px]"
-                                      />
-                                    </a>
-                                  )}
-                                </div>
-                                <div className="h-[15px] w-[15px]">
-                                  {ownerProjectDisplayNameToProjectData[
-                                    sortedContracts[key].project_name
-                                  ][3] && (
-                                    <a
-                                      href={`https://github.com/${
-                                        ownerProjectDisplayNameToProjectData[
-                                          sortedContracts[key].project_name
-                                        ][3]
-                                      }`}
-                                      target="_blank"
-                                      className="group flex items-center gap-x-[5px] text-xs"
-                                    >
-                                      <Icon
-                                        icon="ri:github-fill"
-                                        className="h-[15px] w-[15px]"
-                                      />
-                                    </a>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          )}
+                          
                         </div>
                         <div className="flex justify-between gap-x-[10px]">
                           {sortedContracts[key].name ? (
@@ -1962,10 +1941,9 @@ export default function CategoryMetrics({
                               </div>
                             </div>
                             <Link
-                              href={`${
-                                master.chains[sortedContracts[key].chain]
+                              href={`${master.chains[sortedContracts[key].chain]
                                   .block_explorer
-                              }address/${sortedContracts[key].address}`}
+                                }address/${sortedContracts[key].address}`}
                               rel="noopener noreferrer"
                               target="_blank"
                             >
@@ -2020,14 +1998,14 @@ export default function CategoryMetrics({
                         <div>
                           {
                             master.blockspace_categories.main_categories[
-                              sortedContracts[key].main_category_key
+                            sortedContracts[key].main_category_key
                             ]
                           }
                         </div>
                         <div>
                           {
                             master.blockspace_categories.sub_categories[
-                              sortedContracts[key].sub_category_key
+                            sortedContracts[key].sub_category_key
                             ]
                           }
                         </div>
@@ -2035,18 +2013,18 @@ export default function CategoryMetrics({
                           {selectedMode.includes("gas_fees_")
                             ? showUsd
                               ? `$${Number(
-                                  sortedContracts[
-                                    key
-                                  ].gas_fees_absolute_usd.toFixed(0),
-                                ).toLocaleString("en-GB")}`
+                                sortedContracts[
+                                  key
+                                ].gas_fees_absolute_usd.toFixed(0),
+                              ).toLocaleString("en-GB")}`
                               : `Ξ${Number(
-                                  sortedContracts[
-                                    key
-                                  ].gas_fees_absolute_eth.toFixed(0),
-                                ).toLocaleString("en-GB")}`
+                                sortedContracts[
+                                  key
+                                ].gas_fees_absolute_eth.toFixed(0),
+                              ).toLocaleString("en-GB")}`
                             : Number(
-                                sortedContracts[key].txcount_absolute,
-                              ).toLocaleString("en-GB")}
+                              sortedContracts[key].txcount_absolute,
+                            ).toLocaleString("en-GB")}
                         </div>
                       </GridTableRow>
                     );
