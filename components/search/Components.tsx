@@ -15,7 +15,7 @@ import Image from "next/image";
 import VerticalScrollContainer from "../VerticalScrollContainer";
 import Link from "next/link";
 import { HeaderButton } from "../layout/HeaderButton";
-
+import { debounce } from "lodash";
 
 const setDocumentScroll = (showScroll: boolean) => {
   if (showScroll) {
@@ -135,6 +135,18 @@ export const SearchComponent = () => {
     setDocumentScroll(true);
   }
 
+  // Handle initial scroll state when page loads with search parameters
+  useEffect(() => {
+    if (isOpen) {
+      setDocumentScroll(false);
+    }
+    return () => {
+      if (isOpen) {
+        setDocumentScroll(true);
+      }
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
@@ -150,7 +162,6 @@ export const SearchComponent = () => {
 }
 
 const SearchBar = () => {
-  // const [internalSearch, setInternalSearch] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
   const { AllChainsByKeys } = useMaster();
   const pathname = usePathname();
@@ -160,16 +171,26 @@ const SearchBar = () => {
   const { totalMatches } = useSearchBuckets();
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    const newValue = input.value;
+    const cursorPosition = input.selectionStart;
+
     // get existing query params
     let newSearchParams = new URLSearchParams(window.location.search)
-
-    newSearchParams.set("query", e.target.value);
+    newSearchParams.set("query", newValue);
 
     // create new url
     let url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
-
     window.history.replaceState(null, "", url);
-  }
+
+    // Restore cursor position after React updates the input
+    requestAnimationFrame(() => {
+      if (inputRef.current) {
+        inputRef.current.selectionStart = cursorPosition;
+        inputRef.current.selectionEnd = cursorPosition;
+      }
+    });
+  };
 
   return (
     <>
@@ -181,7 +202,7 @@ const SearchBar = () => {
           <div className="flex w-full gap-x-[10px] items-center bg-[#1F2726] rounded-[22px] h-[44px] p-2.5">
             {query.length > 0 ? (
               <div className="flex items-center justify-center w-[24px] h-[24px]">
-                <Icon icon="feather:chevron-down" className="w-[16px] h-[16px]" />
+                <Icon icon="feather:chevron-down" className="w-[24px] h-[24px]" />
               </div>
             ) : (
               <GTPIcon icon="gtp-search" size="md" />
@@ -191,14 +212,16 @@ const SearchBar = () => {
               autoFocus={true}
               autoComplete="off"
               spellCheck={false}
-              className={`flex-1 h-full bg-transparent text-white placeholder-[#CDD8D3] border-none outline-none overflow-x-clip`}
+              className={`flex-1 h-full bg-transparent text-white placeholder-[#CDD8D3] border-none outline-none overflow-x-clip text-md leading-[150%] font-medium font-raleway`}
               placeholder="Search"
               value={query}
               onChange={handleSearchChange}
             />
             <div className={`absolute flex items-center gap-x-[10px] right-[20px] text-[8px] text-[#CDD8D3] font-medium ${query.length > 0 ? "opacity-100" : "opacity-0"} transition-opacity duration-200`}>
               <div className="flex items-center px-[15px] h-[24px] border border-[#CDD8D3] rounded-full select-none">
-                {totalMatches} {totalMatches === 1 ? "result" : "results"}
+                <div className="text-xxxs text-[#CDD8D3] font-medium font-raleway">
+                  {totalMatches} {totalMatches === 1 ? "result" : "results"}
+                </div>
               </div>
               <div
                 className="flex flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px]"
@@ -228,21 +251,21 @@ const SearchBar = () => {
   )
 }
 
-// we'll create a custom hook to get our search buckets and total matches so we can use the data in more than one place
+// hook to get search buckets and total matches
 const useSearchBuckets = () => {
   const { AllChainsByKeys } = useMaster();
   const searchParams = useSearchParams();
   const query = searchParams.get("query")?.trim();
   const { ownerProjectToProjectData } = useProjectsMetadata();
   
-  // lets get our search buckets in order by figuring out the structure first
+  // search buckets structure
   type SearchBucket = {
     label: string;
     icon: GTPIconName;
     options: { label: string; url: string; icon: string, color?: string}[];
   };
   
-  // our first bucket is the chains
+  // first bucket = chains
   const searchBuckets: SearchBucket[] = useMemo(() => [
     {
       label: "Chains",
@@ -286,35 +309,89 @@ const useSearchBuckets = () => {
     }
   ], [AllChainsByKeys, ownerProjectToProjectData]);
 
-  // we'll bring this outside of the return statement so we can use it more flexibly
-  const allFilteredData = useMemo(() => searchBuckets.map(bucket => {
-  
-    return {
-      type: bucket.label,
-      icon: bucket.icon,
-      filteredData: bucket.options.filter(option => query?.length === 1 ? option.label.toLowerCase().startsWith(query?.toLowerCase() || "") : option.label.toLowerCase().includes(query?.toLowerCase() || ""))
-    };
-  }).sort((a, b) => {
-    // First, prioritize Chains bucket
-    if (a.type === "Chains" && b.type !== "Chains") return -1;
-    if (b.type === "Chains" && a.type !== "Chains") return 1;
-    
-    // For non-chain buckets, maintain the order from navigationItems
-    // Get the indices from navigationItems
-    const aIndex = navigationItems.findIndex(item => item.name === a.type);
-    const bIndex = navigationItems.findIndex(item => item.name === b.type);
-    
-    // If both items are found in navigationItems, sort by their order
-    if (aIndex !== -1 && bIndex !== -1) {
-      return aIndex - bIndex;
-    }
-    
-    // If one item is not in navigationItems (like Applications), put it last
-    if (aIndex === -1) return 1;
-    if (bIndex === -1) return -1;
-    
-    return 0;
-  }).filter(bucket => bucket.filteredData.length > 0), [query, searchBuckets]);
+ 
+  const allFilteredData = useMemo(() => {
+    // Check if the query matches at least 40% of a bucket name from the beginning
+    const bucketMatch = query ? searchBuckets.find(bucket => {
+      const bucketName = bucket.label.toLowerCase().replace(/\s+/g, '');
+      const searchQuery = query.toLowerCase().replace(/\s+/g, '');
+      
+      // Calculate the minimum length needed (40% of bucket name)
+      const minQueryLength = Math.ceil(bucketName.length * 0.4);
+      
+      // Check if query is long enough and matches from the start
+      return searchQuery.length >= minQueryLength && 
+             bucketName.startsWith(searchQuery);
+    }) : null;
+
+    // Get regular search results
+    const regularSearchResults = searchBuckets.map(bucket => {
+      const bucketOptions = bucket.options;
+      const lowerQuery = query?.toLowerCase() || "";
+
+      // Split into three categories
+      const exactMatches = bucketOptions.filter(option => 
+        option.label.toLowerCase() === lowerQuery
+      );
+      
+      const startsWithMatches = bucketOptions.filter(option => {
+        const lowerLabel = option.label.toLowerCase();
+        return lowerLabel !== lowerQuery && // not an exact match
+          lowerLabel.startsWith(lowerQuery);
+      });
+
+      const containsMatches = bucketOptions.filter(option => {
+        const lowerLabel = option.label.toLowerCase();
+        return lowerLabel !== lowerQuery && // not an exact match
+          !lowerLabel.startsWith(lowerQuery) && // not a starts with match
+          lowerLabel.includes(lowerQuery);
+      });
+
+      return {
+        type: bucket.label,
+        icon: bucket.icon,
+        filteredData: [...exactMatches, ...startsWithMatches, ...containsMatches],
+        isBucketMatch: false
+      };
+    });
+
+    // Filter out empty buckets from regular results first
+    const filteredRegularResults = regularSearchResults.filter(bucket => 
+      bucket.filteredData.length > 0
+    );
+
+    // Sort regular results
+    const sortedRegularResults = filteredRegularResults.sort((a, b) => {
+      // First, prioritize Chains bucket
+      if (a.type === "Chains" && b.type !== "Chains") return -1;
+      if (b.type === "Chains" && a.type !== "Chains") return 1;
+      
+      // For remaining items, maintain the order from navigationItems
+      const aIndex = navigationItems.findIndex(item => item.name === a.type);
+      const bIndex = navigationItems.findIndex(item => item.name === b.type);
+      
+      // If both items are found in navigationItems, sort by their order
+      if (aIndex !== -1 && bIndex !== -1) {
+        return aIndex - bIndex;
+      }
+      
+      // If one item is not in navigationItems, put it last
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+      
+      return 0;
+    });
+
+    // Add bucket match at the end if it exists
+    return bucketMatch && bucketMatch.options.length > 0
+      ? [...sortedRegularResults, {
+          type: bucketMatch.label,
+          icon: bucketMatch.icon,
+          filteredData: bucketMatch.options,
+          isBucketMatch: true
+        }]
+      : sortedRegularResults;
+  }, [query, searchBuckets]);
 
   // Calculate total matches for the counter
   const totalMatches = allFilteredData.reduce((total, { filteredData }) => total + filteredData.length, 0);
@@ -325,6 +402,31 @@ const useSearchBuckets = () => {
   }
 }
 
+const OpacityUnmatchedText = ({ text, query }: { text: string; query: string }) => {
+  // Remove spaces from both text and query for opacity matching
+  const normalizedText = text.toLowerCase().replace(/\s+/g, '');
+  const normalizedQuery = query.toLowerCase().replace(/\s+/g, '');
+  
+  let matchedChars = 0;
+  // Count how many characters match from the start
+  for (let i = 0; i < normalizedQuery.length; i++) {
+    if (normalizedText[i] === normalizedQuery[i]) {
+      matchedChars++;
+    } else {
+      break;
+    }
+  }
+
+  const matchedPart = text.slice(0, matchedChars);
+  const unmatchedPart = text.slice(matchedChars);
+  
+  return (
+    <span className="text-sm font-raleway font-medium leading-[150%] text-white">
+      <span>{matchedPart}</span>
+      <span className="opacity-50">{unmatchedPart}</span>
+    </span>
+  );
+};
 
 // These components remain the same
 type SearchBadgeProps = {
@@ -428,15 +530,10 @@ const Filters = () => {
 
   const router = useRouter();
 
-
-
-  // if (!query || totalMatches === 0) return null;
-
   return (
     <div className="flex flex-col-reverse md:flex-col !pt-0 !pb-[0px] pl-[0px] pr-[0px] gap-y-[10px] max-h-[calc(100vh-220px)] overflow-y-auto">
       {query && allFilteredData.length > 0 && <div className="flex flex-col-reverse md:flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px] text-[10px]">
-          {allFilteredData.map(({ type, icon, filteredData }) => {
-            // Only render section if there are matching items
+          {allFilteredData.map(({ type, icon, filteredData, isBucketMatch }) => {
             return (
               <div key={type} className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start">
                 <div className="flex gap-x-[10px] items-center shrink-0">
@@ -444,14 +541,19 @@ const Filters = () => {
                       icon={icon as GTPIconName}
                       size="md"
                     />
-                  <div className="text-white text-sm w-[120px]">{type}</div>
+                  <div className="text-sm w-[120px] font-raleway font-medium leading-[150%]">
+                    {isBucketMatch ? (
+                      <OpacityUnmatchedText text={type} query={query || ""} />
+                    ) : (
+                      <span className="text-white">{type}</span>
+                    )}
+                  </div>
                   <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
                 </div>
                 <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
                   {filteredData.map((item) => (
                     <Link href={item.url} key={item.label}>
                       <SearchBadge
-                        // onClick={() => { router.push(item.url) }}
                         className="!cursor-pointer"
                         label={item.label}
                         leftIcon={`${item.icon}` as GTPIconName}
@@ -459,13 +561,12 @@ const Filters = () => {
                         rightIcon=""
                       />
                     </Link>
-                  )).slice(0, 30)}
+                  )).slice(0, isBucketMatch ? undefined : 30)}
                 </div>
               </div>
-        );
-      })}
-      </div>
-    }
+            );
+          })}
+      </div>}
     </div>
   )
 }
@@ -520,7 +621,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
           {children}
         </div>
       </div>
-      {/* The keyboard shortcuts will now stay at the bottom */}
+      {/* Keyboard shortcuts will now stay at the bottom */}
       <div className={`flex px-[10px] pt-2 pb-[5px] items-start gap-[15px] self-stretch flex-shrink-0 ${!showKeyboardShortcuts ? 'hidden' : ''}`}>
         <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px]">
           <svg xmlns="http://www.w3.org/2000/svg" width="70" height="21" viewBox="0 0 70 21" fill="none">
@@ -554,3 +655,8 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
     </div>
   )
 }
+
+// when pressing backspace it feels laggy 
+  
+
+
