@@ -13,7 +13,7 @@ import { CSSTransition } from "react-transition-group";
 
 interface GTPTooltipNewProps {
   children: ReactNode;
-  size?: "sm" | "md" | "lg";
+  size?: "fit" | "sm" | "md" | "lg";
   triggerElement?: HTMLElement | null;
   positionOffset?: {
     mainAxis: number;
@@ -29,9 +29,11 @@ interface GTPTooltipNewProps {
   containerClass?: string;
   // New animation props
   animationDuration?: number;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const GTPTooltipSizeClassMap = {
+  fit: "w-fit",
   sm: "w-[245px]",
   md: "w-[350px]",
   lg: "w-[350px] md:w-[460px]",
@@ -50,6 +52,7 @@ export const GTPTooltipNew = ({
   portalId = "tooltip-portal",
   enableHover = true,
   allowInteract = true,
+  onOpenChange,
 }: GTPTooltipNewProps) => {
   const [uncontrolledIsOpen, setUncontrolledIsOpen] = useState(defaultOpen);
   const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : uncontrolledIsOpen;
@@ -60,6 +63,12 @@ export const GTPTooltipNew = ({
   const tooltipNodeRef = useRef<HTMLDivElement | null>(null); // <-- Add ref for tooltip node
 
   const handleOpenChange = (nextOpen: boolean) => {
+    // call onOpenChange if it is defined
+    if (onOpenChange) {
+      onOpenChange(nextOpen);
+    }
+    
+    // if controlledIsOpen is undefined, update uncontrolledIsOpen
     if (controlledIsOpen === undefined) {
       setUncontrolledIsOpen(nextOpen);
     }
@@ -245,7 +254,7 @@ const TooltipSizeClassMap = {
   lg: "w-[350px] md:w-[460px]",
 }
 
-const Tooltip = ({ children, size = "sm" }: TooltipProps) => {
+export const Tooltip = ({ children, size = "sm" }: TooltipProps) => {
   return (
     <div className={`flex flex-col gap-y-[5px] ${TooltipSizeClassMap[size]} py-[15px] pr-[15px] rounded-[15px] bg-[#1F2726] text-[#CDD8D3] text-xs shadow-[0px_0px_4px_0px_rgba(0,_0,_0,_0.25)]`}>
       {children}
@@ -258,13 +267,13 @@ export default Tooltip;
 
 type TooltipHeaderProps = {
   title: string;
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   className?: string;
   rightIcon?: React.ReactNode;
   href?: string;
 }
 
-const TooltipHeader = ({ title, icon, className, rightIcon, href }: TooltipHeaderProps) => {
+export const TooltipHeader = ({ title, icon, className, rightIcon, href }: TooltipHeaderProps) => {
   if(href) {
     return (
       <Link href={href} className={`flex w-full gap-x-[10px] pl-[20px] h-[18px] items-center ${className}`}>
@@ -288,7 +297,7 @@ type TooltipBodyProps = {
   className?: string;
 }
 
-const TooltipBody = ({ children, className }: TooltipBodyProps) => {
+export const TooltipBody = ({ children, className }: TooltipBodyProps) => {
   return <div className={`flex flex-col w-full ${className}`}>{children}</div>;
 };
 
@@ -298,7 +307,7 @@ type TooltipFooterProps = {
   className?: string;
 }
 
-const TooltipFooter = ({ children, className }: TooltipFooterProps) => {
+export const TooltipFooter = ({ children, className }: TooltipFooterProps) => {
   return <div className={`flex flex-col w-full ${className}`}>{children}</div>;
 };
 
@@ -324,9 +333,11 @@ type OLIContractTooltipProps = {
   iconClassName?: string;
   iconStyle?: React.CSSProperties;
   project_name: string;
+  message?: string | React.ReactNode;
+  href?: string;
 }
 
-export const OLIContractTooltip = ({ icon, project_name, iconClassName, iconStyle }: OLIContractTooltipProps) => {
+export const OLIContractTooltip = ({ icon, project_name, iconClassName, iconStyle, message="Contract information not available.", href="https://www.openlabelsinitiative.org/" }: OLIContractTooltipProps) => {
   return (
     <>
       <TooltipHeader title={project_name} icon={
@@ -335,13 +346,13 @@ export const OLIContractTooltip = ({ icon, project_name, iconClassName, iconStyl
         </div>
         } />
       <TooltipBody>
-        <div className="pl-[20px]">No application metrics available.</div>
+        <div className="pl-[20px]">{message}</div>
       </TooltipBody>
       <TooltipFooter className="h-[64px] flex flex-col justify-end">
         <div className="pl-[20px] flex flex-col gap-y-[5px]">
           <div className="text-xxs">Are you the developer or you know the project's contracts?</div>
           {/* OLI Button */}
-          <Link href="https://www.openlabelsinitiative.org/?gtp.blockspace.chain-overview" target="_blank" className="mx-auto flex items-center justify-center p-[1px] rounded-full bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)] w-fit h-[24px]">
+          <Link href={href} target="_blank" className="mx-auto flex items-center justify-center p-[1px] rounded-full bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)] w-fit h-[24px]">
             <div className="flex items-center pl-[15px] pr-[5px] gap-x-[8px] h-full bg-forest-50 dark:bg-forest-900 rounded-full transition-all duration-300" style={{ width: "fit-content" }}>
               <div className="whitespace-nowrap overflow-hidden heading-small-xxs">See more here.</div>
               <div className="size-[15px] bg-[#344240] rounded-full flex items-center justify-center">
@@ -363,13 +374,12 @@ type GTPApplicationTooltipProps = {
 }
 
 
-export const GTPApplicationTooltip = memo(({owner_project, project_name}: GTPApplicationTooltipProps) => {
+export const GTPApplicationTooltip = memo(({ owner_project, project_name }: GTPApplicationTooltipProps) => {
   const { ownerProjectToProjectData, projectNameToProjectData } = useProjectsMetadata();
-  const searchParams = useSearchParams();
 
   const projectData = useMemo(() => {
-    if(owner_project) return ownerProjectToProjectData[owner_project];
-    if(project_name) return projectNameToProjectData[project_name];
+    if (owner_project) return ownerProjectToProjectData[owner_project];
+    if (project_name) return projectNameToProjectData[project_name];
     return null;
   }, [owner_project, project_name, ownerProjectToProjectData, projectNameToProjectData]);
 
@@ -379,33 +389,31 @@ export const GTPApplicationTooltip = memo(({owner_project, project_name}: GTPApp
     const firstPart = projectData.description.slice(0, Math.min(100, chars));
 
     return firstPart.split(" ").slice(0, -1).join(" ");
-    
-  }, [projectData]);  
+
+  }, [projectData]);
 
   console.log(projectData, owner_project, project_name);
 
-  if(!projectData) return null;
+  if (!projectData) return null;
 
   return (
     <>
-      
       <TooltipHeader
-
         title={projectData.display_name}
         icon={
           projectData.logo_path ? (
             <Image
               src={`https://api.growthepie.xyz/v1/apps/logos/${projectData.logo_path}`}
-              width={15} // Adjust size if needed based on TooltipHeader styling
+              width={15}
               height={15}
-              className="select-none rounded-full" // TooltipHeader might apply its own size/styles
+              className="select-none rounded-full"
               alt={projectData.display_name}
               onDragStart={(e) => e.preventDefault()}
               loading="eager"
               priority={true}
             />
           ) : (
-            <div className={`flex items-center justify-center size-[15px] bg-[#151A19] rounded-full`}> {/* Adjust size if needed */}
+            <div className={`flex items-center justify-center size-[15px] bg-[#151A19] rounded-full`}>
               <GTPIcon icon="gtp-project-monochrome" size="sm" className="!size-[12px] text-[#5A6462]" containerClassName="flex items-center justify-center" />
             </div>
           )
@@ -414,28 +422,25 @@ export const GTPApplicationTooltip = memo(({owner_project, project_name}: GTPApp
           projectData.on_apps_page ? (
             <div className="flex flex-1 items-center justify-end">
               <div className="size-[18px] bg-[#344240] rounded-full flex items-center justify-center">
-                  <GTPIcon icon={"feather:arrow-right" as GTPIconName} size="sm" />
+                <GTPIcon icon={"feather:arrow-right" as GTPIconName} size="sm" />
               </div>
             </div>
           ) : null
         }
-        href={`/applications/${projectData.owner_project}`}
+        href={projectData.on_apps_page ? `/applications/${projectData.owner_project}` : undefined}
       />
       <TooltipBody className="pl-[20px]">
-         {/* Replicate original inner padding/gap if needed */}
         <div className="flex flex-col gap-y-[10px]">
-            <div className="text-xs">
-              {descriptionPreview}...
-            </div>
-            
+          <div className="text-xs">
+            {descriptionPreview}...
+          </div>
         </div>
       </TooltipBody>
-      <TooltipFooter className="flex items-start pl-[20px]"> {/* Added flex items-center for alignment */}
+      <TooltipFooter className="flex items-start pl-[20px]">
         <GTPApplicationLinks owner_project={projectData.owner_project} showUrl={true} />
       </TooltipFooter>
     </>
   );
-
 });
 
 GTPApplicationTooltip.displayName = 'GTPApplicationTooltip';

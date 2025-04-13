@@ -18,7 +18,7 @@ import { useLocalStorage } from "usehooks-ts";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import VerticalVirtuosoScrollContainer from "@/components/VerticalVirtuosoScrollContainer";
 import { Virtuoso } from "react-virtuoso";
-import { ApplicationCard, ApplicationDisplayName, ApplicationIcon, ApplicationTooltip, Category, Chains, formatNumber, Links, MetricTooltip, TopGainersAndLosersTooltip } from "./_components/Components";
+import { ApplicationCard, ApplicationDisplayName, ApplicationIcon, ApplicationTooltip, Category, CategoryTooltipContent, Chains, formatNumber, Links, MetricTooltip, TopGainersAndLosersTooltip } from "./_components/Components";
 import { useProjectsMetadata } from "./_contexts/ProjectsMetadataContext";
 import { useSort } from "./_contexts/SortContext";
 import { ApplicationsURLs } from "@/lib/urls";
@@ -28,6 +28,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { MetricInfo } from "@/types/api/MasterResponse";
 import { useTimespan } from "./_contexts/TimespanContext";
+import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 
 
 // Preload data for the overview page
@@ -624,7 +625,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
   // Memoize gridColumns to prevent recalculations
   // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() => {
-      const applicationColumnWidth = selectedMetricKeys.length > 2 ? 165 : 285;
+      const applicationColumnWidth = selectedMetricKeys.length > 2 ? 156 : 285;
       const metricColumnWidth = selectedMetricKeys.length > 2 ? 242 : 262;
       return `26px ${applicationColumnWidth}px 166px minmax(150px,800px) 95px ${selectedMetricKeys.map(() => `${metricColumnWidth}px`).join(" ")} ${(new Array(numTotalMetrics - selectedMetricKeys.length).fill(0).map(() => "0px").join(" "))} 29px`;
     },[numTotalMetrics, selectedMetricKeys]
@@ -653,28 +654,39 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
         <div
           className="flex items-center gap-x-[5px] group-hover:underline truncate pl-[15px] pr-[15px]"
         >
-          <Tooltip placement="bottom-start" allowInteract>
-            <TooltipTrigger 
-              className="z-[10] truncate h-[32px]" 
-              onClick={(e) => {
-                if(isTouchDevice) {
-                  e.stopPropagation();
-                  e.preventDefault();
-                }
-              }}
-            >
-              <ApplicationDisplayName owner_project={application.owner_project} />
-            </TooltipTrigger>
-            <TooltipContent className="z-[99] left-0 ml-[20px] -mt-[5px]">
-              <ApplicationTooltip application={application} />
-            </TooltipContent>
-          </Tooltip>
+          <GTPTooltipNew
+            placement="bottom-start"
+            allowInteract={true}
+            size="md"
+            trigger={
+              <div className="z-[10] truncate h-[32px] flex items-center">
+                <ApplicationDisplayName owner_project={application.owner_project} />
+              </div>
+            }
+            containerClass="flex flex-col gap-y-[10px]"
+            positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+          >
+            <ApplicationTooltip application={application} />
+          </GTPTooltipNew>
         </div>
         <div className="flex items-center gap-x-[5px] pr-[15px]">
           <Chains origin_keys={application.origin_keys} />
         </div>
         <div className="text-xs pr-[15px]">
-          <Category category={ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].main_category : ""} />
+          <GTPTooltipNew
+            placement="bottom-start"
+            allowInteract={true}
+            size="md"
+            trigger={
+              <div className="z-[10] truncate h-[32px] flex items-center">
+                <Category category={ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].main_category : ""} />
+              </div>
+            }
+            containerClass="flex flex-col gap-y-[10px] !w-[230px]"
+            positionOffset={{ mainAxis: 0, crossAxis: 78 }}
+          >
+            <CategoryTooltipContent application={application} />
+          </GTPTooltipNew>
         </div>
         <div className="numbers-xs text-right pr-[15px]">
           {application.num_contracts}

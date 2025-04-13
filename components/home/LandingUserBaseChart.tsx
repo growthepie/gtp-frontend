@@ -70,7 +70,7 @@ export default function LandingUserBaseChart() {
             <LandingChart
               data={data}
               master={master}
-              sources={landing.data.metrics.user_base.source}
+              sources={landing.data.metrics.engagement.source}
               cross_chain_users={data.cross_chain_users}
               cross_chain_users_comparison={data.cross_chain_users_comparison}
               latest_total={focusEnabled ? data.latest_total_l2 : data.latest_total}

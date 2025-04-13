@@ -70,6 +70,7 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
   const [showGwei] = useLocalStorage("showGwei", false);
   const { selectedTimespan, timespans } = useTimespan();
   const { hoveredSeriesName, selectedSeriesName } = useChartSync();
+  
   useHighchartsWrappers();
 
   
@@ -252,13 +253,13 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
 
   const getSeriesType = useCallback(
     (name: string) => {
-      if (name === "ethereum") {
-        // show column chart for ethereum if monthly and stacked
-        if (selectedScale === "stacked")
-          return "column";
-        // else show area
-        return "area";
-      }
+      // if (name === "ethereum") {
+      //   // show column chart for ethereum if monthly and stacked
+      //   if (selectedScale === "stacked")
+      //     return "column";
+      //   // else show area
+      //   return "area";
+      // }
       if (selectedScale === "percentage") return "area";
       if (selectedScale === "stacked")
         return "area";
@@ -288,6 +289,7 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
       let zoneAxis: string | undefined = undefined;
 
       const isLineChart = getSeriesType(name) === "line";
+      //@ts-ignore
       const isColumnChart = getSeriesType(name) === "column";
 
       const isAreaChart = getSeriesType(name) === "area";

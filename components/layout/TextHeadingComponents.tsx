@@ -81,7 +81,7 @@ export const Title = ({
     iconBackground?: string;
     leftIcon?: GTPIconName;
     rightIcon?: GTPIconName;
-    label: string;
+    label: string | React.ReactNode;
     shortLabel?: string;
     width?: string;
     gradientClass?: string;
@@ -104,7 +104,7 @@ export const Title = ({
     containerClassName="pl-[38px] md:pl-0"
   }: TitleButtonProps) => {
     return (
-      <div className={`${containerClassName}`}>
+      <div className={`${containerClassName} select-none`}>
         <Link
           href={href}
           rel={newTab ? "noreferrer" : ""}
@@ -112,7 +112,7 @@ export const Title = ({
         >
           <div className={`flex items-center justify-center p-[1px] rounded-full ${gradientClass} ${className}`}>
             <div
-              className={`flex items-center pl-[5px] py-[4px] w-[205px] gap-x-[8px]  bg-forest-50 dark:bg-forest-900 rounded-full transition-all duration-300 ${rightIcon && "pr-[5px]"}`}
+              className={`flex items-center pl-[5px] py-[4px] w-[205px] gap-x-[8px]  bg-forest-50 dark:bg-forest-900 rounded-full transition-all duration-300 ${rightIcon ? "pr-[5px]" : "pr-[15px]"}`}
               style={{
                 width: width || "fit-content",
               }}

@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import Icon from "@/components/layout/Icon";
 import { useUIContext } from "@/contexts/UIContext";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { delay } from "lodash";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
@@ -22,6 +22,14 @@ import { useLocalStorage } from "usehooks-ts";
 import { debounce } from "lodash";
 import { useSearchParamState } from "@/hooks/useSearchParamState";
 import { Title, TitleButtonLink } from "@/components/layout/TextHeadingComponents";
+import { OLIContractTooltip, TooltipBody, TooltipHeader } from "@/components/tooltip/GTPTooltip";
+import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
+import VerticalScrollContainer from "@/components/VerticalScrollContainer";
+import { Badge } from "@/app/(labels)/labels/Search";
+import { Chain } from "@/lib/chains";
+import useSWR from "swr";
+import { ApplicationsURLs } from "@/lib/urls";
+import { ApplicationDetailsResponse } from "../_contexts/ApplicationDetailsDataContext";
 
 type ApplicationIconProps = {
   owner_project: string;
@@ -30,7 +38,7 @@ type ApplicationIconProps = {
 
 export const PageMetadata = ({ owner_project }: { owner_project: string }) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
-  
+
   useEffect(() => {
     // update the document title
     document.title = `${ownerProjectToProjectData[owner_project]?.display_name || owner_project} Application Metrics on Ethereum Layer 2 - growthepie`;
@@ -105,8 +113,8 @@ export const PageTitleAndDescriptionAndControls = () => {
     }
   }, []);
 
-  
-  if(!urlOwnerProject) return (
+
+  if (!urlOwnerProject) return (
     <>
       <div className="flex items-center h-[43px] gap-x-[8px]">
         {/* <GTPIcon icon="gtp-project" size="lg" /> */}
@@ -114,26 +122,26 @@ export const PageTitleAndDescriptionAndControls = () => {
           Applications
         </Heading> */}
         <Title
-            icon="gtp-project"
-            title="Applications"
-            containerClassName="flex md:w-full md:items-center md:justify-between"
-            button={
-              <>
-                <TitleButtonLink
-                  label="Don’t see your app? Label here."
-                  icon="gtp-oli-logo"
-                  iconSize="md"
-                  iconBackground="bg-transparent"
-                  rightIcon={"feather:arrow-right" as GTPIconName}
-                  href="https://www.openlabelsinitiative.org/?gtp.applications"
-                  newTab
-                  gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
-                  className="w-fit hidden md:block"
-                />
-                
-                </>
-            }
-          />
+          icon="gtp-project"
+          title="Applications"
+          containerClassName="flex md:w-full md:items-center md:justify-between"
+          button={
+            <>
+              <TitleButtonLink
+                label="Don’t see your app? Label here."
+                icon="gtp-oli-logo"
+                iconSize="md"
+                iconBackground="bg-transparent"
+                rightIcon={"feather:arrow-right" as GTPIconName}
+                href="https://www.openlabelsinitiative.org/?gtp.applications"
+                newTab
+                gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
+                className="w-fit hidden md:block"
+              />
+
+            </>
+          }
+        />
       </div>
       <div className="flex items-end justify-between gap-x-[10px]">
         <div className="text-sm">
@@ -164,23 +172,23 @@ export const PageTitleAndDescriptionAndControls = () => {
           <div className="flex items-center min-h-[43px] gap-x-[8px]">
             <BackButton />
             <div className="flex-1 flex items-center min-h-[43px] gap-x-[8px]">
-            <ApplicationIcon owner_project={urlOwnerProject} size="md" />
-            <Heading className="heading-large-lg lg:heading-large-xl min-h-[36px]" as="h1">
-              <ApplicationDisplayName owner_project={urlOwnerProject} />
-            </Heading>
+              <ApplicationIcon owner_project={urlOwnerProject} size="md" />
+              <Heading className="heading-large-lg lg:heading-large-xl min-h-[36px]" as="h1">
+                <ApplicationDisplayName owner_project={urlOwnerProject} />
+              </Heading>
             </div>
           </div>
-        
+
           <div className="flex-1 text-sm font-medium">
             <ApplicationDescription owner_project={urlOwnerProject} />
             {/* Relay is a cross-chain payment system that enables instant, low-cost bridging and transaction execution by connecting users with relayers who act on their behalf for a small fee. It aims to minimize gas costs and execution latency, making it suitable for applications like payments, bridging, NFT minting, and gas abstraction. I can add one more sentence to that and its still legible. And one more maybe so that we reach 450 characters. Let’s see.  */}
           </div>
         </div>
         <div className="hidden lg:block">
-        <ProjectDetailsLinks owner_project={urlOwnerProject} />
+          <ProjectDetailsLinks owner_project={urlOwnerProject} />
         </div>
         <div className="block lg:hidden">
-        <ProjectDetailsLinks owner_project={urlOwnerProject} mobile />
+          <ProjectDetailsLinks owner_project={urlOwnerProject} mobile />
         </div>
       </div>
       {/* <Search /> */}
@@ -203,31 +211,31 @@ export const BackButton = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-// const handleBack = () => {
-//   let backUrl = window.history.state?.prev;
-//   let newSearchParams = searchParams.toString().replace(/%2C/g, ",");
-  
-//   if (backUrl) {
-//     // Instead of pushing a new state and going back,
-//     // replace the current state and navigate directly
-//     backUrl = `${backUrl.split("?")[0]}?${newSearchParams}`;
-    
-//     // Option 1: Navigate to the URL directly
-//     // window.location.href = backUrl;
-    
-//     // Option 2: Replace current state and use history.back()
-//     // This preserves scroll position better in many browsers
-//     window.history.replaceState(null, "", window.location.href);
-//     window.history.pushState(null, "", backUrl);
-//     window.history.back();
-    
-//     return;
-//   }
-  
-//   // Fallback: Navigate to applications with search params
-//   backUrl = `/applications${newSearchParams ? `?${newSearchParams}` : ""}`;
-//   window.location.href = backUrl;
-// };
+  // const handleBack = () => {
+  //   let backUrl = window.history.state?.prev;
+  //   let newSearchParams = searchParams.toString().replace(/%2C/g, ",");
+
+  //   if (backUrl) {
+  //     // Instead of pushing a new state and going back,
+  //     // replace the current state and navigate directly
+  //     backUrl = `${backUrl.split("?")[0]}?${newSearchParams}`;
+
+  //     // Option 1: Navigate to the URL directly
+  //     // window.location.href = backUrl;
+
+  //     // Option 2: Replace current state and use history.back()
+  //     // This preserves scroll position better in many browsers
+  //     window.history.replaceState(null, "", window.location.href);
+  //     window.history.pushState(null, "", backUrl);
+  //     window.history.back();
+
+  //     return;
+  //   }
+
+  //   // Fallback: Navigate to applications with search params
+  //   backUrl = `/applications${newSearchParams ? `?${newSearchParams}` : ""}`;
+  //   window.location.href = backUrl;
+  // };
 
   return (
     <div
@@ -250,7 +258,7 @@ export type MultipleSelectTopRowChildProps = {
   handlePrev: () => void;
   selected: string[];
   setSelected: React.Dispatch<React.SetStateAction<string[]>>;
-  onSelect?: ( selected: string[] ) => void;
+  onSelect?: (selected: string[]) => void;
   options: {
     key: string;
     icon?: string;
@@ -258,7 +266,7 @@ export type MultipleSelectTopRowChildProps = {
   }[];
   canSelectNone?: boolean;
 };
-export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selected, setSelected, onSelect, options, canSelectNone = false}: MultipleSelectTopRowChildProps) => {
+export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selected, setSelected, onSelect, options, canSelectNone = false }: MultipleSelectTopRowChildProps) => {
   const { isMobile } = useUIContext();
   // const [isHovering, setIsHovering] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -269,9 +277,9 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
 
   return (
     <>
-      <div 
-        className="group flex flex-col relative lg:h-[44px] w-full lg:w-[300px]" 
-        
+      <div
+        className="group flex flex-col relative lg:h-[44px] w-full lg:w-[300px]"
+
       >
         <div
           className={`relative flex rounded-full h-[41px] lg:h-full w-full lg:z-[15] p-[5px] cursor-pointer ${isMobile ? "w-full" : "w-[271px]"}`}
@@ -279,10 +287,10 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
             backgroundColor: "#344240",
           }}
           onMouseEnter={() => {
-            if(debouncedSetIsOpen.cancel) debouncedSetIsOpen.cancel();
+            if (debouncedSetIsOpen.cancel) debouncedSetIsOpen.cancel();
           }}
           onMouseLeave={() => {
-            if(!isOpen) return;
+            if (!isOpen) return;
             debouncedSetIsOpen(false);
           }}
         >
@@ -314,17 +322,17 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
         </div>
         <div
           className={`flex flex-col relative lg:absolute lg:top-1/2 bottom-auto lg:left-0 lg:right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300 ${isOpen
-              ? `lg:z-[14] overflow-hidden border-transparent rounded-b-[30px] lg:border-forest-200 lg:dark:border-forest-500 lg:rounded-b-[22px] lg:shadow-[0px_4px_46.2px_#00000066] lg:dark:shadow-[0px_4px_46.2px_#000000]`
-              : "max-h-0 z-[13] overflow-hidden border-transparent rounded-b-[22px]"
+            ? `lg:z-[14] overflow-hidden border-transparent rounded-b-[30px] lg:border-forest-200 lg:dark:border-forest-500 lg:rounded-b-[22px] lg:shadow-[0px_4px_46.2px_#00000066] lg:dark:shadow-[0px_4px_46.2px_#000000]`
+            : "max-h-0 z-[13] overflow-hidden border-transparent rounded-b-[22px]"
             } `}
           style={{
             maxHeight: isOpen ? `${options.length * 24 + (options.length - 1) * 10 + 37 + 16}px` : "0px",
           }}
           onMouseEnter={() => {
-            if(debouncedSetIsOpen.cancel) debouncedSetIsOpen.cancel();
+            if (debouncedSetIsOpen.cancel) debouncedSetIsOpen.cancel();
           }}
           onMouseLeave={() => {
-            if(!isOpen) return;
+            if (!isOpen) return;
             debouncedSetIsOpen(false);
           }}
         >
@@ -335,10 +343,10 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
                 className="flex px-[25px] py-[5px] gap-x-[15px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
                 onClick={() => {
                   // setIsOpen(false);
-                  
+
 
                   const newSelected = selected.includes(opt.key) ? selected.filter((m) => m !== opt.key) : [...selected, opt.key];
-                  if(newSelected.length === 0 && !canSelectNone)
+                  if (newSelected.length === 0 && !canSelectNone)
                     return;
 
                   setSelected(newSelected);
@@ -404,7 +412,7 @@ export const ProjectDetailsLinks = memo(({ owner_project, mobile }: ProjectDetai
   }
 
   // Filter valid links (not null or empty string)
-  const validLinks = SOCIAL_LINKS.filter(link => 
+  const validLinks = SOCIAL_LINKS.filter(link =>
     projectData[link.key] !== null && projectData[link.key] !== ""
   );
 
@@ -455,7 +463,7 @@ export const ProjectDetailsLinks = memo(({ owner_project, mobile }: ProjectDetai
 
 ProjectDetailsLinks.displayName = "ProjectDetailsLinks";
 
-export const ApplicationCard = memo(({ application, className, width }: { application?: AggregatedDataRow, className?: string, width?: number}) => {
+export const ApplicationCard = memo(({ application, className, width }: { application?: AggregatedDataRow, className?: string, width?: number }) => {
   const { medianMetric, medianMetricKey } = useApplicationsData();
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { metricsDef } = useMetrics();
@@ -484,7 +492,7 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
     return application[medianMetricKey];
   }, [application, medianMetricKey]);
 
-  
+
 
   const prefix = useMemo(() => {
     const def = metricsDef[medianMetric].units;
@@ -514,40 +522,40 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
   }
 
   return (
-    <Link href={{ pathname: `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",")}}
-      className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] ${className || ""} group hover:cursor-pointer hover:bg-forest-500/10`} 
+    <Link href={{ pathname: `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",") }}
+      className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] ${className || ""} group hover:cursor-pointer hover:bg-forest-500/10`}
       style={{ width: width || undefined }}
-      // onClick={() => {
-      //   // window.location.href = `/applications/${application.owner_project}`;
-      //   router.push(`/applications/${application.owner_project}`);
-      // }}
+    // onClick={() => {
+    //   // window.location.href = `/applications/${application.owner_project}`;
+    //   router.push(`/applications/${application.owner_project}`);
+    // }}
     >
       <div>
         <div className="flex flex-col">
-        <div className="w-full flex justify-between items-end h-[20px]">
-          <div className="h-[20px] flex items-center gap-x-[3px]">
-            <div className="numbers-xs text-[#CDD8D3]">{application.num_contracts.toLocaleString("en-GB")}</div>
-            <div className="text-xs text-[#5A6462]">{application.num_contracts === 1 ? 'contract' : 'contracts'}</div>
+          <div className="w-full flex justify-between items-end h-[20px]">
+            <div className="h-[20px] flex items-center gap-x-[3px]">
+              <div className="numbers-xs text-[#CDD8D3]">{application.num_contracts.toLocaleString("en-GB")}</div>
+              <div className="text-xs text-[#5A6462]">{application.num_contracts === 1 ? 'contract' : 'contracts'}</div>
+            </div>
+            <div className="h-[20px] flex items-center gap-x-[3px]">
+              <div className="numbers-xs text-[#5A6462]">Rank</div>
+              <div className="numbers-xs text-[#CDD8D3]">{rank}</div>
+              {application[`${medianMetricKey}_change_pct`] !== Infinity ? (
+                <div className={`flex justify-end w-[60px] numbers-xs ${application[`${medianMetricKey}_change_pct`] < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
+                  {application[`${medianMetricKey}_change_pct`] < 0 ? '-' : '+'}{formatNumber(Math.abs(application[`${medianMetricKey}_change_pct`]), { defaultDecimals: 1, thresholdDecimals: { base: 1 } })}%
+                </div>
+              ) : <div className="w-[49px]">&nbsp;</div>}
+            </div>
           </div>
-          <div className="h-[20px] flex items-center gap-x-[3px]">
-            <div className="numbers-xs text-[#5A6462]">Rank</div>
-            <div className="numbers-xs text-[#CDD8D3]">{rank}</div>
-            {application[`${medianMetricKey}_change_pct`] !== Infinity ? (
-              <div className={`flex justify-end w-[60px] numbers-xs ${application[`${medianMetricKey}_change_pct`] < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
-                {application[`${medianMetricKey}_change_pct`] < 0 ? '-' : '+'}{formatNumber(Math.abs(application[`${medianMetricKey}_change_pct`]), {defaultDecimals: 1, thresholdDecimals: {base: 1}})}%
-              </div>
-            ) : <div className="w-[49px]">&nbsp;</div>}
+          <div className="h-[20px] w-full flex items-center justify-end gap-x-[3px]">
+            <div className="numbers-sm text-[#CDD8D3]">
+              {prefix}
+              {value?.toLocaleString("en-GB", { maximumFractionDigits: decimals })}
+            </div>
           </div>
-        </div>
-        <div className="h-[20px] w-full flex items-center justify-end gap-x-[3px]">
-          <div className="numbers-sm text-[#CDD8D3]">
-            {prefix}
-            {value?.toLocaleString("en-GB", { maximumFractionDigits: decimals })}
-          </div>
-        </div>
         </div>
       </div>
-      
+
       <div className="w-full flex items-center gap-x-[5px]">
         <ApplicationIcon owner_project={application.owner_project} size="md" />
         <div className="heading-large-md flex-1 overflow-visible truncate">
@@ -555,7 +563,7 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
             <TooltipTrigger
               className="group-hover:underline"
               onClick={(e) => {
-                if(isTouchDevice) {
+                if (isTouchDevice) {
                   e.stopPropagation();
                   e.preventDefault();
                 }
@@ -579,7 +587,7 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
         <div className="h-[20px] flex items-center gap-x-[5px]">
           <Chains origin_keys={application.origin_keys} />
         </div>
-        
+
       </div>
     </Link>
   )
@@ -588,7 +596,7 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
 ApplicationCard.displayName = 'ApplicationCard';
 
 
-export const ApplicationTooltip = memo(({application}: {application: AggregatedDataRow}) => {
+export const ApplicationTooltip = memo(({ application }: { application: AggregatedDataRow }) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const searchParams = useSearchParams();
 
@@ -598,24 +606,25 @@ export const ApplicationTooltip = memo(({application}: {application: AggregatedD
     const firstPart = ownerProjectToProjectData[application.owner_project].description.slice(0, Math.min(100, chars));
 
     return firstPart.split(" ").slice(0, -1).join(" ");
-    
-  }, [application, ownerProjectToProjectData]);  
 
-  if(!application || !ownerProjectToProjectData) return null;
+  }, [application, ownerProjectToProjectData]);
+
+  if (!application || !ownerProjectToProjectData) return null;
 
   return (
-    <div
-      className="cursor-default z-[99] p-[15px] left-[20px] w-[300px] md:w-[345px] top-[32px] bg-[#1F2726] rounded-[15px] transition-opacity duration-300"
-      style={{
-        boxShadow: "0px 0px 30px #000000",
-        // left: `${mouseOffsetX}px`,
-      }}
-      onClick={(e) => {
-        e.stopPropagation();
-      }}
-    >
+    // <div
+    //   className="cursor-default z-[99] p-[15px] left-[20px] w-[300px] md:w-[345px] top-[32px] bg-[#1F2726] rounded-[15px] transition-opacity duration-300"
+    //   style={{
+    //     boxShadow: "0px 0px 30px #000000",
+    //     // left: `${mouseOffsetX}px`,
+    //   }}
+    //   onClick={(e) => {
+    //     e.stopPropagation();
+    //   }}
+    // >
+    <TooltipBody className="pl-[15px]">
       <div className="flex flex-col pl-[5px] gap-y-[10px]">
-        <Link className="flex gap-x-[5px] items-center justify-between" href={{ pathname: `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",")}}>
+        <Link className="flex gap-x-[5px] items-center justify-between" href={{ pathname: `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",") }}>
           <div className="flex gap-x-[5px] items-center">
             {ownerProjectToProjectData[application.owner_project] && ownerProjectToProjectData[application.owner_project].logo_path ? (
               <Image
@@ -641,18 +650,18 @@ export const ApplicationTooltip = memo(({application}: {application: AggregatedD
         <div className="text-xs">
           {descriptionPreview}...
         </div>
-          <Links owner_project={application.owner_project} showUrl={true} />
+        <Links owner_project={application.owner_project} showUrl={true} />
       </div>
-
-    </div>
+      </TooltipBody>
+    // </div>
   )
 });
 
 ApplicationTooltip.displayName = 'ApplicationTooltip';
 
 export const TopGainersAndLosersTooltip = ({ metric }: { metric: string }) => {
-  const {metricsDef} = useMetrics();
-  const { timespans, selectedTimespan} = useTimespan();
+  const { metricsDef } = useMetrics();
+  const { timespans, selectedTimespan } = useTimespan();
   return (
     <div
       className="w-[400px] bg-[#1F2726] rounded-[15px] flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300"
@@ -675,10 +684,10 @@ export const TopGainersAndLosersTooltip = ({ metric }: { metric: string }) => {
       </div>
 
       <div className="text-xxs">
-      This is calculated by comparing the change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label} to the previous {timespans[selectedTimespan].label} for each application, after filtering out applications with less than the median {metricsDef[metric].name} across all applications.
+        This is calculated by comparing the change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label} to the previous {timespans[selectedTimespan].label} for each application, after filtering out applications with less than the median {metricsDef[metric].name} across all applications.
       </div>
 
-        {/* that have experienced the most significant change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label}.
+      {/* that have experienced the most significant change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label}.
         </div>
         <div className="text-xs">
            This is calculated by comparing the change in {metricsDef[metric].name} over the last {timespans[selectedTimespan].label} to the previous {timespans[selectedTimespan].label} after filtering out applications with less than the median {metricsDef[metric].name} value.
@@ -688,7 +697,7 @@ export const TopGainersAndLosersTooltip = ({ metric }: { metric: string }) => {
 }
 
 export const MetricTooltip = ({ metric }: { metric: string }) => {
-  const {metricsDef} = useMetrics();
+  const { metricsDef } = useMetrics();
   const content = {
     gas_fees: {
       title: metricsDef["gas_fees"].name,
@@ -723,12 +732,12 @@ export const MetricTooltip = ({ metric }: { metric: string }) => {
   );
 }
 
-export const Links = memo(({ owner_project, showUrl}: { owner_project: string, showUrl?: boolean }) => {
+export const Links = memo(({ owner_project, showUrl }: { owner_project: string, showUrl?: boolean }) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const linkPrefixes = ["", "https://x.com/", "https://github.com/"];
   const icons = ["feather:monitor", "ri:twitter-x-fill", "ri:github-fill"];
   const keys = ["website", "twitter", "main_github"];
-  
+
   // default hover key should be the first link that is not empty
   const defaultHoverKey = useMemo(() => {
     if (!ownerProjectToProjectData[owner_project]) return "website";
@@ -742,34 +751,34 @@ export const Links = memo(({ owner_project, showUrl}: { owner_project: string, s
     return url.replace("https://", "").replace(/\/$/, "");
   }
 
-  if(!ownerProjectToProjectData[owner_project]) return null;
-  
-  if(showUrl) {
-    return (
-    <div className="flex flex-col gap-y-[5px] pt-[10px]">
-      <div className="flex items-center gap-x-[5px]" onMouseLeave={() => setCurrentHover(defaultHoverKey)}>
-      {ownerProjectToProjectData[owner_project] && keys.map((key, index) => {
-        if(!ownerProjectToProjectData[owner_project][key]) return null;
+  if (!ownerProjectToProjectData[owner_project]) return null;
 
-        return (
-        <div key={index} className="h-[15px] w-[15px]" onMouseEnter={() => setCurrentHover(key)}>
-          {ownerProjectToProjectData[owner_project][key] && <Link
-            href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
-            target="_blank"
-          >
-            <Icon
-              icon={icons[index]}
-              className="w-[15px] h-[15px] select-none"
-            />
-          </Link>}
+  if (showUrl) {
+    return (
+      <div className="flex flex-col gap-y-[5px] pt-[10px]">
+        <div className="flex items-center gap-x-[5px]" onMouseLeave={() => setCurrentHover(defaultHoverKey)}>
+          {ownerProjectToProjectData[owner_project] && keys.map((key, index) => {
+            if (!ownerProjectToProjectData[owner_project][key]) return null;
+
+            return (
+              <div key={index} className="h-[15px] w-[15px]" onMouseEnter={() => setCurrentHover(key)}>
+                {ownerProjectToProjectData[owner_project][key] && <Link
+                  href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
+                  target="_blank"
+                >
+                  <Icon
+                    icon={icons[index]}
+                    className="w-[15px] h-[15px] select-none"
+                  />
+                </Link>}
+              </div>
+            )
+          })}
         </div>
-        )
-      })}
+        <div className="text-xxs text-[#5A6462]">
+          {`${formatUrl(linkPrefixes[keys.indexOf(currentHoverKey)] + ownerProjectToProjectData[owner_project][currentHoverKey]).replace("https://", "")}`}
+        </div>
       </div>
-      <div className="text-xxs text-[#5A6462]">
-        {`${formatUrl(linkPrefixes[keys.indexOf(currentHoverKey)]+ownerProjectToProjectData[owner_project][currentHoverKey]).replace("https://", "")}`}
-      </div>
-    </div>
     );
   }
 
@@ -796,84 +805,338 @@ Links.displayName = 'Links';
 
 export const Chains = ({ origin_keys }: { origin_keys: string[] }) => {
   const { AllChainsByKeys } = useMaster();
-  const [focusEnabled] = useLocalStorage("focusEnabled", false)
+  const [focusEnabled] = useLocalStorage("focusEnabled", false);
   const { selectedChains, setSelectedChains } = useApplicationsData();
-  
+  const [recentChains, setRecentChains] = useLocalStorage<string[]>("applications::recentlySelectedChains", []);
+
   // Number of chains to display initially
   const [visibleCount, setVisibleCount] = useSearchParamState<number>("maxChains", {
     defaultValue: 5,
   });
-  
-  const hiddenCount = origin_keys.length - visibleCount;
 
-  const hasEthereum = origin_keys.includes("ethereum");
+  // Update recently selected chains history when a chain is selected
+  const updateSelectedChain = (chain: string, isSelected: boolean) => {
+    if (isSelected) {
+      // Remove chain if it already exists in the array to avoid duplicates
+      const filteredRecent = recentChains.filter((c: string) => c !== chain);
+      // Add the chain to the beginning of the array (most recent)
+      setRecentChains([chain, ...filteredRecent]);
+    }
 
-  const origin_keys_filtered = !focusEnabled && hasEthereum ? ["ethereum", ...origin_keys.filter((key) => key !== "ethereum")] : origin_keys.filter((key) => key !== "ethereum");
+    if (selectedChains.includes(chain)) {
+      setSelectedChains(selectedChains.filter((c) => c !== chain));
+    } else {
+      setSelectedChains([...selectedChains, chain]);
+    }
+  };
+
+  // Sort the chains so that selected chains appear first, then recent chains, then others
+  const sortedOriginKeys = [...origin_keys].sort((a, b) => {
+    // 1. Selected chains always come first
+    if (selectedChains.includes(a) && !selectedChains.includes(b)) return -1;
+    if (!selectedChains.includes(a) && selectedChains.includes(b)) return 1;
+
+    // 2. If both are selected or both are not selected
+    if (selectedChains.includes(a) === selectedChains.includes(b)) {
+      // 2a. If not selected, sort by recency
+      if (!selectedChains.includes(a)) {
+        const aIndex = recentChains.indexOf(a);
+        const bIndex = recentChains.indexOf(b);
+
+        // If both are in recent chains, sort by recency
+        if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+        // If only a is in recent chains, a comes first
+        if (aIndex !== -1) return -1;
+        // If only b is in recent chains, b comes first
+        if (bIndex !== -1) return 1;
+      }
+
+      // 2b. Special treatment for Ethereum if not in focus mode
+      if (!focusEnabled) {
+        if (a === "ethereum") return -1;
+        if (b === "ethereum") return 1;
+      }
+    }
+
+    // 3. Maintain original order for items with same priority
+    return 0;
+  });
+
+  const hiddenCount = sortedOriginKeys.length - visibleCount;
 
   // Create visible and hidden chains arrays
-  const visibleChains = origin_keys_filtered.slice(0, visibleCount);
-  const hiddenChains = origin_keys_filtered.slice(visibleCount);
+  const visibleChains = sortedOriginKeys.slice(0, visibleCount);
+  const hiddenChains = sortedOriginKeys.slice(visibleCount);
 
   return (
     <div className="flex items-center gap-x-[5px] group/chains">
       <div className="flex items-center gap-x-[0px]">
-      {visibleChains.map((chain, index) => (
+        {visibleChains.map((chain, index) => (
+          <div
+            key={index}
+            className={`group-hover/chains:opacity-50 hover:!opacity-100 cursor-pointer p-[2.5px] ${selectedChains.includes(chain) || selectedChains.length === 0 ? '' : '!text-[#5A6462]'}`}
+            style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors["dark"][0] : '' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              updateSelectedChain(chain, !selectedChains.includes(chain));
+            }}
+          >
+            {AllChainsByKeys[chain] && (
+              <Icon
+                icon={`gtp:${AllChainsByKeys[chain].urlKey}-logo-monochrome`}
+                className="w-[15px] h-[15px]"
+              />
+            )}
+          </div>
+        ))}
+      </div>
+      {hiddenCount > 0 && (
+        <ChainsTooltip
+          visibleChains={visibleChains}
+          hiddenChains={hiddenChains}
+          selectedChains={selectedChains}
+          updateSelectedChain={updateSelectedChain}
+          AllChainsByKeys={AllChainsByKeys}
+        />
+      )}
+    </div>
+  );
+};
+
+export const ChainsTooltip = ({
+  visibleChains,
+  hiddenChains,
+  selectedChains,
+  updateSelectedChain,
+  AllChainsByKeys,
+}: {
+  visibleChains: string[];
+  hiddenChains: string[];
+  selectedChains: string[];
+  updateSelectedChain: (chain: string, isSelected: boolean) => void;
+  AllChainsByKeys: Record<string, Chain>;
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerHeight, setContainerHeight] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isContentReady, setIsContentReady] = useState(false);
+
+  const hiddenCount = hiddenChains.length;
+
+  // Delay the height calculation until after tooltip is open and rendered
+  useEffect(() => {
+    if (!isOpen) {
+      setIsContentReady(false);
+      return;
+    }
+    
+    // Use a small delay to ensure the tooltip content is fully rendered
+    const timer = setTimeout(() => {
+      if (containerRef.current) {
+        setContainerHeight(containerRef.current.clientHeight);
+        setIsContentReady(true);
+      }
+    }, 50);
+    
+    return () => clearTimeout(timer);
+  }, [isOpen]);
+  
+  // Use ResizeObserver to detect size changes after initial render
+  useEffect(() => {
+    if (!containerRef.current || !isOpen || !isContentReady) return;
+    
+    const resizeObserver = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        if (entry.target === containerRef.current) {
+          // When the container size changes, update the height state
+          setContainerHeight(entry.contentRect.height);
+        }
+      }
+    });
+
+    // Start observing the container
+    resizeObserver.observe(containerRef.current);
+
+    // Clean up on unmount or when dependencies change
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [isOpen, isContentReady]);
+
+  if (hiddenCount === 0) return null;
+  
+  // Calculate a safe default height before measurement
+  // For smoother UX, we can estimate based on typical badge height and count
+  const estimatedHeight = Math.min(
+    (Math.ceil((visibleChains.length + hiddenChains.length) / 3) * 30) + 10, // Rough estimate: rows * badge height + padding
+    110 // Max height limit
+  );
+
+  return (
+    <GTPTooltipNew
+      placement="bottom-start"
+      size="sm"
+      allowInteract={true}
+      onOpenChange={(open) => setIsOpen(open)} // Track when tooltip opens
+      trigger={
         <div
-          key={index}
-          className={`group-hover/chains:opacity-50 hover:!opacity-100 cursor-pointer p-[2.5px] ${selectedChains.includes(chain) || selectedChains.length === 0 ? '' : '!text-[#5A6462]'}`} 
-          style={{ color: AllChainsByKeys[chain] ? AllChainsByKeys[chain].colors["dark"][0] : '' }}
+          className="h-[18px] px-[5px] py-0.5 rounded-[999px] outline outline-1 outline-offset-[-1px] outline-[#344240] flex justify-center items-center cursor-pointer select-none"
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
-            if (selectedChains.includes(chain)) {
-              setSelectedChains(selectedChains.filter((c) => c !== chain));
-            } else {
-              setSelectedChains([...selectedChains, chain]);
-            }
           }}
-        >
-          {AllChainsByKeys[chain] && (
-            <Icon
-              icon={`gtp:${AllChainsByKeys[chain].urlKey}-logo-monochrome`}
-              className="w-[15px] h-[15px]"
-            />
-          )}
-        </div>
-      ))}
-      </div>
-      {hiddenCount > 0 && (
-        <div 
-          className="h-[18px] px-[5px] py-0.5 rounded-[999px] outline outline-1 outline-offset-[-1px] outline-[#344240] flex justify-center items-center cursor-pointer"
         >
           <div className="text-[#5a6462] text-[10px] font-medium leading-[15px]">
             +{hiddenCount} more
           </div>
         </div>
-      )}
-    </div>
-  );
-};
-export const Category = ({ category }: { category: string }) => {
-  const getGTPCategoryIcon = (category: string): GTPIconName | "" => {
-    switch (category) {
-      case "Cross-Chain":
-        return "gtp-crosschain";
-      case "Utility":
-        return "gtp-utilities";
-      case "Token Transfers":
-        return "gtp-tokentransfers";
-      case "DeFi":
-        return "gtp-defi";
-      case "Social":
-        return "gtp-socials";
-      case "NFT":
-        return "gtp-nft";
-      case "CeFi":
-        return "gtp-cefi";
-      default:
-        return "";
-    }
+      }
+      containerClass="flex flex-col gap-y-[10px]"
+      positionOffset={{ mainAxis: 5, crossAxis: 20 }}
+    >
+      <TooltipHeader title={`Chain Selection`} />
+      <TooltipBody className="group/chains pl-[15px] flex !flex-row">
+        <VerticalScrollContainer 
+          height={isContentReady ? Math.min(Math.max(containerHeight, 50), 110) : estimatedHeight}
+          className="w-full !h-fit !max-h-[110px]" 
+          scrollThumbColor="#1F2726" 
+          scrollTrackColor="#151A19"
+        >
+          <div 
+            ref={containerRef} 
+            className="flex flex-row flex-wrap gap-[5px]"
+          >
+            {[...visibleChains, ...hiddenChains].filter((chain) => AllChainsByKeys[chain]).map((chain, index) => {
+              const baseBgClass = "bg-[#344240]";
+              const baseBorderClass = "border border-[#344240]";
+              const hoverBgClass = "hover:bg-[#5A6462]";
+              const hoverBorderClass = "hover:border hover:border-[#5A6462]";
+
+              const baseClass = `${baseBgClass} ${baseBorderClass}`;
+              const hoverClass = `${hoverBgClass} ${hoverBorderClass}`;
+
+              const areChainsSelected = selectedChains.length > 0;
+              const isChainSelected = selectedChains.includes(chain);
+
+              const rightIcon = isChainSelected ? "heroicons-solid:x-circle" : undefined;
+              const rightIconColor = isChainSelected ? "#FE5468" : undefined;
+              const altColoring = areChainsSelected && !isChainSelected;
+
+              const leftIcon = `gtp:${AllChainsByKeys[chain].urlKey}-logo-monochrome`;
+              const leftIconColor = AllChainsByKeys[chain].colors["dark"][0];
+
+              let className = `${baseClass} ${hoverClass}`;
+              if (areChainsSelected) {
+                if (isChainSelected) {
+                  className = `${baseClass} ${hoverClass}`;
+                } else {
+                  className = `${baseBorderClass} ${hoverClass}`;
+                }
+              }
+
+              return (
+                <Badge
+                  key={chain}
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    updateSelectedChain(chain, !selectedChains.includes(chain));
+                  }}
+                  label={AllChainsByKeys[chain].label}
+                  leftIcon={leftIcon}
+                  leftIconColor={leftIconColor}
+                  rightIcon={rightIcon}
+                  rightIconColor={rightIconColor}
+                  showLabel={true}
+                  altColoring={altColoring}
+                  className={className}
+                />
+              )
+            })}
+          </div>
+        </VerticalScrollContainer>
+      </TooltipBody>
+    </GTPTooltipNew>
+  )
+}
+
+const getGTPCategoryIcon = (category: string): GTPIconName | "" => {
+  switch (category) {
+    case "Cross-Chain":
+      return "gtp-crosschain";
+    case "Utility":
+      return "gtp-utilities";
+    case "Token Transfers":
+      return "gtp-tokentransfers";
+    case "DeFi":
+      return "gtp-defi";
+    case "Social":
+      return "gtp-socials";
+    case "NFT":
+      return "gtp-nft";
+    case "CeFi":
+      return "gtp-cefi";
+    default:
+      return "";
   }
+}
+
+
+export const SubcategoriesList = ({application}: {application: AggregatedDataRow}) => {
+  const {
+    data: applicationDetails,
+    isLoading: applicationDetailsLoading,
+  } = useSWR<ApplicationDetailsResponse>(ApplicationsURLs.details.replace("{owner_project}", application.owner_project));
+
+  const {data: masterData} = useMaster();
+  
+  if(!applicationDetails || !masterData){
+    return (
+        <div className="flex flex-col gap-[5px] animate-pulse w-full">
+          <div className="h-[15px] w-full rounded-[5px] bg-gray-200/10"></div>
+        </div>
+    )
+  }
+
+  const contractsTable = applicationDetails.contracts_table["max"];
+  const types = contractsTable.types;
+  const rows = contractsTable.data;
+
+  const subcategories = rows.map((row) => {
+    return row[types.indexOf("sub_category_key")];
+  });
+
+  const subcategoriesSet = new Set(subcategories);
+
+  return (
+    <div className="flex flex-col gap-[5px]">
+      {Array.from(subcategoriesSet).map((subcategory) => (
+        <div key={subcategory} className="text-xs">{masterData.blockspace_categories.sub_categories[subcategory as keyof typeof masterData.blockspace_categories.sub_categories]}</div>
+      ))}
+    </div>
+  )
+}
+
+export const CategoryTooltipContent = ({ application }: { application: AggregatedDataRow }) => {
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+
+  return (
+    <>
+      <TooltipHeader title={`Category`} icon={<GTPIcon icon={getGTPCategoryIcon(ownerProjectToProjectData[application.owner_project].main_category) as GTPIconName} size="sm" />} />
+      <TooltipBody className="pl-[15px] !flex-col gap-[5px]">
+        <div className="heading-small-xs">Subcategories</div>
+        <div className="flex flex-col gap-[5px] max-h-[400px] transition-all duration-300 overflow-y-auto">
+          <SubcategoriesList application={application} />
+        </div>
+      </TooltipBody>
+    </>
+  )
+}
+
+export const Category = ({ category }: { category: string }) => {
+
 
   return (
     <>
@@ -883,7 +1146,7 @@ export const Category = ({ category }: { category: string }) => {
           <GTPIcon icon={getGTPCategoryIcon(category) as GTPIconName} size="sm" />
           <div className="text-xs">{category}</div>
         </div>
-      ): (
+      ) : (
         <div className="flex items-center gap-x-[5px] whitespace-nowrap">
           {/* <Icon icon="carbon:unknown-filled" className="size-[15px] text-[#5A6462]/50" /> */}
           <div className="size-[15px] text-black/90 rounded-sm bg-[#5A6462]/50 flex justify-center items-center font-bold text-xs pt-[2px]">?</div>
@@ -908,7 +1171,7 @@ interface FormatNumberOptions {
 }
 
 export function formatNumber(
-  number: number, 
+  number: number,
   options: FormatNumberOptions = {}
 ): string {
   // Handle special cases
@@ -916,7 +1179,7 @@ export function formatNumber(
   if (number === 0) return '0';
 
   const defaultDecimals = options.defaultDecimals ?? 2;
-  
+
   // Define formatting thresholds
   const thresholds: ThresholdConfig[] = [
     { value: 1e12, suffix: 'T' },
@@ -924,18 +1187,18 @@ export function formatNumber(
     { value: 1e6, suffix: 'M' },
     { value: 1e3, suffix: 'k' }
   ];
-  
+
   const absNumber = Math.abs(number);
-  
+
   // Find the appropriate threshold
   const threshold = thresholds.find(t => absNumber >= t.value);
-  
+
   if (threshold) {
     const scaledNumber = number / threshold.value;
     const decimals = options.thresholdDecimals?.[threshold.suffix] ?? defaultDecimals;
     return scaledNumber.toFixed(decimals) + threshold.suffix;
   }
-  
+
   // For numbers less than 1000
   const baseDecimals = options.thresholdDecimals?.['base'] ?? defaultDecimals;
   return number.toFixed(baseDecimals);
