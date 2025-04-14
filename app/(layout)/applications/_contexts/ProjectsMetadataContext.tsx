@@ -27,6 +27,8 @@ export type ProjectsMetadataContextType = {
       website: string;
       logo_path: string;
       main_category: string;
+      sub_category: string;
+      sub_categories: string[];
       on_apps_page: boolean;
     }
   };
@@ -40,6 +42,8 @@ export type ProjectsMetadataContextType = {
       website: string;
       logo_path: string;
       main_category: string;
+      sub_category: string;
+      sub_categories: string[];
       on_apps_page: boolean;
     }
   };
@@ -84,6 +88,8 @@ export const ProjectsMetadataProvider = ({ children, useFilteredProjects = false
         website: project[projectsData.data.types.indexOf("website")],
         logo_path: project[projectsData.data.types.indexOf("logo_path")],
         main_category: project[projectsData.data.types.indexOf("main_category")],
+        sub_category: project[projectsData.data.types.indexOf("sub_category")],
+        sub_categories: project[projectsData.data.types.indexOf("sub_categories")],
         on_apps_page: !useFilteredProjects ? ownerProjectsInAppsPage.has(project[projectsData.data.types.indexOf("owner_project")]) : true,
       }
       return acc;
@@ -101,6 +107,8 @@ export const ProjectsMetadataProvider = ({ children, useFilteredProjects = false
         website: project[projectsData.data.types.indexOf("website")],
         logo_path: project[projectsData.data.types.indexOf("logo_path")],
         main_category: project[projectsData.data.types.indexOf("main_category")],
+        sub_category: project[projectsData.data.types.indexOf("sub_category")],
+        sub_categories: project[projectsData.data.types.indexOf("sub_categories")],
         on_apps_page: !useFilteredProjects ? ownerProjectsInAppsPage.has(project[projectsData.data.types.indexOf("owner_project")]) : true,
       }
       return acc;

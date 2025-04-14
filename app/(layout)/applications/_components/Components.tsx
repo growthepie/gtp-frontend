@@ -1083,44 +1083,13 @@ const getGTPCategoryIcon = (category: string): GTPIconName | "" => {
   }
 }
 
-
-export const SubcategoriesList = ({application}: {application: AggregatedDataRow}) => {
-  const {
-    data: applicationDetails,
-    isLoading: applicationDetailsLoading,
-  } = useSWR<ApplicationDetailsResponse>(ApplicationsURLs.details.replace("{owner_project}", application.owner_project));
-
-  const {data: masterData} = useMaster();
-  
-  if(!applicationDetails || !masterData){
-    return (
-        <div className="flex flex-col gap-[5px] animate-pulse w-full">
-          <div className="h-[15px] w-full rounded-[5px] bg-gray-200/10"></div>
-        </div>
-    )
-  }
-
-  const contractsTable = applicationDetails.contracts_table["max"];
-  const types = contractsTable.types;
-  const rows = contractsTable.data;
-
-  const subcategories = rows.map((row) => {
-    return row[types.indexOf("sub_category_key")];
-  });
-
-  const subcategoriesSet = new Set(subcategories);
-
-  return (
-    <div className="flex flex-col gap-[5px]">
-      {Array.from(subcategoriesSet).map((subcategory) => (
-        <div key={subcategory} className="text-xs">{masterData.blockspace_categories.sub_categories[subcategory as keyof typeof masterData.blockspace_categories.sub_categories]}</div>
-      ))}
-    </div>
-  )
-}
-
 export const CategoryTooltipContent = ({ application }: { application: AggregatedDataRow }) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
+  const { data: masterData } = useMaster();
+
+  if(!masterData){
+    return null;
+  }
 
   return (
     <>
@@ -1128,7 +1097,11 @@ export const CategoryTooltipContent = ({ application }: { application: Aggregate
       <TooltipBody className="pl-[15px] !flex-col gap-[5px]">
         <div className="heading-small-xs">Subcategories</div>
         <div className="flex flex-col gap-[5px] max-h-[400px] transition-all duration-300 overflow-y-auto">
-          <SubcategoriesList application={application} />
+        <div className="flex flex-col gap-[5px]">
+      {ownerProjectToProjectData[application.owner_project].sub_categories.map((subcategory) => (
+        <div key={subcategory} className="text-xs">{masterData.blockspace_categories.sub_categories[subcategory as keyof typeof masterData.blockspace_categories.sub_categories]}</div>
+      ))}
+    </div>
         </div>
       </TooltipBody>
     </>
