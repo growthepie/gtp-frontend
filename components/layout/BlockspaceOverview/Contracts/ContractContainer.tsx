@@ -244,7 +244,7 @@ export default function ContractContainer() {
       </div>
       <div className="flex flex-col w-[100%] mx-auto min-w-[880px] mb-[15px]">
         <GridTableHeader
-          gridDefinitionColumns="grid-cols-[20px,225px,280px,95px,minmax(135px,800px),115px]"
+          gridDefinitionColumns="grid-cols-[20px,150px,280px,95px,minmax(135px,800px),115px]"
           className="pb-[4px] text-[12px] gap-x-[15px] z-[2]"
           style={{
             paddingTop: "15px",

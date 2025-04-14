@@ -34,10 +34,14 @@ const sizeClassMap = {
   * <GTPIcon icon="gtp:donate" size="lg" />
  */
 export const GTPIcon = ({ icon, className, containerClassName, ...props }: GTPIconProps) => {
+  let iconPrefix = "gtp:";
+  if(icon.includes(":")){
+    iconPrefix = "";
+  }
   return (
     <div className={`${sizeClassMap[props.size || "md"]} ${containerClassName || ""}`}>
       <Icon
-        icon={`gtp:${icon}`}
+        icon={`${iconPrefix}${icon}`}
         className={`${sizeClassMap[props.size || "md"] || "w-[24px] h-[24px]"} ${className || ""}`}
         {...props}
       />

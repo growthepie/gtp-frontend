@@ -82,6 +82,12 @@ module.exports = {
           950: "#1B2524",
           1000: "#151A19",
         },
+        hover: "#5A6462",
+        active: "#CDD8D3",
+        "background": "#1F2726",
+        "medium-background": "#344240",
+        "active-black": "#151A19",
+        
       },
       animation: {
         shake: "shake 0.5s ease-in-out infinite",

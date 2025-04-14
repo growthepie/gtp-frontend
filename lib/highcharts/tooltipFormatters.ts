@@ -3,6 +3,7 @@ import * as d3 from 'd3';
 import Highcharts from 'highcharts';
 import { BACKEND_SIMULATION_CONFIG, type BACKEND_SIMULATION_CONFIG as BACKEND_SIMULATION_CONFIG_TYPE, GradientConfig, PatternConfig } from '@/components/layout/LandingChart';
 import { PatternRegistry } from '../highcharts/svgPatterns';
+import { filter } from 'lodash';
 
 // Types
 interface TooltipFormatterOptions {
@@ -18,6 +19,7 @@ interface TooltipFormatterOptions {
   seriesNameMap?: Record<string, string>; // Optional: maps series name to display name
   patternRegistry?: PatternRegistry;
   compositionTypes?: BACKEND_SIMULATION_CONFIG_TYPE['compositionTypes'];
+  enableTotal?: boolean;
 }
 
 interface TooltipPoint {
@@ -319,6 +321,7 @@ export const createTooltipFormatter = (options: TooltipFormatterOptions) => {
     maxPointsToShow = 10,
     colorMap = {},
     compositionTypes = {},
+    enableTotal = false,
   } = options;
   
   return function(this: any) {
@@ -346,6 +349,8 @@ export const createTooltipFormatter = (options: TooltipFormatterOptions) => {
     visiblePoints.forEach(point => {
       tooltip += renderPointRow(point, maxValue, maxPercentage, { ...options, compositionTypes });
     });
+
+ 
     
     // Add "Others" row if necessary
     const filteredRestPoints = restPoints.filter((point: TooltipPoint) => {
@@ -357,7 +362,21 @@ export const createTooltipFormatter = (options: TooltipFormatterOptions) => {
     if (filteredRestPoints.length > 0) {
       tooltip += renderOthersRow(filteredRestPoints, maxValue, maxPercentage, { ...options, compositionTypes });
     }
-    
+
+    if(enableTotal && visiblePoints.length > 1) {
+      let visibleSum = visiblePoints.reduce((acc: number, point: TooltipPoint) => acc + point.y, 0);
+
+      tooltip += `
+        <div class="flex w-full h-[15px] mt-[5px]  space-x-2 items-end font-medium mb-0.5 ">
+          <div class="w-4 h-1.5 rounded-r-full" style="background-color: transparent"></div>
+          <div class="tooltip-point-name ">Total</div>
+          <div class="flex-1 text-right justify-end flex numbers-xs"> 
+          
+            <div class="inline-block ">${(visibleSum).toLocaleString('en-GB', { minimumFractionDigits: 0 })}</div>
+          </div>
+        </div>`
+    }
+
     // Add any special notes/footer for specific metrics
     let tooltipEnd = `</div>`;
     // if (selectedMetric === 'Total Ethereum Ecosystem') {

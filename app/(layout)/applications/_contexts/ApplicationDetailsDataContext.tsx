@@ -129,6 +129,7 @@ export const ApplicationDetailsDataProvider = ({
   const { sort: overviewSort } = useSort();
   const { selectedMetrics } = useMetrics();
   const [showUsd] = useLocalStorage("showUsd", false);
+  const [focusEnabled] = useLocalStorage("focusEnabled", false);
 
   const [sort, setSort] = useState<{ metric: string; sortOrder: string }>({ 
     metric: overviewSort.metric || selectedMetrics[0] || "",
@@ -171,10 +172,60 @@ export const ApplicationDetailsDataProvider = ({
 
   const contractsSorter = useMemo(() => createContractsSorter(), [createContractsSorter]);
 
+  const filteredApplicationDetailsData = useMemo(() => {
+    // Return early if no data is available
+    if (!applicationDetailsData) return undefined;
+    
+    // Create a deep clone of the data to avoid mutation issues
+    const filteredData = JSON.parse(JSON.stringify(applicationDetailsData)) as ApplicationDetailsResponse;
+  
+    if (focusEnabled) {
+      // Filter out Ethereum from metrics
+      if (filteredData.metrics) {
+        Object.keys(filteredData.metrics).forEach(metricKey => {
+          const metric = filteredData.metrics[metricKey];
+          
+          // Filter out Ethereum from over_time data
+          if (metric.over_time && metric.over_time['ethereum']) {
+            const { ethereum, ...otherChains } = metric.over_time;
+            metric.over_time = otherChains;
+          }
+          
+          // Filter out Ethereum from aggregated data
+          if (metric.aggregated && metric.aggregated.data && metric.aggregated.data['ethereum']) {
+            const { ethereum, ...otherChains } = metric.aggregated.data;
+            metric.aggregated.data = otherChains;
+          }
+        });
+      }
+      
+      // Filter out Ethereum from contracts_table for all timespans
+      if (filteredData.contracts_table) {
+        Object.keys(filteredData.contracts_table).forEach(timespan => {
+          const contractsTable = filteredData.contracts_table[timespan];
+          if (contractsTable && contractsTable.data) {
+            // Find the index of origin_key in the types array
+            const originKeyIndex = contractsTable.types.indexOf('origin_key');
+            
+            if (originKeyIndex !== -1) {
+              // Filter out rows where origin_key is 'ethereum'
+              contractsTable.data = contractsTable.data.filter(row => {
+                const originKey = String(row[originKeyIndex]).toLowerCase();
+                return originKey !== 'ethereum';
+              });
+            }
+          }
+        });
+      }
+    }
+    
+    return filteredData;
+  }, [applicationDetailsData, focusEnabled]);
+
   const contracts = useMemo(() => {
-    if (!applicationDetailsData) return [];
-    return contractsSorter(getContractDictArray(applicationDetailsData.contracts_table[selectedTimespan]), sort.metric, sort.sortOrder as SortOrder);
-  }, [applicationDetailsData, contractsSorter, selectedTimespan, sort.metric, sort.sortOrder]);
+    if (!filteredApplicationDetailsData) return [];
+    return contractsSorter(getContractDictArray(filteredApplicationDetailsData.contracts_table[selectedTimespan]), sort.metric, sort.sortOrder as SortOrder);
+  }, [filteredApplicationDetailsData, contractsSorter, selectedTimespan, sort.metric, sort.sortOrder]);
 
   if( applicationDetailsError ) {
     return notFound();
@@ -182,7 +233,7 @@ export const ApplicationDetailsDataProvider = ({
 
   return (
     <ApplicationDetailsDataContext.Provider value={{
-      data: applicationDetailsData || {} as ApplicationDetailsResponse,
+      data: filteredApplicationDetailsData || {} as ApplicationDetailsResponse,
       owner_project,
       contracts: contracts,
       sort,
@@ -193,7 +244,7 @@ export const ApplicationDetailsDataProvider = ({
         dataValidating={[applicationDetailsValidating]} 
       />
       {/* <>{JSON.stringify(sort)} {JSON.stringify(overviewSort)}</> */}
-      {applicationDetailsData && children}
+      {filteredApplicationDetailsData && children}
     </ApplicationDetailsDataContext.Provider>
   );
 }

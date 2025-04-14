@@ -10,23 +10,8 @@ import Highcharts, {
   chart,
   color,
 } from "highcharts/highstock";
-import {
-  HighchartsProvider,
-  HighchartsChart,
-  Chart,
-  XAxis,
-  YAxis,
-  Title,
-  Tooltip as HighchartsTooltip,
-  PlotBand,
-  AreaSeries,
-  ColumnSeries,
-  LineSeries,
-  PieSeries,
-  
-  Series,
-  
-} from "react-jsx-highcharts";
+import { motion, useAnimation, AnimatePresence } from "framer-motion";
+import Heading from "@/components/layout/Heading";
 import {
   useState,
   useEffect,
@@ -89,6 +74,8 @@ const METRIC_COLORS = {
   main_l1: ["#C1C1C1", "#5B5B5B"],
   main_l2: ["#FFDF27", "#FE5468"],
 }
+
+
 
 export type GradientConfig = {
   type: "linearGradient" | "radialGradient";
@@ -401,8 +388,10 @@ export default function LandingChart({
   );
 
   const [selectedScale, setSelectedScale] = useState(
-    selectedMetric === "Compsoition Split" ? "percentage" : "absolute",
+    selectedMetric === "Composition Split" ? "percentage" : "absolute",
   );
+
+  const [hoveredMetric, setHoveredMetric] = useState<string | null>(null);
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
 
   const [zoomed, setZoomed] = useState(false);
@@ -458,6 +447,7 @@ export default function LandingChart({
     focusEnabled: focusEnabled,
     showEthereumMainnet: showEthereumMainnet,
     compositionTypes: chartConfig?.compositionTypes,
+    enableTotal: selectedMetric !== "Composition Split",
   }), [selectedScale, selectedMetric, theme, focusEnabled, showEthereumMainnet, chartConfig?.compositionTypes]);
 
   const tooltipPositioner =
@@ -1230,63 +1220,130 @@ export default function LandingChart({
             <TopRowChild
               isSelected={showTotalUsers}
               roundedClassName="rounded-[12px] sm:rounded-full"
-              className={"!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
+              className={"!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4 group/ecosystem relative"}
               onClick={() => {
                 setShowTotalUsers(true);
                 setSelectedScale("absolute");
                 setSelectedMetric("Total Ethereum Ecosystem");
               }}
+              onMouseEnter={() => {
+                setHoveredMetric("Total Ethereum Ecosystem");
+              }}
+              onMouseLeave={() => {
+                setHoveredMetric(null);
+              }}
             >
-              <div className="flex items-center justify-center gap-x-[5px]">
-                <GTPIcon icon="gtp-metrics-ethereum-ecosystem" size={isLessThan2xl ? "sm" : "md"} />
-                {/* <div>{!isMobile ? textToggles.toggle[focusEnabled ? "l2" : "total"] : focusEnabled ? "Total L2 Ecosystem" : "Total ETH Ecosystem"}</div> */}
-                <DynamicLabel 
-                  className="whitespace-nowrap text-sm"
-                  labels={isLessThan2xl ? {
-                    total: "ETH Ecosystem",
-                    l2: "L2 Ecosystem",
-                  } : {
-                    total: "Total Ethereum Ecosystem",
-                    l2: "Layer 2 Ecosystem",
-                  }} 
-                  selectedLabel={focusEnabled ? "l2" : "total"} 
-                />
+              <div className="flex items-center justify-center gap-x-[5px]  ">
+                <div className="flex items-center gap-x-[5px]">
+                  <GTPIcon icon="gtp-metrics-ethereum-ecosystem" size={isLessThan2xl ? "sm" : "md"} />
+                  <div className="">{isLessThan2xl ? focusEnabled ? "L2 Ecosystem" : "ETH Ecosystem" : focusEnabled ? "Layer 2 Ecosystem" : "Total Ethereum Ecosystem"}</div>
+                </div>
+              </div>
+              <div className="bg-[#1F2726] group-hover:pointer-events-auto pointer-events-none  z-10 p-[15px] pl-[20px] absolute rounded-[15px] shadow-2xl transition-all opacity-0 group-hover/ecosystem:opacity-100 flex-col gap-y-[5px] min-w-[300px] sm:min-w-[400px] left-0 top-[86px] 2xl:top-[57px] flex"
+                style={{
+                  boxShadow: "0px 0px 30px rgba(0, 0, 0, 1)",
+                }}
+              >
+                <div className="flex items-center gap-x-[10px]">
+                  <GTPIcon icon="gtp-metrics-ethereum-ecosystem" size={"sm"} />
+                  <div className="heading-small-xs">{focusEnabled ? "Layer 2 Ecosystem" : "Total Ethereum Ecosystem"}</div>
+                </div>
+                <div className="text-xs text-left ">
+                  The total number of unique addresses interacting with one or multiple chains in the Ethereum ecosystem in a given week. When "Total Ecosystem" is toggled on you can see the number of addresses that are active only on on Ethereum Mainnet in blue.
+                </div>
               </div>
             </TopRowChild>
             <TopRowChild
               isSelected={"absolute" === selectedScale && !showTotalUsers}
               roundedClassName="rounded-[12px] sm:rounded-full"
-              className={"!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
+              className={"!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4 group/composition relative"}
               onClick={() => {
                 setShowTotalUsers(false);
                 setSelectedScale("absolute");
                 setSelectedMetric("Composition");
               }}
+              onMouseEnter={() => {
+                setHoveredMetric("Composition");
+              }}
+              onMouseLeave={() => {
+                setHoveredMetric(null);
+              }}
             >
-              <div className="flex items-center justify-center gap-x-[5px]">
-                <GTPIcon icon="gtp-metrics-chains-grouping" size={isLessThan2xl ? "sm" : "md"}/>
-                <div>Composition</div>
+              {/*Title Area */}
+              <div className="flex items-center justify-center gap-x-[5px]  ">
+                {/* <div>{!isMobile ? textToggles.toggle[focusEnabled ? "l2" : "total"] : focusEnabled ? "Total L2 Ecosystem" : "Total ETH Ecosystem"}</div> */}
+                  <div className="flex items-center justify-center  gap-x-[5px]">
+                    <GTPIcon icon="gtp-metrics-chains-grouping" size={isLessThan2xl ? "sm" : "md"}/>
+                    <div className="">Composition</div>
+                  </div>
+
               </div>
+              {/*Tooltip area: */}
+              <div className="bg-background group-hover:pointer-events-auto pointer-events-none  z-10 p-[15px] pl-[20px] absolute rounded-[15px] shadow-2xl transition-all flex-col gap-y-[5px] min-w-[300px] opacity-0 group-hover/composition:opacity-100 duration-200 sm:min-w-[420px] left-0 right-0 2xl:right-auto 2xl:left-0 top-[86px] 2xl:top-[57px]"
+                style={{
+                  boxShadow: "0px 0px 30px rgba(0, 0, 0, 1)",
+                }}
+              >
+                <div className="flex items-center gap-x-[10px]">
+                  <GTPIcon icon="gtp-metrics-chains-grouping" size={"sm"} />
+                  <div className="heading-small-xs">Composition</div>
+                </div>
+                <div className="text-xs text-left mt-[5px] ">
+                  <span>You can see where most addresses are active.</span>
+                  <ul className="list-disc list-inside -indent-3 pl-3">
+                    <li>Ethereum Mainnet: addresses that only interacted with the L1 ("Total Ecosystem" needs to be toggled)</li>
+                    <li>Cross-Layer: addresses that interacted with L1 and at least one L2</li>
+                    <li>Multiple L2s: addresses that interacted with multiple L2s</li>
+                    <li>Single L2: addresses that interacted with a single L2</li>
+                  </ul>
+                </div>
+              </div>
+         
+
             </TopRowChild>
             <TopRowChild
               isSelected={"percentage" === selectedScale}
               roundedClassName="rounded-[12px] sm:rounded-full"
-              className={"!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
+              className={"!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4 relative group/compositionsplit"}
               onClick={() => {
                 setShowTotalUsers(false);
                 setSelectedScale("percentage");
                 setSelectedMetric("Composition Split");
               }}
+              onMouseEnter={() => {
+                setHoveredMetric("Composition Split");
+              }}
+              onMouseLeave={() => {
+                setHoveredMetric(null);
+              }}
             >
-              <div className="flex items-center justify-center  gap-x-[5px]">
-                <GTPIcon icon="gtp-metrics-chains-percentage" size={isLessThan2xl ? "sm" : "md"} />
-                <div>{isLessThan2xl ? "Comp. Split" : "Composition Split"}</div>
+              {/*Title Area */}
+             <div className="flex items-center justify-center gap-x-[5px] relative w-full ">
+                  <div className="flex items-center justify-center  gap-x-[5px]">
+                      <GTPIcon icon="gtp-metrics-chains-percentage" size={isLessThan2xl ? "sm" : "md"} />
+                      <div className="">{isLessThan2xl ? "Comp. Split" : "Composition Split"}</div>
+                    </div>
+              </div>
+              {/*Tooltip area: */}
+              <div className="bg-[#1F2726] group-hover:pointer-events-auto pointer-events-none z-10 p-[15px] pl-[20px] absolute rounded-[15px] shadow-2xl transition-all flex-col gap-y-[5px] min-w-[300px] opacity-0 group-hover/compositionsplit:opacity-100 duration-200 sm:min-w-[420px] right-0 2xl:right-auto 2xl:left-0 top-[86px] 2xl:top-[57px]"
+                style={{
+                  boxShadow: "0px 0px 30px rgba(0, 0, 0, 1)",
+                }}
+              >
+                <div className="flex items-center gap-x-[10px] ">
+                  <GTPIcon icon="gtp-metrics-chains-percentage" size={"sm"} />
+                  <div className="heading-small-xs">Composition Split</div>
+                </div>
+                <div className="text-xs text-left mt-[5px]">
+                  You can see the composition breakdown relative to each other which allows you to gain an understanding of where activity in the Ethereum ecosystem is taking place and how it shifts over time.
+                </div>
               </div>
             </TopRowChild>
           </TopRowParent>
           <div className="block 2xl:hidden w-[80%] mx-auto my-[10px] h-[2px]">
             <hr className="border-dashed border-t-[1px] w-full h-[1px] border-forest-400" />
           </div>
+
           <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 2xl:!mx-0 !gap-x-[4px] 2xl:!gap-x-[5px]">
             {!zoomed ? (
               Object.keys(timespans).map((timespan) => (
@@ -1458,6 +1515,9 @@ export default function LandingChart({
     </div>
   );
 }
+
+
+
 
 const MobileMetricCard = ({
   icon,

@@ -37,8 +37,8 @@ export type AggregatedDataRow = {
 const memoizedResults = new Map();
 const MAX_CACHE_SIZE = 20;
 
-function getCacheKey(timespan: string, filters: { [key: string]: string[] }) {
-  return `${timespan}-${JSON.stringify(filters)}`;
+function getCacheKey(timespan: string, filters: { [key: string]: string[] }, focusEnabled: boolean) {
+  return `${timespan}-${JSON.stringify(filters)}-${focusEnabled}`;
 }
 
 function ownerProjectToOriginKeysMap(data: AppDatum[]): { [key: string]: string[] } {
@@ -83,10 +83,11 @@ function aggregateProjectData(
   typesArr: string[], 
   ownerProjectToProjectData: { [key: string]: any }, 
   filters: { [key: string]: string[] } = { origin_key: [], owner_project: [], category: [] }, 
-  timespan: string
+  timespan: string,
+  focusEnabled: boolean
 ): AggregatedDataRow[] {
   // Generate cache key
-  const cacheKey = getCacheKey(timespan, filters);
+  const cacheKey = getCacheKey(timespan, filters, focusEnabled);
   
   // Check if we have cached results
   if (memoizedResults.has(cacheKey)) {
@@ -114,10 +115,23 @@ function aggregateProjectData(
     prev_daa: typesArr.indexOf("prev_daa"),
   };
 
-  // Pre-filter data if possible to avoid processing unnecessary entries
-  const filteredData = filters.origin_key.length > 0 
-    ? data.filter(entry => chainFilter.has(entry[typeIndexes.origin_key] as string))
-    : data;
+  // Pre-filter data 
+  // 1. Apply origin_key filter if specified
+  // 2. Apply focusEnabled filter to exclude ethereum if enabled
+  let filteredData = data;
+  
+  if (filters.origin_key.length > 0) {
+    filteredData = filteredData.filter(entry => 
+      chainFilter.has(entry[typeIndexes.origin_key] as string)
+    );
+  }
+  
+  // Exclude ethereum when focusEnabled is true
+  if (focusEnabled) {
+    filteredData = filteredData.filter(entry => 
+      (entry[typeIndexes.origin_key] as string).toLowerCase() !== 'ethereum'
+    );
+  }
 
   // Group data by owner_project in a single pass with reduced operations
   const aggregation = new Map();
@@ -177,9 +191,15 @@ function aggregateProjectData(
     const txCountChangePct = calculatePercentageChange(metrics.txcount, metrics.prev_txcount);
     const daaChangePct = calculatePercentageChange(metrics.daa, metrics.prev_daa);
 
+    let originKeys: string[] = [];
+
+    if(ownerProjectToOriginKeys[owner]){
+      originKeys = focusEnabled ? ownerProjectToOriginKeys[owner].filter(key => key !== "ethereum").sort() : ownerProjectToOriginKeys[owner].sort();
+    }
+
     return {
       owner_project: owner,
-      origin_keys: ownerProjectToOriginKeys[owner]?.sort() || [],
+      origin_keys: originKeys,
       ...metrics,
       gas_fees_eth_change_pct: gasEthChangePct,
       gas_fees_usd_change_pct: gasEthChangePct, // These are the same in your code
@@ -246,6 +266,7 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { timespans, selectedTimespan, setSelectedTimespan, isMonthly, setIsMonthly } = useTimespan();
   const { sort, setSort } = useSort();
+  const [focusEnabled] = useLocalStorage("focusEnabled", false);
 
   // bypass AWS rate limiting in development
   const headers = new Headers();
@@ -358,7 +379,7 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
     isLoading: applicationsTimespanLoading,
     isValidating: applicationsTimespanValidating,
   } = useSWR(
-    ["1d", "7d", "30d", "90d", "365d", "max"].map((timeframe) => ApplicationsURLs.overview.replace('{timespan}', `${timeframe}`)), multiFetcher);
+    ["1d", "7d", "30d", "90d", "365d", "max"].map((timeframe) => ApplicationsURLs.overview.replace('{timespan}', `${timeframe}`)), fetcher || multiFetcher);
 
   const applicationDataFiltered = useMemo(() => {
     if (!applicationsTimespan) return [];
@@ -379,9 +400,10 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
         owner_project: selectedStringFiltersParam,
         category: selectedStringFiltersParam,
       },
-      selectedTimespan // Use timespan as part of cache key
+      selectedTimespan,
+      focusEnabled
     )
-  }, [applicationsTimespan, selectedTimespan, selectedChainsParam, selectedStringFiltersParam, ownerProjectToProjectData]);
+  }, [applicationsTimespan, selectedTimespan, selectedChainsParam, selectedStringFiltersParam, ownerProjectToProjectData, focusEnabled]);
 
   const applicationDataAggregated = useMemo(() => {
     if (!applicationsTimespan) return [];
@@ -402,9 +424,10 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
         owner_project: [],
         category: [],
       },
-      selectedTimespan // Use timespan as part of cache key
+      selectedTimespan,
+      focusEnabled
     )
-  }, [applicationsTimespan, selectedTimespan, ownerProjectToProjectData]);
+  }, [applicationsTimespan, selectedTimespan, ownerProjectToProjectData, focusEnabled]);
 
   const createApplicationDataSorter = (
     ownerProjectToProjectData: Record<string, { main_category: string; display_name: string }>,

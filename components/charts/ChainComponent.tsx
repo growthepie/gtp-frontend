@@ -602,7 +602,7 @@ const ChainComponent = memo(function ChainComponent({
           return pointsSum;
         }, 0);
 
-      const tooltipPoints = points
+      let tooltipPoints = points
         .sort((a: any, b: any) => b.y - a.y)
         .map((point: any) => {
           const { series, y, percentage } = point;
@@ -690,6 +690,28 @@ const ChainComponent = memo(function ChainComponent({
           </div> -->`;
         })
         .join("");
+
+      if(points.length > 1) {
+        let tooltipTotal = points.reduce((acc: number, point: any) => acc + (point.y || 0), 0);        
+        
+        tooltipPoints += `
+          <div class="flex w-full h-[15px] mt-[5px] space-x-2 items-end font-medium mb-1">
+            <div class="w-3.5 h-1.5 rounded-r-full" style="background-color: ${"transparent"
+            }"></div>
+            <div class="tooltip-point-name text-xs">${"Total"
+            }</div>
+            <div class="flex-1 text-right justify-end numbers-xs flex">
+                <div class="${!prefixes[chain] && "hidden"
+            }">${prefixes[chain]}</div>
+                ${parseFloat(tooltipTotal).toLocaleString("en-GB", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+                <div class="ml-0.5 ${!prefixes[chain] && "hidden"
+            }">${prefixes[chain]}</div>
+            </div>
+          </div>`
+      }
       return tooltip + tooltipPoints + tooltipEnd;
     },
     [

@@ -15,7 +15,7 @@ import Image from "next/image";
 import VerticalScrollContainer from "../VerticalScrollContainer";
 import Link from "next/link";
 import { HeaderButton } from "../layout/HeaderButton";
-
+import { debounce } from "lodash";
 
 const setDocumentScroll = (showScroll: boolean) => {
   if (showScroll) {
@@ -135,6 +135,18 @@ export const SearchComponent = () => {
     setDocumentScroll(true);
   }
 
+  // Handle initial scroll state when page loads with search parameters
+  useEffect(() => {
+    if (isOpen) {
+      setDocumentScroll(false);
+    }
+    return () => {
+      if (isOpen) {
+        setDocumentScroll(true);
+      }
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
@@ -150,7 +162,6 @@ export const SearchComponent = () => {
 }
 
 const SearchBar = () => {
-  // const [internalSearch, setInternalSearch] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
   const { AllChainsByKeys } = useMaster();
   const pathname = usePathname();
@@ -160,16 +171,26 @@ const SearchBar = () => {
   const { totalMatches } = useSearchBuckets();
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    const newValue = input.value;
+    const cursorPosition = input.selectionStart;
+
     // get existing query params
     let newSearchParams = new URLSearchParams(window.location.search)
-
-    newSearchParams.set("query", e.target.value);
+    newSearchParams.set("query", newValue);
 
     // create new url
     let url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
-
     window.history.replaceState(null, "", url);
-  }
+
+    // Restore cursor position after React updates the input
+    requestAnimationFrame(() => {
+      if (inputRef.current) {
+        inputRef.current.selectionStart = cursorPosition;
+        inputRef.current.selectionEnd = cursorPosition;
+      }
+    });
+  };
 
   return (
     <>
@@ -181,7 +202,7 @@ const SearchBar = () => {
           <div className="flex w-full gap-x-[10px] items-center bg-[#1F2726] rounded-[22px] h-[44px] p-2.5">
             {query.length > 0 ? (
               <div className="flex items-center justify-center w-[24px] h-[24px]">
-                <Icon icon="feather:chevron-down" className="w-[16px] h-[16px]" />
+                <Icon icon="feather:chevron-down" className="w-[24px] h-[24px]" />
               </div>
             ) : (
               <GTPIcon icon="gtp-search" size="md" />
@@ -191,14 +212,16 @@ const SearchBar = () => {
               autoFocus={true}
               autoComplete="off"
               spellCheck={false}
-              className={`flex-1 h-full bg-transparent text-white placeholder-[#CDD8D3] border-none outline-none overflow-x-clip`}
-              placeholder="Search & Filter"
+              className={`flex-1 h-full bg-transparent text-white placeholder-[#CDD8D3] border-none outline-none overflow-x-clip text-md leading-[150%] font-medium font-raleway`}
+              placeholder="Search"
               value={query}
               onChange={handleSearchChange}
             />
             <div className={`absolute flex items-center gap-x-[10px] right-[20px] text-[8px] text-[#CDD8D3] font-medium ${query.length > 0 ? "opacity-100" : "opacity-0"} transition-opacity duration-200`}>
               <div className="flex items-center px-[15px] h-[24px] border border-[#CDD8D3] rounded-full select-none">
-                {totalMatches} {totalMatches === 1 ? "result" : "results"}
+                <div className="text-xxxs text-[#CDD8D3] font-medium font-raleway">
+                  {totalMatches} {totalMatches === 1 ? "result" : "results"}
+                </div>
               </div>
               <div
                 className="flex flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px]"
@@ -228,21 +251,21 @@ const SearchBar = () => {
   )
 }
 
-// we'll create a custom hook to get our search buckets and total matches so we can use the data in more than one place
+// hook to get search buckets and total matches
 const useSearchBuckets = () => {
   const { AllChainsByKeys } = useMaster();
   const searchParams = useSearchParams();
   const query = searchParams.get("query")?.trim();
   const { ownerProjectToProjectData } = useProjectsMetadata();
   
-  // lets get our search buckets in order by figuring out the structure first
+  // search buckets structure
   type SearchBucket = {
     label: string;
     icon: GTPIconName;
     options: { label: string; url: string; icon: string, color?: string}[];
   };
   
-  // our first bucket is the chains
+  // first bucket = chains
   const searchBuckets: SearchBucket[] = useMemo(() => [
     {
       label: "Chains",
@@ -286,32 +309,89 @@ const useSearchBuckets = () => {
     }
   ], [AllChainsByKeys, ownerProjectToProjectData]);
 
-  // we'll bring this outside of the return statement so we can use it more flexibly
-  const allFilteredData = useMemo(() => searchBuckets.map(bucket => {
-  
-    return {
-      type: bucket.label,
-      icon: bucket.icon,
-      filteredData: bucket.options.filter(option => query?.length === 1 ? option.label.toLowerCase().startsWith(query?.toLowerCase() || "") : option.label.toLowerCase().includes(query?.toLowerCase() || ""))
-    };
-  }).sort((a, b) => {
-    // First, prioritize buckets with startsWith matches
-    const aStartsWithCount = a.filteredData.filter(item => 
-      item.label.toLowerCase().startsWith(query?.toLowerCase() || "")
-    ).length;
+ 
+  const allFilteredData = useMemo(() => {
+    // Check if the query matches at least 40% of a bucket name from the beginning
+    const bucketMatch = query ? searchBuckets.find(bucket => {
+      const bucketName = bucket.label.toLowerCase().replace(/\s+/g, '');
+      const searchQuery = query.toLowerCase().replace(/\s+/g, '');
+      
+      // Calculate the minimum length needed (40% of bucket name)
+      const minQueryLength = Math.ceil(bucketName.length * 0.4);
+      
+      // Check if query is long enough and matches from the start
+      return searchQuery.length >= minQueryLength && 
+             bucketName.startsWith(searchQuery);
+    }) : null;
 
-    const bStartsWithCount = b.filteredData.filter(item => 
-      item.label.toLowerCase().startsWith(query?.toLowerCase() || "")
-    ).length;
-    
-    // If startsWith counts differ, sort by that
-    if (aStartsWithCount !== bStartsWithCount) {
-      return bStartsWithCount - aStartsWithCount;
-    }
-    
-    // If startsWith counts are the same, sort by total filtered data length
-    return b.filteredData.length - a.filteredData.length;
-  }).filter(bucket => bucket.filteredData.length > 0), [query, searchBuckets]);
+    // Get regular search results
+    const regularSearchResults = searchBuckets.map(bucket => {
+      const bucketOptions = bucket.options;
+      const lowerQuery = query?.toLowerCase() || "";
+
+      // Split into three categories
+      const exactMatches = bucketOptions.filter(option => 
+        option.label.toLowerCase() === lowerQuery
+      );
+      
+      const startsWithMatches = bucketOptions.filter(option => {
+        const lowerLabel = option.label.toLowerCase();
+        return lowerLabel !== lowerQuery && // not an exact match
+          lowerLabel.startsWith(lowerQuery);
+      });
+
+      const containsMatches = bucketOptions.filter(option => {
+        const lowerLabel = option.label.toLowerCase();
+        return lowerLabel !== lowerQuery && // not an exact match
+          !lowerLabel.startsWith(lowerQuery) && // not a starts with match
+          lowerLabel.includes(lowerQuery);
+      });
+
+      return {
+        type: bucket.label,
+        icon: bucket.icon,
+        filteredData: [...exactMatches, ...startsWithMatches, ...containsMatches],
+        isBucketMatch: false
+      };
+    });
+
+    // Filter out empty buckets from regular results first
+    const filteredRegularResults = regularSearchResults.filter(bucket => 
+      bucket.filteredData.length > 0
+    );
+
+    // Sort regular results
+    const sortedRegularResults = filteredRegularResults.sort((a, b) => {
+      // First, prioritize Chains bucket
+      if (a.type === "Chains" && b.type !== "Chains") return -1;
+      if (b.type === "Chains" && a.type !== "Chains") return 1;
+      
+      // For remaining items, maintain the order from navigationItems
+      const aIndex = navigationItems.findIndex(item => item.name === a.type);
+      const bIndex = navigationItems.findIndex(item => item.name === b.type);
+      
+      // If both items are found in navigationItems, sort by their order
+      if (aIndex !== -1 && bIndex !== -1) {
+        return aIndex - bIndex;
+      }
+      
+      // If one item is not in navigationItems, put it last
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+      
+      return 0;
+    });
+
+    // Add bucket match at the end if it exists
+    return bucketMatch && bucketMatch.options.length > 0
+      ? [...sortedRegularResults, {
+          type: bucketMatch.label,
+          icon: bucketMatch.icon,
+          filteredData: bucketMatch.options,
+          isBucketMatch: true
+        }]
+      : sortedRegularResults;
+  }, [query, searchBuckets]);
 
   // Calculate total matches for the counter
   const totalMatches = allFilteredData.reduce((total, { filteredData }) => total + filteredData.length, 0);
@@ -322,6 +402,31 @@ const useSearchBuckets = () => {
   }
 }
 
+const OpacityUnmatchedText = ({ text, query }: { text: string; query: string }) => {
+  // Remove spaces from both text and query for opacity matching
+  const normalizedText = text.toLowerCase().replace(/\s+/g, '');
+  const normalizedQuery = query.toLowerCase().replace(/\s+/g, '');
+  
+  let matchedChars = 0;
+  // Count how many characters match from the start
+  for (let i = 0; i < normalizedQuery.length; i++) {
+    if (normalizedText[i] === normalizedQuery[i]) {
+      matchedChars++;
+    } else {
+      break;
+    }
+  }
+
+  const matchedPart = text.slice(0, matchedChars);
+  const unmatchedPart = text.slice(matchedChars);
+  
+  return (
+    <span className="text-sm font-raleway font-medium leading-[150%] text-white">
+      <span>{matchedPart}</span>
+      <span className="opacity-50">{unmatchedPart}</span>
+    </span>
+  );
+};
 
 // These components remain the same
 type SearchBadgeProps = {
@@ -380,7 +485,7 @@ export const SearchBadge = memo(({
 
   return (
     <div
-      className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} text-[10px] rounded-full h-[24px] pl-[5px] pr-[10px] gap-x-[4px] ${onClick ? "cursor-pointer" : "cursor-default"} ${className}`}
+      className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} hover:bg-[#5A6462] active:bg-[#5A6462] text-xs rounded-full h-[24px] pl-[5px] pr-[10px] gap-x-[4px] ${onClick ? "cursor-pointer" : "cursor-default"} ${className}`}
       onClick={onClick ? handleClick : undefined}
     >
       {getLeftIcon()}
@@ -425,15 +530,10 @@ const Filters = () => {
 
   const router = useRouter();
 
-
-
-  // if (!query || totalMatches === 0) return null;
-
   return (
-    <div className="flex flex-col-reverse md:flex-col !pt-0 !pb-0 pl-[12px] pr-[25px] gap-y-[10px] text-[10px] max-h-[calc(100vh-180px)] overflow-y-auto">
-      {query && allFilteredData.length > 0 && <div className="flex flex-col-reverse md:flex-col pt-[10px] pb-[20px] pl-[12px] pr-[25px] gap-y-[10px] text-[10px]">
-          {allFilteredData.map(({ type, icon, filteredData }) => {
-            // Only render section if there are matching items
+    <div className="flex flex-col-reverse md:flex-col !pt-0 !pb-[0px] pl-[0px] pr-[0px] gap-y-[10px] max-h-[calc(100vh-220px)] overflow-y-auto">
+      {query && allFilteredData.length > 0 && <div className="flex flex-col-reverse md:flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px] text-[10px]">
+          {allFilteredData.map(({ type, icon, filteredData, isBucketMatch }) => {
             return (
               <div key={type} className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start">
                 <div className="flex gap-x-[10px] items-center shrink-0">
@@ -441,14 +541,19 @@ const Filters = () => {
                       icon={icon as GTPIconName}
                       size="md"
                     />
-                  <div className="text-white text-sm w-[120px]">{type}</div>
+                  <div className="text-sm w-[120px] font-raleway font-medium leading-[150%]">
+                    {isBucketMatch ? (
+                      <OpacityUnmatchedText text={type} query={query || ""} />
+                    ) : (
+                      <span className="text-white">{type}</span>
+                    )}
+                  </div>
                   <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
                 </div>
                 <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
                   {filteredData.map((item) => (
                     <Link href={item.url} key={item.label}>
                       <SearchBadge
-                        // onClick={() => { router.push(item.url) }}
                         className="!cursor-pointer"
                         label={item.label}
                         leftIcon={`${item.icon}` as GTPIconName}
@@ -456,23 +561,102 @@ const Filters = () => {
                         rightIcon=""
                       />
                     </Link>
-                  )).slice(0, 30)}
+                  )).slice(0, isBucketMatch ? undefined : 30)}
                 </div>
               </div>
-        );
-      })}
-      </div>
-    }
+            );
+          })}
+      </div>}
     </div>
   )
 }
 
 const SearchContainer = ({ children }: { children: React.ReactNode }) => {
+  const { allFilteredData } = useSearchBuckets();
+  const searchParams = useSearchParams();
+  const query = searchParams.get("query");
+  const [hasOverflow, setHasOverflow] = useState(false);
+  const [isScreenTall, setIsScreenTall] = useState(false);
+  
+  // Calculate total number of results
+  const totalResults = allFilteredData.reduce((total, { filteredData }) => total + filteredData.length, 0);
+  
+  const showKeyboardShortcuts = query && 
+    allFilteredData.length > 0 && 
+    isScreenTall && 
+    totalResults >= 10;
+
+  // Add a ref to check for overflow
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Check for overflow when content changes
+  useEffect(() => {
+    if (contentRef.current) {
+      const hasVerticalOverflow = contentRef.current.scrollHeight > contentRef.current.clientHeight;
+      setHasOverflow(hasVerticalOverflow);
+    }
+  }, [allFilteredData, query]);
+
+  // Add effect to check screen height
+  useEffect(() => {
+    const checkScreenHeight = () => {
+      setIsScreenTall(window.innerHeight >= 500);
+    };
+    
+    // Initial check
+    checkScreenHeight();
+    
+    // Add listener for resize events
+    window.addEventListener('resize', checkScreenHeight);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkScreenHeight);
+  }, []);
+
   return (
-    <div className="fixed top-[80px] md:top-[33px] left-[50%] translate-x-[-50%] z-[111] w-[calc(100vw-20px)] md:w-[660px] max-h-[calc(100vh-100px)] p-2.5 bg-[#344240] rounded-[32px] shadow-[0px_0px_50px_0px_rgba(0,0,0,1.00)] inline-flex justify-start items-center gap-[15px]">
-      <div className="flex-1 bg-[#151A19] rounded-[22px] flex justify-start items-center gap-2.5">
-        {children}
+    <div className="fixed top-[80px] md:top-[33px] left-[50%] translate-x-[-50%] z-[111] w-[calc(100vw-20px)] md:w-[660px] max-h-[calc(100vh-100px)] p-2.5 bg-[#344240] rounded-[32px] shadow-[0px_0px_50px_0px_rgba(0,0,0,1.00)] flex flex-col justify-start items-center">
+      {/* Add a wrapper div that will handle the overflow */}
+      <div ref={contentRef} className="w-full flex-1 overflow-hidden flex flex-col min-h-0">
+        <div className={`w-full bg-[#151A19] rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>
+          {children}
+        </div>
+      </div>
+      {/* Keyboard shortcuts will now stay at the bottom */}
+      <div className={`flex px-[10px] pt-2 pb-[5px] items-start gap-[15px] self-stretch flex-shrink-0 ${!showKeyboardShortcuts ? 'hidden' : ''}`}>
+        <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px]">
+          <svg xmlns="http://www.w3.org/2000/svg" width="70" height="21" viewBox="0 0 70 21" fill="none">
+            <rect x="24" width="22" height="10" rx="2" fill="#151A19"/>
+            <path d="M32.6708 6.77639L34.5528 3.01246C34.737 2.64394 35.263 2.64394 35.4472 3.01246L37.3292 6.77639C37.4954 7.10884 37.2537 7.5 36.882 7.5H33.118C32.7463 7.5 32.5046 7.10884 32.6708 6.77639Z" fill="#CDD8D3" stroke="#CDD8D3"/>
+            <rect y="11" width="22" height="10" rx="2" fill="#151A19"/>
+            <path d="M12.8336 18.0581L8.33821 16.4715C7.89343 16.3145 7.89343 15.6855 8.33822 15.5285L12.8336 13.9419C13.1589 13.8271 13.5 14.0684 13.5 14.4134L13.5 17.5866C13.5 17.9316 13.1589 18.1729 12.8336 18.0581Z" fill="#CDD8D3" stroke="#CDD8D3"/>
+            <rect x="48" y="11" width="22" height="10" rx="2" fill="#151A19"/>
+            <path d="M57.1664 13.9419L61.6618 15.5285C62.1066 15.6855 62.1066 16.3145 61.6618 16.4715L57.1664 18.0581C56.8411 18.1729 56.5 17.9316 56.5 17.5866L56.5 14.4134C56.5 14.0684 56.8411 13.8271 57.1664 13.9419Z" fill="#CDD8D3" stroke="#CDD8D3"/>
+            <rect x="24" y="11" width="22" height="10" rx="2" fill="#151A19"/>
+            <path d="M37.3292 14.2236L35.4472 17.9875C35.263 18.3561 34.737 18.3561 34.5528 17.9875L32.6708 14.2236C32.5046 13.8912 32.7463 13.5 33.118 13.5L36.882 13.5C37.2537 13.5 37.4954 13.8912 37.3292 14.2236Z" fill="#CDD8D3" stroke="#CDD8D3"/>
+          </svg>
+          <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional">Move</div>
+        </div>
+        <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px] flex-[1_0_0]">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="21" viewBox="0 0 22 21" fill="none">
+            <rect y="0.5" width="22" height="20" rx="2" fill="#151A19"/>
+            <path d="M16 5.5V12.5C16 13.0523 15.5523 13.5 15 13.5H9" stroke="#CDD8D3" stroke-width="2"/>
+            <path d="M10.3336 15.5581L5.83821 13.9715C5.39343 13.8145 5.39343 13.1855 5.83822 13.0285L10.3336 11.4419C10.6589 11.3271 11 11.5684 11 11.9134L11 15.0866C11 15.4316 10.6589 15.6729 10.3336 15.5581Z" fill="#CDD8D3" stroke="#CDD8D3"/>
+          </svg>
+          <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional">Select</div>
+        </div>
+        <div className="w-[7px] h-[8px]"></div>
+        <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px]">
+          <div className="w-[22px] h-[20px] shrink-0 rounded-[2px] bg-[#151A19] flex items-center justify-center">
+            <div className="w-[22px] h-[20px] shrink-0 rounded-[2px] bg-[#151A19] flex items-center justify-center mt-[1px] text-[#CDD8D3] numbers-xxxs">ESC</div>
+          </div>
+          <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional">Close</div>
+        </div>
       </div>
     </div>
   )
 }
+
+// when pressing backspace it feels laggy 
+  
+
+

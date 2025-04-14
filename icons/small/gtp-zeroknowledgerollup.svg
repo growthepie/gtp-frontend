@@ -7,7 +7,7 @@
 <circle cx="7.5" cy="7" r="1.5" fill="url(#paint4_linear_10658_37894)"/>
 <path fill-rule="evenodd" clip-rule="evenodd" d="M5.72364 6.38471C5.16855 6.66226 4.58791 7.11924 3.85359 7.85355L3.14648 7.14645C3.91217 6.38076 4.58153 5.83774 5.27643 5.49029C5.983 5.137 6.68724 5 7.50004 5C8.31284 5 9.01707 5.137 9.72364 5.49029C10.4185 5.83774 11.0879 6.38076 11.8536 7.14645L11.1465 7.85355C10.4122 7.11924 9.83153 6.66226 9.27643 6.38471C8.733 6.113 8.18724 6 7.50004 6C6.81284 6 6.26707 6.113 5.72364 6.38471Z" fill="url(#paint5_linear_10658_37894)"/>
 <path fill-rule="evenodd" clip-rule="evenodd" d="M5.72364 8.61529C5.16855 8.33774 4.58791 7.88076 3.85359 7.14645L3.14648 7.85355C3.91217 8.61924 4.58153 9.16226 5.27643 9.50971C5.983 9.863 6.68724 10 7.50004 10C8.31284 10 9.01707 9.863 9.72364 9.50971C10.4185 9.16226 11.0879 8.61924 11.8536 7.85355L11.1465 7.14645C10.4122 7.88076 9.83153 8.33774 9.27643 8.61529C8.733 8.887 8.18724 9 7.50004 9C6.81284 9 6.26707 8.887 5.72364 8.61529Z" fill="url(#paint6_linear_10658_37894)"/>
-<path fill-rule="evenodd" clip-rule="evenodd" d="M11.9998 3.99978L3.64344 10.7643L2.99958 9.99919L11.356 3.23463L11.9998 3.99978Z" fill="url(#paint7_linear_10658_37894)"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M11.9998 4.00012L3.64344 10.7647L2.99958 9.99952L11.356 3.23497L11.9998 4.00012Z" fill="url(#paint7_linear_10658_37894)"/>
 </g>
 <defs>
 <linearGradient id="paint0_linear_10658_37894" x1="1.5" y1="2" x2="1.5" y2="13" gradientUnits="userSpaceOnUse">
@@ -38,7 +38,7 @@
 <stop stop-color="#FE5468"/>
 <stop offset="1" stop-color="#FFDF27"/>
 </linearGradient>
-<linearGradient id="paint7_linear_10658_37894" x1="7.12872" y1="6.5225" x2="7.8707" y2="7.47647" gradientUnits="userSpaceOnUse">
+<linearGradient id="paint7_linear_10658_37894" x1="7.12872" y1="6.52283" x2="7.8707" y2="7.4768" gradientUnits="userSpaceOnUse">
 <stop stop-color="#10808C"/>
 <stop offset="1" stop-color="#1DF7EF"/>
 </linearGradient>

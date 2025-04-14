@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { navigationItems } from "@/lib/navigation";
 import { getPageMetadata } from "@/lib/metadata";
+import { ProjectsMetadataProvider } from "../../applications/_contexts/ProjectsMetadataContext";
 
 
 type Props = {
@@ -35,5 +36,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <ProjectsMetadataProvider>
+      {children}
+    </ProjectsMetadataProvider>
+  )
 }

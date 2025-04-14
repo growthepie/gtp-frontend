@@ -57,7 +57,7 @@ export const Title = ({
     <div id={id} className={`flex flex-col md:flex-row items-start md:items-center gap-y-[10px] md:gap-x-[15px] ${containerClassName}`}>
       <div
         id={id}
-        className={`flex gap-x-[8px] items-center ${containerClassName}`}
+        className={`flex gap-x-[8px] items-center`}
       >
         <GTPIcon icon={icon} className={iconClassName} size={iconSize} />
         <Heading
@@ -73,63 +73,73 @@ export const Title = ({
 }
 
 
-type TitleButtonProps = {
-  href: string;
-  newTab?: boolean;
-  icon?: GTPIconName;
-  leftIcon?: GTPIconName;
-  rightIcon?: GTPIconName;
-  label: string;
-  shortLabel?: string;
-  width?: string;
-};
+  type TitleButtonProps = {
+    href: string;
+    newTab?: boolean;
+    icon?: GTPIconName;
+    iconSize?: "sm" | "md" | "lg";
+    iconBackground?: string;
+    leftIcon?: GTPIconName;
+    rightIcon?: GTPIconName;
+    label: string | React.ReactNode;
+    shortLabel?: string;
+    width?: string;
+    gradientClass?: string;
+    className?: string;
+    containerClassName?: string;
+  };
 
-export const TitleButtonLink = ({
-  href,
-  newTab,
-  icon,
-  leftIcon,
-  rightIcon,
-  label,
-  width,
-}: TitleButtonProps) => {
-  return (
-    <div className="pl-[38px] md:pl-0">
-      <Link
-        href={href}
-        rel={newTab ? "noreferrer" : ""}
-        target={newTab ? "_blank" : ""}
-      >
-        <div className="flex items-center justify-center p-[1px] bg-[linear-gradient(144.58deg,#FE5468_20.78%,#FFDF27_104.18%)] rounded-full">
-          <div
-            className="flex items-center pl-[5px] py-[4px] w-[205px] gap-x-[8px] font-semibold bg-forest-50 dark:bg-forest-900 rounded-full transition-all duration-300"
-            style={{
-              width: width,
-            }}
-          >
-            {(icon || leftIcon) && (<div className="w-[24px] h-[24px] bg-[#151A19] rounded-full flex items-center justify-center">
-              {leftIcon && <GTPIcon icon={leftIcon} size="sm" />}
-              {icon && <GTPIcon
-                icon={icon}
-                size="sm"
-              />}
-              {rightIcon && <GTPIcon icon={rightIcon} size="sm" />}
+  export const TitleButtonLink = ({
+    href,
+    newTab,
+    icon,
+    iconSize="sm",
+    iconBackground="bg-[#151A19]",
+    leftIcon,
+    rightIcon,
+    label,
+    width,
+    gradientClass="bg-[linear-gradient(144.58deg,#FE5468_20.78%,#FFDF27_104.18%)]",
+    className,
+    containerClassName="pl-[38px] md:pl-0"
+  }: TitleButtonProps) => {
+    return (
+      <div className={`${containerClassName} select-none`}>
+        <Link
+          href={href}
+          rel={newTab ? "noreferrer" : ""}
+          target={newTab ? "_blank" : ""}
+        >
+          <div className={`flex items-center justify-center p-[1px] rounded-full ${gradientClass} ${className}`}>
+            <div
+              className={`flex items-center pl-[5px] py-[4px] w-[205px] gap-x-[8px]  bg-forest-50 dark:bg-forest-900 rounded-full transition-all duration-300 ${rightIcon ? "pr-[5px]" : "pr-[15px]"}`}
+              style={{
+                width: width || "fit-content",
+              }}
+            >
+              {(icon || leftIcon) && (<div className={`w-[24px] h-[24px] ${iconBackground} rounded-full flex items-center justify-center`}>
+                {leftIcon && <GTPIcon icon={leftIcon} size={iconSize} />}
+                {icon && <GTPIcon
+                  icon={icon}
+                  size={iconSize}
+                />}
+              </div>
+              )}
+              <div className="transition-all duration-300 whitespace-nowrap overflow-hidden heading-small-xs">
+                {label}
+              </div>
+              {rightIcon && (<div className="size-[24px] bg-[#344240] rounded-full flex items-center justify-center">
+                <div className="size-[24px] flex items-center justify-center">
+                  <GTPIcon icon={rightIcon} size="sm" />
+                </div>
+              </div>
+              )}
             </div>
-            )}
-            <div className="transition-all duration-300 whitespace-nowrap overflow-hidden text-[14px] font-semibold">
-              {label}
-            </div>
-            {rightIcon && (<div className="w-[24px] h-[24px] bg-[#151A19] rounded-full flex items-center justify-center">
-
-              <GTPIcon icon={rightIcon} size="sm" />
-            </div>
-            )}
           </div>
-        </div>
-      </Link>
-    </div>
-  );
-}
+        </Link>
+      </div>
+    );
+  }
 
 export const SectionButtonLink = ({
   href,
