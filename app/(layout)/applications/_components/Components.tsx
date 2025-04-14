@@ -199,7 +199,9 @@ export const PageTitleAndDescriptionAndControls = () => {
 
 export const ApplicationDisplayName = ({ owner_project }: { owner_project: string }) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
-  return ownerProjectToProjectData[owner_project] ? ownerProjectToProjectData[owner_project].display_name : owner_project;
+  return (
+    <div>{ownerProjectToProjectData[owner_project] ? ownerProjectToProjectData[owner_project].display_name : owner_project}</div>
+  )
 }
 
 export const ApplicationDescription = ({ owner_project }: { owner_project: string }) => {
@@ -558,24 +560,21 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
 
       <div className="w-full flex items-center gap-x-[5px]">
         <ApplicationIcon owner_project={application.owner_project} size="md" />
-        <div className="heading-large-md flex-1 overflow-visible truncate">
-          <Tooltip placement="bottom-start" allowInteract>
-            <TooltipTrigger
-              className="group-hover:underline"
-              onClick={(e) => {
-                if (isTouchDevice) {
-                  e.stopPropagation();
-                  e.preventDefault();
-                }
-              }}
-            >
+        
+          <GTPTooltipNew
+            size="md"
+            placement="bottom-start"
+            allowInteract={true}
+            trigger={
+              <div className="heading-large-md flex-1 overflow-visible truncate">
               <ApplicationDisplayName owner_project={application.owner_project} />
-            </TooltipTrigger>
-            <TooltipContent className="z-[99] left-0 ml-[20px]">
-              <ApplicationTooltip application={application} />
-            </TooltipContent>
-          </Tooltip>
-        </div>
+              </div>
+            }
+            containerClass="flex flex-col gap-y-[10px]"
+            positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+          >
+            <ApplicationTooltip application={application} />
+          </GTPTooltipNew>
         <div className="cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center">
           <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-[#CDD8D3]" />
         </div>
@@ -596,7 +595,7 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
 ApplicationCard.displayName = 'ApplicationCard';
 
 
-export const ApplicationTooltip = memo(({ application }: { application: AggregatedDataRow }) => {
+export const ApplicationTooltip = ({ application }: { application: AggregatedDataRow }) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const searchParams = useSearchParams();
 
@@ -655,7 +654,7 @@ export const ApplicationTooltip = memo(({ application }: { application: Aggregat
       </TooltipBody>
     // </div>
   )
-});
+};
 
 ApplicationTooltip.displayName = 'ApplicationTooltip';
 
