@@ -182,7 +182,7 @@ export default function LandingSwiperItems() {
     useSWR<MasterResponse>(MasterURL);
 
   const metricIds = useMemo(() => 
-    ["txcount", "stables_mcap", "fees", "rent_paid", "market_cap"], 
+    ["txcount", "throughput", "stables_mcap", "fees", "rent_paid", "market_cap"], 
     []
   );
 
