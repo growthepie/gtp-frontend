@@ -50,7 +50,7 @@ import SVGSparkline, {
 } from "./SVGSparkline";
 import { useLabelsPage } from "./LabelsContext";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
-
+import Link from "next/link";
 const devMiddleware = (useSWRNext) => {
   return (key, fetcher, config) => {
     return useSWRNext(
@@ -586,9 +586,9 @@ export default function LabelsPage() {
   const [paddingTop, paddingBottom] =
     items.length > 0
       ? [
-          Math.max(0, items[0].start - virtualizer.options.scrollMargin),
-          Math.max(0, virtualizer.getTotalSize() - items[items.length - 1].end),
-        ]
+        Math.max(0, items[0].start - virtualizer.options.scrollMargin),
+        Math.max(0, virtualizer.getTotalSize() - items[items.length - 1].end),
+      ]
       : [0, 0];
 
   const handleFilter = useCallback(
@@ -605,8 +605,8 @@ export default function LabelsPage() {
             (f) => f.owner_project === value["owner_project"],
           )
             ? labelsFilters[key].filter(
-                (f) => f.owner_project !== value["owner_project"],
-              )
+              (f) => f.owner_project !== value["owner_project"],
+            )
             : [...labelsFilters[key], value],
         });
       } else {
@@ -954,7 +954,7 @@ export default function LabelsPage() {
                     }
                     rightIcon={
                       sort.metric === "owner_project" &&
-                      sort.sortOrder === "asc"
+                        sort.sortOrder === "asc"
                         ? "feather:arrow-up"
                         : "feather:arrow-down"
                     }
@@ -1070,7 +1070,7 @@ export default function LabelsPage() {
                   <Icon
                     icon={
                       sort.metric === "deployment_date" &&
-                      sort.sortOrder === "asc"
+                        sort.sortOrder === "asc"
                         ? "feather:arrow-up"
                         : "feather:arrow-down"
                     }
@@ -1099,7 +1099,7 @@ export default function LabelsPage() {
                     <Icon
                       icon={
                         sort.metric === "deployment_tx" &&
-                        sort.sortOrder === "asc"
+                          sort.sortOrder === "asc"
                           ? "feather:arrow-up"
                           : "feather:arrow-down"
                       }
@@ -1129,7 +1129,7 @@ export default function LabelsPage() {
                     <Icon
                       icon={
                         sort.metric === "deployer_address" &&
-                        sort.sortOrder === "asc"
+                          sort.sortOrder === "asc"
                           ? "feather:arrow-up"
                           : "feather:arrow-down"
                       }
@@ -1160,7 +1160,7 @@ export default function LabelsPage() {
                       <Icon
                         icon={
                           sort.metric === currentMetric &&
-                          sort.sortOrder === "asc"
+                            sort.sortOrder === "asc"
                             ? "feather:arrow-up"
                             : "feather:arrow-down"
                         }
@@ -1215,9 +1215,8 @@ export default function LabelsPage() {
                       left: 0,
                       width: "100%",
                       height: `${item.size}px`,
-                      transform: `translateY(${
-                        item.start - virtualizer.options.scrollMargin
-                      }px)`,
+                      transform: `translateY(${item.start - virtualizer.options.scrollMargin
+                        }px)`,
                     }}
                   >
                     <GridTableRow
@@ -1228,11 +1227,10 @@ export default function LabelsPage() {
                     >
                       <div className="flex h-full items-center">
                         <Icon
-                          icon={`gtp:${
-                            AllChainsByKeys[
-                              filteredLabelsData[item.index].origin_key
-                            ].urlKey
-                          }-logo-monochrome`}
+                          icon={`gtp:${AllChainsByKeys[
+                            filteredLabelsData[item.index].origin_key
+                          ].urlKey
+                            }-logo-monochrome`}
                           className="w-[15px] h-[15px]"
                           style={{
                             color:
@@ -1258,11 +1256,10 @@ export default function LabelsPage() {
                           }}
                         >
                           <div
-                            className={`flex transition-all duration-300 ${
-                              numAddressChars === 42 - 6
-                                ? ""
-                                : "font-semibold bg-[linear-gradient(90deg,#CDD8D3_calc(100%-17px),transparent_100%)] bg-clip-text text-transparent backface-visibility-hidden"
-                            }  `}
+                            className={`flex transition-all duration-300 ${numAddressChars === 42 - 6
+                              ? ""
+                              : "font-semibold bg-[linear-gradient(90deg,#CDD8D3_calc(100%-17px),transparent_100%)] bg-clip-text text-transparent backface-visibility-hidden"
+                              }  `}
                             style={{
                               direction: "ltr",
                               textOverflow: ". !important",
@@ -1279,18 +1276,16 @@ export default function LabelsPage() {
                             )}
                           </div>
                           <div
-                            className={`relative h-full flex items-center text-[#CDD8D333] ${
-                              numAddressChars === 42 - 6 && "!hidden"
-                            }`}
+                            className={`relative h-full flex items-center text-[#CDD8D333] ${numAddressChars === 42 - 6 && "!hidden"
+                              }`}
                           >
                             &hellip;
                           </div>
                           <div
-                            className={`transition-all duration-300  ${
-                              numAddressChars === 42 - 6
-                                ? ""
-                                : "font-semibold bg-[linear-gradient(-90deg,#CDD8D3_calc(100%-17px),transparent_100%)] bg-clip-text text-transparent backface-visibility-hidden"
-                            } `}
+                            className={`transition-all duration-300  ${numAddressChars === 42 - 6
+                              ? ""
+                              : "font-semibold bg-[linear-gradient(-90deg,#CDD8D3_calc(100%-17px),transparent_100%)] bg-clip-text text-transparent backface-visibility-hidden"
+                              } `}
                           >
                             {filteredLabelsData[item.index].address.slice(-6)}
                           </div>
@@ -1298,7 +1293,7 @@ export default function LabelsPage() {
                             <Icon
                               icon={
                                 copiedAddress ===
-                                filteredLabelsData[item.index].address
+                                  filteredLabelsData[item.index].address
                                   ? "feather:check-circle"
                                   : "feather:copy"
                               }
@@ -1367,12 +1362,12 @@ export default function LabelsPage() {
                                     filteredLabelsData[item.index].owner_project
                                   ][2] ||
                                     ownerProjectToProjectData[
-                                      filteredLabelsData[item.index]
-                                        .owner_project
+                                    filteredLabelsData[item.index]
+                                      .owner_project
                                     ][4] ||
                                     ownerProjectToProjectData[
-                                      filteredLabelsData[item.index]
-                                        .owner_project
+                                    filteredLabelsData[item.index]
+                                      .owner_project
                                     ][5]) && (
                                     <TooltipContent className="relativeflex flex-col items-start justify-center gap-y-[5px] rounded-[10px] p-2.5 bg-[#151a19] border border-[#5A6462] z-[19] max-w-[300px]">
                                       <div className="absolute top-[calc(50%-4px)] -left-1 w-2 h-2 bg-[#151a19]  border-[#5A6462] border border-r-0 border-t-0 transform rotate-45"></div>
@@ -1380,73 +1375,106 @@ export default function LabelsPage() {
                                         filteredLabelsData[item.index]
                                           .owner_project
                                       ][2] && (
-                                        <div className="flex items-center text-xs pb-1">{`${
-                                          ownerProjectToProjectData[
+                                          <div className="flex items-center text-xs pb-1">{`${ownerProjectToProjectData[
                                             filteredLabelsData[item.index]
                                               .owner_project
                                           ][2]
-                                        }`}</div>
-                                      )}
-
+                                            }`}</div>
+                                        )}
+                                      {/* website */}
                                       {ownerProjectToProjectData[
                                         filteredLabelsData[item.index]
                                           .owner_project
                                       ][5] && (
-                                        <a
-                                          href={
-                                            ownerProjectToProjectData[
+                                          <Link
+                                            href={
+                                              ownerProjectToProjectData[
                                               filteredLabelsData[item.index]
                                                 .owner_project
-                                            ][5]
-                                          }
-                                          target="_blank"
-                                          className="group flex items-center gap-x-[5px] text-xs"
-                                        >
-                                          <div className="w-[12px] h-[12px]">
-                                            <Icon
-                                              icon="feather:globe"
-                                              className="w-[12px] h-[12px]"
-                                            />
-                                          </div>
-                                          <div className="group-hover:underline">
-                                            {
-                                              ownerProjectToProjectData[
-                                                filteredLabelsData[item.index]
-                                                  .owner_project
                                               ][5]
                                             }
-                                          </div>
-                                        </a>
-                                      )}
-                                      {ownerProjectToProjectData[
-                                        filteredLabelsData[item.index]
-                                          .owner_project
-                                      ][4] && (
-                                        <div className="flex items-center">
-                                          <a
-                                            href={getProjectTwitterLink(
-                                              filteredLabelsData[item.index],
-                                            )}
                                             target="_blank"
                                             className="group flex items-center gap-x-[5px] text-xs"
                                           >
                                             <div className="w-[12px] h-[12px]">
                                               <Icon
-                                                icon="prime:twitter"
+                                                icon="feather:globe"
                                                 className="w-[12px] h-[12px]"
                                               />
                                             </div>
                                             <div className="group-hover:underline">
                                               {
                                                 ownerProjectToProjectData[
-                                                  filteredLabelsData[item.index]
-                                                    .owner_project
-                                                ][4]
+                                                filteredLabelsData[item.index]
+                                                  .owner_project
+                                                ][5]
                                               }
                                             </div>
-                                          </a>
-                                        </div>
-                                      )}
+                                          </Link>
+                                        )}
+
+                                      {/* github */}
+                                      {ownerProjectToProjectData[
+                                        filteredLabelsData[item.index]
+                                          .owner_project
+                                      ][3] && (
+                                          <Link
+                                            href={`https://github.com/${ownerProjectToProjectData[
+                                              filteredLabelsData[item.index]
+                                                .owner_project
+                                            ][3]
+                                              }/`}
+                                            target="_blank"
+                                            className="group flex items-center gap-x-[5px] text-xs"
+                                          >
+                                            <div className="w-[12px] h-[12px]">
+                                              <Icon
+                                                icon="ri:github-fill"
+                                                className="w-[12px] h-[12px]"
+                                              />
+                                            </div>
+                                            <div className="group-hover:underline">
+                                              {
+                                                ownerProjectToProjectData[
+                                                filteredLabelsData[item.index]
+                                                  .owner_project
+                                                ][3]
+                                              }
+                                            </div>
+                                          </Link>
+                                        )}
+
+                                      {/* twitter */}
+                                      {ownerProjectToProjectData[
+                                        filteredLabelsData[item.index]
+                                          .owner_project
+                                      ][4] && (
+                                          <div className="flex items-center">
+                                            <Link
+                                              href={getProjectTwitterLink(
+                                                filteredLabelsData[item.index]
+                                                  .owner_project
+                                              )}
+                                              target="_blank"
+                                              className="group flex items-center gap-x-[5px] text-xs"
+                                            >
+                                              <div className="w-[12px] h-[12px]">
+                                                <Icon
+                                                  icon="prime:twitter"
+                                                  className="w-[12px] h-[12px]"
+                                                />
+                                              </div>
+                                              <div className="group-hover:underline">
+                                                {
+                                                  ownerProjectToProjectData[
+                                                  filteredLabelsData[item.index]
+                                                    .owner_project
+                                                  ][4]
+                                                }
+                                              </div>
+                                            </Link>
+                                          </div>
+                                        )}
                                     </TooltipContent>
                                   )}
                               </Tooltip>
@@ -1457,85 +1485,84 @@ export default function LabelsPage() {
                                   filteredLabelsData[item.index].owner_project
                                 ] &&
                                   ownerProjectToProjectData[
-                                    filteredLabelsData[item.index].owner_project
+                                  filteredLabelsData[item.index].owner_project
                                   ][5] && (
                                     <div className="h-[15px] w-[15px]">
                                       {ownerProjectToProjectData[
                                         filteredLabelsData[item.index]
                                           .owner_project
                                       ][5] && (
-                                        <a
-                                          href={
-                                            ownerProjectToProjectData[
+                                          <a
+                                            href={
+                                              ownerProjectToProjectData[
                                               filteredLabelsData[item.index]
                                                 .owner_project
-                                            ][5]
-                                          }
-                                          target="_blank"
-                                          className="group flex items-center gap-x-[5px] text-xs"
-                                        >
-                                          <Icon
-                                            icon="ri:global-line"
-                                            className="w-[15px] h-[15px]"
-                                          />
-                                        </a>
-                                      )}
+                                              ][5]
+                                            }
+                                            target="_blank"
+                                            className="group flex items-center gap-x-[5px] text-xs"
+                                          >
+                                            <Icon
+                                              icon="ri:global-line"
+                                              className="w-[15px] h-[15px]"
+                                            />
+                                          </a>
+                                        )}
                                     </div>
                                   )}
                                 {ownerProjectToProjectData[
                                   filteredLabelsData[item.index].owner_project
                                 ] &&
                                   ownerProjectToProjectData[
-                                    filteredLabelsData[item.index].owner_project
+                                  filteredLabelsData[item.index].owner_project
                                   ][3] && (
                                     <div className="h-[15px] w-[15px]">
                                       {ownerProjectToProjectData[
                                         filteredLabelsData[item.index]
                                           .owner_project
                                       ][3] && (
-                                        <a
-                                          href={`https://github.com/${
-                                            ownerProjectToProjectData[
+                                          <a
+                                            href={`https://github.com/${ownerProjectToProjectData[
                                               filteredLabelsData[item.index]
                                                 .owner_project
                                             ][3]
-                                          }/`}
-                                          target="_blank"
-                                          className="group flex items-center gap-x-[5px] text-xs"
-                                        >
-                                          <Icon
-                                            icon="ri:github-fill"
-                                            className="w-[15px] h-[15px]"
-                                          />
-                                        </a>
-                                      )}
+                                              }/`}
+                                            target="_blank"
+                                            className="group flex items-center gap-x-[5px] text-xs"
+                                          >
+                                            <Icon
+                                              icon="ri:github-fill"
+                                              className="w-[15px] h-[15px]"
+                                            />
+                                          </a>
+                                        )}
                                     </div>
                                   )}
                                 {ownerProjectToProjectData[
                                   filteredLabelsData[item.index].owner_project
                                 ] &&
                                   ownerProjectToProjectData[
-                                    filteredLabelsData[item.index].owner_project
+                                  filteredLabelsData[item.index].owner_project
                                   ][4] && (
                                     <div className="h-[15px] w-[15px]">
                                       {ownerProjectToProjectData[
                                         filteredLabelsData[item.index]
                                           .owner_project
                                       ][4] && (
-                                        <a
-                                          href={getProjectTwitterLink(
-                                            filteredLabelsData[item.index]
-                                              .owner_project,
-                                          )}
-                                          target="_blank"
-                                          className="group flex items-center gap-x-[5px] text-xs"
-                                        >
-                                          <Icon
-                                            icon="ri:twitter-x-fill"
-                                            className="w-[15px] h-[15px]"
-                                          />
-                                        </a>
-                                      )}
+                                          <a
+                                            href={getProjectTwitterLink(
+                                              filteredLabelsData[item.index]
+                                                .owner_project,
+                                            )}
+                                            target="_blank"
+                                            className="group flex items-center gap-x-[5px] text-xs"
+                                          >
+                                            <Icon
+                                              icon="ri:twitter-x-fill"
+                                              className="w-[15px] h-[15px]"
+                                            />
+                                          </a>
+                                        )}
                                     </div>
                                   )}
                               </div>
@@ -1589,10 +1616,10 @@ export default function LabelsPage() {
                               size="sm"
                               label={
                                 master?.blockspace_categories.main_categories[
-                                  subcategoryToCategoryMapping[
-                                    filteredLabelsData[item.index]
-                                      .usage_category
-                                  ]
+                                subcategoryToCategoryMapping[
+                                filteredLabelsData[item.index]
+                                  .usage_category
+                                ]
                                 ]
                               }
                               leftIcon={
@@ -1615,8 +1642,8 @@ export default function LabelsPage() {
                               rightIcon={
                                 labelsFilters.category.includes(
                                   subcategoryToCategoryMapping[
-                                    filteredLabelsData[item.index]
-                                      .usage_category
+                                  filteredLabelsData[item.index]
+                                    .usage_category
                                   ],
                                 )
                                   ? "heroicons-solid:x-circle"
@@ -1625,8 +1652,8 @@ export default function LabelsPage() {
                               rightIconColor={
                                 labelsFilters.category.includes(
                                   subcategoryToCategoryMapping[
-                                    filteredLabelsData[item.index]
-                                      .usage_category
+                                  filteredLabelsData[item.index]
+                                    .usage_category
                                   ],
                                 )
                                   ? "#FE5468"
@@ -1636,8 +1663,8 @@ export default function LabelsPage() {
                                 handleFilter(
                                   "category",
                                   subcategoryToCategoryMapping[
-                                    filteredLabelsData[item.index]
-                                      .usage_category
+                                  filteredLabelsData[item.index]
+                                    .usage_category
                                   ],
                                 )
                               }
@@ -1652,7 +1679,7 @@ export default function LabelsPage() {
                               size="sm"
                               label={
                                 master?.blockspace_categories.sub_categories[
-                                  filteredLabelsData[item.index].usage_category
+                                filteredLabelsData[item.index].usage_category
                                 ]
                               }
                               leftIcon={null}
@@ -1741,7 +1768,7 @@ export default function LabelsPage() {
                                 <Icon
                                   icon={
                                     copiedAddress ===
-                                    filteredLabelsData[item.index].deployment_tx
+                                      filteredLabelsData[item.index].deployment_tx
                                       ? "feather:check-circle"
                                       : "feather:copy"
                                   }
@@ -1816,8 +1843,8 @@ export default function LabelsPage() {
                                 <Icon
                                   icon={
                                     copiedAddress ===
-                                    filteredLabelsData[item.index]
-                                      .deployer_address
+                                      filteredLabelsData[item.index]
+                                        .deployer_address
                                       ? "feather:check-circle"
                                       : "feather:copy"
                                   }
@@ -1837,40 +1864,37 @@ export default function LabelsPage() {
                       <div className="flex items-center justify-between pl-[20px]">
                         <div className="relative flex h-[20px] justify-between w-full">
                           <SVGSparklineProvider
-                            key={`${
-                              filteredLabelsData[item.index].origin_key
-                            }_${filteredLabelsData[item.index].address}`}
+                            key={`${filteredLabelsData[item.index].origin_key
+                              }_${filteredLabelsData[item.index].address}`}
                             isDBLoading={false}
                             minUnix={SparklineTimestampRange[0]}
                             maxUnix={SparklineTimestampRange[1]}
                             data={
                               sparklineLabelsData &&
-                              sparklineLabelsData.data[
-                                `${filteredLabelsData[item.index].origin_key}_${
-                                  filteredLabelsData[item.index].address
+                                sparklineLabelsData.data[
+                                `${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address
                                 }`
-                              ]
+                                ]
                                 ? sparklineLabelsData.data[
-                                    `${
-                                      filteredLabelsData[item.index].origin_key
-                                    }_${filteredLabelsData[item.index].address}`
-                                  ].sparkline.map((d) => [
-                                    d[
-                                      sparklineLabelsData.data.types.indexOf(
-                                        "unix",
-                                      )
-                                    ],
-                                    d[
-                                      sparklineLabelsData.data.types.indexOf(
-                                        currentMetric,
-                                      )
-                                    ],
-                                  ])
+                                  `${filteredLabelsData[item.index].origin_key
+                                  }_${filteredLabelsData[item.index].address}`
+                                ].sparkline.map((d) => [
+                                  d[
+                                  sparklineLabelsData.data.types.indexOf(
+                                    "unix",
+                                  )
+                                  ],
+                                  d[
+                                  sparklineLabelsData.data.types.indexOf(
+                                    currentMetric,
+                                  )
+                                  ],
+                                ])
                                 : []
                             }
                             change={
                               filteredLabelsData[item.index][
-                                `${currentMetric}_change`
+                              `${currentMetric}_change`
                               ]
                             }
                             value={
@@ -1987,13 +2011,13 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
           </div>
           {(change === null ||
             parseFloat((change * 100).toFixed(0)) === "0") && (
-            <div
-              className={`text-[9px] text-right leading-[1] text-[#CDD8D399] font-normal`}
-            >
-              {change === null && "—"}
-              {change !== null && "0.0%"}
-            </div>
-          )}
+              <div
+                className={`text-[9px] text-right leading-[1] text-[#CDD8D399] font-normal`}
+              >
+                {change === null && "—"}
+                {change !== null && "0.0%"}
+              </div>
+            )}
           {change !== null && parseFloat((change * 100).toFixed(1)) > 0 && (
             <div
               className={`text-[9px] text-right leading-[1] text-[#1DF7EF] font-normal`}
@@ -2079,13 +2103,13 @@ const LabelsSVGSparkline = ({ chainKey }: { chainKey: string }) => {
           </div>
           {(change === null ||
             parseFloat((change * 100).toFixed(0)) === "0") && (
-            <div
-              className={`text-[9px] text-right leading-[1] text-[#CDD8D399] font-normal`}
-            >
-              {change === null && "—"}
-              {change !== null && "0.0%"}
-            </div>
-          )}
+              <div
+                className={`text-[9px] text-right leading-[1] text-[#CDD8D399] font-normal`}
+              >
+                {change === null && "—"}
+                {change !== null && "0.0%"}
+              </div>
+            )}
           {change !== null && parseFloat((change * 100).toFixed(1)) > 0 && (
             <div
               className={`text-[9px] text-right leading-[1] text-[#1DF7EF] font-normal`}
