@@ -143,7 +143,7 @@ export const ProjectsMetadataProvider = ({ children, useFilteredProjects = false
 export const useProjectsMetadata = () => {
   const context = useContext(ProjectsMetadataContext);
   if (context === undefined) {
-    throw new Error("useApplicationsData must be used within a ApplicationsDataProvider");
+    throw new Error("useProjectsMetadata must be used within a ProjectsMetadataProvider");
   }
   return context;
 }

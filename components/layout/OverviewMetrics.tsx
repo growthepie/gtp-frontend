@@ -36,6 +36,7 @@ import HorizontalScrollContainer from "../HorizontalScrollContainer";
 import { useMaster } from "@/contexts/MasterContext";
 import { TitleButtonLink } from "./TextHeadingComponents";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import { ProjectsMetadataContext, ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 
 // object which contains the allowed modes for chains with mode exceptions
 const AllowedModes: {
@@ -290,7 +291,7 @@ export default function OverviewMetrics({
   // console.log(hoveredCategories);
 
   return (
-    <>
+    <ProjectsMetadataProvider>
       {invalidTimespan !== selectedTimespan && (
         <div className="w-full flex-col relative">
           <Container>
@@ -601,6 +602,6 @@ export default function OverviewMetrics({
       /> */}
         </div>
       )}
-    </>
+    </ProjectsMetadataProvider>
   );
 }

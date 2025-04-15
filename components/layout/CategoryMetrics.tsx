@@ -52,7 +52,7 @@ import { TitleButtonLink } from "./TextHeadingComponents";
 import { GTPApplicationTooltip } from "../tooltip/GTPTooltip";
 import { GTPTooltipNew } from "../tooltip/GTPTooltip";
 import { OLIContractTooltip } from "../tooltip/GTPTooltip";
-import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
+import { ProjectsMetadataProvider, useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 export default function CategoryMetrics({
   data,
   master,
@@ -1095,7 +1095,7 @@ export default function CategoryMetrics({
   // console.log(sortedChainValues);
 
   return (
-    <>
+    <ProjectsMetadataProvider>
       {selectedSubcategories && (
         <div className="relative w-full flex-col">
           <Container>
@@ -2070,6 +2070,6 @@ export default function CategoryMetrics({
           </HorizontalScrollContainer>
         </div>
       )}
-    </>
+    </ProjectsMetadataProvider>
   );
 }
