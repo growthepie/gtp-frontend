@@ -1,3 +1,4 @@
+"use client";
 import { useContractContext } from "./ContractContext";
 import { Icon } from "@iconify/react";
 import { useMemo, useEffect, useState, CSSProperties } from "react";
@@ -359,47 +360,52 @@ export default function ContractRow({
         className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] mb-[3px] !py-0"
       >
         <GridTableChainIcon origin_key={sortedContracts[rowKey].chain} />
-        <div className="flex justify-between">
-          <div className="truncate">
-            {sortedContracts[rowKey].project_name ? (
-                <GTPTooltipNew
-                  placement="bottom-start"
-                  allowInteract={true}
-                  trigger={
-                    projectNameToProjectData[sortedContracts[rowKey].project_name] && projectNameToProjectData[sortedContracts[rowKey].project_name].on_apps_page ? (
-                      <Link 
-                        href={`/applications/${projectNameToProjectData[sortedContracts[rowKey].project_name].owner_project}`} 
-                        className="flex h-[30px] items-center hover:underline cursor-pointer select-none"
-                      >
-                        {sortedContracts[rowKey].project_name}
-                      </Link>
-                    ) : (
-                      <div className="flex h-[30px] items-center cursor-normal select-none">
-                        {sortedContracts[rowKey].project_name}
-                      </div>
-                    )
-                  }
-                  containerClass="flex flex-col gap-y-[10px]"
-                  positionOffset={{ mainAxis: 0, crossAxis: 20 }}
-                >
-                    <GTPApplicationTooltip project_name={sortedContracts[rowKey].project_name} />
-                </GTPTooltipNew>
-            ) : (
-                <GTPTooltipNew
-                  placement="bottom-start"
-                  allowInteract={true}
-                  trigger={
-                    <div className="flex h-[30px] items-center gap-x-[3px] text-[#5A6462] text-[10px] cursor-pointer select-none">
-                      Not Available
-                    </div>
-                  }
-                  containerClass="flex flex-col gap-y-[10px]"
-                  positionOffset={{ mainAxis: 0, crossAxis: 20 }}
-                >
-                  <OLIContractTooltip icon="gtp-project-monochrome" iconClassName="text-[#5A6462]" project_name="Not Available" message="Project information not available." />
-                </GTPTooltipNew>
-            )}
-          </div>
+        <div className="flex justify-between min-w-0 items-center h-full">
+          {sortedContracts[rowKey].project_name ? (
+            <GTPTooltipNew
+              placement="bottom-start"
+              allowInteract={true}
+              trigger={
+                projectNameToProjectData[sortedContracts[rowKey].project_name] && projectNameToProjectData[sortedContracts[rowKey].project_name].on_apps_page ? (
+                  <Link
+                    href={`/applications/${projectNameToProjectData[sortedContracts[rowKey].project_name].owner_project}`}
+                    // Link handles layout, inner span handles truncation
+                    className="flex h-[30px] items-center hover:underline cursor-pointer select-none min-w-0" // Keep flex items-center, add min-w-0
+                  >
+                    <span className="block w-full truncate"> {/* Apply truncate here */}
+                      {sortedContracts[rowKey].project_name}
+                    </span>
+                  </Link>
+                ) : (
+                  <div className="flex h-[30px] items-center cursor-normal select-none min-w-0"> {/* Keep flex items-center, add min-w-0 */}
+                    <span className="block w-full truncate"> {/* Apply truncate here */}
+                      {sortedContracts[rowKey].project_name}
+                    </span>
+                  </div>
+                )
+              }
+              containerClass="flex flex-col gap-y-[10px]"
+              positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+            >
+              <GTPApplicationTooltip project_name={sortedContracts[rowKey].project_name} />
+            </GTPTooltipNew>
+          ) : (
+            <GTPTooltipNew
+              placement="bottom-start"
+              allowInteract={true}
+              trigger={
+                <div className="flex h-[30px] items-center gap-x-[3px] text-[#5A6462] text-[10px] cursor-pointer select-none min-w-0">
+                  <span className="block w-full truncate">
+                    Not Available
+                  </span>
+                </div>
+              }
+              containerClass="flex flex-col gap-y-[10px]"
+              positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+            >
+              <OLIContractTooltip icon="gtp-project-monochrome" iconClassName="text-[#5A6462]" project_name="Not Available" message="Project information not available." />
+            </GTPTooltipNew>
+          )}
         </div>
         <div className="flex justify-between gap-x-[10px]">
           {sortedContracts[rowKey].name ? (

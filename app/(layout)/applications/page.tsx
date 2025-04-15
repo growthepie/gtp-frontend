@@ -652,15 +652,17 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
           </div>
         </div>
         <div
-          className="flex items-center gap-x-[5px] group-hover:underline truncate pl-[15px] pr-[15px]"
+          className="flex items-center gap-x-[5px] group-hover:underline pl-[15px] pr-[15px]"
         >
           <GTPTooltipNew
             placement="bottom-start"
             allowInteract={true}
             size="md"
             trigger={
-              <div className="z-[10] truncate h-[32px] flex items-center">
-                <ApplicationDisplayName owner_project={application.owner_project} />
+              <div className="flex-1 min-w-0 h-[32px] flex items-center"> {/* Keep flex items-center here to vertically center */}
+                <div className="truncate w-full">
+                  <ApplicationDisplayName owner_project={application.owner_project} />
+                </div>
               </div>
             }
             containerClass="flex flex-col gap-y-[10px]"
@@ -678,8 +680,10 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
             allowInteract={true}
             size="md"
             trigger={
-              <div className="z-[10] truncate h-[32px] flex items-center">
-                <Category category={ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].main_category : ""} />
+              <div className="flex-1 min-w-0 h-[32px] flex items-center"> {/* Keep flex items-center here to vertically center */}
+                <div className="truncate w-full">
+                  <Category category={ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].main_category : ""} />
+                </div>
               </div>
             }
             containerClass="flex flex-col gap-y-[10px] !w-[230px]"

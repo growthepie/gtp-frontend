@@ -173,7 +173,7 @@ export const PageTitleAndDescriptionAndControls = () => {
             <BackButton />
             <div className="flex-1 flex items-center min-h-[43px] gap-x-[8px]">
               <ApplicationIcon owner_project={urlOwnerProject} size="md" />
-              <Heading className="heading-large-lg lg:heading-large-xl min-h-[36px]" as="h1">
+              <Heading className="heading-large-lg lg:heading-large-xl min-h-[36px] flex-1" as="h1">
                 <ApplicationDisplayName owner_project={urlOwnerProject} />
               </Heading>
             </div>
@@ -200,7 +200,7 @@ export const PageTitleAndDescriptionAndControls = () => {
 export const ApplicationDisplayName = ({ owner_project }: { owner_project: string }) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
   return (
-    <div>{ownerProjectToProjectData[owner_project] ? ownerProjectToProjectData[owner_project].display_name : owner_project}</div>
+    <span>{ownerProjectToProjectData[owner_project] ? ownerProjectToProjectData[owner_project].display_name : owner_project}</span>
   )
 }
 
@@ -512,10 +512,6 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
     <Link href={{ pathname: `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",") }}
       className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] ${className || ""} group hover:cursor-pointer hover:bg-forest-500/10`}
       style={{ width: width || undefined }}
-    // onClick={() => {
-    //   // window.location.href = `/applications/${application.owner_project}`;
-    //   router.push(`/applications/${application.owner_project}`);
-    // }}
     >
       <div>
         <div className="flex flex-col">
@@ -551,8 +547,8 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
             placement="bottom-start"
             allowInteract={true}
             trigger={
-              <div className="heading-large-md flex-1 overflow-visible truncate">
-              <ApplicationDisplayName owner_project={application.owner_project} />
+              <div className="heading-large-md overflow-visible max-w-full truncate">
+                <ApplicationDisplayName owner_project={application.owner_project} />
               </div>
             }
             containerClass="flex flex-col gap-y-[10px]"
