@@ -17,6 +17,7 @@ function ownerProjectToProjectData(data: AppDatum[]): { [key: string]: any } {
 }
 
 export type ProjectsMetadataContextType = {
+  isLoading: boolean;
   ownerProjectToProjectData: {
     [key: string]: {
       owner_project: string;
@@ -132,6 +133,7 @@ export const ProjectsMetadataProvider = ({ children, useFilteredProjects = false
 
   return (
     <ProjectsMetadataContext.Provider value={{
+      isLoading: projectsLoading || filteredProjectsLoading,
       ownerProjectToProjectData,
       projectNameToProjectData,
     }}>

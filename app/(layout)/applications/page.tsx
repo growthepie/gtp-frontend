@@ -33,7 +33,7 @@ import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 
 // Preload data for the overview page
 ["1d", "7d", "30d", "90d", "365d", "max"].forEach((timespan) => {
-  preload(ApplicationsURLs.overview.replace('{timespan}', timespan), { as: 'fetch' });
+  preload(ApplicationsURLs.overview.replace('{timespan}', timespan), { as: 'fetch', crossOrigin: "anonymous" });
 });
 
 const SCROLL_POS_KEY = 'scrollPos-applications';

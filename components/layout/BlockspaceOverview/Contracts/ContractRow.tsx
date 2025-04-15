@@ -3,7 +3,6 @@ import { Icon } from "@iconify/react";
 import { useMemo, useEffect, useState, CSSProperties } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
-import { ContractRowInterface } from "./ContextInterface";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../Tooltip";
 import ContractLabelModal from "../../ContractLabelModal";
 import { ContractInfo } from "./ContextInterface";
@@ -28,16 +27,12 @@ export default function ContractRow({
   i,
   selectedContract,
   sortedContracts,
-  sortOrder,
-  setSortOrder,
   setSelectedContract,
 }: {
   rowKey: string;
   i: number;
   selectedContract: ContractInfo | null;
   sortedContracts: Object;
-  sortOrder: boolean;
-  setSortOrder: (order: boolean) => void;
   setSelectedContract: (contract: ContractInfo | null) => void;
 }) {
   const { AllChainsByKeys } = useMaster();
@@ -54,15 +49,11 @@ export default function ContractRow({
   const { theme } = useTheme();
 
   const {
-    data,
     master,
     selectedMode,
-    selectedCategory,
-    selectedTimespan,
-    selectedValue,
-    setSelectedCategory,
     formatSubcategories,
-  } = useContractContext() as ContractRowInterface;
+  } = useContractContext();
+
 
   const largestContractValue = useMemo(() => {
     let retValue = 0;
@@ -136,7 +127,7 @@ export default function ContractRow({
     <>
       {selectedContract &&
         selectedContract.address === sortedContracts[rowKey].address && (
-          <div key={rowKey + "" + sortOrder}>
+          <div key={rowKey + "-labelform"}>
             <div className="flex rounded-[27px]  mt-[7.5px] group relative z-[100]">
               <div className="absolute top-0 left-0 right-0 bottom-[-1px] pointer-events-none">
                 <div className="w-full h-full rounded-[27px] overflow-clip">
@@ -363,8 +354,8 @@ export default function ContractRow({
         )}
 
       <GridTableRow
-        key={rowKey + "" + sortOrder}
-        gridDefinitionColumns="grid-cols-[20px,150px,280px,95px,minmax(215px,800px),115px] relative"
+        key={rowKey}
+        gridDefinitionColumns="grid-cols-[20px,150px,280px,95px,minmax(215px,800px),130px] relative"
         className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] mb-[3px] !py-0"
       >
         <GridTableChainIcon origin_key={sortedContracts[rowKey].chain} />

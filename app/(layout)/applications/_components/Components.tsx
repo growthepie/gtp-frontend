@@ -213,39 +213,24 @@ export const BackButton = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // const handleBack = () => {
-  //   let backUrl = window.history.state?.prev;
-  //   let newSearchParams = searchParams.toString().replace(/%2C/g, ",");
+  const handleBack = () => {
+    // 1. Get the current searchParams as a string (e.g., "q=test&sort=asc")
+    const currentParamsString = searchParams.toString().replace(/%2C/g, ",");
 
-  //   if (backUrl) {
-  //     // Instead of pushing a new state and going back,
-  //     // replace the current state and navigate directly
-  //     backUrl = `${backUrl.split("?")[0]}?${newSearchParams}`;
+    // 2. Determine the target pathname
+    const targetPathname = "/applications";
 
-  //     // Option 1: Navigate to the URL directly
-  //     // window.location.href = backUrl;
+    // 3. Construct the full target URL
+    const targetUrl = `${targetPathname}${currentParamsString ? `?${currentParamsString}` : ''}`;
 
-  //     // Option 2: Replace current state and use history.back()
-  //     // This preserves scroll position better in many browsers
-  //     window.history.replaceState(null, "", window.location.href);
-  //     window.history.pushState(null, "", backUrl);
-  //     window.history.back();
-
-  //     return;
-  //   }
-
-  //   // Fallback: Navigate to applications with search params
-  //   backUrl = `/applications${newSearchParams ? `?${newSearchParams}` : ""}`;
-  //   window.location.href = backUrl;
-  // };
+    // 4. Navigate using router.push()
+    router.push(targetUrl);
+  };
 
   return (
     <div
       className="size-[36px] bg-[#344240] rounded-full flex justify-center items-center cursor-pointer"
-      onClick={() => {
-        // go back
-        router.back();
-      }}
+      onClick={handleBack}
 
     >
       <Icon icon="feather:arrow-left" className="size-[26px] text-[#CDD8D3]" />

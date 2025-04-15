@@ -10,7 +10,7 @@ import { useMaster } from "@/contexts/MasterContext";
 import { navigationItems } from "@/lib/navigation";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { AnimatePresence, motion } from "framer-motion";
-import { ProjectsMetadataProvider, useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
+import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import Image from "next/image";
 import VerticalScrollContainer from "../VerticalScrollContainer";
 import Link from "next/link";
@@ -150,14 +150,13 @@ export const SearchComponent = () => {
   if (!isOpen) return null;
 
   return (
-    <ProjectsMetadataProvider useFilteredProjects={true}>
+    <>
       <SearchBar />
       {/* <SearchContainer>
         <SearchBar />
       </SearchContainer> */}
       <GrayOverlay onClick={handleCloseSearch} />
-
-    </ProjectsMetadataProvider>
+    </>
   )
 }
 
