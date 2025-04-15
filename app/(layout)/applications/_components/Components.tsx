@@ -547,7 +547,7 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
             placement="bottom-start"
             allowInteract={true}
             trigger={
-              <div className="heading-large-md overflow-visible max-w-full truncate">
+              <div className="heading-large-md overflow-visible max-w-full truncate hover:underline cursor-pointer">
                 <ApplicationDisplayName owner_project={application.owner_project} />
               </div>
             }
