@@ -8,7 +8,7 @@ import { UIContextProvider } from "@/contexts/UIContext";
 import { useLocalStorage } from "usehooks-ts";
 import { IS_PRODUCTION } from "@/lib/helpers";
 import { MasterProvider } from "@/contexts/MasterContext";
-import { m } from "framer-motion";
+import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 
 // load icons
 addCollection(GTPIcons);
@@ -86,7 +86,9 @@ export function Providers({ children, forcedTheme }: ProvidersProps) {
         }}
       >
         <MasterProvider>
-          <UIContextProvider>{children}</UIContextProvider>
+          <ProjectsMetadataProvider>
+            <UIContextProvider>{children}</UIContextProvider>
+          </ProjectsMetadataProvider>
         </MasterProvider>
       </SWRConfig>
     </ThemeProvider>

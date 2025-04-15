@@ -6,6 +6,7 @@ import React, {
   useCallback,
   useRef,
   ReactNode,
+  memo,
 } from "react";
 import Highcharts, {
   AxisLabelsFormatterContextObject,
@@ -62,7 +63,7 @@ type SeriesData = {
 }
 
 
-export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, prefix, suffix, decimals}: { seriesData: SeriesData[], seriesTypes: string[], metric: string, prefix: string, suffix: string, decimals: number }) => {
+export const ApplicationDetailsChart = memo(({ seriesData, seriesTypes,  metric, prefix, suffix, decimals}: { seriesData: SeriesData[], seriesTypes: string[], metric: string, prefix: string, suffix: string, decimals: number }) => {
   const { selectedScale, selectedYAxisScale } = useChartScale();
   const { data } = useApplicationDetailsData();
   const { metricsDef } = useMetrics();
@@ -512,7 +513,9 @@ export const ApplicationDetailsChart = ({ seriesData, seriesTypes,  metric, pref
       </GTPYAxis>
     </GTPChart>
   )
-}
+});
+
+ApplicationDetailsChart.displayName = "ApplicationDetailsChart";
 
 type ExtraAxisProps = {
   minDataUnix?: number;

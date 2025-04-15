@@ -89,7 +89,6 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
       sessionStorage.setItem("AllChainsByKeys", JSON.stringify(allChains));
       setAllChains(Object.values(allChains));
       setAllChainsByKeys(allChains);
-      console.log(allChains);
       const enabledChainsByKeys = Object.values(allChains).reduce(
         (acc, chain) => {
           if (chain.chainType === "L2") {

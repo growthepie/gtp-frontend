@@ -125,7 +125,7 @@ const SwiperItem = memo(({ metric_id, landing, master, chartId }: { metric_id: s
     ?.urlKey;
     
   const chartComponent = useMemo(() => {
-    if (!master || !landing) return null;
+    if (!master || !landing || !shouldUpdate) return null;
     
     return (
       <ChainComponent
@@ -140,7 +140,7 @@ const SwiperItem = memo(({ metric_id, landing, master, chartId }: { metric_id: s
         xMin={landing.data.all_l2s.metrics[metric_id].daily.data[0][0]}
       />
     );
-  }, [landing, master, metric_id, focusEnabled]);
+  }, [landing, master, metric_id, focusEnabled, shouldUpdate]);
 
   const linkComponent = useMemo(() => {
     return (
@@ -160,15 +160,31 @@ const SwiperItem = memo(({ metric_id, landing, master, chartId }: { metric_id: s
     );
   }, [metric_id, urlKey]);
 
+  // Show loading state while waiting for chart to update
+  const loadingComponent = useMemo(() => {
+    if (shouldUpdate || !master || !landing) return null;
+    
+    return (
+      <div className="w-full h-[145px] md:h-[176px] rounded-[15px]  bg-forest-50 dark:bg-[#1F2726]">
+        <div className="flex items-center justify-center h-full w-full">
+          <div className="w-8 h-8 border-[5px] border-forest-500/30 rounded-full border-t-transparent animate-spin"></div>
+        </div>
+      </div>
+    );
+  }, [shouldUpdate, master, landing]);
+
   return (
     <>
       {chartComponent}
+      {loadingComponent}
       {linkComponent}
     </>
   );
 });
 
 SwiperItem.displayName = "SwiperItem";
+
+const metricIds = ["txcount", "throughput", "stables_mcap", "fees", "rent_paid", "market_cap"];
 
 export default function LandingSwiperItems() {
   const {
@@ -181,15 +197,26 @@ export default function LandingSwiperItems() {
   const { data: master, error: masterError } =
     useSWR<MasterResponse>(MasterURL);
 
-  const metricIds = useMemo(() => 
-    ["txcount", "stables_mcap", "fees", "rent_paid", "market_cap"], 
-    []
-  );
+  const filteredMetricIds = useMemo(() => {
+    return metricIds.filter((metric_id) => {
+      return landing?.data?.all_l2s?.metrics[metric_id]?.daily?.data?.length > 0;
+    });
+  }, [landing]);
+
+  // warn if missing metrics
+  useEffect(() => {
+    if (landing?.data?.all_l2s?.metrics) {
+      const missingMetrics = metricIds.filter((metric_id) => !landing?.data?.all_l2s?.metrics[metric_id]);
+      if (missingMetrics.length > 0) {
+        console.warn(`[LandingSwiperItems] Missing metrics: ${missingMetrics.join(", ")}`);  
+      }
+    }
+  }, [landing]);
 
   return (
     <FocusProvider>
       <SplideTrack>
-        {metricIds.map(
+        {filteredMetricIds.map(
           (metric_id, index) => (
             <SplideSlide key={metric_id}>
               <div

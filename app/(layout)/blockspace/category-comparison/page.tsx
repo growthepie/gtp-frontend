@@ -1,10 +1,7 @@
 "use client";
-import { useMemo, useState } from "react";
 import Heading from "@/components/layout/Heading";
 import Container from "@/components/layout/Container";
-import Image from "next/image";
-import { useSearchParams } from "next/navigation";
-import { useSessionStorage, useLocalStorage } from "usehooks-ts";
+import { useSessionStorage } from "usehooks-ts";
 import CategoryMetrics from "@/components/layout/CategoryMetrics";
 import { BlockspaceURLs, MasterURL } from "@/lib/urls";
 import useSWR from "swr";
@@ -75,8 +72,6 @@ const CategoryComparison = () => {
 
       {usageData && master && (
         <CategoryMetrics
-          showEthereumMainnet={showEthereumMainnet}
-          setShowEthereumMainnet={setShowEthereumMainnet}
           selectedTimespan={selectedTimespan}
           setSelectedTimespan={setSelectedTimespan}
           data={usageData.data}

@@ -1,6 +1,5 @@
 import { TimespanProvider } from "./_contexts/TimespanContext";
 import { MetricsProvider } from "./_contexts/MetricsContext";
-import { ProjectsMetadataProvider } from "./_contexts/ProjectsMetadataContext";
 import { SortProvider } from "./_contexts/SortContext";
 import Container from "@/components/layout/Container";
 import { GTPIcon } from "@/components/layout/GTPIcon";
@@ -30,7 +29,6 @@ export default async function Layout({
   children: React.ReactNode;
 }) {
   return (
-    <ProjectsMetadataProvider>
       <TimespanProvider timespans={{
         "1d": {
           shortLabel: "1d",
@@ -81,6 +79,5 @@ export default async function Layout({
           </SortProvider>
         </MetricsProvider>
       </TimespanProvider>
-    </ProjectsMetadataProvider>
   )
 }
