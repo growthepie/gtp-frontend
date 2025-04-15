@@ -262,9 +262,14 @@ function MetricChart({
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   const navItem = useMemo(() => {
+    /* 
+      Returns metric navigation data as object with {label, category, keys and page data}
+    */
     return metric_type === "fundamentals" ? metricItems.find((item) => item.key === metric_id) : daMetricItems.find((item) => item.key === metric_id);
     //return navigationItems[1].options.find((item) => item.key === metric_id);
+
   }, [metric_id, metric_type]);
+  console.log(navItem);
 
   const urlKey = useMemo(() => {
     if (!navItem) return null;
