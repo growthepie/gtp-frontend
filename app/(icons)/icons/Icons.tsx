@@ -106,3 +106,21 @@ export const CloseIcon = () => (
   </defs>
   </svg>
 );
+
+export const GradientIcon: React.FC = () => (
+  <svg width="16" height="15" viewBox="0 0 16 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="0.5" width="15" height="15" rx="2" fill="url(#paint0_linear_21423_38110)"/>
+    <defs>
+      <linearGradient id="paint0_linear_21423_38110" x1="8" y1="0" x2="18.1117" y2="14.2161" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#FE5468"/>
+        <stop offset="1" stopColor="#FFDF27"/>
+      </linearGradient>
+    </defs>
+  </svg>
+);
+
+export const MonochromeIcon: React.FC = () => (
+  <svg width="16" height="15" viewBox="0 0 16 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="0.5" width="15" height="15" rx="2" fill="#CDD8D3"/>
+  </svg>
+);
