@@ -1,24 +1,15 @@
 "use client";
-import Image from "next/image";
 import {
   useMemo,
   useState,
   useEffect,
-  useRef,
   useCallback,
-  useContext,
-  CSSProperties,
 } from "react";
-import { Icon } from "@iconify/react";
 import { useTheme } from "next-themes";
 import { Chains } from "@/types/api/ChainOverviewResponse";
-import { color } from "highcharts";
-import { useHover, useMediaQuery } from "usehooks-ts";
-import { Chart } from "../charts/chart";
+import {  useMediaQuery } from "usehooks-ts";
 import Container from "./Container";
-import Colors from "tailwindcss/colors";
 
-import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 
@@ -36,19 +27,6 @@ import HorizontalScrollContainer from "../HorizontalScrollContainer";
 import { useMaster } from "@/contexts/MasterContext";
 import { TitleButtonLink } from "./TextHeadingComponents";
 import { GTPIconName } from "@/icons/gtp-icon-names";
-
-// object which contains the allowed modes for chains with mode exceptions
-const AllowedModes: {
-  [chain: string]: {
-    metric: string[];
-    scale: string[];
-  };
-} = {
-  imx: {
-    metric: ["txcount"],
-    scale: ["absolute", "share"],
-  },
-};
 
 export default function OverviewMetrics({
   data,
@@ -332,20 +310,9 @@ export default function OverviewMetrics({
                 {Object.keys(timespans).map((timespan) => (
                   <TopRowChild
                     key={timespan}
-                    //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
                     isSelected={selectedTimespan === timespan}
                     onClick={() => {
                       setSelectedTimespan(timespan);
-                      // setXAxis();
-                      // chartComponent?.current?.xAxis[0].update({
-                      //   min: timespans[selectedTimespan].xMin,
-                      //   max: timespans[selectedTimespan].xMax,
-                      //   // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
-                      //   tickPositions: getTickPositions(
-                      //     timespans.max.xMin,
-                      //     timespans.max.xMax,
-                      //   ),
-                      // });
                     }}
                   >
                     <span className="hidden md:block">
@@ -357,21 +324,6 @@ export default function OverviewMetrics({
                   </TopRowChild>
                 ))}
               </TopRowParent>
-              {/* <div
-            className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[30px] right-[20px] md:right-[45px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${
-              !isMobile
-                ? ["max", "180d"].includes(selectedTimespan)
-                  ? "translate-y-[calc(-100%+3px)]"
-                  : "translate-y-0 "
-                : ["max", "180d"].includes(selectedTimespan)
-                ? "translate-y-[calc(100%+3px)]"
-                : "translate-y-0"
-            }`}
-          >
-            <div className="font-medium bg-forest-100 dark:bg-forest-1000 rounded-b-2xl rounded-t-none lg:rounded-b-none lg:rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
-              7-day rolling average
-            </div>
-          </div> */}
             </TopRowContainer>
           </Container>
           {/*Chain Rows/List */}
@@ -571,34 +523,32 @@ export default function OverviewMetrics({
           <HorizontalScrollContainer>
             <ContractProvider
               value={{
-                data,
-                master,
-                selectedMode,
-                forceSelectedChain,
-                selectedCategory,
-                selectedChain,
-                selectedTimespan,
-                selectedValue,
-                categories,
-                allCats,
-                timespans,
-                standardChainKey,
-                setSelectedChain,
-                setSelectedCategory,
-                setAllCats,
-                formatSubcategories,
+                data: data,
+                master: master,
+                selectedMode: selectedMode,
+                selectedCategory: selectedCategory,
+                selectedTimespan: selectedTimespan,
+                timespans: timespans,
+                categories: categories,
+                formatSubcategories: formatSubcategories,
+                showUsd: showUsd,
+                selectedValue: selectedValue,
+                forceSelectedChain: forceSelectedChain,
+                selectedChain: selectedChain,
+                allCats: allCats,
+                standardChainKey: standardChainKey,
+                setAllCats: setAllCats,
+                setSelectedChain: setSelectedChain,
+                setSelectedCategory: setSelectedCategory,
+                selectedChains: undefined,
+                selectedSubcategories: undefined,
+                chainEcosystemFilter: chainEcosystemFilter,
+                focusEnabled: false,
               }}
             >
               <ContractContainer />
             </ContractProvider>
           </HorizontalScrollContainer>
-          {/* <ContractLabelModal
-        isOpen={isContractLabelModalOpen}
-        onClose={() => {
-          setIsContractLabelModalOpen(false);
-        }}
-        contract={selectedContract}
-      /> */}
         </div>
       )}
     </>

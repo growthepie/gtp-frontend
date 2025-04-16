@@ -173,7 +173,7 @@ export const PageTitleAndDescriptionAndControls = () => {
             <BackButton />
             <div className="flex-1 flex items-center min-h-[43px] gap-x-[8px]">
               <ApplicationIcon owner_project={urlOwnerProject} size="md" />
-              <Heading className="heading-large-lg lg:heading-large-xl min-h-[36px]" as="h1">
+              <Heading className="heading-large-lg lg:heading-large-xl min-h-[36px] flex-1" as="h1">
                 <ApplicationDisplayName owner_project={urlOwnerProject} />
               </Heading>
             </div>
@@ -200,7 +200,7 @@ export const PageTitleAndDescriptionAndControls = () => {
 export const ApplicationDisplayName = ({ owner_project }: { owner_project: string }) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
   return (
-    <div>{ownerProjectToProjectData[owner_project] ? ownerProjectToProjectData[owner_project].display_name : owner_project}</div>
+    <span>{ownerProjectToProjectData[owner_project] ? ownerProjectToProjectData[owner_project].display_name : owner_project}</span>
   )
 }
 
@@ -213,39 +213,24 @@ export const BackButton = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // const handleBack = () => {
-  //   let backUrl = window.history.state?.prev;
-  //   let newSearchParams = searchParams.toString().replace(/%2C/g, ",");
+  const handleBack = () => {
+    // 1. Get the current searchParams as a string (e.g., "q=test&sort=asc")
+    const currentParamsString = searchParams.toString().replace(/%2C/g, ",");
 
-  //   if (backUrl) {
-  //     // Instead of pushing a new state and going back,
-  //     // replace the current state and navigate directly
-  //     backUrl = `${backUrl.split("?")[0]}?${newSearchParams}`;
+    // 2. Determine the target pathname
+    const targetPathname = "/applications";
 
-  //     // Option 1: Navigate to the URL directly
-  //     // window.location.href = backUrl;
+    // 3. Construct the full target URL
+    const targetUrl = `${targetPathname}${currentParamsString ? `?${currentParamsString}` : ''}`;
 
-  //     // Option 2: Replace current state and use history.back()
-  //     // This preserves scroll position better in many browsers
-  //     window.history.replaceState(null, "", window.location.href);
-  //     window.history.pushState(null, "", backUrl);
-  //     window.history.back();
-
-  //     return;
-  //   }
-
-  //   // Fallback: Navigate to applications with search params
-  //   backUrl = `/applications${newSearchParams ? `?${newSearchParams}` : ""}`;
-  //   window.location.href = backUrl;
-  // };
+    // 4. Navigate using router.push()
+    router.push(targetUrl);
+  };
 
   return (
     <div
       className="size-[36px] bg-[#344240] rounded-full flex justify-center items-center cursor-pointer"
-      onClick={() => {
-        // go back
-        router.back();
-      }}
+      onClick={handleBack}
 
     >
       <Icon icon="feather:arrow-left" className="size-[26px] text-[#CDD8D3]" />
@@ -527,10 +512,6 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
     <Link href={{ pathname: `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",") }}
       className={`flex flex-col justify-between h-[140px] border-[0.5px] border-[#5A6462] rounded-[15px] px-[15px] pt-[5px] pb-[10px] ${className || ""} group hover:cursor-pointer hover:bg-forest-500/10`}
       style={{ width: width || undefined }}
-    // onClick={() => {
-    //   // window.location.href = `/applications/${application.owner_project}`;
-    //   router.push(`/applications/${application.owner_project}`);
-    // }}
     >
       <div>
         <div className="flex flex-col">
@@ -566,8 +547,8 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
             placement="bottom-start"
             allowInteract={true}
             trigger={
-              <div className="heading-large-md flex-1 overflow-visible truncate">
-              <ApplicationDisplayName owner_project={application.owner_project} />
+              <div className="heading-large-md overflow-visible flex-1 truncate hover:underline cursor-pointer">
+                <ApplicationDisplayName owner_project={application.owner_project} />
               </div>
             }
             containerClass="flex flex-col gap-y-[10px]"

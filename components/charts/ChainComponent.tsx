@@ -1619,7 +1619,7 @@ const ChainComponent = memo(function ChainComponent({
           <div className="text-[20px] leading-snug font-bold">
             {metricItems[metric_index]?.page?.title}
           </div>
-          <div className="numbers-lg leading-snug font-medium flex">
+          <div className="numbers-lg leading-snug font-medium flex items-center">
             <div>{displayValues[category].prefix}</div>
             <div>{displayValues[category].value}</div>
             <div className="text-base pl-0.5">

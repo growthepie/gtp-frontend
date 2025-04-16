@@ -17,6 +17,7 @@ function ownerProjectToProjectData(data: AppDatum[]): { [key: string]: any } {
 }
 
 export type ProjectsMetadataContextType = {
+  isLoading: boolean;
   ownerProjectToProjectData: {
     [key: string]: {
       owner_project: string;
@@ -132,6 +133,7 @@ export const ProjectsMetadataProvider = ({ children, useFilteredProjects = false
 
   return (
     <ProjectsMetadataContext.Provider value={{
+      isLoading: projectsLoading || filteredProjectsLoading,
       ownerProjectToProjectData,
       projectNameToProjectData,
     }}>
@@ -143,7 +145,7 @@ export const ProjectsMetadataProvider = ({ children, useFilteredProjects = false
 export const useProjectsMetadata = () => {
   const context = useContext(ProjectsMetadataContext);
   if (context === undefined) {
-    throw new Error("useApplicationsData must be used within a ApplicationsDataProvider");
+    throw new Error("useProjectsMetadata must be used within a ProjectsMetadataProvider");
   }
   return context;
 }

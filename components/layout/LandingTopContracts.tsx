@@ -14,7 +14,7 @@ import { ApplicationDisplayName, ApplicationIcon, ApplicationTooltip, Category, 
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import { useMaster } from "@/contexts/MasterContext";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ProjectsMetadataProvider, useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
+import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { AggregatedDataRow } from "@/app/(layout)/applications/_contexts/ApplicationsDataContext";
 import Container from "./Container";
 import { GTPTooltipNew } from "../tooltip/GTPTooltip";
@@ -91,7 +91,6 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
 
   return (
     <>
-      <ProjectsMetadataProvider>
       {landing ? (
         <div className={`h-fit md:h-[450px] lg:h-[300px] grid md:grid-rows-3 md:grid-flow-col lg:grid-rows-2 lg:grid-flow-row pt-[10px] lg:grid-cols-3 gap-[10px]`}>
             {landing.data.top_applications.gainers.data.map((application, index) => (
@@ -110,8 +109,6 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
             <></>
           </div>
       )}
-
-      </ProjectsMetadataProvider>
     </>
   );
 }
@@ -212,7 +209,7 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
           placement="bottom-start"
           allowInteract={true}
           trigger={
-            <div className="heading-large-md flex-1 overflow-visible truncate">
+            <div className="heading-large-md flex-1 overflow-visible truncate hover:underline cursor-pointer">
             <ApplicationDisplayName owner_project={application.owner_project} />
             </div>
           }

@@ -37,8 +37,6 @@ type Props = {
 export default function Page({ params: { owner_project } }: Props) {
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { selectedMetrics } = useMetrics();
-  const { selectedTimespan, timespans } = useTimespan();
-  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { data: master } = useMaster();
 
   const SourcesDisplay = useMemo(() => {
@@ -68,41 +66,40 @@ export default function Page({ params: { owner_project } }: Props) {
 
     return sourcesByMetric;
   }, [master, selectedMetrics]);
- 
+
   return (
     <>
-    <ChartScaleProvider
-          scaleDefs={{
-            absolute: {
-              label: 'Absolute',
-              value: 'absolute',
-            },
-            stacked: {
-              label: 'Stacked',
-              value: 'stacked',
-            },
-            percentage: {
-              label: 'Percentage',
-              value: 'percentage',
-            },
+      <ChartScaleProvider
+        scaleDefs={{
+          absolute: {
+            label: 'Absolute',
+            value: 'absolute',
+          },
+          stacked: {
+            label: 'Stacked',
+            value: 'stacked',
+          },
+          percentage: {
+            label: 'Percentage',
+            value: 'percentage',
+          },
 
-          }}
-        >
-      {selectedMetrics.map((metric, index) => (
+        }}
+      >
+        {selectedMetrics.map((metric, index) => (
           <MetricSection metric={metric} owner_project={owner_project} key={index} />
-      ))}
-      <Container className="pt-[30px]">
-        
+        ))}
+        <Container className="pt-[30px]">
           <ChartScaleControls sources={SourcesDisplay && SourcesDisplay["gas_fees"]} />
-      </Container>
+        </Container>
       </ChartScaleProvider>
 
       <Container>
         <div className="pt-[30px] pb-[15px]">
           <div className="flex flex-col gap-y-[10px]">
-          <div className="flex items-start justify-between">
-                <h2 className="heading-large-md">Most Active Contracts</h2>
-                <div className="hidden md:block">
+            <div className="flex items-start justify-between">
+              <h2 className="heading-large-md">Most Active Contracts</h2>
+              <div className="hidden md:block">
                 <TitleButtonLink
                   label="Label more using OLI"
                   icon="gtp-oli-logo"
@@ -113,22 +110,22 @@ export default function Page({ params: { owner_project } }: Props) {
                   newTab
                   gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
                   className="w-fit hidden md:block"
-                  />
-                </div>
-                <div className="block md:hidden">
-                  <TitleButtonLink
-                    label={<div className="heading-small-xxs">Label here.</div>}
-                    icon="gtp-oli-logo"
-                    iconSize="md"
-                    iconBackground="bg-transparent"
-                    href="https://www.openlabelsinitiative.org/?gtp.applications"
-                    newTab
-                    gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
-                    className="w-fit"
-                    containerClassName=""
-                  />
-                </div>
+                />
               </div>
+              <div className="block md:hidden">
+                <TitleButtonLink
+                  label={<div className="heading-small-xxs">Label here.</div>}
+                  icon="gtp-oli-logo"
+                  iconSize="md"
+                  iconBackground="bg-transparent"
+                  href="https://www.openlabelsinitiative.org/?gtp.applications"
+                  newTab
+                  gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
+                  className="w-fit"
+                  containerClassName=""
+                />
+              </div>
+            </div>
             <div className="text-xs">
               See the most active contracts for {ownerProjectToProjectData[owner_project] ? ` for ${ownerProjectToProjectData[owner_project].display_name}` : ""} (All Time).
             </div>
@@ -160,15 +157,9 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { data } = useApplicationDetailsData();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const { data: master } = useMaster();
-  const { selectedMetrics } = useMetrics();
   const { selectedTimespan } = useTimespan();
   const { selectedSeriesName } = useChartSync();
   const { AllChainsByKeys } = useMaster();
-
-  
-
-  
 
   const def = metricsDef[metric];
 
@@ -228,15 +219,15 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
           </div>
           <div className="text-xs">
             {ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].display_name}{' '}
-            {chainsWithData.length === 1 
-              ? `is available on ${AllChainsByKeys[chainsWithData[0]]?.label || chainsWithData[0]}. Here you see the usage based on the respective metric.` 
+            {chainsWithData.length === 1
+              ? `is available on ${AllChainsByKeys[chainsWithData[0]]?.label || chainsWithData[0]}. Here you see the usage based on the respective metric.`
               : "is available on multiple chains. Here you see how much usage is on each based on the respective metric."}
           </div>
         </div>
       </Container>
       <Container>
         <MetricChainBreakdownBar metric={metric} />
-        <div className={`${selectedTimespan === "1d" ? "max-h-0" : "max-h-[400px]"} transition-all duration-300 overflow-hidden`}>
+        <div className={`${selectedTimespan === "1d" ? "max-h-0" : "h-[168px]"} transition-all duration-300 overflow-hidden`}>
           <ApplicationDetailsChart
             metric={metric}
             prefix={prefix}
@@ -255,415 +246,6 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
     </>
   );
 }
-
-// interface FloatingTooltipProps {
-//   content: React.ReactNode;
-//   containerClassName?: string;
-//   // width?: number;
-//   offsetX?: number;
-//   offsetY?: number;
-//   children: React.ReactNode;
-// }
-
-// const FloatingTooltip: React.FC<FloatingTooltipProps> = ({
-//   content,
-//   containerClassName,
-//   // width = 280,
-//   offsetX = 10,
-//   offsetY = 10,
-//   children,
-// }) => {
-//   const [visible, setVisible] = useState(false);
-//   const [coords, setCoords] = useState({ x: 0, y: 0 });
-//   const [adjustedCoords, setAdjustedCoords] = useState({ x: 0, y: 0 });
-//   const tooltipRef = useRef<HTMLDivElement>(null);
-
-//   const handleMouseMove = (e: React.MouseEvent) => {
-//     const newCoords = {
-//       x: e.clientX + offsetX,
-//       y: e.clientY + offsetY,
-//     };
-//     setCoords(newCoords);
-//   };
-
-//   useEffect(() => {
-//     if (visible && tooltipRef.current) {
-//       const tooltipRect = tooltipRef.current.getBoundingClientRect();
-//       let newX = coords.x;
-//       let newY = coords.y;
-//       // Prevent overflow on the right edge.
-//       if (coords.x + tooltipRect.width > window.innerWidth) {
-//         newX = window.innerWidth - tooltipRect.width - 20;
-//       }
-//       // Prevent overflow on the bottom edge.
-//       if (coords.y + tooltipRect.height > window.innerHeight) {
-//         newY = window.innerHeight - tooltipRect.height - 20;
-//       }
-
-//       // Prevent overflow on the left edge.
-//       if (coords.x < 0) {
-//         newX = 0 + 20;
-//       }
-
-//       // Prevent overflow on the top edge.
-//       if (coords.y < 0) {
-//         newY = 0 + 20;
-//       }
-
-//       setAdjustedCoords({ x: newX, y: newY });
-//     }
-//   }, [coords, visible]);
-
-//   return (
-//     <div
-//       className={"relative inline-block " + containerClassName || ""}
-//       onMouseEnter={() => setVisible(true)}
-//       onMouseLeave={() => setVisible(false)}
-//       onMouseMove={handleMouseMove}
-//     >
-//       {children}
-//       {visible && (
-//         <div
-//           ref={tooltipRef}
-//           style={{
-//             left: adjustedCoords.x,
-//             top: adjustedCoords.y,
-//             // width: width,
-//           }}
-//           className="fixed mt-3 mr-3 mb-3 text-xs font-raleway bg-[#2A3433EE] text-white rounded-[17px] shadow-lg pointer-events-none z-50"
-//         >
-//           {content}
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// const blendColors = (color1: string, color2: string, percentage: number): string => {
-//   // Ensure the percentage is clamped between 0 and 1
-//   percentage = Math.max(0, Math.min(1, percentage));
-
-//   // Convert hex to RGB
-//   const hexToRgb = (hex: string) => {
-//     hex = hex.replace(/^#/, "");
-//     if (hex.length === 3) {
-//       hex = hex.split("").map((char) => char + char).join(""); // Expand shorthand hex
-//     }
-//     const bigint = parseInt(hex, 16);
-//     return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
-//   };
-
-//   // Convert RGB to hex
-//   const rgbToHex = (r: number, g: number, b: number) =>
-//     `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
-
-//   const [r1, g1, b1] = hexToRgb(color1);
-//   const [r2, g2, b2] = hexToRgb(color2);
-
-//   // Interpolate between the two colors
-//   const r = Math.round(r1 + (r2 - r1) * percentage);
-//   const g = Math.round(g1 + (g2 - g1) * percentage);
-//   const b = Math.round(b1 + (b2 - b1) * percentage);
-
-//   return rgbToHex(r, g, b);
-// };
-
-// const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
-//   const { data, owner_project } = useApplicationDetailsData();
-//   const { ownerProjectToProjectData } = useProjectsMetadata();
-//   const { selectedTimespan, timespans } = useTimespan();
-//   const { AllChainsByKeys } = useMaster();
-//   const { metricsDef } = useMetrics();
-//   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-//   const { isSidebarOpen } = useUIContext();
-//   const { hoveredSeriesName, setHoveredSeriesName } = useGTPChartSyncProvider();
-
-//   const containerRef = useRef<HTMLDivElement>(null);
-
-//   const [containerWidth, setContainerWidth] = useState(0);
-
-//   useEffect(() => {
-//     if (containerRef.current) {
-//       setContainerWidth(containerRef.current.offsetWidth);
-//     }
-//   }, [containerRef.current]);
-
-//   const handleResize = () => {
-//     if (containerRef.current) {
-//       setContainerWidth(containerRef.current.offsetWidth);
-//     }
-//   };
-
-//   useEffect(() => {
-//     // on sidebar open/close (timeout to wait for sidebar animation)
-//     const timeout = setTimeout(() => {
-//       handleResize();
-//     }, 300);
-//     return () => {
-//       clearTimeout(timeout);
-//     };
-//   }, [isSidebarOpen]);
-
-//   useEffect(() => {
-//     window.addEventListener("resize", handleResize);
-//     return () => {
-//       window.removeEventListener("resize", handleResize);
-//     };
-//   }, []);
-
-//   const metricDefinition = metricsDef[metric];
-
-//   let prefix = "";
-//   let valueKey = "value";
-//   let decimals = 0;
-//   if (metricDefinition.units.eth) {
-//     prefix = showUsd ? metricDefinition.units.usd.prefix || "" : metricDefinition.units.eth.prefix || "";
-//     valueKey = showUsd ? "usd" : "eth";
-//     decimals = showUsd ? metricDefinition.units.usd.decimals : metricDefinition.units.eth.decimals;
-//   } else {
-//     prefix = Object.values(metricDefinition.units)[0].prefix || "";
-//     valueKey = Object.keys(metricDefinition.units)[0];
-//     decimals = Object.values(metricDefinition.units)[0].decimals || 0;
-//   }
-
-//   const metricData = data.metrics[metric] as MetricData;
-//   const firstSeenOn = data.first_seen;
-//   // filter out chains with 0 value
-//   const chainsData = Object.entries(metricData.aggregated.data).filter(([chain, valsByTimespan]) => valsByTimespan[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)] > 0)
-//     // sort by chain asc
-//     .sort(([chainA], [chainB]) => chainA.localeCompare(chainB));
-//   const values = chainsData.map(([chain, valsByTimespan]) => valsByTimespan[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)]);
-//   const total = Object.values(values).reduce((acc, v) => acc + v, 0);
-//   const percentages = values.map((v) => (v / total) * 100);
-
-//   const cumulativePercentages = percentages.reduce((acc, v, i) => {
-//     const prev = acc[i - 1] || 0;
-//     return [...acc, prev + v];
-//   }, [] as number[]);
-
-//   const maxUnix = Math.max(...Object.values(metricData.over_time).map((chainData) => chainData.daily.data[chainData.daily.data.length - 1][0]));
-//   const minUnix = Math.min(...Object.values(metricData.over_time).map((chainData) => chainData.daily.data[0][0]));
-//   const maxAggValue = Math.max(...Object.values(metricData.aggregated.data).map((chainData) => chainData[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)]));
-
-
-
-//   const getBarColor = useCallback((chain: string) => {
-//     // const index = chainsData.findIndex(([c]) => c === chain);
-//     const isHovered = hoveredSeriesName === chain;
-//     const isHoveredOrNone = isHovered || hoveredSeriesName === null;
-
-//     const color = AllChainsByKeys[chain].colors.dark[0];
-
-//     if (isHoveredOrNone) {
-//       return color;
-//     }
-
-//     const blendPercentage = 0.9;
-//     return blendColors(color, "#1F2726", blendPercentage);
-
-//   }, [hoveredSeriesName, AllChainsByKeys]);
-
-
-
-//   // show all chains in the tooltip
-//   const allTooltipContent = useMemo(() => {
-//     const maxDate = moment.unix(maxUnix/1000).utc().locale("en-GB").format("DD MMM YYYY")
-
-//     let minDate = moment.unix(maxUnix/1000).subtract(timespans[selectedTimespan].value, "days").utc().locale("en-GB").format("DD MMM YYYY");
-
-//     if(selectedTimespan === "max"){
-//       minDate = moment.unix(minUnix/1000).utc().locale("en-GB").format("DD MMM YYYY");
-//     }
-
-//     return (
-//       <div className="flex flex-col gap-y-[5px] w-fit h-full pr-[15px] py-[15px] text-[#CDD8D3]">
-//         <div className="pl-[20px] h-[18px] flex items-center justify-between gap-x-[15px] whitespace-nowrap">
-//           {/* <div className="heading-small-xs h-[20px]">On {AllChainsByKeys[chain].label}</div> */}
-//           <div className="heading-small-xs">{minDate} - {maxDate}</div>
-//           <div className="text-xs">{metricsDef[metric].name}</div>
-//         </div>
-//         <div className="flex flex-col">
-//           {[...chainsData].sort(
-//             ([, a], [, b]) => b[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)] - a[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)]
-//           ).map(([chain, valsByTimespan], i) => {
-//             const value = valsByTimespan[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)];
-            
-//             return (
-//               <>
-//                 <div key={chain} className="h-[20px] flex w-full space-x-[5px] items-center font-medium mb-[0.5]">
-//                   <div
-//                     className="w-[15px] h-[10px] rounded-r-full"
-//                     style={{ backgroundColor: AllChainsByKeys[chain].colors.dark[0] }}
-//                   ></div>
-//                   <div className="tooltip-point-name text-xs">{AllChainsByKeys[chain].label}</div>
-//                   <div className="flex-1 text-right justify-end numbers-xs flex">
-//                     {prefix}{valsByTimespan[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)].toLocaleString("en-GB", { maximumFractionDigits: decimals })}
-//                   </div>
-//                 </div>
-//                 <div className="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-//                   <div className="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
-//                   <div className="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50"
-//                     style={{ width: `${(value/ maxAggValue) * 100}%`, backgroundColor: `${AllChainsByKeys[chain].colors.dark[0]}` }}></div>
-//                 </div>
-//               </>
-//             )
-//           })}
-//           <div className="h-[20px] flex w-full space-x-[5px] items-center font-medium mt-1.5 mb-0.5">
-//             <div className="w-[15px] h-[10px] rounded-r-full" />
-//             <div className="tooltip-point-name text-xs">Total</div>
-//             <div className="flex-1 text-right justify-end numbers-xs flex">
-//               {prefix}{total.toLocaleString("en-GB", { maximumFractionDigits: decimals })}
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     );
-    
-//   }, [maxUnix, timespans, selectedTimespan, metricsDef, metric, chainsData, prefix, total, decimals, minUnix, metricData.aggregated.types, valueKey, AllChainsByKeys, maxAggValue]);
-
-//   if (!metricData) {
-//     return null;
-//   }
-
-//   return (
-//     <div className="pb-[15px]">
-//       <div className="flex items-center h-[34px] rounded-full bg-[#344240] p-[2px]">
-//         <div className="flex items-center h-[30px] w-full rounded-full overflow-hidden bg-black/60 relative" ref={containerRef}>
-//           <FloatingTooltip content={allTooltipContent} containerClassName="h-full">
-//           <div className="absolute left-0 flex gap-x-[10px] items-center h-full w-[200px] bg-[#1F2726] p-[2px] rounded-full" style={{ zIndex: chainsData.length + 1 }}>
-//             <ApplicationIcon owner_project={owner_project} size="sm" />
-//             <div className="flex flex-1 flex-col -space-y-[2px] mt-[2px] truncate pr-[10px]">
-//               <div className="numbers-sm">{prefix}{total.toLocaleString("en-GB", { maximumFractionDigits: decimals })}</div>
-//               <div className="text-xxs truncate ">{ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].display_name || ""}</div>
-//             </div>
-//           </div>
-//           </FloatingTooltip>
-//           <div className="flex flex-1 h-full">
-//             {chainsData.map(([chain, values], i) => {
-//               // Determine whether this bar is hovered.
-//               const isHovered = hoveredSeriesName === chain;
-//               // If any bar is hovered and this one isn't, reduce its opacity.
-//               const barOpacity = hoveredSeriesName !== null && !isHovered ? 0.4 : 1;
-//               // Bump the hovered bar to the top.
-//               // const computedZIndex = isHovered ? chainsData.length + 1 : chainsData.length - i;
-//               const computedZIndex = chainsData.length - i;
-
-//               const barColor = isHovered || hoveredSeriesName === null ? AllChainsByKeys[chain].colors.dark[0] : "#1F2726";
-//               const textColor = isHovered || hoveredSeriesName === null ? AllChainsByKeys[chain].darkTextOnBackground ? "#1F2726" : "#CDD8D3" : "#1F2726";
-
-//               let lastPercentagesTotal = i === 0 ? 0 : percentages.slice(0, i).reduce((acc, v) => acc + v, 0);
-//               let thisPercentage = percentages[i];
-
-
-//               if (thisPercentage < 0.15) {
-//                 thisPercentage = 0.15;
-//               }
-//               let thisPercentageWidth = thisPercentage + (i === 0 ? 0 : lastPercentagesTotal);
-//               const thisRenderWidth = (thisPercentageWidth / 100) * (containerWidth - 200);
-
-//               //convert incoming date (UTC) to timestamp
-//               const firstSeen = moment.utc(firstSeenOn[chain]);
-              
-//               const maxDate = moment.unix(maxUnix/1000).utc().locale("en-GB").format("DD MMM YYYY");
-
-//               let min = selectedTimespan === "max" ? moment.unix(minUnix/1000) : moment.unix(maxUnix/1000).subtract(timespans[selectedTimespan].value, "days");
-              
-
-//               let minDate = min.utc().locale("en-GB").format("DD MMM YYYY");
-//               if(firstSeen.isAfter(min)){
-//                 minDate = firstSeen.utc().locale("en-GB").format("DD MMM YYYY");
-//               }
-
-//               // let minDate = (moment.unix(maxUnix/1000).subtract(timespans[selectedTimespan].value, "days")).utc().locale("en-GB").format("DD MMM YYYY");
-
-//               const tooltipContent = (
-//                 <div className="flex flex-col gap-y-[5px] w-fit h-full pr-[15px] py-[15px] text-[#CDD8D3]">
-//                   <div className="pl-[20px] h-[18px] flex items-center justify-between gap-x-[15px] whitespace-nowrap">
-//                     {/* <div className="heading-small-xs h-[20px]">On {AllChainsByKeys[chain].label}</div> */}
-//                     <div className="heading-small-xs">{minDate} - {maxDate}</div>
-//                     <div className="text-xs">{metricsDef[metric].name}</div>
-//                   </div>
-//                   <div className="flex flex-col">
-//                     {/* <div className="pl-[20px] text-xs">Timeframe: <span className="numbers-xs">{minDate} - {maxDate}</span></div> */}
-//                     <div className="h-[20px] flex w-full space-x-[5px] items-center font-medium mb-0.5">
-//                       <div
-//                         className="w-[15px] h-[10px] rounded-r-full"
-//                         style={{ backgroundColor: AllChainsByKeys[chain].colors.dark[0] }}
-//                       ></div>
-//                       <div className="tooltip-point-name text-xs">{AllChainsByKeys[chain].label}</div>
-//                       <div className="flex-1 text-right justify-end numbers-xs flex">
-//                         {prefix}{values[selectedTimespan][metricData.aggregated.types.indexOf(valueKey)].toLocaleString("en-GB", { maximumFractionDigits: 2 })}
-//                       </div>
-//                     </div>
-//                   </div>
-//                   <div className="pl-[20px] flex flex-col items-start flex-1">
-//                     {/* <div className="heading-small-xs h-[20px]">On {AllChainsByKeys[chain].label}</div> */}
-//                     <div className=" text-xxxs">
-//                       First seen on {firstSeen.utc().toDate().toLocaleString("en-GB", {
-//                         year: "numeric",
-//                         month: "short",
-//                         day: "numeric",
-//                         // hour: "numeric",
-//                         // minute: "numeric",
-//                         // second: "numeric",
-//                       })}
-//                     </div>
-//                   </div>
-//                 </div>
-//               );
-
-//               return (
-//                 <FloatingTooltip key={chain} content={tooltipContent}>
-//                   <div
-//                     className="absolute h-full rounded-full transition-all"
-//                     onMouseEnter={() => setHoveredSeriesName(chain)}
-//                     onMouseLeave={() => setHoveredSeriesName(null)}
-//                     style={{
-//                       // background: isHovered || isHovered === null ? AllChainsByKeys[chain].colors.dark[0] : "#1F2726",
-//                       background: getBarColor(chain),
-//                       // take containerWidth and 140px into account
-//                       width: `calc(${thisRenderWidth}px + 195px)`,
-//                       left: '5px',
-//                       zIndex: computedZIndex,
-//                       // add inner glow to hovered bar
-//                       boxShadow: isHovered ? `0 0 10px ${AllChainsByKeys[chain].colors.dark[0]}66` : "none",
-
-//                     }}
-//                   >
-//                     <div
-//                       className="@container absolute inset-0 left-[135px] right-[15px] flex items-center justify-end text-[#1F2726] truncate"
-//                       style={{
-//                         zIndex: computedZIndex + 1,
-//                       }}
-//                     >
-//                       <div
-//                         className="flex items-center gap-x-[5px]"
-//                         style={{
-//                           color: AllChainsByKeys[chain].darkTextOnBackground ? "#1F2726" : "#CDD8D3",
-//                           opacity: barOpacity,
-//                           // color: textColor,
-//                         }}
-//                       >
-//                         <div className="text-xs !font-semibold hidden @[80px]:block truncate">
-//                           {AllChainsByKeys[chain].name_short}
-//                         </div>
-//                         <div className="numbers-xs hidden @[30px]:block ">
-//                           {percentages[i].toFixed(1)}%
-//                         </div>
-//                       </div>
-//                     </div>
-//                   </div>
-//                 </FloatingTooltip>
-//               )
-//             })
-//             }
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
 
 const ContractsTable = () => {
   const { data, owner_project, contracts, sort, setSort } = useApplicationDetailsData();
@@ -690,61 +272,61 @@ const ContractsTable = () => {
 
   return (
     <>
-    <HorizontalScrollContainer reduceLeftMask={true}>
-      <GridTableHeader
-        gridDefinitionColumns={gridColumns}
-        className="group text-[14px] !pl-[5px] !pr-[30px] !py-0 gap-x-[15px] !pb-[4px]"
-        style={{
-          gridTemplateColumns: gridColumns,
-        }}
-      >
-        <div />
-        <GridTableHeaderCell
-          metric="name"
-          className="heading-small-xs pl-[0px]"
-          sort={sort}
-          setSort={setSort}
+      <HorizontalScrollContainer reduceLeftMask={true}>
+        <GridTableHeader
+          gridDefinitionColumns={gridColumns}
+          className="group text-[14px] !pl-[5px] !pr-[30px] !py-0 gap-x-[15px] !pb-[4px]"
+          style={{
+            gridTemplateColumns: gridColumns,
+          }}
         >
-          Contract Name
-        </GridTableHeaderCell>
-        <GridTableHeaderCell
-          metric="main_category_key"
-          className="heading-small-xs"
-          sort={sort}
-          setSort={setSort}
-        >
-          Category
-        </GridTableHeaderCell>
-        <GridTableHeaderCell
-          metric="sub_category_key"
-          className="heading-small-xs"
-          sort={sort}
-          setSort={setSort}
-        >
-          Subcategory
-        </GridTableHeaderCell>
-        {selectedMetrics.map((metric, index) => {
-          const metricMap = {
-            "gas_fees": "fees_paid_",
-            "txcount": "txcount",
-            "daa": "daa",
-          }
-          const metricKey = `${metricMap[metric]}${metric === "gas_fees" && (showUsd ? "usd" : "eth")}`;
-          return (
-            <GridTableHeaderCell
-              key={metric}
-              metric={metric}
-              className="heading-small-xs z-[0] whitespace-nowrap"
-              justify="end"
-              sort={sort}
-              setSort={setSort}
-            >
-              {metricsDef[metric].name} {Object.keys(metricsDef[metric].units).includes("eth") && <>({showUsd ? "USD" : "ETH"})</>}
-            </GridTableHeaderCell>
-          )
-        })}
-      </GridTableHeader>
-      {/* <div className="flex flex-col" style={{ height: `${contracts.length * 34 + contracts.length * 5}px` }}>
+          <div />
+          <GridTableHeaderCell
+            metric="name"
+            className="heading-small-xs pl-[0px]"
+            sort={sort}
+            setSort={setSort}
+          >
+            Contract Name
+          </GridTableHeaderCell>
+          <GridTableHeaderCell
+            metric="main_category_key"
+            className="heading-small-xs"
+            sort={sort}
+            setSort={setSort}
+          >
+            Category
+          </GridTableHeaderCell>
+          <GridTableHeaderCell
+            metric="sub_category_key"
+            className="heading-small-xs"
+            sort={sort}
+            setSort={setSort}
+          >
+            Subcategory
+          </GridTableHeaderCell>
+          {selectedMetrics.map((metric, index) => {
+            const metricMap = {
+              "gas_fees": "fees_paid_",
+              "txcount": "txcount",
+              "daa": "daa",
+            }
+            const metricKey = `${metricMap[metric]}${metric === "gas_fees" && (showUsd ? "usd" : "eth")}`;
+            return (
+              <GridTableHeaderCell
+                key={metric}
+                metric={metric}
+                className="heading-small-xs z-[0] whitespace-nowrap"
+                justify="end"
+                sort={sort}
+                setSort={setSort}
+              >
+                {metricsDef[metric].name} {Object.keys(metricsDef[metric].units).includes("eth") && <>({showUsd ? "USD" : "ETH"})</>}
+              </GridTableHeaderCell>
+            )
+          })}
+        </GridTableHeader>
+        {/* <div className="flex flex-col" style={{ height: `${contracts.length * 34 + contracts.length * 5}px` }}>
         <VerticalVirtuosoScrollContainer
           height={800}
           totalCount={contracts.length}
@@ -755,29 +337,29 @@ const ContractsTable = () => {
           )}
         />
       </div> */}
-      <div className="flex flex-col transition-[max-height] duration-300 overflow-hidden" style={{ maxHeight: showMore ? contracts.length * 34 + (contracts.length - 1) * 5 : 5 * 34 + 5 * 4 }}>
+        <div className="flex flex-col transition-[max-height] duration-300 overflow-hidden" style={{ maxHeight: showMore ? contracts.length * 34 + (contracts.length - 1) * 5 : 5 * 34 + 5 * 4 }}>
 
-        <Virtuoso
-          totalCount={contracts.length}
-          itemContent={(index) => (
-            <div key={index} className={index < contracts.length - 1 ? "pb-[5px]" : ""}>
-              <ContractsTableRow contract={contracts[index]} />
-            </div>
-          )}
-          useWindowScroll
-          increaseViewportBy={{ top: 0, bottom: 400 }}
-          overscan={50}
-        />
-      </div>
-      
-    </HorizontalScrollContainer>
-    {contracts.length > 5 && (
-      <div className="flex items-center justify-center pt-[21px]">
-        <div className="flex items-center justify-center rounded-full h-[36px] w-[117px] border border-[#CDD8D3] text-[#CDD8D3] cursor-pointer text-md" onClick={() => setShowMore(!showMore)}>
-          {showMore ? "Show less" : "Show more"}
+          <Virtuoso
+            totalCount={contracts.length}
+            itemContent={(index) => (
+              <div key={index} className={index < contracts.length - 1 ? "pb-[5px]" : ""}>
+                <ContractsTableRow contract={contracts[index]} />
+              </div>
+            )}
+            useWindowScroll
+            increaseViewportBy={{ top: 0, bottom: 400 }}
+            overscan={50}
+          />
         </div>
-      </div>
-    )}
+
+      </HorizontalScrollContainer>
+      {contracts.length > 5 && (
+        <div className="flex items-center justify-center pt-[21px]">
+          <div className="flex items-center justify-center rounded-full h-[36px] w-[117px] border border-[#CDD8D3] text-[#CDD8D3] cursor-pointer text-md" onClick={() => setShowMore(!showMore)}>
+            {showMore ? "Show less" : "Show more"}
+          </div>
+        </div>
+      )}
     </>
   )
 }
@@ -803,11 +385,11 @@ const ContractValue = memo(({ contract, metric }: { contract: ContractDict, metr
     }
   }, [metricsDef, metric, showUsd]);
 
-  const decimals = metricsDef[metric].units[Object.keys(metricsDef[metric].units).includes("usd") ? showUsd ? "usd": "eth" : Object.keys(metricsDef[metric].units)[0]].decimals;
+  const decimals = metricsDef[metric].units[Object.keys(metricsDef[metric].units).includes("usd") ? showUsd ? "usd" : "eth" : Object.keys(metricsDef[metric].units)[0]].decimals;
 
   const metricKey = `${metricMap[metric]}${metric === "gas_fees" ? (showUsd ? "usd" : "eth") : ""}`;
 
-  
+
 
   return (
     <div className="flex items-center justify-end gap-[5px] numbers-xs">
@@ -820,7 +402,7 @@ ContractValue.displayName = 'Value';
 
 
 
-const ContractsTableRow = memo(({ contract}: { contract: ContractDict }) => {
+const ContractsTableRow = memo(({ contract }: { contract: ContractDict }) => {
   const { owner_project } = useApplicationDetailsData();
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { metricsDef, selectedMetrics, selectedMetricKeys, } = useMetrics();
@@ -862,7 +444,7 @@ const ContractsTableRow = memo(({ contract}: { contract: ContractDict }) => {
         </div>
       </div>
       <div className="flex items-center gap-x-[15px] justify-between w-full truncate">
-        
+
         {contract.name ? (<div>{contract.name}</div>) : (
           <GTPTooltipNew
             placement="bottom-start"
@@ -949,7 +531,7 @@ const SimilarApplications = ({ owner_project }: { owner_project: string }) => {
 
     const medianMetricValues = filteredApplications.map((application) => application[medianMetricKey])
       .sort((a, b) => a - b);
-      
+
     const medianValue = medianMetricValues[Math.floor(medianMetricValues.length / 2)];
 
     // top 3 applications with highest change_pct after filtering out applications with < median value

@@ -80,7 +80,6 @@ const ChainOverview = () => {
         const isSupported =
           chain === "all_l2s" ? true : supportedChainKeys.includes(chain);
         const isMaster = master?.chains[chain] ? true : false;
-        console.log(focusEnabled)
         const passETH = chain === "ethereum" ? !focusEnabled : true;
         const passEcosystem =
           chain === "all_l2s"
