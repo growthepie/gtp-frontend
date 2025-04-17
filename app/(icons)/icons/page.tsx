@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Header from "../../(icons)/icons/Header";
 import Footer from "../../(icons)/icons/Footer";
 import { GTPIcon } from "@/components/layout/GTPIcon";
@@ -11,8 +11,15 @@ import { saveAs } from "file-saver";
 import { getIcon } from "@iconify/react";
 import { blobToArrayBuffer, svgToPngBlob, fetchSvgText } from "@/lib/iconUtiils";
 import { useToast } from "@/components/toast/GTPToast";
+import { buildInvertedIndex, iconSearchStrings } from "@/icons/gtp-icon-names";
 
 type IconStyleOption = "gradient" | "monochrome";
+
+// show "gtp-" first (alphabetically), then the rest
+const gtpIcons = iconNames.filter(iconName => iconName.startsWith("gtp-"));
+const otherIcons = iconNames.filter(iconName => !iconName.startsWith("gtp-"));
+const orderedIconNames = [...gtpIcons.sort((a, b) => a.localeCompare(b)), ...otherIcons.sort((a, b) => a.localeCompare(b))];
+const invertedIndex = buildInvertedIndex(iconSearchStrings);
 
 const IconsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -22,25 +29,53 @@ const IconsPage = () => {
   // toast
   const { addToast } = useToast();
 
-  const filteredIcons = iconNames.filter((iconName) => {
-    // Filter by search query
-    const matchesSearch = iconName.toLowerCase().includes(searchQuery.toLowerCase());
-    if (!matchesSearch) return false;
-    
-    // Filter by style preference
-    if (selectedStyles.length === 0 || selectedStyles.length === 2) {
-      // If none or both styles are selected, show all icons
-      return true;
-    } else if (selectedStyles.includes("monochrome")) {
-      // Only monochrome selected
-      return iconName.endsWith("-monochrome");
-    } else if (selectedStyles.includes("gradient")) {
-      // Only gradient selected
-      return !iconName.endsWith("-monochrome");
+  const filteredIcons = useMemo(() => {
+    const normalizedQuery = searchQuery.toLowerCase().trim();
+
+    let searchMatches: Set<string> = new Set(); 
+    if (normalizedQuery) {
+      // Add names found via the inverted index
+      const namesFromIndex = invertedIndex[normalizedQuery] || [];
+      namesFromIndex.forEach(name => searchMatches.add(name));
+
+      // Exact keyword match (fastest)
+      const exactMatches = invertedIndex[normalizedQuery] || [];
+      exactMatches.forEach(name => searchMatches.add(name));
+
+      // Partial keyword match (iterate index keys)
+      if (normalizedQuery.length > 1) { 
+          Object.keys(invertedIndex).forEach(keyword => {
+              if (keyword.includes(normalizedQuery)) {
+                  invertedIndex[keyword].forEach(name => searchMatches.add(name));
+              }
+          });
+      }
+
+      // Partial name match (iterate all icon names)
+      orderedIconNames.forEach(iconName => {
+        if (iconName.toLowerCase().includes(normalizedQuery)) {
+          searchMatches.add(iconName);
+        }
+      });
     }
+
+    return orderedIconNames.filter((iconName) => {
+      if (normalizedQuery.length > 0 && searchMatches && !searchMatches.has(iconName)) {
+        return false;
+      }
     
-    return true;
-  });
+      if (selectedStyles.length === 0 || selectedStyles.length === 2) {
+        return true;
+      } else if (selectedStyles.includes("monochrome")) {
+        return iconName.endsWith("-monochrome");
+      } else if (selectedStyles.includes("gradient")) {
+        return !iconName.endsWith("-monochrome");
+      }
+
+      return true;
+    });
+
+  }, [searchQuery, selectedStyles]);
 
   const handleCopySvg = async (iconName: string) => {
     try {
@@ -95,32 +130,66 @@ const IconsPage = () => {
     }
   };
 
+  const [isDownloadingAll, setIsDownloadingAll] = useState(false);
+
   const handleDownloadAll = async (format: "SVG" | "PNG") => {
+    setIsDownloadingAll(true);
     const zip = new JSZip();
-
-    for (const iconName of filteredIcons) {
-      try {
-        const svgText = await fetchSvgText(iconName);
-
-        if (format === "SVG") {
-          // Just store the raw SVG
-          zip.file(`${iconName}.svg`, svgText);
-        } else {
-          // Convert to PNG using a canvas approach
-          const pngBlob = await svgToPngBlob(svgText);
-          const arrayBuffer = await blobToArrayBuffer(pngBlob);
-          zip.file(`${iconName}.png`, arrayBuffer);
-        }
-      } catch (err) {
-        console.error(`Failed to process ${iconName}`, err);
-      }
-    }
-
+    let processErrors = 0;
+    
     try {
+      // Create an array of promises for all icon processing
+      const downloadPromises = filteredIcons.map(async (iconName) => {
+        try {
+          const svgText = await fetchSvgText(iconName);
+          
+          if (format === "SVG") {
+            // Store the raw SVG
+            zip.file(`${iconName}.svg`, svgText);
+          } else {
+            // Convert to PNG 
+            const pngBlob = await svgToPngBlob(svgText);
+            const arrayBuffer = await blobToArrayBuffer(pngBlob);
+            zip.file(`${iconName}.png`, arrayBuffer);
+          }
+          
+          return { success: true, iconName };
+        } catch (err) {
+          processErrors++;
+          console.error(`Failed to process ${iconName}:`, err);
+          return { success: false, iconName, error: err };
+        }
+      });
+      
+      const results = await Promise.all(downloadPromises);
+      
+      if (processErrors > 0) {
+        addToast({
+          message: `Completed with ${processErrors} errors. Downloaded ${results.length - processErrors} of ${results.length} icons.`,
+          type: "warning",
+        });
+      }
+      
       const content = await zip.generateAsync({ type: "blob" });
       saveAs(content, `growthepie_icons_${format.toLowerCase()}.zip`);
+      
+      addToast({
+        message: `Successfully downloaded ZIP file with ${results.length - processErrors} icons.`,
+        type: "success",
+      });
     } catch (err) {
       console.error("Failed to generate ZIP:", err);
+      
+      addToast({
+        message: "Failed to generate ZIP file.",
+        type: "error",
+        action: {
+          label: "Try Again",
+          onClick: () => handleDownloadAll(format)
+        }
+      });
+    } finally {
+      setIsDownloadingAll(false);
     }
   };
 
@@ -129,7 +198,7 @@ const IconsPage = () => {
   
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col min-h-screen"> 
       <Header
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -144,39 +213,57 @@ const IconsPage = () => {
       {/* Main content */}
       <main
         className="
-          flex-grow
-          overflow-y-auto
-          pt-[118px] md:pt-[175px]
+          pt-[110px] md:pt-[175px] 
           flex
           justify-center
-          mb-[120px]
+          pb-[215px] md:pb-[180px]
         "
       >
         <div
           className="
-            w-[1307px]
+            max-w-[1315px]
+            w-full
+            px-[20px]
+            md:px-[60px]
             flex
             flex-col
             gap-[30px]
           "
         >
-          {/* Title */}
-          <div className="w-full flex justify-between mx-auto">
-            <h1 className="text-[28px] leading-[128%] font-bold">
-              Copy or download icons from growthepie's icon set.
+          {/* <LabelsContainer className="pt-[110px] md:pt-[175px] w-full flex items-end sm:items-center justify-between md:justify-start gap-x-[10px] z-[21]">
+            <h1 className="text-[20px] md:text-[30px] pl-[15px] leading-[120%] font-bold z-[19]">
+              Smart Contracts on Ethereum Layer 2s
             </h1>
-          </div>
-
-          {/* Icon Cards */}
+          </LabelsContainer> */}
+          {/* Title */}
           <div
             className="
               w-full
-              flex 
-              flex-wrap 
-              gap-[15px] 
-              mx-auto
+              flex
+              flex-wrap
+              justify-center
+              gap-[15px]
             "
           >
+          <div className="w-full flex justify-between mx-auto">
+            <h1 className="pl-[15px] heading-large-sm md:heading-large-lg">
+              Copy or download icons from growthepie's icon set.
+            </h1>
+            {/* Any other elements that should be beside the title */}
+          </div>
+          </div>
+
+          {/* Icon Cards - Grid Container */}
+          <div
+            className="
+              w-full
+              flex
+              flex-wrap
+              justify-center
+              gap-[15px]
+            "
+          >
+          
             {filteredIcons.map((iconName) => (
               <IconCard
                 key={iconName}
@@ -195,7 +282,16 @@ const IconsPage = () => {
       </main>
 
       {/* Footer */}
-      <Footer />
+      <Footer
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        iconsCount={filteredIcons.length}
+        onDownloadAll={handleDownloadAll}
+        selectedFormat={selectedFormat}
+        setSelectedFormat={setSelectedFormat}
+        selectedStyles={selectedStyles}
+        setSelectedStyles={setSelectedStyles}
+       />
     </div>
   );
 };

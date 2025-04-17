@@ -27,7 +27,7 @@ export default function Search({ query, setQuery, iconsCount }: SearchProps) {
         <div className="absolute inset-0 bg-[#1F2726] rounded-[22px] min-h-[44px]" />
 
         {/* Search bar content */}
-        <div className="relative flex items-center min-h-[44px] rounded-[22px] z-[2]">
+        <div className="relative flex gap-x-[10px] items-center min-h-[44px] rounded-[22px] z-[2]">
           {/* Search icon */}
           <div className="flex items-center justify-center w-[42px] h-[44px]">
             <GTPIcon
@@ -47,29 +47,12 @@ export default function Search({ query, setQuery, iconsCount }: SearchProps) {
           />
 
           {query.length > 0 && (
-            <div className="flex items-center mr-2">
+            <div className="flex items-center">
               {/* Badge with “xx icons” */}
-              <div
-                className="
-                  flex items-center justify-center 
-                  w-[66px] h-[24px] 
-                  px-[15px] gap-[5px]
-                  border border-[#CDD8D3]
-                  bg-transparent
-                  whitespace-nowrap
-                  rounded-[22px]
-                "
-              >
-                <span
-                  className="
-                    text-[9px] font-[500] 
-                    leading-[13.5px] 
-                    text-[#CDD8D3]
-                    font-['Raleway']
-                  "
-                >
+              <div className="flex items-center justify-center px-[15px] h-[24px] border border-[#CDD8D3] bg-transparent whitespace-nowrap rounded-[22px]">
+                <div className="text-xxxs h-[11px]">
                   {iconsCount} icons
-                </span>
+                </div>
               </div>
 
               {/* Close button */}

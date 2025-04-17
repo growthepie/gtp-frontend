@@ -146,6 +146,13 @@ module.exports = {
           fontWeight: '700', // bold
           lineHeight: '120%',
         },
+        'heading-caps': {
+          fontFamily: theme('fontFamily.raleway'),
+          fontWeight: '700', // bold
+          fontVariant: 'all-small-caps',
+          fontFeatureSettings: '"pnum" on, "lnum" on',
+          lineHeight: '120%',
+        },
         'numbers': {
           fontFamily: theme('fontFamily.num'),
           fontWeight: '500', // medium
@@ -158,6 +165,7 @@ module.exports = {
           fontFamily: theme('fontFamily.raleway'),
           fontWeight: '500', // medium
           lineHeight: '150%',
+          fontFeatureSettings: '"pnum" on, "lnum" on',
         },
       };
 
@@ -178,6 +186,20 @@ module.exports = {
           '6xl': '92px',
         },
         'heading-small': {
+          'xxxs': '10px',
+          'xxs': '12px',
+          'xs': '14px',
+          'sm': '16px',
+          'md': '20px',
+          'lg': '24px',
+          'xl': '30px',
+          '2xl': '36px',
+          '3xl': '48px',
+          '4xl': '60px',
+          '5xl': '72px',
+          '6xl': '80px',
+        },
+        'heading-caps': {
           'xxxs': '10px',
           'xxs': '12px',
           'xs': '14px',
@@ -242,3 +264,6 @@ module.exports = {
     },
   ],
 };
+
+
+
