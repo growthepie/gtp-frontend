@@ -72,6 +72,9 @@ const nextConfig = {
     };
   },
   async redirects() {
+    // Skip certain redirects in development environment
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    
     return [
       {
         source: "/data-availability/blob-producers",
@@ -88,11 +91,12 @@ const nextConfig = {
         destination: "https://labels.growthepie.xyz/",
         permanent: true,
       },
-      {
+      // Only include the icons redirect in production, not in development
+      ...(isDevelopment ? [] : [{
         source: "/icons",
         destination: "https://icons.growthepie.xyz/",
         permanent: true,
-      },
+      }]),
       {
         source: "/optimism-retropgf-3",
         destination: "/trackers/optimism-retropgf-3",

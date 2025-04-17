@@ -10,13 +10,32 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { getIcon } from "@iconify/react";
 
+type IconStyleOption = "gradient" | "monochrome";
+
 const IconsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFormat, setSelectedFormat] = useState<"SVG" | "PNG">("SVG");
+  const [selectedStyles, setSelectedStyles] = useState<IconStyleOption[]>(["gradient"]);
 
-  const filteredIcons = iconNames.filter((iconName) =>
-    iconName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredIcons = iconNames.filter((iconName) => {
+    // Filter by search query
+    const matchesSearch = iconName.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!matchesSearch) return false;
+    
+    // Filter by style preference
+    if (selectedStyles.length === 0 || selectedStyles.length === 2) {
+      // If none or both styles are selected, show all icons
+      return true;
+    } else if (selectedStyles.includes("monochrome")) {
+      // Only monochrome selected
+      return iconName.endsWith("-monochrome");
+    } else if (selectedStyles.includes("gradient")) {
+      // Only gradient selected
+      return !iconName.endsWith("-monochrome");
+    }
+    
+    return true;
+  });
 
   const handleCopySvg = async (iconName: string) => {
     try {
@@ -147,6 +166,8 @@ const IconsPage = () => {
         onDownloadAll={handleDownloadAll}
         selectedFormat={selectedFormat}
         setSelectedFormat={setSelectedFormat}
+        selectedStyles={selectedStyles}
+        setSelectedStyles={setSelectedStyles}
       />
 
       {/* Main content */}
@@ -171,7 +192,7 @@ const IconsPage = () => {
           {/* Title */}
           <div className="w-full flex justify-between mx-auto">
             <h1 className="text-[28px] leading-[128%] font-bold">
-              Copy or download icons from growthepie’s icon set.
+              Copy or download icons from growthepie's icon set.
             </h1>
           </div>
 

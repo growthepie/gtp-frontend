@@ -2,6 +2,9 @@ import Link from "next/link";
 import Search from "./Search";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import { GradientIcon, MonochromeIcon } from "./Icons";
+
+type IconStyleOption = "gradient" | "monochrome";
 
 interface FloatingBarProps {
   searchQuery: string;
@@ -10,6 +13,8 @@ interface FloatingBarProps {
   onDownloadAll?: (format: "SVG" | "PNG") => void;
   selectedFormat: "SVG" | "PNG";
   setSelectedFormat: React.Dispatch<React.SetStateAction<"SVG" | "PNG">>;
+  selectedStyles: IconStyleOption[];
+  setSelectedStyles: React.Dispatch<React.SetStateAction<IconStyleOption[]>>;
 }
 
 export default function FloatingBar({
@@ -19,9 +24,23 @@ export default function FloatingBar({
   onDownloadAll = () => {},
   selectedFormat,
   setSelectedFormat,
+  selectedStyles,
+  setSelectedStyles,
 }: FloatingBarProps) {
   const handleDownloadAllClick = () => {
     onDownloadAll(selectedFormat);
+  };
+
+  const toggleStyle = (style: IconStyleOption) => {
+    setSelectedStyles(prev => {
+      if (prev.includes(style)) {
+        // Remove the style if it's already selected
+        return prev.filter(s => s !== style);
+      } else {
+        // Add the style if it's not selected
+        return [...prev, style];
+      }
+    });
   };
 
   return (
@@ -78,6 +97,65 @@ export default function FloatingBar({
               {/* Checkmark */}
               <div className="absolute right-[7px] flex items-center">
                 {selectedFormat === format ? (
+                  <GTPIcon
+                    icon="gtp-checkmark-checked-monochrome"
+                    size="sm"
+                    className="w-[15px] h-[15px]"
+                  />
+                ) : (
+                  <GTPIcon
+                    icon="gtp-checkmark-unchecked-monochrome"
+                    size="sm"
+                    className="w-[15px] h-[15px]"
+                  />
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      {/* Select Style Section */}
+      <div className="flex flex-col items-center gap-[2px] w-[150px] h-[43px] mb-2">
+        {/* Title */}
+        <span
+          className="font-raleway font-bold text-[10px] leading-[12px] uppercase text-[#5A6462] text-center"
+          style={{
+            fontVariant: "all-small-caps",
+            fontFeatureSettings: "'pnum' on, 'lnum' on",
+          }}
+        >
+          Select Style
+        </span>
+        {/* Options */}
+        <div className="flex items-center gap-[8px] w-full h-[35px]">
+          {[
+            { style: "monochrome" as IconStyleOption, Icon: MonochromeIcon, label: "Monochrome" },
+            { style: "gradient" as IconStyleOption, Icon: GradientIcon, label: "Gradient" },
+          ].map(({ style, Icon, label }) => (
+            <div
+              key={style}
+              className={`
+                relative flex items-center justify-center 
+                w-[68px] h-[34px] rounded-full cursor-pointer 
+                bg-[#5A6462]
+              `}
+              onClick={() => toggleStyle(style)}
+            >
+              {/* Inner Rect */}
+              <div className="absolute inset-0 m-[2px] rounded-full bg-[#1F2726]" />
+              {/* Icon */}
+              <div
+                className="
+                  absolute left-[7px] w-[26px] h-[26px] rounded-full 
+                  bg-[#1F2726] flex items-center justify-center
+                "
+              >
+                <Icon />
+              </div>
+              {/* Checkmark */}
+              <div className="absolute right-[7px] flex items-center">
+                {selectedStyles.includes(style) ? (
                   <GTPIcon
                     icon="gtp-checkmark-checked-monochrome"
                     size="sm"

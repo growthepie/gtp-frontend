@@ -12,6 +12,8 @@ interface HeaderProps {
   onDownloadAll?: (format: "SVG" | "PNG") => void;
   selectedFormat: "SVG" | "PNG";
   setSelectedFormat: React.Dispatch<React.SetStateAction<"SVG" | "PNG">>;
+  selectedStyles: ("gradient" | "monochrome")[];
+  setSelectedStyles: React.Dispatch<React.SetStateAction<("gradient" | "monochrome")[]>>;
 }
 
 export default function Header({
@@ -21,6 +23,8 @@ export default function Header({
   onDownloadAll = () => {},
   selectedFormat,
   setSelectedFormat,
+  selectedStyles,
+  setSelectedStyles,
 }: HeaderProps) {
   const { isMobile } = useUIContext();
   return (
@@ -66,6 +70,8 @@ export default function Header({
             onDownloadAll={onDownloadAll}
             selectedFormat={selectedFormat}
             setSelectedFormat={setSelectedFormat}
+            selectedStyles={selectedStyles}
+            setSelectedStyles={setSelectedStyles}
           />
         )}
       </IconsContainer>
