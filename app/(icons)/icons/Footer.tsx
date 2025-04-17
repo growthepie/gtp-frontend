@@ -53,7 +53,7 @@ export default function Footer({
       {/* Container for Mobile Floating Bar */}
       {/* Positioned absolutely, appears only on mobile */}
       <div className="block md:hidden absolute bottom-[80px] md:bottom-[105px] left-0 right-0 z-60 pointer-events-auto"> {/* Adjust bottom value as needed */}
-         <div className="w-full max-w-[1307px] mx-auto px-[20px]"> {/* Constrain width */}
+         <div className="w-full max-w-[1427px] mx-auto px-[20px]"> {/* Constrain width */}
              <FloatingBar
                searchQuery={searchQuery}
                setSearchQuery={setSearchQuery}
@@ -67,7 +67,7 @@ export default function Footer({
          </div>
        </div>
 
-      <Container className="w-full max-w-[1307px] mx-auto px-[20px] md:px-[60px] bottom-0 pointer-events-auto">
+      <Container className="w-full max-w-[1427px] mx-auto px-[20px] md:px-[60px] bottom-0 pointer-events-auto">
         <Container className="z-10 flex w-full items-center justify-between !px-0 pb-5 md:pb-9">
           {/* Left Side Links */}
           <div className="flex justify-center md:justify-start px-[15px] w-full">

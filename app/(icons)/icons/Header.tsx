@@ -42,7 +42,7 @@ export default function Header({
           </div>
         </div>
       </div>
-      <header className="flex z-10 w-full max-w-[1307px] mx-auto justify-between space-x-0 xl:space-x-6 items-end px-[20px] pt-[20px] md:px-[60px] md:pt-[30px]">
+      <header className="flex z-10 w-full max-w-[1427px] mx-auto justify-between space-x-0 xl:space-x-6 items-end px-[20px] pt-[20px] md:px-[60px] md:pt-[30px]">
         <div className="flex justify-start items-center w-full">
           <div className="flex space-x-0 xl:space-x-6 w-full h-full">
             <div className="flex justify-between items-start h-full relative">
@@ -61,7 +61,7 @@ export default function Header({
           </div>
         </div>
       </header>
-      <IconsContainer className={`hidden md:block absolute top-[76px] w-full max-w-[1307px] mx-auto px-[20px] md:px-[60px] z-10`}>
+      <IconsContainer className={`hidden md:block absolute top-[76px] w-full max-w-[1427px] mx-auto px-[20px] md:px-[60px] z-10`}>
           <FloatingBar
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}

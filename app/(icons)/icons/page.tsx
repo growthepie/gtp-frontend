@@ -221,7 +221,7 @@ const IconsPage = () => {
       >
         <div
           className="
-            max-w-[1315px]
+            max-w-[1427px]
             w-full
             px-[20px]
             md:px-[60px]
