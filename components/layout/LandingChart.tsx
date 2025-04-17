@@ -1215,12 +1215,12 @@ export default function LandingChart({
             />
           </div>
         </div>
-        <TopRowContainer className="!flex-col !rounded-[15px] !py-[3px] !px-[3px] !text-xs  2xl:!gap-y-0 2xl:!text-base 2xl:!flex 2xl:!flex-row 2xl:!rounded-full">
-          <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 2xl:!mx-0 !gap-x-[5px] 2xl:!gap-x-[5px]">
+        <TopRowContainer className={`!flex-col !rounded-[15px] !py-[3px] !px-[3px] !text-xs  2xl:!gap-y-0 2xl:!text-base 2xl:!flex ${!isSidebarOpen ? "lg:!flex-row" : "xl:!flex-row"} ${!isSidebarOpen ? "lg:!rounded-full" : "xl:!rounded-full"}`}>
+          <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 lg:!mx-0 !gap-x-[5px] 2xl:!gap-x-[5px]">
             <TopRowChild
               isSelected={showTotalUsers}
               roundedClassName="rounded-[12px] sm:rounded-full"
-              className={"!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4 group/ecosystem relative"}
+              className={`!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base ${!isSidebarOpen ? "lg:!px-4" : "xl:!px-4"} ${!isSidebarOpen ? "lg:!py-[14px]" : "xl:!py-[14px]"} 3xl:!px-6 3xl:!py-4 group/ecosystem relative`}
               onClick={() => {
                 setShowTotalUsers(true);
                 setSelectedScale("absolute");
@@ -1256,7 +1256,7 @@ export default function LandingChart({
             <TopRowChild
               isSelected={"absolute" === selectedScale && !showTotalUsers}
               roundedClassName="rounded-[12px] sm:rounded-full"
-              className={"!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4 group/composition relative"}
+              className={`!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base ${!isSidebarOpen ? "lg:!px-4" : "xl:!px-4"} 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4 group/composition relative`}
               onClick={() => {
                 setShowTotalUsers(false);
                 setSelectedScale("absolute");
@@ -1304,7 +1304,7 @@ export default function LandingChart({
             <TopRowChild
               isSelected={"percentage" === selectedScale}
               roundedClassName="rounded-[12px] sm:rounded-full"
-              className={"!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4 relative group/compositionsplit"}
+              className={`!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base ${!isSidebarOpen ? "lg:!px-4" : "xl:!px-4"} ${!isSidebarOpen ? "lg:!py-[14px]" : "xl:!py-[14px]"} 3xl:!px-6 3xl:!py-4 relative group/compositionsplit`}
               onClick={() => {
                 setShowTotalUsers(false);
                 setSelectedScale("percentage");
@@ -1340,16 +1340,16 @@ export default function LandingChart({
               </div>
             </TopRowChild>
           </TopRowParent>
-          <div className="block 2xl:hidden w-[80%] mx-auto my-[10px] h-[2px]">
+          <div className={`block ${!isSidebarOpen ? "lg:hidden" : "xl:hidden"} w-[80%] mx-auto my-[10px] h-[2px]`}>
             <hr className="border-dashed border-t-[1px] w-full h-[1px] border-forest-400" />
           </div>
 
-          <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 2xl:!mx-0 !gap-x-[4px] 2xl:!gap-x-[5px]">
+          <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4:!mx-0 !gap-x-[4px] 2xl:!gap-x-[5px]">
             {!zoomed ? (
               Object.keys(timespans).map((timespan) => (
                 <TopRowChild
                   key={timespan}
-                  className={"!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
+                  className={`!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base ${!isSidebarOpen ? "lg:!px-4" : "xl:!px-4"} ${!isSidebarOpen ? "lg:!py-[14px]" : "xl:!py-[14px]"} 3xl:!px-6 3xl:!py-4`}
                   //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
                   isSelected={selectedTimespan === timespan}
                   onClick={() => {
