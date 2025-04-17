@@ -9,13 +9,15 @@ import "../../background.css";
 import "../../globals.css";
 import { MasterProvider } from "@/contexts/MasterContext";
 import { getPageMetadata } from "@/lib/metadata";
+import { ToastProvider } from "@/components/toast/GTPToast";
 
 export async function generateMetadata(): Promise<Metadata> {
   const metadata = await getPageMetadata(
     "/icons",
     {}
   );
-  return {...metadata, 
+  return {
+    ...metadata,
     openGraph: {
       title: "icons.growthepie.xyz",
       description:
@@ -102,15 +104,17 @@ export default function RootLayout({
       <body className="bg-forest-50 text-forest-900 dark:bg-[#1F2726] dark:text-forest-500">
         <Providers forcedTheme="dark">
           <MasterProvider>
-            <main className="relative mx-auto min-h-screen w-full flex-1 select-none font-raleway">
-              <div className="background-container !fixed">
-                <div className="background-gradient-group">
-                  <div className="background-gradient-yellow"></div>
-                  <div className="background-gradient-green"></div>
+            <ToastProvider>
+              <main className="relative mx-auto min-h-screen w-full flex-1 select-none font-raleway">
+                <div className="background-container !fixed">
+                  <div className="background-gradient-group">
+                    <div className="background-gradient-yellow"></div>
+                    <div className="background-gradient-green"></div>
+                  </div>
                 </div>
-              </div>
-              {children}
-            </main>
+                {children}
+              </main>
+            </ToastProvider>
           </MasterProvider>
           <DeveloperTools />
           <CookieConsent />

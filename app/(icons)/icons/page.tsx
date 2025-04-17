@@ -9,6 +9,8 @@ import { iconNames, GTPIconName } from "@/icons/gtp-icon-names";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { getIcon } from "@iconify/react";
+import { blobToArrayBuffer, svgToPngBlob, fetchSvgText } from "@/lib/iconUtiils";
+import { useToast } from "@/components/toast/GTPToast";
 
 type IconStyleOption = "gradient" | "monochrome";
 
@@ -16,6 +18,9 @@ const IconsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFormat, setSelectedFormat] = useState<"SVG" | "PNG">("SVG");
   const [selectedStyles, setSelectedStyles] = useState<IconStyleOption[]>(["gradient"]);
+
+  // toast
+  const { addToast } = useToast();
 
   const filteredIcons = iconNames.filter((iconName) => {
     // Filter by search query
@@ -40,9 +45,18 @@ const IconsPage = () => {
   const handleCopySvg = async (iconName: string) => {
     try {
       const svgText = await fetchSvgText(iconName);
-      await navigator.clipboard.writeText(svgText);
-      alert(`Copied ${iconName}.svg to clipboard!`);
+        await navigator.clipboard.writeText(svgText);
+        addToast({
+          title: "Copied",
+          message: `${iconName} has been copied to your clipboard.`,
+          type: "success",
+        });
     } catch (err) {
+      addToast({
+        title: "Failed to copy",
+        message: `${iconName} has failed to copy to your clipboard.`,
+        type: "error",
+      });
       console.error("Failed to copy SVG:", err);
     }
   };
@@ -52,7 +66,17 @@ const IconsPage = () => {
       const svgText = await fetchSvgText(iconName);
       const blob = new Blob([svgText], { type: "image/svg+xml" });
       saveAs(blob, `${iconName}.svg`);
+      addToast({
+        title: "Downloaded",
+        message: `${iconName}.svg has been downloaded.`,
+        type: "success",
+      });
     } catch (err) {
+      addToast({
+        title: "Failed to download",
+        message: `${iconName}.svg has failed to download.`,
+        type: "error",
+      });
       console.error("Failed to download SVG:", err);
     }
   };
@@ -62,6 +86,10 @@ const IconsPage = () => {
       const svgText = await fetchSvgText(iconName);
       const pngBlob = await svgToPngBlob(svgText);
       saveAs(pngBlob, `${iconName}.png`);
+      addToast({
+        message: `Downloaded ${iconName}.png`,
+        type: "success",
+      });
     } catch (err) {
       console.error("Failed to download PNG:", err);
     }
@@ -96,66 +124,9 @@ const IconsPage = () => {
     }
   };
 
-  const fetchSvgText = async (iconName: string): Promise<string> => {
-    const iconData = getIcon(`gtp:${iconName}`);
+
+
   
-    if (!iconData) {
-      throw new Error(`Icon "${iconName}" not found in the Iconify registry.`);
-    }
-  
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${iconData.width || 24} ${iconData.height || 24}" fill="currentColor">${iconData.body}</svg>`;
-  };
-
-  const svgToPngBlob = async (svgText: string): Promise<Blob> => {
-    return new Promise((resolve, reject) => {
-      const svgBlob = new Blob([svgText], { type: "image/svg+xml" });
-      const blobUrl = URL.createObjectURL(svgBlob);
-
-      const img = new Image();
-      img.src = blobUrl;
-
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
-
-        const ctx = canvas.getContext("2d");
-        if (!ctx) {
-          URL.revokeObjectURL(blobUrl);
-          return reject(new Error("Could not get canvas context"));
-        }
-        ctx.drawImage(img, 0, 0);
-
-        canvas.toBlob((pngBlob) => {
-          URL.revokeObjectURL(blobUrl);
-          if (!pngBlob) {
-            return reject(new Error("Could not create PNG blob"));
-          }
-          resolve(pngBlob);
-        }, "image/png");
-      };
-
-      img.onerror = (err) => {
-        URL.revokeObjectURL(blobUrl);
-        reject(err);
-      };
-    });
-  };
-
-  const blobToArrayBuffer = (blob: Blob): Promise<ArrayBuffer> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (reader.result instanceof ArrayBuffer) {
-          resolve(reader.result);
-        } else {
-          reject(new Error("Could not convert blob to ArrayBuffer"));
-        }
-      };
-      reader.onerror = reject;
-      reader.readAsArrayBuffer(blob);
-    });
-  };
 
   return (
     <div className="flex flex-col h-screen">
