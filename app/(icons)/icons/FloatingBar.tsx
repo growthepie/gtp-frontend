@@ -121,7 +121,7 @@ export default function FloatingBar({
       </Link>
 
       {/* --- Visible Options on Large Screens --- */}
-      <div className="hidden lg:flex items-center gap-x-[5px] md:gap-x-[15px]">
+      <div className="hidden md:flex items-center gap-x-[5px] md:gap-x-[15px]">
         {/* Select Format Section (LG+) */}
         <div className="flex flex-col items-center gap-y-[2px]">
           <div className="h-[9px] heading-caps-xxxs text-[#5A6462]">
@@ -207,7 +207,7 @@ export default function FloatingBar({
       </div>
 
       {/* --- Settings Button and Popover (Replaces above options on < LG screens) --- */}
-      <div className="group relative w-fit z-50 flex lg:hidden"> {/* Show only below LG */}
+      <div className="group relative w-fit z-50 flex md:hidden"> {/* Show only below LG */}
         {/* Settings Icon Button */}
         <div className="cursor-pointer flex items-center justify-center !size-[44px] bg-[#1F2726] rounded-full shrink-0">
           <GTPIcon icon="gtp-settings" size="md" /> {/* Use the imported SettingsIcon */}
