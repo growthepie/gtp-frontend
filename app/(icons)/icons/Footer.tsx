@@ -92,11 +92,11 @@ export default function Footer({
 
           {/* Right Side Share Button */}
           <div className="pointer-events-none fixed bottom-[20px] z-50 flex w-full max-w-[1427px] justify-end">
-                <div className="pointer-events-auto pr-[40px] md:pr-[120px]">
-                    {/* <Details /> */}
-                    <Share />
-                </div>
-              </div>
+            <div className="pointer-events-auto pr-[40px] md:pr-[120px]">
+              {/* <Details /> */}
+              <Share />
+            </div>
+          </div>
         </Container>
       </Container>
     </div>

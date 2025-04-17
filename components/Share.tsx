@@ -160,7 +160,7 @@ export default function Share() {
 
   return (
     <>
-      <div className={`relative z-50 flex gap-x-[15px] rounded-full bg-forest-500 p-[5px] shadow-[0px_0px_50px_0px_#00000033] dark:bg-[#5A6462] dark:shadow-[0px_0px_50px_0px_#000000] ${cookieConsentValue ? "block" : "hidden"}`}>
+      <div className={`relative z-50 flex gap-x-[15px] rounded-full bg-forest-500 p-[5px] shadow-[0px_0px_50px_0px_#00000033] dark:bg-[#344240] dark:shadow-[0px_0px_50px_0px_#000000] ${cookieConsentValue ? "block" : "hidden"}`}>
         <div>
           <div className="absolute inset-0 z-40 w-full h-full overflow-hidden pointer-events-none rounded-full">
             {/* Glint effect */}
