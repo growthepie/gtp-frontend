@@ -10,6 +10,7 @@ import "../../globals.css";
 import { MasterProvider } from "@/contexts/MasterContext";
 import { getPageMetadata } from "@/lib/metadata";
 import { ToastProvider } from "@/components/toast/GTPToast";
+import { IconLibraryProvider } from "@/contexts/IconLibraryContext";
 
 export async function generateMetadata(): Promise<Metadata> {
   const metadata = await getPageMetadata(
@@ -105,15 +106,17 @@ export default function RootLayout({
         <Providers forcedTheme="dark">
           <MasterProvider>
             <ToastProvider>
-              <main className="relative mx-auto min-h-screen w-full flex-1 select-none font-raleway">
-                <div className="background-container !fixed">
-                  <div className="background-gradient-group">
-                    <div className="background-gradient-yellow"></div>
-                    <div className="background-gradient-green"></div>
+              <IconLibraryProvider>
+                <main className="relative mx-auto min-h-screen w-full flex-1 select-none font-raleway">
+                  <div className="background-container !fixed">
+                    <div className="background-gradient-group">
+                      <div className="background-gradient-yellow"></div>
+                      <div className="background-gradient-green"></div>
+                    </div>
                   </div>
-                </div>
-                {children}
-              </main>
+                  {children}
+                </main>
+              </IconLibraryProvider>
             </ToastProvider>
           </MasterProvider>
           <DeveloperTools />

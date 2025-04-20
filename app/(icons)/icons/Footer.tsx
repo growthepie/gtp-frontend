@@ -8,28 +8,8 @@ import { GTPIcon } from "@/components/layout/GTPIcon";
 import FloatingBar from "./FloatingBar";
 import Share from "@/components/Share";
 
-interface FooterProps {
-  searchQuery?: string;
-  setSearchQuery?: (value: string) => void;
-  iconsCount?: number;
-  onDownloadAll?: (format: "SVG" | "PNG") => void;
-  selectedFormat: "SVG" | "PNG";
-  setSelectedFormat: React.Dispatch<React.SetStateAction<"SVG" | "PNG">>;
-  selectedStyles: ("gradient" | "monochrome")[];
-  setSelectedStyles: React.Dispatch<React.SetStateAction<("gradient" | "monochrome")[]>>;
-}
 
-
-export default function Footer({
-  searchQuery = "",
-  setSearchQuery = () => {},
-  iconsCount = 0,
-  onDownloadAll = () => {},
-  selectedFormat,
-  setSelectedFormat,
-  selectedStyles,
-  setSelectedStyles,
-}: FooterProps) {
+export default function Footer() {
   const { isMobile } = useUIContext();
 
   return (
@@ -54,19 +34,10 @@ export default function Footer({
       {/* Container for Mobile Floating Bar */}
       {/* Positioned absolutely, appears only on mobile */}
       <div className="block md:hidden absolute bottom-[80px] md:bottom-[105px] left-0 right-0 z-60 pointer-events-auto"> {/* Adjust bottom value as needed */}
-         <div className="w-full max-w-[1427px] mx-auto px-[20px]"> {/* Constrain width */}
-             <FloatingBar
-               searchQuery={searchQuery}
-               setSearchQuery={setSearchQuery}
-               iconsCount={iconsCount}
-               onDownloadAll={onDownloadAll}
-               selectedFormat={selectedFormat}
-               setSelectedFormat={setSelectedFormat}
-               selectedStyles={selectedStyles}
-               setSelectedStyles={setSelectedStyles}
-             />
-         </div>
-       </div>
+        <div className="w-full max-w-[1427px] mx-auto px-[20px]"> {/* Constrain width */}
+          <FloatingBar />
+        </div>
+      </div>
 
       <Container className="w-full max-w-[1427px] mx-auto px-[20px] md:px-[60px] bottom-0 pointer-events-auto">
         <Container className="z-10 flex w-full items-center justify-between !px-0 pb-5 md:pb-9">

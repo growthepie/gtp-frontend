@@ -4,27 +4,8 @@ import IconsContainer from "@/components/layout/IconsContainer";
 import { useUIContext } from "@/contexts/UIContext";
 import FloatingBar from "./FloatingBar";
 import Image from "next/image";
-interface HeaderProps {
-  searchQuery?: string;
-  setSearchQuery?: (value: string) => void;
-  iconsCount?: number;
-  onDownloadAll?: (format: "SVG" | "PNG") => void;
-  selectedFormat: "SVG" | "PNG";
-  setSelectedFormat: React.Dispatch<React.SetStateAction<"SVG" | "PNG">>;
-  selectedStyles: ("gradient" | "monochrome")[];
-  setSelectedStyles: React.Dispatch<React.SetStateAction<("gradient" | "monochrome")[]>>;
-}
 
-export default function Header({
-  searchQuery = "",
-  setSearchQuery = () => {},
-  iconsCount = 0,
-  onDownloadAll = () => {},
-  selectedFormat,
-  setSelectedFormat,
-  selectedStyles,
-  setSelectedStyles,
-}: HeaderProps) {
+export default function Header() {
   const { isMobile } = useUIContext();
   return (
     <div className="fixed flex flex-col w-full z-50 items-center">
@@ -62,16 +43,7 @@ export default function Header({
         </div>
       </header>
       <IconsContainer className={`hidden md:block absolute top-[76px] w-full max-w-[1427px] mx-auto px-[20px] md:px-[60px] z-10`}>
-          <FloatingBar
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            iconsCount={iconsCount}
-            onDownloadAll={onDownloadAll}
-            selectedFormat={selectedFormat}
-            setSelectedFormat={setSelectedFormat}
-            selectedStyles={selectedStyles}
-            setSelectedStyles={setSelectedStyles}
-          />
+          <FloatingBar />
       </IconsContainer>
     </div>
   );

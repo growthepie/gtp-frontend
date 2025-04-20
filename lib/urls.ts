@@ -85,3 +85,9 @@ export const OctantURLs = {
   projects_by_website:
     "https://api.growthepie.xyz/v1/trackers/octant/projects_by_website.json",
 };
+
+export const IconLibraryURLs = {
+  index: "https://api.growthepie.xyz/v1/icon-library/index.json",
+  base: "https://api.growthepie.xyz/v1/icon-library/",
+};
+
