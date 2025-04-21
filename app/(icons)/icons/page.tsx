@@ -348,7 +348,7 @@ const IconCard: React.FC<IconCardProps> = ({ icon }) => {
       }
       setIsCopied(true);
 
-      addToast({ title: 'Copied to Clipboard', message: `${selectedFormat} ${icon.name}`, type: 'success' });
+      addToast({ title: 'Copied to Clipboard', message: `${icon.name}`, type: 'success' });
     } catch (err: any) { addToast({ title: 'Copy Failed', message: err.message || 'Could not copy SVG content.', type: 'error' }); }
     finally { setTimeout(() => setIsCopied(false), 500); }
   };
@@ -396,7 +396,7 @@ const IconCard: React.FC<IconCardProps> = ({ icon }) => {
       dangerouslySetInnerHTML={{ __html: displaySvgContent }} 
       />
       <div className="relative w-[69px] flex justify-center mt-1">
-        <span className="group-hover:hidden text-xs text-center h-[21px] truncate">{selectedFormat} {icon.name}</span>
+        <span className="group-hover:hidden text-xs text-center h-[21px] truncate">{icon.name}</span>
         <div className="hidden group-hover:flex flex-row items-center gap-[10px] h-[15px]">
           <button onClick={handleCopy}><GTPIcon icon={isCopied ? "gtp-checkmark-checked" : "gtp-copy"} size="sm" className="w-[15px] h-[15px]" /></button>
           <button onClick={handleDownload}><GTPIcon icon="gtp-download" size="sm" className="w-[15px] h-[15px]" /></button>

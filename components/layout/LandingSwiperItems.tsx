@@ -58,7 +58,7 @@ function FocusProvider({ children }: { children: React.ReactNode }) {
       // Schedule the next update
       const timer = setTimeout(() => {
         setCurrentUpdateIndex(prev => prev + 1);
-      }, 50); // 50ms between chart updates
+      }, 100); // 50ms between chart updates
       
       return () => clearTimeout(timer);
     }
@@ -90,7 +90,7 @@ function FocusProvider({ children }: { children: React.ReactNode }) {
 function useFocusUpdate(chartId: number) {
   const context = useContext(FocusContext);
   const [shouldUpdate, setShouldUpdate] = useState(true);
-  const [focusEnabled] = useAsyncStorage("focusEnabled", false);
+  const [focusEnabled] = useLocalStorage("focusEnabled", false);
   
   useEffect(() => {
     const updateCallback = () => {
@@ -125,7 +125,7 @@ const SwiperItem = memo(({ metric_id, landing, master, chartId }: { metric_id: s
     ?.urlKey;
     
   const chartComponent = useMemo(() => {
-    if (!master || !landing || !shouldUpdate) return null;
+    if (!master || !landing) return null;
     
     return (
       <ChainComponent
@@ -140,7 +140,7 @@ const SwiperItem = memo(({ metric_id, landing, master, chartId }: { metric_id: s
         xMin={landing.data.all_l2s.metrics[metric_id].daily.data[0][0]}
       />
     );
-  }, [landing, master, metric_id, focusEnabled, shouldUpdate]);
+  }, [landing, master, metric_id, focusEnabled]);
 
   const linkComponent = useMemo(() => {
     return (
@@ -160,23 +160,9 @@ const SwiperItem = memo(({ metric_id, landing, master, chartId }: { metric_id: s
     );
   }, [metric_id, urlKey]);
 
-  // Show loading state while waiting for chart to update
-  const loadingComponent = useMemo(() => {
-    if (shouldUpdate || !master || !landing) return null;
-    
-    return (
-      <div className="w-full h-[145px] md:h-[176px] rounded-[15px]  bg-forest-50 dark:bg-[#1F2726]">
-        <div className="flex items-center justify-center h-full w-full">
-          <div className="w-8 h-8 border-[5px] border-forest-500/30 rounded-full border-t-transparent animate-spin"></div>
-        </div>
-      </div>
-    );
-  }, [shouldUpdate, master, landing]);
-
   return (
     <>
       {chartComponent}
-      {loadingComponent}
       {linkComponent}
     </>
   );
