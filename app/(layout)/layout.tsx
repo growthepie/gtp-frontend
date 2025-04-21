@@ -92,17 +92,20 @@ const host = isFees ? "fees.growthepie.xyz" : "www.growthepie.xyz";
 const title = isFees ? gtpFees.title : gtpMain.title;
 const description = isFees ? gtpFees.description : gtpMain.description;
 
+// YYYY-MM-DD UTC
+const current_date = new Date().toISOString().split("T")[0];
+
 export const metadata: Metadata = {
   metadataBase: new URL(`https://${host}`),
   title: title,
   description: description,
   openGraph: {
     title: "growthepie",
-    description: "Growing Ethereum’s Ecosystem Together",
+    description: "Understand every slice of Ethereum",
     url: "https://www.growthepie.xyz",
     images: [
       {
-        url: "https://www.growthepie.xyz/gtp_og.png",
+        url: `https://www.growthepie.xyz/gtp_og.png?date=${current_date}`,
         width: 1200,
         height: 627,
         alt: "growthepie.xyz",
@@ -114,12 +117,12 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "growthepie.xyz",
-    description: "Growing Ethereum’s Ecosystem Together",
+    description: "Understand every slice of Ethereum",
     site: "@growthepie_eth",
     siteId: "1636391104689094656",
     creator: "@growthepie_eth",
     creatorId: "1636391104689094656",
-    images: ["https://www.growthepie.xyz/gtp_og.png"],
+    images: [`https://www.growthepie.xyz/gtp_og.png?date=${current_date}`],
   },
   robots: {
     index: true,
