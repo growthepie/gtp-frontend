@@ -274,12 +274,21 @@ const ApplicationsTable = memo(() => {
       }, 0);
     });
   }, [applicationDataAggregatedAndFiltered, selectedMetricKeys]);
-
+  const { selectedTimespan } = useTimespan();
   // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() => {
-      const applicationColumnWidth = selectedMetricKeys.length > 2 ? 165 : 285;
-      const metricColumnWidth = selectedMetricKeys.length > 2 ? 242 : 262;
-      return `26px ${applicationColumnWidth}px 166px minmax(150px,800px) 95px ${selectedMetricKeys.map(() => `${metricColumnWidth}px`).join(" ")} ${(new Array(numTotalMetrics - selectedMetricKeys.length).fill(0).map(() => "0px").join(" "))} 29px`;
+      const applicationColumnWidth = selectedMetricKeys.length > 2 ? "156px" : "285px";
+      const metricColumnWidth = selectedMetricKeys.length > 2 ? "242px" : "262px";
+      return [
+        "26px",
+        applicationColumnWidth,
+        "166px",
+        "minmax(150px, 800px)",
+        "95px",
+        ...selectedMetricKeys.map(() => metricColumnWidth),
+        ...new Array(numTotalMetrics - selectedMetricKeys.length).fill("0px"),
+        "29px"
+      ].join(" ");
     },[numTotalMetrics, selectedMetricKeys]
   );
 
@@ -303,7 +312,7 @@ const ApplicationsTable = memo(() => {
       <GridTableHeader
         // gridDefinitionColumns={gridColumns}
         // className="sticky top-[250px] group text-[14px] !px-[5px] !py-0 gap-x-[15px] !pb-[4px] !z-[10]"
-        className="group text-[14px] !px-[5px] !py-0 !gap-x-0 !pb-[4px] !z-[10] !items-start transition-all duration-300"
+        className="group text-[14px] !px-[5px] !py-0 !gap-x-0 !pb-[4px] !z-[10] !it ems-start transition-all duration-300"
         style={{
           gridTemplateColumns: gridColumns,
         }}
@@ -311,7 +320,7 @@ const ApplicationsTable = memo(() => {
         <div />
         <GridTableHeaderCell
           metric="owner_project"
-          className="heading-small-xs pl-[15px] pr-[15px]"
+          className="heading-small-xs pl-[15px] pr-[15px] "
           sort={sort}
           setSort={setSort}
         >
@@ -319,7 +328,7 @@ const ApplicationsTable = memo(() => {
         </GridTableHeaderCell>
         <GridTableHeaderCell
           metric="origin_keys"
-          className="heading-small-xs pl-[5px] pr-[15px]"
+          className="heading-small-xs pl-[5px] pr-[15px] "
           sort={sort}
           setSort={setSort}
         >
@@ -327,7 +336,7 @@ const ApplicationsTable = memo(() => {
         </GridTableHeaderCell>
         <GridTableHeaderCell
           metric="category"
-          className="heading-small-xs pr-[15px] pl-[2.5px]"
+          className="heading-small-xs pr-[15px] pl-[2.5px] "
           sort={sort}
           setSort={setSort}
           
@@ -339,7 +348,7 @@ const ApplicationsTable = memo(() => {
         </GridTableHeaderCell>
         <GridTableHeaderCell
           metric="num_contracts"
-          className="heading-small-xs pr-[15px]"
+          className="heading-small-xs pr-[15px] "
           justify="end"
           sort={sort}
           setSort={setSort}
@@ -348,8 +357,10 @@ const ApplicationsTable = memo(() => {
         </GridTableHeaderCell>
         {selectedMetrics.map((metric, index) => {
           // let key = selectedMetricKeys[index];
+
+
           return (
-            <div key={index} className="flex justify-end pr-[15px]">
+            <div key={index} className={`flex justify-end pr-[15px] `}>
             <GridTableHeaderCell
               
               metric={metric}
@@ -370,7 +381,7 @@ const ApplicationsTable = memo(() => {
               extraRight={
                 <div className="flex items-end gap-x-[5px] pl-[5px] cursor-default z-[10]">
                   <div
-                    className="cursor-pointer flex items-center rounded-full bg-[#344240] text-[#CDD8D3] gap-x-[2px] px-[5px] h-[18px]"
+                    className={`cursor-pointer items-center rounded-full bg-[#344240] text-[#CDD8D3] gap-x-[2px] px-[5px] h-[18px] ${selectedTimespan === "max" ? "hidden" : "flex"}`}
                     onClick={() => {
                       setSort({
                         metric: `${selectedMetricKeys[index]}_change_pct`, //"gas_fees_change_pct",
@@ -623,11 +634,19 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
   const numTotalMetrics = Object.keys(metricsDef).length;
   
   // Memoize gridColumns to prevent recalculations
-  // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() => {
-      const applicationColumnWidth = selectedMetricKeys.length > 2 ? 156 : 285;
-      const metricColumnWidth = selectedMetricKeys.length > 2 ? 242 : 262;
-      return `26px ${applicationColumnWidth}px 166px minmax(150px,800px) 95px ${selectedMetricKeys.map(() => `${metricColumnWidth}px`).join(" ")} ${(new Array(numTotalMetrics - selectedMetricKeys.length).fill(0).map(() => "0px").join(" "))} 29px`;
+      const applicationColumnWidth = selectedMetricKeys.length > 2 ? "156px" : "285px";
+      const metricColumnWidth = selectedMetricKeys.length > 2 ? "242px" : "262px";
+      return [
+        "26px",
+        applicationColumnWidth,
+        "166px",
+        "minmax(150px, 800px)",
+        "95px",
+        ...selectedMetricKeys.map(() => metricColumnWidth),
+        ...new Array(numTotalMetrics - selectedMetricKeys.length).fill("0px"),
+        "29px"
+      ].join(" ");
     },[numTotalMetrics, selectedMetricKeys]
   );
 
@@ -652,7 +671,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
           </div>
         </div>
         <div
-          className="flex items-center gap-x-[5px] group-hover:underline pl-[15px] pr-[15px]"
+          className="flex items-center gap-x-[5px] group-hover:underline pl-[15px] pr-[15px] "
         >
           <GTPTooltipNew
             placement="bottom-start"
@@ -671,7 +690,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
             <ApplicationTooltip application={application} />
           </GTPTooltipNew>
         </div>
-        <div className="flex items-center gap-x-[5px] pr-[15px]">
+        <div className="flex items-center gap-x-[5px] pr-[15px] ">
           <Chains origin_keys={application.origin_keys} />
         </div>
         <div className="text-xs pr-[15px]">
