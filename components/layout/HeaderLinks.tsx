@@ -17,7 +17,7 @@ export default function HeaderLinks() {
           });
         }}
       >
-        <Icon icon="gtp:twitter" className="h-6 w-[24px]" />
+        <Icon icon="gtp:x" className="h-6 w-[24px]" />
       </Link>
 
       <Link
@@ -62,7 +62,7 @@ export default function HeaderLinks() {
           });
         }}
       >
-        <Icon icon="cib:discord" className="h-6 w-7 pt-[2px]" />
+        <Icon icon="gtp:discord" className="h-6 w-7 pt-[2px]" />
       </Link>
       <Link
         href="https://www.github.com/growthepie"
@@ -76,7 +76,7 @@ export default function HeaderLinks() {
           });
         }}
       >
-        <Icon icon="cib:github" className="h-6 w-6" />
+        <Icon icon="gtp:github" className="h-6 w-6" />
       </Link>
     </>
   );

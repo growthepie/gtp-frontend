@@ -9,6 +9,7 @@ import useDragScroll from "@/hooks/useDragScroll";
 import { update } from "lodash";
 import { useUIContext } from "@/contexts/UIContext";
 import { useMaster } from "@/contexts/MasterContext";
+import { GTPIcon } from "@/components/layout/GTPIcon";
 
 export default function Search() {
   const { AllChainsByKeys } = useMaster();
@@ -323,7 +324,7 @@ export default function Search() {
                     className="w-[16px] h-[16px]"
                   />
                 </div>
-              ) : <SearchIcon />}
+              ) : <GTPIcon icon="gtp-search" size="md" />}
             </div>
             <input
               ref={inputRef}
