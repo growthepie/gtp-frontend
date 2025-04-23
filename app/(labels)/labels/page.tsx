@@ -2,6 +2,7 @@
 "use client";
 import LabelsContainer from "@/components/layout/LabelsContainer";
 import Icon from "@/components/layout/Icon";
+import { AllChainsByKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
@@ -16,7 +17,7 @@ import {
   LabelsResponse,
   LabelsResponseHelper,
   ParsedDatum,
-} from "@/types/Labels/LabelsResponse";
+} from "@/types/api/LabelsResponse";
 import Header from "./Header";
 
 import Footer from "./Footer";
@@ -43,8 +44,15 @@ import {
 import { uniqBy } from "lodash";
 import { useMaster } from "@/contexts/MasterContext";
 import { useUIContext } from "@/contexts/UIContext";
-import SVGSparkline, { SVGSparklineProvider, useSVGSparkline } from "./SVGSparkline";
-import { GridTableChainIcon, GridTableHeader, GridTableRow } from "@/components/layout/GridTable";
+import SVGSparkline, {
+  SVGSparklineProvider,
+  useSVGSparkline,
+} from "./SVGSparkline";
+import { useLabelsPage } from "./LabelsContext";
+import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+import Link from "next/link";
+
+import { GridTableChainIcon } from "@/components/layout/GridTable";
 
 const devMiddleware = (useSWRNext) => {
   return (key, fetcher, config) => {
@@ -88,10 +96,12 @@ const metricKeysLabels = {
 };
 
 export default function LabelsPage() {
-  const { AllChainsByKeys, formatMetric } = useMaster();
-  const { isMobile } = useUIContext();
+  const { setDownloadData, tableRef } = useLabelsPage();
+  const { is2XL, isMobile } = useUIContext();
   const showGwei = true;
   const showCents = true;
+
+  const { formatMetric } = useMaster();
 
   //True is default descending false ascending
   // const { theme } = useTheme();
@@ -849,6 +859,8 @@ export default function LabelsPage() {
     [ownerProjectToProjectData],
   );
 
+  
+
   return (
     <>
       <ShowLoading
@@ -1219,9 +1231,12 @@ export default function LabelsPage() {
                       }}
                     >
                       <GridTableChainIcon origin_key={filteredLabelsData[item.index].origin_key} />
-                      <div className="@container flex h-full items-center hover:bg-transparent">
+                      <div
+                        className="flex h-full items-center hover:bg-transparent"
+                        ref={index === 0 ? addressRef : undefined}
+                      >
                         <span
-                          className="@container flex-1 flex h-full items-center hover:bg-transparent pr-[10px]"
+                          className="@container flex-1 flex h-full items-center hover:bg-transparent pr-[10px] font-mono select-none"
                           onDoubleClick={(e) => {
                             e.preventDefault(); // Prevent default double-click behavior
                             const selection = window.getSelection();
@@ -1703,6 +1718,9 @@ export default function LabelsPage() {
                       {showDeploymentTx && (
                         <div
                           className="@container flex-1 flex h-full items-center hover:bg-transparent pr-[10px] text-[11px]"
+                          style={{
+                            fontFeatureSettings: "'pnum' on, 'lnum' on",
+                          }}
                           onDoubleClick={(e) => {
                             e.preventDefault(); // Prevent default double-click behavior
                             const selection = window.getSelection();
@@ -1761,6 +1779,9 @@ export default function LabelsPage() {
                       {showDeployerAddress && (
                         <div
                           className="@container flex-1 flex h-full items-center hover:bg-transparent pr-[10px] text-[11px]"
+                          style={{
+                            fontFeatureSettings: "'pnum' on, 'lnum' on",
+                          }}
                           onDoubleClick={(e) => {
                             e.preventDefault(); // Prevent default double-click behavior
                             const selection = window.getSelection();
@@ -1897,48 +1918,48 @@ export default function LabelsPage() {
   );
 }
 
-// type GridTableProps = {
-//   gridDefinitionColumns: string;
-//   className?: string;
-//   children: React.ReactNode;
-//   style?: React.CSSProperties;
-// };
+type GridTableProps = {
+  gridDefinitionColumns: string;
+  className?: string;
+  children: React.ReactNode;
+  style?: React.CSSProperties;
+};
 
-// // grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px] lg:grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px]
-// // class="select-none grid gap-x-[15px] px-[6px] pt-[30px] text-[11px] items-center font-bold"
-// const GridTableHeader = ({
-//   children,
-//   gridDefinitionColumns,
-//   className,
-//   style,
-// }: GridTableProps) => {
-//   return (
-//     <div
-//       className={`select-none gap-x-[10px] pl-[10px] pr-[32px] pt-[30px] text-[11px] items-center font-semibold grid ${gridDefinitionColumns} ${className}`}
-//       style={style}
-//     >
-//       {children}
-//     </div>
-//   );
-// };
+// grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px] lg:grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px]
+// class="select-none grid gap-x-[15px] px-[6px] pt-[30px] text-[11px] items-center font-bold"
+const GridTableHeader = ({
+  children,
+  gridDefinitionColumns,
+  className,
+  style,
+}: GridTableProps) => {
+  return (
+    <div
+      className={`select-none gap-x-[10px] pl-[10px] pr-[30px] pt-[30px] text-[11px] items-center font-semibold grid ${gridDefinitionColumns} ${className}`}
+      style={style}
+    >
+      {children}
+    </div>
+  );
+};
 
-// // grid grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px] lg:grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px]
-// // class="gap-x-[15px] rounded-full border border-forest-900/20 dark:border-forest-500/20 px-[6px] py-[5px] text-xs items-center"
-// const GridTableRow = ({
-//   children,
-//   gridDefinitionColumns,
-//   className,
-//   style,
-// }: GridTableProps) => {
-//   return (
-//     <div
-//       className={`select-text gap-x-[10px] pl-[10px] pr-[32px] py-[5px] text-xs items-center rounded-full border border-forest-900/20 dark:border-forest-500/20 grid ${gridDefinitionColumns} ${className}`}
-//       style={style}
-//     >
-//       {children}
-//     </div>
-//   );
-// };
+// grid grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px] lg:grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px]
+// class="gap-x-[15px] rounded-full border border-forest-900/20 dark:border-forest-500/20 px-[6px] py-[5px] text-xs items-center"
+const GridTableRow = ({
+  children,
+  gridDefinitionColumns,
+  className,
+  style,
+}: GridTableProps) => {
+  return (
+    <div
+      className={`select-text gap-x-[10px] pl-[10px] pr-[30px] py-[5px] text-xs items-center rounded-full border border-forest-900/20 dark:border-forest-500/20 grid ${gridDefinitionColumns} ${className}`}
+      style={style}
+    >
+      {children}
+    </div>
+  );
+};
 
 const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
   const {
@@ -1957,28 +1978,25 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
       {isDBLoading ? (
         <div className="relative flex items-center justify-center text-[#5A6462] text-[10px] w-[100px] h-full">
           Loading Chart
-        </div> :
-        <CanvasSparkline chainKey={chainKey} />
-      }
-      {hoverDataPoint ? (
-        <div
-          className="flex flex-col justify-center items-end numbers-xs"
-        >
-          <div className="min-w-[55px] text-right" >
-            {hoverDataPoint[1] && formatMetric(hoverDataPoint[1], valueType)}
-          </div>
-          <div className={`text-[9px] text-right leading-[1] text-forest-400`}>{new Date(hoverDataPoint[0]).toLocaleDateString("en-GB",
-            {
-              month: "short",
-              day: "numeric",
-              year: "numeric"
-            }
-          )}</div>
         </div>
       ) : (
-        <div
-          className="flex flex-col justify-center items-end numbers-xs"
-        >
+        <CanvasSparkline chainKey={chainKey} />
+      )}
+      {hoverDataPoint ? (
+        <div className="flex flex-col justify-center items-end numbers-xs">
+          <div className="min-w-[55px] text-right">
+            {hoverDataPoint[1] && formatMetric(hoverDataPoint[1], valueType)}
+          </div>
+          <div className={`text-[9px] text-right leading-[1] text-forest-400`}>
+            {new Date(hoverDataPoint[0]).toLocaleDateString("en-GB", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col justify-center items-end numbers-xs">
           <div className="min-w-[55px] text-right">
             {formatMetric(value, valueType)}
           </div>
@@ -2053,8 +2071,10 @@ const LabelsSVGSparkline = ({ chainKey }: { chainKey: string }) => {
       )}
       {hoverDataPoint ? (
         <div
-          className="flex flex-col justify-center items-end numbers-xs"
-          
+          className="flex flex-col justify-center items-end"
+          style={{
+            fontFeatureSettings: "'pnum' on, 'lnum' on",
+          }}
         >
           <div className="min-w-[55px] text-right">
             {hoverDataPoint[1] && formatMetric(hoverDataPoint[1], valueType)}
@@ -2068,9 +2088,7 @@ const LabelsSVGSparkline = ({ chainKey }: { chainKey: string }) => {
           </div>
         </div>
       ) : (
-        <div
-          className="flex flex-col justify-center items-end numbers-xs"
-        >
+        <div className="flex flex-col justify-center items-end numbers-xs">
           <div className="min-w-[55px] text-right">
             {formatMetric(value, valueType)}
           </div>

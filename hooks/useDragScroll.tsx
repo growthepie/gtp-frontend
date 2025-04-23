@@ -38,7 +38,7 @@ export const useDragScroll = (
       isDragThresholdExceeded.current = false; // Reset the flag
       setIsDragging(true);
       setIsDragged(false);
-      setStartPos({ x: clientX, y: clientY });
+      setStartPos({ x: event.clientX, y: event.clientY });
       setVelocity({ x: 0, y: 0 });
       velocityHistory.current = [];
       rafId.current && cancelAnimationFrame(rafId.current);
@@ -54,7 +54,7 @@ export const useDragScroll = (
     }
   }, []);
 
-  const handleMove = useCallback((clientX: number, clientY: number) => {
+  const handleMouseMove = useCallback((event: MouseEvent) => {
     if (!isDragging) return;
 
     const currentTime = Date.now();
@@ -198,10 +198,12 @@ export const useDragScroll = (
   }, [decay, direction, snap, snapThreshold]);
 
   const handleWheel = useCallback((event: WheelEvent) => {
+    event.preventDefault();
     if (!containerRef.current) return;
     if (direction === 'horizontal') {
-      event.preventDefault();
       containerRef.current.scrollLeft += event.deltaY;
+    } else {
+      containerRef.current.scrollTop += event.deltaY;
     }
   }, [direction]);
 
@@ -240,29 +242,18 @@ export const useDragScroll = (
     return () => cancelAnimationFrame(rafId);
   }, [updateGradients]);
 
-  const calculateAverageVelocity = () => {
-    const now = Date.now();
-    velocityHistory.current = velocityHistory.current.filter(item => now - item.time < 100);
-    const total = velocityHistory.current.reduce((acc, item) => ({
-      x: acc.x + item.x,
-      y: acc.y + item.y
-    }), { x: 0, y: 0 });
-    const count = velocityHistory.current.length;
-    return count > 0 ? { x: total.x / count, y: total.y / count } : { x: 0, y: 0 };
-  };
-
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
+    const handleGlobalMouseMove = (event: MouseEvent) => handleMouseMove(event);
+    const handleGlobalMouseUp = () => handleMouseUp();
+
     container.style.cursor = isDragging ? 'grabbing' : 'grab';
 
     container.addEventListener('mousedown', handleMouseDown);
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-    container.addEventListener('touchstart', handleTouchStart);
-    window.addEventListener('touchmove', handleTouchMove);
-    window.addEventListener('touchend', handleTouchEnd);
+    window.addEventListener('mousemove', handleGlobalMouseMove);
+    window.addEventListener('mouseup', handleGlobalMouseUp);
     window.addEventListener('resize', updateGradients);
     if(snap)
       window.addEventListener('resize', snapToClosest);
@@ -273,11 +264,8 @@ export const useDragScroll = (
 
     return () => {
       container.removeEventListener('mousedown', handleMouseDown);
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-      container.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('mousemove', handleGlobalMouseMove);
+      window.removeEventListener('mouseup', handleGlobalMouseUp);
       window.removeEventListener('resize', updateGradients);
       if(snap)
         window.removeEventListener('resize', snapToClosest);

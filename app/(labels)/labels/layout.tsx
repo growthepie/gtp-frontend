@@ -8,6 +8,11 @@ import DeveloperTools from "@/components/development/DeveloperTools";
 import "../../background.css";
 import "../../globals.css";
 import { MasterProvider } from "@/contexts/MasterContext";
+import Share from "@/components/Share";
+import { meta } from "gtp.branch.config";
+import { LabelsPageProvider } from "./LabelsContext";
+import Footer from "./Footer";
+import Header from "./Header";
 
 const jsonLd: Graph = {
   "@context": "https://schema.org",
