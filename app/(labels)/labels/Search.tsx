@@ -30,7 +30,7 @@ export default function Search() {
   // const [labelsSubcategoriesFilter, setLabelsSubcategoriesFilter] = useSessionStorage<string[]>('labelsSubcategoriesFilter', []);
   // const [labelsChainsFilter, setLabelsChainsFilter] = useSessionStorage<string[]>('labelsChainsFilter', []);
   const [labelsNumberFiltered, setLabelsNumberFiltered] =
-    useSessionStorage<number>("labelsNumberFiltered", 0);
+    useSessionStorage<number>("labelsNumberFiltered", 300);
 
   const [labelsFilters, setLabelsFilters] = useSessionStorage<{
     address: string[];
