@@ -295,10 +295,18 @@ export const TooltipHeader = ({ title, icon, className, rightIcon, href }: Toolt
 type TooltipBodyProps = {
   children: React.ReactNode;
   className?: string;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
-export const TooltipBody = ({ children, className }: TooltipBodyProps) => {
-  return <div className={`flex flex-col w-full ${className}`}>{children}</div>;
+export const TooltipBody = ({ children, className, onClick }: TooltipBodyProps) => {
+  let stopPropagation = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  }
+  return (
+    <div className={`flex flex-col w-full ${className}`} onClick={onClick ? onClick : stopPropagation}>
+      {children}
+    </div>
+  );
 };
 
 
