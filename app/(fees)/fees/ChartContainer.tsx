@@ -2,7 +2,7 @@
 import Icon from "@/components/layout/Icon";
 import { track } from "@vercel/analytics";
 import { useEffect, useState, useMemo, useRef } from "react";
-import SwiperItem from "@/components/layout/SwiperItem";
+import SwiperItem from "@/components/layout/LandingSwiperItems";
 import useSWR from "swr";
 import { LandingURL } from "@/lib/urls";
 import FeesChart from "./FeesChart";

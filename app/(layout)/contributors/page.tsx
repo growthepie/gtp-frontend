@@ -6,7 +6,10 @@ import Image from "next/image";
 import React from "react";
 import { Contributors, Supporters, Datasources } from "@/lib/contributors";
 import Link from "next/link";
-import Container from "@/components/layout/Container";
+import Container, { PageContainer } from "@/components/layout/Container";
+import { Description } from "@/components/layout/TextComponents";
+import { GTPIcon } from "@/components/layout/GTPIcon";
+import { Title } from "@/components/layout/TextHeadingComponents";
 
 addCollection({
   prefix: "gtp",
@@ -88,6 +91,121 @@ addCollection({
 
 export default function ContributorsPage() {
   return (
+    <PageContainer gapSize="lg">
+      {/* <div className="flex flex-col gap-y-[15px]">
+        <div className="flex gap-x-[8px] items-center pb-[15px]">
+          <div className="w-[36px] h-[36px]">
+            <GTPIcon icon="gtp-data" size="lg" />
+          </div>
+          <Heading
+            as="h2"
+            className="leading-[120%] text-[30px] break-inside-avoid"
+          >
+            Data Sources
+          </Heading>
+        </div>
+        <Description className="!pb-[15px]">
+          The majority of our data is <span className="font-bold">done through our own raw data aggregation from RPCs</span>. However, we also source some data from:
+        </Description>
+      </div> */}
+      <Title
+        title="Data Sources"
+        titleSize="md"
+        icon="gtp-data"
+        iconSize="lg"
+        as="h2"
+      />
+      <Description>
+        The majority of our data is <span className="font-bold">done through our own raw data aggregation from RPCs</span>. However, we also source some data from:
+      </Description>
+      <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 items-center gap-[30px] pt-[16px] pb-[16px]">
+        {Datasources.map((s) => (
+          <Link
+            key={s.name}
+            target="_blank"
+            rel="noopener noreferrer"
+            href={s.url}
+            className="relative text-center"
+            style={{
+              width: s.width,
+              height: s.height,
+            }}
+          >
+            <Image
+              src={s.image}
+              alt={s.name}
+
+              className="brightness-[.55] grayscale-100 dark:brightness-100 grayscale-0"
+              fill
+              objectFit="contain"
+            />
+          </Link>
+        ))}
+      </div>
+      <div className="flex flex-col gap-y-[15px]">
+        <div className="flex gap-x-[8px] items-center pb-[15px]">
+          <div className="w-[36px] h-[36px]">
+            <GTPIcon icon="gtp-team" size="lg" />
+          </div>
+          <Heading
+            as="h2"
+            className="leading-[120%] text-[30px] break-inside-avoid"
+          >
+            Team
+          </Heading>
+        </div>
+        <Description className="!pb-[15px]">
+          The majority of our data is <span className="font-bold">done through our own raw data aggregation from RPCs</span>. However, we also source some data from:
+        </Description>
+      </div>
+      <div className="w-full flex flex-wrap justify-center sm:justify-start place-items-center gap-[15px]">
+        {Contributors.map((c) => (
+          <div
+            key={c.name}
+            className="w-[258px] h-[335px] flex flex-col items-stretch p-[15px] bg-forest-50 dark:bg-forest-900 rounded-xl"
+          >
+            <div className="relative w-full aspect-square">
+              <Image
+                src={c.image}
+                alt={c.name}
+                className="rounded-md"
+                // width={228}
+                // height={228}
+                fill
+              />
+            </div>
+            <div className="text-left text-base sm:text-xl mt-3 md:mt-5 font-semibold">
+              {c.name}
+            </div>
+            <div className="flex justify-between mt-1">
+              <div className="text-base">{c.role}</div>
+              <div className="flex space-x-2">
+                {c.linkedin && (
+                  <Link
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href={c.linkedin}
+                  >
+                    <Icon icon="feather:linkedin" className="w-[24px] h-[24px]" />
+                  </Link>
+                )}
+                {c.twitter && (
+                  <Link
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href={c.twitter}
+                  >
+                    <Icon icon="ri:twitter-x-fill" className="w-[24px] h-[24px]" />
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </PageContainer>
+  );
+  return (
     <Container
       className="mx-auto pt-[65px] md:pt-[30px] flex flex-col"
       isPageRoot
@@ -107,27 +225,21 @@ export default function ContributorsPage() {
       </div>
 
       <div className="mb-[90px]">
-        <div className="grid grid-cols-2 lg:grid-cols-2 items-center justify-items-center gap-x-[45px] gap-y-[30px] mx-5">
+        <div className="grid grid-cols-2 lg:grid-cols-4 items-center justify-items-center gap-x-[45px] gap-y-[30px] mx-5">
+
           {Supporters.map((s) => (
+
             <Link
               key={s.name}
               target="_blank"
               rel="noopener noreferrer"
               href={s.url}
-              className="relative text-center"
-            // style={{
-            //   width: s.width,
-            //   height: s.height,
-            // }}
+              className="relative text-center h-[98px] md:h-[98px] w-full flex items-center justify-center"
+
             >
-              <Image
-                src={s.image}
-                alt={s.name}
-                width={s.width}
-                height={s.height}
-                className="brightness-[.55] grayscale-100 dark:brightness-100 grayscale-0"
-              // fill
-              />
+              <div className="w-full">
+                <s.svg />
+              </div>
             </Link>
           ))}
         </div>
@@ -225,3 +337,4 @@ export default function ContributorsPage() {
     </Container>
   );
 }
+

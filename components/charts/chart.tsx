@@ -23,13 +23,14 @@ import {
 } from "@/lib/chartUtils";
 import ChartWatermark from "../layout/ChartWatermark";
 import { Icon } from "@iconify/react";
-import { AllChainsByKeys } from "@/lib/chains";
 import { debounce } from "lodash";
+import { useMaster } from "@/contexts/MasterContext";
 
 export const Chart = ({
   // data,
   chartType,
   backgroundColor = "transparent",
+  plotAreaBackgroundColor = "transparent",
   stack = false,
   types,
   timespan,
@@ -50,6 +51,7 @@ export const Chart = ({
   // data: { [chain: string]: number[][] };
   chartType: "area" | "line" | "column";
   backgroundColor?: string;
+  plotAreaBackgroundColor?: string;
   stack?: boolean;
   types: string[];
   timespan: string;
@@ -63,6 +65,7 @@ export const Chart = ({
     unixKey: string;
     dataKey: string;
     data: number[][];
+    pattern?: any;
     fillOpacity?: number;
     lineWidth?: number;
   }[];
@@ -79,6 +82,7 @@ export const Chart = ({
   chartRef?: React.MutableRefObject<Highcharts.Chart | null | undefined>;
   forceEIP?: boolean;
 }) => {
+  const { AllChainsByKeys } = useMaster();
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
@@ -186,7 +190,14 @@ export const Chart = ({
       });
 
       // add new series
-      series.forEach((s, seriesIndex) => {
+      series.sort((a, b) => {
+        if (yScale === "percentage" || yScale === "percentageDecimal" || stack) {
+          // sort by the time of the first data point so that the series are stacked in the correct order
+          return b.data[0][0] - a.data[0][0];
+        }
+        // else keep the order of the series the same
+        return 0;
+      }).forEach((s, seriesIndex) => {
         const chainKey = s.name;
 
         const fillHexColorOpacity = s.fillOpacity
@@ -196,8 +207,7 @@ export const Chart = ({
         let fillColor =
           allCats === true
             ? undefined
-            : AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] +
-            fillHexColorOpacity;
+            : AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] + fillHexColorOpacity;
 
         const normalAreaColor = {
           linearGradient: {
@@ -234,27 +244,23 @@ export const Chart = ({
               ],
         };
 
-        let blockspaceAreaColor =
-          s.custom?.tooltipLabel === "Unlabeled" && allCats === true
-            ? {
-              pattern: {
-                color: AllChainsByKeys[chainKey].colors["dark"][0] + "99",
-                path: {
-                  d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
-                  strokeWidth: 3,
-                },
-                width: 10,
-                height: 10,
-                opacity: 0.99,
-              },
-            }
-            : AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] +
-            fillHexColorOpacity;
+        // let blockspaceAreaColor =
+        //   s.custom?.tooltipLabel === "Unlabeled" && allCats === true
+        //     ? {
+        //       pattern: {
+        //         color: AllChainsByKeys[chainKey].colors["dark"][0],
+        //         path: {
+        //           d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
+        //           strokeWidth: 3,
+        //         },
+        //         width: 10,
+        //         height: 10,
+        //         opacity: 0.99,
+        //       },
+        //     }
+        //     : AllChainsByKeys[chainKey].colors[theme ?? "dark"][0];
 
-        const color =
-          allCats === true && series.length > 1
-            ? blockspaceAreaColor
-            : normalAreaColor;
+        const color = s.pattern ? { pattern: s.pattern, opacity: 0.33 } : normalAreaColor;
 
         // Remove series if no data
         if (!s.data || s.data.length === 0) {
@@ -326,7 +332,7 @@ export const Chart = ({
                 ...s.custom,
                 chainColor:
                   AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0],
-                fillHexColorOpacity: fillHexColorOpacity,
+                // fillHexColorOpacity: fillHexColorOpacity,
                 color: color,
               },
               data: s.data.map((d) => [
@@ -385,7 +391,7 @@ export const Chart = ({
       });
       chartComponent.current?.redraw();
     }
-  }, [yScale, stack, series, chartType, types, theme, allCats]);
+  }, [yScale, stack, series, allCats, AllChainsByKeys, theme, chartType, types]);
 
   useEffect(() => {
     drawChartSeries();
@@ -568,6 +574,7 @@ export const Chart = ({
                           stacking: undefined,
                         },
                         area: {
+                          //@ts-ignore
                           ...baseOptions.plotOptions.area,
                           stacking:
                             yScale === "percentage"
@@ -692,6 +699,8 @@ export const Chart = ({
                           },
                         ],
                         labels: {
+
+                          //@ts-ignore
                           ...baseOptions.yAxis.labels,
                           formatter: function (
                             t: Highcharts.AxisLabelsFormatterContextObject,
@@ -713,8 +722,8 @@ export const Chart = ({
                                 series.length > 0 &&
                                 series[0].dataKey.includes("eth")
                               ) {
-                                prefix = "";
-                                suffix = "Ξ";
+                                prefix = "Ξ";
+                                suffix = "";
                               }
                             }
 

@@ -5,6 +5,19 @@ import Icon from "@/components/layout/Icon";
 import Subheading from "@/components/layout/Subheading";
 import Image from "next/image";
 import Link from "next/link";
+import { getPageMetadata } from "@/lib/metadata";
+import { Metadata } from "next";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const metadata = await getPageMetadata(
+    "/trackers/optimism-retropgf-3",
+    {}
+  );
+  return {
+    title: metadata.title,
+    description: metadata.description,
+  };
+}
 
 export default async function Layout({
   children,
@@ -13,7 +26,7 @@ export default async function Layout({
 }) {
   return (
     <>
-      <Container className="flex flex-col w-full mt-[25px] md:mt-[45px]">
+      <Container className="flex flex-col w-full mt-[45px] md:mt-[30px]">
         <div className="flex justify-between items-start w-full mb-[0px]">
           <div className="flex flex-col">
             <div className="flex flex-col md:flex-row mb-[15px] md:mb-[19px] items-start">

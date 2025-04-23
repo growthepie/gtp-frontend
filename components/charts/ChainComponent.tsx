@@ -12,6 +12,7 @@ import {
   useCallback,
   useLayoutEffect,
   ReactNode,
+  memo,
 } from "react";
 import { useLocalStorage, useWindowSize, useIsMounted } from "usehooks-ts";
 import fullScreen from "highcharts/modules/full-screen";
@@ -20,7 +21,6 @@ import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import d3 from "d3";
-import { AllChainsByKeys } from "@/lib/chains";
 import { debounce, forEach } from "lodash";
 import {
   Tooltip,
@@ -29,13 +29,15 @@ import {
 } from "@/components/layout/Tooltip";
 import Link from "next/link";
 import { Sources } from "@/lib/datasources";
-
+import { metricItems, MetricItem, metricCategories } from "@/lib/metrics";
 import { navigationItems, navigationCategories } from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
 import ChartWatermark from "@/components/layout/ChartWatermark";
 import { ChainsData } from "@/types/api/ChainResponse";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import { useMaster } from "@/contexts/MasterContext";
+
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -46,8 +48,10 @@ const COLORS = {
   ANNOTATION_BG: "rgb(215, 223, 222)",
 };
 
-export default function ChainComponent({
+const ChainComponent = memo(function ChainComponent({
   data,
+  ethData,
+  focusEnabled,
   chain,
   category,
   selectedTimespan,
@@ -56,6 +60,8 @@ export default function ChainComponent({
   xMin = new Date("2021-09-01").getTime(),
 }: {
   data: ChainsData;
+  ethData: ChainsData;
+  focusEnabled: boolean;
   chain: string;
   category: string;
   selectedTimespan: string;
@@ -66,10 +72,12 @@ export default function ChainComponent({
   // Keep track of the mounted state
   const isMounted = useIsMounted();
   const { isSidebarOpen, isSafariBrowser } = useUIContext();
+  const { AllChainsByKeys } = useMaster();
   const { width, height } = useWindowSize();
   const { theme } = useTheme();
   const isMobile = useMediaQuery("(max-width: 767px)");
 
+  const metric_index = metricItems.findIndex((item) => item.key === category);
   const chartComponents = useRef<Highcharts.Chart[]>([]);
 
   const [zoomMargin, setZoomMargin] = useState([1, 15, 0, 0]);
@@ -90,6 +98,7 @@ export default function ChainComponent({
   const [zoomMax, setZoomMax] = useState<number | null>(null);
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+ 
   const [intervalShown, setIntervalShown] = useState<{
     min: number;
     max: number;
@@ -145,10 +154,7 @@ export default function ChainComponent({
   }, [data.metrics]);
 
   const showGwei = useCallback((metric_id: string) => {
-    const item = navigationItems[1].options.find(
-      (item) => item.key === metric_id,
-    );
-
+    const item = metricItems.find((item) => item.key === metric_id);
     return item?.page?.showGwei;
   }, []);
 
@@ -171,15 +177,18 @@ export default function ChainComponent({
     return p;
   }, [data, showUsd]);
 
+
+
   const formatNumber = useCallback(
-    (key: string, value: number | string, isAxis = false) => {
+    (key: string, value: number | string, isAxis = false, isMetric = true) => {
       let prefix = prefixes[key];
       let suffix = "";
       let val = parseFloat(value as string);
-
+      
+      
       if (
         !showUsd &&
-        data.metrics[key].daily.types.includes("eth") &&
+        (isMetric ? data.metrics[key].daily.types.includes("eth") : true) &&
         selectedScale !== "percentage"
       ) {
         if (showGwei(key)) {
@@ -230,7 +239,7 @@ export default function ChainComponent({
     Object.keys(data.metrics).forEach((key) => {
       maxUnixtimes.push(
         data.metrics[key].daily.data[
-          data.metrics[key].daily.data.length - 1
+        data.metrics[key].daily.data.length - 1
         ][0],
       );
     });
@@ -348,33 +357,134 @@ export default function ChainComponent({
 
   const getNavIcon = useCallback(
     (key: string) => {
-      const navItem = navigationItems[1].options.find(
-        (item) => item.key === key,
-      );
+      const navItem = metricItems[metric_index];
 
       if (!navItem || !navItem.category) return null;
 
-      return navigationCategories[navItem.category]
-        ? navigationCategories[navItem.category].icon
+      return metricCategories[navItem.category]
+        ? metricCategories[navItem.category].icon
         : null;
     },
-    [navigationItems],
+    [metricItems],
   );
 
   const getNavLabel = useCallback(
     (key: string) => {
-      const navItem = navigationItems[1].options.find(
-        (item) => item.key === key,
-      );
-
+      const navItem = metricItems[metric_index];
       if (!navItem || !navItem.category) return null;
 
-      return navigationCategories[navItem.category]
-        ? navigationCategories[navItem.category].label
+      return metricCategories[navItem.category]
+        ? metricCategories[navItem.category].label
         : null;
     },
-    [navigationItems],
+    [metricItems],
   );
+
+  const filteredDataCache = useRef<{[key: string]: any[]}>({});
+
+  // Disable animations when focus is changing
+  const forceNoAnimation = useRef(false);
+  
+  const filteredData = useMemo(() => {
+    // Check if datasets exist
+    if (!data?.metrics?.[category]?.daily) {
+      return [];
+    }
+    
+    // Create a lightweight cache key to prevent unnecessary recalculations
+    const cacheKey = `${category}-${showUsd}-${focusEnabled}`;
+    
+    // If we've already calculated this data combination, return from cache
+    if (filteredDataCache.current[cacheKey]) {
+      return filteredDataCache.current[cacheKey];
+    }
+    
+    // Before heavy computation, disable animations
+    forceNoAnimation.current = true;
+    setTimeout(() => {
+      forceNoAnimation.current = false;
+    }, 600);
+    
+    // Get data from first source
+    const firstDataset = data.metrics[category].daily.types.includes("eth")
+      ? showUsd
+        ? data.metrics[category].daily.data.map((d) => [
+            d[0],
+            d[data.metrics[category].daily.types.indexOf("usd")],
+            0, // placeholder for the second dataset
+          ])
+        : data.metrics[category].daily.data.map((d) => [
+            d[0],
+            showGwei(category)
+              ? d[data.metrics[category].daily.types.indexOf("eth")] * 1000000000
+              : d[data.metrics[category].daily.types.indexOf("eth")],
+            0, // placeholder for the second dataset
+          ])
+      : data.metrics[category].daily.data.map((d) => [
+          d[0],
+          d[1],
+          0, // placeholder for the second dataset
+        ]);
+     
+    // If focusEnabled is true or second dataset doesn't exist, just return the first dataset
+    if (focusEnabled || !ethData?.metrics?.[category]?.daily) {
+      const result = firstDataset.sort((a, b) => a[0] - b[0]);
+      filteredDataCache.current[cacheKey] = result;
+      return result;
+    }
+     
+    // Get data from second source (ethData)
+    const secondDataset = ethData.metrics[category].daily.types.includes("eth")
+      ? showUsd
+        ? ethData.metrics[category].daily.data.map((d) => [
+            d[0],
+            0, // placeholder for the first dataset
+            d[ethData.metrics[category].daily.types.indexOf("usd")],
+          ])
+        : ethData.metrics[category].daily.data.map((d) => [
+            d[0],
+            0, // placeholder for the first dataset
+            showGwei(category)
+              ? d[ethData.metrics[category].daily.types.indexOf("eth")] * 1000000000
+              : d[ethData.metrics[category].daily.types.indexOf("eth")],
+          ])
+      : ethData.metrics[category].daily.data.map((d) => [
+          d[0],
+          0, // placeholder for the first dataset
+          d[1],
+        ]);
+     
+    // Combine both datasets, keeping separate values
+    const combinedMap = new Map();
+     
+    // Add first dataset to map
+    firstDataset.forEach(([timestamp, value1]) => {
+      combinedMap.set(timestamp, { value1: value1 || 0, value2: 0 });
+    });
+     
+    // Add or update with second dataset
+    secondDataset.forEach(([timestamp, _, value2]) => {
+      if (combinedMap.has(timestamp)) {
+        // Set the second value
+        combinedMap.get(timestamp).value2 = value2 || 0;
+      } else {
+        combinedMap.set(timestamp, { value1: 0, value2: value2 || 0 });
+      }
+    });
+     
+    // Convert map back to array format [timestamp, value1, value2]
+    const result = Array.from(combinedMap.entries())
+      .map(([timestamp, { value1, value2 }]) => [
+        timestamp,
+        value1,
+        value2
+      ])
+      .sort((a, b) => a[0] - b[0]);
+    
+    // Store in cache
+    filteredDataCache.current[cacheKey] = result;
+    return result;
+  }, [data, ethData, category, showUsd, showGwei, focusEnabled]);
 
   const displayValues = useMemo(() => {
     const p: {
@@ -384,6 +494,7 @@ export default function ChainComponent({
         suffix: string;
       };
     } = {};
+    
     Object.keys(data.metrics).forEach((key) => {
       const units = Object.keys(master.metrics[key].units);
       const unitKey =
@@ -397,15 +508,13 @@ export default function ChainComponent({
         : "";
       let valueIndex = 1;
       let valueMultiplier = 1;
-
       let valueFormat = Intl.NumberFormat("en-GB", {
         notation: "compact",
         maximumFractionDigits: 2,
         minimumFractionDigits: 2,
       });
-
-      let navItem = navigationItems[1].options.find((ni) => ni.key === key);
-
+      let navItem = metricItems[metric_index];
+      
       if (master.metrics[key].units[unitKey].currency) {
         if (!showUsd) {
           valueIndex = data.metrics[key].daily.types.indexOf("eth");
@@ -417,33 +526,55 @@ export default function ChainComponent({
         } else {
           valueIndex = data.metrics[key].daily.types.indexOf("usd");
         }
+      }
+      
+      // Use filteredData for the current category, otherwise use original data
+      let dataArray;
+      let dateIndex;
+      let valueToDisplay;
+      
+      if (key === category && filteredData.length > 0) {
+        dataArray = filteredData;
+        dateIndex = dataArray.length - 1;
+        
+        if (intervalShown) {
+          const intervalMaxIndex = dataArray.findIndex(
+            (d) => d[0] >= intervalShown?.max
+          );
+          if (intervalMaxIndex !== -1) dateIndex = intervalMaxIndex;
+        }
+        
+        // Sum value1 and value2 for the combined value
+        const value1 = dataArray[dateIndex][1] || 0;
+        const value2 = !focusEnabled ? dataArray[dateIndex][2]  || 0 : 0;
+        
+        valueToDisplay = focusEnabled ? value1 : (value1 + value2);
       } else {
+        dataArray = data.metrics[key].daily.data;
+        dateIndex = dataArray.length - 1;
+        
+        if (intervalShown) {
+          const intervalMaxIndex = dataArray.findIndex(
+            (d) => d[0] >= intervalShown?.max
+          );
+          if (intervalMaxIndex !== -1) dateIndex = intervalMaxIndex;
+        }
+        
+        valueToDisplay = dataArray[dateIndex][valueIndex];
       }
-
-      let dateIndex = data.metrics[key].daily.data.length - 1;
-
-      const latestUnix =
-        data.metrics[key].daily.data[data.metrics[key].daily.data.length - 1];
-
-      if (intervalShown) {
-        const intervalMaxIndex = data.metrics[key].daily.data.findIndex(
-          (d) => d[0] >= intervalShown?.max,
-        );
-        if (intervalMaxIndex !== -1) dateIndex = intervalMaxIndex;
-      }
-
-      let value = valueFormat.format(
-        data.metrics[key].daily.data[dateIndex][valueIndex] * valueMultiplier,
-      );
-
+      
+      let value = valueFormat.format(valueToDisplay * valueMultiplier);
       p[key] = { value, prefix, suffix };
     });
+    
     return p;
-  }, [data.metrics, showUsd, intervalShown]);
+  }, [data.metrics, filteredData, category, showUsd, intervalShown, focusEnabled, master.metrics, metric_index]);
 
   const tooltipFormatter = useCallback(
     function (this: Highcharts.TooltipFormatterContextObject) {
       const { x, points } = this;
+
+
 
       if (!points || !x) return;
 
@@ -453,15 +584,15 @@ export default function ChainComponent({
       const dateString = `
       <div>
         ${date.toLocaleDateString("en-GB", {
-          timeZone: "UTC",
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        })}
+        timeZone: "UTC",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })}
       </div>
       `;
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-40 text-xs font-raleway"><div class="flex-1 font-bold text-[13px] md:text-[1rem] ml-6 mb-2 flex justify-between">${dateString}</div>`;
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 text-xs font-raleway"><div class="flex-1 font-bold text-[13px] md:text-[1rem] ml-6 mb-2 flex justify-between">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
       let pointsSum = 0;
@@ -471,82 +602,79 @@ export default function ChainComponent({
           return pointsSum;
         }, 0);
 
-      const tooltipPoints = points
+      let tooltipPoints = points
         .sort((a: any, b: any) => b.y - a.y)
         .map((point: any) => {
           const { series, y, percentage } = point;
           const { name } = series;
+          
+          const label = name === "ethereum" ? AllChainsByKeys[name].name_short : AllChainsByKeys[name].label;
+    
           if (selectedScale === "percentage")
             return `
-              <div class="flex w-full space-x-2 items-center font-medium mb-1">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-                  AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
-                }"></div>
+              <div class="flex w-full space-x-2 items-center font-medium mb-1 ">
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+              }"></div>
                 <!--
-                <div class="tooltip-point-name">${
-                  AllChainsByKeys[data.chain_id].label
-                }</div>
+                <div class="tooltip-point-name">${label
+              }</div>
                 -->
-                <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-                  percentage,
-                  2,
-                )}%</div>
+                <div class="flex-1 text-right numbers-xs">${Highcharts.numberFormat(
+                percentage,
+                2,
+              )}%</div>
               </div>
               <!-- <div class="flex ml-6 w-[calc(100% - 24rem)] relative mb-1">
                 <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
 
                 <div class="h-[2px] rounded-full absolute left-0 top-0" style="width: ${Highcharts.numberFormat(
-                  percentage,
-                  2,
-                )}%; background-color: ${
-              AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
-            };"> </div>
+                percentage,
+                2,
+              )}%; background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+              };"> </div>
               </div> -->`;
 
-          const units = Object.keys(master.metrics[series.name].units);
+          const units = Object.keys(master.metrics[category].units);
           const unitKey =
             units.find((unit) => unit !== "usd" && unit !== "eth") ||
             (showUsd ? "usd" : "eth");
           const decimals =
-            !showUsd && showGwei(series.name)
+            !showUsd && showGwei(category)
               ? 2
-              : master.metrics[series.name].units[unitKey].decimals_tooltip;
+              : master.metrics[category].units[unitKey].decimals_tooltip;
 
-          let prefix = displayValues[series.name].prefix;
-          let suffix = displayValues[series.name].suffix;
+          let prefix = displayValues[category].prefix;
+          let suffix = displayValues[category].suffix;
           let value = y;
 
           if (
             !showUsd &&
-            data.metrics[series.name].daily.types.includes("eth")
+            data.metrics[category].daily.types.includes("eth")
           ) {
-            if (showGwei(series.name)) {
+            if (showGwei(category)) {
               prefix = "";
               suffix = " Gwei";
             }
           }
 
           return `
-          <div class="flex w-full space-x-2 items-center font-medium mb-1">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-              AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
-            }"></div>
-            <!--
-            <div class="tooltip-point-name text-md">${
-              AllChainsByKeys[data.chain_id].label
-            }</div>
-            -->
-            <div class="flex-1 text-left justify-start font-inter flex">
-                <div class="opacity-70 mr-0.5 ${
-                  !prefix && "hidden"
-                }">${prefix}</div>
+          <div class="flex w-full space-x-2 items-center justify-between font-medium mb-1">
+            <div class="flex items-center gap-x-[5px]">
+              <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+              }"></div>
+              
+              <div class="tooltip-point-name text-xs">${label
+              }</div>
+            </div>
+            <div class="flex-1 text-right justify-end numbers-xs flex">
+                <div class="${!prefix && "hidden"
+            }">${prefix}</div>
                 ${parseFloat(value).toLocaleString("en-GB", {
-                  minimumFractionDigits: decimals,
-                  maximumFractionDigits: decimals,
-                })}
-                <div class="opacity-70 ml-0.5 ${
-                  !suffix && "hidden"
-                }">${suffix}</div>
+              minimumFractionDigits: decimals,
+              maximumFractionDigits: decimals,
+            })}
+                <div class="ml-0.5 ${!suffix && "hidden"
+            }">${suffix}</div>
             </div>
           </div>
           <!-- <div class="flex ml-4 w-[calc(100% - 1rem)] relative mb-1">
@@ -555,12 +683,35 @@ export default function ChainComponent({
             <div class="h-[2px] rounded-full absolute right-0 top-0" style="width: ${formatNumber(
               name,
               (y / pointsSum) * 100,
-            )}%; background-color: ${
-            AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
-          }33;"></div>
+              false,
+              false,
+            )}%; background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+            }33;"></div>
           </div> -->`;
         })
         .join("");
+
+      if(points.length > 1) {
+        let tooltipTotal = points.reduce((acc: number, point: any) => acc + (point.y || 0), 0);        
+        
+        tooltipPoints += `
+          <div class="flex w-full h-[15px] mt-[5px] space-x-2 items-end font-medium mb-1">
+            <div class="w-3.5 h-1.5 rounded-r-full" style="background-color: ${"transparent"
+            }"></div>
+            <div class="tooltip-point-name text-xs">${"Total"
+            }</div>
+            <div class="flex-1 text-right justify-end numbers-xs flex">
+                <div class="${!prefixes[chain] && "hidden"
+            }">${prefixes[chain]}</div>
+                ${parseFloat(tooltipTotal).toLocaleString("en-GB", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+                <div class="ml-0.5 ${!prefixes[chain] && "hidden"
+            }">${prefixes[chain]}</div>
+            </div>
+          </div>`
+      }
       return tooltip + tooltipPoints + tooltipEnd;
     },
     [
@@ -835,7 +986,7 @@ export default function ChainComponent({
         spacingBottom: 0,
         panning: { enabled: false },
         panKey: "shift",
-        animation: isAnimate,
+        animation: forceNoAnimation.current ? false : isAnimate,
         zooming: {
           type: undefined,
           mouseWheel: {
@@ -986,32 +1137,14 @@ export default function ChainComponent({
           lineWidth: 2,
         },
         area: {
+          stacked: true,
           lineWidth: 2,
           // marker: {
           //   radius: 12,
           //   lineWidth: 4,
           // },
           fillOpacity: 1,
-          fillColor: {
-            linearGradient: {
-              x1: 0,
-              y1: 0,
-              x2: 0,
-              y2: 1,
-            },
-            stops: [
-              [
-                0,
-                AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0] +
-                  "33",
-              ],
-              [
-                1,
-                AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1] +
-                  "33",
-              ],
-            ],
-          },
+          
           // shadow: {
           //   color:
           //     AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1] + "33",
@@ -1034,6 +1167,7 @@ export default function ChainComponent({
           // borderWidth: 1,
         },
         series: {
+          stacking: "normal",
           zIndex: 10,
           animation: false,
           marker: {
@@ -1075,11 +1209,13 @@ export default function ChainComponent({
     zoomMax,
     zoomMin,
     zoomed,
+    forceNoAnimation.current,
   ]);
 
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
   const delayPromises = [];
+ 
 
   const onChartRender = (chart: Highcharts.Chart) => {
     if (!chart || !chart.series) return;
@@ -1133,9 +1269,11 @@ export default function ChainComponent({
 
     // only 1 chart so setting const for i to = 0
     const i = 0;
+    const index = chart.series.findIndex((s) => s.name === "all_l2s");
+
     // const chart: Highcharts.Chart = this;
     const lastPoint: Highcharts.Point =
-      chart.series[0].points[chart.series[0].points.length - 1];
+      chart.series[index].points[chart.series[index].points.length - 1];
 
     // check if i exists as a key in lastPointLines
     if (!lastPointLines[i]) {
@@ -1148,7 +1286,17 @@ export default function ChainComponent({
       });
       lastPointLines[i] = [];
     }
-
+    
+    if (index === -1) {
+      console.warn("Series 'all_l2s' not found in chart");
+      return;
+    }
+    
+    // Add safety check for series
+    if (!chart.series[index] || !chart.series[index].points || chart.series[index].points.length === 0) {
+      console.warn("No points found in series 'all_l2s'");
+      return;
+    }
     // calculate the fraction that 15px is in relation to the pixel width of the chart
     const fraction = 15 / chart.chartWidth;
 
@@ -1263,6 +1411,156 @@ export default function ChainComponent({
     );
   }, [category, data.metrics]);
 
+  const seriesConfig = useMemo(() => {
+    return [
+      {
+        name: data.chain_id,
+        crisp: true,
+        data: filteredData.map(d => [d[0], d[1]]),
+        showInLegend: false,
+        fillColor: {
+          linearGradient: {
+            x1: 0,
+            y1: 0,
+            x2: 0,
+            y2: 1,
+          },
+          stops: [
+            [
+              0,
+              AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0] +
+              "33",
+            ],
+            [
+              1,
+              AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1] +
+              "33",
+            ],
+          ],
+        },
+        marker: {
+          enabled: false,
+        },
+        dataGrouping: {
+          enabled: false,
+        },
+        point: {
+          events: {
+            mouseOver: pointHover,
+            mouseOut: pointHover,
+          },
+        },
+        states: {
+          hover: {
+            enabled: true,
+            halo: {
+              size: 5,
+              opacity: 1,
+              attributes: {
+                fill:
+                  AllChainsByKeys[data.chain_id]?.colors[
+                  theme ?? "dark"
+                  ][0] + "99",
+                stroke:
+                  AllChainsByKeys[data.chain_id]?.colors[
+                  theme ?? "dark"
+                  ][0] + "66",
+              },
+            },
+            brightness: 0.3,
+          },
+          inactive: {
+            enabled: true,
+            opacity: 0.6,
+          },
+          selection: {
+            enabled: false,
+          },
+        },
+      },
+      ((category !== "rent_paid")) && {
+        visible: focusEnabled ? false : true,
+        name: ethData.chain_id,
+        crisp: true,
+        data: filteredData.map(d => [d[0], d[2]]),
+        showInLegend: false,
+        marker: {
+          enabled: false,
+        },
+        dataGrouping: {
+          enabled: false,
+        },
+        color: AllChainsByKeys[ethData.chain_id]?.colors[theme ?? "dark"][0],
+        fillColor: {
+          linearGradient: {
+            x1: 0,
+            y1: 0,
+            x2: 0,
+            y2: 1,
+          },
+          stops: [
+            [
+              0,
+              AllChainsByKeys[ethData.chain_id].colors[theme ?? "dark"][0] +
+              "33",
+            ],
+            [
+              1,
+              AllChainsByKeys[ethData.chain_id].colors[theme ?? "dark"][1] +
+              "33",
+            ],
+          ],
+        },
+        point: {
+          events: {
+            mouseOver: pointHover,
+            mouseOut: pointHover,
+          },
+        },
+        states: {
+          hover: {
+            enabled: true,
+            halo: {
+              size: 5,
+              opacity: 1,
+              attributes: {
+                fill:
+                  AllChainsByKeys[ethData.chain_id]?.colors[
+                  theme ?? "dark"
+                  ][0] + "99",
+                stroke:
+                  AllChainsByKeys[ethData.chain_id]?.colors[
+                  theme ?? "dark"
+                  ][0] + "66",
+              },
+            },
+            brightness: 0.3,
+          },
+          inactive: {
+            enabled: true,
+            opacity: 0.6,
+          },
+          selection: {
+            enabled: false,
+          },
+        },
+      },
+    ].filter(Boolean);
+  }, [data.chain_id, filteredData, AllChainsByKeys, theme, pointHover, category, focusEnabled, ethData.chain_id]);
+
+  // Add this effect to detect focus changes and temporarily disable animations
+  useEffect(() => {
+    // When focusEnabled changes, disable animations temporarily
+    forceNoAnimation.current = true;
+    
+    // Re-enable animations after data has been processed
+    const timer = setTimeout(() => {
+      forceNoAnimation.current = false;
+    }, 600);
+    
+    return () => clearTimeout(timer);
+  }, [focusEnabled]);
+
   return (
     <div
       key={category}
@@ -1282,7 +1580,7 @@ export default function ChainComponent({
               ...options,
               chart: {
                 ...options.chart,
-
+                
                 margin: zoomed ? zoomMargin : defaultMargin,
                 events: {
                   // render: function () {
@@ -1308,91 +1606,7 @@ export default function ChainComponent({
                 },
               },
 
-              series: [
-                {
-                  name: category,
-                  crisp: true,
-                  data: data.metrics[category].daily.types.includes("eth")
-                    ? showUsd
-                      ? data.metrics[category].daily.data.map((d) => [
-                          d[0],
-                          d[data.metrics[category].daily.types.indexOf("usd")],
-                        ])
-                      : data.metrics[category].daily.data.map((d) => [
-                          d[0],
-                          showGwei(category)
-                            ? d[
-                                data.metrics[category].daily.types.indexOf(
-                                  "eth",
-                                )
-                              ] * 1000000000
-                            : d[
-                                data.metrics[category].daily.types.indexOf(
-                                  "eth",
-                                )
-                              ],
-                        ])
-                    : data.metrics[category].daily.data.map((d) => [
-                        d[0],
-                        d[1],
-                      ]),
-                  showInLegend: false,
-                  marker: {
-                    enabled: false,
-                  },
-                  dataGrouping: {
-                    enabled: false,
-                  },
-                  // states: {
-                  //   marker: {
-                  //     hover: {
-                  //       enabled: true,
-                  //     },
-                  //   },
-                  // },
-                  point: {
-                    events: {
-                      mouseOver: pointHover,
-                      mouseOut: pointHover,
-                    },
-                  },
-                  // step: "center",
-                  // dataGrouping: {
-                  //   enabled: true,
-                  //   forced: true,
-                  //   approximation: "sum",
-                  //   anchor: "middle",
-                  //   units: [["week", [1]]],
-                  // },
-                  states: {
-                    hover: {
-                      enabled: true,
-                      halo: {
-                        size: 5,
-                        opacity: 1,
-                        attributes: {
-                          fill:
-                            AllChainsByKeys[data.chain_id]?.colors[
-                              theme ?? "dark"
-                            ][0] + "99",
-                          stroke:
-                            AllChainsByKeys[data.chain_id]?.colors[
-                              theme ?? "dark"
-                            ][0] + "66",
-                        },
-                      },
-                      brightness: 0.3,
-                    },
-                    inactive: {
-                      enabled: true,
-                      opacity: 0.6,
-                    },
-                    selection: {
-                      enabled: false,
-                    },
-                  },
-                },
-              ],
+              series: seriesConfig,
             }}
             ref={(chart) => {
               if (chart) {
@@ -1403,12 +1617,9 @@ export default function ChainComponent({
         </div>
         <div className="absolute top-[14px] w-full flex justify-between items-center px-[23px]">
           <div className="text-[20px] leading-snug font-bold">
-            {
-              navigationItems[1].options.find((o) => o.key === category)?.page
-                ?.title
-            }
+            {metricItems[metric_index]?.page?.title}
           </div>
-          <div className="text-[18px] leading-snug font-medium flex space-x-[2px]">
+          <div className="numbers-lg leading-snug font-medium flex items-center">
             <div>{displayValues[category].prefix}</div>
             <div>{displayValues[category].value}</div>
             <div className="text-base pl-0.5">
@@ -1436,7 +1647,7 @@ export default function ChainComponent({
         </div>
       </div>
       <div className="absolute -bottom-[2px] right-[6px]">
-        <Tooltip placement="left" allowInteract>
+        {/* <Tooltip placement="left" allowInteract>
           <TooltipTrigger>
             <div className="p-0 -mr-0.5 z-30 opacity-40 hover:opacity-80">
               <Icon icon="feather:info" className="w-6 h-6" />
@@ -1457,8 +1668,12 @@ export default function ChainComponent({
               </div>
             </div>
           </TooltipContent>
-        </Tooltip>
+        </Tooltip> */}
       </div>
     </div>
   );
-}
+});
+
+ChainComponent.displayName = "ChainComponent";
+
+export default ChainComponent;

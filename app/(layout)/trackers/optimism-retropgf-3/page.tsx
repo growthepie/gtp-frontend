@@ -412,7 +412,7 @@ export default function Page() {
           <TooltipTrigger className="w-full"> */}
           <div className="text-[0.7rem] font-normal w-full flex space-x-0.5 items-center font-inter mt-1">
             {listAmountsByProjectId.listQuartiles[info.row.original.id].q3 >
-              1 ? (
+            1 ? (
               <>
                 <div className=" text-forest-900 dark:text-forest-500 font-light leading-[1] text-right">
                   {formatNumber(
@@ -552,12 +552,13 @@ export default function Page() {
                 style={{
                   height: "2px",
 
-                  width: `${(getProjectsCombinedFundingSourcesByCurrency(
-                    info.row.original.funding_sources,
-                  )["TOTAL"] /
-                    getMaxTotalFundingAmount()) *
+                  width: `${
+                    (getProjectsCombinedFundingSourcesByCurrency(
+                      info.row.original.funding_sources,
+                    )["TOTAL"] /
+                      getMaxTotalFundingAmount()) *
                     100.0
-                    }%`,
+                  }%`,
                   // right with bases on bottom and right
                 }}
               ></div>
@@ -643,7 +644,7 @@ export default function Page() {
 
             <div
               className="flex-1 overflow-hidden text-ellipsis font-bold whitespace-nowrap"
-            // style={{ whiteSpace: "pre-wrap" }}
+              // style={{ whiteSpace: "pre-wrap" }}
             >
               {info.row.original.display_name}
             </div>
@@ -671,8 +672,9 @@ export default function Page() {
           <div className="w-full flex justify-between items-center">
             <div className="border-2 rounded-md border-forest-900/20 dark:border-forest-500/20 p-1 hover:bg-forest-900/10 dark:hover:bg-forest-500/10">
               <Link
-                href={`https://vote.optimism.io/retropgf/3/application/${info.row.original.id.split("|")[1]
-                  }`}
+                href={`https://vote.optimism.io/retropgf/3/application/${
+                  info.row.original.id.split("|")[1]
+                }`}
                 rel="noopener noreferrer"
                 target="_blank"
               >
@@ -708,10 +710,11 @@ export default function Page() {
               rel="noopener noreferrer"
               target="_blank"
               href={`https://optimistic.etherscan.io/address/${info.row.original.applicant.address.address}`}
-              className={`rounded-full px-1 py-0 border border-forest-900/20 dark:border-forest-500/20 font-mono text-[10px] ${info.row.original.applicant.address.resolvedName.name
-                ? "text-forest-900 dark:text-forest-500"
-                : "text-forest-900/50 dark:text-forest-500/50"
-                } hover:bg-forest-900/10 dark:hover:bg-forest-500/10`}
+              className={`rounded-full px-1 py-0 border border-forest-900/20 dark:border-forest-500/20 font-mono text-[10px] ${
+                info.row.original.applicant.address.resolvedName.name
+                  ? "text-forest-900 dark:text-forest-500"
+                  : "text-forest-900/50 dark:text-forest-500/50"
+              } hover:bg-forest-900/10 dark:hover:bg-forest-500/10`}
             >
               {info.row.original.applicant.address.resolvedName.name ? (
                 <>{info.row.original.applicant.address.resolvedName.name}</>
@@ -810,8 +813,8 @@ export default function Page() {
                               </span>
                               {Math.round(
                                 projectsResponse.prices.optimism.usd *
-                                RPGF3ResultsById[info.row.original.id]
-                                  .awarded,
+                                  RPGF3ResultsById[info.row.original.id]
+                                    .awarded,
                               ).toLocaleString("en-GB")}
                             </div>
                             <div className="text-left opacity-60 text-[0.65rem]">
@@ -844,10 +847,11 @@ export default function Page() {
                       style={{
                         height: "2px",
 
-                        width: `${(RPGF3ResultsById[info.row.original.id].awarded /
-                          getMaxAwardedAmount()) *
+                        width: `${
+                          (RPGF3ResultsById[info.row.original.id].awarded /
+                            getMaxAwardedAmount()) *
                           100.0
-                          }%`,
+                        }%`,
                         // right with bases on bottom and right
                       }}
                     ></div>
@@ -899,10 +903,11 @@ export default function Page() {
               <div className="w-4 h-4">
                 <Icon
                   icon={"feather:check-square"}
-                  className={`w-4 h-4  fill-current ${RPGF3ResultsById[info.row.original.id].result_quorum
-                    ? "text-green-500 dark:text-green-500"
-                    : "text-forest-900/80 dark:text-forest-500/80"
-                    }`}
+                  className={`w-4 h-4  fill-current ${
+                    RPGF3ResultsById[info.row.original.id].result_quorum
+                      ? "text-green-500 dark:text-green-500"
+                      : "text-forest-900/80 dark:text-forest-500/80"
+                  }`}
                 />
               </div>
             </div>
@@ -940,7 +945,7 @@ export default function Page() {
                   <div>
                     {listAmountsByProjectId &&
                       listAmountsByProjectId["listCounts"][
-                      info.row.original.id
+                        info.row.original.id
                       ]}
                   </div>
                   <div className="w-4 h-4 text-forest-900/80 dark:text-forest-500/80">
@@ -1072,14 +1077,14 @@ export default function Page() {
                   {listAmountsByProjectId &&
                     Object.values(
                       listAmountsByProjectId.retropgfStatus[
-                      info.row.original.id
+                        info.row.original.id
                       ],
                     ).filter((value) => value).length > 0 && (
                       <div className="absolute right-0 -top-2.5 text-[0.6rem] text-forest-900/40 dark:text-forest-500/40 font-light leading-[1] flex space-x-1 items-center">
                         <div className="leading-snug">RetroPGF</div>
                         {Object.entries(
                           listAmountsByProjectId.retropgfStatus[
-                          info.row.original.id
+                            info.row.original.id
                           ],
                         ).map(([key, value]) => (
                           <div key={key}>
@@ -1126,7 +1131,9 @@ export default function Page() {
                                       $
                                     </span>
                                   )}
-                                  {parseInt(value as string).toLocaleString("en-GB")}
+                                  {parseInt(value as string).toLocaleString(
+                                    "en-GB",
+                                  )}
                                   {currency === "OP" && (
                                     <>
                                       {" "}
@@ -1151,28 +1158,30 @@ export default function Page() {
                       className="relative z-10"
                       style={{
                         height: "2px",
-                        width: `${(getProjectsCombinedFundingSourcesByCurrency(
-                          info.row.original.funding_sources,
-                        )["TOTAL"] /
-                          getProjectsCombinedFundingSourcesByCurrency(
+                        width: `${
+                          (getProjectsCombinedFundingSourcesByCurrency(
                             info.row.original.funding_sources,
-                          )["TOTAL"]) *
+                          )["TOTAL"] /
+                            getProjectsCombinedFundingSourcesByCurrency(
+                              info.row.original.funding_sources,
+                            )["TOTAL"]) *
                           100.0
-                          }%`,
+                        }%`,
                       }}
                     >
                       <div
                         className="absolute bg-[#7fdcd6]"
                         style={{
                           height: "2px",
-                          width: `${(getProjectsCombinedFundingSourcesByCurrency(
-                            info.row.original.funding_sources,
-                          )["USD"] /
-                            getProjectsCombinedFundingSourcesByCurrency(
+                          width: `${
+                            (getProjectsCombinedFundingSourcesByCurrency(
                               info.row.original.funding_sources,
-                            )["TOTAL"]) *
+                            )["USD"] /
+                              getProjectsCombinedFundingSourcesByCurrency(
+                                info.row.original.funding_sources,
+                              )["TOTAL"]) *
                             100.0
-                            }%`,
+                          }%`,
                         }}
                       ></div>
                       <div
@@ -1183,23 +1192,25 @@ export default function Page() {
                             getProjectsCombinedFundingSourcesByCurrency(
                               info.row.original.funding_sources,
                             )["USD"] !== 0
-                              ? `${(getProjectsCombinedFundingSourcesByCurrency(
-                                info.row.original.funding_sources,
-                              )["USD"] /
-                                getProjectsCombinedFundingSourcesByCurrency(
-                                  info.row.original.funding_sources,
-                                )["TOTAL"]) *
-                              100.0
-                              }%`
+                              ? `${
+                                  (getProjectsCombinedFundingSourcesByCurrency(
+                                    info.row.original.funding_sources,
+                                  )["USD"] /
+                                    getProjectsCombinedFundingSourcesByCurrency(
+                                      info.row.original.funding_sources,
+                                    )["TOTAL"]) *
+                                  100.0
+                                }%`
                               : 0,
-                          width: `${(getProjectsCombinedFundingSourcesByCurrency(
-                            info.row.original.funding_sources,
-                          )["OPUSD"] /
-                            getProjectsCombinedFundingSourcesByCurrency(
+                          width: `${
+                            (getProjectsCombinedFundingSourcesByCurrency(
                               info.row.original.funding_sources,
-                            )["TOTAL"]) *
+                            )["OPUSD"] /
+                              getProjectsCombinedFundingSourcesByCurrency(
+                                info.row.original.funding_sources,
+                              )["TOTAL"]) *
                             100.0
-                            }%`,
+                          }%`,
                         }}
                       ></div>
                     </div>
@@ -1628,8 +1639,9 @@ export default function Page() {
         }
         
         td {
-            border-color: ${theme === "light" ? "rgba(0,0,0,0.16)" : "rgba(255,255,255,0.16)"
-          };
+            border-color: ${
+              theme === "light" ? "rgba(0,0,0,0.16)" : "rgba(255,255,255,0.16)"
+            };
             border-width:1px;
             border-style:solid none;
             padding:5px 10px;
@@ -1674,7 +1686,6 @@ export default function Page() {
   });
   const { width: tableWidth } = useResizeObserver({
     ref: tableRef,
-
   });
 
   const [isTableWidthWider, setIsTableWidthWider] = useState(false);
@@ -1761,7 +1772,6 @@ export default function Page() {
       <ShowLoading
         dataLoading={[projectsLoading]}
         dataValidating={[projectsValidating]}
-
       />
       {/* <Container className={`mt-[0px] !pr-0 ${isSidebarOpen ? "min-[1550px]:!pr-[50px]" : "min-[1350px]:!pr-[50px]"}`} ref={containerRef}> */}
       <Container>
@@ -1824,21 +1834,21 @@ export default function Page() {
       </Container>
 
       <Container
-        className={`w-full mt-[0px] h-100 -mb-12 ${isTableWidthWider
-          ? "!pr-0 !pl-[20px] md:!pl-[50px]"
-          : "!px-[20px] md:!px-[50px]"
-          }`}
+        className={`w-full mt-[0px] h-100 -mb-12 ${
+          isTableWidthWider
+            ? "!pr-0 !pl-[20px] md:!pl-[50px]"
+            : "!px-[20px] md:!px-[50px]"
+        }`}
       >
         <div
-          className={`w-full ${isTableWidthWider
-            ? "!pr-[20px] md:!pr-[50px] overflow-x-scroll"
-            : "overflow-x-hidden"
-            } z-100 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller`}
+          className={`w-full ${
+            isTableWidthWider
+              ? "!pr-[20px] md:!pr-[50px] overflow-x-scroll"
+              : "overflow-x-hidden"
+          } z-100 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller`}
         >
           <div className={tableMinWidthClass}>
             <div className="flex flex-col items-center justify-center w-full h-full relative">
-
-
               {Style}
 
               <div className={`${tableMinWidthClass} pr-4`}>
@@ -1867,8 +1877,9 @@ export default function Page() {
                                   <div
                                     className={
                                       header.column.getCanSort()
-                                        ? `-mb-1 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-[11px] font-bold w-fit ${i === 0 ? "pl-[10px]" : ""
-                                        }`
+                                        ? `-mb-1 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-[11px] font-bold w-fit ${
+                                            i === 0 ? "pl-[10px]" : ""
+                                          }`
                                         : ""
                                     }
                                     style={{
@@ -1966,14 +1977,14 @@ export default function Page() {
                 ${
                   // if scroll is at top or bottom, don't show the fade
                   parentRef.current &&
-                    (parentRef.current.scrollTop < 30 ||
-                      parentRef.current.scrollTop >
+                  (parentRef.current.scrollTop < 30 ||
+                    parentRef.current.scrollTop >
                       parentRef.current.scrollHeight -
-                      parentRef.current.clientHeight -
-                      30)
+                        parentRef.current.clientHeight -
+                        30)
                     ? "fade-edge-div-vertical-hidden"
                     : "fade-edge-div-vertical"
-                  }}`}
+                }}`}
               >
                 <div
                   ref={parentRef}
@@ -2011,14 +2022,15 @@ export default function Page() {
                                     //   ? "sticky top-0 z-20"
                                     //   : "sticky top-0 left-0 z-30"
                                     ""
-                                    } bg-white dark:bg-forest-1000 whitespace-nowrap`}
+                                  } bg-white dark:bg-forest-1000 whitespace-nowrap`}
                                 >
                                   {header.isPlaceholder ? null : (
                                     <div
                                       {...{
                                         className: header.column.getCanSort()
-                                          ? `-mb-2 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-[11px] font-bold h-0 ${i === 0 ? "pl-[10px]" : ""
-                                          }`
+                                          ? `-mb-2 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-[11px] font-bold h-0 ${
+                                              i === 0 ? "pl-[10px]" : ""
+                                            }`
                                           : "",
                                         onClick:
                                           header.column.getToggleSortingHandler(),
@@ -2060,8 +2072,9 @@ export default function Page() {
                                 key={row.id}
                                 style={{
                                   height: `${virtualRow.size}px`,
-                                  transform: `translateY(${virtualRow.start - index * virtualRow.size
-                                    }px)`,
+                                  transform: `translateY(${
+                                    virtualRow.start - index * virtualRow.size
+                                  }px)`,
                                 }}
                               >
                                 {row.getVisibleCells().map((cell, i) => {
@@ -2093,9 +2106,11 @@ export default function Page() {
             </div>
           </div>
         </div>
+      </Container>
+      <div className="px-[40px]">
         <QuestionAnswer
           startOpen={false}
-          className="z-50 rounded-3xl bg-forest-50 dark:bg-forest-900 px-[30px] py-[23px] flex flex-col absolute bottom-[240px] left-[20px] right-[20px] md:left-[50px] md:right-[50px]"
+          className="z-50 relative top-[80px] "
           question={"What can you see in this list?"}
           answer={
             <div className="text-xs lg:text-sm">
@@ -2142,7 +2157,7 @@ export default function Page() {
             </div>
           }
         />
-      </Container>
+      </div>
     </>
   );
 }

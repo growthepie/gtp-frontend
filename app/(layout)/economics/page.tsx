@@ -2,11 +2,13 @@
 import Image from "next/image";
 import Heading from "@/components/layout/Heading";
 import useSWR from "swr";
+import { useState } from "react";
 import { EconomicsURL } from "@/lib/urls";
 import {
   EconomicsResponse,
   ChainBreakdownResponse,
   FeesBreakdown,
+  l2_data,
 } from "@/types/api/EconomicsResponse";
 import EconHeadCharts from "@/components/layout/Economics/HeadCharts";
 import ChainBreakdown from "@/components/layout/Economics/ChainBreakdown";
@@ -30,40 +32,22 @@ export default function Economics() {
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
-  if (!econData || !master) {
-    return (
+  const [selectedTimespan, setSelectedTimespan] = useState("365d");
+  const [isMonthly, setIsMonthly] = useState(false);
+
+  return (
+    <>
       <ShowLoading
         dataLoading={[econLoading, masterLoading]}
         dataValidating={[econValidating, masterValidating]}
       />
-    );
-  }
-
-  const {
-    chain_breakdown,
-    da_charts,
-  }: { chain_breakdown: ChainBreakdownResponse; da_charts: FeesBreakdown } =
-    econData.data;
-
-  return (
-    <div className="mt-[60px] flex flex-col gap-y-[60px] h-full">
       {/*Data Availability Fee Markets */}
-      <Container className="flex flex-col gap-y-[15px]">
-        <div className="flex items-center gap-x-[8px]">
-          <Image
-            src="/GTP-Data.svg"
-            alt="GTP Chain"
-            className="object-contain w-[36px] h-[36px]"
-            height={36}
-            width={36}
-          />
-          <Heading className="text-[30px] leading-snug " as="h2">
-            Data Availability Fee Markets
-          </Heading>
+      <div className={`flex flex-col transition-[gap] duration-300 ${selectedTimespan === "1d" ? "gap-y-[15px]" : "gap-y-[30px]"}`}>
+        <div className={`flex flex-col gap-y-[15px]`}>
+          {econData && <EconHeadCharts chart_data={econData.data.all_l2s} selectedTimespan={selectedTimespan} setSelectedTimespan={setSelectedTimespan} isMonthly={isMonthly} setIsMonthly={setIsMonthly} />}
         </div>
-        <EconHeadCharts da_charts={da_charts} />
-      </Container>
-      <ChainBreakdown data={chain_breakdown} master={master} />
-    </div>
+        {econData && master && <ChainBreakdown data={Object.fromEntries(Object.entries(econData.data.chain_breakdown).filter(([key]) => key !== "totals"))} master={master} selectedTimespan={selectedTimespan} setSelectedTimespan={setSelectedTimespan} isMonthly={isMonthly} setIsMonthly={setIsMonthly} totals={econData.data.chain_breakdown["totals"]} />}
+      </div>
+    </>
   );
 }

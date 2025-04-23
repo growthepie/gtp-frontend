@@ -19,14 +19,13 @@ import { debounce, merge } from "lodash";
 // import { theme as customTheme } from "tailwind.config.js";
 import { useTheme } from "next-themes";
 import { Switch } from "../Switch";
-import { AllChainsByKeys } from "@/lib/chains";
 import d3 from "d3";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import Link from "next/link";
 import { Sources } from "@/lib/datasources";
-import { useUIContext } from "@/contexts/UIContext";
+import { useUIContext, useHighchartsWrappers } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
 import Container from "./Container";
 import ChartWatermark from "./ChartWatermark";
@@ -35,7 +34,7 @@ import { BASE_URL, IS_PREVIEW } from "@/lib/helpers";
 import { useWindowSize } from "usehooks-ts";
 import EmbedContainer from "@/app/(embeds)/embed/EmbedContainer";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
-import "../../app/highcharts.axis.css";
+import "@/app/highcharts.axis.css"
 import {
   TopRowContainer,
   TopRowChild,
@@ -44,6 +43,9 @@ import {
 import { MasterURL } from "@/lib/urls";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import { m } from "framer-motion";
+import { useMaster } from "@/contexts/MasterContext";
+import { MetricItem, metricItems } from "@/lib/metrics";
 
 const monthly_agg_labels = {
   avg: "Average",
@@ -178,11 +180,15 @@ export default function ComparisonChart({
   selectedScale,
   setSelectedScale,
   metric_id,
+  metric_info_key = "metrics",
+  chain_info_key = "chains",
   monthly_agg,
   is_embed = false,
   embed_start_timestamp,
   embed_end_timestamp,
   embed_zoomed,
+  minDailyUnix,
+  maxDailyUnix,
 }: {
   data: any;
   timeIntervals: string[];
@@ -199,33 +205,42 @@ export default function ComparisonChart({
   selectedScale: string;
   setSelectedScale: (scale: string) => void;
   metric_id: string;
+  metric_info_key?: "metrics" | "da_metrics";
+  chain_info_key?: "chains" | "da_layers";
   monthly_agg: string;
   is_embed?: boolean;
   embed_start_timestamp?: number;
   embed_end_timestamp?: number;
   embed_zoomed?: boolean;
+  minDailyUnix: number;
+  maxDailyUnix: number;
 }) {
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
   // const [darkMode, setDarkMode] = useLocalStorage("darkMode", true);
   const { theme } = useTheme();
+
+  const { AllChainsByKeys, AllDALayersByKeys } = useMaster();
+
+  const MetadataByKeys = useMemo(() => {
+    return merge(AllChainsByKeys, AllDALayersByKeys);
+  }, [AllChainsByKeys, AllDALayersByKeys]);
+
   const { isSidebarOpen, setEmbedData, embedData } = useUIContext();
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const [selectedTimespansByTimeInterval, setSelectedTimespansByTimeInterval] = useSessionStorage(
-    "selectedTimespansByTimeInterval",
-    {
+  const [selectedTimespansByTimeInterval, setSelectedTimespansByTimeInterval] =
+    useSessionStorage("selectedTimespansByTimeInterval", {
       daily: "365d",
       monthly: "12m",
       [selectedTimeInterval]: selectedTimespan,
-    },
-  );
+    });
 
-
-
+  useHighchartsWrappers();
 
   const navItem = useMemo(() => {
-    return navigationItems[1].options.find((item) => item.key === metric_id);
+    return metricItems.find((item) => item.key === metric_id);
+    //return navigationItems[1].options.find((item) => item.key === metric_id);
   }, [metric_id]);
 
   const urlKey = useMemo(() => {
@@ -342,7 +357,9 @@ export default function ComparisonChart({
 
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
 
-  const filteredData = useMemo<any[]>(() => {
+  const filteredData = useMemo<
+    { name: string; data: any[]; types: string[] }[]
+  >(() => {
     if (!data)
       return [
         {
@@ -451,7 +468,18 @@ export default function ComparisonChart({
 
   const tooltipFormatter = useCallback(
     function (this: any) {
-      const { x, points } = this;
+      const { x, points }: { x: number; points: any[] } = this;
+      points.sort((a: any, b: any) => {
+        if (reversePerformer) return a.y - b.y;
+
+        return b.y - a.y;
+      });
+
+      const firstTenPoints = points.slice(0, 10);
+      const afterTenPoints = points.slice(10);
+
+      const showOthers = afterTenPoints.length > 0 && metric_id !== "txcosts";
+
       const date = new Date(x);
       const dateString = date.toLocaleDateString("en-GB", {
         timeZone: "UTC",
@@ -464,15 +492,8 @@ export default function ComparisonChart({
         <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
-      // let pointsSum = 0;
-      // if (selectedScale !== "percentage")
       let pointsSum = points.reduce((acc: number, point: any) => {
         acc += point.y;
-        return acc;
-      }, 0);
-
-      let pointSumNonNegative = points.reduce((acc: number, point: any) => {
-        if (point.y > 0) acc += point.y;
         return acc;
       }, 0);
 
@@ -488,23 +509,34 @@ export default function ComparisonChart({
 
       if (!data || !master) return;
 
-      const tooltipPoints = points
-        .sort((a: any, b: any) => {
-          if (reversePerformer) return a.y - b.y;
+      const units = Object.keys(master[metric_info_key][metric_id].units);
+      const unitKey =
+        units.find((unit) => unit !== "usd" && unit !== "eth") ||
+        (showUsd ? "usd" : "eth");
+      let prefix = master[metric_info_key][metric_id].units[unitKey].prefix
+        ? master[metric_info_key][metric_id].units[unitKey].prefix
+        : "";
+      let suffix = master[metric_info_key][metric_id].units[unitKey].suffix
+        ? master[metric_info_key][metric_id].units[unitKey].suffix
+        : "";
 
-          return b.y - a.y;
-        })
+      const decimals =
+        !showUsd && showGwei
+          ? 2
+          : master[metric_info_key][metric_id].units[unitKey].decimals_tooltip;
+
+      let tooltipPoints = (showOthers ? firstTenPoints : points)
         .map((point: any) => {
           const { series, y, percentage } = point;
           const { name } = series;
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${MetadataByKeys[name].colors[theme ?? "dark"][0]
               }"></div>
-                <div class="tooltip-point-name">${AllChainsByKeys[name].label
+                <div class="tooltip-point-name text-xs">${MetadataByKeys[name].label
               }</div>
-                <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
+                <div class="flex-1 text-right numbers-xs">${Highcharts.numberFormat(
                 percentage,
                 2,
               )}%</div>
@@ -516,30 +548,14 @@ export default function ComparisonChart({
                 <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
                 style="
                   width: ${(percentage / maxPercentage) * 100}%;
-                  background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+                  background-color: ${MetadataByKeys[name].colors[theme ?? "dark"][0]
               };
                 "></div>
               </div>`;
 
-          const units = Object.keys(master.metrics[metric_id].units);
-          const unitKey =
-            units.find((unit) => unit !== "usd" && unit !== "eth") ||
-            (showUsd ? "usd" : "eth");
-          let prefix = master.metrics[metric_id].units[unitKey].prefix
-            ? master.metrics[metric_id].units[unitKey].prefix
-            : "";
-          let suffix = master.metrics[metric_id].units[unitKey].suffix
-            ? master.metrics[metric_id].units[unitKey].suffix
-            : "";
-
-          const decimals =
-            !showUsd && showGwei
-              ? 2
-              : master.metrics[metric_id].units[unitKey].decimals_tooltip;
-
           let value = y;
 
-          if (!showUsd && master.metrics[metric_id].units[unitKey].currency) {
+          if (!showUsd && master[metric_info_key][metric_id].units[unitKey].currency) {
             if (showGwei) {
               prefix = "";
               suffix = " Gwei";
@@ -548,12 +564,12 @@ export default function ComparisonChart({
 
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${MetadataByKeys[name].colors[theme ?? "dark"][0]
             }"></div>
-            <div class="tooltip-point-name text-md">${AllChainsByKeys[name].label
+            <div class="tooltip-point-name text-xs">${MetadataByKeys[name].label
             }</div>
-            <div class="flex-1 text-right justify-end font-inter flex">
-                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+             <div class="flex-1 text-right justify-end flex numbers-xs">
+                <div class="${!prefix && "hidden"
             }">${prefix}</div>
                 ${metric_id === "fdv" || metric_id === "market_cap"
               ? shortenNumber(value).toString()
@@ -562,7 +578,7 @@ export default function ComparisonChart({
                 maximumFractionDigits: decimals,
               })
             }
-                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+                <div class="ml-0.5 ${!suffix && "hidden"
             }">${suffix}</div>
             </div>
           </div>
@@ -572,31 +588,117 @@ export default function ComparisonChart({
             <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
             style="
               width: ${(Math.max(0, value) / maxPoint) * 100}%;
-              background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+              background-color: ${MetadataByKeys[name].colors[theme ?? "dark"][0]
             };
             "></div>
           </div>`;
         })
         .join("");
 
-      let prefix = valuePrefix;
-      let suffix = "";
-      let value = pointsSum;
+      // let prefix = valuePrefix;
+      // let suffix = "";
       if (metric_id === "throughput") {
         suffix = " Mgas/s";
       }
 
+      // add "others" with the sum of the rest of the points
+      // const rest = afterTenPoints;
+
+      if (showOthers && afterTenPoints.length > 0) {
+        const restString =
+          afterTenPoints.length > 1
+            ? `${parseFloat(afterTenPoints[0].y).toLocaleString("en-GB", {
+              minimumFractionDigits: 0,
+            })}…${parseFloat(
+              afterTenPoints[afterTenPoints.length - 1].y,
+            ).toLocaleString("en-GB", { minimumFractionDigits: 0 })}`
+            : parseFloat(afterTenPoints[0].y).toLocaleString("en-GB", {
+              minimumFractionDigits: 0,
+            });
+
+        const restSum = afterTenPoints.reduce((acc: number, point: any) => {
+          acc += point.y;
+          return acc;
+        }, 0);
+
+        const restPercentage = afterTenPoints.reduce(
+          (acc: number, point: any) => {
+            acc += point.percentage;
+            return acc;
+          },
+          0,
+        );
+
+        if (selectedScale === "percentage")
+          tooltipPoints += `
+          <div class="flex w-full space-x-2 items-center font-medium mb-0.5 opacity-60">
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6"></div>
+            <div class="tooltip-point-name text-xs">${afterTenPoints.length > 1
+              ? `${afterTenPoints.length} Others`
+              : "1 Other"
+            }</div>
+            <div class="flex-1 text-right numbers-xs">${Highcharts.numberFormat(
+              restPercentage,
+              2,
+            )}%</div>
+          </div>
+          <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+
+            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
+            style="
+              width: ${(restPercentage / maxPercentage) * 100}%;
+              background-color: #E0E7E699
+            ;
+            "></div>
+          </div>`;
+        else
+          tooltipPoints += `
+          <div class="flex w-full space-x-2 items-center font-medium mb-0.5 opacity-60">
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6; "></div>
+            <div class="tooltip-point-name text-xs">${afterTenPoints.length > 1
+              ? `${afterTenPoints.length} Others`
+              : "1 Other"
+            }</div>
+             <div class="flex-1 text-right justify-end flex numbers-xs">
+                <div class="${!prefix && "hidden"
+            }">${prefix}</div>
+                ${metric_id === "fdv" || metric_id === "market_cap"
+              ? shortenNumber(restSum).toString()
+              : parseFloat(restSum).toLocaleString("en-GB", {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals,
+              })
+            }
+                <div class="ml-0.5 ${!suffix && "hidden"
+            }">${suffix}</div>
+            </div>
+          </div>
+          <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+
+            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
+            style="
+              width: ${(restSum / maxPoint) * 100}%;
+              background-color: #E0E7E699
+            ;
+            "></div>
+          </div>`;
+      }
+
+      let value = pointsSum;
+
       const sumRow =
         selectedScale === "stacked"
           ? `
-        <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-70">
+        <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-100">
           <div class="w-4 h-1.5 rounded-r-full" style=""></div>
           <div class="tooltip-point-name text-md">Total</div>
-          <div class="flex-1 text-right justify-end font-inter flex">
-
-              <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-          }">${prefix}</div>
-              ${parseFloat(value).toLocaleString("en-GB", {
+           <div class="flex-1 text-right justify-end flex numbers-xs">
+            <div class="mr-0.5 ${!prefix && "hidden"}">
+              ${prefix}
+            </div>
+          ${parseFloat(value).toLocaleString("en-GB", {
             minimumFractionDigits: valuePrefix ? 2 : 0,
             maximumFractionDigits: valuePrefix
               ? 2
@@ -604,8 +706,9 @@ export default function ComparisonChart({
                 ? 2
                 : 0,
           })}
-              <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-          }">${suffix}</div>
+            <div class="ml-0.5 ${!suffix && "hidden"}">
+              ${suffix}
+            </div>
           </div>
         </div>
         <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -617,14 +720,15 @@ export default function ComparisonChart({
     },
     [
       selectedTimeInterval,
-      valuePrefix,
+      data,
+      master,
+      metric_id,
+      showUsd,
+      showGwei,
       selectedScale,
+      valuePrefix,
       reversePerformer,
       theme,
-      showUsd,
-      filteredData,
-      metric_id,
-      showGwei,
     ],
   );
 
@@ -682,79 +786,57 @@ export default function ComparisonChart({
   }, [embed_end_timestamp, filteredData]);
 
   const timespans = useMemo(() => {
-    // let maxDate = new Date();
-    // if (filteredData && filteredData[0].name !== "") {
-    //   maxDate = new Date(
-    //     filteredData.length > 0
-    //       ? filteredData[0].data[filteredData[0].data.length - 1][0]
-    //       : 0,
-    //   );
-    // }
+    const buffer = 1 * 24 * 60 * 60 * 1000 * 2;
+    const maxMinusBuffer = new Date(maxDailyUnix).valueOf() - buffer;
+    const maxPlusBuffer = new Date(maxDailyUnix).valueOf() + buffer;
+    const minMinusBuffer = new Date(minDailyUnix).valueOf() - buffer;
 
-    const buffer = 0.5 * 24 * 60 * 60 * 1000 * 2;
-    const maxPlusBuffer = maxDate.valueOf() + buffer;
-
-    //
-    const firstDayOfLastMonth = new Date(
-      maxDate.getFullYear(),
-      maxDate.getMonth() - 1,
-      1,
-    );
-    const monthMaxPlusBuffer = firstDayOfLastMonth.valueOf() + buffer;
+    // calculate how many days are 6 months ago from the max date
+    const sixMonthsAgo = new Date(maxDailyUnix);
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    const sixMonthsAgoPlusBuffer = sixMonthsAgo.valueOf() - buffer;
 
     return {
-      // "30d": {
-      //   label: "30 days",
-      //   value: 30,
-      //   xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
-      //   xMax: Date.now(),
-      // },
       "90d": {
         label: "90 days",
         shortLabel: "90d",
         value: 90,
-        xMin: maxPlusBuffer - (90 + 1) * 24 * 60 * 60 * 1000,
+        xMin: maxMinusBuffer - 90 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "180d": {
         label: "180 days",
         shortLabel: "180d",
         value: 180,
-        xMin: maxPlusBuffer - (180 + 1) * 24 * 60 * 60 * 1000,
+        xMin: maxMinusBuffer - 180 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "365d": {
         label: "1 year",
         shortLabel: "365d",
         value: 365,
-        xMin: maxPlusBuffer - (365 + 1) * 24 * 60 * 60 * 1000,
+        xMin: maxMinusBuffer - 365 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "6m": {
         label: "6 months",
         shortLabel: "6M",
         value: 6,
-        xMin: maxPlusBuffer - 6.5 * 31 * 24 * 60 * 60 * 1000,
+        xMin: sixMonthsAgoPlusBuffer,
         xMax: maxPlusBuffer,
       },
       "12m": {
         label: "1 year",
         shortLabel: "1Y",
         value: 12,
-        xMin: maxPlusBuffer - 12.5 * 31 * 24 * 60 * 60 * 1000,
+        xMin: maxMinusBuffer - 365 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       maxM: {
         label: "Maximum",
         shortLabel: "Max",
         value: 0,
-        xMin:
-          filteredData[0].name === ""
-            ? Date.now() - (365 + 1) * 24 * 60 * 60 * 1000
-            : filteredData.reduce(
-              (min, d) => Math.min(min, d.data[0][0]),
-              Infinity,
-            ) - buffer,
+        xMin: minMinusBuffer,
 
         xMax: maxPlusBuffer,
       },
@@ -762,31 +844,16 @@ export default function ComparisonChart({
         label: "Maximum",
         shortLabel: "Max",
         value: 0,
-        xMin:
-          filteredData[0].name === ""
-            ? Date.now() - (365 + 1) * 24 * 60 * 60 * 1000
-            : filteredData.reduce(
-              (min, d) => Math.min(min, d.data[0][0]),
-              Infinity,
-            ) - buffer,
+        xMin: minMinusBuffer,
 
         xMax: maxPlusBuffer,
       },
     };
-  }, [filteredData, maxDate]);
-
-  // useEffect(() => {
-  //   if (embedData.title !== navItem?.label + " - growthepie")
-  //     setEmbedData(prevEmbedData => ({
-  //       ...prevEmbedData,
-  //       title: navItem?.label + " - growthepie",
-  //       src: BASE_URL + "/embed/fundamentals/" + navItem?.urlKey + "?showUsd=" + showUsd + "&theme=" + theme,
-  //     }));
-  // }, []);
+  }, [minDailyUnix, maxDailyUnix]);
 
   useEffect(() => {
     const startTimestamp = zoomed ? zoomMin : undefined;
-    const endTimestamp = zoomed ? zoomMax : maxDate.valueOf();
+    const endTimestamp = zoomed ? zoomMax : maxDailyUnix.valueOf();
 
     const vars = {
       showUsd: showUsd ? "true" : "false",
@@ -823,7 +890,8 @@ export default function ComparisonChart({
     }));
   }, [
     embedData.timeframe,
-    maxDate,
+    filteredData,
+    maxDailyUnix,
     navItem?.label,
     navItem?.urlKey,
     selectedScale,
@@ -899,7 +967,11 @@ export default function ComparisonChart({
       ...prev,
       [selectedTimeInterval]: selectedTimespan,
     }));
-  }, [selectedTimeInterval, selectedTimespan, setSelectedTimespansByTimeInterval]);
+  }, [
+    selectedTimeInterval,
+    selectedTimespan,
+    setSelectedTimespansByTimeInterval,
+  ]);
 
   const [intervalShown, setIntervalShown] = useState<{
     min: number;
@@ -1067,20 +1139,20 @@ export default function ComparisonChart({
       let seriesFill = "transparent";
 
       if (isAreaChart) {
-        seriesFill = AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "33";
+        seriesFill = MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "33";
       }
 
       if (isAreaChart) {
-        seriesFill = AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "33";
+        seriesFill = MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "33";
       }
 
       let fillColor =
         selectedTimeInterval === "daily"
-          ? AllChainsByKeys[name]?.colors[theme ?? "dark"][0]
+          ? MetadataByKeys[name]?.colors[theme ?? "dark"][0]
           : undefined;
       let color =
         selectedTimeInterval === "daily"
-          ? AllChainsByKeys[name]?.colors[theme ?? "dark"][0]
+          ? MetadataByKeys[name]?.colors[theme ?? "dark"][0]
           : undefined;
 
       if (types.includes("usd")) {
@@ -1115,9 +1187,9 @@ export default function ComparisonChart({
           y2: 1,
         },
         stops: [
-          [0, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "FF"],
-          // [0.349, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "88"],
-          [1, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "00"],
+          [0, MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "FF"],
+          // [0.349, MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "88"],
+          [1, MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "00"],
         ],
       };
 
@@ -1129,9 +1201,9 @@ export default function ComparisonChart({
           y2: 1,
         },
         stops: [
-          [0, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "FF"],
-          // [0.349, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "88"],
-          [1, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "00"],
+          [0, MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "FF"],
+          // [0.349, MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "88"],
+          [1, MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "00"],
         ],
       };
 
@@ -1144,7 +1216,7 @@ export default function ComparisonChart({
           width: 10,
           height: 10,
           opacity: 1,
-          color: AllChainsByKeys[name].colors[theme ?? "dark"][0] + "CC",
+          color: MetadataByKeys[name].colors[theme ?? "dark"][0] + "CC",
         },
       };
 
@@ -1165,7 +1237,7 @@ export default function ComparisonChart({
           fillColor: isColumnChart ? columnFillColor : seriesFill,
           color: isColumnChart
             ? columnColor
-            : AllChainsByKeys[name].colors[theme ?? "dark"][0],
+            : MetadataByKeys[name].colors[theme ?? "dark"][0],
         },
         {
           // value: monthlyData[monthlyData.length - 2][0],
@@ -1173,7 +1245,7 @@ export default function ComparisonChart({
           fillColor: isColumnChart ? columnFillColor : seriesFill,
           color: isColumnChart
             ? secondZoneDottedColumnColor
-            : AllChainsByKeys[name].colors[theme ?? "dark"][0],
+            : MetadataByKeys[name].colors[theme ?? "dark"][0],
         },
       ];
       // }
@@ -1187,7 +1259,14 @@ export default function ComparisonChart({
         color,
       };
     },
-    [getSeriesType, selectedTimeInterval, theme, showUsd, showGwei],
+    [
+      getSeriesType,
+      selectedTimeInterval,
+      MetadataByKeys,
+      theme,
+      showUsd,
+      showGwei,
+    ],
   );
 
   const [containerRef, { width, height }] = useElementSizeObserver();
@@ -1199,7 +1278,7 @@ export default function ComparisonChart({
   }, [isMobile, is_embed, height]);
 
   const options = useMemo((): Highcharts.Options => {
-    if (!filteredData || filteredData.length === 0) return {};
+    if (!filteredData || filteredData.length === 0 || !master) return {};
 
     if (filteredData[0].types.includes("usd")) {
       if (!showUsd) setValuePrefix("Ξ");
@@ -1211,6 +1290,8 @@ export default function ComparisonChart({
     const dynamicOptions: Highcharts.Options = {
       chart: {
         height: height,
+        className: "zoom-chart",
+        marginLeft: metric_id === "txcosts" ? 90 : 60,
         type: getSeriesType(filteredData[0].name),
         plotBorderColor: "transparent",
         panning: {
@@ -1255,12 +1336,8 @@ export default function ComparisonChart({
         opposite: false,
         showFirstLabel: true,
         showLastLabel: true,
-        type: "linear",
-        // ["absolute", "percentage"].includes(selectedScale)
-        //   ? "linear"
-        //   : "logarithmic",
-        // reversed: reversePerformer ?? false,
-        min: metric_id === "profit" ? null : 0,
+        type: master[metric_info_key][metric_id].log_default === true && ["absolute"].includes(selectedScale) ? "logarithmic" : "linear",
+        min: metric_id === "profit" || (master[metric_info_key][metric_id].log_default === true && ["absolute"].includes(selectedScale)) ? null : 0,
         max: selectedScale === "percentage" ? 100 : undefined,
         labels: {
           y: 5,
@@ -1370,212 +1447,228 @@ export default function ComparisonChart({
       },
       //@ts-ignore
       series: [
-        ...filteredData.map((series: any, i: number) => {
-          const zIndex = showEthereumMainnet
-            ? series.name === "ethereum"
-              ? 0
-              : 10
-            : 10;
-          let borderRadius: string | null = null;
-
-          if (showEthereumMainnet && i === 1) {
-            borderRadius = "8%";
-          } else if (i === 0) {
-            borderRadius = "8%";
-          }
-
-          const timeIntervalToMilliseconds = {
-            daily: 1 * 24 * 3600 * 1000,
-            weekly: 7 * 24 * 3600 * 1000,
-            monthly: 30 * 24 * 3600 * 1000,
-          };
-
-          const pointsSettings = {
-            pointPlacement:
-              selectedTimeInterval === "monthly" && selectedScale === "stacked"
+        ...filteredData
+          .sort((a, b) => {
+            if (selectedScale === "stacked" || selectedScale === "percentage") {
+              // sort by the time of the first data point so that the series are stacked in the correct order
+              return b.data[0][0] - a.data[0][0];
+            }
+            // else keep the order of the series the same
+            return 0;
+          })
+          .map((series: any, i: number) => {
+            const zIndex = showEthereumMainnet
+              ? series.name === "ethereum"
                 ? 0
-                : 0.5,
-          };
+                : 10
+              : 10;
+            let borderRadius: string | null = null;
 
-          return {
-            name: series.name,
-            // always show ethereum on the bottom
-            zIndex: zIndex,
-            step: undefined,
-            data: getSeriesData(series.name, series.types, series.data).data,
-            zoneAxis: getSeriesData(series.name, series.types, series.data)
-              .zoneAxis,
-            zones: getSeriesData(series.name, series.types, series.data).zones,
-            ...pointsSettings,
-            type: getSeriesType(series.name),
-            // fill if series name is ethereum
-            clip: true,
-            dataGrouping: dataGrouping,
-            borderRadiusTopLeft: borderRadius,
-            borderRadiusTopRight: borderRadius,
-            fillOpacity: getSeriesData(series.name, series.types, series.data)
-              .fillOpacity,
-            fillColor: getSeriesData(series.name, series.types, series.data)
-              .fillColor,
-            color: getSeriesData(series.name, series.types, series.data).color,
-            borderColor:
-              AllChainsByKeys[series.name]?.colors[theme ?? "dark"][0],
-            borderWidth: 1,
-            lineWidth: 2,
-            ...// @ts-ignore
-            (["area", "line"].includes(getSeriesType(series.name))
-              ? {
-                shadow: {
-                  color:
-                    AllChainsByKeys[series.name]?.colors[theme ?? "dark"][1] +
-                    "FF",
-                  width: 10,
-                },
-                // color: {
-                //   linearGradient: {
-                //     x1: 0,
-                //     y1: 0,
-                //     x2: 1,
-                //     y2: 0,
-                //   },
-                //   stops: [
-                //     [
-                //       0,
-                //       AllChainsByKeys[series.name]?.colors[
-                //         theme ?? "dark"
-                //       ][0],
-                //     ],
-                //     // [0.33, AllChainsByKeys[series.name].colors[1]],
-                //     [
-                //       1,
-                //       AllChainsByKeys[series.name]?.colors[
-                //         theme ?? "dark"
-                //       ][1],
-                //     ],
-                //   ],
-                // },
-              }
-              : series.name === "all_l2s"
+            if (showEthereumMainnet && i === 1) {
+              borderRadius = "8%";
+            } else if (i === 0) {
+              borderRadius = "8%";
+            }
+
+            const timeIntervalToMilliseconds = {
+              daily: 1 * 24 * 3600 * 1000,
+              weekly: 7 * 24 * 3600 * 1000,
+              monthly: 30 * 24 * 3600 * 1000,
+            };
+
+            const pointsSettings = {
+              pointPlacement:
+                selectedTimeInterval === "monthly" &&
+                  selectedScale === "stacked"
+                  ? 0
+                  : 0.5,
+            };
+
+            return {
+              name: series.name,
+              // always show ethereum on the bottom
+              zIndex: zIndex,
+              index: i,
+              step: undefined,
+              data: getSeriesData(series.name, series.types, series.data).data,
+              zoneAxis: getSeriesData(series.name, series.types, series.data)
+                .zoneAxis,
+              zones: getSeriesData(series.name, series.types, series.data)
+                .zones,
+              ...pointsSettings,
+              type: getSeriesType(series.name),
+              // fill if series name is ethereum
+              clip: true,
+              dataGrouping: dataGrouping,
+              borderRadiusTopLeft: borderRadius,
+              borderRadiusTopRight: borderRadius,
+              fillOpacity: getSeriesData(series.name, series.types, series.data)
+                .fillOpacity,
+              fillColor: getSeriesData(series.name, series.types, series.data)
+                .fillColor,
+              color: getSeriesData(series.name, series.types, series.data)
+                .color,
+              borderColor:
+                MetadataByKeys[series.name]?.colors[theme ?? "dark"][0],
+              borderWidth: 1,
+              lineWidth: 2,
+              ...// @ts-ignore
+              (["area", "line"].includes(getSeriesType(series.name))
                 ? {
-                  borderColor: "transparent",
-                  shadow: "none",
-                  // shadow: {
-                  //   color: "#CDD8D3" + "FF",
-                  //   // color:
-                  //   //   AllChainsByKeys[series.name].colors[theme ?? "dark"][1] + "33",
-                  //   // width: 10,
-                  //   offsetX: 0,
-                  //   offsetY: 0,
-                  //   width: 2,
-                  // },
+                  shadow: {
+                    color:
+                      MetadataByKeys[series.name]?.colors[
+                      theme ?? "dark"
+                      ][1] + "FF",
+                    width: 10,
+                  },
                   // color: {
                   //   linearGradient: {
                   //     x1: 0,
                   //     y1: 0,
-                  //     x2: 0,
-                  //     y2: 1,
-                  //   },
-                  //   stops:
-                  //     theme === "dark"
-                  //       ? [
-                  //           [
-                  //             0,
-                  //             AllChainsByKeys[series.name]?.colors[
-                  //               theme ?? "dark"
-                  //             ][0] + "E6",
-                  //           ],
-
-                  //           [
-                  //             1,
-                  //             AllChainsByKeys[series.name]?.colors[
-                  //               theme ?? "dark"
-                  //             ][1] + "E6",
-                  //           ],
-                  //         ]
-                  //       : [
-                  //           [
-                  //             0,
-                  //             AllChainsByKeys[series.name]?.colors[
-                  //               theme ?? "dark"
-                  //             ][0] + "E6",
-                  //           ],
-
-                  //           [
-                  //             1,
-                  //             AllChainsByKeys[series.name]?.colors[
-                  //               theme ?? "dark"
-                  //             ][1] + "E6",
-                  //           ],
-                  //         ],
-                  // },
-                }
-                : {
-                  borderColor: "transparent",
-                  shadow: "none",
-                  // shadow: {
-                  //   color: "#CDD8D3" + "FF",
-                  //   offsetX: 0,
-                  //   offsetY: 0,
-                  //   width: 2,
-                  // },
-                  // fillColor: {
-                  //   linearGradient: {
-                  //     x1: 0,
-                  //     y1: 0,
-                  //     x2: 0,
-                  //     y2: 1,
+                  //     x2: 1,
+                  //     y2: 0,
                   //   },
                   //   stops: [
                   //     [
                   //       0,
-                  //       AllChainsByKeys[series.name]?.colors[
+                  //       MetadataByKeys[series.name]?.colors[
                   //         theme ?? "dark"
-                  //       ][0] + "FF",
+                  //       ][0],
                   //     ],
-                  //     [
-                  //       0.349,
-                  //       AllChainsByKeys[series.name]?.colors[
-                  //         theme ?? "dark"
-                  //       ][0] + "88",
-                  //     ],
+                  //     // [0.33, MetadataByKeys[series.name].colors[1]],
                   //     [
                   //       1,
-                  //       AllChainsByKeys[series.name]?.colors[
+                  //       MetadataByKeys[series.name]?.colors[
                   //         theme ?? "dark"
-                  //       ][0] + "00",
+                  //       ][1],
                   //     ],
                   //   ],
                   // },
-                }),
-            states: {
-              hover: {
-                enabled: true,
-                halo: {
-                  size: 5,
-                  opacity: 1,
-                  attributes: {
-                    fill:
-                      AllChainsByKeys[series.name]?.colors[theme ?? "dark"][0] +
-                      "99",
-                    stroke:
-                      AllChainsByKeys[series.name]?.colors[theme ?? "dark"][0] +
-                      "66",
-                    strokeWidth: 0,
+                }
+                : series.name === "all_l2s"
+                  ? {
+                    borderColor: "transparent",
+                    shadow: "none",
+                    // shadow: {
+                    //   color: "#CDD8D3" + "FF",
+                    //   // color:
+                    //   //   MetadataByKeys[series.name].colors[theme ?? "dark"][1] + "33",
+                    //   // width: 10,
+                    //   offsetX: 0,
+                    //   offsetY: 0,
+                    //   width: 2,
+                    // },
+                    // color: {
+                    //   linearGradient: {
+                    //     x1: 0,
+                    //     y1: 0,
+                    //     x2: 0,
+                    //     y2: 1,
+                    //   },
+                    //   stops:
+                    //     theme === "dark"
+                    //       ? [
+                    //           [
+                    //             0,
+                    //             MetadataByKeys[series.name]?.colors[
+                    //               theme ?? "dark"
+                    //             ][0] + "E6",
+                    //           ],
+
+                    //           [
+                    //             1,
+                    //             MetadataByKeys[series.name]?.colors[
+                    //               theme ?? "dark"
+                    //             ][1] + "E6",
+                    //           ],
+                    //         ]
+                    //       : [
+                    //           [
+                    //             0,
+                    //             MetadataByKeys[series.name]?.colors[
+                    //               theme ?? "dark"
+                    //             ][0] + "E6",
+                    //           ],
+
+                    //           [
+                    //             1,
+                    //             MetadataByKeys[series.name]?.colors[
+                    //               theme ?? "dark"
+                    //             ][1] + "E6",
+                    //           ],
+                    //         ],
+                    // },
+                  }
+                  : {
+                    borderColor: "transparent",
+                    shadow: "none",
+                    // shadow: {
+                    //   color: "#CDD8D3" + "FF",
+                    //   offsetX: 0,
+                    //   offsetY: 0,
+                    //   width: 2,
+                    // },
+                    // fillColor: {
+                    //   linearGradient: {
+                    //     x1: 0,
+                    //     y1: 0,
+                    //     x2: 0,
+                    //     y2: 1,
+                    //   },
+                    //   stops: [
+                    //     [
+                    //       0,
+                    //       MetadataByKeys[series.name]?.colors[
+                    //         theme ?? "dark"
+                    //       ][0] + "FF",
+                    //     ],
+                    //     [
+                    //       0.349,
+                    //       MetadataByKeys[series.name]?.colors[
+                    //         theme ?? "dark"
+                    //       ][0] + "88",
+                    //     ],
+                    //     [
+                    //       1,
+                    //       MetadataByKeys[series.name]?.colors[
+                    //         theme ?? "dark"
+                    //       ][0] + "00",
+                    //     ],
+                    //   ],
+                    // },
+                  }),
+              states: {
+                hover: {
+                  enabled: true,
+                  halo: {
+                    size: 5,
+                    opacity: 1,
+                    attributes: {
+                      fill:
+                        MetadataByKeys[series.name]?.colors[
+                        theme ?? "dark"
+                        ][0] + "99",
+                      stroke:
+                        MetadataByKeys[series.name]?.colors[
+                        theme ?? "dark"
+                        ][0] + "66",
+                      strokeWidth: 0,
+                    },
                   },
+                  brightness: 0.3,
                 },
-                brightness: 0.3,
+                inactive: {
+                  enabled: true,
+                  opacity: 0.6,
+                },
+                selection: {
+                  enabled: false,
+                },
               },
-              inactive: {
-                enabled: true,
-                opacity: 0.6,
-              },
-              selection: {
-                enabled: false,
-              },
-            },
-            showInNavigator: false,
-          };
-        }),
+              showInNavigator: false,
+            };
+          }),
       ],
       navigator: {
         enabled: false,
@@ -1596,30 +1689,29 @@ export default function ComparisonChart({
     return merge({}, baseOptions, dynamicOptions);
   }, [
     filteredData,
-    isMobile,
+    height,
+    metric_id,
     getSeriesType,
+    is_embed,
     scaleToPlotOptions,
     selectedScale,
     theme,
-    // getTickPositions,
-    timespans,
     onXAxisSetExtremes,
     zoomed,
     zoomMin,
+    timespans,
     selectedTimespan,
     zoomMax,
     tooltipFormatter,
     tooltipPositioner,
     showUsd,
     formatNumber,
+    isMobile,
     showEthereumMainnet,
-    dataGrouping,
-    showGwei,
-    metric_id,
-    getSeriesData,
-    getChartHeight,
     selectedTimeInterval,
-    is_embed,
+    getSeriesData,
+    dataGrouping,
+    MetadataByKeys,
   ]);
 
   // useEffect(() => {
@@ -1789,9 +1881,61 @@ export default function ComparisonChart({
                   isSelected={selectedTimeInterval === interval}
                   onClick={() => {
                     if (selectedTimeInterval === interval) return;
+                    // ["90d", "180d", "365d", "max"].includes(timespan)
+                    // : ["6m", "12m", "maxM"].includes(timespan),
+                    if (interval === "daily") {
+                      if ("12m" === selectedTimespan) {
+                        setSelectedTimespan("365d");
+                      } else if ("maxM" === selectedTimespan) {
+                        setSelectedTimespan("max");
+                      } else {
+                        // find closest timespan
+                        const closestTimespan = Object.keys(timespans)
+                          .filter((timespan) =>
+                            ["90d", "180d", "365d", "max"].includes(timespan),
+                          )
+                          .reduce((prev, curr) =>
+                            Math.abs(
+                              timespans[curr].xMax -
+                              timespans[selectedTimespan].xMax,
+                            ) <
+                              Math.abs(
+                                timespans[prev].xMax -
+                                timespans[selectedTimespan].xMax,
+                              )
+                              ? curr
+                              : prev,
+                          );
 
-                    setSelectedTimespan(selectedTimespansByTimeInterval[interval]);
+                        setSelectedTimespan(closestTimespan);
+                      }
+                    } else {
+                      if ("365d" === selectedTimespan) {
+                        setSelectedTimespan("12m");
+                      } else if ("max" === selectedTimespan) {
+                        setSelectedTimespan("maxM");
+                      } else {
+                        // find closest timespan
+                        const closestTimespan = Object.keys(timespans)
+                          .filter((timespan) =>
+                            ["6m", "12m", "maxM"].includes(timespan),
+                          )
+                          .reduce((prev, curr) =>
+                            Math.abs(
+                              timespans[curr].xMax -
+                              timespans[selectedTimespan].xMax,
+                            ) <
+                              Math.abs(
+                                timespans[prev].xMax -
+                                timespans[selectedTimespan].xMax,
+                              )
+                              ? curr
+                              : prev,
+                          );
 
+                        setSelectedTimespan(closestTimespan);
+                      }
+                    }
 
                     setSelectedTimeInterval(interval);
                     // setXAxis();
@@ -1950,7 +2094,9 @@ export default function ComparisonChart({
                     <div className="absolute bottom-[53.5%] left-0 right-0 flex flex-col gap-y-[3px] items-center justify-center pointer-events-none z-0 opacity-40">
                       <ChartWatermark className="w-[128.67px] h-[30.67px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
                       <div className="font-medium text-[10px] uppercase">
-                        {master && master.metrics[metric_id].name}
+                        {master &&
+                          master[metric_info_key][metric_id] &&
+                          master[metric_info_key][metric_id].name}
                       </div>
                     </div>
                   </div>
@@ -2032,7 +2178,7 @@ export default function ComparisonChart({
               {/* toggle ETH */}
 
               <div className="flex justify-center items-center pl-0 md:pl-0 w-full md:w-auto">
-                <div className="flex justify-between md:justify-center items-center  space-x-[4px] md:space-x-1 mr-0 md:mr-2.5 w-full md:w-auto ">
+                <div className="flex justify-between md:justify-center items-center  gap-x-[4px] md:space-x-1 mr-0 md:mr-2.5 w-full md:w-auto ">
                   <button
                     className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${"absolute" === selectedScale
                       ? "bg-forest-500 dark:bg-forest-1000"
@@ -2109,7 +2255,7 @@ export default function ComparisonChart({
               {/* toggle ETH */}
 
               <div className="flex justify-center items-center pl-0 md:pl-0 w-full md:w-auto">
-                <div className="flex justify-between md:justify-center items-center  space-x-[4px] md:space-x-1 mr-0 md:mr-2.5 w-full md:w-auto ">
+                <div className="flex justify-between md:justify-center items-center gap-x-[4px] md:space-x-1 mr-0 md:mr-2.5 w-full md:w-auto ">
                   <button
                     className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"absolute" === selectedScale
                       ? "bg-forest-500 dark:bg-forest-1000"
@@ -2121,28 +2267,32 @@ export default function ComparisonChart({
                   >
                     Absolute
                   </button>
-                  <button
-                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"stacked" === selectedScale
-                      ? "bg-forest-500 dark:bg-forest-1000"
-                      : "hover:bg-forest-500/10"
-                      }`}
-                    onClick={() => {
-                      setSelectedScale("stacked");
-                    }}
-                  >
-                    Stacked
-                  </button>
-                  <button
-                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"percentage" === selectedScale
-                      ? "bg-forest-500 dark:bg-forest-1000"
-                      : "hover:bg-forest-500/10"
-                      }`}
-                    onClick={() => {
-                      setSelectedScale("percentage");
-                    }}
-                  >
-                    Percentage
-                  </button>
+                  {metric_id !== "txcosts" && (
+                    <>
+                      <button
+                        className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"stacked" === selectedScale
+                          ? "bg-forest-500 dark:bg-forest-1000"
+                          : "hover:bg-forest-500/10"
+                          }`}
+                        onClick={() => {
+                          setSelectedScale("stacked");
+                        }}
+                      >
+                        Stacked
+                      </button>
+                      <button
+                        className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"percentage" === selectedScale
+                          ? "bg-forest-500 dark:bg-forest-1000"
+                          : "hover:bg-forest-500/10"
+                          }`}
+                        onClick={() => {
+                          setSelectedScale("percentage");
+                        }}
+                      >
+                        Percentage
+                      </button>
+                    </>
+                  )}
                 </div>
                 <div className="flex">
                   <Tooltip placement="left" allowInteract>

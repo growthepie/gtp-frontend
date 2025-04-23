@@ -14,13 +14,16 @@ import { Icon } from "@iconify/react";
 import { navigationItems } from "@/lib/navigation";
 import Subheading from "@/components/layout/Subheading";
 import { useUIContext } from "@/contexts/UIContext";
-import { AllChainsByKeys, Get_SupportedChainKeys } from "@/lib/chains";
+import { Get_SupportedChainKeys } from "@/lib/chains";
 import { Chains } from "@/types/api/ChainOverviewResponse";
 import ShowLoading from "@/components/layout/ShowLoading";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import { useMaster } from "@/contexts/MasterContext";
+import { filter } from "lodash";
 
 const ChainOverview = () => {
+  const { AllChainsByKeys } = useMaster();
   const {
     data: usageData,
     error: usageError,
@@ -35,6 +38,7 @@ const ChainOverview = () => {
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
+  const [focusEnabled] = useLocalStorage("focusEnabled", false)
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
     "blockspaceTimespan",
     "max",
@@ -76,16 +80,17 @@ const ChainOverview = () => {
         const isSupported =
           chain === "all_l2s" ? true : supportedChainKeys.includes(chain);
         const isMaster = master?.chains[chain] ? true : false;
+        const passETH = chain === "ethereum" ? !focusEnabled : true;
         const passEcosystem =
           chain === "all_l2s"
             ? true
             : isMaster
               ? chainEcosystemFilter === "all-chains"
                 ? true
-                : master?.chains[chain].bucket.includes(chainEcosystemFilter)
+                : AllChainsByKeys[chain].ecosystem.includes(chainEcosystemFilter)
               : false;
 
-        return passEcosystem && isSupported;
+        return passEcosystem && isSupported && passETH;
       })
       .reduce((result, chain) => {
         const chainKey = AllChainsByKeys[chain].key;
@@ -99,7 +104,9 @@ const ChainOverview = () => {
       }, {});
 
     return filteredChains;
-  }, [chainEcosystemFilter, master, usageData?.data.chains]);
+  }, [chainEcosystemFilter, master, usageData?.data.chains, focusEnabled]);
+
+  // console.log(chainFilter);
 
   return (
     <>
@@ -109,12 +116,14 @@ const ChainOverview = () => {
             dataLoading={[usageLoading]}
             dataValidating={[usageValidating]}
           />
-          <Container className="flex flex-col w-full pt-[65px] md:pt-[30px]" isPageRoot>
-            <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] relative">
+          <Container
+            className="flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] mb-[15px]"
+            isPageRoot
+          >
+            <div className="flex items-center w-[99.8%] justify-between md:text-[36px] relative">
               <div className="flex gap-x-[8px] items-center">
-                <Image
-                  src="/GTP-Package.svg"
-                  alt="GTP Chain"
+                <Icon
+                  icon={"gtp:gtp-chain"}
                   className="object-contain w-[32px] h-[32px]"
                   height={36}
                   width={36}
@@ -128,8 +137,8 @@ const ChainOverview = () => {
               </div>
               <EcosystemDropdown />
             </div>
-            <div className="flex items-center w-[99%] mx-auto mb-[30px]">
-              <div className="text-[16px]">
+            <div className="flex items-center w-[99%] mx-auto pb-[15px]">
+              <div className="text-[14px]">
                 An overview of chains high-level blockspace usage. All expressed
                 in share of chain usage. You can toggle between share of chain
                 usage or absolute numbers.

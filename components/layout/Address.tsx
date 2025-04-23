@@ -68,8 +68,7 @@ type AddressIconProps = {
   address: string;
   className?: string;
 };
-
-export const AddressIdenticon = ({ address, className }: AddressIconProps) => {
+export const AddressIcon = ({ address, className }: AddressIconProps) => {
   const [icon, setIcon] = useState<HTMLCanvasElement | null>(null);
   // create a blockies icon asynchrounously
   useEffect(() => {

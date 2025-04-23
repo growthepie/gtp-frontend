@@ -2,9 +2,10 @@ import { useTheme } from "next-themes";
 import { useMemo, useCallback, CSSProperties } from "react";
 import { Icon } from "@iconify/react";
 import { useLocalStorage } from "usehooks-ts";
-import { AllChainsByKeys } from "@/lib/chains";
 import { useRowContext } from "./RowContext";
 import { RowChildrenInterface } from "./ContextInterface";
+import { useMaster } from "@/contexts/MasterContext";
+import { indexOf } from "lodash";
 
 export default function RowChildren({
   chainKey,
@@ -12,12 +13,16 @@ export default function RowChildren({
   i,
   categoryIndex,
   chainCategories,
+  parentRef,
 }) {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { theme } = useTheme();
 
+  const { AllChainsByKeys } = useMaster();
+
   const {
     data,
+    master,
     selectedMode,
     forceSelectedChain,
     isCategoryHovered,
@@ -66,6 +71,16 @@ export default function RowChildren({
     return chainValues;
   }, [data, selectedTimespan, selectedMode]);
 
+  const isPrevCategoryHovered = useMemo(() => {
+    if (categoryIndex === 0) return false;
+
+    const allCategoryKeys = Object.keys(
+      master.blockspace_categories.main_categories,
+    );
+
+    return isCategoryHovered(allCategoryKeys[categoryIndex - 1]);
+  }, [master, isCategoryHovered, categoryIndex, selectedCategory]);
+
   const relativePercentageByChain = useMemo(() => {
     return Object.keys(data).reduce((acc, chainKey) => {
       return {
@@ -73,207 +88,10 @@ export default function RowChildren({
         [chainKey]:
           100 -
           (Object.keys(data[chainKey].overview[selectedTimespan]).length - 1) *
-          2,
+            2,
       };
     }, {});
   }, [data, selectedTimespan]);
-
-  const getBarSectionStyle = useCallback(
-    (
-      chainKey: string,
-      categoryKey: string, // dataIndex: number,
-    ) => {
-      const style: CSSProperties = {
-        backgroundColor: "white",
-        // width: "0px",
-        borderRadius: "0px",
-      };
-
-      const categoriesKey = Object.keys(categories).indexOf(categoryKey);
-      const dataKeys = Object.keys(data[chainKey].overview[selectedTimespan]);
-      const dataKeysIntersectCategoriesKeys = Object.keys(categories).filter(
-        (key) => dataKeys.includes(key),
-      );
-      const dataIndex = dataKeysIntersectCategoriesKeys.indexOf(categoryKey);
-
-      const categoryData =
-        data[chainKey].overview[selectedTimespan][categoryKey]["data"];
-
-      // const isLastCategory =
-      //   dataIndex === dataKeysIntersectCategoriesKeys.length - 1;
-
-      const isLastCategory = categoryKey === "unlabeled";
-      const isFirstCategory = categoryKey === "nft_fi";
-
-      const dataTypes = data[chainKey].overview.types;
-
-      const isSelectedCategory = selectedCategory === categoryKey && !allCats;
-
-      const isSelectedChainOrNoSelectedChain =
-        selectedChain === chainKey || !selectedChain;
-
-      // default transition
-      style.transition = "all 0.165s ease-in-out";
-
-      if (isFirstCategory) style.transformOrigin = "left center";
-      else if (isLastCategory) style.transformOrigin = "right center";
-
-      if (isLastCategory)
-        style.borderRadius = "20000px 99999px 99999px 20000px";
-
-      if (!categoryData) {
-        if (
-          (isSelectedCategory && isSelectedChainOrNoSelectedChain) ||
-          isCategoryHovered(categoryKey)
-        ) {
-          if (isSelectedCategory && isSelectedChainOrNoSelectedChain) {
-            style.backgroundColor = "rgba(255,255,255, 0.88)";
-            style.color = "rgba(0, 0, 0, 0.66)";
-            // style.marginRight = "-5px";
-          } else {
-            style.backgroundColor = "rgba(255,255,255, 0.6)";
-            style.color = "rgba(0, 0, 0, 0.33)";
-          }
-          if (isLastCategory) {
-            style.borderRadius = "25% 125% 125% 25%";
-          } else {
-            style.borderRadius = "5px";
-          }
-          style.transform =
-            isCategoryHovered(categoryKey) && !isSelectedCategory
-              ? "scale(1.2)"
-              : isSelectedChainOrNoSelectedChain
-                ? "scale(1.30)"
-                : "scale(1.2)";
-
-          if (isLastCategory && isSelectedChainOrNoSelectedChain)
-            style.transform += " translateX(3px)";
-          style.zIndex = isCategoryHovered(categoryKey) ? 2 : 5;
-        } else {
-          style.backgroundColor = "rgba(255,255,255, 0.60)";
-          if (isLastCategory) {
-            style.borderRadius = "20000px 9999999px 9999999px 20000px";
-            style.paddingRight = "30px";
-          } else {
-            style.borderRadius = "2px";
-          }
-        }
-        style.paddingTop = "0px";
-        style.paddingBottom = "0px";
-        style.width =
-          isCategoryHovered(categoryKey) || selectedCategory === categoryKey
-            ? "45px"
-            : "10px";
-
-        style.margin = "0px 1px";
-
-        return style;
-      }
-      if (
-        (isSelectedCategory && isSelectedChainOrNoSelectedChain) ||
-        isCategoryHovered(categoryKey)
-      ) {
-        if (isLastCategory) {
-          style.borderRadius = "20000px 99999px 99999px 20000px";
-        } else {
-          style.borderRadius = "5px";
-        }
-
-        if (selectedValue === "share") {
-          style.width = categoryData
-            ? categoryData[dataTypes.indexOf(selectedMode)] *
-            relativePercentageByChain[chainKey] +
-            8 +
-            "%"
-            : "0px";
-          // if()
-        } else {
-          style.width = categoryData
-            ? (categoryData[dataTypes.indexOf(selectedMode)] /
-              sumChainValue[chainKey]) *
-            relativePercentageByChain[chainKey] +
-            8 +
-            "%"
-            : "0px";
-          // if()
-        }
-        style.transform =
-          isCategoryHovered(categoryKey) && !isSelectedCategory
-            ? "scaleY(1.01)"
-            : isSelectedChainOrNoSelectedChain
-              ? "scaleY(1.08)"
-              : "scaleY(1.01)";
-
-        if (isLastCategory && isSelectedChainOrNoSelectedChain)
-          style.transform += " translateX(3px)";
-
-        // style.outline =
-        //   isSelectedCategory && isSelectedChainOrNoSelectedChain
-        //     ? "3px solid rgba(255,255,255, 1)"
-        //     : "3px solid rgba(255,255,255, 0.33)";
-
-        style.zIndex = isCategoryHovered(categoryKey) ? 2 : 5;
-
-        style.backgroundColor = "";
-      } else {
-        if (selectedValue === "share") {
-          style.width = categoryData
-            ? categoryData[dataTypes.indexOf(selectedMode)] *
-            relativePercentageByChain[chainKey] +
-            8 +
-            "%"
-            : "0px";
-          // if()
-        } else {
-          style.width = categoryData
-            ? (categoryData[dataTypes.indexOf(selectedMode)] /
-              sumChainValue[chainKey]) *
-            relativePercentageByChain[chainKey] +
-            8 +
-            "%"
-            : "0px";
-        }
-
-        // if(isCategoryHovered[categoryKey])
-        // style.transform =
-        //   isCategoryHovered[categoryKey] && !isSelectedCategory
-        //     ? "scale(1)"
-        //     : "scale(1.05)";
-
-        if (isLastCategory) {
-          style.borderRadius = "0px 99999px 99999px 0px";
-        } else {
-          style.borderRadius = "0px";
-        }
-
-        if (categoryKey === "unlabeled" && categoryData) {
-          // style.backgroundColor = "rgba(88, 88, 88, 0.55)";
-          style.background =
-            "linear-gradient(-45deg, rgba(0, 0, 0, .88) 25%, rgba(0, 0, 0, .99) 25%, rgba(0, 0, 0, .99) 50%, rgba(0, 0, 0, .88) 50%, rgba(0, 0, 0, .88) 75%, rgba(0, 0, 0, .99) 75%, rgba(0, 0, 0, .99))";
-          // style.background = undefined;
-          //   "linear-gradient(to right, #e5405e 0%, #ffdb3a 45%, #3fffa2 100%)";
-          // style.backgroundPosition = "75% 0%";
-          // style.backgroundRepeat = "repeat";
-          style.animation = "unlabeled-gradient 20s linear infinite";
-          style.backgroundSize = "10px 10px";
-        } else {
-          style.backgroundColor = `rgba(0, 0, 0, ${0.06 + (dataIndex / (Object.keys(categories).length - 1)) * 0.94
-            })`;
-        }
-      }
-      return style;
-    },
-    [
-      selectedCategory,
-      selectedMode,
-      selectedChain,
-      data,
-      relativePercentageByChain,
-      isCategoryHovered,
-      categories,
-      selectedTimespan,
-    ],
-  );
 
   function formatNumber(number: number): string {
     if (number === 0) {
@@ -289,7 +107,7 @@ export default function RowChildren({
         Math.abs(number) >= 10000
           ? Math.round(number / 1e3)
           : (number / 1e3).toFixed(1);
-      return `${rounded}${Math.abs(number) >= 10000 ? "K" : "k"}`;
+      return `${rounded}${Math.abs(number) >= 10000 ? "k" : "k"}`;
     } else if (Math.abs(number) >= 100) {
       return number.toFixed(0);
     } else if (Math.abs(number) >= 10) {
@@ -299,26 +117,244 @@ export default function RowChildren({
     }
   }
 
-  return (
-    <div
-      key={categoryKey}
-      onClick={() => {
+  const childBlockStyle = useCallback(
+    (
+      chainKey: string,
+      categoryKey: string, // dataIndex: number,
+    ) => {
+      const style: CSSProperties = {
+        backgroundColor: "white",
+        // width: "0px",
+        borderRadius: "0px",
+      };
+
+      const categoriesKey = Object.keys(categories).indexOf(categoryKey);
+
+      const dataKeys = Object.keys(data[chainKey].overview[selectedTimespan]);
+      const dataKeysIntersectCategoriesKeys = Object.keys(categories).filter(
+        (key) => dataKeys.includes(key),
+      );
+      const dataIndex = dataKeysIntersectCategoriesKeys.indexOf(categoryKey);
+      const dataTypes = data[chainKey].overview.types;
+      const categoryData =
+        data[chainKey].overview[selectedTimespan][categoryKey]["data"];
+
+      const allCategoryKeys = Object.keys(
+        master.blockspace_categories.main_categories,
+      );
+
+      const isLastCategory = categoryKey === "unlabeled";
+      const isFirstCategory = categoryKey === allCategoryKeys[0];
+
+      const isNextCategoryHovered = isCategoryHovered(
+        allCategoryKeys[allCategoryKeys.indexOf(categoryKey) + 1],
+      );
+      const isLastCategoryHovered = isCategoryHovered(
+        allCategoryKeys[allCategoryKeys.indexOf(categoryKey) - 1],
+      );
+
+      style.backgroundColor = `rgba(0, 0, 0, ${
+        1 - (1 - 0.1 * (dataIndex + 1))
+      })`;
+
+      if (isLastCategory)
+        style.borderRadius = "10000px 99999px 99999px 10000px";
+
+      if (categoryData) {
+        const widthPercentage =
+          categoryData[dataTypes.indexOf(selectedMode)] /
+          sumChainValue[chainKey];
+
+        if (isLastCategory && selectedCategory !== categoryKey) {
+          style.background =
+            "linear-gradient(-45deg, rgba(0, 0, 0, .88) 25%, rgba(0, 0, 0, .99) 25%, rgba(0, 0, 0, .99) 50%, rgba(0, 0, 0, .88) 50%, rgba(0, 0, 0, .88) 75%, rgba(0, 0, 0, .99) 75%, rgba(0, 0, 0, .99))";
+          // style.background = undefined;
+          //   "linear-gradient(to right, #e5405e 0%, #ffdb3a 45%, #3fffa2 100%)";
+          // style.backgroundPosition = "75% 0%";
+          // style.backgroundRepeat = "repeat";
+          style.animation = "unlabeled-gradient 20s linear infinite";
+          style.backgroundSize = "10px 10px";
+        }
+        if (selectedValue === "share") {
+          style.width = `calc(${widthPercentage * 100}%)`;
+          style.minWidth = "20px";
+          // if()
+        } else {
+          style.width = `calc(${widthPercentage * 100}%)`;
+          style.minWidth = "20px";
+          // if()
+        }
+      } else {
+        style.width = 10;
+      }
+
+      style.opacity = 1;
+
+      return style;
+    },
+    [
+      AllChainsByKeys,
+      selectedCategory,
+      selectedMode,
+      selectedChain,
+      data,
+      relativePercentageByChain,
+      isCategoryHovered,
+      categories,
+      selectedTimespan,
+    ],
+  );
+
+  const shareValue = useMemo(() => {
+    const dataTypes = data[chainKey].overview.types;
+    const categoryData =
+      data[chainKey].overview[selectedTimespan][categoryKey]["data"];
+    if (!categoryData) return 0;
+    else
+      return (
+        categoryData[dataTypes.indexOf(selectedMode)] / sumChainValue[chainKey]
+      );
+  }, [data, chainKey, categoryKey, selectedMode, sumChainValue]);
+
+  const subChildStyle = useCallback(
+    (
+      chainKey: string,
+      categoryKey: string, // dataIndex: number,
+    ) => {
+      const style: CSSProperties = {
+        backgroundColor: "inherit",
+        // width: "0px",
+        borderRadius: "0px",
+      };
+
+      const allCategoryKeys = Object.keys(
+        master.blockspace_categories.main_categories,
+      );
+      const dataTypes = data[chainKey].overview.types;
+
+      const isLastCategory = categoryKey === "unlabeled";
+      const isFirstCategory = categoryKey === allCategoryKeys[0];
+
+      const categoryData =
+        data[chainKey].overview[selectedTimespan][categoryKey]["data"];
+
+      if (
+        !data[chainKey].overview[selectedTimespan][categoryKey]["data"] &&
+        !(
+          selectedCategory === categoryKey ||
+          isCategoryHovered(categoryKey) ||
+          (selectedChain && selectedChain !== chainKey)
+        )
+      ) {
+        style.backgroundColor = "rgba(255, 255, 255, 0.8)";
+        if (isLastCategory) {
+          style.borderRadius = "50px 999px 999px 50px";
+        } else {
+          style.borderRadius = "50px";
+        }
+      }
+
+      if (
+        (selectedCategory === categoryKey && !allCats) ||
+        isCategoryHovered(categoryKey)
+      ) {
         if (selectedCategory === categoryKey) {
-          if (!data[chainKey].overview[selectedTimespan][categoryKey]["data"]) {
-            return;
-          }
-          if (selectedChain === chainKey && !forceSelectedChain) {
-            // setSelectedCategory(categoryKey);
-            setSelectedChain(null);
+          if (!selectedChain || selectedChain === chainKey) {
+            style.backgroundColor = "#151A19";
           } else {
-            // setSelectedCategory(categoryKey);
-            setSelectedChain(chainKey);
+            if (!isCategoryHovered(categoryKey)) {
+              style.backgroundColor = "inherit";
+              if (!categoryData) {
+                style.backgroundColor = "rgba(255, 255, 255, 0.8)";
+                style.borderRadius = "50px";
+              }
+            } else {
+              style.backgroundColor = "#1F2726";
+            }
           }
         } else {
-          setSelectedCategory(categoryKey);
-          if (forceSelectedChain) setAllCats(false);
-          if (!forceSelectedChain) setSelectedChain(null);
+          style.backgroundColor = "#1F2726";
         }
+
+        if (
+          !selectedChain ||
+          selectedChain === chainKey ||
+          isCategoryHovered(categoryKey)
+        ) {
+          style.color = "#CDD8D3";
+          style.minWidth = "55px";
+          style.width = "calc(100% + 14px)";
+          style.height = "38px";
+          style.transformOrigin = "center center";
+
+          if (isFirstCategory) {
+            if (categoryData) {
+              style.transformOrigin = "left center";
+              style.left = "0px";
+            } else {
+              style.left = "0px";
+            }
+          }
+
+          if (isLastCategory) {
+            if (categoryData) {
+              style.transformOrigin = "right center";
+              style.right = "-5px";
+            } else {
+              style.right = "1px";
+              style.borderRadius = "";
+            }
+          }
+
+          if (
+            categoryKey === allCategoryKeys[1] &&
+            !categoryData &&
+            !data[chainKey].overview[selectedTimespan][allCategoryKeys[0]][
+              "data"
+            ]
+          ) {
+            style.left = "3px";
+          }
+
+          style.borderRadius = "999px";
+
+          style.border = `2px solid ${
+            AllChainsByKeys[chainKey].colors["dark"][0] +
+            (isCategoryHovered(categoryKey) ? "EE" : "FF")
+          } `;
+          if (!data[chainKey].overview[selectedTimespan][categoryKey]["data"]) {
+            style.minWidth = "55px";
+          }
+        }
+      }
+
+      return style;
+    },
+    [
+      allCats,
+      AllChainsByKeys,
+      selectedCategory,
+      selectedMode,
+      selectedChain,
+      data,
+      relativePercentageByChain,
+      isCategoryHovered,
+      categories,
+      selectedTimespan,
+    ],
+  );
+
+  return (
+    <div
+      className="flex flex-col h-[31px] relative w-full  cursor-pointer justify-center items-center transition-all "
+      style={{
+        ...childBlockStyle(chainKey, categoryKey),
+        zIndex:
+          selectedCategory === categoryKey
+            ? 20
+            : isCategoryHovered(categoryKey)
+            ? 25
+            : 10, // Higher z-index for the selected div
       }}
       onMouseEnter={() => {
         hoverCategory(categoryKey);
@@ -326,49 +362,69 @@ export default function RowChildren({
       onMouseLeave={() => {
         unhoverCategory(categoryKey);
       }}
-      className={`flex flex-col h-[41px] justify-center items-center py-5 cursor-pointer relative transition-all duration-200 ease-in-out
-                        ${data[chainKey].overview[selectedTimespan][categoryKey]
-          ? (selectedCategory === categoryKey &&
-            (!allCats && (selectedChain === chainKey ||
-              selectedChain === null))) ||
-            isCategoryHovered(categoryKey)
-            ? isCategoryHovered(categoryKey) &&
-              selectedCategory !== categoryKey
-              ? `py-[23px] -my-[3px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme ?? "dark"][1]}`
-              : `py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme ?? "dark"][1]}`
-            : `z-[1]`
-          : "py-[23px] -my-[3px] z-[2] shadow-lg"
-        } 
-                        ${categoryIndex === Object.keys(categories).length - 1
-          ? selectedCategory === categoryKey &&
-            (selectedChain === chainKey ||
-              selectedChain === null)
-            ? ""
-            : "rounded-r-full"
-          : ""
-        }`}
-      style={getBarSectionStyle(chainKey, categoryKey)}
     >
       <div
-        className={`mix-blend-luminosity font-medium w-full absolute inset-0 flex items-center justify-center ${(selectedCategory === categoryKey &&
-          (selectedChain === chainKey || selectedChain === null)) ||
+        className={`w-full h-full flex justify-center items-center absolute cursor-pointer opacity-100 transition-all ${
+          (selectedCategory === categoryKey &&
+            (selectedChain === chainKey || selectedChain === null) &&
+            !allCats) ||
           isCategoryHovered(categoryKey)
-          ? `${isCategoryHovered(categoryKey) &&
-            selectedCategory !== categoryKey
-            ? "text-xs"
-            : "text-sm font-semibold"
-          } ${AllChainsByKeys[chainKey].darkTextOnBackground === true
-            ? "text-black"
-            : "text-white"
-          }`
-          : AllChainsByKeys[chainKey].darkTextOnBackground === true
+            ? `${
+                isCategoryHovered(categoryKey) &&
+                selectedCategory !== categoryKey
+                  ? "text-[14px] font-semibold"
+                  : "text-[14px] font-bold"
+              } ${
+                AllChainsByKeys[chainKey].darkTextOnBackground === true
+                  ? "text-black"
+                  : "text-white"
+              }`
+            : AllChainsByKeys[chainKey].darkTextOnBackground === true
             ? i > 4
-              ? "text-white/60 text-xs"
-              : "text-black text-xs"
+              ? "text-white/60 text-[10px]"
+              : "text-black text-[10px]"
             : i > 4
-              ? "text-white/60 text-xs"
-              : "text-white/80 text-xs"
-          }`}
+            ? "text-white/60 text-[10px]"
+            : "text-white/80 text-[10px]"
+        } `}
+        style={{
+          ...subChildStyle(chainKey, categoryKey),
+          zIndex:
+            selectedCategory === categoryKey
+              ? 40
+              : isCategoryHovered(categoryKey)
+              ? 60
+              : 20, // Higher z-index for the child div of the selected element
+        }}
+        onClick={() => {
+          if (selectedCategory === categoryKey) {
+            if (
+              !data[chainKey].overview[selectedTimespan][categoryKey]["data"]
+            ) {
+              return;
+            }
+            if (selectedChain === chainKey && !forceSelectedChain) {
+              // setSelectedCategory(categoryKey);
+              setSelectedChain(null);
+            } else {
+              // setSelectedCategory(categoryKey);
+              setSelectedChain(chainKey);
+              if (allCats) {
+                setAllCats(false);
+              }
+            }
+          } else {
+            setSelectedCategory(categoryKey);
+            if (forceSelectedChain) setAllCats(false);
+            if (!forceSelectedChain) setSelectedChain(null);
+          }
+        }}
+        onMouseEnter={() => {
+          hoverCategory(categoryKey);
+        }}
+        onMouseLeave={() => {
+          unhoverCategory(categoryKey);
+        }}
       >
         {data[chainKey].overview[selectedTimespan][categoryKey]["data"] ? (
           <>
@@ -376,37 +432,51 @@ export default function RowChildren({
               ? selectedMode.includes("txcount")
                 ? ""
                 : showUsd
-                  ? "$ "
-                  : "Ξ "
+                ? "$"
+                : "Ξ"
               : ""}
             {selectedValue === "share"
-              ? (
-                data[chainKey].overview[selectedTimespan][categoryKey][
-                "data"
-                ][data[chainKey].overview.types.indexOf(selectedMode)] * 100.0
-              ).toFixed(2)
-              : formatNumber(
-                data[chainKey].overview[selectedTimespan][categoryKey][
-                "data"
-                ][data[chainKey].overview.types.indexOf(selectedMode)],
-              )}
+              ? shareValue > 0.05 ||
+                selectedCategory === categoryKey ||
+                isCategoryHovered(categoryKey)
+                ? (
+                    data[chainKey].overview[selectedTimespan][categoryKey][
+                      "data"
+                    ][data[chainKey].overview.types.indexOf(selectedMode)] *
+                    100.0
+                  ).toFixed(2)
+                : ""
+              : shareValue > 0.05 ||
+                selectedCategory === categoryKey ||
+                isCategoryHovered(categoryKey)
+              ? formatNumber(
+                  data[chainKey].overview[selectedTimespan][categoryKey][
+                    "data"
+                  ][data[chainKey].overview.types.indexOf(selectedMode)],
+                )
+              : ""}
             {selectedValue === "share" ? "%" : ""}{" "}
           </>
         ) : (
           <div
-            className={`text-black/80
-                            ${isCategoryHovered(categoryKey) ||
-                selectedCategory === categoryKey
-                ? "opacity-100 py-8"
-                : "opacity-0"
-              } transition-opacity duration-300 ease-in-out`}
+            className={`text-white/80 
+                          ${
+                            isCategoryHovered(categoryKey) ||
+                            selectedCategory === categoryKey
+                              ? !selectedChain ||
+                                selectedChain === chainKey ||
+                                isCategoryHovered(categoryKey)
+                                ? "opacity-100 py-8"
+                                : "opacity-0"
+                              : "opacity-0"
+                          } transition-opacity duration-300 ease-in-out`}
           >
             {selectedValue === "absolute"
               ? selectedMode.includes("txcount")
                 ? ""
                 : showUsd
-                  ? "$ "
-                  : "Ξ "
+                ? "$ "
+                : "Ξ "
               : ""}
             0 {selectedValue === "share" ? "%" : ""}{" "}
           </div>

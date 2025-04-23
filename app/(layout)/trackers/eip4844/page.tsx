@@ -8,13 +8,14 @@ import useSWR from "swr";
 import Heading from "@/components/layout/Heading";
 import { useMemo, useState, useEffect, useRef } from "react";
 import { useLocalStorage } from "usehooks-ts";
-import { AllChainsByKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
 import { useMediaQuery } from "usehooks-ts";
 import { useTransition, animated } from "@react-spring/web";
 import ShowLoading from "@/components/layout/ShowLoading";
+import { useMaster } from "@/contexts/MasterContext";
 
 export default function Eiptracker() {
+  const { AllChainsByKeys } = useMaster();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [selectedTimescale, setSelectedTimescale] = useState("hourly");
   const [selectedTimespan, setSelectedTimespan] = useState("max");
@@ -233,7 +234,7 @@ export default function Eiptracker() {
       />
       {feeData && avgTxCosts && (
         <>
-          <Container className="flex w-full mt-[65px] md:mt-[45px]">
+          <Container className="flex w-full mt-[45px] md:mt-[30px]">
             <div className="flex flex-col px-[20px] gap-y-[5px]">
               <div className="flex gap-x-[8px] items-center">
                 {/* <Image

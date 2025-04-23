@@ -4,13 +4,14 @@ import Icon from "@/components/layout/Icon";
 import useSWR from "swr";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { AllChainsByKeys, Get_SupportedChainKeys } from "@/lib/chains";
 import { useSessionStorage } from "usehooks-ts";
 import useDragScroll from "@/hooks/useDragScroll";
 import { update } from "lodash";
 import { useUIContext } from "@/contexts/UIContext";
+import { useMaster } from "@/contexts/MasterContext";
 
 export default function Search() {
+  const { AllChainsByKeys } = useMaster();
   const { isMobile } = useUIContext();
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -1056,13 +1057,15 @@ const SearchIcon = () => (
 );
 
 type BadgeProps = {
-  onClick: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onMouseEnter?: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onMouseLeave?: (e: React.MouseEvent<HTMLDivElement>) => void;
   label: string | React.ReactNode;
   leftIcon?: string | React.ReactNode;
   leftIconColor?: string;
-  rightIcon: string;
+  rightIcon?: string;
   rightIconColor?: string;
-  rightIconSize?: "sm" | "base";
+  rightIconSize?: "sm" | "md" | "base";
   size?: "sm" | "base";
   className?: string;
   showLabel?: boolean;
@@ -1071,6 +1074,8 @@ type BadgeProps = {
 };
 export const Badge = ({
   onClick,
+  onMouseEnter,
+  onMouseLeave,
   label,
   leftIcon,
   leftIconColor = "#CDD8D3",
@@ -1083,45 +1088,22 @@ export const Badge = ({
   altColoring = false,
   truncateStyle = "end",
 }: BadgeProps) => {
+  if (size === "sm"){
+    let rIconSize = "w-[14px] h-[14px]";
+    let rIconContainerSize = "w-[14px] h-[14px]";
+    if(rightIconSize === "sm")
+      rIconSize = "w-[10px] h-[10px]";
+      rIconContainerSize = "w-[10px] h-[10px]";
+    if(rightIconSize === "md")
+      rIconSize = "size-[15px] h-[15px]";
+      rIconContainerSize = "w-[14px] h-[12px] -mt-[1px]";
 
-  let labelSection = label;
-
-  if (typeof label === "string") {
-    labelSection = (
-      <div className="flex items-center text-[#CDD8D3] text-[10px] truncate">
-        {label}
-      </div>
-    );
-
-    if (truncateStyle === "start") {
-      labelSection = (
-        <div className="flex items-center text-[#CDD8D3] text-[10px] truncate" style={{
-          direction: "rtl",
-        }}>
-          {label}
-        </div>
-      );
-    }
-
-    if (truncateStyle === "middle") {
-      labelSection = (
-        <div className="flex items-center text-[#CDD8D3] text-[10px] truncate">
-          <div className="truncate">
-            {label.slice(0, Math.floor(label.length / 2))}
-          </div>
-          <div className="">
-            {label.slice(-4)}
-          </div>
-        </div>
-      );
-    }
-  }
-
-  if (size === "sm")
     return (
       <div
-        className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} text-[10px] h-[20px] rounded-full pl-[5px] pr-[2px] py-[3px] gap-x-[4px] cursor-pointer max-w-full ${className}`}
+        className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} text-[10px] rounded-full pl-[3px] pr-[2px] py-[3px] gap-x-[4px] cursor-pointer max-w-full ${className}`}
         onClick={onClick}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
       >
         {leftIcon ? typeof leftIcon === "string" ? (
           <div className="flex items-center justify-center w-[12px] h-[12px]">
@@ -1135,35 +1117,41 @@ export const Badge = ({
           </div>
         ) : (
           <div className="flex items-center justify-center w-[12px] h-[12px]">
-            {leftIcon}
+            <Icon
+              icon={leftIcon}
+              className="w-[12px] h-[12px]"
+              style={{ color: leftIconColor }}
+            />
           </div>
         ) : (
           <div className="w-[0px] h-[12px]" />
         )}
-        {showLabel && (
-          <div className="flex items-center text-[#CDD8D3] pr-0.5 truncate">
-            {labelSection}
-          </div>
-        )}
-        <div
-          className={`flex items-center justify-center ${rightIconSize == "sm" ? "pr-[3px]" : "w-[14px] h-[14px]"
+        <div className="text-[#CDD8D3] leading-[120%] text-[10px] truncate">
+          {label}
+        </div>
+        {rightIcon ? (
+          <div
+          className={`relative flex items-center justify-center ${rightIconSize == "sm" ? "pr-[3px]" : rIconContainerSize
             }`}
-        >
+          >
           <Icon
             icon={rightIcon}
-            className={
-              rightIconSize == "sm" ? "w-[10px] h-[10px]" : "w-[14px] h-[14px]"
-            }
+            className={`absolute ${rIconSize}`}
             style={{ color: rightIconColor }}
           />
-        </div>
+        </div>) : (
+          <div className="w-[0px] h-[12px]" />
+        )}
       </div>
     );
+  }
 
   return (
     <div
       className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} h-[25px] text-[10px] rounded-full pl-[2px] pr-[5px] gap-x-[5px] cursor-pointer max-w-full ${className}`}
       onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       {leftIcon ? typeof leftIcon === "string" ? (
         <div className="flex items-center justify-center pl-[5px] h-[15px]">
@@ -1187,13 +1175,17 @@ export const Badge = ({
           {labelSection}
         </div>
       )}
-      <div className="flex items-center justify-center w-[15px] h-[15px]">
-        <Icon
-          icon={rightIcon}
-          className="w-[15px] h-[15px]"
-          style={{ color: rightIconColor }}
-        />
-      </div>
+      {rightIcon ? (
+        <div className="flex items-center justify-center w-[15px] h-[15px]">
+          <Icon
+            icon={rightIcon}
+            className="w-[15px] h-[15px]"
+            style={{ color: rightIconColor }}
+          />
+        </div>
+        ) : (
+          <div className="w-[3px] h-[25px]" />
+      )}
     </div>
   );
 };

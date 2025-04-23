@@ -19,7 +19,6 @@ import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import d3 from "d3";
-import { AllChainsByKeys } from "@/lib/chains";
 import { debounce, forEach } from "lodash";
 import Link from "next/link";
 import useSWR from "swr";
@@ -31,6 +30,7 @@ import ChartWatermark from "@/components/layout/ChartWatermark";
 import { ChainsData } from "@/types/api/ChainResponse";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { LandingURL, MasterURL } from "@/lib/urls";
+import { useMaster } from "@/contexts/MasterContext";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -68,6 +68,8 @@ export default function ContractCard({
 }) {
   const { theme } = useTheme();
 
+  const { AllChainsByKeys } = useMaster();
+
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   const [copied, setCopied] = useState(false);
@@ -93,9 +95,8 @@ export default function ContractCard({
       className="hover:cursor-pointer"
       onClick={() => {
         if (data[types.indexOf("main_category_key")]) {
-          window.location.href = `/blockspace/category-comparison?category=${
-            data[types.indexOf("main_category_key")]
-          }&subcategories=${data[types.indexOf("sub_category_key")]}`;
+          window.location.href = `/blockspace/category-comparison?category=${data[types.indexOf("main_category_key")]
+            }&subcategories=${data[types.indexOf("sub_category_key")]}`;
         } else {
           navigator.clipboard.writeText(data[types.indexOf("address")]);
           handleCopy();
@@ -124,7 +125,7 @@ export default function ContractCard({
                     style={{
                       color:
                         AllChainsByKeys[data[types.indexOf("chain")]].colors[
-                          theme ?? "dark"
+                        theme ?? "dark"
                         ][0],
                     }}
                   />
@@ -138,7 +139,7 @@ export default function ContractCard({
           <div className="flex flex-col items-end space-x-3 space-y-1 justify-end absolute right-0 top-0">
             <>
               {metric.includes("gas_fees") && (
-                <div className="flex flex-row items-center space-x-1 text-sm">
+                <div className="flex flex-row items-center numbers-sm">
                   <div>{metric.includes("_usd") ? "$" : "Ξ"}</div>
                   <div>
                     {Intl.NumberFormat("en-GB", {
@@ -149,7 +150,7 @@ export default function ContractCard({
                 </div>
               )}
               {metric.includes("daa") && (
-                <div className="flex flex-row items-end space-x-1 text-sm">
+                <div className="flex flex-row items-end space-x-1 numbers-sm">
                   <div>
                     <Icon icon="feather:users" className="w-4 h-4" />
                   </div>
@@ -162,7 +163,7 @@ export default function ContractCard({
                 </div>
               )}
               {metric.includes("txcount") && (
-                <div className="flex flex-row items-end space-x-1 text-sm">
+                <div className="flex flex-row items-end space-x-1 numbers-sm">
                   <div>
                     <Icon icon="feather:activity" className="w-4 h-4" />
                   </div>
@@ -176,13 +177,12 @@ export default function ContractCard({
               )}
             </>
             {data[types.indexOf(`${metric}_change_percent`)] ? (
-              <div className="flex space-x-1 text-[0.6rem] items-end justify-end ">
+              <div className="flex space-x-1 text-xxs items-end justify-end ">
                 <div
-                  className={`flex flex-row space-x-1 text-xs font-semibold transition-colors duration-200 ${
-                    data[types.indexOf(`${metric}_change_percent`)] >= 0
-                      ? " text-green-500 dark:group-hover:text-green-400"
-                      : " text-red-500 dark:group-hover:text-red-400"
-                  }`}
+                  className={`flex flex-row items-end space-x-1 numbers-xs font-semibold transition-colors duration-200 ${data[types.indexOf(`${metric}_change_percent`)] >= 0
+                    ? " text-green-500 dark:group-hover:text-green-400"
+                    : " text-red-500 dark:group-hover:text-red-400"
+                    }`}
                 >
                   {data[types.indexOf(`${metric}_change_percent`)] >= 0 ? (
                     <>
@@ -204,12 +204,12 @@ export default function ContractCard({
                   ) / 100.0}
                   %
                 </div>
-                <div className="text-forest-900 dark:text-forest-300">
+                <div className="text-forest-900 dark:text-forest-300 leading-[10px]">
                   {changeSuffix}
                 </div>
               </div>
             ) : (
-              <div className="flex flex-row items-center space-x-1 text-xs md:text-sm">
+              <div className="flex flex-row items-center space-x-1 text-xs md:text-xs">
                 -
               </div>
             )}
@@ -217,7 +217,11 @@ export default function ContractCard({
         </div>
         <div className="w-full my-2.5">
           <div className="text-[30px] font-bold">
-            {data[types.indexOf("project_name")]}
+            {data[types.indexOf("project_name")] ? (
+              data[types.indexOf("project_name")]
+            ) : (
+              <>&nbsp;</>
+            )}
           </div>
           <div className="flex items-center text-forest-600 dark:text-forest-400 ">
             <div className="text-md leading-snug max-w-[200px] truncate">
@@ -225,44 +229,60 @@ export default function ContractCard({
                 ? data[types.indexOf("name")]
                 : data[types.indexOf("address")]}
             </div>
+            {!data[types.indexOf("main_category_key")] && (
+              <div className="flex flex-row items-center space-x-1">
+                {copied ? (
+                  <Icon
+                    icon="feather:check-circle"
+                    className="w-[16px] h-[16px] hidden group-hover:block"
+                  />
+                ) : (
+                  <Icon
+                    icon="feather:copy"
+                    className="w-[16px] h-[16px] hidden group-hover:block"
+                  />
+                )}
+
+              </div>
+            )}
           </div>
         </div>
         <div className="flex flex-row justify-between items-end  w-full">
           <div
-            className={`flex flex-row items-center space-x-1 text-xs md:text-sm ${
-              data[types.indexOf("name")] ? "pt-0" : " pt-[22px]"
-            }`}
+            className={`flex flex-row items-center space-x-1 text-xs md:text-sm`}
           >
             {master && (
-              <div className="flex flex-row items-center space-x-1">
+              <div className="flex flex-row items-center justify-end space-x-1">
                 {master.blockspace_categories.main_categories[
                   data[types.indexOf("main_category_key")]
                 ]
                   ? master.blockspace_categories.main_categories[
-                      data[types.indexOf("main_category_key")]
-                    ]
+                  data[types.indexOf("main_category_key")]
+                  ]
                   : copied
-                  ? "Address Copied to Clipboard"
-                  : "Category Not Assigned"}{" "}
+                    ? "Address Copied to Clipboard"
+                    : "No Category Assigned"}{" "}
                 {!data[types.indexOf("main_category_key")] ? null : (
                   <span className="mx-1">&gt;</span>
                 )}
                 {
                   master.blockspace_categories.sub_categories[
-                    data[types.indexOf("sub_category_key")]
+                  data[types.indexOf("sub_category_key")]
                   ]
                 }
               </div>
             )}
           </div>
-          <Icon
-            icon="feather:info"
-            className="w-6 h-6 block group-hover:hidden"
-          />
-          <Icon
-            icon="feather:chevron-right"
-            className="w-6 h-6 hidden group-hover:block"
-          />
+          <div className={`flex flex-row items-center space-x-1 ${!data[types.indexOf("main_category_key")] && "opacity-0"}`}>
+            <Icon
+              icon="feather:info"
+              className="w-6 h-6 block group-hover:hidden"
+            />
+            <Icon
+              icon="feather:chevron-right"
+              className="w-6 h-6 hidden group-hover:block"
+            />
+          </div>
         </div>
       </div>
     </div>

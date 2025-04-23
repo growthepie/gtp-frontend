@@ -14,16 +14,19 @@ import { Icon } from "@iconify/react";
 import { navigationItems } from "@/lib/navigation";
 import Subheading from "@/components/layout/Subheading";
 import { useUIContext } from "@/contexts/UIContext";
-import { AllChainsByKeys, Get_SupportedChainKeys } from "@/lib/chains";
+import { Get_SupportedChainKeys } from "@/lib/chains";
 import { Chains } from "@/types/api/ChainOverviewResponse";
 import ShowLoading from "@/components/layout/ShowLoading";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { useRouter } from "next/router";
 import { notFound } from "next/navigation";
+import { useMaster } from "@/contexts/MasterContext";
 
 const ChainOverview = ({ params }: { params: any }) => {
   const forceCategory = params.category;
+
+  const { AllChainsByKeys } = useMaster();
 
   const {
     data: usageData,
@@ -45,7 +48,7 @@ const ChainOverview = ({ params }: { params: any }) => {
       return notFound();
     }
   }, [master]);
-
+  const [focusEnabled] = useLocalStorage("focusEnabled", false)
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
     "blockspaceTimespan",
     "max",
@@ -87,16 +90,17 @@ const ChainOverview = ({ params }: { params: any }) => {
         const isSupported =
           chain === "all_l2s" ? true : supportedChainKeys.includes(chain);
         const isMaster = master?.chains[chain] ? true : false;
+        const passETH = chain === "ethereum" ? !focusEnabled : true;
         const passEcosystem =
           chain === "all_l2s"
             ? true
             : isMaster
-            ? chainEcosystemFilter === "all-chains"
-              ? true
-              : master?.chains[chain].bucket.includes(chainEcosystemFilter)
-            : false;
+              ? chainEcosystemFilter === "all-chains"
+                ? true
+                : AllChainsByKeys[chain].ecosystem.includes(chainEcosystemFilter)
+              : false;
 
-        return passEcosystem && isSupported;
+        return passEcosystem && isSupported && passETH;
       })
       .reduce((result, chain) => {
         const chainKey = AllChainsByKeys[chain].key;
@@ -110,7 +114,7 @@ const ChainOverview = ({ params }: { params: any }) => {
       }, {});
 
     return filteredChains;
-  }, [chainEcosystemFilter, master, usageData?.data.chains]);
+  }, [chainEcosystemFilter, master, usageData?.data.chains, focusEnabled]);
 
   return (
     <>
