@@ -293,7 +293,7 @@ export default function LabelsPage() {
     gas_fees_usd_change: number[];
     daa: number[];
     daa_change: number[];
-  }>("labelsFiltersObj", {
+  }>("labelsFilters", {
     address: [],
     origin_key: [],
     name: [],
@@ -348,6 +348,8 @@ export default function LabelsPage() {
   const filteredLabelsData = useMemo<ParsedDatum[]>(() => {
     let rows = [];
 
+
+
     if ((!quickLabelsData && !fullLabelsData) || !master) return rows;
 
     if (!fullLabelsData) {
@@ -355,6 +357,8 @@ export default function LabelsPage() {
     } else {
       rows = fullLabelsData.data;
     }
+
+    console.log("filteredLabelsData",labelsChainsFilter, rows.length, rows[0]);
 
     const numFilters = Object.values(labelsFilters).flat().length;
 

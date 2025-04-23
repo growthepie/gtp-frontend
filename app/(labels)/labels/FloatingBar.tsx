@@ -49,7 +49,6 @@ export default function FloatingBar({
           <HomeIcon />
         </div>
       </Link>
-      {labelsNumberFiltered}
       <Search />
       <div className="group relative w-fit z-50">
         <div className="cursor-pointer flex items-center bg-[#1F2726] gap-x-[10px] rounded-full py-[10px] pl-[10px] pr-[0px] lg:pl-[15px] lg:pr-[15px] gap font-medium transition-all duration-300">
