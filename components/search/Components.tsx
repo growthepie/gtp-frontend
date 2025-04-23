@@ -511,23 +511,155 @@ SearchBadge.displayName = 'SearchBadge';
 const Filters = () => {
   const { AllChainsByKeys } = useMaster();
   const [viewportHeight, setViewportHeight] = useState<number>(0);
-
-  useEffect(() => {
-    const handleResize = () =>{
-      setViewportHeight(window.innerHeight);
-    }
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    }
-  }, []);
+  const [keyCoords, setKeyCoords] = useState<{y: number | null, x: number | null}>({y: null, x: null});
+  const [hoveredKey, setHoveredKey] = useState<string | null>(null);
+  const [keyPressed, setKeyPressed] = useState('');
+  const [forceUpdate, setForceUpdate] = useState(0);
+  
+  const childRefs = useRef<{ [key: string]: HTMLAnchorElement | null }>({});
+  const measurementsRef = useRef<{ [key: string]: DOMRect }>({});
 
   const searchParams = useSearchParams();
   const query = searchParams.get("query");
-
   const { allFilteredData, totalMatches } = useSearchBuckets();
-
   const router = useRouter();
+
+  const keyMapping = useMemo(() => {
+    const dataMap: string[][] = [[]];
+    let yIndex = 0;
+    
+    allFilteredData.forEach(({ type, icon, filteredData, isBucketMatch }, bucketIndex) => {
+      // Start a new row for each bucket
+      if (bucketIndex > 0) {
+        yIndex++;
+        dataMap[yIndex] = [];
+      }
+
+      // Group items by their offsetTop within the current bucket
+      let currentRow: string[] = [];
+      let lastTop: number | null = null;
+
+      filteredData.forEach((item) => {
+        const key = String(item.label + type);
+        const rect = measurementsRef.current[key];
+        const itemTop = rect?.top;
+        
+        // If this is the first item or has same top position as previous items, add to current row
+        if (lastTop === null || itemTop === lastTop) {
+          currentRow.push(key);
+        } else {
+          // If top position is different, start a new row
+          yIndex++;
+          dataMap[yIndex] = [];
+          currentRow = [key];
+        }
+        
+        // Update lastTop and add current row to dataMap
+        lastTop = itemTop || lastTop;
+        dataMap[yIndex] = currentRow;
+      });
+    });
+    
+    // Filter out empty arrays
+    return dataMap.filter(arr => arr.length > 0);
+  }, [allFilteredData, forceUpdate]);
+
+  // Setup resize observer
+  useEffect(() => {
+    const observer = new ResizeObserver((entries) => {
+      let hasChanges = false;
+      
+      entries.forEach(entry => {
+        const element = entry.target as HTMLElement;
+        const key = element.getAttribute('data-key');
+        if (!key) return;
+        
+        const rect = element.getBoundingClientRect();
+        const oldRect = measurementsRef.current[key];
+        
+        if (!oldRect || oldRect.top !== rect.top || oldRect.left !== rect.left) {
+          measurementsRef.current[key] = rect;
+          hasChanges = true;
+        }
+      });
+      
+      if (hasChanges) {
+        setForceUpdate(prev => prev + 1);
+      }
+    });
+    
+    Object.entries(childRefs.current).forEach(([key, element]) => {
+      if (element) {
+        element.setAttribute('data-key', key);
+        observer.observe(element);
+      }
+    });
+    
+    return () => observer.disconnect();
+  }, [allFilteredData]);
+
+  useEffect(() => {
+    setKeyCoords({y: null, x: null});
+  }, [query, allFilteredData])
+  
+
+  // Add keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!keyMapping.length) return;
+
+      const isCoordsNull = keyCoords.y === null || keyCoords.x === null;
+      const currentY = keyCoords.y ?? 0;
+      const currentX = keyCoords.x ?? 0;
+
+      
+
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        if(isCoordsNull) {
+          setKeyCoords({y: 0, x: 0});
+        } else if(currentY !== 0) {
+          setKeyCoords({y: currentY - 1, x: Math.min(currentX, (keyMapping[currentY - 1]?.length || 1) - 1)});
+        }
+      } else if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        if(isCoordsNull) {
+          setKeyCoords({y: 0, x: 0});
+        } else if(currentY !== keyMapping.length - 1) {
+          setKeyCoords({y: currentY + 1, x: Math.min(currentX, (keyMapping[currentY + 1]?.length || 1) - 1)});
+        }
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        if(isCoordsNull) {
+          setKeyCoords({y: 0, x: 0});
+        } else if(currentX !== 0) {
+          setKeyCoords({y: currentY, x: currentX - 1});
+        }
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        if(isCoordsNull) {
+          setKeyCoords({y: 0, x: 0});
+        } else if(currentX !== keyMapping[currentY].length - 1) {
+          setKeyCoords({y: currentY, x: currentX + 1});
+        }
+      } else if (event.key === 'Enter' && !isCoordsNull) {
+        event.preventDefault();
+        const selectedKey = keyMapping[currentY][currentX];
+        const selectedElement = childRefs.current[selectedKey];
+        if (selectedElement) {
+          selectedElement.click();
+        }
+      }
+    };
+
+    if (query && allFilteredData.length > 0) {
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [keyCoords, keyMapping, query, allFilteredData]);
+
+
+
 
   return (
     <div className="flex flex-col-reverse md:flex-col !pt-0 !pb-[0px] pl-[0px] pr-[0px] gap-y-[10px] max-h-[calc(100vh-220px)] overflow-y-auto">
@@ -550,17 +682,30 @@ const Filters = () => {
                   <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
                 </div>
                 <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
-                  {filteredData.map((item) => (
-                    <Link href={item.url} key={item.label}>
-                      <SearchBadge
-                        className="!cursor-pointer"
-                        label={item.label}
-                        leftIcon={`${item.icon}` as GTPIconName}
-                        leftIconColor={item.color || "white"}
-                        rightIcon=""
-                      />
-                    </Link>
-                  )).slice(0, isBucketMatch ? undefined : 30)}
+                  {filteredData.map((item) => {
+                    const itemKey = String(item.label + type);
+                    const isSelected = keyCoords.y !== null && 
+                      keyCoords.x !== null && 
+                      keyMapping[keyCoords.y]?.[keyCoords.x] === itemKey;
+                    
+                    return (
+                      <Link 
+                        href={item.url} 
+                        key={item.label}   
+                        ref={(el) => {
+                          childRefs.current[itemKey] = el;
+                        }}
+                      >
+                        <SearchBadge
+                          className={`!cursor-pointer ${isSelected ? "!bg-[#5A6462]" : ""}`}
+                          label={item.label}
+                          leftIcon={`${item.icon}` as GTPIconName}
+                          leftIconColor={item.color || "white"}
+                          rightIcon=""
+                        />
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             );
