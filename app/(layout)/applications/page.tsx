@@ -277,13 +277,13 @@ const ApplicationsTable = memo(() => {
   const { selectedTimespan } = useTimespan();
   // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() => {
-      const applicationColumnWidth = selectedMetricKeys.length > 2 ? "156px" : "285px";
+      const applicationColumnWidth = selectedMetricKeys.length > 2 ? "minmax(156px, 1fr)" : "minmax(285px, 1fr)";
       const metricColumnWidth = selectedMetricKeys.length > 2 ? "242px" : "262px";
       return [
         "26px",
         applicationColumnWidth,
         "166px",
-        "minmax(150px, 800px)",
+        "150px",
         "95px",
         ...selectedMetricKeys.map(() => metricColumnWidth),
         ...new Array(numTotalMetrics - selectedMetricKeys.length).fill("0px"),
@@ -328,7 +328,7 @@ const ApplicationsTable = memo(() => {
         </GridTableHeaderCell>
         <GridTableHeaderCell
           metric="origin_keys"
-          className="heading-small-xs pl-[5px] pr-[15px] "
+          className="heading-small-xs pl-[3px] pr-[15px] "
           sort={sort}
           setSort={setSort}
         >
@@ -490,7 +490,7 @@ const Value = memo(({
   const { sort } = useSort();
   const [showUsd] = useLocalStorage("showUsd", true);
   const { selectedMetrics } = useMetrics();
-
+  const { selectedTimespan } = useTimespan();
   // Determine if this metric is the currently selected sort metric
   const isSelectedMetric = useMemo(() =>
     sort.metric === metric,
@@ -540,13 +540,13 @@ const Value = memo(({
       {/* Value container */}
       <div className="w-full flex flex-col items-end gap-y-[2px]">
         {/* Value display */}
-        <div className="flex justify-end items-center gap-x-[2px]">
+        <div className="flex justify-end  items-center gap-x-[2px]">
           <div className="numbers-xs">
             {displayValue}
           </div>
           <div className={`numbers-xxs w-[49px] text-right ${
             change_pct < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'
-          }`}>
+          } ${selectedTimespan === "max" ? "hidden" : ""}`}>
             {changePctDisplayValue}
           </div>
         </div>
@@ -635,13 +635,13 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
   
   // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() => {
-      const applicationColumnWidth = selectedMetricKeys.length > 2 ? "156px" : "285px";
+      const applicationColumnWidth = selectedMetricKeys.length > 2 ? "minmax(156px, 1fr)" : "minmax(285px, 1fr)";
       const metricColumnWidth = selectedMetricKeys.length > 2 ? "242px" : "262px";
       return [
         "26px",
         applicationColumnWidth,
         "166px",
-        "minmax(150px, 800px)",
+        "150px",
         "95px",
         ...selectedMetricKeys.map(() => metricColumnWidth),
         ...new Array(numTotalMetrics - selectedMetricKeys.length).fill("0px"),
