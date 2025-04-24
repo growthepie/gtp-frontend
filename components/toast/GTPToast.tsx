@@ -179,7 +179,7 @@ const ToastContainer = memo(({
 
   return createPortal(
     <div
-      className={`fixed z-50 flex flex-col gap-y-3 pb-[100px] ${positionClasses[position || "bottom-right"]}`}
+      className={`fixed z-50 flex flex-col gap-y-[10px] pb-[125px] md:pb-[75px] md:pr-[40px] ${positionClasses[position || "bottom-right"]}`}
       style={{ pointerEvents: "none" }}
     >
       <TransitionGroup component={null}>
@@ -194,7 +194,7 @@ const ToastContainer = memo(({
               exitActive: "toast-exit-active"
             }}
           >
-            <div style={{ pointerEvents: "auto" }} className="mb-2">
+            <div style={{ pointerEvents: "auto" }}>
               <ToastItem
                 toast={toast}
                 onDismiss={() => onDismiss(toast.id)}

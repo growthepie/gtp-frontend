@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from "react";
 type IconStyleOption = "gradient" | "monochrome";
 type IconFormatOption = "SVG" | "PNG";
 
+const customizeButtonWidthMobile = "44px";
 const customizeButtonWidth = "136px";
 const customizeButtonWidthHover = "280px";
 
@@ -95,6 +96,14 @@ export default function FloatingBar() {
         <GTPIcon icon="gtp-house" size="md" />
       </Link>
 
+      
+      
+
+      {/* Search Bar */}
+      <div className="flex-1 min-w-[150px]">
+        <Search query={searchQuery} setQuery={setSearchQuery} iconsCount={iconsCount} />
+      </div>
+
       {/* --- Visible Options on LG+ Screens --- */}
       <div className="hidden lg:flex items-center gap-x-[5px] md:gap-x-[15px]">
         {/* Format Selector */}
@@ -125,19 +134,6 @@ export default function FloatingBar() {
       </div>
       {/* --- End Visible Options on LG+ Screens --- */}
 
-      {/* Download All Button (Visible differently on screen sizes) */}
-      <button className="flex lg:hidden items-center justify-center rounded-full !size-[44px] bg-[#1F2726]" onClick={handleDownloadAllClick} title="Download All">
-        <GTPIcon icon="gtp-download" size="md" />
-      </button>
-      <button className="hidden lg:flex items-center gap-x-[10px] rounded-full px-[15px] h-[44px] bg-[#1F2726]" onClick={handleDownloadAllClick}>
-        <GTPIcon icon="gtp-download" size="md" />
-        <div className="heading-small-sm">Download All</div>
-      </button>
-
-      {/* Search Bar */}
-      <div className="flex-1">
-        <Search query={searchQuery} setQuery={setSearchQuery} iconsCount={iconsCount} />
-      </div>
 
       {/* --- Customize Button and Popover --- */}
       <div
@@ -160,7 +156,15 @@ export default function FloatingBar() {
         {/* Popover container */}
         {/* Customize Button */}
         <button
-          className={`z-10 cursor-pointer flex items-center gap-x-1.5 px-3 h-[44px] rounded-full shrink-0 transition-all duration-200 ease-out heading-small-sm bg-[#1F2726]`}
+          className={`z-10 cursor-pointer flex md:hidden  overflow-hidden items-center justify-start pl-[10px] gap-x-1.5 h-[44px] rounded-full shrink-0 transition-all duration-200 ease-out heading-small-sm bg-[#1F2726]`}
+          title="Customize Icon Colors"
+          style={{ width: isCustomizeOpen ? customizeButtonWidthMobile : customizeButtonWidthMobile }}
+        >
+          <GTPIcon icon="gtp-settings" size="md" /> {/* Or a palette icon */}
+          <span style={{ opacity: isCustomizeOpen ? 0 : 0 }}>Customize</span>
+        </button>
+        <button
+          className={`z-10 cursor-pointer hidden md:flex items-center gap-x-1.5 px-3 h-[44px] rounded-full shrink-0 transition-all duration-200 ease-out heading-small-sm bg-[#1F2726]`}
           title="Customize Icon Colors"
             
           style={{ width: isCustomizeOpen ? customizeButtonWidthHover : customizeButtonWidth }}
@@ -171,7 +175,7 @@ export default function FloatingBar() {
 
         {/* Popover Menu */}
         <div
-          className={`z-0 whitespace-nowrap w-0 max-h-[0px] absolute top-1/2 right-0 bg-[#151A19] rounded-b-[30px] transition-all duration-200 ease-out shadow-[0px_4px_46.2px_0px_#000000] overflow-hidden origin-top-right`}
+          className={`z-0 whitespace-nowrap w-0 max-h-[0px] absolute bottom-[calc(100%+15px)] top-auto right-[calc(-50%-10px)] md:bottom-auto md:top-1/2 md:left-auto md:right-0 bg-[#151A19] rounded-[22px] md:rounded-t-[0px] md:rounded-b-[22px] transition-all duration-200 ease-out shadow-[0px_4px_46.2px_0px_#000000] overflow-hidden origin-top-right`}
           role="dialog"
           aria-modal="true"
           style={{ 
@@ -179,12 +183,21 @@ export default function FloatingBar() {
             maxHeight: isCustomizeOpen ? "70vh" : "0px",
           }}
         >
-          <div className="h-[24px]"></div>
+          <div className="h-[5px] md:h-[24px]"></div>
           {/* Only render Customization Controls */}
           <CustomizationControls />
+          <div className="h-[5px] md:h-0"></div>
         </div>
       </div>
       {/* --- End Customize Button and Popover --- */}
+      {/* Download All Button (Visible differently on screen sizes) */}
+      <button className="flex items-center justify-center rounded-full !size-[44px] bg-[#1F2726]" onClick={handleDownloadAllClick} title="Download All">
+        <GTPIcon icon="gtp-download" size="md" />
+      </button>
+      {/* <button className="hidden lg:flex items-center gap-x-[10px] rounded-full px-[15px] h-[44px] bg-[#1F2726]" onClick={handleDownloadAllClick}>
+        <GTPIcon icon="gtp-download" size="md" />
+        <div className="heading-small-sm">Download All</div>
+      </button> */}
     </div>
   );
 }
