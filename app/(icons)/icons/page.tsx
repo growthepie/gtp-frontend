@@ -172,7 +172,7 @@ const IconsPageWithProvider = () => {
       }
 
       if (processedCount === 0 && totalCount > 0) {
-         throw new Error("No icons could be processed for the ZIP file.");
+        throw new Error("No icons could be processed for the ZIP file.");
       }
 
       addToast({ title: 'Generating ZIP', message: 'Compressing files...', type: 'info', duration: 4000 });
