@@ -358,8 +358,6 @@ export default function LabelsPage() {
       rows = fullLabelsData.data;
     }
 
-    console.log("filteredLabelsData",labelsChainsFilter, rows.length, rows[0]);
-
     const numFilters = Object.values(labelsFilters).flat().length;
 
     if (numFilters !== 0) {
