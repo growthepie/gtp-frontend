@@ -163,14 +163,23 @@ export default async function Page() {
             }
           />
           <QuestionAnswer
-            question="Why have the numbers on the landing page not been updated for a few days?"
+            question="I attested contract labels via the Open Labels Initiative - when will they show on the Applications section?"
             answer={
               <>
-                The numbers in the Weekly Engagement chart use a weekly aggregation. In
-                order to avoid confusion we only show completed weeks and no
-                partial weeks. The date that you can see in the chart is always
-                the start of the week (Monday). These numbers will update every
-                Monday. All other numbers on this page update daily.
+                Thank you for attesting your contracts via <Link
+                  href="https://www.openlabelsinitiative.org/"
+                  className="underline"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  OLI
+                </Link>!
+                Your attestations are securely stored in the OLI Label Pool.
+                We, as growthepie, consume labels from the OLI Label Pool and
+                we apply our own verification step before we add them to our platform.
+                Usually, this step takes 1 to 3 days and you should see your application
+                being listed very soon. In case you have issues, please reach out via
+                Discord.
               </>
             }
           />
