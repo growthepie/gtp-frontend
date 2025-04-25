@@ -8,33 +8,12 @@ import Subheading from '@/components/layout/Subheading';
 import { GTPIcon } from '@/components/layout/GTPIcon';
 import QuickDiveCard from '@/components/quick-dives/QuickDiveCard';
 import { SectionButtonLink } from '@/components/layout/TextHeadingComponents';
-
-// Mock data for quick dives
-const QUICK_DIVES = [
-  {
-    title: "Pectra: Tx type 4",
-    subtitle: "Understanding transaction types and their impacts",
-    date: "2025-04-17",
-    icon: "gtp-metrics-transactioncount",
-    slug: "pectra-tx-type-4"
-  },
-  {
-    title: "Optimism Bedrock",
-    subtitle: "A new foundation for Optimism's L2 solution",
-    date: "2025-03-20",
-    icon: "optimism-logo-monochrome",
-    slug: "optimism-bedrock"
-  },
-  {
-    title: "Arbitrum Nitro",
-    subtitle: "Exploring Arbitrum's next-generation tech stack",
-    date: "2025-01-15",
-    icon: "arbitrum-logo-monochrome",
-    slug: "arbitrum-nitro"
-  }
-];
+import { getFeaturedQuickDives } from '@/lib/mock/quickDivesData';
 
 const QuickDivesSection: React.FC = () => {
+  // Get featured quick dives (most recent ones) for the landing page
+  const featuredQuickDives = getFeaturedQuickDives(3);
+
   return (
     <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
       <div className="flex justify-between items-center">
@@ -57,7 +36,7 @@ const QuickDivesSection: React.FC = () => {
       
       {/* Quick Dives Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-        {QUICK_DIVES.map((quickDive, index) => (
+        {featuredQuickDives.map((quickDive, index) => (
           <QuickDiveCard 
             key={index}
             title={quickDive.title}
@@ -65,6 +44,7 @@ const QuickDivesSection: React.FC = () => {
             date={quickDive.date}
             icon={quickDive.icon}
             slug={quickDive.slug}
+            author={quickDive.author}
           />
         ))}
       </div>

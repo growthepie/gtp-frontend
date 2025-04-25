@@ -13,6 +13,10 @@ interface QuickDiveCardProps {
   date: string;
   icon: string;
   slug: string;
+  author?: {
+    name: string;
+    xUsername: string;
+  };
   className?: string;
 }
 
@@ -22,6 +26,7 @@ const QuickDiveCard: React.FC<QuickDiveCardProps> = ({
   date,
   icon,
   slug,
+  author,
   className = ''
 }) => {
   const formatDate = (dateString: string) => {
@@ -30,6 +35,11 @@ const QuickDiveCard: React.FC<QuickDiveCardProps> = ({
       month: 'short',
       year: 'numeric'
     });
+  };
+
+  const handleAuthorClick = (e: React.MouseEvent) => {
+    // Prevent the card link from being triggered when clicking on the author
+    e.stopPropagation();
   };
 
   return (
@@ -49,9 +59,25 @@ const QuickDiveCard: React.FC<QuickDiveCardProps> = ({
         <p className="text-sm mb-8 line-clamp-2">{subtitle}</p>
         
         {/* Placeholder for teaser screenshot - can be replaced with actual image */}
-        <div className="w-full h-[140px] bg-[#B0C4F2] rounded-lg mb-4 flex items-center justify-center">
+        <div className="w-full h-[180px] bg-[#B0C4F2] rounded-lg mb-12 flex items-center justify-center">
           <span className="text-forest-700">teaser screenshot</span>
         </div>
+        
+        {/* Author attribution - moved up with more spacing */}
+        {author && (
+          <div className="absolute bottom-4 left-4 flex items-center">
+            <a 
+              href={`https://x.com/${author.xUsername}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              onClick={handleAuthorClick}
+              className="flex items-center text-xs text-forest-800 dark:text-forest-300 hover:underline"
+            >
+              <Icon icon="ri:twitter-x-fill" className="w-3.5 h-3.5 mr-1.5" />
+              <span>{author.name}</span>
+            </a>
+          </div>
+        )}
         
         {/* Arrow at bottom right */}
         <div className="absolute bottom-4 right-4">

@@ -13,6 +13,10 @@ interface QuickDiveData {
   date: string;
   icon: string;
   related: string[];
+  author?: {
+    name: string;
+    xUsername: string;
+  };
 }
 
 interface RelatedQuickDivesProps {
@@ -39,6 +43,7 @@ const RelatedQuickDives: React.FC<RelatedQuickDivesProps> = ({ relatedQuickDives
             date={quickDive.date}
             icon={quickDive.icon}
             slug={quickDive.title.toLowerCase().replace(/\s+/g, '-')}
+            author={quickDive.author}
           />
         ))}
       </div>

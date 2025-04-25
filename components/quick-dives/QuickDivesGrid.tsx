@@ -13,6 +13,10 @@ interface QuickDiveData {
   icon: string;
   slug: string;
   related: string[];
+  author?: {
+    name: string;
+    xUsername: string;
+  };
 }
 
 interface QuickDivesGridProps {
@@ -30,6 +34,7 @@ const QuickDivesGrid: React.FC<QuickDivesGridProps> = ({ quickDives }) => {
           date={quickDive.date}
           icon={quickDive.icon}
           slug={quickDive.slug}
+          author={quickDive.author}
         />
       ))}
     </div>
