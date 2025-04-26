@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import Image from 'next/image';
 import { ContentBlock } from '@/lib/types/blockTypes';
 import dynamic from 'next/dynamic';
@@ -12,17 +12,60 @@ const ChartWrapper = dynamic(() => import('./ChartWrapper'), {
   loading: () => <div className="w-full h-[300px] bg-forest-50 dark:bg-forest-900 animate-pulse rounded-lg"></div>
 });
 
+// Helper function to parse image markdown
+const parseImageTag = (markdownString: string) => {
+  // Match pattern: ![alt text](/path/to/image.jpg | width=123,height=456,align=center) "caption"
+  const regex = /!\[(.*?)\]\((.*?)(?:\s+\|\s+(.*?))?\)(?:\s+"(.*?)")?/;
+  const match = markdownString.match(regex);
+  
+  if (!match) return null;
+  
+  const [_, alt, src, attributes = '', caption = ''] = match;
+  
+  // Parse attributes like width=700,height=500,align=center
+  const attributeObj: {[key: string]: string | number} = {};
+  if (attributes) {
+    attributes.split(',').forEach(attr => {
+      const [key, value] = attr.trim().split('=');
+      if (key && value) {
+        // Convert numeric values
+        attributeObj[key] = /^\d+$/.test(value) ? parseInt(value) : value;
+      }
+    });
+  }
+  
+  return {
+    alt,
+    src: src.trim(),
+    width: attributeObj.width || 1200,
+    height: attributeObj.height || 600,
+    align: attributeObj.align || 'center',
+    caption
+  };
+};
+
 interface BlockProps {
   block: ContentBlock;
 }
 
 const Block: React.FC<BlockProps> = ({ block }) => {
   switch (block.type) {
-    case 'paragraph':
+    case 'paragraph': {
+      // Check if this paragraph contains an image markdown
+      const imageData = block.content.trim().startsWith('![') ? parseImageTag(block.content) : null;
+      
+      if (imageData) {
+        // If this is an image markdown, render it as an image
+        return renderImage(imageData);
+      }
+      
       return (
-        <div className={`my-4 text-md leading-relaxed ${block.className || ''}`} 
-             dangerouslySetInnerHTML={{ __html: block.content }} />
+        <div 
+          className={`my-4 text-md leading-relaxed ${block.className || ''}`} 
+          dangerouslySetInnerHTML={{ __html: block.content }} 
+        />
       );
+    }
       
     case 'heading':
       const HeadingTag = `h${block.level}` as keyof JSX.IntrinsicElements;
@@ -43,68 +86,25 @@ const Block: React.FC<BlockProps> = ({ block }) => {
       );
       
     case 'image':
-      // Calculate dimensions while maintaining aspect ratio
-      const width = block.width ? parseInt(block.width.toString()) : 1200;
-      const height = block.height ? parseInt(block.height.toString()) : 600;
-      const aspectRatio = width / height;
-      
-      // Determine alignment class based on block.className
-      let alignClass = 'mx-auto'; // Default center alignment
-      if (block.className?.includes('text-left')) alignClass = 'ml-0';
-      if (block.className?.includes('text-right')) alignClass = 'ml-auto';
-      
-      return (
-        <figure className={`my-8 ${alignClass} max-w-full`}>
-          {/* Image container with proper dimensions */}
-          <div 
-            className={`relative overflow-hidden rounded-lg bg-forest-200 dark:bg-forest-800`}
-            style={{ 
-              maxWidth: width, 
-              width: '100%',
-              aspectRatio: aspectRatio
-            }}
-          >
-            {/* Fallback placeholder for when actual images aren't available */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
-              <GTPIcon icon="gtp-metrics-activeaddresses" size="lg" className="mb-4 opacity-30" />
-              <span className="text-forest-700 dark:text-forest-300 text-sm">
-                {block.alt || 'Image placeholder'}
-              </span>
-              <span className="text-forest-600 dark:text-forest-400 text-xs mt-2 max-w-sm overflow-hidden text-ellipsis">
-                {block.src.split('/').pop()}
-              </span>
-            </div>
-            
-            {/* In a production environment, this would display actual images */}
-            {/* 
-            <Image
-              src={block.src}
-              alt={block.alt || 'Image'}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="object-cover"
-              priority={true}
-            />
-            */}
-          </div>
-          {block.caption && (
-            <figcaption className="text-center text-xs mt-2 text-forest-700 dark:text-forest-400 italic max-w-full">
-              {block.caption}
-            </figcaption>
-          )}
-        </figure>
-      );
+      return renderImage(block);
       
     case 'chart':
       return (
-        <div className={`my-6 ${block.className || ''}`}>
+        <div className={`my-8 ${block.className || ''}`}>
           <ChartWrapper
             chartType={block.chartType}
             data={block.data}
             options={block.options}
-            width={block.width}
+            width={block.width || '100%'}
             height={block.height || 400}
+            title={block.title}
+            subtitle={block.subtitle}
           />
+          {block.caption && (
+            <figcaption className="text-center text-xs mt-2 text-forest-700 dark:text-forest-400 italic">
+              {block.caption}
+            </figcaption>
+          )}
         </div>
       );
       
@@ -166,5 +166,63 @@ const Block: React.FC<BlockProps> = ({ block }) => {
       return null;
   }
 };
+
+// Helper function to render an image consistently
+function renderImage(imageData: any) {
+  // Extract values with proper defaults
+  const width = imageData.width ? parseInt(imageData.width.toString()) : 1200;
+  const height = imageData.height ? parseInt(imageData.height.toString()) : 600;
+  const aspectRatio = width / height;
+  const alt = imageData.alt || 'Image';
+  const src = imageData.src || '';
+  const caption = imageData.caption || '';
+  
+  // Always center images
+  const alignClass = 'mx-auto'; // Center alignment for all images
+  
+  // Check if it's a development environment or if the image source is available
+  const isImageAvailable = process.env.NODE_ENV === 'production' || src.startsWith('http');
+  
+  return (
+    <figure className="my-8 mx-auto flex justify-center w-full">
+      <div 
+        className="relative overflow-hidden rounded-lg bg-forest-200 dark:bg-forest-800 mx-auto"
+        style={{ 
+          maxWidth: width, 
+          width: '100%',
+          aspectRatio: aspectRatio
+        }}
+      >
+        {isImageAvailable ? (
+          // Real image when available
+          <Image
+            src={src}
+            alt={alt}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover"
+            priority={true}
+          />
+        ) : (
+          // Fallback placeholder
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+            <GTPIcon icon="gtp-metrics-activeaddresses" size="lg" className="mb-4 opacity-30" />
+            <span className="text-forest-700 dark:text-forest-300 text-sm">
+              {alt || 'Image placeholder'}
+            </span>
+            <span className="text-forest-600 dark:text-forest-400 text-xs mt-2 max-w-sm overflow-hidden text-ellipsis">
+              {src.split('/').pop()}
+            </span>
+          </div>
+        )}
+      </div>
+      {caption && (
+        <figcaption className="text-center text-xs mt-2 text-forest-700 dark:text-forest-400 italic w-full">
+          {caption}
+        </figcaption>
+      )}
+    </figure>
+  );
+}
 
 export default Block;

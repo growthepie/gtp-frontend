@@ -23,12 +23,12 @@ export interface QuickDiveData {
       title: "Pectra: Tx type 4",
       subtitle: "Understanding transaction types and their impacts",
       content: [
-        "# Introduction to Transaction Types",
+        "## Introduction to Transaction Types",
         "Ethereum's transaction format has evolved over time to support new features and improvements. Each transaction type is identified by a specific number, with transaction type 4 being one of the latest innovations within the Pectra protocol.",
         
         "> Transaction type 4 is designed to optimize gas efficiency and provide more accurate fee estimations in congested networks. This is particularly important for Layer 2 solutions that aim to reduce costs for users.",
         
-        "![Transaction type evolution diagram showing the progression from Legacy to Type 4](/images/quick-dives/transaction-types-evolution.png | width=800,height=400)",
+        "![Transaction type evolution diagram showing the progression from Legacy to Type 4](/images/quick-dives/transaction-types-evolution.png | width=800,height=400) \"Test\"",
         
         "## How Transaction Type 4 Works",
         "Transaction type 4 introduces a new field in the transaction data structure that allows for more granular control over gas limits and prioritization. This helps to address several key challenges:",
@@ -61,7 +61,7 @@ export interface QuickDiveData {
       title: "Optimism Bedrock",
       subtitle: "A new foundation for Optimism's L2 solution",
       content: [
-        "# The Bedrock Upgrade",
+        "## The Bedrock Upgrade",
         "Optimism's Bedrock upgrade represents a complete architectural overhaul of the protocol, focusing on modularity, efficiency, and improved developer experience. Launched in June 2023, Bedrock marks a significant milestone in Optimism's evolution toward becoming a more efficient and EVM-equivalent Layer 2 solution.",
         
         "> Bedrock reduces fees by up to 40% through optimized data compression and more efficient transaction processing - a game-changer for applications sensitive to gas costs.",
@@ -76,8 +76,97 @@ export interface QuickDiveData {
         
         "The most significant improvement is the redesigned rollup node, which handles transaction sequencing and execution more efficiently than its predecessor.",
         
+        "```chart",
+        JSON.stringify({
+          type: "column",
+          title: "Optimism Transaction Costs Before vs. After Bedrock",
+          subtitle: "Average gas costs in USD for common operations",
+          data: [
+            {
+              name: "Before Bedrock",
+              color: "#FF0420",
+              data: [0.27, 0.48, 1.35, 2.14, 0.53]
+            },
+            {
+              name: "After Bedrock",
+              color: "#FF5A00",
+              data: [0.15, 0.26, 0.79, 1.28, 0.32]
+            }
+          ],
+          options: {
+            xAxis: {
+              categories: ["Token Transfer", "Swap", "NFT Mint", "Contract Deployment", "LP Addition"]
+            },
+            yAxis: {
+              title: {
+                text: "Cost in USD"
+              }
+            },
+            plotOptions: {
+              column: {
+                dataLabels: {
+                  enabled: false
+                }
+              }
+            }
+          },
+          height: 400,
+          caption: "Gas cost reduction across different operation types after the Bedrock upgrade"
+        }),
+        "```",
+        
         "## Impact on the Ecosystem",
         "Since the Bedrock upgrade, Optimism has seen a 47% increase in daily active addresses and a 32% increase in total value locked. These metrics suggest that the lower fees and improved reliability have attracted both users and developers to the platform.",
+        
+        "```chart",
+        JSON.stringify({
+          type: "line",
+          title: "Optimism Network Growth Post-Bedrock",
+          data: [
+            {
+              name: "Daily Active Addresses",
+              color: "#FF5A00", 
+              data: [25000, 28500, 31200, 35600, 39800, 42300]
+            },
+            {
+              name: "Total Value Locked (in millions $)",
+              color: "#FF0420",
+              data: [520, 610, 680, 750, 830, 920]
+            }
+          ],
+          options: {
+            xAxis: {
+              categories: ["Jun 2023", "Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023", "Nov 2023"]
+            },
+            yAxis: [
+              {
+                title: {
+                  text: "Daily Active Addresses"
+                }
+              },
+              {
+                title: {
+                  text: "TVL (millions $)"
+                },
+                opposite: true
+              }
+            ],
+            tooltip: {
+              shared: true
+            },
+            series: [
+              {
+                yAxis: 0
+              },
+              {
+                yAxis: 1
+              }
+            ]
+          },
+          height: 450,
+          caption: "Network growth metrics in the six months following the Bedrock upgrade"
+        }),
+        "```",
         
         "For developers, the upgrade has simplified the migration process from Ethereum, as applications now require minimal modifications to run on Optimism. This has led to a proliferation of new projects and services in the ecosystem, further driving adoption and usage."
       ],
@@ -94,7 +183,7 @@ export interface QuickDiveData {
       title: "Arbitrum Nitro",
       subtitle: "Exploring Arbitrum's next-generation tech stack",
       content: [
-        "# Nitro: A New Era for Arbitrum",
+        "## Nitro: A New Era for Arbitrum",
         "Arbitrum Nitro represents a fundamental redesign of the Arbitrum technology stack, replacing the previous Arbitrum Classic architecture with a more efficient and developer-friendly implementation. Launched in August 2022, Nitro has dramatically improved Arbitrum's performance, cost-efficiency, and compatibility with Ethereum.",
         
         "> The WASM-based prover in Nitro is estimated to be 50x faster than the previous implementation, allowing for significantly more transaction throughput while maintaining security guarantees.",
@@ -132,7 +221,7 @@ export interface QuickDiveData {
       title: "zkSync Era",
       subtitle: "A closer look at how zkSync's zkEVM works",
       content: [
-        "# zkSync Era: The zkEVM Revolution",
+        "## zkSync Era: The zkEVM Revolution",
         "zkSync Era represents a breakthrough in zero-knowledge proof technology, offering a fully EVM-compatible Layer 2 solution with the security benefits of ZK proofs. Launched in March 2023, Era has quickly established itself as a leading zkEVM implementation.",
         
         "![zkSync Era architecture overview](/images/quick-dives/zksync-era-overview.png | width=900,height=500,align=center) \"High-level architecture of zkSync Era\"",
@@ -177,57 +266,6 @@ export interface QuickDiveData {
       author: {
         name: "Maya Rodriguez",
         xUsername: "maya_zkp"
-      }
-    },
-    "starknet-volition": {
-      title: "Starknet Volition",
-      subtitle: "Data availability options in StarkNet",
-      content: [
-        "# Starknet Volition: Flexible Data Availability",
-        "Starknet Volition introduces a revolutionary approach to data availability in Layer 2 solutions, allowing users to choose where their transaction data is stored. This hybrid model gives users unprecedented flexibility to optimize for either cost, security, or privacy based on their specific needs.",
-        
-        "![Starknet Volition high-level architecture](/images/quick-dives/starknet-volition-architecture.png | width=900,height=500,align=center) \"Starknet Volition architecture showing different data availability modes\"",
-        
-        "> Volition represents a paradigm shift in thinking about the data availability trilemma, offering a spectrum of choices rather than a one-size-fits-all approach.",
-        
-        "## The Data Availability Spectrum",
-        "Volition offers three primary data availability modes:",
-        
-        "- **L1 Data Availability**: Transaction data is posted directly to Ethereum, providing maximum security but at higher cost.",
-        "- **L2 Data Availability**: Data is stored by Starknet operators, offering lower costs but requiring some trust in the operator network.",
-        "- **Validium Mode**: Data is kept entirely off-chain, maximizing privacy and minimizing costs, with slightly different security assumptions.",
-        
-        "The most innovative aspect of Volition is that these modes can be selected on a per-transaction or per-application basis, rather than being a network-wide setting.",
-        
-        "![Data availability cost comparison](/images/quick-dives/data-availability-costs.png | width=700,height=400) \"Cost comparison between different data availability options\"",
-        
-        "## Technical Implementation",
-        "Implementing this flexibility required significant architectural innovations:",
-        
-        "- **Data Availability Committee (DAC)**: A distributed network of entities responsible for maintaining and attesting to off-chain data.",
-        "- **Data Availability Managers**: Smart contracts that track which mode is used for each piece of data and enforce the appropriate verification rules.",
-        "- **Hybrid State Proofs**: A novel proving system that can verify state transitions regardless of where the underlying data is stored.",
-        
-        "![Data Availability Committee structure](/images/quick-dives/dac-structure.png | width=500,height=300,align=left) \"Structure of the Data Availability Committee\"",
-        
-        "## Use Cases and Applications",
-        "Different applications benefit from different data availability models:",
-        
-        "- **DeFi Applications**: Typically use L1 DA for maximum security when handling high-value transactions.",
-        "- **Gaming and Social Applications**: Often choose L2 DA to balance cost and security for frequent, lower-value interactions.",
-        "- **Enterprise Solutions**: Might prefer Validium mode for privacy-sensitive operations where data shouldn't be publicly visible.",
-        
-        "![Trade-offs between different data availability modes](/images/quick-dives/data-availability-tradeoffs.png | width=800,height=600,align=center) \"Security, cost, and privacy trade-offs across different data availability modes\"",
-        
-        "This flexibility has made Starknet an attractive platform for a diverse range of applications, contributing to its rapid ecosystem growth in 2024-2025."
-      ],
-      image: "/images/quick-dives/starknet-volition.png",
-      date: "2025-01-05",
-      icon: "starknet-logo-monochrome",
-      related: ["zksync-era", "arbitrum-nitro"],
-      author: {
-        name: "Liam Thompson",
-        xUsername: "liam_stark"
       }
     }
   };

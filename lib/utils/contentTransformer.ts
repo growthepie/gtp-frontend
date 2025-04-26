@@ -1,4 +1,4 @@
-import { ContentBlock, ParagraphBlock, HeadingBlock, ImageBlock, CalloutBlock, generateBlockId } from '@/lib/types/blockTypes';
+import { ContentBlock, ParagraphBlock, HeadingBlock, ImageBlock, CalloutBlock, ChartBlock, generateBlockId } from '@/lib/types/blockTypes';
 
 /**
  * Transforms an array of text content into structured content blocks
@@ -10,23 +10,27 @@ export function transformContentToBlocks(content: string[]): ContentBlock[] {
     return [];
   }
 
-  return content.map((text, index) => {
+  const blocks: ContentBlock[] = [];
+  
+  for (let i = 0; i < content.length; i++) {
+    const text = content[i];
+    
     // Simple heuristic: if the text starts with # treat it as a heading
     if (text.startsWith('# ')) {
-      return {
+      blocks.push({
         id: generateBlockId(),
         type: 'heading',
         content: text.substring(2),
         level: 1
-      } as HeadingBlock;
+      } as HeadingBlock);
     } 
     else if (text.startsWith('## ')) {
-      return {
+      blocks.push({
         id: generateBlockId(),
         type: 'heading',
         content: text.substring(3),
         level: 2
-      } as HeadingBlock;
+      } as HeadingBlock);
     }
     // If text starts with ![] syntax (markdown image), create an image block
     else if (text.startsWith('![') && text.includes('](') && text.endsWith(')')) {
@@ -53,7 +57,7 @@ export function transformContentToBlocks(content: string[]): ContentBlock[] {
           const height = heightParam ? heightParam.split('=')[1] : undefined;
           const className = alignParam ? `text-${alignParam.split('=')[1]}` : '';
           
-          return {
+          blocks.push({
             id: generateBlockId(),
             type: 'image',
             src: actualSrc,
@@ -62,47 +66,137 @@ export function transformContentToBlocks(content: string[]): ContentBlock[] {
             width,
             height,
             className
-          } as ImageBlock;
+          } as ImageBlock);
+        } else {
+          blocks.push({
+            id: generateBlockId(),
+            type: 'image',
+            src,
+            alt,
+            caption
+          } as ImageBlock);
         }
-        
-        return {
-          id: generateBlockId(),
-          type: 'image',
-          src,
-          alt,
-          caption
-        } as ImageBlock;
       }
     }
     // For backward compatibility: If text contains image markers [image:url:alt], extract and create an image block
     else if (text.match(/\[image:(.*?):(.*?)\]/)) {
       const match = text.match(/\[image:(.*?):(.*?)\]/);
       if (match && match.length >= 3) {
-        return {
+        blocks.push({
           id: generateBlockId(),
           type: 'image',
           src: match[1],
           alt: match[2] || 'Image'
-        } as ImageBlock;
+        } as ImageBlock);
+      }
+    }
+    // If text starts with ```chart, treat it as a chart block
+    else if (text.startsWith('```chart')) {
+      // Handle chart blocks specially
+      try {
+        // First check if this is the beginning of a chart block
+        if (text === '```chart') {
+          // If it's just the opening marker, the next element should be the JSON data
+          if (i + 1 < content.length) {
+            const jsonString = content[i + 1];
+            // And the one after that should be the closing marker
+            const closingMarker = content[i + 2] === '```' ? content[i + 2] : null;
+            
+            if (closingMarker) {
+              // We have a complete chart block
+              const chartConfig = JSON.parse(jsonString);
+              
+              // Get chart type from config or default to line
+              const chartType = chartConfig.type || 'line';
+              
+              // Extract chart data
+              const data = chartConfig.data || [];
+              
+              // Extract any additional options
+              const options = chartConfig.options || {};
+              
+              // Get title, subtitle, dimensions
+              const { title, subtitle, width, height, caption } = chartConfig;
+              
+              blocks.push({
+                id: generateBlockId(),
+                type: 'chart',
+                chartType,
+                data,
+                options,
+                title,
+                subtitle,
+                width,
+                height,
+                caption
+              } as ChartBlock);
+              
+              // Skip the next two items since we've processed them
+              i += 2;
+              continue;
+            }
+          }
+        }
+        
+        // If we get here, try the original approach as fallback
+        const jsonMatch = text.match(/```chart([\s\S]*?)```/);
+        if (jsonMatch && jsonMatch[1]) {
+          const chartConfig = JSON.parse(jsonMatch[1].trim());
+          
+          const chartType = chartConfig.type || 'line';
+          const data = chartConfig.data || [];
+          const options = chartConfig.options || {};
+          const { title, subtitle, width, height, caption } = chartConfig;
+          
+          blocks.push({
+            id: generateBlockId(),
+            type: 'chart',
+            chartType,
+            data,
+            options,
+            title,
+            subtitle,
+            width,
+            height,
+            caption
+          } as ChartBlock);
+        } else {
+          // If no match, treat it as a paragraph
+          blocks.push({
+            id: generateBlockId(),
+            type: 'paragraph',
+            content: text
+          } as ParagraphBlock);
+        }
+      } catch (e) {
+        // If parsing fails, return a paragraph with error message
+        blocks.push({
+          id: generateBlockId(),
+          type: 'paragraph',
+          content: `Error parsing chart data: ${e.message}`
+        } as ParagraphBlock);
       }
     }
     // If text starts with > treat it as a callout
     else if (text.startsWith('> ')) {
-      return {
+      blocks.push({
         id: generateBlockId(),
         type: 'callout',
         content: text.substring(2),
         icon: 'gtp-info'
-      } as CalloutBlock;
+      } as CalloutBlock);
     }
-    
     // Default to paragraph
-    return {
-      id: generateBlockId(),
-      type: 'paragraph',
-      content: text
-    } as ParagraphBlock;
-  });
+    else {
+      blocks.push({
+        id: generateBlockId(),
+        type: 'paragraph',
+        content: text
+      } as ParagraphBlock);
+    }
+  }
+  
+  return blocks;
 }
 
 /**
