@@ -40,6 +40,7 @@ export default function Search() {
     owner_project: { owner_project: string; owner_project_clear: string }[];
     category: string[];
     subcategory: string[];
+    deployer_address: string[];
     txcount: number[];
     txcount_change: number[];
     gas_fees_usd: number[];
@@ -53,6 +54,7 @@ export default function Search() {
     owner_project: [],
     category: [],
     subcategory: [],
+    deployer_address: [],
     txcount: [],
     txcount_change: [],
     gas_fees_usd: [],
@@ -100,6 +102,7 @@ export default function Search() {
     address: string[];
     origin_key: string[];
     name: string[];
+    deployer_address: string[];
     owner_project: { owner_project: string; owner_project_clear: string }[];
     category: string[];
     subcategory: string[];
@@ -110,6 +113,7 @@ export default function Search() {
     owner_project: [],
     category: [],
     subcategory: [],
+    deployer_address: [],
   });
 
   // bold the search terms in the badges
@@ -150,6 +154,20 @@ export default function Search() {
         key={address}
         onClick={() => handleFilter("address", address)}
         label={address}
+        leftIcon="heroicons-solid:qrcode"
+        leftIconColor="#CDD8D3"
+        rightIcon="heroicons-solid:x-circle"
+        rightIconColor="#FE5468"
+        showLabel={true}
+        altColoring={isOpen}
+      />
+    ));
+
+    const deployerAddressFilters = labelsFilters.deployer_address.map((deployerAddress) => (
+      <Badge
+        key={deployerAddress}
+        onClick={() => handleFilter("deployer_address", deployerAddress)}
+        label={deployerAddress}
         leftIcon="heroicons-solid:qrcode"
         leftIconColor="#CDD8D3"
         rightIcon="heroicons-solid:x-circle"
@@ -233,23 +251,14 @@ export default function Search() {
 
     return [
       ...addressFilters,
+      ...deployerAddressFilters,
       ...chainFilters,
       ...categoryFilters,
       ...subcategoryFilters,
       ...ownerProjectFilters,
       ...nameFilters,
     ];
-  }, [
-    handleFilter,
-    isOpen,
-    labelsFilters.address,
-    labelsFilters.category,
-    labelsFilters.name,
-    labelsFilters.origin_key,
-    labelsFilters.owner_project,
-    labelsFilters.subcategory,
-    master,
-  ]);
+  }, [master, labelsFilters.address, labelsFilters.deployer_address, labelsFilters.origin_key, labelsFilters.category, labelsFilters.subcategory, labelsFilters.owner_project, labelsFilters.name, isOpen, handleFilter, AllChainsByKeys]);
 
   useEffect(() => {
     if (!master || labelsOwnerProjects.length === 0) return;
@@ -262,6 +271,7 @@ export default function Search() {
         category: [],
         subcategory: [],
         origin_key: [],
+        deployer_address: [],
       });
       return;
     }
@@ -289,6 +299,7 @@ export default function Search() {
 
     setLabelsAutocomplete({
       address: [],
+      deployer_address: [],
       name: [],
       owner_project: ownerProjectAutocomplete,
       category: categoryAutocomplete,
@@ -373,6 +384,7 @@ export default function Search() {
                         origin_key: [],
                         name: [],
                         owner_project: [],
+                        deployer_address: [],
                         category: [],
                         subcategory: [],
                         txcount: [],
