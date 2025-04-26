@@ -970,7 +970,7 @@ export const ChainsTooltip = ({
             e.preventDefault();
           }}
         >
-          <div className="text-[#5a6462] text-[10px] font-medium leading-[15px]">
+          <div className="text-[#5a6462] text-[10px] font-medium leading-[15px] whitespace-nowrap">
             +{hiddenCount} more
           </div>
         </div>
