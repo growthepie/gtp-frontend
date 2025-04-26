@@ -2,11 +2,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import Sidebar from "./Sidebar";
-import { Icon } from "@iconify/react";
+import { getIcon, Icon } from "@iconify/react";
 import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { track } from "@vercel/analytics";
+import { GTPIcon } from "./GTPIcon";
+import { useOutsideAlerter } from "@/hooks/useOutsideAlerter";
+import { useToast } from "../toast/GTPToast";
+import { triggerBlobDownload } from "@/lib/icon-library/clientSvgUtils";
+import { convertSvgToPngBlob } from "@/lib/icon-library/clientSvgUtils";
+import { GTPIconName } from "@/icons/gtp-icon-names";
 
 export default function SidebarContainer() {
   const { isSidebarOpen, toggleSidebar } = useUIContext();
@@ -16,6 +22,7 @@ export default function SidebarContainer() {
       <div className="pt-[35px] pl-[20px] bg-[#1F2726] min-h-screen max-h-screen sticky top-0 left-0 hidden md:flex flex-col overflow-y-hidden overflow-x-hidden gap-y-[36px] border-r-[2px] border-[#151A19] z-[3]">
         <div className="select-none h-[45.07px]">
           <div className="flex items-center justify-start h-[45.07px] gap-x-[15px] pr-[10px]">
+            <LogoContextMenu>
             <Link
               href="/"
               className={`${isSidebarOpen ? "relative h-[45.07px] w-[192.87px] block" : "relative h-[45.07px] w-[62px] overflow-clip"} transition-all duration-300`}
@@ -80,9 +87,9 @@ export default function SidebarContainer() {
                   <path d="M172.792 38.693V23.898H176.575V38.693H172.792ZM172.792 21.837V18.082H176.575V21.837H172.792Z" fill="#CDD8D3" />
                   <path d="M185.72 38.9746C184.534 38.9746 183.461 38.7766 182.501 38.3816C181.541 37.9676 180.722 37.4126 180.045 36.7156C179.367 36.0006 178.84 35.1916 178.464 34.2876C178.106 33.3656 177.927 32.3966 177.927 31.3796C177.927 29.9686 178.238 28.6786 178.859 27.5116C179.499 26.3446 180.402 25.4126 181.569 24.7166C182.755 24.0016 184.148 23.6436 185.748 23.6436C187.367 23.6436 188.75 24.0016 189.898 24.7166C191.046 25.4126 191.922 26.3446 192.524 27.5116C193.145 28.6596 193.456 29.9026 193.456 31.2386C193.456 31.4646 193.446 31.6996 193.428 31.9446C193.409 32.1706 193.39 32.3586 193.371 32.5096H181.936C182.012 33.2616 182.228 33.9206 182.586 34.4856C182.962 35.0506 183.433 35.4836 183.997 35.7846C184.581 36.0666 185.202 36.2076 185.861 36.2076C186.614 36.2076 187.32 36.0286 187.978 35.6716C188.656 35.2946 189.117 34.8056 189.362 34.2036L192.609 35.1066C192.251 35.8596 191.734 36.5276 191.056 37.1116C190.397 37.6946 189.616 38.1556 188.713 38.4946C187.809 38.8146 186.811 38.9746 185.72 38.9746ZM181.852 30.1096H189.588C189.512 29.3566 189.296 28.7066 188.938 28.1616C188.6 27.5966 188.148 27.1636 187.583 26.8626C187.018 26.5426 186.388 26.3826 185.691 26.3826C185.014 26.3826 184.393 26.5426 183.828 26.8626C183.282 27.1636 182.83 27.5966 182.473 28.1616C182.134 28.7066 181.927 29.3566 181.852 30.1096Z" fill="#CDD8D3" />
                 </svg>
-
               </div>
             </Link>
+            </LogoContextMenu>
             <div className="absolute flex items-end p-[10px] right-0 cursor-pointer " onClick={() => {
               // track("clicked Sidebar Close", {
               //   location: "desktop sidebar",
@@ -104,3 +111,153 @@ export default function SidebarContainer() {
     </div>
   );
 }
+
+// custom right-click menu to copy, download, or go to the icon page
+export const LogoContextMenu = ({ children}: {children: React.ReactNode}) => {
+  const toast = useToast();
+  const [isOpen, setIsOpen] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [logoFullSVG, setLogoFullSVG] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useOutsideAlerter(menuRef, () => {
+    setIsOpen(false);
+  });
+
+  const handleContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsOpen(true);
+    setPosition({ x: event.clientX, y: event.clientY });
+  };
+
+  useEffect(() => {
+    const fetchLogoFullSVG = async () => {
+      const logoFullSVG = await fetch("/logo-full.svg");
+      const logoFullSVGString = await logoFullSVG.text();
+      setLogoFullSVG(logoFullSVGString);
+    }
+    fetchLogoFullSVG();
+  }, []);
+
+  const getSVG = () => {
+
+  }
+
+  const handleCopy = () => {
+    if(!logoFullSVG){
+      toast.addToast({
+        title: "Error",
+        message: "Logo not found",
+        type: "error",
+      });
+      return;
+    }
+    navigator.clipboard.writeText(logoFullSVG);
+    toast.addToast({
+      title: "Success",
+      message: "Logo copied to clipboard",
+      type: "success",
+    });
+    setIsOpen(false);
+  };
+
+  const handleDownload = async () => {
+    if(!logoFullSVG){
+      toast.addToast({
+        title: "Error",
+        message: "Logo not found",
+        type: "error",
+      });
+      setIsOpen(false);
+      return;
+    }
+    const width = logoFullSVG.match(/width="(\d+)"/)?.[1];
+    const height = logoFullSVG.match(/height="(\d+)"/)?.[1];
+    if(!width || !height){
+      toast.addToast({
+        title: "Error",
+        message: "Logo dimensions not found",
+        type: "error",
+      });
+      setIsOpen(false);
+      return;
+    }
+    const blob = await convertSvgToPngBlob(logoFullSVG, parseInt(width), parseInt(height));
+    if(!blob){
+      toast.addToast({
+        title: "Error",
+        message: "Failed to convert logo to PNG",
+        type: "error",
+      });
+      setIsOpen(false);
+      return;
+    }
+    triggerBlobDownload(`logo-full.png`, blob);
+    setIsOpen(false);
+  };
+
+  const handleGoToIconsPage = () => {
+    window.open("https://icons.growthepie.xyz", "_blank");
+  };  
+
+  // CMD icon: material-symbols:keyboard-command-key
+  const CMDIcon = <Icon icon="lucide:command" />;
+  const CTRLIcon = <div className="font-inter">Ctrl</div>
+  const PlusIcon = <div className="font-inter">+</div>
+  const XIcon = <div className="font-inter">X</div>
+  const SIcon = <div className="font-inter">S</div>
+  const CIcon = <div className="font-inter">C</div>
+  const options = [
+    {
+      icon: "gtp-copy",
+      label: "Copy",
+      // shortcut: <div className="flex items-center gap-x-[5px]">
+      //   {CMDIcon} / {CTRLIcon}
+      //   {PlusIcon}
+      //   {CIcon}
+      // </div>,
+      onClick: handleCopy,
+    },
+    {
+      icon: "gtp-download",
+      label: "Download",
+      // shortcut: <div className="flex items-center gap-x-[5px]">
+      //   {CMDIcon} / {CTRLIcon}
+      //   {PlusIcon}
+      //   {SIcon}
+      // </div>,
+      onClick: handleDownload,
+    },
+    {
+      icon: "pie-only",
+      label: "See more icons",
+      onClick: handleGoToIconsPage,
+    },
+  ];
+
+
+  return (
+    <div className={`relative`} onContextMenu={handleContextMenu}>
+      {children}
+      {isOpen && (
+        <div ref={menuRef} className={`fixed z-[999] flex flex-col w-fit gap-y-[5px] rounded-[15px] overflow-hidden bg-[#1F2726] text-[#CDD8D3] text-xs shadow-[0px_0px_8px_0px_rgba(0,_0,_0,_0.66)]`} style={{ left: position.x, top: position.y }}>
+          <div className="flex flex-col gap-y-[5px] w-full py-[10px]">
+            {options.map((option) => (
+              <button key={option.label} onClick={option.onClick} className="flex w-full items-center justify-between gap-x-[30px] pl-[20px] pr-[25px] py-[5px] cursor-pointer hover:bg-[#5A6462]/50">
+                <div className="flex justify-start items-center gap-x-[10px] text-[12px]">
+                  {option.icon === "pie-only" ? (
+                    <Image src="/logo-pie-only.svg" width={13} height={17} alt="gtp pie"/>
+                  ) :(<GTPIcon icon={option.icon as GTPIconName} size="sm" className="!size-[12px]" />)}
+                  <span>{option.label}</span>
+                </div>
+                {/* <div className="flex justify-end items-center gap-x-[5px] text-[10px] text-[#5A6462]">
+                  {option.shortcut}
+                </div> */}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
