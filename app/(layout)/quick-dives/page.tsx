@@ -1,41 +1,43 @@
-// File: app/(layout)/quick-dives/page.tsx
-// This is a server component (default in Next.js App Router)
-
-import { Suspense } from 'react';
-import { PageContainer, PageRoot, Section } from "@/components/layout/Container";
-import { Description } from "@/components/layout/TextComponents";
-import { Title } from "@/components/layout/TextHeadingComponents";
-import QuickDivesGrid from "@/components/quick-dives/QuickDivesGrid";
-import Loading from "./loading";
+import { PageContainer } from '@/components/layout/Container';
+import { Title } from '@/components/layout/TextHeadingComponents';
+import { GTPIcon } from '@/components/layout/GTPIcon';
+import { Metadata } from 'next';
+import QuickDivesGrid from '@/components/quick-dives/QuickDivesGrid';
 import { getAllQuickDives } from '@/lib/mock/quickDivesData';
+import Link from 'next/link';
 
-export default function QuickDivesIndexPage() {
-  // Get all quick dives and sort by date (newest first)
-  const quickDives = getAllQuickDives()
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+export const metadata: Metadata = {
+  title: 'Quick Dives - growthepie',
+  description: 'Deep dives into Ethereum L2 technologies, trends, and updates.'
+};
 
+export default function QuickDivesPage() {
+  // Get all quick dives and add slug property
+  const quickDives = getAllQuickDives().map(dive => ({
+    ...dive,
+    slug: dive.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '')
+  }));
+
+  // Sort by date (newest first)
+  const sortedQuickDives = [...quickDives].sort((a, b) => 
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+  
   return (
-    <PageRoot className="pt-[45px] md:pt-[30px]">
-      <PageContainer paddingY="none">
-        <Section>
-          <Title
-            icon="gtp-project"
-            title="Quick Dives"
-            as="h1"
-          />
-          <Description>
-            In-depth looks at interesting blockchain development trends and technologies. 
-            These quick dives provide focused analysis on specific features, updates, and innovations 
-            across the Ethereum ecosystem.
-          </Description>
-        </Section>
+    <div className="pt-[45px] md:pt-[30px]">
+      <PageContainer>
+        <Title
+          title="Quick Dives"
+          icon="gtp-metrics-activeaddresses"
+          as="h1"
+        />
         
-        <Suspense fallback={<Loading />}>
-          <Section className="mt-8">
-            <QuickDivesGrid quickDives={quickDives} />
-          </Section>
-        </Suspense>
+        <p className="text-md md:text-lg mb-12">
+          Short, focused analyses of key developments and technologies in the Ethereum ecosystem.
+        </p>
+        
+        <QuickDivesGrid quickDives={sortedQuickDives} />
       </PageContainer>
-    </PageRoot>
+    </div>
   );
 }

@@ -43,19 +43,52 @@ const Block: React.FC<BlockProps> = ({ block }) => {
       );
       
     case 'image':
+      // Calculate dimensions while maintaining aspect ratio
+      const width = block.width ? parseInt(block.width.toString()) : 1200;
+      const height = block.height ? parseInt(block.height.toString()) : 600;
+      const aspectRatio = width / height;
+      
+      // Determine alignment class based on block.className
+      let alignClass = 'mx-auto'; // Default center alignment
+      if (block.className?.includes('text-left')) alignClass = 'ml-0';
+      if (block.className?.includes('text-right')) alignClass = 'ml-auto';
+      
       return (
-        <figure className={`my-6 ${block.className || ''}`}>
-          <div className="relative overflow-hidden rounded-lg">
+        <figure className={`my-8 ${alignClass} max-w-full`}>
+          {/* Image container with proper dimensions */}
+          <div 
+            className={`relative overflow-hidden rounded-lg bg-forest-200 dark:bg-forest-800`}
+            style={{ 
+              maxWidth: width, 
+              width: '100%',
+              aspectRatio: aspectRatio
+            }}
+          >
+            {/* Fallback placeholder for when actual images aren't available */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+              <GTPIcon icon="gtp-metrics-activeaddresses" size="lg" className="mb-4 opacity-30" />
+              <span className="text-forest-700 dark:text-forest-300 text-sm">
+                {block.alt || 'Image placeholder'}
+              </span>
+              <span className="text-forest-600 dark:text-forest-400 text-xs mt-2 max-w-sm overflow-hidden text-ellipsis">
+                {block.src.split('/').pop()}
+              </span>
+            </div>
+            
+            {/* In a production environment, this would display actual images */}
+            {/* 
             <Image
               src={block.src}
-              alt={block.alt}
-              width={block.width || 1200}
-              height={block.height || 600}
-              className="w-full h-auto object-cover"
+              alt={block.alt || 'Image'}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover"
+              priority={true}
             />
+            */}
           </div>
           {block.caption && (
-            <figcaption className="text-center text-xs mt-2 text-forest-700 dark:text-forest-400">
+            <figcaption className="text-center text-xs mt-2 text-forest-700 dark:text-forest-400 italic max-w-full">
               {block.caption}
             </figcaption>
           )}
