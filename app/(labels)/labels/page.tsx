@@ -1788,10 +1788,8 @@ export default function LabelsPage() {
                                 truncateStyle="middle"
                                 className="!max-w-[110px]"
                                 label={
-                                  <div className="max-w-[100px] truncate">
-                                    {filteredLabelsData[item.index]
-                                      .deployer_address}
-                                  </div>
+                                    filteredLabelsData[item.index]
+                                      .deployer_address
                                 }
                                 leftIcon={
                                   "material-symbols:deployed-code-account-rounded"

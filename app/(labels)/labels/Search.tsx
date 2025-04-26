@@ -976,12 +976,15 @@ export const Badge = ({
           className={`relative flex items-center justify-center ${rightIconSize == "sm" ? "pr-[3px]" : rIconContainerSize
             }`}
           >
-          <Icon
-            icon={rightIcon}
-            className={`absolute ${rIconSize}`}
-            style={{ color: rightIconColor }}
-          />
-        </div>) : (
+            <div className={rIconSize}>
+              <Icon
+                icon={rightIcon}
+                className={`absolute ${rIconSize}`}
+                style={{ color: rightIconColor }}
+              />
+            </div>
+          </div>
+          ) : (
           <div className="w-[0px] h-[12px]" />
         )}
       </div>
