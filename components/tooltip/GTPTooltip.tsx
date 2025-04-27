@@ -246,6 +246,7 @@ export const GTPTooltipNew = ({
 interface TooltipProps {
   children: React.ReactNode;
   size?: "sm" | "md" | "lg";
+  className?: string;
 }
 
 const TooltipSizeClassMap = {
@@ -254,9 +255,9 @@ const TooltipSizeClassMap = {
   lg: "w-[350px] md:w-[460px]",
 }
 
-export const Tooltip = ({ children, size = "sm" }: TooltipProps) => {
+export const Tooltip = ({ children, size = "sm", className }: TooltipProps) => {
   return (
-    <div className={`flex flex-col gap-y-[5px] ${TooltipSizeClassMap[size]} py-[15px] pr-[15px] rounded-[15px] bg-[#1F2726] text-[#CDD8D3] text-xs shadow-[0px_0px_4px_0px_rgba(0,_0,_0,_0.25)]`}>
+    <div className={`flex flex-col gap-y-[5px] ${TooltipSizeClassMap[size]} py-[15px] pr-[15px] rounded-[15px] bg-[#1F2726] text-[#CDD8D3] text-xs shadow-[0px_0px_4px_0px_rgba(0,_0,_0,_0.25)] ${className}`}>
       {children}
     </div>
   );
@@ -295,10 +296,18 @@ export const TooltipHeader = ({ title, icon, className, rightIcon, href }: Toolt
 type TooltipBodyProps = {
   children: React.ReactNode;
   className?: string;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
-export const TooltipBody = ({ children, className }: TooltipBodyProps) => {
-  return <div className={`flex flex-col w-full ${className}`}>{children}</div>;
+export const TooltipBody = ({ children, className, onClick }: TooltipBodyProps) => {
+  let stopPropagation = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  }
+  return (
+    <div className={`flex flex-col w-full ${className}`} onClick={onClick ? onClick : stopPropagation}>
+      {children}
+    </div>
+  );
 };
 
 

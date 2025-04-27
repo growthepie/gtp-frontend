@@ -12,6 +12,7 @@ import { track } from "@vercel/analytics";
 import FocusSwitch from "./FocusSwitch";
 import { HeaderSearchButton, SearchComponent } from "../search/Components";
 import { IS_DEVELOPMENT, IS_PRODUCTION } from "@/lib/helpers";
+import { LogoContextMenu } from "./SidebarContainer";
 
 export default function Header() {
   // const [isOpen, setIsOpen] = useState<boolean>(false)
@@ -25,7 +26,8 @@ export default function Header() {
               <Notification />
             </div>
             <div className="flex justify-between items-start h-full md:hidden relative w-full">
-              <Link href="/" className="">
+              <LogoContextMenu>
+                <Link href="/" className="">
                 <div className="h-[36px] w-[154.05px] relative ">
                   <svg viewBox="0 0 193 46" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M13.4079 13.991C13.3229 12.805 13.6459 11.716 14.3389 10.66C14.8029 9.958 15.4609 9.2 16.1869 8.365C18.0599 6.208 20.3799 3.538 20.9479 0C22.1829 2.712 21.5839 5.349 20.2169 7.774C19.6019 8.864 18.9209 9.647 18.2709 10.394C17.5059 11.273 16.7849 12.102 16.2669 13.321C15.9819 13.984 15.8199 14.619 15.7439 15.24L13.4079 13.991Z" fill="url(#paint0_radial_14271_43555)" />
@@ -86,6 +88,7 @@ export default function Header() {
                   </svg>
                 </div>
               </Link>
+              </LogoContextMenu>
               <div>
                 <Notification />
                 <Sidebar isMobile={true} />

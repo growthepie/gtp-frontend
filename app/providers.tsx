@@ -9,6 +9,7 @@ import { useLocalStorage } from "usehooks-ts";
 import { IS_PRODUCTION } from "@/lib/helpers";
 import { MasterProvider } from "@/contexts/MasterContext";
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
+import { ToastProvider } from "@/components/toast/GTPToast";
 
 // load icons
 addCollection(GTPIcons);
@@ -85,11 +86,15 @@ export function Providers({ children, forcedTheme }: ProvidersProps) {
           // refreshInterval: 1000 * 60 * 60, // 1 hour
         }}
       >
-        <MasterProvider>
-          <ProjectsMetadataProvider>
-            <UIContextProvider>{children}</UIContextProvider>
+          <MasterProvider>
+            <ProjectsMetadataProvider>
+              <UIContextProvider>
+              <ToastProvider>
+                {children}
+              </ToastProvider>
+            </UIContextProvider>
           </ProjectsMetadataProvider>
-        </MasterProvider>
+          </MasterProvider>
       </SWRConfig>
     </ThemeProvider>
   );

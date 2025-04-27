@@ -932,12 +932,7 @@ export default function FeesPage() {
   const getFormattedLastValue = useCallback(
     (chain, metric) => {
       // feeData.chain_data[item.chain[1]]?.hourly?.txcosts_native_median?.data[optIndex]
-      // true, feeData.chain_data["ethereum"]["hourly"]["txcosts_swap"].data[optIndex][showUsd ? 2 : 1]
-      if (
-        !feeData ||
-        !(metric in feeData.chain_data[chain]["hourly"]) ||
-        !master
-      )
+      if (!feeData || !(metric in feeData.chain_data[chain]["hourly"]) || !master)
         return null;
 
       let valueIndex = 1;
@@ -957,7 +952,8 @@ export default function FeesPage() {
       const usdClasses = " w-[63px] md:w-[63px] -mr-1.5 pr-2";
       const gweiClasses = "w-[80px] md:w-[85px] -mr-1.5";
       const centsClasses = " w-[80px] md:w-[90px] -mr-1.5";
-      const tpsClasses = " w-[50px] md:w-[52px] pr-2.5 -mr-2.5";
+      const tpsClasses = "min-w-[50px] md:min-w-[52px] w-fit px-2.5 -mr-2.5";
+      const throughputClasses = "min-w-[80px] md:min-w-[85px] w-fit px-2 -mr-1.5";
 
       // default to gwei classes
       let classes = gweiClasses;
@@ -980,6 +976,8 @@ export default function FeesPage() {
 
       if (metric === "tps") {
         classes = tpsClasses;
+      } else if (metric === "throughput") {
+        classes = throughputClasses;
       }
 
       // return N/A if value is null

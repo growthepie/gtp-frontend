@@ -604,7 +604,7 @@ export const ApplicationTooltip = ({ application }: { application: AggregatedDat
     // >
     <TooltipBody className="pl-[15px]">
       <div className="flex flex-col pl-[5px] gap-y-[10px]">
-        <Link className="flex gap-x-[5px] items-center justify-between" href={{ pathname: `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",") }}>
+        <Link className="flex gap-x-[5px] items-center justify-between" href={{ pathname: `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",") }} onClick={(e)=> e.stopPropagation}>
           <div className="flex gap-x-[5px] items-center">
             {ownerProjectToProjectData[application.owner_project] && ownerProjectToProjectData[application.owner_project].logo_path ? (
               <Image
@@ -766,15 +766,18 @@ export const Links = memo(({ owner_project, showUrl }: { owner_project: string, 
     <div className="flex items-center gap-x-[5px]">
       {ownerProjectToProjectData[owner_project] && keys.map((key, index) => (
         <div key={index} className="h-[15px] w-[15px]">
-          {ownerProjectToProjectData[owner_project][key] && <Link
-            href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
-            target="_blank"
-          >
-            <Icon
-              icon={icons[index]}
-              className="w-[15px] h-[15px] select-none"
-            />
-          </Link>}
+          {ownerProjectToProjectData[owner_project][key] && (
+            <Link
+              href={`${linkPrefixes[index]}${ownerProjectToProjectData[owner_project][key]}`}
+              target="_blank"
+              onClick={(e)=> {e.stopPropagation(); e.preventDefault()}}
+            >
+              <Icon
+                icon={icons[index]}
+                className="w-[15px] h-[15px] select-none"
+              />
+            </Link>
+          )}
         </div>
       ))}
     </div>
@@ -967,7 +970,7 @@ export const ChainsTooltip = ({
             e.preventDefault();
           }}
         >
-          <div className="text-[#5a6462] text-[10px] font-medium leading-[15px]">
+          <div className="text-[#5a6462] text-[10px] font-medium leading-[15px] whitespace-nowrap">
             +{hiddenCount} more
           </div>
         </div>
