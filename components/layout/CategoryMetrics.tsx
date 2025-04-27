@@ -730,7 +730,8 @@ export default function CategoryMetrics({
   };
 
   const contractSelectedMode = useMemo(() => {
-    if (selectedMode === 'gas_fees') {
+    console.log(selectedMode, selectedValue, showUsd);
+    if (selectedMode === 'gas_fees_') {
         return selectedValue === 'share'
             ? (showUsd ? 'gas_fees_share_usd' : 'gas_fees_share_eth')
             : (showUsd ? 'gas_fees_absolute_usd' : 'gas_fees_absolute_eth');
