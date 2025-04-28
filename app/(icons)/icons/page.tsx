@@ -20,7 +20,7 @@ import ShowLoading from "@/components/layout/ShowLoading";
 
 type IconStyleOption = "gradient" | "monochrome";
 
-export function buildInvertedIndex(data: { name: string; strings: string[] }[]) {
+function buildInvertedIndex(data: { name: string; strings: string[] }[]) {
   const index = {};
   data.forEach(item => {
     const itemName = item.name;
