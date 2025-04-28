@@ -13,6 +13,7 @@ import { useToast } from "../toast/GTPToast";
 import { triggerBlobDownload } from "@/lib/icon-library/clientSvgUtils";
 import { convertSvgToPngBlob } from "@/lib/icon-library/clientSvgUtils";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import { createPortal } from "react-dom";
 
 export default function SidebarContainer() {
   const { isSidebarOpen, toggleSidebar } = useUIContext();
@@ -22,11 +23,12 @@ export default function SidebarContainer() {
       <div className="pt-[35px] pl-[20px] bg-[#1F2726] min-h-screen max-h-screen sticky top-0 left-0 hidden md:flex flex-col overflow-y-hidden overflow-x-hidden gap-y-[36px] border-r-[2px] border-[#151A19] z-[3]">
         <div className="select-none h-[45.07px]">
           <div className="flex items-center justify-start h-[45.07px] gap-x-[15px] pr-[10px]">
-            <LogoContextMenu>
+            
             <Link
               href="/"
               className={`${isSidebarOpen ? "relative h-[45.07px] w-[192.87px] block" : "relative h-[45.07px] w-[62px] overflow-clip"} transition-all duration-300`}
             >
+              <LogoContextMenu>
               <div className={`h-[45.07px] w-[192.87px] relative ${isSidebarOpen ? "scale-100  translate-x-[1.5px] translate-y-[0px]" : "scale-[0.5325] translate-x-[1.5px] translate-y-[2px]"} transition-all duration-300`} style={{ transformOrigin: "21px 27px" }}>
                 <svg className="absolute" viewBox="0 0 194 46" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M13.9962 13.991C13.9112 12.805 14.2342 11.716 14.9272 10.66C15.3912 9.958 16.0492 9.2 16.7752 8.365C18.6482 6.208 20.9682 3.538 21.5362 0C22.7712 2.712 22.1722 5.349 20.8052 7.774C20.1902 8.864 19.5092 9.647 18.8592 10.394C18.0942 11.273 17.3732 12.102 16.8552 13.321C16.5702 13.984 16.4082 14.619 16.3322 15.24L13.9962 13.991Z" fill="url(#paint0_radial_2690_14166)" />
@@ -88,8 +90,9 @@ export default function SidebarContainer() {
                   <path d="M185.72 38.9746C184.534 38.9746 183.461 38.7766 182.501 38.3816C181.541 37.9676 180.722 37.4126 180.045 36.7156C179.367 36.0006 178.84 35.1916 178.464 34.2876C178.106 33.3656 177.927 32.3966 177.927 31.3796C177.927 29.9686 178.238 28.6786 178.859 27.5116C179.499 26.3446 180.402 25.4126 181.569 24.7166C182.755 24.0016 184.148 23.6436 185.748 23.6436C187.367 23.6436 188.75 24.0016 189.898 24.7166C191.046 25.4126 191.922 26.3446 192.524 27.5116C193.145 28.6596 193.456 29.9026 193.456 31.2386C193.456 31.4646 193.446 31.6996 193.428 31.9446C193.409 32.1706 193.39 32.3586 193.371 32.5096H181.936C182.012 33.2616 182.228 33.9206 182.586 34.4856C182.962 35.0506 183.433 35.4836 183.997 35.7846C184.581 36.0666 185.202 36.2076 185.861 36.2076C186.614 36.2076 187.32 36.0286 187.978 35.6716C188.656 35.2946 189.117 34.8056 189.362 34.2036L192.609 35.1066C192.251 35.8596 191.734 36.5276 191.056 37.1116C190.397 37.6946 189.616 38.1556 188.713 38.4946C187.809 38.8146 186.811 38.9746 185.72 38.9746ZM181.852 30.1096H189.588C189.512 29.3566 189.296 28.7066 188.938 28.1616C188.6 27.5966 188.148 27.1636 187.583 26.8626C187.018 26.5426 186.388 26.3826 185.691 26.3826C185.014 26.3826 184.393 26.5426 183.828 26.8626C183.282 27.1636 182.83 27.5966 182.473 28.1616C182.134 28.7066 181.927 29.3566 181.852 30.1096Z" fill="#CDD8D3" />
                 </svg>
               </div>
+              </LogoContextMenu>
             </Link>
-            </LogoContextMenu>
+            
             <div className="absolute flex items-end p-[10px] right-0 cursor-pointer " onClick={() => {
               // track("clicked Sidebar Close", {
               //   location: "desktop sidebar",
@@ -113,7 +116,7 @@ export default function SidebarContainer() {
 }
 
 // custom right-click menu to copy, download, or go to the icon page
-export const LogoContextMenu = ({ children}: {children: React.ReactNode}) => {
+export const LogoContextMenu = ({ children }: { children: React.ReactNode }) => {
   const toast = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -126,18 +129,31 @@ export const LogoContextMenu = ({ children}: {children: React.ReactNode}) => {
 
   const handleContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
-    setIsOpen(true);
+    // clientX/clientY are viewport coordinates, perfect for position: fixed
     setPosition({ x: event.clientX, y: event.clientY });
+    setIsOpen(true);
   };
 
   useEffect(() => {
     const fetchLogoFullSVG = async () => {
-      const logoFullSVG = await fetch("/logo-full.svg");
-      const logoFullSVGString = await logoFullSVG.text();
-      setLogoFullSVG(logoFullSVGString);
-    }
+      try {
+        const response = await fetch("/logo-full.svg");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const logoFullSVGString = await response.text();
+        setLogoFullSVG(logoFullSVGString);
+      } catch (error) {
+        console.error("Failed to fetch logo SVG:", error);
+        toast.addToast({
+          title: "Error",
+          message: "Could not load logo.",
+          type: "error",
+        });
+      }
+    };
     fetchLogoFullSVG();
-  }, []);
+  }, [toast]);
 
   const getSVG = () => {
 
@@ -208,56 +224,43 @@ export const LogoContextMenu = ({ children}: {children: React.ReactNode}) => {
   const SIcon = <div className="font-inter">S</div>
   const CIcon = <div className="font-inter">C</div>
   const options = [
-    {
-      icon: "gtp-copy",
-      label: "Copy",
-      // shortcut: <div className="flex items-center gap-x-[5px]">
-      //   {CMDIcon} / {CTRLIcon}
-      //   {PlusIcon}
-      //   {CIcon}
-      // </div>,
-      onClick: handleCopy,
-    },
-    {
-      icon: "gtp-download",
-      label: "Download",
-      // shortcut: <div className="flex items-center gap-x-[5px]">
-      //   {CMDIcon} / {CTRLIcon}
-      //   {PlusIcon}
-      //   {SIcon}
-      // </div>,
-      onClick: handleDownload,
-    },
-    {
-      icon: "pie-only",
-      label: "See more icons",
-      onClick: handleGoToIconsPage,
-    },
+    { icon: "gtp-copy", label: "Copy", onClick: handleCopy },
+    { icon: "gtp-download", label: "Download", onClick: handleDownload },
+    { icon: "gtp-growthepie-logo", label: "See more icons", onClick: handleGoToIconsPage },
   ];
 
+  // Define the menu content as a variable for clarity
+  const menuContent = (
+    <div
+      ref={menuRef}
+      className="fixed z-[999] flex flex-col w-fit gap-y-[5px] rounded-[15px] overflow-hidden bg-[#1F2726] text-[#CDD8D3] text-xs shadow-[0px_0px_8px_0px_rgba(0,_0,_0,_0.66)]"
+      // Add units (px) to position values
+      style={{ left: `${position.x}px`, top: `${position.y}px` }}
+      // Prevent context menu on the menu itself
+      onContextMenu={(e) => e.preventDefault()}
+    >
+      <div className="flex flex-col gap-y-[5px] w-full py-[10px]">
+        {options.map((option) => (
+          <button
+            key={option.label}
+            onClick={option.onClick}
+            className="flex w-full items-center justify-between gap-x-[30px] pl-[20px] pr-[25px] py-[5px] cursor-pointer hover:bg-[#5A6462]/50"
+          >
+            <div className="flex justify-start items-center gap-x-[10px] text-[12px]">
+              <GTPIcon icon={option.icon as GTPIconName} size="sm" className="!size-[12px]" />
+              <span>{option.label}</span>
+            </div>
+            {/* Optional: Shortcut placeholder */}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
-    <div className={`relative`} onContextMenu={handleContextMenu}>
+    <div className="relative w-fit"  onContextMenu={handleContextMenu}>
       {children}
-      {isOpen && (
-        <div ref={menuRef} className={`fixed z-[999] flex flex-col w-fit gap-y-[5px] rounded-[15px] overflow-hidden bg-[#1F2726] text-[#CDD8D3] text-xs shadow-[0px_0px_8px_0px_rgba(0,_0,_0,_0.66)]`} style={{ left: position.x, top: position.y }}>
-          <div className="flex flex-col gap-y-[5px] w-full py-[10px]">
-            {options.map((option) => (
-              <button key={option.label} onClick={option.onClick} className="flex w-full items-center justify-between gap-x-[30px] pl-[20px] pr-[25px] py-[5px] cursor-pointer hover:bg-[#5A6462]/50">
-                <div className="flex justify-start items-center gap-x-[10px] text-[12px]">
-                  {option.icon === "pie-only" ? (
-                    <Image src="/logo-pie-only.svg" width={13} height={17} alt="gtp pie"/>
-                  ) :(<GTPIcon icon={option.icon as GTPIconName} size="sm" className="!size-[12px]" />)}
-                  <span>{option.label}</span>
-                </div>
-                {/* <div className="flex justify-end items-center gap-x-[5px] text-[10px] text-[#5A6462]">
-                  {option.shortcut}
-                </div> */}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      {isOpen && createPortal(menuContent, document.body)}
     </div>
   );
 };
