@@ -7,7 +7,7 @@ import Footer from "../../(icons)/icons/Footer";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 // ... other imports
 import { useToast } from "@/components/toast/GTPToast";
-import { buildInvertedIndex, iconSearchStrings } from "@/icons/gtp-icon-names";
+import { iconSearchStrings } from "@/public/icon-library/icons";
 import { useIconLibrary, } from "@/contexts/IconLibraryContext";
 import { IconIndexEntry, CustomizationMode } from "@/lib/icon-library/types";
 import { applySvgCustomizations, convertSvgToPngBlob, getSvgAtWidthAndHeight, triggerBlobDownload, triggerDownload } from "@/lib/icon-library/clientSvgUtils";
@@ -19,6 +19,26 @@ import { IconPageUIContext, IconPageUIProvider, IconPageUIState, useIconPageUI }
 import ShowLoading from "@/components/layout/ShowLoading";
 
 type IconStyleOption = "gradient" | "monochrome";
+
+export function buildInvertedIndex(data: { name: string; strings: string[] }[]) {
+  const index = {};
+  data.forEach(item => {
+    const itemName = item.name;
+    item.strings.forEach(str => {
+      // Normalize the string (e.g., lowercase) for case-insensitive matching
+      const normalizedStr = str.toLowerCase();
+      if (!index[normalizedStr]) {
+        index[normalizedStr] = []; // Initialize array if string is new
+      }
+      // Add the name to the list for this string, avoiding duplicates if necessary
+      if (!index[normalizedStr].includes(itemName)) {
+        index[normalizedStr].push(itemName);
+      }
+    });
+  });
+  return index;
+}
+
 
 // Constants for icons...
 const invertedIndex = buildInvertedIndex(iconSearchStrings);
@@ -389,17 +409,57 @@ const IconCard: React.FC<IconCardProps> = ({ icon }) => {
   if (displaySvgContent === null) return <div className="icon-card w-[95px] h-[60px] bg-red-900/20 rounded-[11px] flex items-center justify-center text-xs text-red-400">{icon.name} (Err)</div>;
 
   return (
-    <div className="group flex flex-col justify-between items-center bg-[#1F2726] hover:bg-[#5A6462] rounded-[11px] py-[5px] px-[13px] transition-transform transform hover:scale-105" title={icon.name}>
-      <div 
-      style={{ width: `${selectedSize}px`, height: `${selectedSize}px` }}
-      className="icon-preview text-white flex items-center justify-center" 
-      dangerouslySetInnerHTML={{ __html: displaySvgContent }} 
-      />
-      <div className="relative w-[69px] flex justify-center mt-1">
-        <span className="group-hover:hidden text-xs text-center h-[21px] truncate">{icon.name}</span>
-        <div className="hidden group-hover:flex flex-row items-center gap-[10px] h-[15px]">
-          <button onClick={handleCopy}><GTPIcon icon={isCopied ? "gtp-checkmark-checked" : "gtp-copy"} size="sm" className="w-[15px] h-[15px]" /></button>
-          <button onClick={handleDownload}><GTPIcon icon="gtp-download" size="sm" className="w-[15px] h-[15px]" /></button>
+    <div className="group relative w-[95px] h-[60px]">
+      
+      
+      {/* absolute container, always centered */}
+      <div className="absolute top-0 -left-1/2 -right-1/2 bg-gradient-to-t from-[#1F2726] group-hover:from-[#5A6462] max-w-[95px] min-w-[95px] min-h-[60px] max-h-[60px] hover:max-w-[300px] hover:max-h-[300px]  bg-[#1F2726] hover:bg-[#5A6462] rounded-[11px] p-[13px] transition-all duration-300 transform hover:scale-105 overflow-visible">
+        {/* Icon preview - centered */}
+        <div 
+          style={{ width: `${selectedSize}px`, height: `${selectedSize}px` }}
+          className="icon-preview text-white mx-auto flex items-center justify-center"
+          dangerouslySetInnerHTML={{ __html: displaySvgContent }} 
+        />
+        {/* Default truncated name shown when not hovering */}
+        <div className="px-3 py-2">
+          <span className="block text-xs text-center text-white truncate hover:whitespace-nowrap">
+            {icon.name}
+          </span>
+        </div>
+        
+        {/* Expanded info shown on hover */}
+        <div className="absolute top-0 left-0 w-full transform transition-all duration-300 group-hover:translate-y-0 opacity-0 group-hover:opacity-100">
+          {/* Full name */}
+          <span className="block text-xs text-center text-white mb-2">
+            {icon.name}
+          </span>
+          
+          {/* Actions */}
+          <div className="flex justify-center items-center space-x-4 mb-1">
+            <button 
+              onClick={handleCopy}
+              className="text-white hover:text-teal-300 transition-colors duration-200 flex items-center gap-1"
+            >
+              <GTPIcon 
+                icon={isCopied ? "gtp-checkmark-checked" : "gtp-copy"} 
+                size="sm" 
+                className="w-[15px] h-[15px]" 
+              />
+              <span className="text-xs">Copy</span>
+            </button>
+            
+            <button 
+              onClick={handleDownload}
+              className="text-white hover:text-teal-300 transition-colors duration-200 flex items-center gap-1"
+            >
+              <GTPIcon 
+                icon="gtp-download" 
+                size="sm" 
+                className="w-[15px] h-[15px]" 
+              />
+              <span className="text-xs">Download</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
