@@ -7,7 +7,7 @@ import Footer from "../../(icons)/icons/Footer";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 // ... other imports
 import { useToast } from "@/components/toast/GTPToast";
-import { iconSearchStrings } from "@/public/icon-library/icons";
+import { iconSearchStrings } from "./icon-library-search";
 import { useIconLibrary, } from "@/contexts/IconLibraryContext";
 import { IconIndexEntry, CustomizationMode } from "@/lib/icon-library/types";
 import { applySvgCustomizations, convertSvgToPngBlob, getSvgAtWidthAndHeight, triggerBlobDownload, triggerDownload } from "@/lib/icon-library/clientSvgUtils";
@@ -410,10 +410,8 @@ const IconCard: React.FC<IconCardProps> = ({ icon }) => {
 
   return (
     <div className="group relative w-[95px] h-[60px]">
-      
-      
       {/* absolute container, always centered */}
-      <div className="absolute top-0 -left-1/2 -right-1/2 bg-gradient-to-t from-[#1F2726] group-hover:from-[#5A6462] max-w-[95px] min-w-[95px] min-h-[60px] max-h-[60px] hover:max-w-[300px] hover:max-h-[300px]  bg-[#1F2726] hover:bg-[#5A6462] rounded-[11px] p-[13px] transition-all duration-300 transform hover:scale-105 overflow-visible">
+      <div className="absolute flex flex-col top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-t from-[#1F2726] group-hover:from-[#5A6462] max-w-[95px] min-w-[95px] min-h-[60px] max-h-[60px] group-hover:max-w-[300px] group-hover:max-h-[90px] group-hover:z-[10] bg-[#1F2726] group-hover:bg-[#5A6462] rounded-[11px] px-[13px] py-[5px] gap-y-[5px] transition-all duration-300 transform group-hover:scale-105 overflow-visible">
         {/* Icon preview - centered */}
         <div 
           style={{ width: `${selectedSize}px`, height: `${selectedSize}px` }}
@@ -421,46 +419,35 @@ const IconCard: React.FC<IconCardProps> = ({ icon }) => {
           dangerouslySetInnerHTML={{ __html: displaySvgContent }} 
         />
         {/* Default truncated name shown when not hovering */}
-        <div className="px-3 py-2">
-          <span className="block text-xs text-center text-white truncate hover:whitespace-nowrap">
-            {icon.name}
-          </span>
-        </div>
-        
-        {/* Expanded info shown on hover */}
-        <div className="absolute top-0 left-0 w-full transform transition-all duration-300 group-hover:translate-y-0 opacity-0 group-hover:opacity-100">
-          {/* Full name */}
-          <span className="block text-xs text-center text-white mb-2">
-            {icon.name}
-          </span>
+        <div className="flex flex-col w-full gap-y-[5px]">
           
+          <div className="text-sm text-center truncate hover:whitespace-nowrap">
+            {icon.name}
+          </div>
           {/* Actions */}
-          <div className="flex justify-center items-center space-x-4 mb-1">
+          <div className="flex justify-center items-center gap-x-[10px] h-0 group-hover:h-[20px] transition-all duration-100 overflow-hidden">
             <button 
               onClick={handleCopy}
-              className="text-white hover:text-teal-300 transition-colors duration-200 flex items-center gap-1"
             >
               <GTPIcon 
-                icon={isCopied ? "gtp-checkmark-checked" : "gtp-copy"} 
+                icon={isCopied ? "gtp-checkmark-checked-monochrome" : "gtp-copy-monochrome"} 
                 size="sm" 
-                className="w-[15px] h-[15px]" 
+                className="w-[15px] h-[15px]"
               />
-              <span className="text-xs">Copy</span>
             </button>
             
             <button 
               onClick={handleDownload}
-              className="text-white hover:text-teal-300 transition-colors duration-200 flex items-center gap-1"
             >
               <GTPIcon 
-                icon="gtp-download" 
+                icon="gtp-download-monochrome" 
                 size="sm" 
-                className="w-[15px] h-[15px]" 
+                className="w-[15px] h-[15px]"
               />
-              <span className="text-xs">Download</span>
             </button>
           </div>
         </div>
+      
       </div>
     </div>
   );
