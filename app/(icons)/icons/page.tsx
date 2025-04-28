@@ -17,6 +17,7 @@ import { saveAs } from "file-saver"; // Ensure saveAs is imported
 // Import the Provider and Hook
 import { IconPageUIContext, IconPageUIProvider, IconPageUIState, useIconPageUI } from './IconPageUIContext'; // Adjust path if needed
 import ShowLoading from "@/components/layout/ShowLoading";
+import { GTPIconName } from "@/icons/gtp-icon-names";
 
 type IconStyleOption = "gradient" | "monochrome";
 
@@ -405,24 +406,45 @@ const IconCard: React.FC<IconCardProps> = ({ icon }) => {
     }
   };
 
+  const [isNameCopied, setIsNameCopied] = useState(false);
+
+  const handleNameCopy = () => {
+    navigator.clipboard.writeText(icon.name)
+      .then(() => {
+        setIsNameCopied(true);
+        addToast({ title: 'Copied to Clipboard', message: `"${icon.name}" (Icon ID)`, type: 'success' });
+        setTimeout(() => setIsNameCopied(false), 500);
+      })
+      .catch((err) => {
+        console.error('Failed to copy name:', err);
+        addToast({ title: 'Copy Failed', message: 'Could not copy icon name.', type: 'error' });
+      });
+  };
+
   if (displaySvgContent === undefined) return <div className="icon-card w-[95px] h-[60px] bg-[#1F2726]/50 rounded-[11px] animate-pulse"></div>;
   if (displaySvgContent === null) return <div className="icon-card w-[95px] h-[60px] bg-red-900/20 rounded-[11px] flex items-center justify-center text-xs text-red-400">{icon.name} (Err)</div>;
 
   return (
     <div className="group relative w-[95px] h-[60px]">
       {/* absolute container, always centered */}
-      <div className="absolute flex flex-col top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-t from-[#1F2726] group-hover:from-[#5A6462] max-w-[95px] min-w-[95px] min-h-[60px] max-h-[60px] group-hover:max-w-[300px] group-hover:max-h-[90px] group-hover:z-[10] bg-[#1F2726] group-hover:bg-[#5A6462] rounded-[11px] px-[13px] py-[5px] gap-y-[5px] transition-all duration-300 transform group-hover:scale-105 overflow-visible">
+      <div className="absolute flex flex-col top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 delay-100 z-0 group-hover:z-[10] group-hover:delay-0">
+      <div className="flex flex-col bg-gradient-to-t from-[#1F2726] group-hover:from-[#5A6462] max-w-[95px] min-w-[95px] min-h-[60px] max-h-[60px] group-hover:max-w-[300px] group-hover:max-h-[90px] bg-[#1F2726] group-hover:bg-[#5A6462] rounded-[11px] px-[13px] py-[5px] gap-y-[5px] transition-all duration-300 transform group-hover:scale-105 overflow-visible">
         {/* Icon preview - centered */}
         <div 
           style={{ width: `${selectedSize}px`, height: `${selectedSize}px` }}
           className="icon-preview text-white mx-auto flex items-center justify-center"
           dangerouslySetInnerHTML={{ __html: displaySvgContent }} 
         />
-        {/* Default truncated name shown when not hovering */}
+        {/* Icon name and actions */}
         <div className="flex flex-col w-full gap-y-[5px]">
-          
-          <div className="text-sm text-center truncate hover:whitespace-nowrap">
-            {icon.name}
+          {/* Name - truncated, normal on hover */}
+          <div className="w-full text-sm text-center truncate group-hover:whitespace-nowrap" onClick={handleNameCopy}>
+              {icon.name}
+            {/* <div className={`${isNameCopied ? "w-[15px]" : "w-0 hidden"} transition-all duration-300 overflow-hidden`}>
+              {isNameCopied && (
+                <GTPIcon icon={"feather:check" as GTPIconName} size="sm" />
+              )}
+            </div> */}
           </div>
           {/* Actions */}
           <div className="flex justify-center items-center gap-x-[10px] h-0 group-hover:h-[20px] transition-all duration-100 overflow-hidden">
@@ -448,6 +470,7 @@ const IconCard: React.FC<IconCardProps> = ({ icon }) => {
           </div>
         </div>
       
+      </div>
       </div>
     </div>
   );
