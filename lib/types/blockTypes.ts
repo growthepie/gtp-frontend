@@ -10,7 +10,8 @@ export type BlockType =
   | 'quote'
   | 'divider'
   | 'container'  // Container can hold multiple blocks horizontally
-  | 'spacer';     // For vertical spacing
+  | 'spacer'      // For vertical spacing
+  | 'iframe';     // For embedded content like iframes
 
 export interface BaseBlock {
   id: string;
@@ -47,6 +48,8 @@ export interface ChartBlock extends BaseBlock {
   options?: any; // Chart configuration options
   width?: number | string;
   height?: number | string;
+  title?: string;
+  subtitle?: string;
   className?: string;
 }
 
@@ -90,6 +93,16 @@ export interface SpacerBlock extends BaseBlock {
   height: number;
 }
 
+export interface IframeBlock extends BaseBlock {
+  type: 'iframe';
+  src: string;
+  title?: string;
+  width?: number | string;
+  height?: number | string;
+  caption?: string;
+  className?: string;
+}
+
 export type ContentBlock = 
   | ParagraphBlock
   | HeadingBlock
@@ -100,7 +113,8 @@ export type ContentBlock =
   | QuoteBlock
   | DividerBlock
   | ContainerBlock
-  | SpacerBlock;
+  | SpacerBlock
+  | IframeBlock;
 
 // Helper function to generate a unique ID for blocks
 export const generateBlockId = (): string => {

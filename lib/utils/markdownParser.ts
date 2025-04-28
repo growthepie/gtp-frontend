@@ -1,4 +1,3 @@
-// File: lib/utils/markdownParser.ts
 import { ContentBlock, generateBlockId } from '@/lib/types/blockTypes';
 
 // Simple utility to convert markdown to raw HTML without remark
@@ -40,6 +39,48 @@ export async function processMarkdownContent(content: string[]): Promise<Content
           }
         }
       }
+      // Handle iframe blocks
+      else if (text.startsWith('```iframe')) {
+        // Check if next line contains JSON data
+        if (i + 1 < content.length) {
+          const jsonString = content[i + 1];
+          // And check if the line after that is the closing marker
+          const closingMarker = i + 2 < content.length && content[i + 2] === '```';
+          
+          if (closingMarker) {
+            const iframeBlock = parseIframeBlock(jsonString);
+            if (iframeBlock) {
+              blocks.push(iframeBlock);
+              i += 2; // Skip the next two lines
+              continue;
+            }
+          }
+        }
+      }
+      // Handle code blocks
+      else if (text.startsWith('```')) {
+        const language = text.substring(3).trim();
+        let codeContent = '';
+        let j = i + 1;
+        
+        // Collect all content until closing ```
+        while (j < content.length && !content[j].startsWith('```')) {
+          codeContent += content[j] + '\n';
+          j++;
+        }
+        
+        if (j < content.length && content[j] === '```') {
+          blocks.push({
+            id: generateBlockId(),
+            type: 'code',
+            content: codeContent.trim(),
+            language
+          });
+          
+          i = j; // Skip to after the closing ```
+          continue;
+        }
+      }
       // Handle headings
       else if (/^#{1,6}\s/.test(text)) {
         const level = text.match(/^(#{1,6})\s/)[1].length;
@@ -63,6 +104,13 @@ export async function processMarkdownContent(content: string[]): Promise<Content
           type: 'callout',
           content: text.substring(2), // No HTML conversion
           icon: 'gtp-info'
+        });
+      }
+      // Handle dividers
+      else if (text === '---') {
+        blocks.push({
+          id: generateBlockId(),
+          type: 'divider'
         });
       }
       // Default to paragraph
@@ -107,6 +155,25 @@ function parseChartBlock(jsonString: string): ContentBlock | null {
     };
   } catch (error) {
     console.error('Error parsing chart data:', error);
+    return null;
+  }
+}
+
+// Helper function to parse iframe blocks
+function parseIframeBlock(jsonString: string): ContentBlock | null {
+  try {
+    const iframeConfig = JSON.parse(jsonString);
+    return {
+      id: generateBlockId(),
+      type: 'iframe',
+      src: iframeConfig.src || '',
+      title: iframeConfig.title || 'Embedded content',
+      width: iframeConfig.width || '100%',
+      height: iframeConfig.height || '500px',
+      caption: iframeConfig.caption || ''
+    };
+  } catch (error) {
+    console.error('Error parsing iframe data:', error);
     return null;
   }
 }

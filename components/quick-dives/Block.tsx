@@ -1,4 +1,3 @@
-// File: components/quick-dives/Block.tsx
 import React from 'react';
 import { ContentBlock } from '@/lib/types/blockTypes';
 import { ParagraphBlock } from './blocks/ParagraphBlock';
@@ -11,6 +10,7 @@ import { CodeBlock } from './blocks/CodeBlock';
 import { DividerBlock } from './blocks/DividerBlock';
 import { ContainerBlock } from './blocks/ContainerBlock';
 import { SpacerBlock } from './blocks/SpacerBlock';
+import { IframeBlock } from './blocks/IframeBlock';
 
 interface BlockProps {
   block: ContentBlock;
@@ -38,6 +38,8 @@ const Block: React.FC<BlockProps> = ({ block }) => {
       return <ContainerBlock block={block} />;
     case 'spacer':
       return <SpacerBlock block={block} />;
+    case 'iframe':
+      return <IframeBlock block={block} />;
     default:
       console.warn(`Unknown block type: ${(block as any).type}`);
       return null;

@@ -1,5 +1,3 @@
-// File: lib/mock/quickDivesData.ts
-
 export interface QuickDiveData {
     title: string;
     subtitle: string;
@@ -196,6 +194,19 @@ export interface QuickDiveData {
         "- **Advanced Prover**: The new proving system is significantly more efficient, reducing the computational resources required to generate and verify proofs of transaction execution.",
         "- **Advanced Compression**: Improved data compression techniques that minimize L1 calldata costs, directly translating to lower fees for users.",
         
+        "## User Activity Visualization",
+        "The following interactive visualization allows you to explore how Arbitrum's user activity compares with other Layer 2 solutions since the Nitro upgrade:",
+        
+        "```iframe",
+        JSON.stringify({
+          src: "https://www.growthepie.xyz/embed/fundamentals/daily-active-addresses?showUsd=true&theme=dark&timespan=90d&scale=absolute&interval=daily&showMainnet=false&chains=arbitrum%2Cbase%2Ccelo%2Cunichain&zoomed=false&startTimestamp=&endTimestamp=1745712000000",
+          title: "Active Addresses - growthepie",
+          width: "100%",
+          height: "500px",
+          caption: "Daily active addresses comparison across Layer 2 solutions. Source: growthepie.xyz"
+        }),
+        "```",
+        
         "## Performance Metrics",
         "Since the Nitro upgrade, Arbitrum has demonstrated impressive performance improvements:",
         
@@ -238,6 +249,19 @@ export interface QuickDiveData {
         
         "![zkEVM compiler pipeline](/images/quick-dives/zksync-compiler-pipeline.png) \"LLVM-based compiler pipeline for zkSync Era\"",
         
+        "## Interactive Fee Comparison",
+        "The following interactive visualization lets you compare transaction costs across various L2 solutions including zkSync Era:",
+        
+        "```iframe",
+        JSON.stringify({
+          src: "https://www.growthepie.xyz/embed/fundamentals/transaction-costs?showUsd=true&theme=dark&timespan=90d&scale=absolute&interval=daily&showMainnet=true&chains=ethereum%2Carbitrum%2Cbase%2Czksync_era&zoomed=false",
+          title: "Transaction Costs Comparison - growthepie",
+          width: "100%",
+          height: "600px",
+          caption: "Comparative transaction costs across Ethereum and various L2 solutions including zkSync Era. Source: growthepie.xyz"
+        }),
+        "```",
+        
         "## Performance and Scalability",
         "Era's performance metrics demonstrate the potential of zkEVM technology:",
         
@@ -266,6 +290,75 @@ export interface QuickDiveData {
       author: {
         name: "Maya Rodriguez",
         xUsername: "maya_zkp"
+      }
+    },
+    "l2-fee-comparison": {
+      title: "L2 Fee Comparison",
+      subtitle: "Analyzing transaction costs across Ethereum's scaling solutions",
+      content: [
+        "## The Current State of L2 Fees",
+        "The Ethereum ecosystem continues to expand with various Layer 2 solutions competing to offer the most cost-effective scaling solution. This analysis examines the current fee structures across the major L2 platforms and how they compare to Ethereum mainnet.",
+        
+        "> While all L2s provide significant cost savings compared to Ethereum mainnet, the fee differences between L2s themselves can vary by up to 10x depending on the transaction type and network conditions.",
+        
+        "## Interactive Fee Comparison Tool",
+        "To better understand how fees compare across different scaling solutions, the visualization below provides a real-time comparison of transaction costs:",
+        
+        "```iframe",
+        JSON.stringify({
+          src: "https://www.growthepie.xyz/embed/fundamentals/transaction-costs?showUsd=true&theme=dark&timespan=365d&scale=absolute&interval=daily&showMainnet=false&chains=arbitrum%2Cbase%2Ccelo%2Cfraxtal%2Credstone%2Cunichain",
+          title: "Transaction Costs Comparison - growthepie",
+          width: "100%",
+          height: "600px",
+          caption: "Comparative transaction costs across Ethereum and major L2 solutions. Source: growthepie.xyz"
+        }),
+        "```",
+        
+        "## What Drives Fee Differences?",
+        "The variation in fees across L2s is influenced by several factors:",
+        
+        "### Data Availability Costs",
+        "One of the most significant factors in L2 fees is how data availability is handled. Solutions using Ethereum for data availability (like Optimistic Rollups) have a base cost determined by Ethereum's calldata gas prices, while those using alternative data availability layers can achieve lower costs.",
+        
+        "### Proof Generation",
+        "ZK-Rollups require computational resources to generate validity proofs, which adds to their operational costs. However, recent optimizations in proof generation have significantly reduced this overhead.",
+        
+        "### Sequencer Efficiency",
+        "The efficiency of the sequencer in batching transactions can greatly impact fees. More sophisticated batching strategies can amortize fixed costs across more transactions.",
+        
+        "### Network Subsidies",
+        "Some L2s subsidize transaction costs to drive adoption, particularly in their early stages. This can create temporarily lower fees that may not be sustainable long-term.",
+        
+        "## User Activity and Network Congestion",
+        "The relationship between network activity and fees varies across different L2 solutions. The visualization below shows daily active addresses across several major platforms:",
+        
+        "```iframe",
+        JSON.stringify({
+          src: "https://www.growthepie.xyz/embed/fundamentals/daily-active-addresses?showUsd=true&theme=dark&timespan=90d&scale=absolute&interval=daily&showMainnet=false&chains=arbitrum%2Cbase%2Coptimism%2Czksync_era&zoomed=false",
+          title: "Active Addresses - growthepie",
+          width: "100%",
+          height: "500px",
+          caption: "Daily active addresses comparison across Layer 2 solutions. Source: growthepie.xyz"
+        }),
+        "```",
+        
+        "## Looking Ahead: Fee Trends",
+        "As L2 technology continues to evolve, we can expect fees to trend downward due to several factors:",
+        
+        "- **EIP-4844 (Proto-Danksharding)**: This Ethereum upgrade will significantly reduce data availability costs for rollups.",
+        "- **Proof Optimization**: Ongoing research in ZK proofs is reducing the computational overhead of generating and verifying proofs.",
+        "- **L3s and App-Specific Chains**: The emergence of L3s built on top of existing L2s promises even greater fee reduction for specific applications.",
+        "- **Alternative DA Layers**: New purpose-built data availability layers could further reduce costs compared to using Ethereum mainnet for DA.",
+        
+        "While fee differences between L2s will likely persist due to their architectural differences, the overall trend points toward increasingly affordable transaction costs across the Ethereum ecosystem."
+      ],
+      image: "/images/quick-dives/l2-fee-comparison.png",
+      date: "2025-04-08",
+      icon: "gtp-metrics-feespaidbyusers",
+      related: ["zksync-era", "optimism-bedrock", "arbitrum-nitro"],
+      author: {
+        name: "Lisa Thompson",
+        xUsername: "lisa_crypto_econ"
       }
     }
   };
