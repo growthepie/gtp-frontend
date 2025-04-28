@@ -1,3 +1,4 @@
+// File: components/quick-dives/ChartWrapper.tsx
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -32,24 +33,37 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   const chartRef = useRef<HighchartsReact.RefObject>(null);
   const { theme } = useTheme();
   const [isChartReady, setIsChartReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   
   // Initialize Highcharts modules
   useEffect(() => {
-    // Only initialize once
-    if (!Highcharts.charts || Highcharts.charts.length === 0) {
-      highchartsRoundedCorners(Highcharts);
-      highchartsAnnotations(Highcharts);
-      highchartsPatternFill(Highcharts);
+    try {
+      // Only initialize once
+      if (!Highcharts.charts || Highcharts.charts.length === 0) {
+        highchartsRoundedCorners(Highcharts);
+        highchartsAnnotations(Highcharts);
+        highchartsPatternFill(Highcharts);
+        
+        Highcharts.setOptions({
+          lang: {
+            numericSymbols: ["K", " M", "B", "T", "P", "E"],
+          },
+        });
+      }
       
-      Highcharts.setOptions({
-        lang: {
-          numericSymbols: ["K", " M", "B", "T", "P", "E"],
-        },
-      });
+      // Validate data
+      if (!Array.isArray(data)) {
+        throw new Error('Chart data must be an array');
+      }
+      
+      setIsChartReady(true);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message || 'Failed to initialize chart');
+      setLoading(false);
     }
-    
-    setIsChartReady(true);
-  }, []);
+  }, [data]);
   
   // Handle resize events
   useEffect(() => {
@@ -66,6 +80,33 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
       handleResize.cancel();
     };
   }, []);
+  
+  if (loading) {
+    return (
+      <div 
+        style={{ width, height }} 
+        className="flex items-center justify-center bg-forest-50 dark:bg-forest-900 rounded-lg animate-pulse"
+        aria-busy="true"
+      >
+        <p className="text-forest-500 dark:text-forest-400">Loading chart...</p>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div 
+        style={{ width, height }} 
+        className="flex items-center justify-center bg-forest-50 dark:bg-forest-900 rounded-lg"
+        role="alert"
+      >
+        <div className="text-center p-4">
+          <p className="text-red-500 mb-2">Failed to load chart</p>
+          <p className="text-sm text-forest-700 dark:text-forest-300">{error}</p>
+        </div>
+      </div>
+    );
+  }
   
   // Base chart options that match the platform style
   const baseOptions: Highcharts.Options = {
@@ -225,17 +266,6 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
       .add();
     }
   };
-  
-  if (!isChartReady) {
-    return (
-      <div 
-        style={{ width, height }} 
-        className="flex items-center justify-center bg-forest-50 dark:bg-forest-900 rounded-lg animate-pulse"
-      >
-        <p className="text-forest-500 dark:text-forest-400">Loading chart...</p>
-      </div>
-    );
-  }
   
   return (
     <div style={{ width, height }} className="relative">

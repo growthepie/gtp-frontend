@@ -1,46 +1,35 @@
 // File: components/quick-dives/RelatedQuickDives.tsx
-'use client'; // Add this directive to mark it as a client component
+'use client';
 
 import React from 'react';
 import QuickDiveCard from './QuickDiveCard';
-import { useTheme } from 'next-themes';
-
-interface QuickDiveData {
-  title: string;
-  subtitle: string;
-  content: string[];
-  image: string;
-  date: string;
-  icon: string;
-  related: string[];
-  author?: {
-    name: string;
-    xUsername: string;
-  };
-}
+import { QuickDiveWithSlug } from '@/lib/types/quickDives';
+import Heading from '@/components/layout/Heading';
 
 interface RelatedQuickDivesProps {
-  relatedQuickDives: QuickDiveData[];
+  relatedQuickDives: QuickDiveWithSlug[];
 }
 
 const RelatedQuickDives: React.FC<RelatedQuickDivesProps> = ({ relatedQuickDives }) => {
-  const { theme } = useTheme();
-  
   if (!relatedQuickDives || relatedQuickDives.length === 0) {
     return null;
   }
 
   return (
-    <div className="mt-10">
+    <div className="mt-10 mb-8">
+      <Heading as="h2" className="heading-large-lg mb-8">
+        Related Quick Dives
+      </Heading>
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {relatedQuickDives.map((quickDive, index) => (
+        {relatedQuickDives.map((quickDive) => (
           <QuickDiveCard 
-            key={index}
+            key={quickDive.slug}
             title={quickDive.title}
             subtitle={quickDive.subtitle}
             date={quickDive.date}
             icon={quickDive.icon}
-            slug={quickDive.title.toLowerCase().replace(/\s+/g, '-')}
+            slug={quickDive.slug}
             author={quickDive.author}
           />
         ))}

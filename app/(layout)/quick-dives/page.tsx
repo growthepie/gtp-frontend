@@ -1,10 +1,9 @@
+// File: app/(layout)/quick-dives/page.tsx
 import { PageContainer } from '@/components/layout/Container';
 import { Title } from '@/components/layout/TextHeadingComponents';
-import { GTPIcon } from '@/components/layout/GTPIcon';
 import { Metadata } from 'next';
 import QuickDivesGrid from '@/components/quick-dives/QuickDivesGrid';
 import { getAllQuickDives } from '@/lib/mock/quickDivesData';
-import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Quick Dives - growthepie',
@@ -12,11 +11,8 @@ export const metadata: Metadata = {
 };
 
 export default function QuickDivesPage() {
-  // Get all quick dives and add slug property
-  const quickDives = getAllQuickDives().map(dive => ({
-    ...dive,
-    slug: dive.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '')
-  }));
+  // Get all quick dives (now with built-in caching)
+  const quickDives = getAllQuickDives();
 
   // Sort by date (newest first)
   const sortedQuickDives = [...quickDives].sort((a, b) => 

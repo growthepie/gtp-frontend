@@ -1,3 +1,4 @@
+// File: components/home/QuickDivesSection.tsx
 'use client';
 
 import React from 'react';
@@ -5,15 +6,12 @@ import Container from '@/components/layout/Container';
 import Heading from '@/components/layout/Heading';
 import { GTPIcon } from '@/components/layout/GTPIcon';
 import { SectionButtonLink } from '@/components/layout/TextHeadingComponents';
-import QuickDiveCard from '@/components/quick-dives/QuickDiveCard';
+import QuickDivesGrid from '@/components/quick-dives/QuickDivesGrid';
 import { getFeaturedQuickDives } from '@/lib/mock/quickDivesData';
 
 const QuickDivesSection: React.FC = () => {
   // Get the latest 3 quick dives to feature
-  const featuredQuickDives = getFeaturedQuickDives(3).map(dive => ({
-    ...dive,
-    slug: dive.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '')
-  }));
+  const featuredQuickDives = getFeaturedQuickDives(3);
   
   if (!featuredQuickDives.length) {
     return null;
@@ -43,19 +41,7 @@ const QuickDivesSection: React.FC = () => {
         </p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-[5px] lg:px-[45px]">
-        {featuredQuickDives.map((quickDive, index) => (
-          <QuickDiveCard
-            key={index}
-            title={quickDive.title}
-            subtitle={quickDive.subtitle}
-            date={quickDive.date}
-            icon={quickDive.icon}
-            slug={quickDive.slug}
-            author={quickDive.author}
-          />
-        ))}
-      </div>
+      <QuickDivesGrid quickDives={featuredQuickDives} />
     </Container>
   );
 };

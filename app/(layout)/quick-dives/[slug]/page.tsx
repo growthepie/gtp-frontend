@@ -1,3 +1,4 @@
+// File: app/(layout)/quick-dives/[slug]/page.tsx
 import { notFound } from 'next/navigation';
 import { PageContainer } from '@/components/layout/Container';
 import { GTPIcon } from '@/components/layout/GTPIcon';
@@ -5,11 +6,11 @@ import { Title } from '@/components/layout/TextHeadingComponents';
 import Heading from '@/components/layout/Heading';
 import { Metadata } from 'next';
 import { GTPIconName } from '@/icons/gtp-icon-names';
-import QUICK_DIVES_DATA, { getQuickDiveBySlug, getRelatedQuickDives } from '@/lib/mock/quickDivesData';
+import { getQuickDiveBySlug, getRelatedQuickDives } from '@/lib/mock/quickDivesData';
 import ClientAuthorLink from '@/components/quick-dives/ClientAuthorLink';
 import Block from '@/components/quick-dives/Block';
-import { ContentBlock, ImageBlock, generateBlockId } from '@/lib/types/blockTypes';
-import { transformContentToBlocks } from '@/lib/utils/contentTransformer';
+import { formatDate } from '@/lib/utils/formatters';
+import { processMarkdownContent } from '@/lib/utils/markdownParser';
 import RelatedQuickDives from '@/components/quick-dives/RelatedQuickDives';
 
 type Props = {
@@ -37,28 +38,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function QuickDivePage({ params }: Props) {
+export default async function QuickDivePage({ params }: Props) {
   const quickDive = getQuickDiveBySlug(params.slug);
   
   if (!quickDive) {
     return notFound();
   }
   
-  // Convert array of text content to structured blocks
-  const contentBlocks = transformContentToBlocks(quickDive.content);
+  // Convert array of text content to structured blocks using our new markdown parser
+  const contentBlocks = await processMarkdownContent(quickDive.content);
   
   // Get related quick dives
   const relatedContent = quickDive.related 
-    ? getRelatedQuickDives(quickDive.related)
+    ? getRelatedQuickDives(quickDive.related).map(dive => ({
+        ...dive,
+        slug: dive.slug || dive.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '')
+      }))
     : [];
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
-  };
   
   return (
     <div className="pt-[45px] md:pt-[30px]">
@@ -117,10 +113,7 @@ export default function QuickDivePage({ params }: Props) {
         
         {/* Related content section */}
         {relatedContent.length > 0 && (
-          <div className="mt-16 mb-8">
-            <Heading as="h2" className="heading-large-lg mb-8">Related Quick Dives</Heading>
-            <RelatedQuickDives relatedQuickDives={relatedContent} />
-          </div>
+          <RelatedQuickDives relatedQuickDives={relatedContent} />
         )}
       </PageContainer>
     </div>

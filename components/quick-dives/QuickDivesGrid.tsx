@@ -3,32 +3,26 @@
 
 import React from 'react';
 import QuickDiveCard from './QuickDiveCard';
-
-interface QuickDiveData {
-  title: string;
-  subtitle: string;
-  content: string[];
-  image: string;
-  date: string;
-  icon: string;
-  slug: string;
-  related: string[];
-  author?: {
-    name: string;
-    xUsername: string;
-  };
-}
+import { QuickDiveWithSlug } from '@/lib/types/quickDives';
 
 interface QuickDivesGridProps {
-  quickDives: QuickDiveData[];
+  quickDives: QuickDiveWithSlug[];
 }
 
 const QuickDivesGrid: React.FC<QuickDivesGridProps> = ({ quickDives }) => {
+  if (!quickDives || quickDives.length === 0) {
+    return (
+      <div className="w-full py-8 text-center">
+        <p>No quick dives available.</p>
+      </div>
+    );
+  }
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {quickDives.map((quickDive, index) => (
         <QuickDiveCard 
-          key={index}
+          key={quickDive.slug || index}
           title={quickDive.title}
           subtitle={quickDive.subtitle}
           date={quickDive.date}
