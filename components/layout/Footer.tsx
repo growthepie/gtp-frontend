@@ -20,7 +20,7 @@ export default function Footer() {
   return (
     <div className="relative bottom-0 bg-forest-50  dark:bg-[#1F2726] px-[20px] py-[50px] md:p-[50px] md:pb-[150px]">
       <div className="flex flex-col md:flex-row md:justify-between">
-        <div className="flex flex-col md:justify-between md:flex-wrap min-[1270px]:h-[250px] md:basis-[361px]">
+        <div className="flex flex-col md:justify-between md:flex-wrap min-[1270px]:h-[350px] md:basis-[361px]">
           <div className="flex flex-col w-[176px]">
             <FooterSectionHeader>
               MORE CONTENT
@@ -30,10 +30,25 @@ export default function Footer() {
               label="Knowledge"
               href="https://docs.growthepie.xyz/"
             />
-            <FooterLink
+            {/* <FooterLink
               leftIcon={<Image src={BlogIcon} alt="Blog" width={24} height={24} />}
               label="Blog"
               href="https://mirror.xyz/blog.growthepie.eth"
+            /> */}
+            <FooterLink
+              leftIcon={<Image src={BlogIcon} alt="Blog" width={24} height={24} />}
+              label="Fees"
+              href="https://fees.growthepie.xyz/"
+            />
+            <FooterLink
+              leftIcon={<Image src={BlogIcon} alt="Blog" width={24} height={24} />}
+              label="Labels"
+              href="https://labels.growthepie.xyz/"
+            />
+            <FooterLink
+              leftIcon={<Image src={BlogIcon} alt="Blog" width={24} height={24} />}
+              label="Icons"
+              href="https://icons.growthepie.xyz/"
             />
           </div>
           <div className="flex flex-col w-[176px]">
