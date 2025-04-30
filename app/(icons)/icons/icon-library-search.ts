@@ -2,628 +2,644 @@ export const iconSearchStrings: {
   name: string;
   strings: string[];
 }[] = [
-    {
-      "name": "label-add",
-      "strings": ["tag", "new", "create", "plus", "classify"]
-    },
-    {
-      "name": "labeled",
-      "strings": ["tag", "categorized", "marked", "identified", "classified"]
-    },
-    {
-      "name": "unlabeled",
-      "strings": ["untagged", "uncategorized", "unmarked", "remove label", "clear"]
-    },
-    {
-      "name": "cross-chain",
-      "strings": ["bridge", "interoperability", "multichain", "swap", "transfer"]
-    },
-    {
-      "name": "token-transfers",
-      "strings": ["send", "receive", "exchange", "crypto", "money", "payment"]
-    },
-    {
-      "name": "utilities",
-      "strings": ["tools", "helpers", "functions", "apps", "services"]
-    },
-    {
-      "name": "socials",
-      "strings": ["community", "media", "connect", "share", "network"]
-    },
-    {
-      "name": "nft",
-      "strings": ["non-fungible token", "collectible", "digital art", "erc721", "erc1155"]
-    },
-    {
-      "name": "de-fi",
-      "strings": ["decentralized finance", "lending", "borrowing", "yield", "staking", "dex"]
-    },
-    {
-      "name": "ce-fi",
-      "strings": ["centralized finance", "exchange", "custody", "binance", "coinbase"]
-    },
-    {
-      "name": "project",
-      "strings": ["dapp", "application", "protocol", "platform", "initiative"]
-    },
-    {
-      "name": "subcategories",
-      "strings": ["nested", "drilldown", "filter", "group", "secondary"]
-    },
-    {
-      "name": "categories",
-      "strings": ["grouping", "classification", "types", "filter", "primary"]
-    },
-    {
-      "name": "metrics-chains-percentage",
-      "strings": ["pie chart", "distribution", "share", "blockchain ratio", "market share"]
-    },
-    {
-      "name": "metrics-chain-composition",
-      "strings": ["breakdown", "allocation", "makeup", "blockchain parts", "structure"]
-    },
-    {
-      "name": "metrics-ethereum-ecosystem",
-      "strings": ["eth", "l2", "scaling", "rollup", "layer 2", "market view"]
-    },
-    {
-      "name": "metrics-activity",
-      "strings": ["usage", "engagement", "transactions", "user actions", "network activity"]
-    },
-    {
-      "name": "metrics-convenience",
-      "strings": ["user experience", "ease of use", "gas cost", "speed", "ux"]
-    },
-    {
-      "name": "metrics-economics",
-      "strings": ["finance", "tokenomics", "value", "cost", "profit", "revenue"]
-    },
-    {
-      "name": "metrics-value-locked",
-      "strings": ["tvl", "defi", "staked value", "liquidity", "total value locked"]
-    },
-    {
-      "name": "metrics-active-addresses",
-      "strings": ["users", "wallets", "daily active", "monthly active", "dau", "mau"]
-    },
-    {
-      "name": "metrics-transaction-count",
-      "strings": ["tx count", "volume", "throughput", "network usage", "txs"]
-    },
-    {
-      "name": "metrics-throughput",
-      "strings": ["tps", "transactions per second", "speed", "capacity", "scalability"]
-    },
-    {
-      "name": "metrics-stablecoin-market-cap",
-      "strings": ["usdc", "usdt", "dai", "market value", "stable value", "stables"]
-    },
-    {
-      "name": "metrics-total-value-secured",
-      "strings": ["tvs", "bridge security", "economic security", "assets secured", "settlement value"]
-    },
-    {
-      "name": "metrics-fees-paid-by-users",
-      "strings": ["gas fees", "transaction cost", "user cost", "revenue", "l2 fees"]
-    },
-    {
-      "name": "metrics-rent-paid-to-l1",
-      "strings": ["l1 cost", "settlement cost", "data cost", "ethereum fees", "da fees"]
-    },
-    {
-      "name": "metrics-onchain-profit",
-      "strings": ["revenue", "earnings", "protocol income", "profitability", "sequencer profit"]
-    },
-    {
-      "name": "metrics-market-cap",
-      "strings": ["valuation", "token value", "total supply", "crypto cap", "mcap"]
-    },
-    {
-      "name": "metrics-fully-diluted-valuation",
-      "strings": ["fdv", "tokenomics", "future value", "max supply value", "diluted cap"]
-    },
-    {
-      "name": "metrics-transaction-cost",
-      "strings": ["gas price", "fee", "cost per tx", "user expense", "average fee"]
-    },
-    {
-      "name": "da-consumers",
-      "strings": ["rollups", "users", "l2", "data users", "sequencers"]
-    },
-    {
-      "name": "da-fees-paid-per-mb",
-      "strings": ["data cost", "megabyte price", "blob cost", "calldata cost", "storage price"]
-    },
-    {
-      "name": "da-fees-paid",
-      "strings": ["total data cost", "blob fees", "calldata fees", "l1 data expense", "rent"]
-    },
-    {
-      "name": "da-data-posted",
-      "strings": ["blob size", "calldata size", "l1 data usage", "storage", "footprint"]
-    },
-    {
-      "name": "da-blobs-number",
-      "strings": ["blob count", "eip4844", "data packets", "posted blobs", "4844"]
-    },
-    {
-      "name": "da-custom-offchain",
-      "strings": ["external da", "offchain data", "validium", "dac", "alternative da"]
-    },
-    {
-      "name": "dac",
-      "strings": ["data availability committee", "committee", "offchain data", "validium", "anytrust"]
-    },
-    {
-      "name": "da-memo",
-      "strings": ["note", "reference", "tag", "data note", "metadata"]
-    },
-    {
-      "name": "celestia",
-      "strings": ["tia", "modular blockchain", "data availability", "cosmos", "da layer"]
-    },
-    {
-      "name": "blobs-ethereum",
-      "strings": ["eip4844", "proto-danksharding", "eth data", "l1 data", "blobspace"]
-    },
-    {
-      "name": "calldata-ethereum",
-      "strings": ["eth data", "l1 data", "transaction input", "legacy data", "onchain data"]
-    },
-    {
-      "name": "calldata",
-      "strings": ["data", "input", "transaction data", "l1 data", "legacy da"]
-    },
-    {
-      "name": "blobs",
-      "strings": ["eip4844", "data", "danksharding", "l1 data", "blobspace"]
-    },
-    {
-      "name": "data-availability",
-      "strings": ["da", "celestia", "eigenlayer", "avail", "security", "settlement"]
-    },
-    {
-      "name": "layer2-maturity-early-phase",
-      "strings": ["stage 0", "new l2", "training wheels", "initial stage", "l2beat stage"]
-    },
-    {
-      "name": "layer2-maturity-emerging",
-      "strings": ["stage 1 limited", "developing l2", "growing", "limited training wheels", "l2beat stage"]
-    },
-    {
-      "name": "layer2-maturity-developing",
-      "strings": ["stage 1 full", "maturing l2", "advancing", "partial training wheels", "l2beat stage"]
-    },
-    {
-      "name": "layer2-maturity-maturing",
-      "strings": ["stage 2", "advanced l2", "full rollup", "no training wheels", "l2beat stage"]
-    },
-    {
-      "name": "layer2-maturity-robust",
-      "strings": ["stage 2+", "fully mature", "battle-tested", "proven l2", "l2beat stage"]
-    },
-    {
-      "name": "optimistic-rollup",
-      "strings": ["op stack", "arbitrum", "optimism", "fraud proof", "l2", "op rollup"]
-    },
-    {
-      "name": "zero-knowledge-rollup",
-      "strings": ["zk rollup", "zk sync", "starknet", "validity proof", "l2", "zk proof"]
-    },
-    {
-      "name": "layer1",
-      "strings": ["l1", "mainnet", "ethereum", "base layer", "settlement layer", "blockchain"]
-    },
-    {
-      "name": "plus",
-      "strings": ["add", "new", "create", "increase", "expand"]
-    },
-    {
-      "name": "block-explorer",
-      "strings": ["etherscan", "scan", "transaction lookup", "chain explorer", "view transaction"]
-    },
-    {
-      "name": "checkmark-unchecked",
-      "strings": ["incomplete", "todo", "pending", "false", "no", "checkbox"]
-    },
-    {
-      "name": "checkmark-checked",
-      "strings": ["complete", "done", "verified", "true", "yes", "checkbox"]
-    },
-    {
-      "name": "compare",
-      "strings": ["diff", "contrast", "versus", "analysis", "select"]
-    },
-    {
-      "name": "arrow-no-change",
-      "strings": ["stable", "flat", "sideways", "neutral", "same"]
-    },
-    {
-      "name": "arrow-down",
-      "strings": ["decrease", "loss", "negative", "reduce", "downward"]
-    },
-    {
-      "name": "arrow-up",
-      "strings": ["increase", "gain", "positive", "grow", "upward"]
-    },
-    {
-      "name": "ethereum-weekly",
-      "strings": ["newsletter", "summary", "eth news", "updates", "publication"]
-    },
-    {
-      "name": "shield",
-      "strings": ["security", "protection", "safe", "audit", "guard"]
-    },
-    {
-      "name": "rank",
-      "strings": ["position", "leaderboard", "order", "level", "rating"]
-    },
-    {
-      "name": "png",
-      "strings": ["image", "raster", "picture", "file format", "export"]
-    },
-    {
-      "name": "svg",
-      "strings": ["image", "vector", "scalable", "file format", "export"]
-    },
-    {
-      "name": "copy",
-      "strings": ["duplicate", "clipboard", "paste", "clone", "text"]
-    },
-    {
-      "name": "data",
-      "strings": ["information", "stats", "chart", "graph", "analytics"]
-    },
-    {
-      "name": "about",
-      "strings": ["info", "details", "learn more", "help", "information"]
-    },
-    {
-      "name": "pie",
-      "strings": ["chart", "percentage", "distribution", "share", "graph"]
-    },
-    {
-      "name": "multiple-chains",
-      "strings": ["multichain", "cross-chain", "interoperability", "networks", "blockchains"]
-    },
-    {
-      "name": "metrics",
-      "strings": ["data", "stats", "kpi", "performance", "analytics", "chart"]
-    },
-    {
-      "name": "support",
-      "strings": ["help", "donate", "contribute", "assist", "fund"]
-    },
-    {
-      "name": "team",
-      "strings": ["members", "contributors", "people", "authors", "group"]
-    },
-    {
-      "name": "wallets-multiple-chains",
-      "strings": ["multichain wallet", "metamask", "rabby", "cross-chain wallet", "portfolio"]
-    },
-    {
-      "name": "layers",
-      "strings": ["l1", "l2", "l3", "stack", "scaling", "levels"]
-    },
-    {
-      "name": "ethereum-logo",
-      "strings": ["eth", "ether", "blockchain", "crypto", "mainnet"]
-    },
-    {
-      "name": "token-eth",
-      "strings": ["ether", "crypto", "currency", "native token", "gas token"]
-    },
-    {
-      "name": "users",
-      "strings": ["people", "community", "addresses", "accounts", "profiles"]
-    },
-    {
-      "name": "pie-chart",
-      "strings": ["percentage", "distribution", "share", "data viz", "stats", "graph"]
-    },
-    {
-      "name": "bridge",
-      "strings": ["cross-chain", "transfer", "swap", "connect chains", "interoperability"]
-    },
-    {
-      "name": "jump-to-section",
-      "strings": ["navigate", "link", "anchor", "scroll to", "go to"]
-    },
-    {
-      "name": "menu",
-      "strings": ["navigation", "options", "hamburger", "list", "sidebar"]
-    },
-    {
-      "name": "technology",
-      "strings": ["tech stack", "mechanism", "protocol", "architecture", "how it works"]
-    },
-    {
-      "name": "risk",
-      "strings": ["security", "warning", "danger", "vulnerability", "tradeoffs", "alert"]
-    },
-    {
-      "name": "overview",
-      "strings": ["summary", "introduction", "general", "dashboard", "home"]
-    },
-    {
-      "name": "background-information",
-      "strings": ["context", "history", "details", "learn more", "resources"]
-    },
-    {
-      "name": "usage",
-      "strings": ["activity", "adoption", "metrics", "user data", "analytics"]
-    },
-    {
-      "name": "feedback",
-      "strings": ["comment", "suggestion", "review", "contact", "opinion"]
-    },
-    {
-      "name": "realtime",
-      "strings": ["live", "streaming", "up-to-date", "dynamic", "current"]
-    },
-    {
-      "name": "blog",
-      "strings": ["articles", "posts", "news", "updates", "writing"]
-    },
-    {
-      "name": "donate",
-      "strings": ["support", "fund", "contribute", "give", "tip", "sponsor"]
-    },
-    {
-      "name": "tracker",
-      "strings": ["monitor", "dashboard", "stats", "follow", "analytics"]
-    },
-    {
-      "name": "search",
-      "strings": ["find", "lookup", "query", "filter", "magnifying glass"]
-    },
-    {
-      "name": "notification",
-      "strings": ["alert", "update", "message", "bell", "alarm"]
-    },
-    {
-      "name": "settings",
-      "strings": ["options", "configure", "preferences", "gear", "controls"]
-    },
-    {
-      "name": "wallet",
-      "strings": ["metamask", "connect", "address", "crypto storage", "account"]
-    },
-    {
-      "name": "more",
-      "strings": ["ellipsis", "extra", "options", "details", "kebab"]
-    },
-    {
-      "name": "share",
-      "strings": ["social", "link", "send", "connect", "export"]
-    },
-    {
-      "name": "download",
-      "strings": ["save", "export", "get", "file", "local"]
-    },
-    {
-      "name": "compass",
-      "strings": ["explore", "discover", "navigate", "guide", "direction"]
-    },
-    {
-      "name": "file-text",
-      "strings": ["document", "page", "notes", "report", "text file"]
-    },
-    {
-      "name": "book-open",
-      "strings": ["docs", "learn", "guide", "documentation", "wiki", "read"]
-    },
-    {
-      "name": "chain",
-      "strings": ["blockchain", "network", "link", "connection", "dependency"]
-    },
-    {
-      "name": "blockspace",
-      "strings": ["data", "capacity", "transactions", "throughput", "availability"]
-    },
-    {
-      "name": "fundamentals",
-      "strings": ["basics", "core concepts", "essentials", "analysis", "foundation"]
-    },
-    {
-      "name": "house",
-      "strings": ["home", "main", "dashboard", "start", "index"]
-    },
-    {
-      "name": "celo",
-      "strings": ["blockchain", "l1", "mobile first", "stablecoin", "cGLD", "alfajores"]
-    },
-    {
-      "name": "lisk",
-      "strings": ["lsk", "blockchain", "sdk", "javascript", "sidechain"]
-    },
-    {
-      "name": "unichain",
-      "strings": ["unknown", "placeholder", "generic chain", "test chain"]
-    },
-    {
-      "name": "zircuit",
-      "strings": ["zk rollup", "l2", "security focused", "sequencer level", "ai"]
-    },
-    {
-      "name": "nova",
-      "strings": ["arbitrum nova", "anytrust", "l2", "social", "gaming", "arb"]
-    },
-    {
-      "name": "soneium",
-      "strings": ["unknown", "placeholder", "generic chain", "test chain"]
-    },
-    {
-      "name": "swell",
-      "strings": ["liquid staking", "l2", "rsweth", "defi", "restaking", "op stack"]
-    },
-    {
-      "name": "ink",
-      "strings": ["substrate", "wasm", "rust", "polkadot", "contract"]
-    },
-    {
-      "name": "real",
-      "strings": ["rwa", "tokenization", "real world asset", "finance"]
-    },
-    {
-      "name": "b3",
-      "strings": ["unknown", "placeholder", "generic chain", "test chain", "brazil"]
-    },
-    {
-      "name": "eclipse",
-      "strings": ["svm", "solana vm", "l2", "rollup", "parallel evm"]
-    },
-    {
-      "name": "fraxtal",
-      "strings": ["frax finance", "l2", "modular", "fxs", "op stack", "stablecoin"]
-    },
-    {
-      "name": "mint",
-      "strings": ["nft", "l2", "zora stack", "creator economy", "coinbase"]
-    },
-    {
-      "name": "world-chain",
-      "strings": ["worldcoin", "optimism stack", "op stack", "identity", "ubi", "wld"]
-    },
-    {
-      "name": "celestia",
-      "strings": ["tia", "modular", "da layer", "data", "logo"]
-    },
-    {
-      "name": "gravity",
-      "strings": ["bridge", "cosmos", "ethereum", "interoperability", "ibc"]
-    },
-    {
-      "name": "orderly",
-      "strings": ["omnichain", "dex", "trading", "infrastructure", "near", "perp"]
-    },
-    {
-      "name": "derive",
-      "strings": ["unknown", "placeholder", "generic chain", "test chain"]
-    },
-    {
-      "name": "redstone",
-      "strings": ["oracle", "data feeds", "l2", "op stack", "defi"]
-    },
-    {
-      "name": "taiko",
-      "strings": ["zk rollup", "l2", "based rollup", "ethereum equivalent", "zk-evm", "type 1"]
-    },
-    {
-      "name": "mode",
-      "strings": ["l2", "op stack", "defi", "growth", "airdrop"]
-    },
-    {
-      "name": "dummy",
-      "strings": ["placeholder", "test", "example", "template", "generic"]
-    },
-    {
-      "name": "blast",
-      "strings": ["l2", "optimistic rollup", "native yield", "defi", "airdrop"]
-    },
-    {
-      "name": "manta",
-      "strings": ["zk", "l2", "privacy", "pacific", "atlantic", "celestia"]
-    },
-    {
-      "name": "metis",
-      "strings": ["l2", "optimistic rollup", "hybrid rollup", "dac", "sequencer"]
-    },
-    {
-      "name": "rhino",
-      "strings": ["rhinofi", "defi", "l2", "multichain", "dex", "starkex"]
-    },
-    {
-      "name": "scroll",
-      "strings": ["zk rollup", "l2", "zk-evm", "ethereum equivalent", "type 2"]
-    },
-    {
-      "name": "starknet",
-      "strings": ["zk rollup", "l2", "starkware", "cairo", "validity proof", "strk"]
-    },
-    {
-      "name": "loopring",
-      "strings": ["zk rollup", "l2", "dex", "payment", "lrc", "exchange"]
-    },
-    {
-      "name": "immutable",
-      "strings": ["imx", "l2", "zk rollup", "nft", "gaming", "starkex"]
-    },
-    {
-      "name": "mantle",
-      "strings": ["l2", "modular", "mETH", "bitdao", "eigenlayer", "mnt"]
-    },
-    {
-      "name": "linea",
-      "strings": ["zk rollup", "l2", "consensys", "zk-evm", "metamask"]
-    },
-    {
-      "name": "pgn",
-      "strings": ["public goods network", "l2", "op stack", "gitcoin", "funding"]
-    },
-    {
-      "name": "zora",
-      "strings": ["nft", "l2", "creator economy", "op stack", "art", "media"]
-    },
-    {
-      "name": "base",
-      "strings": ["coinbase", "l2", "op stack", "optimism", "layer 2"]
-    },
-    {
-      "name": "polygon",
-      "strings": ["matic", "pos", "zk-evm", "l2", "scaling", "sidechain", "miden"]
-    },
-    {
-      "name": "zk-sync",
-      "strings": ["zk rollup", "l2", "era", "lite", "matter labs", "zk-evm"]
-    },
-    {
-      "name": "arbitrum",
-      "strings": ["arb", "l2", "optimistic rollup", "one", "nova", "offchain labs", "nitro"]
-    },
-    {
-      "name": "optimism",
-      "strings": ["op", "l2", "optimistic rollup", "op stack", "superchain", "bedrock"]
-    },
-    {
-      "name": "ethereum",
-      "strings": ["eth", "l1", "mainnet", "blockchain", "layer 1", "ether"]
-    },
-    {
-      "name": "x",
-      "strings": ["twitter", "social media", "elon musk", "tweets", "feed"]
-    },
-    {
-      "name": "lens",
-      "strings": ["social protocol", "decentralized social", "nft", "polygon", "aave"]
-    },
-    {
-      "name": "farcaster",
-      "strings": ["decentralized social", "social protocol", "warpcast", "optimism", "frames"]
-    },
-    {
-      "name": "discord",
-      "strings": ["chat", "community", "server", "communication", "support"]
-    },
-    {
-      "name": "github",
-      "strings": ["code", "repository", "git", "collaboration", "developer", "issues"]
-    },
-    {
-      "name": "glo-dollar",
-      "strings": ["stablecoin", "ubi", "public goods", "charity", "impact"]
-    },
-    {
-      "name": "octant",
-      "strings": ["governance", "snapshot", "voting", "dao", "delegate"]
-    },
-    {
-      "name": "giveth",
-      "strings": ["donate", "public goods", "charity", "funding", "nonprofit"]
-    },
-    {
-      "name": "oli-open-labels-initiative",
-      "strings": ["tags", "labels", "classification", "taxonomy", "ethereum", "etherscan"]
-    }
-  ];
+  {
+    "name": "label-add",
+    "strings": ["tag", "plus", "new", "create", "mark"]
+  },
+  {
+    "name": "labeled",
+    "strings": ["tag", "marked", "identified", "classified", "categorized"]
+  },
+  {
+    "name": "unlabeled",
+    "strings": ["untagged", "unmarked", "unidentified", "unclassified", "uncategorized"]
+  },
+  {
+    "name": "cross-chain",
+    "strings": ["bridge", "interchain", "multi-chain", "interoperability", "L1-L2"]
+  },
+  {
+    "name": "token-transfers",
+    "strings": ["send", "receive", "crypto transfer", "asset movement", "payment"]
+  },
+  {
+    "name": "utilities",
+    "strings": ["tools", "features", "functions", "services", "helpers"]
+  },
+  {
+    "name": "socials",
+    "strings": ["community", "communication", "platforms", "networks", "media"]
+  },
+  {
+    "name": "nft",
+    "strings": ["non-fungible token", "digital collectible", "art", "unique asset", "ERC721"]
+  },
+  {
+    "name": "de-fi",
+    "strings": ["decentralized finance", "lending", "borrowing", "swap", "yield"]
+  },
+  {
+    "name": "ce-fi",
+    "strings": ["centralized finance", "exchange", "cex", "custodial", "traditional finance"]
+  },
+  {
+    "name": "project",
+    "strings": ["application", "dApp", "platform", "initiative", "protocol"]
+  },
+  {
+    "name": "subcategories",
+    "strings": ["groups", "types", "sections", "kinds", "breakdown"]
+  },
+  {
+    "name": "categories",
+    "strings": ["types", "groups", "sections", "classifications", "taxonomy"]
+  },
+  {
+    "name": "metrics-chains-percentage",
+    "strings": ["chain share", "distribution", "market share", "network breakdown", "L2 percentage"]
+  },
+  {
+    "name": "metrics-chain-composition",
+    "strings": ["makeup", "structure", "components", "L2 ecosystem", "network parts"]
+  },
+  {
+    "name": "metrics-ethereum-ecosystem",
+    "strings": ["eth ecosystem", "L2s", "rollups", "scaling solutions", "overall view"]
+  },
+  {
+    "name": "metrics-activity",
+    "strings": ["usage", "engagement", "user activity", "transactions", "network usage"]
+  },
+  {
+    "name": "metrics-convenience",
+    "strings": ["user experience", "ease of use", "accessibility", "UX", "simplicity"]
+  },
+  {
+    "name": "metrics-economics",
+    "strings": ["financials", "tokenomics", "costs", "revenue", "value"]
+  },
+  {
+    "name": "metrics-value-locked",
+    "strings": ["tvl", "total value locked", "liquidity", "assets locked", "defi value"]
+  },
+  {
+    "name": "metrics-active-addresses",
+    "strings": ["dau", "mau", "users", "wallets", "user engagement"]
+  },
+  {
+    "name": "metrics-transaction-count",
+    "strings": ["tx count", "throughput", "activity volume", "network load", "txs"]
+  },
+  {
+    "name": "metrics-throughput",
+    "strings": ["tps", "transactions per second", "capacity", "speed", "scalability"]
+  },
+  {
+    "name": "metrics-stablecoin-market-cap",
+    "strings": ["stablecoin value", "market capitalization", "usdc", "usdt", "dai marketcap"]
+  },
+  {
+    "name": "metrics-total-value-secured",
+    "strings": ["tvs", "security", "assets secured", "economic security", "chain security"]
+  },
+  {
+    "name": "metrics-fees-paid-by-users",
+    "strings": ["gas fees", "transaction costs", "user expenses", "network cost", "L2 fees"]
+  },
+  {
+    "name": "metrics-rent-paid-to-l1",
+    "strings": ["L1 fees", "data costs", "security cost", "settlement cost", "calldata cost"]
+  },
+  {
+    "name": "metrics-onchain-profit",
+    "strings": ["revenue", "earnings", "profitability", "L2 profit", "sequencer profit"]
+  },
+  {
+    "name": "metrics-market-cap",
+    "strings": ["valuation", "market capitalization", "token value", "mcap", "network value"]
+  },
+  {
+    "name": "metrics-fully-diluted-valuation",
+    "strings": ["fdv", "token valuation", "future value", "total supply value"]
+  },
+  {
+    "name": "metrics-transaction-cost",
+    "strings": ["tx fee", "gas price", "user cost", "average fee", "L2 gas"]
+  },
+  {
+    "name": "da-consumers",
+    "strings": ["data users", "rollups using DA", "data availability users", "clients"]
+  },
+  {
+    "name": "da-fees-paid-per-mb",
+    "strings": ["data cost", "megabyte cost", "storage fee", "availability price", "data pricing"]
+  },
+  {
+    "name": "da-fees-paid",
+    "strings": ["total data cost", "L1 data fees", "availability expense", "blob fees", "calldata fees"]
+  },
+  {
+    "name": "da-data-posted",
+    "strings": ["data published", "L1 data usage", "availability volume", "blobs posted", "calldata posted"]
+  },
+  {
+    "name": "da-blobs-number",
+    "strings": ["EIP-4844 blobs", "blob count", "proto-danksharding", "data quantity", "posted blobs"]
+  },
+  {
+    "name": "da-custom-offchain",
+    "strings": ["external DA", "off-chain data", "private DA", "committee", "AnyTrust"]
+  },
+  {
+    "name": "dac",
+    "strings": ["data availability committee", "off-chain committee", "validation committee", "AnyTrust committee"]
+  },
+  {
+    "name": "da-memo",
+    "strings": ["starknet memo", "transaction memo", "specific DA method", "memo field"]
+  },
+  {
+    "name": "celestia",
+    "strings": ["TIA", "modular blockchain", "data availability layer", "DA solution", "blobstream"]
+  },
+  {
+    "name": "blobs-ethereum",
+    "strings": ["EIP-4844", "proto-danksharding", "L1 DA", "ethereum data layer", "Deneb upgrade"]
+  },
+  {
+    "name": "calldata-ethereum",
+    "strings": ["L1 data", "transaction data", "legacy DA", "ethereum data", "pre-4844 data"]
+  },
+  {
+    "name": "calldata",
+    "strings": ["transaction data", "input data", "legacy DA", "L1 data cost"]
+  },
+  {
+    "name": "blobs",
+    "strings": ["EIP-4844 data", "proto-danksharding data", "new DA", "data blobs", "4844 tx"]
+  },
+  {
+    "name": "data-availability",
+    "strings": ["DA", "data layer", "L1 data", "security", "rollup data"]
+  },
+  {
+    "name": "layer2-maturity-early-phase",
+    "strings": ["stage 0", "beginning", "initial phase", "nascent L2", "full training wheels"]
+  },
+  {
+    "name": "layer2-maturity-emerging",
+    "strings": ["stage 1", "developing", "growing phase", "limited training wheels", "some decentralization"]
+  },
+  {
+    "name": "layer2-maturity-developing",
+    "strings": ["stage 2", "advancing", "progressing phase", "few training wheels", "more decentralization"]
+  },
+  {
+    "name": "layer2-maturity-maturing",
+    "strings": ["stage 3", "advanced", "established phase", "minimal training wheels", "mostly decentralized"]
+  },
+  {
+    "name": "layer2-maturity-robust",
+    "strings": ["stage 4", "fully mature", "decentralized", "no training wheels", "final stage"]
+  },
+  {
+    "name": "optimistic-rollup",
+    "strings": ["op rollup", "fraud proofs", "OVM", "layer 2 scaling", "optimism type"]
+  },
+  {
+    "name": "zero-knowledge-rollup",
+    "strings": ["zk rollup", "validity proofs", "ZKVM", "SNARK", "STARK", "layer 2 scaling"]
+  },
+  {
+    "name": "layer1",
+    "strings": ["L1", "mainnet", "base layer", "settlement layer", "ethereum"]
+  },
+  {
+    "name": "plus",
+    "strings": ["add", "new", "create", "positive", "increase"]
+  },
+  {
+    "name": "block-explorer",
+    "strings": ["etherscan", "chain explorer", "transaction viewer", "ledger scan", "network scan"]
+  },
+  {
+    "name": "checkmark-unchecked",
+    "strings": ["todo", "pending", "incomplete", "empty box", "false"]
+  },
+  {
+    "name": "checkmark-checked",
+    "strings": ["done", "complete", "verified", "ticked box", "true", "success"]
+  },
+  {
+    "name": "compare",
+    "strings": ["contrast", "difference", "analysis", "versus", "comparison"]
+  },
+  {
+    "name": "arrow-no-change",
+    "strings": ["stable", "flat", "same", "neutral", "horizontal", "no diff"]
+  },
+  {
+    "name": "arrow-down",
+    "strings": ["decrease", "negative", "loss", "down trend", "reduce", "lower"]
+  },
+  {
+    "name": "arrow-up",
+    "strings": ["increase", "positive", "gain", "up trend", "grow", "higher"]
+  },
+  {
+    "name": "growthepie-icons",
+    "strings": ["gtp icons", "library assets", "brand assets", "images", "graphics"]
+  },
+  {
+    "name": "growthepie-labels",
+    "strings": ["gtp labels", "tags", "classifications", "markers", "identifiers"]
+  },
+  {
+    "name": "growthepie-fees",
+    "strings": ["gtp finance", "costs data", "revenue data", "economics", "financial metrics"]
+  },
+  {
+    "name": "growthepie-logo",
+    "strings": ["gtp brand", "main logo", "identity", "mark", "logotype"]
+  },
+  {
+    "name": "ethereum-weekly",
+    "strings": ["eth newsletter", "update", "summary", "digest", "report"]
+  },
+  {
+    "name": "shield",
+    "strings": ["security", "protection", "safety", "audit", "defense", "risk"]
+  },
+  {
+    "name": "rank",
+    "strings": ["position", "leaderboard", "order", "rating", "level", "score"]
+  },
+  {
+    "name": "png",
+    "strings": ["image format", "raster graphic", "picture file", "bitmap"]
+  },
+  {
+    "name": "svg",
+    "strings": ["vector graphic", "scalable vector graphics", "image format", "illustration file", "logo format"]
+  },
+  {
+    "name": "copy",
+    "strings": ["duplicate", "clone", "clipboard", "paste", "ctrl+c"]
+  },
+  {
+    "name": "data",
+    "strings": ["information", "statistics", "metrics", "figures", "numbers", "charts"]
+  },
+  {
+    "name": "about",
+    "strings": ["information", "details", "info", "description", "learn"]
+  },
+  {
+    "name": "pie",
+    "strings": ["chart", "graph", "distribution", "share", "percentage", "market share"]
+  },
+  {
+    "name": "multiple-chains",
+    "strings": ["multi-chain", "cross-chain", "interchain", "network diversity", "ecosystem"]
+  },
+  {
+    "name": "metrics",
+    "strings": ["data", "stats", "kpis", "performance indicators", "measurements", "analytics"]
+  },
+  {
+    "name": "support",
+    "strings": ["help", "assistance", "donate", "contribute", "aid", "funding"]
+  },
+  {
+    "name": "team",
+    "strings": ["contributors", "members", "group", "people", "organization", "authors"]
+  },
+  {
+    "name": "wallets-multiple-chains",
+    "strings": ["multi-chain wallet", "cross-chain wallet", "asset management", "portfolio"]
+  },
+  {
+    "name": "layers",
+    "strings": ["L1", "L2", "L3", "stack", "scaling layers", "levels", "network layers"]
+  },
+  {
+    "name": "ethereum-logo",
+    "strings": ["eth logo", "ethereum brand", "mainnet logo", "ethereum symbol", "ETH"]
+  },
+  {
+    "name": "token-eth",
+    "strings": ["ether", "cryptocurrency", "native token", "gas token", "ETH currency"]
+  },
+  {
+    "name": "users",
+    "strings": ["people", "community", "audience", "participants", "addresses", "wallets"]
+  },
+  {
+    "name": "pie-chart",
+    "strings": ["data visualization", "graph", "statistics", "distribution", "percentage chart", "market share chart"]
+  },
+  {
+    "name": "bridge",
+    "strings": ["cross-chain transfer", "L1-L2 bridge", "asset moving", "interoperability tool", "token bridge"]
+  },
+  {
+    "name": "jump-to-section",
+    "strings": ["navigate", "link", "anchor", "shortcut", "go to", "scroll to"]
+  },
+  {
+    "name": "menu",
+    "strings": ["navigation", "options", "list", "hamburger menu", "settings", "sidebar"]
+  },
+  {
+    "name": "technology",
+    "strings": ["tech stack", "infrastructure", "architecture", "how it works", "protocol details"]
+  },
+  {
+    "name": "risk",
+    "strings": ["security assessment", "vulnerabilities", "concerns", "warnings", "safety factors", "threats"]
+  },
+  {
+    "name": "overview",
+    "strings": ["summary", "introduction", "general info", "high-level", "abstract"]
+  },
+  {
+    "name": "background-information",
+    "strings": ["context", "history", "details", "documentation", "learn more", "reference"]
+  },
+  {
+    "name": "usage",
+    "strings": ["activity", "adoption", "user base", "application", "how to use", "metrics"]
+  },
+  {
+    "name": "feedback",
+    "strings": ["suggestions", "comments", "input", "survey", "contact us", "report issue"]
+  },
+  {
+    "name": "realtime",
+    "strings": ["live data", "current", "up-to-date", "instant", "streaming"]
+  },
+  {
+    "name": "blog",
+    "strings": ["articles", "posts", "news", "updates", "publications", "insights"]
+  },
+  {
+    "name": "donate",
+    "strings": ["support", "contribute", "fund", "give", "sponsor", "tip"]
+  },
+  {
+    "name": "tracker",
+    "strings": ["dashboard", "monitor", "analytics", "data tool", "explorer", "stats page"]
+  },
+  {
+    "name": "search",
+    "strings": ["find", "query", "lookup", "filter", "explore", "magnifying glass"]
+  },
+  {
+    "name": "notification",
+    "strings": ["alert", "update", "message", "bell", "reminder", "activity feed"]
+  },
+  {
+    "name": "settings",
+    "strings": ["configuration", "options", "preferences", "customize", "controls", "gear"]
+  },
+  {
+    "name": "wallet",
+    "strings": ["crypto wallet", "address", "connect wallet", "funds management", "account"]
+  },
+  {
+    "name": "more",
+    "strings": ["options", "extra", "additional", "details", "expand", "ellipsis"]
+  },
+  {
+    "name": "share",
+    "strings": ["social share", "link", "send", "distribute", "export", "connect"]
+  },
+  {
+    "name": "download",
+    "strings": ["save", "export", "get", "acquire", "offline", "backup"]
+  },
+  {
+    "name": "compass",
+    "strings": ["explore", "discover", "navigate", "guide", "direction", "orientation"]
+  },
+  {
+    "name": "file-text",
+    "strings": ["document", "page", "report", "notes", "article", "text file"]
+  },
+  {
+    "name": "book-open",
+    "strings": ["documentation", "learn", "guide", "manual", "knowledge base", "reading"]
+  },
+  {
+    "name": "chain",
+    "strings": ["blockchain", "network", "ledger", "L1", "L2", "link"]
+  },
+  {
+    "name": "blockspace",
+    "strings": ["transaction space", "data capacity", "throughput market", "fee market", "blocks"]
+  },
+  {
+    "name": "fundamentals",
+    "strings": ["basics", "core concepts", "principles", "foundation", "essentials"]
+  },
+  {
+    "name": "house",
+    "strings": ["home", "main page", "dashboard", "start", "homepage"]
+  },
+  {
+    "name": "celo",
+    "strings": ["CELO token", "mobile-first", "carbon-negative L2", "Alliance", "OP Stack"]
+  },
+  {
+    "name": "lisk",
+    "strings": ["LSK token", "javascript sdk", "app chain", "Optimism stack", "L2 solution"]
+  },
+  {
+    "name": "unichain",
+    "strings": ["new L2", "emerging chain", "testnet"]
+  },
+  {
+    "name": "zircuit",
+    "strings": ["zk rollup", "security-focused L2", "sequencer level safety", "Ethereum L2"]
+  },
+  {
+    "name": "nova",
+    "strings": ["Arbitrum Nova", "AnyTrust chain", "DAC", "gaming L2", "social L2"]
+  },
+  {
+    "name": "soneium",
+    "strings": ["new L2", "emerging chain", "testnet"]
+  },
+  {
+    "name": "swell",
+    "strings": ["Swell L2", "restaking rollup", "rswETH", "DeFi L2", "Polygon CDK"]
+  },
+  {
+    "name": "ink",
+    "strings": ["new L2", "emerging chain", "testnet"]
+  },
+  {
+    "name": "real",
+    "strings": ["new L2", "emerging chain", "testnet"]
+  },
+  {
+    "name": "b3",
+    "strings": ["new L2", "emerging chain", "testnet"]
+  },
+  {
+    "name": "eclipse",
+    "strings": ["SVM rollup", "Solana VM on Ethereum", "high throughput L2", "Ethereum L2"]
+  },
+  {
+    "name": "fraxtal",
+    "strings": ["Frax Finance L2", "modular rollup", "FXTL token", "DeFi L2", "OP Stack"]
+  },
+  {
+    "name": "mint",
+    "strings": ["Mint Blockchain", "NFT L2", "L2 for NFTs", "OP Stack"]
+  },
+  {
+    "name": "world-chain",
+    "strings": ["Worldcoin L2", "OP Stack", "identity chain", "UBI project", "humanity"]
+  },
+  {
+    "name": "celestia",
+    "strings": ["TIA", "data availability", "modular chain", "DA layer", "blobstream"]
+  },
+  {
+    "name": "gravity",
+    "strings": ["Gravity Bridge", "Cosmos bridge", "Ethereum L2", "new chain"]
+  },
+  {
+    "name": "orderly",
+    "strings": ["Orderly Network", "NEAR based", "DeFi L2", "new chain"]
+  },
+  {
+    "name": "derive",
+    "strings": ["new L2", "emerging chain", "testnet"]
+  },
+  {
+    "name": "redstone",
+    "strings": ["Redstone Oracles", "OP Stack L2", "DeFi chain", "data oracles"]
+  },
+  {
+    "name": "taiko",
+    "strings": ["Based Rollup", "Type 1 zkEVM", "decentralized sequencing L2", "Ethereum L2", "TKO token"]
+  },
+  {
+    "name": "mode",
+    "strings": ["Mode Network", "OP Stack", "DeFi L2", "sequencer fee sharing", "Ethereum L2"]
+  },
+  {
+    "name": "dummy",
+    "strings": ["placeholder", "example", "template", "test icon", "sample"]
+  },
+  {
+    "name": "blast",
+    "strings": ["BLAST token", "native yield L2", "OP Stack L2", "Blur L2", "Ethereum L2"]
+  },
+  {
+    "name": "manta",
+    "strings": ["Manta Pacific", "OP Stack L2", "zk applications L2", "privacy chain", "MANTA token"]
+  },
+  {
+    "name": "metis",
+    "strings": ["METIS token", "Hybrid Rollup", "decentralized sequencer L2", "OP + ZK", "Ethereum L2"]
+  },
+  {
+    "name": "rhino",
+    "strings": ["rhino.fi", "multi-chain DeFi", "StarkEx L2", "Ethereum L2"]
+  },
+  {
+    "name": "scroll",
+    "strings": ["Scroll zkEVM", "Type 2 zkEVM", "bytecode equivalent L2", "Ethereum L2"]
+  },
+  {
+    "name": "starknet",
+    "strings": ["STRK token", "ZK Rollup", "STARK proofs", "Cairo language L2", "Ethereum L2"]
+  },
+  {
+    "name": "loopring",
+    "strings": ["LRC token", "ZK Rollup", "DEX L2", "payments L2", "Ethereum L2"]
+  },
+  {
+    "name": "immutable",
+    "strings": ["IMX token", "ZK Rollup", "StarkEx", "NFT L2", "gaming L2", "Immutable X"]
+  },
+  {
+    "name": "mantle",
+    "strings": ["MNT token", "Modular L2", "EigenDA", "OP Stack fork", "BitDAO L2", "ByBit L2"]
+  },
+  {
+    "name": "linea",
+    "strings": ["ConsenSys zkEVM", "Type 2 zkEVM", "developer L2", "Ethereum L2"]
+  },
+  {
+    "name": "pgn",
+    "strings": ["Public Goods Network", "OP Stack L2", "Gitcoin L2", "public goods funding L2"]
+  },
+  {
+    "name": "zora",
+    "strings": ["Zora Network", "OP Stack L2", "NFT creator L2", "media L2", "Ethereum L2"]
+  },
+  {
+    "name": "base",
+    "strings": ["Base Network", "Coinbase L2", "OP Stack", "developer L2", "Ethereum L2"]
+  },
+  {
+    "name": "polygon",
+    "strings": ["MATIC", "POL token", "PoS chain", "zkEVM", "Miden", "CDK", "Polygon Labs"]
+  },
+  {
+    "name": "zk-sync",
+    "strings": ["ZKS token", "ZK Rollup", "SNARK proofs", "zkEVM", "Matter Labs", "Era", "Lite"]
+  },
+  {
+    "name": "arbitrum",
+    "strings": ["ARB token", "Optimistic Rollup", "Nitro stack", "Arbitrum One", "Nova", "Orbit L3s"]
+  },
+  {
+    "name": "optimism",
+    "strings": ["OP token", "Optimistic Rollup", "OP Stack", "Superchain", "Bedrock", "Ethereum L2"]
+  },
+  {
+    "name": "ethereum",
+    "strings": ["ETH", "mainnet", "L1", "settlement layer", "world computer", "blockchain"]
+  },
+  {
+    "name": "x",
+    "strings": ["twitter", "social media", "microblogging", "news feed", "posts"]
+  },
+  {
+    "name": "lens",
+    "strings": ["Lens Protocol", "web3 social graph", "decentralized social", "profiles", "social layer"]
+  },
+  {
+    "name": "farcaster",
+    "strings": ["decentralized social network", "frames", "hubs", "warpcast", "social layer"]
+  },
+  {
+    "name": "discord",
+    "strings": ["chat", "community server", "communication platform", "voice chat", "messaging"]
+  },
+  {
+    "name": "github",
+    "strings": ["code hosting", "version control", "collaboration", "repositories", "development platform", "git"]
+  },
+  {
+    "name": "glo-dollar",
+    "strings": ["stablecoin", "UBI experiment", "public goods funding", "impact investing", "GLO token"]
+  },
+  {
+    "name": "octant",
+    "strings": ["public goods", "new project", "initiative"]
+  },
+  {
+    "name": "giveth",
+    "strings": ["donation platform", "blockchain philanthropy", "public goods funding", "crypto giving", "charity"]
+  },
+  {
+    "name": "oli-open-labels-initiative",
+    "strings": ["OLI", "data labeling", "public dataset", "address tagging", "onchain data initiative"]
+  }
+];
