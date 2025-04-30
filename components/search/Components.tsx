@@ -553,6 +553,15 @@ const Filters = () => {
   const { allFilteredData, totalMatches } = useSearchBuckets();
   const router = useRouter();
 
+  const getKey = (label: string, type: string) => {
+    return String(`${type}::${label}`);
+  }
+
+  useEffect(() => {
+    // reset lastBucketIndeces
+    setLastBucketIndeces({});
+  }, [query]);
+
   const keyMapping = useMemo(() => {
     const dataMap: string[][] = [[]];
     let yIndex = 0;
@@ -582,7 +591,7 @@ const Filters = () => {
       let currentRow: string[] = [];
       let lastTop: number | null = null;
 
-      filteredData.forEach((item) => {
+      filteredData.forEach((item, itemIndex) => {
         if (localYIndex > 2)
         {
           
@@ -590,13 +599,29 @@ const Filters = () => {
         };
         
         
-        const key = String(item.label + type);
+        const key = getKey(item.label, type);
         const rect = measurementsRef.current[key];
         const itemTop = rect?.top;
         
         // If this is the first item or has same top position as previous items, add to current row
         if (lastTop === null || itemTop === lastTop) {
           currentRow.push(key);
+          // 1. make sure we're currently in the third row
+          if(localYIndex === 2){
+            // 2. make sure there's a next item
+            const nextItem = filteredData[itemIndex + 1];
+            if(nextItem){
+              // 3. make sure the next item is in the NEXT row
+              const nextItemKey = getKey(nextItem.label, type);
+              const nextItemRect = measurementsRef.current[nextItemKey];
+              const nextItemTop = nextItemRect?.top;
+              const lastYIndex = localYIndex;
+              if(nextItemTop !== itemTop){
+                setLastBucketIndeces(prev => ({...prev, [key]: {x: currentRow.length - 1, y: lastYIndex}}));
+              }
+            }
+
+          }
         } else {
           // If top position is different, start a new row
           localYIndex++;
@@ -615,8 +640,10 @@ const Filters = () => {
     // Filter out empty arrays
     return dataMap.filter(arr => arr.length > 0);
   }, [allFilteredData, forceUpdate, query]);
+
   
-  console.log(lastBucketIndeces)
+  console.log("keyMapping", keyMapping)
+  console.log("lastBucketIndeces", lastBucketIndeces)
   // Setup resize observer
   useEffect(() => {
     const observer = new ResizeObserver((entries) => {
@@ -739,29 +766,47 @@ const Filters = () => {
                 </div>
                 <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
                   {filteredData.map((item) => {
-                    const itemKey = String(item.label + type);
+                    const itemKey = getKey(item.label, type);
                     const isSelected = keyCoords.y !== null && 
                       keyCoords.x !== null && 
                       keyMapping[keyCoords.y]?.[keyCoords.x] === itemKey;
-                    
-                    
+
                     return (
-                      <Link 
-                        href={item.url} 
-                        key={item.label}   
-                        ref={(el) => {
-                          childRefs.current[itemKey] = el;
-                        }}
-                      >
-                        <SearchBadge
-                          className={`!cursor-pointer ${isSelected ? "!bg-[#5A6462]" : ""}`}
-                          label={item.label}
-                          leftIcon={`${item.icon}` as GTPIconName}
-                          leftIconColor={item.color || "white"}
-                          rightIcon=""
-                        />
-                      </Link>
-                    );
+                      <BucketItem 
+                        key={itemKey}
+                        item={item} 
+                        itemKey={itemKey} 
+                        isSelected={isSelected} 
+                        childRefs={childRefs} 
+                        lastBucketIndeces={lastBucketIndeces}
+                      />
+                    )
+                    // if(lastBucketIndeces[itemKey]){
+                    //   // see fuckin more
+                    //   return (
+                    //     <div key={item.label} className="flex flex-col gap-[5px]">
+                    //       See more...
+                    //     </div>
+                    //   )
+                    // }
+                    
+                    // return (
+                    //   <Link 
+                    //     href={item.url} 
+                    //     key={item.label}   
+                    //     ref={(el) => {
+                    //       childRefs.current[itemKey] = el;
+                    //     }}
+                    //   >
+                    //     <SearchBadge
+                    //       className={`!cursor-pointer ${isSelected ? "!bg-[#5A6462]" : ""}`}
+                    //       label={item.label}
+                    //       leftIcon={`${item.icon}` as GTPIconName}
+                    //       leftIconColor={item.color || "white"}
+                    //       rightIcon=""
+                    //     />
+                    //   </Link>
+                    // );
                   })}
                 </div>
               </div>
@@ -769,6 +814,45 @@ const Filters = () => {
           })}
       </div>}
     </div>
+  )
+}
+
+const BucketItem = ({ item, itemKey, isSelected, childRefs, lastBucketIndeces }: { item: any, itemKey: string, isSelected: boolean, childRefs: any, lastBucketIndeces: any }) => {
+
+  // if(lastBucketIndeces[itemKey]){
+  //   return (
+  //     <button className="max-w-full w-[200px]" onClick={() => {
+  //       console.log("lastBucketIndeces", lastBucketIndeces)
+  //     }}>
+  //       <div key={item.label} className="flex flex-col gap-[5px]">
+  //         See more...
+  //       </div>
+  //     </button>
+  //   )
+  // }
+
+  return (
+    <Link 
+      href={item.url} 
+      key={item.label}   
+      ref={(el) => {
+        childRefs.current[itemKey] = el;
+      }}
+      className="relative"
+    >
+      {lastBucketIndeces[itemKey] && (
+        <div className="absolute inset-0 flex items-center justify-center bg-[#344240] rounded-md">
+          See more...
+        </div>
+      )}
+      <SearchBadge
+        className={`!cursor-pointer ${isSelected ? "!bg-[#5A6462]" : ""}`}
+        label={item.label}
+        leftIcon={`${item.icon}` as GTPIconName}
+        leftIconColor={item.color || "white"}
+        rightIcon=""
+      />
+    </Link>
   )
 }
 
