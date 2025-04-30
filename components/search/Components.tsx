@@ -16,6 +16,7 @@ import VerticalScrollContainer from "../VerticalScrollContainer";
 import Link from "next/link";
 import { HeaderButton } from "../layout/HeaderButton";
 import { debounce } from "lodash";
+import { numberFormat } from "highcharts";
 
 const setDocumentScroll = (showScroll: boolean) => {
   if (showScroll) {
@@ -166,21 +167,39 @@ const SearchBar = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const query = searchParams.get("query") || "";
+  const [localQuery, setLocalQuery] = useState(query);
 
   const { totalMatches } = useSearchBuckets();
+
+  // Create a debounced version of the search update function
+  const debouncedUpdateSearch = useCallback(
+    debounce((newValue: string) => {
+      // get existing query params
+      let newSearchParams = new URLSearchParams(window.location.search);
+      newSearchParams.set("query", newValue);
+
+      // create new url
+      let url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
+      window.history.replaceState(null, "", url);
+    }, 300),
+    [pathname]
+  );
+
+  // Update local query when URL query changes
+  useEffect(() => {
+    setLocalQuery(query);
+  }, [query]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target;
     const newValue = input.value;
     const cursorPosition = input.selectionStart;
 
-    // get existing query params
-    let newSearchParams = new URLSearchParams(window.location.search)
-    newSearchParams.set("query", newValue);
+    // Update local state immediately
+    setLocalQuery(newValue);
 
-    // create new url
-    let url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
-    window.history.replaceState(null, "", url);
+    // Call the debounced function for URL updates
+    debouncedUpdateSearch(newValue);
 
     // Restore cursor position after React updates the input
     requestAnimationFrame(() => {
@@ -191,6 +210,13 @@ const SearchBar = () => {
     });
   };
 
+  // Cleanup the debounced function on unmount
+  useEffect(() => {
+    return () => {
+      debouncedUpdateSearch.cancel();
+    };
+  }, [debouncedUpdateSearch]);
+
   return (
     <>
       {/* SearchContainer includes the thick border with rounded corners along with the main dark background */}
@@ -199,7 +225,7 @@ const SearchBar = () => {
         <div className="flex w-full flex-col">
           {/* first child: the search bar w/ Icon and input */}
           <div className="flex w-full gap-x-[10px] items-center bg-[#1F2726] rounded-[22px] h-[44px] p-2.5">
-            {query.length > 0 ? (
+            {localQuery.length > 0 ? (
               <div className="flex items-center justify-center w-[24px] h-[24px]">
                 <Icon icon="feather:chevron-down" className="w-[24px] h-[24px]" />
               </div>
@@ -213,10 +239,10 @@ const SearchBar = () => {
               spellCheck={false}
               className={`flex-1 h-full bg-transparent text-white placeholder-[#CDD8D3] border-none outline-none overflow-x-clip text-md leading-[150%] font-medium font-raleway`}
               placeholder="Search"
-              value={query}
+              value={localQuery}
               onChange={handleSearchChange}
             />
-            <div className={`absolute flex items-center gap-x-[10px] right-[20px] text-[8px] text-[#CDD8D3] font-medium ${query.length > 0 ? "opacity-100" : "opacity-0"} transition-opacity duration-200`}>
+            <div className={`absolute flex items-center gap-x-[10px] right-[20px] text-[8px] text-[#CDD8D3] font-medium ${localQuery.length > 0 ? "opacity-100" : "opacity-0"} transition-opacity duration-200`}>
               <div className="flex items-center px-[15px] h-[24px] border border-[#CDD8D3] rounded-full select-none">
                 <div className="text-xxxs text-[#CDD8D3] font-medium font-raleway">
                   {totalMatches} {totalMatches === 1 ? "result" : "results"}
@@ -225,7 +251,8 @@ const SearchBar = () => {
               <div
                 className="flex flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px]"
                 onClick={(e) => {
-                  handleSearchChange({ target: { value: "" } } as React.ChangeEvent<HTMLInputElement>);
+                  setLocalQuery("");
+                  debouncedUpdateSearch("");
                   e.stopPropagation();
                 }}
               >
@@ -254,7 +281,9 @@ const SearchBar = () => {
 const useSearchBuckets = () => {
   const { AllChainsByKeys } = useMaster();
   const searchParams = useSearchParams();
+  
   const query = searchParams.get("query")?.trim();
+
   const { ownerProjectToProjectData } = useProjectsMetadata();
   
   // search buckets structure
@@ -515,7 +544,7 @@ const Filters = () => {
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
   const [keyPressed, setKeyPressed] = useState('');
   const [forceUpdate, setForceUpdate] = useState(0);
-  
+  const [lastBucketIndeces, setLastBucketIndeces] = useState<{[key: string] : {x: number, y: number}}>({});
   const childRefs = useRef<{ [key: string]: HTMLAnchorElement | null }>({});
   const measurementsRef = useRef<{ [key: string]: DOMRect }>({});
 
@@ -527,19 +556,40 @@ const Filters = () => {
   const keyMapping = useMemo(() => {
     const dataMap: string[][] = [[]];
     let yIndex = 0;
+    // let manualBucket: string = "";
     
     allFilteredData.forEach(({ type, icon, filteredData, isBucketMatch }, bucketIndex) => {
-      // Start a new row for each bucket
+      // if(type !== manualBucket) {
+      //   if(manualBucket !== "") {
+      //     const name = manualBucket;
+      //     const y = yIndex;
+      //     setLastBucketIndeces(prev => ({...prev, [name]: {x: currentRow.length - 1, y: y}}));
+      //     manualBucket = type;
+      //   }else if (manualBucket === ""){
+      //     manualBucket = type;
+      //   }
+      // }
+
+
+      let localYIndex = 0;
+      
       if (bucketIndex > 0) {
         yIndex++;
-        dataMap[yIndex] = [];
+        localYIndex = 0;
+        dataMap[yIndex] = [];      
       }
 
-      // Group items by their offsetTop within the current bucket
       let currentRow: string[] = [];
       let lastTop: number | null = null;
 
       filteredData.forEach((item) => {
+        if (localYIndex > 2)
+        {
+          
+          return
+        };
+        
+        
         const key = String(item.label + type);
         const rect = measurementsRef.current[key];
         const itemTop = rect?.top;
@@ -549,6 +599,8 @@ const Filters = () => {
           currentRow.push(key);
         } else {
           // If top position is different, start a new row
+          localYIndex++;
+          if (localYIndex > 2) return;
           yIndex++;
           dataMap[yIndex] = [];
           currentRow = [key];
@@ -559,11 +611,12 @@ const Filters = () => {
         dataMap[yIndex] = currentRow;
       });
     });
-    
+
     // Filter out empty arrays
     return dataMap.filter(arr => arr.length > 0);
-  }, [allFilteredData, forceUpdate]);
-
+  }, [allFilteredData, forceUpdate, query]);
+  
+  console.log(lastBucketIndeces)
   // Setup resize observer
   useEffect(() => {
     const observer = new ResizeObserver((entries) => {
@@ -602,6 +655,7 @@ const Filters = () => {
     setKeyCoords({y: null, x: null});
   }, [query, allFilteredData])
   
+
 
   // Add keyboard navigation
   useEffect(() => {
@@ -665,8 +719,10 @@ const Filters = () => {
     <div className="flex flex-col-reverse md:flex-col !pt-0 !pb-[0px] pl-[0px] pr-[0px] gap-y-[10px] max-h-[calc(100vh-220px)] overflow-y-auto">
       {query && allFilteredData.length > 0 && <div className="flex flex-col-reverse md:flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px] text-[10px]">
           {allFilteredData.map(({ type, icon, filteredData, isBucketMatch }) => {
+            
+            
             return (
-              <div key={type} className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start">
+              <div key={type} className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start max-h-[87px] overflow-y-hidden">
                 <div className="flex gap-x-[10px] items-center shrink-0">
                     <GTPIcon
                       icon={icon as GTPIconName}
@@ -687,6 +743,7 @@ const Filters = () => {
                     const isSelected = keyCoords.y !== null && 
                       keyCoords.x !== null && 
                       keyMapping[keyCoords.y]?.[keyCoords.x] === itemKey;
+                    
                     
                     return (
                       <Link 
