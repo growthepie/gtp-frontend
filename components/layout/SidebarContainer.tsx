@@ -226,7 +226,7 @@ export const LogoContextMenu = ({ children }: { children: React.ReactNode }) => 
   const options = [
     { icon: "gtp-copy", label: "Copy", onClick: handleCopy },
     { icon: "gtp-download", label: "Download", onClick: handleDownload },
-    { icon: "gtp-growthepie-logo", label: "See more icons", onClick: handleGoToIconsPage },
+    { icon: "gtp-growthepie-icons", label: "See more icons", onClick: handleGoToIconsPage },
   ];
 
   // Define the menu content as a variable for clarity
