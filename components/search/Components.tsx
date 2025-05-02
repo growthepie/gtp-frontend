@@ -557,6 +557,8 @@ const Filters = ({ showMore, setShowMore }: { showMore: {[key: string]: boolean}
 
   useEffect(() => {
     // reset lastBucketIndeces
+    //
+    setShowMore({});
     setLastBucketIndeces({});
   }, [query]);
 
@@ -577,7 +579,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: {[key: string]: boolean}
       //   }
       // }
 
-
+      const isShowMore = showMore[type] && type !== "Applications";
       let localYIndex = 0;
       
       if (bucketIndex > 0) {
@@ -590,7 +592,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: {[key: string]: boolean}
       let lastTop: number | null = null;
 
       filteredData.forEach((item, itemIndex) => {
-        if (localYIndex > 2 && !showMore[type])
+        if (localYIndex > 2 && !isShowMore)
         {
           
           return
@@ -605,8 +607,10 @@ const Filters = ({ showMore, setShowMore }: { showMore: {[key: string]: boolean}
         if (lastTop === null || itemTop === lastTop) {
           currentRow.push(key);
           // 1. make sure we're currently in the third row
-          if(localYIndex === 2 && !showMore[type]){
+         
+          if(localYIndex === 2 && !isShowMore){
             // 2. make sure there's a next item
+            
             const nextItem = filteredData[itemIndex + 1];
             if(nextItem){
               // 3. make sure the next item is in the NEXT row
@@ -623,7 +627,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: {[key: string]: boolean}
         } else {
           // If top position is different, start a new row
           localYIndex++;
-          if (localYIndex > 2) return;
+          if (localYIndex > 2 && !isShowMore) return;
           yIndex++;
           dataMap[yIndex] = [];
           currentRow = [key];
@@ -637,7 +641,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: {[key: string]: boolean}
 
     // Filter out empty arrays
     return dataMap.filter(arr => arr.length > 0);
-  }, [allFilteredData, forceUpdate, query, showMore]);
+  }, [allFilteredData, forceUpdate, query, showMore, measurementsRef]);
 
 
   // Setup resize observer
@@ -742,10 +746,10 @@ const Filters = ({ showMore, setShowMore }: { showMore: {[key: string]: boolean}
     <div className="flex flex-col-reverse md:flex-col !pt-0 !pb-[0px] pl-[0px] pr-[0px] gap-y-[10px] max-h-[calc(100vh-220px)] overflow-y-auto">
       {query && allFilteredData.length > 0 && <div className="flex flex-col-reverse md:flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px] text-[10px]">
           {allFilteredData.map(({ type, icon, filteredData, isBucketMatch }) => {
-            console.log(showMore)
+            const isShowMore = showMore[type] && type !== "Applications";
             
             return (
-              <div key={type} className={`flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start overflow-y-hidden ${showMore[type] ? "max-h-full" : "max-h-[87px] "}`}>
+              <div key={type} className={`flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start overflow-y-hidden ${isShowMore ? "max-h-full" : "max-h-[87px] "}`}>
                 <div className="flex gap-x-[10px] items-center shrink-0">
                     <GTPIcon
                       icon={icon as GTPIconName}
@@ -814,14 +818,42 @@ const BucketItem = ({
 }) => {
   const isApps = bucket === "Applications";
 
+
   return (
     <Link 
-      href={lastBucketIndeces[itemKey] ? isApps ? `/applications?search=${query}` : ``  : item.url} 
+      href={lastBucketIndeces[itemKey] && !showMore[bucket] ? isApps ? `/applications?search=${query}` : `` : item.url} 
       key={item.label}   
       ref={(el) => {
         childRefs.current[itemKey] = el;
       }}
-
+      
+      onClick={(e) => {
+        if (lastBucketIndeces[itemKey] && !showMore[bucket]) {
+          
+          setShowMore(prev => ({...prev, [bucket]: true}));
+          if(isApps){
+           
+            setTimeout(() => {
+              setShowMore(prev => ({...prev, [bucket]: false}));
+            }, 1000);
+          }
+          return;
+        }
+      }}
+      
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          if (lastBucketIndeces[itemKey] && !showMore[bucket]) {
+            
+            setShowMore(prev => ({...prev, [bucket]: true})); 
+            if(isApps){
+              setTimeout(() => {
+                setShowMore(prev => ({...prev, [bucket]: false}));
+              }, 1000);
+            }
+          }
+        }
+      }}
       className="relative"
     >
       {lastBucketIndeces[itemKey] && !showMore[bucket] && (
