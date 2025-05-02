@@ -17,6 +17,7 @@ import Link from "next/link";
 import { HeaderButton } from "../layout/HeaderButton";
 import { debounce } from "lodash";
 import { numberFormat } from "highcharts";
+import { B } from "million/dist/shared/million.485bbee4";
 
 const setDocumentScroll = (showScroll: boolean) => {
   if (showScroll) {
@@ -122,6 +123,7 @@ export const SearchComponent = () => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const isOpen = searchParams.get("search") === "true";
+  const [showMore, setShowMore] = useState<{[key: string]: boolean}>({});
 
   const handleCloseSearch = () => {
     // get existing query params
@@ -152,23 +154,19 @@ export const SearchComponent = () => {
 
   return (
     <>
-      <SearchBar />
-      {/* <SearchContainer>
-        <SearchBar />
-      </SearchContainer> */}
+      <SearchBar showMore={showMore} setShowMore={setShowMore} />
       <GrayOverlay onClick={handleCloseSearch} />
     </>
   )
 }
 
-const SearchBar = () => {
+const SearchBar = ({ showMore, setShowMore }: { showMore: {[key: string]: boolean}, setShowMore: React.Dispatch<React.SetStateAction<{[key: string]: boolean}>> }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const { AllChainsByKeys } = useMaster();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const query = searchParams.get("query") || "";
   const [localQuery, setLocalQuery] = useState(query);
-
   const { totalMatches } = useSearchBuckets();
 
   // Create a debounced version of the search update function
@@ -270,7 +268,7 @@ const SearchBar = () => {
             </div>
           </div>
           {/* second child: the filter selection container */}
-          <Filters />
+          <Filters showMore={showMore} setShowMore={setShowMore} />
         </div>
       </SearchContainer>
     </>
@@ -537,7 +535,7 @@ export const SearchBadge = memo(({
 
 SearchBadge.displayName = 'SearchBadge';
 
-const Filters = () => {
+const Filters = ({ showMore, setShowMore }: { showMore: {[key: string]: boolean}, setShowMore: React.Dispatch<React.SetStateAction<{[key: string]: boolean}>> }) => {
   const { AllChainsByKeys } = useMaster();
   const [viewportHeight, setViewportHeight] = useState<number>(0);
   const [keyCoords, setKeyCoords] = useState<{y: number | null, x: number | null}>({y: null, x: null});
@@ -592,7 +590,7 @@ const Filters = () => {
       let lastTop: number | null = null;
 
       filteredData.forEach((item, itemIndex) => {
-        if (localYIndex > 2)
+        if (localYIndex > 2 && !showMore[type])
         {
           
           return
@@ -607,7 +605,7 @@ const Filters = () => {
         if (lastTop === null || itemTop === lastTop) {
           currentRow.push(key);
           // 1. make sure we're currently in the third row
-          if(localYIndex === 2){
+          if(localYIndex === 2 && !showMore[type]){
             // 2. make sure there's a next item
             const nextItem = filteredData[itemIndex + 1];
             if(nextItem){
@@ -639,11 +637,9 @@ const Filters = () => {
 
     // Filter out empty arrays
     return dataMap.filter(arr => arr.length > 0);
-  }, [allFilteredData, forceUpdate, query]);
+  }, [allFilteredData, forceUpdate, query, showMore]);
 
-  
-  console.log("keyMapping", keyMapping)
-  console.log("lastBucketIndeces", lastBucketIndeces)
+
   // Setup resize observer
   useEffect(() => {
     const observer = new ResizeObserver((entries) => {
@@ -746,10 +742,10 @@ const Filters = () => {
     <div className="flex flex-col-reverse md:flex-col !pt-0 !pb-[0px] pl-[0px] pr-[0px] gap-y-[10px] max-h-[calc(100vh-220px)] overflow-y-auto">
       {query && allFilteredData.length > 0 && <div className="flex flex-col-reverse md:flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px] text-[10px]">
           {allFilteredData.map(({ type, icon, filteredData, isBucketMatch }) => {
-            
+            console.log(showMore)
             
             return (
-              <div key={type} className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start max-h-[87px] overflow-y-hidden">
+              <div key={type} className={`flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start overflow-y-hidden ${showMore[type] ? "max-h-full" : "max-h-[87px] "}`}>
                 <div className="flex gap-x-[10px] items-center shrink-0">
                     <GTPIcon
                       icon={icon as GTPIconName}
@@ -779,34 +775,12 @@ const Filters = () => {
                         isSelected={isSelected} 
                         childRefs={childRefs} 
                         lastBucketIndeces={lastBucketIndeces}
+                        bucket={type}
+                        query={query}
+                        showMore={showMore}
+                        setShowMore={setShowMore}
                       />
                     )
-                    // if(lastBucketIndeces[itemKey]){
-                    //   // see fuckin more
-                    //   return (
-                    //     <div key={item.label} className="flex flex-col gap-[5px]">
-                    //       See more...
-                    //     </div>
-                    //   )
-                    // }
-                    
-                    // return (
-                    //   <Link 
-                    //     href={item.url} 
-                    //     key={item.label}   
-                    //     ref={(el) => {
-                    //       childRefs.current[itemKey] = el;
-                    //     }}
-                    //   >
-                    //     <SearchBadge
-                    //       className={`!cursor-pointer ${isSelected ? "!bg-[#5A6462]" : ""}`}
-                    //       label={item.label}
-                    //       leftIcon={`${item.icon}` as GTPIconName}
-                    //       leftIconColor={item.color || "white"}
-                    //       rightIcon=""
-                    //     />
-                    //   </Link>
-                    // );
                   })}
                 </div>
               </div>
@@ -817,31 +791,41 @@ const Filters = () => {
   )
 }
 
-const BucketItem = ({ item, itemKey, isSelected, childRefs, lastBucketIndeces }: { item: any, itemKey: string, isSelected: boolean, childRefs: any, lastBucketIndeces: any }) => {
-
-  // if(lastBucketIndeces[itemKey]){
-  //   return (
-  //     <button className="max-w-full w-[200px]" onClick={() => {
-  //       console.log("lastBucketIndeces", lastBucketIndeces)
-  //     }}>
-  //       <div key={item.label} className="flex flex-col gap-[5px]">
-  //         See more...
-  //       </div>
-  //     </button>
-  //   )
-  // }
+const BucketItem = ({ 
+  item, 
+  itemKey, 
+  isSelected, 
+  childRefs, 
+  lastBucketIndeces, 
+  bucket, 
+  query, 
+  showMore, 
+  setShowMore 
+}: { 
+  item: any, 
+  itemKey: string, 
+  isSelected: boolean, 
+  childRefs: any, 
+  lastBucketIndeces: any, 
+  bucket: string, 
+  query: string, 
+  showMore: {[key: string]: boolean}, 
+  setShowMore: React.Dispatch<React.SetStateAction<{[key: string]: boolean}>>
+}) => {
+  const isApps = bucket === "Applications";
 
   return (
     <Link 
-      href={item.url} 
+      href={lastBucketIndeces[itemKey] ? isApps ? `/applications?search=${query}` : ``  : item.url} 
       key={item.label}   
       ref={(el) => {
         childRefs.current[itemKey] = el;
       }}
+
       className="relative"
     >
-      {lastBucketIndeces[itemKey] && (
-        <div className="absolute inset-0 flex items-center justify-center bg-[#344240] rounded-md">
+      {lastBucketIndeces[itemKey] && !showMore[bucket] && (
+        <div className={`absolute inset-0 flex items-center justify-center rounded-full ${isSelected? "!bg-[#5A6462]" : "bg-[#344240]"} hover:bg-[#5A6462] active:bg-[#5A6462] text-xs`}>
           See more...
         </div>
       )}
