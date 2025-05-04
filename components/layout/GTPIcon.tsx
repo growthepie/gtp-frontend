@@ -10,7 +10,7 @@ import { triggerDownload, convertSvgToPngBlob, triggerBlobDownload } from "@/lib
 import { useOutsideAlerter } from "@/hooks/useOutsideAlerter";
 
 // custom right-click menu to copy, download, or go to the icon page
-const CustomContextMenuWrapper = ({ icon, children, className, size, style }: GTPIconProps) => {
+const CustomContextMenuWrapper = ({ fullIconName, children, className, size, style }: { fullIconName: string, children: React.ReactNode, className?: string, size?: "sm" | "md" | "lg", style?: React.CSSProperties }) => {
   const toast = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -27,7 +27,8 @@ const CustomContextMenuWrapper = ({ icon, children, className, size, style }: GT
   };
 
   const getSVG = () => {
-    const iconData = getIcon(icon);
+    console.log(fullIconName);
+    const iconData = getIcon(fullIconName);
     console.log(iconData);
     if(!iconData){
       return null;
@@ -55,14 +56,17 @@ const CustomContextMenuWrapper = ({ icon, children, className, size, style }: GT
     let bodyString = body;
     if(color){
       // replace instances of currentColor with the color
-      bodyString = bodyString.replaceAll("currentColor", color);
+      bodyString = bodyString.replace(/currentColor/g, color);
     }
 
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${left} ${top} ${width} ${height}" ${color ? `style="color: ${color}"` : ""}>${bodyString}</svg>`;
   }
 
-  const handleCopy = () => {
+  const handleCopy = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
     const iconSVG = getSVG();
+    console.log(iconSVG);
     if(!iconSVG){
       toast.addToast({
         title: "Error",
@@ -81,7 +85,9 @@ const CustomContextMenuWrapper = ({ icon, children, className, size, style }: GT
     setIsOpen(false);
   };
 
-  const handleDownload = async () => {
+  const handleDownload = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
     const iconSVG = getSVG();
     if(!iconSVG){
       toast.addToast({
@@ -102,11 +108,13 @@ const CustomContextMenuWrapper = ({ icon, children, className, size, style }: GT
       setIsOpen(false);
       return;
     }
-    triggerBlobDownload(`${icon}.png`, blob);
+    triggerBlobDownload(`${fullIconName}.png`, blob);
     setIsOpen(false);
   };
 
-  const handleGoToIconsPage = () => {
+  const handleGoToIconsPage = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
     window.open("https://icons.growthepie.xyz", "_blank");
   };  
 
@@ -139,7 +147,7 @@ const CustomContextMenuWrapper = ({ icon, children, className, size, style }: GT
       onClick: handleDownload,
     },
     {
-      icon: "",
+      icon: "gtp-growthepie-icons",
       label: "See more icons",
       onClick: handleGoToIconsPage,
     },
@@ -153,7 +161,7 @@ const CustomContextMenuWrapper = ({ icon, children, className, size, style }: GT
         <div ref={menuRef} className={`fixed z-[999] flex flex-col w-fit gap-y-[5px] rounded-[15px] overflow-hidden bg-[#1F2726] text-[#CDD8D3] text-xs shadow-[0px_0px_8px_0px_rgba(0,_0,_0,_0.66)]`} style={{ left: position.x, top: position.y }}>
           <div className="flex flex-col gap-y-[5px] w-full py-[10px]">
             {options.map((option) => (
-              <button key={option.label} onClick={option.onClick} className="flex w-full items-center justify-between gap-x-[30px] pl-[20px] pr-[25px] py-[5px] cursor-pointer hover:bg-[#5A6462]/50">
+              <button key={option.label} onClick={(e) => option.onClick(e)} className="flex w-full items-center justify-between gap-x-[30px] pl-[20px] pr-[25px] py-[5px] cursor-pointer hover:bg-[#5A6462]/50">
                 <div className="flex justify-start items-center gap-x-[10px] text-[12px]">
                   <GTPIcon icon={option.icon as GTPIconName} size="sm" className="!size-[12px]" />
                   <span>{option.label}</span>
@@ -207,7 +215,7 @@ export const GTPIcon = ({ icon, className, containerClassName, showContextMenu =
   }
   if(showContextMenu){
       return (
-        <CustomContextMenuWrapper icon={icon} size={props.size} className={`${sizeClassMap[props.size || "md"]} ${containerClassName || ""}`} style={{color: props.style?.color}}>
+        <CustomContextMenuWrapper fullIconName={`${iconPrefix}${icon}`} size={props.size} className={`${sizeClassMap[props.size || "md"]} ${containerClassName || ""}`} style={{color: props.style?.color}}>
           <Icon
           icon={`${iconPrefix}${icon}`}
           className={`${sizeClassMap[props.size || "md"] || "w-[24px] h-[24px]"} ${className || ""}`}
