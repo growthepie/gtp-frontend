@@ -638,6 +638,7 @@ export const DropdownIcon = memo(({
           style={{
             color: iconColor,
           }}
+          showContextMenu={true}
         />
 
         {showArrow && (

@@ -246,6 +246,7 @@ export const GTPTooltipNew = ({
 interface TooltipProps {
   children: React.ReactNode;
   size?: "sm" | "md" | "lg";
+  className?: string;
 }
 
 const TooltipSizeClassMap = {
@@ -254,9 +255,9 @@ const TooltipSizeClassMap = {
   lg: "w-[350px] md:w-[460px]",
 }
 
-export const Tooltip = ({ children, size = "sm" }: TooltipProps) => {
+export const Tooltip = ({ children, size = "sm", className }: TooltipProps) => {
   return (
-    <div className={`flex flex-col gap-y-[5px] ${TooltipSizeClassMap[size]} py-[15px] pr-[15px] rounded-[15px] bg-[#1F2726] text-[#CDD8D3] text-xs shadow-[0px_0px_4px_0px_rgba(0,_0,_0,_0.25)]`}>
+    <div className={`flex flex-col gap-y-[5px] ${TooltipSizeClassMap[size]} py-[15px] pr-[15px] rounded-[15px] bg-[#1F2726] text-[#CDD8D3] text-xs shadow-[0px_0px_4px_0px_rgba(0,_0,_0,_0.25)] ${className}`}>
       {children}
     </div>
   );

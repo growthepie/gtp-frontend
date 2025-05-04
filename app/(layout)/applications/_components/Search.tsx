@@ -23,6 +23,12 @@ export default function Search() {
   const pathname = usePathname();
   const router = useRouter();
   
+  // Get search term from URL
+  const searchFromParams = useMemo(() => 
+    searchParams.get("search") || "",
+    [searchParams]
+  );
+  
   // Get filters from URL parameters using useMemo to stabilize dependencies
   const chainsFromParams = useMemo(() => 
     searchParams.get("origin_key")?.split(",").filter(Boolean) || [],
@@ -35,9 +41,9 @@ export default function Search() {
   );
   
   // Local UI state
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [internalSearch, setInternalSearch] = useState<string>("");
-  const [search, setSearch] = useState<string>("");
+  const [isOpen, setIsOpen] = useState<boolean>(!!searchFromParams);
+  const [internalSearch, setInternalSearch] = useState<string>(searchFromParams);
+  const [search, setSearch] = useState<string>(searchFromParams);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -46,7 +52,7 @@ export default function Search() {
     () => debounce((value: string) => {
       setSearch(value);
     }, 300),
-    [setSearch]
+    []
   );
 
   // Clean up the debounced function on unmount
@@ -63,6 +69,20 @@ export default function Search() {
     debouncedSetSearch(value); // Debounced update for expensive operations
   };
 
+  // Initialize and update search state
+  useEffect(() => {
+    if (searchFromParams) {
+      setInternalSearch(searchFromParams);
+      setSearch(searchFromParams);
+      setIsOpen(true);
+      handleFilter("string", internalSearch);
+      setInternalSearch("");
+      debouncedSetSearch("");
+      
+    }
+  }, [searchFromParams]);
+
+  // Focus input when search opens
   useEffect(() => {
     if (isOpen) {
       inputRef.current?.focus();

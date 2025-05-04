@@ -16,6 +16,8 @@ import VerticalScrollContainer from "../VerticalScrollContainer";
 import Link from "next/link";
 import { HeaderButton } from "../layout/HeaderButton";
 import { debounce } from "lodash";
+import { numberFormat } from "highcharts";
+import { B } from "million/dist/shared/million.485bbee4";
 
 const setDocumentScroll = (showScroll: boolean) => {
   if (showScroll) {
@@ -121,6 +123,7 @@ export const SearchComponent = () => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const isOpen = searchParams.get("search") === "true";
+  const [showMore, setShowMore] = useState<{[key: string]: boolean}>({});
 
   const handleCloseSearch = () => {
     // get existing query params
@@ -151,36 +154,50 @@ export const SearchComponent = () => {
 
   return (
     <>
-      <SearchBar />
-      {/* <SearchContainer>
-        <SearchBar />
-      </SearchContainer> */}
+      <SearchBar showMore={showMore} setShowMore={setShowMore} />
       <GrayOverlay onClick={handleCloseSearch} />
     </>
   )
 }
 
-const SearchBar = () => {
+const SearchBar = ({ showMore, setShowMore }: { showMore: {[key: string]: boolean}, setShowMore: React.Dispatch<React.SetStateAction<{[key: string]: boolean}>> }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const { AllChainsByKeys } = useMaster();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const query = searchParams.get("query") || "";
-
+  const [localQuery, setLocalQuery] = useState(query);
   const { totalMatches } = useSearchBuckets();
+
+  // Create a debounced version of the search update function
+  const debouncedUpdateSearch = useCallback(
+    debounce((newValue: string) => {
+      // get existing query params
+      let newSearchParams = new URLSearchParams(window.location.search);
+      newSearchParams.set("query", newValue);
+
+      // create new url
+      let url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
+      window.history.replaceState(null, "", url);
+    }, 300),
+    [pathname]
+  );
+
+  // Update local query when URL query changes
+  useEffect(() => {
+    setLocalQuery(query);
+  }, [query]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target;
     const newValue = input.value;
     const cursorPosition = input.selectionStart;
 
-    // get existing query params
-    let newSearchParams = new URLSearchParams(window.location.search)
-    newSearchParams.set("query", newValue);
+    // Update local state immediately
+    setLocalQuery(newValue);
 
-    // create new url
-    let url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
-    window.history.replaceState(null, "", url);
+    // Call the debounced function for URL updates
+    debouncedUpdateSearch(newValue);
 
     // Restore cursor position after React updates the input
     requestAnimationFrame(() => {
@@ -191,6 +208,13 @@ const SearchBar = () => {
     });
   };
 
+  // Cleanup the debounced function on unmount
+  useEffect(() => {
+    return () => {
+      debouncedUpdateSearch.cancel();
+    };
+  }, [debouncedUpdateSearch]);
+
   return (
     <>
       {/* SearchContainer includes the thick border with rounded corners along with the main dark background */}
@@ -199,7 +223,7 @@ const SearchBar = () => {
         <div className="flex w-full flex-col">
           {/* first child: the search bar w/ Icon and input */}
           <div className="flex w-full gap-x-[10px] items-center bg-[#1F2726] rounded-[22px] h-[44px] p-2.5">
-            {query.length > 0 ? (
+            {localQuery.length > 0 ? (
               <div className="flex items-center justify-center w-[24px] h-[24px]">
                 <Icon icon="feather:chevron-down" className="w-[24px] h-[24px]" />
               </div>
@@ -213,10 +237,10 @@ const SearchBar = () => {
               spellCheck={false}
               className={`flex-1 h-full bg-transparent text-white placeholder-[#CDD8D3] border-none outline-none overflow-x-clip text-md leading-[150%] font-medium font-raleway`}
               placeholder="Search"
-              value={query}
+              value={localQuery}
               onChange={handleSearchChange}
             />
-            <div className={`absolute flex items-center gap-x-[10px] right-[20px] text-[8px] text-[#CDD8D3] font-medium ${query.length > 0 ? "opacity-100" : "opacity-0"} transition-opacity duration-200`}>
+            <div className={`absolute flex items-center gap-x-[10px] right-[20px] text-[8px] text-[#CDD8D3] font-medium ${localQuery.length > 0 ? "opacity-100" : "opacity-0"} transition-opacity duration-200`}>
               <div className="flex items-center px-[15px] h-[24px] border border-[#CDD8D3] rounded-full select-none">
                 <div className="text-xxxs text-[#CDD8D3] font-medium font-raleway">
                   {totalMatches} {totalMatches === 1 ? "result" : "results"}
@@ -225,7 +249,8 @@ const SearchBar = () => {
               <div
                 className="flex flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px]"
                 onClick={(e) => {
-                  handleSearchChange({ target: { value: "" } } as React.ChangeEvent<HTMLInputElement>);
+                  setLocalQuery("");
+                  debouncedUpdateSearch("");
                   e.stopPropagation();
                 }}
               >
@@ -243,7 +268,7 @@ const SearchBar = () => {
             </div>
           </div>
           {/* second child: the filter selection container */}
-          <Filters />
+          <Filters showMore={showMore} setShowMore={setShowMore} />
         </div>
       </SearchContainer>
     </>
@@ -254,7 +279,9 @@ const SearchBar = () => {
 const useSearchBuckets = () => {
   const { AllChainsByKeys } = useMaster();
   const searchParams = useSearchParams();
+  
   const query = searchParams.get("query")?.trim();
+
   const { ownerProjectToProjectData } = useProjectsMetadata();
   
   // search buckets structure
@@ -508,33 +535,221 @@ export const SearchBadge = memo(({
 
 SearchBadge.displayName = 'SearchBadge';
 
-const Filters = () => {
+const Filters = ({ showMore, setShowMore }: { showMore: {[key: string]: boolean}, setShowMore: React.Dispatch<React.SetStateAction<{[key: string]: boolean}>> }) => {
   const { AllChainsByKeys } = useMaster();
   const [viewportHeight, setViewportHeight] = useState<number>(0);
-
-  useEffect(() => {
-    const handleResize = () =>{
-      setViewportHeight(window.innerHeight);
-    }
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    }
-  }, []);
+  const [keyCoords, setKeyCoords] = useState<{y: number | null, x: number | null}>({y: null, x: null});
+  const [hoveredKey, setHoveredKey] = useState<string | null>(null);
+  const [keyPressed, setKeyPressed] = useState('');
+  const [forceUpdate, setForceUpdate] = useState(0);
+  const [lastBucketIndeces, setLastBucketIndeces] = useState<{[key: string] : {x: number, y: number}}>({});
+  const childRefs = useRef<{ [key: string]: HTMLAnchorElement | null }>({});
+  const measurementsRef = useRef<{ [key: string]: DOMRect }>({});
 
   const searchParams = useSearchParams();
   const query = searchParams.get("query");
-
   const { allFilteredData, totalMatches } = useSearchBuckets();
-
   const router = useRouter();
+
+  const getKey = (label: string, type: string) => {
+    return String(`${type}::${label}`);
+  }
+
+  useEffect(() => {
+    // reset lastBucketIndeces
+    //
+    setShowMore({});
+    setLastBucketIndeces({});
+  }, [query]);
+
+  const keyMapping = useMemo(() => {
+    const dataMap: string[][] = [[]];
+    let yIndex = 0;
+    // let manualBucket: string = "";
+    
+    allFilteredData.forEach(({ type, icon, filteredData, isBucketMatch }, bucketIndex) => {
+      // if(type !== manualBucket) {
+      //   if(manualBucket !== "") {
+      //     const name = manualBucket;
+      //     const y = yIndex;
+      //     setLastBucketIndeces(prev => ({...prev, [name]: {x: currentRow.length - 1, y: y}}));
+      //     manualBucket = type;
+      //   }else if (manualBucket === ""){
+      //     manualBucket = type;
+      //   }
+      // }
+
+      const isShowMore = showMore[type] && type !== "Applications";
+      let localYIndex = 0;
+      
+      if (bucketIndex > 0) {
+        yIndex++;
+        localYIndex = 0;
+        dataMap[yIndex] = [];      
+      }
+
+      let currentRow: string[] = [];
+      let lastTop: number | null = null;
+
+      filteredData.forEach((item, itemIndex) => {
+        if (localYIndex > 2 && !isShowMore)
+        {
+          
+          return
+        };
+        
+        
+        const key = getKey(item.label, type);
+        const rect = measurementsRef.current[key];
+        const itemTop = rect?.top;
+        
+        // If this is the first item or has same top position as previous items, add to current row
+        if (lastTop === null || itemTop === lastTop) {
+          currentRow.push(key);
+          // 1. make sure we're currently in the third row
+         
+          if(localYIndex === 2 && !isShowMore){
+            // 2. make sure there's a next item
+            
+            const nextItem = filteredData[itemIndex + 1];
+            if(nextItem){
+              // 3. make sure the next item is in the NEXT row
+              const nextItemKey = getKey(nextItem.label, type);
+              const nextItemRect = measurementsRef.current[nextItemKey];
+              const nextItemTop = nextItemRect?.top;
+              const lastYIndex = localYIndex;
+              if(nextItemTop !== itemTop){
+                setLastBucketIndeces(prev => ({...prev, [key]: {x: currentRow.length - 1, y: lastYIndex}}));
+              }
+            }
+
+          }
+        } else {
+          // If top position is different, start a new row
+          localYIndex++;
+          if (localYIndex > 2 && !isShowMore) return;
+          yIndex++;
+          dataMap[yIndex] = [];
+          currentRow = [key];
+        }
+        
+        // Update lastTop and add current row to dataMap
+        lastTop = itemTop || lastTop;
+        dataMap[yIndex] = currentRow;
+      });
+    });
+
+    // Filter out empty arrays
+    return dataMap.filter(arr => arr.length > 0);
+  }, [allFilteredData, forceUpdate, query, showMore, measurementsRef]);
+
+
+  // Setup resize observer
+  useEffect(() => {
+    const observer = new ResizeObserver((entries) => {
+      let hasChanges = false;
+      
+      entries.forEach(entry => {
+        const element = entry.target as HTMLElement;
+        const key = element.getAttribute('data-key');
+        if (!key) return;
+        
+        const rect = element.getBoundingClientRect();
+        const oldRect = measurementsRef.current[key];
+        
+        if (!oldRect || oldRect.top !== rect.top || oldRect.left !== rect.left) {
+          measurementsRef.current[key] = rect;
+          hasChanges = true;
+        }
+      });
+      
+      if (hasChanges) {
+        setForceUpdate(prev => prev + 1);
+      }
+    });
+    
+    Object.entries(childRefs.current).forEach(([key, element]) => {
+      if (element) {
+        element.setAttribute('data-key', key);
+        observer.observe(element);
+      }
+    });
+    
+    return () => observer.disconnect();
+  }, [allFilteredData]);
+
+  useEffect(() => {
+    setKeyCoords({y: null, x: null});
+  }, [query, allFilteredData])
+  
+
+
+  // Add keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!keyMapping.length) return;
+
+      const isCoordsNull = keyCoords.y === null || keyCoords.x === null;
+      const currentY = keyCoords.y ?? 0;
+      const currentX = keyCoords.x ?? 0;
+
+      
+
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        if(isCoordsNull) {
+          setKeyCoords({y: 0, x: 0});
+        } else if(currentY !== 0) {
+          setKeyCoords({y: currentY - 1, x: Math.min(currentX, (keyMapping[currentY - 1]?.length || 1) - 1)});
+        }
+      } else if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        if(isCoordsNull) {
+          setKeyCoords({y: 0, x: 0});
+        } else if(currentY !== keyMapping.length - 1) {
+          setKeyCoords({y: currentY + 1, x: Math.min(currentX, (keyMapping[currentY + 1]?.length || 1) - 1)});
+        }
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        if(isCoordsNull) {
+          setKeyCoords({y: 0, x: 0});
+        } else if(currentX !== 0) {
+          setKeyCoords({y: currentY, x: currentX - 1});
+        }
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        if(isCoordsNull) {
+          setKeyCoords({y: 0, x: 0});
+        } else if(currentX !== keyMapping[currentY].length - 1) {
+          setKeyCoords({y: currentY, x: currentX + 1});
+        }
+      } else if (event.key === 'Enter' && !isCoordsNull) {
+        event.preventDefault();
+        const selectedKey = keyMapping[currentY][currentX];
+        const selectedElement = childRefs.current[selectedKey];
+        if (selectedElement) {
+          selectedElement.click();
+        }
+      }
+    };
+
+    if (query && allFilteredData.length > 0) {
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [keyCoords, keyMapping, query, allFilteredData]);
+
+
+
 
   return (
     <div className="flex flex-col-reverse md:flex-col !pt-0 !pb-[0px] pl-[0px] pr-[0px] gap-y-[10px] max-h-[calc(100vh-220px)] overflow-y-auto">
       {query && allFilteredData.length > 0 && <div className="flex flex-col-reverse md:flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px] text-[10px]">
           {allFilteredData.map(({ type, icon, filteredData, isBucketMatch }) => {
+            const isShowMore = showMore[type] && type !== "Applications";
+            
             return (
-              <div key={type} className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start">
+              <div key={type} className={`flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start overflow-y-hidden ${isShowMore ? "max-h-full" : "max-h-[87px] "}`}>
                 <div className="flex gap-x-[10px] items-center shrink-0">
                     <GTPIcon
                       icon={icon as GTPIconName}
@@ -550,23 +765,110 @@ const Filters = () => {
                   <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
                 </div>
                 <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
-                  {filteredData.map((item) => (
-                    <Link href={item.url} key={item.label}>
-                      <SearchBadge
-                        className="!cursor-pointer"
-                        label={item.label}
-                        leftIcon={`${item.icon}` as GTPIconName}
-                        leftIconColor={item.color || "white"}
-                        rightIcon=""
+                  {filteredData.map((item) => {
+                    const itemKey = getKey(item.label, type);
+                    const isSelected = keyCoords.y !== null && 
+                      keyCoords.x !== null && 
+                      keyMapping[keyCoords.y]?.[keyCoords.x] === itemKey;
+
+                    return (
+                      <BucketItem 
+                        key={itemKey}
+                        item={item} 
+                        itemKey={itemKey} 
+                        isSelected={isSelected} 
+                        childRefs={childRefs} 
+                        lastBucketIndeces={lastBucketIndeces}
+                        bucket={type}
+                        query={query}
+                        showMore={showMore}
+                        setShowMore={setShowMore}
                       />
-                    </Link>
-                  )).slice(0, isBucketMatch ? undefined : 30)}
+                    )
+                  })}
                 </div>
               </div>
             );
           })}
       </div>}
     </div>
+  )
+}
+
+const BucketItem = ({ 
+  item, 
+  itemKey, 
+  isSelected, 
+  childRefs, 
+  lastBucketIndeces, 
+  bucket, 
+  query, 
+  showMore, 
+  setShowMore 
+}: { 
+  item: any, 
+  itemKey: string, 
+  isSelected: boolean, 
+  childRefs: any, 
+  lastBucketIndeces: any, 
+  bucket: string, 
+  query: string, 
+  showMore: {[key: string]: boolean}, 
+  setShowMore: React.Dispatch<React.SetStateAction<{[key: string]: boolean}>>
+}) => {
+  const isApps = bucket === "Applications";
+
+
+  return (
+    <Link 
+      href={lastBucketIndeces[itemKey] && !showMore[bucket] ? isApps ? `/applications?search=${query}` : `` : item.url} 
+      key={item.label}   
+      ref={(el) => {
+        childRefs.current[itemKey] = el;
+      }}
+      
+      onClick={(e) => {
+        if (lastBucketIndeces[itemKey] && !showMore[bucket]) {
+          
+          setShowMore(prev => ({...prev, [bucket]: true}));
+          if(isApps){
+           
+            setTimeout(() => {
+              setShowMore(prev => ({...prev, [bucket]: false}));
+            }, 1000);
+          }
+          return;
+        }
+      }}
+      
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          if (lastBucketIndeces[itemKey] && !showMore[bucket]) {
+            
+            setShowMore(prev => ({...prev, [bucket]: true})); 
+            if(isApps){
+              setTimeout(() => {
+                setShowMore(prev => ({...prev, [bucket]: false}));
+              }, 1000);
+            }
+          }
+        }
+      }}
+      className="relative"
+    >
+      {lastBucketIndeces[itemKey] && !showMore[bucket] && (
+        <div className={`absolute inset-0 flex items-center justify-center rounded-full ${isSelected? "!bg-[#5A6462]" : "bg-[#344240]"} hover:bg-[#5A6462] active:bg-[#5A6462] text-xs`}>
+          See more...
+        </div>
+      )}
+      <SearchBadge
+        className={`!cursor-pointer ${isSelected ? "!bg-[#5A6462]" : ""}`}
+        label={item.label}
+        leftIcon={`${item.icon}` as GTPIconName}
+        leftIconColor={item.color || "white"}
+        rightIcon=""
+      />
+    </Link>
   )
 }
 
