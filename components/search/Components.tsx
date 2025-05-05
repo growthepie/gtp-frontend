@@ -19,6 +19,10 @@ import { debounce } from "lodash";
 import { numberFormat } from "highcharts";
 import { B } from "million/dist/shared/million.485bbee4";
 
+function normalizeString(str: string) {
+  return str.toLowerCase().replace(/\s+/g, '');
+}
+
 const setDocumentScroll = (showScroll: boolean) => {
   if (showScroll) {
     document.body.classList.add("overflow-y-scroll");
@@ -179,7 +183,7 @@ const SearchBar = ({ showMore, setShowMore }: { showMore: {[key: string]: boolea
       // create new url
       let url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
       window.history.replaceState(null, "", url);
-    }, 300),
+    }, 50),
     [pathname]
   );
 
@@ -325,13 +329,15 @@ const useSearchBuckets = () => {
           icon: `gtp:${option.icon}`,
           color: undefined
         })),
-        ...Object.entries(ownerProjectToProjectData).filter(([owner, project]) => project.logo_path).map(([owner, project]) => ({
-          label: project.display_name,
-          url: `/applications/${project.owner_project}`,
-          icon: `https://api.growthepie.xyz/v1/apps/logos/${project.logo_path}`,
-          color: undefined
-      }
-    ))]
+        ...Object.entries(ownerProjectToProjectData)
+          .filter(([owner, project]) => project.logo_path && project.on_apps_page)
+          .map(([owner, project]) => ({
+            label: project.display_name,
+            url: `/applications/${project.owner_project}`,
+            icon: `https://api.growthepie.xyz/v1/apps/logos/${project.logo_path}`,
+            color: undefined
+        }))
+      ]
     }
   ], [AllChainsByKeys, ownerProjectToProjectData]);
 
@@ -339,8 +345,8 @@ const useSearchBuckets = () => {
   const allFilteredData = useMemo(() => {
     // Check if the query matches at least 40% of a bucket name from the beginning
     const bucketMatch = query ? searchBuckets.find(bucket => {
-      const bucketName = bucket.label.toLowerCase().replace(/\s+/g, '');
-      const searchQuery = query.toLowerCase().replace(/\s+/g, '');
+      const bucketName = normalizeString(bucket.label);
+      const searchQuery = normalizeString(query);
       
       // Calculate the minimum length needed (40% of bucket name)
       const minQueryLength = Math.ceil(bucketName.length * 0.4);
@@ -353,21 +359,21 @@ const useSearchBuckets = () => {
     // Get regular search results
     const regularSearchResults = searchBuckets.map(bucket => {
       const bucketOptions = bucket.options;
-      const lowerQuery = query?.toLowerCase() || "";
+      const lowerQuery = normalizeString(query || "");
 
       // Split into three categories
       const exactMatches = bucketOptions.filter(option => 
-        option.label.toLowerCase() === lowerQuery
+        normalizeString(option.label) === lowerQuery
       );
       
       const startsWithMatches = bucketOptions.filter(option => {
-        const lowerLabel = option.label.toLowerCase();
+        const lowerLabel = normalizeString(option.label);
         return lowerLabel !== lowerQuery && // not an exact match
           lowerLabel.startsWith(lowerQuery);
       });
 
       const containsMatches = bucketOptions.filter(option => {
-        const lowerLabel = option.label.toLowerCase();
+        const lowerLabel = normalizeString(option.label);
         return lowerLabel !== lowerQuery && // not an exact match
           !lowerLabel.startsWith(lowerQuery) && // not a starts with match
           lowerLabel.includes(lowerQuery);
@@ -430,8 +436,8 @@ const useSearchBuckets = () => {
 
 const OpacityUnmatchedText = ({ text, query }: { text: string; query: string }) => {
   // Remove spaces from both text and query for opacity matching
-  const normalizedText = text.toLowerCase().replace(/\s+/g, '');
-  const normalizedQuery = query.toLowerCase().replace(/\s+/g, '');
+  const normalizedText = normalizeString(text);
+  const normalizedQuery = normalizeString(query);
   
   let matchedChars = 0;
   // Count how many characters match from the start
@@ -744,10 +750,17 @@ const Filters = ({ showMore, setShowMore }: { showMore: {[key: string]: boolean}
 
   return (
     <div className="flex flex-col-reverse md:flex-col !pt-0 !pb-[0px] pl-[0px] pr-[0px] gap-y-[10px] max-h-[calc(100vh-220px)] overflow-y-auto">
-      {query && allFilteredData.length > 0 && <div className="flex flex-col-reverse md:flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px] text-[10px]">
+      {query && allFilteredData.length > 0 && <div 
+      key={query}
+      className="flex flex-col-reverse md:flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px] text-[10px]">
           {allFilteredData.map(({ type, icon, filteredData, isBucketMatch }) => {
             const isShowMore = showMore[type] && type !== "Applications";
-            
+            // Limit Applications bucket to 20 results unless showMore is true
+            const resultsToRender =
+              type === "Applications" && !isShowMore
+                ? filteredData.slice(0, 20)
+                : filteredData;
+
             return (
               <div key={type} className={`flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start overflow-y-hidden ${isShowMore ? "max-h-full" : "max-h-[87px] "}`}>
                 <div className="flex gap-x-[10px] items-center shrink-0">
@@ -765,7 +778,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: {[key: string]: boolean}
                   <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
                 </div>
                 <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
-                  {filteredData.map((item) => {
+                  {resultsToRender.map((item) => {
                     const itemKey = getKey(item.label, type);
                     const isSelected = keyCoords.y !== null && 
                       keyCoords.x !== null && 
