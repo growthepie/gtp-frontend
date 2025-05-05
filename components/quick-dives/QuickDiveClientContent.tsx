@@ -5,6 +5,7 @@ import React from 'react';
 import { PageContainer } from '@/components/layout/Container';
 import QuickDiveContent from './QuickDiveContent';
 import RelatedQuickDives from './RelatedQuickDives';
+import { QuickDiveWithSlug } from '@/lib/types/quickDives';
 
 interface QuickDiveData {
   title: string;
@@ -19,7 +20,7 @@ interface QuickDiveData {
 interface QuickDiveClientContentProps {
   content: string[];
   image: string;
-  relatedQuickDives: QuickDiveData[];
+  relatedQuickDives: QuickDiveWithSlug[];
 }
 
 const QuickDiveClientContent: React.FC<QuickDiveClientContentProps> = ({

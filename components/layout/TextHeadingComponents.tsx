@@ -39,11 +39,11 @@ export const Title = ({
     return (
       <div
         id={id}
-        className={`flex gap-x-[8px] items-center ${containerClassName}`}
+        className={`flex items-center h-[43px] gap-x-[8px]  ${containerClassName}`}
       >
-        <GTPIcon icon={icon} className={iconClassName} size={iconSize} />
+        <GTPIcon icon={icon} className={`object-contain w-[36px] h-[36px] ${iconClassName}`} size={iconSize} />
         <Heading
-          className={`leading-[120%] break-inside-avoid ${titleSizeMap[titleSize]} ${titleClassName}`}
+          className={`leading-snug ${titleSizeMap[titleSize]} ${titleClassName}`}
           as={as}
         >
           {title}
