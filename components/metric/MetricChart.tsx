@@ -196,7 +196,6 @@ function MetricChart({
 
   // useHighchartsWrappers();
   let tooltipWorker: Worker | null = null;
-  let tooltipCache = new Map<string, string>();
 
   const createSafeCacheKey = (
     points: any[],
@@ -742,32 +741,7 @@ function MetricChart({
         suffix = " Mgas/s";
       }
   
-      // Generate a cache key based on relevant data
-      const cacheKey = createSafeCacheKey(
-        points,
-        maxPoint,
-        maxPercentage,
-        theme,
-        metric_id,
-        prefix,
-        suffix,
-        decimals,
-        selectedScale,
-        showOthers
-      );
-  
-  
-      // Check cache first
-      if (tooltipCache.has(cacheKey)) {
-        return tooltipCache.get(cacheKey);
-      }
-  
-      // If no worker exists, create one
-      if (!tooltipWorker) {
-        tooltipWorker = new Worker(new URL('./tooltipWorker.ts', import.meta.url));
-      }
-  
-      // Process the points directly in the main thread as fallback
+      // Process the points directly in the main thread
       const processPointsInMainThread = () => {
         const firstTenPoints = points.slice(0, 10);
         const afterTenPoints = points.slice(10);
@@ -883,11 +857,7 @@ function MetricChart({
           </div>`
         : "";
   
-      const result = tooltip + tooltipPoints + sumRow + "</div>";
-      tooltipCache.set(cacheKey, result);
-      
-
-      return result;
+      return tooltip + tooltipPoints + sumRow + "</div>";
     },
     [
       metric_id,
