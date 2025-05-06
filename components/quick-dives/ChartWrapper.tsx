@@ -11,6 +11,13 @@ import { debounce } from 'lodash';
 import { useTheme } from 'next-themes';
 import ChartWatermark from '@/components/layout/ChartWatermark';
 
+// Extend Highcharts Chart type to include customWatermark
+declare module 'highcharts' {
+  interface Chart {
+    customWatermark?: Highcharts.SVGElement;
+  }
+}
+
 interface ChartWrapperProps {
   chartType: 'line' | 'area' | 'bar' | 'column' | 'pie';
   data: any;

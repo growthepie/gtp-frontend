@@ -50,10 +50,7 @@ export default async function QuickDivePage({ params }: Props) {
   
   // Get related quick dives
   const relatedContent = quickDive.related 
-    ? getRelatedQuickDives(quickDive.related).map(dive => ({
-        ...dive,
-        slug: dive.slug || dive.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '')
-      }))
+    ? getRelatedQuickDives(quickDive.related)
     : [];
   
   return (

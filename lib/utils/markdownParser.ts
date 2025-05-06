@@ -83,15 +83,26 @@ export async function processMarkdownContent(content: string[]): Promise<Content
       }
       // Handle headings
       else if (/^#{1,6}\s/.test(text)) {
-        const level = text.match(/^(#{1,6})\s/)[1].length;
+        const match = text.match(/^(#{1,6})\s/);
+        if (!match) {
+          // If no match (shouldn't happen due to the test above, but TypeScript needs this)
+          blocks.push({
+            id: generateBlockId(),
+            type: 'paragraph',
+            content: text
+          });
+          continue;
+        }
+        const level = match[1].length;
         const content = text.replace(/^#{1,6}\s/, '');
         
         blocks.push({
           id: generateBlockId(),
           type: 'heading',
-          content: content, // No HTML conversion
-          level: level as 1|2|3|4|5|6
+          content,
+          level: level as 1 | 2 | 3 | 4 | 5 | 6
         });
+        continue;
       }
       // Handle images with special attributes
       else if (text.startsWith('![') && text.includes('](')) {

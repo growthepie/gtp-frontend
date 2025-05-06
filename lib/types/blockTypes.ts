@@ -50,6 +50,7 @@ export interface ChartBlock extends BaseBlock {
   height?: number | string;
   title?: string;
   subtitle?: string;
+  caption?: string;
   className?: string;
 }
 
