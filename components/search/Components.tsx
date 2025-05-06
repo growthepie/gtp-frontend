@@ -435,28 +435,92 @@ const useSearchBuckets = () => {
 }
 
 const OpacityUnmatchedText = ({ text, query }: { text: string; query: string }) => {
-  // Remove spaces from both text and query for opacity matching
+  const spanRef = useRef<HTMLSpanElement>(null);      // Parent span (visible)
+  const matchRef = useRef<HTMLSpanElement>(null);     // Match span
+  const [isTruncated, setIsTruncated] = useState(false);
+  const [matchIsHidden, setMatchIsHidden] = useState(false);
+
+  // Always call hooks before any return
+  useEffect(() => {
+    if (spanRef.current) {
+      setIsTruncated(spanRef.current.scrollWidth > spanRef.current.clientWidth);
+    }
+  }, [text, query]);
+
+  useEffect(() => {
+    if (spanRef.current && matchRef.current) {
+      const parentRect = spanRef.current.getBoundingClientRect();
+      const matchRect = matchRef.current.getBoundingClientRect();
+      setMatchIsHidden(matchRect.right > parentRect.right);
+    } else {
+      setMatchIsHidden(false);
+    }
+  }, [isTruncated, text, query]);
+
+  if (!query) return <>{text}</>;
+
+  // Normalize for matching
   const normalizedText = normalizeString(text);
   const normalizedQuery = normalizeString(query);
-  
-  let matchedChars = 0;
-  // Count how many characters match from the start
-  for (let i = 0; i < normalizedQuery.length; i++) {
-    if (normalizedText[i] === normalizedQuery[i]) {
-      matchedChars++;
-    } else {
-      break;
-    }
+
+  const matchIndex = normalizedText.indexOf(normalizedQuery);
+
+  if (matchIndex === -1) {
+    // No match, all faded
+    return <span className="opacity-50">{text}</span>;
   }
 
-  const matchedPart = text.slice(0, matchedChars);
-  const unmatchedPart = text.slice(matchedChars);
-  
+  // Map normalized match index back to original string indices
+  let origStart = 0, normCount = 0;
+  while (origStart < text.length && normCount < matchIndex) {
+    if (text[origStart] !== ' ') normCount++;
+    origStart++;
+  }
+
+  let origEnd = origStart, normMatchCount = 0;
+  while (origEnd < text.length && normMatchCount < query.replace(/\s+/g, '').length) {
+    if (text[origEnd] !== ' ') normMatchCount++;
+    origEnd++;
+  }
+
+  const before = text.slice(0, origStart);
+  const match = text.slice(origStart, origEnd);
+  const after = text.slice(origEnd);
+
+  // If the match is hidden, use solid color for parent (and thus ellipsis)
+  const parentColorClass =
+    isTruncated && matchIsHidden
+      ? "text-[rgba(205,216,211)]"
+      : "text-[rgba(205,216,211,0.5)]";
+
   return (
-    <span className="text-sm font-raleway font-medium leading-[150%] text-white">
-      <span>{matchedPart}</span>
-      <span className="opacity-50">{unmatchedPart}</span>
-    </span>
+    <>
+      {/* Hidden span for measuring full width (not visible) */}
+      <span
+        style={{
+          position: "absolute",
+          visibility: "hidden",
+          whiteSpace: "nowrap",
+          pointerEvents: "none",
+          height: 0,
+          overflow: "hidden",
+        }}
+      >
+        {text}
+      </span>
+      {/* Actual rendered text */}
+      <span
+        ref={spanRef}
+        className={`truncate inline-block max-w-full align-bottom ${parentColorClass}`}
+        style={{ position: "relative" }}
+      >
+        {before && (
+          <span className="text-[rgba(205,216,211,0.5)]">{before}</span>
+        )}
+        <span ref={matchRef} className="text-[rgba(205,216,211)]">{match}</span>
+        {after && <span>{after}</span>}
+      </span>
+    </>
   );
 };
 
@@ -870,13 +934,19 @@ const BucketItem = ({
       className="relative"
     >
       {lastBucketIndeces[itemKey] && !showMore[bucket] && (
-        <div className={`absolute inset-0 flex items-center justify-center rounded-full ${isSelected? "!bg-[#5A6462]" : "bg-[#344240]"} hover:bg-[#5A6462] active:bg-[#5A6462] text-xs`}>
+        <div className={`absolute inset-0 z-20 flex items-center justify-center rounded-full ${isSelected? "!bg-[#5A6462]" : "bg-[#344240]"} hover:bg-[#5A6462] active:bg-[#5A6462] text-xs`}>
           See more...
         </div>
       )}
       <SearchBadge
         className={`!cursor-pointer ${isSelected ? "!bg-[#5A6462]" : ""}`}
-        label={item.label}
+        label={
+          // Use OpacityUnmatchedText for startsWith/contains matches, plain for exact
+          (normalizeString(item.label).startsWith(normalizeString(query)) && normalizeString(item.label) !== normalizeString(query)) ||
+          (normalizeString(item.label).includes(normalizeString(query)) && !normalizeString(item.label).startsWith(normalizeString(query)))
+            ? <OpacityUnmatchedText text={item.label} query={query} />
+            : item.label
+        }
         leftIcon={`${item.icon}` as GTPIconName}
         leftIconColor={item.color || "white"}
         rightIcon=""
@@ -969,8 +1039,6 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
     </div>
   )
 }
-
-// when pressing backspace it feels laggy 
   
 
 
