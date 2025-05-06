@@ -586,7 +586,7 @@ export const SearchBadge = memo(({
     >
       {getLeftIcon()}
       {showLabel && (
-        <div className="text-[#CDD8D3] leading-[150%] pr-0.5 truncate max-w-[100px]">
+        <div className="text-[#CDD8D3] leading-[150%] pr-0.5 truncate max-w-[185px]">
           {label}
         </div>
       )}
@@ -832,7 +832,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: {[key: string]: boolean}
                       icon={icon as GTPIconName}
                       size="md"
                     />
-                  <div className="text-sm w-[120px] font-raleway font-medium leading-[150%]">
+                  <div className="text-sm w-[120px] font-raleway font-medium leading-[150%] cursor-default">
                     {isBucketMatch ? (
                       <OpacityUnmatchedText text={type} query={query || ""} />
                     ) : (
@@ -1018,7 +1018,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
             <rect x="24" y="11" width="22" height="10" rx="2" fill="#151A19"/>
             <path d="M37.3292 14.2236L35.4472 17.9875C35.263 18.3561 34.737 18.3561 34.5528 17.9875L32.6708 14.2236C32.5046 13.8912 32.7463 13.5 33.118 13.5L36.882 13.5C37.2537 13.5 37.4954 13.8912 37.3292 14.2236Z" fill="#CDD8D3" stroke="#CDD8D3"/>
           </svg>
-          <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional">Move</div>
+          <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Move</div>
         </div>
         <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px] flex-[1_0_0]">
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="21" viewBox="0 0 22 21" fill="none">
@@ -1026,14 +1026,14 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
             <path d="M16 5.5V12.5C16 13.0523 15.5523 13.5 15 13.5H9" stroke="#CDD8D3" stroke-width="2"/>
             <path d="M10.3336 15.5581L5.83821 13.9715C5.39343 13.8145 5.39343 13.1855 5.83822 13.0285L10.3336 11.4419C10.6589 11.3271 11 11.5684 11 11.9134L11 15.0866C11 15.4316 10.6589 15.6729 10.3336 15.5581Z" fill="#CDD8D3" stroke="#CDD8D3"/>
           </svg>
-          <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional">Select</div>
+          <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Select</div>
         </div>
         <div className="w-[7px] h-[8px]"></div>
         <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px]">
           <div className="w-[22px] h-[20px] shrink-0 rounded-[2px] bg-[#151A19] flex items-center justify-center">
-            <div className="w-[22px] h-[20px] shrink-0 rounded-[2px] bg-[#151A19] flex items-center justify-center mt-[1px] text-[#CDD8D3] numbers-xxxs">ESC</div>
+            <div className="w-[22px] h-[20px] shrink-0 rounded-[2px] bg-[#151A19] flex items-center justify-center mt-[1px] text-[#CDD8D3] numbers-xxxs cursor-default">ESC</div>
           </div>
-          <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional">Close</div>
+          <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Close</div>
         </div>
       </div>
     </div>
