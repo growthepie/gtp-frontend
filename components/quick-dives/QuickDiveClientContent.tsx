@@ -5,21 +5,12 @@ import React from 'react';
 import { PageContainer } from '@/components/layout/Container';
 import QuickDiveContent from './QuickDiveContent';
 import RelatedQuickDives from './RelatedQuickDives';
-
-interface QuickDiveData {
-  title: string;
-  subtitle: string;
-  content: string[];
-  image: string;
-  date: string;
-  icon: string;
-  related: string[];
-}
+import { QuickDiveWithSlug } from '@/lib/types/quickDives';
 
 interface QuickDiveClientContentProps {
   content: string[];
   image: string;
-  relatedQuickDives: QuickDiveData[];
+  relatedQuickDives: QuickDiveWithSlug[];
 }
 
 const QuickDiveClientContent: React.FC<QuickDiveClientContentProps> = ({
@@ -29,7 +20,9 @@ const QuickDiveClientContent: React.FC<QuickDiveClientContentProps> = ({
 }) => {
   return (
     <>
-      <QuickDiveContent content={content} image={image} />
+      <PageContainer>
+        <QuickDiveContent content={content} image={image} />
+      </PageContainer>
       
       <PageContainer>
         <RelatedQuickDives relatedQuickDives={relatedQuickDives} />
