@@ -18,6 +18,7 @@ import { HeaderButton } from "../layout/HeaderButton";
 import { debounce } from "lodash";
 import { numberFormat } from "highcharts";
 import { B } from "million/dist/shared/million.485bbee4";
+import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
 function normalizeString(str: string) {
   return str.toLowerCase().replace(/\s+/g, '');
@@ -287,12 +288,22 @@ const useSearchBuckets = () => {
   const query = searchParams.get("query")?.trim();
 
   const { ownerProjectToProjectData } = useProjectsMetadata();
+  const { AllChainsByStacks } = useMaster();
 
   // search buckets structure
   type SearchBucket = {
     label: string;
     icon: GTPIconName;
-    options: { label: string; url: string; icon: string, color?: string }[];
+    options: { 
+      label: string; 
+      url: string; 
+      icon: string; 
+      color?: string;
+    }[];
+    groupOptions?: { 
+      label: string; 
+      options: { label: string; url: string; icon: string, color?: string }[]
+    }[];
   };
 
   // first bucket = chains
@@ -307,6 +318,16 @@ const useSearchBuckets = () => {
           url: `/chains/${chain.urlKey}`,
           icon: `gtp:${chain.urlKey}-logo-monochrome`,
           color: chain.colors.dark[0]
+        })),
+      groupOptions: Object.entries(AllChainsByStacks)
+        .map(([bucket, chains]) => ({
+          label: bucket,
+          options: chains.map(chain => ({
+            label: chain.name,
+            url: `/chains/${chain.url_key}`,
+            icon: `gtp:${chain.url_key}-logo-monochrome`,
+            color: chain.colors.dark[0]
+          }))
         }))
     },
     ...navigationItems.filter(navItem => navItem.name !== "Applications").map(navItem => ({
@@ -339,7 +360,7 @@ const useSearchBuckets = () => {
           }))
       ]
     }
-  ], [AllChainsByKeys, ownerProjectToProjectData]);
+  ], [AllChainsByKeys, ownerProjectToProjectData, AllChainsByStacks]);
 
 
   const allFilteredData = useMemo(() => {
@@ -379,10 +400,19 @@ const useSearchBuckets = () => {
           lowerLabel.includes(lowerQuery);
       });
 
+      const groupOptions = bucket.groupOptions;
+
+      const groupOptionsMatches = groupOptions?.filter(group => {
+        const lowerLabel = normalizeString(group.label);
+        return lowerLabel !== lowerQuery && // not an exact match
+          lowerLabel.includes(lowerQuery);
+      });
+
       return {
         type: bucket.label,
         icon: bucket.icon,
         filteredData: [...exactMatches, ...startsWithMatches, ...containsMatches],
+        filteredGroupData: groupOptionsMatches,
         isBucketMatch: false
       };
     });
@@ -420,6 +450,7 @@ const useSearchBuckets = () => {
         type: `${bucketMatch.label} `,
         icon: bucketMatch.icon,
         filteredData: bucketMatch.options,
+        filteredGroupData: null,
         isBucketMatch: true
       }]
       : sortedRegularResults;
@@ -641,20 +672,8 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
     const dataMap: string[][] = [[]];
     const newLastBucketIndeces: { [key: string]: { x: number, y: number } } = {};
     let yIndex = 0;
-    // let manualBucket: string = "";
 
-    allFilteredData.forEach(({ type, icon, filteredData, isBucketMatch }, bucketIndex) => {
-      // if(type !== manualBucket) {
-      //   if(manualBucket !== "") {
-      //     const name = manualBucket;
-      //     const y = yIndex;
-      //     setLastBucketIndeces(prev => ({...prev, [name]: {x: currentRow.length - 1, y: y}}));
-      //     manualBucket = type;
-      //   }else if (manualBucket === ""){
-      //     manualBucket = type;
-      //   }
-      // }
-
+    allFilteredData.forEach(({ type, icon, filteredData, filteredGroupData, isBucketMatch }, bucketIndex) => {
       const isShowMore = showMore[type] && type !== "Applications";
       let localYIndex = 0;
 
@@ -666,6 +685,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
 
       let currentRow: string[] = [];
       let lastTop: number | null = null;
+
 
       filteredData.forEach((item, itemIndex) => {
         if (localYIndex > 2 && !isShowMore) {
@@ -823,30 +843,39 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
     }
   }, [keyCoords, keyMapping, memoizedQuery, allFilteredData]);
 
+  const [groupRef, { height: groupHeight }] =
+  useElementSizeObserver<HTMLDivElement>();
 
 
 
   return (
-    <div className="flex flex-col-reverse md:flex-col !pt-0 !pb-[0px] pl-[0px] pr-[0px] gap-y-[10px] max-h-[calc(100vh-220px)] overflow-y-auto">
+    <div className="flex flex-col !pt-0 !pb-[0px] pl-[0px] pr-[0px] gap-y-[10px] max-h-[calc(100vh-220px)] overflow-y-auto">
       {memoizedQuery && allFilteredData.length > 0 && <div
         key={memoizedQuery}
-        className="flex flex-col-reverse md:flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px] text-[10px]">
-        {allFilteredData.map(({ type, icon, filteredData, isBucketMatch }) => {
+        className="flex flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px] text-[10px]">
+        {allFilteredData.map(({ type, icon, filteredData, filteredGroupData, isBucketMatch }) => {
           const isShowMore = showMore[type] && type !== "Applications";
           // Limit Applications bucket to 20 results unless showMore is true
           const resultsToRender =
             type === "Applications" && !isShowMore
               ? filteredData.slice(0, 20)
               : filteredData;
-
+          
           return (
-            <div key={type} className={`flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start overflow-y-hidden ${isShowMore ? "max-h-full" : "max-h-[87px] "}`}>
+            <div 
+              key={type} 
+              className={`flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start overflow-y-hidden ${isShowMore ? "max-h-full" : "max-h-[118px] md:max-h-[87px] "}`}
+              // style={{
+              //   maxHeight: isShowMore ? "100%" : `calc(87px + ${groupHeight}px)`
+              // }}
+            >
               <div className="flex gap-x-[10px] items-center shrink-0">
                 <GTPIcon
                   icon={icon as GTPIconName}
-                  size="md"
+                  size="sm"
+                  className="md:!size-[24px]"
                 />
-                <div className="text-sm w-[120px] font-raleway font-medium leading-[150%] cursor-default">
+                <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default">
                   {isBucketMatch ? (
                     <OpacityUnmatchedText text={type} query={memoizedQuery || ""} />
                   ) : (
@@ -855,36 +884,64 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
                 </div>
                 <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
               </div>
-              <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
-                {resultsToRender.map((item) => {
-                  const itemKey = getKey(item.label, type);
-                  const isSelected = keyCoords.y !== null &&
-                    keyCoords.x !== null &&
-                    keyMapping[keyCoords.y]?.[keyCoords.x] === itemKey;
+              {/* <div className="flex flex-col gap-[5px]"> */}
+                <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
+                  {resultsToRender.map((item) => {
+                    const itemKey = getKey(item.label, type);
+                    const isSelected = keyCoords.y !== null &&
+                      keyCoords.x !== null &&
+                      keyMapping[keyCoords.y]?.[keyCoords.x] === itemKey;
 
-                  return (
-                    <BucketItem
-                      key={itemKey}
-                      item={item}
-                      itemKey={itemKey}
-                      isSelected={isSelected}
-                      childRefs={childRefs}
-                      lastBucketIndeces={lastBucketIndeces}
-                      bucket={type}
-                      query={memoizedQuery}
-                      showMore={showMore}
-                      setShowMore={setShowMore}
-                    />
-                  )
-                })}
-              </div>
-            </div>
+                    return (
+                      <BucketItem
+                        key={itemKey}
+                        item={item}
+                        itemKey={itemKey}
+                        isSelected={isSelected}
+                        childRefs={childRefs}
+                        lastBucketIndeces={lastBucketIndeces}
+                        bucket={type}
+                        query={memoizedQuery}
+                        showMore={showMore}
+                        setShowMore={setShowMore}
+                      />
+                    )
+                  })}
+                </div>
+                {/* {filteredGroupData && (
+                  <div ref={groupRef} className="flex flex-col gap-[5px]">
+                    {filteredGroupData.map((group) => (
+                      <div key={group.label} className="flex flex-col gap-[5px]">
+                        <div className="text-xxs">{type} that are part of the &apos;{group.label}&apos;</div>
+                        <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
+                          {group.options.map((option) => (
+                            <BucketItem
+                              key={option.label}
+                              item={option}
+                              itemKey={`${group.label}::${option.label}`}
+                              isSelected={false}
+                              childRefs={childRefs}
+                              lastBucketIndeces={lastBucketIndeces}
+                              bucket={type}
+                              query={memoizedQuery}
+                              showMore={showMore}
+                              setShowMore={setShowMore}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )} */}
+              {/* </div> */}
+            </div>  
           );
         })}
       </div>}
     </div>
   )
 }
+
 
 const BucketItem = ({
   item,
