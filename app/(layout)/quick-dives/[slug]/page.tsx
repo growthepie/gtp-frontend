@@ -1,6 +1,6 @@
 // File: app/(layout)/quick-dives/[slug]/page.tsx
 import { notFound } from 'next/navigation';
-import { PageContainer } from '@/components/layout/Container';
+import Container, { PageContainer } from '@/components/layout/Container';
 import { GTPIcon } from '@/components/layout/GTPIcon';
 import { Title } from '@/components/layout/TextHeadingComponents';
 import Heading from '@/components/layout/Heading';
@@ -12,6 +12,7 @@ import Block from '@/components/quick-dives/Block';
 import { formatDate } from '@/lib/utils/formatters';
 import { processMarkdownContent } from '@/lib/utils/markdownParser';
 import RelatedQuickDives from '@/components/quick-dives/RelatedQuickDives';
+
 
 type Props = {
   params: { slug: string };
@@ -54,17 +55,33 @@ export default async function QuickDivePage({ params }: Props) {
     : [];
   
   return (
-    <div className="pt-[45px] md:pt-[30px]">
-      <PageContainer>
+    <div className="">
+      <Container
+        className="flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] mb-[15px]"
+        isPageRoot
+      >
         {/* Header section */}
-        <div className="mb-6">
-          <div className="flex items-center gap-x-2 text-xs text-forest-700 dark:text-forest-400 mb-4">
+        <div className="flex w-full justify-between items-center h-fit">
+          
+          <div className=''>
+              <Title
+                title={quickDive.title}
+                icon={quickDive.icon as GTPIconName}
+                as="h1"
+              />
+
+          </div>
+          <div className="flex items-center h-full gap-x-2 text-sm">
             <span>Quick Dive</span>
-            <span className="mx-1">•</span>
+            <svg width="6" height="6" viewBox="0 0 6 6" fill="#344240">
+              <circle cx="3" cy="3" r="3" />
+            </svg>
             <span>{formatDate(quickDive.date)}</span>
             {quickDive.author && (
               <>
-                <span className="mx-1">•</span>
+                <svg width="6" height="6" viewBox="0 0 6 6" fill="#344240">
+                  <circle cx="3" cy="3" r="3" />
+                </svg>
                 <ClientAuthorLink 
                   name={quickDive.author.name} 
                   xUsername={quickDive.author.xUsername} 
@@ -72,21 +89,12 @@ export default async function QuickDivePage({ params }: Props) {
               </>
             )}
           </div>
-          
-          <Title
-            title={quickDive.title}
-            icon={quickDive.icon as GTPIconName}
-            as="h1"
-          />
-          
-          <p className="text-lg md:text-xl mt-4 mb-8 max-w-4xl">
-            {quickDive.subtitle}
-          </p>
+
         </div>
         
         {/* Main content with blocks */}
-        <div className="bg-forest-50 dark:bg-[#1F2726] rounded-xl p-6 md:p-8 mb-12 shadow-sm">
-          <div className="max-w-4xl mx-auto">
+        <div className="">
+          <div className="mx-auto">
             {contentBlocks.map((block) => (
               <Block key={block.id} block={block} />
             ))}
@@ -112,7 +120,7 @@ export default async function QuickDivePage({ params }: Props) {
         {relatedContent.length > 0 && (
           <RelatedQuickDives relatedQuickDives={relatedContent} />
         )}
-      </PageContainer>
+      </Container>
     </div>
   );
 }

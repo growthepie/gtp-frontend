@@ -6,11 +6,11 @@ import dynamic from 'next/dynamic';
 // Dynamically import ChartWrapper to avoid SSR issues
 const ChartWrapper = dynamic(() => import('../ChartWrapper'), { 
   ssr: false,
-  loading: () => <div className="w-full h-[300px] bg-forest-50 dark:bg-forest-900 animate-pulse rounded-lg"></div>
+  loading: () => <div className="w-full h-[300px] transparent"></div>
 });
 
 interface ChartBlockProps {
-  block: ChartBlockType;
+  block: ChartBlockType & { caption?: string };
 }
 
 export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {

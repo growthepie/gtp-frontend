@@ -12,7 +12,7 @@ interface QuickDiveContentProps {
 
 const QuickDiveContent: React.FC<QuickDiveContentProps> = ({ content, image }) => {
   return (
-    <PageContainer className="py-8">
+    <PageContainer className="">
       <div className="bg-forest-50 dark:bg-[#1F2726] rounded-[15px] overflow-hidden">
         <div className="p-6 md:p-8">
           <div className="flex flex-col md:flex-row gap-8">
