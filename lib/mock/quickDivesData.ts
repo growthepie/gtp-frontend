@@ -6,10 +6,10 @@ export interface QuickDiveData {
     date: string;
     icon: string;
     related: string[];
-    author?: {
+    authors?: {
       name: string;
       xUsername: string;
-    };
+    }[];
   }
   
   export interface QuickDivesData {
@@ -17,44 +17,40 @@ export interface QuickDiveData {
   }
   
   const QUICK_DIVES_DATA: QuickDivesData = {
-    "pectra-tx-type-4": {
-      title: "Pectra: Tx type 4",
-      subtitle: "Understanding transaction types and their impacts",
+    "fork-pectra": {
+      title: "Pectra Hard-Fork",
+      subtitle: "Massive UX + Scaling Improvements",
       content: [
-        "## Introduction to Transaction Types",
-        "Ethereum's transaction format has evolved over time to support new features and improvements. Each transaction type is identified by a specific number, with transaction type 4 being one of the latest innovations within the Pectra protocol.",
-        
-        "> Transaction type 4 is designed to optimize gas efficiency and provide more accurate fee estimations in congested networks. This is particularly important for Layer 2 solutions that aim to reduce costs for users.",
-        
-        "![Transaction type evolution diagram showing the progression from Legacy to Type 4](/images/quick-dives/transaction-types-evolution.png | width=800,height=400) \"Test\"",
-        
-        "## How Transaction Type 4 Works",
-        "Transaction type 4 introduces a new field in the transaction data structure that allows for more granular control over gas limits and prioritization. This helps to address several key challenges:",
-        
-        "1. It reduces the impact of network congestion on transaction pricing",
-        "2. It provides more predictable fee estimations, especially during high demand periods",
-        "3. It optimizes calldata, resulting in lower overall costs for complex transactions",
-        
-        "The technical implementation involves changes to both the transaction envelope and the way gas calculations are performed by validators. The most significant change is the separation of execution gas from data availability costs, which allows for more flexible pricing models.",
-        
-        "![Transaction type 4 structure compared to earlier types](/images/quick-dives/tx-type-4-structure.png | width=700,height=500,align=center) \"Transaction envelope structure showing new fields\"",
-        
-        "## Real-world Impact",
-        "Initial tests on the Pectra testnet showed a 15-30% reduction in gas costs for typical DeFi operations compared to traditional type 2 transactions. This substantial improvement could make certain applications viable that were previously too expensive to operate.",
-        
-        "For users, this translates to more predictable fees and fewer failed transactions due to gas estimation errors. For developers, it provides more flexibility in designing gas-efficient smart contracts and introduces new patterns for optimizing transaction batching.",
-        
-        "![Gas savings chart comparing transaction types](/images/quick-dives/tx-type-gas-comparison.png) \"Comparative gas costs across different transaction types and operations\""
+        "# Pectra is for the People",
+        "Less clicks, less signatures, more Blobs. Many past Ethereum upgrades have focused on technical improvements, but Pectra is different. It aims to enhance the user experience for everyday users, making it easier to interact with the Ethereum ecosystem.",
+
+        "## What is part of the Pectra upgrade?",
+        "Pectra introduces several key features designed to simplify the user experience:",
+        "> EIP-7702: Smarter wallets - Enables normal wallets (EOAs) to act as smart accounts. Unlocking features like sponsorship, delegation transactions, paying gas in other tokens, and much more.",
+        "> EIP-7691: Boost Layer 2s through more Blobs - Layer 2s have been using up all available Blob space for a while. Now we get more Blobs! This means cheaper transactions and more space for Layer 2s.",
+        "> EIP-7252, 7002, 6110 - ETH staking upgrades The validator staking limit is raised from 32 ETH to 2,048 ETH and the withdrawal process is simplified. Simpler is better.",
+        "and 6 more EIPs that include various improvements to the Ethereum protocol.",
+
+
+        "## EIP-7702: Smarter Wallets",
+        "Let's take a dive into the data and see how these changes are impacting the Ethereum ecosystem.",
+        "How many wallets are using EIP-7702? How many transactions are using the new features? The following chart shows the adoption of EIP-7702 over time and is updated daily.",
+       
       ],
-      image: "/images/quick-dives/pectra-tx-type-4.png",
-      date: "2025-04-17",
+      image: "/images/quick-dives/fork-pectra.png",
+      date: "2025-05-15",
       icon: "gtp-metrics-transactioncount",
-      related: ["optimism-bedrock", "arbitrum-nitro"],
-      author: {
-        name: "Alex Chen",
-        xUsername: "alexchen_eth"
-      }
+      related: [],
+      authors: [{
+        name: "Matthias Seidl",
+        xUsername: "web3_data"
+      },
+      {
+        name: "Lorenz Lehmann",
+        xUsername: "LehmannLorenz"
+      }],
     },
+    
     "optimism-bedrock": {
       title: "Optimism Bedrock",
       subtitle: "A new foundation for Optimism's L2 solution",
@@ -172,10 +168,10 @@ export interface QuickDiveData {
       date: "2025-03-20",
       icon: "optimism-logo-monochrome",
       related: ["pectra-tx-type-4", "arbitrum-nitro"],
-      author: {
+      authors: [{
         name: "Sarah Johnson",
         xUsername: "sarahj_crypto"
-      }
+      }]
     },
     "arbitrum-nitro": {
       title: "Arbitrum Nitro",
@@ -223,10 +219,10 @@ export interface QuickDiveData {
       date: "2025-01-15",
       icon: "arbitrum-logo-monochrome",
       related: ["pectra-tx-type-4", "optimism-bedrock"],
-      author: {
+      authors: [{
         name: "Raj Patel",
         xUsername: "rajpatel_web3"
-      }
+      }]
     },
     "zksync-era": {
       title: "zkSync Era",
@@ -287,10 +283,10 @@ export interface QuickDiveData {
       date: "2025-02-10",
       icon: "gtp-metrics-transactioncosts",
       related: ["pectra-tx-type-4", "optimism-bedrock"],
-      author: {
+      authors: [{
         name: "Maya Rodriguez",
         xUsername: "maya_zkp"
-      }
+      }]
     },
     "l2-fee-comparison": {
       title: "L2 Fee Comparison",
@@ -356,10 +352,10 @@ export interface QuickDiveData {
       date: "2025-04-08",
       icon: "gtp-metrics-feespaidbyusers",
       related: ["zksync-era", "optimism-bedrock", "arbitrum-nitro"],
-      author: {
+      authors: [{
         name: "Lisa Thompson",
         xUsername: "lisa_crypto_econ"
-      }
+      }]
     }
   };
   

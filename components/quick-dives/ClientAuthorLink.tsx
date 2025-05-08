@@ -1,4 +1,3 @@
-// File: components/quick-dives/ClientAuthorLink.tsx
 'use client';
 
 import React from 'react';
