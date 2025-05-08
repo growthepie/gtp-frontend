@@ -66,7 +66,7 @@ export const HeaderSearchButton = () => {
     window.history.replaceState(null, "", url);
     setDocumentScroll(true);
   }, [pathname]);
-  
+
   const handleClearQuery = useCallback(() => {
     // get existing query params
     let newSearchParams = new URLSearchParams(window.location.search)
@@ -79,14 +79,14 @@ export const HeaderSearchButton = () => {
     window.history.replaceState(null, "", url);
   }, [pathname]);
 
-  
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      
+
       // on '/' press, open search if not already open, otherwise close it
       if (e.key === "/") {
         e.preventDefault();
-      e.stopPropagation();
+        e.stopPropagation();
         if (isOpen) {
           handleCloseSearch();
         } else {
@@ -98,7 +98,7 @@ export const HeaderSearchButton = () => {
       if (e.key === "Escape") {
         e.preventDefault();
         e.stopPropagation();
-        if(query !== ""){
+        if (query !== "") {
           handleClearQuery();
         } else {
           handleCloseSearch();
@@ -110,14 +110,14 @@ export const HeaderSearchButton = () => {
       window.removeEventListener("keydown", handleKeyDown);
     }
   }, [handleClearQuery, handleCloseSearch, handleOpenSearch, isOpen, query]);
-  
+
   return (
     <HeaderButton size="xl" className="cursor-pointer group" onClick={() => handleOpenSearch()} ariaLabel="Search">
       <div className="flex items-center">
-      <GTPIcon icon="gtp-search" size="md" />
-      <div className={`flex items-center justify-end overflow-hidden w-0 group-hover:w-[28px] transition-all duration-200 ${isOpen ? "!w-[28px]" : "w-0"}`}>
-      <div className="size-[18px] heading-small-xs font-black rounded-[4px] text-[#344240] bg-[#1F2726] flex items-center justify-center">/</div>
-      </div>
+        <GTPIcon icon="gtp-search" size="md" />
+        <div className={`flex items-center justify-end overflow-hidden w-0 group-hover:w-[28px] transition-all duration-200 ${isOpen ? "!w-[28px]" : "w-0"}`}>
+          <div className="size-[18px] heading-small-xs font-black rounded-[4px] text-[#344240] bg-[#1F2726] flex items-center justify-center">/</div>
+        </div>
       </div>
     </HeaderButton>
   )
@@ -127,7 +127,7 @@ export const SearchComponent = () => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const isOpen = searchParams.get("search") === "true";
-  const [showMore, setShowMore] = useState<{[key: string]: boolean}>({});
+  const [showMore, setShowMore] = useState<{ [key: string]: boolean }>({});
 
   const handleCloseSearch = () => {
     // get existing query params
@@ -164,7 +164,7 @@ export const SearchComponent = () => {
   )
 }
 
-const SearchBar = ({ showMore, setShowMore }: { showMore: {[key: string]: boolean}, setShowMore: React.Dispatch<React.SetStateAction<{[key: string]: boolean}>> }) => {
+const SearchBar = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean }, setShowMore: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>> }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const { AllChainsByKeys } = useMaster();
   const pathname = usePathname();
@@ -246,7 +246,7 @@ const SearchBar = ({ showMore, setShowMore }: { showMore: {[key: string]: boolea
             />
             <div className={`absolute flex items-center gap-x-[10px] right-[20px] text-[8px] text-[#CDD8D3] font-medium ${localQuery.length > 0 ? "opacity-100" : "opacity-0"} transition-opacity duration-200`}>
               <div className="flex items-center px-[15px] h-[24px] border border-[#CDD8D3] rounded-full select-none">
-                <div className="text-xxxs text-[#CDD8D3] font-medium font-raleway">
+                <div className="text-xxxs text-[#CDD8D3] font-medium font-raleway -mb-[1px]">
                   {totalMatches} {totalMatches === 1 ? "result" : "results"}
                 </div>
               </div>
@@ -283,18 +283,18 @@ const SearchBar = ({ showMore, setShowMore }: { showMore: {[key: string]: boolea
 const useSearchBuckets = () => {
   const { AllChainsByKeys } = useMaster();
   const searchParams = useSearchParams();
-  
+
   const query = searchParams.get("query")?.trim();
 
   const { ownerProjectToProjectData } = useProjectsMetadata();
-  
+
   // search buckets structure
   type SearchBucket = {
     label: string;
     icon: GTPIconName;
-    options: { label: string; url: string; icon: string, color?: string}[];
+    options: { label: string; url: string; icon: string, color?: string }[];
   };
-  
+
   // first bucket = chains
   const searchBuckets: SearchBucket[] = useMemo(() => [
     {
@@ -336,24 +336,24 @@ const useSearchBuckets = () => {
             url: `/applications/${project.owner_project}`,
             icon: `https://api.growthepie.xyz/v1/apps/logos/${project.logo_path}`,
             color: undefined
-        }))
+          }))
       ]
     }
   ], [AllChainsByKeys, ownerProjectToProjectData]);
 
- 
+
   const allFilteredData = useMemo(() => {
     // Check if the query matches at least 40% of a bucket name from the beginning
     const bucketMatch = query ? searchBuckets.find(bucket => {
       const bucketName = normalizeString(bucket.label);
       const searchQuery = normalizeString(query);
-      
+
       // Calculate the minimum length needed (40% of bucket name)
       const minQueryLength = Math.ceil(bucketName.length * 0.4);
-      
+
       // Check if query is long enough and matches from the start
-      return searchQuery.length >= minQueryLength && 
-             bucketName.startsWith(searchQuery);
+      return searchQuery.length >= minQueryLength &&
+        bucketName.startsWith(searchQuery);
     }) : null;
 
     // Get regular search results
@@ -362,10 +362,10 @@ const useSearchBuckets = () => {
       const lowerQuery = normalizeString(query || "");
 
       // Split into three categories
-      const exactMatches = bucketOptions.filter(option => 
+      const exactMatches = bucketOptions.filter(option =>
         normalizeString(option.label) === lowerQuery
       );
-      
+
       const startsWithMatches = bucketOptions.filter(option => {
         const lowerLabel = normalizeString(option.label);
         return lowerLabel !== lowerQuery && // not an exact match
@@ -388,7 +388,7 @@ const useSearchBuckets = () => {
     });
 
     // Filter out empty buckets from regular results first
-    const filteredRegularResults = regularSearchResults.filter(bucket => 
+    const filteredRegularResults = regularSearchResults.filter(bucket =>
       bucket.filteredData.length > 0
     );
 
@@ -397,37 +397,37 @@ const useSearchBuckets = () => {
       // First, prioritize Chains bucket
       if (a.type === "Chains" && b.type !== "Chains") return -1;
       if (b.type === "Chains" && a.type !== "Chains") return 1;
-      
+
       // For remaining items, maintain the order from navigationItems
       const aIndex = navigationItems.findIndex(item => item.name === a.type);
       const bIndex = navigationItems.findIndex(item => item.name === b.type);
-      
+
       // If both items are found in navigationItems, sort by their order
       if (aIndex !== -1 && bIndex !== -1) {
         return aIndex - bIndex;
       }
-      
+
       // If one item is not in navigationItems, put it last
       if (aIndex === -1) return 1;
       if (bIndex === -1) return -1;
-      
+
       return 0;
     });
 
     // Add bucket match at the end if it exists
     return bucketMatch && bucketMatch.options.length > 0
       ? [...sortedRegularResults, {
-          type: bucketMatch.label,
-          icon: bucketMatch.icon,
-          filteredData: bucketMatch.options,
-          isBucketMatch: true
-        }]
+        type: `${bucketMatch.label} `,
+        icon: bucketMatch.icon,
+        filteredData: bucketMatch.options,
+        isBucketMatch: true
+      }]
       : sortedRegularResults;
   }, [query, searchBuckets]);
 
   // Calculate total matches for the counter
   const totalMatches = allFilteredData.reduce((total, { filteredData }) => total + filteredData.length, 0);
-  
+
   return {
     allFilteredData,
     totalMatches
@@ -567,14 +567,14 @@ export const SearchBadge = memo(({
     }
     return (
       <div className="flex items-center justify-center w-[15px] h-[15px]">
-          <Icon
-            icon={leftIcon}
-            className="text-[#CDD8D3] w-[15px] h-[15px]"
-            style={{
-              color: leftIconColor,
-            }}
-          />
-        </div>
+        <Icon
+          icon={leftIcon}
+          className="text-[#CDD8D3] w-[15px] h-[15px]"
+          style={{
+            color: leftIconColor,
+          }}
+        />
+      </div>
     )
 
   }
@@ -605,14 +605,14 @@ export const SearchBadge = memo(({
 
 SearchBadge.displayName = 'SearchBadge';
 
-const Filters = ({ showMore, setShowMore }: { showMore: {[key: string]: boolean}, setShowMore: React.Dispatch<React.SetStateAction<{[key: string]: boolean}>> }) => {
+const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean }, setShowMore: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>> }) => {
   const { AllChainsByKeys } = useMaster();
   const [viewportHeight, setViewportHeight] = useState<number>(0);
-  const [keyCoords, setKeyCoords] = useState<{y: number | null, x: number | null}>({y: null, x: null});
+  const [keyCoords, setKeyCoords] = useState<{ y: number | null, x: number | null }>({ y: null, x: null });
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
   const [keyPressed, setKeyPressed] = useState('');
   const [forceUpdate, setForceUpdate] = useState(0);
-  const [lastBucketIndeces, setLastBucketIndeces] = useState<{[key: string] : {x: number, y: number}}>({});
+  const [lastBucketIndeces, setLastBucketIndeces] = useState<{ [key: string]: { x: number, y: number } }>({});
   const childRefs = useRef<{ [key: string]: HTMLAnchorElement | null }>({});
   const measurementsRef = useRef<{ [key: string]: DOMRect }>({});
 
@@ -625,18 +625,24 @@ const Filters = ({ showMore, setShowMore }: { showMore: {[key: string]: boolean}
     return String(`${type}::${label}`);
   }
 
+  const memoizedQuery = useMemo(() => {
+    // trim the query
+    return normalizeString(query || "");
+  }, [query]);
+
   useEffect(() => {
     // reset lastBucketIndeces
     //
     setShowMore({});
     setLastBucketIndeces({});
-  }, [query]);
+  }, [memoizedQuery]);
 
   const keyMapping = useMemo(() => {
     const dataMap: string[][] = [[]];
+    const newLastBucketIndeces: { [key: string]: { x: number, y: number } } = {};
     let yIndex = 0;
     // let manualBucket: string = "";
-    
+
     allFilteredData.forEach(({ type, icon, filteredData, isBucketMatch }, bucketIndex) => {
       // if(type !== manualBucket) {
       //   if(manualBucket !== "") {
@@ -651,46 +657,48 @@ const Filters = ({ showMore, setShowMore }: { showMore: {[key: string]: boolean}
 
       const isShowMore = showMore[type] && type !== "Applications";
       let localYIndex = 0;
-      
+
       if (bucketIndex > 0) {
         yIndex++;
         localYIndex = 0;
-        dataMap[yIndex] = [];      
+        dataMap[yIndex] = [];
       }
 
       let currentRow: string[] = [];
       let lastTop: number | null = null;
 
       filteredData.forEach((item, itemIndex) => {
-        if (localYIndex > 2 && !isShowMore)
-        {
-          
+        if (localYIndex > 2 && !isShowMore) {
+
           return
         };
-        
-        
+
+
         const key = getKey(item.label, type);
         const rect = measurementsRef.current[key];
         const itemTop = rect?.top;
-        
+
         // If this is the first item or has same top position as previous items, add to current row
         if (lastTop === null || itemTop === lastTop) {
           currentRow.push(key);
           // 1. make sure we're currently in the third row
-         
-          if(localYIndex === 2 && !isShowMore){
+
+          if (localYIndex === 2 && !isShowMore) {
             // 2. make sure there's a next item
-            
+
             const nextItem = filteredData[itemIndex + 1];
-            if(nextItem){
+            if (nextItem) {
               // 3. make sure the next item is in the NEXT row
               const nextItemKey = getKey(nextItem.label, type);
               const nextItemRect = measurementsRef.current[nextItemKey];
               const nextItemTop = nextItemRect?.top;
               const lastYIndex = localYIndex;
-              if(nextItemTop !== itemTop){
-                setLastBucketIndeces(prev => ({...prev, [key]: {x: currentRow.length - 1, y: lastYIndex}}));
-              }
+              // if(nextItemTop !== itemTop){
+              //   setLastBucketIndeces(prev => ({...prev, [key]: {x: currentRow.length - 1, y: lastYIndex}}));
+              // }
+              if (nextItemTop !== itemTop) {
+                newLastBucketIndeces[key] = { x: currentRow.length - 1, y: lastYIndex };
+              };
             }
 
           }
@@ -702,56 +710,62 @@ const Filters = ({ showMore, setShowMore }: { showMore: {[key: string]: boolean}
           dataMap[yIndex] = [];
           currentRow = [key];
         }
-        
+
         // Update lastTop and add current row to dataMap
         lastTop = itemTop || lastTop;
         dataMap[yIndex] = currentRow;
       });
     });
 
-    // Filter out empty arrays
+    // // Filter out empty arrays
+    // return dataMap.filter(arr => arr.length > 0);
+
+    // commit the built map
+    setLastBucketIndeces(newLastBucketIndeces);
+
+    // filter out empty arrays
     return dataMap.filter(arr => arr.length > 0);
-  }, [allFilteredData, forceUpdate, query, showMore, measurementsRef]);
+  }, [allFilteredData, forceUpdate, memoizedQuery, showMore, measurementsRef]);
 
 
   // Setup resize observer
   useEffect(() => {
     const observer = new ResizeObserver((entries) => {
       let hasChanges = false;
-      
+
       entries.forEach(entry => {
         const element = entry.target as HTMLElement;
         const key = element.getAttribute('data-key');
         if (!key) return;
-        
+
         const rect = element.getBoundingClientRect();
         const oldRect = measurementsRef.current[key];
-        
+
         if (!oldRect || oldRect.top !== rect.top || oldRect.left !== rect.left) {
           measurementsRef.current[key] = rect;
           hasChanges = true;
         }
       });
-      
+
       if (hasChanges) {
         setForceUpdate(prev => prev + 1);
       }
     });
-    
+
     Object.entries(childRefs.current).forEach(([key, element]) => {
       if (element) {
         element.setAttribute('data-key', key);
         observer.observe(element);
       }
     });
-    
+
     return () => observer.disconnect();
   }, [allFilteredData]);
 
   useEffect(() => {
-    setKeyCoords({y: null, x: null});
-  }, [query, allFilteredData])
-  
+    setKeyCoords({ y: null, x: null });
+  }, [memoizedQuery, allFilteredData])
+
 
 
   // Add keyboard navigation
@@ -763,35 +777,35 @@ const Filters = ({ showMore, setShowMore }: { showMore: {[key: string]: boolean}
       const currentY = keyCoords.y ?? 0;
       const currentX = keyCoords.x ?? 0;
 
-      
+
 
       if (event.key === 'ArrowUp') {
         event.preventDefault();
-        if(isCoordsNull) {
-          setKeyCoords({y: 0, x: 0});
-        } else if(currentY !== 0) {
-          setKeyCoords({y: currentY - 1, x: Math.min(currentX, (keyMapping[currentY - 1]?.length || 1) - 1)});
+        if (isCoordsNull) {
+          setKeyCoords({ y: 0, x: 0 });
+        } else if (currentY !== 0) {
+          setKeyCoords({ y: currentY - 1, x: Math.min(currentX, (keyMapping[currentY - 1]?.length || 1) - 1) });
         }
       } else if (event.key === 'ArrowDown') {
         event.preventDefault();
-        if(isCoordsNull) {
-          setKeyCoords({y: 0, x: 0});
-        } else if(currentY !== keyMapping.length - 1) {
-          setKeyCoords({y: currentY + 1, x: Math.min(currentX, (keyMapping[currentY + 1]?.length || 1) - 1)});
+        if (isCoordsNull) {
+          setKeyCoords({ y: 0, x: 0 });
+        } else if (currentY !== keyMapping.length - 1) {
+          setKeyCoords({ y: currentY + 1, x: Math.min(currentX, (keyMapping[currentY + 1]?.length || 1) - 1) });
         }
       } else if (event.key === 'ArrowLeft') {
         event.preventDefault();
-        if(isCoordsNull) {
-          setKeyCoords({y: 0, x: 0});
-        } else if(currentX !== 0) {
-          setKeyCoords({y: currentY, x: currentX - 1});
+        if (isCoordsNull) {
+          setKeyCoords({ y: 0, x: 0 });
+        } else if (currentX !== 0) {
+          setKeyCoords({ y: currentY, x: currentX - 1 });
         }
       } else if (event.key === 'ArrowRight') {
         event.preventDefault();
-        if(isCoordsNull) {
-          setKeyCoords({y: 0, x: 0});
-        } else if(currentX !== keyMapping[currentY].length - 1) {
-          setKeyCoords({y: currentY, x: currentX + 1});
+        if (isCoordsNull) {
+          setKeyCoords({ y: 0, x: 0 });
+        } else if (currentX !== keyMapping[currentY].length - 1) {
+          setKeyCoords({ y: currentY, x: currentX + 1 });
         }
       } else if (event.key === 'Enter' && !isCoordsNull) {
         event.preventDefault();
@@ -803,130 +817,121 @@ const Filters = ({ showMore, setShowMore }: { showMore: {[key: string]: boolean}
       }
     };
 
-    if (query && allFilteredData.length > 0) {
+    if (memoizedQuery && allFilteredData.length > 0) {
       window.addEventListener('keydown', handleKeyDown);
       return () => window.removeEventListener('keydown', handleKeyDown);
     }
-  }, [keyCoords, keyMapping, query, allFilteredData]);
+  }, [keyCoords, keyMapping, memoizedQuery, allFilteredData]);
 
 
 
 
   return (
     <div className="flex flex-col-reverse md:flex-col !pt-0 !pb-[0px] pl-[0px] pr-[0px] gap-y-[10px] max-h-[calc(100vh-220px)] overflow-y-auto">
-      {query && allFilteredData.length > 0 && <div 
-      key={query}
-      className="flex flex-col-reverse md:flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px] text-[10px]">
-          {allFilteredData.map(({ type, icon, filteredData, isBucketMatch }) => {
-            const isShowMore = showMore[type] && type !== "Applications";
-            // Limit Applications bucket to 20 results unless showMore is true
-            const resultsToRender =
-              type === "Applications" && !isShowMore
-                ? filteredData.slice(0, 20)
-                : filteredData;
+      {memoizedQuery && allFilteredData.length > 0 && <div
+        key={memoizedQuery}
+        className="flex flex-col-reverse md:flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px] text-[10px]">
+        {allFilteredData.map(({ type, icon, filteredData, isBucketMatch }) => {
+          const isShowMore = showMore[type] && type !== "Applications";
+          // Limit Applications bucket to 20 results unless showMore is true
+          const resultsToRender =
+            type === "Applications" && !isShowMore
+              ? filteredData.slice(0, 20)
+              : filteredData;
 
-            return (
-              <div key={type} className={`flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start overflow-y-hidden ${isShowMore ? "max-h-full" : "max-h-[87px] "}`}>
-                <div className="flex gap-x-[10px] items-center shrink-0">
-                    <GTPIcon
-                      icon={icon as GTPIconName}
-                      size="md"
-                    />
-                  <div className="text-sm w-[120px] font-raleway font-medium leading-[150%] cursor-default">
-                    {isBucketMatch ? (
-                      <OpacityUnmatchedText text={type} query={query || ""} />
-                    ) : (
-                      <span className="text-white">{type}</span>
-                    )}
-                  </div>
-                  <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
+          return (
+            <div key={type} className={`flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start overflow-y-hidden ${isShowMore ? "max-h-full" : "max-h-[87px] "}`}>
+              <div className="flex gap-x-[10px] items-center shrink-0">
+                <GTPIcon
+                  icon={icon as GTPIconName}
+                  size="md"
+                />
+                <div className="text-sm w-[120px] font-raleway font-medium leading-[150%] cursor-default">
+                  {isBucketMatch ? (
+                    <OpacityUnmatchedText text={type} query={memoizedQuery || ""} />
+                  ) : (
+                    <span className="text-white">{type}</span>
+                  )}
                 </div>
-                <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
-                  {resultsToRender.map((item) => {
-                    const itemKey = getKey(item.label, type);
-                    const isSelected = keyCoords.y !== null && 
-                      keyCoords.x !== null && 
-                      keyMapping[keyCoords.y]?.[keyCoords.x] === itemKey;
-
-                    return (
-                      <BucketItem 
-                        key={itemKey}
-                        item={item} 
-                        itemKey={itemKey} 
-                        isSelected={isSelected} 
-                        childRefs={childRefs} 
-                        lastBucketIndeces={lastBucketIndeces}
-                        bucket={type}
-                        query={query}
-                        showMore={showMore}
-                        setShowMore={setShowMore}
-                      />
-                    )
-                  })}
-                </div>
+                <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
               </div>
-            );
-          })}
+              <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
+                {resultsToRender.map((item) => {
+                  const itemKey = getKey(item.label, type);
+                  const isSelected = keyCoords.y !== null &&
+                    keyCoords.x !== null &&
+                    keyMapping[keyCoords.y]?.[keyCoords.x] === itemKey;
+
+                  return (
+                    <BucketItem
+                      key={itemKey}
+                      item={item}
+                      itemKey={itemKey}
+                      isSelected={isSelected}
+                      childRefs={childRefs}
+                      lastBucketIndeces={lastBucketIndeces}
+                      bucket={type}
+                      query={memoizedQuery}
+                      showMore={showMore}
+                      setShowMore={setShowMore}
+                    />
+                  )
+                })}
+              </div>
+            </div>
+          );
+        })}
       </div>}
     </div>
   )
 }
 
-const BucketItem = ({ 
-  item, 
-  itemKey, 
-  isSelected, 
-  childRefs, 
-  lastBucketIndeces, 
-  bucket, 
-  query, 
-  showMore, 
-  setShowMore 
-}: { 
-  item: any, 
-  itemKey: string, 
-  isSelected: boolean, 
-  childRefs: any, 
-  lastBucketIndeces: any, 
-  bucket: string, 
-  query: string, 
-  showMore: {[key: string]: boolean}, 
-  setShowMore: React.Dispatch<React.SetStateAction<{[key: string]: boolean}>>
+const BucketItem = ({
+  item,
+  itemKey,
+  isSelected,
+  childRefs,
+  lastBucketIndeces,
+  bucket,
+  query,
+  showMore,
+  setShowMore
+}: {
+  item: any,
+  itemKey: string,
+  isSelected: boolean,
+  childRefs: any,
+  lastBucketIndeces: any,
+  bucket: string,
+  query: string,
+  showMore: { [key: string]: boolean },
+  setShowMore: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>
 }) => {
   const isApps = bucket === "Applications";
 
 
   return (
-    <Link 
-      href={lastBucketIndeces[itemKey] && !showMore[bucket] ? isApps ? `/applications?search=${query}` : `` : item.url} 
-      key={item.label}   
+    <Link
+      href={lastBucketIndeces[itemKey] && !showMore[bucket] ? isApps ? `/applications?search=${query}&timespan=max` : `` : item.url}
+      key={item.label}
       ref={(el) => {
         childRefs.current[itemKey] = el;
       }}
-      
+
       onClick={(e) => {
         if (lastBucketIndeces[itemKey] && !showMore[bucket]) {
-          
-          setShowMore(prev => ({...prev, [bucket]: true}));
-          if(isApps){
-           
-            setTimeout(() => {
-              setShowMore(prev => ({...prev, [bucket]: false}));
-            }, 1000);
+          if (!isApps) {
+            setShowMore(prev => ({ ...prev, [bucket]: true }));
           }
           return;
         }
       }}
-      
+
       onKeyDown={(e) => {
         if (e.key === 'Enter') {
           if (lastBucketIndeces[itemKey] && !showMore[bucket]) {
-            
-            setShowMore(prev => ({...prev, [bucket]: true})); 
-            if(isApps){
-              setTimeout(() => {
-                setShowMore(prev => ({...prev, [bucket]: false}));
-              }, 1000);
+            if (!isApps) {
+              setShowMore(prev => ({ ...prev, [bucket]: true }));
             }
           }
         }
@@ -934,8 +939,12 @@ const BucketItem = ({
       className="relative"
     >
       {lastBucketIndeces[itemKey] && !showMore[bucket] && (
-        <div className={`absolute inset-0 z-20 flex items-center justify-center rounded-full ${isSelected? "!bg-[#5A6462]" : "bg-[#344240]"} hover:bg-[#5A6462] active:bg-[#5A6462] text-xs`}>
-          See more...
+        <div className={`absolute inset-[-1px] z-20 flex items-center justify-start rounded-full whitespace-nowrap ${isSelected ? "underline" : "text-[#5A6462]"} hover:underline bg-[#151A19] text-xxs`}>
+          {isApps ? (
+            <div>See more...</div>
+          ) : (
+            <div>See more...</div>
+          )}
         </div>
       )}
       <SearchBadge
@@ -943,7 +952,7 @@ const BucketItem = ({
         label={
           // Use OpacityUnmatchedText for startsWith/contains matches, plain for exact
           (normalizeString(item.label).startsWith(normalizeString(query)) && normalizeString(item.label) !== normalizeString(query)) ||
-          (normalizeString(item.label).includes(normalizeString(query)) && !normalizeString(item.label).startsWith(normalizeString(query)))
+            (normalizeString(item.label).includes(normalizeString(query)) && !normalizeString(item.label).startsWith(normalizeString(query)))
             ? <OpacityUnmatchedText text={item.label} query={query} />
             : item.label
         }
@@ -961,13 +970,13 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
   const query = searchParams.get("query");
   const [hasOverflow, setHasOverflow] = useState(false);
   const [isScreenTall, setIsScreenTall] = useState(false);
-  
+
   // Calculate total number of results
   const totalResults = allFilteredData.reduce((total, { filteredData }) => total + filteredData.length, 0);
-  
-  const showKeyboardShortcuts = query && 
-    allFilteredData.length > 0 && 
-    isScreenTall && 
+
+  const showKeyboardShortcuts = query &&
+    allFilteredData.length > 0 &&
+    isScreenTall &&
     totalResults >= 10;
 
   // Add a ref to check for overflow
@@ -986,13 +995,13 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
     const checkScreenHeight = () => {
       setIsScreenTall(window.innerHeight >= 500);
     };
-    
+
     // Initial check
     checkScreenHeight();
-    
+
     // Add listener for resize events
     window.addEventListener('resize', checkScreenHeight);
-    
+
     // Cleanup
     return () => window.removeEventListener('resize', checkScreenHeight);
   }, []);
@@ -1009,22 +1018,22 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
       <div className={`flex px-[10px] pt-2 pb-[5px] items-start gap-[15px] self-stretch flex-shrink-0 ${!showKeyboardShortcuts ? 'hidden' : ''}`}>
         <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px]">
           <svg xmlns="http://www.w3.org/2000/svg" width="70" height="21" viewBox="0 0 70 21" fill="none">
-            <rect x="24" width="22" height="10" rx="2" fill="#151A19"/>
-            <path d="M32.6708 6.77639L34.5528 3.01246C34.737 2.64394 35.263 2.64394 35.4472 3.01246L37.3292 6.77639C37.4954 7.10884 37.2537 7.5 36.882 7.5H33.118C32.7463 7.5 32.5046 7.10884 32.6708 6.77639Z" fill="#CDD8D3" stroke="#CDD8D3"/>
-            <rect y="11" width="22" height="10" rx="2" fill="#151A19"/>
-            <path d="M12.8336 18.0581L8.33821 16.4715C7.89343 16.3145 7.89343 15.6855 8.33822 15.5285L12.8336 13.9419C13.1589 13.8271 13.5 14.0684 13.5 14.4134L13.5 17.5866C13.5 17.9316 13.1589 18.1729 12.8336 18.0581Z" fill="#CDD8D3" stroke="#CDD8D3"/>
-            <rect x="48" y="11" width="22" height="10" rx="2" fill="#151A19"/>
-            <path d="M57.1664 13.9419L61.6618 15.5285C62.1066 15.6855 62.1066 16.3145 61.6618 16.4715L57.1664 18.0581C56.8411 18.1729 56.5 17.9316 56.5 17.5866L56.5 14.4134C56.5 14.0684 56.8411 13.8271 57.1664 13.9419Z" fill="#CDD8D3" stroke="#CDD8D3"/>
-            <rect x="24" y="11" width="22" height="10" rx="2" fill="#151A19"/>
-            <path d="M37.3292 14.2236L35.4472 17.9875C35.263 18.3561 34.737 18.3561 34.5528 17.9875L32.6708 14.2236C32.5046 13.8912 32.7463 13.5 33.118 13.5L36.882 13.5C37.2537 13.5 37.4954 13.8912 37.3292 14.2236Z" fill="#CDD8D3" stroke="#CDD8D3"/>
+            <rect x="24" width="22" height="10" rx="2" fill="#151A19" />
+            <path d="M32.6708 6.77639L34.5528 3.01246C34.737 2.64394 35.263 2.64394 35.4472 3.01246L37.3292 6.77639C37.4954 7.10884 37.2537 7.5 36.882 7.5H33.118C32.7463 7.5 32.5046 7.10884 32.6708 6.77639Z" fill="#CDD8D3" stroke="#CDD8D3" />
+            <rect y="11" width="22" height="10" rx="2" fill="#151A19" />
+            <path d="M12.8336 18.0581L8.33821 16.4715C7.89343 16.3145 7.89343 15.6855 8.33822 15.5285L12.8336 13.9419C13.1589 13.8271 13.5 14.0684 13.5 14.4134L13.5 17.5866C13.5 17.9316 13.1589 18.1729 12.8336 18.0581Z" fill="#CDD8D3" stroke="#CDD8D3" />
+            <rect x="48" y="11" width="22" height="10" rx="2" fill="#151A19" />
+            <path d="M57.1664 13.9419L61.6618 15.5285C62.1066 15.6855 62.1066 16.3145 61.6618 16.4715L57.1664 18.0581C56.8411 18.1729 56.5 17.9316 56.5 17.5866L56.5 14.4134C56.5 14.0684 56.8411 13.8271 57.1664 13.9419Z" fill="#CDD8D3" stroke="#CDD8D3" />
+            <rect x="24" y="11" width="22" height="10" rx="2" fill="#151A19" />
+            <path d="M37.3292 14.2236L35.4472 17.9875C35.263 18.3561 34.737 18.3561 34.5528 17.9875L32.6708 14.2236C32.5046 13.8912 32.7463 13.5 33.118 13.5L36.882 13.5C37.2537 13.5 37.4954 13.8912 37.3292 14.2236Z" fill="#CDD8D3" stroke="#CDD8D3" />
           </svg>
           <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Move</div>
         </div>
         <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px] flex-[1_0_0]">
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="21" viewBox="0 0 22 21" fill="none">
-            <rect y="0.5" width="22" height="20" rx="2" fill="#151A19"/>
-            <path d="M16 5.5V12.5C16 13.0523 15.5523 13.5 15 13.5H9" stroke="#CDD8D3" stroke-width="2"/>
-            <path d="M10.3336 15.5581L5.83821 13.9715C5.39343 13.8145 5.39343 13.1855 5.83822 13.0285L10.3336 11.4419C10.6589 11.3271 11 11.5684 11 11.9134L11 15.0866C11 15.4316 10.6589 15.6729 10.3336 15.5581Z" fill="#CDD8D3" stroke="#CDD8D3"/>
+            <rect y="0.5" width="22" height="20" rx="2" fill="#151A19" />
+            <path d="M16 5.5V12.5C16 13.0523 15.5523 13.5 15 13.5H9" stroke="#CDD8D3" stroke-width="2" />
+            <path d="M10.3336 15.5581L5.83821 13.9715C5.39343 13.8145 5.39343 13.1855 5.83822 13.0285L10.3336 11.4419C10.6589 11.3271 11 11.5684 11 11.9134L11 15.0866C11 15.4316 10.6589 15.6729 10.3336 15.5581Z" fill="#CDD8D3" stroke="#CDD8D3" />
           </svg>
           <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Select</div>
         </div>
@@ -1039,6 +1048,6 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
     </div>
   )
 }
-  
+
 
 
