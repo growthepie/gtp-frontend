@@ -1,4 +1,3 @@
-// File: components/quick-dives/QuickDivesGrid.tsx
 'use client';
 
 import React from 'react';
@@ -28,7 +27,7 @@ const QuickDivesGrid: React.FC<QuickDivesGridProps> = ({ quickDives }) => {
           date={quickDive.date}
           icon={quickDive.icon}
           slug={quickDive.slug}
-          author={quickDive.author}
+          authors={quickDive.authors}
         />
       ))}
     </div>

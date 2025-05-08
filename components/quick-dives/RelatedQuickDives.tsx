@@ -1,4 +1,3 @@
-// File: components/quick-dives/RelatedQuickDives.tsx
 'use client';
 
 import React from 'react';
@@ -30,7 +29,7 @@ const RelatedQuickDives: React.FC<RelatedQuickDivesProps> = ({ relatedQuickDives
             date={quickDive.date}
             icon={quickDive.icon}
             slug={quickDive.slug}
-            author={quickDive.author}
+            authors={quickDive.authors}
           />
         ))}
       </div>

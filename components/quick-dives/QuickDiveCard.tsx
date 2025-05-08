@@ -1,4 +1,3 @@
-// File: components/quick-dives/QuickDiveCard.tsx (continued)
 'use client';
 
 import React from 'react';
@@ -8,16 +7,18 @@ import { Icon } from '@iconify/react';
 import { GTPIconName } from '@/icons/gtp-icon-names';
 import { formatDate } from '@/lib/utils/formatters';
 
+interface Author {
+  name: string;
+  xUsername: string;
+}
+
 interface QuickDiveCardProps {
   title: string;
   subtitle: string;
   date: string;
   icon: string;
   slug: string;
-  author?: {
-    name: string;
-    xUsername: string;
-  };
+  authors?: Author[];
   className?: string;
 }
 
@@ -27,13 +28,17 @@ const QuickDiveCard: React.FC<QuickDiveCardProps> = ({
   date,
   icon,
   slug,
-  author,
+  authors,
   className = ''
 }) => {
   const handleAuthorClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
   };
+
+  // Display only the first author on the card, with a "+X more" indicator if there are multiple
+  const displayAuthor = authors && authors.length > 0 ? authors[0] : null;
+  const additionalAuthors = authors && authors.length > 1 ? authors.length - 1 : 0;
 
   return (
     <Link 
@@ -66,18 +71,23 @@ const QuickDiveCard: React.FC<QuickDiveCardProps> = ({
         </div>
         
         {/* Author attribution - now with better accessibility */}
-        {author && (
+        {displayAuthor && (
           <div className="absolute bottom-4 left-4 flex items-center">
             <a 
-              href={`https://x.com/${author.xUsername}`} 
+              href={`https://x.com/${displayAuthor.xUsername}`} 
               target="_blank" 
               rel="noopener noreferrer"
               onClick={handleAuthorClick}
               className="flex items-center text-xs text-forest-800 dark:text-forest-300 hover:underline"
-              aria-label={`Author: ${author.name} (opens in a new tab)`}
+              aria-label={`Author: ${displayAuthor.name} (opens in a new tab)`}
             >
               <Icon icon="ri:twitter-x-fill" className="w-3.5 h-3.5 mr-1.5" aria-hidden="true" />
-              <span>{author.name}</span>
+              <span>{displayAuthor.name}</span>
+              {additionalAuthors > 0 && (
+                <span className="ml-1 text-xs text-forest-600 dark:text-forest-400">
+                  +{additionalAuthors} more
+                </span>
+              )}
             </a>
           </div>
         )}
