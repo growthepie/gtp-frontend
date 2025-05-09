@@ -38,10 +38,10 @@ const QUICK_DIVES_DATA: QuickDivesData = {
     date: "2025-04-17",
     icon: "gtp-metrics-transactioncount",
     related: ["optimism-bedrock", "arbitrum-nitro"],
-    author: {
+    author: [{
       name: "Alex Chen",
       xUsername: "alexchen_eth"
-    }
+    }]
   },
   "optimism-bedrock": {
     title: "Optimism Bedrock",
@@ -67,6 +67,28 @@ const QUICK_DIVES_DATA: QuickDivesData = {
         type: "column",
         title: "Optimism Transaction Costs Before vs. After Bedrock",
         subtitle: "Average gas costs in USD for common operations",
+        stacking: "normal",
+        dataAsJson: {
+          url: "https://api.growthepie.xyz/v1/da_timeseries.json",
+          pathToData: "data.da_layers.da_celestia.90d.da_consumers.eclipse.daily.values",
+          meta: [{
+            name: "Before Bedrock",
+            color: "#FF0420",
+            xIndex: 4,
+            yIndex: 3,
+            suffix: null,
+            prefix: "$"
+          },
+          {
+            name: "After Bedrock",
+            color: "#FF5A00",
+            xIndex: 4,
+            yIndex: 3,
+            suffix: null,
+            prefix: null
+          }
+          ],
+        },
         data: [
           {
             name: "Before Bedrock",
@@ -97,7 +119,8 @@ const QUICK_DIVES_DATA: QuickDivesData = {
           }
         },
         height: 400,
-        caption: "Gas cost reduction across different operation types after the Bedrock upgrade"
+        caption: "Gas cost reduction across different operation types after the Bedrock upgrade",
+        seeMetricURL: "https://www.growthepie.xyz/chains/optimism"
       }),
       "```",
       
@@ -106,8 +129,17 @@ const QUICK_DIVES_DATA: QuickDivesData = {
       
       "```chart",
       JSON.stringify({
-        type: "line",
+        type: "area",
+        stacking: "percent",
         title: "Optimism Network Growth Post-Bedrock",
+        chartCategories: [{
+          name: "Revenue",
+          color: "#FF5A00"
+        },
+        {
+          name: "Total Value Locked",
+          color: "#FF0420"
+        }],
         data: [
           {
             name: "Daily Active Addresses",
@@ -160,10 +192,13 @@ const QUICK_DIVES_DATA: QuickDivesData = {
     date: "2025-03-20",
     icon: "optimism-logo-monochrome",
     related: ["pectra-tx-type-4", "arbitrum-nitro"],
-    author: {
+    author: [{
       name: "Sarah Johnson",
       xUsername: "sarahj_crypto"
-    }
+    },{
+      name: "John Doe",
+      xUsername: "johndoe_crypto"
+    }]
   },
   "arbitrum-nitro": {
     title: "Arbitrum Nitro",
@@ -211,10 +246,10 @@ const QUICK_DIVES_DATA: QuickDivesData = {
     date: "2025-01-15",
     icon: "arbitrum-logo-monochrome",
     related: ["pectra-tx-type-4", "optimism-bedrock"],
-    author: {
+    author: [{
       name: "Raj Patel",
       xUsername: "rajpatel_web3"
-    }
+    }]
   },
   "zksync-era": {
     title: "zkSync Era",
@@ -275,10 +310,10 @@ const QUICK_DIVES_DATA: QuickDivesData = {
     date: "2025-02-10",
     icon: "gtp-metrics-transactioncosts",
     related: ["pectra-tx-type-4", "optimism-bedrock"],
-    author: {
+    author: [{
       name: "Maya Rodriguez",
       xUsername: "maya_zkp"
-    }
+    }]
   },
   "l2-fee-comparison": {
     title: "L2 Fee Comparison",
@@ -344,10 +379,11 @@ const QUICK_DIVES_DATA: QuickDivesData = {
     date: "2025-04-08",
     icon: "gtp-metrics-feespaidbyusers",
     related: ["zksync-era", "optimism-bedrock", "arbitrum-nitro"],
-    author: {
+    author: [{
       name: "Lisa Thompson",
       xUsername: "lisa_crypto_econ"
-    }
+    }],
+
   }
 };
 

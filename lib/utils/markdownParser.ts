@@ -162,7 +162,10 @@ function parseChartBlock(jsonString: string): ContentBlock | null {
       subtitle: chartConfig.subtitle,
       width: chartConfig.width || '100%',
       height: chartConfig.height || 400,
-      caption: chartConfig.caption
+      caption: chartConfig.caption,
+      stacking: chartConfig.stacking || null,
+      dataAsJson: chartConfig.dataAsJson || null,
+      seeMetricURL: chartConfig.seeMetricURL || null
     };
   } catch (error) {
     console.error('Error parsing chart data:', error);

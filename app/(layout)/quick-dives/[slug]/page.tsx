@@ -12,10 +12,21 @@ import Block from '@/components/quick-dives/Block';
 import { formatDate } from '@/lib/utils/formatters';
 import { processMarkdownContent } from '@/lib/utils/markdownParser';
 import RelatedQuickDives from '@/components/quick-dives/RelatedQuickDives';
+import { Author } from '@/lib/types/quickDives';
 
 
 type Props = {
   params: { slug: string };
+};
+
+const getAuthorNames = (authors: Author[] | undefined): string[] => {
+  if (!authors) return [];
+  return authors.map(a => a.name);
+};
+
+const getFirstAuthor = (author: Author | Author[] | undefined): Author | undefined => {
+  if (!author) return undefined;
+  return Array.isArray(author) ? author[0] : author;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -34,7 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: quickDive.title,
       description: quickDive.subtitle,
       type: 'article',
-      authors: quickDive.author ? [quickDive.author.name] : undefined,
+      authors: getAuthorNames(quickDive.author),
     },
   };
 }
@@ -77,15 +88,21 @@ export default async function QuickDivePage({ params }: Props) {
               <circle cx="3" cy="3" r="3" />
             </svg>
             <span>{formatDate(quickDive.date)}</span>
-            {quickDive.author && (
+            {quickDive.author && quickDive.author.length > 0 && (
               <>
-                <svg width="6" height="6" viewBox="0 0 6 6" fill="#344240">
-                  <circle cx="3" cy="3" r="3" />
-                </svg>
-                <ClientAuthorLink 
-                  name={quickDive.author.name} 
-                  xUsername={quickDive.author.xUsername} 
-                />
+                {quickDive.author.map((author) => (
+                  <>
+                    <svg width="6" height="6" viewBox="0 0 6 6" fill="#344240">
+                      <circle cx="3" cy="3" r="3" />
+                    </svg>
+                    <ClientAuthorLink 
+                      key={author.name}
+                      name={author.name} 
+                      xUsername={author.xUsername} 
+                    />
+                  </>
+                ))}
+
               </>
             )}
           </div>
@@ -93,7 +110,7 @@ export default async function QuickDivePage({ params }: Props) {
         </div>
         
         {/* Main content with blocks */}
-        <div className="">
+        <div className="pl-[45px] pr-[120px]">
           <div className="mx-auto">
             {contentBlocks.map((block) => (
               <Block key={block.id} block={block} />

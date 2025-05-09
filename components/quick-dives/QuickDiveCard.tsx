@@ -17,7 +17,7 @@ interface QuickDiveCardProps {
   author?: {
     name: string;
     xUsername: string;
-  };
+  }[];
   className?: string;
 }
 
@@ -66,19 +66,29 @@ const QuickDiveCard: React.FC<QuickDiveCardProps> = ({
         </div>
         
         {/* Author attribution - now with better accessibility */}
-        {author && (
-          <div className="absolute bottom-4 left-4 flex items-center">
-            <a 
-              href={`https://x.com/${author.xUsername}`} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              onClick={handleAuthorClick}
-              className="flex items-center text-xs text-forest-800 dark:text-forest-300 hover:underline"
-              aria-label={`Author: ${author.name} (opens in a new tab)`}
-            >
-              <Icon icon="ri:twitter-x-fill" className="w-3.5 h-3.5 mr-1.5" aria-hidden="true" />
-              <span>{author.name}</span>
-            </a>
+        {author && author.length > 0 && (
+          <div className="absolute bottom-4 left-4 flex items-center gap-x-2">
+            {author.map((author, index) => (
+              <div key={author.name}>
+                <React.Fragment >
+                  
+                  {index > 0 && (
+                    <span className="text-forest-800 dark:text-forest-300">•</span>
+                  )}
+                  <a 
+                    href={`https://x.com/${author.xUsername}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    onClick={handleAuthorClick}
+                    className="flex items-center text-xs text-forest-800 dark:text-forest-300 hover:underline"
+                    aria-label={`Author: ${author.name} (opens in a new tab)`}
+                  >
+                    <Icon icon="ri:twitter-x-fill" className="w-3.5 h-3.5 mr-1.5" aria-hidden="true" />
+                    <span>{author.name}</span>
+                  </a>
+                </React.Fragment>
+              </div>
+            ))}
           </div>
         )}
         

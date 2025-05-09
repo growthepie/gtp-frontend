@@ -26,7 +26,9 @@ import { debounce } from 'lodash';
 import { useTheme } from 'next-themes';
 import ChartWatermark from '@/components/layout/ChartWatermark';
 import "@/app/highcharts.axis.css";
-
+import { Type } from "@/types/api/CategoryComparisonResponse";
+import { GTPIcon } from "../layout/GTPIcon";
+import { Icon } from "@iconify/react";
 // Extend Highcharts Chart type to include customWatermark
 declare module 'highcharts' {
   interface Chart {
@@ -35,13 +37,26 @@ declare module 'highcharts' {
 }
 
 interface ChartWrapperProps {
-  chartType: 'line' | 'area' | 'bar' | 'column' | 'pie';
+  chartType: 'line' | 'area' | 'column' | 'pie';
   data: any;
   options?: any;
   width?: number | string;
   height?: number | string;
   title?: string;
   subtitle?: string;
+  stacking?: "normal" | "percent" | null;
+  jsonData?: any;
+  jsonMeta?: {
+    meta: {
+      name: string,
+      color: string,
+      xIndex: number,
+      yIndex: number,
+      suffix?: string,
+      prefix?: string
+    }[]
+  }
+  seeMetricURL?: string | null;
 }
 
 const ChartWrapper: React.FC<ChartWrapperProps> = ({
@@ -51,7 +66,11 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   width = '100%',
   height = 400,
   title,
-  subtitle
+  subtitle,
+  stacking,
+  jsonData,
+  jsonMeta,
+  seeMetricURL
 }) => {
   const chartRef = useRef<any>(null);
   const { theme } = useTheme();
@@ -114,13 +133,17 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         year: "numeric",
       });
       const chartTitle = this.series.chart.title.textStr;
+      const useJson = jsonMeta ? true : false;
+      const isArray = Array.isArray(jsonMeta?.meta);
+      const suffix = points.map((point: any) => (point.series.suffix ? point.series.suffix : ""));
+      const prefix = points.map((point: any) => (point.series.prefix ? point.series.prefix : ""));
 
       // check if data steps are less than 1 day
       // if so, add the time to the tooltip
       const timeDiff = points[0].series.xData[1] - points[0].series.xData[0];
 
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-56 md:w-56 text-xs font-raleway rounded-full bg-opacity-60">
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-72 md:w-72 text-xs font-raleway rounded-full bg-opacity-60">
         <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2 ">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
@@ -151,7 +174,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         .map((point: any, index: number) => {
           const { series, y, percentage } = point;
           const { name } = series;
-          console.log(series)
+          
 
           const isFees = true;
           const nameString = name.slice(0, 20);
@@ -159,19 +182,18 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
           const color = series.color.stops ? series.color.stops[0][1] : series.color;
 
-          let prefix = "";
-          let suffix = "";
+
           let value = y;
           let displayValue = y;
 
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${color}"></div>
-            <div class="tooltip-point-name text-xs">${nameString}</div>
-            <div class="flex-1 text-right justify-end flex numbers-xs">
+            <div class="tooltip-point-name text-xs flex-1 truncate">${nameString}</div>
+            <div class="flex-1 text-right justify-end w-full flex numbers-xs">
               <div class="flex justify-end text-right w-full">
                   <div class="${!prefix && "hidden"
-            }">${prefix}</div>
+            }">${prefix}</div><div>
               ${
                 parseFloat(displayValue).toLocaleString(
                   "en-GB",
@@ -183,7 +205,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 )
                 
               }
-               
+               </div>
                 </div>
                 <div class="ml-0.5 ${!suffix && "hidden"
             }">${suffix}</div>
@@ -226,223 +248,284 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     );
   }
 
-  console.log(chartType)
+ 
+  
   return (
-    <div style={{ width, height }} className="relative">
-      <HighchartsProvider Highcharts={Highcharts}>
-        <HighchartsChart ref={chartRef}
-            plotOptions={{
-              line: {
-                lineWidth: 1.5,
-              },
-              area: {
-                lineWidth: 1.5,
-                dataGrouping: {
-                  enabled: true,
-                  
+    <div className="relative px-[35px]">
+      <div style={{ width, height }} className="relative bg-active-black rounded-[25px] shadow-md flex flex-col gap-y-[15px] h-full p-[15px] ">
+        <div className="w-full h-[36px] p-[5px] bg-[#1F2726] rounded-full">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-x-[5px]">
+              <div className="w-fit h-fit"><GTPIcon icon={"gtp-metrics-totalvaluelocked"} className="w-[24px] h-[24px] "/></div>
+              <div className="text-[20px] font-bold leading-[120%]">{title}</div>
+            </div>
+          </div>
+        </div>
+        <HighchartsProvider Highcharts={Highcharts}>
+          <HighchartsChart ref={chartRef}
+              plotOptions={{
+                line: {
+                  lineWidth: 1.5,
                 },
-
-                // marker: {
-                //   radius: 12,
-                //   lineWidth: 4,
-                // },
-
-                // shadow: {
-                //   color:
-                //     AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1] + "33",
-                //   width: 10,
-                // },
-
-                // borderColor: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
-                // borderWidth: 1,
-              },
-              series: {
-                zIndex: 10,
-                animation: false,
-
-                marker: {
-                  lineColor: "white",
-                  radius: 0,
-                  symbol: "circle",
-                },
-                states: {
-                  hover: {
+                area: {
+                  lineWidth: 1.5,
+                  dataGrouping: {
                     enabled: true,
-                    brightness: 0.1,
-                  },
-                  inactive: {
-                    opacity: 0.6,
-                  }
-                }
-              },
-            }}
-        >
-          <Chart 
-            backgroundColor={"transparent"}
-            type="line"
-            panning={{
-              enabled: false,
-              type: "x",
-            }}
-            panKey="shift"
-            // zooming={{
-            //   type: "x",
-            //   mouseWheel: {
-            //     enabled: false,
-            //     type: "xy",
-            //   },
-            // }}
-            zooming={{
-              mouseWheel: {
-                enabled: false,
-              },
-            }}
-            animation={{
-              duration: 50,
-            }}
-            marginBottom={5}
-            marginLeft={45}
-            marginRight={45}
-            marginTop={15}
-            
-
-          />
-          
-          
-          <XAxis 
-            labels={{
-              style: {
-                color: theme === 'dark' ? '#CDD8D3' : '#293332',
-                fontSize: '10px',
-              }
-            }}
-        
-            gridLineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.11)' : 'rgba(41, 51, 50, 0.11)'}
-            lineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.33)' : 'rgba(41, 51, 50, 0.33)'}
-            tickColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.33)' : 'rgba(41, 51, 50, 0.33)'}
-          />
-          
-          <YAxis 
-            labels={{
-              style: {
-                color: theme === 'dark' ? '#CDD8D3' : '#293332',
-                fontSize: '10px',
-              }
-            }}
-            gridLineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.11)' : 'rgba(41, 51, 50, 0.11)'}
-          >
-            {chartType === 'line' && (
-              data.map((series: any) => (
-                <LineSeries
-                  animation={true}
-                  key={series.name}
-                  name={series.name}
-                  data={series.data}
-                  color={series.color}
-
-                />
-              ))
-            )}  
-            
-            {chartType === 'area' && (
-              data.map((series: any) => {
-                return (
-                  <AreaSeries
-                    key={series.name}
-                    name={series.name}
-                    data={series.data}
-                    color={series.color}
-                    animation={true}
-                    states={{
-                      hover: {
-                        enabled: true,
-                        brightness: 0.1,
-                      },
-                      inactive: {
-                        opacity: 0.6,
-                      },
-                    }}
-                    fillOpacity={0.3}
-                    marker={{
-                      enabled: false,
-                    }}
-                  />
-                );
-              })
-            )}
-            
-            {chartType === 'column' && (
-              console.log(data),
-              data.map((series: any) => {
-                return(
-                  <ColumnSeries
-                    borderRadius="8%"
-                    borderColor="transparent"
                     
-                    pointPlacement="on"
+                  },
+
+
+                  // marker: {
+                  //   radius: 12,
+                  //   lineWidth: 4,
+                  // },
+
+                  // shadow: {
+                  //   color:
+                  //     AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1] + "33",
+                  //   width: 10,
+                  // },
+
+                  // borderColor: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
+                  // borderWidth: 1,
+                },
+                column: {
+                  
+                  borderColor: "transparent",
+                  animation: true,
+                  pointPlacement: "on",
+                },
+                series: {
+                  zIndex: 10,
+                  animation: false,
+
+                  marker: {
+                    lineColor: "white",
+                    radius: 0,
+                    symbol: "circle",
+                  },
+                  states: {
+                    hover: {
+                      enabled: true,
+                      brightness: 0.1,
+                    },
+                    inactive: {
+                      opacity: 0.6,
+                    }
+                  }
+                },
+              }}
+          >
+            <Chart 
+              backgroundColor={"transparent"}
+              type="line"
+              panning={{
+                enabled: false,
+                type: "x",
+              }}
+              panKey="shift"
+              // zooming={{
+              //   type: "x",
+              //   mouseWheel: {
+              //     enabled: false,
+              //     type: "xy",
+              //   },
+              // }}
+              zooming={{
+                mouseWheel: {
+                  enabled: false,
+                },
+              }}
+              animation={{
+                duration: 50,
+              }}
+              marginBottom={5}
+              marginLeft={40}
+              marginRight={5}
+              marginTop={15}
+              
+               
+
+            />
+            
+            
+            <XAxis 
+              labels={{
+                style: {
+                  color: theme === 'dark' ? '#CDD8D3' : '#293332',
+                  fontSize: '10px',
+                }
+              }}
+
+              gridLineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.11)' : 'rgba(41, 51, 50, 0.11)'}
+              lineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.33)' : 'rgba(41, 51, 50, 0.33)'}
+              tickColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.33)' : 'rgba(41, 51, 50, 0.33)'}
+            />
+            
+            <YAxis 
+              labels={{
+                style: {
+                  color: theme === 'dark' ? '#CDD8D3' : '#293332',
+                  fontSize: '10px',
+                }
+              }}
+              gridLineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.11)' : 'rgba(41, 51, 50, 0.11)'}
+            >
+              {chartType === 'line' && (
+                (jsonMeta ? jsonMeta.meta : data).map((series: any) => (
+                  <LineSeries
+                    animation={true}
+                    key={series.name}
+                    name={series.name}
                     data={series.data}
                     color={series.color}
-                    name={series.name}
-                    key={series.name}
+
                   />
-                )
-              })
-            )}
+                ))
+              )}  
+              
+              {chartType === 'area' && (
+                (jsonMeta ? jsonMeta.meta : data).map((series: any) => {
+                  return (
+                    <AreaSeries
+                      stacking={stacking ? stacking : undefined}
+                      key={series.name}
+                      name={series.name}
+                      data={series.data}
+                      color={series.color}
+                      animation={true}
+                      states={{
+                        hover: {
+                          enabled: true,
+                          brightness: 0.1,
+                        },
+                        inactive: {
+                          opacity: 0.6,
+                        },
+                      }}
+                      fillOpacity={0.3}
+                      marker={{
+                        enabled: false,
+                      }}
+                    />
+                  );
+                })
+              )}
+              
+              {chartType === 'column' && (
+                (jsonMeta ? jsonMeta.meta : data).map((series: any) => {
+                  const useJson = jsonMeta ? true : false;
+                  const finalData = useJson ? jsonData.map((item: any) => [
+                    item[series.xIndex], // x value
+                    item[series.yIndex]  // y value
+                  ]) : series.data;
+                  
+                  
+                  return(
+                    <ColumnSeries
+                      borderRadius="8%"
+                      stacking={stacking ? stacking : undefined}
+                      borderColor="transparent"
+                      pointPlacement="on"
+                      data={finalData}
+                      color={series.color}
+                      name={series.name}
+                      key={series.name}
+                    />
+                  )
+                })
+              )}
+              
+              {chartType === 'pie' && (
+                <PieSeries
+                  animation={true}
+                  states={{
+                    hover: {
+                      enabled: true,
+                      brightness: 0.1,
+                    },
+                    inactive: {
+                      opacity: 0.6,
+                    },
+                  }}
+                  allowPointSelect={true}
+                  cursor="pointer"
+                  borderWidth={0}
+                  borderRadius={5}
+                  dataLabels={{
+                    enabled: false,
+                  }}
+                  showInLegend={true}
+                />
+              )}
+            </YAxis >
             
-            {chartType === 'pie' && (
-              <PieSeries
-                animation={true}
-                states={{
-                  hover: {
-                    enabled: true,
-                    brightness: 0.1,
-                  },
-                  inactive: {
-                    opacity: 0.6,
-                  },
-                }}
-                allowPointSelect={true}
-                cursor="pointer"
-                borderWidth={0}
-                borderRadius={5}
-                dataLabels={{
-                  enabled: false,
-                }}
-                showInLegend={true}
-              />
+            <Tooltip 
+              useHTML={true}
+              shared={true}
+              split={false}
+              followPointer={true}
+              followTouchMove={true}
+              backgroundColor={"#2A3433EE"}
+              padding={0}
+              hideDelay={300}
+              stickOnContact={true}
+              shape="rect"
+              borderRadius={17}
+              borderWidth={0}
+              outside={true}
+              shadow={{
+                color: "black",
+                opacity: 0.015,
+                offsetX: 2,
+                offsetY: 2,
+              }}
+              style={{
+                color: "rgb(215, 223, 222)",
+              }}
+              formatter={tooltipFormatter}
+            />
+            
+          </HighchartsChart>
+        </HighchartsProvider>
+        <div className="absolute bottom-[20%] left-0 right-0 flex flex-col items-center justify-center pointer-events-none z-0 opacity-40  " 
+          style={{
+            height: typeof height === "number" ? (height - 147) + "px" : "100%"
+          }}
+        >
+          <ChartWatermark className="w-[200.67px] h-[150.67px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
+        </div>
+        {/*Footer*/}
+        <div className="pl-[40px] flex justify-between">
+          <div className="flex flex-col gap-y-[5px]">
+            {/*Categories*/}
+            <div className="flex gap-x-[5px]">
+              {(jsonMeta?.meta || data).map((category) => (
+                <div key={category.name} className="bg-medium-background flex items-center justify-center rounded-full gap-x-[2px] p-[3px]">
+                  <div className="w-[5px] h-[5px] rounded-full" style={{ backgroundColor: category.color }}></div>
+                  <div className="h-full text-[9px]">{category.name}</div>
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-col gap-y-[2px]">
+              <div className="text-[10px]">{`Chart type: ${chartType.charAt(0).toUpperCase() + chartType.slice(1)}`}</div>
+              <div className="text-[10px]">{`Aggregation: 7-Day Rolling Average`}</div>
+            </div>
+          </div>
+          <div className="h-full flex items-end ">
+            {seeMetricURL && (
+              <a className="bg-[#263130] rounded-full pl-[15px] pr-[5px] flex items-center h-[36px] gap-x-[8px] " href={seeMetricURL} rel="_noopener" style={{
+                border: `1px solid transparent`,
+              backgroundImage: `linear-gradient(var(--Gradient-Red-Yellow, #263130), var(--Gradient-Red-Yellow, #263130)), linear-gradient(144.58deg, #FE5468 0%, #FF8F4F 70%, #FFDF27 100%)`,
+              backgroundOrigin: 'border-box',
+              backgroundClip: 'padding-box, border-box'
+            }}>
+              <div className="text-[14px] font-bold leading-[120%]">See metric page</div>
+              <div className="w-[24px] h-[24px] flex items-center justify-center bg-medium-background rounded-full"><Icon icon={'fluent:arrow-right-32-filled'} className={`w-[15px] h-[15px]`}  /></div>
+            </a>
             )}
-          </YAxis >
-          
-          <Tooltip 
-            useHTML={true}
-            shared={true}
-            split={false}
-            followPointer={true}
-            followTouchMove={true}
-            backgroundColor={"#2A3433EE"}
-            padding={0}
-            hideDelay={300}
-            stickOnContact={true}
-            shape="rect"
-            borderRadius={17}
-            borderWidth={0}
-            outside={true}
-            shadow={{
-              color: "black",
-              opacity: 0.015,
-              offsetX: 2,
-              offsetY: 2,
-            }}
-            style={{
-              color: "rgb(215, 223, 222)",
-            }}
-            formatter={tooltipFormatter}
-          />
-          
-        </HighchartsChart>
-      </HighchartsProvider>
-      <div className="absolute bottom-[5%] left-0 right-0 flex flex-col items-center justify-center pointer-events-none z-0 opacity-40 h-full">
-        <ChartWatermark className="w-[200.67px] h-[150.67px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
+          </div>
+        </div>
       </div>
     </div>
   );

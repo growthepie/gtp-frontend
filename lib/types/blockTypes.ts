@@ -43,7 +43,7 @@ export interface ImageBlock extends BaseBlock {
 
 export interface ChartBlock extends BaseBlock {
   type: 'chart';
-  chartType: 'line' | 'bar' | 'pie' | 'area';
+  chartType: 'line' | 'area' | 'column' | 'pie';
   data: any; // This would be the chart data structure
   options?: any; // Chart configuration options
   width?: number | string;
@@ -52,6 +52,24 @@ export interface ChartBlock extends BaseBlock {
   subtitle?: string;
   caption?: string;
   className?: string;
+  stacking?: "normal" | "percent" | null;
+  chartCategories?: {
+    name: string;
+    color: string;
+  }[];
+  dataAsJson?: {
+    url: string;
+    pathToData: string;
+    meta: {
+      name: string;
+      color: string;
+      xIndex: number;
+      yIndex: number;
+      suffix?: string;
+      prefix?: string;
+    }[];
+  } | null;
+  seeMetricURL?: string | null;
 }
 
 export interface CalloutBlock extends BaseBlock {

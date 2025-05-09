@@ -12,7 +12,7 @@ export interface Author {
     date: string;
     icon: string;
     related: string[];
-    author?: Author;
+    author?: Author[];
   }
   
   export interface QuickDiveWithSlug extends QuickDiveData {
