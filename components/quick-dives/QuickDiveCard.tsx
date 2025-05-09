@@ -1,4 +1,4 @@
-// File: components/quick-dives/QuickDiveCard.tsx (continued)
+// File: components/quick-dives/QuickDiveCard.tsx
 'use client';
 
 import React from 'react';
@@ -42,6 +42,7 @@ const QuickDiveCard: React.FC<QuickDiveCardProps> = ({
       aria-labelledby={`card-title-${slug}`}
     >
       <div className="h-full rounded-[15px] bg-forest-50 dark:bg-[#1F2726] p-4 overflow-hidden transition-all duration-200 hover:shadow-md relative focus-within:ring-2 focus-within:ring-forest-500">
+        {/* Card header */}
         <div className="flex justify-between items-start mb-2">
           <h3 id={`card-title-${slug}`} className="heading-small-md font-bold">
             {title}
@@ -51,29 +52,32 @@ const QuickDiveCard: React.FC<QuickDiveCardProps> = ({
           </div>
         </div>
         
-        <div className="text-xs text-forest-800 dark:text-forest-300 mb-3">
+        {/* Date */}
+        <div className="text-xs text-forest-800 dark:text-forest-300 mb-2">
           <time dateTime={date}>{formatDate(date)}</time>
         </div>
         
-        <p className="text-sm mb-8 line-clamp-2">{subtitle}</p>
+        {/* Content section with fixed height to ensure teaser alignment */}
+        <div className="h-[60px] mb-2">
+          <p className="text-sm line-clamp-2">{subtitle}</p>
+        </div>
         
-        {/* Teaser image with proper alt text */}
         <div 
-          className="w-full h-[180px] bg-[#B0C4F2] rounded-lg mb-12 flex items-center justify-center"
+          className="w-full h-[180px] bg-[#B0C4F2] rounded-lg mb-4 flex items-center justify-center"
           aria-hidden="true"
         >
           <span className="text-forest-700">teaser screenshot</span>
         </div>
         
-        {/* Author attribution - now with better accessibility */}
-        {author && author.length > 0 && (
-          <div className="absolute bottom-4 left-4 flex items-center gap-x-2">
-            {author.map((author, index) => (
-              <div key={author.name}>
-                <React.Fragment >
-                  
+        {/* Footer section with fixed height */}
+        <div className="h-[28px] relative">
+          {/* Author attribution */}
+          {author && author.length > 0 && (
+            <div className="absolute bottom-0 left-0 flex items-center gap-x-2">
+              {author.map((author, index) => (
+                <div key={author.name} className="flex items-center">
                   {index > 0 && (
-                    <span className="text-forest-800 dark:text-forest-300">•</span>
+                    <span className="mx-1.5 text-forest-800 dark:text-forest-300">•</span>
                   )}
                   <a 
                     href={`https://x.com/${author.xUsername}`} 
@@ -86,15 +90,15 @@ const QuickDiveCard: React.FC<QuickDiveCardProps> = ({
                     <Icon icon="ri:twitter-x-fill" className="w-3.5 h-3.5 mr-1.5" aria-hidden="true" />
                     <span>{author.name}</span>
                   </a>
-                </React.Fragment>
-              </div>
-            ))}
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {/* Arrow at bottom right */}
+          <div className="absolute bottom-0 right-0" aria-hidden="true">
+            <Icon icon="feather:arrow-right" className="w-5 h-5" />
           </div>
-        )}
-        
-        {/* Arrow at bottom right - hide from screen readers */}
-        <div className="absolute bottom-4 right-4" aria-hidden="true">
-          <Icon icon="feather:arrow-right" className="w-5 h-5" />
         </div>
       </div>
     </Link>
