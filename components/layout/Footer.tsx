@@ -122,11 +122,19 @@ export default function Footer() {
                 </div>
               </div>
               {/*desktop text*/}
-              <div className="text-[10px]">
-                Being a public good, we rely on grants and public funding rounds, such as Gitcoin, Octant or Giveth. Please support us whenever a round is active. On Giveth you can also donate whenever you feel like it.
+              <div className="text-xs">
+              As a public good, we rely on grants and funding rounds like Gitcoin, Octant, and Giveth. Support us during active rounds—or donate anytime via Giveth. More info on our <Link href="/donate" className="underline" onClick={() => {
+                track("clicked Donate Footer link", {
+                  location: "desktop footer",
+                  page: window.location.pathname,
+                });
+              }}>donate page</Link>.
               </div>
-              <div className="text-[10px]">
-                Individual links contain affiliate links, like the “Bridge” button, which provide us with some additional income through a revenue-share program. For more, please check the following links:
+              <div className="text-xs">
+              Some links on our platform are affiliate links and may generate a commission for us.
+              </div>
+              <div className="text-xs">
+              Disclaimer: Information on growthepie is for educational purposes only and not investment advice. Data may be inaccurate or delayed.
               </div>
             </div>
             <div className="flex justify-between flex-col md:items-end lg:flex-row gap-y-[15px] md:w-full lg:justify-between text-xs leading-[1.5]">
