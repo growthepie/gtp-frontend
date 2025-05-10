@@ -34,10 +34,9 @@ const QuickDivesSection: React.FC = () => {
         <SectionButtonLink href="/quick-dives" label="See all quick dives" shortLabel="More dives" />
       </div>
       
-      <div className="text-md px-[5px] lg:px-[45px] mb-8">
+      <div className="text-md px-[5px] lg:px-[45px]">
         <p className="mb-2">
-          Get in-depth knowledge on specific technologies and developments in the Ethereum ecosystem through 
-          our focused, visual explanations.
+          Quick Dives are short, focused analyses of specific topics or trends in the Ethereum ecosystem. 
         </p>
       </div>
       

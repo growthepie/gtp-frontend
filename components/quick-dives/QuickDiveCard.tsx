@@ -1,4 +1,4 @@
-// File: components/quick-dives/QuickDiveCard.tsx (continued)
+// File: components/quick-dives/QuickDiveCard.tsx
 'use client';
 
 import React from 'react';
@@ -42,6 +42,7 @@ const QuickDiveCard: React.FC<QuickDiveCardProps> = ({
       aria-labelledby={`card-title-${slug}`}
     >
       <div className="h-full rounded-[15px] bg-forest-50 dark:bg-[#1F2726] p-4 overflow-hidden transition-all duration-200 hover:shadow-md relative focus-within:ring-2 focus-within:ring-forest-500">
+        {/* Card header */}
         <div className="flex justify-between items-start mb-2">
           <h3 id={`card-title-${slug}`} className="heading-small-md font-bold">
             {title}
@@ -51,15 +52,18 @@ const QuickDiveCard: React.FC<QuickDiveCardProps> = ({
           </div>
         </div>
         
-        <div className="text-xs text-forest-800 dark:text-forest-300 mb-3">
+        {/* Date */}
+        <div className="text-xs text-forest-800 dark:text-forest-300 mb-2">
           <time dateTime={date}>{formatDate(date)}</time>
         </div>
         
-        <p className="text-sm mb-8 line-clamp-2">{subtitle}</p>
+        {/* Content section with fixed height to ensure teaser alignment */}
+        <div className="h-[60px] mb-2">
+          <p className="text-sm line-clamp-2">{subtitle}</p>
+        </div>
         
-        {/* Teaser image with proper alt text */}
         <div 
-          className="w-full h-[180px] bg-[#B0C4F2] rounded-lg mb-12 flex items-center justify-center"
+          className="w-full h-[180px] bg-[#B0C4F2] rounded-lg mb-4 flex items-center justify-center"
           aria-hidden="true"
         >
           <span className="text-forest-700">teaser screenshot</span>
