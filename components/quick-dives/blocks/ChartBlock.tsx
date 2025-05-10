@@ -47,7 +47,6 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
     ? getNestedValue(unProcessedData, block.dataAsJson.pathToData)
     : undefined;
 
-    console.log(block.seeMetricURL);
   
   return (
     

@@ -4,6 +4,13 @@ export interface Author {
     xUsername: string;
   }
   
+  export interface Topic {
+    icon: string;
+    name: string;
+    url: string;
+    color?: string;
+  }
+  
   export interface QuickDiveData {
     title: string;
     subtitle: string;
@@ -13,6 +20,7 @@ export interface Author {
     icon: string;
     related: string[];
     author?: Author[];
+    topics?: Topic[];
   }
   
   export interface QuickDiveWithSlug extends QuickDiveData {

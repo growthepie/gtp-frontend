@@ -13,6 +13,7 @@ import { formatDate } from '@/lib/utils/formatters';
 import { processMarkdownContent } from '@/lib/utils/markdownParser';
 import RelatedQuickDives from '@/components/quick-dives/RelatedQuickDives';
 import { Author } from '@/lib/types/quickDives';
+import Link from 'next/link';
 
 
 type Props = {
@@ -117,22 +118,33 @@ export default async function QuickDivePage({ params }: Props) {
             ))}
           </div>
           
-          {/* Content metadata and tags */}
-          <div className="mt-12 pt-8 border-t border-forest-200 dark:border-forest-800">
-            <div className="flex flex-wrap gap-3">
-              <span className="px-3 py-1 bg-forest-100 dark:bg-forest-900 rounded-full text-xs">
-                {quickDive.icon.replace(/-/g, ' ').replace('logo monochrome', '')}
-              </span>
-              <span className="px-3 py-1 bg-forest-100 dark:bg-forest-900 rounded-full text-xs">
-                Layer 2
-              </span>
-              <span className="px-3 py-1 bg-forest-100 dark:bg-forest-900 rounded-full text-xs">
-                Technical
-              </span>
-            </div>
+
+        </div>
+                {/* Content metadata and tags */}
+
+
+        <div className="h-[34px] px-[15px] py-[5px] bg-[#1F2726] rounded-full flex items-center gap-x-[10px]">
+          <span className="text-xxs text-[#5A6462]">Topics Discussed</span>
+          <div className="flex items-center gap-x-[5px]">
+            {quickDive.topics?.map((topic) => (
+              <Link
+                key={topic.name}
+                href={topic.url}
+                className="flex items-center gap-x-[5px] rounded-full w-fit pl-[5px] pr-[10px] py-[3px] bg-medium-background"
+                
+              >
+                <GTPIcon 
+                  icon={topic.icon as GTPIconName} 
+                  size="sm" 
+                  style={{ color: topic.color }}
+                />
+                <div className="text-xs">
+                  {topic.name}
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
-        
         {/* Related content section */}
         {relatedContent.length > 0 && (
           <RelatedQuickDives relatedQuickDives={relatedContent} />

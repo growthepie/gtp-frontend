@@ -18,6 +18,12 @@ interface QuickDiveCardProps {
     name: string;
     xUsername: string;
   }[];
+  topics?: {
+    icon: string;
+    name: string;
+    url: string;
+    color?: string;
+  }[];
   className?: string;
 }
 
@@ -28,6 +34,7 @@ const QuickDiveCard: React.FC<QuickDiveCardProps> = ({
   icon,
   slug,
   author,
+  topics,
   className = ''
 }) => {
   const handleAuthorClick = (e: React.MouseEvent) => {
@@ -69,27 +76,47 @@ const QuickDiveCard: React.FC<QuickDiveCardProps> = ({
           <span className="text-forest-700">teaser screenshot</span>
         </div>
         
-        {/* Author attribution - now with better accessibility */}
+        {/* Topics */}
+        {topics && topics.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {topics.map((topic) => (
+              <Link
+                key={topic.name}
+                href={topic.url}
+                onClick={(e) => e.stopPropagation()}
+                className="flex items-center gap-x-1 px-2 py-1 rounded-full text-xs"
+                style={{
+                  backgroundColor: topic.color ? `${topic.color}20` : '#34424020',
+                  color: topic.color || '#344240'
+                }}
+              >
+                <GTPIcon icon={topic.icon as GTPIconName} size="sm" />
+                <span>{topic.name}</span>
+              </Link>
+            ))}
+          </div>
+        )}
+        
+        {/* Author attribution */}
         {author && author.length > 0 && (
           <div className="absolute bottom-4 left-4 flex items-center gap-x-2">
             {author.map((authorItem, index) => (
               <div key={authorItem.name}>
                 <div className="flex items-center gap-x-0.5">
-                  
                   {index > 0 ? (
                     <span className="text-forest-800 dark:text-forest-300 hover:underline text-xs">{`+${(author.length - 1)} More`}</span>
                   ) : (
-                  <button 
-                    onClick={(e) => {
-                      handleAuthorClick(e);
-                      window.open(`https://x.com/${authorItem.xUsername}`, '_blank', 'noopener,noreferrer');
-                    }}
-                    className="flex items-center text-xs text-forest-800 dark:text-forest-300 hover:underline"
-                    aria-label={`Author: ${authorItem.name} (opens in a new tab)`}
-                  >
-                    <Icon icon="ri:twitter-x-fill" className="w-3.5 h-3.5 mr-1.5" aria-hidden="true" />
-                    <span>{authorItem.name}</span>
-                  </button>
+                    <button 
+                      onClick={(e) => {
+                        handleAuthorClick(e);
+                        window.open(`https://x.com/${authorItem.xUsername}`, '_blank', 'noopener,noreferrer');
+                      }}
+                      className="flex items-center text-xs text-forest-800 dark:text-forest-300 hover:underline"
+                      aria-label={`Author: ${authorItem.name} (opens in a new tab)`}
+                    >
+                      <Icon icon="ri:twitter-x-fill" className="w-3.5 h-3.5 mr-1.5" aria-hidden="true" />
+                      <span>{authorItem.name}</span>
+                    </button>
                   )}
                 </div>
               </div>
@@ -97,7 +124,7 @@ const QuickDiveCard: React.FC<QuickDiveCardProps> = ({
           </div>
         )}
         
-        {/* Arrow at bottom right - hide from screen readers */}
+        {/* Arrow at bottom right */}
         <div className="absolute bottom-4 right-4" aria-hidden="true">
           <Icon icon="feather:arrow-right" className="w-5 h-5" />
         </div>

@@ -198,6 +198,12 @@ const QUICK_DIVES_DATA: QuickDivesData = {
     },{
       name: "John Doe",
       xUsername: "johndoe_crypto"
+    }],
+    topics: [{
+      icon: "optimism-logo-monochrome",
+      color: "#FE5468",
+      name: "Optimism",
+      url: "/chains/optimism"
     }]
   },
   "arbitrum-nitro": {
@@ -313,6 +319,12 @@ const QUICK_DIVES_DATA: QuickDivesData = {
     author: [{
       name: "Maya Rodriguez",
       xUsername: "maya_zkp"
+    }],
+    topics: [{
+      icon: "base-logo-monochrome",
+      color: "#2151F5",
+      name: "Base",
+      url: "/chains/base"
     }]
   },
   "l2-fee-comparison": {
@@ -383,6 +395,12 @@ const QUICK_DIVES_DATA: QuickDivesData = {
       name: "Lisa Thompson",
       xUsername: "lisa_crypto_econ"
     }],
+    topics: [{
+      icon: "base-logo-monochrome",
+      color: "#2151F5",
+      name: "Base",
+      url: "/chains/base"
+    }]
 
   }
 };
