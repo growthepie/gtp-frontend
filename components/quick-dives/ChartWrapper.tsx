@@ -77,6 +77,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   const [isChartReady, setIsChartReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [filteredNames, setFilteredNames] = useState<string[]>([]);
   
   // Initialize Highcharts modules
   useEffect(() => {
@@ -372,20 +373,24 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               gridLineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.11)' : 'rgba(41, 51, 50, 0.11)'}
             >
               {chartType === 'line' && (
-                (jsonMeta ? jsonMeta.meta : data).map((series: any) => (
-                  <LineSeries
-                    animation={true}
-                    key={series.name}
-                    name={series.name}
-                    data={series.data}
-                    color={series.color}
+                (jsonMeta ? jsonMeta.meta : data).map((series: any) => {
+                  if(!filteredNames.includes(series.name) && filteredNames.length > 0) return null;
+                  return (
+                    <LineSeries
+                      animation={true}
+                      key={series.name}
+                      name={series.name}
+                      data={series.data}
+                      color={series.color}
 
                   />
-                ))
+                )
+              })
               )}  
               
               {chartType === 'area' && (
                 (jsonMeta ? jsonMeta.meta : data).map((series: any) => {
+                  if(!filteredNames.includes(series.name) && filteredNames.length > 0) return null;
                   return (
                     <AreaSeries
                       stacking={stacking ? stacking : undefined}
@@ -420,7 +425,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                     item[series.yIndex]  // y value
                   ]) : series.data;
                   
-                  
+                  if(!filteredNames.includes(series.name) && filteredNames.length > 0) return null;
                   return(
                     <ColumnSeries
                       borderRadius="8%"
@@ -500,12 +505,33 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           <div className="flex flex-col gap-y-[5px]">
             {/*Categories*/}
             <div className="flex gap-x-[5px]">
-              {(jsonMeta?.meta || data).map((category) => (
-                <div key={category.name} className="bg-medium-background flex items-center justify-center rounded-full gap-x-[2px] p-[3px]">
-                  <div className="w-[5px] h-[5px] rounded-full" style={{ backgroundColor: category.color }}></div>
-                  <div className="h-full text-[9px]">{category.name}</div>
-                </div>
-              ))}
+              {(jsonMeta?.meta || data).map((category) => {
+                let bgBorderClass = "border-[1px] border-[#344240] bg-[#344240] hover:border-[#5A6462] hover:bg-[#5A6462] ";
+                if(filteredNames.length > 0 && (!filteredNames.includes(category.name))) {
+                  bgBorderClass = "border-[1px] border-[#344240] bg-transparent hover:border-[#5A6462] hover:bg-[#5A6462]";
+                }
+                
+                return (
+                  <div key={category.name} className={`bg-[#344240] hover:bg-[#5A6462] flex items-center justify-center rounded-full gap-x-[2px] p-[3px] cursor-pointer ${bgBorderClass}`} onClick={() => {
+                    console.log(category.name, filteredNames);
+                    if(!filteredNames.includes(category.name)) {
+                      setFilteredNames((prev) => {
+                        const newFilteredNames = [...prev, category.name];
+                        // Check if we would have all categories selected
+                        if (newFilteredNames.length === (jsonMeta?.meta || data).length) {
+                          return []; // Reset to empty if all would be selected
+                        }
+                        return newFilteredNames;
+                      });
+                    } else {
+                      setFilteredNames((prev) => prev.filter((name) => name !== category.name));
+                    }
+                  }}>
+                    <div className="w-[5px] h-[5px] rounded-full" style={{ backgroundColor: category.color }}></div>
+                    <div className="h-full text-[9px]">{category.name}</div>
+                  </div>
+                )
+              })}
             </div>
             <div className="flex flex-col gap-y-[2px]">
               <div className="text-[10px]">{`Chart type: ${chartType.charAt(0).toUpperCase() + chartType.slice(1)}`}</div>
