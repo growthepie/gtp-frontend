@@ -124,12 +124,21 @@ export async function processMarkdownContent(content: string[]): Promise<Content
           type: 'divider'
         });
       }
+      // Handle list items
+      else if (text.startsWith('- ')) {
+        blocks.push({
+          id: generateBlockId(),
+          type: 'list',
+          content: text.substring(2), // Remove the '- ' prefix
+          items: [text.substring(2)] // Start with the first item
+        });
+      }
       // Default to paragraph
       else {
         blocks.push({
           id: generateBlockId(),
           type: 'paragraph',
-          content: text // No HTML conversion
+          content: parseBoldText(text) // Process bold text in paragraphs
         });
       }
     } catch (error) {
@@ -228,4 +237,9 @@ function parseImageBlock(imageText: string): ContentBlock {
     height: height || 'auto',
     className: align ? `text-${align}` : ''
   };
+}
+
+// Helper function to parse bold text in paragraphs
+function parseBoldText(text: string): string {
+  return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 }

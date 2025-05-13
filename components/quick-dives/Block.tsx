@@ -11,6 +11,7 @@ import { DividerBlock } from './blocks/DividerBlock';
 import { ContainerBlock } from './blocks/ContainerBlock';
 import { SpacerBlock } from './blocks/SpacerBlock';
 import { IframeBlock } from './blocks/IframeBlock';
+import { ListBlock } from './blocks/ListBlock';
 
 interface BlockProps {
   block: ContentBlock;
@@ -40,6 +41,8 @@ const Block: React.FC<BlockProps> = ({ block }) => {
       return <SpacerBlock block={block} />;
     case 'iframe':
       return <IframeBlock block={block} />;
+    case 'list':
+      return <ListBlock block={block} />;
     default:
       console.warn(`Unknown block type: ${(block as any).type}`);
       return null;

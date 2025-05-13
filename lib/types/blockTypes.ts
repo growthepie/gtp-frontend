@@ -11,7 +11,8 @@ export type BlockType =
   | 'divider'
   | 'container'  // Container can hold multiple blocks horizontally
   | 'spacer'      // For vertical spacing
-  | 'iframe';     // For embedded content like iframes
+  | 'iframe'
+  | 'list';      // For list items
 
 export interface BaseBlock {
   id: string;
@@ -122,6 +123,13 @@ export interface IframeBlock extends BaseBlock {
   className?: string;
 }
 
+export interface ListBlock extends BaseBlock {
+  type: 'list';
+  content: string;
+  items: string[];
+  className?: string;
+}
+
 export type ContentBlock = 
   | ParagraphBlock
   | HeadingBlock
@@ -133,7 +141,8 @@ export type ContentBlock =
   | DividerBlock
   | ContainerBlock
   | SpacerBlock
-  | IframeBlock;
+  | IframeBlock
+  | ListBlock;
 
 // Helper function to generate a unique ID for blocks
 export const generateBlockId = (): string => {
