@@ -29,6 +29,8 @@ const QuickDivesGrid: React.FC<QuickDivesGridProps> = ({ quickDives }) => {
           icon={quickDive.icon}
           slug={quickDive.slug}
           author={quickDive.author}
+          topics={quickDive.topics}
+          
         />
       ))}
     </div>

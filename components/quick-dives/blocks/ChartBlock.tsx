@@ -46,7 +46,7 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
   const nestedData = block.dataAsJson && unProcessedData 
     ? getNestedValue(unProcessedData, block.dataAsJson.pathToData)
     : undefined;
-
+  
   
   return (
     
