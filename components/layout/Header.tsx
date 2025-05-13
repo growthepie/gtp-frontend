@@ -1,8 +1,10 @@
+"use client"
 import Image from "next/image";
 import Link from "next/link";
 import Sidebar from "./Sidebar";
 import Icon from "./Icon";
 import EthUsdSwitch from "./EthUsdSwitch";
+import { useMediaQuery } from "usehooks-ts";
 
 import Banner from "@/components/Banner";
 import SupportUsBanner from "./SupportUsBanner";
@@ -16,6 +18,7 @@ import { LogoContextMenu } from "./SidebarContainer";
 
 export default function Header() {
   // const [isOpen, setIsOpen] = useState<boolean>(false)
+  const isMobile = useMediaQuery("(max-width: 767px)");
   return (
     <>
       <header className="flex justify-between space-x-0 xl:space-x-6 items-start max-w-[1600px] w-full mx-auto px-[20px] pt-[20px] md:px-[50px] md:pt-[52px]">
@@ -25,7 +28,7 @@ export default function Header() {
             <div className={`hidden md:flex pr-[15px] `}>
               <Notification />
             </div>
-            <div className="flex justify-between items-start h-full md:hidden relative w-full">
+            <div className="flex justify-between items-start h-full md:hidden relative w-full self-stretch pl-[5px] pr-[5px]">
               <LogoContextMenu>
                 <Link href="/" className="">
                 <div className="h-[36px] w-[154.05px] relative ">
@@ -89,17 +92,26 @@ export default function Header() {
                 </div>
               </Link>
               </LogoContextMenu>
-              <div>
+              <div className="flex gap-[15px] justify-center items-end">
                 <Notification />
-                <Sidebar isMobile={true} />
+                {!IS_PRODUCTION && (
+                  <div className={`${isMobile ? "block" : "hidden"} w-auto relative right-[21px] top-[2px]`}>
+                    <HeaderSearchButton />
+                  </div>
+                )}
+                <div className="w-auto">
+                  <Sidebar isMobile={true} />
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <div className="items-center z-10 hidden md:flex md:gap-x-[20px]">
-          <FocusSwitch />
-          <EthUsdSwitch />
-          {!IS_PRODUCTION && <HeaderSearchButton />}
+        <div>
+          <div className="items-center z-10 hidden md:flex md:gap-x-[20px]">
+            <FocusSwitch />
+            <EthUsdSwitch />
+            {!IS_PRODUCTION && <HeaderSearchButton />}
+            </div>
         </div>
       </header>
       <SearchComponent />

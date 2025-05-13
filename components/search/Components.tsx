@@ -1,5 +1,5 @@
-"use client";
-
+"use client"
+import { useMediaQuery } from "usehooks-ts";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { GrayOverlay } from "../layout/Backgrounds"
 import { GTPIcon } from "../layout/GTPIcon"
@@ -39,6 +39,7 @@ export const HeaderSearchButton = () => {
   const searchParams = useSearchParams();
   const isOpen = searchParams.get("search") === "true";
   const query = searchParams.get("query") || "";
+  const isMobile = useMediaQuery("(max-width: 767px)");
 
   // read state from url
   const handleOpenSearch = useCallback(() => {
@@ -113,12 +114,14 @@ export const HeaderSearchButton = () => {
   }, [handleClearQuery, handleCloseSearch, handleOpenSearch, isOpen, query]);
 
   return (
-    <HeaderButton size="xl" className="cursor-pointer group" onClick={() => handleOpenSearch()} ariaLabel="Search">
+    <HeaderButton size="xl" className={`cursor-pointer group ${isMobile ? "bg-transparent" : "bg-inherit"}`} onClick={() => handleOpenSearch()} ariaLabel="Search" >
       <div className="flex items-center">
         <GTPIcon icon="gtp-search" size="md" />
+        {!isMobile && (
         <div className={`flex items-center justify-end overflow-hidden w-0 group-hover:w-[28px] transition-all duration-200 ${isOpen ? "!w-[28px]" : "w-0"}`}>
           <div className="size-[18px] heading-small-xs font-black rounded-[4px] text-[#344240] bg-[#1F2726] flex items-center justify-center">/</div>
         </div>
+        )}
       </div>
     </HeaderButton>
   )
@@ -846,8 +849,6 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
   const [groupRef, { height: groupHeight }] =
   useElementSizeObserver<HTMLDivElement>();
 
-
-
   return (
     <div className="flex flex-col !pt-0 !pb-[0px] pl-[0px] pr-[0px] gap-y-[10px] max-h-[calc(100vh-220px)] overflow-y-auto">
       {memoizedQuery && allFilteredData.length > 0 && <div
@@ -872,17 +873,17 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
               <div className="flex gap-x-[10px] items-center shrink-0">
                 <GTPIcon
                   icon={icon as GTPIconName}
-                  size="sm"
-                  className="md:!size-[24px]"
+                  size="md"
+                  className="max-sm:size-[15px] max-sm:mt-[3px]"
                 />
-                <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default">
+                <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default max-sm:ml-[-10px] max-sm:mt-[-3px]">
                   {isBucketMatch ? (
                     <OpacityUnmatchedText text={type} query={memoizedQuery || ""} />
                   ) : (
                     <span className="text-white">{type}</span>
                   )}
                 </div>
-                <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
+                <div className="w-[6px] h-[6px] bg-[#344240] rounded-full max-sm:mt-[-3px]" />
               </div>
               {/* <div className="flex flex-col gap-[5px]"> */}
                 <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
@@ -996,7 +997,7 @@ const BucketItem = ({
       className="relative"
     >
       {lastBucketIndeces[itemKey] && !showMore[bucket] && (
-        <div className={`absolute inset-[-1px] z-20 flex items-center justify-start rounded-full whitespace-nowrap ${isSelected ? "underline" : "text-[#5A6462]"} hover:underline bg-[#151A19] text-xxs`}>
+        <div className={`absolute inset-[-1px] z-20 pl-[5px] flex items-center justify-start rounded-full whitespace-nowrap ${isSelected ? "underline" : "text-[#5A6462]"} hover:underline bg-[#151A19] text-xxs`}>
           {isApps ? (
             <div>See more...</div>
           ) : (
@@ -1027,6 +1028,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
   const query = searchParams.get("query");
   const [hasOverflow, setHasOverflow] = useState(false);
   const [isScreenTall, setIsScreenTall] = useState(false);
+  const [pressedKey, setPressedKey] = useState<string | null>(null);
 
   // Calculate total number of results
   const totalResults = allFilteredData.reduce((total, { filteredData }) => total + filteredData.length, 0);
@@ -1063,6 +1065,31 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
     return () => window.removeEventListener('resize', checkScreenHeight);
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+        setPressedKey(event.key);
+      }
+    };
+
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+        // Add a delay before resetting the pressed key
+        setTimeout(() => {
+          setPressedKey(null);
+        }, 200); // 200ms delay
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
   return (
     <div className="fixed top-[80px] md:top-[33px] left-[50%] translate-x-[-50%] z-[111] w-[calc(100vw-20px)] md:w-[660px] max-h-[calc(100vh-100px)] p-2.5 bg-[#344240] rounded-[32px] shadow-[0px_0px_50px_0px_rgba(0,0,0,1.00)] flex flex-col justify-start items-center">
       {/* Add a wrapper div that will handle the overflow */}
@@ -1072,17 +1099,78 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
         </div>
       </div>
       {/* Keyboard shortcuts will now stay at the bottom */}
-      <div className={`flex px-[10px] pt-2 pb-[5px] items-start gap-[15px] self-stretch flex-shrink-0 ${!showKeyboardShortcuts ? 'hidden' : ''}`}>
+      <div className={`flex px-[10px] pt-2 pb-[5px] items-start gap-[15px] self-stretch flex-shrink-0 ${!showKeyboardShortcuts ? 'hidden' : ''} max-sm:hidden`}>
         <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px]">
           <svg xmlns="http://www.w3.org/2000/svg" width="70" height="21" viewBox="0 0 70 21" fill="none">
-            <rect x="24" width="22" height="10" rx="2" fill="#151A19" />
-            <path d="M32.6708 6.77639L34.5528 3.01246C34.737 2.64394 35.263 2.64394 35.4472 3.01246L37.3292 6.77639C37.4954 7.10884 37.2537 7.5 36.882 7.5H33.118C32.7463 7.5 32.5046 7.10884 32.6708 6.77639Z" fill="#CDD8D3" stroke="#CDD8D3" />
-            <rect y="11" width="22" height="10" rx="2" fill="#151A19" />
-            <path d="M12.8336 18.0581L8.33821 16.4715C7.89343 16.3145 7.89343 15.6855 8.33822 15.5285L12.8336 13.9419C13.1589 13.8271 13.5 14.0684 13.5 14.4134L13.5 17.5866C13.5 17.9316 13.1589 18.1729 12.8336 18.0581Z" fill="#CDD8D3" stroke="#CDD8D3" />
-            <rect x="48" y="11" width="22" height="10" rx="2" fill="#151A19" />
-            <path d="M57.1664 13.9419L61.6618 15.5285C62.1066 15.6855 62.1066 16.3145 61.6618 16.4715L57.1664 18.0581C56.8411 18.1729 56.5 17.9316 56.5 17.5866L56.5 14.4134C56.5 14.0684 56.8411 13.8271 57.1664 13.9419Z" fill="#CDD8D3" stroke="#CDD8D3" />
-            <rect x="24" y="11" width="22" height="10" rx="2" fill="#151A19" />
-            <path d="M37.3292 14.2236L35.4472 17.9875C35.263 18.3561 34.737 18.3561 34.5528 17.9875L32.6708 14.2236C32.5046 13.8912 32.7463 13.5 33.118 13.5L36.882 13.5C37.2537 13.5 37.4954 13.8912 37.3292 14.2236Z" fill="#CDD8D3" stroke="#CDD8D3" />
+            {/* Up arrow */}
+            <rect 
+              x="24" 
+              width="22" 
+              height="10" 
+              rx="2" 
+              fill="#151A19"
+              style={{ 
+                opacity: pressedKey === 'ArrowUp' ? 0.60 : 1
+              }}
+            />
+            <path 
+              d="M32.6708 6.77639L34.5528 3.01246C34.737 2.64394 35.263 2.64394 35.4472 3.01246L37.3292 6.77639C37.4954 7.10884 37.2537 7.5 36.882 7.5H33.118C32.7463 7.5 32.5046 7.10884 32.6708 6.77639Z" 
+              fill="#CDD8D3" 
+              stroke="#CDD8D3"
+            />
+            
+            {/* Left arrow */}
+            <rect 
+              y="11" 
+              width="22" 
+              height="10" 
+              rx="2" 
+              fill="#151A19"
+              style={{ 
+                opacity: pressedKey === 'ArrowLeft' ? 0.6 : 1
+              }}
+            />
+            <path 
+              d="M12.8336 18.0581L8.33821 16.4715C7.89343 16.3145 7.89343 15.6855 8.33822 15.5285L12.8336 13.9419C13.1589 13.8271 13.5 14.0684 13.5 14.4134L13.5 17.5866C13.5 17.9316 13.1589 18.1729 12.8336 18.0581Z" 
+              fill="#CDD8D3" 
+              stroke="#CDD8D3"
+            />
+            
+            {/* Right arrow */}
+            <rect 
+              x="48" 
+              y="11" 
+              width="22" 
+              height="10" 
+              rx="2" 
+              fill="#151A19"
+              style={{ 
+                opacity: pressedKey === 'ArrowRight' ? 0.6 : 1
+              }}
+            />
+            <path 
+              d="M57.1664 13.9419L61.6618 15.5285C62.1066 15.6855 62.1066 16.3145 61.6618 16.4715L57.1664 18.0581C56.8411 18.1729 56.5 17.9316 56.5 17.5866L56.5 14.4134C56.5 14.0684 56.8411 13.8271 57.1664 13.9419Z" 
+              fill="#CDD8D3" 
+              stroke="#CDD8D3"
+            />
+            
+            {/* Down arrow */}
+            <rect 
+              x="24" 
+              y="11" 
+              width="22" 
+              height="10" 
+              rx="2" 
+              fill="#151A19"
+              style={{ 
+                opacity: pressedKey === 'ArrowDown' ? 0.6 : 1
+              }}
+            />
+            <path 
+              d="M37.3292 14.2236L35.4472 17.9875C35.263 18.3561 34.737 18.3561 34.5528 17.9875L32.6708 14.2236C32.5046 13.8912 32.7463 13.5 33.118 13.5L36.882 13.5C37.2537 13.5 37.4954 13.8912 37.3292 14.2236Z" 
+              fill="#CDD8D3" 
+              stroke="#CDD8D3"
+            />
           </svg>
           <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Move</div>
         </div>
@@ -1090,8 +1178,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="21" viewBox="0 0 22 21" fill="none">
             <rect y="0.5" width="22" height="20" rx="2" fill="#151A19" />
             <path d="M16 5.5V12.5C16 13.0523 15.5523 13.5 15 13.5H9" stroke="#CDD8D3" stroke-width="2" />
-            <path d="M10.3336 15.5581L5.83821 13.9715C5.39343 13.8145 5.39343 13.1855 5.83822 13.0285L10.3336 11.4419C10.6589 11.3271 11 11.5684 11 11.9134L11 15.0866C11 15.4316 10.6589 15.6729 10.3336 15.5581Z" fill="#CDD8D3" stroke="#CDD8D3" />
-          </svg>
+            <path d="M10.3336 15.5581L5.83821 13.9715C5.39343 13.8145 5.39343 13.1855 5.83822 13.0285L10.3336 11.4419C10.6589 11.3271 11 11.5684 11 11.9134L11 15.0866C11 15.4316 10.6589 15.6729 10.3336 15.5581Z" fill="#CDD8D3" stroke="#CDD8D3" />          </svg>
           <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Select</div>
         </div>
         <div className="w-[7px] h-[8px]"></div>
