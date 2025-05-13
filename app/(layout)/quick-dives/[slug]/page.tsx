@@ -146,8 +146,8 @@ export default async function QuickDivePage({ params }: Props) {
           </div>
         </div>
         {/* Related content section */}
-        {relatedContent.length > 0 && (
-          <RelatedQuickDives relatedQuickDives={relatedContent} />
+        {relatedContent.length > 0 && quickDive.topics && (
+          <RelatedQuickDives relatedQuickDives={relatedContent} mainTopics={quickDive.topics} />
         )}
       </Container>
     </div>

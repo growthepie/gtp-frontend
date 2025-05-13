@@ -41,7 +41,20 @@ const QUICK_DIVES_DATA: QuickDivesData = {
     author: [{
       name: "Alex Chen",
       xUsername: "alexchen_eth"
-    }]
+    }],
+    topics: [{
+      icon: "optimism-logo-monochrome",
+      color: "#FE5468",
+      name: "Optimism",
+      url: "/chains/optimism"
+    },
+    {
+      icon: "arbitrum-logo-monochrome",
+      color: "#2151F5",
+      name: "Arbitrum",
+      url: "/chains/arbitrum"
+    }
+  ]
   },
   "optimism-bedrock": {
     title: "Optimism Bedrock",
@@ -255,6 +268,12 @@ const QUICK_DIVES_DATA: QuickDivesData = {
     author: [{
       name: "Raj Patel",
       xUsername: "rajpatel_web3"
+    }],
+    topics: [{
+      icon: "base-logo-monochrome",
+      color: "#2151F5",
+      name: "Base",
+      url: "/chains/base"
     }]
   },
   "zksync-era": {

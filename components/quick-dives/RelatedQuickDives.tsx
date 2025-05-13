@@ -8,9 +8,15 @@ import Heading from '@/components/layout/Heading';
 
 interface RelatedQuickDivesProps {
   relatedQuickDives: QuickDiveWithSlug[];
+  mainTopics: {
+    icon: string;
+    color?: string;
+    name: string;
+    url: string;
+  }[];  
 }
 
-const RelatedQuickDives: React.FC<RelatedQuickDivesProps> = ({ relatedQuickDives }) => {
+const RelatedQuickDives: React.FC<RelatedQuickDivesProps> = ({ relatedQuickDives, mainTopics }) => {
   if (!relatedQuickDives || relatedQuickDives.length === 0) {
     return null;
   }
@@ -31,6 +37,9 @@ const RelatedQuickDives: React.FC<RelatedQuickDivesProps> = ({ relatedQuickDives
             icon={quickDive.icon}
             slug={quickDive.slug}
             author={quickDive.author}
+            topics={quickDive.topics}
+            isRelatedPage={true}
+            mainTopics={mainTopics}
           />
         ))}
       </div>
