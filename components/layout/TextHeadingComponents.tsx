@@ -41,9 +41,9 @@ export const Title = ({
         id={id}
         className={`flex items-center h-[43px] gap-x-[8px]  ${containerClassName}`}
       >
-        <div className="flex items-center justify-center rounded-full w-[36px] h-[36px] bg-[#344240]">
+        {/* <div className="flex items-center justify-center rounded-full w-[36px] h-[36px] bg-[#344240]">
           <Icon icon={'fluent:arrow-left-32-filled'} className={`w-[20px] h-[25px]`}  />
-        </div>
+        </div> */}
         <GTPIcon icon={icon} className={`object-contain w-[36px] h-[36px] ${iconClassName}`} size={iconSize} />
         <Heading
           className={`leading-snug ${titleSizeMap[titleSize]} ${titleClassName}`}
