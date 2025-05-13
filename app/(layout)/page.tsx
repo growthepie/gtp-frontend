@@ -1,4 +1,3 @@
-
 import Home from "@/components/home/Home";
 import LandingUserBaseChart from "@/components/home/LandingUserBaseChart";
 import Container from "@/components/layout/Container";
@@ -6,7 +5,6 @@ import Heading from "@/components/layout/Heading";
 import LandingTopContracts from "@/components/layout/LandingTopContracts";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import Icon from "@/components/layout/ServerIcon";
-// import ShowLoading from "@/components/layout/ShowLoading";
 import Subheading from "@/components/layout/Subheading";
 import SwiperContainer from "@/components/layout/SwiperContainer";
 import { Metadata } from "next";
@@ -16,10 +14,10 @@ import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import LandingSwiperItems from "@/components/layout/LandingSwiperItems";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { SectionButtonLink } from "@/components/layout/TextHeadingComponents";
-import { useLocalStorage } from "usehooks-ts";
-// import { LandingURL } from "@/lib/urls";
 import {LandingFirstHeaders, LandingSecondHeaders} from "@/components/home/LandingHeaders";
 import { getPageMetadata } from "@/lib/metadata";
+import QuickDivesSection from "@/components/home/QuickDivesSection"; // Import the new component
+import { IS_PRODUCTION } from "@/lib/helpers";
 
 export async function generateMetadata(): Promise<Metadata> {
   const metadata = await getPageMetadata(
@@ -83,6 +81,9 @@ export default async function Page() {
       <Container className="">
         <LandingTopContracts />
       </Container>
+      {!IS_PRODUCTION && (
+        <QuickDivesSection />
+      )}
       <Container>
         <div className="flex mt-[25px] md:mt-[60px] mb-[25px] md:mb-[30px] ml-1.5 md:ml-0 space-x-2 items-center">
           <GTPIcon
