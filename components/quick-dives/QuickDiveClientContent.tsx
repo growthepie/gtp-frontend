@@ -11,12 +11,19 @@ interface QuickDiveClientContentProps {
   content: string[];
   image: string;
   relatedQuickDives: QuickDiveWithSlug[];
+  topics?: {
+    icon: string;
+    color?: string;
+    name: string;
+    url: string;
+  }[];
 }
 
 const QuickDiveClientContent: React.FC<QuickDiveClientContentProps> = ({
   content,
   image,
-  relatedQuickDives
+  relatedQuickDives,
+  topics = []
 }) => {
   return (
     <>
@@ -25,7 +32,7 @@ const QuickDiveClientContent: React.FC<QuickDiveClientContentProps> = ({
       </PageContainer>
       
       <PageContainer>
-        <RelatedQuickDives relatedQuickDives={relatedQuickDives} />
+        <RelatedQuickDives relatedQuickDives={relatedQuickDives} mainTopics={topics} />
       </PageContainer>
     </>
   );

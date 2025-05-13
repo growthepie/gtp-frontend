@@ -14,6 +14,7 @@ import { processMarkdownContent } from '@/lib/utils/markdownParser';
 import RelatedQuickDives from '@/components/quick-dives/RelatedQuickDives';
 import { Author } from '@/lib/types/quickDives';
 import Link from 'next/link';
+import QuickDiveClientContent from '@/components/quick-dives/QuickDiveClientContent';
 
 
 type Props = {
@@ -117,12 +118,9 @@ export default async function QuickDivePage({ params }: Props) {
               <Block key={block.id} block={block} />
             ))}
           </div>
-          
-
         </div>
-                {/* Content metadata and tags */}
 
-
+        {/* Content metadata and tags */}
         <div className="h-[34px] px-[15px] py-[5px] bg-[#1F2726] rounded-full flex items-center gap-x-[10px]">
           <span className="text-xxs text-[#5A6462]">Topics Discussed</span>
           <div className="flex items-center gap-x-[5px]">
@@ -131,7 +129,6 @@ export default async function QuickDivePage({ params }: Props) {
                 key={topic.name}
                 href={topic.url}
                 className="flex items-center gap-x-[5px] rounded-full w-fit pl-[5px] pr-[10px] py-[3px] bg-medium-background"
-                
               >
                 <GTPIcon 
                   icon={topic.icon as GTPIconName} 
@@ -145,9 +142,15 @@ export default async function QuickDivePage({ params }: Props) {
             ))}
           </div>
         </div>
+
         {/* Related content section */}
-        {relatedContent.length > 0 && quickDive.topics && (
-          <RelatedQuickDives relatedQuickDives={relatedContent} mainTopics={quickDive.topics} />
+        {relatedContent.length > 0 && (
+          <QuickDiveClientContent 
+            content={quickDive.content}
+            image={quickDive.image}
+            relatedQuickDives={relatedContent}
+            topics={quickDive.topics}
+          />
         )}
       </Container>
     </div>
