@@ -116,7 +116,7 @@ export const HeaderSearchButton = () => {
   }, [handleClearQuery, handleCloseSearch, handleOpenSearch, isOpen, query]);
 
   return (
-    <HeaderButton size="xl" className={`cursor-pointer group ${isMobile ? "bg-transparent" : "bg-inherit"}`} onClick={() => handleOpenSearch()} ariaLabel="Search" >
+    <HeaderButton size="xl" className={`cursor-pointer group ${isMobile ? "bg-transparent" : "bg-[#344240]"}`} onClick={() => handleOpenSearch()} ariaLabel="Search" >
       <div className="flex items-center">
         <GTPIcon icon="gtp-search" size="md" />
         {!isMobile && (
