@@ -7,7 +7,7 @@ import { getAllQuickBites } from '@/lib/mock/quickBitesData';
 
 export const metadata: Metadata = {
   title: 'Quick Bites - growthepie',
-  description: 'Deep dives into Ethereum L2 technologies, trends, and updates.'
+  description: 'Short and focused analyses of specific topics or trends in the Ethereum ecosystem'
 };
 
 export default function QuickBitesPage() {
@@ -29,7 +29,7 @@ export default function QuickBitesPage() {
         />
         
         <p className="text-md md:text-lg mb-12">
-          Short, focused analyses of key developments and technologies in the Ethereum ecosystem.
+          Short and focused analyses of specific topics or trends in the Ethereum ecosystem.
         </p>
         
         <QuickBitesGrid QuickBites={sortedQuickBites} />
