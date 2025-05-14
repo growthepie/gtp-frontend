@@ -1,4 +1,4 @@
-// File: app/(layout)/quick-dives/[slug]/page.tsx
+// File: app/(layout)/quick-bites/[slug]/page.tsx
 import { notFound } from 'next/navigation';
 import Container, { PageContainer } from '@/components/layout/Container';
 import { GTPIcon } from '@/components/layout/GTPIcon';
@@ -6,15 +6,15 @@ import { Title } from '@/components/layout/TextHeadingComponents';
 import Heading from '@/components/layout/Heading';
 import { Metadata } from 'next';
 import { GTPIconName } from '@/icons/gtp-icon-names';
-import { getQuickDiveBySlug, getRelatedQuickDives } from '@/lib/mock/quickDivesData';
-import ClientAuthorLink from '@/components/quick-dives/ClientAuthorLink';
-import Block from '@/components/quick-dives/Block';
+import { getQuickBiteBySlug, getRelatedQuickBites } from '@/lib/mock/quickBitesData';
+import ClientAuthorLink from '@/components/quick-bites/ClientAuthorLink';
+import Block from '@/components/quick-bites/Block';
 import { formatDate } from '@/lib/utils/formatters';
 import { processMarkdownContent } from '@/lib/utils/markdownParser';
-import RelatedQuickDives from '@/components/quick-dives/RelatedQuickDives';
-import { Author } from '@/lib/types/quickDives';
+import RelatedQuickBites from '@/components/quick-bites/RelatedQuickBites';
+import { Author } from '@/lib/types/quickBites';
 import Link from 'next/link';
-import QuickDiveClientContent from '@/components/quick-dives/QuickDiveClientContent';
+import QuickBiteClientContent from '@/components/quick-bites/QuickBiteClientContent';
 
 
 type Props = {
@@ -32,39 +32,39 @@ const getFirstAuthor = (author: Author | Author[] | undefined): Author | undefin
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const quickDive = getQuickDiveBySlug(params.slug);
+  const QuickBite = getQuickBiteBySlug(params.slug);
   
-  if (!quickDive) {
+  if (!QuickBite) {
     return {
-      title: 'Quick Dive Not Found',
+      title: 'Quick Bite Not Found',
     };
   }
 
   return {
-    title: `${quickDive.title} - growthepie Quick Dive`,
-    description: quickDive.subtitle,
+    title: `${QuickBite.title} - growthepie Quick Bite`,
+    description: QuickBite.subtitle,
     openGraph: {
-      title: quickDive.title,
-      description: quickDive.subtitle,
+      title: QuickBite.title,
+      description: QuickBite.subtitle,
       type: 'article',
-      authors: getAuthorNames(quickDive.author),
+      authors: getAuthorNames(QuickBite.author),
     },
   };
 }
 
-export default async function QuickDivePage({ params }: Props) {
-  const quickDive = getQuickDiveBySlug(params.slug);
+export default async function QuickBitePage({ params }: Props) {
+  const QuickBite = getQuickBiteBySlug(params.slug);
   
-  if (!quickDive) {
+  if (!QuickBite) {
     return notFound();
   }
   
   // Convert array of text content to structured blocks using our new markdown parser
-  const contentBlocks = await processMarkdownContent(quickDive.content);
+  const contentBlocks = await processMarkdownContent(QuickBite.content);
   
-  // Get related quick dives
-  const relatedContent = quickDive.related 
-    ? getRelatedQuickDives(quickDive.related)
+  // Get related quick bites
+  const relatedContent = QuickBite.related 
+    ? getRelatedQuickBites(QuickBite.related)
     : [];
   
   return (
@@ -78,21 +78,21 @@ export default async function QuickDivePage({ params }: Props) {
           
           <div className=''>
               <Title
-                title={quickDive.title}
-                icon={quickDive.icon as GTPIconName}
+                title={QuickBite.title}
+                icon={QuickBite.icon as GTPIconName}
                 as="h1"
               />
 
           </div>
           <div className="flex items-center h-full gap-x-2 text-sm">
-            <span>Quick Dive</span>
+            <span>Quick Bite</span>
             <svg width="6" height="6" viewBox="0 0 6 6" fill="#344240">
               <circle cx="3" cy="3" r="3" />
             </svg>
-            <span>{formatDate(quickDive.date)}</span>
-            {quickDive.author && quickDive.author.length > 0 && (
+            <span>{formatDate(QuickBite.date)}</span>
+            {QuickBite.author && QuickBite.author.length > 0 && (
               <>
-                {quickDive.author.map((author) => (
+                {QuickBite.author.map((author) => (
                   <>
                     <svg width="6" height="6" viewBox="0 0 6 6" fill="#344240">
                       <circle cx="3" cy="3" r="3" />
@@ -124,7 +124,7 @@ export default async function QuickDivePage({ params }: Props) {
         <div className="h-[34px] px-[15px] py-[5px] bg-[#1F2726] rounded-full flex items-center gap-x-[10px]">
           <span className="text-xxs text-[#5A6462]">Topics Discussed</span>
           <div className="flex items-center gap-x-[5px]">
-            {quickDive.topics?.map((topic) => (
+            {QuickBite.topics?.map((topic) => (
               <Link
                 key={topic.name}
                 href={topic.url}
@@ -145,11 +145,11 @@ export default async function QuickDivePage({ params }: Props) {
 
         {/* Related content section */}
         {relatedContent.length > 0 && (
-          <QuickDiveClientContent 
-            content={quickDive.content}
-            image={quickDive.image}
-            relatedQuickDives={relatedContent}
-            topics={quickDive.topics}
+          <QuickBiteClientContent 
+            content={QuickBite.content}
+            image={QuickBite.image}
+            relatedQuickBites={relatedContent}
+            topics={QuickBite.topics}
           />
         )}
       </Container>

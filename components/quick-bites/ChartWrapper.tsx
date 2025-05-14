@@ -1,4 +1,4 @@
-// File: components/quick-dives/ChartWrapper.tsx
+// File: components/quick-bites/ChartWrapper.tsx
 'use client';
 import addHighchartsMore from "highcharts/highcharts-more";
 import React, { useEffect, useRef, useState, useCallback } from 'react';

@@ -1,10 +1,10 @@
-import { QuickDiveData, QuickDiveWithSlug } from '@/lib/types/quickDives';
+import { QuickBiteData, QuickBiteWithSlug } from '@/lib/types/quickBites';
 
-export interface QuickDivesData {
-  [key: string]: QuickDiveData;
+export interface QuickBitesData {
+  [key: string]: QuickBiteData;
 }
 
-const QUICK_DIVES_DATA: QuickDivesData = {
+const QUICK_BITES_DATA: QuickBitesData = {
   "pectra-tx-type-4": {
     title: "Pectra: Tx type 4",
     subtitle: "Understanding transaction types and their impacts",
@@ -14,7 +14,7 @@ const QUICK_DIVES_DATA: QuickDivesData = {
       
       "> Transaction type 4 is designed to optimize gas efficiency and provide more accurate fee estimations in congested networks. This is particularly important for Layer 2 solutions that aim to reduce costs for users.",
       
-      "![Transaction type evolution diagram showing the progression from Legacy to Type 4](/images/quick-dives/transaction-types-evolution.png | width=800,height=400) \"Test\"",
+      "![Transaction type evolution diagram showing the progression from Legacy to Type 4](/images/quick-bites/transaction-types-evolution.png | width=800,height=400) \"Test\"",
       
       "## How Transaction Type 4 Works",
       "Transaction type 4 introduces a new field in the transaction data structure that allows for more granular control over gas limits and prioritization. This helps to address several key challenges:",
@@ -25,16 +25,16 @@ const QUICK_DIVES_DATA: QuickDivesData = {
       
       "The technical implementation involves changes to both the transaction envelope and the way gas calculations are performed by validators. The most significant change is the separation of execution gas from data availability costs, which allows for more flexible pricing models.",
       
-      "![Transaction type 4 structure compared to earlier types](/images/quick-dives/tx-type-4-structure.png | width=700,height=500,align=center) \"Transaction envelope structure showing new fields\"",
+      "![Transaction type 4 structure compared to earlier types](/images/quick-bites/tx-type-4-structure.png | width=700,height=500,align=center) \"Transaction envelope structure showing new fields\"",
       
       "## Real-world Impact",
       "Initial tests on the Pectra testnet showed a 15-30% reduction in gas costs for typical DeFi operations compared to traditional type 2 transactions. This substantial improvement could make certain applications viable that were previously too expensive to operate.",
       
       "For users, this translates to more predictable fees and fewer failed transactions due to gas estimation errors. For developers, it provides more flexibility in designing gas-efficient smart contracts and introduces new patterns for optimizing transaction batching.",
       
-      "![Gas savings chart comparing transaction types](/images/quick-dives/tx-type-gas-comparison.png) \"Comparative gas costs across different transaction types and operations\""
+      "![Gas savings chart comparing transaction types](/images/quick-bites/tx-type-gas-comparison.png) \"Comparative gas costs across different transaction types and operations\""
     ],
-    image: "/images/quick-dives/pectra-tx-type-4.png",
+    image: "/images/quick-bites/pectra-tx-type-4.png",
     date: "2025-04-17",
     icon: "gtp-metrics-transactioncount",
     related: ["optimism-bedrock", "arbitrum-nitro"],
@@ -201,7 +201,7 @@ const QUICK_DIVES_DATA: QuickDivesData = {
       
       "For developers, the upgrade has simplified the migration process from Ethereum, as applications now require minimal modifications to run on Optimism. This has led to a proliferation of new projects and services in the ecosystem, further driving adoption and usage."
     ],
-    image: "/images/quick-dives/optimism-bedrock.png",
+    image: "/images/quick-bites/optimism-bedrock.png",
     date: "2025-03-20",
     icon: "optimism-logo-monochrome",
     related: ["pectra-tx-type-4", "arbitrum-nitro"],
@@ -261,7 +261,7 @@ const QUICK_DIVES_DATA: QuickDivesData = {
       
       "The improved developer experience has also attracted hundreds of new projects to the platform, creating a rich ecosystem of applications across DeFi, gaming, and social platforms."
     ],
-    image: "/images/quick-dives/arbitrum-nitro.png",
+    image: "/images/quick-bites/arbitrum-nitro.png",
     date: "2025-01-15",
     icon: "arbitrum-logo-monochrome",
     related: ["pectra-tx-type-4", "optimism-bedrock"],
@@ -283,7 +283,7 @@ const QUICK_DIVES_DATA: QuickDivesData = {
       "## zkSync Era: The zkEVM Revolution",
       "zkSync Era represents a breakthrough in zero-knowledge proof technology, offering a fully EVM-compatible Layer 2 solution with the security benefits of ZK proofs. Launched in March 2023, Era has quickly established itself as a leading zkEVM implementation.",
       
-      "![zkSync Era architecture overview](/images/quick-dives/zksync-era-overview.png | width=900,height=500,align=center) \"High-level architecture of zkSync Era\"",
+      "![zkSync Era architecture overview](/images/quick-bites/zksync-era-overview.png | width=900,height=500,align=center) \"High-level architecture of zkSync Era\"",
       
       "> Unlike optimistic rollups that have a challenge period of 7 days, zkSync Era provides near-immediate finality once proofs are generated and verified on Ethereum mainnet.",
       
@@ -295,7 +295,7 @@ const QUICK_DIVES_DATA: QuickDivesData = {
       "- **Recursive Proofs**: A mechanism for aggregating multiple transaction proofs into a single proof, dramatically reducing verification costs on Ethereum.",
       "- **Native Account Abstraction**: Built-in support for smart contract wallets and gasless transactions.",
       
-      "![zkEVM compiler pipeline](/images/quick-dives/zksync-compiler-pipeline.png) \"LLVM-based compiler pipeline for zkSync Era\"",
+      "![zkEVM compiler pipeline](/images/quick-bites/zksync-compiler-pipeline.png) \"LLVM-based compiler pipeline for zkSync Era\"",
       
       "## Interactive Fee Comparison",
       "The following interactive visualization lets you compare transaction costs across various L2 solutions including zkSync Era:",
@@ -318,7 +318,7 @@ const QUICK_DIVES_DATA: QuickDivesData = {
       "- **Finality**: Once proofs are verified on Ethereum (approximately 10-30 minutes)",
       "- **Cost Reduction**: 10-50x lower fees compared to Ethereum mainnet",
       
-      "![Performance comparison between different L2 solutions](/images/quick-dives/l2-performance-comparison.png | width=800,align=center) \"Performance metrics across various Layer 2 solutions\"",
+      "![Performance comparison between different L2 solutions](/images/quick-bites/l2-performance-comparison.png | width=800,align=center) \"Performance metrics across various Layer 2 solutions\"",
       
       "## Developer Experience",
       "A key focus of zkSync Era has been maintaining compatibility with existing Ethereum development tools and practices. This compatibility has been achieved through:",
@@ -329,9 +329,9 @@ const QUICK_DIVES_DATA: QuickDivesData = {
       
       "This has allowed developers to migrate their applications to zkSync Era with minimal changes to their codebase, accelerating adoption and ecosystem growth.",
       
-      "![Developer tooling ecosystem for zkSync Era](/images/quick-dives/zksync-developer-tools.png | width=600,height=400) \"Developer tools and SDK ecosystem\""
+      "![Developer tooling ecosystem for zkSync Era](/images/quick-bites/zksync-developer-tools.png | width=600,height=400) \"Developer tools and SDK ecosystem\""
     ],
-    image: "/images/quick-dives/zksync-era.png",
+    image: "/images/quick-bites/zksync-era.png",
     date: "2025-02-10",
     icon: "gtp-metrics-transactioncosts",
     related: ["pectra-tx-type-4", "optimism-bedrock"],
@@ -406,7 +406,7 @@ const QUICK_DIVES_DATA: QuickDivesData = {
       
       "While fee differences between L2s will likely persist due to their architectural differences, the overall trend points toward increasingly affordable transaction costs across the Ethereum ecosystem."
     ],
-    image: "/images/quick-dives/l2-fee-comparison.png",
+    image: "/images/quick-bites/l2-fee-comparison.png",
     date: "2025-04-08",
     icon: "gtp-metrics-feespaidbyusers",
     related: ["zksync-era", "optimism-bedrock", "arbitrum-nitro"],
@@ -424,36 +424,36 @@ const QUICK_DIVES_DATA: QuickDivesData = {
   }
 };
 
-export default QUICK_DIVES_DATA;
+export default QUICK_BITES_DATA;
 
 // Helper functions for working with the mock data
-export const getQuickDiveBySlug = (slug: string): QuickDiveData | undefined => {
-  return QUICK_DIVES_DATA[slug];
+export const getQuickBiteBySlug = (slug: string): QuickBiteData | undefined => {
+  return QUICK_BITES_DATA[slug];
 };
 
-export const getAllQuickDives = (): (QuickDiveData & { slug: string })[] => {
-  return Object.entries(QUICK_DIVES_DATA).map(([slug, data]) => ({
+export const getAllQuickBites = (): (QuickBiteData & { slug: string })[] => {
+  return Object.entries(QUICK_BITES_DATA).map(([slug, data]) => ({
     ...data,
     slug
   }));
 };
 
-export const getRelatedQuickDives = (slugs: string[]): QuickDiveWithSlug[] => {
+export const getRelatedQuickBites = (slugs: string[]): QuickBiteWithSlug[] => {
   return slugs
     .map(slug => {
-      const data = QUICK_DIVES_DATA[slug];
+      const data = QUICK_BITES_DATA[slug];
       if (!data) return null;
       return {
         ...data,
         slug
       };
     })
-    .filter((item): item is QuickDiveWithSlug => item !== null);
+    .filter((item): item is QuickBiteWithSlug => item !== null);
 };
 
-// Get featured quick dives for homepage
-export const getFeaturedQuickDives = (count: number = 3): (QuickDiveData & { slug: string })[] => {
-  return getAllQuickDives()
+// Get featured quick bites for homepage
+export const getFeaturedQuickBites = (count: number = 3): (QuickBiteData & { slug: string })[] => {
+  return getAllQuickBites()
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, count);
 };

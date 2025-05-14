@@ -1,4 +1,4 @@
-// File: lib/types/quickDives.ts
+// File: lib/types/QuickBites.ts
 export interface Author {
     name: string;
     xUsername: string;
@@ -11,7 +11,7 @@ export interface Author {
     color?: string;
   }
   
-  export interface QuickDiveData {
+  export interface QuickBiteData {
     title: string;
     subtitle: string;
     content: string[];
@@ -23,11 +23,11 @@ export interface Author {
     topics?: Topic[];
   }
   
-  export interface QuickDiveWithSlug extends QuickDiveData {
+  export interface QuickBiteWithSlug extends QuickBiteData {
     slug: string;
   }
   
   // Type guards
-  export function isQuickDiveWithSlug(dive: QuickDiveData | QuickDiveWithSlug): dive is QuickDiveWithSlug {
+  export function isQuickBiteWithSlug(dive: QuickBiteData | QuickBiteWithSlug): dive is QuickBiteWithSlug {
     return 'slug' in dive;
   }

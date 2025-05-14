@@ -1,4 +1,4 @@
-// File: components/quick-dives/QuickDiveCard.tsx
+// File: components/quick-dives/QuickBiteCard.tsx
 'use client';
 
 import React from 'react';
@@ -9,7 +9,7 @@ import { GTPIconName } from '@/icons/gtp-icon-names';
 import { formatDate } from '@/lib/utils/formatters';
 import { url } from 'inspector';
 
-interface QuickDiveCardProps {
+interface QuickBiteCardProps {
   title: string;
   subtitle: string;
   date: string;
@@ -35,7 +35,7 @@ interface QuickDiveCardProps {
   }[];  
 }
 
-const QuickDiveCard: React.FC<QuickDiveCardProps> = ({
+const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
   title,
   subtitle,
   date,
@@ -54,7 +54,7 @@ const QuickDiveCard: React.FC<QuickDiveCardProps> = ({
   
   return (
     <Link 
-      href={`/quick-dives/${slug}`} 
+      href={`/quick-bites/${slug}`} 
       className={`block h-full ${className}`}
       aria-labelledby={`card-title-${slug}`}
     >
@@ -178,4 +178,4 @@ const QuickDiveCard: React.FC<QuickDiveCardProps> = ({
             ))}
           </div>
         )} */}
-export default QuickDiveCard;
+export default QuickBiteCard;
