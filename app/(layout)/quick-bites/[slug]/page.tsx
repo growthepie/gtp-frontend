@@ -81,6 +81,8 @@ export default async function QuickBitePage({ params }: Props) {
                 title={QuickBite.title}
                 icon={QuickBite.icon as GTPIconName}
                 as="h1"
+                backArrow={true}
+                backArrowLink={"/"}
               />
 
           </div>
