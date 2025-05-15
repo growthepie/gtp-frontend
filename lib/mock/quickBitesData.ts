@@ -1,38 +1,84 @@
 import { QuickBiteData, QuickBiteWithSlug } from '@/lib/types/quickBites';
+import { title } from 'process';
 
 export interface QuickBitesData {
   [key: string]: QuickBiteData;
 }
 
 const QUICK_BITES_DATA: QuickBitesData = {
-  "pectra-tx-type-4": {
-    title: "Pectra: Tx type 4",
-    subtitle: "Understanding transaction types and their impacts",
+  "pectra-fork": {
+    title: "Pectra: The Peoples Upgrade",
+    subtitle: "Track the Adoption of Pectras UX + Scaling Improvements",
     content: [
-      "## Introduction to Transaction Types",
-      "Ethereum's transaction format has evolved over time to support new features and improvements. Each transaction type is identified by a specific number, with transaction type 4 being one of the latest innovations within the Pectra protocol.",
-      
-      "> Transaction type 4 is designed to optimize gas efficiency and provide more accurate fee estimations in congested networks. This is particularly important for Layer 2 solutions that aim to reduce costs for users.",
-      
-      "![Transaction type evolution diagram showing the progression from Legacy to Type 4](/images/quick-bites/transaction-types-evolution.png | width=800,height=400) \"Test\"",
-      
-      "## How Transaction Type 4 Works",
-      "Transaction type 4 introduces a new field in the transaction data structure that allows for more granular control over gas limits and prioritization. This helps to address several key challenges:",
-      
-      "1. It reduces the impact of network congestion on transaction pricing",
-      "2. It provides more predictable fee estimations, especially during high demand periods",
-      "3. It optimizes calldata, resulting in lower overall costs for complex transactions",
-      
-      "The technical implementation involves changes to both the transaction envelope and the way gas calculations are performed by validators. The most significant change is the separation of execution gas from data availability costs, which allows for more flexible pricing models.",
-      
-      "![Transaction type 4 structure compared to earlier types](/images/quick-bites/tx-type-4-structure.png | width=700,height=500,align=center) \"Transaction envelope structure showing new fields\"",
-      
-      "## Real-world Impact",
-      "Initial tests on the Pectra testnet showed a 15-30% reduction in gas costs for typical DeFi operations compared to traditional type 2 transactions. This substantial improvement could make certain applications viable that were previously too expensive to operate.",
-      
-      "For users, this translates to more predictable fees and fewer failed transactions due to gas estimation errors. For developers, it provides more flexibility in designing gas-efficient smart contracts and introduces new patterns for optimizing transaction batching.",
-      
-      "![Gas savings chart comparing transaction types](/images/quick-bites/tx-type-gas-comparison.png) \"Comparative gas costs across different transaction types and operations\""
+        "> Less clicks, less signatures, more Blobs. Many past Ethereum upgrades have focused on technical improvements, but Pectra is different. It aims to enhance the user experience for everyday users, making it easier to interact with the Ethereum ecosystem.",
+
+        "## What is part of the Pectra upgrade?",
+        "Pectra introduces several key features designed to simplify the user experience:",
+        "- **EIP-7702: Smarter wallets** - Enables wallets (EOAs) to act as smart accounts. Unlocking features like sponsorship, delegation transactions, paying gas in other tokens, and much more.",
+        "- **EIP-7691: Boost Layer 2s through more Blobs** - Layer 2s have been using up all available Blob space for a while. Now we get more Blobs! This means cheaper transactions and more space for Layer 2s.",
+        "- **EIP-7252, 7002, 6110** - ETH staking upgrades The validator staking limit is raised from 32 ETH to 2,048 ETH and the withdrawal process is simplified. Simpler is better.",
+        "and 6 more EIPs that include various improvements to the Ethereum protocol.",
+
+
+        "## EIP-7702: Smarter Wallets",
+        "The following chart shows the adoption of EIP-7702 wallets over the past 90 days. The data is sourced from the Ethereum Foundation and reflects the number of unique wallets that have implemented the new features.",
+
+
+        "## EIP-7691: More Blobs",
+        "The Blob limit was raised from 6 to 9 and the target was raised from 3 to 6. This means more blobs for Layer 2s and it takes longer for the Blob fee market to kick in.",
+        "The following chart shows the average daily blob count starting January 2025.",
+
+         "```chart",
+        JSON.stringify({
+          type: "column",
+          title: "Ethereum Daily Blob Count",
+          subtitle: "Compare the average daily blob count before and after the Pectra upgrade",
+          stacking: "normal",
+          dataAsJson: {
+            url: "https://api.growthepie.xyz/v1/da_metrics/blob_count.json",
+            pathToData: "data.chains.da_ethereum_blobs.daily.data",
+            meta: [{
+              name: "Blob Count",
+              color: "#FF0420",
+              xIndex: 0,
+              yIndex: 1,
+              suffix: null,
+              prefix: "$"
+            },
+            {
+              name: "Blob Target",
+              color: "#FF5A00",
+              xIndex: 0,
+              yIndex: 1,
+              suffix: null,
+              prefix: null
+            }
+            ],
+          },
+
+          options: {
+            xAxis: {
+              categories: ["Token Transfer", "Swap", "NFT Mint", "Contract Deployment", "LP Addition"]
+            },
+            yAxis: {
+              title: {
+                text: "Cost in USD"
+              }
+            },
+            plotOptions: {
+              column: {
+                dataLabels: {
+                  enabled: false
+                }
+              }
+            }
+          },
+          height: 400,
+          caption: "Gas cost reduction across different operation types after the Bedrock upgrade",
+          seeMetricURL: "https://www.growthepie.xyz/chains/optimism"
+        }),
+      "```",
+
     ],
     image: "/images/quick-bites/pectra-tx-type-4.png",
     date: "2025-04-17",
@@ -106,21 +152,11 @@ const QUICK_BITES_DATA: QuickBitesData = {
           }
           ],
         },
-        data: [
-          {
-            name: "Before Bedrock",
-            color: "#FF0420",
-            data: [0.27, 0.48, 1.35, 2.14, 0.53]
-          },
-          {
-            name: "After Bedrock",
-            color: "#FF5A00",
-            data: [0.15, 0.26, 0.79, 1.28, 0.32]
-          }
-        ],
         options: {
           xAxis: {
-            categories: ["Token Transfer", "Swap", "NFT Mint", "Contract Deployment", "LP Addition"]
+            title: {
+              text: "Date?"
+            }
           },
           yAxis: {
             title: {

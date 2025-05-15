@@ -36,7 +36,7 @@ const QuickBitesSection: React.FC = () => {
       
       <div className="text-md px-[5px] lg:px-[45px]">
         <p className="mb-2">
-          Quick Bites are short, focused analyses of specific topics or trends in the Ethereum ecosystem. 
+          Short and focused analyses of specific topics or trends in the Ethereum ecosystem
         </p>
       </div>
       
