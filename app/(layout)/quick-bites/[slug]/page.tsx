@@ -87,28 +87,25 @@ export default async function QuickBitePage({ params }: Props) {
 
           </div>
           <div className="flex items-center h-full gap-x-2 text-sm">
-            <span>Quick Bite</span>
-            <svg width="6" height="6" viewBox="0 0 6 6" fill="#344240">
-              <circle cx="3" cy="3" r="3" />
-            </svg>
-            <span>{formatDate(QuickBite.date)}</span>
+            
             {QuickBite.author && QuickBite.author.length > 0 && (
               <>
                 {QuickBite.author.map((author) => (
                   <>
-                    <svg width="6" height="6" viewBox="0 0 6 6" fill="#344240">
-                      <circle cx="3" cy="3" r="3" />
-                    </svg>
                     <ClientAuthorLink 
                       key={author.name}
                       name={author.name} 
                       xUsername={author.xUsername} 
                     />
+                    <svg width="6" height="6" viewBox="0 0 6 6" fill="#344240">
+                      <circle cx="3" cy="3" r="3" />
+                    </svg>
                   </>
                 ))}
 
               </>
             )}
+            <span>{formatDate(QuickBite.date)}</span>
           </div>
 
         </div>
