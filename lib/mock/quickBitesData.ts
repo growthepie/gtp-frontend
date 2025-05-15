@@ -92,12 +92,12 @@ const QUICK_BITES_DATA: QuickBitesData = {
 
     ],
     image: "/images/quick-bites/pectra-tx-type-4.png",
-    date: "2025-04-17",
-    icon: "gtp-metrics-transactioncount",
+    date: "2025-05-16",
+    icon: "ethereum-logo-monochrome",
     related: [],
     author: [{
       name: "Matthias Seidl",
-      xUsername: "web3_dat"
+      xUsername: "web3_data"
     },
     {
       name: "Lorenz Lehmann",
@@ -111,7 +111,7 @@ const QUICK_BITES_DATA: QuickBitesData = {
       url: "/chains/ethereum"
     },
     {
-      icon: "da-blobs-number",
+      icon: "gtp-da-blobs-number",
       name: "Blob Count",
       url: "/data-availability/blob-count"
     }
