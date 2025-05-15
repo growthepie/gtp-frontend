@@ -540,8 +540,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               })}
             </div>
             <div className="flex flex-col gap-y-[2px]">
-              <div className="text-[10px]">{`Chart type: ${chartType.charAt(0).toUpperCase() + chartType.slice(1)}`}</div>
-              <div className="text-[10px]">{`Aggregation: 7-Day Rolling Average`}</div>
+              {/* <div className="text-[10px]">{`Chart type: ${chartType.charAt(0).toUpperCase() + chartType.slice(1)}`}</div>
+              <div className="text-[10px]">{`Aggregation: 7-Day Rolling Average`}</div> */}
             </div>
           </div>
           <div className="h-full flex items-end ">

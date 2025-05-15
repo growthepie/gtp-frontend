@@ -10,74 +10,68 @@ const QUICK_BITES_DATA: QuickBitesData = {
     title: "Pectra: The Peoples Upgrade",
     subtitle: "Track the Adoption of Pectras UX + Scaling Improvements",
     content: [
-        "> Less clicks, less signatures, more Blobs. Many past Ethereum upgrades have focused on technical improvements, but Pectra is different. It aims to enhance the user experience for everyday users, making it easier to interact with the Ethereum ecosystem.",
+        "> Less clicks, less signatures, more Blobs. Many past Ethereum upgrades focused on technical improvements, but Pectra is different. It aims to enhance the user experience for everyday users, making it easier and chepaer to interact with the Ethereum ecosystem.",
 
         "## What is part of the Pectra upgrade?",
         "Pectra introduces several key features designed to simplify the user experience:",
+        "- **EIP-7691: Boost Rollups through more Blobs** - Rollupss have been operating at Blob capacity for a while. Now we get more Blobs! This means cheaper transactions and more space for Rollups.",
+        "- **EIP-7623: Increase Calldata Cost** - This is a technical improvement that increases the cost of calldata, making it more expensive to submit large amounts of data with the goal to have rollups only use Blobs for data availability.",
         "- **EIP-7702: Smarter wallets** - Enables wallets (EOAs) to act as smart accounts. Unlocking features like sponsorship, delegation transactions, paying gas in other tokens, and much more.",
-        "- **EIP-7691: Boost Layer 2s through more Blobs** - Layer 2s have been using up all available Blob space for a while. Now we get more Blobs! This means cheaper transactions and more space for Layer 2s.",
-        "- **EIP-7252, 7002, 6110** - ETH staking upgrades The validator staking limit is raised from 32 ETH to 2,048 ETH and the withdrawal process is simplified. Simpler is better.",
-        "and 6 more EIPs that include various improvements to the Ethereum protocol.",
-
-
-        "## EIP-7702: Smarter Wallets",
-        "The following chart shows the adoption of EIP-7702 wallets over the past 90 days. The data is sourced from the Ethereum Foundation and reflects the number of unique wallets that have implemented the new features.",
-
+        "- **EIP-7252, 7002, 6110: ETH staking upgrades** - The validator staking limit is raised from 32 ETH to 2,048 ETH and the withdrawal process is simplified. Simpler is better.",
+        "and 5 more EIPs that include various improvements to the Ethereum protocol.",
 
         "## EIP-7691: More Blobs",
         "The Blob limit was raised from 6 to 9 and the target was raised from 3 to 6. This means more blobs for Layer 2s and it takes longer for the Blob fee market to kick in.",
-        "The following chart shows the average daily blob count starting January 2025.",
+        "The following chart shows how close we are to the new Blob target. Whenever the number of submitted blobs per block is above the target, the Blob fee market will kick in and increse Blob fees.",
 
          "```chart",
         JSON.stringify({
-          type: "column",
-          title: "Ethereum Daily Blob Count",
-          subtitle: "Compare the average daily blob count before and after the Pectra upgrade",
+          type: "line",
+          title: "Submitted Blobs per Block",
+          subtitle: "Compare the average #Blobs per block before and after the Pectra upgrade",
           stacking: "normal",
           dataAsJson: {
-            url: "https://api.growthepie.xyz/v1/da_metrics/blob_count.json",
-            pathToData: "data.chains.da_ethereum_blobs.daily.data",
             meta: [{
               name: "Blob Count",
-              color: "#FF0420",
+              color: "#FFC300",
               xIndex: 0,
               yIndex: 1,
               suffix: null,
-              prefix: "$"
+              prefix: null,
+              url: "https://api.growthepie.xyz/v1/quick-bites/pectra-fork.json",
+              pathToData: "data.ethereum_blob_count.daily.values",
+              dashStyle: "solid" 
             },
             {
-              name: "Blob Target",
-              color: "#FF5A00",
+              name: "Target",
+              color: "#19D9D6",
               xIndex: 0,
               yIndex: 1,
               suffix: null,
-              prefix: null
+              prefix: null,
+              url: "https://api.growthepie.xyz/v1/quick-bites/pectra-fork.json",
+              pathToData: "data.ethereum_blob_target.daily.values",
+              dashStyle: "Dash" 
             }
             ],
           },
-
-          options: {
-            xAxis: {
-              categories: ["Token Transfer", "Swap", "NFT Mint", "Contract Deployment", "LP Addition"]
-            },
-            yAxis: {
-              title: {
-                text: "Cost in USD"
-              }
-            },
-            plotOptions: {
-              column: {
-                dataLabels: {
-                  enabled: false
-                }
-              }
-            }
-          },
           height: 400,
-          caption: "Gas cost reduction across different operation types after the Bedrock upgrade",
-          seeMetricURL: "https://www.growthepie.xyz/chains/optimism"
+          caption: "Ethereum Blob Count per Block vs Target. Data updated daily.",
+          seeMetricURL: "https://www.growthepie.xyz/data-availability/blob-count"
         }),
       "```",
+
+      "## EIP-7623: Increase Calldata Cost",
+      "EIP-7623 increases the cost of calldata, making it more expensive to submit large amounts of data with the goal to have rollups only use Blobs for data availability.",
+      "Many rollups used to switch between calldata and Blobs to save on fees. Now, they will only use Blobs for data availability. We track only 1 rollup that is still using calldata for data availability: Polygon zkEVM.",
+
+
+
+      "## EIP-7702: Smarter Wallets",
+      "EIP-7702 introduces a new transaction type that allows wallets to act as smart accounts. This improves the user experience by allowing wallets to pay for transactions, delegate transactions, and more.",
+      "The following chart shows the adoption of EIP-7702 wallets.",
+
+
 
     ],
     image: "/images/quick-bites/pectra-tx-type-4.png",
