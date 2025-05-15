@@ -79,9 +79,14 @@ const QUICK_BITES_DATA: QuickBitesData = {
     icon: "gtp-metrics-transactioncount",
     related: ["optimism-bedrock", "arbitrum-nitro"],
     author: [{
-      name: "Alex Chen",
-      xUsername: "alexchen_eth"
-    }],
+      name: "Matthias Seidl",
+      xUsername: "web3_dat"
+    },
+    {
+      name: "Lorenz Lehmann",
+      xUsername: "LehmannLorenz"
+    }
+  ],
     topics: [{
       icon: "optimism-logo-monochrome",
       color: "#FE5468",
