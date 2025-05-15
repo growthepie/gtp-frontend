@@ -15,10 +15,9 @@ const QUICK_BITES_DATA: QuickBitesData = {
         "## What is part of the Pectra upgrade?",
         "Pectra introduces several key features designed to simplify the user experience:",
         "- **EIP-7691: Boost Rollups through more Blobs** - Rollupss have been operating at Blob capacity for a while. Now we get more Blobs! This means cheaper transactions and more space for Rollups.",
-        "- **EIP-7623: Increase Calldata Cost** - This is a technical improvement that increases the cost of calldata, making it more expensive to submit large amounts of data with the goal to have rollups only use Blobs for data availability.",
-        "- **EIP-7702: Smarter wallets** - Enables wallets (EOAs) to act as smart accounts. Unlocking features like sponsorship, delegation transactions, paying gas in other tokens, and much more.",
-        "- **EIP-7252, 7002, 6110: ETH staking upgrades** - The validator staking limit is raised from 32 ETH to 2,048 ETH and the withdrawal process is simplified. Simpler is better.",
-        "and 5 more EIPs that include various improvements to the Ethereum protocol.",
+        "- **EIP-7702: Smarter Wallets** - Enables wallets (EOAs) to act as smart accounts. Unlocking features like sponsorship, delegation transactions, paying gas in other tokens, and much more.",
+        "- **EIP-7252, 7002, 6110: ETH Staking Upgrades** - The validator staking limit is raised from 32 ETH to 2,048 ETH and the withdrawal process is simplified. Simpler is better.",
+        "and 6 more EIPs that include various improvements to the Ethereum protocol.",
 
         "## EIP-7691: More Blobs",
         "The Blob limit was raised from 6 to 9 and the target was raised from 3 to 6. This means more blobs for Layer 2s and it takes longer for the Blob fee market to kick in.",
@@ -61,17 +60,35 @@ const QUICK_BITES_DATA: QuickBitesData = {
         }),
       "```",
 
-      "## EIP-7623: Increase Calldata Cost",
-      "EIP-7623 increases the cost of calldata, making it more expensive to submit large amounts of data with the goal to have rollups only use Blobs for data availability.",
-      "Many rollups used to switch between calldata and Blobs to save on fees. Now, they will only use Blobs for data availability. We track only 1 rollup that is still using calldata for data availability: Polygon zkEVM.",
-
-
-
       "## EIP-7702: Smarter Wallets",
       "EIP-7702 introduces a new transaction type that allows wallets to act as smart accounts. This improves the user experience by allowing wallets to pay for transactions, delegate transactions, and more.",
-      "The following chart shows the adoption of EIP-7702 wallets.",
+      "The following chart shows the adoption of EIP-7702 wallets by visualizing the daily number of Set Code transactions on Ethereum (aka Type 4 transactions).",
 
+      "```chart",
+      JSON.stringify({
+        type: "column",
+        title: "Transactions that trigger smart wallet upgrades and downgrades",
+        subtitle: "The number of Set Code transactions on Ethereum (aka Type 4 transactions)",
+        stacking: "normal",
+        dataAsJson: {
+          meta: [{
+            name: "Set Code Transactions",
+            color: "#FFC300",
+            xIndex: 1,
+            yIndex: 0,
+            suffix: null,
+            prefix: null,
+            url: "https://api.growthepie.xyz/v1/quick-bites/pectra-fork.json",
+            pathToData: "data.type4_tx_count.daily.values",
+          }
+          ],
+        },
+        height: 400,
+        caption: "The number of Set Code transactions on Ethereum (aka Type 4 transactions). Data updated daily.",
+      }),
+    "```",
 
+    "All charts on this page are updated daily so that you can see the adoption of the Pectra upgrades over time.",
 
     ],
     image: "/images/quick-bites/pectra-tx-type-4.png",
