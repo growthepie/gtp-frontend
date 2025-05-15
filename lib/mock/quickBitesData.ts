@@ -94,7 +94,7 @@ const QUICK_BITES_DATA: QuickBitesData = {
     image: "/images/quick-bites/pectra-tx-type-4.png",
     date: "2025-04-17",
     icon: "gtp-metrics-transactioncount",
-    related: ["optimism-bedrock", "arbitrum-nitro"],
+    related: [],
     author: [{
       name: "Matthias Seidl",
       xUsername: "web3_dat"
@@ -105,16 +105,15 @@ const QUICK_BITES_DATA: QuickBitesData = {
     }
   ],
     topics: [{
-      icon: "optimism-logo-monochrome",
-      color: "#FE5468",
-      name: "Optimism",
-      url: "/chains/optimism"
+      icon: "ethereum-logo-monochrome",
+      color: "#94ABD3",
+      name: "Ethereum",
+      url: "/chains/ethereum"
     },
     {
-      icon: "arbitrum-logo-monochrome",
-      color: "#2151F5",
-      name: "Arbitrum",
-      url: "/chains/arbitrum"
+      icon: "da-blobs-number",
+      name: "Blob Count",
+      url: "/data-availability/blob-count"
     }
   ]
   },
@@ -324,76 +323,6 @@ const QUICK_BITES_DATA: QuickBitesData = {
     author: [{
       name: "Raj Patel",
       xUsername: "rajpatel_web3"
-    }],
-    topics: [{
-      icon: "base-logo-monochrome",
-      color: "#2151F5",
-      name: "Base",
-      url: "/chains/base"
-    }]
-  },
-  "zksync-era": {
-    title: "zkSync Era",
-    subtitle: "A closer look at how zkSync's zkEVM works",
-    content: [
-      "## zkSync Era: The zkEVM Revolution",
-      "zkSync Era represents a breakthrough in zero-knowledge proof technology, offering a fully EVM-compatible Layer 2 solution with the security benefits of ZK proofs. Launched in March 2023, Era has quickly established itself as a leading zkEVM implementation.",
-      
-      "![zkSync Era architecture overview](/images/quick-bites/zksync-era-overview.png | width=900,height=500,align=center) \"High-level architecture of zkSync Era\"",
-      
-      "> Unlike optimistic rollups that have a challenge period of 7 days, zkSync Era provides near-immediate finality once proofs are generated and verified on Ethereum mainnet.",
-      
-      "## Technical Architecture",
-      "zkSync Era's architecture includes several innovative components:",
-      
-      "- **Type 4 zkEVM**: An advanced implementation that achieves EVM equivalence while maintaining the efficiency advantages of ZK technology.",
-      "- **LLVM-based Compiler**: A sophisticated compiler pipeline that translates Solidity and Vyper contracts into bytecode optimized for ZK proving.",
-      "- **Recursive Proofs**: A mechanism for aggregating multiple transaction proofs into a single proof, dramatically reducing verification costs on Ethereum.",
-      "- **Native Account Abstraction**: Built-in support for smart contract wallets and gasless transactions.",
-      
-      "![zkEVM compiler pipeline](/images/quick-bites/zksync-compiler-pipeline.png) \"LLVM-based compiler pipeline for zkSync Era\"",
-      
-      "## Interactive Fee Comparison",
-      "The following interactive visualization lets you compare transaction costs across various L2 solutions including zkSync Era:",
-      
-      "```iframe",
-      JSON.stringify({
-        src: "https://www.growthepie.xyz/embed/fundamentals/transaction-costs?showUsd=true&theme=dark&timespan=90d&scale=absolute&interval=daily&showMainnet=true&chains=ethereum%2Carbitrum%2Cbase%2Czksync_era&zoomed=false",
-        title: "Transaction Costs Comparison - growthepie",
-        width: "100%",
-        height: "600px",
-        caption: "Comparative transaction costs across Ethereum and various L2 solutions including zkSync Era. Source: growthepie.xyz"
-      }),
-      "```",
-      
-      "## Performance and Scalability",
-      "Era's performance metrics demonstrate the potential of zkEVM technology:",
-      
-      "- **Transaction Throughput**: Up to 100-200 TPS, with potential for 2000+ TPS with future optimizations",
-      "- **Proof Generation Time**: 1-3 minutes for typical transaction batches",
-      "- **Finality**: Once proofs are verified on Ethereum (approximately 10-30 minutes)",
-      "- **Cost Reduction**: 10-50x lower fees compared to Ethereum mainnet",
-      
-      "![Performance comparison between different L2 solutions](/images/quick-bites/l2-performance-comparison.png | width=800,align=center) \"Performance metrics across various Layer 2 solutions\"",
-      
-      "## Developer Experience",
-      "A key focus of zkSync Era has been maintaining compatibility with existing Ethereum development tools and practices. This compatibility has been achieved through:",
-      
-      "- Full support for Ethereum RPC API",
-      "- Compatibility with popular development frameworks like Hardhat and Foundry",
-      "- Native integration with ethers.js and web3.js libraries",
-      
-      "This has allowed developers to migrate their applications to zkSync Era with minimal changes to their codebase, accelerating adoption and ecosystem growth.",
-      
-      "![Developer tooling ecosystem for zkSync Era](/images/quick-bites/zksync-developer-tools.png | width=600,height=400) \"Developer tools and SDK ecosystem\""
-    ],
-    image: "/images/quick-bites/zksync-era.png",
-    date: "2025-02-10",
-    icon: "gtp-metrics-transactioncosts",
-    related: ["pectra-tx-type-4", "optimism-bedrock"],
-    author: [{
-      name: "Maya Rodriguez",
-      xUsername: "maya_zkp"
     }],
     topics: [{
       icon: "base-logo-monochrome",
