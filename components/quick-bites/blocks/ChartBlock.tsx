@@ -33,23 +33,32 @@ interface JsonMeta {
     xIndex: number,
     yIndex: number,
     suffix?: string,
-    prefix?: string
+    prefix?: string,
+    url?: string,
+    pathToData?: string,
+    dashStyle?: Highcharts.DashStyleValue
   }[]
 }
-export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
 
-  // if dataasJson is present collect the data using useSWR handle if data as json doens't exist    
-  const { data: unProcessedData, error } = useSWR(block.dataAsJson?.url, fetcher);
-  const passChartData = block.dataAsJson ? unProcessedData : block.data;
+export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
+  // Fetch data for all meta entries
+  const urls = block.dataAsJson?.meta.map(meta => meta.url) || [];
+  const { data: unProcessedData, error } = useSWR(
+    urls.length > 0 ? urls : null,
+    urls.length > 0 ? (urls: string[]) => Promise.all(urls.map(url => fetcher(url))) : null
+  );
   
-  // Get nested data using the pathToData
+  // Get nested data for all meta entries
   const nestedData = block.dataAsJson && unProcessedData 
-    ? getNestedValue(unProcessedData, block.dataAsJson.pathToData)
+    ? block.dataAsJson.meta.map((meta, index) => 
+        meta.pathToData ? getNestedValue(unProcessedData[index], meta.pathToData) : undefined
+      )
     : undefined;
-  
-  
+
+  const passChartData = block.dataAsJson ? unProcessedData : block.data;
+
+
   return (
-    
     <div className={`my-8 ${block.className || ''}`}>
       {passChartData && (
         <ChartWrapper

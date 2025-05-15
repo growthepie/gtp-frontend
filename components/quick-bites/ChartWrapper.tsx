@@ -53,7 +53,8 @@ interface ChartWrapperProps {
       xIndex: number,
       yIndex: number,
       suffix?: string,
-      prefix?: string
+      prefix?: string,
+      dashStyle?: Highcharts.DashStyleValue
     }[]
   }
   seeMetricURL?: string | null;
@@ -144,7 +145,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
       const timeDiff = points[0].series.xData[1] - points[0].series.xData[0];
 
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-72 md:w-72 text-xs font-raleway rounded-full bg-opacity-60">
+      const tooltip = `<div class="mt-3 mr-3 mb-3  text-xs font-raleway rounded-full bg-opacity-60">
         <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2 ">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
@@ -171,48 +172,37 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
       }, 0);
 
       const tooltipPoints = points
-
         .map((point: any, index: number) => {
           const { series, y, percentage } = point;
           const { name } = series;
           
-
           const isFees = true;
           const nameString = name.slice(0, 20);
           
-
           const color = series.color.stops ? series.color.stops[0][1] : series.color;
-
 
           let value = y;
           let displayValue = y;
+          const currentPrefix = prefix[index] || '';
+          const currentSuffix = suffix[index] || '';
 
           return `
-          <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${color}"></div>
-            <div class="tooltip-point-name text-xs flex-1 truncate">${nameString}</div>
-            <div class="flex-1 text-right justify-end w-full flex numbers-xs">
-              <div class="flex justify-end text-right w-full">
-                  <div class="${!prefix && "hidden"
-            }">${prefix}</div><div>
-              ${
-                parseFloat(displayValue).toLocaleString(
-                  "en-GB",
-                  {
-                    minimumFractionDigits: 2,
-
-                    maximumFractionDigits: 2,
-                  },
-                )
-                
-              }
-               </div>
+            <div class="flex space-x-2 items-center font-medium mb-0.5">
+              <div class="min-w-4 max-w-4 h-1.5 rounded-r-full" style="background-color: ${color}"></div>
+              <div class="tooltip-point-name text-xs w-min truncate ">${nameString}</div>
+              <div class=" flex-1 text-right justify-end  w-full flex numbers-xs">
+                <div class="flex justify-end text-right w-full">
+                  <div class="${!currentPrefix && "hidden"}">${currentPrefix}</div>
+                  <div class="">
+                    ${parseFloat(displayValue).toLocaleString("en-GB", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })}
+                  </div>
+                  <div class="ml-0.5 ${!currentSuffix && "hidden"}">${currentSuffix}</div>
                 </div>
-                <div class="ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
-            </div>
-          </div>
-         `;
+              </div>
+            </div>`;
         })
         .join("");
 
@@ -262,8 +252,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
             </div>
           </div>
         </div>
-        <HighchartsProvider Highcharts={Highcharts}>
-          <HighchartsChart ref={chartRef}
+        <HighchartsProvider Highcharts={Highcharts} >
+          <HighchartsChart ref={chartRef} options={options}
               plotOptions={{
                 line: {
                   lineWidth: 1.5,
@@ -361,6 +351,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               gridLineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.11)' : 'rgba(41, 51, 50, 0.11)'}
               lineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.33)' : 'rgba(41, 51, 50, 0.33)'}
               tickColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.33)' : 'rgba(41, 51, 50, 0.33)'}
+            
             />
             
             <YAxis 
@@ -373,24 +364,34 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               gridLineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.11)' : 'rgba(41, 51, 50, 0.11)'}
             >
               {chartType === 'line' && (
-                (jsonMeta ? jsonMeta.meta : data).map((series: any) => {
+              
+                (jsonMeta ? jsonMeta.meta : data).map((series: any, index: number) => {
                   if(!filteredNames.includes(series.name) && filteredNames.length > 0) return null;
+                  const seriesData = jsonData ? jsonData[index].map((item: any) => [
+                    item[series.xIndex], // x value
+                    item[series.yIndex]  // y value
+                  ]) : series.data;
+                 
                   return (
                     <LineSeries
                       animation={true}
                       key={series.name}
                       name={series.name}
-                      data={series.data}
+                      data={seriesData}
                       color={series.color}
-
+                      dashStyle={series.dashStyle ? series.dashStyle : undefined}
                   />
                 )
               })
               )}  
               
               {chartType === 'area' && (
-                (jsonMeta ? jsonMeta.meta : data).map((series: any) => {
+                (jsonMeta ? jsonMeta.meta : data).map((series: any, index: number) => {
                   if(!filteredNames.includes(series.name) && filteredNames.length > 0) return null;
+                  const seriesData = jsonData ? jsonData[index].map((item: any) => [
+                    item[series.xIndex], // x value
+                    item[series.yIndex]  // y value
+                  ]) : series.data;
                   return (
                     <AreaSeries
                       stacking={stacking ? stacking : undefined}
@@ -412,19 +413,21 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                       marker={{
                         enabled: false,
                       }}
+                      dashStyle={series.dashStyle ? series.dashStyle : undefined}
                     />
                   );
                 })
               )}
               
               {chartType === 'column' && (
-                (jsonMeta ? jsonMeta.meta : data).map((series: any) => {
+                (jsonMeta ? jsonMeta.meta : data).map((series: any, index: number) => {
                   const useJson = jsonMeta ? true : false;
-                  const finalData = useJson ? jsonData.map((item: any) => [
+                  const seriesData = jsonData ? jsonData[index].map((item: any) => [
                     item[series.xIndex], // x value
                     item[series.yIndex]  // y value
                   ]) : series.data;
-                  
+
+              
                   if(!filteredNames.includes(series.name) && filteredNames.length > 0) return null;
                   return(
                     <ColumnSeries
@@ -432,10 +435,11 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                       stacking={stacking ? stacking : undefined}
                       borderColor="transparent"
                       pointPlacement="on"
-                      data={finalData}
+                      data={seriesData}
                       color={series.color}
                       name={series.name}
                       key={series.name}
+                      dashStyle={series.dashStyle ? series.dashStyle : undefined}
                     />
                   )
                 })
@@ -473,10 +477,11 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               followTouchMove={true}
               backgroundColor={"#2A3433EE"}
               padding={0}
-              hideDelay={300}
+              hideDelay={1000000}
               stickOnContact={true}
               shape="rect"
               borderRadius={17}
+            
               borderWidth={0}
               outside={true}
               shadow={{
@@ -489,6 +494,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 color: "rgb(215, 223, 222)",
               }}
               formatter={tooltipFormatter}
+              
             />
             
           </HighchartsChart>
@@ -513,7 +519,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 
                 return (
                   <div key={category.name} className={`bg-[#344240] hover:bg-[#5A6462] flex items-center justify-center rounded-full gap-x-[2px] p-[3px] cursor-pointer ${bgBorderClass}`} onClick={() => {
-                    console.log(category.name, filteredNames);
+                    
                     if(!filteredNames.includes(category.name)) {
                       setFilteredNames((prev) => {
                         const newFilteredNames = [...prev, category.name];

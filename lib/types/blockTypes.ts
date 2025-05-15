@@ -59,8 +59,6 @@ export interface ChartBlock extends BaseBlock {
     color: string;
   }[];
   dataAsJson?: {
-    url: string;
-    pathToData: string;
     meta: {
       name: string;
       color: string;
@@ -68,6 +66,9 @@ export interface ChartBlock extends BaseBlock {
       yIndex: number;
       suffix?: string;
       prefix?: string;
+      url?: string;
+      pathToData?: string;
+      dashStyle?: Highcharts.DashStyleValue;
     }[];
   } | null;
   seeMetricURL?: string | null;

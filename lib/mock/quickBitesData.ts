@@ -77,20 +77,22 @@ const QUICK_BITES_DATA: QuickBitesData = {
       
       "```chart",
       JSON.stringify({
-        type: "column",
+        type: "line",
         title: "Optimism Transaction Costs Before vs. After Bedrock",
         subtitle: "Average gas costs in USD for common operations",
         stacking: "normal",
         dataAsJson: {
-          url: "https://api.growthepie.xyz/v1/da_timeseries.json",
-          pathToData: "data.da_layers.da_celestia.90d.da_consumers.eclipse.daily.values",
+
           meta: [{
             name: "Before Bedrock",
             color: "#FF0420",
             xIndex: 4,
             yIndex: 3,
             suffix: null,
-            prefix: "$"
+            prefix: "$",
+            url: "https://api.growthepie.xyz/v1/da_timeseries.json",
+            pathToData: "data.da_layers.da_celestia.90d.da_consumers.eclipse.daily.values",
+            dashStyle: "LongDash" // Highcharts dashstylevalue
           },
           {
             name: "After Bedrock",
@@ -98,7 +100,9 @@ const QUICK_BITES_DATA: QuickBitesData = {
             xIndex: 4,
             yIndex: 3,
             suffix: null,
-            prefix: null
+            prefix: null,
+            url: "https://api.growthepie.xyz/v1/da_timeseries.json",
+            pathToData: "data.da_layers.da_celestia.90d.da_consumers.lightlink.daily.values",
           }
           ],
         },
