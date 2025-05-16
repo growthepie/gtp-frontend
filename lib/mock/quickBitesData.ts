@@ -16,12 +16,12 @@ const QUICK_BITES_DATA: QuickBitesData = {
         "Pectra introduces several key features designed to simplify the user experience:",
         "- **EIP-7691: Boost Rollups through more Blobs** - Rollupss have been operating at Blob capacity for a while. Now we get more Blobs! This means cheaper transactions and more space for Rollups.",
         "- **EIP-7702: Smarter Wallets** - Enables wallets (EOAs) to act as smart accounts. Unlocking features like sponsorship, delegation transactions, paying gas in other tokens, and much more.",
-        "- **EIP-7252, 7002, 6110: ETH Staking Upgrades** - The validator staking limit is raised from 32 ETH to 2,048 ETH and the withdrawal process is simplified. Simpler is better.",
+        "- **EIP-7252, 7002, 6110: ETH Staking Upgrades** - The validator's effective staking limit was raised from 32 ETH to 2,048 ETH, meaning your rewards can compound. The withdrawal process is simplified - simpler is better.",
         "and 6 more EIPs that include various improvements to the Ethereum protocol.",
 
         "## EIP-7691: More Blobs",
-        "The Blob limit was raised from 6 to 9 and the target was raised from 3 to 6. This means more blobs for Layer 2s and it takes longer for the Blob fee market to kick in.",
-        "The following chart shows how close we are to the new Blob target. Whenever the number of submitted blobs per block is above the target, the Blob fee market will kick in and increse Blob fees.",
+        "The Blob target was doubled from 3 to 6, and the limit was raised from 6 to 9. This means more blobs for Layer 2s and it takes longer for the Blob fee market to kick in.",
+        "The following chart shows how close we are to the new Blob target. Whenever the number of submitted blobs per block is above the target, the Blob fee market will kick in and increase the cost per blob (using the EIP-1559 mechanism).",
 
          "```chart",
         JSON.stringify({
@@ -56,12 +56,12 @@ const QUICK_BITES_DATA: QuickBitesData = {
           },
           height: 400,
           caption: "Ethereum Blob Count per Block vs Target. Data updated daily.",
-          seeMetricURL: "https://www.growthepie.xyz/data-availability/blob-count"
+          seeMetricURL: "https://www.growthepie.xyz/data-availability"
         }),
       "```",
 
       "## EIP-7702: Smarter Wallets",
-      "EIP-7702 introduces a new transaction type that allows wallets to act as smart accounts. This improves the user experience by allowing wallets to pay for transactions, delegate transactions, and more.",
+      "EIP-7702 introduces a new transaction type that allows wallets to act as smart accounts. This improves the user experience by allowing wallets to pay network fees with custom gas tokens, delegate transactions, and more.",
       "The following chart shows the adoption of EIP-7702 wallets by visualizing the daily number of Set Code transactions on EVM chains (aka Type 4 transactions).",
 
       "```chart",
