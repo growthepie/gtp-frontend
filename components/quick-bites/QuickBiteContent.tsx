@@ -19,7 +19,7 @@ const QuickBiteContent: React.FC<QuickBiteContentProps> = ({ content, image }) =
             {/* Content section */}
             <div className="flex-1">
               {content.map((paragraph, index) => (
-                <p key={index} className="mb-4 text-sm md:text-base">
+                <p key={index} className="mb-4 text-xs md:text-sm ">
                   {paragraph}
                 </p>
               ))}

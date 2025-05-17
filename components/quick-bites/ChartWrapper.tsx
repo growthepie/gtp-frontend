@@ -242,13 +242,13 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
  
   
   return (
-    <div className="relative px-[35px]">
-      <div style={{ width, height }} className="relative bg-active-black rounded-[25px] shadow-md flex flex-col gap-y-[15px] h-full p-[15px] ">
-        <div className="w-full h-[36px] p-[5px] bg-[#1F2726] rounded-full">
+    <div className="relative md:px-[35px]">
+      <div style={{ width, height }} className="relative bg-transparent md:bg-active-black rounded-[25px] shadow-none md:shadow-md flex flex-col gap-y-[15px] h-full md:p-[15px] ">
+        <div className="w-full h-auto md:h-[36px] p-[5px] bg-[#1F2726] rounded-full">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-x-[5px]">
               <div className="w-fit h-fit"><GTPIcon icon={"gtp-metrics-totalvaluelocked"} className="w-[24px] h-[24px] "/></div>
-              <div className="text-[20px] font-bold leading-[120%]">{title}</div>
+              <div className="heading-small-md">{title}</div>
             </div>
           </div>
         </div>
@@ -477,7 +477,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               followTouchMove={true}
               backgroundColor={"#2A3433EE"}
               padding={0}
-              hideDelay={1000000}
+              hideDelay={300}
               stickOnContact={true}
               shape="rect"
               borderRadius={17}
@@ -499,7 +499,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
             
           </HighchartsChart>
         </HighchartsProvider>
-        <div className="absolute bottom-[20%] left-0 right-0 flex flex-col items-center justify-center pointer-events-none z-0 opacity-40  " 
+        <div className="absolute bottom-[20%] left-[40px] md:left-0 right-0 flex flex-col items-center justify-center pointer-events-none z-0 opacity-40  " 
           style={{
             height: typeof height === "number" ? (height - 147) + "px" : "100%"
           }}
@@ -507,10 +507,10 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           <ChartWatermark className="w-[200.67px] h-[150.67px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
         </div>
         {/*Footer*/}
-        <div className="pl-[40px] flex justify-between">
+        <div className="md:pl-[40px] flex flex-col justify-between gap-y-[5px] md:gap-y-0">
           <div className="flex flex-col gap-y-[5px]">
             {/*Categories*/}
-            <div className="flex gap-x-[5px]">
+            <div className="flex gap-x-[5px] md:items-stretch items-center md:justify-normal justify-center">
               {(jsonMeta?.meta || data).map((category) => {
                 let bgBorderClass = "border-[1px] border-[#344240] bg-[#344240] hover:border-[#5A6462] hover:bg-[#5A6462] ";
                 if(filteredNames.length > 0 && (!filteredNames.includes(category.name))) {
@@ -539,20 +539,23 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 )
               })}
             </div>
-            <div className="flex flex-col gap-y-[2px]">
-              <div className="text-[10px]">{`Chart type: ${chartType.charAt(0).toUpperCase() + chartType.slice(1)}`}</div>
-              <div className="text-[10px]">{`Aggregation: 7-Day Rolling Average`}</div>
-            </div>
+
           </div>
-          <div className="h-full flex items-end ">
+          <div className="h-full flex md:flex-row flex-col justify-between md:items-end items-center ">
+            <div className="flex flex-row md:flex-col gap-y-[2px]">
+              
+              <div className="text-[10px]"><span className="font-bold">Chart type:</span>{` ${chartType.charAt(0).toUpperCase() + chartType.slice(1)}`}</div>
+              <div className="md:hidden md:mx-0 mx-1 flex items-center relative bottom-[6px] justify-center ">-</div>
+              <div className="text-[10px]"><span className="font-bold">Aggregation:</span>{` 7-Day Rolling Average`}</div>
+            </div>
             {seeMetricURL && (
-              <a className="bg-[#263130] rounded-full pl-[15px] pr-[5px] flex items-center h-[36px] gap-x-[8px] " href={seeMetricURL} rel="_noopener" style={{
+              <a className="bg-[#263130] md:w-auto w-full rounded-full pl-[15px] pr-[5px] flex items-center md:justify-normal justify-center h-[36px] gap-x-[8px] " href={seeMetricURL} rel="_noopener" style={{
                 border: `1px solid transparent`,
               backgroundImage: `linear-gradient(var(--Gradient-Red-Yellow, #263130), var(--Gradient-Red-Yellow, #263130)), linear-gradient(144.58deg, #FE5468 0%, #FF8F4F 70%, #FFDF27 100%)`,
               backgroundOrigin: 'border-box',
               backgroundClip: 'padding-box, border-box'
             }}>
-              <div className="text-[14px] font-bold leading-[120%]">See metric page</div>
+              <div className="heading-small-xs">See metric page</div>
               <div className="w-[24px] h-[24px] flex items-center justify-center bg-medium-background rounded-full"><Icon icon={'fluent:arrow-right-32-filled'} className={`w-[15px] h-[15px]`}  /></div>
             </a>
             )}

@@ -20,7 +20,7 @@ const parseBoldText = (text: string): JSX.Element[] => {
 
 export const ListBlock: React.FC<ListBlockProps> = ({ block }) => {
   return (
-    <ul className="list-disc pl-3.5 my-4 text-sm space-y-2">
+    <ul className="list-disc pl-3.5 my-4  text-xs md:text-sm space-y-2">
       {block.items.map((item, index) => (
         <li key={index} className="text-forest-900 dark:text-forest-100">
           {parseBoldText(item)}

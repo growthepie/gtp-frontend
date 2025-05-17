@@ -5,7 +5,7 @@ import React from 'react';
 import { ChartBlock as ChartBlockType } from '@/lib/types/blockTypes';
 import dynamic from 'next/dynamic';
 import useSWR from 'swr';
-
+ 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 // Utility function to safely get nested values using dot notation
