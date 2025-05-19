@@ -519,7 +519,7 @@ export default function Search() {
                         className="text-white"
                       />
                     </div>
-                    <div className="text-white leading-[150%]">Category</div>
+                    <div className="text-white leading-[150%]">Main Category</div>
                     <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
                   </div>
                   {master && availableMainCategories && availableMainCategories.length > 0 && (
