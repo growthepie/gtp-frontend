@@ -78,40 +78,38 @@ export default async function QuickBitePage({ params }: Props) {
   return (
     <div className="">
       <Container
-        className="flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] mb-[15px]"
+        className="flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] mb-[15px] lg:pr-[20px] xl:px-[50px]"
         isPageRoot
       >
         {/* Header section */}
-        <div className=" flex flex-col-reverse md:gap-y-0 gap-y-[10px] md:flex-row w-full justify-between items-center h-fit">
+        <div className=" flex flex-col-reverse lg:gap-y-0 gap-y-[10px] lg:flex-row w-full justify-between items-center h-fit">
           
-          <div className='flex items-center h-[43px] gap-x-[8px] md:w-auto w-full'>
+          <div className='flex items-center h-[43px] gap-x-[8px] lg:w-auto w-full'>
        
-            <Link className="md:flex hidden items-center justify-center rounded-full w-[36px] h-[36px] bg-[#344240]" href={"/"}>
+            <Link className="lg:flex hidden items-center justify-center rounded-full w-[36px] h-[36px] bg-[#344240]" href={"/"}>
               <Icon icon={'fluent:arrow-left-32-filled'} className={`w-[20px] h-[25px]`}  />
             </Link>    
             <div className='items-center justify-center w-[36px] h-[36px] md:flex hidden'>   
               <GTPIcon icon={QuickBite.icon as GTPIconName} className={`object-contain `} size={"lg"} />
             </div>  
             <div
-              className={`leading-snug heading-large-md md:heading-large-xl flex items-center `}              
+              className={`leading-snug heading-large-md md:heading-large-lg xl:heading-large-xl flex items-center `}              
             >
               {QuickBite.title}
             </div>
           
 
           </div>
-          <div className="flex md:justify-normal justify-between md:w-auto w-full  items-center h-full gap-x-2 text-sm">
-            <Link className="md:hidden flex items-center justify-center rounded-full w-[36px] h-[36px] bg-[#344240]" href={"/"}>
+          <div className="flex lg:justify-normal justify-between lg:w-auto w-full  items-center h-full gap-x-2 text-sm">
+            <Link className="lg:hidden flex items-center justify-center rounded-full w-[36px] h-[36px] bg-[#344240]" href={"/"}>
               <Icon icon={'fluent:arrow-left-32-filled'} className={`w-[20px] h-[25px]`}  />
             </Link>  
-            <span className='md:block hidden'>Quick Bite</span>
+
 
             <div className='flex items-center gap-x-[5px] md:flex-row flex-row-reverse'>
-              <svg width="6" height="6" viewBox="0 0 6 6" fill="#344240" className='md:block hidden'>
-                <circle cx="3" cy="3" r="3" />
-              </svg>
-              <span className='text-xxs md:text-sm'>{formatDate(QuickBite.date)}</span>
-              {QuickBite.author && QuickBite.author.length > 0 && (
+
+              <span className='text-xxs lg:text-xs xl:text-sm '>{formatDate(QuickBite.date)}</span>
+              {QuickBite.author && QuickBite.author.length > 1 && (
                 <>
                   {QuickBite.author.map((author) => (
                     <>
@@ -134,7 +132,7 @@ export default async function QuickBitePage({ params }: Props) {
         </div>
         
         {/* Main content with blocks */}
-        <div className="md:pl-[45px] md:pr-[120px]">
+        <div className="lg:pl-[45px] lg:pr-[120px]">
           <div className=" md:mx-auto">
             {contentBlocks.map((block) => (
               <Block key={block.id} block={block} />

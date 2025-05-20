@@ -10,8 +10,8 @@ export const HeadingBlock: React.FC<HeadingBlockProps> = ({ block }) => {
   const HeadingTag = `h${block.level}` as keyof JSX.IntrinsicElements;
   
   const headingClasses = {
-    1: 'heading-large-xs md:heading-large-md my-[15px]',
-    2: 'heading-large-xs md:heading-large-lg my-[15px]',
+    1: 'heading-large-xs md:heading-large-md xl:heading-large-md my-[15px]',
+    2: 'heading-large-xs md:heading-large-md xl:heading-large-lg my-[15px]',
   }[block.level];
   
   return (
