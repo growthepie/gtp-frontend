@@ -94,11 +94,11 @@ export default function Header() {
               </LogoContextMenu>
               <div className="flex gap-[15px] justify-center items-end">
                 <Notification />
-                {!IS_PRODUCTION && (
+              
                   <div className={`${isMobile ? "block" : "hidden"} w-auto relative right-[21px] top-[2px]`}>
                     <HeaderSearchButton />
                   </div>
-                )}
+             
                 <div className="w-auto">
                   <Sidebar isMobile={true} />
                 </div>
@@ -110,7 +110,7 @@ export default function Header() {
           <div className="items-center z-10 hidden md:flex md:gap-x-[20px]">
             <FocusSwitch />
             <EthUsdSwitch />
-            {!IS_PRODUCTION && <HeaderSearchButton />}
+            <HeaderSearchButton />
             </div>
         </div>
       </header>
