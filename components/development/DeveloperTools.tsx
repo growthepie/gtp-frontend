@@ -1,4 +1,4 @@
-import ApiTool from "./ApiTool";
+import ApiTool, { GlobalSearchToggleButton } from "./ApiTool";
 
 export default function DeveloperTools() {
 
@@ -17,7 +17,9 @@ export default function DeveloperTools() {
           <div className="hidden 2xl:block">{"2xl"}</div>
         </div>
         <ApiTool />
+        <GlobalSearchToggleButton />
       </div>
     </div>
   )
 }
+

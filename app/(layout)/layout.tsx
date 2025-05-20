@@ -12,7 +12,8 @@ import Share from "@/components/Share";
 import "../background.css";
 import DeveloperTools from "@/components/development/DeveloperTools";
 import Footer from "@/components/layout/Footer";
-
+import GlobalSearchBar from "@/components/layout/GlobalSearchBar";
+import { IS_PRODUCTION } from "@/lib/helpers";
 const jsonLd: Graph = {
   "@context": "https://schema.org",
   "@graph": [
@@ -213,6 +214,7 @@ export default function RootLayout({
         <Providers>
           <div className="flex h-fit w-screen justify-center">
             <div className="flex min-h-screen w-full max-w-[1680px]">
+              {!IS_PRODUCTION && <GlobalSearchBar />}
               <SidebarContainer />
               <div
                 id="content-panel"
@@ -230,6 +232,7 @@ export default function RootLayout({
                   </div>
                   <Header />
                   <main className="z-10 mx-auto min-h-[calc(100vh-218px-56px)] w-full flex-1 pb-[165px] md:min-h-[calc(100vh-207px-80px)]">
+                    
                     {children}
                   </main>
                   {/* <BottomBanner /> */}
