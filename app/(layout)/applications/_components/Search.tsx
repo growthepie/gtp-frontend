@@ -49,7 +49,7 @@ export default function Search() {
   
   // Get search term from URL
   const searchFromParams = useMemo(() => 
-    searchParams.get("search") || "",
+    searchParams.get("applications-search") || "",
     [searchParams]
   );
   
