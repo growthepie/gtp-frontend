@@ -49,7 +49,7 @@ export default function Search() {
   
   // Get search term from URL
   const searchFromParams = useMemo(() => 
-    searchParams.get("applications-search") || "",
+    searchParams.get("q") || "",
     [searchParams]
   );
   
@@ -349,8 +349,8 @@ export default function Search() {
   return (
     <div className="relative w-full h-[44px]">
       <div
-        className="fixed inset-0 bg-black/10 z-[15]"
-        onClick={() => setIsOpen(false)}
+        className="hidden md:block fixed inset-0 bg-black/10 z-[15]"
+        onMouseDown={() => setIsOpen(false)}
         style={{
           opacity: isOpen ? 0.5 : 0,
           pointerEvents: isOpen ? "auto" : "none",
