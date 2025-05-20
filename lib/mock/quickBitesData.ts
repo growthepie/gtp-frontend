@@ -29,6 +29,7 @@ const QUICK_BITES_DATA: QuickBitesData = {
           title: "Submitted Blobs per Block",
           subtitle: "Compare the average #Blobs per block before and after the Pectra upgrade",
           stacking: "normal",
+          showXAsDate: true,
           dataAsJson: {
             meta: [{
               name: "Blob Count",
@@ -70,6 +71,8 @@ const QUICK_BITES_DATA: QuickBitesData = {
         title: "Transactions that trigger smart wallet upgrades and downgrades",
         subtitle: "The number of Set Code transactions on EVM chains (aka Type 4 transactions)",
         stacking: "normal",
+        showXAsDate: true,
+
         dataAsJson: {
           meta: [{
             name: "Ethereum",
@@ -172,6 +175,7 @@ const QUICK_BITES_DATA: QuickBitesData = {
         title: "Optimism Transaction Costs Before vs. After Bedrock",
         subtitle: "Average gas costs in USD for common operations",
         stacking: "normal",
+        showXAsDate: true,
         dataAsJson: {
 
           meta: [{

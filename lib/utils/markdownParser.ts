@@ -173,6 +173,7 @@ function parseChartBlock(jsonString: string): ContentBlock | null {
       height: chartConfig.height || 400,
       caption: chartConfig.caption,
       stacking: chartConfig.stacking || null,
+      showXAsDate: chartConfig.showXAsDate || false,
       dataAsJson: chartConfig.dataAsJson || null,
       seeMetricURL: chartConfig.seeMetricURL || null
     };

@@ -58,6 +58,7 @@ export interface ChartBlock extends BaseBlock {
     name: string;
     color: string;
   }[];
+  showXAsDate?: boolean;
   dataAsJson?: {
     meta: {
       name: string;

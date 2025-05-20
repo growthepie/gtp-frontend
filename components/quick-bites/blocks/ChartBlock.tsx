@@ -71,6 +71,7 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
           subtitle={block.subtitle}
           stacking={block.stacking}
           jsonData={nestedData}
+          showXAsDate={block.showXAsDate}
           jsonMeta={
             block.dataAsJson ? {
               meta: block.dataAsJson.meta
