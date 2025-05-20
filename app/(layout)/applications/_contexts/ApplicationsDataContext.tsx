@@ -79,10 +79,10 @@ function calculatePercentageChange(current: number, previous: number): number {
 }
 
 function aggregateProjectData(
-  data: AppDatum[], 
-  typesArr: string[], 
-  ownerProjectToProjectData: { [key: string]: any }, 
-  filters: { [key: string]: string[] } = { origin_key: [], owner_project: [], category: [] }, 
+  data: AppDatum[],
+  typesArr: string[],
+  ownerProjectToProjectData: { [key: string]: any },
+  filters: { [key: string]: string[] } = { origin_key: [], owner_project: [], main_category: [] },
   timespan: string,
   focusEnabled: boolean
 ): AggregatedDataRow[] {
@@ -98,8 +98,9 @@ function aggregateProjectData(
   const ownerProjectToOriginKeys = ownerProjectToOriginKeysMap(data);
 
   // Convert chain filter to Set for O(1) lookups
-  const chainFilter = new Set(filters.origin_key);
-  const stringFilters = filters.owner_project;
+  const chainFilter = new Set(filters.origin_key); // Assuming these are consistently cased or case-insensitive elsewhere
+  const stringFilters = filters.owner_project.map(f => f.toLowerCase()); // Ensure string filters are lowercase
+  const mainCategoryFilter = new Set(filters.main_category.map(c => c.toLowerCase())); // Ensure main_category filters are lowercase
 
   // Create a lookup object for faster type index access
   const typeIndexes = {
@@ -142,8 +143,17 @@ function aggregateProjectData(
     // Skip if not matching string filters (early bailout)
     if (stringFilters.length > 0) {
       const ownerProjectDisplay = ownerProjectToProjectData[owner]?.display_name?.toLowerCase();
-      if (!ownerProjectDisplay || !stringFilters.some(filter => 
-        ownerProjectDisplay.includes(filter.toLowerCase()))) {
+      if (!ownerProjectDisplay || !stringFilters.some(filter => // stringFilters are already lowercase
+        ownerProjectDisplay.includes(filter))) {
+        continue;
+      }
+    }
+
+    // Skip if not matching main_category filters (early bailout)
+    if (mainCategoryFilter.size > 0) {
+      const projectMetaData = ownerProjectToProjectData[owner];
+      const projectMainCategory = projectMetaData?.main_category?.toLowerCase(); // Ensure project's category is lowercase for comparison
+      if (!projectMainCategory || !mainCategoryFilter.has(projectMainCategory)) { // mainCategoryFilter has lowercase values
         continue;
       }
     }
@@ -223,7 +233,6 @@ function aggregateProjectData(
     const firstKey = memoizedResults.keys().next().value;
     memoizedResults.delete(firstKey);
   }
-
   return results;
 }
 
@@ -254,6 +263,8 @@ export type ApplicationsDataContextType = {
   applicationsChains: string[];
   selectedStringFilters: string[];
   setSelectedStringFilters: (value: string[]) => void;
+  selectedMainCategories: string[];
+  setSelectedMainCategories: (value: string[]) => void;
   medianMetric: string;
   medianMetricKey: string;
 }
@@ -306,10 +317,16 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
     [searchParams]
   );
 
+  const selectedMainCategoryParam = useMemo(() =>{
+    const categories = searchParams.get("main_category")?.split(",") || [];
+    return categories;
+  }, [searchParams]);
+
 
   enum FilterType {
     SEARCH = "owner_project",
     CHAIN = "origin_key",
+    MAIN_CATEGORY = "main_category",
   }
   const handleFilters = (type: FilterType, value: string[]) => {
     // update the params
@@ -392,18 +409,20 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
       "max": applicationsTimespan[5],
     };
 
-    if (!applicationsDataTimespan || !applicationsDataTimespan[selectedTimespan]) return [];
-
-    return aggregateProjectData(
+    if (!applicationsDataTimespan || !applicationsDataTimespan[selectedTimespan]) {
+      return [];
+    }
+    const aggregated = aggregateProjectData(
       applicationsDataTimespan[selectedTimespan].data.data, applicationsDataTimespan[selectedTimespan].data.types, ownerProjectToProjectData, {
         origin_key: selectedChainsParam,
         owner_project: selectedStringFiltersParam,
-        category: selectedStringFiltersParam,
+        main_category: selectedMainCategoryParam,
       },
       selectedTimespan,
       focusEnabled
-    )
-  }, [applicationsTimespan, selectedTimespan, selectedChainsParam, selectedStringFiltersParam, ownerProjectToProjectData, focusEnabled]);
+    );
+    return aggregated;
+  }, [applicationsTimespan, selectedTimespan, selectedChainsParam, selectedStringFiltersParam, selectedMainCategoryParam, ownerProjectToProjectData, focusEnabled]);
 
   const applicationDataAggregated = useMemo(() => {
     if (!applicationsTimespan) return [];
@@ -422,7 +441,7 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
       applicationsDataTimespan[selectedTimespan].data.data, applicationsDataTimespan[selectedTimespan].data.types, ownerProjectToProjectData, {
         origin_key: [],
         owner_project: [],
-        category: [],
+        main_category: [],
       },
       selectedTimespan,
       focusEnabled
@@ -488,6 +507,8 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
         applicationsChains,
         selectedStringFilters: selectedStringFiltersParam,
         setSelectedStringFilters: (value) => handleFilters(FilterType.SEARCH, value),
+        selectedMainCategories: selectedMainCategoryParam,
+        setSelectedMainCategories: (value) => handleFilters(FilterType.MAIN_CATEGORY, value),
         medianMetric,
         medianMetricKey,
       }}

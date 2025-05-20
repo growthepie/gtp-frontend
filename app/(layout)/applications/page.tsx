@@ -29,6 +29,7 @@ import Image from "next/image";
 import { MetricInfo } from "@/types/api/MasterResponse";
 import { useTimespan } from "./_contexts/TimespanContext";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
+import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
 
 // Preload data for the overview page
@@ -44,11 +45,14 @@ export default function Page() {
   const { metricsDef } = useMetrics();
   const { timespans, selectedTimespan } = useTimespan();
 
+  const [topGainersRef, { height: topGainersHeight }] = useElementSizeObserver<HTMLDivElement>();
+
+
   useEffect(() => {
     const handleScroll = () => {
       sessionStorage.setItem(SCROLL_POS_KEY, window.scrollY.toString());
     };
-  
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -56,24 +60,24 @@ export default function Page() {
   useLayoutEffect(() => {
     const restoreScroll = () => {
       const savedScroll = sessionStorage.getItem(SCROLL_POS_KEY);
-      
+
       if (!savedScroll) {
         return;
       }
-      
+
       console.log("Attempting to restore scroll with scroll position:", savedScroll);
       const scrollY = parseInt(savedScroll);
-      
+
       // Track start time for the 1-second attempt window
       const startTime = Date.now();
       const maxDuration = 1000; // 1 second in milliseconds
-      
+
       // Function to attempt scrolling with retries
       const attemptScroll = () => {
         const pageHeight = document.documentElement.scrollHeight;
         const currentTime = Date.now();
         const timeElapsed = currentTime - startTime;
-        
+
         if (scrollY < pageHeight) {
           // Page is tall enough, perform scroll
           window.scrollTo(0, scrollY);
@@ -89,17 +93,17 @@ export default function Page() {
           return false; // Failed
         }
       };
-      
+
       // Start the attempt cycle
       attemptScroll();
     };
-  
+
     const referrer = document.referrer;
     // if the referrer is the applications page, restore the scroll
     if (referrer.includes("/applications/")) {
       restoreScroll();
     }
-    
+
   }, []);
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
@@ -125,7 +129,7 @@ export default function Page() {
     }
   }, [applicationDataAggregatedAndFiltered, medianMetricKey, showUsd]);
 
- 
+
 
   const hideTopGainersAndLosers = useMemo(() => {
     return selectedTimespan === "max" || selectedStringFilters.length > 0;
@@ -134,7 +138,15 @@ export default function Page() {
   return (
     <>
       <div>
-        <div className={`transition-[max-height,opacity] duration-300 ${hideTopGainersAndLosers === true ? "overflow-hidden max-h-0 opacity-0" : "max-h-[calc(78px+150px)] md:max-h-[530px] lg:h-[380px] opacity-100"}`}>
+        <div
+
+          className={``}
+          style={{
+            height: hideTopGainersAndLosers ? 0 : `calc(78px + ${topGainersHeight}px)`, // Use the height from the observer
+            opacity: hideTopGainersAndLosers ? 0 : 1,
+            transition: "height 0.3s ease, opacity 0.3s ease",
+          }}
+        >
           <Container className={`pt-[30px]`}>
             <div className="flex flex-col gap-y-[10px] ">
               <div className="heading-large">Top Gainers and Losers by {metricsDef[medianMetric].name}</div>
@@ -155,21 +167,24 @@ export default function Page() {
               </div>
             </div>
           </Container>
-          <Container className={`hidden h-[450px] lg:h-[300px] md:grid md:grid-rows-3 md:grid-flow-col lg:grid-rows-2 lg:grid-flow-row pt-[10px] lg:grid-cols-3 gap-[10px]`}>
-            {topGainers.map((application, index) => (
-              <ApplicationCard key={index} application={application} />
-            ))}
-            {topLosers.map((application, index) => (
-              <ApplicationCard key={index} application={application} />
-            ))}
-            {isLoading && new Array(6).fill(0).map((_, index) => (
-              <ApplicationCard key={index} application={undefined} />
-            ))}
-          </Container>
-        </div>
-        <div className={`block md:hidden transition-[max-height,opacity] duration-300 ${hideTopGainersAndLosers === true ? "overflow-hidden max-h-0 opacity-0" : "max-h-[150px]"}`}>
-          <div className="pt-[10px]">
-            <CardSwiper cards={[...topGainers.map((application, index) => <ApplicationCard key={index} application={application} />), ...topLosers.map((application, index) => <ApplicationCard key={3 + index} application={application} />)]} />
+          <div ref={topGainersRef}>
+            <Container className={`hidden md:flex md:flex-wrap pt-[10px] gap-[10px]`}>
+              {topGainers.map((application, index) => (
+                <ApplicationCard key={index} application={application} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
+              ))}
+              {topLosers.map((application, index) => (
+                <ApplicationCard key={index} application={application} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
+              ))}
+              {isLoading && new Array(6).fill(0).map((_, index) => (
+                <ApplicationCard key={index} application={undefined} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
+              ))}
+            </Container>
+          
+            <div className={`block md:hidden`}>
+              <div className="pt-[10px]">
+                <CardSwiper cards={[...topGainers.map((application, index) => <ApplicationCard key={index} application={application} />), ...topLosers.map((application, index) => <ApplicationCard key={3 + index} application={application} />)]} />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -199,38 +214,38 @@ const CardSwiper = ({ cards }: { cards: React.ReactNode[] }) => {
   const { containerRef, showLeftGradient, showRightGradient } =
     useDragScroll("horizontal", 0.96, { snap: true, snapThreshold: 0.2 });
 
-    const onScroll = () => {
-      if (containerRef.current) {
-        const containerRect = containerRef.current.getBoundingClientRect();
-        const containerCenter = containerRect.left + containerRect.width / 2;
-        const children = Array.from(containerRef.current.children);
-        let closestIndex = 0;
-        let closestDistance = Infinity;
-        children.forEach((child, index) => {
-          const rect = child.getBoundingClientRect();
-          const childCenter = rect.left + rect.width / 2;
-          const distance = Math.abs(childCenter - containerCenter);
-          if (distance < closestDistance) {
-            closestDistance = distance;
-            closestIndex = index;
-          }
-        });
-        setActiveIndex(closestIndex);
-        setLeftIndex(Math.max(0, closestIndex - 1));
-        setRightIndex(Math.min(children.length - 1, closestIndex + 1));
-        setIsFirst(closestIndex === 0);
-        setIsLast(closestIndex === children.length - 1);
-      }
-    };
-  
-    useEffect(() => {
-      const container = containerRef.current;
-      if (!container) return;
-      container.addEventListener("scroll", onScroll);
-      // Run once on mount to set the active index correctly.
-      onScroll();
-      return () => container.removeEventListener("scroll", onScroll);
-    }, []);
+  const onScroll = () => {
+    if (containerRef.current) {
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const containerCenter = containerRect.left + containerRect.width / 2;
+      const children = Array.from(containerRef.current.children);
+      let closestIndex = 0;
+      let closestDistance = Infinity;
+      children.forEach((child, index) => {
+        const rect = child.getBoundingClientRect();
+        const childCenter = rect.left + rect.width / 2;
+        const distance = Math.abs(childCenter - containerCenter);
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestIndex = index;
+        }
+      });
+      setActiveIndex(closestIndex);
+      setLeftIndex(Math.max(0, closestIndex - 1));
+      setRightIndex(Math.min(children.length - 1, closestIndex + 1));
+      setIsFirst(closestIndex === 0);
+      setIsLast(closestIndex === children.length - 1);
+    }
+  };
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    container.addEventListener("scroll", onScroll);
+    // Run once on mount to set the active index correctly.
+    onScroll();
+    return () => container.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
     <div
@@ -241,10 +256,9 @@ const CardSwiper = ({ cards }: { cards: React.ReactNode[] }) => {
         return (
           <div
             key={index}
-            className={`transition-[transform,opacity] duration-300 ease-in-out ${
-              index === activeIndex ? "scale-100 opacity-100" : "scale-[0.75] opacity-50"
-            }`}
-            style={{ 
+            className={`transition-[transform,opacity] duration-300 ease-in-out ${index === activeIndex ? "scale-100 opacity-100" : "scale-[0.75] opacity-50"
+              }`}
+            style={{
               minWidth: "calc(100% - 40px)",
               marginRight: !isLast && index === leftIndex ? "-40px" : 0,
               marginLeft: !isFirst && index === rightIndex ? "-40px" : 0,
@@ -260,7 +274,7 @@ const CardSwiper = ({ cards }: { cards: React.ReactNode[] }) => {
 
 const ApplicationsTable = memo(() => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
-  const { applicationDataAggregatedAndFiltered} = useApplicationsData();
+  const { applicationDataAggregatedAndFiltered } = useApplicationsData();
   const { sort, setSort } = useSort();
   const { metricsDef, selectedMetrics, setSelectedMetrics, selectedMetricKeys, } = useMetrics();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
@@ -277,38 +291,38 @@ const ApplicationsTable = memo(() => {
   const { selectedTimespan } = useTimespan();
   // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() => {
-      const applicationColumnWidth = selectedMetricKeys.length > 2 ? "minmax(156px, 1fr)" : "minmax(285px, 1fr)";
-      const metricColumnWidth = selectedMetricKeys.length > 2 ? "242px" : "262px";
-      return [
-        "26px",
-        applicationColumnWidth,
-        "166px",
-        "150px",
-        "95px",
-        ...selectedMetricKeys.map(() => metricColumnWidth),
-        ...new Array(numTotalMetrics - selectedMetricKeys.length).fill("0px"),
-        "29px"
-      ].join(" ");
-    },[numTotalMetrics, selectedMetricKeys]
+    const applicationColumnWidth = selectedMetricKeys.length > 2 ? "minmax(156px, 1fr)" : "minmax(285px, 1fr)";
+    const metricColumnWidth = selectedMetricKeys.length > 2 ? "242px" : "262px";
+    return [
+      "26px",
+      applicationColumnWidth,
+      "166px",
+      "150px",
+      "95px",
+      ...selectedMetricKeys.map(() => metricColumnWidth),
+      ...new Array(numTotalMetrics - selectedMetricKeys.length).fill("0px"),
+      "29px"
+    ].join(" ");
+  }, [numTotalMetrics, selectedMetricKeys]
   );
 
- // Optimize row rendering with a memoized item renderer
- const renderItem = useCallback((index) => {
-  return (
-    <div key={index} className="pb-[5px]">
-      <ApplicationTableRow 
-        rowIndex={index} 
-        application={applicationDataAggregatedAndFiltered[index]} 
-        maxMetrics={maxMetrics} 
-      />
-    </div>
-  );
-}, [applicationDataAggregatedAndFiltered, maxMetrics]);
+  // Optimize row rendering with a memoized item renderer
+  const renderItem = useCallback((index) => {
+    return (
+      <div key={index} className="pb-[5px]">
+        <ApplicationTableRow
+          rowIndex={index}
+          application={applicationDataAggregatedAndFiltered[index]}
+          maxMetrics={maxMetrics}
+        />
+      </div>
+    );
+  }, [applicationDataAggregatedAndFiltered, maxMetrics]);
 
   return (
     <>
-    {/* <div>{numTotalMetrics} {selectedMetricKeys.length} {(new Array(numTotalMetrics - selectedMetricKeys.length).fill(0).map(() => "0px").join(" "))}</div> */}
-    {/* <HorizontalScrollContainer reduceLeftMask={true}> */}
+      {/* <div>{numTotalMetrics} {selectedMetricKeys.length} {(new Array(numTotalMetrics - selectedMetricKeys.length).fill(0).map(() => "0px").join(" "))}</div> */}
+      {/* <HorizontalScrollContainer reduceLeftMask={true}> */}
       <GridTableHeader
         // gridDefinitionColumns={gridColumns}
         // className="sticky top-[250px] group text-[14px] !px-[5px] !py-0 gap-x-[15px] !pb-[4px] !z-[10]"
@@ -339,7 +353,7 @@ const ApplicationsTable = memo(() => {
           className="heading-small-xs pr-[15px] pl-[2.5px] "
           sort={sort}
           setSort={setSort}
-          
+
         >
           <div className="flex items-center gap-x-[5px]">
             <GTPIcon icon="gtp-categories" size="sm" />
@@ -361,66 +375,66 @@ const ApplicationsTable = memo(() => {
 
           return (
             <div key={index} className={`flex justify-end pr-[15px] `}>
-            <GridTableHeaderCell
-              
-              metric={metric}
-              className="heading-small-xs z-[0] flex whitespace-nowrap"
-              justify="end"
-              sort={sort}
-              setSort={setSort}
-              // onSort={() => {
-              //   // if (selectedMetrics[0] !== metric) {
-              //     // reorder selectedMetrics array so that the first metric is the one that was clicked
-              //     const newSelectedMetrics = [metric, ...selectedMetrics.filter((m) => m !== metric)];
-              //     console.log("newSelectedMetrics", newSelectedMetrics);
-              //     setSelectedMetrics(newSelectedMetrics);
-                  
-              //     console.log("selectedMetrics", selectedMetrics);
-              //   // }
-              // }}
-              extraRight={
-                <div className="flex items-end gap-x-[5px] pl-[5px] cursor-default z-[10]">
-                  <div
-                    className={`cursor-pointer items-center rounded-full bg-[#344240] text-[#CDD8D3] gap-x-[2px] px-[5px] h-[18px] ${selectedTimespan === "max" ? "hidden" : "flex"}`}
-                    onClick={() => {
-                      setSort({
-                        metric: `${selectedMetricKeys[index]}_change_pct`, //"gas_fees_change_pct",
-                        sortOrder:
-                          sort.metric === `${selectedMetricKeys[index]}_change_pct`
-                            ? sort.sortOrder === "asc"
-                              ? "desc"
-                              : "asc"
-                            : "desc",
-                      });
-                    }}
-                  >
-                    <div className="text-xxxs !leading-[14px]">Change</div>
-                    {/* <Icon icon="feather:arrow-down" className="w-[10px] h-[10px]" /> */}
-                    <Icon
-                      icon={
-                        sort.metric === `${selectedMetricKeys[index]}_change_pct` && sort.sortOrder === "asc"
-                          ? "feather:arrow-up"
-                          : "feather:arrow-down"
-                      }
-                      className="w-[10px] h-[10px]"
-                      style={{
-                        opacity: sort.metric === `${selectedMetricKeys[index]}_change_pct` ? 1 : 0.2,
+              <GridTableHeaderCell
+
+                metric={metric}
+                className="heading-small-xs z-[0] flex whitespace-nowrap"
+                justify="end"
+                sort={sort}
+                setSort={setSort}
+                // onSort={() => {
+                //   // if (selectedMetrics[0] !== metric) {
+                //     // reorder selectedMetrics array so that the first metric is the one that was clicked
+                //     const newSelectedMetrics = [metric, ...selectedMetrics.filter((m) => m !== metric)];
+                //     console.log("newSelectedMetrics", newSelectedMetrics);
+                //     setSelectedMetrics(newSelectedMetrics);
+
+                //     console.log("selectedMetrics", selectedMetrics);
+                //   // }
+                // }}
+                extraRight={
+                  <div className="flex items-end gap-x-[5px] pl-[5px] cursor-default z-[10]">
+                    <div
+                      className={`cursor-pointer items-center rounded-full bg-[#344240] text-[#CDD8D3] gap-x-[2px] px-[5px] h-[18px] ${selectedTimespan === "max" ? "hidden" : "flex"}`}
+                      onClick={() => {
+                        setSort({
+                          metric: `${selectedMetricKeys[index]}_change_pct`, //"gas_fees_change_pct",
+                          sortOrder:
+                            sort.metric === `${selectedMetricKeys[index]}_change_pct`
+                              ? sort.sortOrder === "asc"
+                                ? "desc"
+                                : "asc"
+                              : "desc",
+                        });
                       }}
-                    />
+                    >
+                      <div className="text-xxxs !leading-[14px]">Change</div>
+                      {/* <Icon icon="feather:arrow-down" className="w-[10px] h-[10px]" /> */}
+                      <Icon
+                        icon={
+                          sort.metric === `${selectedMetricKeys[index]}_change_pct` && sort.sortOrder === "asc"
+                            ? "feather:arrow-up"
+                            : "feather:arrow-down"
+                        }
+                        className="w-[10px] h-[10px]"
+                        style={{
+                          opacity: sort.metric === `${selectedMetricKeys[index]}_change_pct` ? 1 : 0.2,
+                        }}
+                      />
+                    </div>
+                    <Tooltip placement="bottom">
+                      <TooltipTrigger>
+                        <Icon icon="feather:info" className="w-[15px] h-[15px]" />
+                      </TooltipTrigger>
+                      <TooltipContent className="z-[99]">
+                        <MetricTooltip metric={metric} />
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
-                  <Tooltip placement="bottom">
-                    <TooltipTrigger>
-                      <Icon icon="feather:info" className="w-[15px] h-[15px]" />
-                    </TooltipTrigger>
-                    <TooltipContent className="z-[99]">
-                      <MetricTooltip metric={metric} />
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-              }
-            >
-              {metricsDef[metric].name} {Object.keys(metricsDef[metric].units).includes("eth") && <>({showUsd ? "USD" : "ETH"})</>}
-            </GridTableHeaderCell>
+                }
+              >
+                {metricsDef[metric].name} {Object.keys(metricsDef[metric].units).includes("eth") && <>({showUsd ? "USD" : "ETH"})</>}
+              </GridTableHeaderCell>
             </div>
           )
         })}
@@ -446,8 +460,8 @@ const ApplicationsTable = memo(() => {
         />
       </div>
       {/* </HorizontalScrollContainer> */}
-      </>
-    
+    </>
+
   )
 });
 
@@ -478,14 +492,14 @@ const areValuePropsEqual = (prevProps: ValueProps, nextProps: ValueProps) => {
   );
 };
 
-const Value = memo(({ 
-  rowIndex, 
-  rank, 
-  def, 
-  value, 
-  change_pct, 
-  maxMetric, 
-  metric 
+const Value = memo(({
+  rowIndex,
+  rank,
+  def,
+  value,
+  change_pct,
+  maxMetric,
+  metric
 }: ValueProps) => {
   const { sort } = useSort();
   const [showUsd] = useLocalStorage("showUsd", true);
@@ -506,17 +520,17 @@ const Value = memo(({
   // Format displayed value once
   const displayValue = useMemo(() => {
     // Get the appropriate unit from the metric definition
-    const unitType = Object.keys(def.units).includes("usd") 
-      ? showUsd ? "usd" : "eth" 
+    const unitType = Object.keys(def.units).includes("usd")
+      ? showUsd ? "usd" : "eth"
       : Object.keys(def.units)[0];
-    
+
     const unit = def.units[unitType];
     const prefix = unit.prefix || "";
     const decimals = unit.decimals;
-    
-    return prefix + value.toLocaleString("en-GB", { 
-      minimumFractionDigits: decimals, 
-      maximumFractionDigits: decimals 
+
+    return prefix + value.toLocaleString("en-GB", {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
     });
   }, [def, showUsd, value]);
 
@@ -525,8 +539,8 @@ const Value = memo(({
     if (change_pct === Infinity) return " ";
 
     return `${change_pct < 0 ? '-' : '+'}${formatNumber(Math.abs(change_pct), {
-      defaultDecimals: 1, 
-      thresholdDecimals: {base: 0}
+      defaultDecimals: 1,
+      thresholdDecimals: { base: 0 }
     })}%`;
   }, [change_pct]);
 
@@ -536,7 +550,7 @@ const Value = memo(({
       <div className="numbers-xs text-[#5A6462] w-[calc(7.33*4px+10px)] pl-[10px]">
         {isSelectedMetric && rank}
       </div>
-      
+
       {/* Value container */}
       <div className="w-full flex flex-col items-end gap-y-[2px]">
         {/* Value display */}
@@ -544,16 +558,15 @@ const Value = memo(({
           <div className="numbers-xs">
             {displayValue}
           </div>
-          <div className={`numbers-xxs w-[49px] text-right ${
-            change_pct < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'
-          } ${selectedTimespan === "max" ? "hidden" : ""}`}>
+          <div className={`numbers-xxs w-[49px] text-right ${change_pct < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'
+            } ${selectedTimespan === "max" ? "hidden" : ""}`}>
             {changePctDisplayValue}
           </div>
         </div>
-        
+
         {/* Progress bar */}
         <div className="relative w-full h-[4px] rounded-full">
-          <div 
+          <div
             className="absolute h-[4px] right-0 transition-[width]"
             style={{
               width: progressWidth,
@@ -577,17 +590,17 @@ const areTableRowPropsEqual = (
 ) => {
   // Compare rowIndex
   if (prevProps.rowIndex !== nextProps.rowIndex) return false;
-  
+
   // Compare maxMetrics array
   if (prevProps.maxMetrics.length !== nextProps.maxMetrics.length) return false;
   for (let i = 0; i < prevProps.maxMetrics.length; i++) {
     if (prevProps.maxMetrics[i] !== nextProps.maxMetrics[i]) return false;
   }
-  
+
   // Compare relevant application properties (avoid deep comparison of the entire object)
   const prevApp = prevProps.application;
   const nextApp = nextProps.application;
-  
+
   if (
     prevApp.owner_project !== nextApp.owner_project ||
     prevApp.num_contracts !== nextApp.num_contracts ||
@@ -604,20 +617,20 @@ const areTableRowPropsEqual = (
   ) {
     return false;
   }
-  
+
   // Compare origin_keys arrays
   if (prevApp.origin_keys.length !== nextApp.origin_keys.length) return false;
   for (let i = 0; i < prevApp.origin_keys.length; i++) {
     if (prevApp.origin_keys[i] !== nextApp.origin_keys[i]) return false;
   }
-  
+
   // If we got here, the props are considered equal
   return true;
 };
 
 
 const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { application: AggregatedDataRow, maxMetrics: number[], rowIndex: number }) => {
-  const { ownerProjectToProjectData  } = useProjectsMetadata();
+  const { ownerProjectToProjectData } = useProjectsMetadata();
   const { metricsDef, selectedMetrics, selectedMetricKeys, } = useMetrics();
   const { selectedTimespan } = useTimespan();
   const { sort } = useSort();
@@ -632,26 +645,26 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
   }, []);
 
   const numTotalMetrics = Object.keys(metricsDef).length;
-  
+
   // Memoize gridColumns to prevent recalculations
   const gridColumns = useMemo(() => {
-      const applicationColumnWidth = selectedMetricKeys.length > 2 ? "minmax(156px, 1fr)" : "minmax(285px, 1fr)";
-      const metricColumnWidth = selectedMetricKeys.length > 2 ? "242px" : "262px";
-      return [
-        "26px",
-        applicationColumnWidth,
-        "166px",
-        "150px",
-        "95px",
-        ...selectedMetricKeys.map(() => metricColumnWidth),
-        ...new Array(numTotalMetrics - selectedMetricKeys.length).fill("0px"),
-        "29px"
-      ].join(" ");
-    },[numTotalMetrics, selectedMetricKeys]
+    const applicationColumnWidth = selectedMetricKeys.length > 2 ? "minmax(156px, 1fr)" : "minmax(285px, 1fr)";
+    const metricColumnWidth = selectedMetricKeys.length > 2 ? "242px" : "262px";
+    return [
+      "26px",
+      applicationColumnWidth,
+      "166px",
+      "150px",
+      "95px",
+      ...selectedMetricKeys.map(() => metricColumnWidth),
+      ...new Array(numTotalMetrics - selectedMetricKeys.length).fill("0px"),
+      "29px"
+    ].join(" ");
+  }, [numTotalMetrics, selectedMetricKeys]
   );
 
   return (
-    <Link href={{ pathname: `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",")}}>
+    <Link href={{ pathname: `/applications/${application.owner_project}`, query: searchParams.toString().replace(/%2C/g, ",") }}>
       <GridTableRow
         // gridDefinitionColumns={gridColumns}
         className={`group text-[14px] !px-[5px] !py-0 h-[34px] !gap-x-0 transition-all duration-300`}
@@ -717,13 +730,13 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
         {selectedMetrics.map((metric, index) => {
           const metricKey = selectedMetricKeys[index];
           let bgColor = "bg-transparent";
-          
+
           // starting from the last metric column, the bg should be bg-[#344240]/30 and every other column should be bg-transparent
           if (index === selectedMetrics.length - 1) {
             bgColor = "bg-[#344240]/30";
           } else if (selectedMetrics.length % 2 === 0) {
             bgColor = index % 2 === 1 ? "bg-[#344240]/30" : "bg-transparent";
-          }else{
+          } else {
             bgColor = index % 2 === 0 ? "bg-[#344240]/30" : "bg-transparent";
           }
 
@@ -742,8 +755,8 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
           )
         })}
         {selectedMetricKeys.length < numTotalMetrics && (new Array(numTotalMetrics - selectedMetricKeys.length).fill(0).map((_, index) => (
-            <div key={index} className="w-[0px]" />
-          )))}
+          <div key={index} className="w-[0px]" />
+        )))}
         <div className="relative flex justify-end items-center pr-[0px]">
           <div className="absolute cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center">
             <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-[#CDD8D3]" />

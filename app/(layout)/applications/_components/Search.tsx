@@ -6,15 +6,39 @@ import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { useSessionStorage } from "usehooks-ts";
 import useDragScroll from "@/hooks/useDragScroll";
-import { debounce } from "lodash";
+import { debounce, get } from "lodash";
 import { useUIContext } from "@/contexts/UIContext";
 import { useMaster } from "@/contexts/MasterContext";
+import { useProjectsMetadata } from "../_contexts/ProjectsMetadataContext"; // Correctly added import
 import { useApplicationsData } from "../_contexts/ApplicationsDataContext";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { GTPIcon } from "@/components/layout/GTPIcon";
+import { GTPIconName } from "@/icons/gtp-icon-names";
+
+const getGTPCategoryIcon = (category: string): GTPIconName | "" => {
+  switch (category) {
+    case "Cross-Chain":
+      return "gtp-crosschain";
+    case "Utility":
+      return "gtp-utilities";
+    case "Token Transfers":
+      return "gtp-tokentransfers";
+    case "DeFi":
+      return "gtp-defi";
+    case "Social":
+      return "gtp-socials";
+    case "NFT":
+      return "gtp-nft";
+    case "CeFi":
+      return "gtp-cefi";
+    default:
+      return "";
+  }
+}
 
 export default function Search() {
   const { AllChainsByKeys } = useMaster();
+  const { availableMainCategories } = useProjectsMetadata(); // Added
   const { isMobile } = useUIContext();
   const { applicationDataAggregatedAndFiltered, applicationsChains } = useApplicationsData();
   
@@ -35,10 +59,15 @@ export default function Search() {
     [searchParams]
   );
   
-  const stringFiltersFromParams = useMemo(() => 
+  const stringFiltersFromParams = useMemo(() =>
     searchParams.get("owner_project")?.split(",").filter(Boolean) || [],
     [searchParams]
   );
+
+  const mainCategoryFromParams = useMemo(() =>{
+    const categories = searchParams.get("main_category")?.split(",").filter(Boolean) || [];
+    return categories;
+  }, [searchParams]);
   
   // Local UI state
   const [isOpen, setIsOpen] = useState<boolean>(!!searchFromParams);
@@ -96,7 +125,7 @@ export default function Search() {
   }, [applicationDataAggregatedAndFiltered]);
 
   // Update URL params when filters change
-  const updateURLParams = useCallback((filterType: 'origin_key' | 'owner_project', newValues: string[]) => {
+  const updateURLParams = useCallback((filterType: 'origin_key' | 'owner_project' | 'main_category', newValues: string[]) => {
     const newSearchParams = new URLSearchParams(searchParams.toString());
     
     if (newValues.length === 0) {
@@ -113,7 +142,7 @@ export default function Search() {
   // Handler for adding/removing filters
   const handleFilter = useCallback(
     (
-      key: 'origin_key' | 'string',
+      key: 'origin_key' | 'string' | 'main_category',
       value: string
     ) => {
       if (key === "origin_key") {
@@ -132,10 +161,17 @@ export default function Search() {
         updateURLParams('owner_project', newStringFilters);
       }
 
+      if (key === "main_category") {
+        const newMainCategories = mainCategoryFromParams.includes(value)
+          ? mainCategoryFromParams.filter(category => category !== value)
+          : [...mainCategoryFromParams, value];
+        updateURLParams('main_category', newMainCategories);
+      }
+
       setInternalSearch("");
       setSearch("");
     },
-    [chainsFromParams, stringFiltersFromParams, updateURLParams]
+    [chainsFromParams, stringFiltersFromParams, mainCategoryFromParams, updateURLParams]
   );
 
   // Clear all filters
@@ -143,6 +179,7 @@ export default function Search() {
     const newSearchParams = new URLSearchParams(searchParams.toString());
     newSearchParams.delete('origin_key');
     newSearchParams.delete('owner_project');
+    newSearchParams.delete('main_category');
     
     const url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
     window.history.replaceState(null, "", url);
@@ -224,15 +261,47 @@ export default function Search() {
         altColoring={isOpen}
       />
     ));
+    const mainCategoryFilters = mainCategoryFromParams.map((categoryKey) => {
+      
+      // get the display name for the category from availableMainCategories
+      const displayName = availableMainCategories.find((category) => category.toLowerCase() === categoryKey.toLowerCase()) || categoryKey;
+
+      return (
+      <Badge
+        key={categoryKey}
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          // Pass the raw categoryKey (which should match the keys in availableMainCategories)
+          // The handleFilter function and URL params should ideally use a consistent case (e.g., lowercase)
+          handleFilter("main_category", categoryKey.toLowerCase());
+        }}
+        label={displayName} // Display the original casing
+        leftIcon={`gtp:${getGTPCategoryIcon(displayName)}`}
+        leftIconColor="#CDD8D3"
+        rightIcon="heroicons-solid:x-circle"
+        rightIconColor="#FE5468"
+        showLabel={true}
+        altColoring={isOpen}
+      />
+    )});
+
+
     return [
       ...chainFilters,
       ...stringFilters,
+      ...mainCategoryFilters,
     ];
-  }, [master, chainsFromParams, stringFiltersFromParams, AllChainsByKeys, isOpen, handleFilter, boldSearch]);
+  }, [master, chainsFromParams, stringFiltersFromParams, mainCategoryFromParams, AllChainsByKeys, isOpen, handleFilter, boldSearch]);
 
   // Update autocomplete with debounced search term
   useEffect(() => {
-    if (!master || applicationsOwnerProjects.length === 0) return;
+    if (!availableMainCategories || !master) { // Ensure essential data is present
+        if (search.length === 0) {
+            setApplicationsAutocomplete({ address: [], name: [], owner_project: [], category: [], subcategory: [], origin_key: [] });
+        }
+        return;
+    }
 
     if (search.length === 0) {
       setApplicationsAutocomplete({
@@ -246,22 +315,22 @@ export default function Search() {
       return;
     }
 
-    const categoryAutocomplete = Object.keys(
-      master.blockspace_categories.main_categories,
-    ).filter((category) =>
-      master.blockspace_categories.main_categories[category]
-        .toLowerCase()
-        .includes(search.toLowerCase()),
+    // Autocomplete for main categories using the derived list
+    const categoryAutocomplete = availableMainCategories.filter((category) =>
+      category.toLowerCase().includes(search.toLowerCase())
     );
-    const subcategoryAutocomplete = Object.keys(
-      master.blockspace_categories.sub_categories,
-    ).filter((subcategory) =>
-      master.blockspace_categories.sub_categories[subcategory]
-        .toLowerCase()
-        .includes(search.toLowerCase()),
-    );
+
+    // Autocomplete for subcategories (assuming this still comes from master)
+    const subcategoryAutocomplete = master.blockspace_categories?.sub_categories
+      ? Object.keys(master.blockspace_categories.sub_categories).filter((subcategory) =>
+          master.blockspace_categories.sub_categories[subcategory]
+            .toLowerCase()
+            .includes(search.toLowerCase())
+        )
+      : [];
+
     const chainAutocomplete = applicationsChains.filter((chainKey) =>
-      master.chains[chainKey].name.toLowerCase().includes(search.toLowerCase()),
+      master.chains[chainKey]?.name.toLowerCase().includes(search.toLowerCase())
     );
     const ownerProjectAutocomplete = applicationsOwnerProjects.filter((row) =>
       row.owner_project.toLowerCase().includes(search.toLowerCase()),
@@ -275,7 +344,7 @@ export default function Search() {
       subcategory: subcategoryAutocomplete,
       origin_key: chainAutocomplete,
     });
-  }, [applicationsChains, applicationsOwnerProjects, master, search, setApplicationsAutocomplete]);
+  }, [applicationsChains, applicationsOwnerProjects, master, search, setApplicationsAutocomplete, availableMainCategories]); // Added availableMainCategories
 
   return (
     <div className="relative w-full h-[44px]">
@@ -319,6 +388,8 @@ export default function Search() {
                   e.preventDefault();
                 }
               }}
+              onFocus={() => setIsOpen(true)}
+              onBlur={() => setIsOpen(false)}
             />
 
             <div className={`flex items-center justify-between pr-[10px] gap-x-[10px] ${isOpen ? "" : "w-[calc(100%-63px-34px)]"}`}>
@@ -366,9 +437,9 @@ export default function Search() {
           {/* Only render dropdown content when open */}
           {/* {isOpen && ( */}
             <div
-              className={`${isOpen ? "max-h-[100px]" : "max-h-0"} transition-[max-height] z-[16] absolute flex flex-col-reverse md:flex-col rounded-t-[22px] md:rounded-t-none md:rounded-b-[22px] bg-[#151A19] left-0 right-0 bottom-[calc(100%-22px)] md:bottom-auto md:top-[calc(100%-22px)] shadow-[0px_0px_50px_0px_#000000] duration-300  overflow-hidden overflow-y-auto lg:overflow-y-hidden scrollbar-thin scrollbar-thumb-forest-700 scrollbar-track-transparent`}
+              className={`${isOpen ? "max-h-[400px]" : "max-h-0"} pt-[10px] md:pt-0 md:pb-[10px] gap-y-[15px] md:gap-y-[10px] transition-[max-height] z-[16] absolute flex flex-col-reverse md:flex-col rounded-t-[22px] md:rounded-t-none md:rounded-b-[22px] bg-[#151A19] left-0 right-0 bottom-[calc(100%-22px)] md:bottom-auto md:top-[calc(100%-22px)] shadow-[0px_0px_50px_0px_#000000] duration-300  overflow-hidden overflow-y-auto lg:overflow-y-hidden scrollbar-thin scrollbar-thumb-forest-700 scrollbar-track-transparent`}
             >
-              <div className={`flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] pb-[25px] pt-[5px] md:pb-[5px] md:pt-[25px] gap-y-[10px] text-[10px] bg-[#344240] z-[1] ${Filters.length > 0 ? "max-h-[100px]" : "max-h-[20px] opacity-0 !p-0"} transition-all duration-300 overflow-clip`}>
+              <div className={`select-none flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] pb-[25px] pt-[5px] md:pb-[5px] md:pt-[25px] gap-y-[10px] text-[10px] bg-[#344240] z-[1] ${Filters.length > 0 ? "max-h-[100px]" : "max-h-[20px] opacity-0 !p-0"} transition-all duration-300 overflow-clip`}>
                 <div className="flex flex-col md:flex-row h-[50px] md:h-[30px] gap-x-[10px] gap-y-[10px] items-start md:items-center z-[50]">
                   <div className="flex gap-x-[10px] items-center">
                     <div className="w-[15px] h-[15px]">
@@ -384,13 +455,14 @@ export default function Search() {
                   </FilterSelectionContainer>
                 </div>
               </div>
-              <div className="flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] pb-[10px] pt-[10px] gap-y-[10px] text-[10px]">
+              <div className="flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] gap-y-[10px] text-[10px]">
                 <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start md:items-center">
                   <div className="flex gap-x-[10px] items-center">
                     <div className="w-[15px] h-[15px]">
-                      <Icon
-                        icon="gtp:gtp-chain-alt"
-                        className="w-[15px] h-[15px] text-white"
+                      <GTPIcon
+                        icon="gtp-chain-alt"
+                        size="sm"
+                        className="text-white"
                       />
                     </div>
                     <div className="text-white leading-[150%]">Chain</div>
@@ -434,6 +506,57 @@ export default function Search() {
                               } transition-all`}
                           />
                         ))}
+                    </FilterSelectionContainer>
+                  )}
+                </div>
+              </div>
+              {/* Main Category Filter Section */}
+              <div className="flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] gap-y-[10px] text-[10px]">
+                <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start md:items-center">
+                  <div className="flex gap-x-[10px] items-center">
+                    <div className="w-[15px] h-[15px]">
+                      <GTPIcon
+                        icon="gtp-categories-monochrome"
+                        size="sm"
+                        className="text-white"
+                      />
+                    </div>
+                    <div className="text-white leading-[150%]">Main Category</div>
+                    <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
+                  </div>
+                  {master && availableMainCategories && availableMainCategories.length > 0 && (
+                    <FilterSelectionContainer className="w-full md:flex-1">
+                      {availableMainCategories
+                        .filter(
+                          (categoryKey) => // categoryKey here is from availableMainCategories (e.g., "DeFi")
+                            !mainCategoryFromParams.includes(categoryKey.toLowerCase()) // mainCategoryFromParams are lowercase
+                        )
+                        .map((categoryKey) => { // categoryKey is e.g. "DeFi"
+                          const displayName = categoryKey; // Use the category key itself (it's already cased for display)
+                          return (
+                            <Badge
+                              key={categoryKey}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                handleFilter("main_category", categoryKey.toLowerCase()); // Pass lowercase value to filter
+                              }}
+                              label={
+                                applicationsAutocomplete.category.includes(categoryKey) // Check against original casing for bolding
+                                  ? boldSearch(displayName)
+                                  : displayName
+                              }
+                              leftIcon={`gtp:${getGTPCategoryIcon(categoryKey)}`} // Use the GTP icon or fallback to a generic tag icon
+                              rightIcon="heroicons-solid:plus-circle"
+                              className={`z-[100]${search.length > 0 && applicationsAutocomplete.category.length > 0
+                                ? applicationsAutocomplete.category.includes(categoryKey)
+                                  ? "opacity-100" // Matched by autocomplete
+                                  : "opacity-30" // Not matched by autocomplete
+                                : "opacity-100" // No search or no autocomplete results, show all
+                                } transition-all`}
+                            />
+                          );
+                        })}
                     </FilterSelectionContainer>
                   )}
                 </div>
@@ -489,7 +612,13 @@ export const Badge = memo(({
       >
         {leftIcon ? (
           <div className="flex items-center justify-center w-[12px] h-[12px]">
-            {leftIcon}
+            <Icon
+              icon={leftIcon}
+              className="text-[#CDD8D3] w-[10px] h-[10px]"
+              style={{
+                color: leftIconColor,
+              }}
+            />
           </div>
         ) : (
           <div className="w-[0px] h-[12px]" />
