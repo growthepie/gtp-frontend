@@ -972,7 +972,7 @@ const BucketItem = ({
 
   return (
     <Link
-      href={lastBucketIndeces[itemKey] && !showMore[bucket] ? isApps ? `/applications?search=${query}&timespan=max` : `` : item.url}
+      href={lastBucketIndeces[itemKey] && !showMore[bucket] ? isApps ? `/applications?q=${query}&timespan=max` : `` : item.url}
       key={item.label}
       ref={(el) => {
         childRefs.current[itemKey] = el;

@@ -2,6 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+*:focus:not(.focus-visible) {
+  outline: none;
+}
+
+*:focus-visible {
+  /* remove default focus style */
+  outline: none;
+  /* custom focus styles */
+  box-shadow: 0px 0px 0px 2px #ffffff66;
+}
+
+input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
 /* @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;700;900&display=swap"); */
 /* 
 @layer utilities {
