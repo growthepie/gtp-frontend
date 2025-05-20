@@ -1,16 +1,16 @@
-// File: components/quick-dives/QuickDiveContent.tsx
+// File: components/quick-dives/QuickBiteContent.tsx
 'use client'; // Add this directive to mark it as a client component
 
 import React from 'react';
 import { PageContainer } from '@/components/layout/Container';
 import Image from 'next/image';
 
-interface QuickDiveContentProps {
+interface QuickBiteContentProps {
   content: string[];
   image: string;
 }
 
-const QuickDiveContent: React.FC<QuickDiveContentProps> = ({ content, image }) => {
+const QuickBiteContent: React.FC<QuickBiteContentProps> = ({ content, image }) => {
   return (
     <PageContainer className="">
       <div className="bg-forest-50 dark:bg-[#1F2726] rounded-[15px] overflow-hidden">
@@ -19,7 +19,7 @@ const QuickDiveContent: React.FC<QuickDiveContentProps> = ({ content, image }) =
             {/* Content section */}
             <div className="flex-1">
               {content.map((paragraph, index) => (
-                <p key={index} className="mb-4 text-sm md:text-base">
+                <p key={index} className="mb-4 text-xs md:text-sm ">
                   {paragraph}
                 </p>
               ))}
@@ -39,7 +39,7 @@ const QuickDiveContent: React.FC<QuickDiveContentProps> = ({ content, image }) =
                 {/* 
                 <Image
                   src={image}
-                  alt="Quick Dive visualization"
+                  alt="Quick Bite visualization"
                   fill
                   className="object-cover"
                 /> 
@@ -53,4 +53,4 @@ const QuickDiveContent: React.FC<QuickDiveContentProps> = ({ content, image }) =
   );
 };
 
-export default QuickDiveContent;
+export default QuickBiteContent;

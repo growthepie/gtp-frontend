@@ -9,7 +9,7 @@ interface CalloutBlockProps {
 
 export const CalloutBlock: React.FC<CalloutBlockProps> = ({ block }) => {
   return (
-    <div className={`my-6 p-4 bg-forest-50 dark:bg-forest-900 rounded-lg border-l-4 ${block.color ? `border-${block.color}` : 'border-forest-400'} ${block.className || ''}`}>
+    <div className={`my-[15px] p-[15px] bg-forest-50 dark:bg-forest-900 rounded-[15px] border-l-4 text-xs md:text-sm leading-[1.5] ${block.color ? `border-${"[#E3E8E7]"}` : 'border-[#E3E8E7]'} ${block.className || ''}`}>
       <div className="flex items-start gap-3">
         {block.icon && (
           <div className="flex-shrink-0 mt-1">

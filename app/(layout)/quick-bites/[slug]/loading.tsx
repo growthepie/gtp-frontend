@@ -1,4 +1,4 @@
-// File: app/(layout)/quick-dives/[slug]/loading.tsx
+// File: app/(layout)/quick-bites/[slug]/loading.tsx
 import { PageContainer } from "@/components/layout/Container";
 
 export default function Loading() {
@@ -26,7 +26,7 @@ export default function Loading() {
         </div>
       </div>
       
-      {/* Related quick dives loading */}
+      {/* Related quick bites loading */}
       <div className="mt-10">
         <div className="h-8 bg-forest-200 dark:bg-forest-700 rounded mb-6 w-64" />
         

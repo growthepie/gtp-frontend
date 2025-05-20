@@ -1,4 +1,4 @@
-// File: components/quick-dives/ChartWrapper.tsx
+// File: components/quick-bites/ChartWrapper.tsx
 'use client';
 import addHighchartsMore from "highcharts/highcharts-more";
 import React, { useEffect, useRef, useState, useCallback } from 'react';
@@ -29,12 +29,7 @@ import "@/app/highcharts.axis.css";
 import { Type } from "@/types/api/CategoryComparisonResponse";
 import { GTPIcon } from "../layout/GTPIcon";
 import { Icon } from "@iconify/react";
-// Extend Highcharts Chart type to include customWatermark
-declare module 'highcharts' {
-  interface Chart {
-    customWatermark?: Highcharts.SVGElement;
-  }
-}
+import type { AxisLabelsFormatterContextObject } from 'highcharts';
 
 interface ChartWrapperProps {
   chartType: 'line' | 'area' | 'column' | 'pie';
@@ -53,10 +48,12 @@ interface ChartWrapperProps {
       xIndex: number,
       yIndex: number,
       suffix?: string,
-      prefix?: string
+      prefix?: string,
+      dashStyle?: Highcharts.DashStyleValue
     }[]
   }
   seeMetricURL?: string | null;
+  showXAsDate?: boolean;
 }
 
 const ChartWrapper: React.FC<ChartWrapperProps> = ({
@@ -70,7 +67,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   stacking,
   jsonData,
   jsonMeta,
-  seeMetricURL
+  seeMetricURL,
+  showXAsDate = false
 }) => {
   const chartRef = useRef<any>(null);
   const { theme } = useTheme();
@@ -79,6 +77,13 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   const [loading, setLoading] = useState(true);
   const [filteredNames, setFilteredNames] = useState<string[]>([]);
   
+  // Add timespans and selectedTimespan
+  const timespans = {
+    all: { xMin: 0, xMax: Date.now() },
+    // Add other timespans as needed
+  };
+  const selectedTimespan = 'all';
+
   // Initialize Highcharts modules
   useEffect(() => {
     try {
@@ -144,7 +149,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
       const timeDiff = points[0].series.xData[1] - points[0].series.xData[0];
 
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-72 md:w-72 text-xs font-raleway rounded-full bg-opacity-60">
+      const tooltip = `<div class="mt-3 mr-3 mb-3  text-xs font-raleway rounded-full bg-opacity-60">
         <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2 ">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
@@ -171,48 +176,37 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
       }, 0);
 
       const tooltipPoints = points
-
         .map((point: any, index: number) => {
           const { series, y, percentage } = point;
           const { name } = series;
           
-
           const isFees = true;
           const nameString = name.slice(0, 20);
           
-
           const color = series.color.stops ? series.color.stops[0][1] : series.color;
-
 
           let value = y;
           let displayValue = y;
+          const currentPrefix = prefix[index] || '';
+          const currentSuffix = suffix[index] || '';
 
           return `
-          <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${color}"></div>
-            <div class="tooltip-point-name text-xs flex-1 truncate">${nameString}</div>
-            <div class="flex-1 text-right justify-end w-full flex numbers-xs">
-              <div class="flex justify-end text-right w-full">
-                  <div class="${!prefix && "hidden"
-            }">${prefix}</div><div>
-              ${
-                parseFloat(displayValue).toLocaleString(
-                  "en-GB",
-                  {
-                    minimumFractionDigits: 2,
-
-                    maximumFractionDigits: 2,
-                  },
-                )
-                
-              }
-               </div>
+            <div class="flex space-x-2 items-center font-medium mb-0.5">
+              <div class="min-w-4 max-w-4 h-1.5 rounded-r-full" style="background-color: ${color}"></div>
+              <div class="tooltip-point-name text-xs w-min truncate ">${nameString}</div>
+              <div class=" flex-1 text-right justify-end  w-full flex numbers-xs">
+                <div class="flex justify-end text-right w-full">
+                  <div class="${!currentPrefix && "hidden"}">${currentPrefix}</div>
+                  <div class="">
+                    ${parseFloat(displayValue).toLocaleString("en-GB", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })}
+                  </div>
+                  <div class="ml-0.5 ${!currentSuffix && "hidden"}">${currentSuffix}</div>
                 </div>
-                <div class="ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
-            </div>
-          </div>
-         `;
+              </div>
+            </div>`;
         })
         .join("");
 
@@ -252,18 +246,18 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
  
   
   return (
-    <div className="relative px-[35px]">
-      <div style={{ width, height }} className="relative bg-active-black rounded-[25px] shadow-md flex flex-col gap-y-[15px] h-full p-[15px] ">
-        <div className="w-full h-[36px] p-[5px] bg-[#1F2726] rounded-full">
+    <div className="relative md:px-[35px]">
+      <div style={{ width, height }} className="relative bg-transparent md:bg-active-black rounded-[25px] shadow-none md:shadow-md flex flex-col gap-y-[15px] h-full md:p-[15px] ">
+        <div className="w-full h-auto md:h-[36px] p-[5px] bg-[#1F2726] rounded-full">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-x-[5px]">
               <div className="w-fit h-fit"><GTPIcon icon={"gtp-metrics-totalvaluelocked"} className="w-[24px] h-[24px] "/></div>
-              <div className="text-[20px] font-bold leading-[120%]">{title}</div>
+              <div className="heading-small-md">{title}</div>
             </div>
           </div>
         </div>
-        <HighchartsProvider Highcharts={Highcharts}>
-          <HighchartsChart ref={chartRef}
+        <HighchartsProvider Highcharts={Highcharts} >
+          <HighchartsChart ref={chartRef} options={options}
               plotOptions={{
                 line: {
                   lineWidth: 1.5,
@@ -324,6 +318,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 enabled: false,
                 type: "x",
               }}
+              
               panKey="shift"
               // zooming={{
               //   type: "x",
@@ -340,7 +335,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               animation={{
                 duration: 50,
               }}
-              marginBottom={5}
+              marginBottom={showXAsDate ? 22 : 10}
               marginLeft={40}
               marginRight={5}
               marginTop={15}
@@ -355,12 +350,50 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 style: {
                   color: theme === 'dark' ? '#CDD8D3' : '#293332',
                   fontSize: '10px',
-                }
-              }}
+                },
+                distance: 10,
+                enabled: showXAsDate,
+                formatter: showXAsDate ? function (this: AxisLabelsFormatterContextObject) {
+                  if (timespans[selectedTimespan].xMax - timespans[selectedTimespan].xMin <= 40 * 24 * 3600 * 1000) {
+                    let isBeginningOfWeek = new Date(this.value).getUTCDay() === 1;
+                    let showMonth = this.isFirst || new Date(this.value).getUTCDate() === 1;
 
+                    return new Date(this.value).toLocaleDateString("en-GB", {
+                      timeZone: "UTC",
+                      month: "short",
+                      day: "numeric",
+                      year: this.isFirst ? "numeric" : undefined,
+                    });
+                  }
+                  else {
+                    // if Jan 1st, show year
+                    if (new Date(this.value).getUTCMonth() === 0 && new Date(this.value).getUTCDate() === 1) {
+                      return new Date(this.value).toLocaleDateString("en-GB", {
+                        timeZone: "UTC",
+                        year: "numeric",
+                      });
+                    }
+                    // if not 1st of the month, show month and day
+                    else if (new Date(this.value).getUTCDate() !== 1) {
+                      return new Date(this.value).toLocaleDateString("en-GB", {
+                        timeZone: "UTC",
+                        month: "short",
+                        day: "numeric",
+                      });
+                    }
+                    return new Date(this.value).toLocaleDateString("en-GB", {
+                      timeZone: "UTC",
+                      month: "short",
+                      year: "numeric",
+                    });
+                  }
+                } : undefined
+              }}
               gridLineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.11)' : 'rgba(41, 51, 50, 0.11)'}
               lineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.33)' : 'rgba(41, 51, 50, 0.33)'}
               tickColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.33)' : 'rgba(41, 51, 50, 0.33)'}
+              type={showXAsDate ? "datetime" : undefined}
+              tickAmount={5}
             />
             
             <YAxis 
@@ -373,24 +406,33 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               gridLineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.11)' : 'rgba(41, 51, 50, 0.11)'}
             >
               {chartType === 'line' && (
-                (jsonMeta ? jsonMeta.meta : data).map((series: any) => {
+                (jsonMeta ? jsonMeta.meta : data).map((series: any, index: number) => {
                   if(!filteredNames.includes(series.name) && filteredNames.length > 0) return null;
+                  const seriesData = jsonData ? jsonData[index].map((item: any) => [
+                    item[series.xIndex], // x value
+                    item[series.yIndex]  // y value
+                  ]) : series.data;
+                 
                   return (
                     <LineSeries
                       animation={true}
                       key={series.name}
                       name={series.name}
-                      data={series.data}
+                      data={seriesData}
                       color={series.color}
-
-                  />
-                )
-              })
+                      dashStyle={series.dashStyle ? series.dashStyle : undefined}
+                    />
+                  );
+                })
               )}  
               
               {chartType === 'area' && (
-                (jsonMeta ? jsonMeta.meta : data).map((series: any) => {
+                (jsonMeta ? jsonMeta.meta : data).map((series: any, index: number) => {
                   if(!filteredNames.includes(series.name) && filteredNames.length > 0) return null;
+                  const seriesData = jsonData ? jsonData[index].map((item: any) => [
+                    item[series.xIndex], // x value
+                    item[series.yIndex]  // y value
+                  ]) : series.data;
                   return (
                     <AreaSeries
                       stacking={stacking ? stacking : undefined}
@@ -412,19 +454,21 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                       marker={{
                         enabled: false,
                       }}
+                      dashStyle={series.dashStyle ? series.dashStyle : undefined}
                     />
                   );
                 })
               )}
               
               {chartType === 'column' && (
-                (jsonMeta ? jsonMeta.meta : data).map((series: any) => {
+                (jsonMeta ? jsonMeta.meta : data).map((series: any, index: number) => {
                   const useJson = jsonMeta ? true : false;
-                  const finalData = useJson ? jsonData.map((item: any) => [
+                  const seriesData = jsonData ? jsonData[index].map((item: any) => [
                     item[series.xIndex], // x value
                     item[series.yIndex]  // y value
                   ]) : series.data;
-                  
+
+              
                   if(!filteredNames.includes(series.name) && filteredNames.length > 0) return null;
                   return(
                     <ColumnSeries
@@ -432,10 +476,11 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                       stacking={stacking ? stacking : undefined}
                       borderColor="transparent"
                       pointPlacement="on"
-                      data={finalData}
+                      data={seriesData}
                       color={series.color}
                       name={series.name}
                       key={series.name}
+                      dashStyle={series.dashStyle ? series.dashStyle : undefined}
                     />
                   )
                 })
@@ -477,6 +522,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               stickOnContact={true}
               shape="rect"
               borderRadius={17}
+            
               borderWidth={0}
               outside={true}
               shadow={{
@@ -489,11 +535,12 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 color: "rgb(215, 223, 222)",
               }}
               formatter={tooltipFormatter}
+              
             />
             
           </HighchartsChart>
         </HighchartsProvider>
-        <div className="absolute bottom-[20%] left-0 right-0 flex flex-col items-center justify-center pointer-events-none z-0 opacity-40  " 
+        <div className="absolute bottom-[20%] left-[40px] md:left-0 right-0 flex flex-col items-center justify-center pointer-events-none z-0 opacity-40  " 
           style={{
             height: typeof height === "number" ? (height - 147) + "px" : "100%"
           }}
@@ -501,10 +548,10 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           <ChartWatermark className="w-[200.67px] h-[150.67px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
         </div>
         {/*Footer*/}
-        <div className="pl-[40px] flex justify-between">
+        <div className="md:pl-[40px] relative bottom-[2px] flex flex-col justify-between gap-y-[5px] md:gap-y-0">
           <div className="flex flex-col gap-y-[5px]">
             {/*Categories*/}
-            <div className="flex gap-x-[5px]">
+            <div className="flex gap-x-[5px] md:items-stretch items-center md:justify-normal justify-center">
               {(jsonMeta?.meta || data).map((category) => {
                 let bgBorderClass = "border-[1px] border-[#344240] bg-[#344240] hover:border-[#5A6462] hover:bg-[#5A6462] ";
                 if(filteredNames.length > 0 && (!filteredNames.includes(category.name))) {
@@ -513,7 +560,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 
                 return (
                   <div key={category.name} className={`bg-[#344240] hover:bg-[#5A6462] flex items-center justify-center rounded-full gap-x-[2px] p-[3px] cursor-pointer ${bgBorderClass}`} onClick={() => {
-                    console.log(category.name, filteredNames);
+                    
                     if(!filteredNames.includes(category.name)) {
                       setFilteredNames((prev) => {
                         const newFilteredNames = [...prev, category.name];
@@ -533,20 +580,23 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 )
               })}
             </div>
-            <div className="flex flex-col gap-y-[2px]">
-              <div className="text-[10px]">{`Chart type: ${chartType.charAt(0).toUpperCase() + chartType.slice(1)}`}</div>
-              <div className="text-[10px]">{`Aggregation: 7-Day Rolling Average`}</div>
-            </div>
+
           </div>
-          <div className="h-full flex items-end ">
+          <div className="h-full flex md:flex-row flex-col justify-between md:items-end items-center ">
+            <div className="flex flex-row md:flex-col gap-y-[2px]">
+              
+              <div className="text-[10px]"><span className="font-bold">Chart type:</span>{` ${chartType.charAt(0).toUpperCase() + chartType.slice(1)}`}</div>
+              <div className="md:hidden md:mx-0 mx-1 flex items-center relative bottom-[6px] justify-center ">-</div>
+              <div className="text-[10px]"><span className="font-bold">Aggregation:</span>{` 7-Day Rolling Average`}</div>
+            </div>
             {seeMetricURL && (
-              <a className="bg-[#263130] rounded-full pl-[15px] pr-[5px] flex items-center h-[36px] gap-x-[8px] " href={seeMetricURL} rel="_noopener" style={{
+              <a className="bg-[#263130] md:w-auto w-full rounded-full pl-[15px] pr-[5px] flex items-center md:justify-normal justify-center h-[36px] gap-x-[8px] " href={seeMetricURL} rel="_noopener" style={{
                 border: `1px solid transparent`,
               backgroundImage: `linear-gradient(var(--Gradient-Red-Yellow, #263130), var(--Gradient-Red-Yellow, #263130)), linear-gradient(144.58deg, #FE5468 0%, #FF8F4F 70%, #FFDF27 100%)`,
               backgroundOrigin: 'border-box',
               backgroundClip: 'padding-box, border-box'
             }}>
-              <div className="text-[14px] font-bold leading-[120%]">See metric page</div>
+              <div className="heading-small-xs">See metric page</div>
               <div className="w-[24px] h-[24px] flex items-center justify-center bg-medium-background rounded-full"><Icon icon={'fluent:arrow-right-32-filled'} className={`w-[15px] h-[15px]`}  /></div>
             </a>
             )}

@@ -9,7 +9,7 @@ interface ParagraphBlockProps {
 export const ParagraphBlock: React.FC<ParagraphBlockProps> = ({ block }) => {
   return (
     <div 
-      className={`my-[15px] text-sm leading-[1.5] ${block.className || ''}`} 
+      className={`my-[15px] text-xs md:text-sm leading-[1.5] ${block.className || ''}`} 
       dangerouslySetInnerHTML={{ __html: block.content }} 
     />
   );

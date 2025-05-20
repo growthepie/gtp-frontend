@@ -2,6 +2,8 @@
 import { useLocalStorage } from "usehooks-ts";
 import { useSWRConfig } from "swr";
 import { useEffect, useMemo } from "react";
+import { Icon } from "@iconify/react";
+import { track } from "@vercel/analytics/react";
 
 // ability to change the API root between v1 and dev
 export default function ApiTool() {
@@ -64,4 +66,17 @@ export default function ApiTool() {
       </div>
     </div>
   );
+}
+
+
+export const GlobalSearchToggleButton = () => {
+  const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", false);
+
+  return (
+    <div className="flex items-center justify-end h-full cursor-pointer " onClick={() => {
+      setShowGlobalSearchBar(!showGlobalSearchBar); 
+    }}>
+      <Icon icon="feather:search" className="w-[13.15px] h-[13.15px]" />
+    </div>
+  )
 }

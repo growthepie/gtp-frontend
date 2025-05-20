@@ -16,7 +16,7 @@ import { GTPIcon } from "@/components/layout/GTPIcon";
 import { SectionButtonLink } from "@/components/layout/TextHeadingComponents";
 import {LandingFirstHeaders, LandingSecondHeaders} from "@/components/home/LandingHeaders";
 import { getPageMetadata } from "@/lib/metadata";
-import QuickDivesSection from "@/components/home/QuickDivesSection"; // Import the new component
+import QuickBitesSection from "@/components/home/QuickBitesSection"; // Import the new component
 import { IS_PRODUCTION } from "@/lib/helpers";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -82,7 +82,7 @@ export default async function Page() {
         <LandingTopContracts />
       </Container>
       {!IS_PRODUCTION && (
-        <QuickDivesSection />
+        <QuickBitesSection />
       )}
       <Container>
         <div className="flex mt-[25px] md:mt-[60px] mb-[25px] md:mb-[30px] ml-1.5 md:ml-0 space-x-2 items-center">

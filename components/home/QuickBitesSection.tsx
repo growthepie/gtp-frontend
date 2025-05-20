@@ -1,4 +1,4 @@
-// File: components/home/QuickDivesSection.tsx
+// File: components/home/QuickBitesSection.tsx
 'use client';
 
 import React from 'react';
@@ -6,14 +6,14 @@ import Container from '@/components/layout/Container';
 import Heading from '@/components/layout/Heading';
 import { GTPIcon } from '@/components/layout/GTPIcon';
 import { SectionButtonLink } from '@/components/layout/TextHeadingComponents';
-import QuickDivesGrid from '@/components/quick-dives/QuickDivesGrid';
-import { getFeaturedQuickDives } from '@/lib/mock/quickDivesData';
+import QuickBitesGrid from '@/components/quick-bites/QuickBitesGrid';
+import { getFeaturedQuickBites } from '@/lib/mock/quickBitesData';
 
-const QuickDivesSection: React.FC = () => {
-  // Get the latest 3 quick dives to feature
-  const featuredQuickDives = getFeaturedQuickDives(3);
+const QuickBitesSection: React.FC = () => {
+  // Get the latest 3 quick bites to feature
+  const featuredQuickBites = getFeaturedQuickBites(3);
   
-  if (!featuredQuickDives.length) {
+  if (!featuredQuickBites.length) {
     return null;
   }
 
@@ -28,21 +28,21 @@ const QuickDivesSection: React.FC = () => {
           <Heading
             className="heading-large-lg"
           >
-            Quick Dives
+            Quick Bites
           </Heading>
         </div>
-        <SectionButtonLink href="/quick-dives" label="See all quick dives" shortLabel="More dives" />
+        <SectionButtonLink href="/quick-bites" label="See all quick bites" shortLabel="More dives" />
       </div>
       
       <div className="text-md px-[5px] lg:px-[45px]">
         <p className="mb-2">
-          Quick Dives are short, focused analyses of specific topics or trends in the Ethereum ecosystem. 
+          Short and focused analyses of specific topics or trends in the Ethereum ecosystem
         </p>
       </div>
       
-      <QuickDivesGrid quickDives={featuredQuickDives} />
+      <QuickBitesGrid QuickBites={featuredQuickBites} />
     </Container>
   );
 };
 
-export default QuickDivesSection;
+export default QuickBitesSection;

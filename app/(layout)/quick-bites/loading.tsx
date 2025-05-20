@@ -1,4 +1,4 @@
-// File: app/(layout)/quick-dives/loading.tsx
+// File: app/(layout)/quick-bites/loading.tsx
 import { PageContainer, Section } from "@/components/layout/Container";
 
 export default function Loading() {

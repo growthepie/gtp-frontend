@@ -1,58 +1,152 @@
-import { QuickDiveData, QuickDiveWithSlug } from '@/lib/types/quickDives';
+import { QuickBiteData, QuickBiteWithSlug } from '@/lib/types/quickBites';
+import { title } from 'process';
 
-export interface QuickDivesData {
-  [key: string]: QuickDiveData;
+export interface QuickBitesData {
+  [key: string]: QuickBiteData;
 }
 
-const QUICK_DIVES_DATA: QuickDivesData = {
-  "pectra-tx-type-4": {
-    title: "Pectra: Tx type 4",
-    subtitle: "Understanding transaction types and their impacts",
+const QUICK_BITES_DATA: QuickBitesData = {
+  "pectra-fork": {
+    title: "Pectra: The Peoples Upgrade",
+    subtitle: "Track the Adoption of Pectras UX + Scaling Improvements",
     content: [
-      "## Introduction to Transaction Types",
-      "Ethereum's transaction format has evolved over time to support new features and improvements. Each transaction type is identified by a specific number, with transaction type 4 being one of the latest innovations within the Pectra protocol.",
-      
-      "> Transaction type 4 is designed to optimize gas efficiency and provide more accurate fee estimations in congested networks. This is particularly important for Layer 2 solutions that aim to reduce costs for users.",
-      
-      "![Transaction type evolution diagram showing the progression from Legacy to Type 4](/images/quick-dives/transaction-types-evolution.png | width=800,height=400) \"Test\"",
-      
-      "## How Transaction Type 4 Works",
-      "Transaction type 4 introduces a new field in the transaction data structure that allows for more granular control over gas limits and prioritization. This helps to address several key challenges:",
-      
-      "1. It reduces the impact of network congestion on transaction pricing",
-      "2. It provides more predictable fee estimations, especially during high demand periods",
-      "3. It optimizes calldata, resulting in lower overall costs for complex transactions",
-      
-      "The technical implementation involves changes to both the transaction envelope and the way gas calculations are performed by validators. The most significant change is the separation of execution gas from data availability costs, which allows for more flexible pricing models.",
-      
-      "![Transaction type 4 structure compared to earlier types](/images/quick-dives/tx-type-4-structure.png | width=700,height=500,align=center) \"Transaction envelope structure showing new fields\"",
-      
-      "## Real-world Impact",
-      "Initial tests on the Pectra testnet showed a 15-30% reduction in gas costs for typical DeFi operations compared to traditional type 2 transactions. This substantial improvement could make certain applications viable that were previously too expensive to operate.",
-      
-      "For users, this translates to more predictable fees and fewer failed transactions due to gas estimation errors. For developers, it provides more flexibility in designing gas-efficient smart contracts and introduces new patterns for optimizing transaction batching.",
-      
-      "![Gas savings chart comparing transaction types](/images/quick-dives/tx-type-gas-comparison.png) \"Comparative gas costs across different transaction types and operations\""
+        "> Less clicks, less signatures, more Blobs. Many past Ethereum upgrades focused on technical improvements, but Pectra is different. It aims to enhance the user experience for everyday users, making it easier and chepaer to interact with the Ethereum ecosystem.",
+
+        "## What is part of the Pectra upgrade?",
+        "Pectra introduces several key features designed to simplify the user experience:",
+        "- **EIP-7691: Boost Rollups through more Blobs** - Rollupss have been operating at Blob capacity for a while. Now we get more Blobs! This means cheaper transactions and more space for Rollups.",
+        "- **EIP-7702: Smarter Wallets** - Enables wallets (EOAs) to act as smart accounts. Unlocking features like sponsorship, delegation transactions, paying gas in other tokens, and much more.",
+        "- **EIP-7252, 7002, 6110: ETH Staking Upgrades** - The validator's effective staking limit was raised from 32 ETH to 2,048 ETH, meaning your rewards can compound. The withdrawal process is simplified - simpler is better.",
+        "and 6 more EIPs that include various improvements to the Ethereum protocol.",
+
+        "## EIP-7691: More Blobs",
+        "The Blob target was doubled from 3 to 6, and the limit was raised from 6 to 9. This means more blobs for Layer 2s and it takes longer for the Blob fee market to kick in.",
+        "The following chart shows how close we are to the new Blob target. Whenever the number of submitted blobs per block is above the target, the Blob fee market will kick in and increase the cost per blob (using the EIP-1559 mechanism).",
+
+         "```chart",
+        JSON.stringify({
+          type: "line",
+          title: "Submitted Blobs per Block",
+          subtitle: "Compare the average #Blobs per block before and after the Pectra upgrade",
+          stacking: "normal",
+          showXAsDate: true,
+          dataAsJson: {
+            meta: [{
+              name: "Blob Count",
+              color: "#FFC300",
+              xIndex: 0,
+              yIndex: 1,
+              suffix: null,
+              prefix: null,
+              url: "https://api.growthepie.xyz/v1/quick-bites/pectra-fork.json",
+              pathToData: "data.ethereum_blob_count.daily.values",
+              dashStyle: "solid" 
+            },
+            {
+              name: "Target",
+              color: "#19D9D6",
+              xIndex: 0,
+              yIndex: 1,
+              suffix: null,
+              prefix: null,
+              url: "https://api.growthepie.xyz/v1/quick-bites/pectra-fork.json",
+              pathToData: "data.ethereum_blob_target.daily.values",
+              dashStyle: "Dash" 
+            }
+            ],
+          },
+          height: 400,
+          caption: "Ethereum Blob Count per Block vs Target. Data updated daily.",
+          seeMetricURL: "https://www.growthepie.xyz/data-availability"
+        }),
+      "```",
+
+      "## EIP-7702: Smarter Wallets",
+      "EIP-7702 introduces a new transaction type that allows wallets to act as smart accounts. This improves the user experience by allowing wallets to pay network fees with custom gas tokens, delegate transactions, and more.",
+      "The following chart shows the adoption of EIP-7702 wallets by visualizing the daily number of Set Code transactions on EVM chains (aka Type 4 transactions).",
+
+      "```chart",
+      JSON.stringify({
+        type: "column",
+        title: "Transactions that trigger smart wallet upgrades and downgrades",
+        subtitle: "The number of Set Code transactions on EVM chains (aka Type 4 transactions)",
+        stacking: "normal",
+        showXAsDate: true,
+
+        dataAsJson: {
+          meta: [{
+            name: "Ethereum",
+            color: "#94ABD3",
+            xIndex: 1,
+            yIndex: 0,
+            suffix: null,
+            prefix: null,
+            url: "https://api.growthepie.xyz/v1/quick-bites/pectra-fork.json",
+            pathToData: "data.type4_tx_count.ethereum.daily.values",
+          },
+          {
+            name: "Base",
+            color: "#2151F5",
+            xIndex: 1,
+            yIndex: 0,
+            suffix: null,
+            prefix: null,
+            url: "https://api.growthepie.xyz/v1/quick-bites/pectra-fork.json",
+            pathToData: "data.type4_tx_count.base.daily.values",
+          },
+          {
+            name: "OP Mainnet",
+            color: "#FE5468",
+            xIndex: 1,
+            yIndex: 0,
+            suffix: null,
+            prefix: null,
+            url: "https://api.growthepie.xyz/v1/quick-bites/pectra-fork.json",
+            pathToData: "data.type4_tx_count.optimism.daily.values",
+          },
+          {
+            name: "Unichain",
+            color: "#FF47BB",
+            xIndex: 1,
+            yIndex: 0,
+            suffix: null,
+            prefix: null,
+            url: "https://api.growthepie.xyz/v1/quick-bites/pectra-fork.json",
+            pathToData: "data.type4_tx_count.unichain.daily.values",
+          },
+          ],
+        },
+        height: 400,
+        caption: "The number of Set Code transactions on EVM chains (aka Type 4 transactions). Data updated daily.",
+      }),
+    "```",
+
+    "All charts on this page are updated daily so that you can see the adoption of the Pectra upgrades over time.",
+
     ],
-    image: "/images/quick-dives/pectra-tx-type-4.png",
-    date: "2025-04-17",
-    icon: "gtp-metrics-transactioncount",
-    related: ["optimism-bedrock", "arbitrum-nitro"],
+    image: "/images/quick-bites/pectra-tx-type-4.png",
+    date: "2025-05-16",
+    icon: "ethereum-logo-monochrome",
+    related: [],
     author: [{
-      name: "Alex Chen",
-      xUsername: "alexchen_eth"
-    }],
-    topics: [{
-      icon: "optimism-logo-monochrome",
-      color: "#FE5468",
-      name: "Optimism",
-      url: "/chains/optimism"
+      name: "Matthias Seidl",
+      xUsername: "web3_data"
     },
     {
-      icon: "arbitrum-logo-monochrome",
-      color: "#2151F5",
-      name: "Arbitrum",
-      url: "/chains/arbitrum"
+      name: "Lorenz Lehmann",
+      xUsername: "LehmannLorenz"
+    }
+  ],
+    topics: [{
+      icon: "ethereum-logo-monochrome",
+      color: "#94ABD3",
+      name: "Ethereum",
+      url: "/chains/ethereum"
+    },
+    {
+      icon: "gtp-da-blobs-number",
+      name: "Blob Count",
+      url: "/data-availability/blob-count"
     }
   ]
   },
@@ -77,20 +171,23 @@ const QUICK_DIVES_DATA: QuickDivesData = {
       
       "```chart",
       JSON.stringify({
-        type: "column",
+        type: "line",
         title: "Optimism Transaction Costs Before vs. After Bedrock",
         subtitle: "Average gas costs in USD for common operations",
         stacking: "normal",
+        showXAsDate: true,
         dataAsJson: {
-          url: "https://api.growthepie.xyz/v1/da_timeseries.json",
-          pathToData: "data.da_layers.da_celestia.90d.da_consumers.eclipse.daily.values",
+
           meta: [{
             name: "Before Bedrock",
             color: "#FF0420",
             xIndex: 4,
             yIndex: 3,
             suffix: null,
-            prefix: "$"
+            prefix: "$",
+            url: "https://api.growthepie.xyz/v1/da_timeseries.json",
+            pathToData: "data.da_layers.da_celestia.90d.da_consumers.eclipse.daily.values",
+            dashStyle: "LongDash" // Highcharts dashstylevalue
           },
           {
             name: "After Bedrock",
@@ -98,25 +195,17 @@ const QUICK_DIVES_DATA: QuickDivesData = {
             xIndex: 4,
             yIndex: 3,
             suffix: null,
-            prefix: null
+            prefix: null,
+            url: "https://api.growthepie.xyz/v1/da_timeseries.json",
+            pathToData: "data.da_layers.da_celestia.90d.da_consumers.lightlink.daily.values",
           }
           ],
         },
-        data: [
-          {
-            name: "Before Bedrock",
-            color: "#FF0420",
-            data: [0.27, 0.48, 1.35, 2.14, 0.53]
-          },
-          {
-            name: "After Bedrock",
-            color: "#FF5A00",
-            data: [0.15, 0.26, 0.79, 1.28, 0.32]
-          }
-        ],
         options: {
           xAxis: {
-            categories: ["Token Transfer", "Swap", "NFT Mint", "Contract Deployment", "LP Addition"]
+            title: {
+              text: "Date?"
+            }
           },
           yAxis: {
             title: {
@@ -201,7 +290,7 @@ const QUICK_DIVES_DATA: QuickDivesData = {
       
       "For developers, the upgrade has simplified the migration process from Ethereum, as applications now require minimal modifications to run on Optimism. This has led to a proliferation of new projects and services in the ecosystem, further driving adoption and usage."
     ],
-    image: "/images/quick-dives/optimism-bedrock.png",
+    image: "/images/quick-bites/optimism-bedrock.png",
     date: "2025-03-20",
     icon: "optimism-logo-monochrome",
     related: ["pectra-tx-type-4", "arbitrum-nitro"],
@@ -261,83 +350,13 @@ const QUICK_DIVES_DATA: QuickDivesData = {
       
       "The improved developer experience has also attracted hundreds of new projects to the platform, creating a rich ecosystem of applications across DeFi, gaming, and social platforms."
     ],
-    image: "/images/quick-dives/arbitrum-nitro.png",
+    image: "/images/quick-bites/arbitrum-nitro.png",
     date: "2025-01-15",
     icon: "arbitrum-logo-monochrome",
     related: ["pectra-tx-type-4", "optimism-bedrock"],
     author: [{
       name: "Raj Patel",
       xUsername: "rajpatel_web3"
-    }],
-    topics: [{
-      icon: "base-logo-monochrome",
-      color: "#2151F5",
-      name: "Base",
-      url: "/chains/base"
-    }]
-  },
-  "zksync-era": {
-    title: "zkSync Era",
-    subtitle: "A closer look at how zkSync's zkEVM works",
-    content: [
-      "## zkSync Era: The zkEVM Revolution",
-      "zkSync Era represents a breakthrough in zero-knowledge proof technology, offering a fully EVM-compatible Layer 2 solution with the security benefits of ZK proofs. Launched in March 2023, Era has quickly established itself as a leading zkEVM implementation.",
-      
-      "![zkSync Era architecture overview](/images/quick-dives/zksync-era-overview.png | width=900,height=500,align=center) \"High-level architecture of zkSync Era\"",
-      
-      "> Unlike optimistic rollups that have a challenge period of 7 days, zkSync Era provides near-immediate finality once proofs are generated and verified on Ethereum mainnet.",
-      
-      "## Technical Architecture",
-      "zkSync Era's architecture includes several innovative components:",
-      
-      "- **Type 4 zkEVM**: An advanced implementation that achieves EVM equivalence while maintaining the efficiency advantages of ZK technology.",
-      "- **LLVM-based Compiler**: A sophisticated compiler pipeline that translates Solidity and Vyper contracts into bytecode optimized for ZK proving.",
-      "- **Recursive Proofs**: A mechanism for aggregating multiple transaction proofs into a single proof, dramatically reducing verification costs on Ethereum.",
-      "- **Native Account Abstraction**: Built-in support for smart contract wallets and gasless transactions.",
-      
-      "![zkEVM compiler pipeline](/images/quick-dives/zksync-compiler-pipeline.png) \"LLVM-based compiler pipeline for zkSync Era\"",
-      
-      "## Interactive Fee Comparison",
-      "The following interactive visualization lets you compare transaction costs across various L2 solutions including zkSync Era:",
-      
-      "```iframe",
-      JSON.stringify({
-        src: "https://www.growthepie.xyz/embed/fundamentals/transaction-costs?showUsd=true&theme=dark&timespan=90d&scale=absolute&interval=daily&showMainnet=true&chains=ethereum%2Carbitrum%2Cbase%2Czksync_era&zoomed=false",
-        title: "Transaction Costs Comparison - growthepie",
-        width: "100%",
-        height: "600px",
-        caption: "Comparative transaction costs across Ethereum and various L2 solutions including zkSync Era. Source: growthepie.xyz"
-      }),
-      "```",
-      
-      "## Performance and Scalability",
-      "Era's performance metrics demonstrate the potential of zkEVM technology:",
-      
-      "- **Transaction Throughput**: Up to 100-200 TPS, with potential for 2000+ TPS with future optimizations",
-      "- **Proof Generation Time**: 1-3 minutes for typical transaction batches",
-      "- **Finality**: Once proofs are verified on Ethereum (approximately 10-30 minutes)",
-      "- **Cost Reduction**: 10-50x lower fees compared to Ethereum mainnet",
-      
-      "![Performance comparison between different L2 solutions](/images/quick-dives/l2-performance-comparison.png | width=800,align=center) \"Performance metrics across various Layer 2 solutions\"",
-      
-      "## Developer Experience",
-      "A key focus of zkSync Era has been maintaining compatibility with existing Ethereum development tools and practices. This compatibility has been achieved through:",
-      
-      "- Full support for Ethereum RPC API",
-      "- Compatibility with popular development frameworks like Hardhat and Foundry",
-      "- Native integration with ethers.js and web3.js libraries",
-      
-      "This has allowed developers to migrate their applications to zkSync Era with minimal changes to their codebase, accelerating adoption and ecosystem growth.",
-      
-      "![Developer tooling ecosystem for zkSync Era](/images/quick-dives/zksync-developer-tools.png | width=600,height=400) \"Developer tools and SDK ecosystem\""
-    ],
-    image: "/images/quick-dives/zksync-era.png",
-    date: "2025-02-10",
-    icon: "gtp-metrics-transactioncosts",
-    related: ["pectra-tx-type-4", "optimism-bedrock"],
-    author: [{
-      name: "Maya Rodriguez",
-      xUsername: "maya_zkp"
     }],
     topics: [{
       icon: "base-logo-monochrome",
@@ -406,7 +425,7 @@ const QUICK_DIVES_DATA: QuickDivesData = {
       
       "While fee differences between L2s will likely persist due to their architectural differences, the overall trend points toward increasingly affordable transaction costs across the Ethereum ecosystem."
     ],
-    image: "/images/quick-dives/l2-fee-comparison.png",
+    image: "/images/quick-bites/l2-fee-comparison.png",
     date: "2025-04-08",
     icon: "gtp-metrics-feespaidbyusers",
     related: ["zksync-era", "optimism-bedrock", "arbitrum-nitro"],
@@ -424,36 +443,36 @@ const QUICK_DIVES_DATA: QuickDivesData = {
   }
 };
 
-export default QUICK_DIVES_DATA;
+export default QUICK_BITES_DATA;
 
 // Helper functions for working with the mock data
-export const getQuickDiveBySlug = (slug: string): QuickDiveData | undefined => {
-  return QUICK_DIVES_DATA[slug];
+export const getQuickBiteBySlug = (slug: string): QuickBiteData | undefined => {
+  return QUICK_BITES_DATA[slug];
 };
 
-export const getAllQuickDives = (): (QuickDiveData & { slug: string })[] => {
-  return Object.entries(QUICK_DIVES_DATA).map(([slug, data]) => ({
+export const getAllQuickBites = (): (QuickBiteData & { slug: string })[] => {
+  return Object.entries(QUICK_BITES_DATA).map(([slug, data]) => ({
     ...data,
     slug
   }));
 };
 
-export const getRelatedQuickDives = (slugs: string[]): QuickDiveWithSlug[] => {
+export const getRelatedQuickBites = (slugs: string[]): QuickBiteWithSlug[] => {
   return slugs
     .map(slug => {
-      const data = QUICK_DIVES_DATA[slug];
+      const data = QUICK_BITES_DATA[slug];
       if (!data) return null;
       return {
         ...data,
         slug
       };
     })
-    .filter((item): item is QuickDiveWithSlug => item !== null);
+    .filter((item): item is QuickBiteWithSlug => item !== null);
 };
 
-// Get featured quick dives for homepage
-export const getFeaturedQuickDives = (count: number = 3): (QuickDiveData & { slug: string })[] => {
-  return getAllQuickDives()
+// Get featured quick bites for homepage
+export const getFeaturedQuickBites = (count: number = 3): (QuickBiteData & { slug: string })[] => {
+  return getAllQuickBites()
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, count);
 };
