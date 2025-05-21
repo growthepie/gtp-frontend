@@ -82,7 +82,8 @@ export default async function QuickBitePage({ params }: Props) {
             </Link>   
             {/* Icon */}
             <div className='items-center justify-center w-[36px] h-[36px] md:flex hidden'>   
-              <GTPIcon icon={QuickBite.icon as GTPIconName} className={`object-contain `} size={"lg"} />
+              {/* <GTPIcon icon={QuickBite.icon as GTPIconName} className={`object-contain `} size={"lg"} /> */}
+              <GTPIcon icon="gtp-quick-bites" size="lg" />
             </div>
             {/* Title */} 
             <h1

@@ -7,17 +7,17 @@ export interface QuickBitesData {
 
 const QUICK_BITES_DATA: QuickBitesData = {
   "pectra-upgrade": {
-    title: "Pectra: The Peoples Upgrade",
+    title: "Pectra: The People's Upgrade",
     subtitle: "Track the Adoption of Pectras UX + Scaling Improvements",
     content: [
-        "> Less clicks, less signatures, more Blobs. Many past Ethereum upgrades focused on technical improvements, but Pectra is different. It aims to enhance the user experience for everyday users, making it easier and chepaer to interact with the Ethereum ecosystem.",
+        "> Less clicks, less signatures, more Blobs. Many past Ethereum upgrades focused on technical improvements, but Pectra is different. It aims to enhance the user experience for everyday users, making it easier and cheaper to interact with the Ethereum ecosystem.",
 
         "## What is part of the Pectra upgrade?",
         "Pectra introduces several key features designed to simplify the user experience:",
-        "- **EIP-7691: Boost Rollups through more Blobs** - Rollupss have been operating at Blob capacity for a while. Now we get more Blobs! This means cheaper transactions and more space for Rollups.",
-        "- **EIP-7702: Smarter Wallets** - Enables wallets (EOAs) to act as smart accounts. Unlocking features like sponsorship, delegation transactions, paying gas in other tokens, and much more.",
+        "- **EIP-7691: Boost Rollups through more Blobs** - Rollups have been operating at Blob capacity for a while. Now we get more Blobs! This means cheaper transactions and more space for Rollups.",
+        "- **EIP-7702: Smarter Wallets** - Enables wallets (EOAs) to act as smart accounts, unlocking features like sponsorship, delegation transactions, paying gas in other tokens, and much more.",
         "- **EIP-7252, 7002, 6110: ETH Staking Upgrades** - The validator's effective staking limit was raised from 32 ETH to 2,048 ETH, meaning your rewards can compound. The withdrawal process is simplified - simpler is better.",
-        "and 6 more EIPs that include various improvements to the Ethereum protocol.",
+        "...and 6 more EIPs that include various improvements to the Ethereum protocol.",
 
         "## EIP-7691: More Blobs",
         "The Blob target was doubled from 3 to 6, and the limit was raised from 6 to 9. This means more blobs for Layer 2s and it takes longer for the Blob fee market to kick in.",

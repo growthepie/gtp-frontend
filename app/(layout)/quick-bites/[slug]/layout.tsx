@@ -21,16 +21,14 @@ export async function generateMetadata({ params: { slug } }: Props): Promise<Met
     return notFound();
   }
 
-  const og_image = QuickBite.og_image || `https://api.growthepie.xyz/v1/og_images/quick-bites/default.png`;
+  // YYYY-MM-DD UTC
+  const current_date = new Date().toISOString().split("T")[0];
+
+  const og_image = `${QuickBite.og_image}?date=${current_date}` || `https://api.growthepie.xyz/v1/og_images/quick-bites/default.png?date=${current_date}`;
   
   // Generate a description from the content if none is provided
   const description = QuickBite.subtitle || 
     (QuickBite.content && QuickBite.content.length > 0 ? QuickBite.content[0] : "");
-  
-  // Current date for the OG image cache busting
-  const currentDate = new Date();
-  currentDate.setHours(2, 0, 0, 0);
-  const dateString = currentDate.toISOString().slice(0, 10).replace(/-/g, "");
   
   return {
     title: `${QuickBite.title} | growthepie`,
