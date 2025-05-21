@@ -232,7 +232,6 @@ export default function RootLayout({
                   </div>
                   <Header />
                   <main className="z-10 mx-auto min-h-[calc(100vh-218px-56px)] w-full flex-1 pb-[165px] md:min-h-[calc(100vh-207px-80px)]">
-                    
                     {children}
                   </main>
                   {/* <BottomBanner /> */}
