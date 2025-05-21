@@ -6,7 +6,7 @@ export interface QuickBitesData {
 }
 
 const QUICK_BITES_DATA: QuickBitesData = {
-  "pectra-fork": {
+  "pectra-upgrade": {
     title: "Pectra: The Peoples Upgrade",
     subtitle: "Track the Adoption of Pectras UX + Scaling Improvements",
     content: [
@@ -125,6 +125,7 @@ const QUICK_BITES_DATA: QuickBitesData = {
 
     ],
     image: "/images/quick-bites/pectra-tx-type-4.png",
+    og_image: "https://api.growthepie.xyz/v1/og_images/quick-bites/pectra-upgrade.png",
     date: "2025-05-16",
     icon: "ethereum-logo-monochrome",
     related: [],

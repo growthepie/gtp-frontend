@@ -31,26 +31,26 @@ const getFirstAuthor = (author: Author | Author[] | undefined): Author | undefin
   return Array.isArray(author) ? author[0] : author;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const QuickBite = getQuickBiteBySlug(params.slug);
+// export async function generateMetadata({ params }: Props): Promise<Metadata> {
+//   const QuickBite = getQuickBiteBySlug(params.slug);
   
-  if (!QuickBite) {
-    return {
-      title: 'Quick Bite Not Found',
-    };
-  }
+//   if (!QuickBite) {
+//     return {
+//       title: 'Quick Bite Not Found',
+//     };
+//   }
 
-  return {
-    title: `${QuickBite.title} - growthepie Quick Bite`,
-    description: QuickBite.subtitle,
-    openGraph: {
-      title: QuickBite.title,
-      description: QuickBite.subtitle,
-      type: 'article',
-      authors: getAuthorNames(QuickBite.author),
-    },
-  };
-}
+//   return {
+//     title: `${QuickBite.title} - growthepie Quick Bite`,
+//     description: QuickBite.subtitle,
+//     openGraph: {
+//       title: QuickBite.title,
+//       description: QuickBite.subtitle,
+//       type: 'article',
+//       authors: getAuthorNames(QuickBite.author),
+//     },
+//   };
+// }
 
 export default async function QuickBitePage({ params }: Props) {
   const QuickBite = getQuickBiteBySlug(params.slug);

@@ -32,6 +32,7 @@ export interface Author {
     subtitle: string;
     content: string[];
     image: string;
+    og_image?: string;
     date: string;
     icon: string;
     related: string[];

@@ -20,6 +20,8 @@ export async function generateMetadata({ params: { slug } }: Props): Promise<Met
     });
     return notFound();
   }
+
+  const og_image = QuickBite.og_image || `https://api.growthepie.xyz/v1/og_images/quick-bites/default.png`;
   
   // Generate a description from the content if none is provided
   const description = QuickBite.subtitle || 
@@ -31,12 +33,12 @@ export async function generateMetadata({ params: { slug } }: Props): Promise<Met
   const dateString = currentDate.toISOString().slice(0, 10).replace(/-/g, "");
   
   return {
-    title: `${QuickBite.title} - Quick Bite | growthepie`,
+    title: `${QuickBite.title} | growthepie`,
     description: description,
     openGraph: {
       images: [
         {
-          url: `https://api.growthepie.xyz/v1/og_images/quick-bites/${slug}.png?date=${dateString}`,
+          url: og_image,
           width: 1200,
           height: 627,
           alt: `${QuickBite.title} - growthepie.xyz`,
