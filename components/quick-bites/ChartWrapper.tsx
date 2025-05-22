@@ -31,6 +31,7 @@ import { GTPIcon } from "../layout/GTPIcon";
 import { Icon } from "@iconify/react";
 import type { AxisLabelsFormatterContextObject } from 'highcharts';
 import { useUIContext } from "@/contexts/UIContext";
+import moment from "moment";
 
 let highchartsInitialized = false;
 interface ChartWrapperProps {
@@ -141,12 +142,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   const tooltipFormatter = useCallback(
     function (this: any) {
       const { x, points } = this;
-      const date = new Date(x);
-      let dateString = date.toLocaleDateString("en-GB", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
+      let dateString = moment.utc(x).utc().locale("en-GB").format("DD MMM YYYY");
       const chartTitle = this.series.chart.title.textStr;
       const useJson = jsonMeta ? true : false;
       const isArray = Array.isArray(jsonMeta?.meta);
