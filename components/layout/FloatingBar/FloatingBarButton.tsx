@@ -5,7 +5,7 @@ import { GTPIconName } from "@/icons/gtp-icon-names";
 interface FloatingBarButtonProps {
   onClick?: () => void;
   label?: string;
-  icon?: string | GTPIconName;
+  icon?: GTPIconName;
   iconPosition?: 'left' | 'right';
   size?: 'sm' | 'md' | 'lg';
   className?: string;
@@ -46,7 +46,7 @@ export const FloatingBarButton: React.FC<FloatingBarButtonProps> = ({
       {/* Icon on the left if iconPosition is 'left' and icon exists */}
       {icon && iconPosition === 'left' && (
         <GTPIcon 
-          icon={icon as GTPIconName} 
+          icon={icon} 
           size={size === 'sm' ? 'sm' : 'md'} 
         />
       )}
@@ -59,7 +59,7 @@ export const FloatingBarButton: React.FC<FloatingBarButtonProps> = ({
       {/* Icon on the right if iconPosition is 'right' and icon exists */}
       {icon && iconPosition === 'right' && (
         <GTPIcon 
-          icon={icon as GTPIconName} 
+          icon={icon} 
           size={size === 'sm' ? 'sm' : 'md'} 
         />
       )}

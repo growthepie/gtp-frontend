@@ -31,7 +31,12 @@ export const IconContextMenu = ({
 }: IconContextMenuProps) => {
   const toast = useToast();
   const [isOpen, setIsOpen] = useState(false);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [position, setPosition] = useState<{
+    top?: number | undefined;
+    left?: number | undefined;
+    bottom?: number | undefined;
+    right?: number | undefined;
+  }>({ top: undefined, left: undefined, bottom: undefined, right: undefined });
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close menu on outside click
@@ -59,8 +64,21 @@ export const IconContextMenu = ({
   const handleContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.stopPropagation(); // Prevent triggering parent context menus if nested
-    // clientX/clientY are viewport coordinates, perfect for position: fixed
-    setPosition({ x: event.clientX, y: event.clientY });
+    // 
+    const viewportWidth = window.innerWidth;
+
+    // if 767px or less
+    if (viewportWidth <= 767) {
+      console.log("Viewport width is less than or equal to 767px");
+      // Use clientX/clientY for mobile devices
+      const windowHeight = window.innerHeight;
+      setPosition({ left: event.clientX, bottom: windowHeight - event.clientY, top: undefined, right: undefined });
+    } else {
+    
+      console.log("Viewport width is greater than 767px");
+      
+      setPosition({ left: event.clientX, top: event.clientY, bottom: undefined, right: undefined });
+    }
     setIsOpen(true);
   };
 
@@ -131,8 +149,8 @@ export const IconContextMenu = ({
   const menuContent = (
     <div
       ref={menuRef}
-      className="fixed z-[999] flex flex-col w-fit gap-y-[5px] rounded-[15px] overflow-hidden bg-[#1F2726] text-[#CDD8D3] text-xs shadow-[0px_0px_8px_0px_rgba(0,_0,_0,_0.66)]"
-      style={{ left: `${position.x}px`, top: `${position.y}px` }}
+      className="fixed z-context-menu flex flex-col w-fit gap-y-[5px] rounded-[15px] overflow-hidden bg-[#1F2726] text-[#CDD8D3] text-xs shadow-[0px_0px_8px_0px_rgba(0,_0,_0,_0.66)]"
+      style={{ left: position.left, top: position.top, bottom: position.bottom, right: position.right }}
       // Prevent context menu on the menu itself
       onContextMenu={(e) => e.preventDefault()}
     >

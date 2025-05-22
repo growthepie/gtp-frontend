@@ -106,6 +106,20 @@ module.exports = {
           '100%': { transform: 'translateX(100%) skewX(-20deg) skewY(-35deg)' },
         },
       },
+      zIndex: { 
+        ...defaultTheme.zIndex,
+        'context-menu': '9000',
+        'global-search': '8000',
+        'global-search-backdrop': '7000',
+      },
+      transitionDuration: {
+        ...defaultTheme.transitionDuration,
+        'sidebar': '200ms',
+      },
+      transitionTimingFunction: {
+        ...defaultTheme.transitionTimingFunction,
+        'sidebar': 'cubic-bezier(0.5, 0, 0.5, 1.0)',
+      },
     },
   },
   plugins: [
