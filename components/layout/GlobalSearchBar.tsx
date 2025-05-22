@@ -117,8 +117,8 @@ export default function GlobalFloatingBar() {
 
   return (
     <>
-      <div className={`fixed z-global-search-backdrop bottom-[0px] md:bottom-auto md:top-[0px] w-full max-w-[1680px] px-0 md:px-[13px] ${isSidebarOpen ? "md:ml-[253px]" : "md:ml-[94px]"} transition-[margin] duration-sidebar ease-sidebar z-50 flex justify-center w-full`}>
-        <div className="bg-[#151a19] z-[-1] relative bottom-0 top-0 md:bottom-auto md:top-0 left-0 right-0 h-[100px] overflow-hidden pointer-events-none sidebar-bg-mask">
+      <div className={`fixed z-global-search-backdrop bottom-[-200px] md:bottom-auto md:top-[0px] w-full max-w-[1680px] px-0 md:px-[13px] ${isSidebarOpen ? "md:ml-[253px]" : "md:ml-[94px]"} transition-[margin] duration-sidebar ease-sidebar z-50 flex justify-center w-full`}>
+        <div className="bg-[#151a19] z-[-1] relative bottom-0 top-0 md:bottom-auto md:top-0 left-0 right-0 h-[300px] md:h-[100px] overflow-hidden pointer-events-none sidebar-bg-mask">
           <div className="background-gradient-group">
             <div className="background-gradient-yellow"></div>
             <div className="background-gradient-green"></div>

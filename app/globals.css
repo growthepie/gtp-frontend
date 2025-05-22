@@ -25,7 +25,7 @@ input:focus-visible {
   --background: white;
   --foreground: black;
   --bg-mask-image-desktop: linear-gradient(to bottom, white 0, white 50px, transparent 100px);
-  --bg-mask-image-mobile: linear-gradient(to top, white 0, white 50px, transparent 100px);
+  --bg-mask-image-mobile: linear-gradient(to top, white 0, white 250px, transparent 300px);
 }
 
 [data-theme="dark"] {
