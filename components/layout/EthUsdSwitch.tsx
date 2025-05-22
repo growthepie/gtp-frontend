@@ -10,9 +10,10 @@ import { Icon } from "@iconify/react";
 
 type EthUsdSwitchProps = {
   isMobile?: boolean;
+  showBorder?: boolean;
 };
 
-export default function EthUsdSwitch({ isMobile }: EthUsdSwitchProps) {
+export default function EthUsdSwitch({ isMobile, showBorder=false }: EthUsdSwitchProps) {
   const [mounted, setMounted] = useState(false);
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
@@ -55,6 +56,7 @@ export default function EthUsdSwitch({ isMobile }: EthUsdSwitchProps) {
       value={showUsd ? "usd" : "eth"}
       onChange={handleToggle}
       size={isMobile ? "sm" : "xl"}
+      className={`${showBorder ? "rounded-full border border-[#5A6462]" : ""}`}
     />
   );
 }

@@ -247,7 +247,7 @@ export const SearchBar = ({ showMore, setShowMore, showSearchContainer=true }: {
               value={localQuery}
               onChange={handleSearchChange}
             />
-            <div className={`absolute flex items-center gap-x-[10px] right-[20px] text-[8px] text-[#CDD8D3] font-medium ${localQuery.length > 0 ? "opacity-100" : "opacity-0"} transition-opacity duration-200`}>
+            <div className={`absolute flex items-center gap-x-[10px] right-[20px] text-[8px] text-[#CDD8D3] font-medium ${localQuery.length > 0 ? "opacity-100" : "opacity-0 pointer-events-none"} transition-opacity duration-200`}>
               <div className="flex items-center px-[15px] h-[24px] border border-[#CDD8D3] rounded-full select-none">
                 <div className="text-xxxs text-[#CDD8D3] font-medium font-raleway -mb-[1px]">
                   {totalMatches} {totalMatches === 1 ? "result" : "results"}
