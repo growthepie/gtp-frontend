@@ -229,7 +229,7 @@ export const BackButton = () => {
 
   return (
     <div
-      className="size-[36px] bg-[#344240] rounded-full flex justify-center items-center cursor-pointer"
+      className="size-[36px] rounded-full flex justify-center items-center cursor-pointer bg-[#344240] hover:bg-[#5A6462]"
       onClick={handleBack}
 
     >

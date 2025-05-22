@@ -30,7 +30,9 @@ import { Type } from "@/types/api/CategoryComparisonResponse";
 import { GTPIcon } from "../layout/GTPIcon";
 import { Icon } from "@iconify/react";
 import type { AxisLabelsFormatterContextObject } from 'highcharts';
+import { useUIContext } from "@/contexts/UIContext";
 
+let highchartsInitialized = false;
 interface ChartWrapperProps {
   chartType: 'line' | 'area' | 'column' | 'pie';
   data: any;
@@ -76,6 +78,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [filteredNames, setFilteredNames] = useState<string[]>([]);
+  const {isMobile} = useUIContext();
   
   // Add timespans and selectedTimespan
   const timespans = {
@@ -87,31 +90,37 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   // Initialize Highcharts modules
   useEffect(() => {
     try {
-      // Only initialize once
-      if (!Highcharts.charts || Highcharts.charts.length === 0) {
+      if (!highchartsInitialized) {
         highchartsRoundedCorners(Highcharts);
         highchartsAnnotations(Highcharts);
         highchartsPatternFill(Highcharts);
-        
         Highcharts.setOptions({
           lang: {
             numericSymbols: ["K", " M", "B", "T", "P", "E"],
           },
         });
+        highchartsInitialized = true;
       }
-      
-      // Validate data
-      if (!Array.isArray(data)) {
-        throw new Error('Chart data must be an array');
-      }
-      
-      setIsChartReady(true);
-      setLoading(false);
     } catch (err) {
       setError(err.message || 'Failed to initialize chart');
       setLoading(false);
     }
-  }, [data]);
+  }, []);
+
+  useEffect(() => {
+    // This effect now only handles data-specific logic
+    try {
+      if (!Array.isArray(data)) {
+        throw new Error('Chart data must be an array');
+      }
+      setIsChartReady(true);
+      setLoading(false);
+      setError(null); // Clear previous error
+    } catch (err) {
+      setError(err.message || 'Failed to initialize chart');
+      setLoading(false);
+    }
+  }, [data]); // Runs when data change
   
   // Handle resize events
   useEffect(() => {
@@ -212,7 +221,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
       return tooltip + tooltipPoints + tooltipEnd;
     },
-    [],
+    [jsonMeta],
   );
 
   
@@ -248,16 +257,16 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   return (
     <div className="relative md:px-[35px]">
       <div style={{ width, height }} className="relative bg-transparent md:bg-active-black rounded-[25px] shadow-none md:shadow-md flex flex-col gap-y-[15px] h-full md:p-[15px] ">
-        <div className="w-full h-auto md:h-[36px] p-[5px] bg-[#1F2726] rounded-full">
-          <div className="flex items-center justify-between">
+        <div className="w-full h-auto pl-[10px] pr-[5px] py-[5px] bg-[#1F2726] rounded-full">
+          <div className="flex items-center justify-center md:justify-between">
             <div className="flex items-center gap-x-[5px]">
               <div className="w-fit h-fit"><GTPIcon icon={"gtp-metrics-totalvaluelocked"} className="w-[24px] h-[24px] "/></div>
               <div className="heading-small-md">{title}</div>
             </div>
           </div>
         </div>
-        <HighchartsProvider Highcharts={Highcharts} >
-          <HighchartsChart ref={chartRef} options={options}
+        <HighchartsProvider Highcharts={Highcharts}>
+          <HighchartsChart chart={chartRef.current} options={options}
               plotOptions={{
                 line: {
                   lineWidth: 1.5,
@@ -335,7 +344,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               animation={{
                 duration: 50,
               }}
-              marginBottom={showXAsDate ? 22 : 10}
+              marginBottom={showXAsDate ? 32 : 20}
               marginLeft={40}
               marginRight={5}
               marginTop={15}
@@ -345,14 +354,21 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
             />
             
             
-            <XAxis 
+            <XAxis
+              crosshair={{
+                width: 0.5,
+                color: theme === 'dark' ? '#CDD8D3' : '#293332',
+                snap: false,
+              }}
               labels={{
                 style: {
-                  color: theme === 'dark' ? '#CDD8D3' : '#293332',
-                  fontSize: '10px',
+                  fontFamily: "Fira Sans",
+                  fontSize: "10px",
+                  color: "#CDD8D3",
                 },
-                distance: 10,
+                distance: 20,
                 enabled: showXAsDate,
+                useHTML: true,
                 formatter: showXAsDate ? function (this: AxisLabelsFormatterContextObject) {
                   if (timespans[selectedTimespan].xMax - timespans[selectedTimespan].xMin <= 40 * 24 * 3600 * 1000) {
                     let isBeginningOfWeek = new Date(this.value).getUTCDay() === 1;
@@ -389,11 +405,13 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                   }
                 } : undefined
               }}
+              
               gridLineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.11)' : 'rgba(41, 51, 50, 0.11)'}
               lineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.33)' : 'rgba(41, 51, 50, 0.33)'}
               tickColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.33)' : 'rgba(41, 51, 50, 0.33)'}
               type={showXAsDate ? "datetime" : undefined}
               tickAmount={5}
+              tickLength={15}
             />
             
             <YAxis 
@@ -519,7 +537,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               backgroundColor={"#2A3433EE"}
               padding={0}
               hideDelay={300}
-              stickOnContact={true}
+              stickOnContact={false}
               shape="rect"
               borderRadius={17}
             
@@ -535,17 +553,17 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 color: "rgb(215, 223, 222)",
               }}
               formatter={tooltipFormatter}
-              
+
             />
             
           </HighchartsChart>
         </HighchartsProvider>
-        <div className="absolute bottom-[20%] left-[40px] md:left-0 right-0 flex flex-col items-center justify-center pointer-events-none z-0 opacity-40  " 
+        <div className="absolute bottom-[27.5%] md:bottom-[24.5%] left-[40px] md:left-0 right-0 flex flex-col items-center justify-center pointer-events-none z-0 opacity-40  " 
           style={{
             height: typeof height === "number" ? (height - 147) + "px" : "100%"
           }}
         >
-          <ChartWatermark className="w-[200.67px] h-[150.67px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
+          <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
         </div>
         {/*Footer*/}
         <div className="md:pl-[40px] relative bottom-[2px] flex flex-col justify-between gap-y-[5px] md:gap-y-0">
@@ -559,7 +577,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 }
                 
                 return (
-                  <div key={category.name} className={`bg-[#344240] hover:bg-[#5A6462] flex items-center justify-center rounded-full gap-x-[2px] p-[3px] cursor-pointer ${bgBorderClass}`} onClick={() => {
+                  <div key={category.name} className={`bg-[#344240] hover:bg-[#5A6462] flex items-center justify-center rounded-full gap-x-[2px] px-[3px] h-[18px] cursor-pointer ${bgBorderClass}`} onClick={() => {
                     
                     if(!filteredNames.includes(category.name)) {
                       setFilteredNames((prev) => {
@@ -575,7 +593,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                     }
                   }}>
                     <div className="w-[5px] h-[5px] rounded-full" style={{ backgroundColor: category.color }}></div>
-                    <div className="h-full text-[9px]">{category.name}</div>
+                    <div className="text-xxxs !leading-[9px]">{category.name}</div>
                   </div>
                 )
               })}
