@@ -252,7 +252,7 @@ const Notification = () => {
             }}
           >
             <div
-              className={`hidden mb-[10px] lg:mb-0 md:flex items-center gap-x-[10px] overflow-hidden w-[135px] mdl:w-[343px] xl:w-[480px] 2xl:w-[740px] border-[1px] h-[36px] rounded-full px-[10px] relative z-30 border-forest-1000 dark:border-forest-500 hover:dark:!bg-[#1F2726] hover:!bg-[#FFFFFF] hover:dark:!border-[#CDD8D3] hover:!border-[#151A19] tansition-all duration-300`}
+              className={`hidden mb-[10px] lg:mb-0 md:flex items-center gap-x-[10px] overflow-hidden w-[205px] mdl:w-[343px] xl:w-[480px] 2xl:w-[740px] border-[1px] h-[36px] rounded-full px-[10px] relative z-30 border-forest-1000 dark:border-forest-500 hover:dark:!bg-[#1F2726] hover:!bg-[#FFFFFF] hover:dark:!border-[#CDD8D3] hover:!border-[#151A19] tansition-all duration-300`}
               style={{
                 borderColor: currentItemTextColor,
                 backgroundColor: currentItemBackgroundColor,
@@ -355,7 +355,7 @@ const Notification = () => {
               </div>
             </div>
             <div
-              className={`absolute top-[18px] hidden mb-[10px] lg:mb-0 md:flex flex-col w-[305px] mdl:w-[343px] xl:w-[600px] 2xl:w-[770px] dark:bg-[#1F2726] bg-white border-forest-1000 dark:border-forest-500 rounded-b-xl z-1 overflow-hidden transition-all duration-300 ease-in-out ${openNotif ? "border" : "border-0"
+              className={`absolute top-[18px] hidden mb-[10px] lg:mb-0 md:flex flex-col w-[480px] xl:w-[480px] 2xl:w-[740px] dark:bg-[#1F2726] bg-white border-forest-1000 dark:border-forest-500 rounded-[12px] rounded-tl-none xl:rounded-tr-none z-1 overflow-hidden transition-all duration-300 ease-in-out ${openNotif ? "border" : "border-0"
                 }`}
               style={{
                 maxHeight: openNotif ? filteredData.length * 200 + "px" : "0",
