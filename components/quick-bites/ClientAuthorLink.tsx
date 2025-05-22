@@ -15,7 +15,7 @@ const ClientAuthorLink: React.FC<ClientAuthorLinkProps> = ({ name, xUsername }) 
       href={`https://x.com/${xUsername}`} 
       target="_blank" 
       rel="noopener noreferrer"
-      className="flex items-center text-xxs md:text-xs xl:text-sm gap-x-[5px] hover:underline"
+      className="flex items-center text-xxs lg:text-sm gap-x-[5px] hover:underline"
       aria-label={`Author: ${name} (opens in a new tab)`}
     >
       <Icon icon="ri:twitter-x-fill" className="w-[15px] h-[15px]" aria-hidden="true" />

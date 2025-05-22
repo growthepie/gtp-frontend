@@ -6,22 +6,22 @@ export interface QuickBitesData {
 }
 
 const QUICK_BITES_DATA: QuickBitesData = {
-  "pectra-fork": {
-    title: "Pectra: The Peoples Upgrade",
+  "pectra-upgrade": {
+    title: "Pectra: The People's Upgrade",
     subtitle: "Track the Adoption of Pectras UX + Scaling Improvements",
     content: [
-        "> Less clicks, less signatures, more Blobs. Many past Ethereum upgrades focused on technical improvements, but Pectra is different. It aims to enhance the user experience for everyday users, making it easier and chepaer to interact with the Ethereum ecosystem.",
+        "> Less clicks, less signatures, more Blobs. Many past Ethereum upgrades focused on technical improvements, but Pectra is different. It aims to enhance the user experience for everyday users, making it easier and cheaper to interact with the Ethereum ecosystem.",
 
         "## What is part of the Pectra upgrade?",
         "Pectra introduces several key features designed to simplify the user experience:",
-        "- **EIP-7691: Boost Rollups through more Blobs** - Rollupss have been operating at Blob capacity for a while. Now we get more Blobs! This means cheaper transactions and more space for Rollups.",
-        "- **EIP-7702: Smarter Wallets** - Enables wallets (EOAs) to act as smart accounts. Unlocking features like sponsorship, delegation transactions, paying gas in other tokens, and much more.",
+        "- **EIP-7691: Boost Rollups through more Blobs** - Rollups have been operating at Blob capacity for a while. Now we get more Blobs! This means cheaper transactions and more space for Rollups.",
+        "- **EIP-7702: Smarter Wallets** - Enables wallets (EOAs) to act as smart accounts, unlocking features like sponsorship, delegation transactions, paying gas in other tokens, and much more.",
         "- **EIP-7252, 7002, 6110: ETH Staking Upgrades** - The validator's effective staking limit was raised from 32 ETH to 2,048 ETH, meaning your rewards can compound. The withdrawal process is simplified - simpler is better.",
-        "and 6 more EIPs that include various improvements to the Ethereum protocol.",
+        "...and 6 more EIPs that include various improvements to the Ethereum protocol.",
 
         "## EIP-7691: More Blobs",
         "The Blob target was doubled from 3 to 6, and the limit was raised from 6 to 9. This means more blobs for Layer 2s and it takes longer for the Blob fee market to kick in.",
-        "The following chart shows how close we are to the new Blob target. Whenever the number of submitted blobs per block is above the target, the Blob fee market will kick in and increase the cost per blob (using the EIP-1559 mechanism).",
+        "The following chart shows how close we are to the new Blob target. When the number of blobs submitted per block exceeds the target, the Blob fee market will kick in and increase the cost per blob (using the EIP-1559 mechanism).",
 
          "```chart",
         JSON.stringify({
@@ -62,7 +62,7 @@ const QUICK_BITES_DATA: QuickBitesData = {
       "```",
 
       "## EIP-7702: Smarter Wallets",
-      "EIP-7702 introduces a new transaction type that allows wallets to act as smart accounts. This improves the user experience by allowing wallets to pay network fees with custom gas tokens, delegate transactions, and more.",
+      "EIP-7702 introduces a new transaction type that allows wallets to act as smart accounts. This improves the user experience by enabling wallets to pay network fees with custom gas tokens, delegate transactions, and more.",
       "The following chart shows the adoption of EIP-7702 wallets by visualizing the daily number of Set Code transactions on EVM chains (aka Type 4 transactions).",
 
       "```chart",
@@ -121,10 +121,11 @@ const QUICK_BITES_DATA: QuickBitesData = {
       }),
     "```",
 
-    "All charts on this page are updated daily so that you can see the adoption of the Pectra upgrades over time.",
+    "All charts on this page are updated daily so you can track the adoption of the Pectra upgrades over time.",
 
     ],
     image: "/images/quick-bites/pectra-tx-type-4.png",
+    og_image: "https://api.growthepie.xyz/v1/og_images/quick-bites/pectra-upgrade.png",
     date: "2025-05-16",
     icon: "ethereum-logo-monochrome",
     related: [],
