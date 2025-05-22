@@ -598,28 +598,26 @@ const DATableChartsComponent = ({
 
     const pieTooltipFormatter = useCallback(
         function (this: any) {
-            
-            console.log(this);
-          
+            const absolute = formatBytes(this.y);
+            const percentage = Intl.NumberFormat("en-GB", {
+                notation: "standard",
+                maximumFractionDigits: 2,
+                minimumFractionDigits: 2,
+            }).format(this.percentage);
+
             return `<div class="mt-3 mr-3 mb-3 w-40 text-xs font-raleway justify-between gap-x-[5px] flex items-center">
                 <div class="flex gap-x-[5px] items-center ">
                     <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${this.color}"></div>
                     <div class="tooltip-point-name text-xs">${this.key}</div>
                 </div>
-                <div class="tooltip-point-name numbers-xs">${selectedScale === "percentage" ? Intl.NumberFormat("en-GB", {
-                    notation: "standard",
-                    maximumFractionDigits: 2,
-                    minimumFractionDigits: 2,
-                }).format((this.percentage)) + " %" 
-                
-                :
-                (formatBytes(this.y))
-            }</div>
-            
+                <div class="tooltip-point-name numbers-xs flex flex-col items-end">
+                    <div class="text-right whitespace-pre">${absolute}</div>
+                    <div class="text-forest-500 text-right whitespace-pre" style="padding-left: ${absolute.length - percentage.length}ch">${percentage}  %</div>
+                </div>
             </div>`;
-
-
-    }, [showUsd, selectedChain, selectedScale])
+        },
+        [showUsd, selectedChain, selectedScale]
+    );
 
 
 
