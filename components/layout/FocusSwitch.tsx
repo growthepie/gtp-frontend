@@ -8,9 +8,10 @@ import { ToggleSwitch } from "./ToggleSwitch";
 
 type FocusSwitchProps = {
   isMobile?: boolean;
+  showBorder?: boolean;
 };
 
-export default function FocusSwitch({ isMobile }: FocusSwitchProps) {
+export default function FocusSwitch({ isMobile, showBorder=false }: FocusSwitchProps) {
   const [mounted, setMounted] = useState(false);
   const [focusEnabled, setFocusEnabled] = useAsyncStorage("focusEnabled", false);
   const [isChanging, setIsChanging] = useState(false);
@@ -67,7 +68,7 @@ export default function FocusSwitch({ isMobile }: FocusSwitchProps) {
   }
 
   return (
-    <div className="relative">
+    <div className={`relative rounded-full ${showBorder ? "border border-[#5A6462]" : ""}`}>
       {/* Show spinner overlay while updating */}
       {isUpdating && (
         <div className="absolute inset-0 flex items-center justify-center z-10 bg-forest-100 dark:bg-forest-950 bg-opacity-20 dark:bg-opacity-20 rounded-lg">
