@@ -21,7 +21,7 @@ const QUICK_BITES_DATA: QuickBitesData = {
 
         "## EIP-7691: More Blobs",
         "The Blob target was doubled from 3 to 6, and the limit was raised from 6 to 9. This means more blobs for Layer 2s and it takes longer for the Blob fee market to kick in.",
-        "The following chart shows how close we are to the new Blob target. Whenever the number of submitted blobs per block is above the target, the Blob fee market will kick in and increase the cost per blob (using the EIP-1559 mechanism).",
+        "The following chart shows how close we are to the new Blob target. When the number of blobs submitted per block exceeds the target, the Blob fee market will kick in and increase the cost per blob (using the EIP-1559 mechanism).",
 
          "```chart",
         JSON.stringify({
@@ -62,7 +62,7 @@ const QUICK_BITES_DATA: QuickBitesData = {
       "```",
 
       "## EIP-7702: Smarter Wallets",
-      "EIP-7702 introduces a new transaction type that allows wallets to act as smart accounts. This improves the user experience by allowing wallets to pay network fees with custom gas tokens, delegate transactions, and more.",
+      "EIP-7702 introduces a new transaction type that allows wallets to act as smart accounts. This improves the user experience by enabling wallets to pay network fees with custom gas tokens, delegate transactions, and more.",
       "The following chart shows the adoption of EIP-7702 wallets by visualizing the daily number of Set Code transactions on EVM chains (aka Type 4 transactions).",
 
       "```chart",
@@ -121,7 +121,7 @@ const QUICK_BITES_DATA: QuickBitesData = {
       }),
     "```",
 
-    "All charts on this page are updated daily so that you can see the adoption of the Pectra upgrades over time.",
+    "All charts on this page are updated daily so you can track the adoption of the Pectra upgrades over time.",
 
     ],
     image: "/images/quick-bites/pectra-tx-type-4.png",
