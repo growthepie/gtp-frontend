@@ -126,7 +126,7 @@ const QUICK_BITES_DATA: QuickBitesData = {
     ],
     image: "/images/quick-bites/pectra-tx-type-4.png",
     og_image: "https://api.growthepie.xyz/v1/og_images/quick-bites/pectra-upgrade.png",
-    date: "2025-05-16",
+    date: "2025-05-22",
     icon: "ethereum-logo-monochrome",
     related: [],
     author: [{
