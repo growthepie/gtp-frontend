@@ -92,12 +92,12 @@ export default function Header() {
                 </div>
               </Link>
               </LogoContextMenu>
-              <div className="flex gap-[15px] justify-center items-end">
+              <div className="relative flex gap-[5px] justify-center items-end h-[37px] pr-[calc(10px+24px)]">
                 <Notification />
               
-                  <div className={`${isMobile ? "block" : "hidden"} w-auto relative right-[21px] top-[2px]`}>
+                  {/* <div className={`${isMobile ? "block" : "hidden"} w-auto relative -left-[48px] -top-[5px]`}> */}
                     <HeaderSearchButton />
-                  </div>
+                  {/* </div> */}
              
                 <div className="w-auto">
                   <Sidebar isMobile={true} />
