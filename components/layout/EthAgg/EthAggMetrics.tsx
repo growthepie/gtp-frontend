@@ -4,6 +4,7 @@ import Container from '../Container';
 import HighchartsReact from 'highcharts-react-official';
 import { HighchartsProvider, HighchartsChart, YAxis, Series, XAxis, Tooltip, Chart, ColumnSeries } from 'react-jsx-highcharts';
 import Highcharts from 'highcharts';
+import "@/app/highcharts.axis.css";
 
 // Define the props type for EthAggMetricsComponent
 interface EthAggMetricsProps {
@@ -254,89 +255,103 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
               })()}
             </div>
         </div>
-        <div className='bg-[#1F2726] rounded-[15px] p-[15px] w-full h-[306px]'>
-          <div className='heading-large-md mb-[15px]'>Ecosystem TPS</div>
-          <div className='numbers-4xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>{Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(globalMetrics.total_tps || 0)}</div>
-          <div className='w-full h-[54px] '>
-            <HighchartsProvider Highcharts={Highcharts}>
-              
-                <HighchartsChart>
-                  <Chart
-                    backgroundColor={"transparent"}
-                    type="line"
-                    colors={['#10808C', '#1DF7EF']}
-                    panning={{
-                      enabled: false,
-                      type: "x",
-                    }}
-                    panKey="shift"
-                    zooming={{
-                      mouseWheel: {
+        <div className='flex flex-col gap-y-[15px] bg-[#1F2726] rounded-[15px] p-[15px] w-full h-[306px]'>
+          <div className='heading-large-md'>Ecosystem TPS</div>
+          <div className='flex flex-col gap-y-[30px]'>
+            <div className='numbers-4xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>{Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(globalMetrics.total_tps || 0)}</div>
+            <div className='w-full h-[58px] -mt-[5px]'>
+              <HighchartsProvider Highcharts={Highcharts}>
+                  <HighchartsChart>
+                    <Chart
+                      backgroundColor={"transparent"}
+                      type="line"
+                      colors={['#10808C', '#1DF7EF']}
+                      panning={{
                         enabled: false,
-                      },
-                    }}
-                    animation={{
-                      duration: 50,
-                    }}
-                    marginBottom={5}
-
-                    marginTop={15}
-                    height={54}
-                  
-                   
-                  />
-                  <YAxis
-                    visible={false}
-                    type="linear"
-                    gridLineWidth={1}
-                    gridLineColor={"#5A6462"}
-                    gridLineDashStyle={"Solid"}
-                    startOnTick={false}
-                    endOnTick={true}
-                    tickAmount={4}
-                    gridZIndex={10}
-                    min={0}
-                    
-                    
-                    zoomEnabled={false}
-                  >
-                    <ColumnSeries
-                      type="column"
-                      data={totalTPSLive}
-                      color={{
-                        linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-                        stops: [
-                          [0, '#10808C'],
-                          [1, '#1DF7EF']
-                        ]
+                        type: "x",
                       }}
-
-                      pointPadding={4}
-                      pointWidth={8}
-                      groupPadding={0}
-                      colorByPoint={false}
-                      borderRadius={0}
-                      borderColor={"transparent"}
+                      panKey="shift"
+                      zooming={{
+                        mouseWheel: {
+                          enabled: false,
+                        },
+                      }}
+                      animation={{
+                        duration: 50,
+                      }}
+                      marginBottom={5}
+                      marginTop={5}
+                      marginLeft={40}
+                      marginRight={0}
+                      height={58} // 48 (figma) + 5 (marginBottom) + 5 (marginTop) = 58
+                    
+                    
                     />
-                  </YAxis>
-                  <XAxis 
-                    type="linear"
-                    gridLineWidth={0}
-                    lineWidth={0}
-                    tickLength={10}
-                    labels={{
-                      enabled: false
-                    }}
-                    min={0}
-                    max={40}
-                    tickColor={"#5A6462"}
-                  
-                    tickWidth={0}
-                  />
-                  <Tooltip />
-                </HighchartsChart>
-             
-            </HighchartsProvider>
+                    <YAxis
+                      visible={true}
+                      type="linear"
+                      gridLineWidth={1}
+                      gridLineColor={"#5A6462"}
+                      gridLineDashStyle={"Solid"}
+                      startOnTick={true}
+                      endOnTick={true}
+                      tickAmount={2}
+                      gridZIndex={10}
+                      min={0}
+                      labels={{
+                        distance: 10,
+                        align: "right",
+                        useHTML: true,
+                        style: {
+                          whiteSpace: "nowrap",
+                          textAlign: "right",
+                          color: "rgb(215, 223, 222)",
+                          fontSize: "10px",
+                          fontWeight: "700",
+                          fontFamily: "Fira Sans",
+                        },
+                      }}
+                      zoomEnabled={false}
+                    >
+                      <ColumnSeries
+                        type="column"
+                        data={totalTPSLive}
+                        color={{
+                          linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                          stops: [
+                            [0, '#10808C'],
+                            [1, '#1DF7EF']
+                          ]
+                        }}
+
+                        pointPadding={4}
+                        pointWidth={8}
+                        groupPadding={0}
+                        colorByPoint={false}
+                        borderRadius={0}
+                        borderColor={"transparent"}
+                        animation={false}
+                      />
+                    </YAxis>
+                    <XAxis 
+                      type="linear"
+                      gridLineWidth={0}
+                      lineWidth={0}
+                      tickLength={10}
+                      labels={{
+                        enabled: false
+                      }}
+                      min={0}
+                      max={40}
+                      tickColor={"#5A6462"}
+                    
+                      tickWidth={0}
+                    />
+                    <Tooltip />
+                  </HighchartsChart>
+              
+              </HighchartsProvider>
+            </div>
           </div>
         </div>
         <div className='bg-[#1F2726] rounded-[15px] p-[15px] w-full h-[306px]'>
