@@ -18,6 +18,17 @@ export default function EthUsdSwitch({ isMobile, showBorder=false, className }: 
   const [mounted, setMounted] = useState(false);
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
+  const [isResizing, setIsResizing] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsResizing(true);
+      setTimeout(() => setIsResizing(false), 200);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // useEffect only runs on the client, so now we can safely show the UI
   useEffect(() => {
     setMounted(true);
@@ -57,7 +68,7 @@ export default function EthUsdSwitch({ isMobile, showBorder=false, className }: 
       value={showUsd ? "usd" : "eth"}
       onChange={handleToggle}
       size={isMobile ? "sm" : "xl"}
-      className={`${showBorder ? "rounded-full border border-[#5A6462]" : ""} ${className || ""}`}
+      className={`${showBorder ? "rounded-full border border-[#5A6462]" : ""} ${className || ""} ${isResizing ? "opacity-0" : ""}`}
     />
   );
 }

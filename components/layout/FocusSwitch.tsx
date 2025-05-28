@@ -17,6 +17,18 @@ export default function FocusSwitch({ isMobile, showBorder=false, className}: Fo
   const [focusEnabled, setFocusEnabled] = useAsyncStorage("focusEnabled", false);
   const [isChanging, setIsChanging] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const [isResizing, setIsResizing] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsResizing(true);
+      setTimeout(() => setIsResizing(false), 200);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -60,7 +72,7 @@ export default function FocusSwitch({ isMobile, showBorder=false, className}: Fo
       
       updateTimeoutRef.current = setTimeout(() => {
         setIsUpdating(false);
-      }, 300); // Allow enough time for charts to update
+      }, 200); // Allow enough time for charts to update
     }, 100);
   }, [isMobile, setFocusEnabled, isChanging, isUpdating]);
 
@@ -69,7 +81,7 @@ export default function FocusSwitch({ isMobile, showBorder=false, className}: Fo
   }
 
   return (
-    <div className={`relative rounded-full ${showBorder ? "border border-[#5A6462]" : ""} ${className || ""}`}>
+    <div className={`relative rounded-full ${showBorder ? "border border-[#5A6462]" : ""} ${className || ""} ${isResizing ? "opacity-0" : ""}`}>
       {/* Show spinner overlay while updating */}
       {isUpdating && (
         <div className="absolute inset-0 flex items-center justify-center z-10 bg-forest-100 dark:bg-forest-950 bg-opacity-20 dark:bg-opacity-20 rounded-lg">

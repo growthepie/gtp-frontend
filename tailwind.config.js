@@ -109,6 +109,7 @@ module.exports = {
       zIndex: { 
         ...defaultTheme.zIndex,
         'context-menu': '9000',
+        'global-search-tooltip': '8500',
         'global-search': '8000',
         'global-search-backdrop': '7000',
       },

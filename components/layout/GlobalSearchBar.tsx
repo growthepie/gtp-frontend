@@ -21,20 +21,45 @@ import EthUsdSwitch from './EthUsdSwitch';
 import FocusSwitch from './FocusSwitch';
 import { IconContextMenu } from './IconContextMenu';
 import { useToast } from '../toast/GTPToast';
+import { useNotifications } from '@/hooks/useNotifications';
+import NotificationContent from '@/components/notifications/NotificationContent';
+import { GTPIconName } from '@/icons/gtp-icon-names';
+import { track } from '@vercel/analytics/react';
+import SharePopoverContent from './FloatingBar/SharePopoverContent';
+
+
 export default function GlobalFloatingBar() {
   const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", false);
-  const { isSidebarOpen, toggleSidebar } = useUIContext();
-  // State for search and filters
-  const [searchQuery, setSearchQuery] = useState('');
-  const [results, setResults] = useState<number>(0);
+  const { isMobile, isSidebarOpen, toggleSidebar } = useUIContext();
+
+  const { filteredData, hasUnseenNotifications, markNotificationsAsSeen, isLoading, error } = useNotifications();
+  // State for controlling popover visibility
+  const [isNotificationPopoverOpen, setIsNotificationPopoverOpen] = useState(false);
+  const [isMobileMenuPopoverOpen, setIsMobileMenuPopoverOpen] = useState(false);
+  const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false);
+
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
-  const [selectedFormat, setSelectedFormat] = useState('SVG');
-  const [selectedSize, setSelectedSize] = useState(24);
 
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const isOpen = searchParams.get("search") === "true";
   const [showMore, setShowMore] = useState<{ [key: string]: boolean }>({});
+
+  const handleSharePopoverOpenChange = (openState: boolean) => {
+    const location = isMobile ? 'mobile' : 'desktop';
+    if (openState && !isSharePopoverOpen) { // Opening
+      track("opened Share window", { 
+        location,
+        page: window.location.pathname 
+      });
+    } else if (!openState && isSharePopoverOpen) { // Closing via overlay/escape
+      track("closed Share window by overlay/escape", { 
+        location,
+        page: window.location.pathname 
+      });
+    }
+    setIsSharePopoverOpen(openState);
+  };
 
   // Handle search submission
   const handleSearchSubmit = (query: string) => {
@@ -130,28 +155,28 @@ export default function GlobalFloatingBar() {
           <FloatingBarContainer className='p-[5px] md:px-[15px] md:py-[10px]'>
             {/* Mobile - Share Button */}
             <Popover
-              trigger={
+                placement="top-start"
+                isOpen={isSharePopoverOpen}
+                onOpenChange={handleSharePopoverOpenChange}
+                content={
+                  <SharePopoverContent onClose={() => setIsSharePopoverOpen(false)} />
+                }
+                className='block md:hidden'
+                trigger="click"
+              >
                 <FloatingBarButton
                   icon="gtp-share"
-                  title="Filters"
+                  title="Share"
                 />
-              }
-              content={
-                <div className="p-4 gap-y-3 min-w-[200px] ml-auto mr-0">
-
-                </div>
-              }
-              position="bottom"
-              className='flex md:hidden'
-            />
+              </Popover>
             {/* Desktop - Home Button */}
             <div className={`hidden md:flex items-center justify-between w-[50.87px] ${isSidebarOpen ? "md:w-[230px]" : "md:w-[60.87px]"} transition-all duration-sidebar ease-sidebar`}>
               <GTPLogoOld />
               <div className="flex items-center justify-end h-full cursor-pointer " onClick={() => {
-                // track("clicked Sidebar Close", {
-                //   location: "desktop sidebar",
-                //   page: window.location.pathname,
-                // });
+                track("clicked Sidebar Close", {
+                  location: "desktop sidebar",
+                  page: window.location.pathname,
+                });
                 toggleSidebar();
                 setIsChangingSidebar(true);
                 setTimeout(() => {
@@ -201,36 +226,59 @@ export default function GlobalFloatingBar() {
 
             {/* Desktop - Notifications */}
             <Popover
-              trigger={
-                <FloatingBarButton
-                  icon="gtp-notification"
-                  title="Filters"
-                />
-              }
+              placement='bottom-end'
+              isOpen={isNotificationPopoverOpen}
+              onOpenChange={(open) => {
+                setIsNotificationPopoverOpen(open);
+                if (open) {
+                  markNotificationsAsSeen();
+                }
+              }}
               content={
-                <div className="p-4 gap-y-3 min-w-[200px] ml-auto mr-0">
-
+                <div
+                  className="p-0 gap-y-3 min-w-[480px] max-h-[70vh] scrollbar-thin scrollbar-thumb-[rgba(136,160,157,0.3)] scrollbar-track-[rgba(0,0,0,0.3)] bg-[#1F2726] border-forest-500 rounded-[12px] overflow-hidden shadow-lg"
+                  style={{ overflowY: 'auto' }}
+                >
+                  <NotificationContent
+                    notifications={filteredData}
+                    isLoading={isLoading}
+                    error={error}
+                  />
                 </div>
               }
-              position="bottom"
               className='hidden md:flex'
-            />
+              trigger="click"
+            >
+                <FloatingBarButton
+                  icon={(hasUnseenNotifications ? "gtp-notification" : "feather:bell") as GTPIconName}
+                  title="Notifications"
+                />
+            </Popover>
             {/* Mobile - Menu Button */}
             <Popover
-              trigger={
-                <FloatingBarButton
-                  icon="gtp-burger-menu"
-                  title="Filters"
-                />
-              }
+              placement='top-end'
+              isOpen={isMobileMenuPopoverOpen}
+              onOpenChange={setIsMobileMenuPopoverOpen}
               content={
-                <div className="p-4 gap-y-3 min-w-[200px] ml-auto mr-0">
-
-                </div>
+                <div
+                className="p-0 gap-y-3 w-[calc(100vw-80px)] md:min-w-[480px] ml-auto mr-0 max-h-[70vh] scrollbar-thin scrollbar-thumb-[rgba(136,160,157,0.3)] scrollbar-track-[rgba(0,0,0,0.3)] bg-[#1F2726] border-forest-500 rounded-[12px] overflow-hidden shadow-lg"
+                style={{ overflowY: 'auto' }}
+              >
+                <NotificationContent
+                  notifications={filteredData}
+                  isLoading={isLoading}
+                  error={error}
+                />
+              </div>
               }
-              position="bottom"
               className='flex md:hidden'
-            />
+              trigger="click"
+            >
+              <FloatingBarButton
+                  icon={(hasUnseenNotifications ? "gtp-notification" : "feather:bell") as GTPIconName}
+                  title="Notifications"
+                />
+            </Popover>
           </FloatingBarContainer>
         </div>
       </div>
