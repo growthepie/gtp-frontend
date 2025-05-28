@@ -27,8 +27,28 @@ const nextConfig = {
           has: [
             {
               type: "host",
+              value: "fees.growthepie.com",
+            },
+          ],
+          destination: "/fees",
+        },
+        {
+          source: "/",
+          has: [
+            {
+              type: "host",
               value: "dev.fees.growthepie.xyz",
             },
+            {
+              type: "host",
+              value: "dev.fees.growthepie.com",
+            },
+          ],
+          destination: "/fees",
+        },
+        {
+          source: "/",
+          has: [
             {
               type: "host",
               value: "dev.fees.growthepie.com",
@@ -55,8 +75,28 @@ const nextConfig = {
           has: [
             {
               type: "host",
+              value: "labels.growthepie.com",
+            },
+          ],
+          destination: "/labels",
+        },
+        {
+          source: "/",
+          has: [
+            {
+              type: "host",
               value: "dev.labels.growthepie.xyz",
             },
+            {
+              type: "host",
+              value: "dev.labels.growthepie.com",
+            },
+          ],
+          destination: "/labels",
+        },
+        {
+          source: "/",
+          has: [
             {
               type: "host",
               value: "dev.labels.growthepie.com",
@@ -83,8 +123,28 @@ const nextConfig = {
           has: [
             {
               type: "host",
+              value: "icons.growthepie.com",
+            },
+          ],
+          destination: "/icons",
+        },
+        {
+          source: "/",
+          has: [
+            {
+              type: "host",
               value: "dev.icons.growthepie.xyz",
             },
+            {
+              type: "host",
+              value: "dev.icons.growthepie.com",
+            },
+          ],
+          destination: "/icons",
+        },
+        {
+          source: "/",
+          has: [
             {
               type: "host",
               value: "dev.icons.growthepie.com",
