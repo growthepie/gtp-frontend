@@ -7,7 +7,7 @@ import { Title } from '@/components/layout/TextHeadingComponents';
 import Heading from '@/components/layout/Heading';
 import { Metadata } from 'next';
 import { GTPIconName } from '@/icons/gtp-icon-names';
-import { getQuickBiteBySlug, getRelatedQuickBites } from '@/lib/mock/quickBitesData';
+import { getQuickBiteBySlug, getRelatedQuickBites } from '@/lib/quick-bites/quickBites';
 import ClientAuthorLink from '@/components/quick-bites/ClientAuthorLink';
 import Block from '@/components/quick-bites/Block';
 import { formatDate } from '@/lib/utils/formatters';
@@ -99,7 +99,7 @@ export default function QuickBitePage({ params }: Props) {
               <Icon icon={'fluent:arrow-left-32-filled'} className={`w-[20px] h-[25px]`}  />
             </Link>  
             <div className='flex items-center gap-x-[5px] md:flex-row flex-row-reverse whitespace-nowrap'>
-              {QuickBite && QuickBite.author && QuickBite.author.length > 1 && (
+              {QuickBite && QuickBite.author && (
                 <>
                   <div className='flex items-center gap-x-[5px] md:flex-row flex-row-reverse'>
                     {QuickBite.author.map((author) => (

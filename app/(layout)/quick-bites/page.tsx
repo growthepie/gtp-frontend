@@ -3,7 +3,7 @@ import { PageContainer } from '@/components/layout/Container';
 import { Title } from '@/components/layout/TextHeadingComponents';
 import { Metadata } from 'next';
 import QuickBitesGrid from '@/components/quick-bites/QuickBitesGrid';
-import { getAllQuickBites } from '@/lib/mock/quickBitesData';
+import { getAllQuickBites } from '@/lib/quick-bites/quickBites';
 
 export const metadata: Metadata = {
   title: 'Quick Bites - growthepie',
