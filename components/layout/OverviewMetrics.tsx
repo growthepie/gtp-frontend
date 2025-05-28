@@ -1,24 +1,15 @@
 "use client";
-import Image from "next/image";
 import {
   useMemo,
   useState,
   useEffect,
-  useRef,
   useCallback,
-  useContext,
-  CSSProperties,
 } from "react";
-import { Icon } from "@iconify/react";
 import { useTheme } from "next-themes";
 import { Chains } from "@/types/api/ChainOverviewResponse";
-import { color } from "highcharts";
-import { useHover, useMediaQuery } from "usehooks-ts";
-import { Chart } from "../charts/chart";
+import {  useMediaQuery } from "usehooks-ts";
 import Container from "./Container";
-import Colors from "tailwindcss/colors";
 
-import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 
@@ -34,19 +25,8 @@ import {
 } from "@/components/layout/TopRow";
 import HorizontalScrollContainer from "../HorizontalScrollContainer";
 import { useMaster } from "@/contexts/MasterContext";
-
-// object which contains the allowed modes for chains with mode exceptions
-const AllowedModes: {
-  [chain: string]: {
-    metric: string[];
-    scale: string[];
-  };
-} = {
-  imx: {
-    metric: ["txcount"],
-    scale: ["absolute", "share"],
-  },
-};
+import { TitleButtonLink } from "./TextHeadingComponents";
+import { GTPIconName } from "@/icons/gtp-icon-names";
 
 export default function OverviewMetrics({
   data,
@@ -67,7 +47,7 @@ export default function OverviewMetrics({
   const { AllChainsByKeys } = useMaster();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [selectedMode, setSelectedMode] = useState(
-    forceSelectedChain === "imx" ? "txcount_share" : "gas_fees_share_usd",
+  "txcount_share"
   );
   const [isCategoryMenuExpanded, setIsCategoryMenuExpanded] = useState(true);
   const [allCats, setAllCats] = useState(forceSelectedChain ? true : false);
@@ -237,7 +217,7 @@ export default function OverviewMetrics({
           xMax: Date.now(),
         },
         max: {
-          label: "All Time",
+          label: "Max",
           shortLabel: "Max",
           value: 0,
         },
@@ -266,7 +246,7 @@ export default function OverviewMetrics({
           xMax: Date.now(),
         },
         max: {
-          label: "All Time",
+          label: "Max",
           shortLabel: "Max",
           value: 0,
         },
@@ -330,20 +310,9 @@ export default function OverviewMetrics({
                 {Object.keys(timespans).map((timespan) => (
                   <TopRowChild
                     key={timespan}
-                    //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
                     isSelected={selectedTimespan === timespan}
                     onClick={() => {
                       setSelectedTimespan(timespan);
-                      // setXAxis();
-                      // chartComponent?.current?.xAxis[0].update({
-                      //   min: timespans[selectedTimespan].xMin,
-                      //   max: timespans[selectedTimespan].xMax,
-                      //   // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
-                      //   tickPositions: getTickPositions(
-                      //     timespans.max.xMin,
-                      //     timespans.max.xMax,
-                      //   ),
-                      // });
                     }}
                   >
                     <span className="hidden md:block">
@@ -355,21 +324,6 @@ export default function OverviewMetrics({
                   </TopRowChild>
                 ))}
               </TopRowParent>
-              {/* <div
-            className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[30px] right-[20px] md:right-[45px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${
-              !isMobile
-                ? ["max", "180d"].includes(selectedTimespan)
-                  ? "translate-y-[calc(-100%+3px)]"
-                  : "translate-y-0 "
-                : ["max", "180d"].includes(selectedTimespan)
-                ? "translate-y-[calc(100%+3px)]"
-                : "translate-y-0"
-            }`}
-          >
-            <div className="font-medium bg-forest-100 dark:bg-forest-1000 rounded-b-2xl rounded-t-none lg:rounded-b-none lg:rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
-              7-day rolling average
-            </div>
-          </div> */}
             </TopRowContainer>
           </Container>
           {/*Chain Rows/List */}
@@ -529,7 +483,35 @@ export default function OverviewMetrics({
           {/*Contracts Header */}
           <Container>
             <div className="w-[100%] mx-auto mt-[30px] flex flex-col">
-              <h1 className="text-lg font-bold">Most Active Contracts</h1>
+              <div className="flex items-start justify-between">
+                <h2 className="heading-large-md">Most Active Contracts</h2>
+                <div className="hidden md:block">
+                <TitleButtonLink
+                  label="Don’t see your app? Label here."
+                  icon="gtp-oli-logo"
+                  iconSize="md"
+                  iconBackground="bg-transparent"
+                  rightIcon={"feather:arrow-right" as GTPIconName}
+                  href="https://www.openlabelsinitiative.org/?gtp.applications"
+                  newTab
+                  gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
+                  className="w-fit hidden md:block"
+                  />
+                </div>
+                <div className="block md:hidden">
+                  <TitleButtonLink
+                    label={<div className="heading-small-xxs">Label here.</div>}
+                    icon="gtp-oli-logo"
+                    iconSize="md"
+                    iconBackground="bg-transparent"
+                    href="https://www.openlabelsinitiative.org/?gtp.applications"
+                    newTab
+                    gradientClass="bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)]"
+                    className="w-fit"
+                    containerClassName=""
+                  />
+                </div>
+              </div>
               <p className="text-sm mt-[15px]">
                 See the most active contracts within the selected timeframe (
                 {timespans[selectedTimespan].label}) and for your selected
@@ -541,34 +523,32 @@ export default function OverviewMetrics({
           <HorizontalScrollContainer>
             <ContractProvider
               value={{
-                data,
-                master,
-                selectedMode,
-                forceSelectedChain,
-                selectedCategory,
-                selectedChain,
-                selectedTimespan,
-                selectedValue,
-                categories,
-                allCats,
-                timespans,
-                standardChainKey,
-                setSelectedChain,
-                setSelectedCategory,
-                setAllCats,
-                formatSubcategories,
+                data: data,
+                master: master,
+                selectedMode: selectedMode,
+                selectedCategory: selectedCategory,
+                selectedTimespan: selectedTimespan,
+                timespans: timespans,
+                categories: categories,
+                formatSubcategories: formatSubcategories,
+                showUsd: showUsd,
+                selectedValue: selectedValue,
+                forceSelectedChain: forceSelectedChain,
+                selectedChain: selectedChain,
+                allCats: allCats,
+                standardChainKey: standardChainKey,
+                setAllCats: setAllCats,
+                setSelectedChain: setSelectedChain,
+                setSelectedCategory: setSelectedCategory,
+                selectedChains: undefined,
+                selectedSubcategories: undefined,
+                chainEcosystemFilter: chainEcosystemFilter,
+                focusEnabled: false,
               }}
             >
               <ContractContainer />
             </ContractProvider>
           </HorizontalScrollContainer>
-          {/* <ContractLabelModal
-        isOpen={isContractLabelModalOpen}
-        onClose={() => {
-          setIsContractLabelModalOpen(false);
-        }}
-        contract={selectedContract}
-      /> */}
         </div>
       )}
     </>

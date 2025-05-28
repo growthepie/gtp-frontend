@@ -2,59 +2,8 @@
 import { ISitemapField, getServerSideSitemap } from "next-sitemap";
 import { navigationItems } from "@/lib/navigation";
 import { MasterURL } from "@/lib/urls";
-import { MasterResponse } from "@/types/api/MasterResponse";
-import {
-  Get_AllChainsNavigationItems,
-  Get_SupportedChainKeys,
-} from "@/lib/chains";
 
 export async function GET(request: Request) {
-  const master = await fetch(MasterURL);
-  const masterData: MasterResponse = await master.json();
-
-  const fundamentals = navigationItems[1];
-  const blockspace = navigationItems[2];
-  const dataAvailability = navigationItems[3];
-  const trackers = navigationItems[4];
-
-  const chains = Get_AllChainsNavigationItems(masterData);
-
-  const masterChainKeys = Object.keys(masterData.chains);
-
-  // const pages = [
-  //   ...fundamentals.options
-  //     .filter((c) => c.excludeFromSitemap !== true)
-  //     .map(
-  //       (option) => `https://www.growthepie.xyz/fundamentals/${option.urlKey}`,
-  //     ),
-  //   ...blockspace.options
-  //     .filter((c) => c.excludeFromSitemap !== true)
-  //     .map(
-  //       (option) => `https://www.growthepie.xyz/blockspace/${option.urlKey}`,
-  //     ),
-  //   ...Object.keys(masterData.blockspace_categories.main_categories).map(
-  //     (category) =>
-  //       `https://www.growthepie.xyz/blockspace/chain-overview/${category}`,
-  //   ),
-  //   ...chains.options
-  //     .filter(
-  //       (c) =>
-  //         c.key &&
-  //         Get_SupportedChainKeys(masterData).includes(c.key) &&
-  //         c.excludeFromSitemap !== true,
-  //     )
-  //     .map((option) => `https://www.growthepie.xyz/chains/${option.urlKey}`),
-  //   ...dataAvailability.options
-  //     .filter((c) => c.excludeFromSitemap !== true)
-  //     .map(
-  //       (option) =>
-  //         `https://www.growthepie.xyz/data-availability/${option.urlKey}`,
-  //     ),
-  //   ...trackers.options
-  //     .filter((c) => c.hide !== true && c.excludeFromSitemap !== true)
-  //     .map((option) => `https://www.growthepie.xyz/trackers/${option.urlKey}`),
-  // ];
-
   const pages = navigationItems
     .map((item) => {
       return item.options
@@ -84,7 +33,8 @@ export async function GET(request: Request) {
           !page.includes("/api/") &&
           !page.includes("/[") &&
           !page.includes("/_") &&
-          !page.includes("404"),
+          !page.includes("404") &&
+          !page.includes("/applications/"), // Exclude applications routes
       )
       .map(
         (page): ISitemapField => ({

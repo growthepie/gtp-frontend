@@ -38,32 +38,6 @@ export const DAOverviewURL = "https://api.growthepie.xyz/v1/da_overview.json";
 export const DATimeseriesURL =
   "https://api.growthepie.xyz/v1/da_timeseries.json";
 
-export const ChainBlockspaceURLs = {
-  ethereum: "https://api.growthepie.xyz/v1/chains/blockspace/ethereum.json",
-  arbitrum: "https://api.growthepie.xyz/v1/chains/blockspace/arbitrum.json",
-  polygon_zkevm:
-    "https://api.growthepie.xyz/v1/chains/blockspace/polygon_zkevm.json",
-  optimism: "https://api.growthepie.xyz/v1/chains/blockspace/optimism.json",
-  imx: "https://api.growthepie.xyz/v1/chains/blockspace/imx.json",
-  zksync_era: "https://api.growthepie.xyz/v1/chains/blockspace/zksync_era.json",
-  base: "https://api.growthepie.xyz/v1/chains/blockspace/base.json",
-  gitcoin_pgn:
-    "https://api.growthepie.xyz/v1/chains/blockspace/gitcoin_pgn.json",
-  zora: "https://api.growthepie.xyz/v1/chains/blockspace/zora.json",
-  linea: "https://api.growthepie.xyz/v1/chains/blockspace/linea.json",
-  scroll: "https://api.growthepie.xyz/v1/chains/blockspace/scroll.json",
-  mantle: "https://api.growthepie.xyz/v1/chains/blockspace/mantle.json",
-  starknet: "https://api.growthepie.xyz/v1/chains/blockspace/starknet.json",
-  loopring: "https://api.growthepie.xyz/v1/chains/blockspace/loopring.json",
-  rhino: "https://api.growthepie.xyz/v1/chains/blockspace/rhino.json",
-  metis: "https://api.growthepie.xyz/v1/chains/blockspace/metis.json",
-  manta: "https://api.growthepie.xyz/v1/chains/blockspace/manta.json",
-  blast: "https://api.growthepie.xyz/v1/chains/blockspace/blast.json",
-  mode: "https://api.growthepie.xyz/v1/chains/blockspace/mode.json",
-  taiko: "https://api.growthepie.xyz/v1/chains/blockspace/taiko.json",
-  redstone: "https://api.growthepie.xyz/v1/chains/blockspace/redstone.json",
-};
-
 export const EconomicsURL = "https://api.growthepie.xyz/v1/economics.json";
 
 export const LandingURL = "https://api.growthepie.xyz/v1/landing_page.json";
@@ -79,6 +53,7 @@ export const LabelsURLS = {
   full: "https://api.growthepie.xyz/v1/labels/full.json",
   sparkline: "https://api.growthepie.xyz/v1/labels/sparkline.json",
   projects: "https://api.growthepie.xyz/v1/labels/projects.json",
+  projectsFiltered: "https://api.growthepie.xyz/v1/labels/projects_filtered.json",
 };
 export const LabelsParquetURLS = {
   quick: "https://api.growthepie.xyz/v1/labels/quick.parquet",
@@ -110,3 +85,9 @@ export const OctantURLs = {
   projects_by_website:
     "https://api.growthepie.xyz/v1/trackers/octant/projects_by_website.json",
 };
+
+export const IconLibraryURLs = {
+  index: "https://api.growthepie.xyz/v1/icon-library/index.json",
+  base: "https://api.growthepie.xyz/v1/icon-library/",
+};
+

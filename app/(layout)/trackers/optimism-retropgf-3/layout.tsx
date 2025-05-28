@@ -5,6 +5,19 @@ import Icon from "@/components/layout/Icon";
 import Subheading from "@/components/layout/Subheading";
 import Image from "next/image";
 import Link from "next/link";
+import { getPageMetadata } from "@/lib/metadata";
+import { Metadata } from "next";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const metadata = await getPageMetadata(
+    "/trackers/optimism-retropgf-3",
+    {}
+  );
+  return {
+    title: metadata.title,
+    description: metadata.description,
+  };
+}
 
 export default async function Layout({
   children,

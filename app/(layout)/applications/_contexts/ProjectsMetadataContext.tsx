@@ -1,20 +1,8 @@
 "use client";
-import ShowLoading from "@/components/layout/ShowLoading";
-import { DALayerWithKey, useMaster } from "@/contexts/MasterContext";
-import { Chain, Get_SupportedChainKeys } from "@/lib/chains";
-import { IS_PRODUCTION } from "@/lib/helpers";
-import { ApplicationsURLs, DAMetricsURLs, DAOverviewURL, LabelsURLS, MasterURL, MetricsURLs } from "@/lib/urls";
-import { DAOverviewResponse } from "@/types/api/DAOverviewResponse";
-import { MasterResponse } from "@/types/api/MasterResponse";
-import { ChainData, MetricData, MetricsResponse } from "@/types/api/MetricsResponse";
-import { AppDatum, AppOverviewResponse, AppOverviewResponseHelper, ParsedDatum } from "@/types/applications/AppOverviewResponse";
-import { intersection } from "lodash";
-import { RefObject, createContext, useContext, useEffect, useMemo, useState } from "react";
-import { LogLevel } from "react-virtuoso";
-import useSWR, { useSWRConfig, preload} from "swr";
-import { useLocalStorage, useSessionStorage } from "usehooks-ts";
-
-
+import { LabelsURLS } from "@/lib/urls";
+import { AppDatum } from "@/types/applications/AppOverviewResponse";
+import { createContext, useCallback, useContext, useMemo, } from "react";
+import useSWR from "swr";
 
 function ownerProjectToProjectData(data: AppDatum[]): { [key: string]: any } {
   return data.reduce((acc, entry) => {
@@ -26,6 +14,7 @@ function ownerProjectToProjectData(data: AppDatum[]): { [key: string]: any } {
 }
 
 export type ProjectsMetadataContextType = {
+  isLoading: boolean;
   ownerProjectToProjectData: {
     [key: string]: {
       owner_project: string;
@@ -36,46 +25,135 @@ export type ProjectsMetadataContextType = {
       website: string;
       logo_path: string;
       main_category: string;
+      sub_category: string;
+      sub_categories: string[];
+      on_apps_page: boolean;
     }
   };
+  projectNameToProjectData: {
+    [key: string]: {
+      owner_project: string;
+      display_name: string;
+      description: string;
+      main_github: string;
+      twitter: string;
+      website: string;
+      logo_path: string;
+      main_category: string;
+      sub_category: string;
+      sub_categories: string[];
+      on_apps_page: boolean;
+    }
+  };
+  availableMainCategories: string[];
+}
+
+type ProjectsMetadataProviderProps = {
+  children: React.ReactNode;
+  useFilteredProjects?: boolean;
 }
 
 export const ProjectsMetadataContext = createContext<ProjectsMetadataContextType | undefined>(undefined);
 
-export const ProjectsMetadataProvider = ({ children }: { children: React.ReactNode }) => {
+export const ProjectsMetadataProvider = ({ children, useFilteredProjects = false }: ProjectsMetadataProviderProps) => {
   const {
     data: projectsData,
     error: projectsError,
     isLoading: projectsLoading,
     isValidating: projectsValidating,
-  } = useSWR<any>(LabelsURLS.projects);
+  } = useSWR<any>(useFilteredProjects ? LabelsURLS.projectsFiltered : LabelsURLS.projects);
+
+  const {
+    data: filteredProjectsData,
+    error: filteredProjectsError,
+    isLoading: filteredProjectsLoading,
+    isValidating: filteredProjectsValidating,
+  } = useSWR<any>(!useFilteredProjects ? LabelsURLS.projectsFiltered : null);
+
+  const ownerProjectsInAppsPage = useMemo(() => {
+    if(!filteredProjectsData) return new Set<string>();
+    // 
+    return new Set(filteredProjectsData.data.data.map((project: any) => project[filteredProjectsData.data.types.indexOf("owner_project")]));
+  }, [filteredProjectsData]);
+
+  const createDisplayNameToProjectData = useCallback((projectsData: any) => {
+    return projectsData.data.data.reduce((acc, project) => {
+      acc[project[projectsData.data.types.indexOf("display_name")]] = {
+        owner_project: project[projectsData.data.types.indexOf("owner_project")],
+        display_name: project[projectsData.data.types.indexOf("display_name")],
+        description: project[projectsData.data.types.indexOf("description")],
+        main_github: project[projectsData.data.types.indexOf("main_github")],
+        twitter: project[projectsData.data.types.indexOf("twitter")],
+        website: project[projectsData.data.types.indexOf("website")],
+        logo_path: project[projectsData.data.types.indexOf("logo_path")],
+        main_category: project[projectsData.data.types.indexOf("main_category")],
+        sub_category: project[projectsData.data.types.indexOf("sub_category")],
+        sub_categories: project[projectsData.data.types.indexOf("sub_categories")],
+        on_apps_page: !useFilteredProjects ? ownerProjectsInAppsPage.has(project[projectsData.data.types.indexOf("owner_project")]) : true,
+      }
+      return acc;
+    }, {});
+  }, [ownerProjectsInAppsPage, useFilteredProjects]);
+
+  const createOwnerProjectToProjectData = useCallback((projectsData: any) => {
+    return projectsData.data.data.reduce((acc, project) => {
+      acc[project[projectsData.data.types.indexOf("owner_project")]] = {
+        owner_project: project[projectsData.data.types.indexOf("owner_project")],
+        display_name: project[projectsData.data.types.indexOf("display_name")],
+        description: project[projectsData.data.types.indexOf("description")],
+        main_github: project[projectsData.data.types.indexOf("main_github")],
+        twitter: project[projectsData.data.types.indexOf("twitter")],
+        website: project[projectsData.data.types.indexOf("website")],
+        logo_path: project[projectsData.data.types.indexOf("logo_path")],
+        main_category: project[projectsData.data.types.indexOf("main_category")],
+        sub_category: project[projectsData.data.types.indexOf("sub_category")],
+        sub_categories: project[projectsData.data.types.indexOf("sub_categories")],
+        on_apps_page: !useFilteredProjects ? ownerProjectsInAppsPage.has(project[projectsData.data.types.indexOf("owner_project")]) : true,
+      }
+      return acc;
+    }, {});
+  }, [ownerProjectsInAppsPage, useFilteredProjects]);
+
 
   const ownerProjectToProjectData = useMemo(() => {
     if (!projectsData) return {};
 
-    let ownerProjectToProjectData = {};
-    const typesArr = projectsData.data.types;
-    projectsData.data.data.forEach((project) => {
-      ownerProjectToProjectData[project[typesArr.indexOf("owner_project")]] = {
-        owner_project: project[typesArr.indexOf("owner_project")],
-        display_name: project[typesArr.indexOf("display_name")],
-        description: project[typesArr.indexOf("description")],
-        main_github: project[typesArr.indexOf("main_github")],
-        twitter: project[typesArr.indexOf("twitter")],
-        website: project[typesArr.indexOf("website")],
-        logo_path: project[typesArr.indexOf("logo_path")],
-        main_category: project[typesArr.indexOf("main_category")],
+    return createOwnerProjectToProjectData(projectsData);
+  }, [projectsData, createOwnerProjectToProjectData]);
+
+  const projectNameToProjectData = useMemo(() => {
+    if (!projectsData) return {};
+
+    const displayNameToProjectData = createDisplayNameToProjectData(projectsData);
+
+    return displayNameToProjectData;
+  }, [projectsData, createDisplayNameToProjectData]);
+
+  const availableMainCategories = useMemo(() => {
+    if (!projectsData || !projectsData.data || !projectsData.data.data) {
+      return [];
+    }
+    const categories = new Set<string>();
+    const mainCategoryIndex = projectsData.data.types.indexOf("main_category");
+    if (mainCategoryIndex === -1) return [];
+
+    projectsData.data.data.forEach((project: any[]) => {
+      const category = project[mainCategoryIndex];
+      if (category && typeof category === 'string') {
+        categories.add(category);
       }
     });
-
-    return ownerProjectToProjectData;
+    return Array.from(categories).sort();
   }, [projectsData]);
 
   return (
     <ProjectsMetadataContext.Provider value={{
+      isLoading: projectsLoading || filteredProjectsLoading,
       ownerProjectToProjectData,
+      projectNameToProjectData,
+      availableMainCategories,
     }}>
-      {children}
+      {projectsData && children}
     </ProjectsMetadataContext.Provider>
   );
 }
@@ -83,7 +161,7 @@ export const ProjectsMetadataProvider = ({ children }: { children: React.ReactNo
 export const useProjectsMetadata = () => {
   const context = useContext(ProjectsMetadataContext);
   if (context === undefined) {
-    throw new Error("useApplicationsData must be used within a ApplicationsDataProvider");
+    throw new Error("useProjectsMetadata must be used within a ProjectsMetadataProvider");
   }
   return context;
 }

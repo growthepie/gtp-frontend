@@ -1,6 +1,6 @@
 "use client";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import { SidebarMenuGroup } from "./SidebarMenuGroup";
+import { SidebarMenuGroup, SidebarMenuLink } from "./SidebarMenuGroup";
 import Link from "next/link";
 import {
   navigationItems,
@@ -16,6 +16,7 @@ import { track } from "@vercel/analytics";
 import { useMaster } from "@/contexts/MasterContext";
 import VerticalScrollContainer from "../VerticalScrollContainer";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+import FocusSwitch from "./FocusSwitch";
 
 type SidebarProps = {
   className?: string;
@@ -116,7 +117,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
             toggleMobileSidebar();
           }}
         >
-          <Icon icon="feather:menu" className="h-8 w-8" />
+          <Icon icon="feather:menu" className={` ${isMobile ? "h-[24px] w-[24px]" : "w-8 h-8"} `} />
         </button>
         {/* Mobile Sidebar */}
         <div
@@ -124,6 +125,9 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
           className={`fixed top-0 right-0 z-[998] flex justify-end transform transition-transform duration-300 ease-in-out will-change-transform ${isMobileSidebarOpen ? "translate-x-0" : "translate-x-full"
             }`}
           aria-hidden={!isMobileSidebarOpen}
+          style={{
+            height: `100dvh`,
+          }}
         >
           {/* Overlay */}
           {/* <div
@@ -285,13 +289,21 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
             <div ref={mobileRef} className="z-[999] mt-[30px] h-[calc(100vh-100px)] w-full flex flex-col justify-between overflow-hidden relative pointer-events-auto">
               {/* <div className="flex-1 w-full overflow-x-hidden relative overflow-y-auto scrollbar-thin scrollbar-thumb-forest-1000/50 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller"> */}
               <VerticalScrollContainer height={mobileHeight - 150} scrollbarPosition="right" scrollbarAbsolute={false} scrollbarWidth="6px">
-                {navigationItemsWithChains.map((item) => (
-                  <SidebarMenuGroup
-                    key={item.name + "_item"}
-                    item={item}
-                    sidebarOpen={isMobileSidebarOpen}
-                  />
-                ))}
+                {navigationItemsWithChains.map((item) => 
+                  item.href ? (
+                    <SidebarMenuLink
+                      key={item.name + "_link"}
+                      item={item}
+                      sidebarOpen={isSidebarOpen}
+                    />
+                  ) : (
+                    <SidebarMenuGroup
+                      key={item.name + "_item"}
+                      item={item}
+                      sidebarOpen={isSidebarOpen}
+                    />
+                  )
+                )}
               </VerticalScrollContainer>
               {/* </div> */}
 
@@ -314,6 +326,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                   </Link>
                 </div>
                 <div className="items-end justify-center z-[999] flex space-x-[15px] mt-[2px] mb-[17px]">
+                  <FocusSwitch isMobile />
                   <EthUsdSwitch isMobile />
                 </div>
               </div>
@@ -343,13 +356,21 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
       {/* <div className="flex-1 flex flex-col gap-y-[10px] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-forest-800/30 scrollbar-track-forest-800/10"> */}
       <VerticalScrollContainer height={height - 36} scrollbarPosition="left" scrollbarAbsolute={true} scrollbarWidth="6px">
         <div className="pl-[20px] w-[270px]">
-          {navigationItemsWithChains.map((item) => (
-            <SidebarMenuGroup
-              key={item.name + "_item"}
-              item={item}
-              sidebarOpen={isSidebarOpen}
-            />
-          ))}
+          {navigationItemsWithChains.map((item) => 
+            item.href ? (
+              <SidebarMenuLink
+                key={item.name + "_link"}
+                item={item}
+                sidebarOpen={isSidebarOpen}
+              />
+            ) : (
+              <SidebarMenuGroup
+                key={item.name + "_item"}
+                item={item}
+                sidebarOpen={isSidebarOpen}
+              />
+            )
+          )}
         </div>
       </VerticalScrollContainer>
 

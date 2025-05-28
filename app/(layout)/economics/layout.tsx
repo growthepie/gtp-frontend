@@ -5,13 +5,16 @@ import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import Image from "next/image";
 import Link from "next/link";
 import { Metadata } from "next";
-
+import { getPageMetadata } from "@/lib/metadata";
 
 export async function generateMetadata(): Promise<Metadata> {  
-  
+  const metadata = await getPageMetadata(
+    '/economics',
+    {}
+  );
   return {
-    title: "Layer 2 Fees - Real-time Data",
-    description: "Aggregated economics metrics across layer2 chains.",
+    title: metadata.title,
+    description: metadata.description,
   };
 }
 

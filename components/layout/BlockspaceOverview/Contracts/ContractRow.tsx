@@ -1,9 +1,9 @@
+"use client";
 import { useContractContext } from "./ContractContext";
 import { Icon } from "@iconify/react";
 import { useMemo, useEffect, useState, CSSProperties } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
-import { ContractRowInterface } from "./ContextInterface";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../Tooltip";
 import ContractLabelModal from "../../ContractLabelModal";
 import { ContractInfo } from "./ContextInterface";
@@ -19,25 +19,25 @@ import {
   GridTableHeaderCell,
   GridTableRow,
 } from "@/components/layout/GridTable";
+import { GTPApplicationTooltip, GTPTooltipNew, OLIContractTooltip } from "@/components/tooltip/GTPTooltip";
+import { GTPIconName } from "@/icons/gtp-icon-names";
+import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 
 export default function ContractRow({
   rowKey,
   i,
   selectedContract,
   sortedContracts,
-  sortOrder,
-  setSortOrder,
   setSelectedContract,
 }: {
   rowKey: string;
   i: number;
   selectedContract: ContractInfo | null;
   sortedContracts: Object;
-  sortOrder: boolean;
-  setSortOrder: (order: boolean) => void;
   setSelectedContract: (contract: ContractInfo | null) => void;
 }) {
   const { AllChainsByKeys } = useMaster();
+  const { projectNameToProjectData } = useProjectsMetadata();
   const [copyContract, setCopyContract] = useState(false);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [labelFormMainCategoryKey, setLabelFormMainCategoryKey] = useState<
@@ -50,15 +50,11 @@ export default function ContractRow({
   const { theme } = useTheme();
 
   const {
-    data,
     master,
     selectedMode,
-    selectedCategory,
-    selectedTimespan,
-    selectedValue,
-    setSelectedCategory,
     formatSubcategories,
-  } = useContractContext() as ContractRowInterface;
+  } = useContractContext();
+
 
   const largestContractValue = useMemo(() => {
     let retValue = 0;
@@ -132,7 +128,7 @@ export default function ContractRow({
     <>
       {selectedContract &&
         selectedContract.address === sortedContracts[rowKey].address && (
-          <div key={rowKey + "" + sortOrder}>
+          <div key={rowKey + "-labelform"}>
             <div className="flex rounded-[27px]  mt-[7.5px] group relative z-[100]">
               <div className="absolute top-0 left-0 right-0 bottom-[-1px] pointer-events-none">
                 <div className="w-full h-full rounded-[27px] overflow-clip">
@@ -359,99 +355,57 @@ export default function ContractRow({
         )}
 
       <GridTableRow
-        key={rowKey + "" + sortOrder}
-        gridDefinitionColumns="grid-cols-[20px,225px,280px,95px,minmax(135px,800px),115px] relative"
-        className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] mb-[3px]"
+        key={rowKey}
+        gridDefinitionColumns="grid-cols-[20px,150px,280px,95px,minmax(215px,800px),130px] relative"
+        className="group text-[12px] h-[34px] inline-grid transition-all duration-300 gap-x-[15px] mb-[3px] !py-0"
       >
         <GridTableChainIcon origin_key={sortedContracts[rowKey].chain} />
-        <div className="flex justify-between">
-          <div>
-            {sortedContracts[rowKey].project_name ? (
-              sortedContracts[rowKey].project_name
-            ) : (
-              <div className="flex h-full items-center gap-x-[3px] text-[#5A6462] text-[10px]">
-                Not Available
-              </div>
-            )}
-          </div>
-          {ownerProjectDisplayNameToProjectData[
-            sortedContracts[rowKey].project_name
-          ] && (
-              <div className="flex gap-x-[5px] ">
-                {/* <div className="flex 3xl:hidden">
-                                <Icon
-                                  icon={copiedAddress === sortedContracts[key].project_name.address ? "feather:check-circle" : "feather:copy"}
-                                  className="w-[14px] h-[14px] cursor-pointer"
-                                  onClick={() => {
-                                    handleCopyAddress(filteredLabelsData[item.index].address);
-                                  }}
-                                />
-                              </div> */}
-                <div className="flex items-center gap-x-[5px]">
-                  <div className="h-[15px] w-[15px]">
-                    {ownerProjectDisplayNameToProjectData[
-                      sortedContracts[rowKey].project_name
-                    ][5] && (
-                        <a
-                          href={
-                            ownerProjectDisplayNameToProjectData[
-                            sortedContracts[rowKey].project_name
-                            ][5]
-                          }
-                          target="_blank"
-                          className="group flex items-center  gap-x-[5px] text-xs"
-                        >
-                          <Icon
-                            icon="feather:monitor"
-                            className="w-[15px] h-[15px]"
-                          />
-                        </a>
-                      )}
+        <div className="flex justify-between min-w-0 items-center h-full">
+          {sortedContracts[rowKey].project_name ? (
+            <GTPTooltipNew
+              placement="bottom-start"
+              allowInteract={true}
+              trigger={
+                projectNameToProjectData[sortedContracts[rowKey].project_name] && projectNameToProjectData[sortedContracts[rowKey].project_name].on_apps_page ? (
+                  <Link
+                    href={`/applications/${projectNameToProjectData[sortedContracts[rowKey].project_name].owner_project}`}
+                    // Link handles layout, inner span handles truncation
+                    className="flex h-[30px] items-center hover:underline cursor-pointer select-none min-w-0" // Keep flex items-center, add min-w-0
+                  >
+                    <span className="block w-full truncate"> {/* Apply truncate here */}
+                      {sortedContracts[rowKey].project_name}
+                    </span>
+                  </Link>
+                ) : (
+                  <div className="flex h-[30px] items-center cursor-normal select-none min-w-0"> {/* Keep flex items-center, add min-w-0 */}
+                    <span className="block w-full truncate"> {/* Apply truncate here */}
+                      {sortedContracts[rowKey].project_name}
+                    </span>
                   </div>
-                  <div className="h-[15px] w-[15px]">
-                    {ownerProjectDisplayNameToProjectData[
-                      sortedContracts[rowKey].project_name
-                    ][4] && (
-                        <a
-                          href={
-                            `https://x.com/${ownerProjectDisplayNameToProjectData[
-                            sortedContracts[rowKey].project_name
-                            ][4]}`
-
-                          }
-                          target="_blank"
-                          className="group flex items-center gap-x-[5px] text-xs"
-                        >
-                          <Icon
-                            icon="ri:twitter-x-fill"
-                            className="w-[15px] h-[15px]"
-                          />
-                        </a>
-                      )}
-                  </div>
-                  <div className="h-[15px] w-[15px]">
-                    {ownerProjectDisplayNameToProjectData[
-                      sortedContracts[rowKey].project_name
-                    ][3] && (
-                        <a
-                          href={
-                            `https://github.com/${ownerProjectDisplayNameToProjectData[
-                            sortedContracts[rowKey].project_name
-                            ][3]}`
-                          }
-                          target="_blank"
-                          className="group flex items-center gap-x-[5px] text-xs"
-                        >
-                          <Icon
-                            icon="ri:github-fill"
-                            className="w-[15px] h-[15px]"
-                          />
-                        </a>
-                      )}
-                  </div>
+                )
+              }
+              containerClass="flex flex-col gap-y-[10px]"
+              positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+            >
+              <GTPApplicationTooltip project_name={sortedContracts[rowKey].project_name} />
+            </GTPTooltipNew>
+          ) : (
+            <GTPTooltipNew
+              placement="bottom-start"
+              allowInteract={true}
+              trigger={
+                <div className="flex h-[30px] items-center gap-x-[3px] text-[#5A6462] text-[10px] cursor-pointer select-none min-w-0">
+                  <span className="block w-full truncate">
+                    Not Available
+                  </span>
                 </div>
-              </div>
-            )}
+              }
+              containerClass="flex flex-col gap-y-[10px]"
+              positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+            >
+              <OLIContractTooltip icon="gtp-project-monochrome" iconClassName="text-[#5A6462]" project_name="Not Available" message="Project information not available." />
+            </GTPTooltipNew>
+          )}
         </div>
         <div className="flex justify-between gap-x-[10px]">
           {sortedContracts[rowKey].name ? (
@@ -495,14 +449,14 @@ export default function ContractRow({
           </div>
         </div>
 
-        <div>
+        <div className="truncate">
           {
             master.blockspace_categories.main_categories[
             sortedContracts[rowKey].main_category_key
             ]
           }
         </div>
-        <div>
+        <div className="truncate">
           {
             master.blockspace_categories.sub_categories[
             sortedContracts[rowKey].sub_category_key

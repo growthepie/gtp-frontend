@@ -2,13 +2,21 @@
 import ShowLoading from "@/components/layout/ShowLoading";
 import { ApplicationsURLs } from "@/lib/urls";
 import { DailyData } from "@/types/api/EconomicsResponse";
-import { createContext, useContext } from "react";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import useSWR from "swr";
+import { useSort } from "./SortContext";
+import { useMetrics } from "./MetricsContext";
+import { SortConfig, sortItems, SortOrder, SortType } from "@/lib/sorter";
+import { useMaster } from "@/contexts/MasterContext";
+import { useLocalStorage } from "usehooks-ts";
+import { notFound } from "next/navigation";
+import { useTimespan } from "./TimespanContext";
 
 export interface ApplicationDetailsResponse {
   metrics:          Metrics;
   first_seen:       Date;
-  contracts:        Contracts;
+  // contracts:        Contracts;
+  contracts_table:  {[timespan: string]: ContractsTable};
   last_updated_utc: Date;
 }
 
@@ -17,10 +25,16 @@ export interface Contracts {
   data:  Array<Array<number | null | string>>;
 }
 
+export interface ContractsTable {
+  types: string[];
+  data:  Array<Array<number | null | string>>;
+}
+
 export interface Metrics {
   txcount:  MetricData;
   daa:      MetricData;
   gas_fees: MetricData;
+  [key: string]: MetricData;
 }
 
 export interface MetricData {
@@ -49,7 +63,7 @@ export interface OverTimeData {
 
 export interface Daily {
   types: string[];
-  data:  number[];
+  data:  number[][]; // [timestamp, value]
 }
 
 type ContractKeys = [
@@ -69,7 +83,7 @@ export type ContractDict = {
 }
 
 
-const getContractDictArray = (contracts: Contracts): ContractDict[] => {
+const getContractDictArray = (contracts: Contracts) => {
   const types = contracts.types;
   const data = contracts.data;
 
@@ -87,6 +101,8 @@ export type ApplicationDetailsDataContextType = {
   data: ApplicationDetailsResponse;
   owner_project: string;
   contracts: ContractDict[];
+  sort: { metric: string; sortOrder: string };
+  setSort: React.Dispatch<React.SetStateAction<{ metric: string; sortOrder: string; }>>;
 }
 
 export const ApplicationDetailsDataContext = createContext<ApplicationDetailsDataContextType | undefined>(undefined);
@@ -103,22 +119,132 @@ export const ApplicationDetailsDataProvider = ({
   const { 
     data: applicationDetailsData,
     isLoading: applicationDetailsLoading,
-    isValidating: applicationDetailsValidating 
+    isValidating: applicationDetailsValidating,
+    error: applicationDetailsError,
   } = useSWR<ApplicationDetailsResponse>(
     owner_project ? ApplicationsURLs.details.replace("{owner_project}", owner_project) : null,
   );
+  const {data:master} = useMaster();
+  const { selectedTimespan } = useTimespan();
+  const { sort: overviewSort } = useSort();
+  const { selectedMetrics } = useMetrics();
+  const [showUsd] = useLocalStorage("showUsd", false);
+  const [focusEnabled] = useLocalStorage("focusEnabled", false);
+
+  const [sort, setSort] = useState<{ metric: string; sortOrder: string }>({ 
+    metric: overviewSort.metric || selectedMetrics[0] || "",
+    sortOrder: "desc",
+  });
+
+  const createContractsSorter = useCallback(() => {
+    return (items: ContractDict[], metric: string, sortOrder: SortOrder): ContractDict[] => {
+      if(!master) return items;
+
+      let actualMetric = metric === "gas_fees" ? (showUsd ? "gas_fees_usd" : "gas_fees_eth") : metric;
+      
+      const config: SortConfig<ContractDict> = {
+        metric: actualMetric as keyof ContractDict,
+        sortOrder,
+        type: SortType.NUMBER,
+        valueAccessor: (item, met) => {
+
+          if (met === "main_category_key") {
+            return master.blockspace_categories.main_categories[item.main_category_key];
+          }
+          if (met === "sub_category_key") {
+            return master.blockspace_categories.sub_categories[item.sub_category_key];
+          }
+          if( met === "origin_key") {
+            return master.chains[item.origin_key].name;
+          }
+          return item[met];
+        }
+      };
+
+      // set non-numeric types (default is SortType.NUMBER)
+      if (["address", "name", "main_category_key", "sub_category_key", "origin_key"].includes(metric)) {
+        config.type = SortType.STRING;
+      }
+
+      return sortItems(items, config);
+    };
+  }, [master, showUsd]);
+
+  const contractsSorter = useMemo(() => createContractsSorter(), [createContractsSorter]);
+
+  const filteredApplicationDetailsData = useMemo(() => {
+    // Return early if no data is available
+    if (!applicationDetailsData) return undefined;
+    
+    // Create a deep clone of the data to avoid mutation issues
+    const filteredData = JSON.parse(JSON.stringify(applicationDetailsData)) as ApplicationDetailsResponse;
+  
+    if (focusEnabled) {
+      // Filter out Ethereum from metrics
+      if (filteredData.metrics) {
+        Object.keys(filteredData.metrics).forEach(metricKey => {
+          const metric = filteredData.metrics[metricKey];
+          
+          // Filter out Ethereum from over_time data
+          if (metric.over_time && metric.over_time['ethereum']) {
+            const { ethereum, ...otherChains } = metric.over_time;
+            metric.over_time = otherChains;
+          }
+          
+          // Filter out Ethereum from aggregated data
+          if (metric.aggregated && metric.aggregated.data && metric.aggregated.data['ethereum']) {
+            const { ethereum, ...otherChains } = metric.aggregated.data;
+            metric.aggregated.data = otherChains;
+          }
+        });
+      }
+      
+      // Filter out Ethereum from contracts_table for all timespans
+      if (filteredData.contracts_table) {
+        Object.keys(filteredData.contracts_table).forEach(timespan => {
+          const contractsTable = filteredData.contracts_table[timespan];
+          if (contractsTable && contractsTable.data) {
+            // Find the index of origin_key in the types array
+            const originKeyIndex = contractsTable.types.indexOf('origin_key');
+            
+            if (originKeyIndex !== -1) {
+              // Filter out rows where origin_key is 'ethereum'
+              contractsTable.data = contractsTable.data.filter(row => {
+                const originKey = String(row[originKeyIndex]).toLowerCase();
+                return originKey !== 'ethereum';
+              });
+            }
+          }
+        });
+      }
+    }
+    
+    return filteredData;
+  }, [applicationDetailsData, focusEnabled]);
+
+  const contracts = useMemo(() => {
+    if (!filteredApplicationDetailsData) return [];
+    return contractsSorter(getContractDictArray(filteredApplicationDetailsData.contracts_table[selectedTimespan]), sort.metric, sort.sortOrder as SortOrder);
+  }, [filteredApplicationDetailsData, contractsSorter, selectedTimespan, sort.metric, sort.sortOrder]);
+
+  if( applicationDetailsError ) {
+    return notFound();
+  }
 
   return (
     <ApplicationDetailsDataContext.Provider value={{
-      data: applicationDetailsData || {} as ApplicationDetailsResponse,
+      data: filteredApplicationDetailsData || {} as ApplicationDetailsResponse,
       owner_project,
-      contracts: applicationDetailsData ? getContractDictArray(applicationDetailsData.contracts) : [],
+      contracts: contracts,
+      sort,
+      setSort,
     }}>
       <ShowLoading 
         dataLoading={[applicationDetailsLoading]} 
         dataValidating={[applicationDetailsValidating]} 
       />
-      {applicationDetailsData && children}
+      {/* <>{JSON.stringify(sort)} {JSON.stringify(overviewSort)}</> */}
+      {filteredApplicationDetailsData && children}
     </ApplicationDetailsDataContext.Provider>
   );
 }

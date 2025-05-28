@@ -15,10 +15,11 @@ import ShowLoading from "@/components/layout/ShowLoading";
 import HorizontalScrollContainer from "../HorizontalScrollContainer";
 import { isMobile } from "react-device-detect";
 import { useMaster } from "@/contexts/MasterContext";
+import { useLocalStorage } from "usehooks-ts";
 
 export default function LandingUserBaseChart() {
   const [isSidebarOpen] = useState(false);
-
+  const [focusEnabled] = useLocalStorage("focusEnabled", false)
   const { AllChains, AllChainsByKeys } = useMaster();
 
   const {
@@ -40,39 +41,20 @@ export default function LandingUserBaseChart() {
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("weekly");
 
-  const [selectedMetric, setSelectedMetric] = useState("Total Users");
+  const [selectedMetric, setSelectedMetric] = useState("Total Ethereum Ecosystem");
 
+  const [sort, setSort] = useState<{ metric: string; sortOrder: "asc" | "desc" }>({ metric: "users", sortOrder: "desc" });
+
+  
   useEffect(() => {
     if (landing) {
-      setData(landing.data.metrics.user_base[selectedTimeInterval]);
+      setData(landing.data.metrics.engagement[selectedTimeInterval]);
     }
   }, [landing, selectedTimeInterval]);
 
-  useEffect(() => {
-    if (!data) return;
+  
 
-    setSelectedChains(
-      Object.keys(data.chains)
-        .filter((chainKey) => AllChainsByKeys.hasOwnProperty(chainKey))
-        .map((chain) => chain),
-    );
-  }, [AllChainsByKeys, data, landing, selectedMetric, selectedTimeInterval]);
-
-  const chains = useMemo(() => {
-    if (!data || !master) return [];
-
-    return AllChains.filter(
-      (chain) =>
-        Object.keys(data.chains).includes(chain.key) &&
-        Get_SupportedChainKeys(master) &&
-        chain.key != "ethereum",
-    );
-  }, [AllChains, data, master]);
-
-  const [selectedChains, setSelectedChains] = useState(
-    AllChains.map((chain) => chain.key),
-  );
-
+  
   return (
     <>
       <ShowLoading
@@ -83,28 +65,16 @@ export default function LandingUserBaseChart() {
       {data && landing && master && AllChainsByKeys ? (
         <>
           <Container
-            className={`w-full ${isMobile ? "h-[620px]" : "h-[600px]"} ${isSidebarOpen
-              ? "md:h-[718px] lg:h-[626px]"
-              : "md:h-[718px] lg:h-[657px]"
-              } rounded-[15px] pb-[15px] md:pb-[42px]`}
+            className={`w-full`}
           >
             <LandingChart
-              data={Object.keys(data.chains)
-                .filter((chain) => selectedChains.includes(chain))
-                .map((chain) => {
-                  return {
-                    name: chain,
-                    // type: 'spline',
-                    types: data.chains[chain].data.types,
-                    data: data.chains[chain].data.data,
-                  };
-                })}
+              data={data}
               master={master}
-              sources={landing.data.metrics.user_base.source}
+              sources={landing.data.metrics.engagement.source}
               cross_chain_users={data.cross_chain_users}
               cross_chain_users_comparison={data.cross_chain_users_comparison}
-              latest_total={data.latest_total}
-              latest_total_comparison={data.latest_total_comparison}
+              latest_total={focusEnabled ? data.latest_total_l2 : data.latest_total}
+              latest_total_comparison={focusEnabled ? data.latest_total_comparison_l2 : data.latest_total_comparison}
               l2_dominance={data.l2_dominance}
               l2_dominance_comparison={data.l2_dominance_comparison}
               selectedMetric={selectedMetric}
@@ -114,12 +84,16 @@ export default function LandingUserBaseChart() {
           </Container>
           <HorizontalScrollContainer reduceLeftMask={true}>
             <TableRankingProvider>
+              <div className="flex flex-col gap-y-[5px]">
               <LandingMetricsTable
                 data={{ chains: landing.data.metrics.table_visual }}
                 master={master}
                 // interactable={selectedMetric !== "Total Users"}
                 interactable={false}
+                sort={sort}
+                setSort={setSort}
               />
+              </div>
             </TableRankingProvider>
           </HorizontalScrollContainer>
         </>

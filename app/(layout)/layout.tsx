@@ -2,7 +2,7 @@ import "../globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import { Providers } from "../providers";
 import CookieConsent from "@/components/layout/CookieConsent";
-import { Raleway, Inter, Roboto_Mono, Fira_Sans, Fira_Mono } from "next/font/google";
+import { Raleway, Inter, Roboto_Mono, Fira_Sans, Fira_Mono, Source_Code_Pro } from "next/font/google";
 import Header from "@/components/layout/Header";
 import SidebarContainer from "@/components/layout/SidebarContainer";
 import { Metadata } from "next";
@@ -12,7 +12,8 @@ import Share from "@/components/Share";
 import "../background.css";
 import DeveloperTools from "@/components/development/DeveloperTools";
 import Footer from "@/components/layout/Footer";
-
+import GlobalSearchBar from "@/components/layout/GlobalSearchBar";
+import { IS_PRODUCTION } from "@/lib/helpers";
 const jsonLd: Graph = {
   "@context": "https://schema.org",
   "@graph": [
@@ -72,18 +73,14 @@ export const viewport = {
 };
 
 const gtpMain = {
-  title: {
-    absolute:
-      "Growing Ethereum’s Ecosystem Together - Layer 2 User Base - growthepie",
-    template: "%s - growthepie",
-  },
+  title: "growthepie – Ethereum Ecosystem Analytics",
   description:
-    "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
+    "Comprehensive data and insights across Ethereum Layer 1 and Layer 2 networks. Visualize usage, economics, and growth of the entire Ethereum ecosystem.",
 };
 
 const gtpFees = {
   title: {
-    absolute: "Ethereum Layer 2 Fees - Real-Time Data - growthepie",
+    absolute: "Ethereum Layer 2 Fees - growthepie",
     template: "%s - growthepie",
   },
   description:
@@ -96,18 +93,20 @@ const host = isFees ? "fees.growthepie.xyz" : "www.growthepie.xyz";
 const title = isFees ? gtpFees.title : gtpMain.title;
 const description = isFees ? gtpFees.description : gtpMain.description;
 
+// YYYY-MM-DD UTC
+const current_date = new Date().toISOString().split("T")[0];
+
 export const metadata: Metadata = {
   metadataBase: new URL(`https://${host}`),
   title: title,
   description: description,
   openGraph: {
     title: "growthepie",
-    description: "Growing Ethereum’s Ecosystem Together",
+    description: "Understand every slice of Ethereum",
     url: "https://www.growthepie.xyz",
-
     images: [
       {
-        url: "https://www.growthepie.xyz/gtp_og.png",
+        url: `https://www.growthepie.xyz/gtp_og.png?date=${current_date}`,
         width: 1200,
         height: 627,
         alt: "growthepie.xyz",
@@ -119,12 +118,12 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "growthepie.xyz",
-    description: "Growing Ethereum’s Ecosystem Together",
+    description: "Understand every slice of Ethereum",
     site: "@growthepie_eth",
     siteId: "1636391104689094656",
     creator: "@growthepie_eth",
     creatorId: "1636391104689094656",
-    images: ["https://www.growthepie.xyz/gtp_og.png"],
+    images: [`https://www.growthepie.xyz/gtp_og.png?date=${current_date}`],
   },
   robots: {
     index: true,
@@ -171,6 +170,13 @@ const firaSans = Fira_Sans({
   weight: ["300", "400", "500", "600", "700", "800"],
 });
 
+const sourceCodePro = Source_Code_Pro({
+  subsets: ["latin"],
+  variable: "--font-source-code-pro",
+  display: "swap",
+  weight: ["400", "500", "600", "700", "800", "900"],
+});
+
 export default function RootLayout({
   children,
 }: {
@@ -188,7 +194,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${raleway.variable} ${inter.variable} ${firaMono.variable} ${firaSans.variable}`}
+      className={`${raleway.variable} ${inter.variable} ${firaMono.variable} ${firaSans.variable} ${sourceCodePro.variable}`}
       suppressHydrationWarning
       style={{
         fontFeatureSettings: "'pnum' on, 'lnum' on",
@@ -206,8 +212,9 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <Providers>
-          <div className="flex h-fit w-full justify-center">
+          <div className="flex h-fit w-screen justify-center">
             <div className="flex min-h-screen w-full max-w-[1680px]">
+              {!IS_PRODUCTION && <GlobalSearchBar />}
               <SidebarContainer />
               <div
                 id="content-panel"

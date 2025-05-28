@@ -31,8 +31,9 @@ module.exports = {
         inter: ["var(--font-inter)", "sans-serif"],
         raleway: ["var(--font-raleway)", "sans-serif"],
         sans: ["var(--font-raleway)", ...defaultTheme.fontFamily.sans],
-        mono: ["var(--font-fira-mono)", ...defaultTheme.fontFamily.mono],
+        mono: ["var(--font-fira-mono)", ...defaultTheme.fontFamily.mono], 
         num: ["var(--font-fira-sans)", "sans-serif"],
+        "source-code-pro": ["var(--font-source-code-pro)", "sans-serif"],
       },
       fontSize: {
         'xxxs': '9px',
@@ -81,6 +82,12 @@ module.exports = {
           950: "#1B2524",
           1000: "#151A19",
         },
+        hover: "#5A6462",
+        active: "#CDD8D3",
+        "background": "#1F2726",
+        "medium-background": "#344240",
+        "active-black": "#151A19",
+        
       },
       animation: {
         shake: "shake 0.5s ease-in-out infinite",
@@ -139,6 +146,13 @@ module.exports = {
           fontWeight: '700', // bold
           lineHeight: '120%',
         },
+        'heading-caps': {
+          fontFamily: theme('fontFamily.raleway'),
+          fontWeight: '700', // bold
+          fontVariant: 'all-small-caps',
+          fontFeatureSettings: '"pnum" on, "lnum" on',
+          lineHeight: '120%',
+        },
         'numbers': {
           fontFamily: theme('fontFamily.num'),
           fontWeight: '500', // medium
@@ -151,6 +165,7 @@ module.exports = {
           fontFamily: theme('fontFamily.raleway'),
           fontWeight: '500', // medium
           lineHeight: '150%',
+          fontFeatureSettings: '"pnum" on, "lnum" on',
         },
       };
 
@@ -171,6 +186,20 @@ module.exports = {
           '6xl': '92px',
         },
         'heading-small': {
+          'xxxs': '10px',
+          'xxs': '12px',
+          'xs': '14px',
+          'sm': '16px',
+          'md': '20px',
+          'lg': '24px',
+          'xl': '30px',
+          '2xl': '36px',
+          '3xl': '48px',
+          '4xl': '60px',
+          '5xl': '72px',
+          '6xl': '80px',
+        },
+        'heading-caps': {
           'xxxs': '10px',
           'xxs': '12px',
           'xs': '14px',
@@ -235,3 +264,6 @@ module.exports = {
     },
   ],
 };
+
+
+

@@ -1,7 +1,7 @@
 "use client";
 import { Chain, Get_AllChainsByKeys, Get_AllChainsNavigationItems, Get_SupportedChainKeys } from "@/lib/chains";
 import { GloHolderURL, MasterURL } from "@/lib/urls";
-import { DataAvailabilityLayerData, DataAvailabilityLayers, MasterResponse, Metrics, MetricInfo, UnitSchema, Chains } from "@/types/api/MasterResponse";
+import { DataAvailabilityLayerData, DataAvailabilityLayers, MasterResponse, Metrics, MetricInfo, UnitSchema, Chains, ChainInfo } from "@/types/api/MasterResponse";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { ImportChainIcons } from "@/lib/chainIcons";
 import useSWR from "swr";
@@ -13,6 +13,7 @@ type MasterContextType = {
   data: MasterResponse | undefined;
   AllChains: Chain[];
   AllChainsByKeys: { [key: string]: Chain };
+  AllChainsByStacks: { [key: string]: ChainInfo[] };
   AllDALayers: DALayerWithKey[];
   AllDALayersByKeys: { [key: string]: DALayerWithKey };
   DefaultChainSelection: string[];
@@ -55,6 +56,7 @@ const MasterContext = createContext<MasterContextType | null>({
   data: undefined,
   AllChains: [],
   AllChainsByKeys: {},
+  AllChainsByStacks: {},
   AllDALayers: [],
   AllDALayersByKeys: {},
   DefaultChainSelection: [],
@@ -75,13 +77,13 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
   const { data, isLoading } = useSWR<MasterResponse>(MasterURL);
   const [AllChains, setAllChains] = useState<Chain[]>([]);
   const [AllChainsByKeys, setAllChainsByKeys] = useState<{ [key: string]: Chain }>({});
+  const [AllChainsByStacks, setAllChainsByStacks] = useState<{ [key: string]: ChainInfo[] }>({});
   const [AllDALayers, setDALayers] = useState<DALayerWithKey[]>([]);
   const [AllDALayersByKeys, setDALayersByKeys] = useState<{ [key: string]: DALayerWithKey }>({});
   const [DefaultChainSelection, setDefaultChainSelection] = useState<string[]>([]);
   const [EnabledChainsByKeys, setEnabledChainsByKeys] = useState<{ [key: string]: Chain }>({});
   const [ChainsNavigationItems, setChainsNavigationItems] = useState<any>({});
   const [ChainsNavigationItemsByKeys, setChainsNavigationItemsByKeys] = useState<any>({});
-  const { data: glo_dollar_data } = useSWR(GloHolderURL);
 
   useEffect(() => {
     if (data) {
@@ -90,7 +92,6 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
       sessionStorage.setItem("AllChainsByKeys", JSON.stringify(allChains));
       setAllChains(Object.values(allChains));
       setAllChainsByKeys(allChains);
-
       const enabledChainsByKeys = Object.values(allChains).reduce(
         (acc, chain) => {
           if (chain.chainType === "L2") {
@@ -127,6 +128,20 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
       }, {}));
 
       setDefaultChainSelection(data.default_chain_selection);
+
+      // create dictionary of chain.bucket -> chains[]
+      const allChainsByStacks = Object.values(data.chains).reduce((acc, chain) => {
+        if (chain.bucket === "-") {
+          return acc;
+        }
+        if (!acc[chain.bucket]) {
+          acc[chain.bucket] = [];
+        }
+        acc[chain.bucket].push(chain);
+        return acc;
+      }, {} as { [key: string]: ChainInfo[] });
+
+      setAllChainsByStacks(allChainsByStacks);
 
       // import chain icons into iconify
       ImportChainIcons(data);
@@ -169,6 +184,7 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
         data,
         AllChains,
         AllChainsByKeys,
+        AllChainsByStacks,
         AllDALayers,
         AllDALayersByKeys,
         DefaultChainSelection,

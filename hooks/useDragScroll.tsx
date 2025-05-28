@@ -28,23 +28,28 @@ export const useDragScroll = (
   const velocityHistory = useRef<{ x: number; y: number; time: number }[]>([]);
   const rafId = useRef<number | null>(null);
 
+  // Add a minimum drag threshold
+  const MIN_DRAG_THRESHOLD = 3; // pixels
+  const isDragThresholdExceeded = useRef(false);
+
   const handleMouseDown = useCallback((event: MouseEvent) => {
     if (containerRef.current && containerRef.current.contains(event.target as Node)) {
       isMouseDownInside.current = true;
+      isDragThresholdExceeded.current = false; // Reset the flag
       setIsDragging(true);
       setIsDragged(false);
       setStartPos({ x: event.clientX, y: event.clientY });
       setVelocity({ x: 0, y: 0 });
       velocityHistory.current = [];
       rafId.current && cancelAnimationFrame(rafId.current);
-
+  
       if (containerRef.current) {
         setScrollPos({
           left: containerRef.current.scrollLeft,
           top: containerRef.current.scrollTop,
         });
       }
-
+  
       event.preventDefault(); // Prevent text selection
     }
   }, []);
@@ -54,20 +59,27 @@ export const useDragScroll = (
 
     const currentTime = Date.now();
     const timeDelta = currentTime - lastMoveTime;
-    setIsDragged(true);
-
-    if (containerRef.current) {
-      if (direction === 'horizontal') {
-        const dx = event.clientX - startPos.x;
-        containerRef.current.scrollLeft = scrollPos.left - dx;
-        velocityHistory.current.push({ x: -dx / timeDelta, y: 0, time: currentTime });
-      } else {
-        const dy = event.clientY - startPos.y;
-        containerRef.current.scrollTop = scrollPos.top - dy;
-        velocityHistory.current.push({ x: 0, y: -dy / timeDelta, time: currentTime });
+    // Calculate the distance moved
+    const dx = event.clientX - startPos.x;
+    const dy = event.clientY - startPos.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    // Only consider it a drag if it exceeds the threshold
+    if (distance > MIN_DRAG_THRESHOLD) {
+      isDragThresholdExceeded.current = true;
+      setIsDragged(true);
+    
+      if (containerRef.current) {
+        if (direction === 'horizontal') {
+          containerRef.current.scrollLeft = scrollPos.left - dx;
+          velocityHistory.current.push({ x: -dx / timeDelta, y: 0, time: currentTime });
+        } else {
+          containerRef.current.scrollTop = scrollPos.top - dy;
+          velocityHistory.current.push({ x: 0, y: -dy / timeDelta, time: currentTime });
+        }
       }
+      setLastMoveTime(currentTime);
     }
-    setLastMoveTime(currentTime);
   }, [isDragging, lastMoveTime, direction, startPos.x, startPos.y, scrollPos.left, scrollPos.top]);
 
   const calculateAverageVelocity = () => {
@@ -197,16 +209,38 @@ export const useDragScroll = (
 
   const updateGradients = useCallback(() => {
     if (!containerRef.current) return;
+    
+    // Add a small buffer (1px) to account for potential rounding errors
+    const scrollBuffer = 1;
+    
     if (direction === 'horizontal') {
       const { scrollLeft, scrollWidth, clientWidth } = containerRef.current;
-      setShowLeftGradient(scrollLeft > 0);
-      setShowRightGradient(scrollLeft < scrollWidth - clientWidth);
+      
+      // Check if there's actual overflow that would require scrolling
+      const hasOverflow = scrollWidth > clientWidth;
+      
+      // Only show left gradient if we've scrolled and there's overflow
+      setShowLeftGradient(hasOverflow && scrollLeft > 0);
+      
+      // Only show right gradient if there's more to scroll and there's overflow
+      // The buffer helps with edge cases where scrollLeft + clientWidth is very close to scrollWidth
+      setShowRightGradient(hasOverflow && scrollLeft < (scrollWidth - clientWidth - scrollBuffer));
+
     } else {
       const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
-      setShowLeftGradient(scrollTop > 0);
-      setShowRightGradient(scrollTop < scrollHeight - clientHeight);
+      const hasOverflow = scrollHeight > clientHeight;
+      
+      setShowLeftGradient(hasOverflow && scrollTop > 0);
+      setShowRightGradient(hasOverflow && scrollTop < (scrollHeight - clientHeight - scrollBuffer));
     }
   }, [direction]);
+  
+  // Add this effect to ensure gradients update when children change
+  useEffect(() => {
+    // Force update gradients on next animation frame to ensure the DOM has updated
+    const rafId = requestAnimationFrame(() => updateGradients());
+    return () => cancelAnimationFrame(rafId);
+  }, [updateGradients]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -245,16 +279,33 @@ export const useDragScroll = (
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-    const handleClick = (event: MouseEvent) => {
-      if (isDragged) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
+    
+    let scrollRAF: number | null = null;
+    
+    const handleScroll = () => {
+      // Cancel any pending RAF to avoid multiple updates
+      if (scrollRAF !== null) {
+        cancelAnimationFrame(scrollRAF);
       }
+      
+      // Schedule a new update on next frame
+      scrollRAF = requestAnimationFrame(() => {
+        updateGradients();
+        scrollRAF = null;
+      });
     };
-    container.addEventListener('click', handleClick, true);
+    
+    // Use passive: true for better performance
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    
+    // Initial update
     updateGradients();
+    
     return () => {
-      container.removeEventListener('click', handleClick, true);
+      if (scrollRAF !== null) {
+        cancelAnimationFrame(scrollRAF);
+      }
+      container.removeEventListener('scroll', handleScroll);
     };
   }, [isDragged, updateGradients]);
 

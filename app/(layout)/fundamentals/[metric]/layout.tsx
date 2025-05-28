@@ -8,39 +8,44 @@ import { metricItems } from "@/lib/metrics";
 import { Title, TitleButtonLink } from "@/components/layout/TextHeadingComponents";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { Description, textToLinkedText } from "@/components/layout/TextComponents";
+import { getPageMetadata } from "@/lib/metadata";
 
 type Props = {
   params: { metric: string };
 };
 
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params: { metric } }: Props): Promise<Metadata> {
+  // 1. Check if the metric is valid
   if (
-    !params.metric ||
-    metricItems.find((item) => item.urlKey === params.metric) === undefined
+    !metric ||
+    metricItems.find((item) => item.urlKey === metric) === undefined
   ) {
     track("404 Error", {
       location: "404 Error",
-      page: "/fundamentals/" + params.metric,
+      page: "/fundamentals/" + metric,
     });
     return notFound();
   }
 
-  const option = metricItems.find((item) => item.urlKey === params.metric);
+  // 2. Get the page metadata
+  const metadata = await getPageMetadata(
+    `/fundamentals/${metric}`,
+    {}
+  );
 
-  if (option) {
-    const currentDate = new Date();
-    // Set the time to 2 am
-    currentDate.setHours(2, 0, 0, 0);
-    // Convert the date to a string in the format YYYYMMDD (e.g., 20240424)
-    const dateString = currentDate.toISOString().slice(0, 10).replace(/-/g, "");
-    return {
-      title: option.page?.title,
-      description: option.page?.why,
+  const currentDate = new Date();
+  // Set the time to 2 am
+  currentDate.setHours(2, 0, 0, 0);
+  // Convert the date to a string in the format YYYYMMDD (e.g., 20240424)
+  const dateString = currentDate.toISOString().slice(0, 10).replace(/-/g, "");
+  return {
+      title: metadata.title,
+      description: metadata.description,
       openGraph: {
         images: [
           {
-            url: `https://api.growthepie.xyz/v1/og_images/fundamentals/${params.metric}.png?date=${dateString}`,
+            url: `https://api.growthepie.xyz/v1/og_images/fundamentals/${metric}.png?date=${dateString}`,
             width: 1200,
             height: 627,
             alt: "growthepie.xyz",
@@ -48,12 +53,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         ],
       },
     };
-  }
-
-  return {
-    title: "Metric not found",
-    description: "Metric not found",
-  };
 }
 
 export default async function Layout({

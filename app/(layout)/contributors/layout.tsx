@@ -5,11 +5,18 @@ import Heading from "@/components/layout/Heading";
 import Icon from "@/components/layout/Icon";
 import { Metadata } from "next";
 import { Title } from "@/components/layout/TextHeadingComponents";
+import { getPageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
-  title: "Contributors",
-  description: "The people who made this project possible",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const metadata = await getPageMetadata(
+    '/contributors',
+    {}
+  );
+  return {
+    title: metadata.title,
+    description: metadata.description,
+  };
+}
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (

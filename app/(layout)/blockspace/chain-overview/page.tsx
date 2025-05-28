@@ -38,6 +38,7 @@ const ChainOverview = () => {
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
+  const [focusEnabled] = useLocalStorage("focusEnabled", false)
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
     "blockspaceTimespan",
     "max",
@@ -79,6 +80,7 @@ const ChainOverview = () => {
         const isSupported =
           chain === "all_l2s" ? true : supportedChainKeys.includes(chain);
         const isMaster = master?.chains[chain] ? true : false;
+        const passETH = chain === "ethereum" ? !focusEnabled : true;
         const passEcosystem =
           chain === "all_l2s"
             ? true
@@ -88,7 +90,7 @@ const ChainOverview = () => {
                 : AllChainsByKeys[chain].ecosystem.includes(chainEcosystemFilter)
               : false;
 
-        return passEcosystem && isSupported;
+        return passEcosystem && isSupported && passETH;
       })
       .reduce((result, chain) => {
         const chainKey = AllChainsByKeys[chain].key;
@@ -102,7 +104,7 @@ const ChainOverview = () => {
       }, {});
 
     return filteredChains;
-  }, [chainEcosystemFilter, master, usageData?.data.chains]);
+  }, [chainEcosystemFilter, master, usageData?.data.chains, focusEnabled]);
 
   // console.log(chainFilter);
 

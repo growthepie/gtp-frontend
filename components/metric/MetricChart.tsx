@@ -44,6 +44,7 @@ import ChartWatermark from "@/components/layout/ChartWatermark";
 import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import dynamic from "next/dynamic";
+import moment from "moment";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -195,7 +196,6 @@ function MetricChart({
 
   // useHighchartsWrappers();
   let tooltipWorker: Worker | null = null;
-  let tooltipCache = new Map<string, string>();
 
   const createSafeCacheKey = (
     points: any[],
@@ -233,7 +233,7 @@ function MetricChart({
   const { theme } = useTheme();
   const { isSidebarOpen, isMobile, setEmbedData, embedData } = useUIContext();
   const { AllChainsByKeys, data: master, metrics, da_metrics, chains, da_layers } = useMaster();
-
+  const [focusEnabled] = useLocalStorage("focusEnabled", false);
   const metricsDict = metric_type === "fundamentals" ? metrics : da_metrics;
   const chainsDict = metric_type === "fundamentals" ? chains : da_layers;
 
@@ -261,9 +261,14 @@ function MetricChart({
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   const navItem = useMemo(() => {
+    /* 
+      Returns metric navigation data as object with {label, category, keys and page data}
+    */
     return metric_type === "fundamentals" ? metricItems.find((item) => item.key === metric_id) : daMetricItems.find((item) => item.key === metric_id);
     //return navigationItems[1].options.find((item) => item.key === metric_id);
+
   }, [metric_id, metric_type]);
+  console.log(navItem);
 
   const urlKey = useMemo(() => {
     if (!navItem) return null;
@@ -703,13 +708,7 @@ function MetricChart({
   
       const showOthers = points.length > 10 && metric_id !== "txcosts";
   
-      const date = new Date(x);
-      const dateString = date.toLocaleDateString("en-GB", {
-        timeZone: "UTC",
-        month: "short",
-        day: selectedTimeInterval === "daily" ? "numeric" : undefined,
-        year: "numeric",
-      });
+      const dateString = moment.utc(x).utc().locale("en-GB").format("DD MMM YYYY");
   
       const pointsSum = points.reduce((acc: number, point: any) => acc + point.y, 0);
       
@@ -742,32 +741,7 @@ function MetricChart({
         suffix = " Mgas/s";
       }
   
-      // Generate a cache key based on relevant data
-      const cacheKey = createSafeCacheKey(
-        points,
-        maxPoint,
-        maxPercentage,
-        theme,
-        metric_id,
-        prefix,
-        suffix,
-        decimals,
-        selectedScale,
-        showOthers
-      );
-  
-  
-      // Check cache first
-      if (tooltipCache.has(cacheKey)) {
-        return tooltipCache.get(cacheKey);
-      }
-  
-      // If no worker exists, create one
-      if (!tooltipWorker) {
-        tooltipWorker = new Worker(new URL('./tooltipWorker.ts', import.meta.url));
-      }
-  
-      // Process the points directly in the main thread as fallback
+      // Process the points directly in the main thread
       const processPointsInMainThread = () => {
         const firstTenPoints = points.slice(0, 10);
         const afterTenPoints = points.slice(10);
@@ -862,8 +836,8 @@ function MetricChart({
   
       const tooltipPoints = processPointsInMainThread();
       
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway">
-        <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
+      const tooltip = `<div class="mt-3 mr-3 mb-3 min-w-52 md:min-w-60 text-xs font-raleway">
+        <div class="flex justify-between items-center font-bold text-[13px] md:text-[1rem] ml-6 mb-2 gap-x-[15px]"><div>${dateString}</div><div class="text-xs">${metricsDict[metric_id].name}</div></div>`;
       
       const sumRow = selectedScale === "stacked"
         ? `<div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5">
@@ -883,11 +857,7 @@ function MetricChart({
           </div>`
         : "";
   
-      const result = tooltip + tooltipPoints + sumRow + "</div>";
-      tooltipCache.set(cacheKey, result);
-      
-
-      return result;
+      return tooltip + tooltipPoints + sumRow + "</div>";
     },
     [
       metric_id,
@@ -1114,12 +1084,7 @@ function MetricChart({
               borderRadius={17}
               borderWidth={0}
               outside={true}
-              shadow={{
-                color: "black",
-                opacity: 0.015,
-                offsetX: 2,
-                offsetY: 2,
-              }}
+
               style={{
                 color: "rgb(215, 223, 222)",
               }}
@@ -1158,7 +1123,7 @@ function MetricChart({
                   }
                   else {
                     // if Jan 1st, show year
-                    if (new Date(this.value).getUTCMonth() === 0) {
+                    if (new Date(this.value).getUTCMonth() === 0 && new Date(this.value).getUTCDate() === 1) {
                       return new Date(this.value).toLocaleDateString("en-GB", {
                         timeZone: "UTC",
                         year: "numeric",
@@ -1258,11 +1223,26 @@ function MetricChart({
                 },
               }}
             >
-              {seriesData.filter(series => !showEthereumMainnet ? series.name !== "ethereum" : true).map((series, i) => {
+              {seriesData.filter(series => !showEthereumMainnet && focusEnabled ? series.name !== "ethereum" : true).map((series, i) => {
                 return (
                   <Series
                     key={i}
                     {...series}
+                    shadow={["area", "line"].includes(getSeriesType(series.name)) && selectedScale !== "stacked" ? 
+ 
+                      {
+       
+                        color:
+       
+                          AllChainsByKeys[series.name]?.colors.dark[1] + "FF",
+       
+                        width: 9,
+       
+                      } : 
+       
+                      undefined 
+       
+                    }
                   />
                 );
               })}

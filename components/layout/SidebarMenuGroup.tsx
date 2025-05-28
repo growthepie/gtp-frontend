@@ -17,6 +17,7 @@ import {
 import { GTPIcon, GTPIconSize } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useMaster } from "@/contexts/MasterContext";
+import { useUIContext } from "@/contexts/UIContext";
 
 type SidebarProps = {
   item: NavigationItem;
@@ -27,12 +28,62 @@ type SidebarProps = {
   sidebarOpen: boolean;
 };
 
+export const SidebarMenuLink = memo(({
+  item,
+  sidebarOpen,
+}: SidebarProps) => {
+  const { isMobile } = useUIContext();
+  const pathname = usePathname();
+
+  const isActive = useMemo(() => {
+    if (item.href) return pathname.startsWith(item.href);
+    return false;
+  }, [item.href, pathname]);
+
+  return (
+    <>
+    <Accordion
+      icon={item.icon as GTPIconName}
+      size="lg"
+      background="none"
+      iconBackground="none"
+      label={item.label}
+      link={item.href}
+      hideLabel={!sidebarOpen && !isMobile}
+      isActive={isActive}
+      onToggle={() => {}}
+      rightContent={
+        item.newChild && (
+          <div className="pointer-events-none absolute bottom-[8px] right-[0px] top-[8px] flex items-center justify-center overflow-hidden text-xs font-bold transition-all duration-300 md:right-[20px]">
+            <div
+              className={`h-full w-[50px] rounded-full bg-gradient-to-t from-[#FFDF27] to-[#FE5468] transition-all duration-300 md:rounded-br-none md:rounded-tr-none ${
+                (!sidebarOpen && !isMobile) || isActive
+                  ? "translate-x-[60px] opacity-0 ease-in-out"
+                  : "translate-x-0 opacity-100 delay-300 ease-in-out"
+              }`}
+            >
+              <div className="hard-shine-2 absolute inset-0 flex items-center justify-end rounded-full pr-[8px] text-xs font-bold text-forest-900 transition-all duration-300 md:rounded-br-none md:rounded-tr-none">
+                NEW!
+              </div>
+            </div>
+          </div>
+        )
+      }
+    />
+    <div className="mb-[10px]"/>
+    </>
+  );
+});
+
+SidebarMenuLink.displayName = "SidebarMenuLink";
+
 export const SidebarMenuGroup = memo(({
   item,
   onOpen,
   onClose,
   sidebarOpen,
 }: SidebarProps) => {
+  const { isMobile } = useUIContext();
   const { data: master } = useSWR<MasterResponse>(MasterURL);
 
   const ChainGroups = useMemo(() => {
@@ -143,7 +194,7 @@ export const SidebarMenuGroup = memo(({
       label={item.label}
       onToggle={handleToggle}
       isOpen={isOpen}
-      hideLabel={!sidebarOpen}
+      hideLabel={!sidebarOpen && !isMobile}
       className=""
       accordionClassName="mb-[10px]"
       rightContent={
@@ -194,7 +245,7 @@ export const SidebarMenuGroup = memo(({
                         AllChainsByKeys[option.key].colors["dark"][1]
                       }
                       label={option.label}
-                      hideLabel={!sidebarOpen}
+                      hideLabel={!sidebarOpen && !isMobile}
                       link={option.url}
                       isActive={
                         option.url
@@ -243,12 +294,12 @@ export const SidebarMenuGroup = memo(({
                       className="p-[5px] text-[14px] font-bold text-[#5A6462]"
                       style={{ fontVariant: "all-small-caps" }}
                     >
-                      {sidebarOpen ? (
+                      {!sidebarOpen && !isMobile ? (
+                        <span>&nbsp;</span>
+                      ) : (
                         navigationCategories[
                           option.category
                         ].label.toUpperCase()
-                      ) : (
-                        <span>&nbsp;</span>
                       )}
                     </div>
                   );
@@ -268,7 +319,7 @@ export const SidebarMenuGroup = memo(({
                     icon={option.icon as GTPIconName}
                     iconBackground="dark"
                     label={option.label}
-                    hideLabel={!sidebarOpen}
+                    hideLabel={!sidebarOpen && !isMobile}
                     link={option.url}
                     isActive={
                       option.url
@@ -587,6 +638,7 @@ export const DropdownIcon = memo(({
           style={{
             color: iconColor,
           }}
+          showContextMenu={true}
         />
 
         {showArrow && (

@@ -5,9 +5,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import React from "react";
 import { useWindowSize } from "usehooks-ts";
+import { GTPIcon } from "./GTPIcon";
+import { GTPIconName } from "@/icons/gtp-icon-names";
 
 export type GridTableProps = {
-  gridDefinitionColumns: string;
+  gridDefinitionColumns?: string;
   className?: string;
   children: React.ReactNode;
   style?: React.CSSProperties;
@@ -27,7 +29,7 @@ export const GridTableHeader = ({
 }: GridTableProps) => {
   return (
     <div
-      className={`select-none gap-x-[10px] pl-[10px] pr-[32px] pt-[30px] text-[11px] items-center font-semibold grid ${gridDefinitionColumns} ${className}`}
+      className={`select-none gap-x-[10px] pl-[10px] pr-[32px] pt-[30px] text-[11px] items-center font-semibold grid ${gridDefinitionColumns || ""} ${className || ""}`}
       style={style}
     >
       {children}
@@ -36,7 +38,7 @@ export const GridTableHeader = ({
 };
 
 export type GridTableRowProps = {
-  gridDefinitionColumns: string;
+  gridDefinitionColumns?: string;
   className?: string;
   children: React.ReactNode;
   style?: React.CSSProperties;
@@ -45,6 +47,7 @@ export type GridTableRowProps = {
     color?: string;
     width: number;
     containerStyle: React.CSSProperties;
+    transitionClass?: string;
   };
   onClick?: () => void;
 };
@@ -74,11 +77,13 @@ export const GridTableRow = ({
   }
 
 
-  if (bar)
-
+  if (bar) {
+    if(!bar.transitionClass) {
+      bar.transitionClass = "all 0.3s ease-in-out";
+    }
     return (
       <div
-        className={`select-text gap-x-[10px] pl-[10px] pr-[32px] py-[5px] text-xs items-center rounded-full border-[0.5px] border-[#5A6462] grid ${gridDefinitionColumns} ${className} ${onClick ? "cursor-pointer hover:bg-forest-500/10" : ""}`}
+        className={`select-text gap-x-[10px] pl-[10px] pr-[32px] py-[5px] text-xs items-center rounded-full border-[0.5px] border-[#5A6462] grid ${gridDefinitionColumns || ""} ${className || ""} ${onClick ? "cursor-pointer hover:bg-forest-500/10" : ""}`}
         style={style}
         onClick={onClick}
       >
@@ -90,7 +95,7 @@ export const GridTableRow = ({
           }}
         >
           <div
-            className={`z-20 transition-all duration-300`}
+            className={`z-20 ${bar.transitionClass} duration-300`}
             style={{
               background: getBarColor(),
               width: bar.width * 100 + "%",
@@ -100,6 +105,7 @@ export const GridTableRow = ({
         </div>
       </div >
     );
+  }
 
   return (
     <div
@@ -119,12 +125,13 @@ export const GridTableChainIcon = ({ origin_key, className, color }: { origin_ke
   return (
     <div className={`flex h-full items-center ${className || ""}`}>
       {AllChainsByKeys[origin_key] && (
-        <Icon
-          icon={`gtp:${AllChainsByKeys[
+        <GTPIcon
+          icon={`${AllChainsByKeys[
             origin_key
           ].urlKey
-            }-logo-monochrome`}
+            }-logo-monochrome` as GTPIconName}
           className="w-[15px] h-[15px]"
+          size="sm"
           style={{
             color: color ||
               AllChainsByKeys[
@@ -167,7 +174,7 @@ export const GridTableHeaderCell = ({ children, className, justify, metric, sort
       <div className={`flex items-center ${alignClass || "justify-start"} gap-x-[12px]  ${className}`}>
         {extraLeft}
         <div
-          className={`flex items-center ${alignClass || "justify-start"} ${(onSort || setSort) && "cursor-pointer"}`}
+          className={`flex items-center gap-x-[2px] ${alignClass || "justify-start"} ${(onSort || setSort) && "cursor-pointer"}`}
           onClick={() => {
             if(onSort) onSort();
             (metric && sort && setSort) && setSort({
@@ -183,6 +190,7 @@ export const GridTableHeaderCell = ({ children, className, justify, metric, sort
         >
           {children}
           {metric && sort && (
+            <div className="size-[10px]">
             <Icon
               icon={
                 sort.metric === metric && sort.sortOrder === "asc"
@@ -194,6 +202,7 @@ export const GridTableHeaderCell = ({ children, className, justify, metric, sort
                 opacity: sort.metric === metric ? 1 : 0.2,
               }}
             />
+            </div>
           )}
         </div>
         {extraRight}
@@ -219,17 +228,19 @@ export const GridTableHeaderCell = ({ children, className, justify, metric, sort
     >
       {children}
       {metric && sort && (
-        <Icon
-          icon={
-            sort.metric === metric && sort.sortOrder === "asc"
-              ? "feather:arrow-up"
-              : "feather:arrow-down"
-          }
-          className="w-[10px] h-[10px]"
-          style={{
-            opacity: sort.metric === metric ? 1 : 0.2,
-          }}
-        />
+        <div className="size-[10px]">
+          <Icon
+            icon={
+              sort.metric === metric && sort.sortOrder === "asc"
+                ? "feather:arrow-up"
+                : "feather:arrow-down"
+            }
+            className="w-[10px] h-[10px]"
+            style={{
+              opacity: sort.metric === metric ? 1 : 0.2,
+            }}
+          />
+        </div>
       )}
     </div>
   );
@@ -358,6 +369,7 @@ type GridTableAddressCellProps = {
   iconClassName?: string;
   iconContainerClassName?: string;
   fontSize?: number;
+  showCopyIcon?: boolean;
 };
 export const GridTableAddressCell = ({
   address,
@@ -365,6 +377,7 @@ export const GridTableAddressCell = ({
   iconClassName,
   iconContainerClassName,
   fontSize = 12,
+  showCopyIcon = true,
 }: GridTableAddressCellProps) => {
 
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
@@ -389,7 +402,6 @@ export const GridTableAddressCell = ({
     return Math.min(Math.floor(addressWidth / fontWidth) - 9, 42 - 9);
   }, [addressWidth, fontWidth]);
 
-  console.log("numAddressChars", numAddressChars);
 
 
   return (
@@ -434,16 +446,18 @@ export const GridTableAddressCell = ({
         </div>
 
       </span>
-      <div
-        className={`flex items-center justify-center size-[15px] ${iconContainerClassName || ""}`}
+      {showCopyIcon && (
+        <div
+          className={`flex items-center justify-center size-[15px] ${iconContainerClassName || ""}`}
 
-      >
-        <Icon
-          icon={copiedAddress === address ? "feather:check-circle" : "feather:copy"}
-          className={`size-[15px] cursor-pointer ${iconClassName || ""}`}
+        >
+          <Icon
+            icon={copiedAddress === address ? "feather:check-circle" : "feather:copy"}
+            className={`size-[15px] cursor-pointer ${iconClassName || ""}`}
 
-        />
-      </div>
+          />
+        </div>
+      )}
     </div>
   )
 };

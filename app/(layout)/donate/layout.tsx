@@ -1,9 +1,16 @@
-import Container, { PageRoot, PageContainer } from "@/components/layout/Container";
-import Heading from "@/components/layout/Heading";
-import QuestionAnswer from "@/components/layout/QuestionAnswer";
-import Icon from "@/components/layout/Icon";
+import { PageRoot, PageContainer } from "@/components/layout/Container";
 import { Description } from "@/components/layout/TextComponents";
 import { Title } from "@/components/layout/TextHeadingComponents";
+import { getPageMetadata } from "@/lib/metadata";
+import { Metadata } from "next";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const metadata = await getPageMetadata(
+    "/donate",
+    {}
+  );
+  return metadata;
+}
 
 export default async function Layout({
   children,

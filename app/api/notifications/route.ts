@@ -45,35 +45,58 @@ async function fetchData() {
       ? jsonResponse.records
       : [];
 
-    return records
-      .map((record: any) => ({
-        id: record?.id || "",
-        displayPages: record?.fields?.["Display Page"] || "",
-        body: record?.fields?.["Body"] || "",
-        desc: record?.fields?.["Head"] || "",
-        url: record?.fields?.["URL"] || "",
-        icon: record?.fields?.["Icon"] || "",
-        backgroundColor: record?.fields?.["Color"] || "",
-        textColor: record?.fields?.["Text Color"] || "",
-        startTimestamp:
-          moment
-            .utc(
-              `${record?.fields?.["Start Date"] || ""}T${
-                record?.fields?.["Start Time"] || ""
-              }Z`,
-            )
-            .valueOf() || 0,
-        endTimestamp:
-          moment
-            .utc(
-              `${record?.fields?.["End Date"] || ""}T${
-                record?.fields?.["End Time"] || ""
-              }Z`,
-            )
-            .valueOf() || 0,
-        branch: record?.fields?.["Branch"] || "",
-        status: record?.fields?.["Status"] || "Enabled",
-      }))
+    const result = records
+      .map((record: any) => {
+        // Check if we have all necessary date/time fields before trying to create timestamps
+        const hasStartDateAndTime = record?.fields?.["Start Date"] && record?.fields?.["Start Time"];
+        const hasEndDateAndTime = record?.fields?.["End Date"] && record?.fields?.["End Time"];
+
+        // Safely create timestamps only if we have both date and time
+        let startTimestamp = 0;
+        if (hasStartDateAndTime) {
+          try {
+            // The "Z" suffix was likely causing issues - format date properly and check for empty strings
+            const startDate = record.fields["Start Date"]?.trim() || "";
+            const startTime = record.fields["Start Time"]?.trim() || "";
+            
+            if (startDate && startTime) {
+              startTimestamp = moment.utc(`${startDate}T${startTime}`).valueOf();
+            }
+          } catch (e) {
+            console.warn(`Invalid start date/time for record ${record.id}:`, e.message);
+          }
+        }
+        
+        let endTimestamp = 0;
+        if (hasEndDateAndTime) {
+          try {
+            // The "Z" suffix was likely causing issues - format date properly and check for empty strings
+            const endDate = record.fields["End Date"]?.trim() || "";
+            const endTime = record.fields["End Time"]?.trim() || "";
+            
+            if (endDate && endTime) {
+              endTimestamp = moment.utc(`${endDate}T${endTime}`).valueOf();
+            }
+          } catch (e) {
+            console.warn(`Invalid end date/time for record ${record.id}:`, e.message);
+          }
+        }
+
+        return {
+          id: record?.id || "",
+          displayPages: record?.fields?.["Display Page"] || "",
+          body: record?.fields?.["Body"] || "",
+          desc: record?.fields?.["Head"] || "",
+          url: record?.fields?.["URL"] || "",
+          icon: record?.fields?.["Icon"] || "",
+          backgroundColor: record?.fields?.["Color"] || "",
+          textColor: record?.fields?.["Text Color"] || "",
+          startTimestamp: startTimestamp,
+          endTimestamp: endTimestamp,
+          branch: record?.fields?.["Branch"] || "",
+          status: record?.fields?.["Status"] || "Enabled"
+        };
+      })
       .filter(
         (notification: NotificationType) =>
           BranchesToInclude.includes(notification.branch) &&
@@ -83,6 +106,8 @@ async function fetchData() {
           notification.endTimestamp &&
           notification.status === "Enabled",
       );
+
+    return result;
   } catch (error) {
     console.error("Error fetching notifications:", error);
     return [];

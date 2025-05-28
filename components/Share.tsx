@@ -11,6 +11,7 @@ import Link from "next/link";
 import { track } from "@vercel/analytics/react";
 import { useSessionStorage } from "usehooks-ts";
 import useCookieChange from "./layout/CookieChange";
+import { GrayOverlay } from "./layout/Backgrounds";
 
 const mainEmbedPages = ["", "fundamentals"];
 const feesEmbedPages = [];
@@ -159,7 +160,7 @@ export default function Share() {
 
   return (
     <>
-      <div className={`relative z-50 flex gap-x-[15px] rounded-full bg-forest-500 p-[5px] shadow-[0px_0px_50px_0px_#00000033] dark:bg-[#5A6462] dark:shadow-[0px_0px_50px_0px_#000000] ${cookieConsentValue ? "block" : "hidden"}`}>
+      <div className={`relative z-50 flex gap-x-[15px] rounded-full bg-forest-500 p-[5px] shadow-[0px_0px_50px_0px_#00000033] dark:bg-[#344240] dark:shadow-[0px_0px_50px_0px_#000000] ${cookieConsentValue ? "block" : "hidden"}`}>
         <div>
           <div className="absolute inset-0 z-40 w-full h-full overflow-hidden pointer-events-none rounded-full">
             {/* Glint effect */}
@@ -278,16 +279,14 @@ export default function Share() {
           </button>
           {openShare && (
             <>
-              <div
-                className="fixed inset-0 bg-black opacity-0 transition-opacity duration-500 z-[100]"
-                style={{ opacity: 0.3 }}
+              <GrayOverlay 
                 onClick={() => {
-                  setOpenShare(!openShare);
+                  setOpenShare(!openShare)
                   track("closed Share window", {
                     location: isMobile ? `mobile` : `desktop`,
                     page: window.location.pathname,
                   });
-                }}
+                }} 
               />
               <div
                 className={`absolute -right-[5px] -bottom-[5px] bg-forest-50 dark:bg-[#1F2726] z-[101] rounded-[40px] shadow-[0px_0px_30px_0px_#000000BF] py-[30px] px-[20px] 

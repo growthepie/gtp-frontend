@@ -1,40 +1,17 @@
 "use client";
 import ShowLoading from "@/components/layout/ShowLoading";
-import { DALayerWithKey, useMaster } from "@/contexts/MasterContext";
-import { Chain, Get_SupportedChainKeys } from "@/lib/chains";
-import { IS_PRODUCTION } from "@/lib/helpers";
-import { ApplicationsURLs, DAMetricsURLs, DAOverviewURL, LabelsURLS, MasterURL, MetricsURLs } from "@/lib/urls";
-import { DAOverviewResponse } from "@/types/api/DAOverviewResponse";
+import { ApplicationsURLs, MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { ChainData, MetricData, MetricsResponse } from "@/types/api/MetricsResponse";
-import { AppDatum, AppOverviewResponse, AppOverviewResponseHelper, ParsedDatum } from "@/types/applications/AppOverviewResponse";
-import { intersection } from "lodash";
-import { RefObject, createContext, useContext, useEffect, useMemo, useState } from "react";
-import { LogLevel } from "react-virtuoso";
-import useSWR, { useSWRConfig, preload} from "swr";
-import { useLocalStorage, useSessionStorage } from "usehooks-ts";
+import { AppDatum } from "@/types/applications/AppOverviewResponse";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import useSWR, { useSWRConfig } from "swr";
+import { useLocalStorage } from "usehooks-ts";
 import { useTimespan } from "./TimespanContext";
 import { useMetrics } from "./MetricsContext";
 import { useProjectsMetadata } from "./ProjectsMetadataContext";
 import { useSort } from "./SortContext";
-
-
-
-function calculatePercentageChange(current, previous) {
-  if (previous === 0) return current === 0 ? 0 : Infinity;
-  return ((current - previous) / previous) * 100;
-}
-
-function assignRanks(items, metric) {
-  // Sort items by the specified metric in descending order
-  items.sort((a, b) => b[metric] - a[metric]);
-  // Assign ranks, handling ties
-  let rank = 1;
-  items.forEach((item, index) => {
-    if (index > 0 && item[metric] < items[index - 1][metric]) rank = index + 1;
-    item[`rank_${metric}`] = rank;
-  });
-}
+import { SortConfig, sortItems, SortOrder, SortType } from "@/lib/sorter";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
 
 export type AggregatedDataRow = {
   owner_project: string;
@@ -57,30 +34,76 @@ export type AggregatedDataRow = {
   rank_daa: number;
 }
 
+const memoizedResults = new Map();
+const MAX_CACHE_SIZE = 20;
+
+function getCacheKey(timespan: string, filters: { [key: string]: string[] }, focusEnabled: boolean) {
+  return `${timespan}-${JSON.stringify(filters)}-${focusEnabled}`;
+}
+
 function ownerProjectToOriginKeysMap(data: AppDatum[]): { [key: string]: string[] } {
-  return data.reduce((acc, entry) => {
+  // Create cache key for this specific function
+  const cacheKey = `ownerProjectToOriginKeysMap-${data.length}`;
+  if (memoizedResults.has(cacheKey)) {
+    return memoizedResults.get(cacheKey);
+  }
+
+  const result = data.reduce((acc, entry) => {
     const [owner, origin]: [string, string] = [entry[0] as string, entry[1] as string];
     if (!acc[owner]) acc[owner] = [];
     if (!acc[owner].includes(origin)) acc[owner].push(origin);
     return acc;
   }, {});
+
+  memoizedResults.set(cacheKey, result);
+  return result;
 }
 
+// Function to handle sorting and rank assignment - extracted for clarity
+function assignRanks(items: AggregatedDataRow[], metric: string) {
+  // Sort items by the specified metric in descending order
+  items.sort((a, b) => b[metric] - a[metric]);
+  
+  // Assign ranks, handling ties
+  let rank = 1;
+  items.forEach((item, index) => {
+    if (index > 0 && item[metric] < items[index - 1][metric]) rank = index + 1;
+    item[`rank_${metric}`] = rank;
+  });
+}
+
+// Improved calculation function with better type safety
+function calculatePercentageChange(current: number, previous: number): number {
+  if (previous === 0) return current === 0 ? 0 : Infinity;
+  return ((current - previous) / previous) * 100;
+}
 
 function aggregateProjectData(
-  data: AppDatum[], typesArr: string[], ownerProjectToProjectData: {[key: string]: any}, filters: { [key: string]: string[] } = { origin_key: [], owner_project: [], category: [] }
+  data: AppDatum[],
+  typesArr: string[],
+  ownerProjectToProjectData: { [key: string]: any },
+  filters: { [key: string]: string[] } = { origin_key: [], owner_project: [], main_category: [] },
+  timespan: string,
+  focusEnabled: boolean
 ): AggregatedDataRow[] {
-  // const data = AppOverviewResponseHelper.fromResponse(rawData).response.data.data;
-  // get Mapping of owner_project to origin_keys
+  // Generate cache key
+  const cacheKey = getCacheKey(timespan, filters, focusEnabled);
+  
+  // Check if we have cached results
+  if (memoizedResults.has(cacheKey)) {
+    return memoizedResults.get(cacheKey);
+  }
+
+  // Pre-process: get mapping of owner_project to origin_keys
   const ownerProjectToOriginKeys = ownerProjectToOriginKeysMap(data);
 
   // Convert chain filter to Set for O(1) lookups
-  const chainFilter = new Set(filters.origin_key);
+  const chainFilter = new Set(filters.origin_key); // Assuming these are consistently cased or case-insensitive elsewhere
+  const stringFilters = filters.owner_project.map(f => f.toLowerCase()); // Ensure string filters are lowercase
+  const mainCategoryFilter = new Set(filters.main_category.map(c => c.toLowerCase())); // Ensure main_category filters are lowercase
 
-  // Group data by owner_project in a single pass
-  const aggregation = new Map();
-
-  const typesInexes = {
+  // Create a lookup object for faster type index access
+  const typeIndexes = {
     owner_project: typesArr.indexOf("owner_project"),
     origin_key: typesArr.indexOf("origin_key"),
     num_contracts: typesArr.indexOf("num_contracts"),
@@ -93,38 +116,51 @@ function aggregateProjectData(
     prev_daa: typesArr.indexOf("prev_daa"),
   };
 
-  for (const entry of data) {
-    const [
-      owner, 
-      origin, 
-      numContracts, 
-      gasEth, prevGasEth, gasUsd, 
-      txCount, prevTxCount, 
-      daa, prevDaa
-    ] = [
-      entry[typesInexes.owner_project] as string, 
-      entry[typesInexes.origin_key] as string, 
-      entry[typesInexes.num_contracts] as number, 
-      entry[typesInexes.gas_fees_eth] as number, entry[typesInexes.prev_gas_fees_eth] as number, entry[typesInexes.gas_fees_usd] as number, 
-      entry[typesInexes.txcount] as number, entry[typesInexes.prev_txcount] as number,
-      entry[typesInexes.daa] as number, entry[typesInexes.prev_daa] as number
-    ];
+  // Pre-filter data 
+  // 1. Apply origin_key filter if specified
+  // 2. Apply focusEnabled filter to exclude ethereum if enabled
+  let filteredData = data;
+  
+  if (filters.origin_key.length > 0) {
+    filteredData = filteredData.filter(entry => 
+      chainFilter.has(entry[typeIndexes.origin_key] as string)
+    );
+  }
+  
+  // Exclude ethereum when focusEnabled is true
+  if (focusEnabled) {
+    filteredData = filteredData.filter(entry => 
+      (entry[typeIndexes.origin_key] as string).toLowerCase() !== 'ethereum'
+    );
+  }
 
-    // Skip if not matching the filter
-    if (chainFilter.size > 0 && !chainFilter.has(origin)) continue;
+  // Group data by owner_project in a single pass with reduced operations
+  const aggregation = new Map();
 
-    // Skip if not matching the filter
-    if(filters.owner_project.length > 0){
-      // allow partial matches
-      const ownerProjectDisplay = ownerProjectToProjectData[owner].display_name.toLowerCase();
-      if(!filters.owner_project.some((filter) => ownerProjectDisplay.includes(filter.toLowerCase()))) continue;
+  for (const entry of filteredData) {
+    const owner = entry[typeIndexes.owner_project] as string;
+    
+    // Skip if not matching string filters (early bailout)
+    if (stringFilters.length > 0) {
+      const ownerProjectDisplay = ownerProjectToProjectData[owner]?.display_name?.toLowerCase();
+      if (!ownerProjectDisplay || !stringFilters.some(filter => // stringFilters are already lowercase
+        ownerProjectDisplay.includes(filter))) {
+        continue;
+      }
     }
 
+    // Skip if not matching main_category filters (early bailout)
+    if (mainCategoryFilter.size > 0) {
+      const projectMetaData = ownerProjectToProjectData[owner];
+      const projectMainCategory = projectMetaData?.main_category?.toLowerCase(); // Ensure project's category is lowercase for comparison
+      if (!projectMainCategory || !mainCategoryFilter.has(projectMainCategory)) { // mainCategoryFilter has lowercase values
+        continue;
+      }
+    }
 
     // Initialize the group if it doesn't exist
     if (!aggregation.has(owner)) {
       aggregation.set(owner, {
-        // origin_keys: new Set(),  // Use Set for unique keys
         num_contracts: 0,
         gas_fees_eth: 0,
         prev_gas_fees_eth: 0,
@@ -136,9 +172,18 @@ function aggregateProjectData(
       });
     }
 
+    // Extract values once for performance
+    const numContracts = entry[typeIndexes.num_contracts] as number || 0;
+    const gasEth = entry[typeIndexes.gas_fees_eth] as number || 0;
+    const prevGasEth = entry[typeIndexes.prev_gas_fees_eth] as number || 0;
+    const gasUsd = entry[typeIndexes.gas_fees_usd] as number || 0;
+    const txCount = entry[typeIndexes.txcount] as number || 0;
+    const prevTxCount = entry[typeIndexes.prev_txcount] as number || 0;
+    const daa = entry[typeIndexes.daa] as number || 0;
+    const prevDaa = entry[typeIndexes.prev_daa] as number || 0;
+
     // Aggregate metrics
     const acc = aggregation.get(owner);
-    // acc.origin_keys.add(origin);
     acc.num_contracts += numContracts;
     acc.gas_fees_eth += gasEth;
     acc.prev_gas_fees_eth += prevGasEth;
@@ -151,36 +196,43 @@ function aggregateProjectData(
 
   // Convert to final array format and calculate percentage changes
   const results = Array.from(aggregation.entries()).map(([owner, metrics]) => {
-    const { origin_keys, ...otherMetrics} = metrics;
+    // Pre-calculate percentage changes
+    const gasEthChangePct = calculatePercentageChange(metrics.gas_fees_eth, metrics.prev_gas_fees_eth);
+    const txCountChangePct = calculatePercentageChange(metrics.txcount, metrics.prev_txcount);
+    const daaChangePct = calculatePercentageChange(metrics.daa, metrics.prev_daa);
+
+    let originKeys: string[] = [];
+
+    if(ownerProjectToOriginKeys[owner]){
+      originKeys = focusEnabled ? ownerProjectToOriginKeys[owner].filter(key => key !== "ethereum").sort() : ownerProjectToOriginKeys[owner].sort();
+    }
+
     return {
-    owner_project: owner,
-    origin_keys: ownerProjectToOriginKeys[owner].sort(),  // Sort origin_keys
-    ...otherMetrics,
-    gas_fees_eth_change_pct: calculatePercentageChange(
-      metrics.gas_fees_eth,
-      metrics.prev_gas_fees_eth
-    ),
-    gas_fees_usd_change_pct: calculatePercentageChange(
-      metrics.gas_fees_eth,
-      metrics.prev_gas_fees_eth
-    ),
-    txcount_change_pct: calculatePercentageChange(
-      metrics.txcount,
-      metrics.prev_txcount
-    ),
-    daa_change_pct: calculatePercentageChange(
-      metrics.daa,
-      metrics.prev_daa
-    ),
+      owner_project: owner,
+      origin_keys: originKeys,
+      ...metrics,
+      gas_fees_eth_change_pct: gasEthChangePct,
+      gas_fees_usd_change_pct: gasEthChangePct, // These are the same in your code
+      txcount_change_pct: txCountChangePct,
+      daa_change_pct: daaChangePct
     };
   });
 
-  // Calculate ranks in a single pass for all metrics
+  // Calculate ranks in a single pass for all metrics - do this separately for clarity
   assignRanks(results, 'gas_fees_eth');
   assignRanks(results, 'gas_fees_usd');
   assignRanks(results, 'txcount');
   assignRanks(results, 'daa');
 
+  // Cache the results
+  memoizedResults.set(cacheKey, results);
+
+  // Limit cache size to avoid memory leaks
+  if (memoizedResults.size > MAX_CACHE_SIZE) {
+    // Remove the oldest entry using iterator
+    const firstKey = memoizedResults.keys().next().value;
+    memoizedResults.delete(firstKey);
+  }
   return results;
 }
 
@@ -202,34 +254,127 @@ const devMiddleware = (useSWRNext) => {
   };
 };
 
-
 export type ApplicationsDataContextType = {
   selectedChains: string[];
   setSelectedChains: (value: string[]) => void;
   applicationDataAggregated: AggregatedDataRow[];
+  applicationDataAggregatedAndFiltered: AggregatedDataRow[];
   isLoading: boolean;
   applicationsChains: string[];
   selectedStringFilters: string[];
-  setSelectedStringFilters: React.Dispatch<React.SetStateAction<string[]>>;
+  setSelectedStringFilters: (value: string[]) => void;
+  selectedMainCategories: string[];
+  setSelectedMainCategories: (value: string[]) => void;
+  medianMetric: string;
+  medianMetricKey: string;
 }
+
+
 
 export const ApplicationsDataContext = createContext<ApplicationsDataContextType | undefined>(undefined);
 
 export const ApplicationsDataProvider = ({ children }: { children: React.ReactNode }) => {
-  const {ownerProjectToProjectData} = useProjectsMetadata();
-  const {timespans, selectedTimespan, setSelectedTimespan, isMonthly, setIsMonthly} = useTimespan();
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+  const { timespans, selectedTimespan, setSelectedTimespan, isMonthly, setIsMonthly } = useTimespan();
   const { sort, setSort } = useSort();
-  const { metricsDef , setSelectedMetrics, selectedMetrics} = useMetrics();
+  const [focusEnabled] = useLocalStorage("focusEnabled", false);
 
+  // bypass AWS rate limiting in development
+  const headers = new Headers();
+  headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
+  headers.set("Pragma", "no-cache");
+  headers.set("Expires", "0");
+
+  if (process.env.NEXT_PUBLIC_X_DEVELOPER_TOKEN)
+    headers.set("X-Developer-Token", process.env.NEXT_PUBLIC_X_DEVELOPER_TOKEN);
+
+  const requestOptions = {
+    method: "GET",
+    headers: headers,
+  };
 
   const { fetcher } = useSWRConfig();
-  const fallbackFetcher = (url) => fetch(url).then((r) => r.json());
+  const fallbackFetcher = (url) => fetch(url, requestOptions).then((r) => r.json());
+
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
+
+  const { metricsDef, setSelectedMetrics, selectedMetrics } = useMetrics();
   
-  const [selectedChains, setSelectedChains] = useState<string[]>([]);
-  const [selectedStringFilters, setSelectedStringFilters] = useState<string[]>([]);
+  /* < Query Params > */
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const selectedChainsParam = useMemo(() =>
+    searchParams.get("origin_key")?.split(",") || [],
+    [searchParams]
+  );
+
+  const selectedStringFiltersParam = useMemo(() =>
+    searchParams.get("owner_project")?.split(",") || [],
+    [searchParams]
+  );
+
+  const selectedMainCategoryParam = useMemo(() =>{
+    const categories = searchParams.get("main_category")?.split(",") || [];
+    return categories;
+  }, [searchParams]);
+
+
+  enum FilterType {
+    SEARCH = "owner_project",
+    CHAIN = "origin_key",
+    MAIN_CATEGORY = "main_category",
+  }
+  const handleFilters = (type: FilterType, value: string[]) => {
+    // update the params
+    updateSearchQuery({
+      [type]: value,
+    });
+  };
+
+  const updateSearchQuery = (updatedQuery: { [key: string]: string[] }) => {
+    // get existing query params
+    let newSearchParams = new URLSearchParams(window.location.search)
+
+    // update existing query params
+    for (const key in updatedQuery) {
+      if (updatedQuery[key].length === 0) {
+        newSearchParams.delete(key);
+        continue;
+      }
+      newSearchParams.set(key, updatedQuery[key].join(","));
+    }
+
+    // create new url
+    let url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
+    // router.replace(url, { scroll: false });
+    window.history.replaceState(null, "", url);
+  };
+  /* </ Query Params > */
+
+
+  const getMetricKeyFromMetric = useCallback((metric: string) => {
+    if (metric === "gas_fees") return showUsd ? "gas_fees_usd" : "gas_fees_eth";
+    return metric;
+  }, [showUsd]);
+
+  const medianMetric = useMemo(() => {
+    if (Object.keys(metricsDef).includes(sort.metric)) {
+      return sort.metric;
+    }
+    return "txcount";
+  }, [metricsDef, sort.metric]);
+
+  const medianMetricKey = useMemo(() => {
+    if (Object.keys(metricsDef).includes(sort.metric)) {
+      return getMetricKeyFromMetric(sort.metric);
+    }
+    return "txcount";
+  }, [getMetricKeyFromMetric, metricsDef, sort.metric]);
+  
 
 
   const {
@@ -239,17 +384,11 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
-
-
-
-
-
   const multiFetcher = (urls) => {
-    if(!fetcher) return Promise.all(urls.map(url => fallbackFetcher(url)));
+    if (!fetcher) return Promise.all(urls.map(url => fallbackFetcher(url)));
 
     return Promise.all(urls.map(url => fetcher(url)));
   }
-
 
   const {
     data: applicationsTimespan,
@@ -257,7 +396,7 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
     isLoading: applicationsTimespanLoading,
     isValidating: applicationsTimespanValidating,
   } = useSWR(
-    ["1d", "7d", "30d", "90d", "365d", "max"].map((timeframe) => ApplicationsURLs.overview.replace('{timespan}', `${timeframe}`)), multiFetcher);
+    ["1d", "7d", "30d", "90d", "365d", "max"].map((timeframe) => ApplicationsURLs.overview.replace('{timespan}', `${timeframe}`)), fetcher || multiFetcher);
 
   const applicationDataFiltered = useMemo(() => {
     if (!applicationsTimespan) return [];
@@ -270,105 +409,81 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
       "max": applicationsTimespan[5],
     };
 
-    if (!applicationsDataTimespan || !applicationsDataTimespan[selectedTimespan]) return [];
-    
-    return aggregateProjectData(applicationsDataTimespan[selectedTimespan].data.data, applicationsDataTimespan[selectedTimespan].data.types, ownerProjectToProjectData, {
-      origin_key: selectedChains,
-      owner_project: selectedStringFilters,
-      category: selectedStringFilters,
-    })
-
-  }, [applicationsTimespan, selectedTimespan, selectedChains, selectedStringFilters, ownerProjectToProjectData]);
-
-
-  // if sort.metric changes, set it as the first member of the selectedMetrics
-  // useEffect(() => {
-  //   if(Object.keys(metricsDef).includes(sort.metric))
-  //     setSelectedMetrics((prev) => {
-  //       if(prev[0] === sort.metric) return prev;
-  //       return [sort.metric, ...prev.filter((m) => m !== sort.metric)];
-  //     });
-    
-  // }, [sort.metric, metricsDef]);
-
-
+    if (!applicationsDataTimespan || !applicationsDataTimespan[selectedTimespan]) {
+      return [];
+    }
+    const aggregated = aggregateProjectData(
+      applicationsDataTimespan[selectedTimespan].data.data, applicationsDataTimespan[selectedTimespan].data.types, ownerProjectToProjectData, {
+        origin_key: selectedChainsParam,
+        owner_project: selectedStringFiltersParam,
+        main_category: selectedMainCategoryParam,
+      },
+      selectedTimespan,
+      focusEnabled
+    );
+    return aggregated;
+  }, [applicationsTimespan, selectedTimespan, selectedChainsParam, selectedStringFiltersParam, selectedMainCategoryParam, ownerProjectToProjectData, focusEnabled]);
 
   const applicationDataAggregated = useMemo(() => {
-    enum SortType {
-      number = "number",
-      string = "string",
-      stringArray = "stringArray",
-    }
+    if (!applicationsTimespan) return [];
+    const applicationsDataTimespan = {
+      "1d": applicationsTimespan[0],
+      "7d": applicationsTimespan[1],
+      "30d": applicationsTimespan[2],
+      "90d": applicationsTimespan[3],
+      "365d": applicationsTimespan[4],
+      "max": applicationsTimespan[5],
+    };
 
-    const sorted = [...applicationDataFiltered];
-    let sortMetric = sort.metric;
+    if (!applicationsDataTimespan || !applicationsDataTimespan[selectedTimespan]) return [];
 
+    return aggregateProjectData(
+      applicationsDataTimespan[selectedTimespan].data.data, applicationsDataTimespan[selectedTimespan].data.types, ownerProjectToProjectData, {
+        origin_key: [],
+        owner_project: [],
+        main_category: [],
+      },
+      selectedTimespan,
+      focusEnabled
+    )
+  }, [applicationsTimespan, selectedTimespan, ownerProjectToProjectData, focusEnabled]);
 
+  const createApplicationDataSorter = (
+    ownerProjectToProjectData: Record<string, { main_category: string; display_name: string }>,
+    showUsd: boolean
+  ) => {
+    return (items: AggregatedDataRow[], metric: string, sortOrder: SortOrder): AggregatedDataRow[] => {
+      let actualMetric = metric === "gas_fees" ? (showUsd ? "gas_fees_usd" : "gas_fees_eth") : metric;
 
-    if(sortMetric == "gas_fees")
-      sortMetric = showUsd ? "gas_fees_usd" : "gas_fees_eth";
-    
-    sorted.sort((a, b) => {
-      let sortType = SortType.number;
-
-      let aVal = a[sortMetric];
-      let bVal = b[sortMetric];
-      if(sortMetric === "category"){
-        sortType = SortType.string;
-        aVal = ownerProjectToProjectData[a.owner_project].main_category;
-        bVal = ownerProjectToProjectData[b.owner_project].main_category;
-      }else if(sortMetric === "owner_project"){
-        sortType = SortType.string;
-        aVal = ownerProjectToProjectData[a.owner_project].display_name;
-        bVal = ownerProjectToProjectData[b.owner_project].display_name;
-      }else if(sortMetric === "origin_keys"){
-        sortType = SortType.stringArray;
-        aVal = a.origin_keys.sort().map((key) => key[0].toUpperCase()).join("");
-        bVal = b.origin_keys.sort().map((key) => key[0].toUpperCase()).join("");
-      }
-
-      if(!aVal && !bVal) return 0;
-
-      if(sortType === SortType.number){
-        if(!aVal || aVal == Infinity) return 1;
-        if(!bVal || bVal == Infinity) return -1;
-
-        if(sort.sortOrder === "asc")
-          return aVal - bVal;
-        return bVal - aVal;
-      }
-      else if(sortType === SortType.string){
-        if(!aVal) return 1;
-        if(!bVal) return -1;
-
-        if(sort.sortOrder === "asc")
-          return aVal.localeCompare(bVal);
-        return bVal.localeCompare(aVal);
-      }
-      else if(sortType === SortType.stringArray){
-        // first by length, then by first letter
-        if(!aVal) return 1;
-        if(!bVal) return -1;
-
-        let aCount = aVal.length;
-        let bCount = bVal.length;
-
-        if(sort.sortOrder === "asc"){
-          if(aCount < bCount) return -1;
-          if(aCount > bCount) return 1;
-          return aVal[0].localeCompare(bVal[0]);
+      const config: SortConfig<AggregatedDataRow> = {
+        metric: actualMetric as keyof AggregatedDataRow,
+        sortOrder,
+        type: SortType.NUMBER,
+        valueAccessor: (item, met: any) => {
+          if (met === "category") {
+            return ownerProjectToProjectData[item.owner_project].main_category;
+          }
+          if (met === "owner_project") {
+            return ownerProjectToProjectData[item.owner_project].display_name;
+          }
+          return item[met];
         }
-
-        if(aCount < bCount) return 1;
-        if(aCount > bCount) return -1;
-
-        return bVal[0].localeCompare(aVal[0]);
+      };
+      // Set correct sort type based on metric
+      if (metric === "category" || metric === "owner_project") {
+        config.type = SortType.STRING;
+      } else if (metric === "origin_keys") {
+        config.type = SortType.STRING_ARRAY;
       }
+      return sortItems(items, config);
+    };
+  };
 
-      return 0;
-    });
-    return sorted;
-  }, [applicationDataFiltered, ownerProjectToProjectData, showUsd, sort.metric, sort.sortOrder]);
+  const applicationDataSorter = createApplicationDataSorter(ownerProjectToProjectData, showUsd);
+
+  const applicationDataAggregatedAndFiltered = useMemo(() => {
+    return applicationDataSorter(applicationDataFiltered, sort.metric, sort.sortOrder as SortOrder);
+  }, [applicationDataFiltered, applicationDataSorter, sort.metric, sort.sortOrder]);
 
   // distinct chains across all data
   const applicationsChains = useMemo(() => {
@@ -381,23 +496,26 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
     return Array.from(chains);
   }, [applicationDataFiltered]);
 
-
   return (
     <ApplicationsDataContext.Provider
       value={{
-        selectedChains, setSelectedChains,
-        applicationDataAggregated,
+        selectedChains: selectedChainsParam,
+        setSelectedChains: (value) => handleFilters(FilterType.CHAIN, value),
+        applicationDataAggregated: applicationDataAggregated,
+        applicationDataAggregatedAndFiltered,
         isLoading: applicationsTimespanLoading || masterLoading,
-
         applicationsChains,
-        selectedStringFilters,
-        setSelectedStringFilters,
+        selectedStringFilters: selectedStringFiltersParam,
+        setSelectedStringFilters: (value) => handleFilters(FilterType.SEARCH, value),
+        selectedMainCategories: selectedMainCategoryParam,
+        setSelectedMainCategories: (value) => handleFilters(FilterType.MAIN_CATEGORY, value),
+        medianMetric,
+        medianMetricKey,
       }}
     >
       <ShowLoading
-        dataLoading={[masterLoading]}
-        // dataValidating={[masterValidating]}
-        // fullScreen={true}
+        dataLoading={[masterLoading, applicationsTimespanLoading]}
+        dataValidating={[masterValidating, applicationsTimespanValidating]}
       />
       {children}
     </ApplicationsDataContext.Provider>

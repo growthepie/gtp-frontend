@@ -10,7 +10,6 @@ import { Icon } from "@iconify/react";
 import { ChainResponse } from "@/types/api/ChainResponse";
 import {
   BlockspaceURLs,
-  ChainBlockspaceURLs,
   ChainsBaseURL,
   FeesURLs,
   MasterURL,
@@ -109,7 +108,7 @@ const Chain = ({ params }: { params: any }) => {
     error: usageError,
     isLoading: usageLoading,
     isValidating: usageValidating,
-  } = useSWR<ChainData>(ChainBlockspaceURLs[chainKey]);
+  } = useSWR<ChainData>(`https://api.growthepie.xyz/v1/chains/blockspace/${chainKey}.json`);
 
   const {
     data: feeData,
@@ -455,9 +454,9 @@ const Chain = ({ params }: { params: any }) => {
               <div className="flex flex-col md:flex-row pb-[15px] md:pb-[15px] items-start">
                 <div className="flex gap-x-[8px] items-center">
                   <div className="w-9 h-9  ">
-                    <Icon
-                      icon={`gtp:${AllChainsByKeys[chainKey].urlKey}-logo-monochrome`}
-                      className="w-9 h-9"
+                    <GTPIcon
+                      icon={`gtp:${AllChainsByKeys[chainKey].urlKey}-logo-monochrome` as GTPIconName}
+                      size="lg"
                       style={{
                         color:
                           AllChainsByKeys[chainKey].colors[theme ?? "dark"][1],

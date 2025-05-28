@@ -4,6 +4,7 @@ import { MasterURL } from "@/lib/urls";
 import { ChainInfo, MasterResponse } from "@/types/api/MasterResponse";
 import { notFound } from "next/navigation";
 import { track } from "@vercel/analytics/server";
+import { getPageMetadata } from "@/lib/metadata";
 
 type Props = {
   params: { chain: string };
@@ -15,24 +16,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     cache: "no-store",
   }).then((r) => r.json());
 
+  // 1. Fetch data specific to this chain (e.g., its full name)
   const AllChainsByUrlKey = Object.keys(res.chains).filter((key) => !["multiple", "all_l2s"].includes(key)).reduce((acc, key) => {
     acc[res.chains[key].url_key] = { ...res.chains[key], key: key };
     return acc;
   }, {} as { [key: string]: ChainInfo & { key: string } });
 
 
-  // if (!params.chain || !Object.keys(AllChainsByUrlKey).includes(params.chain)) {
-  //   track("404 Error", {
-  //     location: "404 Error",
-  //     page: "/chains/" + params.chain,
-  //   });
-  //   return notFound();
-  // }
-
   const key = AllChainsByUrlKey[params.chain].key;
   const urlKey = AllChainsByUrlKey[params.chain].url_key;
 
-
+  // 2. Fetch metadata template from Airtable using the *template path*
+  //    and provide the dynamic data for placeholder replacement.
+  const metadata = await getPageMetadata(
+    '/chains/[slug]', // The path key stored in Airtable
+    { chainName: res.chains[key].name } // Data for placeholders like {{chainName}}
+  );
 
   if (res && key && res.chains[key]) {
     const currentDate = new Date();
@@ -41,8 +40,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // Convert the date to a string in the format YYYYMMDD (e.g., 20240424)
     const dateString = currentDate.toISOString().slice(0, 10).replace(/-/g, "");
     return {
-      title: res.chains[key].name,
-      description: res.chains[key].symbol,
+      title: {
+        absolute: metadata.title,
+      },
+      description: metadata.description,
       openGraph: {
         images: [
           {

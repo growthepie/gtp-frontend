@@ -124,7 +124,7 @@ export default function Footer({
               href="https://www.growthepie.xyz/"
               target="_blank"
             >
-              <div className="w-6 h-6 z-[100]">
+              <div className="w-6 h-6 z-[49]">
                 <Icon icon="gtp:house" className="h-6 w-6" />
               </div>
             </Link>
@@ -152,7 +152,7 @@ export default function Footer({
       )}
       {isMobile && (
         <div
-          className={`absolute bottom-6 bg-[#151A19] rounded-2xl z-0  left-0 right-0 mx-auto transition-all duration-[290ms] overflow-hidden px-2 ${
+          className={`absolute bottom-10 bg-[#151A19] rounded-2xl z-0  left-0 right-0 mx-auto transition-all duration-[290ms] overflow-hidden px-2 ${
             hoverSettings
               ? "w-[90vw] shadow-[0px_4px_46.2px_0px_#000000] opacity-100"
               : "w-[0px] shadow-transparent opacity-0"
@@ -172,9 +172,7 @@ export default function Footer({
           }}
         >
           <div
-            className={`pt-[5px] flex flex-col h-[calc(100px + 28px + 28px * (1 + ${
-              Object.keys(metrics).length
-            }))] w-full`}
+            className={`pt-[5px] flex flex-col w-full`}
           >
             <div className="flex flex-col w-full">
               <div className="flex items-center w-full">

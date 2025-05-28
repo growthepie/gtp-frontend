@@ -38,9 +38,10 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
 
   const { theme } = useTheme();
   const { data: master, AllChainsByKeys, AllDALayersByKeys, SupportedChainKeys, EnabledChainsByKeys } = useMaster();
-
+  const [focusEnabled] = useLocalStorage("focusEnabled", false);
   const { data, chainKeys, metric_id, avg } = useMetricData();
   const { selectedChains, selectedTimeInterval, selectedTimespan, timeIntervalKey, selectedScale, showEthereumMainnet } = useMetricChartControls();
+
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
@@ -66,13 +67,14 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
 
   const getSeriesType = useCallback(
     (name: string) => {
-      if (name === "ethereum") {
+      if (name === "ethereum" && focusEnabled) {
         // show column chart for ethereum if monthly and stacked
         if (selectedTimeInterval === "monthly" && selectedScale === "stacked")
           return "column";
         // else show area
         return "area";
       }
+     
       if (selectedScale === "percentage") return "area";
       if (selectedScale === "stacked")
         return selectedTimeInterval === "daily" ? "area" : "column";
@@ -113,23 +115,52 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
 
       let fillOpacity = undefined;
 
-      let seriesFill = "transparent";
+      let seriesFill: Highcharts.GradientColorObject | string = "transparent";
 
       if (isAreaChart) {
-        seriesFill = MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "33";
+        seriesFill = {
+          linearGradient: {
+            x1: 0,
+            y1: 0,
+            x2: 0,
+            y2: 1,
+          },
+          stops: [
+            [0, MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "99"],
+            [1, MetadataByKeys[name]?.colors[theme ?? "dark"][1] + "33"],
+          ],
+        };
       }
 
-      if (isAreaChart) {
-        seriesFill = MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "33";
-      }
-
-      let fillColor =
+      let fillColor: Highcharts.GradientColorObject | string | undefined =
         selectedTimeInterval === "daily"
-          ? MetadataByKeys[name]?.colors[theme ?? "dark"][0]
+          ? {
+            linearGradient: {
+              x1: 0,
+              y1: 0,
+              x2: 0,
+              y2: 1,
+            },
+            stops: [
+              [0, MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "99"],
+              [1, MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "33"],
+            ],
+          }
           : undefined;
-      let color =
+      let color: Highcharts.GradientColorObject | string | undefined =
         selectedTimeInterval === "daily"
-          ? MetadataByKeys[name]?.colors[theme ?? "dark"][0]
+          ? {
+            linearGradient: {
+              x1: 0,
+              y1: 0,
+              x2: 1,
+              y2: 0,
+            },
+            stops: [
+              [0, MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "EE"],
+              [1, MetadataByKeys[name]?.colors[theme ?? "dark"][0] + "FF"],
+            ],
+          }
           : undefined;
 
       if (types.includes("usd")) {
@@ -343,7 +374,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
         const aData = data.chains[a][timeIntervalKey].data;
         const bData = data.chains[b][timeIntervalKey].data;
 
-        if (showEthereumMainnet) {
+        if (showEthereumMainnet && !focusEnabled) {
           if (a === "ethereum") {
             return 1;
           }
@@ -360,7 +391,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
     }).map((chainKey, i) => {
       const chain = data.chains[chainKey];
 
-      console.log(selectedScale)
+      
       const zIndex = showEthereumMainnet
         ? chainKey === "ethereum"
           ? 0
@@ -400,7 +431,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
           .color,
         borderColor:
           MetadataByKeys[chainKey]?.colors[theme ?? "dark"][0],
-        borderWidth: 1,
+        borderWidth: 0,
         lineWidth: 2,
         marker: getSeriesData(chainKey, chain[timeIntervalKey].types, chain[timeIntervalKey].data).marker,
         states: {
@@ -431,32 +462,12 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
             enabled: false,
           },
         },
-        ...// @ts-ignore
-        ((["area", "line"].includes(getSeriesType(chainKey)) && selectedScale !== "stacked")
-          ? {
-            shadow: {
-              color:
-                MetadataByKeys[chainKey]?.colors[
-                theme ?? "dark"
-                ][1] + "FF",
-              width: 7,
-            },
-          }
-          : chainKey === "all_l2s"
-            ? {
-              borderColor: "transparent",
-              shadow: "none",
-            }
-            : {
-              borderColor: "transparent",
-              shadow: "none",
-
-            }),
+        
       };
     });
 
     return d;
-  }, [data, selectedTimeInterval, selectedScale, chainKeys, metric_type, selectedChains, SupportedChainKeys, showEthereumMainnet, timeIntervalKey, getSeriesData, getSeriesType, dataGrouping, MetadataByKeys, theme]);
+  }, [data, selectedTimeInterval, selectedScale, chainKeys, metric_type, selectedChains, SupportedChainKeys, showEthereumMainnet, timeIntervalKey, getSeriesData, getSeriesType, dataGrouping, MetadataByKeys, focusEnabled, theme]);
 
   return (
     <MetricSeriesContext.Provider

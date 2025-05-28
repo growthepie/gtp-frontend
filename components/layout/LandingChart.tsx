@@ -3,11 +3,15 @@
 import highchartsAnnotations from "highcharts/modules/annotations";
 import highchartsRoundedCorners from "highcharts-rounded-corners";
 import HighchartsReact from "highcharts-react-official";
+import HighchartsColumnSeries from "highcharts/es-modules/Series/Column/ColumnSeries"
 import Highcharts, {
   AxisLabelsFormatterContextObject,
   Tick,
   chart,
+  color,
 } from "highcharts/highstock";
+import { motion, useAnimation, AnimatePresence } from "framer-motion";
+import Heading from "@/components/layout/Heading";
 import {
   useState,
   useEffect,
@@ -18,7 +22,7 @@ import {
 } from "react";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
-import { debounce, merge } from "lodash";
+import { debounce, fill, merge } from "lodash";
 import { Switch } from "../Switch";
 import {
   // AllChainsByKeys,
@@ -45,6 +49,13 @@ import {
 import { useMaster } from "@/contexts/MasterContext";
 import { GTPIcon } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import highchartsPatternFill from "highcharts/modules/pattern-fill";
+import { transparent } from "tailwindcss/colors";
+import { createTooltipFormatter, formatNumber } from "@/lib/highcharts/tooltipFormatters";
+import { baseChartOptions } from "@/lib/highcharts/chartUtils";
+import { PatternRegistry, initializePatterns } from "@/lib/highcharts/svgPatterns";
+import { DynamicLabel } from "../home/LandingHeaders";
+
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -54,140 +65,199 @@ const COLORS = {
   TOOLTIP_BG: "#1b2135",
   ANNOTATION_BG: "rgb(215, 223, 222)",
 };
+
+const METRIC_COLORS = {
+  cross_layer: ["#C1C1C1", "#FE5468"],
+  single_l2: ["#FFDF27", "#FE5468"],
+  multiple_l2s: ["#FFDF27", "#FE5468"],
+  only_l1: ["#C1C1C1", "#5B5B5B"],
+  main_l1: ["#C1C1C1", "#5B5B5B"],
+  main_l2: ["#FFDF27", "#FE5468"],
+}
+
+
+
+export type GradientConfig = {
+  type: "linearGradient" | "radialGradient";
+  linearGradient?: { x1: number; y1: number; x2: number; y2: number };
+  radialGradient?: { cx: number; cy: number; r: number; fx: number; fy: number };
+  stops: [number, string][];
+}
+
+export type PatternConfig = {
+  type: string;
+  direction: string;
+  color: string;
+  backgroundFill: string;
+}
+
+export type MaskConfig = {
+  direction: string;
+}
+
+export type BACKEND_SIMULATION_CONFIG = {
+  defs: {
+    gradients: {
+      id: string;
+      config: GradientConfig
+    }[];
+    patterns: {
+      id: string;
+      type: string;
+      config: {
+        type: string;
+        direction: string;  
+      };
+    }[];
+  };
+  compositionTypes: {
+    [key: string]: {
+      order: number;
+      name?: string;
+      description?: string;
+      fill: {
+        type: string;
+        config: GradientConfig | PatternConfig;
+      };
+      mask?: {
+        config: MaskConfig;
+      };
+    };
+  };
+}
+
+export const BACKEND_SIMULATION_CONFIG: BACKEND_SIMULATION_CONFIG = {
+  defs: {
+    gradients: [
+      {
+        id: "cross_layer_background_gradient",
+        config: {
+          type: "linearGradient",
+          linearGradient: { x1: 1, y1: 1, x2: 0, y2: 0 },
+          stops: [[0, "#fe7557"], [1, "#fe7557"]]
+        }
+      }
+    ],
+    patterns: []
+  },
+  compositionTypes: {
+    main_l1: {
+      order: 0,
+      name: "Ethereum Mainnet",
+      description: "Ethereum Mainnet data",
+      fill: {
+        type: "gradient",
+        config: {
+          type: "linearGradient",
+          linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+          stops: [[0, "#94ABD3"], [1, "#596780"]]
+        }
+      }
+    },
+    main_l2: {
+      order: 1,
+      name: "Layer 2",
+      description: "Layer 2 scaling solutions",
+      fill: {
+        type: "gradient",
+        config: {
+          type: "linearGradient",
+          linearGradient: { x1: 0, y1: 1, x2: 0, y2: 0 },
+          stops: [[0, "#FE5468"], [1, "#FFDF27"]]
+        }
+      }
+    },
+    only_l1: {
+      order: 0,
+      name: "Ethereum Mainnet",
+      description: "Only users that interacted with Ethereum Mainnet but not with any L2.",
+      fill: {
+        type: "gradient",
+        config: {
+          type: "linearGradient",
+          linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+          stops: [[0, "#94ABD3"], [1, "#596780"]]
+        }
+      }
+    },
+    cross_layer: {
+      order: 1,
+      name: "Cross-Layer",
+      description: "Users that interacted with Ethereum Mainnet and at least one L2.",
+      fill: {
+        type: "pattern",
+        config: {
+          type: "colored-hash",
+          direction: "right",
+          color: "#94ABD3",
+          backgroundFill: "url(#cross_layer_background_gradient)"
+        }
+      }
+    },
+    multiple_l2s: {
+      order: 2,
+      name: "Multiple Layer 2s",
+      description: "Users that interacted with multiple L2s but not Ethereum Mainnet.",
+      fill: {
+        type: "gradient",
+        config: {
+          type: "linearGradient",
+          linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
+          stops: [[0, "#FE5468"], [1, "#FFDF27"]]
+        }
+      }
+    },
+    single_l2: {
+      order: 3,
+      name: "Single Layer 2",
+      description: "Users that interacted with a single L2 but not Ethereum Mainnet.",
+      fill: {
+        type: "gradient",
+        config: {
+          type: "linearGradient",
+          linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
+          stops: [[0, "#FE5468"], [1, "#FFDF27"]]
+        }
+      },
+      mask: {
+        config: {
+          direction: "right"
+        }
+      }
+    },
+    all_l2s: {
+      order: 4,
+      name: "All Layer 2s",
+      description: "Users that interacted with all L2s.",
+      fill: {
+        type: "gradient",
+        config: {
+          type: "linearGradient",
+          linearGradient: { x1: 0, y1: 1, x2: 0, y2: 0 },
+          stops: [[0, "#FE5468"], [1, "#FFDF27"]]
+        }
+      }
+    },
+    ethereum: {
+      order: 5,
+      name: "Ethereum Mainnet",
+      description: "Users that interacted with Ethereum Mainnet.",
+      fill: {
+        type: "gradient",
+        config: {
+          type: "linearGradient",
+          linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+          stops: [[0, "#94ABD3"], [1, "#596780"]]
+        }
+      }
+    }
+  }
+};
+
 const isArray = (obj: any) =>
   Object.prototype.toString.call(obj) === "[object Array]";
 const splat = (obj: any) => (isArray(obj) ? obj : [obj]);
 
-const baseOptions: Highcharts.Options = {
-  accessibility: { enabled: false },
-  exporting: { enabled: false },
-  chart: {
-    backgroundColor: "transparent",
-    showAxes: false,
-    panKey: "shift",
-    zooming: {
-      resetButton: {
-        position: {
-          x: 0,
-          y: 10,
-        },
-        theme: {
-          fill: "transparent",
-          style: {
-            opacity: 1,
-            fontSize: "12",
-            fontFamily: "Inter",
-            fontWeight: "300",
-            color: "#fff",
-            textTransform: "lowercase",
-            border: "1px solid #fff",
-          },
-          borderRadius: 4,
-          padding: 8,
-          borderWidth: 2,
-          r: 16,
-          states: { hover: { fill: "#fff", style: { color: "#000" } } },
-        },
-      },
-    },
-  },
-  title: undefined,
-  yAxis: {
-    title: { text: undefined },
-    labels: {
-      enabled: true,
-    },
-    gridLineWidth: 1,
-    gridLineColor: COLORS.GRID,
-  },
-  xAxis: {
-    type: "datetime",
-    lineWidth: 0,
-    crosshair: {
-      width: 0.5,
-      color: COLORS.PLOT_LINE,
-      snap: false,
-    },
-    // labels: {
-    //   style: { color: COLORS.LABEL },
-    //   enabled: true,
-    //   formatter: (item) => {
-    //     const date = new Date(item.value);
-    //     const isMonthStart = date.getDate() === 1;
-    //     const isYearStart = isMonthStart && date.getMonth() === 0;
-
-    //     if (isYearStart) {
-    //       return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
-    //     } else {
-    //       return `<span style="">${date.toLocaleDateString("en-GB", {
-    //         timeZone: "UTC",
-    //         month: "short",
-    //       })}</span>`;
-    //     }
-    //   },
-    // },
-
-    gridLineWidth: 0,
-  },
-  legend: {
-    enabled: false,
-    useHTML: false,
-    symbolWidth: 0,
-  },
-  tooltip: {
-    // backgroundColor: 'transparent',
-    useHTML: true,
-    shadow: false,
-    shared: true,
-  },
-  plotOptions: {
-    area: {
-      stacking: "normal",
-      events: {
-        legendItemClick: function () {
-          return false;
-        },
-      },
-      marker: {
-        radius: 0,
-      },
-      shadow: false,
-      animation: false,
-    },
-    column: {
-      grouping: true,
-      stacking: "normal",
-      events: {
-        legendItemClick: function () {
-          return false;
-        },
-      },
-      groupPadding: 0,
-      animation: true,
-    },
-    series: {
-      stacking: "normal",
-      events: {
-        legendItemClick: function () {
-          return false;
-        },
-      },
-      marker: {
-        radius: 0,
-      },
-      shadow: false,
-      animation: false,
-    },
-  },
-  credits: {
-    enabled: false,
-  },
-  navigation: {
-    buttonOptions: {
-      enabled: false,
-    },
-  },
-};
 
 export default function LandingChart({
   data,
@@ -240,6 +310,13 @@ export default function LandingChart({
   const [isDragging, setIsDragging] = useState(false);
   const { isSidebarOpen, setEmbedData, embedData } = useUIContext();
 
+  const  textToggles = {
+    "toggle": {
+      "total": "Total Ethereum Ecosystem",
+      "l2": "Layer 2 Ecosystem"
+      }
+  }
+
 
   // useEffect(() => {
   //   if (embedData.src !== BASE_URL + "/embed/user-base")
@@ -252,6 +329,10 @@ export default function LandingChart({
 
   useHighchartsWrappers();
 
+  const [maskIds, setMaskIds] = useState<{ rightMaskId: string; leftMaskId: string } | null>(null);
+
+
+
   useEffect(() => {
     Highcharts.setOptions({
       lang: {
@@ -259,8 +340,8 @@ export default function LandingChart({
       },
     });
     highchartsRoundedCorners(Highcharts);
-    highchartsAnnotations(Highcharts);
-
+    // highchartsAnnotations(Highcharts);
+    highchartsPatternFill(Highcharts);
     // loadHighchartsWrappers();
 
     // update x-axis label sizes if it is a 4 digit number
@@ -294,22 +375,23 @@ export default function LandingChart({
       },
     );
 
-
     setHighchartsLoaded(true);
   }, []);
 
   const { theme } = useTheme();
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const [focusEnabled] = useLocalStorage("focusEnabled", false);
 
   const [selectedTimespan, setSelectedTimespan] = useState(
     embed_timespan ?? "max",
   );
 
   const [selectedScale, setSelectedScale] = useState(
-    selectedMetric === "Percentage" ? "percentage" : "absolute",
+    selectedMetric === "Composition Split" ? "percentage" : "absolute",
   );
 
+  const [hoveredMetric, setHoveredMetric] = useState<string | null>(null);
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
 
   const [zoomed, setZoomed] = useState(false);
@@ -331,71 +413,8 @@ export default function LandingChart({
   const [totalUsersIncrease, setTotalUsersIncrease] = useState(0);
 
   const isMobile = useMediaQuery("(max-width: 767px)");
-
-  // const getTickPositions = useCallback(
-  //   (xMin: any, xMax: any): number[] => {
-  //     const tickPositions: number[] = [];
-  //     const xMinDate = new Date(xMin);
-  //     const xMaxDate = new Date(xMax);
-  //     const xMinMonth = xMinDate.getUTCMonth();
-  //     const xMaxMonth = xMaxDate.getUTCMonth();
-
-  //     const xMinYear = xMinDate.getUTCFullYear();
-  //     const xMaxYear = xMaxDate.getUTCFullYear();
-
-  //     // if (selectedTimespan === "max") {
-  //     //   for (let year = xMinYear; year <= xMaxYear; year++) {
-  //     //     for (let month = 0; month < 12; month = month + 4) {
-  //     //       // if (year === xMinYear && month < xMinMonth) continue;
-  //     //       // if (year === xMaxYear && month > xMaxMonth) continue;
-  //     //       tickPositions.push(Date.UTC(year, month, 1).valueOf());
-  //     //     }
-  //     //   }
-  //     //   return tickPositions;
-  //     // }
-  //     // for (let year = xMinYear; year <= xMaxYear; year++) {
-
-  //     //   for (let month = 0; month <= 12; month++) {
-  //     //     // if (year === xMinYear && month < xMinMonth) continue;
-  //     //     // if (year === xMaxYear && month > xMaxMonth) continue;
-  //     //     tickPositions.push(Date.UTC(year, month, 1).valueOf());
-  //     //   }
-  //     // }
-
-  //     const daysDiff = daysShown;
-
-  //     if (daysShown < 365) {
-  //       for (let year = xMinYear; year <= xMaxYear; year++) {
-  //         for (let month = 0; month < 12; month = month + 1) {
-  //           // if (year === xMinYear && month < xMinMonth) continue;
-  //           // if (year === xMaxYear && month > xMaxMonth) continue;
-  //           tickPositions.push(Date.UTC(year, month, 1).valueOf());
-  //         }
-  //       }
-  //     }
-
-  //     if (daysShown >= 365) {
-  //       for (let year = xMinYear; year <= xMaxYear; year++) {
-  //         for (let month = 0; month < 12; month = month + 3) {
-  //           // if (year === xMinYear && month < xMinMonth) continue;
-  //           // if (year === xMaxYear && month > xMaxMonth) continue;
-  //           tickPositions.push(Date.UTC(year, month, 1).valueOf());
-  //         }
-  //       }
-  //     }
-
-  //     // for (let i = xMinMonth; i <= xMaxMonth; i++) {
-  //     //   tickPositions.push(Date.UTC(xMinYear, i, 1).valueOf());
-  //     // }
-
-  //     // // remove the last tick if its an embed
-  //     // if (is_embed)
-  //     //   tickPositions.pop();
-
-  //     return tickPositions;
-  //   },
-  //   [selectedTimespan, is_embed, daysShown],
-  // );
+  // 2xl breakpoint
+  const isLessThan2xl = useMediaQuery("(max-width: 1536px)");
 
   const getSeriesType = useCallback(
     (name: string) => {
@@ -409,225 +428,27 @@ export default function LandingChart({
   );
 
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
-  // daysShown based on minX and maxX on chart X axis
-  // const daysShown = useMemo(a() => {
-  //   if (!chartComponent.current) return parseInt(selectedTimespan);
-  //   if (zoomed) return Math.round((zoomMax - zoomMin) / (24 * 60 * 60 * 1000));
-  //   const minX = chartComponent.current?.xAxis[0].getExtremes().min;
-  //   const maxX = chartComponent.current?.xAxis[0].getExtremes().max;
-  //   if (minX && maxX)
-  //     return Math.round((maxX - minX) / (24 * 60 * 60 * 1000));
-  //   if (selectedTimespan === "max") return 365 * 5;
-  //   return parseInt(selectedTimespan);
-  // }, [selectedTimespan, zoomed, zoomMax, zoomMin, chartComponent.current]);
 
   const [daysShown, setDaysShown] = useState(900);
 
-  const formatNumber = useCallback(
-    (value: number | string, isAxis = false) => {
-      return isAxis
-        ? selectedScale !== "percentage"
-          ? d3.format(".2s")(value)
-          : d3.format(".2s")(value) + "%"
-        : d3.format(",.2~s")(value);
-    },
-    [selectedScale],
-  );
+  const chartConfig = useMemo(() => {
+    if (!data) return null;
+    return {
+      compositions: data.timechart.compositions,
+      types: data.timechart.types,
+      compositionTypes: BACKEND_SIMULATION_CONFIG.compositionTypes,
+    };
+  }, [data]);
 
-  const tooltipFormatter = useCallback(
-    function (this: any) {
-      const { x, points }: { x: number; points: any[] } = this;
-      const firstTenPoints = points.sort((a: any, b: any) => b.y - a.y).slice(0, 10);
-      const afterTenPoints = points.sort((a: any, b: any) => b.y - a.y).slice(10);
-      const date = new Date(x);
-      const dateString = `
-      <div>
-        ${date.toLocaleDateString("en-GB", {
-        timeZone: "UTC",
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })}
-      </div>
-      <div>-</div>
-      <div>
-        ${new Date(date.valueOf() + 6 * 24 * 60 * 60 * 1000).toLocaleDateString(
-        //add 7 days to the date
-        undefined,
-        {
-          timeZone: "UTC",
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        },
-      )}
-      </div>`;
-
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-60 md:w-60 text-xs font-raleway"><div class="flex-1 font-bold text-[13px] md:text-[1rem] ml-6 mb-2 flex justify-between">${dateString}</div>`;
-      let tooltipEnd = `</div>`;
-
-      if (selectedMetric === "Users per Chain")
-        tooltipEnd = `
-          <div class="text-0.55rem] flex flex-col items-start pl-[24px] pt-3 gap-x-1 w-full text-forest-900/60 dark:text-forest-500/60">
-            <div class="font-medium">Note:</div>
-            Addresses exclusively interacting with<br/>respective chain.
-          </div>
-        </div>`;
-
-      let pointsSum = points.reduce((acc: number, point: any) => {
-        acc += point.y;
-        return acc;
-      }, 0);
-
-      let maxPoint = points.reduce((acc: number, point: any) => {
-        acc = Math.max(acc, point.y);
-        return acc;
-      }, 0);
-
-      let maxPercentage = points.reduce((acc: number, point: any) => {
-        acc = Math.max(acc, point.percentage);
-        return acc;
-      }, 0);
-
-      let tooltipPoints = firstTenPoints
-        .filter((point: any) => {
-          const { series, y, percentage } = point;
-          const { name } = series;
-          const supportedChainKeys = Get_SupportedChainKeys(master, [
-            "all_l2s",
-            "multiple",
-          ]);
-
-          return supportedChainKeys.includes(name);
-        })
-        .map((point: any) => {
-          const { series, y, percentage } = point;
-          const { name } = series;
-          if (selectedScale === "percentage")
-            return `
-              <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-              }"></div>
-                <div class="tooltip-point-name text-xs">${AllChainsByKeys[name].label
-              }</div>
-                <div class="flex-1 text-right numbers-xs">${Highcharts.numberFormat(
-                percentage,
-                2,
-              )}%</div>
-              </div>
-              <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-                <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
-    
-                <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
-                style="
-                  width: ${(percentage / maxPercentage) * 100}%;
-                  background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-              };
-                "></div>
-              </div>`;
-
-          const value = formatNumber(y);
-          return `
-          <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-            }"></div>
-            <div class="tooltip-point-name text-xs">${AllChainsByKeys[name].label
-            }</div>
-             <div class="flex-1 text-right justify-end flex numbers-xs">
-              <div class="inline-block">${parseFloat(y).toLocaleString(
-              "en-GB",
-              {
-                minimumFractionDigits: 0,
-              },
-            )}</div>
-            </div>
-          </div>
-          <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
-
-            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
-            style="
-              width: ${(y / maxPoint) * 100}%;
-              background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-            };
-            "></div>
-          </div>`;
-        })
-        .join("");
-
-      // add "others" with the sum of the rest of the points
-      const rest = afterTenPoints
-        .filter((point: any) => {
-          const { series, y, percentage } = point;
-          const { name } = series;
-          const supportedChainKeys = Get_SupportedChainKeys(master, [
-            "all_l2s",
-            "multiple",
-          ]);
-
-          return supportedChainKeys.includes(name);
-        })
-
-      if (rest.length === 0) return tooltip + tooltipPoints + tooltipEnd;
-
-      const restString = rest.length > 1 ? `${parseFloat(rest[0].y).toLocaleString("en-GB", { minimumFractionDigits: 0 })}…${parseFloat(rest[rest.length - 1].y).toLocaleString("en-GB", { minimumFractionDigits: 0 })}` :
-        parseFloat(rest[0].y).toLocaleString("en-GB", { minimumFractionDigits: 0 });
-
-      const restSum = rest.reduce((acc: number, point: any) => {
-        acc += point.y;
-        return acc;
-      }, 0);
-
-      const restPercentage = rest.reduce((acc: number, point: any) => {
-        acc += point.percentage;
-        return acc;
-      }, 0);
-
-      if (selectedScale === "percentage")
-        tooltipPoints += `
-          <div class="flex w-full space-x-2 items-center font-medium mb-0.5 opacity-60">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6"></div>
-            <div class="tooltip-point-name">${rest.length > 1 ? `${rest.length} Others` : "1 Other"}</div>
-            <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-          restPercentage,
-          2,
-        )}%</div>
-          </div>
-          <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
-
-            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
-            style="
-              width: ${(restPercentage / maxPercentage) * 100}%;
-              background-color: #E0E7E699
-            ;
-            "></div>
-          </div>`;
-
-      else
-        tooltipPoints += `
-          <div class="flex w-full space-x-2 items-center font-medium mb-0.5 opacity-60">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6"></div>
-            <div class="tooltip-point-name">${rest.length > 1 ? `${rest.length} Others` : "1 Other"}</div>
-             <div class="flex-1 text-right justify-end flex numbers-xs">
-              <div class="inline-block">${restSum.toLocaleString("en-GB", { minimumFractionDigits: 0, })}</div>
-            </div>
-          </div>
-          <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
-
-            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
-            style="
-              width: ${(restSum / maxPoint) * 100}%;
-              background-color: #E0E7E699
-            ;
-            "></div>
-          </div>`;
-
-      return tooltip + tooltipPoints + tooltipEnd;
-    },
-    [formatNumber, master, selectedMetric, selectedScale, theme],
-  );
+  const customTooltipFormatter = useMemo(() => createTooltipFormatter({
+    selectedScale: selectedScale as "percentage" | "absolute",
+    selectedMetric: selectedMetric,
+    theme: theme as "dark" | "light",
+    focusEnabled: focusEnabled,
+    showEthereumMainnet: showEthereumMainnet,
+    compositionTypes: chartConfig?.compositionTypes,
+    enableTotal: selectedMetric !== "Composition Split",
+  }), [selectedScale, selectedMetric, theme, focusEnabled, showEthereumMainnet, chartConfig?.compositionTypes]);
 
   const tooltipPositioner =
     useCallback<Highcharts.TooltipPositionerCallbackFunction>(
@@ -666,28 +487,74 @@ export default function LandingChart({
     );
 
   const [showTotalUsers, setShowTotalUsers] = useState(
-    selectedMetric === "Total Users",
+    selectedMetric === "Total Ethereum Ecosystem",
   );
 
   const filteredData = useMemo(() => {
-    if (!data) return null;
+    if (!data) return [];
+    const compositions = data.timechart.compositions;
+    const types = data.timechart.types;
+    let retData: any = [];
+  
+    // Define explicit order for the keys
+    const orderedKeys = ["single_l2", "multiple_l2s", "cross_layer", "only_l1"]; // Adjust as needed
+  
+    // Filter keys and apply custom ordering
+    const compositionKeys = Object.keys(compositions)
+      .filter((key) => !(key === "only_l1" && focusEnabled))
+      .sort((a, b) => orderedKeys.indexOf(a) - orderedKeys.indexOf(b)); // Sort based on explicit order
+  
+    if (selectedMetric === "Total Ethereum Ecosystem") {
+      if(!focusEnabled){
+        let onlySumData: number[][] = [];
+        let onlyL2SumData: number[][] = [];
+        compositions.only_l1.forEach((element, index) => {
+          let sum_l1 = 0;
+          let sum_l2 = 0;
+          sum_l1 += compositions.only_l1[index][types.indexOf("value")];
+          sum_l1 += compositions.cross_layer[index][types.indexOf("value")];
+          sum_l2 += compositions.multiple_l2s[index][types.indexOf("value")];
+          sum_l2 += compositions.single_l2[index][types.indexOf("value")];
 
-    const l2s = data.filter((d) => "all_l2s" === d.name)[0];
+          onlySumData.push([element[types.indexOf("unix")], sum_l1]);
+          onlyL2SumData.push([element[types.indexOf("unix")], sum_l2]);
+        });
 
-    setTotalUsersIncrease(
-      (l2s.data[l2s.data.length - 1][1] - l2s.data[l2s.data.length - 2][1]) /
-      l2s.data[l2s.data.length - 2][1],
-    );
+        retData.push({ name: "main_l2", data: onlyL2SumData, types: types });
+        retData.push({ name: "main_l1", data: onlySumData, types: types });
 
-    if (showTotalUsers)
-      return showEthereumMainnet
-        ? data.filter((d) => ["all_l2s", "ethereum"].includes(d.name))
-        : [l2s];
+      } else {
+        let sumData: number[][] = [];
+    
+        compositions.cross_layer.forEach((element, index) => {
+          let sum = 0;
+          compositionKeys.forEach((key) => {
+            sum += compositions[key][index][types.indexOf("value")];
+          });
+    
+          sumData.push([element[types.indexOf("unix")], sum]);
+        });
+    
+        retData.push({ name: "all_l2s", data: sumData, types: types , stacked: false});
+        if(focusEnabled && showEthereumMainnet){
+          retData.push({ name: "ethereum", data: compositions.only_l1, types: types, stacked: false });
+          
+        }
+      }
+    } else {
 
-    return showEthereumMainnet
-      ? data.filter((d) => !["all_l2s"].includes(d.name))
-      : data.filter((d) => !["all_l2s", "ethereum"].includes(d.name));
-  }, [data, showEthereumMainnet, showTotalUsers]);
+      compositionKeys.forEach((key) => {
+        retData.push({ name: key, data: compositions[key], types: types, stacked: key === "single_l2" ? false : true });
+      });
+      if(focusEnabled && showEthereumMainnet){
+        retData.push({ name: "ethereum", data: compositions.only_l1, types: types, stacked: false, });
+      }
+    }
+  
+    return retData;
+  }, [data, showEthereumMainnet, showTotalUsers, focusEnabled, selectedMetric]);
+  
+  
 
   const maxDate = useMemo(() => {
     if (embed_end_timestamp) return new Date(embed_end_timestamp);
@@ -717,24 +584,28 @@ export default function LandingChart({
       // },
       "90d": {
         label: "90 days",
+        labelShort: "90d",
         value: 90,
         xMin: maxPlusBuffer - 90 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "180d": {
         label: "180 days",
+        labelShort: "180d",
         value: 180,
         xMin: maxPlusBuffer - 180 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "365d": {
         label: "1 year",
+        labelShort: "1y",
         value: 365,
         xMin: maxPlusBuffer - 365 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       max: {
         label: "Maximum",
+        labelShort: "Max",
         value: 0,
         xMin:
           filteredData.reduce((min, d) => {
@@ -817,39 +688,36 @@ export default function LandingChart({
     label: string;
   } | null>(null);
 
-  const onXAxisSetExtremes =
-    useCallback<Highcharts.AxisSetExtremesEventCallbackFunction>(
-      function (e) {
-        if (e.trigger === "pan") return;
-        const { min, max } = e;
-        const numDays = (max - min) / (24 * 60 * 60 * 1000);
+  const handleAfterSetExtremes = useCallback((e: any) => {
+    if (e.trigger === "pan") return;
+    
+    const { min, max } = e;
+    const numDays = (max - min) / (24 * 60 * 60 * 1000);
 
-        setIntervalShown({
-          min,
-          max,
-          num: numDays,
-          label: `${Math.round(numDays)} day${numDays > 1 ? "s" : ""}`,
-        });
+    setIntervalShown({
+      min,
+      max,
+      num: numDays,
+      label: `${Math.round(numDays)} day${numDays > 1 ? "s" : ""}`,
+    });
 
-        if (
-          e.trigger === "zoom" ||
-          // e.trigger === "pan" ||
-          e.trigger === "navigator" ||
-          e.trigger === "rangeSelectorButton"
-        ) {
-          const { xMin, xMax } = timespans[selectedTimespan];
+    if (
+      e.trigger === "zoom" ||
+      // e.trigger === "pan" ||
+      e.trigger === "navigator" ||
+      e.trigger === "rangeSelectorButton"
+    ) {
+      const { xMin, xMax } = timespans[selectedTimespan];
 
-          if (min === xMin && max === xMax) {
-            setZoomed(false);
-          } else {
-            setZoomed(true);
-          }
-          setZoomMin(min);
-          setZoomMax(max);
-        }
-      },
-      [selectedTimespan, timespans],
-    );
+      if (min === xMin && max === xMax) {
+        setZoomed(false);
+      } else {
+        setZoomed(true);
+      }
+      setZoomMin(min);
+      setZoomMax(max);
+    }
+  }, [selectedTimespan, timespans]);
 
   // const containerRef = useRef<HTMLDivElement>(null);
 
@@ -857,27 +725,15 @@ export default function LandingChart({
 
   const getChartHeight = useCallback(() => {
     if (is_embed) return height;
-    if (isMobile) return 264;
-    return 360;
+    if (isMobile) return 284;
+    return 400;
   }, [isMobile, is_embed, height]);
 
   const options = useMemo((): Highcharts.Options => {
-    // let units: [string, Array<number> | null][] = [["month", [6]], ["year", [1]]];
-    // if (daysShown <= 365) {
-    //   units = [["month", [3]], ["year", [1]]];
-    // }
-    // if (daysShown <= 180) {
-    //   units = [["month", [2]], ["year", [1]]];
-    // }
-    // if (daysShown <= 90) {
-    //   units = [["month", [1]], ["year", [1]]];
-    // }
-
     const dynamicOptions: Highcharts.Options = {
       chart: {
         height: getChartHeight(),
         className: "zoom-chart",
-        animation: true,
         type: selectedScale === "percentage" ? "area" : "column",
         plotBorderColor: "transparent",
         panning: {
@@ -912,10 +768,59 @@ export default function LandingChart({
             },
           },
         },
-        events: {},
+        events: {
+          load: function() {
+            const registry = initializePatterns(this, BACKEND_SIMULATION_CONFIG);
+            this.options['patternRegistry'] = registry;
+          },
+          render: function() {
+            const registry = this.options['patternRegistry'] as PatternRegistry;
+            if(!registry) return;
+
+            const series = this.series;
+
+            series.forEach((series: any, index: number) => {
+              const seriesOptions = series.options;
+              const compositionType = seriesOptions.custom?.compositionType;
+              
+              if (!compositionType || !BACKEND_SIMULATION_CONFIG.compositionTypes[compositionType]) return;
+
+              const typeConfig = BACKEND_SIMULATION_CONFIG.compositionTypes[compositionType];
+              if(typeConfig.fill.type === "gradient" || typeConfig.fill.type === "pattern") {
+                registry.applyFillToSeries(index, `${series.name}_fill`);
+              }
+
+              if(typeConfig.mask) {
+                registry.applyMaskToSeries(index, `${series.name}_mask`);
+              }
+            });
+          },
+          redraw: function() {
+            const registry = this.options['patternRegistry'] as PatternRegistry;
+            if(!registry) return;
+
+            
+            const series = this.series;
+
+            series.forEach((series: any, index: number) => {
+              const seriesOptions = series.options;
+              const compositionType = seriesOptions.custom?.compositionType;
+              
+              if (!compositionType || !BACKEND_SIMULATION_CONFIG.compositionTypes[compositionType]) return;
+              
+              const typeConfig = BACKEND_SIMULATION_CONFIG.compositionTypes[compositionType];
+              if(typeConfig.fill.type === "gradient" || typeConfig.fill.type === "pattern") {
+                registry.applyFillToSeries(index, `${series.name}_fill`);
+              }
+
+              if(typeConfig.mask) {
+                registry.applyMaskToSeries(index, `${series.name}_mask`);
+              }
+            });
+          },
+        },
         // height: isMobile ? 200 : 400,
       },
-
       plotOptions: {
         area: {
           stacking: selectedScale === "percentage" ? "percent" : "normal",
@@ -962,7 +867,7 @@ export default function LandingChart({
         minorTickWidth: 2,
         minorGridLineWidth: 0,
         tickColor: "#CDD8D34C",
-        tickLength: 25,
+        tickLength: 15,
         tickWidth: 1,
         offset: 0,
         minTickInterval: 30 * 24 * 3600 * 1000,
@@ -990,20 +895,42 @@ export default function LandingChart({
               year: "numeric",
             });
           },
-          y: 40,
+          y: 30,
           style: {
             fontSize: "10px",
             color: "#CDD8D3",
           },
         },
         events: {
-          afterSetExtremes: onXAxisSetExtremes,
+          setExtremes: function(e: any) {
+            const registry = this.options['patternRegistry'] as PatternRegistry;
+            if(!registry) return;
+            
+            const series = this.series;
+
+            series.forEach((series: any, index: number) => {
+              const seriesOptions = series.options;
+              const compositionType = seriesOptions.custom?.compositionType;
+              
+              if (!compositionType) return;
+              
+              const typeConfig = BACKEND_SIMULATION_CONFIG.compositionTypes[compositionType];
+              if(typeConfig.fill.type === "gradient" || typeConfig.fill.type === "pattern") {
+                registry.applyFillToSeries(index, `${series.name}_fill`);
+              }
+
+              if(typeConfig.mask) {
+                registry.applyMaskToSeries(index, `${series.name}_mask`);
+              }
+            });
+          },
+          afterSetExtremes: handleAfterSetExtremes,
         },
         min: zoomed ? zoomMin : timespans[selectedTimespan].xMin,
         max: zoomed ? zoomMax : timespans[selectedTimespan].xMax,
       },
       tooltip: {
-        formatter: tooltipFormatter,
+        formatter: customTooltipFormatter,
         positioner: tooltipPositioner,
         split: false,
         followPointer: true,
@@ -1013,6 +940,7 @@ export default function LandingChart({
         borderWidth: 0,
         padding: 0,
         outside: true,
+        useHTML: true,
         shadow: {
           color: "black",
           opacity: 0.015,
@@ -1027,6 +955,9 @@ export default function LandingChart({
       series: [
         ...filteredData
           .sort((a, b) => {
+            if(!["main_l1", "main_l2"].includes(a.name)) {
+              return BACKEND_SIMULATION_CONFIG.compositionTypes[b.name]!.order - BACKEND_SIMULATION_CONFIG.compositionTypes[a.name]!.order;
+            }
             const aValue =
               a.data && a.data[a.data.length - 1]
                 ? a.data[a.data.length - 1][1]
@@ -1062,6 +993,7 @@ export default function LandingChart({
               monthly: 30 * 24 * 60 * 60 * 1000,
             };
 
+            
             const pointsSettings =
               getSeriesType(series.name) === "column"
                 ? {
@@ -1073,288 +1005,93 @@ export default function LandingChart({
                   pointPlacement: 0.5,
                 };
 
+            let color: any = {
+              linearGradient: {x1: 0, y1: 0, x2: 0, y2: 0},
+              stops: [
+                [0, "#000000"],
+                [1, "#000000"],
+              ],
+              pattern: undefined,
+            }
+            let primaryColor = color.stops[0][1];
+
+            let fill: any = undefined;
+
+            // if gradient, get the color from the gradient
+            if(BACKEND_SIMULATION_CONFIG.compositionTypes[series.name]?.fill?.config?.type === "linearGradient") {
+              const config = BACKEND_SIMULATION_CONFIG.compositionTypes[series.name]?.fill?.config as GradientConfig;
+              color.linearGradient = config.linearGradient;
+              color.stops = config.stops;
+              primaryColor = config.stops.map((stop: [number, string]) => stop[1])[0];
+              fill = {
+                linearGradient: config.linearGradient,
+                stops: config.stops,
+              }
+            }
+            // if pattern, get the color from the pattern
+            if(BACKEND_SIMULATION_CONFIG.compositionTypes[series.name]?.fill?.config?.type === "colored-hash") {
+              const config = BACKEND_SIMULATION_CONFIG.compositionTypes[series.name]?.fill?.config as PatternConfig;
+              primaryColor = config.color;
+              
+            }
+
+            // if(color !== undefined && fill === undefined) {
+            //   fill = color;
+            // }
+            fill = undefined; //`url(#${series.name}_fill)`;
+            color = `url(#${series.name}_fill)`;
+            
+
             return {
               name: series.name,
+              custom: {
+                compositionType: series.name, // Reference to COMPOSITION_TYPES
+              },
               // always show ethereum on the bottom
               zIndex: zIndex,
               step: "center",
               data: series.data.map((d: any) => [d[0], d[1]]),
               ...pointsSettings,
               clip: true,
+              lineWidth: 1,
               borderRadiusTopLeft: borderRadius,
               borderRadiusTopRight: borderRadius,
               type: getSeriesType(series.name),
-              fillOpacity: series.name === "ethereum" ? 1 : 0,
-              fillColor: {
-                linearGradient: {
-                  x1: 0,
-                  y1: 0,
-                  x2: 0,
-                  y2: 1,
-                },
-                stops: [
-                  [
-                    0,
-                    series.name && theme && EnabledChainsByKeys[series.name]
-                      ? EnabledChainsByKeys[series.name]?.colors[
-                      theme ?? "dark"
-                      ][0] + "33"
-                      : [],
-                  ],
-
-                  [
-                    1,
-                    series.name && theme && EnabledChainsByKeys[series.name]
-                      ? EnabledChainsByKeys[series.name]?.colors[
-                      theme ?? "dark"
-                      ][1] + "33"
-                      : [],
-                  ],
-                ],
-              },
-              // borderColor:
-              //   series.name && theme && EnabledChainsByKeys[series.name]
-              //     ? EnabledChainsByKeys[series.name]?.colors[theme ?? "dark"][0]
-              //     : "transparent",
-              // borderWidth: 1,
-              lineWidth: 1,
-              ...(getSeriesType(series.name) !== "column"
-                ? {
-                  shadow: {
-                    color:
-                      series.name && theme && EnabledChainsByKeys[series.name]
-                        ? EnabledChainsByKeys[series.name]?.colors[theme][1] +
-                        "FF"
-                        : "transparent",
-                    width: 10,
-                  },
-                  color: {
-                    linearGradient: {
-                      x1: 0,
-                      y1: 0,
-                      x2: 1,
-                      y2: 0,
-                    },
-                    stops: [
-                      [
-                        0,
-                        series.name &&
-                          theme &&
-                          EnabledChainsByKeys[series.name]
-                          ? EnabledChainsByKeys[series.name]?.colors[theme][0]
-                          : [],
-                      ],
-                      // [0.33, AllChainsByKeys[series.name].colors[1]],
-                      [
-                        1,
-                        series.name &&
-                          theme &&
-                          EnabledChainsByKeys[series.name]
-                          ? EnabledChainsByKeys[series.name]?.colors[theme][1]
-                          : [],
-                      ],
-                    ],
-                  },
-                }
-                : series.name === "all_l2s"
-                  ? {
-                    borderColor: "transparent",
-                    borderWidth: 0,
-                    // shadow: {
-                    //   color: "#CDD8D3",
-                    //   offsetX: 0,
-                    //   offsetY: 0,
-                    //   width: 0,
-                    // },
-                    color: {
-                      linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 0,
-                        y2: 1,
-                      },
-                      stops:
-                        theme === "dark"
-                          ? [
-                            [
-                              0,
-                              series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][0] + "FF"
-                                : [],
-                            ],
-                            // [
-                            //   0.3,
-                            //   //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
-                            //   AllChainsByKeys[series.name].colors[theme][0] +
-                            //     "FF",
-                            // ],
-                            [
-                              1,
-                              series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][1] + "FF"
-                                : [],
-                            ],
-                          ]
-                          : [
-                            [
-                              0,
-                              series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][0] + "FF"
-                                : [],
-                            ],
-                            // [
-                            //   0.7,
-                            //   AllChainsByKeys[series.name].colors[theme][0] +
-                            //     "88",
-                            // ],
-                            [
-                              1,
-                              series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][1] + "FF"
-                                : [],
-                            ],
-                          ],
-                    },
-                  }
-                  : {
-                    borderColor: theme == "dark" ? "#2A3433" : "#EAECEB",
-                    borderWidth: 0,
-                    //  series.name &&
-                    //   theme &&
-                    //   EnabledChainsByKeys[series.name]
-                    //   ? EnabledChainsByKeys[series.name]?.colors[
-                    //   theme
-                    //   ][0] + "33"
-                    //   : [],
-                    shadow: null,
-                    color: {
-                      linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 0,
-                        y2: 1,
-                      },
-                      stops:
-                        theme === "dark"
-                          ? [
-                            [
-                              0,
-                              series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][0] + "FF"
-                                : [],
-                            ],
-                            // [
-                            //   0.349,
-                            //   series.name &&
-                            //     theme &&
-                            //     EnabledChainsByKeys[series.name]
-                            //     ? EnabledChainsByKeys[series.name]?.colors[
-                            //     theme
-                            //     ][0] + "88"
-                            //     : [],
-                            // ],
-                            [
-                              1,
-                              // "#151a19FF"
-                              series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][0] + "00"
-                                : [],
-                            ],
-                          ]
-                          : [
-                            [
-                              0,
-                              series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][0] + "FF"
-                                : [],
-                            ],
-                            // [
-                            //   0.349,
-                            //   series.name &&
-                            //     theme &&
-                            //     EnabledChainsByKeys[series.name]
-                            //     ? EnabledChainsByKeys[series.name]?.colors[
-                            //     theme
-                            //     ][0] + "88"
-                            //     : [],
-                            // ],
-                            [
-                              1,
-                              // "#FFFFFFFF"
-                              series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][0] + "00"
-                                : [],
-                            ],
-                          ],
-                    },
-                  }),
+              // color: undefined, // Use gradient from composition type
+              // fillColor: undefined, // Use gradient from composition type
+              color: color,
+              fillColor: fill,
               states: {
                 hover: {
                   enabled: true,
-                  halo: {
-                    size: 5,
-                    opacity: 1,
-                    attributes: {
-                      fill:
-                        series.name && theme && EnabledChainsByKeys[series.name]
-                          ? EnabledChainsByKeys[series.name]?.colors[
-                          theme ?? "dark"
-                          ][0] + "99"
-                          : "transparent",
-                      stroke:
-                        series.name && theme && EnabledChainsByKeys[series.name]
-                          ? EnabledChainsByKeys[series.name]?.colors[
-                          theme ?? "dark"
-                          ][0] + "66"
-                          : "transparent",
-                      "stroke-width": 0,
+                    halo: {
+                      size: 5,
+                      opacity: 1,
+                      attributes: {
+                        fill:
+                          primaryColor + "99",
+                        stroke:
+                          primaryColor + "66",
+                      },
                     },
+                    brightness: 0.3,
                   },
-                  // lineWidth: 4,
-                  // lineWidthPlus: 4,
-                  brightness: 0.3,
+                  inactive: {
+                    enabled: true,
+                    opacity: 0.6,
+                  },
+                  selection: {
+                    enabled: false,
+                  },
                 },
-                inactive: {
-                  enabled: true,
-                  opacity: 0.6,
-                },
-                selection: {
-                  enabled: false,
-                },
-              },
-              showInNavigator: false,
+              pointPlacement: pointsSettings.pointPlacement,
+              // marker: {
+              //   lineColor: primaryColor,
+              //   radius: 2,
+              //   symbol: "circle",
+              // },
+              // fillColor: series.name === "cross_layer" ? {pattern: seriesPattern} : fillColor,
+              // fillOpacity: fillOpacity,
             };
           }),
       ],
@@ -1375,53 +1112,9 @@ export default function LandingChart({
       },
     };
 
-    return merge({}, baseOptions, dynamicOptions);
+    return merge({}, baseChartOptions, dynamicOptions);
     // return { ...baseOptions };
-  }, [
-    getChartHeight,
-    filteredData,
-    formatNumber,
-    getSeriesType,
-    // getTickPositions,
-    isDragging,
-    isMobile,
-    metric,
-    onXAxisSetExtremes,
-    selectedScale,
-    showEthereumMainnet,
-    theme,
-    selectedTimespan,
-    timespans,
-    tooltipFormatter,
-    tooltipPositioner,
-    zoomMax,
-    zoomMin,
-    zoomed,
-    is_embed,
-  ]);
-
-  // const resituateChart = debounce(() => {
-  //   chartComponent.current && chartComponent.current.reflow();
-  // }, 300);
-
-  // useEffect(() => {
-  //   resituateChart();
-
-  //   // cancel the debounced function on component unmount
-  //   return () => {
-  //     resituateChart.cancel();
-  //   };
-  // }, [chartComponent, selectedTimespan, timespans, resituateChart]);
-
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     resituateChart();
-  //   }, 300);
-
-  //   return () => {
-  //     resituateChart.cancel();
-  //   };
-  // }, [isSidebarOpen, resituateChart]);
+  }, [getChartHeight, selectedScale, is_embed, theme, handleAfterSetExtremes, zoomed, zoomMin, timespans, selectedTimespan, zoomMax, customTooltipFormatter, tooltipPositioner, isDragging, filteredData, isMobile, showEthereumMainnet, getSeriesType, metric]);
 
   useEffect(() => {
     if (chartComponent.current) {
@@ -1522,52 +1215,141 @@ export default function LandingChart({
             />
           </div>
         </div>
-        <TopRowContainer className="!flex-col !rounded-[15px] !py-[3px] !px-[3px] !text-xs  2xl:!gap-y-0 2xl:!text-base 2xl:!flex 2xl:!flex-row 2xl:!rounded-full">
-          <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 2xl:!mx-0 !gap-x-[4px] 2xl:!gap-x-[5px]">
+        <TopRowContainer className={`!flex-col !rounded-[15px] !py-[3px] !px-[3px] !text-xs  2xl:!gap-y-0 2xl:!text-base 2xl:!flex ${!isSidebarOpen ? "lg:!flex-row" : "xl:!flex-row"} ${!isSidebarOpen ? "lg:!rounded-full" : "xl:!rounded-full"}`}>
+          <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 lg:!mx-0 !gap-x-[5px] 2xl:!gap-x-[5px]">
             <TopRowChild
               isSelected={showTotalUsers}
-              className={"!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
+              roundedClassName="rounded-[12px] sm:rounded-full"
+              className={`!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base ${!isSidebarOpen ? "lg:!px-4" : "xl:!px-4"} ${!isSidebarOpen ? "lg:!py-[14px]" : "xl:!py-[14px]"} 3xl:!px-6 3xl:!py-4 group/ecosystem relative`}
               onClick={() => {
                 setShowTotalUsers(true);
                 setSelectedScale("absolute");
-                setSelectedMetric("Total Users");
+                setSelectedMetric("Total Ethereum Ecosystem");
+              }}
+              onMouseEnter={() => {
+                setHoveredMetric("Total Ethereum Ecosystem");
+              }}
+              onMouseLeave={() => {
+                setHoveredMetric(null);
               }}
             >
-              Active Addresses
+              <div className="flex items-center justify-center gap-x-[5px]  ">
+                <div className="flex items-center gap-x-[5px]">
+                  <GTPIcon icon="gtp-metrics-ethereum-ecosystem" size={isLessThan2xl ? "sm" : "md"} />
+                  <div className="">{isLessThan2xl ? focusEnabled ? "L2 Ecosystem" : "ETH Ecosystem" : focusEnabled ? "Layer 2 Ecosystem" : "Total Ethereum Ecosystem"}</div>
+                </div>
+              </div>
+              <div className="bg-[#1F2726] group-hover:pointer-events-auto pointer-events-none  z-10 p-[15px] pl-[20px] absolute rounded-[15px] shadow-2xl transition-all opacity-0 group-hover/ecosystem:opacity-100 flex-col gap-y-[5px] min-w-[300px] sm:min-w-[400px] left-0 top-[86px] 2xl:top-[57px] flex"
+                style={{
+                  boxShadow: "0px 0px 30px rgba(0, 0, 0, 1)",
+                }}
+              >
+                <div className="flex items-center gap-x-[10px]">
+                  <GTPIcon icon="gtp-metrics-ethereum-ecosystem" size={"sm"} />
+                  <div className="heading-small-xs">{focusEnabled ? "Layer 2 Ecosystem" : "Total Ethereum Ecosystem"}</div>
+                </div>
+                <div className="text-xs text-left ">
+                  The total number of unique addresses interacting with one or multiple chains in the Ethereum ecosystem in a given week. When "Total Ecosystem" is toggled on you can see the number of addresses that are active only on on Ethereum Mainnet in blue.
+                </div>
+              </div>
             </TopRowChild>
             <TopRowChild
               isSelected={"absolute" === selectedScale && !showTotalUsers}
-              className={"!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
+              roundedClassName="rounded-[12px] sm:rounded-full"
+              className={`!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base ${!isSidebarOpen ? "lg:!px-4" : "xl:!px-4"} 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4 group/composition relative`}
               onClick={() => {
                 setShowTotalUsers(false);
                 setSelectedScale("absolute");
-                setSelectedMetric("Users per Chain");
+                setSelectedMetric("Composition");
+              }}
+              onMouseEnter={() => {
+                setHoveredMetric("Composition");
+              }}
+              onMouseLeave={() => {
+                setHoveredMetric(null);
               }}
             >
-              Active Addresses per Chain
-            </TopRowChild>
+              {/*Title Area */}
+              <div className="flex items-center justify-center gap-x-[5px]  ">
+                {/* <div>{!isMobile ? textToggles.toggle[focusEnabled ? "l2" : "total"] : focusEnabled ? "Total L2 Ecosystem" : "Total ETH Ecosystem"}</div> */}
+                  <div className="flex items-center justify-center  gap-x-[5px]">
+                    <GTPIcon icon="gtp-metrics-chains-grouping" size={isLessThan2xl ? "sm" : "md"}/>
+                    <div className="">Composition</div>
+                  </div>
 
+              </div>
+              {/*Tooltip area: */}
+              <div className="bg-background group-hover:pointer-events-auto pointer-events-none  z-10 p-[15px] pl-[20px] absolute rounded-[15px] shadow-2xl transition-all flex-col gap-y-[5px] min-w-[300px] opacity-0 group-hover/composition:opacity-100 duration-200 sm:min-w-[420px] left-0 right-0 2xl:right-auto 2xl:left-0 top-[86px] 2xl:top-[57px]"
+                style={{
+                  boxShadow: "0px 0px 30px rgba(0, 0, 0, 1)",
+                }}
+              >
+                <div className="flex items-center gap-x-[10px]">
+                  <GTPIcon icon="gtp-metrics-chains-grouping" size={"sm"} />
+                  <div className="heading-small-xs">Composition</div>
+                </div>
+                <div className="text-xs text-left mt-[5px] ">
+                  <span>You can see where most addresses are active.</span>
+                  <ul className="list-disc list-inside -indent-3 pl-3">
+                    <li>Ethereum Mainnet: addresses that only interacted with the L1 ("Total Ecosystem" needs to be toggled)</li>
+                    <li>Cross-Layer: addresses that interacted with L1 and at least one L2</li>
+                    <li>Multiple L2s: addresses that interacted with multiple L2s</li>
+                    <li>Single L2: addresses that interacted with a single L2</li>
+                  </ul>
+                </div>
+              </div>
+         
+
+            </TopRowChild>
             <TopRowChild
               isSelected={"percentage" === selectedScale}
-              className={"!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
+              roundedClassName="rounded-[12px] sm:rounded-full"
+              className={`!px-[8px] !py-[4px] !grow !text-xs sm:!text-sm 2xl:!text-base ${!isSidebarOpen ? "lg:!px-4" : "xl:!px-4"} ${!isSidebarOpen ? "lg:!py-[14px]" : "xl:!py-[14px]"} 3xl:!px-6 3xl:!py-4 relative group/compositionsplit`}
               onClick={() => {
                 setShowTotalUsers(false);
                 setSelectedScale("percentage");
-                setSelectedMetric("Percentage");
+                setSelectedMetric("Composition Split");
+              }}
+              onMouseEnter={() => {
+                setHoveredMetric("Composition Split");
+              }}
+              onMouseLeave={() => {
+                setHoveredMetric(null);
               }}
             >
-              Percentage
+              {/*Title Area */}
+             <div className="flex items-center justify-center gap-x-[5px] relative w-full ">
+                  <div className="flex items-center justify-center  gap-x-[5px]">
+                      <GTPIcon icon="gtp-metrics-chains-percentage" size={isLessThan2xl ? "sm" : "md"} />
+                      <div className="">{isLessThan2xl ? "Comp. Split" : "Composition Split"}</div>
+                    </div>
+              </div>
+              {/*Tooltip area: */}
+              <div className="bg-[#1F2726] group-hover:pointer-events-auto pointer-events-none z-10 p-[15px] pl-[20px] absolute rounded-[15px] shadow-2xl transition-all flex-col gap-y-[5px] min-w-[300px] opacity-0 group-hover/compositionsplit:opacity-100 duration-200 sm:min-w-[420px] right-0 2xl:right-auto 2xl:left-0 top-[86px] 2xl:top-[57px]"
+                style={{
+                  boxShadow: "0px 0px 30px rgba(0, 0, 0, 1)",
+                }}
+              >
+                <div className="flex items-center gap-x-[10px] ">
+                  <GTPIcon icon="gtp-metrics-chains-percentage" size={"sm"} />
+                  <div className="heading-small-xs">Composition Split</div>
+                </div>
+                <div className="text-xs text-left mt-[5px]">
+                  You can see the composition breakdown relative to each other which allows you to gain an understanding of where activity in the Ethereum ecosystem is taking place and how it shifts over time.
+                </div>
+              </div>
             </TopRowChild>
           </TopRowParent>
-          <div className="block 2xl:hidden w-[70%] mx-auto my-[10px]">
-            <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
+          <div className={`block ${!isSidebarOpen ? "lg:hidden" : "xl:hidden"} w-[80%] mx-auto my-[10px] h-[2px]`}>
+            <hr className="border-dashed border-t-[1px] w-full h-[1px] border-forest-400" />
           </div>
-          <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4 2xl:!mx-0 !gap-x-[4px] 2xl:!gap-x-[5px]">
+
+          <TopRowParent className="!w-full 2xl:!w-auto !justify-between 2xl:!justify-center !items-stretch 2xl:!items-center !mx-4:!mx-0 !gap-x-[4px] 2xl:!gap-x-[5px]">
             {!zoomed ? (
               Object.keys(timespans).map((timespan) => (
                 <TopRowChild
                   key={timespan}
-                  className={"!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base 2xl:!px-4 2xl:!py-[14px] 3xl:!px-6 3xl:!py-4"}
+                  className={`!px-[16px] !py-[4px] !grow !text-sm 2xl:!text-base ${!isSidebarOpen ? "lg:!px-4" : "xl:!px-4"} ${!isSidebarOpen ? "lg:!py-[14px]" : "xl:!py-[14px]"} 3xl:!px-6 3xl:!py-4`}
                   //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
                   isSelected={selectedTimespan === timespan}
                   onClick={() => {
@@ -1586,7 +1368,12 @@ export default function LandingChart({
                     //   setZoomed(false);
                   }}
                 >
-                  {timespans[timespan].label}
+                  <div className="block sm:hidden">
+                    {timespans[timespan].labelShort}
+                  </div>
+                  <div className="hidden sm:block">
+                    {timespans[timespan].label}
+                  </div>
                 </TopRowChild>
               ))
             ) : (
@@ -1617,7 +1404,7 @@ export default function LandingChart({
           </TopRowParent>
         </TopRowContainer>
       </div>
-      <div className="flex-1 min-h-0 w-full pt-8 pb-4 md:pt-[52px] md:pb-4 2xl:pt-[52px] 2xl:pb-16 ">
+      <div className="flex-1 min-h-0 w-full pb-4 pt-[30px] md:pt-[15px] xl:pt-[5px] md:pb-[10px] ">
         <div
           className="relative h-[284px] md:h-[400px] w-full rounded-xl"
           ref={containerRef}
@@ -1642,7 +1429,7 @@ export default function LandingChart({
               </div>
             </div>
           )}
-          <div className="absolute bottom-[53.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50">
+          <div className="absolute bottom-[56.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50">
             <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
           </div>
           {filteredData.length === 0 && (
@@ -1652,89 +1439,85 @@ export default function LandingChart({
           )}
           {/* </div> */}
         </div>
-      </div>
-      <div className="h-[32px] lg:h-[80px] flex flex-col justify-start ">
-        <div className="flex justify-between items-center rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative">
-          {/* toggle ETH */}
-          <div className="flex z-10">
-            <Switch
-              checked={showEthereumMainnet}
-              onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
-            />
-            <div className="ml-2 block md:hidden xl:block leading-[1.75]">
-              Show Ethereum
-            </div>
-            <div className="ml-2 hidden md:block xl:hidden leading-[1.75]">
-              Show ETH
-            </div>
-          </div>
-          <div className="flex justify-end items-center absolute top-[56px] lg:-top-[15px] right-[-1px] rounded-full z-10">
-            <div className="flex justify-center items-center">
-              <div className="flex items-center justify-center gap-x-[20px] pr-[10px]">
-                <MetricCard
-                  icon="gtp-users"
-                  metric_name="Active Addresses"
-                  metric_value={latest_total}
-                  metric_comparison={latest_total_comparison}
-                  theme={theme || "dark"}
-                />
-                <MetricCard
-                  icon="gtp-walletsmultiplechains"
-                  metric_name="Active on Multiple Chains"
-                  metric_value={cross_chain_users}
-                  metric_comparison={cross_chain_users_comparison}
-                  theme={theme || "dark"}
-                />
-                <MetricCard
-                  icon="gtp-layers"
-                  metric_name="Layer 2 Dominance"
-                  metric_value={(Math.round(l2_dominance * 100) / 100).toFixed(
-                    2,
-                  )}
-                  metric_comparison={l2_dominance_comparison}
-                  theme={theme || "dark"}
-                  is_multiple
-                />
-              </div>
 
-              <Tooltip placement="left" allowInteract>
-                <TooltipTrigger>
-                  <div className="bottom-[28px] right-[8px] p-0 -mr-0.5 lg:p-1.5 z-10 lg:mr-0 absolute lg:static lg:mb-0.5">
-                    <Icon icon="feather:info" className="w-6 h-6" />
+      </div>
+      <div className="pb-0">
+        <div className="h-[34px] flex flex-col justify-start ">
+            <div className="flex justify-between items-center rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative h-[34px]">
+              {/* toggle ETH */}
+              <div>
+                <div className={`z-10 pl-0.5 ${focusEnabled ? "flex items-center" : "hidden"}`} >
+                  <Switch
+                    checked={showEthereumMainnet}
+                    onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
+                  />
+                  <div className="ml-2 block md:hidden xl:block heading-small-xs">
+                    Compare Ethereum Mainnet
                   </div>
-                </TooltipTrigger>
-                <TooltipContent className="-mt-10 pr-10 lg:mt-0 z-50 flex items-center justify-center lg:pr-[3px]">
-                  <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto md:w-[435px] h-[80px] flex items-center">
-                    <div className="flex flex-col space-y-1">
-                      <div className="font-bold text-sm leading-snug">
-                        Data Sources:
-                      </div>
-                      <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
-                        {sources
-                          .map<React.ReactNode>((s) => (
-                            <Link
-                              key={s}
-                              rel="noopener noreferrer"
-                              target="_blank"
-                              href={Sources[s] ?? ""}
-                              className="hover:text-forest-500 dark:hover:text-forest-500 underline"
-                            >
-                              {s}
-                            </Link>
-                          ))
-                          .reduce((prev, curr) => [prev, ", ", curr])}
-                      </div>
-                    </div>
+                  <div className={`ml-2 hidden md:block xl:hidden heading-small-xs`}>
+                    Compare ETH
                   </div>
-                </TooltipContent>
-              </Tooltip>
+                </div>
+                <div className={`${focusEnabled ? "hidden" : "flex"} items-center`}>
+
+                  <Tooltip placement={isMobile ? "left" : "right"} allowInteract >
+                    <TooltipTrigger>
+                      <div className={`bottom-[5px] lg:bottom-[28px] right-[8px] p-0 -mr-0.5 lg:p-1.5 z-10 lg:mr-0 absolute lg:static lg:mb-0.5`}>
+                        <Icon icon="feather:info" className="w-6 h-6" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <div className="flex flex-col items-center">
+                            <div className="p-[15px] text-sm bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
+                              
+                              <div className="text-xxs text-wrap">
+                                  Compare Ethereum toggle is no long needed as it is included in Total Ethereum Ecosystem.
+                              </div>
+                            </div>
+                        </div>
+                      </TooltipContent>
+                  </Tooltip>
+                </div>
+              </div>
+              <div className="flex justify-end items-center absolute top-[50px] lg:-top-[15px] right-[20px] rounded-full z-10">
+                <div className="flex justify-center items-center">
+                  <div className="flex items-center justify-center gap-x-[20px] pr-[10px]">
+                    <MetricCard
+                      icon="gtp-users"
+                      metric_name="Active Addresses"
+                      metric_value={latest_total}
+                      metric_comparison={latest_total_comparison}
+                      theme={theme || "dark"}
+                    />
+                    <MetricCard
+                      icon="gtp-walletsmultiplechains"
+                      metric_name="Active on Multiple Chains"
+                      metric_value={cross_chain_users}
+                      metric_comparison={cross_chain_users_comparison}
+                      theme={theme || "dark"}
+                    />
+                    <MetricCard
+                      icon="gtp-layers"
+                      metric_name="Layer 2 Dominance"
+                      metric_value={(Math.round(l2_dominance * 100) / 100).toFixed(
+                        2,
+                      )}
+                      metric_comparison={l2_dominance_comparison}
+                      theme={theme || "dark"}
+                      is_multiple
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
         </div>
       </div>
     </div>
   );
 }
+
+
+
 
 const MobileMetricCard = ({
   icon,

@@ -7,22 +7,30 @@ export function TopRowChild({
   className,
   ref,
   style,
+  roundedClassName = "rounded-full",
   onClick,
+  onMouseEnter,
+  onMouseLeave,
 }: {
   children: React.ReactNode;
   isSelected: boolean;
   className?: string;
   ref?: React.Ref<HTMLButtonElement>;
   style?: React.CSSProperties;
+  roundedClassName?: string;
   onClick?: () => void;
+  onMouseEnter?: React.MouseEventHandler<HTMLButtonElement>; // Updated type
+  onMouseLeave?: React.MouseEventHandler<HTMLButtonElement>; // Updated type
 }) {
   return (
     <button
-      className={`select-none rounded-full px-[16px] py-[4px] grow text-sm lg:text-base lg:px-4 lg:py-[14px] xl:px-6 xl:py-4 font-medium  ${isSelected
+      className={`select-none ${roundedClassName} px-[16px] py-[4px] grow text-sm lg:text-base lg:px-4 lg:py-[14px] xl:px-6 xl:py-4 font-medium  ${isSelected
         ? "bg-forest-500 dark:bg-forest-1000"
         : "hover:bg-forest-500/10"
         } ${className} `}
       onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       ref={ref ?? null}
       style={style}
     >

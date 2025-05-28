@@ -11,6 +11,7 @@ import { track } from "@vercel/analytics";
 import useSWR from "swr";
 import type { NotificationType } from "@/app/api/notifications/route";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+import { GTPIcon } from "./layout/GTPIcon";
 
 const currentDateTime = new Date().getTime();
 
@@ -251,7 +252,7 @@ const Notification = () => {
             }}
           >
             <div
-              className={`hidden mb-[10px] lg:mb-0 md:flex items-center gap-x-[10px] overflow-hidden w-[305px] mdl:w-[343px] xl:w-[600px] 2xl:w-[770px] border-[1px] h-[36px] rounded-full px-[10px] relative z-30 border-forest-1000 dark:border-forest-500 hover:dark:!bg-[#1F2726] hover:!bg-[#FFFFFF] hover:dark:!border-[#CDD8D3] hover:!border-[#151A19] tansition-all duration-300`}
+              className={`hidden mb-[10px] lg:mb-0 md:flex items-center gap-x-[10px] overflow-hidden w-[205px] mdl:w-[343px] xl:w-[480px] 2xl:w-[740px] border-[1px] h-[36px] rounded-full px-[10px] relative z-30 border-forest-1000 dark:border-forest-500 hover:dark:!bg-[#1F2726] hover:!bg-[#FFFFFF] hover:dark:!border-[#CDD8D3] hover:!border-[#151A19] tansition-all duration-300`}
               style={{
                 borderColor: currentItemTextColor,
                 backgroundColor: currentItemBackgroundColor,
@@ -354,7 +355,7 @@ const Notification = () => {
               </div>
             </div>
             <div
-              className={`absolute top-[18px] hidden mb-[10px] lg:mb-0 md:flex flex-col w-[305px] mdl:w-[343px] xl:w-[600px] 2xl:w-[770px] dark:bg-[#1F2726] bg-white border-forest-1000 dark:border-forest-500 rounded-b-xl z-1 overflow-hidden transition-all duration-300 ease-in-out ${openNotif ? "border" : "border-0"
+              className={`absolute top-[18px] hidden mb-[10px] lg:mb-0 md:flex flex-col w-[480px] xl:w-[480px] 2xl:w-[740px] dark:bg-[#1F2726] bg-white border-forest-1000 dark:border-forest-500 rounded-[12px] rounded-tl-none xl:rounded-tr-none z-1 overflow-hidden transition-all duration-300 ease-in-out ${openNotif ? "border" : "border-0"
                 }`}
               style={{
                 maxHeight: openNotif ? filteredData.length * 200 + "px" : "0",
@@ -381,7 +382,7 @@ const Notification = () => {
           </div>
           <div className="md:hidden">
             <div
-              className={`relative flex md:hidden top-0.5 mr-10 justify-self-end hover:pointer cursor-pointer p-3 rounded-full ${openNotif ? "dark:bg-[#1F2726] bg-forst-50 z-40" : ""
+              className={`relative flex md:hidden hover:pointer cursor-pointer p-[5px] rounded-full ${openNotif ? "dark:bg-[#1F2726] bg-forst-50 z-40" : ""
                 }
                 `}
               onClick={() => {
@@ -392,7 +393,14 @@ const Notification = () => {
                 {hasUnseenNotifications && (
                   <div className="w-[10px] h-[10px] bg-red-500 rounded-full absolute top-0 right-0.5 border-2 border-white dark:border-forest-1000"></div>
                 )}
-                <Icon icon="feather:bell" className="w-[24px] h-[24px]" />
+                  {hasUnseenNotifications ? (
+                    <GTPIcon icon="gtp-notification" size="md" />
+                  ) : (
+                  <Icon
+                    icon="feather:bell"
+                    className="w-[24px] h-[24px] light:text-[#1F2726]"
+                  />
+                )}
               </div>
             </div>
 
@@ -428,7 +436,7 @@ const Notification = () => {
                           target="_blank"
                         >
                           <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[8px]">
-                            <div className="h-[17px] font-bold text-[16px]">
+                            <div className="min-h-[17px] font-bold text-[16px]">
                               {item.desc}
                             </div>
                             <div className="h-auto text-[14px] leading-snug">

@@ -1,161 +1,108 @@
 "use client";
-import ShowLoading from "@/components/layout/ShowLoading";
-import { DALayerWithKey, useMaster } from "@/contexts/MasterContext";
-import { Chain, Get_SupportedChainKeys } from "@/lib/chains";
-import { IS_PRODUCTION } from "@/lib/helpers";
-import { ApplicationsURLs, DAMetricsURLs, DAOverviewURL, LabelsURLS, MasterURL, MetricsURLs } from "@/lib/urls";
-import { DAOverviewResponse } from "@/types/api/DAOverviewResponse";
-import { MasterResponse } from "@/types/api/MasterResponse";
-import { ChainData, MetricData, MetricsResponse } from "@/types/api/MetricsResponse";
-import { AppDatum, AppOverviewResponse, AppOverviewResponseHelper, ParsedDatum } from "@/types/applications/AppOverviewResponse";
-import { intersection } from "lodash";
-import { RefObject, createContext, useContext, useEffect, useMemo, useState } from "react";
-import { LogLevel } from "react-virtuoso";
-import useSWR, { useSWRConfig, preload} from "swr";
-import { useLocalStorage, useSessionStorage } from "usehooks-ts";
+import { 
+  createContext, 
+  useContext, 
+  useState, 
+  useCallback, 
+  useMemo, 
+  useTransition,
+  ReactNode
+} from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
+// Define types
+type Timespan = {
+  label: string;
+  shortLabel: string;
+  value: number;
+};
+
+type TimespanMap = {
+  [key: string]: Timespan;
+};
 
 export type TimespanContextType = {
   selectedTimespan: string;
   setSelectedTimespan: (value: string) => void;
   isMonthly: boolean;
   setIsMonthly: (value: boolean) => void;
-  timespans: {
-    [key: string]: {
-      label: string;
-      shortLabel: string;
-      value: number;
-      // xMin: number;
-      // xMax: number;
-    };
-  }
-}
+  timespans: TimespanMap;
+};
 
 export const TimespanContext = createContext<TimespanContextType | undefined>(undefined);
 
 type TimespanProviderProps = {
-  children: React.ReactNode;
-  timespans: {
-    [key: string]: {
-      label: string;
-      shortLabel: string;
-      value: number;
-      // xMin: number;
-      // xMax: number;
-    };
-  };
-}
+  children: ReactNode;
+  timespans: TimespanMap;
+  defaultTimespan?: string;
+};
 
-export const TimespanProvider = ({ children, timespans }: TimespanProviderProps) => {
-  const [selectedTimespan, setSelectedTimespan] = useState<string>("7d");
+export const TimespanProvider = ({ 
+  children, 
+  timespans, 
+  defaultTimespan = "7d" 
+}: TimespanProviderProps) => {
+  // Use useTransition to mark UI updates as non-urgent
+  const [isPending, startTransition] = useTransition();
   const [isMonthly, setIsMonthly] = useState<boolean>(false);
+  
+  // Get URL utilities from Next.js
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+  
+  // Get the current timespan from URL or use default
+  const selectedTimespanParam = searchParams.get("timespan") || defaultTimespan;
+  
+  // Create a memoized function to handle timespan updates
+  const setSelectedTimespan = useCallback((value: string) => {
+    console.log(`Setting timespan to ${value}`, selectedTimespanParam);
+    if (value === selectedTimespanParam) return; // Avoid unnecessary updates
+    
+    startTransition(() => {
+      // get existing query params
+      let newSearchParams = new URLSearchParams(searchParams.toString());
 
-  // const timespans = useMemo(() => {
-  //   let xMax = Date.now();
+      if (value === defaultTimespan) {
+        newSearchParams.delete("timespan");
+      } else {
+        newSearchParams.set("timespan", value);
+      }
+    
 
-  //   if (!isMonthly) {
-  //     return {
-  //       "1d": {
-  //         shortLabel: "1d",
-  //         label: "1 day",
-  //         value: 1,
-  //         xMin: xMax - 1 * 24 * 60 * 60 * 1000,
-  //         xMax: xMax,
-  //       },
-  //       "7d": {
-  //         shortLabel: "7d",
-  //         label: "7 days",
-  //         value: 7,
-  //         xMin: xMax - 7 * 24 * 60 * 60 * 1000,
-  //         xMax: xMax,
-  //       },
-  //       "30d": {
-  //         shortLabel: "30d",
-  //         label: "30 days",
-  //         value: 30,
-  //         xMin: xMax - 30 * 24 * 60 * 60 * 1000,
-  //         xMax: xMax,
-  //       },
-  //       "90d": {
-  //         shortLabel: "90d",
-  //         label: "90 days",
-  //         value: 90,
-  //         xMin: xMax - 90 * 24 * 60 * 60 * 1000,
-  //         xMax: xMax,
-  //       },
-  //       "365d": {
-  //         shortLabel: "1y",
-  //         label: "1 year",
-  //         value: 365,
-  //         xMin: xMax - 365 * 24 * 60 * 60 * 1000,
-  //         xMax: xMax,
-  //       },
-  //       max: {
-  //         shortLabel: "Max",
-  //         label: "Max",
-  //         value: 0,
-  //         xMin: xMax - 365 * 24 * 60 * 60 * 1000,
-  //         xMax: xMax,
-  //       },
-  //     } as {
-  //       [key: string]: {
-  //         label: string;
-  //         shortLabel: string;
-  //         value: number;
-  //         xMin: number;
-  //         xMax: number;
-  //       };
-  //     };
-  //   } else {
-  //     return {
-  //       "90d": {
-  //         shortLabel: "3m",
-  //         label: "3 months",
-  //         value: 90,
-  //         xMin: xMax - 90 * 24 * 60 * 60 * 1000,
-  //         xMax: xMax,
-  //       },
-  //       "365d": {
-  //         shortLabel: "1y",
-  //         label: "1 year",
-  //         value: 365,
-  //         xMin: xMax - 365 * 24 * 60 * 60 * 1000,
-  //         xMax: xMax,
-  //       },
-  //       max: {
-  //         shortLabel: "Max",
-  //         label: "Max",
-  //         value: 0,
-  //         xMin: xMax - 365 * 24 * 60 * 60 * 1000,
-  //         xMax: xMax,
-  //       },
-  //     } as {
-  //       [key: string]: {
-  //         label: string;
-  //         shortLabel: string;
-  //         value: number;
-  //         xMin: number;
-  //         xMax: number;
-  //       };
-  //     };
-  //   }
-  // }, [isMonthly]);
-
+      // create new url
+      let url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
+      // Update the URL without forcing a hard navigation
+      // router.replace(url, { scroll: false });
+      window.history.replaceState(null, "", url);
+    });
+  }, [selectedTimespanParam, searchParams, defaultTimespan, pathname]);
+  
+  // Create the context value object only when its dependencies change
+  const contextValue = useMemo(() => ({
+    timespans,
+    selectedTimespan: selectedTimespanParam,
+    setSelectedTimespan,
+    isMonthly,
+    setIsMonthly,
+  }), [
+    timespans,
+    selectedTimespanParam,
+    setSelectedTimespan,
+    isMonthly,
+  ]);
+  
   return (
-    <TimespanContext.Provider value={{
-      timespans,
-      selectedTimespan, setSelectedTimespan,
-      isMonthly, setIsMonthly,
-    }}>
+    <TimespanContext.Provider value={contextValue}>
       {children}
     </TimespanContext.Provider>
   );
-}
+};
 
 export const useTimespan = () => {
   const context = useContext(TimespanContext);
   if (context === undefined) {
-    throw new Error("useApplicationsData must be used within a ApplicationsDataProvider");
+    throw new Error("useTimespan must be used within a TimespanProvider");
   }
   return context;
-}
+};
