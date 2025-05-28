@@ -6,7 +6,7 @@ const pectraUpgrade: QuickBiteData = {
   content: [
     "> Less clicks, less signatures, more Blobs. Many past Ethereum upgrades focused on technical improvements, but Pectra is different. It aims to enhance the user experience for everyday users, making it easier and cheaper to interact with the Ethereum ecosystem.",
 
-    "## What is part of the Pectra upgrade?",
+    "# What is part of the Pectra upgrade?",
     "Pectra introduces several key features designed to simplify the user experience:",
     "- **EIP-7691: Boost Rollups through more Blobs** - Rollups have been operating at Blob capacity for a while. Now we get more Blobs! This means cheaper transactions and more space for Rollups.",
     "- **EIP-7702: Smarter Wallets** - Enables wallets (EOAs) to act as smart accounts, unlocking features like sponsorship, delegation transactions, paying gas in other tokens, and much more.",
