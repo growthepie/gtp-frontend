@@ -16,6 +16,9 @@ const testBite: QuickBiteData = {
     "## A list of items",
     "- **List Item 1**: Blaaaah",
     "- **List Item 2**: blab baablb abalas",
+
+    "## Dynamic Values in Text",
+    "This next value is dynamic and bold: **{{timeboostTotalETH}} ETH**.",
     
     "## Embedded Chart Block",
     "```iframe",
