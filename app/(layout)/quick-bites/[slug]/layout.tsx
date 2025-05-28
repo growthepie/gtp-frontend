@@ -2,7 +2,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { track } from "@vercel/analytics/server";
-import { getQuickBiteBySlug } from "@/lib/mock/quickBitesData";
+import { getQuickBiteBySlug } from "@/lib/quick-bites/quickBites";
 
 type Props = {
   params: { slug: string };
