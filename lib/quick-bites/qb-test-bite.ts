@@ -144,7 +144,7 @@ const testBite: QuickBiteData = {
 
     "```image",
     JSON.stringify({
-      src: "/images/quick-bites/sample-chart.png", // should allow link to our API
+      src: "https://pbs.twimg.com/media/GFGqJLuWUAACKYj?format=jpg&name=4096x4096", // should allow link to our API
       alt: "Sample chart showing transaction volume over time",
       width: "800",
       height: "400",
