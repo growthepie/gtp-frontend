@@ -35,7 +35,7 @@ import { match } from "assert";
 import useChartSync from "./components/ChartHandler";
 import { filter, get, set } from "lodash";
 import { locale } from "moment";
-import ChartWatermark from "../ChartWatermark";
+import ChartWatermark, { ChartWatermarkWithMetricName } from "../ChartWatermark";
 import { Badge } from "@/app/(labels)/labels/Search";
 import highchartsPatternFill from "highcharts/modules/pattern-fill";
 // import highchartsAnnotations from "highcharts/modules/annotations";
@@ -846,9 +846,8 @@ const DATableChartsComponent = ({
                         <YAxisScaleControls selectedScale={selectedScale} setSelectedScale={setSelectedScale} />
                     </div>
                 </div>
-                <div className="absolute left-[calc(50%-85px)] top-[calc(39%-4.5px)] z-0 opacity-20">
-                    <ChartWatermark className="w-[225px] h-[45px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
-                    <div className="w-[225px] h-[15px] flex items-center justify-center "><div className=" text-[10px] leading-[120%] font-semibold ">DA: {da_name === "da_celestia" ? "CELESTIA" : "ETHEREUM BLOBS"}</div></div>
+                <div className="absolute left-[calc(50%-85px)] top-[calc(39%-4.5px)] z-[100] opacity-40">
+                    <ChartWatermarkWithMetricName className="w-[225px] h-[45px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" metricName={da_name === "da_celestia" ? "CELESTIA" : "ETHEREUM BLOBS"} />
                 </div>
                 
 
