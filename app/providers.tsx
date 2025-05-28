@@ -48,7 +48,7 @@ const devMiddleware = (useSWRNext) => {
       (urlOrUrls) => {
         if (Array.isArray(urlOrUrls)) {
           return Promise.all(urlOrUrls.map(url => {
-            if (url.includes("api.growthepie.xyz")) {
+            if (url.includes("api.growthepie.com")) {
               // replace /v1/ with /dev/ to get JSON files from the dev folder in S3
               let newUrl = url.replace("/v1/", "/dev/");
               return fetcher(newUrl);
@@ -56,7 +56,7 @@ const devMiddleware = (useSWRNext) => {
             return fetcher(url);
           }));
         } else {
-          if (urlOrUrls.includes("api.growthepie.xyz")) {
+          if (urlOrUrls.includes("api.growthepie.com")) {
             // replace /v1/ with /dev/ to get JSON files from the dev folder in S3
             let newUrl = urlOrUrls.replace("/v1/", "/dev/");
             return fetcher(newUrl);

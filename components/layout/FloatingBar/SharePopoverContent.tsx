@@ -87,14 +87,14 @@ export default function SharePopoverContent({ onClose }: SharePopoverContentProp
   const handleSendEmail = () => {
     if (currentURL !== null) {
       const mailtoLink = `mailto:${""}?subject=${encodeURIComponent(
-        "Check out what I found on growthepie.xyz!",
+        "Check out what I found on growthepie.com!",
       )}&body=${encodeURIComponent(currentURL)}`;
       window.location.href = mailtoLink;
     }
   };
 
   const shareOnTwitter = () => {
-    const text = "Check out what I found on growthepie.xyz!";
+    const text = "Check out what I found on growthepie.com!";
     if (currentURL !== null) {
       const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
         currentURL,
@@ -105,7 +105,7 @@ export default function SharePopoverContent({ onClose }: SharePopoverContentProp
 
   const shareOnReddit = () => {
     if (currentURL !== null) {
-      const title = "Check out what I found on growthepie.xyz!";
+      const title = "Check out what I found on growthepie.com!";
       const redditShareUrl = `https://www.reddit.com/submit?url=${encodeURIComponent(
         currentURL,
       )}&title=${encodeURIComponent(title)}`;

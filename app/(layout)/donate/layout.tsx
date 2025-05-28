@@ -29,7 +29,7 @@ export default async function Layout({
           title="Donate"
         />
         <Description>
-          growthepie.xyz started with an initial grant from the Ethereum
+          growthepie.com started with an initial grant from the Ethereum
           Foundation back in February 2023. We decided to build the platform as
           a public good, because we want everyone to have free access to
           transparent data and visualizations, that everyone understands, not

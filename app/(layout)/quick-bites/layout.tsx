@@ -13,10 +13,10 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       images: [
         {
-          url: `https://api.growthepie.xyz/v1/og_images/quick-bites/default.png`,
+          url: `https://api.growthepie.com/v1/og_images/quick-bites/default.png`,
           width: 1200,
           height: 627,
-          alt: "Quick Bites - growthepie.xyz",
+          alt: "Quick Bites - growthepie.com",
         },
       ],
     },

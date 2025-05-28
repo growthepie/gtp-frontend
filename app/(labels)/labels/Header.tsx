@@ -65,7 +65,7 @@ export default function Header({
           <div className="flex px-[5px] items-center w-full h-[54px] rounded-full bg-[#344240] shadow-[0px_0px_50px_0px_#000000]">
             <a
               className="flex items-center w-[162px] h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-2 gap"
-              href="https://www.growthepie.xyz/"
+              href="https://www.growthepie.com/"
               target="_blank"
             >
               <Icon icon="gtp:house" className="h-6 w-6" />
@@ -79,7 +79,7 @@ export default function Header({
         {/* <div className="flex p-[5px] items-center w-full rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000] gap-x-[15px]">
           <Link
             className="flex items-center bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
-            href="https://www.growthepie.xyz/"
+            href="https://www.growthepie.com/"
             target="_blank"
           >
             <div className="w-6 h-6">

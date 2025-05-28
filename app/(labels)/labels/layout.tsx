@@ -14,10 +14,10 @@ const jsonLd: Graph = {
   "@graph": [
     {
       "@type": "Organization",
-      "@id": `https://www.growthepie.xyz/#organization`,
+      "@id": `https://www.growthepie.com/#organization`,
       name: "growthepie",
-      url: "https://www.growthepie.xyz",
-      logo: "https://www.growthepie.xyz/logo_full.png",
+      url: "https://www.growthepie.com",
+      logo: "https://www.growthepie.com/logo_full.png",
       sameAs: [
         "https://twitter.com/growthepie_eth",
         "https://mirror.xyz/blog.growthepie.eth",
@@ -26,8 +26,8 @@ const jsonLd: Graph = {
     },
     {
       "@type": "WebSite",
-      "@id": `https://www.growthepie.xyz/#website`,
-      url: `https://www.growthepie.xyz/`,
+      "@id": `https://www.growthepie.com/#website`,
+      url: `https://www.growthepie.com/`,
       name: "growthepie",
       description:
         "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
@@ -36,7 +36,7 @@ const jsonLd: Graph = {
         name: "growthepie",
         logo: {
           "@type": "ImageObject",
-          url: `https://www.growthepie.xyz/logo_full.png`,
+          url: `https://www.growthepie.com/logo_full.png`,
         },
       },
     },
@@ -46,7 +46,7 @@ const jsonLd: Graph = {
 // const jsonLdWebSite: WithContext<WebSite> = {
 //   "@context": "https://schema.org",
 //   "@type": "WebSite",
-//   url: "https://www.growthepie.xyz",
+//   url: "https://www.growthepie.com",
 //   name: "growthepie",
 //   description:
 //     "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
@@ -55,7 +55,7 @@ const jsonLd: Graph = {
 //     name: "growthepie",
 //     logo: {
 //       "@type": "ImageObject",
-//       url: "https://www.growthepie.xyz/logo_full.png",
+//       url: "https://www.growthepie.com/logo_full.png",
 //     },
 //   },
 // };
@@ -92,7 +92,7 @@ const isLabels =
   process.env.NEXT_PUBLIC_VERCEL_URL &&
   process.env.NEXT_PUBLIC_VERCEL_URL.includes("labels.");
 
-const host = isLabels ? "labels.growthepie.xyz" : "www.growthepie.xyz";
+const host = isLabels ? "labels.growthepie.com" : "www.growthepie.com";
 
 const title = isLabels ? gtpLabels.title : gtpMain.title;
 const description = isLabels ? gtpLabels.description : gtpMain.description;
@@ -110,7 +110,7 @@ export const metadata: Metadata = {
         url: `https://${host}/gtp_og.png`,
         width: 1200,
         height: 627,
-        alt: "growthepie.xyz",
+        alt: "growthepie.com",
       },
     ],
     locale: "en_US",
@@ -118,7 +118,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "growthepie.xyz",
+    title: "growthepie.com",
     description: "Growing Ethereum’s Ecosystem Together",
     site: "@growthepie_eth",
     siteId: "1636391104689094656",
