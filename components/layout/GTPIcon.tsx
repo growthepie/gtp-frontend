@@ -1,8 +1,13 @@
 "use client";
-import { Icon } from "@iconify/react";
+import { Icon, getIcon } from "@iconify/react";
 import { GTPIconName } from "@/icons/gtp-icon-names"; // array of strings that are the names of the icons
 import { GetRankingColor } from "@/lib/chains";
-import { memo } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
+import Tooltip from "../tooltip/GTPTooltip";
+import { useToast } from "../toast/GTPToast";
+import { triggerDownload, convertSvgToPngBlob, triggerBlobDownload } from "@/lib/icon-library/clientSvgUtils";
+import { useOutsideAlerter } from "@/hooks/useOutsideAlerter";
+import { IconContextMenu } from "./IconContextMenu";
 
 type GTPIconProps = {
   // should be one of the strings in GTPIconNames
@@ -10,6 +15,7 @@ type GTPIconProps = {
   className?: string;
   containerClassName?: string;
   size?: "sm" | "md" | "lg";
+  showContextMenu?: boolean;
 } & React.ComponentProps<typeof Icon>;
 type sizes = "sm" | "md" | "lg";
 
@@ -19,7 +25,7 @@ export const GTPIconSize: { [key in sizes]: string } = {
   lg: "36px",
 };
 
-const sizeClassMap = {
+export const sizeClassMap = {
   sm: "w-[15px] h-[15px]",
   md: "w-[24px] h-[24px]",
   lg: "w-[36px] h-[36px]",
@@ -33,20 +39,91 @@ const sizeClassMap = {
   * @example
   * <GTPIcon icon="gtp:donate" size="lg" />
  */
-export const GTPIcon = ({ icon, className, containerClassName, ...props }: GTPIconProps) => {
-  let iconPrefix = "gtp:";
-  if(icon.includes(":")){
-    iconPrefix = "";
-  }
-  return (
-    <div className={`${sizeClassMap[props.size || "md"]} ${containerClassName || ""}`}>
-      <Icon
-        icon={`${iconPrefix}${icon}`}
-        className={`${sizeClassMap[props.size || "md"] || "w-[24px] h-[24px]"} ${className || ""}`}
-        {...props}
-      />
-    </div>
+export const GTPIcon = ({ icon, className, containerClassName, showContextMenu = false, size = "md", style, ...props }: GTPIconProps) => {
+  const iconPrefix = icon.includes(":") ? "" : "gtp:";
+  const fullIconName = `${iconPrefix}${icon}`;
+  const currentSizeClass = sizeClassMap[size] || sizeClassMap.md;
+
+  // Define the getSVG function needed by IconContextMenu
+  // Use useCallback to memoize the function if needed, especially if dependencies change often
+  const getIconSvgData = useCallback(async (): Promise<{ svgString: string | null; width: number; height: number } | null> => {
+    const iconData = getIcon(fullIconName); // Use the imported getIconData
+    if (!iconData) {
+      console.error("Icon data not found for:", fullIconName);
+      return null;
+    }
+
+    const { left, top, width, height, body } = iconData;
+
+    // Determine color from className or style
+    let color: string | undefined = undefined;
+    if (className?.includes("text-")) {
+      const match = className.match(/text-(\S+)/);
+      if (match) {
+        // Handle hex like text-[#1F2726] or named colors like text-red-500
+        const colorValue = match[1];
+        if (colorValue.startsWith("[#") && colorValue.endsWith("]")) {
+          color = colorValue.substring(2, colorValue.length - 1);
+        } else {
+          // This part is tricky without Tailwind's config. For simplicity,
+          // we might only support hex or direct style colors.
+          // Or you could pass the resolved color via `style` prop.
+          // console.warn("Cannot reliably resolve Tailwind named colors for SVG export:", colorValue);
+        }
+      }
+    }
+    if (!color && style?.color) {
+      color = style.color;
+    }
+
+    let bodyString = body;
+    if (color) {
+      // Replace instances of currentColor with the determined color
+      // Make sure to handle potential fill/stroke attributes set to currentColor too
+      bodyString = bodyString.replace(/currentColor/g, color);
+    }
+
+    // Construct the SVG string
+    const svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${left} ${top} ${width} ${height}" width="${width}" height="${height}" ${color ? `style="color: ${color};"` : ''}>${bodyString}</svg>`;
+
+    return {
+      svgString,
+      width: width,
+      height: height,
+    };
+  }, [fullIconName, className, style]); // Dependencies for the callback
+
+
+  // The core Icon component
+  const IconElement = (
+    <Icon
+      icon={fullIconName}
+      className={`${currentSizeClass} ${className || ""}`}
+      style={style}
+      {...props} // Pass remaining props like onClick etc.
+    />
   );
+
+
+  if (showContextMenu) {
+    // Wrap with the IconContextMenu component
+    return (
+      <IconContextMenu
+        getSvgData={getIconSvgData}
+        itemName={fullIconName.replace(/[:\/]/g, "_")} // Sanitize name for download
+        wrapperClassName={`${currentSizeClass} ${containerClassName || ""}`} // Apply size/container classes to the wrapper
+      >
+        {IconElement}
+      </IconContextMenu>
+    );
+  } else {
+    // Render directly within a container div if no context menu
+    return (
+      <div className={`${currentSizeClass} ${containerClassName || ""}`}>
+        {IconElement}
+      </div>
+    );
+  }
 };
 
 type GTPMaturityIconProps = {
@@ -58,7 +135,7 @@ type GTPMaturityIconProps = {
 
 const ethIcon = "gtp:gtp-ethereumlogo";
 export const GTPMaturityIcon = memo(({ maturityKey, className, containerClassName, ...props }: GTPMaturityIconProps) => {
-  
+
   let icon = `gtp:gtp-layer2-maturity-${maturityKey}`;
   let opacityClass = "";
   let sizeClass = sizeClassMap[props.size || "md"];
@@ -67,21 +144,21 @@ export const GTPMaturityIcon = memo(({ maturityKey, className, containerClassNam
     icon = "feather:circle";
     opacityClass = "opacity-[0.05]";
     sizeClass = "w-[15px] h-[15px]";
-  }else if (maturityKey === "10_foundational") {
+  } else if (maturityKey === "10_foundational") {
     icon = ethIcon;
-  }else{
+  } else {
     const split = maturityKey.split("_");
-    const name = split.slice(1).join("-");  
+    const name = split.slice(1).join("-");
     icon = `gtp:gtp-layer2-maturity-${name}`;
   }
 
-  if(maturityKey === "10_foundational" || maturityKey === "0_early_phase" || maturityKey === "NA"){
+  if (maturityKey === "10_foundational" || maturityKey === "0_early_phase" || maturityKey === "NA") {
     // return N/A text
-   return (
-    <div className={`${sizeClassMap[props.size || "md"]} ${containerClassName || ""} flex items-center justify-center`}>
-      <div className="text-xs text-[#5A6462]">N/A</div>
-    </div>
-   )
+    return (
+      <div className={`${sizeClassMap[props.size || "md"]} ${containerClassName || ""} flex items-center justify-center`}>
+        <div className="text-xs text-[#5A6462]">N/A</div>
+      </div>
+    )
   }
 
   return (
@@ -142,7 +219,7 @@ type RankIconProps = {
   children?: React.ReactNode;
   isIcon?: boolean;
 }
-export const RankIcon = ({ colorScale, size = "md", children, isIcon = true}: RankIconProps) => {
+export const RankIcon = ({ colorScale, size = "md", children, isIcon = true }: RankIconProps) => {
   const color = colorScale == -1 ? "#CDD8D322" : GetRankingColor(colorScale * 100);
   const borderColor = colorScale == -1 ? "#CDD8D333" : color + "AA";
   // const borderColor = "#CDD8D322";

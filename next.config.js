@@ -15,6 +15,10 @@ const nextConfig = {
               type: "host",
               value: "fees.growthepie.xyz",
             },
+            {
+              type: "host",
+              value: "fees.growthepie.com",
+            },
           ],
           destination: "/fees",
         },
@@ -24,6 +28,10 @@ const nextConfig = {
             {
               type: "host",
               value: "dev.fees.growthepie.xyz",
+            },
+            {
+              type: "host",
+              value: "dev.fees.growthepie.com",
             },
           ],
           destination: "/fees",
@@ -35,6 +43,10 @@ const nextConfig = {
               type: "host",
               value: "labels.growthepie.xyz",
             },
+            {
+              type: "host",
+              value: "labels.growthepie.com",
+            },
           ],
           destination: "/labels",
         },
@@ -44,6 +56,10 @@ const nextConfig = {
             {
               type: "host",
               value: "dev.labels.growthepie.xyz",
+            },
+            {
+              type: "host",
+              value: "dev.labels.growthepie.com",
             },
           ],
           destination: "/labels",
@@ -55,6 +71,10 @@ const nextConfig = {
               type: "host",
               value: "icons.growthepie.xyz",
             },
+            {
+              type: "host",
+              value: "icons.growthepie.com",
+            },
           ],
           destination: "/icons",
         },
@@ -64,6 +84,10 @@ const nextConfig = {
             {
               type: "host",
               value: "dev.icons.growthepie.xyz",
+            },
+            {
+              type: "host",
+              value: "dev.icons.growthepie.com",
             },
           ],
           destination: "/icons",
@@ -158,7 +182,19 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "pbs.twimg.com",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+      },
+      {
+        protocol: "https",
         hostname: "api.growthepie.xyz",
+      },
+      {
+        protocol: "https",
+        hostname: "api.growthepie.com",
       },
     ],
   },

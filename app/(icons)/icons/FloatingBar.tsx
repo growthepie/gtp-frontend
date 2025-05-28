@@ -91,7 +91,7 @@ export default function FloatingBar() {
   return (
     <div className="flex p-[5px] items-center w-full rounded-full mt-[16px] bg-[#344240] shadow-[0px_0px_50px_0px_#000000] gap-x-[5px] md:gap-x-[15px] z-0 pointer-events-auto">
       {/* Home Icon */}
-      <Link href="https://www.growthepie.xyz/" target="_blank" className="flex items-center justify-center !size-[44px] bg-[#1F2726] rounded-full shrink-0">
+      <Link href="https://www.growthepie.com/" target="_blank" className="flex items-center justify-center !size-[44px] bg-[#1F2726] rounded-full shrink-0">
         <GTPIcon icon="gtp-house" size="md" />
       </Link>
 

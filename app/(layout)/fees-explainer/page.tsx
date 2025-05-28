@@ -27,7 +27,7 @@ const FeesExplainer = () => {
       </div>
       <iframe
         title="Fee HTML"
-        src="https://api.growthepie.xyz/v1/misc/fee.html"
+        src="https://api.growthepie.com/v1/misc/fee.html"
         width="100%"
         height="820px"
         frameBorder="0"

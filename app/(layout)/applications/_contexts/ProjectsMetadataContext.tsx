@@ -4,9 +4,6 @@ import { AppDatum } from "@/types/applications/AppOverviewResponse";
 import { createContext, useCallback, useContext, useMemo, } from "react";
 import useSWR from "swr";
 
-
-
-
 function ownerProjectToProjectData(data: AppDatum[]): { [key: string]: any } {
   return data.reduce((acc, entry) => {
     const [owner, origin]: [string, string] = [entry[0] as string, entry[1] as string];
@@ -48,6 +45,7 @@ export type ProjectsMetadataContextType = {
       on_apps_page: boolean;
     }
   };
+  availableMainCategories: string[];
 }
 
 type ProjectsMetadataProviderProps = {
@@ -131,11 +129,29 @@ export const ProjectsMetadataProvider = ({ children, useFilteredProjects = false
     return displayNameToProjectData;
   }, [projectsData, createDisplayNameToProjectData]);
 
+  const availableMainCategories = useMemo(() => {
+    if (!projectsData || !projectsData.data || !projectsData.data.data) {
+      return [];
+    }
+    const categories = new Set<string>();
+    const mainCategoryIndex = projectsData.data.types.indexOf("main_category");
+    if (mainCategoryIndex === -1) return [];
+
+    projectsData.data.data.forEach((project: any[]) => {
+      const category = project[mainCategoryIndex];
+      if (category && typeof category === 'string') {
+        categories.add(category);
+      }
+    });
+    return Array.from(categories).sort();
+  }, [projectsData]);
+
   return (
     <ProjectsMetadataContext.Provider value={{
       isLoading: projectsLoading || filteredProjectsLoading,
       ownerProjectToProjectData,
       projectNameToProjectData,
+      availableMainCategories,
     }}>
       {projectsData && children}
     </ProjectsMetadataContext.Provider>

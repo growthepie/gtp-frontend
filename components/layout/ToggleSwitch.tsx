@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 
 interface ToggleValue {
   value: string;
@@ -42,6 +42,14 @@ export function ToggleSwitch({
   const [toggleWidth, setToggleWidth] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const animationFrameRef = useRef<number | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setTimeout(() => {
+      // Set mounted to true after a short delay to ensure the component is fully rendered
+    setMounted(true);
+    }, 500);
+  }, []);
   
   // Measure the toggle width when the component mounts or window resizes
   useEffect(() => {
@@ -51,6 +59,8 @@ export function ToggleSwitch({
     // Debounced resize handler
     let resizeTimeout: NodeJS.Timeout;
     const handleResize = () => {
+      if(!mounted) return;
+      
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
         if (toggle) {
@@ -197,7 +207,7 @@ export function ToggleSwitch({
                 absolute left-0 ${selectionHeightMap[size]}
                 flex items-center justify-center
                 rounded-full ${sliderColor}
-                transition-all duration-300 will-change-transform
+                ${mounted && "transition-all duration-300 will-change-transform"}
                 px-[10px]
               `}
               style={{

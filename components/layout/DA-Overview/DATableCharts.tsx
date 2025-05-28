@@ -35,7 +35,7 @@ import { match } from "assert";
 import useChartSync from "./components/ChartHandler";
 import { filter, get, set } from "lodash";
 import { locale } from "moment";
-import ChartWatermark from "../ChartWatermark";
+import ChartWatermark, { ChartWatermarkWithMetricName } from "../ChartWatermark";
 import { Badge } from "@/app/(labels)/labels/Search";
 import highchartsPatternFill from "highcharts/modules/pattern-fill";
 // import highchartsAnnotations from "highcharts/modules/annotations";
@@ -598,28 +598,26 @@ const DATableChartsComponent = ({
 
     const pieTooltipFormatter = useCallback(
         function (this: any) {
-            
-            console.log(this);
-          
+            const absolute = formatBytes(this.y);
+            const percentage = Intl.NumberFormat("en-GB", {
+                notation: "standard",
+                maximumFractionDigits: 2,
+                minimumFractionDigits: 2,
+            }).format(this.percentage);
+
             return `<div class="mt-3 mr-3 mb-3 w-40 text-xs font-raleway justify-between gap-x-[5px] flex items-center">
                 <div class="flex gap-x-[5px] items-center ">
                     <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${this.color}"></div>
                     <div class="tooltip-point-name text-xs">${this.key}</div>
                 </div>
-                <div class="tooltip-point-name numbers-xs">${selectedScale === "percentage" ? Intl.NumberFormat("en-GB", {
-                    notation: "standard",
-                    maximumFractionDigits: 2,
-                    minimumFractionDigits: 2,
-                }).format((this.percentage)) + " %" 
-                
-                :
-                (formatBytes(this.y))
-            }</div>
-            
+                <div class="tooltip-point-name numbers-xs flex flex-col items-end">
+                    <div class="text-right whitespace-pre">${absolute}</div>
+                    <div class="text-forest-500 text-right whitespace-pre" style="padding-left: ${absolute.length - percentage.length}ch">${percentage}  %</div>
+                </div>
             </div>`;
-
-
-    }, [showUsd, selectedChain, selectedScale])
+        },
+        [showUsd, selectedChain, selectedScale]
+    );
 
 
 
@@ -848,9 +846,8 @@ const DATableChartsComponent = ({
                         <YAxisScaleControls selectedScale={selectedScale} setSelectedScale={setSelectedScale} />
                     </div>
                 </div>
-                <div className="absolute left-[calc(50%-85px)] top-[calc(39%-4.5px)] z-0 opacity-20">
-                    <ChartWatermark className="w-[225px] h-[45px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
-                    <div className="w-[225px] h-[15px] flex items-center justify-center "><div className=" text-[10px] leading-[120%] font-semibold ">DA: {da_name === "da_celestia" ? "CELESTIA" : "ETHEREUM BLOBS"}</div></div>
+                <div className="absolute left-[calc(50%-85px)] top-[calc(39%-4.5px)] z-[100] opacity-40">
+                    <ChartWatermarkWithMetricName className="w-[225px] h-[45px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" metricName={da_name === "da_celestia" ? "CELESTIA" : "ETHEREUM BLOBS"} />
                 </div>
                 
 

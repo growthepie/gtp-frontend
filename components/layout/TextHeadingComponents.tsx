@@ -15,6 +15,8 @@ type TitleProps = {
   id?: string;
   button?: React.ReactNode;
   as?: "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+  backArrow?: boolean;
+  backArrowLink?: string;
 };
 
 const titleSizeMap = {
@@ -34,16 +36,23 @@ export const Title = ({
   id,
   button,
   as = "h1",
+  backArrow = false,
+  backArrowLink = ""
 }: TitleProps) => {
   if (!button) {
     return (
       <div
         id={id}
-        className={`flex gap-x-[8px] items-center ${containerClassName}`}
+        className={`flex items-center h-[43px] gap-x-[8px]  ${containerClassName}`}
       >
-        <GTPIcon icon={icon} className={iconClassName} size={iconSize} />
+        {backArrow && (
+          <Link className="flex items-center justify-center rounded-full w-[36px] h-[36px] bg-[#344240]" href={backArrowLink}>
+            <Icon icon={'fluent:arrow-left-32-filled'} className={`w-[20px] h-[25px]`}  />
+          </Link>
+        )}
+        <GTPIcon icon={icon} className={`object-contain w-[36px] h-[36px] ${iconClassName}`} size={iconSize} />
         <Heading
-          className={`leading-[120%] break-inside-avoid ${titleSizeMap[titleSize]} ${titleClassName}`}
+          className={`leading-snug ${titleSizeMap[titleSize]} ${titleClassName}`}
           as={as}
         >
           {title}

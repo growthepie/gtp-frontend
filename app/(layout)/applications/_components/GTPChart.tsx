@@ -1149,9 +1149,9 @@ export const GTPChart = ({ children, providerProps, highchartsChartProps, chartP
     highchartsRoundedCorners(Highcharts);
 
     // Override the reset function to maintain tooltip and crosshair visibility
-    Highcharts.Pointer.prototype.reset = function () {
-      return undefined;
-    };
+    // Highcharts.Pointer.prototype.reset = function () {
+    //   return undefined;
+    // };
 
     // Handle mouse/touch events for synchronized charts
     ['mousemove', 'touchmove', 'touchstart'].forEach(function (eventType) {

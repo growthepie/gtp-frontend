@@ -85,14 +85,14 @@ export default function Share() {
   const handleSendEmail = () => {
     if (currentURL !== null) {
       const mailtoLink = `mailto:${""}?subject=${encodeURIComponent(
-        "Check out what I found on growthepie.xyz!",
+        "Check out what I found on growthepie.com!",
       )}&body=${encodeURIComponent(currentURL)}`;
       window.location.href = mailtoLink;
     }
   };
 
   const shareOnTwitter = () => {
-    const text = "Check out what I found on growthepie.xyz!";
+    const text = "Check out what I found on growthepie.com!";
     if (currentURL !== null) {
       const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
         currentURL,
@@ -103,7 +103,7 @@ export default function Share() {
 
   const shareOnReddit = () => {
     if (currentURL !== null) {
-      const title = "Check out what I found on growthepie.xyz!";
+      const title = "Check out what I found on growthepie.com!";
       const redditShareUrl = `https://www.reddit.com/submit?url=${encodeURIComponent(
         currentURL,
       )}&title=${encodeURIComponent(title)}`;
@@ -152,7 +152,7 @@ export default function Share() {
     return `<iframe ${embedDataString}></iframe>`;
   }, [embedDataString]);
 
-  // [Layer 2 Transaction Costs past EIP4844](https://www.growthepie.xyz/embed/fundamentals/transaction-costs?showUsd=true&theme=dark&timespan=180d&scale=absolute&interval=daily&showMainnet=false&chains=zora%2Cstarknet%2Coptimism%2Carbitrum%2Cmantle%2Cbase&zoomed=true&startTimestamp=1707978691244.2397&endTimestamp=1713744000000?display=iframe)
+  // [Layer 2 Transaction Costs past EIP4844](https://www.growthepie.com/embed/fundamentals/transaction-costs?showUsd=true&theme=dark&timespan=180d&scale=absolute&interval=daily&showMainnet=false&chains=zora%2Cstarknet%2Coptimism%2Carbitrum%2Cmantle%2Cbase&zoomed=true&startTimestamp=1707978691244.2397&endTimestamp=1713744000000?display=iframe)
   const markdownEmbedIframe = useMemo(() => {
     const url = embedData.src;
     return `[${embedData.title}](${url}?display=iframe)`;

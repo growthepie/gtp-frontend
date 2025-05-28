@@ -9,6 +9,7 @@ import { useLocalStorage } from "usehooks-ts";
 import { IS_PRODUCTION } from "@/lib/helpers";
 import { MasterProvider } from "@/contexts/MasterContext";
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
+import { ToastProvider } from "@/components/toast/GTPToast";
 
 // load icons
 addCollection(GTPIcons);
@@ -47,7 +48,7 @@ const devMiddleware = (useSWRNext) => {
       (urlOrUrls) => {
         if (Array.isArray(urlOrUrls)) {
           return Promise.all(urlOrUrls.map(url => {
-            if (url.includes("api.growthepie.xyz")) {
+            if (url.includes("api.growthepie.com")) {
               // replace /v1/ with /dev/ to get JSON files from the dev folder in S3
               let newUrl = url.replace("/v1/", "/dev/");
               return fetcher(newUrl);
@@ -55,7 +56,7 @@ const devMiddleware = (useSWRNext) => {
             return fetcher(url);
           }));
         } else {
-          if (urlOrUrls.includes("api.growthepie.xyz")) {
+          if (urlOrUrls.includes("api.growthepie.com")) {
             // replace /v1/ with /dev/ to get JSON files from the dev folder in S3
             let newUrl = urlOrUrls.replace("/v1/", "/dev/");
             return fetcher(newUrl);
@@ -85,11 +86,15 @@ export function Providers({ children, forcedTheme }: ProvidersProps) {
           // refreshInterval: 1000 * 60 * 60, // 1 hour
         }}
       >
-        <MasterProvider>
-          <ProjectsMetadataProvider>
-            <UIContextProvider>{children}</UIContextProvider>
+          <MasterProvider>
+            <ProjectsMetadataProvider>
+              <UIContextProvider>
+              <ToastProvider>
+                {children}
+              </ToastProvider>
+            </UIContextProvider>
           </ProjectsMetadataProvider>
-        </MasterProvider>
+          </MasterProvider>
       </SWRConfig>
     </ThemeProvider>
   );

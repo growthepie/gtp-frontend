@@ -117,7 +117,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
             toggleMobileSidebar();
           }}
         >
-          <Icon icon="feather:menu" className="h-8 w-8" />
+          <Icon icon="feather:menu" className={` ${isMobile ? "h-[24px] w-[24px]" : "w-8 h-8"} `} />
         </button>
         {/* Mobile Sidebar */}
         <div

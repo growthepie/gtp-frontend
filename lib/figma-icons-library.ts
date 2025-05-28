@@ -66,6 +66,39 @@ export interface IconIndexEntry {
 }
 
 
+/**
+ * Fetches the Figma file data.
+ * @param fileKey The key of the Figma file.
+ * @param accessToken Your Figma access token.
+ * @returns The Figma file data.
+ */
+async function fetchFigmaFile(
+  fileKey: string,
+  accessToken: string,
+): Promise<FigmaFileResponse> {
+  const url = `https://api.figma.com/v1/files/${fileKey}`;
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        "X-Figma-Token": accessToken,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Figma API responded with status ${response.status}: ${response.statusText}`,
+      );
+    }
+
+    const data: FigmaFileResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching Figma file:", error);
+    throw error;
+  }
+}
+
 // ... (keep fetchSVGUrls, find*NodeById functions) ...
 async function fetchSVGUrls(
   fileKey: string,
@@ -292,18 +325,18 @@ async function main() {
     console.log("Loading Figma file data...");
 
     // --- Option 1: Fetch live data (uncomment when needed) ---
-    // const figmaData = await fetchFigmaFile(FIGMA_FILE_KEY, FIGMA_ACCESS_TOKEN);
+    const figmaData = await fetchFigmaFile(FIGMA_FILE_KEY, FIGMA_ACCESS_TOKEN);
     // await fs.writeFile(path.join(__dirname, "../figmaData-cache.json"), JSON.stringify(figmaData, null, 2), 'utf-8');
 
     // --- Option 2: Read cached data ---
-    const cacheFilePath = path.join(__dirname, "../figmaData-stream.json"); // Or your cache file name
-    if (!existsSync(cacheFilePath)) {
-      console.error(`Error: Figma data cache file not found at ${cacheFilePath}`);
-      console.log("Please run the script once with live fetching enabled to create the cache, or provide the file.");
-      process.exit(1);
-    }
-    const rawFigmaData = await fs.readFile(cacheFilePath, "utf-8");
-    const figmaData = JSON.parse(rawFigmaData);
+    // const cacheFilePath = path.join(__dirname, "../figmaData-stream.json"); // Or your cache file name
+    // if (!existsSync(cacheFilePath)) {
+    //   console.error(`Error: Figma data cache file not found at ${cacheFilePath}`);
+    //   console.log("Please run the script once with live fetching enabled to create the cache, or provide the file.");
+    //   process.exit(1);
+    // }
+    // const rawFigmaData = await fs.readFile(cacheFilePath, "utf-8");
+    // const figmaData = JSON.parse(rawFigmaData);
     // console.log("Figma data loaded from cache."); // Less verbose log
 
 

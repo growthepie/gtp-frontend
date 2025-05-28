@@ -20,20 +20,35 @@ export default function Footer() {
   return (
     <div className="relative bottom-0 bg-forest-50  dark:bg-[#1F2726] px-[20px] py-[50px] md:p-[50px] md:pb-[150px]">
       <div className="flex flex-col md:flex-row md:justify-between">
-        <div className="flex flex-col md:justify-between md:flex-wrap min-[1270px]:h-[250px] md:basis-[361px]">
+        <div className="flex flex-col md:justify-between md:flex-wrap min-[1270px]:h-[350px] md:basis-[361px]">
           <div className="flex flex-col w-[176px]">
             <FooterSectionHeader>
               MORE CONTENT
             </FooterSectionHeader>
             <FooterLink
-              leftIcon={<Image src={KnowledgeIcon} alt="Knowledge" width={24} height={24} />}
+              leftIcon={<GTPIcon icon="gtp-book-open" size="md" />}
               label="Knowledge"
               href="https://docs.growthepie.xyz/"
             />
-            <FooterLink
+            {/* <FooterLink
               leftIcon={<Image src={BlogIcon} alt="Blog" width={24} height={24} />}
               label="Blog"
               href="https://mirror.xyz/blog.growthepie.eth"
+            /> */}
+            <FooterLink
+              leftIcon={<GTPIcon icon="gtp-growthepie-fees" size="md" />}
+              label="Fees"
+              href="https://fees.growthepie.xyz/"
+            />
+            <FooterLink
+              leftIcon={<GTPIcon icon="gtp-growthepie-labels" size="md" />}
+              label="Labels"
+              href="https://labels.growthepie.xyz/"
+            />
+            <FooterLink
+              leftIcon={<GTPIcon icon="gtp-growthepie-icons" size="md" />}
+              label="Icons"
+              href="https://icons.growthepie.xyz/"
             />
           </div>
           <div className="flex flex-col w-[176px]">
@@ -107,11 +122,19 @@ export default function Footer() {
                 </div>
               </div>
               {/*desktop text*/}
-              <div className="text-[10px]">
-                Being a public good, we rely on grants and public funding rounds, such as Gitcoin, Octant or Giveth. Please support us whenever a round is active. On Giveth you can also donate whenever you feel like it.
+              <div className="text-xs">
+              As a public good, we rely on grants and funding rounds like Gitcoin, Octant, and Giveth. Support us during active rounds—or donate anytime via Giveth. More info on our <Link href="/donate" className="underline" onClick={() => {
+                track("clicked Donate Footer link", {
+                  location: "desktop footer",
+                  page: window.location.pathname,
+                });
+              }}>donate page</Link>.
               </div>
-              <div className="text-[10px]">
-                Individual links contain affiliate links, like the “Bridge” button, which provide us with some additional income through a revenue-share program. For more, please check the following links:
+              <div className="text-xs">
+              Some links on our platform are affiliate links and may generate a commission for us.
+              </div>
+              <div className="text-xs">
+              Disclaimer: Information on growthepie is for educational purposes only and not investment advice. Data may be inaccurate or delayed.
               </div>
             </div>
             <div className="flex justify-between flex-col md:items-end lg:flex-row gap-y-[15px] md:w-full lg:justify-between text-xs leading-[1.5]">

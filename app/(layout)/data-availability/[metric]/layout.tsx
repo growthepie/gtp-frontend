@@ -46,10 +46,10 @@ export async function generateMetadata({ params: { metric } }: Props): Promise<M
       openGraph: {
         images: [
           {
-            url: `https://api.growthepie.xyz/v1/og_images/data-availability/${metric}.png?date=${dateString}`,
+            url: `https://api.growthepie.com/v1/og_images/data-availability/${metric}.png?date=${dateString}`,
             width: 1200,
             height: 627,
-            alt: "growthepie.xyz",
+            alt: "growthepie.com",
           },
         ],
       },
@@ -86,7 +86,7 @@ export default async function Layout({
                 <TitleButtonLink
                   label="Detailed Fees Overview"
                   icon="detailed-fees"
-                  href="https://fees.growthepie.xyz/"
+                  href="https://fees.growthepie.com/"
                   newTab
                 />
               )

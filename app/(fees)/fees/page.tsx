@@ -1263,7 +1263,7 @@ export default function FeesPage() {
           <div className="relative flex p-[5px] items-center w-full justify-between rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000] z-10">
             <a
               className="flex items-center w-[162px] bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
-              href="https://www.growthepie.xyz/"
+              href="https://www.growthepie.com/"
               target="_blank"
             >
               <div className="w-6 h-6">
@@ -1974,7 +1974,7 @@ export default function FeesPage() {
                           </div>
                           <Link
                             className="hover:underline whitespace-nowrap"
-                            href={`https://www.growthepie.xyz/chains/${AllChainsByKeys[item.chain[1]].urlKey
+                            href={`https://www.growthepie.com/chains/${AllChainsByKeys[item.chain[1]].urlKey
                               }`}
                             target="_blank"
                           >
@@ -2370,7 +2370,7 @@ export default function FeesPage() {
                       </div>
                       <Link
                         className="hover:underline"
-                        href={`https://www.growthepie.xyz/chains/${AllChainsByKeys["ethereum"].urlKey}`}
+                        href={`https://www.growthepie.com/chains/${AllChainsByKeys["ethereum"].urlKey}`}
                         target="_blank"
                       >
                         {isMobile
@@ -2564,7 +2564,7 @@ export default function FeesPage() {
                 </div>
                 <Link
                   className="hover:underline"
-                  href={`https://www.growthepie.xyz/chains/${AllChainsByKeys["ethereum"].urlKey}`}
+                  href={`https://www.growthepie.com/chains/${AllChainsByKeys["ethereum"].urlKey}`}
                   target="_blank"
                 >
                   {isMobile

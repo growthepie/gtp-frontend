@@ -1,4 +1,3 @@
-
 import Home from "@/components/home/Home";
 import LandingUserBaseChart from "@/components/home/LandingUserBaseChart";
 import Container from "@/components/layout/Container";
@@ -6,7 +5,6 @@ import Heading from "@/components/layout/Heading";
 import LandingTopContracts from "@/components/layout/LandingTopContracts";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import Icon from "@/components/layout/ServerIcon";
-// import ShowLoading from "@/components/layout/ShowLoading";
 import Subheading from "@/components/layout/Subheading";
 import SwiperContainer from "@/components/layout/SwiperContainer";
 import { Metadata } from "next";
@@ -16,10 +14,10 @@ import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import LandingSwiperItems from "@/components/layout/LandingSwiperItems";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { SectionButtonLink } from "@/components/layout/TextHeadingComponents";
-import { useLocalStorage } from "usehooks-ts";
-// import { LandingURL } from "@/lib/urls";
 import {LandingFirstHeaders, LandingSecondHeaders} from "@/components/home/LandingHeaders";
 import { getPageMetadata } from "@/lib/metadata";
+import QuickBitesSection from "@/components/home/QuickBitesSection"; // Import the new component
+import { IS_PRODUCTION } from "@/lib/helpers";
 
 export async function generateMetadata(): Promise<Metadata> {
   const metadata = await getPageMetadata(
@@ -83,6 +81,9 @@ export default async function Page() {
       <Container className="">
         <LandingTopContracts />
       </Container>
+      {!IS_PRODUCTION && (
+        <QuickBitesSection />
+      )}
       <Container>
         <div className="flex mt-[25px] md:mt-[60px] mb-[25px] md:mb-[30px] ml-1.5 md:ml-0 space-x-2 items-center">
           <GTPIcon
@@ -153,7 +154,7 @@ export default async function Page() {
                 breakdown of active addresses on each individual chain, please
                 refer to the{" "}
                 <Link
-                  href="https://www.growthepie.xyz/fundamentals/daily-active-addresses"
+                  href="https://www.growthepie.com/fundamentals/daily-active-addresses"
                   className="underline"
                 >
                   &quot;Active addresses&quot;
@@ -163,14 +164,23 @@ export default async function Page() {
             }
           />
           <QuestionAnswer
-            question="Why have the numbers on the landing page not been updated for a few days?"
+            question="I attested contract labels via the Open Labels Initiative - when will they show on the Applications section?"
             answer={
               <>
-                The numbers in the Weekly Engagement chart use a weekly aggregation. In
-                order to avoid confusion we only show completed weeks and no
-                partial weeks. The date that you can see in the chart is always
-                the start of the week (Monday). These numbers will update every
-                Monday. All other numbers on this page update daily.
+                Thank you for attesting your contracts via <Link
+                  href="https://www.openlabelsinitiative.org/"
+                  className="underline"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  OLI
+                </Link>!
+                Your attestations are securely stored in the OLI Label Pool.
+                We, as growthepie, consume labels from the OLI Label Pool and
+                we apply our own verification step before we add them to our platform.
+                Usually, this step takes 1 to 3 days and you should see your application
+                being listed very soon. In case you have issues, please reach out via
+                Discord.
               </>
             }
           />

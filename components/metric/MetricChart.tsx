@@ -40,7 +40,7 @@ import { format as d3Format } from "d3"
 import { useTheme } from "next-themes";
 import { BASE_URL } from "@/lib/helpers";
 import EmbedContainer from "@/app/(embeds)/embed/EmbedContainer";
-import ChartWatermark from "@/components/layout/ChartWatermark";
+import ChartWatermark, { ChartWatermarkWithMetricName } from "@/components/layout/ChartWatermark";
 import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import dynamic from "next/dynamic";
@@ -196,7 +196,6 @@ function MetricChart({
 
   // useHighchartsWrappers();
   let tooltipWorker: Worker | null = null;
-  let tooltipCache = new Map<string, string>();
 
   const createSafeCacheKey = (
     points: any[],
@@ -742,32 +741,7 @@ function MetricChart({
         suffix = " Mgas/s";
       }
   
-      // Generate a cache key based on relevant data
-      const cacheKey = createSafeCacheKey(
-        points,
-        maxPoint,
-        maxPercentage,
-        theme,
-        metric_id,
-        prefix,
-        suffix,
-        decimals,
-        selectedScale,
-        showOthers
-      );
-  
-  
-      // Check cache first
-      if (tooltipCache.has(cacheKey)) {
-        return tooltipCache.get(cacheKey);
-      }
-  
-      // If no worker exists, create one
-      if (!tooltipWorker) {
-        tooltipWorker = new Worker(new URL('./tooltipWorker.ts', import.meta.url));
-      }
-  
-      // Process the points directly in the main thread as fallback
+      // Process the points directly in the main thread
       const processPointsInMainThread = () => {
         const firstTenPoints = points.slice(0, 10);
         const afterTenPoints = points.slice(10);
@@ -883,11 +857,7 @@ function MetricChart({
           </div>`
         : "";
   
-      const result = tooltip + tooltipPoints + sumRow + "</div>";
-      tooltipCache.set(cacheKey, result);
-      
-
-      return result;
+      return tooltip + tooltipPoints + sumRow + "</div>";
     },
     [
       metric_id,
@@ -1280,13 +1250,13 @@ function MetricChart({
           </HighchartsChart>
         </HighchartsProvider>
       </div>
-      <div className="absolute bottom-[53.5%] left-0 right-0 flex flex-col gap-y-[3px] items-center justify-center pointer-events-none z-0 opacity-40">
-        <ChartWatermark className="w-[128.67px] h-[30.67px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
-        <div className="font-medium text-[10px] uppercase">
+      <div className="absolute inset-0 left-[42px] flex flex-col space-y-[0px] items-center justify-center pointer-events-none z-0 opacity-20">
+        <ChartWatermarkWithMetricName className="w-[192.87px] text-forest-300 dark:text-[#EAECEB]" metricName={metricsDict[metric_id]?.name} />
+        {/* <div className="font-medium text-[10px] uppercase">
           {master &&
             metricsDict[metric_id] &&
             metricsDict[metric_id].name}
-        </div>
+        </div> */}
       </div>
       {
         seriesData.length === 0 && (

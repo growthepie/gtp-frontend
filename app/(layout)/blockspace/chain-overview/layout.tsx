@@ -23,10 +23,10 @@ export async function generateMetadata(): Promise<Metadata> {
       openGraph: {
         images: [
           {
-            url: `https://api.growthepie.xyz/v1/og_images/blockspace/chain-overview.png?date=${dateString}`,
+            url: `https://api.growthepie.com/v1/og_images/blockspace/chain-overview.png?date=${dateString}`,
             width: 1200,
             height: 627,
-            alt: "growthepie.xyz",
+            alt: "growthepie.com",
           },
         ],
       },

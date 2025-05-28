@@ -7,7 +7,7 @@ import Footer from "../../(icons)/icons/Footer";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 // ... other imports
 import { useToast } from "@/components/toast/GTPToast";
-import { buildInvertedIndex, iconSearchStrings } from "@/icons/gtp-icon-names";
+import { iconSearchStrings } from "./icon-library-search";
 import { useIconLibrary, } from "@/contexts/IconLibraryContext";
 import { IconIndexEntry, CustomizationMode } from "@/lib/icon-library/types";
 import { applySvgCustomizations, convertSvgToPngBlob, getSvgAtWidthAndHeight, triggerBlobDownload, triggerDownload } from "@/lib/icon-library/clientSvgUtils";
@@ -17,8 +17,29 @@ import { saveAs } from "file-saver"; // Ensure saveAs is imported
 // Import the Provider and Hook
 import { IconPageUIContext, IconPageUIProvider, IconPageUIState, useIconPageUI } from './IconPageUIContext'; // Adjust path if needed
 import ShowLoading from "@/components/layout/ShowLoading";
+import { GTPIconName } from "@/icons/gtp-icon-names";
 
 type IconStyleOption = "gradient" | "monochrome";
+
+function buildInvertedIndex(data: { name: string; strings: string[] }[]) {
+  const index = {};
+  data.forEach(item => {
+    const itemName = item.name;
+    item.strings.forEach(str => {
+      // Normalize the string (e.g., lowercase) for case-insensitive matching
+      const normalizedStr = str.toLowerCase();
+      if (!index[normalizedStr]) {
+        index[normalizedStr] = []; // Initialize array if string is new
+      }
+      // Add the name to the list for this string, avoiding duplicates if necessary
+      if (!index[normalizedStr].includes(itemName)) {
+        index[normalizedStr].push(itemName);
+      }
+    });
+  });
+  return index;
+}
+
 
 // Constants for icons...
 const invertedIndex = buildInvertedIndex(iconSearchStrings);
@@ -385,22 +406,71 @@ const IconCard: React.FC<IconCardProps> = ({ icon }) => {
     }
   };
 
+  const [isNameCopied, setIsNameCopied] = useState(false);
+
+  const handleNameCopy = () => {
+    navigator.clipboard.writeText(icon.name)
+      .then(() => {
+        setIsNameCopied(true);
+        addToast({ title: 'Copied to Clipboard', message: `"${icon.name}" (Icon ID)`, type: 'success' });
+        setTimeout(() => setIsNameCopied(false), 500);
+      })
+      .catch((err) => {
+        console.error('Failed to copy name:', err);
+        addToast({ title: 'Copy Failed', message: 'Could not copy icon name.', type: 'error' });
+      });
+  };
+
   if (displaySvgContent === undefined) return <div className="icon-card w-[95px] h-[60px] bg-[#1F2726]/50 rounded-[11px] animate-pulse"></div>;
   if (displaySvgContent === null) return <div className="icon-card w-[95px] h-[60px] bg-red-900/20 rounded-[11px] flex items-center justify-center text-xs text-red-400">{icon.name} (Err)</div>;
 
   return (
-    <div className="group flex flex-col justify-between items-center bg-[#1F2726] hover:bg-[#5A6462] rounded-[11px] py-[5px] px-[13px] transition-transform transform hover:scale-105" title={icon.name}>
-      <div 
-      style={{ width: `${selectedSize}px`, height: `${selectedSize}px` }}
-      className="icon-preview text-white flex items-center justify-center" 
-      dangerouslySetInnerHTML={{ __html: displaySvgContent }} 
-      />
-      <div className="relative w-[69px] flex justify-center mt-1">
-        <span className="group-hover:hidden text-xs text-center h-[21px] truncate">{icon.name}</span>
-        <div className="hidden group-hover:flex flex-row items-center gap-[10px] h-[15px]">
-          <button onClick={handleCopy}><GTPIcon icon={isCopied ? "gtp-checkmark-checked" : "gtp-copy"} size="sm" className="w-[15px] h-[15px]" /></button>
-          <button onClick={handleDownload}><GTPIcon icon="gtp-download" size="sm" className="w-[15px] h-[15px]" /></button>
+    <div className="group relative w-[95px] h-[60px]">
+      {/* absolute container, always centered */}
+      <div className="absolute flex flex-col top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 delay-100 z-0 group-hover:z-[10] group-hover:delay-0">
+      <div className="flex flex-col bg-gradient-to-t from-[#1F2726] group-hover:from-[#5A6462] max-w-[95px] min-w-[95px] min-h-[60px] max-h-[60px] group-hover:max-w-[300px] group-hover:max-h-[90px] bg-[#1F2726] group-hover:bg-[#5A6462] rounded-[11px] px-[13px] py-[5px] gap-y-[5px] transition-all duration-300 transform group-hover:scale-105 overflow-visible">
+        {/* Icon preview - centered */}
+        <div 
+          style={{ width: `${selectedSize}px`, height: `${selectedSize}px` }}
+          className="icon-preview text-white mx-auto flex items-center justify-center"
+          dangerouslySetInnerHTML={{ __html: displaySvgContent }} 
+        />
+        {/* Icon name and actions */}
+        <div className="flex flex-col w-full gap-y-[5px]">
+          {/* Name - truncated, normal on hover */}
+          <div className="w-full text-sm text-center truncate group-hover:whitespace-nowrap" onClick={handleNameCopy}>
+              {icon.name}
+            {/* <div className={`${isNameCopied ? "w-[15px]" : "w-0 hidden"} transition-all duration-300 overflow-hidden`}>
+              {isNameCopied && (
+                <GTPIcon icon={"feather:check" as GTPIconName} size="sm" />
+              )}
+            </div> */}
+          </div>
+          {/* Actions */}
+          <div className="flex justify-center items-center gap-x-[10px] h-0 group-hover:h-[20px] transition-all duration-100 overflow-hidden">
+            <button 
+              onClick={handleCopy}
+            >
+              <GTPIcon 
+                icon={isCopied ? "gtp-checkmark-checked-monochrome" : "gtp-copy-monochrome"} 
+                size="sm" 
+                className="w-[15px] h-[15px]"
+              />
+            </button>
+            
+            <button 
+              onClick={handleDownload}
+            >
+              <GTPIcon 
+                icon="gtp-download-monochrome" 
+                size="sm" 
+                className="w-[15px] h-[15px]"
+              />
+            </button>
+          </div>
         </div>
+      
+      </div>
       </div>
     </div>
   );

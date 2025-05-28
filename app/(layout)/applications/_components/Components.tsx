@@ -73,7 +73,7 @@ export const ApplicationIcon = ({ owner_project, size }: ApplicationIconProps) =
     <div className={`flex items-center justify-center select-none bg-[#151A19] rounded-full ${sizeClassMap[size]}`}>
       {ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].logo_path ? (
         <Image
-          src={`https://api.growthepie.xyz/v1/apps/logos/${ownerProjectToProjectData[owner_project].logo_path}`}
+          src={`https://api.growthepie.com/v1/apps/logos/${ownerProjectToProjectData[owner_project].logo_path}`}
           width={sizePixelMap[size]} height={sizePixelMap[size]}
           className="select-none rounded-full"
           alt={owner_project}
@@ -229,7 +229,7 @@ export const BackButton = () => {
 
   return (
     <div
-      className="size-[36px] bg-[#344240] rounded-full flex justify-center items-center cursor-pointer"
+      className="size-[36px] rounded-full flex justify-center items-center cursor-pointer bg-[#344240] hover:bg-[#5A6462]"
       onClick={handleBack}
 
     >
@@ -608,7 +608,7 @@ export const ApplicationTooltip = ({ application }: { application: AggregatedDat
           <div className="flex gap-x-[5px] items-center">
             {ownerProjectToProjectData[application.owner_project] && ownerProjectToProjectData[application.owner_project].logo_path ? (
               <Image
-                src={`https://api.growthepie.xyz/v1/apps/logos/${ownerProjectToProjectData[application.owner_project].logo_path}`}
+                src={`https://api.growthepie.com/v1/apps/logos/${ownerProjectToProjectData[application.owner_project].logo_path}`}
                 width={15} height={15}
                 className="select-none rounded-full size-[15px]"
                 alt={application.owner_project}
