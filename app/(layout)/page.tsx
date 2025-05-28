@@ -154,7 +154,7 @@ export default async function Page() {
                 breakdown of active addresses on each individual chain, please
                 refer to the{" "}
                 <Link
-                  href="https://www.growthepie.xyz/fundamentals/daily-active-addresses"
+                  href="https://www.growthepie.com/fundamentals/daily-active-addresses"
                   className="underline"
                 >
                   &quot;Active addresses&quot;

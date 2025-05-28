@@ -158,7 +158,19 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "pbs.twimg.com",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+      },
+      {
+        protocol: "https",
         hostname: "api.growthepie.xyz",
+      },
+      {
+        protocol: "https",
+        hostname: "api.growthepie.com",
       },
     ],
   },

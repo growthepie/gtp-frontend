@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     const appsTypes = appsData.data.types;
     const owner_project_index = appsTypes.indexOf("owner_project");
     const appsPages = appsData.data.data.map((app) => {
-      return `https://www.growthepie.xyz/applications/${app[owner_project_index]}`;
+      return `https://www.growthepie.com/applications/${app[owner_project_index]}`;
     });
     appsPages.forEach((app) => apps.add(app));
   }

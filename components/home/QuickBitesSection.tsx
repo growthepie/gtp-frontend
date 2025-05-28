@@ -7,7 +7,7 @@ import Heading from '@/components/layout/Heading';
 import { GTPIcon } from '@/components/layout/GTPIcon';
 import { SectionButtonLink } from '@/components/layout/TextHeadingComponents';
 import QuickBitesGrid from '@/components/quick-bites/QuickBitesGrid';
-import { getFeaturedQuickBites } from '@/lib/mock/quickBitesData';
+import { getFeaturedQuickBites } from '@/lib/quick-bites/quickBites';
 
 const QuickBitesSection: React.FC = () => {
   // Get the latest 3 quick bites to feature

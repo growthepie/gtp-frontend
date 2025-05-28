@@ -13,7 +13,7 @@ export async function GET(request: Request) {
             option.url &&
             !option.url.includes("https://"),
         )
-        .map((option) => `https://www.growthepie.xyz${option.url}`);
+        .map((option) => `https://www.growthepie.com${option.url}`);
     })
     .flat();
 

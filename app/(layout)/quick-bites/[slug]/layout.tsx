@@ -2,7 +2,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { track } from "@vercel/analytics/server";
-import { getQuickBiteBySlug } from "@/lib/mock/quickBitesData";
+import { getQuickBiteBySlug } from "@/lib/quick-bites/quickBites";
 
 type Props = {
   params: { slug: string };
@@ -24,7 +24,7 @@ export async function generateMetadata({ params: { slug } }: Props): Promise<Met
   // YYYY-MM-DD UTC
   const current_date = new Date().toISOString().split("T")[0];
 
-  const og_image = `${QuickBite.og_image}?date=${current_date}` || `https://api.growthepie.xyz/v1/og_images/quick-bites/default.png?date=${current_date}`;
+  const og_image = `${QuickBite.og_image}?date=${current_date}` || `https://api.growthepie.com/v1/og_images/quick-bites/default.png?date=${current_date}`;
   
   // Generate a description from the content if none is provided
   const description = QuickBite.subtitle || 
@@ -39,7 +39,7 @@ export async function generateMetadata({ params: { slug } }: Props): Promise<Met
           url: og_image,
           width: 1200,
           height: 627,
-          alt: `${QuickBite.title} - growthepie.xyz`,
+          alt: `${QuickBite.title} - growthepie.com`,
         },
       ],
     },

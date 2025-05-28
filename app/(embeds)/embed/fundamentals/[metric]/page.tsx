@@ -152,7 +152,7 @@ const Chain = ({ params }: { params: any }) => {
   }
 
   return (
-    // <Link href={`https://www.growthepie.xyz/fundamentals/${params.metric}`} referrerPolicy="origin" target="_blank" rel="noopener noreferrer" aria-label="growthepie.xyz">
+    // <Link href={`https://www.growthepie.com/fundamentals/${params.metric}`} referrerPolicy="origin" target="_blank" rel="noopener noreferrer" aria-label="growthepie.com">
     <>
       {metricData && (
         <ComparisonChart

@@ -121,7 +121,7 @@ export default function Footer({
           <div className="relative flex p-[5px] items-center justify-between rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000]">
             <Link
               className="flex items-center w-[44px] h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
-              href="https://www.growthepie.xyz/"
+              href="https://www.growthepie.com/"
               target="_blank"
             >
               <div className="w-6 h-6 z-[49]">

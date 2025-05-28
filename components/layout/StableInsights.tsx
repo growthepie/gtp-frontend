@@ -50,6 +50,7 @@ import VerticalScrollContainer from "../VerticalScrollContainer";
 import "@/app/highcharts.axis.css";
 import { useMaster } from "@/contexts/MasterContext";
 import { Sources } from "@/lib/datasources";
+import { ChartWatermarkWithMetricName } from "@/components/layout/ChartWatermark";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -660,7 +661,10 @@ export default function StableInsights({ }: {}) {
                 </div>
               </div>
               <div className="w-full lg:flex-1 lg:min-w-[500px] relative h-[300px] md:h-auto pt-[46px] pb-[25px]">
-                <div className="inset-0 absolute z-10 flex items-center justify-center pointer-events-none select-none">
+                <div className="absolute inset-0 left-[30px] right-[10px] top-[50px] bottom-[70px] flex flex-col space-y-[0px] items-center justify-center pointer-events-none z-0 opacity-20">
+                  <ChartWatermarkWithMetricName className="w-[192.87px] text-forest-300 dark:text-[#EAECEB]" metricName={"GLO DOLLAR STABLECOIN HOLDERS"} />
+                </div>
+                {/* <div className="inset-0 absolute z-10 flex items-center justify-center pointer-events-none select-none">
                   <Image
                     src="/glowatermark.svg"
                     alt="GTP Chain"
@@ -668,7 +672,7 @@ export default function StableInsights({ }: {}) {
                     height={60}
                     width={226}
                   />
-                </div>
+                </div> */}
                 <HighchartsProvider Highcharts={Highcharts}>
                   <HighchartsChart
                     containerProps={{

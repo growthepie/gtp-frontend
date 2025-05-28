@@ -98,7 +98,7 @@ export default function FeesChart({
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   const { data, error, isLoading, isValidating } = useSWR<FeesLineChart>(
-    "https://api.growthepie.xyz/v1/fees/linechart.json",
+    "https://api.growthepie.com/v1/fees/linechart.json",
   );
 
   const reversePerformer = useMemo(() => {
