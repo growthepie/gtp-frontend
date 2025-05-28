@@ -5,11 +5,7 @@ import { HeadingBlock } from './blocks/HeadingBlock';
 import { ImageBlock } from './blocks/ImageBlock';
 import { ChartBlock } from './blocks/ChartBlock';
 import { CalloutBlock } from './blocks/CalloutBlock';
-import { QuoteBlock } from './blocks/QuoteBlock';
 import { CodeBlock } from './blocks/CodeBlock';
-import { DividerBlock } from './blocks/DividerBlock';
-import { ContainerBlock } from './blocks/ContainerBlock';
-import { SpacerBlock } from './blocks/SpacerBlock';
 import { IframeBlock } from './blocks/IframeBlock';
 import { ListBlock } from './blocks/ListBlock';
 
@@ -29,16 +25,8 @@ const Block: React.FC<BlockProps> = ({ block }) => {
       return <ChartBlock block={block} />;
     case 'callout':
       return <CalloutBlock block={block} />;
-    case 'quote':
-      return <QuoteBlock block={block} />;
     case 'code':
       return <CodeBlock block={block} />;
-    case 'divider':
-      return <DividerBlock block={block} />;
-    case 'container':
-      return <ContainerBlock block={block} />;
-    case 'spacer':
-      return <SpacerBlock block={block} />;
     case 'iframe':
       return <IframeBlock block={block} />;
     case 'list':

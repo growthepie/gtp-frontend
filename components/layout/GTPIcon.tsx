@@ -25,7 +25,7 @@ export const GTPIconSize: { [key in sizes]: string } = {
   lg: "36px",
 };
 
-const sizeClassMap = {
+export const sizeClassMap = {
   sm: "w-[15px] h-[15px]",
   md: "w-[24px] h-[24px]",
   lg: "w-[36px] h-[36px]",

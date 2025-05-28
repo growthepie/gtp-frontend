@@ -21,20 +21,45 @@ import EthUsdSwitch from './EthUsdSwitch';
 import FocusSwitch from './FocusSwitch';
 import { IconContextMenu } from './IconContextMenu';
 import { useToast } from '../toast/GTPToast';
+import { useNotifications } from '@/hooks/useNotifications';
+import NotificationContent from '@/components/notifications/NotificationContent';
+import { GTPIconName } from '@/icons/gtp-icon-names';
+import { track } from '@vercel/analytics/react';
+import SharePopoverContent from './FloatingBar/SharePopoverContent';
+
+
 export default function GlobalFloatingBar() {
   const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", false);
-  const { isSidebarOpen, toggleSidebar } = useUIContext();
-  // State for search and filters
-  const [searchQuery, setSearchQuery] = useState('');
-  const [results, setResults] = useState<number>(0);
+  const { isMobile, isSidebarOpen, toggleSidebar } = useUIContext();
+
+  const { filteredData, hasUnseenNotifications, markNotificationsAsSeen, isLoading, error } = useNotifications();
+  // State for controlling popover visibility
+  const [isNotificationPopoverOpen, setIsNotificationPopoverOpen] = useState(false);
+  const [isMobileMenuPopoverOpen, setIsMobileMenuPopoverOpen] = useState(false);
+  const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false);
+
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
-  const [selectedFormat, setSelectedFormat] = useState('SVG');
-  const [selectedSize, setSelectedSize] = useState(24);
 
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const isOpen = searchParams.get("search") === "true";
   const [showMore, setShowMore] = useState<{ [key: string]: boolean }>({});
+
+  const handleSharePopoverOpenChange = (openState: boolean) => {
+    const location = isMobile ? 'mobile' : 'desktop';
+    if (openState && !isSharePopoverOpen) { // Opening
+      track("opened Share window", { 
+        location,
+        page: window.location.pathname 
+      });
+    } else if (!openState && isSharePopoverOpen) { // Closing via overlay/escape
+      track("closed Share window by overlay/escape", { 
+        location,
+        page: window.location.pathname 
+      });
+    }
+    setIsSharePopoverOpen(openState);
+  };
 
   // Handle search submission
   const handleSearchSubmit = (query: string) => {
@@ -80,7 +105,7 @@ export default function GlobalFloatingBar() {
   const [isHoveringToggle, setIsHoveringToggle] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [isChangingSidebar, setIsChangingSidebar] = useState(false);
-  const ANIMATION_DURATION = 500;
+  const ANIMATION_DURATION = 200;
 
   const HOVER_ROTATIONS = {
     SIDEBAR_OPEN: {
@@ -96,18 +121,19 @@ export default function GlobalFloatingBar() {
   };
 
   useEffect(() => {
-    if (isChangingSidebar) return;
+    if (isChangingSidebar) return; // 1. THE CRITICAL PART FOR CLICK
+
     if (isSidebarOpen) {
       if (isHoveringToggle) {
-        setRotation(HOVER_ROTATIONS.SIDEBAR_OPEN.HOVER_ON);
+        setRotation(HOVER_ROTATIONS.SIDEBAR_OPEN.HOVER_ON); // 2. Hover effect
       } else {
-        setRotation(HOVER_ROTATIONS.SIDEBAR_OPEN.DEFAULT);
+        setRotation(HOVER_ROTATIONS.SIDEBAR_OPEN.DEFAULT); // 3. Unhover / Default
       }
-    }else{
+    } else { // Sidebar is closed
       if (isHoveringToggle) {
-        setRotation(HOVER_ROTATIONS.SIDEBAR_CLOSED.HOVER_ON);
+        setRotation(HOVER_ROTATIONS.SIDEBAR_CLOSED.HOVER_ON); // 2. Hover effect
       } else {
-        setRotation(HOVER_ROTATIONS.SIDEBAR_CLOSED.DEFAULT);
+        setRotation(HOVER_ROTATIONS.SIDEBAR_CLOSED.DEFAULT); // 3. Unhover / Default
       }
     }
   }, [isHoveringToggle, isSidebarOpen, isChangingSidebar]);
@@ -116,31 +142,41 @@ export default function GlobalFloatingBar() {
 
   return (
     <>
-      <div className={`fixed top-[0px] w-full max-w-[1680px] px-[40px] md:px-[13px] ${isSidebarOpen ? "ml-[253px]" : "ml-[94px]"} transition-[margin] duration-300 z-50 flex justify-center w-full pointer-events-none`}>
-        <div
-          className="bg-[#151a19] z-[-1] relative top-0 left-0 right-0 h-[200px] overflow-hidden pointer-events-none"
-          style={{
-            backgroundPosition: "top",
-            maskImage: `linear-gradient(to bottom, white 0, white 50px, transparent 100px)`,
-          }}
-        >
+      <div className={`fixed z-global-search-backdrop bottom-[-200px] md:bottom-auto md:top-[0px] w-full max-w-[1680px] px-0 md:px-[13px] ${isSidebarOpen ? "md:ml-[253px]" : "md:ml-[94px]"} transition-[margin] duration-sidebar ease-sidebar z-50 flex justify-center w-full`}>
+        <div className="bg-[#151a19] z-[-1] relative bottom-0 top-0 md:bottom-auto md:top-0 left-0 right-0 h-[300px] md:h-[100px] overflow-hidden pointer-events-none sidebar-bg-mask">
           <div className="background-gradient-group">
             <div className="background-gradient-yellow"></div>
             <div className="background-gradient-green"></div>
           </div>
+        </div>
       </div>
-      </div>
-      <div className={`fixed top-[0px] left-0 right-0 z-50 flex justify-center w-full pointer-events-none pt-[30px]`}>
-        <div className="w-full max-w-[1680px] px-[40px] md:px-[13px]">
-          <FloatingBarContainer className='px-[15px] py-[10px]'>
-            {/* Home Button */}
-            <div className={`flex items-center justify-between ${isSidebarOpen ? "w-[230px]" : "w-[60.87px]"} transition-all duration-300`}>
+      <div className={`fixed z-global-search bottom-0 md:bottom-auto md:top-[0px] left-0 right-0 flex justify-center w-full pointer-events-none pb-[30px] md:pb-0 md:pt-[30px]`}>
+        <div className="w-full max-w-[1680px] px-[20px] md:px-[13px]">
+          <FloatingBarContainer className='p-[5px] md:px-[15px] md:py-[10px]'>
+            {/* Mobile - Share Button */}
+            <Popover
+                placement="top-start"
+                isOpen={isSharePopoverOpen}
+                onOpenChange={handleSharePopoverOpenChange}
+                content={
+                  <SharePopoverContent onClose={() => setIsSharePopoverOpen(false)} />
+                }
+                className='block md:hidden'
+                trigger="click"
+              >
+                <FloatingBarButton
+                  icon="gtp-share"
+                  title="Share"
+                />
+              </Popover>
+            {/* Desktop - Home Button */}
+            <div className={`hidden md:flex items-center justify-between w-[50.87px] ${isSidebarOpen ? "md:w-[230px]" : "md:w-[60.87px]"} transition-all duration-sidebar ease-sidebar`}>
               <GTPLogoOld />
               <div className="flex items-center justify-end h-full cursor-pointer " onClick={() => {
-                // track("clicked Sidebar Close", {
-                //   location: "desktop sidebar",
-                //   page: window.location.pathname,
-                // });
+                track("clicked Sidebar Close", {
+                  location: "desktop sidebar",
+                  page: window.location.pathname,
+                });
                 toggleSidebar();
                 setIsChangingSidebar(true);
                 setTimeout(() => {
@@ -149,7 +185,7 @@ export default function GlobalFloatingBar() {
               }}>
                 <Icon
                   icon={isSidebarOpen ? "feather:log-out" : "feather:log-in"}
-                  className={`w-[13.15px] h-[13.15px] transition-transform`}
+                  className={`w-[13.15px] h-[13.15px] transition-transform duration-sidebar ease-sidebar`} // MODIFIED
                   style={{ transform: `rotate(${rotation}deg)` }}
                   onMouseEnter={() => {
                     setIsHoveringToggle(true);
@@ -166,13 +202,6 @@ export default function GlobalFloatingBar() {
               <SearchContainer>
                 <SearchBar showMore={showMore} setShowMore={setShowMore} showSearchContainer={false} />
               </SearchContainer>
-              {/* <SearchInput
-            query={searchQuery}
-            setQuery={setSearchQuery}
-            placeholder="Search..."
-            onEnter={handleSearchSubmit}
-            iconsCount={searchQuery ? results : undefined}
-          /> */}
             </div>
 
             {/* Active Filters Section */}
@@ -192,24 +221,64 @@ export default function GlobalFloatingBar() {
                 </FilterSelectionContainer>
               </div>
             )}
-            <FocusSwitch showBorder={true} />
-            <EthUsdSwitch showBorder={true} />
+            <FocusSwitch showBorder={true} className='hidden md:flex' />
+            <EthUsdSwitch showBorder={true} className='hidden md:flex' />
 
-            {/* Filters Popover */}
+            {/* Desktop - Notifications */}
             <Popover
-              trigger={
-                <FloatingBarButton
-                  icon="gtp:gtp-notification"
-                  title="Filters"
-                />
-              }
+              placement='bottom-end'
+              isOpen={isNotificationPopoverOpen}
+              onOpenChange={(open) => {
+                setIsNotificationPopoverOpen(open);
+                if (open) {
+                  markNotificationsAsSeen();
+                }
+              }}
               content={
-                <div className="p-4 gap-y-3 min-w-[200px] ml-auto mr-0">
-
+                <div
+                  className="p-0 gap-y-3 min-w-[480px] max-h-[70vh] scrollbar-thin scrollbar-thumb-[rgba(136,160,157,0.3)] scrollbar-track-[rgba(0,0,0,0.3)] bg-[#1F2726] border-forest-500 rounded-[12px] overflow-hidden shadow-lg"
+                  style={{ overflowY: 'auto' }}
+                >
+                  <NotificationContent
+                    notifications={filteredData}
+                    isLoading={isLoading}
+                    error={error}
+                  />
                 </div>
               }
-              position="bottom"
-            />
+              className='hidden md:flex'
+              trigger="click"
+            >
+                <FloatingBarButton
+                  icon={(hasUnseenNotifications ? "gtp-notification" : "feather:bell") as GTPIconName}
+                  title="Notifications"
+                />
+            </Popover>
+            {/* Mobile - Menu Button */}
+            <Popover
+              placement='top-end'
+              isOpen={isMobileMenuPopoverOpen}
+              onOpenChange={setIsMobileMenuPopoverOpen}
+              content={
+                <div
+                className="p-0 gap-y-3 w-[calc(100vw-80px)] md:min-w-[480px] ml-auto mr-0 max-h-[70vh] scrollbar-thin scrollbar-thumb-[rgba(136,160,157,0.3)] scrollbar-track-[rgba(0,0,0,0.3)] bg-[#1F2726] border-forest-500 rounded-[12px] overflow-hidden shadow-lg"
+                style={{ overflowY: 'auto' }}
+              >
+                <NotificationContent
+                  notifications={filteredData}
+                  isLoading={isLoading}
+                  error={error}
+                />
+              </div>
+              }
+              className='flex md:hidden'
+              trigger="click"
+            >
+              <FloatingBarButton
+                  icon={(hasUnseenNotifications ? "gtp-notification" : "feather:bell") as GTPIconName}
+                  title="Notifications"
+                />
+            </Popover>
           </FloatingBarContainer>
         </div>
       </div>
@@ -286,7 +355,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <div className="absolute top-[-10px] left-0 w-full p-2.5 bg-[#344240] rounded-[32px] flex flex-col justify-start items-center">
+    <div className="absolute top-[-5px] md:top-[-10px] left-0 w-full p-[5px] md:p-2.5 bg-[#344240] rounded-[32px] flex flex-col justify-start items-center">
       {/* Add a wrapper div that will handle the overflow */}
       <div ref={contentRef} className="w-full flex-1 overflow-hidden flex flex-col min-h-0">
         <div className={`w-full bg-[#151A19] rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>
@@ -440,10 +509,10 @@ const GTPLogoOld = () => {
   return (
     <Link
       href="/"
-      className={`${isSidebarOpen ? "relative h-[45.07px] w-[192.87px] block" : "relative h-[45.07px] w-[62px] overflow-clip"} transition-all duration-300`}
+      className={`${isSidebarOpen ? "relative h-[45.07px] w-[192.87px] block" : "relative h-[45.07px] w-[62px] overflow-clip"} transition-all duration-sidebar ease-sidebar`}
     >
       <IconContextMenu getSvgData={getLogoSvgData} itemName="gtp-logo-full" wrapperClassName="block h-full w-full">
-        <div className={`h-[45.07px] w-[192.87px] relative ${isSidebarOpen ? "translate-x-[1.5px]" : "translate-x-[1.5px]"} transition-all duration-300`} style={{ transformOrigin: "21px 27px" }}>
+        <div className={`h-[45.07px] w-[192.87px] relative ${isSidebarOpen ? "translate-x-[1.5px]" : "translate-x-[1.5px]"} transition-all duration-sidebar ease-sidebar`} style={{ transformOrigin: "21px 27px" }}>
           <svg className="absolute" viewBox="0 0 194 46" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M13.1034 14.7805C13.0263 13.704 13.3194 12.7156 13.9484 11.7572C14.3695 11.1201 14.9667 10.4321 15.6257 9.67423C17.3256 7.7165 19.4313 5.29317 19.9468 2.08203C21.0677 4.54348 20.5241 6.93686 19.2833 9.13783C18.7252 10.1271 18.1071 10.8378 17.5171 11.5158C16.8228 12.3136 16.1684 13.066 15.6983 14.1724C15.4396 14.7741 15.2926 15.3504 15.2236 15.9141L13.1034 14.7805Z" fill="url(#paint0_radial_22480_56536)" />
             <path d="M16.7412 16.7279C16.9999 15.7786 17.4473 14.8909 18.0418 14.0296C18.5337 13.3107 18.9948 12.778 19.4087 12.2997C20.801 10.6887 21.665 9.68846 21.4118 4.28906C21.5743 4.63577 21.7349 4.96977 21.891 5.29198L21.8919 5.29379C23.2497 8.11284 24.2027 10.0896 22.6017 12.8043C21.8102 14.1458 21.233 14.8129 20.7229 15.4028C20.1484 16.0663 19.6583 16.6335 19.042 17.9532L16.7412 16.7279Z" fill="url(#paint1_radial_22480_56536)" />
@@ -494,7 +563,7 @@ const GTPLogoOld = () => {
             </defs>
 
           </svg>
-          <svg className={`absolute ${isSidebarOpen ? "opacity-100" : "opacity-0"} transition-all duration-300`} viewBox="0 0 193 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg className={`absolute ${isSidebarOpen ? "opacity-100" : "opacity-0"} transition-all duration-sidebar ease-sidebar`} viewBox="0 0 193 46" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M159.866 26.7579C159.866 23.078 157.303 20.4111 153.621 20.4111C149.892 20.4111 147.276 23.1241 147.276 26.8765C147.276 30.9337 149.933 33.1986 154.64 33.1986C156.18 33.2039 157.699 32.8314 159.067 32.1131L158.461 29.7065C157.227 30.3209 155.858 30.6948 154.662 30.6948C152.222 30.6948 150.748 29.6324 150.585 27.8171H159.789C159.818 27.5601 159.866 27.1352 159.866 26.7579ZM150.522 25.8141C150.684 24.1388 151.872 22.9363 153.597 22.9363C155.321 22.9363 156.511 24.1388 156.673 25.8141H150.522Z" fill="#CDD8D3" />
             <path d="M145.883 16H142.761V19.138H145.883V16Z" fill="#CDD8D3" />
             <path d="M145.883 20.624H142.761V32.9865H145.883V20.624Z" fill="#CDD8D3" />

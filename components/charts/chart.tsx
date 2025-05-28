@@ -748,7 +748,7 @@ export const Chart = ({
                 />
               </div>
               <div
-                className="absolute left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50"
+                className="absolute left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-20"
                 style={{
                   top:
                     parseInt(chartHeight, 10) <= 400
@@ -760,7 +760,7 @@ export const Chart = ({
                   className={`h-[30.67px] md:h-[46px] ${parseInt(chartHeight, 10) > 200
                     ? "w-[128px] md:w-[163px]"
                     : "w-[128.67px] md:w-[193px] "
-                    } text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten`}
+                    } text-forest-300 dark:text-[#EAECEB]`}
                 />
               </div>
             </div>

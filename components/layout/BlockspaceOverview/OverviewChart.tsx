@@ -42,6 +42,7 @@ import { fill } from "lodash";
 import { useMaster } from "@/contexts/MasterContext";
 import { fullBrowserVersion } from "react-device-detect";
 import "@/app/highcharts.axis.css";
+import ChartWatermark from "../ChartWatermark";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -800,7 +801,7 @@ export default function OverviewChart({
     <>
       <div className="w-full h-[249px] flex items-center">
         <div
-          className={`bg-blend-lighten h-full ${!allCats && selectedValue === "share" ? "w-[96%]" : "w-full"
+          className={`relative bg-blend-lighten h-full ${!allCats && selectedValue === "share" ? "w-[96%]" : "w-full"
             }`}
         >
           <HighchartsProvider Highcharts={Highcharts}>
@@ -1152,6 +1153,9 @@ export default function OverviewChart({
               </YAxis>
             </HighchartsChart>
           </HighchartsProvider>
+          <div className="absolute bottom-[60px] top-[30px] left-[43px] right-[10px] flex items-center justify-center pointer-events-none z-0 opacity-20">
+            <ChartWatermark className="w-[128.67px] md:w-[192.87px] text-forest-300 dark:text-[#EAECEB]" />
+          </div>
         </div>
         {chartAvg && (
           <div

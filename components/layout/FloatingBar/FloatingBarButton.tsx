@@ -1,11 +1,12 @@
-import React from 'react';
-import { GTPIcon } from "@/components/layout/GTPIcon";
+import React, { useMemo } from 'react';
+import { GTPIcon, sizeClassMap } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import { Icon } from '@iconify/react';
 
 interface FloatingBarButtonProps {
   onClick?: () => void;
   label?: string;
-  icon?: string | GTPIconName;
+  icon?: GTPIconName;
   iconPosition?: 'left' | 'right';
   size?: 'sm' | 'md' | 'lg';
   className?: string;
@@ -37,6 +38,15 @@ export const FloatingBarButton: React.FC<FloatingBarButtonProps> = ({
     return `${baseClasses} gap-x-[10px] ${size === 'sm' ? 'px-[10px] h-[30px]' : 'px-[15px] h-[44px]'}`;
   };
 
+  const iconComponent = useMemo(() => {
+    if (!icon) return null;
+    if(icon.includes(":")) {
+      return <Icon icon={icon} className={sizeClassMap[size]} />;
+    }
+
+    return <GTPIcon icon={icon} size={size === 'sm' ? 'sm' : 'md'} />;
+  }, [icon, size]);
+
   return (
     <button
       className={`${getBaseClasses()} ${className}`}
@@ -45,10 +55,7 @@ export const FloatingBarButton: React.FC<FloatingBarButtonProps> = ({
     >
       {/* Icon on the left if iconPosition is 'left' and icon exists */}
       {icon && iconPosition === 'left' && (
-        <GTPIcon 
-          icon={icon as GTPIconName} 
-          size={size === 'sm' ? 'sm' : 'md'} 
-        />
+        iconComponent
       )}
       
       {/* Label if provided */}
@@ -58,10 +65,7 @@ export const FloatingBarButton: React.FC<FloatingBarButtonProps> = ({
       
       {/* Icon on the right if iconPosition is 'right' and icon exists */}
       {icon && iconPosition === 'right' && (
-        <GTPIcon 
-          icon={icon as GTPIconName} 
-          size={size === 'sm' ? 'sm' : 'md'} 
-        />
+        iconComponent
       )}
       
       {/* Badge if showBadge is true */}
