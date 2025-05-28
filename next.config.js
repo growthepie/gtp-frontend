@@ -15,6 +15,12 @@ const nextConfig = {
               type: "host",
               value: "fees.growthepie.xyz",
             },
+          ],
+          destination: "/fees",
+        },
+        {
+          source: "/",
+          has: [
             {
               type: "host",
               value: "fees.growthepie.com",
@@ -29,6 +35,12 @@ const nextConfig = {
               type: "host",
               value: "dev.fees.growthepie.xyz",
             },
+          ],
+          destination: "/fees",
+        },
+        {
+          source: "/",
+          has: [
             {
               type: "host",
               value: "dev.fees.growthepie.com",
@@ -43,6 +55,12 @@ const nextConfig = {
               type: "host",
               value: "labels.growthepie.xyz",
             },
+          ],
+          destination: "/labels",
+        },
+        {
+          source: "/",
+          has: [
             {
               type: "host",
               value: "labels.growthepie.com",
@@ -57,6 +75,12 @@ const nextConfig = {
               type: "host",
               value: "dev.labels.growthepie.xyz",
             },
+          ],
+          destination: "/labels",
+        },
+        {
+          source: "/",
+          has: [
             {
               type: "host",
               value: "dev.labels.growthepie.com",
@@ -71,6 +95,12 @@ const nextConfig = {
               type: "host",
               value: "icons.growthepie.xyz",
             },
+          ],
+          destination: "/icons",
+        },
+        {
+          source: "/",
+          has: [
             {
               type: "host",
               value: "icons.growthepie.com",
@@ -85,6 +115,12 @@ const nextConfig = {
               type: "host",
               value: "dev.icons.growthepie.xyz",
             },
+          ],
+          destination: "/icons",
+        },
+        {
+          source: "/",
+          has: [
             {
               type: "host",
               value: "dev.icons.growthepie.com",
