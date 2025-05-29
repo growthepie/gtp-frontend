@@ -5,68 +5,52 @@ const arbitrumTimeboost: QuickBiteData = {
   title: "Timeboost: An Express Lane for Arbitrum",
   subtitle: "FCFS is over.",
   content: [
-    "> Total ETH paid in Timeboost fees: {{timeboostTotalETH}} ETH.",
 
-    "## What is Timeboost?",
-    "It's cool!",
-
-    "## Money for DAO",
-    "The Blob target was doubled from 3 to 6, and the limit was raised from 6 to 9. This means more blobs for Layer 2s and it takes longer for the Blob fee market to kick in.",
-    "The following chart shows how close we are to the new Blob target. When the number of blobs submitted per block exceeds the target, the Blob fee market will kick in and increase the cost per blob (using the EIP-1559 mechanism).",
-
+    "# Timeboost Usage",
+    "The introduction of Arbitrum Timeboost has been a great success. It started to generate significant revenue from day one.",
+    "> Total DAO Revenue from Timeboost on Arbitrum: {{timeboostTotalETH}} ETH.",
+    
     "```chart",
     JSON.stringify({
       type: "column",
       title: "Daily Timeboost Revenue in ETH",
-      subtitle: "The amount of money that Arbitrum DAO is making from Timeboost per day",
+      subtitle: "The revenue that the Arbitrum DAO is making from Timeboost on Arbitrum per day",
       stacking: "normal",
       showXAsDate: true,
       dataAsJson: {
         meta: [
           {
             name: "Timeboost Fees",
-            color: "#19D9D6",
+            color: "#1DF7EF",
             xIndex: 1,
             yIndex: 0,
             suffix: 'ETH',
             prefix: null,
             url: "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json",
             pathToData: "data.fees_paid_priority_eth.daily.values",
-          },
-          {
-            name: "Network Fees",
-            color: "#FFC300",
-            xIndex: 1,
-            yIndex: 0,
-            suffix: 'ETH',
-            prefix: null,
-            url: "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json",
-            pathToData: "data.fees_paid_base_eth.daily.values",
           }
         ],
       },
       height: 400,
-      caption: "The amount of money that Arbitrum DAO is making from Timeboost per day. Data updated daily.",
-      seeMetricURL: "https://www.growthepie.com/economics"
+      caption: "The revenue that the Arbitrum DAO is making from Timeboost on Arbitrum per day. Data updated daily.",
     }),
     "```",
 
-    "## EIP-7702: Smarter Wallets",
-    "EIP-7702 introduces a new transaction type that allows wallets to act as smart accounts. This improves the user experience by enabling wallets to pay network fees with custom gas tokens, delegate transactions, and more.",
-    "The following chart shows the adoption of EIP-7702 wallets by visualizing the daily number of Set Code transactions on EVM chains (aka Type 4 transactions).",
+    "## Timeboost vs Network Fees",
+    "In addition to revenue from Timeboost, the Arbitrum DAO also receivs the standard transaction fees that users pay. The following chart allows you to track the share of Timeboost fees vs Network fees in ETH.",
 
     "```chart",
     JSON.stringify({
       type: "area",
-      title: "Daily Timeboost Revenue in ETH",
-      subtitle: "The amount of money that Arbitrum DAO is making from Timeboost per day",
+      title: "Timeboost vs Network Fees in ETH",
+      subtitle: "The share of Revenue that the Arbitrum DAO is making from Timeboost vs Network Fees",
       stacking: "percent",
       showXAsDate: true,
       dataAsJson: {
         meta: [
           {
             name: "Timeboost Fees",
-            color: "#19D9D6",
+            color: "#1DF7EF",
             xIndex: 1,
             yIndex: 0,
             suffix: '%',
@@ -76,7 +60,7 @@ const arbitrumTimeboost: QuickBiteData = {
           },
           {
             name: "Network Fees",
-            color: "#FFC300",
+            color: "#FFDF27",
             xIndex: 1,
             yIndex: 0,
             suffix: '%',
@@ -87,12 +71,46 @@ const arbitrumTimeboost: QuickBiteData = {
         ],
       },
       height: 400,
-      caption: "The amount of money that Arbitrum DAO is making from Timeboost per day. Data updated daily.",
+      caption: "The share of Revenue that the Arbitrum DAO is making from Timeboost vs Network Feess. Data updated daily.",
       seeMetricURL: "https://www.growthepie.com/economics"
     }),
     "```",
 
-    "All charts on this page are updated daily so you can track the adoption of the Pectra upgrades over time.",
+    "# What is Timeboost?",
+    "Timeboost went live on April 17th. It allows Arbitrum to better capitalize on MEV by providing express lane access for users. Until the introduction of Timeboost, Arbitrum had been operating on a FCFS (First-Come, First-Serve) basis. Though it provides great UX it also introduced a lot of spam by searchers that attempted to extract MEV.",
+    "Timeboost is a new transaction ordering policy that preserves many of the great benefits of FCFS while unlocking a path for chain owners to capture some of the available MEV on their network and introducing an auction to reduce latency, racing, and, ultimately, spam.",
+
+    "## Timeboost is implemented using three separate components that work together:",
+
+    "- A special “express lane” which allows valid transactions to be sequenced as soon as the sequencer receives them for a given round.",
+    
+    "```image",
+    JSON.stringify({
+      src: "https://api.growthepie.com/v1/quick-bites/timeboost-express-lane.png",
+      alt: "Timeboost Express Lane",
+      width: "800",
+      height: "400",
+      caption: "Timeboost Express Lane",
+    }),
+    "```",
+    
+    "- An offchain auction to determine the controller of the express lane for a given round. This auction is managed by an autonomous auctioneer.",
+    
+    "```image",
+    JSON.stringify({
+      src: "https://api.growthepie.com/v1/quick-bites/timeboost-auction-flow.png",
+      alt: "Timeboost Auction Flow",
+      width: "800",
+      height: "400",
+      caption: "Timeboost Auction Flow",
+    }),
+    "```",
+    
+    "- An auction contract deployed on the target chain to serve as the canonical source of truth for the auction results and handling of auction proceeds.",
+
+    "A more detailed explanation of Timeboost can be found here: https://docs.arbitrum.io/how-arbitrum-works/timeboost/gentle-introduction",
+
+    "All charts on this page are updated daily so you can track the adoption of Timeboost.",
   ],
   image: "/images/quick-bites/pectra-tx-type-4.png",
   og_image: "https://api.growthepie.com/v1/og_images/quick-bites/pectra-upgrade.png",
