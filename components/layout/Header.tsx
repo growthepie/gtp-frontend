@@ -5,7 +5,7 @@ import Sidebar from "./Sidebar";
 import Icon from "./Icon";
 import EthUsdSwitch from "./EthUsdSwitch";
 import { useMediaQuery } from "usehooks-ts";
-
+import { useLocalStorage } from 'usehooks-ts';
 import Banner from "@/components/Banner";
 import SupportUsBanner from "./SupportUsBanner";
 import Notification from "@/components/Notification";
@@ -19,6 +19,8 @@ import { LogoContextMenu } from "./SidebarContainer";
 export default function Header() {
   // const [isOpen, setIsOpen] = useState<boolean>(false)
   const isMobile = useMediaQuery("(max-width: 767px)");
+  const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", false);
+
   return (
     <>
       <header className="flex justify-between space-x-0 xl:space-x-6 items-start max-w-[1600px] w-full mx-auto px-[20px] pt-[20px] md:px-[50px] md:pt-[52px]">
@@ -93,11 +95,14 @@ export default function Header() {
               </Link>
               </LogoContextMenu>
               <div className="relative flex gap-[5px] justify-center items-end h-[37px] pr-[calc(10px+24px)]">
-                <Notification />
+                
               
-                  {/* <div className={`${isMobile ? "block" : "hidden"} w-auto relative -left-[48px] -top-[5px]`}> */}
-                    <HeaderSearchButton />
-                  {/* </div> */}
+                  {!showGlobalSearchBar && (
+                    <>
+                      <Notification />
+                      <HeaderSearchButton />
+                    </>
+                  )}
              
                 <div className="w-auto">
                   <Sidebar isMobile={true} />
@@ -110,8 +115,8 @@ export default function Header() {
           <div className="items-center z-10 hidden md:flex md:gap-x-[20px]">
             <FocusSwitch />
             <EthUsdSwitch />
-            <HeaderSearchButton />
-            </div>
+            {!showGlobalSearchBar && <HeaderSearchButton />}
+          </div>
         </div>
       </header>
       <SearchComponent />

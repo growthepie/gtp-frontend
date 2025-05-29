@@ -45,6 +45,59 @@ export default function GlobalFloatingBar() {
   const isOpen = searchParams.get("search") === "true";
   const [showMore, setShowMore] = useState<{ [key: string]: boolean }>({});
 
+  const [isSearchInputFocusedMobile, setIsSearchInputFocusedMobile] = useState(false);
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Handlers for search input focus/blur
+  const handleSearchInputFocus = useCallback(() => {
+    if (isMobile) {
+      setIsSearchInputFocusedMobile(true);
+    }
+  }, [isMobile]);
+
+  const handleSearchInputBlur = useCallback(() => {
+    // Delay blur handling to allow clicks on search results or other UI elements
+    setTimeout(() => {
+      if (isMobile) {
+        setIsSearchInputFocusedMobile(false);
+      }
+    }, 150); // 150ms delay, adjust if needed
+  }, [isMobile]);
+
+  // Effect for '/' and 'Escape' key press
+  useEffect(() => {
+    const handleGlobalKeyDown = (event: KeyboardEvent) => {
+      const targetElement = event.target as HTMLElement;
+      const isTypingInInput =
+        targetElement.tagName === 'INPUT' ||
+        targetElement.tagName === 'TEXTAREA' ||
+        targetElement.isContentEditable;
+
+      if (event.key === '/') {
+        // If '/' is pressed and we are NOT typing in an input/textarea/editable field
+        if (!isTypingInInput) {
+          event.preventDefault(); // Prevent default browser action (e.g., find)
+          searchInputRef.current?.focus(); // Focus the search input
+        }
+        // If search input itself is focused and '/' is pressed, do nothing, let '/' be typed.
+      } else if (event.key === 'Escape') {
+        // If Escape is pressed and the search input is currently focused
+        if (document.activeElement === searchInputRef.current) {
+          searchInputRef.current?.blur(); // Blur the search input
+          // Optionally, if you have other actions for Escape (like closing search results popover),
+          // you might want to call them here or let them be handled by their own Escape listeners.
+          // event.preventDefault(); // Could be added if Escape has other unwanted default actions in this context
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleGlobalKeyDown);
+    };
+  }, []); // Empty dependency array: runs once on mount, cleans up on unmount
+
   const handleSharePopoverOpenChange = (openState: boolean) => {
     const location = isMobile ? 'mobile' : 'desktop';
     if (openState && !isSharePopoverOpen) { // Opening
@@ -140,17 +193,33 @@ export default function GlobalFloatingBar() {
 
   if (!showGlobalSearchBar) return null;
 
+  const mobileTransformAmount = '-translate-y-[600px]'; 
+  const currentMobileTransform = isMobile && isSearchInputFocusedMobile && true ? mobileTransformAmount : 'translate-y-0';
+
   return (
     <>
-      <div className={`fixed z-global-search-backdrop bottom-[-200px] md:bottom-auto md:top-[0px] w-full max-w-[1680px] px-0 md:px-[13px] ${isSidebarOpen ? "md:ml-[253px]" : "md:ml-[94px]"} transition-[margin] duration-sidebar ease-sidebar z-50 flex justify-center w-full`}>
-        <div className="bg-[#151a19] z-[-1] relative bottom-0 top-0 md:bottom-auto md:top-0 left-0 right-0 h-[300px] md:h-[100px] overflow-hidden pointer-events-none sidebar-bg-mask">
+      <div className={`
+        fixed z-global-search-backdrop w-full max-w-[1680px] px-0 md:px-[13px]
+        ${isSidebarOpen ? "md:ml-[253px]" : "md:ml-[94px]"} 
+        transition-[margin] duration-sidebar ease-sidebar 
+        z-50 flex justify-center
+        ${isMobile ? `bottom-[-800px]` : `md:bottom-auto md:top-[0px]`}
+        ${currentMobileTransform}
+        transition-transform duration-300 ease-in-out pointer-events-none
+      `}>
+        <div className="bg-[#151a19] z-[-1] relative bottom-0 top-0 md:bottom-auto md:top-0 left-0 right-0 h-[1000px] md:h-[100px] overflow-hidden pointer-events-none sidebar-bg-mask">
           <div className="background-gradient-group">
             <div className="background-gradient-yellow"></div>
             <div className="background-gradient-green"></div>
           </div>
         </div>
       </div>
-      <div className={`fixed z-global-search bottom-0 md:bottom-auto md:top-[0px] left-0 right-0 flex justify-center w-full pointer-events-none pb-[30px] md:pb-0 md:pt-[30px]`}>
+      <div className={`
+        fixed z-global-search left-0 right-0 flex justify-center w-full pointer-events-none
+        ${isMobile ? `bottom-0 pb-[30px]` : `md:bottom-auto md:top-[0px] md:pb-0 md:pt-[30px]`}
+        ${currentMobileTransform} {/* Apply transform for mobile */}
+        transition-transform duration-300 ease-in-out {/* Added for smooth transform animation */}
+      `}>
         <div className="w-full max-w-[1680px] px-[20px] md:px-[13px]">
           <FloatingBarContainer className='p-[5px] md:px-[15px] md:py-[10px]'>
             {/* Mobile - Share Button */}
@@ -198,9 +267,17 @@ export default function GlobalFloatingBar() {
             </div>
 
             {/* Search Bar */}
-            <div className="flex-1 min-w-0 relative h-[44px]">
+            <div className={`flex-1 min-w-0 relative h-[44px] ${isMobile && isSearchInputFocusedMobile && "-mx-[55px]"} transition-[margin] duration-200`}>
               <SearchContainer>
-                <SearchBar showMore={showMore} setShowMore={setShowMore} showSearchContainer={false} />
+                <SearchBar 
+                  ref={searchInputRef}
+                  showMore={showMore} 
+                  setShowMore={setShowMore} 
+                  showSearchContainer={false}
+
+                  onInputFocus={handleSearchInputFocus}
+                  onInputBlur={handleSearchInputBlur}
+                />
               </SearchContainer>
             </div>
 
