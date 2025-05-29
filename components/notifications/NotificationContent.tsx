@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import Link from "next/link";
 import type { NotificationType } from "@/app/api/notifications/route";
 import { GTPIcon } from '../layout/GTPIcon';
+import { GTPIconName } from '@/icons/gtp-icon-names';
 
 interface NotificationContentProps {
   notifications: NotificationType[] | null;
@@ -45,7 +46,7 @@ const NotificationContent = ({ notifications, isLoading, error }: NotificationCo
               target="_blank"
             >
               <GTPIcon
-                icon={(item.icon ? item.icon : "gtp-notification-monochrome") as GTPIcon}
+                icon={(item.icon ? item.icon : "gtp-notification-monochrome") as GTPIconName}
                 size="sm"
                 className="text-[#5A6462]"
               />
@@ -58,7 +59,7 @@ const NotificationContent = ({ notifications, isLoading, error }: NotificationCo
                 </div>
               </div>
               <div className="w-[24px] h-[24px] min-w-[24px] pr-[20px] self-center">
-                <GTPIcon icon={"feather:chevron-right" as GTPIcon} size="md" />
+                <GTPIcon icon={"feather:chevron-right" as GTPIconName} size="md" />
               </div>
             </Link>
           ) : (
@@ -68,7 +69,7 @@ const NotificationContent = ({ notifications, isLoading, error }: NotificationCo
               }`}
             >
               <GTPIcon
-                icon={(item.icon ? item.icon : "gtp-notification-monochrome") as GTPIcon}
+                icon={(item.icon ? item.icon : "gtp-notification-monochrome") as GTPIconName}
                 size="sm"
                 className="text-[#5A6462]"
               />

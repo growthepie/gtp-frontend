@@ -17,8 +17,8 @@ import Link from "next/link";
 import { HeaderButton } from "../layout/HeaderButton";
 import { debounce } from "lodash";
 import { numberFormat } from "highcharts";
-import { B } from "million/dist/shared/million.485bbee4";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+import type { InputHTMLAttributes } from 'react';
 
 function normalizeString(str: string) {
   return str.toLowerCase().replace(/\s+/g, '');
@@ -186,6 +186,8 @@ interface SearchBarProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'on
   showSearchContainer?: boolean;
   onInputFocus?: () => void;
   onInputBlur?: () => void;
+  onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
+  onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
 }
 
 export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
