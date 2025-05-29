@@ -405,6 +405,8 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
   }
 );
 
+SearchBar.displayName = "SearchBar";
+
 // hook to get search buckets and total matches
 export const useSearchBuckets = () => {
   const { AllChainsByKeys } = useMaster();
