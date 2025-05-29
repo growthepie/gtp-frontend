@@ -3,7 +3,7 @@ import { QuickBiteData } from '@/lib/types/quickBites';
 
 const arbitrumTimeboost: QuickBiteData = {
   title: "Timeboost: An Express Lane for Arbitrum",
-  subtitle: "FCFS is over.",
+  subtitle: "Timeboost allows to better capitalize on MEV by providing express lane access for users",
   content: [
 
     "# Timeboost Usage",
