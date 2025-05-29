@@ -50,13 +50,7 @@ export function useNotifications() {
         currentDateTime < record.endTimestamp &&
         urlEnabled(record.displayPages ? record.displayPages : ""),
     );
-    return [...filtered, ...filtered.map((n) => {
-      return {
-        ...n,
-        url: n.url ? undefined : n.url,
-      }
-
-    })];
+    return filtered;
   }, [data, urlEnabled]);
 
   // Determine if there are any unseen notifications

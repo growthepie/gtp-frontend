@@ -236,9 +236,15 @@ export default function GlobalFloatingBar() {
               }}
               content={
                 <div
-                  className="p-0 gap-y-3 min-w-[480px] max-h-[70vh] scrollbar-thin scrollbar-thumb-[rgba(136,160,157,0.3)] scrollbar-track-[rgba(0,0,0,0.3)] bg-[#1F2726] border-forest-500 rounded-[12px] overflow-hidden shadow-lg"
+                  className="flex flex-col py-[15px] gap-y-[5px] max-w-[532px] max-h-[70vh] scrollbar-thin scrollbar-thumb-[rgba(136,160,157,0.3)] scrollbar-track-[rgba(0,0,0,0.3)] bg-[#1F2726] border-forest-500 rounded-[12px] overflow-hidden shadow-lg"
                   style={{ overflowY: 'auto' }}
                 >
+                  <div className="flex pl-[15px] gap-x-[15px]">
+                    <GTPIcon icon={(hasUnseenNotifications ? "gtp-notification-new" : "gtp-notification") as GTPIconName} size="sm" />
+                    <div className="heading-small-xs">
+                      Notification Center
+                    </div>
+                  </div>
                   <NotificationContent
                     notifications={filteredData}
                     isLoading={isLoading}
@@ -250,7 +256,7 @@ export default function GlobalFloatingBar() {
               trigger="click"
             >
                 <FloatingBarButton
-                  icon={(hasUnseenNotifications ? "gtp-notification" : "feather:bell") as GTPIconName}
+                  icon={(hasUnseenNotifications ? "gtp-notification-new" : "gtp-notification") as GTPIconName}
                   title="Notifications"
                 />
             </Popover>
@@ -261,9 +267,15 @@ export default function GlobalFloatingBar() {
               onOpenChange={setIsMobileMenuPopoverOpen}
               content={
                 <div
-                className="p-0 gap-y-3 w-[calc(100vw-80px)] md:min-w-[480px] ml-auto mr-0 max-h-[70vh] scrollbar-thin scrollbar-thumb-[rgba(136,160,157,0.3)] scrollbar-track-[rgba(0,0,0,0.3)] bg-[#1F2726] border-forest-500 rounded-[12px] overflow-hidden shadow-lg"
+                className="flex flex-col py-[15px] gap-y-[5px] max-w-[532px] w-[calc(100vw-80px)] md:min-w-[480px] ml-auto mr-0 max-h-[70vh] scrollbar-thin scrollbar-thumb-[rgba(136,160,157,0.3)] scrollbar-track-[rgba(0,0,0,0.3)] bg-[#1F2726] border-forest-500 rounded-[12px] overflow-hidden shadow-lg"
                 style={{ overflowY: 'auto' }}
               >
+                <div className="flex pl-[15px] gap-x-[15px]">
+                  <GTPIcon icon={(hasUnseenNotifications ? "gtp-notification-new" : "gtp-notification") as GTPIconName} size="sm" />
+                  <div className="heading-small-xs">
+                    Notification Center
+                  </div>
+                </div>
                 <NotificationContent
                   notifications={filteredData}
                   isLoading={isLoading}
@@ -275,7 +287,7 @@ export default function GlobalFloatingBar() {
               trigger="click"
             >
               <FloatingBarButton
-                  icon={(hasUnseenNotifications ? "gtp-notification" : "feather:bell") as GTPIconName}
+                  icon={(hasUnseenNotifications ? "gtp-notification-new" : "gtp-notification") as GTPIconName}
                   title="Notifications"
                 />
             </Popover>
