@@ -194,7 +194,7 @@ export default function GlobalFloatingBar() {
   if (!showGlobalSearchBar) return null;
 
   const mobileTransformAmount = '-translate-y-[600px]'; 
-  const currentMobileTransform = isMobile && isSearchInputFocusedMobile && true ? mobileTransformAmount : 'translate-y-0';
+  const currentMobileTransform = isMobile && isSearchInputFocusedMobile ? mobileTransformAmount : 'translate-y-0';
 
   return (
     <>
