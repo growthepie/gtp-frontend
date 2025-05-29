@@ -261,7 +261,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         <div className="w-full h-auto pl-[10px] pr-[5px] py-[5px] bg-[#1F2726] rounded-full">
           <div className="flex items-center justify-center md:justify-between">
             <div className="flex items-center gap-x-[5px]">
-              <div className="w-fit h-fit"><GTPIcon icon={"gtp-metrics-totalvaluelocked"} className="w-[24px] h-[24px] "/></div>
+              <div className="w-fit h-fit"><GTPIcon icon={"gtp-quick-bites"} className="w-[24px] h-[24px] "/></div>
               <div className="heading-small-md">{title}</div>
             </div>
           </div>
