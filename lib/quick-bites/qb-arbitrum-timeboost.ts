@@ -8,7 +8,7 @@ const arbitrumTimeboost: QuickBiteData = {
 
     "# Timeboost Usage",
     "The introduction of Arbitrum Timeboost has been a great success. It started to generate significant revenue from day one.",
-    "> Total DAO Revenue from Timeboost on Arbitrum: {{timeboostTotalETH}} ETH.",
+    "> Total DAO Revenue from Timeboost on Arbitrum to date: ${{timeboostTotalUSD}} or {{timeboostTotalETH}} ETH.",
     
     "```chart",
     JSON.stringify({
