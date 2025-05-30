@@ -34,8 +34,6 @@ module.exports = {
         mono: ["var(--font-fira-mono)", ...defaultTheme.fontFamily.mono], 
         num: ["var(--font-fira-sans)", "sans-serif"],
         "source-code-pro": ["var(--font-source-code-pro)", "sans-serif"],
-        // "fira-sans": ["var(--font-fira-sans)", "sans-serif"],
-        // ...figmaStyles.theme.extend.fontFamily,
       },
       fontSize: {
         'xxxs': '9px',
@@ -71,7 +69,7 @@ module.exports = {
         negative: "#FF3838",
         forest: {
           DEFAULT: "#293332",
-          50: "#EAECEB", // updated
+          50: "#EAECEB",
           100: "#F0F5F3",
           200: "#B5C4C3",
           300: "#9FB2B0",
@@ -486,7 +484,6 @@ module.exports = {
 
       addUtilities(newUtilities, ["responsive", "hover"]);
     },
-    // ...figmaStyles.plugins,
     function({ addUtilities, theme }) {
       // Define base styles for each category
       const baseStyles = {
