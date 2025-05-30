@@ -1,6 +1,5 @@
 // File: components/quick-bites/ChartWrapper.tsx
 'use client';
-import addHighchartsMore from "highcharts/highcharts-more";
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Highcharts from 'highcharts/highstock';
 import {
@@ -9,11 +8,7 @@ import {
   Chart,
   XAxis,
   YAxis,
-  Title,
-  Subtitle,
-  Legend,
   Tooltip,
-  Series,
   LineSeries,
   AreaSeries,
   ColumnSeries,
@@ -26,11 +21,9 @@ import { debounce } from 'lodash';
 import { useTheme } from 'next-themes';
 import ChartWatermark from '@/components/layout/ChartWatermark';
 import "@/app/highcharts.axis.css";
-import { Type } from "@/types/api/CategoryComparisonResponse";
 import { GTPIcon } from "../layout/GTPIcon";
 import { Icon } from "@iconify/react";
 import type { AxisLabelsFormatterContextObject } from 'highcharts';
-import { useUIContext } from "@/contexts/UIContext";
 import moment from "moment";
 
 let highchartsInitialized = false;
@@ -52,6 +45,7 @@ interface ChartWrapperProps {
       yIndex: number,
       suffix?: string,
       prefix?: string,
+      tooltipDecimals?: number,
       dashStyle?: Highcharts.DashStyleValue
     }[]
   }
@@ -79,7 +73,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [filteredNames, setFilteredNames] = useState<string[]>([]);
-  const {isMobile} = useUIContext();
+
   
   // Add timespans and selectedTimespan
   const timespans = {
@@ -143,80 +137,51 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     function (this: any) {
       const { x, points } = this;
       let dateString = moment.utc(x).utc().locale("en-GB").format("DD MMM YYYY");
-      const chartTitle = this.series.chart.title.textStr;
-      const useJson = jsonMeta ? true : false;
-      const isArray = Array.isArray(jsonMeta?.meta);
       const total = points.reduce((acc: number, point: any) => {
         acc += point.y;
         return acc;
       }, 0);
-     
-      const suffix = points.map((point: any) => (point.series.suffix ? point.series.suffix : ""));
-      const prefix = points.map((point: any) => (point.series.prefix ? point.series.prefix : ""));
-
-      // check if data steps are less than 1 day
-      // if so, add the time to the tooltip
-      const timeDiff = points[0].series.xData[1] - points[0].series.xData[0];
-
 
       const tooltip = `<div class="mt-3 mr-3 mb-3  text-xs font-raleway rounded-full bg-opacity-60">
         <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2 ">${dateString}</div>`;
       const tooltipEnd = `</div>`;
-
-      // let pointsSum = 0;
-      // if (selectedScale !== "percentage")
-      let pointsSum = points.reduce((acc: number, point: any) => {
-        acc += point.y;
-        return acc;
-      }, 0);
-
-      let pointSumNonNegative = points.reduce((acc: number, point: any) => {
-        if (point.y > 0) acc += point.y;
-        return acc;
-      }, 0);
-
-      const maxPoint = points.reduce((max: number, point: any) => {
-        if (point.y > max) max = point.y;
-        return max;
-      }, 0);
-
-      const maxPercentage = points.reduce((max: number, point: any) => {
-        if (point.percentage > max) max = point.percentage;
-        return max;
-      }, 0);
 
       const tooltipPoints = points
         .map((point: any, index: number) => {
           const { series, y, percentage } = point;
           const { name } = series;
           
-          const isFees = true;
           const nameString = name.slice(0, 20);
           
           const color = series.color.stops ? series.color.stops[0][1] : series.color;
 
-          let value = y;
-          let displayValue = stacking === "percent" ? (y / total) * 100 : y;
           const currentPrefix = jsonMeta?.meta[index].prefix || '';
           const currentSuffix = jsonMeta?.meta[index].suffix || '';
+          const currentDecimals = jsonMeta?.meta[index].tooltipDecimals || 2;
 
-          return `
-            <div class="flex space-x-2 items-center font-medium mb-0.5">
-              <div class="min-w-4 max-w-4 h-1.5 rounded-r-full" style="background-color: ${color}"></div>
-              <div class="tooltip-point-name text-xs w-min truncate ">${nameString}</div>
-              <div class=" flex-1 text-right justify-end  w-full flex numbers-xs">
-                <div class="flex justify-end text-right w-full">
-                  <div class="${!currentPrefix && "hidden"}">${currentPrefix}</div>
-                  <div class="">
-                    ${parseFloat(displayValue).toLocaleString("en-GB", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2
-                    })}
-                  </div>
-                  <div class="ml-0.5 ${!currentSuffix && "hidden"}">${currentSuffix}</div>
-                </div>
-              </div>
-            </div>`;
+          let displayValue = parseFloat(y).toLocaleString("en-GB", {
+            minimumFractionDigits: currentDecimals,
+            maximumFractionDigits: currentDecimals
+          });
+
+          let displayText;
+          if (stacking === "percent") {
+            const percentageValue = ((y / total) * 100).toFixed(2); // keep 2 decimal places
+            displayText = `${currentPrefix}${displayValue}${currentSuffix} (${percentageValue}%)`;
+        } else {
+            displayText = `${currentPrefix}${displayValue}${currentSuffix}`;
+        }
+
+        return `
+        <div class="flex space-x-2 items-center font-medium mb-0.5">
+          <div class="min-w-4 max-w-4 h-1.5 rounded-r-full" style="background-color: ${color}"></div>
+          <div class="tooltip-point-name text-xs w-min truncate ">${nameString}</div>
+          <div class=" flex-1 text-right justify-end w-full flex numbers-xs">
+            <div class="flex justify-end text-right w-full">
+              <div>${displayText}</div>
+            </div>
+          </div>
+        </div>`;
         })
         .join("");
 
