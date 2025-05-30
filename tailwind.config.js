@@ -90,10 +90,343 @@ module.exports = {
         "background": "#1F2726",
         "medium-background": "#344240",
         "active-black": "#151A19",
-        ...figmaStyles.theme.extend.colors,
+        black: {
+          DEFAULT: "#000000"
+        },
+        blackalpha: {
+          "50": "#0000000a",
+          "100": "#0000000f",
+          "200": "#00000014",
+          "300": "#00000029",
+          "400": "#0000003d",
+          "500": "#0000005c",
+          "600": "#0000007a",
+          "700": "#000000a3",
+          "800": "#000000cc",
+          "900": "#000000eb"
+        },
+        "dark-active-black": {
+          DEFAULT: "#151a19"
+        },
+        "dark-active-text": {
+          DEFAULT: "#cdd8d3"
+        },
+        "dark-arbitrum-blue": {
+          DEFAULT: "#1df7ef"
+        },
+        "dark-b3": {
+          DEFAULT: "#3368ef"
+        },
+        "dark-background": {
+          DEFAULT: "#1f2726"
+        },
+        "dark-base-blue": {
+          DEFAULT: "#2151f5"
+        },
+        "dark-blast-yellow": {
+          DEFAULT: "#e9e238"
+        },
+        "dark-blue": {
+          DEFAULT: "#1df7ef"
+        },
+        "dark-celestia": {
+          DEFAULT: "#8e44ed"
+        },
+        "dark-celo-yellow": {
+          DEFAULT: "#fcff52"
+        },
+        "dark-dark-red": {
+          DEFAULT: "#d03434"
+        },
+        "dark-derive": {
+          DEFAULT: "#fa8836"
+        },
+        "dark-eclipse-green": {
+          DEFAULT: "#a1fea0"
+        },
+        "dark-ethereum-blobs": {
+          DEFAULT: "#ffc300"
+        },
+        "dark-ethereum-calldata": {
+          DEFAULT: "#00b3b3"
+        },
+        "dark-ethereum-gray": {
+          DEFAULT: "#94abd3"
+        },
+        "dark-fraxtal": {
+          DEFAULT: "#1864ab"
+        },
+        "dark-gravity": {
+          DEFAULT: "#ffac43"
+        },
+        "dark-green-faint": {
+          DEFAULT: "#eeff97"
+        },
+        "dark-green-neon": {
+          DEFAULT: "#4cff7e"
+        },
+        "dark-hover": {
+          DEFAULT: "#5a6462"
+        },
+        "dark-imx-green": {
+          DEFAULT: "#3afcc9"
+        },
+        "dark-ink-purple": {
+          DEFAULT: "#7132f5"
+        },
+        "dark-linea-blue": {
+          DEFAULT: "#a9e9ff"
+        },
+        "dark-lisk": {
+          DEFAULT: "#613fff"
+        },
+        "dark-loopring": {
+          DEFAULT: "#4f5edf"
+        },
+        "dark-manta-pink": {
+          DEFAULT: "#fb4ff2"
+        },
+        "dark-mantle-blue": {
+          DEFAULT: "#10808c"
+        },
+        "dark-medium-background": {
+          "30": "#3442404d",
+          DEFAULT: "#344240"
+        },
+        "dark-metis-blue": {
+          DEFAULT: "#00d2ff"
+        },
+        "dark-metric-colour": {
+          "1": "#436964",
+          "2": "#06a390"
+        },
+        "dark-mint-green": {
+          DEFAULT: "#30bf54"
+        },
+        "dark-mode-green": {
+          DEFAULT: "#c4df00"
+        },
+        "dark-neon-red": {
+          DEFAULT: "#ff3838"
+        },
+        "dark-nova": {
+          DEFAULT: "#ef6627"
+        },
+        "dark-optimism-red": {
+          DEFAULT: "#fe5468"
+        },
+        "dark-orange": {
+          DEFAULT: "#f0995a"
+        },
+        "dark-orderly": {
+          DEFAULT: "#7d79e6"
+        },
+        "dark-other-chain": {
+          "1": "#7d8887",
+          "2": "#717d7c",
+          "3": "#667170",
+          "4": "#5a6665",
+          "5": "#4f5b5a",
+          "6": "#43504f",
+          "7": "#384443",
+          "8": "#2c3938"
+        },
+        "dark-petrol": {
+          DEFAULT: "#10808c"
+        },
+        "dark-pgn-green": {
+          DEFAULT: "#d7fd7b"
+        },
+        "dark-pink": {
+          DEFAULT: "#fb4ff3"
+        },
+        "dark-polygon-purple": {
+          DEFAULT: "#ad0dc5"
+        },
+        "dark-purple": {
+          DEFAULT: "#ad0dc5"
+        },
+        "dark-real": {
+          DEFAULT: "#d9ddf0"
+        },
+        "dark-red": {
+          DEFAULT: "#fe5468"
+        },
+        "dark-restone-red": {
+          DEFAULT: "#ff6061"
+        },
+        "dark-rhino-orange": {
+          DEFAULT: "#ecb16b"
+        },
+        "dark-scroll-yellow": {
+          DEFAULT: "#ffdf27"
+        },
+        "dark-soneium": {
+          DEFAULT: "#d7e2dc"
+        },
+        "dark-starknet-orange": {
+          DEFAULT: "#ec796b"
+        },
+        "dark-swell-blue": {
+          DEFAULT: "#2956de"
+        },
+        "dark-taiko-pink": {
+          DEFAULT: "#e81899"
+        },
+        "dark-teal": {
+          DEFAULT: "#3afcc9"
+        },
+        "dark-unichain": {
+          DEFAULT: "#ff47bb"
+        },
+        "dark-world-chain": {
+          DEFAULT: "#d9d0c1"
+        },
+        "dark-yellow-saturated": {
+          DEFAULT: "#ffdf27"
+        },
+        "dark-zircuit": {
+          DEFAULT: "#01b98c"
+        },
+        "dark-zksync-purpleblue": {
+          DEFAULT: "#2e3ec7"
+        },
+        "dark-zora-blue": {
+          DEFAULT: "#2fb9f4"
+        },
+        "glo-dollar-blue": {
+          DEFAULT: "#24e5df"
+        },
+        "gtp-orange-dark": {
+          DEFAULT: "#fe5468"
+        },
+        "gtp-orange-light-yellow": {
+          DEFAULT: "#ffdf27"
+        },
+        "gtp-turquoise-dark": {
+          DEFAULT: "#10808c"
+        },
+        "gtp-turquoise-light": {
+          DEFAULT: "#1df7ef"
+        },
+        "light-arbitrum-blue": {
+          DEFAULT: "#2ecee8"
+        },
+        "light-background": {
+          DEFAULT: "#eaeceb"
+        },
+        "light-base-blue": {
+          DEFAULT: "#2151f5"
+        },
+        "light-blast-yellow": {
+          DEFAULT: "#e9e238"
+        },
+        "light-blue": {
+          DEFAULT: "#2ecee8"
+        },
+        "light-ethereum-gray": {
+          DEFAULT: "#8b8b8b"
+        },
+        "light-green": {
+          DEFAULT: "#45aa6f"
+        },
+        "light-hover": {
+          DEFAULT: "#f0f5f3"
+        },
+        "light-imx-green": {
+          DEFAULT: "#3ecda7"
+        },
+        "light-linea-blue": {
+          DEFAULT: "#9ce5ff"
+        },
+        "light-loopring-blue": {
+          DEFAULT: "#4f5edf"
+        },
+        "light-manta-pink": {
+          DEFAULT: "#fb4ff2"
+        },
+        "light-metis-blue": {
+          DEFAULT: "#00d2ff"
+        },
+        "light-mode-green": {
+          DEFAULT: "#c4df00"
+        },
+        "light-optimism-red": {
+          DEFAULT: "#dd3408"
+        },
+        "light-orderly": {
+          DEFAULT: "#5d00ba"
+        },
+        "light-petrol": {
+          DEFAULT: "#08373c"
+        },
+        "light-pgn-green": {
+          DEFAULT: "#b9ee75"
+        },
+        "light-pink": {
+          DEFAULT: "#f130de"
+        },
+        "light-polygon-purple": {
+          DEFAULT: "#800094"
+        },
+        "light-purple": {
+          DEFAULT: "#800094"
+        },
+        "light-red": {
+          DEFAULT: "#dd3408"
+        },
+        "light-redstone-red": {
+          DEFAULT: "#ff6061"
+        },
+        "light-rhino-orange": {
+          DEFAULT: "#ecb16b"
+        },
+        "light-scroll-yellow": {
+          DEFAULT: "#ffdf27"
+        },
+        "light-starknet-orange": {
+          DEFAULT: "#ec796b"
+        },
+        "light-teal": {
+          DEFAULT: "#3ecda7"
+        },
+        "light-yellow-saturated": {
+          DEFAULT: "#fbb90d"
+        },
+        "light-zksync-purple": {
+          DEFAULT: "#390094"
+        },
+        "light-zora-blue": {
+          DEFAULT: "#2fb9f4"
+        },
+        white: {
+          DEFAULT: "#ffffff"
+        },
+        whitealpha: {
+          "50": "#ffffff0a",
+          "100": "#ffffff0f",
+          "200": "#ffffff14",
+          "300": "#ffffff29",
+          "400": "#ffffff3d",
+          "500": "#ffffff5c",
+          "600": "#ffffff7a",
+          "700": "#ffffffa3",
+          "800": "#ffffffcc",
+          "900": "#ffffffeb"
+        }
       },
       backgroundImage: {
-        ...figmaStyles.theme.extend.backgroundImage,
+        "dark-ethereum-gradient": "linear-gradient(-90deg, #94abd3 0.00%,#596780 100.00%)",
+        "gradient-dark-red": "linear-gradient(90deg, #fe5468 0.00%,#98323e 100.00%)",
+        "gradient-dark-yellow": "linear-gradient(-90deg, #ffe761 0.00%,#c7ae24 100.00%)",
+        "gradient-green": "linear-gradient(-90deg, #eeff97 0.00%,#a1b926 100.00%)",
+        "gradient-light-red": "linear-gradient(90deg, #fe5468 0.00%,#d41027 100.00%)",
+        "gradient-red-yellow": "linear-gradient(81deg, #fe5468 0.00%,#ffdf27 100.00%)",
+        "gradient-red-yellow-radial": "linear-gradient(90deg, #fe5468 0.00%,#ffdf27 100.00%)",
+        "gradient-turquoise-blue": "linear-gradient(90deg, #10808c 0.00%,#1df7ef 100.00%)",
+        "gradient-yellow-green": "linear-gradient(90deg, #ffdf27 0.00%,#eeff97 100.00%)",
+        "oli-gradient": "linear-gradient(-46deg, #5c44c2 0.00%,#69adda 49.94%,#ff1684 94.50%)",
+        "open-labels-initiative": "linear-gradient(-46deg, #5c44c2 0.00%,#69adda 49.94%,#ff1684 94.50%)"
       },
       animation: {
         shake: "shake 0.5s ease-in-out infinite",
