@@ -1142,7 +1142,7 @@ export default function LandingChart({
       <EmbedContainer
         title="User Base"
         icon="gtp:gtp-pie"
-        url="https://www.growthepie.xyz"
+        url="https://www.growthepie.com"
         time_frame={timespans[selectedTimespan].label}
         chart_type={selectedMetric}
         aggregation={selectedScale}

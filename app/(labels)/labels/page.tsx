@@ -51,7 +51,7 @@ const devMiddleware = (useSWRNext) => {
     return useSWRNext(
       key,
       (url) => {
-        if (url.includes("api.growthepie.xyz")) {
+        if (url.includes("api.growthepie.com")) {
           // replace /v1/ with /dev/ to get JSON files from the dev folder in S3
           let newUrl = url.replace("/v1/", "/dev/");
           return fetch(newUrl).then((r) => r.json());

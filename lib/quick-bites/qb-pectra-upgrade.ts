@@ -32,7 +32,7 @@ const pectraUpgrade: QuickBiteData = {
           yIndex: 1,
           suffix: null,
           prefix: null,
-          url: "https://api.growthepie.xyz/v1/quick-bites/pectra-fork.json",
+          url: "https://api.growthepie.com/v1/quick-bites/pectra-fork.json",
           pathToData: "data.ethereum_blob_count.daily.values",
           dashStyle: "solid" 
         },
@@ -43,7 +43,7 @@ const pectraUpgrade: QuickBiteData = {
           yIndex: 1,
           suffix: null,
           prefix: null,
-          url: "https://api.growthepie.xyz/v1/quick-bites/pectra-fork.json",
+          url: "https://api.growthepie.com/v1/quick-bites/pectra-fork.json",
           pathToData: "data.ethereum_blob_target.daily.values",
           dashStyle: "Dash" 
         }
@@ -51,7 +51,7 @@ const pectraUpgrade: QuickBiteData = {
       },
       height: 400,
       caption: "Ethereum Blob Count per Block vs Target. Data updated daily.",
-      seeMetricURL: "https://www.growthepie.xyz/data-availability"
+      seeMetricURL: "https://www.growthepie.com/data-availability"
     }),
     "```",
 
@@ -75,7 +75,7 @@ const pectraUpgrade: QuickBiteData = {
           yIndex: 0,
           suffix: null,
           prefix: null,
-          url: "https://api.growthepie.xyz/v1/quick-bites/pectra-fork.json",
+          url: "https://api.growthepie.com/v1/quick-bites/pectra-fork.json",
           pathToData: "data.type4_tx_count.ethereum.daily.values",
         },
         {
@@ -85,7 +85,7 @@ const pectraUpgrade: QuickBiteData = {
           yIndex: 0,
           suffix: null,
           prefix: null,
-          url: "https://api.growthepie.xyz/v1/quick-bites/pectra-fork.json",
+          url: "https://api.growthepie.com/v1/quick-bites/pectra-fork.json",
           pathToData: "data.type4_tx_count.base.daily.values",
         },
         {
@@ -95,7 +95,7 @@ const pectraUpgrade: QuickBiteData = {
           yIndex: 0,
           suffix: null,
           prefix: null,
-          url: "https://api.growthepie.xyz/v1/quick-bites/pectra-fork.json",
+          url: "https://api.growthepie.com/v1/quick-bites/pectra-fork.json",
           pathToData: "data.type4_tx_count.optimism.daily.values",
         },
         {
@@ -105,7 +105,7 @@ const pectraUpgrade: QuickBiteData = {
           yIndex: 0,
           suffix: null,
           prefix: null,
-          url: "https://api.growthepie.xyz/v1/quick-bites/pectra-fork.json",
+          url: "https://api.growthepie.com/v1/quick-bites/pectra-fork.json",
           pathToData: "data.type4_tx_count.unichain.daily.values",
         },
         ],

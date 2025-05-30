@@ -71,7 +71,7 @@ export default function Eiptracker() {
     error: feeError,
     isLoading: feeLoading,
     isValidating: feeValidating,
-  } = useSWR("https://api.growthepie.xyz/v1/fees.json");
+  } = useSWR("https://api.growthepie.com/v1/fees.json");
 
   const avgTxCosts = useMemo(() => {
     if (!feeData) return {}; // Return an empty object if feeData is falsy

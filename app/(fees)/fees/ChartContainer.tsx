@@ -44,7 +44,7 @@ export default function ChartContainer({
   master,
 }: SlidingFooterContainerProps) {
   const { data, error, isLoading, isValidating } = useSWR<FeesLineChart>(
-    "https://api.growthepie.xyz/v1/fees/linechart.json",
+    "https://api.growthepie.com/v1/fees/linechart.json",
   );
 
   const [metricIndex, setMetricIndex] = useState(0);

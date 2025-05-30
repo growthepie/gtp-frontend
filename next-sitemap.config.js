@@ -1,8 +1,8 @@
-const baseUrl = "https://www.growthepie.xyz";
+const baseUrl = "https://www.growthepie.com";
 
-// for www.growthepie.xyz & dev.growthepie.xyz
+// for www.growthepie.com & dev.growthepie.com
 const gtpMain = {
-  siteUrl: "https://www.growthepie.xyz",
+  siteUrl: "https://www.growthepie.com",
   generateRobotsTxt: true,
   exclude: [
     "/server-sitemap.xml",
@@ -25,15 +25,15 @@ const gtpMain = {
   robotsTxtOptions: {
     exclude: ["/server-sitemap.xml", "/server-applications-sitemap.xml"],
     additionalSitemaps: [
-      `https://www.growthepie.xyz/server-sitemap.xml`,
-      `https://www.growthepie.xyz/server-applications-sitemap.xml`
+      `https://www.growthepie.com/server-sitemap.xml`,
+      `https://www.growthepie.com/server-applications-sitemap.xml`
     ],
   },
 };
 
-// for fees.growthepie.xyz & dev.fees.growthepie.xyz
+// for fees.growthepie.com & dev.fees.growthepie.com
 const gtpFees = {
-  siteUrl: "https://fees.growthepie.xyz",
+  siteUrl: "https://fees.growthepie.com",
   generateRobotsTxt: true,
   exclude: [
     "/blog",
@@ -61,9 +61,9 @@ const gtpFees = {
   },
 };
 
-// for labels.growthepie.xyz & dev.labels.growthepie.xyz
+// for labels.growthepie.com & dev.labels.growthepie.com
 const gtpLabels = {
-  siteUrl: "https://labels.growthepie.xyz",
+  siteUrl: "https://labels.growthepie.com",
   generateRobotsTxt: true,
   exclude: [
     "/blog",

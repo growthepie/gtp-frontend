@@ -20,16 +20,16 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     ...metadata,
     openGraph: {
-      title: "icons.growthepie.xyz",
+      title: "icons.growthepie.com",
       description:
         "Explore and download open source icons from growthepie. Freely available icons designed for the Ethereum ecosystem and beyond.",
-      url: `https://icons.growthepie.xyz`,
+      url: `https://icons.growthepie.com`,
       images: [
         {
-          url: `https://icons.growthepie.xyz/gtp_og.png`,
+          url: `https://icons.growthepie.com/gtp_og.png`,
           width: 1200,
           height: 627,
-          alt: "growthepie.xyz",
+          alt: "growthepie.com",
         },
       ],
       locale: "en_US",
@@ -37,14 +37,14 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: "icons.growthepie.xyz",
+      title: "icons.growthepie.com",
       description:
         "Explore and download open source icons from growthepie. Freely available icons designed for the Ethereum ecosystem and beyond.",
       site: "@growthepie_eth",
       siteId: "1636391104689094656",
       creator: "@growthepie_eth",
       creatorId: "1636391104689094656",
-      images: [`https://icons.growthepie.xyz/gtp_og.png`],
+      images: [`https://icons.growthepie.com/gtp_og.png`],
     },
     robots: {
       index: true,

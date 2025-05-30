@@ -108,7 +108,7 @@ const Chain = ({ params }: { params: any }) => {
     error: usageError,
     isLoading: usageLoading,
     isValidating: usageValidating,
-  } = useSWR<ChainData>(`https://api.growthepie.xyz/v1/chains/blockspace/${chainKey}.json`);
+  } = useSWR<ChainData>(`https://api.growthepie.com/v1/chains/blockspace/${chainKey}.json`);
 
   const {
     data: feeData,

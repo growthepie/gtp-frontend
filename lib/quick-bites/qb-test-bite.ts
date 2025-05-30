@@ -23,10 +23,10 @@ const testBite: QuickBiteData = {
     "## Embedded Chart Block",
     "```iframe",
     JSON.stringify({
-      src: "https://www.growthepie.xyz/embed/fundamentals/daily-active-addresses?showUsd=true&theme=dark&timespan=90d&scale=absolute&interval=daily&showMainnet=false&chains=arbitrum%2Cbase%2Ccelo%2Cunichain&zoomed=false&startTimestamp=&endTimestamp=1745712000000",
+      src: "https://www.growthepie.com/embed/fundamentals/daily-active-addresses?showUsd=true&theme=dark&timespan=90d&scale=absolute&interval=daily&showMainnet=false&chains=arbitrum%2Cbase%2Ccelo%2Cunichain&zoomed=false&startTimestamp=&endTimestamp=1745712000000",
       width: "100%",
       height: "500px",
-      caption: "Daily active addresses comparison across Layer 2 solutions. Source: growthepie.xyz"
+      caption: "Daily active addresses comparison across Layer 2 solutions. Source: growthepie.com"
     }),
     "```",
     
@@ -46,7 +46,7 @@ const testBite: QuickBiteData = {
           yIndex: 1,
           suffix: null,
           prefix: null,
-          url: "https://api.growthepie.xyz/v1/quick-bites/pectra-fork.json",
+          url: "https://api.growthepie.com/v1/quick-bites/pectra-fork.json",
           pathToData: "data.ethereum_blob_count.daily.values",
           dashStyle: "solid" 
         },
@@ -57,7 +57,7 @@ const testBite: QuickBiteData = {
           yIndex: 1,
           suffix: null,
           prefix: null,
-          url: "https://api.growthepie.xyz/v1/quick-bites/pectra-fork.json",
+          url: "https://api.growthepie.com/v1/quick-bites/pectra-fork.json",
           pathToData: "data.ethereum_blob_target.daily.values",
           dashStyle: "Dash" 
         }
@@ -65,7 +65,7 @@ const testBite: QuickBiteData = {
       },
       height: 400,
       caption: "Ethereum Blob Count per Block vs Target. Data updated daily.",
-      seeMetricURL: "https://www.growthepie.xyz/data-availability"
+      seeMetricURL: "https://www.growthepie.com/data-availability"
     }),
     "```",
 
@@ -86,7 +86,7 @@ const testBite: QuickBiteData = {
           yIndex: 0,
           suffix: null,
           prefix: null,
-          url: "https://api.growthepie.xyz/v1/quick-bites/pectra-fork.json",
+          url: "https://api.growthepie.com/v1/quick-bites/pectra-fork.json",
           pathToData: "data.type4_tx_count.ethereum.daily.values",
         },
         {
@@ -96,7 +96,7 @@ const testBite: QuickBiteData = {
           yIndex: 0,
           suffix: null,
           prefix: null,
-          url: "https://api.growthepie.xyz/v1/quick-bites/pectra-fork.json",
+          url: "https://api.growthepie.com/v1/quick-bites/pectra-fork.json",
           pathToData: "data.type4_tx_count.base.daily.values",
         },
         {
@@ -106,7 +106,7 @@ const testBite: QuickBiteData = {
           yIndex: 0,
           suffix: null,
           prefix: null,
-          url: "https://api.growthepie.xyz/v1/quick-bites/pectra-fork.json",
+          url: "https://api.growthepie.com/v1/quick-bites/pectra-fork.json",
           pathToData: "data.type4_tx_count.optimism.daily.values",
         },
         {
@@ -116,7 +116,7 @@ const testBite: QuickBiteData = {
           yIndex: 0,
           suffix: null,
           prefix: null,
-          url: "https://api.growthepie.xyz/v1/quick-bites/pectra-fork.json",
+          url: "https://api.growthepie.com/v1/quick-bites/pectra-fork.json",
           pathToData: "data.type4_tx_count.unichain.daily.values",
         },
         ],
@@ -151,7 +151,7 @@ const testBite: QuickBiteData = {
       alt: "Sample chart showing transaction volume over time",
       width: "800",
       height: "400",
-      caption: "Transaction volume trends across major L2 networks. Source: growthepie.xyz",
+      caption: "Transaction volume trends across major L2 networks. Source: growthepie.com",
     }),
     "```",
 

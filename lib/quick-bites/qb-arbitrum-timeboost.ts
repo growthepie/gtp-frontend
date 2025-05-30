@@ -30,7 +30,7 @@ const arbitrumTimeboost: QuickBiteData = {
             yIndex: 0,
             suffix: 'ETH',
             prefix: null,
-            url: "https://api.growthepie.xyz/v1/quick-bites/arbitrum-timeboost.json",
+            url: "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json",
             pathToData: "data.fees_paid_priority_eth.daily.values",
           },
           {
@@ -40,7 +40,7 @@ const arbitrumTimeboost: QuickBiteData = {
             yIndex: 0,
             suffix: 'ETH',
             prefix: null,
-            url: "https://api.growthepie.xyz/v1/quick-bites/arbitrum-timeboost.json",
+            url: "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json",
             pathToData: "data.fees_paid_base_eth.daily.values",
           }
         ],
@@ -71,7 +71,7 @@ const arbitrumTimeboost: QuickBiteData = {
             yIndex: 0,
             suffix: '%',
             prefix: null,
-            url: "https://api.growthepie.xyz/v1/quick-bites/arbitrum-timeboost.json",
+            url: "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json",
             pathToData: "data.fees_paid_priority_eth.daily.values",
           },
           {
@@ -81,7 +81,7 @@ const arbitrumTimeboost: QuickBiteData = {
             yIndex: 0,
             suffix: '%',
             prefix: null,
-            url: "https://api.growthepie.xyz/v1/quick-bites/arbitrum-timeboost.json",
+            url: "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json",
             pathToData: "data.fees_paid_base_eth.daily.values",
           }
         ],
@@ -95,7 +95,7 @@ const arbitrumTimeboost: QuickBiteData = {
     "All charts on this page are updated daily so you can track the adoption of the Pectra upgrades over time.",
   ],
   image: "/images/quick-bites/pectra-tx-type-4.png",
-  og_image: "https://api.growthepie.xyz/v1/og_images/quick-bites/pectra-upgrade.png",
+  og_image: "https://api.growthepie.com/v1/og_images/quick-bites/pectra-upgrade.png",
   date: "2025-05-29",
   related: [],
   author: [{
