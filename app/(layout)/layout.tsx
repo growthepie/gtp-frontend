@@ -194,7 +194,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${raleway.variable} ${inter.variable} ${firaMono.variable} ${firaSans.variable} ${sourceCodePro.variable} ${raleway.className}`}
+      className={`${raleway.variable} ${inter.variable} ${firaMono.variable} ${firaSans.variable} ${sourceCodePro.variable}`}
       suppressHydrationWarning
       style={{
         fontFeatureSettings: "'pnum' on, 'lnum' on",
@@ -250,7 +250,6 @@ export default function RootLayout({
           <CookieConsent />
         </Providers>
         <Analytics />
-        <span className={raleway.className} style={{ display: 'none' }} />
       </body>
     </html>
   );
