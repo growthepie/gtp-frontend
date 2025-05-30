@@ -1,5 +1,4 @@
 const defaultTheme = require("tailwindcss/defaultTheme");
-const { figmaStyles } = require("./figma-styles.config");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
