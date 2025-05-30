@@ -1,10 +1,11 @@
+// In your quick bite data file (e.g., lib/quick-bites/arbitrum-timeboost.ts)
 import { QuickBiteData } from '@/lib/types/quickBites';
 
 const arbitrumTimeboost: QuickBiteData = {
   title: "Timeboost: An Express Lane for Arbitrum",
   subtitle: "FCFS is over.",
   content: [
-    "> FCFS (First-Come, First-Served) is over. Timeboost is here.",
+    "> Total ETH paid in Timeboost fees: {{timeboostTotalETH}} ETH.",
 
     "## What is Timeboost?",
     "It's cool!",
@@ -68,7 +69,7 @@ const arbitrumTimeboost: QuickBiteData = {
             color: "#19D9D6",
             xIndex: 1,
             yIndex: 0,
-            suffix: 'ETH',
+            suffix: '%',
             prefix: null,
             url: "https://api.growthepie.xyz/v1/quick-bites/arbitrum-timeboost.json",
             pathToData: "data.fees_paid_priority_eth.daily.values",
@@ -78,7 +79,7 @@ const arbitrumTimeboost: QuickBiteData = {
             color: "#FFC300",
             xIndex: 1,
             yIndex: 0,
-            suffix: 'ETH',
+            suffix: '%',
             prefix: null,
             url: "https://api.growthepie.xyz/v1/quick-bites/arbitrum-timeboost.json",
             pathToData: "data.fees_paid_base_eth.daily.values",
@@ -115,4 +116,4 @@ const arbitrumTimeboost: QuickBiteData = {
   icon: "arbitrum-logo-monochrome"
 };
 
-export default arbitrumTimeboost; 
+export default arbitrumTimeboost;

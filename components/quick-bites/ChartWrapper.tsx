@@ -146,6 +146,11 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
       const chartTitle = this.series.chart.title.textStr;
       const useJson = jsonMeta ? true : false;
       const isArray = Array.isArray(jsonMeta?.meta);
+      const total = points.reduce((acc: number, point: any) => {
+        acc += point.y;
+        return acc;
+      }, 0);
+     
       const suffix = points.map((point: any) => (point.series.suffix ? point.series.suffix : ""));
       const prefix = points.map((point: any) => (point.series.prefix ? point.series.prefix : ""));
 
@@ -191,9 +196,9 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           const color = series.color.stops ? series.color.stops[0][1] : series.color;
 
           let value = y;
-          let displayValue = y;
-          const currentPrefix = prefix[index] || '';
-          const currentSuffix = suffix[index] || '';
+          let displayValue = stacking === "percent" ? (y / total) * 100 : y;
+          const currentPrefix = jsonMeta?.meta[index].prefix || '';
+          const currentSuffix = jsonMeta?.meta[index].suffix || '';
 
           return `
             <div class="flex space-x-2 items-center font-medium mb-0.5">
@@ -269,10 +274,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 },
                 area: {
                   lineWidth: 1.5,
-                  dataGrouping: {
-                    enabled: true,
-                    
-                  },
+
 
 
                   // marker: {
@@ -341,7 +343,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 duration: 50,
               }}
               marginBottom={showXAsDate ? 32 : 20}
-              marginLeft={40}
+              marginLeft={50}
               marginRight={5}
               marginTop={15}
               
@@ -414,9 +416,25 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               labels={{
                 style: {
                   color: theme === 'dark' ? '#CDD8D3' : '#293332',
-                  fontSize: '10px',
+                  fontSize: '8px',
+                },
+                formatter: function (this: any) {
+
+                
+                  if (jsonMeta?.meta[0]?.suffix) {
+                    return this.value.toLocaleString("en-GB", {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 2
+                    }) + jsonMeta.meta[0].suffix;
+                  } else {
+                    return this.value.toLocaleString("en-GB", {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 2
+                    });
+                  }
                 }
               }}
+              
               gridLineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.11)' : 'rgba(41, 51, 50, 0.11)'}
             >
               {chartType === 'line' && (
@@ -447,12 +465,13 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                     item[series.xIndex], // x value
                     item[series.yIndex]  // y value
                   ]) : series.data;
+                  
                   return (
                     <AreaSeries
                       stacking={stacking ? stacking : undefined}
                       key={series.name}
                       name={series.name}
-                      data={series.data}
+                      data={seriesData}
                       color={series.color}
                       animation={true}
                       states={{

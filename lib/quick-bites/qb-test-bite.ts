@@ -16,6 +16,9 @@ const testBite: QuickBiteData = {
     "## A list of items",
     "- **List Item 1**: Blaaaah",
     "- **List Item 2**: blab baablb abalas",
+
+    "## Dynamic Values in Text",
+    "This next value is dynamic and bold: **{{timeboostTotalETH}} ETH**.",
     
     "## Embedded Chart Block",
     "```iframe",
@@ -144,7 +147,7 @@ const testBite: QuickBiteData = {
 
     "```image",
     JSON.stringify({
-      src: "/images/quick-bites/sample-chart.png", // should allow link to our API
+      src: "https://pbs.twimg.com/media/GFGqJLuWUAACKYj?format=jpg&name=4096x4096", // should allow link to our API
       alt: "Sample chart showing transaction volume over time",
       width: "800",
       height: "400",

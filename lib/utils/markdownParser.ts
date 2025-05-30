@@ -57,6 +57,22 @@ export async function processMarkdownContent(content: string[]): Promise<Content
           }
         }
       }
+      // Handle image blocks (JSON format)
+      else if (text.startsWith('```image')) {
+        if (i + 1 < content.length) {
+          const jsonString = content[i + 1];
+          const closingMarker = i + 2 < content.length && content[i + 2] === '```';
+
+          if (closingMarker) {
+            const imageJsonBlock = parseImageJsonBlock(jsonString);
+            if (imageJsonBlock) {
+              blocks.push(imageJsonBlock);
+              i += 2; // Skip JSON data and closing marker
+              continue;
+            }
+          }
+        }
+      }
       // Handle code blocks
       else if (text.startsWith('```')) {
         const language = text.substring(3).trim();
@@ -198,6 +214,26 @@ function parseIframeBlock(jsonString: string): ContentBlock | null {
     };
   } catch (error) {
     console.error('Error parsing iframe data:', error);
+    return null;
+  }
+}
+
+// Helper function to parse image blocks (from JSON)
+function parseImageJsonBlock(jsonString: string): ContentBlock | null {
+  try {
+    const imageConfig = JSON.parse(jsonString);
+    return {
+      id: generateBlockId(),
+      type: 'image',
+      src: imageConfig.src || '',
+      alt: imageConfig.alt || 'Image',
+      width: imageConfig.width, // Keep as string/number or undefined
+      height: imageConfig.height, // Keep as string/number or undefined
+      caption: imageConfig.caption || '',
+      className: imageConfig.className || ''
+    };
+  } catch (error) {
+    console.error('Error parsing image JSON data:', error);
     return null;
   }
 }
