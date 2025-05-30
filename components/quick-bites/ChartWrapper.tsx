@@ -166,7 +166,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
           let displayText;
           if (stacking === "percent") {
-            const percentageValue = ((y / total) * 100).toFixed(2); // keep 2 decimal places
+            const percentageValue = ((y / total) * 100).toFixed(1); // keep 1 decimal
             displayText = `${currentPrefix}${displayValue}${currentSuffix} (${percentageValue}%)`;
         } else {
             displayText = `${currentPrefix}${displayValue}${currentSuffix}`;
