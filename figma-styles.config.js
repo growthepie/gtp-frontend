@@ -7,7 +7,7 @@
  */
 const plugin = require('tailwindcss/plugin');
 
-export const figmaStyles = {
+const figmaStyles = {
   theme: {
     extend: {
       colors: {
@@ -348,20 +348,6 @@ export const figmaStyles = {
         "gradient-yellow-green": "linear-gradient(90deg, #ffdf27 0.00%,#eeff97 100.00%)",
         "oli-gradient": "linear-gradient(-46deg, #5c44c2 0.00%,#69adda 49.94%,#ff1684 94.50%)",
         "open-labels-initiative": "linear-gradient(-46deg, #5c44c2 0.00%,#69adda 49.94%,#ff1684 94.50%)"
-      },
-      fontFamily: {
-        "fira-sans": [
-          "Fira Sans",
-          "ui-sans-serif",
-          "system-ui",
-          "sans-serif"
-        ],
-        raleway: [
-          "Raleway",
-          "ui-sans-serif",
-          "system-ui",
-          "sans-serif"
-        ]
       },
       fontSize: {
         "heading-caps-2xl": [
@@ -1384,3 +1370,6 @@ export const figmaStyles = {
     )
   ]
 };
+
+// Export using module.exports
+module.exports = { figmaStyles };

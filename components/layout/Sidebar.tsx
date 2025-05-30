@@ -17,6 +17,8 @@ import { useMaster } from "@/contexts/MasterContext";
 import VerticalScrollContainer from "../VerticalScrollContainer";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import FocusSwitch from "./FocusSwitch";
+import { GTPIcon } from "./GTPIcon";
+import { GTPIconName } from "@/icons/gtp-icon-names";
 
 type SidebarProps = {
   className?: string;
@@ -93,11 +95,11 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
       <>
         <button
           className={`z-[999] transition-colors duration-200 ${isMobileSidebarOpen ? "hidden" : "block"
-            } ${
+            } p-[5px] ${
             // if scroll position is 20px or more from top, add bg and shadow
             scrollHeight > 0
-              ? "fixed bg-white dark:bg-forest-1000 shadow-md rounded-full border-2 border-forest-900 dark:border-forest-200 p-2 right-[6px] top-[18px]"
-              : `fixed right-[16px] top-[28px] border-transparent`
+              ? "fixed bg-white dark:bg-forest-1000 shadow-md rounded-full border-2 border-forest-900 dark:border-forest-200 right-[17px] top-[26px]"
+              : `fixed rounded-full border-2 border-transparent right-[17px] top-[26px]`
             }`}
           // style={{
           //   top: scrollHeight >= 15 ? "20px" : `calc(28px - ${scrollHeight}px)`,
@@ -117,7 +119,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
             toggleMobileSidebar();
           }}
         >
-          <Icon icon="feather:menu" className={` ${isMobile ? "h-[24px] w-[24px]" : "w-8 h-8"} `} />
+          <GTPIcon icon={"feather:menu" as GTPIconName} size="md" />
         </button>
         {/* Mobile Sidebar */}
         <div
@@ -276,7 +278,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                 </div>
                 {/* <div className="z-[999] flex items-center space-x-[16px] mb-0.5 w-full px-2"></div> */}
                 <button
-                  className="flex h-full items-center"
+                  className="flex h-full items-center pr-[13px]"
                   onClick={toggleMobileSidebar}
                 >
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

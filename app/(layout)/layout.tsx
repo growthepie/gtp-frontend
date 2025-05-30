@@ -194,7 +194,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${raleway.variable} ${inter.variable} ${firaMono.variable} ${firaSans.variable} ${sourceCodePro.variable}`}
+      className={`${raleway.variable} ${inter.variable} ${firaMono.variable} ${firaSans.variable} ${sourceCodePro.variable} ${raleway.className}`}
       suppressHydrationWarning
       style={{
         fontFeatureSettings: "'pnum' on, 'lnum' on",
@@ -212,7 +212,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <Providers>
-          <div className="flex h-fit w-screen justify-center">
+          <div className="flex h-fit w-full justify-center">
             <div className="flex min-h-screen w-full max-w-[1680px]">
               {!IS_PRODUCTION && <GlobalSearchBar />}
               <SidebarContainer />
@@ -250,6 +250,7 @@ export default function RootLayout({
           <CookieConsent />
         </Providers>
         <Analytics />
+        <span className={raleway.className} style={{ display: 'none' }} />
       </body>
     </html>
   );

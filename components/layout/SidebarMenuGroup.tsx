@@ -419,13 +419,13 @@ export const Accordion = memo(({
   const padding = {
     sm: "3px 16px 3px 0px",
     md: "3px 15px 3px 5px",
-    lg: "3px 13px 3px 3px",
+    lg: "3px 13px 3px 2px",
   };
 
   const gap = {
     sm: "0 15px",
     md: "0 15px",
-    lg: "0 10px",
+    lg: "0 5px",
   };
 
   const bg = {

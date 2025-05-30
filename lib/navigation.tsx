@@ -208,6 +208,31 @@ const dataAvailabilityGroup: NavigationItem = {
 };
 
 export const navigationItems: NavigationItem[] = [
+  ...(!IS_PRODUCTION
+    ? [{ 
+        name: "Ecosystem",
+        label: "Ecosystem",
+        icon: "gtp-ethereumlogo",
+        options: [
+          {
+            label: "Overview",
+            page: {
+              title: "Overview",
+              description: `Applications are the lifeblood of any blockchain ecosystem. They drive user engagement, transaction volume, and overall network activity. By analyzing the top applications on a chain, we can gain insights into the most popular use cases and the types of users that are attracted to the platform. This information is crucial for developers, investors, and anyone interested in understanding the dynamics of a blockchain ecosystem.`,
+              icon: "gtp-overview",
+            },
+            icon: "gtp-overview",
+            key: "eth-agg",
+            rootKey: "eth-agg",
+            urlKey: "eth-agg",
+            url: "/eth-agg",
+            // showNew: true,
+          },
+        ],
+        href: "/eth-agg",
+        newChild: true,
+      }] 
+    : []) as NavigationItem[],
   {
     name: "Fundamentals",
     label: "Fundamentals",
