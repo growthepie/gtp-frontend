@@ -324,7 +324,10 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   };
 
   return (
-    <div className='flex gap-x-[15px] w-full'>
+  <>
+  {connectionStatus === 'connected' && (
+    <div className='flex gap-x-[15px] w-full px-[15px]'>
+
         <div className='bg-[#1F2726] rounded-[15px] p-[15px] w-full h-[306px]'>
             <div className='heading-large-md mb-[15px]'>Ethereum Uptime</div>
             <div className='numbers-2xl mb-[30px]'>
@@ -496,7 +499,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
           </div>
 
         </div>
-        <div className='bg-[#1F2726] rounded-[15px] py-[15px] px-[30px] w-full h-[306px]'>
+        <div className='bg-[#1F2726] rounded-[15px] py-[15px] px-[15px] w-full h-[306px]'>
           <div className='heading-large-md mb-[30px]'>Average Transaction Fee</div>
           <div className='pt-[15px] mb-[50px]'>
             <div className='flex justify-between items-center'>
@@ -567,6 +570,8 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
           </div>
         </div>
     </div>
+    )}
+    </>
   );
 };
 
