@@ -5,6 +5,10 @@ import HighchartsReact from 'highcharts-react-official';
 import { HighchartsProvider, HighchartsChart, YAxis, Series, XAxis, Tooltip, Chart, ColumnSeries } from 'react-jsx-highcharts';
 import Highcharts from 'highcharts';
 import "@/app/highcharts.axis.css";
+import { useLocalStorage } from 'usehooks-ts';
+import { GTPIcon } from '../GTPIcon';
+import { Icon } from '@iconify/react';
+import { useMaster } from '@/contexts/MasterContext';
 
 // Define the props type for EthAggMetricsComponent
 interface EthAggMetricsProps {
@@ -23,6 +27,8 @@ interface ChainMetrics {
   name: string;
   tps?: number;
   cost?: number;
+  tx_cost_native_usd?: number;
+  tx_cost_native?: number;
   // Add other chain-specific metrics if needed
 }
 
@@ -62,11 +68,23 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   const [uptimeCounter, setUptimeCounter] = useState<string>("00:00:00:00");
   const [uptimeYears, setUptimeYears] = useState<number>(0);
   const [totalTPSLive, setTotalTPSLive] = useState<number[]>([]);
+  const [ethCostLive, setEthCostLive] = useState<number[]>([]);
+  const [layer2CostLive, setLayer2CostLive] = useState<number[]>([]);
+  const [chainsCostHistory, setChainsCostHistory] = useState<{[key: string]: number[]}>({});
+  const [chainsTPSHistory, setChainsTPSHistory] = useState<{[key: string]: number[]}>({});
+  const [eventHover, setEventHover] = useState<string | null>(null);
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const [showChainsTPS, setShowChainsTPS] = useState<boolean>(false);
+  const [showChainsCost, setShowChainsCost] = useState<boolean>(false);
+  
+  const { AllChainsByKeys } = useMaster();
 
   const eventSourceRef = useRef<EventSource | null>(null);
   const reconnectAttemptsRef = useRef<number>(0);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const uptimeAnimationRef = useRef<number | null>(null);
+
+  const HISTORY_LIMIT = 22; // Define a limit for history arrays
 
   const formatDuration = (ms: number) => {
     const totalSeconds = Math.floor(ms / 1000);
@@ -121,9 +139,28 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
         return [...prevData, newValue];
       }
     });
+
+    setEthCostLive(prevData => {
+      const newValue = globalMetrics.eth_tx_cost_usd ?? 0;
+      if (prevData.length >= HISTORY_LIMIT) {
+        return [...prevData.slice(1), newValue];
+      } else {
+        return [...prevData, newValue];
+      }
+    });
+
+    setLayer2CostLive(prevData => {
+      const newValue = globalMetrics.avg_l2_tx_cost_usd ?? 0;
+      if (prevData.length >= HISTORY_LIMIT) {
+        return [...prevData.slice(1), newValue];
+      } else {
+        return [...prevData, newValue];
+      }
+    });
   }, [globalMetrics]);
 
-  console.log(totalTPSLive);
+ 
+  
 
   useEffect(() => {
     if (selectedBreakdownGroup === "Metrics") {
@@ -149,7 +186,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     }
 
     setConnectionStatus('connecting');
-    console.log("Attempting to connect to SSE:", SSE_URL);
+  
 
     eventSourceRef.current = new EventSource(SSE_URL);
 
@@ -222,6 +259,54 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     };
   }, [selectedBreakdownGroup, connectSSE]);
 
+  useEffect(() => {
+    if (!chainData || Object.keys(chainData).length === 0) return;
+
+    // Update chainsCostHistory
+    setChainsCostHistory(prevCostHistory => {
+      const newCostHistoryState = { ...prevCostHistory };
+      let hasCostChanges = false;
+      for (const chainId in chainData) { // Use chainId (the key from chainData) directly
+        
+        if (chainData.hasOwnProperty(chainId)) {
+          const chain = chainData[chainId]; // This is the ChainMetrics object
+       
+          const currentChainCostHistory = newCostHistoryState[chainId] || [];
+          const costValue = chain[showUsd ? 'tx_cost_native_usd' : 'tx_cost_native'] ?? 0;
+          const updatedChainCostHistory = [...currentChainCostHistory, costValue].slice(-HISTORY_LIMIT);
+
+          // Avoid unnecessary updates if the array content is identical
+          if (!newCostHistoryState[chainId] || newCostHistoryState[chainId].join(',') !== updatedChainCostHistory.join(',')) {
+              newCostHistoryState[chainId] = updatedChainCostHistory;
+              hasCostChanges = true;
+          }
+        }
+      }
+      return hasCostChanges ? newCostHistoryState : prevCostHistory;
+    });
+
+    // Update chainsTPSHistory
+    setChainsTPSHistory(prevTpsHistory => {
+      const newTpsHistoryState = { ...prevTpsHistory };
+      let hasTpsChanges = false;
+      for (const chainId in chainData) { // Use chainId (the key from chainData) directly
+        if (chainData.hasOwnProperty(chainId)) {
+          const chain = chainData[chainId]; // This is the ChainMetrics object
+          const currentChainTpsHistory = newTpsHistoryState[chainId] || [];
+          const tpsValue = chain.tps ?? 0;
+          const updatedChainTpsHistory = [...currentChainTpsHistory, tpsValue].slice(-HISTORY_LIMIT);
+
+          if (!newTpsHistoryState[chainId] || newTpsHistoryState[chainId].join(',') !== updatedChainTpsHistory.join(',')) {
+              newTpsHistoryState[chainId] = updatedChainTpsHistory;
+              hasTpsChanges = true;
+          }
+        }
+      }
+      return hasTpsChanges ? newTpsHistoryState : prevTpsHistory;
+    });
+
+  }, [chainData, showUsd]);
+
   if (selectedBreakdownGroup !== "Metrics" || globalMetrics === undefined || chainData === undefined ) {
     return null; 
   }
@@ -238,12 +323,11 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
       error: "Connection Error - Retrying..."
   };
 
-  console.log(totalTPSLive);
   return (
     <div className='flex gap-x-[15px] w-full'>
         <div className='bg-[#1F2726] rounded-[15px] p-[15px] w-full h-[306px]'>
             <div className='heading-large-md mb-[15px]'>Ethereum Uptime</div>
-            <div className='numbers-4xl '>
+            <div className='numbers-2xl mb-[30px]'>
               {(() => {
                 const uptime = formatUptime(new Date().getTime() - ETHEREUM_LAUNCH_DATE.getTime());
                 return (
@@ -254,12 +338,21 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                 );
               })()}
             </div>
+            <div className='flex flex-col gap-y-[5px]'>
+              <div className='heading-large-md text-[#5A6462]'><span className='font-bold'>Events:</span></div>
+              <div className='flex flex-col gap-y-[5px] pl-[15px]'>
+                <div className={`transition-all duration-300 cursor-default ${eventHover === 'after' ? 'text-xs' : 'text-xxxs text-[#5A6462]'} w-fit`} onMouseEnter={() => setEventHover('after')} onMouseLeave={() => setEventHover(null)}><span className={`${eventHover !== 'after' ? 'font-bold' : ''}`}>Event after:</span> </div>
+                <div className={`transition-all duration-300 cursor-default ${eventHover === null ? 'text-xs' : 'text-xxxs text-[#5A6462] w-fit'}`}><span className={`${eventHover !== null ? 'font-bold' : ''}`}> Main event</span></div>
+                <div className={`transition-all duration-300 cursor-default ${eventHover === 'before' ? 'text-xs' : 'text-xxxs text-[#5A6462]'} w-fit`} onMouseEnter={() => setEventHover('before')} onMouseLeave={() => setEventHover(null)}><span className={`${eventHover !== 'before' ? 'font-bold' : ''}`}>Event before:</span></div>
+              </div>
+            </div>
+
         </div>
-        <div className='flex flex-col gap-y-[15px] bg-[#1F2726] rounded-[15px] p-[15px] w-full h-[306px]'>
+        <div className='flex flex-col gap-y-[15px] bg-[#1F2726] rounded-[15px] p-[15px] w-full h-[306px] '>
           <div className='heading-large-md'>Ecosystem TPS</div>
           <div className='flex flex-col gap-y-[30px]'>
-            <div className='numbers-4xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>{Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(globalMetrics.total_tps || 0)}</div>
-            <div className='w-full h-[58px] -mt-[5px]'>
+            <div className='numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>{Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(globalMetrics.total_tps || 0)}</div>
+            <div className='w-full h-[58px] -mt-[5px] mb-[20px]'>
               <HighchartsProvider Highcharts={Highcharts}>
                   <HighchartsChart>
                     <Chart
@@ -284,7 +377,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                       marginLeft={40}
                       marginRight={0}
                       height={58} // 48 (figma) + 5 (marginBottom) + 5 (marginTop) = 58
-                    
+                      
                     
                     />
                     <YAxis
@@ -353,8 +446,125 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
               </HighchartsProvider>
             </div>
           </div>
+          <div className={`relative flex flex-col gap-y-[5px] -mx-[15px] bg-[#1F2726] rounded-b-[15px] ${showChainsTPS ? 'pb-[10px]' : 'pb-0'}`}
+          >
+            <div className={`flex flex-col gap-y-[2.5px] px-[15px] duration-300  overflow-y-hidden ${!showChainsTPS ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''}`}
+              style={{
+                height: !showChainsTPS ? `80px` : `${Object.keys(chainsTPSHistory).length * 21 + 15}px`
+              }}
+            >
+              <div className='heading-large-md text-[#5A6462] '>Chains</div>
+              {Object.keys(chainsTPSHistory).map((chainId) => {
+                const chain = AllChainsByKeys[chainId];
+                
+                const chainColor = chain.colors.dark[0];
+                const chainName = chain.name_short;
+                return (
+                  <div key={chainId} className='flex w-full items-center justify-between h-[18px]'>
+                    <div className='flex w-[115px] gap-x-[5px] items-center'>
+                      <div className='w-[15px] h-[10px] rounded-r-full ' style={{ backgroundColor: chainColor }}></div>
+                      <div className="text-xs ">{chainName}</div>
+                    </div>
+                    <div className='flex gap-x-[1px] items-center'>
+                    {chainsTPSHistory[chainId].map((tps, index) => (
+                      <div className={`rounded-full cursor-pointer ${index === 21 ? 'bg-blue-400 w-[10px] h-[10px]' : 'bg-red-400 hover:w-[8px] hover:h-[8px] w-[5px] h-[5px] '}`} key={index + chainId}/>
+                    ))}
+                    </div>
+                    <div className='flex flex-col items-end w-[100px] numbers-xs'>
+                      <div>{Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(chainData[chainId]?.tps || 0)}</div>
+                      <div className='h-[2px] ' 
+                        style={{
+                          width: chainData[chainId].tps && globalMetrics.total_tps ? `${chainData[chainId].tps / globalMetrics.total_tps * 100}%` : '0%',
+                          backgroundColor: chainColor
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className='w-full h-[18px] flex items-center justify-center relative z-10 cursor-pointer top-[0px] ' 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setShowChainsTPS(!showChainsTPS);
+            }}>
+              <div className={`transition-transform absolute duration-300 ${showChainsTPS ? 'rotate-180' : ''}`}><GTPIcon icon='gtp-chevrondown-monochrome' size='md' className='text-[#5A6462]' /></div>
+              <div className='absolute right-[15px]'><GTPIcon icon='gtp-info-monochrome' size='sm' className='text-[#5A6462]' /></div>
+            </div>
+          </div>
+
         </div>
-        <div className='bg-[#1F2726] rounded-[15px] p-[15px] w-full h-[306px]'>
+        <div className='bg-[#1F2726] rounded-[15px] py-[15px] px-[30px] w-full h-[306px]'>
+          <div className='heading-large-md mb-[30px]'>Average Transaction Fee</div>
+          <div className='pt-[15px] mb-[50px]'>
+            <div className='flex justify-between items-center'>
+              <div className='w-[115px] heading-small-xxs'>Ethereum Mainnet</div>
+              <div className='flex gap-x-[1px] items-center'>
+                {ethCostLive.map((cost, index) => (
+                  <div className={`rounded-full cursor-pointer ${index === 21 ? 'bg-blue-400 w-[10px] h-[10px]' : 'bg-red-400 hover:w-[8px] hover:h-[8px] w-[5px] h-[5px] '}`} key={index + 'eth'}/>
+                ))}
+              </div>
+              <div className='flex bg-gradient-to-b from-[#596780] to-[#94ABD3] bg-clip-text text-transparent flex-col items-end w-[100px] numbers-2xl'>{Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(globalMetrics.eth_tx_cost_usd || 0)}</div>
+            </div>
+            <div className='flex justify-between items-center mt-[15px]'>
+              <div className='w-[115px] heading-small-xxs'>Layer 2s</div>
+              <div className='flex gap-x-[1px] items-center'>
+                {layer2CostLive.map((cost, index) => (
+                  <div className={`rounded-full cursor-pointer ${index === 21 ? 'bg-blue-400 w-[10px] h-[10px]' : 'bg-red-400 hover:w-[8px] hover:h-[8px] w-[5px] h-[5px] '}`} key={index + 'eth'}/>
+                ))}
+              </div>
+              <div className='flex bg-gradient-to-b from-[#FE5468] to-[#FFDF27] bg-clip-text text-transparent flex-col items-end w-[100px] numbers-2xl'>{Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(globalMetrics.avg_l2_tx_cost_usd || 0)}</div>
+            </div>
+          </div>
+          <div className={`relative flex flex-col gap-y-[5px] -mx-[15px] bg-[#1F2726] rounded-b-[15px] ${showChainsCost ? 'pb-[10px]' : 'pb-0'}`}
+          >
+            <div className={`flex flex-col gap-y-[2.5px] px-[15px] duration-300  overflow-y-hidden ${!showChainsCost ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''}`}
+              style={{
+                height: !showChainsCost ? `80px` : `${Object.keys(chainsTPSHistory).length * 21 + 15}px`
+              }}
+            >
+              <div className='heading-large-md text-[#5A6462] '>Chains</div>
+              {Object.keys(chainsTPSHistory).map((chainId) => {
+                const chain = AllChainsByKeys[chainId];
+                
+                const chainColor = chain.colors.dark[0];
+                const chainName = chain.name_short;
+                return (
+                  <div key={`cost-${chainId}`} className='flex w-full items-center justify-between h-[18px]'>
+                    <div className='flex w-[115px] gap-x-[5px] items-center'>
+                      <div className='w-[15px] h-[10px] rounded-r-full ' style={{ backgroundColor: chainColor }}></div>
+                      <div className="text-xs ">{chainName}</div>
+                    </div>
+                    <div className='flex gap-x-[1px] items-center'>
+                    {chainsTPSHistory[chainId].map((tps, index) => (
+                      <div className={`rounded-full cursor-pointer ${index === 21 ? 'bg-blue-400 w-[10px] h-[10px]' : 'bg-red-400 hover:w-[8px] hover:h-[8px] w-[5px] h-[5px] '}`} key={index + chainId}/>
+                    ))}
+                    </div>
+                    <div className='flex flex-col items-end w-[100px] numbers-xs'>
+                      <div>{Intl.NumberFormat('en-US', { maximumFractionDigits: 5, minimumFractionDigits: 4 }).format(chainData[chainId]?.tx_cost_native_usd || 0)}</div>
+                      <div className='h-[2px] ' 
+                        style={{
+                          width: chainData[chainId].tx_cost_native_usd && globalMetrics.avg_l2_tx_cost_usd && globalMetrics.eth_tx_cost_usd ? `${chainData[chainId].tx_cost_native_usd / (globalMetrics.avg_l2_tx_cost_usd + globalMetrics.eth_tx_cost_usd) * 100}%` : '0%',
+                          backgroundColor: chainColor
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className='w-full h-[18px] flex items-center justify-center relative z-10 cursor-pointer top-[0px] ' 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setShowChainsCost(!showChainsCost);
+            }}>
+              <div className={`transition-transform absolute duration-300 ${showChainsCost ? 'rotate-180' : ''}`}><GTPIcon icon='gtp-chevrondown-monochrome' size='md' className='text-[#5A6462]' /></div>
+              <div className='absolute right-[15px]'><GTPIcon icon='gtp-info-monochrome' size='sm' className='text-[#5A6462]' /></div>
+            </div>
+          </div>
         </div>
     </div>
   );
