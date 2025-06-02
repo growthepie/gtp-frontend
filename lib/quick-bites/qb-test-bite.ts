@@ -4,23 +4,27 @@ const testBite: QuickBiteData = {
   title: "This is a Test Quick Bite",
   subtitle: "Trying out different types of blocks",
   content: [
+    "This Quick Bite is a test to see how different types of blocks work. It's a work in progress and will be updated as we add more features to the platform.",
+    
     "# Main Header",
-    "Some Text",
-
+    "Some Text. This is a normal text block. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "Now there was a line break. I can also use **bold** text. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    
     "## Subheader",
-    "Some more text",
+    "Some more text. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
 
     "## Callout Block",
-    "> Callout Block.",
+    "> This is a very important message!",
     
     "## A list of items",
-    "- **List Item 1**: Blaaaah",
-    "- **List Item 2**: blab baablb abalas",
+    "- Normal Text: Blaaaah",
+    "- Bold Text: **Bla Bli Blub**",
 
     "## Dynamic Values in Text",
-    "This next value is dynamic and bold: **{{timeboostTotalETH}} ETH**.",
+    "This next value is dynamic (taken from API endpoint): **{{timeboostTotalETH}} ETH**.",
     
     "## Embedded Chart Block",
+    "Usage: When you want to embed a chart from growthepie.com",
     "```iframe",
     JSON.stringify({
       src: "https://www.growthepie.com/embed/fundamentals/daily-active-addresses?showUsd=true&theme=dark&timespan=90d&scale=absolute&interval=daily&showMainnet=false&chains=arbitrum%2Cbase%2Ccelo%2Cunichain&zoomed=false&startTimestamp=&endTimestamp=1745712000000",
@@ -31,6 +35,9 @@ const testBite: QuickBiteData = {
     "```",
     
     "## Line Chart with different line types",
+    "Usage: When you want to compare 2-5 entities over time OR compare a value against target (use dashed line)",
+    "General Chart features: Chart Title, Metric Url Link, Line Styles, Stacking, Show X as Date, Suffix/Prefix",
+    
     "```chart",
     JSON.stringify({
       type: "line",
@@ -70,6 +77,7 @@ const testBite: QuickBiteData = {
     "```",
 
     "## Column Chart",
+    "Usage: When you want to show the growth of 2-5 entities over time with limited timestamps (max 180) ",
     "```chart",
     JSON.stringify({
       type: "column",
@@ -86,6 +94,7 @@ const testBite: QuickBiteData = {
           yIndex: 0,
           suffix: null,
           prefix: null,
+          tooltipDecimals: 0,
           url: "https://api.growthepie.com/v1/quick-bites/pectra-fork.json",
           pathToData: "data.type4_tx_count.ethereum.daily.values",
         },
@@ -96,6 +105,7 @@ const testBite: QuickBiteData = {
           yIndex: 0,
           suffix: null,
           prefix: null,
+          tooltipDecimals: 0,
           url: "https://api.growthepie.com/v1/quick-bites/pectra-fork.json",
           pathToData: "data.type4_tx_count.base.daily.values",
         },
@@ -106,6 +116,7 @@ const testBite: QuickBiteData = {
           yIndex: 0,
           suffix: null,
           prefix: null,
+          tooltipDecimals: 0,
           url: "https://api.growthepie.com/v1/quick-bites/pectra-fork.json",
           pathToData: "data.type4_tx_count.optimism.daily.values",
         },
@@ -116,6 +127,7 @@ const testBite: QuickBiteData = {
           yIndex: 0,
           suffix: null,
           prefix: null,
+          tooltipDecimals: 0,
           url: "https://api.growthepie.com/v1/quick-bites/pectra-fork.json",
           pathToData: "data.type4_tx_count.unichain.daily.values",
         },
@@ -126,8 +138,88 @@ const testBite: QuickBiteData = {
     }),
     "```",
 
+    "## Area Chart",
+    "Usage: When you want to show the growth of 2-5 entities over time with more timestamps (90 or more) ",
+    "```chart",
+    JSON.stringify({
+      type: "area",
+      title: "Daily Timeboost Revenue in ETH",
+      subtitle: "The amount of money that Arbitrum DAO is making from Timeboost per day",
+      stacking: "normal",
+      showXAsDate: true,
+      dataAsJson: {
+        meta: [
+          {
+            name: "Timeboost Fees",
+            color: "#19D9D6",
+            xIndex: 1,
+            yIndex: 0,
+            suffix: null,
+            prefix: 'Ξ',
+            tooltipDecimals: 3,
+            url: "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json",
+            pathToData: "data.fees_paid_priority_eth.daily.values",
+          },
+          {
+            name: "Network Fees",
+            color: "#FFC300",
+            xIndex: 1,
+            yIndex: 0,
+            suffix: 'ETH',
+            prefix: null,
+            tooltipDecimals: 3,
+            url: "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json",
+            pathToData: "data.fees_paid_base_eth.daily.values",
+          }
+        ],
+      },
+      height: 400,
+      caption: "The amount of money that Arbitrum DAO is making from Timeboost per day. Data updated daily.",
+    }),
+    "```",
+
+    "## Area Chart Percentage Mode",
+    "Usage: when you want to shwocase the market share of 2-5 entities over time",
+    "```chart",
+    JSON.stringify({
+      type: "area",
+      title: "Daily Timeboost Revenue in ETH",
+      subtitle: "The amount of money that Arbitrum DAO is making from Timeboost per day",
+      stacking: "percent",
+      showXAsDate: true,
+      dataAsJson: {
+        meta: [
+          {
+            name: "Timeboost Fees",
+            color: "#19D9D6",
+            xIndex: 1,
+            yIndex: 0,
+            suffix: ' ETH',
+            prefix: null,
+            tooltipDecimals: 2,
+            url: "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json",
+            pathToData: "data.fees_paid_priority_eth.daily.values",
+          },
+          {
+            name: "Network Fees",
+            color: "#FFC300",
+            xIndex: 1,
+            yIndex: 0,
+            suffix: ' ETH',
+            prefix: null,
+            tooltipDecimals: 2,
+            url: "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json",
+            pathToData: "data.fees_paid_base_eth.daily.values",
+          }
+        ],
+      },
+      height: 400,
+      caption: "The amount of money that Arbitrum DAO is making from Timeboost per day. Data updated daily.",
+    }),
+    "```",
+
     "## Code Example",
-    "Here's a sample code block showing how to use the QuickBiteData type:",
+    "Here's a sample code block showing how to use the QuickBiteData type",
 
     "```typescript",
     "interface QuickBiteData {",

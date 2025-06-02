@@ -4,6 +4,8 @@ import { Icon } from "@iconify/react";
 import ReactMarkdown from "react-markdown";
 import Link from "next/link";
 import type { NotificationType } from "@/app/api/notifications/route";
+import { GTPIcon } from '../layout/GTPIcon';
+import { GTPIconName } from '@/icons/gtp-icon-names';
 
 interface NotificationContentProps {
   notifications: NotificationType[] | null;
@@ -36,52 +38,46 @@ const NotificationContent = ({ notifications, isLoading, error }: NotificationCo
         <div key={item.id + (item.url || index)}> {/* Added index to key for unique fallback */}
           {item.url ? (
             <Link
-              className={`group flex items-start border-forest-500 border-dashed w-full hover:cursor-pointer px-4 py-[15px] hover:bg-forest-500/10 transition-colors duration-200 ${
+              className={`group flex items-center gap-x-[15px] border-[#5A6462] border-dashed w-full hover:cursor-pointer p-[10px] pl-[15px] ${
                 index < notifications.length - 1 ? "border-b" : "border-b-0"
               }`}
               href={item.url}
               rel="noopener noreferrer"
               target="_blank"
             >
-              <div className="w-[12px] h-[12px] min-w-[12px] mt-1"> {/* Adjusted margin-top for icon alignment */}
-                <Icon
-                  icon={item.icon ? item.icon : "feather:bell"}
-                  className={`w-[12px] h-[12px] text-forest-800 ${
-                    item.icon ? "visible" : "invisible"
-                  }`}
-                />
-              </div>
-              <div className="flex flex-col w-full gap-y-[8px] ml-[12px]"> {/* Added ml to align text with icon */}
-                <div className="heading-small-sm">
+              <GTPIcon
+                icon={(item.icon ? item.icon : "gtp-notification-monochrome") as GTPIconName}
+                size="sm"
+                className="text-[#5A6462]"
+              />
+              <div className="flex flex-col w-full"> {/* Added ml to align text with icon */}
+                <div className="heading-small-xs group-hover:underline">
                   {item.desc}
                 </div>
-                <div className="h-auto text-sm">
+                <div className="text-xs">
                   <ReactMarkdown>{item.body}</ReactMarkdown>
                 </div>
               </div>
               <div className="w-[24px] h-[24px] min-w-[24px] pr-[20px] self-center">
-                <Icon icon="feather:chevron-right" />
+                <GTPIcon icon={"feather:chevron-right" as GTPIconName} size="md" />
               </div>
             </Link>
           ) : (
             <div
-              className={`group flex items-start border-forest-500 border-dashed w-full px-4 py-[15px] hover:bg-forest-500/10 transition-colors duration-200 ${
+              className={`group flex items-center gap-x-[15px] border-[#5A6462] border-dashed w-full p-[10px] pl-[15px] ${
                 index < notifications.length - 1 ? "border-b" : "border-b-0"
               }`}
             >
-              <div className="w-[12px] h-[12px] min-w-[12px] mt-1"> {/* Adjusted margin-top for icon alignment */}
-                <Icon
-                  icon={item.icon ? item.icon : "feather:bell"}
-                  className={`w-[12px] h-[12px] text-forest-800 ${
-                    item.icon ? "visible" : "invisible"
-                  }`}
-                />
-              </div>
-              <div className="flex flex-col w-full gap-y-[8px] ml-[12px]"> {/* Added ml */}
-                <div className="heading-small-sm">
+              <GTPIcon
+                icon={(item.icon ? item.icon : "gtp-notification-monochrome") as GTPIconName}
+                size="sm"
+                className="text-[#5A6462]"
+              />
+              <div className="flex flex-col w-full"> {/* Added ml */}
+                <div className="heading-small-xs">
                   {item.desc}
                 </div>
-                <div className="h-auto text-sm">
+                <div className="text-xs">
                   <ReactMarkdown>{item.body}</ReactMarkdown>
                 </div>
               </div>

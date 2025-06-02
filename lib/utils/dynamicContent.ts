@@ -22,10 +22,17 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
       // Handle timeboost data placeholders
       if (processedItem.includes('{{timeboost')) {
         const timeboostData = await fetchData('timeboost', "https://api.growthepie.xyz/v1/quick-bites/arbitrum-timeboost.json");
-        const timeboostDataRounded = timeboostData.data.fees_paid_priority_eth.total.toFixed(2);
-        if (timeboostDataRounded) {
-          processedItem = processedItem.replace('{{timeboostTotalETH}}', timeboostDataRounded);
-          // Add more timeboost replacements as needed
+        const timeboostDataETHRounded = timeboostData.data.fees_paid_priority_eth.total.toFixed(2);
+        const timeboostDataUSDRounded = parseFloat(timeboostData.data.fees_paid_priority_usd.total).toLocaleString("en-GB", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0
+        });
+
+        if (timeboostDataETHRounded) {
+          processedItem = processedItem.replace('{{timeboostTotalETH}}', timeboostDataETHRounded);
+        }
+        if (timeboostDataUSDRounded) {
+          processedItem = processedItem.replace('{{timeboostTotalUSD}}', timeboostDataUSDRounded);
         }
       }
 

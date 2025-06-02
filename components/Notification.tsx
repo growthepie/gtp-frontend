@@ -139,8 +139,9 @@ const Notification = () => {
                   } w-auto ${item.url ? "cursor-pointer" : "cursor-normal"} flex`}
               >
                 <div className="w-[12px] h-[12px]">
-                  <Icon
-                    icon={item.icon ? item.icon : "feather:bell"}
+                  <GTPIcon
+                    icon={item.icon ? item.icon : "gtp-notification"}
+                    size="sm"
                     className={`w-[12px] h-[12px] text-forest-1000 dark:text-forest-800 dark:group-hover:text-forest-200  ${item.icon ? "visible" : "invisible"
                       }`}
                   />
@@ -265,7 +266,7 @@ const Notification = () => {
               >
                 <div className="flex items-center gap-x-[10px]">
                   <div className="w-[16px] h-[16px] relative">
-                    <Icon icon="feather:bell" className="w-[16px] h-[16px]" />
+                    <GTPIcon icon="gtp-notification" size="sm" />
                   </div>
                   <p className="text-[12px] font-[500]">Notification Center</p>
                 </div>
@@ -298,13 +299,14 @@ const Notification = () => {
                         }}
                       ></div>
                     )}
-                    <Icon
+                    <GTPIcon
                       icon={
                         filteredData[currentIndex] &&
                           filteredData[currentIndex].icon
                           ? filteredData[currentIndex].icon
-                          : "feather:bell"
+                          : "gtp-notification"
                       }
+                      size="sm"
                       className={`w-[16px] h-[16px] light:text-[#1F2726]`}
                     />
                   </div>
@@ -390,15 +392,13 @@ const Notification = () => {
               }}
             >
               <div className="w-[24px] h-[24px] relative">
-                {hasUnseenNotifications && (
-                  <div className="w-[10px] h-[10px] bg-red-500 rounded-full absolute top-0 right-0.5 border-2 border-white dark:border-forest-1000"></div>
-                )}
                   {hasUnseenNotifications ? (
-                    <GTPIcon icon="gtp-notification" size="md" />
+                    <GTPIcon icon="gtp-notification-new" size="md" />
                   ) : (
-                  <Icon
-                    icon="feather:bell"
-                    className="w-[24px] h-[24px] light:text-[#1F2726]"
+                  <GTPIcon
+                    icon="gtp-notification"
+                    size="md"
+                    className="light:text-[#1F2726]"
                   />
                 )}
               </div>

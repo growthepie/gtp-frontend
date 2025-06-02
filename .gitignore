@@ -45,3 +45,5 @@ certificates
 # icon library
 /public/icon-library
 
+# figma styles
+/lib/figma-styles/output
