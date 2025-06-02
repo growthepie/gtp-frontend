@@ -17,7 +17,8 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { MasterURL } from "@/lib/urls";
 import Container from "@/components/layout/Container";
 import TopSelectArea from "@/components/layout/EthAgg/TopSelectArea";
-import EthAggMetrics from "@/components/layout/EthAgg/EthAggMetrics";
+import TopEthAggMetrics from "@/components/layout/EthAgg/MetricsTop";
+import MetricsCharts from "@/components/layout/EthAgg/MetricsCharts";
 export default function EthAgg() {
  
   const [selectedBreakdownGroup, setSelectedBreakdownGroup] = useState("Metrics");
@@ -29,7 +30,8 @@ export default function EthAgg() {
     <>
      <TopSelectArea selectedBreakdownGroup={selectedBreakdownGroup} setSelectedBreakdownGroup={setSelectedBreakdownGroup} />
      <div className="mt-[30px]">
-        <EthAggMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
+        <TopEthAggMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
+        <MetricsCharts selectedBreakdownGroup={selectedBreakdownGroup} />
      </div>
       {/* <ShowLoading
         dataLoading={[econLoading, masterLoading]}

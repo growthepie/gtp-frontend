@@ -10,8 +10,8 @@ import { GTPIcon } from '../GTPIcon';
 import { Icon } from '@iconify/react';
 import { useMaster } from '@/contexts/MasterContext';
 
-// Define the props type for EthAggMetricsComponent
-interface EthAggMetricsProps {
+// Define the props type for TopEthAggMetricsComponent
+interface TopEthAggMetricsProps {
   selectedBreakdownGroup: string;
 }
 
@@ -48,7 +48,7 @@ interface SSEData {
 }
 // --------------------------------------------------------------------------
 
-function EthAggMetricsComponent({ selectedBreakdownGroup }: EthAggMetricsProps) {
+function TopEthAggMetricsComponent({ selectedBreakdownGroup }: TopEthAggMetricsProps) {
   return (
     <Container className="mt-[30px] min-h-[300px]"> {/* Added min-height for better loading view */}
       <RealTimeMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
@@ -326,7 +326,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   return (
   <>
   {connectionStatus === 'connected' && (
-    <div className='flex gap-x-[15px] w-full px-[15px]'>
+    <div className='flex gap-x-[15px] w-full '>
 
         <div className='bg-[#1F2726] rounded-[15px] p-[15px] w-full h-[306px]'>
             <div className='heading-large-md mb-[15px]'>Ethereum Uptime</div>
@@ -576,10 +576,10 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
 };
 
 const arePropsEqual = (
-  prevProps: Readonly<EthAggMetricsProps>,
-  nextProps: Readonly<EthAggMetricsProps>
+  prevProps: Readonly<TopEthAggMetricsProps>,
+  nextProps: Readonly<TopEthAggMetricsProps>
 ) => {
-   // This comparison means EthAggMetricsComponent (and thus RealTimeMetrics) will only re-evaluate 
+   // This comparison means TopEthAggMetricsComponent (and thus RealTimeMetrics) will only re-evaluate 
    // its rendering if selectedBreakdownGroup actually changes its value OR 
    // if selectedBreakdownGroup *becomes* or *stops being* "Metrics".
    // The RealTimeMetrics internal useEffect for SSE connection also depends on selectedBreakdownGroup === "Metrics".
@@ -592,15 +592,12 @@ const arePropsEqual = (
    if (prevProps.selectedBreakdownGroup === "Metrics" && nextProps.selectedBreakdownGroup !== "Metrics") {
        return false;
    }
-   // If it stays not "Metrics", and the group itself changes, it doesn't matter for *this* component as it renders null.
-   // However, to be precise for general memoization: if it's not "Metrics" in both, and group changes, technically props changed.
-   // But since it renders null, further optimization is to say they are equal if both are not "Metrics".
+
    if (prevProps.selectedBreakdownGroup !== "Metrics" && nextProps.selectedBreakdownGroup !== "Metrics") {
        return true; // Effectively, don't care about changes if not displaying Metrics.
    }
-   // If it stays "Metrics", and the group (which is "Metrics") doesn't change, they are equal.
-   // This case should be covered by the direct comparison: prevProps.selectedBreakdownGroup === nextProps.selectedBreakdownGroup
+
    return prevProps.selectedBreakdownGroup === nextProps.selectedBreakdownGroup;
 };
 
-export default React.memo(EthAggMetricsComponent, arePropsEqual);
+export default React.memo(TopEthAggMetricsComponent, arePropsEqual);
