@@ -128,6 +128,11 @@ export interface DataAvailabilityLayerData {
     dark: [string, string];
     darkTextOnBackground: boolean;
   };
+  block_explorers: BlockExplorers;
+  incl_in_da_overview: boolean;
+  url_key: string;
+  website: string;
+  twitter: string;
 }
 
 export interface FeeMetrics {

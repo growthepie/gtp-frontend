@@ -5,37 +5,20 @@ import {
     Chart,
     XAxis,
     YAxis,
-    Title,
     Tooltip as HighchartsTooltip,
-    PlotBand,
-    AreaSeries,
-    ColumnSeries,
-    LineSeries,
     PieSeries,
-    
     Series,
-    
 } from "react-jsx-highcharts";
-import Highcharts, { chart } from "highcharts/highstock";
+import Highcharts from "highcharts/highstock";
 import { useLocalStorage } from "usehooks-ts";
-import Image from "next/image";
 import { useMemo, memo,  useState, useCallback, useRef, useEffect } from "react";
 import { useMaster } from "@/contexts/MasterContext";
 import "@/app/highcharts.axis.css";
 import Icon from "@/components/layout/Icon";
 import { DAConsumerChart } from "@/types/api/DAOverviewResponse";
-import { stringToDOM } from "million";
-import { Any } from "react-spring";
-import { format } from "path";
-import VerticalScrollContainer from "@/components/VerticalScrollContainer";
-import { animated, useSpring, useTransition } from "@react-spring/web";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import DynamicIcon from "../DynamicIcon";
-import { match } from "assert";
 import useChartSync from "./components/ChartHandler";
-import { filter, get, set } from "lodash";
-import { locale } from "moment";
-import ChartWatermark, { ChartWatermarkWithMetricName } from "../ChartWatermark";
+import { ChartWatermarkWithMetricName } from "../ChartWatermark";
 import { Badge } from "@/app/(labels)/labels/Search";
 import highchartsPatternFill from "highcharts/modules/pattern-fill";
 // import highchartsAnnotations from "highcharts/modules/annotations";
@@ -64,6 +47,7 @@ interface DATableChartsProps {
     data?: any;
     isOpen?: boolean;
     isMonthly: boolean;
+    da_key: string;
     da_name: string;
     pie_data: DAConsumerChart;
     master: MasterResponse;
@@ -76,6 +60,7 @@ const DATableChartsComponent = ({
     data,
     isMonthly,
     isOpen,
+    da_key,
     da_name,
     pie_data,
     master,
@@ -847,7 +832,7 @@ const DATableChartsComponent = ({
                     </div>
                 </div>
                 <div className="absolute left-[calc(50%-85px)] top-[calc(39%-4.5px)] z-[100] opacity-40">
-                    <ChartWatermarkWithMetricName className="w-[225px] h-[45px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" metricName={da_name === "da_celestia" ? "CELESTIA" : "ETHEREUM BLOBS"} />
+                    <ChartWatermarkWithMetricName className="w-[225px] h-[45px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" metricName={da_name} />
                 </div>
                 
 
@@ -1144,7 +1129,7 @@ const DATableChartsComponent = ({
                             return (
                                 <Series
                                     type={isMonthly ? "column" : "area"}
-                                    key={key + "-DATableCharts" + da_name}
+                                    key={key + "-DATableCharts" + da_key}
                                     name={name}
 
                                     visible={filteredChains[key][isMonthly ? "monthly" : "daily"].values.length > 0}
@@ -1453,7 +1438,7 @@ const DATableChartsComponent = ({
                         
                         >
                                 <PieSeries
-                                    key={`${"Pie"}-DATableCharts-${da_name}`}
+                                    key={`${"Pie"}-DATableCharts-${da_key}`}
                                     name={"Pie Chart"}
                                     innerSize={"95%"}
                                     size={"100%"}
@@ -1725,7 +1710,7 @@ const DATableCharts = memo(DATableChartsComponent, (prevProps, nextProps) => {
     return (
       prevProps.selectedTimespan === nextProps.selectedTimespan &&
       prevProps.isMonthly === nextProps.isMonthly &&
-      prevProps.da_name === nextProps.da_name &&
+      prevProps.da_key === nextProps.da_key &&
       prevProps.data === nextProps.data &&
       prevProps.pie_data === nextProps.pie_data &&
       prevProps.master === nextProps.master

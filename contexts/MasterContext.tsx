@@ -4,6 +4,7 @@ import { GloHolderURL, MasterURL } from "@/lib/urls";
 import { DataAvailabilityLayerData, DataAvailabilityLayers, MasterResponse, Metrics, MetricInfo, UnitSchema, Chains, ChainInfo } from "@/types/api/MasterResponse";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { ImportChainIcons } from "@/lib/chainIcons";
+import { ImportDaIcons } from "@/lib/daIcons";
 import useSWR from "swr";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 
@@ -145,6 +146,9 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
 
       // import chain icons into iconify
       ImportChainIcons(data);
+
+      // import data availability icons into iconify
+      ImportDaIcons(data);
     }
   }, [data]);
 
