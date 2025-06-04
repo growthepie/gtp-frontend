@@ -25,6 +25,7 @@ import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 import { first } from "lodash";
 import { Badge } from "@/app/(labels)/labels/Search";
 import Link from "next/link";
+import { getIcon, listIcons } from "@iconify/react";
 
 
 
@@ -399,6 +400,7 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
             />
           ) : (
             <DynamicIcon
+              key={index}
               pathString={master.custom_logos[chain[altIndex]].body}
               size={12}
               className="text-forest-200"
@@ -432,7 +434,8 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
       // )
     }, []);
 
-   
+    console.log("listIcons", listIcons(undefined, "gtp"));
+    console.log("getIcon", getIcon("gtp:da-eigenda-logo-monochrome"));
 
     //daconsumers breakdown_data[item.key][selectedTimespan].da_consumers
     return (
@@ -711,13 +714,14 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                           item.key,
                         )} `}
                       >
-                        <div className="w-[26px] h-[26px] relative rounded-full bg-[#151A19] flex items-center justify-center">
-                          <Icon icon={`gtp:${item.key.replaceAll("_", "-")}-logo-monochrome`} className="w-[15px] h-[15px]"
+                        <div className="w-[26px] h-[26px] relative rounded-full bg-[#151A19] flex items-center justify-center" title={item.key.replaceAll("_", "-")}>
+                          <Icon icon={`gtp:${AllDALayersByKeys[item.key].url_key.replaceAll("_", "-")}-logo-monochrome`} className="w-[15px] h-[15px]"
                           style={{
                             color:
                               AllDALayersByKeys[item.key].colors["dark"][0],
                             }}
                           />
+                          
                           <Icon
                             icon={"gtp:circle-arrow"}
                             className={`w-[4px] h-[9px] absolute top-[9px] right-0 ${selectedTimespan !== "1d" ? "visible" : "hidden"}`}
@@ -858,7 +862,8 @@ export default function DATable({breakdown_data, selectedTimespan, isMonthly}: {
                             selectedTimespan={selectedTimespan}
                             isMonthly={isMonthly}
                             isOpen={openDA[item.key]}
-                            da_name={item.key}
+                            da_key={item.key}
+                            da_name={AllDALayersByKeys[item.key].name}
                             pie_data={breakdown_data[item.key][selectedTimespan].da_consumer_chart}
                             master={master}
                           />
