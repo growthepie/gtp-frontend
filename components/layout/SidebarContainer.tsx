@@ -144,7 +144,7 @@ export default function SidebarContainer() {
               </IconContextMenu>
             </Link>
             
-            <div className="absolute flex items-end p-[10px] h-[45.07px] top-[40px] right-0 cursor-pointer " onClick={() => {
+            <div className="absolute flex items-end p-[10px] h-[45.07px] top-[41px] right-0 cursor-pointer " onClick={() => {
               // track("clicked Sidebar Close", {
               //   location: "desktop sidebar",
               //   page: window.location.pathname,
