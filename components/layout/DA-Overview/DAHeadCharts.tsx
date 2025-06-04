@@ -44,7 +44,8 @@ const chart_titles = {
 
 const area_colors = {
     da_ethereum_blobs: "#FFC300",
-    da_celestia: "#8E44ED"
+    da_celestia: "#8E44ED",
+    da_eigenda: "#3D29D9"
 }
   
 export default function DAHeadCharts({selectedTimespan, isMonthly, data}: {selectedTimespan: string, isMonthly: boolean, data: AllDAOverview}) {
