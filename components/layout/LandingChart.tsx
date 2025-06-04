@@ -1498,7 +1498,7 @@ export default function LandingChart({
                     />
                     <MetricCard
                       icon="gtp-layers"
-                      metric_name="Layer 2 Dominance"
+                      metric_name="Layer 2 Multiplier"
                       metric_value={(Math.round(l2_dominance * 100) / 100).toFixed(
                         2,
                       )}
