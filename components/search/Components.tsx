@@ -291,7 +291,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
 
     if(!showSearchContainer){
       return (
-        <div className="flex w-full flex-col">
+        <div className={`flex w-full flex-col-reverse md:flex-col`}>
             {/* first child: the search bar w/ Icon and input */}
             <div className="flex w-full gap-x-[10px] items-center bg-[#1F2726] rounded-[22px] h-[44px] p-2.5">
               {localQuery.length > 0 ? (
@@ -303,7 +303,6 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               )}
               <input
                 ref={localInputRef}
-                autoFocus={true}
                 autoComplete="off"
                 spellCheck={false}
                 className={`flex-1 h-full bg-transparent text-white placeholder-[#CDD8D3] border-none outline-none overflow-x-clip text-md leading-[150%] font-medium font-raleway`}

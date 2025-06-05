@@ -69,7 +69,7 @@ export default function SidebarContainer() {
 
   return (
     <div className="bg-forest-1000 md:min-w-[94px] max-w-[253px]">
-      <div className="pt-[43px] pl-[20px] bg-[#1F2726] min-h-screen max-h-screen sticky top-0 left-0 hidden md:flex flex-col overflow-y-hidden overflow-x-hidden gap-y-[36px] border-r-[2px] border-[#151A19] z-[3]">
+      <div className="pt-[43px] pl-[20px] bg-[#1F2726] min-h-screen max-h-screen sticky top-0 left-0 hidden md:flex flex-col gap-y-[36px] border-r-[2px] border-[#151A19] z-[3]">
         <div className="select-none h-[45.07px]">
           <div className="flex items-center justify-start h-[45.07px] gap-x-[15px] pr-[10px]">
             
