@@ -76,6 +76,10 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [showChainsTPS, setShowChainsTPS] = useState<boolean>(false);
   const [showChainsCost, setShowChainsCost] = useState<boolean>(false);
+  const [tpsHoverIndex, setTpsHoverIndex] = useState<number | null>(null);
+  const [costHoverIndex, setCostHoverIndex] = useState<number | null>(null);
+  const [tpsIndex, setTpsIndex] = useState<number>(17);
+  const [costIndex, setCostIndex] = useState<number>(17);
 
   const { AllChainsByKeys } = useMaster();
 
@@ -84,7 +88,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const uptimeAnimationRef = useRef<number | null>(null);
 
-  const HISTORY_LIMIT = 22; // Define a limit for history arrays
+  const HISTORY_LIMIT = 18; // Define a limit for history arrays
 
   const formatDuration = (ms: number) => {
     const totalSeconds = Math.floor(ms / 1000);
@@ -114,7 +118,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     const minutes = totalMinutes % 60;
     const seconds = totalSeconds % 60;
 
-    return { heading: `${years}years, ${months}months, ${days}days`, subheading: `${hours}hours, ${minutes}minutes, ${seconds}seconds` };
+    return { heading: `${years} years, ${months} months, ${days} days`, subheading: `${hours} hours, ${minutes} minutes, ${seconds} seconds` };
   };
 
   const updateUptimeDisplay = useCallback(() => {
@@ -502,7 +506,11 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                       </div>
                       <div className='flex gap-x-[1px] items-center'>
                         {chainsTPSHistory[chainId].map((tps, index) => (
-                          <div className={`rounded-full cursor-pointer ${index === 21 ? 'bg-blue-400 w-[10px] h-[10px]' : 'bg-red-400 hover:w-[8px] hover:h-[8px] w-[5px] h-[5px] '}`} key={index + chainId} />
+                          <div className={`rounded-full cursor-pointer ${tpsIndex === index ? 'bg-blue-400 w-[10px] h-[10px]' : tpsHoverIndex === index ? 'bg-red-400 w-[8px] h-[8px] ' : 'bg-red-400 w-[5px] h-[5px] '}`} key={index + chainId}
+                            onMouseEnter={() => setTpsHoverIndex(index)}
+                            onMouseLeave={() => setTpsHoverIndex(null)}
+                            onClick={() => setTpsIndex(index)}
+                          />
                         ))}
                       </div>
                       <div className='flex flex-col items-end w-[100px] numbers-xs'>
@@ -547,13 +555,15 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                 <div className='w-[115px] heading-small-xxs'>Layer 2s</div>
                 <div className='flex gap-x-[1px] items-center'>
                   {layer2CostLive.map((cost, index) => (
-                    <div className={`rounded-full cursor-pointer ${index === 21 ? 'bg-blue-400 w-[10px] h-[10px]' : 'bg-red-400 hover:w-[8px] hover:h-[8px] w-[5px] h-[5px] '}`} key={index + 'eth'} />
+                    <div className={`rounded-full cursor-pointer ${index === 21 ? 'bg-blue-400 w-[10px] h-[10px]' : 'bg-red-400 hover:w-[8px] hover:h-[8px] w-[5px] h-[5px] '}`} key={index + 'eth'} 
+                    
+                    />
                   ))}
                 </div>
                 <div className='flex bg-gradient-to-b from-[#FE5468] to-[#FFDF27] bg-clip-text text-transparent flex-col items-end w-[100px] numbers-2xl'>{Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(globalMetrics.avg_l2_tx_cost_usd || 0)}</div>
               </div>
             </div>
-            <div className={`relative flex flex-col gap-y-[5px] -mx-[15px] bg-[#1F2726] rounded-b-[15px] ${showChainsCost ? 'pb-[10px]' : 'pb-0'}`}
+            <div className={`relative flex flex-col gap-y-[5px] -mx-[15px] bg-[#1F2726]  z-10 rounded-b-[15px] ${showChainsCost ? 'pb-[10px] shadow-lg' : 'pb-0'}`}
             >
               <div className={`flex flex-col gap-y-[2.5px] px-[15px] duration-300  overflow-y-hidden ${!showChainsCost ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''}`}
                 style={{
@@ -574,7 +584,11 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                       </div>
                       <div className='flex gap-x-[1px] items-center'>
                         {chainsTPSHistory[chainId].map((tps, index) => (
-                          <div className={`rounded-full cursor-pointer ${index === 21 ? 'bg-blue-400 w-[10px] h-[10px]' : 'bg-red-400 hover:w-[8px] hover:h-[8px] w-[5px] h-[5px] '}`} key={index + chainId} />
+                          <div className={`rounded-full cursor-pointer ${index === costIndex ? 'bg-blue-400 w-[10px] h-[10px]' : costHoverIndex === index ? 'bg-red-400 w-[8px] h-[8px] ' : 'bg-red-400 w-[5px] h-[5px] '}`} key={index + chainId} 
+                            onMouseEnter={() => setCostHoverIndex(index)}
+                            onMouseLeave={() => setCostHoverIndex(null)}
+                            onClick={() => setCostIndex(index)}
+                          />
                         ))}
                       </div>
                       <div className='flex flex-col items-end w-[100px] numbers-xs'>
