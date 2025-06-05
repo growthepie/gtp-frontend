@@ -31,6 +31,7 @@ type SidebarProps = {
 export const SidebarMenuLink = memo(({
   item,
   sidebarOpen,
+  onClose, // for mobile menu
 }: SidebarProps) => {
   const { isMobile } = useUIContext();
   const pathname = usePathname();
@@ -39,6 +40,12 @@ export const SidebarMenuLink = memo(({
     if (item.href) return pathname.startsWith(item.href);
     return false;
   }, [item.href, pathname]);
+  
+  const handleLinkClick = () => {
+    if (item.href && !item.href.startsWith("http") && onClose) {
+      onClose();
+    }
+  };
 
   return (
     <>
@@ -49,6 +56,7 @@ export const SidebarMenuLink = memo(({
       iconBackground="none"
       label={item.label}
       link={item.href}
+      onClick={handleLinkClick}
       hideLabel={!sidebarOpen && !isMobile}
       isActive={isActive}
       onToggle={() => {}}
@@ -167,22 +175,21 @@ export const SidebarMenuGroup = memo(({
     setIsOpen(openState);
   }, [item.name, item.options, pathname, urlParts]);
 
-  const handleToggle = () => {
-    if (isOpen) {
-      handleClose();
-    } else {
-      handleOpen();
-    }
-  };
-
-  const handleOpen = () => {
+  const handleGroupOpen = () => {
     setIsOpen(true);
     onOpen && onOpen();
   };
 
-  const handleClose = () => {
+  const handleGroupClose = () => { // Renamed from handleClose
     setIsOpen(false);
-    onClose && onClose();
+  };
+
+  const handleToggle = () => {
+    if (isOpen) {
+      handleGroupClose(); 
+    } else {
+      handleGroupOpen(); 
+    }
   };
 
   return (
@@ -229,48 +236,56 @@ export const SidebarMenuGroup = memo(({
                   >
                     {sidebarOpen ? bucket.toUpperCase() : <span>&nbsp;</span>}
                   </div>
-                  {chains.map((option) => (
-                    <Accordion
-                      key={option.key}
-                      size={"sm"}
-                      background="none"
-                      icon={option.icon as GTPIconName}
-                      iconBackground="dark"
-                      iconColor={
-                        option.url && pathname.localeCompare(option.url) === 0
-                          ? AllChainsByKeys[option.key].colors["dark"][1]
-                          : "#5A6462"
+                  {chains.map((option) => {
+                    const handleChainLinkClick = () => {
+                      if (option.url && !option.url.startsWith("http") && onClose) {
+                        onClose(); // This `onClose` is from SidebarMenuGroup's props (for mobile menu)
                       }
-                      iconHoverColor={
-                        AllChainsByKeys[option.key].colors["dark"][1]
-                      }
-                      label={option.label}
-                      hideLabel={!sidebarOpen && !isMobile}
-                      link={option.url}
-                      isActive={
-                        option.url
-                          ? pathname.localeCompare(option.url) === 0
-                          : false
-                      }
-                      rightContent={
-                        option.showNew && (
-                          <div className="absolute bottom-1 right-[2px] top-1 flex items-center justify-center overflow-hidden text-xs font-bold transition-all duration-300 md:right-[16px]">
-                            <div
-                              className={`h-full w-[50px] rounded-full bg-gradient-to-t from-[#FFDF27] to-[#FE5468] transition-all duration-300 md:rounded-br-none md:rounded-tr-none ${
-                                sidebarOpen && isOpen
-                                  ? "translate-x-[0px] opacity-100 delay-300 ease-in-out"
-                                  : "translate-x-[60px] opacity-0 ease-in-out"
-                              }`}
-                            >
-                              <div className="hard-shine-2 absolute inset-0 flex items-center justify-end rounded-full pr-[8px] text-xs font-bold text-forest-900 transition-all duration-300 md:rounded-br-none md:rounded-tr-none">
-                                NEW!
+                    };
+                    return (
+                      <Accordion
+                        key={option.key}
+                        size={"sm"}
+                        background="none"
+                        icon={option.icon as GTPIconName}
+                        iconBackground="dark"
+                        iconColor={
+                          option.url && pathname.localeCompare(option.url) === 0
+                            ? AllChainsByKeys[option.key].colors["dark"][1]
+                            : "#5A6462"
+                        }
+                        iconHoverColor={
+                          AllChainsByKeys[option.key].colors["dark"][1]
+                        }
+                        label={option.label}
+                        hideLabel={!sidebarOpen && !isMobile}
+                        link={option.url}
+                        onClick={handleChainLinkClick}
+                        isActive={
+                          option.url
+                            ? pathname.localeCompare(option.url) === 0
+                            : false
+                        }
+                        rightContent={
+                          option.showNew && (
+                            <div className="absolute bottom-1 right-[2px] top-1 flex items-center justify-center overflow-hidden text-xs font-bold transition-all duration-300 md:right-[16px]">
+                              <div
+                                className={`h-full w-[50px] rounded-full bg-gradient-to-t from-[#FFDF27] to-[#FE5468] transition-all duration-300 md:rounded-br-none md:rounded-tr-none ${
+                                  sidebarOpen && isOpen
+                                    ? "translate-x-[0px] opacity-100 delay-300 ease-in-out"
+                                    : "translate-x-[60px] opacity-0 ease-in-out"
+                                }`}
+                              >
+                                <div className="hard-shine-2 absolute inset-0 flex items-center justify-end rounded-full pr-[8px] text-xs font-bold text-forest-900 transition-all duration-300 md:rounded-br-none md:rounded-tr-none">
+                                  NEW!
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        )
-                      }
-                    />
-                  ))}
+                          )
+                        }
+                      />
+                    );
+                  })}
                 </div>
               );
             })}
@@ -306,6 +321,12 @@ export const SidebarMenuGroup = memo(({
                 }
               }
 
+              const handleOptionLinkClick = () => {
+                if (option.url && !option.url.startsWith("http") && onClose) {
+                  onClose(); // This `onClose` is from SidebarMenuGroup's props (for mobile menu)
+                }
+              };
+
               return (
                 <div
                   key={option.key}
@@ -321,6 +342,7 @@ export const SidebarMenuGroup = memo(({
                     label={option.label}
                     hideLabel={!sidebarOpen && !isMobile}
                     link={option.url}
+                    onClick={handleOptionLinkClick}
                     isActive={
                       option.url
                         ? pathname.localeCompare(option.url) === 0
@@ -372,6 +394,7 @@ type AccordionProps = {
   hideLabel?: boolean;
   isActive?: boolean;
   onToggle?: () => void;
+  onClick?: () => void;
   width?: string | undefined;
   rightContent?: ReactNode;
 };
@@ -393,6 +416,7 @@ export const Accordion = memo(({
   hideLabel = false,
   isActive = false,
   onToggle = () => {},
+  onClick = () => {},
   width = undefined,
   rightContent,
 }: AccordionProps) => {
@@ -446,6 +470,33 @@ export const Accordion = memo(({
     lg: "20px",
   };
 
+  // Click handler for the main clickable element (Link or div)
+  const handleElementClick = (event: React.MouseEvent) => {
+    if (link && onClick) {
+      // If it's a link and has an onClick prop (e.g., for closing mobile menu)
+      // Let Next.js Link handle navigation, then call our onClick.
+      // Note: For external links, onClick (onClose) is typically not called by parent.
+      onClick(); 
+    }
+    // If it's an accordion (has children), always toggle.
+    if (children) {
+      onToggle();
+    }
+  };
+  
+  const InteractiveWrapper = link ? Link : 'div';
+  const interactiveProps = link 
+    ? { 
+        href: link, 
+        target: link.startsWith("http") ? "_blank" : undefined,
+        rel: link.startsWith("http") ? "noopener noreferrer" : undefined,
+      } 
+    : {
+      href: "",
+      target: undefined,
+      rel: undefined,
+    };
+
   const [isHovered, setIsHovered] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -461,20 +512,13 @@ export const Accordion = memo(({
     <>
       <Tooltip placement="top-start">
         <TooltipTrigger className="w-full">
-          <Link
-            className={`relative flex w-full flex-col overflow-visible ${className}`}
-            href={link ? link : ""}
-            target={link && link.startsWith("http") ? "_blank" : undefined}
-            rel={
-              link && link.startsWith("http")
-                ? "noopener noreferrer"
-                : undefined
-            }
-            style={{
-              width: width,
-            }}
+        <InteractiveWrapper
+            {...interactiveProps}
+            className={`relative flex w-full flex-col overflow-visible ${className} ${children && !link ? "cursor-pointer" : ""}`}
+            style={{ width: width }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
+            onClick={handleElementClick} // Unified click handler
           >
             <div
               className={`flex w-full items-center justify-between ${
@@ -514,7 +558,7 @@ export const Accordion = memo(({
               </div>
             </div>
             {rightContent}
-          </Link>
+          </InteractiveWrapper>
         </TooltipTrigger>
         {hideLabel && (
           <TooltipContent

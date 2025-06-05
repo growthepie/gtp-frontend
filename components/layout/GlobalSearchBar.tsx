@@ -22,10 +22,12 @@ import FocusSwitch from './FocusSwitch';
 import { IconContextMenu } from './IconContextMenu';
 import { useToast } from '../toast/GTPToast';
 import { useNotifications } from '@/hooks/useNotifications';
-import NotificationContent from '@/components/notifications/NotificationContent';
+import NotificationInsideContent from '@/components/notifications/NotificationContent';
 import { GTPIconName } from '@/icons/gtp-icon-names';
 import { track } from '@vercel/analytics/react';
 import SharePopoverContent from './FloatingBar/SharePopoverContent';
+import MobileMenuContent from './FloatingBar/MobileMenuContent';
+import NotificationContent from './FloatingBar/NotificationContent';
 
 
 export default function GlobalFloatingBar() {
@@ -44,6 +46,96 @@ export default function GlobalFloatingBar() {
   const pathname = usePathname();
   const isOpen = searchParams.get("search") === "true";
   const [showMore, setShowMore] = useState<{ [key: string]: boolean }>({});
+
+  // Track if the user is interacting with search (not just focused)
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // Handle search activation
+  const activateSearch = useCallback(() => {
+    if (isMobile) {
+      // Clear any pending deactivation
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+      setIsSearchActive(true);
+      
+      // Focus the search input after a brief delay to ensure the UI has updated
+      // This is important for mobile UX - users expect to start typing immediately
+      setTimeout(() => {
+        if (searchInputRef.current && !searchInputRef.current.matches(':focus')) {
+          searchInputRef.current.focus();
+        }
+      }, 50);
+    }
+  }, [isMobile]);
+
+  // Effect to focus the search input when the search bar becomes active on mobile
+  useEffect(() => {
+    if (isMobile && isSearchActive) {
+      // Delay focusing slightly to allow UI transitions/updates to settle.
+      // The search bar container has a `transition-[margin] duration-200`.
+      // A small delay like 50ms should be enough for the input to be ready and avoid focus issues during animation.
+      const timerId = setTimeout(() => {
+        if (searchInputRef.current && document.activeElement !== searchInputRef.current) {
+          searchInputRef.current.focus();
+        }
+      }, 50); // Adjust delay if necessary (0, 50, 100ms are common)
+      
+      return () => clearTimeout(timerId);
+    }
+  }, [isMobile, isSearchActive]);
+
+  // Handle search deactivation with intelligent delay
+  const deactivateSearch = useCallback(() => {
+    if (isMobile) {
+      // Use a longer delay to allow for interaction
+      searchTimeoutRef.current = setTimeout(() => {
+        // Check if focus is still within the search container
+        if (searchContainerRef.current && 
+            !searchContainerRef.current.contains(document.activeElement)) {
+          setIsSearchActive(false);
+        }
+      }, 300); // Longer delay for better UX
+    }
+  }, [isMobile]);
+
+  // Clean up timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Handle clicks outside the search area
+  useEffect(() => {
+    if (!isMobile || !isSearchActive) return;
+
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (searchContainerRef.current && 
+          !searchContainerRef.current.contains(event.target as Node)) {
+        // Check if the click is on the search input itself or its children.
+        // If searchInputRef.current is part of searchContainerRef.current, this is fine.
+        // We want to close if the click is truly outside.
+        setIsSearchActive(false);
+      }
+    };
+
+    // Add listeners with a slight delay to avoid immediate triggers
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [isMobile, isSearchActive]);
 
   const [isSearchInputFocusedMobile, setIsSearchInputFocusedMobile] = useState(false);
 
@@ -75,19 +167,23 @@ export default function GlobalFloatingBar() {
         targetElement.isContentEditable;
 
       if (event.key === '/') {
-        // If '/' is pressed and we are NOT typing in an input/textarea/editable field
         if (!isTypingInInput) {
-          event.preventDefault(); // Prevent default browser action (e.g., find)
-          searchInputRef.current?.focus(); // Focus the search input
+          event.preventDefault();
+          if (isMobile) {
+            activateSearch(); // This will also trigger the focus via useEffect
+          } else {
+            searchInputRef.current?.focus(); 
+          }
         }
-        // If search input itself is focused and '/' is pressed, do nothing, let '/' be typed.
       } else if (event.key === 'Escape') {
-        // If Escape is pressed and the search input is currently focused
         if (document.activeElement === searchInputRef.current) {
-          searchInputRef.current?.blur(); // Blur the search input
-          // Optionally, if you have other actions for Escape (like closing search results popover),
-          // you might want to call them here or let them be handled by their own Escape listeners.
-          // event.preventDefault(); // Could be added if Escape has other unwanted default actions in this context
+          searchInputRef.current?.blur();
+          if (isMobile && isSearchActive) {
+            setIsSearchActive(false); // Also close the expanded mobile search on Esc
+          }
+        } else if (isMobile && isSearchActive) {
+            // If search is active on mobile but input not focused, Esc should still close it
+            setIsSearchActive(false);
         }
       }
     };
@@ -96,7 +192,7 @@ export default function GlobalFloatingBar() {
     return () => {
       window.removeEventListener('keydown', handleGlobalKeyDown);
     };
-  }, []); // Empty dependency array: runs once on mount, cleans up on unmount
+  }, [isMobile, isSearchActive, activateSearch]);
 
   const handleSharePopoverOpenChange = (openState: boolean) => {
     const location = isMobile ? 'mobile' : 'desktop';
@@ -174,70 +270,106 @@ export default function GlobalFloatingBar() {
   };
 
   useEffect(() => {
-    if (isChangingSidebar) return; // 1. THE CRITICAL PART FOR CLICK
+    if (isChangingSidebar) return; 
 
     if (isSidebarOpen) {
       if (isHoveringToggle) {
-        setRotation(HOVER_ROTATIONS.SIDEBAR_OPEN.HOVER_ON); // 2. Hover effect
+        setRotation(HOVER_ROTATIONS.SIDEBAR_OPEN.HOVER_ON); 
       } else {
-        setRotation(HOVER_ROTATIONS.SIDEBAR_OPEN.DEFAULT); // 3. Unhover / Default
+        setRotation(HOVER_ROTATIONS.SIDEBAR_OPEN.DEFAULT); 
       }
-    } else { // Sidebar is closed
+    } else { 
       if (isHoveringToggle) {
-        setRotation(HOVER_ROTATIONS.SIDEBAR_CLOSED.HOVER_ON); // 2. Hover effect
+        setRotation(HOVER_ROTATIONS.SIDEBAR_CLOSED.HOVER_ON); 
       } else {
-        setRotation(HOVER_ROTATIONS.SIDEBAR_CLOSED.DEFAULT); // 3. Unhover / Default
+        setRotation(HOVER_ROTATIONS.SIDEBAR_CLOSED.DEFAULT); 
       }
     }
   }, [isHoveringToggle, isSidebarOpen, isChangingSidebar]);
 
-  if (!showGlobalSearchBar) return null;
 
-  const mobileTransformAmount = '-translate-y-[600px]'; 
-  const currentMobileTransform = isMobile && isSearchInputFocusedMobile ? mobileTransformAmount : 'translate-y-0';
+  useEffect(() => {
+    const handleAnchorLinkClick = (e: MouseEvent) => {
+      const target = e.target;
+      if (target instanceof HTMLAnchorElement && target.href && target.href.includes('#')) {
+        // This logic might be too broad, e.preventDefault() will stop navigation.
+        // Consider if this is truly desired for all anchor links.
+        // If the goal is just to close the search bar:
+        if (isMobile && isSearchActive) {
+           setIsSearchActive(false);
+        }
+        // e.preventDefault(); // Removed this to allow default anchor behavior unless specifically needed
+      }
+    }
+
+    window.addEventListener('click', handleAnchorLinkClick, true); // Use capture phase if needed
+    return () => {
+      window.removeEventListener('click', handleAnchorLinkClick, true);
+    }
+  }, [isMobile, isSearchActive]);
+
+
+
+  if (!showGlobalSearchBar) return null;
 
   return (
     <>
-      <div className={`
-        fixed z-global-search-backdrop w-full max-w-[1680px] px-0 md:px-[13px]
-        ${isSidebarOpen ? "md:ml-[253px]" : "md:ml-[94px]"} 
-        transition-[margin] duration-sidebar ease-sidebar 
-        z-50 flex justify-center
-        ${isMobile ? `bottom-[-800px]` : `md:bottom-auto md:top-[0px]`}
-        ${currentMobileTransform}
-        transition-transform duration-300 ease-in-out pointer-events-none
-      `}>
-        <div className="bg-[#151a19] z-[-1] relative bottom-0 top-0 md:bottom-auto md:top-0 left-0 right-0 h-[1000px] md:h-[100px] overflow-hidden pointer-events-none sidebar-bg-mask">
+      <div className={`fixed z-global-search-backdrop bottom-[-200px] md:bottom-auto md:top-[0px] w-full max-w-[1680px] px-0 md:px-[13px] ${isSidebarOpen ? "md:ml-[253px]" : "md:ml-[94px]"} transition-[margin] duration-sidebar ease-sidebar z-50 flex justify-center w-full`}>
+        <div className="bg-[#151a19] z-[-1] relative bottom-0 top-0 md:bottom-auto md:top-0 left-0 right-0 h-[300px] md:h-[100px] overflow-hidden pointer-events-none sidebar-bg-mask">
           <div className="background-gradient-group">
             <div className="background-gradient-yellow"></div>
             <div className="background-gradient-green"></div>
           </div>
         </div>
       </div>
-      <div className={`
-        fixed z-global-search left-0 right-0 flex justify-center w-full pointer-events-none
-        ${isMobile ? `bottom-0 pb-[30px]` : `md:bottom-auto md:top-[0px] md:pb-0 md:pt-[30px]`}
-        ${currentMobileTransform} {/* Apply transform for mobile */}
-        transition-transform duration-300 ease-in-out {/* Added for smooth transform animation */}
-      `}>
+      {isMobile && isSearchActive && (
+        <div
+          className="fixed inset-0 bg-black/20 z-40"
+          onClick={() => setIsSearchActive(false)}
+        />
+      )}
+      <div className="fixed z-global-search bottom-[60px] md:hidden left-0 right-0 flex justify-center w-full pointer-events-none pb-[30px] md:pb-0 md:pt-[30px]">
+        <div className="w-full max-w-[1680px] px-[20px] md:px-[13px] pointer-events-auto">
+          <div className="px-[5px] md:px-[15px] md:py-[10px]">
+            <Popover
+              placement='top-start'
+              isOpen={isNotificationPopoverOpen}
+              onOpenChange={setIsNotificationPopoverOpen}
+              content={
+                <NotificationContent onClose={() => setIsNotificationPopoverOpen(false)} />
+              }
+              className='flex md:hidden'
+              trigger="click"
+            >
+              <FloatingBarButton
+                icon={(hasUnseenNotifications ? "gtp-notification-new" : "gtp-notification") as GTPIconName}
+                title="Notifications"
+                className='!bg-[#344240]'
+              />
+            </Popover>
+          </div>
+        </div>
+      </div>
+      <div className={`fixed z-global-search bottom-0 md:bottom-auto md:top-[0px] left-0 right-0 flex justify-center w-full pointer-events-none pb-[30px] md:pb-0 md:pt-[30px]`}>
+
         <div className="w-full max-w-[1680px] px-[20px] md:px-[13px]">
           <FloatingBarContainer className='p-[5px] md:px-[15px] md:py-[10px]'>
             {/* Mobile - Share Button */}
             <Popover
-                placement="top-start"
-                isOpen={isSharePopoverOpen}
-                onOpenChange={handleSharePopoverOpenChange}
-                content={
-                  <SharePopoverContent onClose={() => setIsSharePopoverOpen(false)} />
-                }
-                className='block md:hidden'
-                trigger="click"
-              >
-                <FloatingBarButton
-                  icon="gtp-share"
-                  title="Share"
-                />
-              </Popover>
+              placement="top-start"
+              isOpen={isSharePopoverOpen}
+              onOpenChange={handleSharePopoverOpenChange}
+              content={
+                <SharePopoverContent onClose={() => setIsSharePopoverOpen(false)} />
+              }
+              className='block md:hidden'
+              trigger="click"
+            >
+              <FloatingBarButton
+                icon="gtp-share"
+                title="Share"
+              />
+            </Popover>
             {/* Desktop - Home Button */}
             <div className={`hidden md:flex items-center justify-between w-[50.87px] ${isSidebarOpen ? "md:w-[230px]" : "md:w-[60.87px]"} transition-all duration-sidebar ease-sidebar`}>
               <GTPLogoOld />
@@ -267,16 +399,22 @@ export default function GlobalFloatingBar() {
             </div>
 
             {/* Search Bar */}
-            <div className={`flex-1 min-w-0 relative h-[44px] ${isMobile && isSearchInputFocusedMobile && "-mx-[55px]"} transition-[margin] duration-200`}>
+            <div
+              ref={searchContainerRef}
+              className={`flex-1 min-w-0 relative h-[44px] ${isMobile && isSearchActive ? "-mx-[55px]" : ""
+                } transition-[margin] duration-200`}
+              // onMouseEnter={activateSearch}
+              // onMouseLeave={deactivateSearch}
+              onTouchStart={activateSearch}
+            >
               <SearchContainer>
-                <SearchBar 
+                <SearchBar
                   ref={searchInputRef}
-                  showMore={showMore} 
-                  setShowMore={setShowMore} 
+                  showMore={showMore}
+                  setShowMore={setShowMore}
                   showSearchContainer={false}
-
-                  onInputFocus={handleSearchInputFocus}
-                  onInputBlur={handleSearchInputBlur}
+                  onFocus={activateSearch}
+                  onBlur={deactivateSearch}
                 />
               </SearchContainer>
             </div>
@@ -305,37 +443,22 @@ export default function GlobalFloatingBar() {
             <Popover
               placement='bottom-end'
               isOpen={isNotificationPopoverOpen}
-              onOpenChange={(open) => {
+              onOpenChange={(open: boolean) => {
                 setIsNotificationPopoverOpen(open);
-                if (open) {
+                if(!open) {
                   markNotificationsAsSeen();
-                }
+                } 
               }}
               content={
-                <div
-                  className="flex flex-col py-[15px] gap-y-[5px] max-w-[532px] max-h-[70vh] scrollbar-thin scrollbar-thumb-[rgba(136,160,157,0.3)] scrollbar-track-[rgba(0,0,0,0.3)] bg-[#1F2726] border-forest-500 rounded-[12px] overflow-hidden shadow-lg"
-                  style={{ overflowY: 'auto' }}
-                >
-                  <div className="flex pl-[15px] gap-x-[15px]">
-                    <GTPIcon icon={(hasUnseenNotifications ? "gtp-notification-new" : "gtp-notification") as GTPIconName} size="sm" />
-                    <div className="heading-small-xs">
-                      Notification Center
-                    </div>
-                  </div>
-                  <NotificationContent
-                    notifications={filteredData}
-                    isLoading={isLoading}
-                    error={error}
-                  />
-                </div>
+                <NotificationContent onClose={() => setIsNotificationPopoverOpen(false)} />
               }
               className='hidden md:flex'
               trigger="click"
             >
-                <FloatingBarButton
-                  icon={(hasUnseenNotifications ? "gtp-notification-new" : "gtp-notification") as GTPIconName}
-                  title="Notifications"
-                />
+              <FloatingBarButton
+                icon={(hasUnseenNotifications ? "gtp-notification-new" : "gtp-notification") as GTPIconName}
+                title="Notifications"
+              />
             </Popover>
             {/* Mobile - Menu Button */}
             <Popover
@@ -343,30 +466,16 @@ export default function GlobalFloatingBar() {
               isOpen={isMobileMenuPopoverOpen}
               onOpenChange={setIsMobileMenuPopoverOpen}
               content={
-                <div
-                className="flex flex-col py-[15px] gap-y-[5px] max-w-[532px] w-[calc(100vw-80px)] md:min-w-[480px] ml-auto mr-0 max-h-[70vh] scrollbar-thin scrollbar-thumb-[rgba(136,160,157,0.3)] scrollbar-track-[rgba(0,0,0,0.3)] bg-[#1F2726] border-forest-500 rounded-[12px] overflow-hidden shadow-lg"
-                style={{ overflowY: 'auto' }}
-              >
-                <div className="flex pl-[15px] gap-x-[15px]">
-                  <GTPIcon icon={(hasUnseenNotifications ? "gtp-notification-new" : "gtp-notification") as GTPIconName} size="sm" />
-                  <div className="heading-small-xs">
-                    Notification Center
-                  </div>
-                </div>
-                <NotificationContent
-                  notifications={filteredData}
-                  isLoading={isLoading}
-                  error={error}
-                />
-              </div>
+                // mobile menu popover content
+                <MobileMenuContent onClose={() => setIsMobileMenuPopoverOpen(false)} />
               }
               className='flex md:hidden'
               trigger="click"
             >
               <FloatingBarButton
-                  icon={(hasUnseenNotifications ? "gtp-notification-new" : "gtp-notification") as GTPIconName}
-                  title="Notifications"
-                />
+                icon={"gtp-burger-menu" as GTPIconName}
+                title="Menu"
+              />
             </Popover>
           </FloatingBarContainer>
         </div>
@@ -444,7 +553,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <div className="absolute top-[-5px] md:top-[-10px] left-0 w-full p-[5px] md:p-2.5 bg-[#344240] rounded-[32px] flex flex-col justify-start items-center">
+    <div className="absolute bottom-[-5px] md:bottom-auto md:top-[-10px] left-0 w-full p-[5px] md:p-2.5 bg-[#344240] rounded-[32px] flex flex-col justify-start items-center">
       {/* Add a wrapper div that will handle the overflow */}
       <div ref={contentRef} className="w-full flex-1 overflow-hidden flex flex-col min-h-0">
         <div className={`w-full bg-[#151A19] rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>

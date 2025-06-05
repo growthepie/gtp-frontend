@@ -53,7 +53,7 @@ const SelectionButton = ({
             onMouseLeave={() => setIsHovered(false)}
         >
             <GTPIcon icon={icon} size={(breakdownGroup === selectedBreakdownGroup || isHovered) ? "lg" : "md"} className={`transition-all relative ${breakdownGroup === "Builders & Apps" ? "bottom-[2px]" : ""}`}/>
-            <div className={`${(selectedBreakdownGroup === breakdownGroup || isHovered) ? "heading-large-lg" : "heading-large-sm"} transition-all text-nowrap`}>{breakdownGroup}</div>
+            <div className={`${(selectedBreakdownGroup === breakdownGroup || isHovered) ? "heading-large-md" : "heading-large-sm"} transition-all text-nowrap`}>{breakdownGroup}</div>
         </div>
     );
 }

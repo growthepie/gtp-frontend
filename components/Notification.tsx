@@ -253,7 +253,7 @@ const Notification = () => {
             }}
           >
             <div
-              className={`hidden mb-[10px] lg:mb-0 md:flex items-center gap-x-[10px] overflow-hidden w-[205px] mdl:w-[343px] xl:w-[480px] 2xl:w-[740px] border-[1px] h-[36px] rounded-full px-[10px] relative z-30 border-forest-1000 dark:border-forest-500 hover:dark:!bg-[#1F2726] hover:!bg-[#FFFFFF] hover:dark:!border-[#CDD8D3] hover:!border-[#151A19] tansition-all duration-300`}
+              className={`hidden md:flex items-center gap-x-[10px] overflow-hidden w-[205px] mdl:w-[343px] xl:w-[480px] 2xl:w-[740px] border-[1px] h-[36px] rounded-full px-[10px] relative z-30 border-forest-1000 dark:border-forest-500 hover:dark:!bg-[#1F2726] hover:!bg-[#FFFFFF] hover:dark:!border-[#CDD8D3] hover:!border-[#151A19] tansition-all duration-300`}
               style={{
                 borderColor: currentItemTextColor,
                 backgroundColor: currentItemBackgroundColor,
