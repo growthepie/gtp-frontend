@@ -343,26 +343,26 @@ export default forwardRef(function VerticalScrollContainer(
     }
   }, [contentScrollAreaRef, contentRef, updateScrollableAreaScroll]);
 
-  useEffect(() => {
-    if (hasInitialMeasurement && contentScrollAreaRef.current) {
-      // Save current scroll position
-      const currentScroll = contentScrollAreaRef.current.scrollTop;
+  // useEffect(() => {
+  //   if (hasInitialMeasurement && contentScrollAreaRef.current) {
+  //     // Save current scroll position
+  //     const currentScroll = contentScrollAreaRef.current.scrollTop;
       
-      // Force a refresh of calculations
-      updateScrollableAreaScroll();
+  //     // Force a refresh of calculations
+  //     updateScrollableAreaScroll();
       
-      // Temporarily adjust scroll position to force recalculation
-      contentScrollAreaRef.current.scrollTop = currentScroll + 1;
+  //     // Temporarily adjust scroll position to force recalculation
+  //     contentScrollAreaRef.current.scrollTop = currentScroll + 1;
       
-      // Then restore it immediately
-      setTimeout(() => {
-        if (contentScrollAreaRef.current) {
-          contentScrollAreaRef.current.scrollTop = currentScroll;
-          updateScrollableAreaScroll();
-        }
-      }, 300);
-    }
-  }, [hasInitialMeasurement, updateScrollableAreaScroll]);
+  //     // Then restore it immediately
+  //     setTimeout(() => {
+  //       if (contentScrollAreaRef.current) {
+  //         contentScrollAreaRef.current.scrollTop = currentScroll;
+  //         updateScrollableAreaScroll();
+  //       }
+  //     }, 300);
+  //   }
+  // }, [hasInitialMeasurement, updateScrollableAreaScroll]);
 
   // Calculate thumb position and size
   const { scrollerY, thumbHeight } = useMemo(() => {

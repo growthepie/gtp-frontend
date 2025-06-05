@@ -8,7 +8,7 @@ const arbitrumTimeboost: QuickBiteData = {
 
     "# Timeboost Usage",
     "The introduction of Arbitrum Timeboost has been a great success. It started to generate significant revenue from day one.",
-    "> Total DAO Revenue from Timeboost on Arbitrum to date: ${{timeboostTotalUSD}} or Ξ{{timeboostTotalETH}} (this number updates daily).",
+    "> Total DAO Revenue from Timeboost on Arbitrum to date: ${{timeboostTotalUSD}} or Ξ{{timeboostTotalETH}}.",
     
     "```chart",
     JSON.stringify({
@@ -38,7 +38,7 @@ const arbitrumTimeboost: QuickBiteData = {
     "```",
 
     "## Timeboost vs Network Fees",
-    "In addition to revenue from Timeboost, the Arbitrum DAO also receivs the standard transaction fees that users pay. The following chart allows you to track the share of Timeboost fees vs Network fees in ETH.",
+    "In addition to revenue from Timeboost, the Arbitrum DAO also receives the standard transaction fees that users pay. The following chart allows you to track the share of Timeboost fees vs Network fees in ETH.",
 
     "```chart",
     JSON.stringify({
