@@ -1,27 +1,41 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { GTPIcon } from '../GTPIcon';
 import Container from '../Container';
 import { TopRowContainer } from '../TopRow';
 import { TopRowParent } from '../TopRow';
 import { TopRowChild } from '../TopRow';
 import { HighchartsProvider, HighchartsChart, YAxis, XAxis, Tooltip, Chart, LineSeries, Series } from 'react-jsx-highcharts';
+import useSWR from 'swr';
+import { EthAggURL } from '@/lib/urls';
+import { EthAggResponse, CountLayer2s, Tps, Stables } from '@/types/api/EthAggResponse';
 import Highcharts from 'highcharts';
 import "@/app/highcharts.axis.css";
+import { tooltipPositioner } from '@/lib/chartUtils';
 // Define the props type for MetricsChartsComponent
 interface MetricsChartsProps {
   selectedBreakdownGroup: string;
 }
 
 function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) {
+ 
+  const { data, error, isLoading } = useSWR<EthAggResponse>(EthAggURL);
+
+  
+  if (!data) return;
+
+
+
+ 
+
   return (
     <Container className='flex flex-col gap-y-[60px] mt-[60px] w-full'>
-      <EconCharts selectedBreakdownGroup={selectedBreakdownGroup} />
-      <ScalingCharts selectedBreakdownGroup={selectedBreakdownGroup} />
+      <EconCharts selectedBreakdownGroup={selectedBreakdownGroup} stableData={data.data.stables} />
+      <ScalingCharts selectedBreakdownGroup={selectedBreakdownGroup} layer2Data={data.data.count_layer2s} tpsData={data.data.tps} />
     </Container>
   );
 }
 
-const EconCharts = ({ selectedBreakdownGroup }: MetricsChartsProps) => {
+const EconCharts = ({ selectedBreakdownGroup, stableData }: MetricsChartsProps & { stableData: Stables }) => {
   const [selectedMode, setSelectedMode] = useState("gas_fees_usd_absolute");
   const [selectedValue, setSelectedValue] = useState("absolute");
   const [selectedTimespan, setSelectedTimespan] = useState("1y");
@@ -56,6 +70,107 @@ const EconCharts = ({ selectedBreakdownGroup }: MetricsChartsProps) => {
   if(selectedBreakdownGroup !== "Metrics") {
     return null;
   }
+
+  const tooltipFormatter = useCallback(
+    function (this: any) {
+      const { x, points } = this;
+      console.log(points)
+      const date = new Date(x);
+      const isMonthly = false;
+      const valuePrefix = showUsd ? '$' : '';
+      let dateString = date.toLocaleDateString("en-GB", {
+        month: "short",
+        day: isMonthly ? undefined : "numeric",
+        year: "numeric",
+      });
+      const chartTitle = this.series.chart.title.textStr;
+
+      // check if data steps are less than 1 day
+      // if so, add the time to the tooltip
+      const timeDiff = points[0].series.xData[1] - points[0].series.xData[0];
+      if (timeDiff < 1000 * 60 * 60 * 24) {
+        dateString +=
+          " " +
+          date.toLocaleTimeString("en-GB", {
+            hour: "numeric",
+            minute: "2-digit",
+          });
+      }
+
+      const tooltip = `<div class="mt-3 mr-3 mb-3 text-xs font-raleway">
+        <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2 ">${dateString}</div>`;
+      const tooltipEnd = `</div>`;
+
+      // let pointsSum = 0;
+      // if (selectedScale !== "percentage")
+      let pointsSum = points.reduce((acc: number, point: any) => {
+        acc += point.y;
+        return acc;
+      }, 0);
+
+      let pointSumNonNegative = points.reduce((acc: number, point: any) => {
+        if (point.y > 0) acc += point.y;
+        return acc;
+      }, 0);
+
+      const maxPoint = points.reduce((max: number, point: any) => {
+        if (point.y > max) max = point.y;
+        return max;
+      }, 0);
+
+      const maxPercentage = points.reduce((max: number, point: any) => {
+        if (point.percentage > max) max = point.percentage;
+        return max;
+      }, 0);
+
+      
+      const tooltipPoints = points
+      .sort((a: any, b: any) => b.y - a.y)
+      .map((point: any, index: number)  => {
+          const { series, y, percentage } = point;
+          const { name } = series;
+          const nameString = name;
+          
+          
+          
+
+          let prefix = "";
+          let suffix = "";
+          let value = y;
+          let displayValue = y;
+
+          return `
+          <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${series.color}"></div>
+            <div class="tooltip-point-name text-xs">${nameString}</div>
+            <div class="flex-1 text-right justify-end flex numbers-xs">
+              <div class="flex justify-end text-right w-full">
+                  <div class="${!prefix && "hidden"
+            }">${prefix}</div>
+              ${
+                 Intl.NumberFormat("en-GB", {
+                    notation: "standard",
+                    maximumFractionDigits: 2,
+                    minimumFractionDigits: 2,
+                  }).format(
+                    displayValue
+                  )
+                  
+              }
+               
+                </div>
+                <div class="ml-0.5 ${!suffix && "hidden"
+            }">${suffix}</div>
+            </div>
+          </div>
+         `;
+        })
+        .join("");
+
+      return tooltip + tooltipPoints + tooltipEnd;
+    },
+    [showUsd],
+  );
 
   return (
     <div className='flex flex-col gap-y-[15px]'>
@@ -115,7 +230,19 @@ const EconCharts = ({ selectedBreakdownGroup }: MetricsChartsProps) => {
                     </div>
                 </div>
                 <HighchartsProvider Highcharts={Highcharts}>
-                    <HighchartsChart>
+                    <HighchartsChart
+                        plotOptions={{
+                            series: {
+                                zIndex: 10,
+                                animation: false,
+                                marker: {
+                                lineColor: "white",
+                                radius: 0,
+                                symbol: "circle",
+                                },
+                            },
+                        }}
+                    >
                         <Chart
                             
                             backgroundColor={"transparent"}
@@ -233,7 +360,19 @@ const EconCharts = ({ selectedBreakdownGroup }: MetricsChartsProps) => {
                     </div>
                 </div>
                 <HighchartsProvider Highcharts={Highcharts}>
-                    <HighchartsChart>
+                    <HighchartsChart
+                        plotOptions={{
+                            series: {
+                                zIndex: 10,
+                                animation: false,
+                                marker: {
+                                lineColor: "white",
+                                radius: 0,
+                                symbol: "circle",
+                                },
+                            },
+                        }}
+                    >
                         <Chart
                             
                             backgroundColor={"transparent"}
@@ -256,7 +395,9 @@ const EconCharts = ({ selectedBreakdownGroup }: MetricsChartsProps) => {
                         <XAxis 
                             type="datetime"
                             gridLineWidth={0}
-
+                            min={timespans[selectedTimespan].xMin}
+                            max={timespans[selectedTimespan].xMax}
+                            
                             //tickInterval={timespans[selectedTimespan].xMax - timespans[selectedTimespan].xMin / 4}
                             //method for showiing set amount of ticks
                             labels={{
@@ -270,6 +411,7 @@ const EconCharts = ({ selectedBreakdownGroup }: MetricsChartsProps) => {
                                     color: "#D7DFDE",
                                     fontSize: "9px",
                                     fontFamily: "Fira Sans",
+                                    zIndex: 10
                                 }
                             }}
                         />
@@ -297,9 +439,13 @@ const EconCharts = ({ selectedBreakdownGroup }: MetricsChartsProps) => {
                                 
                             }}
                         >
+                        {Object.entries(stableData).map(([name, data]) => {
+
+                            return (
                             <Series
+                                key={name}
                                 type="area"
-                                name="Data Availability Fee Markets"
+                                name={name}
                                 marker={{
                                     enabled: false,
                                 }}
@@ -313,10 +459,41 @@ const EconCharts = ({ selectedBreakdownGroup }: MetricsChartsProps) => {
                                     stops: [[0, "#10808C"], [0.7, "#10808C"], [0.8, "#158B99"], [0.9, "#1AC4D4"], [1, "#1DF7EF"]]
                                     
                                 }}
-                                data={[1, 2, 3, 4, 5]}
+
+                                data={data.daily.values.map((value) => [value[data.daily.types.indexOf("unix")], value[data.daily.types.indexOf("value")]])}
                             />
+                            )
+                        })}
                         </YAxis>
-                        <Tooltip />
+                        <Tooltip
+                              useHTML={true}
+                              shared={true}
+                              split={false}
+                              followPointer={true}
+                              followTouchMove={true}
+                              backgroundColor={"#2A3433EE"}
+                              padding={0}
+                              hideDelay={300}
+                              stickOnContact={true}
+                              shape="rect"
+                              borderRadius={17}
+                              borderWidth={0}
+                              outside={true}
+                              shadow={{
+                                color: "black",
+                                opacity: 0.015,
+                                offsetX: 2,
+                                offsetY: 2,
+                              }}
+                              style={{
+                                color: "rgb(215, 223, 222)",
+                              }}
+                              formatter={tooltipFormatter}
+                              // ensure tooltip is always above the chart
+                              positioner={tooltipPositioner}
+                              valuePrefix={showUsd ? "$" : ""}
+                              valueSuffix={showUsd ? "" : " Gwei"}
+                        />
                     </HighchartsChart>
                 </HighchartsProvider>
                 
@@ -329,7 +506,7 @@ const EconCharts = ({ selectedBreakdownGroup }: MetricsChartsProps) => {
   );
 }
 
-const ScalingCharts = ({ selectedBreakdownGroup }: MetricsChartsProps) => {
+const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData }: MetricsChartsProps & { layer2Data: CountLayer2s, tpsData: Tps }) => {
     const [selectedMode, setSelectedMode] = useState("gas_fees_usd_absolute");
     const [selectedValue, setSelectedValue] = useState("absolute");
     const [selectedTimespan, setSelectedTimespan] = useState("1y");
@@ -360,6 +537,107 @@ const ScalingCharts = ({ selectedBreakdownGroup }: MetricsChartsProps) => {
         xMax: Date.now(),
       },
     }), []);
+    
+    const tooltipFormatter = useCallback(
+        function (this: any) {
+          const { x, points } = this;
+          console.log(points)
+          const date = new Date(x);
+          const isMonthly = false;
+          const valuePrefix = showUsd ? '$' : '';
+          let dateString = date.toLocaleDateString("en-GB", {
+            month: "short",
+            day: isMonthly ? undefined : "numeric",
+            year: "numeric",
+          });
+          const chartTitle = this.series.chart.title.textStr;
+    
+          // check if data steps are less than 1 day
+          // if so, add the time to the tooltip
+          const timeDiff = points[0].series.xData[1] - points[0].series.xData[0];
+          if (timeDiff < 1000 * 60 * 60 * 24) {
+            dateString +=
+              " " +
+              date.toLocaleTimeString("en-GB", {
+                hour: "numeric",
+                minute: "2-digit",
+              });
+          }
+    
+          const tooltip = `<div class="mt-3 mr-3 mb-3 text-xs font-raleway">
+            <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2 ">${dateString}</div>`;
+          const tooltipEnd = `</div>`;
+    
+          // let pointsSum = 0;
+          // if (selectedScale !== "percentage")
+          let pointsSum = points.reduce((acc: number, point: any) => {
+            acc += point.y;
+            return acc;
+          }, 0);
+    
+          let pointSumNonNegative = points.reduce((acc: number, point: any) => {
+            if (point.y > 0) acc += point.y;
+            return acc;
+          }, 0);
+    
+          const maxPoint = points.reduce((max: number, point: any) => {
+            if (point.y > max) max = point.y;
+            return max;
+          }, 0);
+    
+          const maxPercentage = points.reduce((max: number, point: any) => {
+            if (point.percentage > max) max = point.percentage;
+            return max;
+          }, 0);
+    
+          
+          const tooltipPoints = points
+          .sort((a: any, b: any) => b.y - a.y)
+          .map((point: any, index: number)  => {
+              const { series, y, percentage } = point;
+              const { name } = series;
+              const nameString = name;
+              
+              
+              
+    
+              let prefix = "";
+              let suffix = " GB";
+              let value = y;
+              let displayValue = y;
+    
+              return `
+              <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${series.color}"></div>
+                <div class="tooltip-point-name text-xs">${nameString}</div>
+                <div class="flex-1 text-right justify-end flex numbers-xs">
+                  <div class="flex justify-end text-right w-full">
+                      <div class="${!prefix && "hidden"
+                }">${prefix}</div>
+                  ${
+                     Intl.NumberFormat("en-GB", {
+                        notation: "standard",
+                        maximumFractionDigits: 2,
+                        minimumFractionDigits: 2,
+                      }).format(
+                        displayValue
+                      )
+                      
+                  }
+                   
+                    </div>
+                    <div class="ml-0.5 ${!suffix && "hidden"
+                }">${suffix}</div>
+                </div>
+              </div>
+             `;
+            })
+            .join("");
+    
+          return tooltip + tooltipPoints + tooltipEnd;
+        },
+        [showUsd],
+      );
   
     if(selectedBreakdownGroup !== "Metrics") {
       return null;
@@ -404,7 +682,9 @@ const ScalingCharts = ({ selectedBreakdownGroup }: MetricsChartsProps) => {
                     </div>
                     <div className='flex flex-col h-full items-end pt-[5px] w-full'>
                         <div className='flex items-center gap-x-[5px]'> 
-                            <div className='numbers-3xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>98</div>
+                            <div className='numbers-3xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
+                                {layer2Data.daily.values[layer2Data.daily.values.length - 1][layer2Data.daily.types.indexOf("value")]}
+                            </div>
                             <div className='w-[16px] h-[16px] rounded-full ' 
                                 style={{
                                     background: "linear-gradient(to bottom, #10808C, #1DF7EF)",
@@ -412,7 +692,7 @@ const ScalingCharts = ({ selectedBreakdownGroup }: MetricsChartsProps) => {
                             </div>
                         </div>
                         <div className='flex items-center gap-x-[5px]'> 
-                            <div className='text-sm bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>Layer 2 Share: 39%</div>
+                            {/* <div className='text-sm bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>Layer 2 Share: 39%</div> */}
                             <div className='w-[16px] h-[16px] rounded-full ' 
                                 style={{
                                     background: "transparent",
@@ -423,7 +703,19 @@ const ScalingCharts = ({ selectedBreakdownGroup }: MetricsChartsProps) => {
                     </div>
                 </div>
                 <HighchartsProvider Highcharts={Highcharts}>
-                    <HighchartsChart>
+                    <HighchartsChart
+                        plotOptions={{
+                            series: {
+                                zIndex: 10,
+                                animation: false,
+                                marker: {
+                                lineColor: "white",
+                                radius: 0,
+                                symbol: "circle",
+                                },
+                            },
+                        }}
+                    >
                         <Chart
                             
                             backgroundColor={"transparent"}
@@ -446,7 +738,8 @@ const ScalingCharts = ({ selectedBreakdownGroup }: MetricsChartsProps) => {
                         <XAxis 
                             type="datetime"
                             gridLineWidth={0}
-
+                            min={timespans[selectedTimespan].xMin}
+                            max={timespans[selectedTimespan].xMax}
                             //tickInterval={timespans[selectedTimespan].xMax - timespans[selectedTimespan].xMin / 4}
                             //method for showiing set amount of ticks
                             labels={{
@@ -488,8 +781,10 @@ const ScalingCharts = ({ selectedBreakdownGroup }: MetricsChartsProps) => {
                             }}
                         >
                             <Series
-                                type="area"
-                                name="Data Availability Fee Markets"
+                                type="column"
+                                name="Total Layer 2s"
+                                borderRadius={0}
+                                borderColor={"transparent"}
                                 marker={{
                                     enabled: false,
                                 }}
@@ -503,10 +798,39 @@ const ScalingCharts = ({ selectedBreakdownGroup }: MetricsChartsProps) => {
                                     stops: [[0, "#10808C"], [0.7, "#10808C"], [0.8, "#158B99"], [0.9, "#1AC4D4"], [1, "#1DF7EF"]]
                                     
                                 }}
-                                data={[1, 2, 3, 4, 5]}
+                                data={layer2Data.daily.values.map((value) => [value[layer2Data.daily.types.indexOf("unix")], value[layer2Data.daily.types.indexOf("value")]])
+                                }
                             />
                         </YAxis>
-                        <Tooltip />
+                        <Tooltip
+                              useHTML={true}
+                              shared={true}
+                              split={false}
+                              followPointer={true}
+                              followTouchMove={true}
+                              backgroundColor={"#2A3433EE"}
+                              padding={0}
+                              hideDelay={300}
+                              stickOnContact={true}
+                              shape="rect"
+                              borderRadius={17}
+                              borderWidth={0}
+                              outside={true}
+                              shadow={{
+                                color: "black",
+                                opacity: 0.015,
+                                offsetX: 2,
+                                offsetY: 2,
+                              }}
+                              style={{
+                                color: "rgb(215, 223, 222)",
+                              }}
+                              formatter={tooltipFormatter}
+                              // ensure tooltip is always above the chart
+                              positioner={tooltipPositioner}
+                              valuePrefix={showUsd ? "$" : ""}
+                              valueSuffix={showUsd ? "" : " Gwei"}
+                        />
                     </HighchartsChart>
                 </HighchartsProvider>
                 
@@ -522,7 +846,11 @@ const ScalingCharts = ({ selectedBreakdownGroup }: MetricsChartsProps) => {
                     </div>
                     <div className='flex flex-col h-full items-end pt-[5px] w-full'>
                         <div className='flex items-center gap-x-[5px]'> 
-                            <div className='numbers-3xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>98</div>
+                            <div className='numbers-3xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
+                                {Intl.NumberFormat("en-US", {
+                                    maximumFractionDigits: 2,
+                                }).format(tpsData.layer_2s.daily.values[tpsData.layer_2s.daily.values.length - 1][tpsData.layer_2s.daily.types.indexOf("value")])}
+                            </div>
                             <div className='w-[16px] h-[16px] rounded-full ' 
                                 style={{
                                     background: "linear-gradient(to bottom, #10808C, #1DF7EF)",
@@ -530,7 +858,7 @@ const ScalingCharts = ({ selectedBreakdownGroup }: MetricsChartsProps) => {
                             </div>
                         </div>
                         <div className='flex items-center gap-x-[5px]'> 
-                            <div className='text-sm bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>Layer 2 Share: 39%</div>
+                            {/* <div className='text-sm bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>Layer 2 Share: 39%</div> */}
                             <div className='w-[16px] h-[16px] rounded-full ' 
                                 style={{
                                     background: "transparent",
@@ -541,7 +869,19 @@ const ScalingCharts = ({ selectedBreakdownGroup }: MetricsChartsProps) => {
                     </div>
                 </div>
                 <HighchartsProvider Highcharts={Highcharts}>
-                    <HighchartsChart>
+                    <HighchartsChart
+                        plotOptions={{
+                            series: {
+                                zIndex: 10,
+                                animation: false,
+                                marker: {
+                                lineColor: "white",
+                                radius: 0,
+                                symbol: "circle",
+                                },
+                            },
+                        }}
+                    >
                         <Chart
                             
                             backgroundColor={"transparent"}
@@ -570,6 +910,7 @@ const ScalingCharts = ({ selectedBreakdownGroup }: MetricsChartsProps) => {
                             labels={{
                                 overflow: "allow",
                                 step: 1,
+                                zIndex: 50,
                                 x: 10,
                                 y: -10,
                                 align: "center",
@@ -621,10 +962,39 @@ const ScalingCharts = ({ selectedBreakdownGroup }: MetricsChartsProps) => {
                                     stops: [[0, "#10808C"], [0.7, "#10808C"], [0.8, "#158B99"], [0.9, "#1AC4D4"], [1, "#1DF7EF"]]
                                     
                                 }}
-                                data={[1, 2, 3, 4, 5]}
+                                data={tpsData.layer_2s.daily.values.map((value) => [value[tpsData.layer_2s.daily.types.indexOf("unix")], value[tpsData.layer_2s.daily.types.indexOf("value")]])
+                                }
                             />
                         </YAxis>
-                        <Tooltip />
+                        <Tooltip
+                            useHTML={true}
+                            shared={true}
+                            split={false}
+                            followPointer={true}
+                            followTouchMove={true}
+                            backgroundColor={"#2A3433EE"}
+                            padding={0}
+                            hideDelay={300}
+                            stickOnContact={true}
+                            shape="rect"
+                            borderRadius={17}
+                            borderWidth={0}
+                            outside={true}
+                            shadow={{
+                            color: "black",
+                            opacity: 0.015,
+                            offsetX: 2,
+                            offsetY: 2,
+                            }}
+                            style={{
+                            color: "rgb(215, 223, 222)",
+                            }}
+                            formatter={tooltipFormatter}
+                            // ensure tooltip is always above the chart
+                            positioner={tooltipPositioner}
+                            valuePrefix={showUsd ? "$" : ""}
+                            valueSuffix={showUsd ? "" : " Gwei"}
+                        />
                     </HighchartsChart>
                 </HighchartsProvider>
                 

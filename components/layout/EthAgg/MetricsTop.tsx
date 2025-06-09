@@ -9,6 +9,7 @@ import { useLocalStorage } from 'usehooks-ts';
 import { GTPIcon } from '../GTPIcon';
 import { Icon } from '@iconify/react';
 import { useMaster } from '@/contexts/MasterContext';
+import { useTransition, animated } from "@react-spring/web";
 
 // Define the props type for TopEthAggMetricsComponent
 interface TopEthAggMetricsProps {
@@ -81,7 +82,101 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   const [tpsIndex, setTpsIndex] = useState<number>(17);
   const [costIndex, setCostIndex] = useState<number>(17);
 
+  const [ethCostHoverIndex, setEthCostHoverIndex] = useState<number | null>(null);
+  const [ethCostSelectedIndex, setEthCostSelectedIndex] = useState<number>(17);
+  const [l2CostHoverIndex, setL2CostHoverIndex] = useState<number | null>(null);
+  const [l2CostSelectedIndex, setL2CostSelectedIndex] = useState<number>(17);
+
+  const getGradientColor = (percentage: number) => {
+    const colors = [
+      { percent: 0, color: "#1DF7EF" },
+      { percent: 20, color: "#76EDA0" },
+      { percent: 50, color: "#FFDF27" },
+      { percent: 70, color: "#FF9B47" },
+      { percent: 100, color: "#FE5468" },
+    ];
+  
+    let lowerBound = colors[0];
+    let upperBound = colors[colors.length - 1];
+  
+    for (let i = 0; i < colors.length - 1; i++) {
+      if (
+        percentage >= colors[i].percent &&
+        percentage <= colors[i + 1].percent
+      ) {
+        lowerBound = colors[i];
+        upperBound = colors[i + 1];
+        break;
+      }
+    }
+  
+    const percentDiff =
+      (percentage - lowerBound.percent) /
+      (upperBound.percent - lowerBound.percent);
+  
+    const r = Math.floor(
+      parseInt(lowerBound.color.substring(1, 3), 16) +
+      percentDiff *
+      (parseInt(upperBound.color.substring(1, 3), 16) -
+        parseInt(lowerBound.color.substring(1, 3), 16)),
+    );
+  
+    const g = Math.floor(
+      parseInt(lowerBound.color.substring(3, 5), 16) +
+      percentDiff *
+      (parseInt(upperBound.color.substring(3, 5), 16) -
+        parseInt(lowerBound.color.substring(3, 5), 16)),
+    );
+  
+    const b = Math.floor(
+      parseInt(lowerBound.color.substring(5, 7), 16) +
+      percentDiff *
+      (parseInt(upperBound.color.substring(5, 7), 16) -
+        parseInt(lowerBound.color.substring(5, 7), 16)),
+    );
+  
+    return `#${r.toString(16).padStart(2, "0")}${g
+      .toString(16)
+      .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+  };
+  
   const { AllChainsByKeys } = useMaster();
+
+  // Create transitions for TPS chains
+  const tpsTransitions = useTransition(
+    Object.keys(chainsTPSHistory).sort((a, b) => chainsTPSHistory[b][chainsTPSHistory[b].length - 1] - chainsTPSHistory[a][chainsTPSHistory[a].length - 1]).map((chainId, index) => ({
+      chainId,
+      y: index * 21,
+      height: 18,
+    })),
+    {
+      key: (item) => item.chainId,
+      from: { opacity: 0, height: 0, y: 0 },
+      leave: { opacity: 0, height: 0 },
+      enter: ({ y, height }) => ({ opacity: 1, y, height }),
+      update: ({ y, height }) => ({ opacity: 1, y, height }),
+      config: { mass: 1, tension: 280, friction: 60 },
+      trail: 25,
+    }
+  );
+
+  // Create transitions for Cost chains
+  const costTransitions = useTransition(
+    Object.keys(chainsCostHistory).sort((a, b) => chainsCostHistory[b][chainsCostHistory[b].length - 1] - chainsCostHistory[a][chainsCostHistory[a].length - 1]).map((chainId, index) => ({
+      chainId,
+      y: index * 21,
+      height: 18,
+    })),
+    {
+      key: (item) => item.chainId,
+      from: { opacity: 0, height: 0, y: 0 },
+      leave: { opacity: 0, height: 0 },
+      enter: ({ y, height }) => ({ opacity: 1, y, height }),
+      update: ({ y, height }) => ({ opacity: 1, y, height }),
+      config: { mass: 1, tension: 280, friction: 60 },
+      trail: 25,
+    }
+  );
 
   const eventSourceRef = useRef<EventSource | null>(null);
   const reconnectAttemptsRef = useRef<number>(0);
@@ -162,9 +257,6 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
       }
     });
   }, [globalMetrics]);
-
-
-
 
   useEffect(() => {
     if (selectedBreakdownGroup === "Metrics") {
@@ -315,6 +407,24 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     return null;
   }
 
+  const tpsHistoryAvg = useMemo(() => {
+    return Object.fromEntries(
+      Object.entries(chainsTPSHistory).map(([key, value]) => [
+        key,
+        value.reduce((a, b) => a + b, 0) / (value.length || 1),
+      ]),
+    );
+  }, [chainsTPSHistory]);
+
+  const costHistoryAvg = useMemo(() => {
+    return Object.fromEntries(
+      Object.entries(chainsCostHistory).map(([key, value]) => [
+        key,
+        value.reduce((a, b) => a + b, 0) / (value.length || 1),
+      ]),
+    );
+  }, [chainsCostHistory]);
+
   // Helper to display values or a dash
   const displayValue = (value: number | string | undefined, unit: string = '') => {
     return value !== undefined && value !== null ? `${typeof value === 'number' && unit !== '' && !value.toString().includes('.') ? value : typeof value === 'number' ? value.toFixed(2) : value}${unit}` : '-';
@@ -385,7 +495,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                       height={58} // 48 (figma) + 5 (marginBottom) + 5 (marginTop) = 58
                       events={{
                         redraw: function () {
-                          console.log("[load] Chart loaded:", this);
+                         
                           const chart = this;
                           const series = chart.series[0];
 
@@ -406,7 +516,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                             pointWidth: BAR_WIDTH_PX,
                           }, false); // Update series with fixed point width
 
-                          console.log("[load] Chart loaded with series:", series);
+                      
                         },
 
                       }}
@@ -485,46 +595,75 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                 </HighchartsProvider>
               </div>
             </div>
-            <div className={`relative flex flex-col gap-y-[5px] -mx-[15px] bg-[#1F2726] rounded-b-[15px] ${showChainsTPS ? 'pb-[10px]' : 'pb-0'}`}
+            <div className={`relative flex flex-col gap-y-[5px] -mx-[15px] z-10 bg-[#1F2726] rounded-b-[15px]  ${showChainsTPS ? 'pb-[10px] shadow-lg' : 'pb-0'}`}
             >
               <div className={`flex flex-col gap-y-[2.5px] px-[15px] duration-300  overflow-y-hidden ${!showChainsTPS ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''}`}
                 style={{
-                  height: !showChainsTPS ? `80px` : `${Object.keys(chainsTPSHistory).length * 21 + 15}px`
+                  height: !showChainsTPS ? `80px` : `${Object.keys(chainsTPSHistory).length * 21 + 35}px`
                 }}
               >
                 <div className='heading-large-md text-[#5A6462] '>Chains</div>
-                {Object.keys(chainsTPSHistory).map((chainId) => {
-                  const chain = AllChainsByKeys[chainId];
+                <div className="relative">
+                  {tpsTransitions((style, { chainId }) => {
+                    const chain = AllChainsByKeys[chainId];
+                    if (!chain) return null;
 
-                  const chainColor = chain.colors.dark[0];
-                  const chainName = chain.name_short;
-                  return (
-                    <div key={chainId} className='flex w-full items-center justify-between h-[18px]'>
-                      <div className='flex w-[115px] gap-x-[5px] items-center'>
-                        <div className='w-[15px] h-[10px] rounded-r-full ' style={{ backgroundColor: chainColor }}></div>
-                        <div className="text-xs ">{chainName}</div>
-                      </div>
-                      <div className='flex gap-x-[1px] items-center'>
-                        {chainsTPSHistory[chainId].map((tps, index) => (
-                          <div className={`rounded-full cursor-pointer ${tpsIndex === index ? 'bg-blue-400 w-[10px] h-[10px]' : tpsHoverIndex === index ? 'bg-red-400 w-[8px] h-[8px] ' : 'bg-red-400 w-[5px] h-[5px] '}`} key={index + chainId}
-                            onMouseEnter={() => setTpsHoverIndex(index)}
-                            onMouseLeave={() => setTpsHoverIndex(null)}
-                            onClick={() => setTpsIndex(index)}
+                    const chainColor = chain.colors.dark[0];
+                    const chainName = chain.name_short;
+                    return (
+                      <animated.div
+                        key={chainId}
+                        style={style}
+                        className='absolute flex w-full items-center justify-between'
+                      >
+                        <div className='flex  w-[115px] gap-x-[5px] items-center '>
+                          <div className='w-[15px] h-[10px] rounded-r-full ' style={{ backgroundColor: chainColor }}></div>
+                          <div className="text-xs ">{chainName}</div>
+                        </div>
+                        <div className='flex items-center relative justify-center' style={{ width: '140px', height: '18px' }}>
+                          {chainsTPSHistory[chainId]?.map((tps, index) => {
+                            const totalDots = chainsTPSHistory[chainId]?.length || 0;
+                            
+                            // Calculate actual positions based on dot sizes (center-to-center spacing)
+                            let cumulativeWidth = 0;
+                            const positions: number[] = [];
+                            
+                            for (let i = 0; i < totalDots; i++) {
+                              positions.push(cumulativeWidth);
+                              let dotSize = tpsIndex === i ? 10 : 5; // Compare with loop variable i, not outer index
+                              cumulativeWidth += dotSize + (i < totalDots - 1 ? 1 : 0); // 2px gap between dots
+                            }
+                            
+                            const totalWidth = cumulativeWidth;
+                            const startOffset = (140 - totalWidth) / 2 + 15;
+                            
+                            return (
+                            <div className={`rounded-full transition-all duration-50 absolute cursor-pointer ${tpsIndex === index ? 'bg-blue-400 w-[10px] h-[10px]' : tpsHoverIndex === index ? 'bg-red-400 w-[8px] h-[8px] ' : 'bg-red-400 w-[5px] h-[5px] '}`} key={index + chainId}
+                              onMouseEnter={() => setTpsHoverIndex(index)}
+                              onMouseLeave={() => setTpsHoverIndex(null)}
+                              onClick={() => setTpsIndex(index)}
+                              style={{
+                                left: `${startOffset + positions[index] + (tpsIndex === index ? 5 : 2.5)}px`, // Center based on actual dot size
+                                top: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                backgroundColor: getGradientColor(100 - (((chainsCostHistory[chainId][index] / costHistoryAvg[chainId]) * 100)))
+                              }}
+                            />
+                          )})}
+                        </div>
+                        <div className='flex flex-col items-end w-[100px] numbers-xs ml-[30px]'>
+                          <div>{Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(chainData[chainId]?.tps || 0)}</div>
+                          <div className='h-[2px] '
+                            style={{
+                              width: chainData[chainId]?.tps && globalMetrics.total_tps ? `${chainData[chainId].tps / globalMetrics.total_tps * 100}%` : '0%',
+                              backgroundColor: chainColor
+                            }}
                           />
-                        ))}
-                      </div>
-                      <div className='flex flex-col items-end w-[100px] numbers-xs'>
-                        <div>{Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(chainData[chainId]?.tps || 0)}</div>
-                        <div className='h-[2px] '
-                          style={{
-                            width: chainData[chainId].tps && globalMetrics.total_tps ? `${chainData[chainId].tps / globalMetrics.total_tps * 100}%` : '0%',
-                            backgroundColor: chainColor
-                          }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
+                        </div>
+                      </animated.div>
+                    );
+                  })}
+                </div>
               </div>
 
               <div className='w-full h-[18px] flex items-center justify-center relative z-10 cursor-pointer top-[0px] '
@@ -544,21 +683,117 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
             <div className='pt-[15px] mb-[50px]'>
               <div className='flex justify-between items-center'>
                 <div className='w-[115px] heading-small-xxs'>Ethereum Mainnet</div>
-                <div className='flex gap-x-[1px] items-center'>
-                  {ethCostLive.map((cost, index) => (
-                    <div className={`rounded-full cursor-pointer ${index === 21 ? 'bg-blue-400 w-[10px] h-[10px]' : 'bg-red-400 hover:w-[8px] hover:h-[8px] w-[5px] h-[5px] '}`} key={index + 'eth'} />
-                  ))}
+                <div className='relative flex items-center justify-center' style={{ width: '140px', height: '18px' }}>
+                  {(() => {
+                    if (!ethCostLive || ethCostLive.length === 0) return null;
+
+                    const totalDots = ethCostLive.length;
+                    const positions: number[] = [];
+                    let cumulativeWidth = 0;
+                    const dotSizes: number[] = [];
+
+                    const maxCost = Math.max(...ethCostLive);
+                    const minCost = Math.min(...ethCostLive);
+
+                    for (let i = 0; i < totalDots; i++) {
+                      const size = ethCostSelectedIndex === i ? 10 : 5;
+                      dotSizes.push(size);
+                      positions.push(cumulativeWidth);
+                      cumulativeWidth += size + (i < totalDots - 1 ? 1 : 0);
+                    }
+
+                    const totalWidth = cumulativeWidth;
+                    const startOffset = (140 - totalWidth) / 2;
+
+                    return ethCostLive.map((cost, index) => {
+                      const dotSize = dotSizes[index];
+                      const halfDotSize = dotSize / 2;
+
+                      const range = maxCost - minCost;
+                      const percentage = range > 0 ? ((cost - minCost) / range) * 100 : 0;
+                      const color = getGradientColor(percentage);
+
+                      return (
+                        <div
+                          key={index + 'eth'}
+                          className={`rounded-full transition-all duration-50 absolute cursor-pointer ${
+                            ethCostSelectedIndex === index
+                              ? 'w-[10px] h-[10px]'
+                              : ethCostHoverIndex === index
+                              ? 'w-[8px] h-[8px]'
+                              : 'w-[5px] h-[5px]'
+                          }`}
+                          onMouseEnter={() => setEthCostHoverIndex(index)}
+                          onMouseLeave={() => setEthCostHoverIndex(null)}
+                          onClick={() => setEthCostSelectedIndex(index)}
+                          style={{
+                            backgroundColor: color,
+                            left: `${startOffset + positions[index] + halfDotSize}px`,
+                            top: '50%',
+                            transform: 'translate(-50%, -50%)',
+                          }}
+                        />
+                      );
+                    });
+                  })()}
                 </div>
                 <div className='flex bg-gradient-to-b from-[#596780] to-[#94ABD3] bg-clip-text text-transparent flex-col items-end w-[100px] numbers-2xl'>{Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(globalMetrics.eth_tx_cost_usd || 0)}</div>
               </div>
               <div className='flex justify-between items-center mt-[15px]'>
                 <div className='w-[115px] heading-small-xxs'>Layer 2s</div>
-                <div className='flex gap-x-[1px] items-center'>
-                  {layer2CostLive.map((cost, index) => (
-                    <div className={`rounded-full cursor-pointer ${index === 21 ? 'bg-blue-400 w-[10px] h-[10px]' : 'bg-red-400 hover:w-[8px] hover:h-[8px] w-[5px] h-[5px] '}`} key={index + 'eth'} 
-                    
-                    />
-                  ))}
+                <div className='relative flex items-center justify-center' style={{ width: '140px', height: '18px' }}>
+                  {(() => {
+                    if (!layer2CostLive || layer2CostLive.length === 0) return null;
+
+                    const totalDots = layer2CostLive.length;
+                    const positions: number[] = [];
+                    let cumulativeWidth = 0;
+                    const dotSizes: number[] = [];
+
+                    const maxCost = Math.max(...layer2CostLive);
+                    const minCost = Math.min(...layer2CostLive);
+
+                    for (let i = 0; i < totalDots; i++) {
+                      const size = l2CostSelectedIndex === i ? 10 : 5;
+                      dotSizes.push(size);
+                      positions.push(cumulativeWidth);
+                      cumulativeWidth += size + (i < totalDots - 1 ? 1 : 0);
+                    }
+
+                    const totalWidth = cumulativeWidth;
+                    const startOffset = (140 - totalWidth) / 2;
+
+                    return layer2CostLive.map((cost, index) => {
+                      const dotSize = dotSizes[index];
+                      const halfDotSize = dotSize / 2;
+
+                      const range = maxCost - minCost;
+                      const percentage = range > 0 ? ((cost - minCost) / range) * 100 : 0;
+                      const color = getGradientColor(percentage);
+
+                      return (
+                        <div
+                          key={index + 'l2'}
+                          className={`rounded-full transition-all duration-50 absolute cursor-pointer ${
+                            l2CostSelectedIndex === index
+                              ? 'w-[10px] h-[10px]'
+                              : l2CostHoverIndex === index
+                              ? 'w-[8px] h-[8px]'
+                              : 'w-[5px] h-[5px]'
+                          }`}
+                          onMouseEnter={() => setL2CostHoverIndex(index)}
+                          onMouseLeave={() => setL2CostHoverIndex(null)}
+                          onClick={() => setL2CostSelectedIndex(index)}
+                          style={{
+                            backgroundColor: color,
+                            left: `${startOffset + positions[index] + halfDotSize}px`,
+                            top: '50%',
+                            transform: 'translate(-50%, -50%)',
+                          }}
+                        />
+                      );
+                    });
+                  })()}
                 </div>
                 <div className='flex bg-gradient-to-b from-[#FE5468] to-[#FFDF27] bg-clip-text text-transparent flex-col items-end w-[100px] numbers-2xl'>{Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(globalMetrics.avg_l2_tx_cost_usd || 0)}</div>
               </div>
@@ -567,42 +802,72 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
             >
               <div className={`flex flex-col gap-y-[2.5px] px-[15px] duration-300  overflow-y-hidden ${!showChainsCost ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''}`}
                 style={{
-                  height: !showChainsCost ? `80px` : `${Object.keys(chainsTPSHistory).length * 21 + 15}px`
+                  height: !showChainsCost ? `80px` : `${Object.keys(chainsCostHistory).length * 21 + 35}px`
                 }}
               >
                 <div className='heading-large-md text-[#5A6462] '>Chains</div>
-                {Object.keys(chainsTPSHistory).map((chainId) => {
-                  const chain = AllChainsByKeys[chainId];
+                <div className="relative">
+                  {costTransitions((style, { chainId }) => {
+                    const chain = AllChainsByKeys[chainId];
+                    if (!chain) return null;
 
-                  const chainColor = chain.colors.dark[0];
-                  const chainName = chain.name_short;
-                  return (
-                    <div key={`cost-${chainId}`} className='flex w-full items-center justify-between h-[18px]'>
-                      <div className='flex w-[115px] gap-x-[5px] items-center'>
-                        <div className='w-[15px] h-[10px] rounded-r-full ' style={{ backgroundColor: chainColor }}></div>
-                        <div className="text-xs ">{chainName}</div>
-                      </div>
-                      <div className='flex gap-x-[1px] items-center'>
-                        {chainsTPSHistory[chainId].map((tps, index) => (
-                          <div className={`rounded-full cursor-pointer ${index === costIndex ? 'bg-blue-400 w-[10px] h-[10px]' : costHoverIndex === index ? 'bg-red-400 w-[8px] h-[8px] ' : 'bg-red-400 w-[5px] h-[5px] '}`} key={index + chainId} 
-                            onMouseEnter={() => setCostHoverIndex(index)}
-                            onMouseLeave={() => setCostHoverIndex(null)}
-                            onClick={() => setCostIndex(index)}
+                    const chainColor = chain.colors.dark[0];
+                    const chainName = chain.name_short;
+                    return (
+                      <animated.div
+                        key={`cost-${chainId}`}
+                        style={style}
+                        className='absolute flex w-full items-center justify-between'
+                      >
+                        <div className='flex w-[115px] gap-x-[5px] items-center'>
+                          <div className='w-[15px] h-[10px] rounded-r-full ' style={{ backgroundColor: chainColor }}></div>
+                          <div className="text-xs ">{chainName}</div>
+                        </div>
+                        <div className='flex items-center relative justify-center' style={{ width: '140px', height: '18px' }}>
+                          {chainsCostHistory[chainId]?.map((cost, index) => {
+                            const totalDots = chainsCostHistory[chainId]?.length || 0;
+                            
+                            // Calculate actual positions based on dot sizes (center-to-center spacing)
+                            let cumulativeWidth = 0;
+                            const positions: number[] = [];
+                            
+                            for (let i = 0; i < totalDots; i++) {
+                              positions.push(cumulativeWidth);
+                              let dotSize = costIndex === i ? 10 : 5; // Compare with loop variable i
+                              cumulativeWidth += dotSize + (i < totalDots - 1 ? 1 : 0); // 2px gap between dots
+                            }
+                            
+                            const totalWidth = cumulativeWidth;
+                            const startOffset = (140 - totalWidth) / 2;
+                            
+                            return (
+                            <div className={`rounded-full transition-all duration-50 absolute cursor-pointer ${index === costIndex ? 'w-[10px] h-[10px]' : costHoverIndex === index ? 'w-[8px] h-[8px] ' : 'w-[5px] h-[5px] '}`} key={index + chainId} 
+                              onMouseEnter={() => setCostHoverIndex(index)}
+                              onMouseLeave={() => setCostHoverIndex(null)}
+                              onClick={() => setCostIndex(index)}
+                              style={{
+                                left: `${startOffset + positions[index] + (costIndex === index ? 5 : 2.5)}px`, // Center based on actual dot size
+                                top: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                backgroundColor: getGradientColor(100 - (((chainsCostHistory[chainId][index] / costHistoryAvg[chainId]) * 100)))
+                              }}
+                            
+                            />
+                          )})}
+                        </div>
+                        <div className='flex flex-col items-end w-[100px] numbers-xs'>
+                          <div>{Intl.NumberFormat('en-US', { maximumFractionDigits: 5, minimumFractionDigits: 4 }).format(chainData[chainId]?.tx_cost_native_usd || 0)}</div>
+                          <div className='h-[2px] '
+                            style={{
+                              width: chainData[chainId]?.tx_cost_native_usd && globalMetrics.avg_l2_tx_cost_usd && globalMetrics.eth_tx_cost_usd ? `${chainData[chainId].tx_cost_native_usd / (globalMetrics.avg_l2_tx_cost_usd + globalMetrics.eth_tx_cost_usd) * 100}%` : '0%',
+                              backgroundColor: chainColor
+                            }}
                           />
-                        ))}
-                      </div>
-                      <div className='flex flex-col items-end w-[100px] numbers-xs'>
-                        <div>{Intl.NumberFormat('en-US', { maximumFractionDigits: 5, minimumFractionDigits: 4 }).format(chainData[chainId]?.tx_cost_native_usd || 0)}</div>
-                        <div className='h-[2px] '
-                          style={{
-                            width: chainData[chainId].tx_cost_native_usd && globalMetrics.avg_l2_tx_cost_usd && globalMetrics.eth_tx_cost_usd ? `${chainData[chainId].tx_cost_native_usd / (globalMetrics.avg_l2_tx_cost_usd + globalMetrics.eth_tx_cost_usd) * 100}%` : '0%',
-                            backgroundColor: chainColor
-                          }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
+                        </div>
+                      </animated.div>
+                    );
+                  })}
+                </div>
               </div>
               <div className='w-full h-[18px] flex items-center justify-center relative z-10 cursor-pointer top-[0px] '
                 onClick={(e) => {
