@@ -1575,7 +1575,7 @@ const MobileMetricCard = ({
               {(metric_comparison * 100).toFixed(2)}%
             </span>
           )}{" "}
-          in last week
+          from last week
         </div>
       </div>
     </div>
@@ -1636,7 +1636,7 @@ const MetricCard = ({
               {(metric_comparison * 100).toFixed(2)}%
             </span>
           )}{" "}
-          <span className="font-raleway">in last week</span>
+          <span className="font-raleway">from last week</span>
         </div>
       </div>
     </div>
