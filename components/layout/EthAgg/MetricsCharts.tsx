@@ -67,10 +67,6 @@ const EconCharts = ({ selectedBreakdownGroup, stableData }: MetricsChartsProps &
     },
   }), []);
 
-  if(selectedBreakdownGroup !== "Metrics") {
-    return null;
-  }
-
   const tooltipFormatter = useCallback(
     function (this: any) {
       const { x, points } = this;
@@ -171,6 +167,12 @@ const EconCharts = ({ selectedBreakdownGroup, stableData }: MetricsChartsProps &
     },
     [showUsd],
   );
+
+  if(selectedBreakdownGroup !== "Metrics") {
+    return null;
+  }
+
+  
 
   return (
     <div className='flex flex-col gap-y-[15px]'>

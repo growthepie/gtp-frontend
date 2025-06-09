@@ -403,10 +403,6 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
 
   }, [chainData, showUsd]);
 
-  if (selectedBreakdownGroup !== "Metrics" || globalMetrics === undefined || chainData === undefined) {
-    return null;
-  }
-
   const tpsHistoryAvg = useMemo(() => {
     return Object.fromEntries(
       Object.entries(chainsTPSHistory).map(([key, value]) => [
@@ -424,6 +420,12 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
       ]),
     );
   }, [chainsCostHistory]);
+
+
+  if (selectedBreakdownGroup !== "Metrics" || globalMetrics === undefined || chainData === undefined) {
+    return null;
+  }
+
 
   // Helper to display values or a dash
   const displayValue = (value: number | string | undefined, unit: string = '') => {
