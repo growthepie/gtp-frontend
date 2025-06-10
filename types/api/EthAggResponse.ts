@@ -5,6 +5,7 @@ export type EthAggResponse = {
         tps: Tps;
         count_layer2s: CountLayer2s;
         stables: Stables;
+        gdp: Gdp;
     };
 }
 
@@ -25,6 +26,21 @@ export type Stables = {
 }
 
 export type Tps = {
+    layer_2s: {
+        daily: {
+            types: string[];
+            values: number[][];
+        }
+    }
+    ethereum_mainnet: {
+        daily: {
+            types: string[];
+            values: number[][];
+        }
+    }
+}
+
+export type Gdp = {
     layer_2s: {
         daily: {
             types: string[];

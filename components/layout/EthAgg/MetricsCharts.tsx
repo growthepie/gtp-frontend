@@ -7,7 +7,7 @@ import { TopRowChild } from '../TopRow';
 import { HighchartsProvider, HighchartsChart, YAxis, XAxis, Tooltip, Chart, LineSeries, Series } from 'react-jsx-highcharts';
 import useSWR from 'swr';
 import { EthAggURL } from '@/lib/urls';
-import { EthAggResponse, CountLayer2s, Tps, Stables } from '@/types/api/EthAggResponse';
+import { EthAggResponse, CountLayer2s, Tps, Stables, Gdp } from '@/types/api/EthAggResponse';
 import Highcharts from 'highcharts';
 import "@/app/highcharts.axis.css";
 import { tooltipPositioner } from '@/lib/chartUtils';
@@ -29,13 +29,13 @@ function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) 
 
   return (
     <Container className='flex flex-col gap-y-[60px] mt-[60px] w-full'>
-      <EconCharts selectedBreakdownGroup={selectedBreakdownGroup} stableData={data.data.stables} />
+      <EconCharts selectedBreakdownGroup={selectedBreakdownGroup} gdpData={data.data.gdp} stableData={data.data.stables} />
       <ScalingCharts selectedBreakdownGroup={selectedBreakdownGroup} layer2Data={data.data.count_layer2s} tpsData={data.data.tps} />
     </Container>
   );
 }
 
-const EconCharts = ({ selectedBreakdownGroup, stableData }: MetricsChartsProps & { stableData: Stables }) => {
+const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData }: MetricsChartsProps & { stableData: Stables, gdpData: Gdp }) => {
   const [selectedMode, setSelectedMode] = useState("gas_fees_usd_absolute");
   const [selectedValue, setSelectedValue] = useState("absolute");
   const [selectedTimespan, setSelectedTimespan] = useState("1y");
@@ -324,7 +324,8 @@ const EconCharts = ({ selectedBreakdownGroup, stableData }: MetricsChartsProps &
                                     stops: [[0, "#10808C"], [0.7, "#10808C"], [0.8, "#158B99"], [0.9, "#1AC4D4"], [1, "#1DF7EF"]]
                                     
                                 }}
-                                data={[1, 2, 3, 4, 5]}
+                                data={gdpData.layer_2s.daily.values.map((value) => [value[gdpData.layer_2s.daily.types.indexOf("unix")], value[gdpData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")]])
+                                }
                             />
                         </YAxis>
                         <Tooltip />
@@ -462,7 +463,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData }: MetricsChartsProps &
                                     
                                 }}
 
-                                data={data.daily.values.map((value) => [value[data.daily.types.indexOf("unix")], value[data.daily.types.indexOf("value")]])}
+                                data={data.daily.values.map((value) => [value[data.daily.types.indexOf("unix")], value[data.daily.types.indexOf(showUsd ? "usd" : "eth")]])}
                             />
                             )
                         })}
@@ -685,7 +686,7 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData }: MetricsC
                     <div className='flex flex-col h-full items-end pt-[5px] w-full'>
                         <div className='flex items-center gap-x-[5px]'> 
                             <div className='numbers-3xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
-                                {layer2Data.daily.values[layer2Data.daily.values.length - 1][layer2Data.daily.types.indexOf("value")]}
+                                {layer2Data.daily.values[layer2Data.daily.values.length - 1][layer2Data.daily.types.indexOf(showUsd ? "usd" : "eth")]}
                             </div>
                             <div className='w-[16px] h-[16px] rounded-full ' 
                                 style={{

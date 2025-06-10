@@ -17,7 +17,7 @@ interface TopEthAggMetricsProps {
 }
 
 // --- Configuration (replace with your actual values or import from a config file) ---
-const SSE_URL = "http://localhost:8085/events"; // IMPORTANT: Replace with your actual SSE endpoint URL if it has a specific path e.g. /events
+const SSE_URL = "https://sse.growthepie.com/events"; // IMPORTANT: Replace with your actual SSE endpoint URL if it has a specific path e.g. /events
 const RECONNECT_DELAY = 1000; // Initial reconnect delay: 1 second
 const RECONNECT_MAX_DELAY = 30000; // Max reconnect delay: 30 seconds
 const ETHEREUM_LAUNCH_DATE = new Date("2015-07-30T00:00:00Z");
@@ -61,6 +61,7 @@ interface RealTimeMetricsProps {
   selectedBreakdownGroup: string;
 }
 
+
 const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   const [chainData, setChainData] = useState<Record<string, ChainMetrics>>({});
   const [globalMetrics, setGlobalMetrics] = useState<GlobalMetrics>({});
@@ -86,6 +87,8 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   const [ethCostSelectedIndex, setEthCostSelectedIndex] = useState<number>(17);
   const [l2CostHoverIndex, setL2CostHoverIndex] = useState<number | null>(null);
   const [l2CostSelectedIndex, setL2CostSelectedIndex] = useState<number>(17);
+
+
 
   const getGradientColor = (percentage: number) => {
     const colors = [
@@ -368,7 +371,8 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
           const chain = chainData[chainId]; // This is the ChainMetrics object
 
           const currentChainCostHistory = newCostHistoryState[chainId] || [];
-          const costValue = chain[showUsd ? 'tx_cost_native_usd' : 'tx_cost_native'] ?? 0;
+
+          const costValue = chain[showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] ?? 0;
           const updatedChainCostHistory = [...currentChainCostHistory, costValue].slice(-HISTORY_LIMIT);
 
           // Avoid unnecessary updates if the array content is identical
@@ -389,6 +393,9 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
         if (chainData.hasOwnProperty(chainId)) {
           const chain = chainData[chainId]; // This is the ChainMetrics object
           const currentChainTpsHistory = newTpsHistoryState[chainId] || [];
+          if(chainId === "mantle") {
+            console.log("chain", chain);
+          }
           const tpsValue = chain.tps ?? 0;
           const updatedChainTpsHistory = [...currentChainTpsHistory, tpsValue].slice(-HISTORY_LIMIT);
 
@@ -402,6 +409,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     });
 
   }, [chainData, showUsd]);
+
 
   const tpsHistoryAvg = useMemo(() => {
     return Object.fromEntries(
@@ -438,6 +446,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     connected: "Connected",
     error: "Connection Error - Retrying..."
   };
+
 
   return (
     <>
@@ -638,9 +647,11 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                             
                             const totalWidth = cumulativeWidth;
                             const startOffset = (140 - totalWidth) / 2 + 15;
+
+                           
                             
                             return (
-                            <div className={`rounded-full transition-all duration-50 absolute cursor-pointer ${tpsIndex === index ? 'bg-blue-400 w-[10px] h-[10px]' : tpsHoverIndex === index ? 'bg-red-400 w-[8px] h-[8px] ' : 'bg-red-400 w-[5px] h-[5px] '}`} key={index + chainId}
+                            <div className={`rounded-full transition-all duration-50 absolute cursor-pointer ${tpsIndex === index ? 'w-[10px] h-[10px]' : tpsHoverIndex === index ? ' w-[8px] h-[8px] ' : ' w-[5px] h-[5px] '}`} key={index + chainId}
                               onMouseEnter={() => setTpsHoverIndex(index)}
                               onMouseLeave={() => setTpsHoverIndex(null)}
                               onClick={() => setTpsIndex(index)}
@@ -648,7 +659,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                                 left: `${startOffset + positions[index] + (tpsIndex === index ? 5 : 2.5)}px`, // Center based on actual dot size
                                 top: '50%',
                                 transform: 'translate(-50%, -50%)',
-                                backgroundColor: getGradientColor(100 - (((chainsCostHistory[chainId][index] / costHistoryAvg[chainId]) * 100)))
+                                backgroundColor: (chainsTPSHistory[chainId][index] > 0 && tpsHistoryAvg[chainId] > 0) && (chainsTPSHistory[chainId][index] && tpsHistoryAvg[chainId]) ? getGradientColor(100 - (((chainsTPSHistory[chainId][index] / tpsHistoryAvg[chainId]) * 100))) : '#5A6462'
                               }}
                             />
                           )})}
@@ -739,7 +750,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                     });
                   })()}
                 </div>
-                <div className='flex bg-gradient-to-b from-[#596780] to-[#94ABD3] bg-clip-text text-transparent flex-col items-end w-[100px] numbers-2xl'>{Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(globalMetrics.eth_tx_cost_usd || 0)}</div>
+                <div className='flex bg-gradient-to-b from-[#596780] to-[#94ABD3] bg-clip-text text-transparent flex-col items-end w-[100px] numbers-2xl'>{Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(globalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth'] || 0)}</div>
               </div>
               <div className='flex justify-between items-center mt-[15px]'>
                 <div className='w-[115px] heading-small-xxs'>Layer 2s</div>
@@ -797,7 +808,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                     });
                   })()}
                 </div>
-                <div className='flex bg-gradient-to-b from-[#FE5468] to-[#FFDF27] bg-clip-text text-transparent flex-col items-end w-[100px] numbers-2xl'>{Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(globalMetrics.avg_l2_tx_cost_usd || 0)}</div>
+                <div className='flex bg-gradient-to-b from-[#FE5468] to-[#FFDF27] bg-clip-text text-transparent flex-col items-end w-[100px] numbers-2xl'>{Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(globalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] || 0)}</div>
               </div>
             </div>
             <div className={`relative flex flex-col gap-y-[5px] -mx-[15px] bg-[#1F2726]  z-10 rounded-b-[15px] ${showChainsCost ? 'pb-[10px] shadow-lg' : 'pb-0'}`}
@@ -841,7 +852,9 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                             
                             const totalWidth = cumulativeWidth;
                             const startOffset = (140 - totalWidth) / 2;
-                            
+                            if(chainId === "mantle") {
+                              console.log(chainsCostHistory[chainId][index], costHistoryAvg[chainId])
+                            }
                             return (
                             <div className={`rounded-full transition-all duration-50 absolute cursor-pointer ${index === costIndex ? 'w-[10px] h-[10px]' : costHoverIndex === index ? 'w-[8px] h-[8px] ' : 'w-[5px] h-[5px] '}`} key={index + chainId} 
                               onMouseEnter={() => setCostHoverIndex(index)}
@@ -851,17 +864,17 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                                 left: `${startOffset + positions[index] + (costIndex === index ? 5 : 2.5)}px`, // Center based on actual dot size
                                 top: '50%',
                                 transform: 'translate(-50%, -50%)',
-                                backgroundColor: getGradientColor(100 - (((chainsCostHistory[chainId][index] / costHistoryAvg[chainId]) * 100)))
+                                backgroundColor: ((chainsCostHistory[chainId][index] > 0 && costHistoryAvg[chainId] > 0) && (chainsCostHistory[chainId][index] && costHistoryAvg[chainId])) ? getGradientColor((((chainsCostHistory[chainId][index] / costHistoryAvg[chainId]) * 100))) : '#5A6462'
                               }}
                             
                             />
                           )})}
                         </div>
                         <div className='flex flex-col items-end w-[100px] numbers-xs'>
-                          <div>{Intl.NumberFormat('en-US', { maximumFractionDigits: 5, minimumFractionDigits: 4 }).format(chainData[chainId]?.tx_cost_native_usd || 0)}</div>
+                          <div>{Intl.NumberFormat('en-US', { maximumFractionDigits: 5, minimumFractionDigits: 4 }).format(chainData[chainId]?.[showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] || 0)}</div>
                           <div className='h-[2px] '
                             style={{
-                              width: chainData[chainId]?.tx_cost_native_usd && globalMetrics.avg_l2_tx_cost_usd && globalMetrics.eth_tx_cost_usd ? `${chainData[chainId].tx_cost_native_usd / (globalMetrics.avg_l2_tx_cost_usd + globalMetrics.eth_tx_cost_usd) * 100}%` : '0%',
+                              width: chainData[chainId]?.[showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] && globalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] && globalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth'] ? `${chainData[chainId][showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] / (globalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] + globalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth']) * 100}%` : '0%',
                               backgroundColor: chainColor
                             }}
                           />
