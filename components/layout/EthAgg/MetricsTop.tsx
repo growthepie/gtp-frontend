@@ -10,6 +10,7 @@ import { GTPIcon } from '../GTPIcon';
 import { Icon } from '@iconify/react';
 import { useMaster } from '@/contexts/MasterContext';
 import { useTransition, animated } from "@react-spring/web";
+import { useSearchParamState } from '@/hooks/useSearchParamState';
 
 // Define the props type for TopEthAggMetricsComponent
 interface TopEthAggMetricsProps {
@@ -76,8 +77,12 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   const [chainsTPSHistory, setChainsTPSHistory] = useState<{ [key: string]: number[] }>({});
   const [eventHover, setEventHover] = useState<string | null>(null);
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const [showChainsTPS, setShowChainsTPS] = useState<boolean>(false);
-  const [showChainsCost, setShowChainsCost] = useState<boolean>(false);
+  const [showChainsTPS, setShowChainsTPS] = useSearchParamState<boolean>("tps", {
+    defaultValue: false,
+  });
+  const [showChainsCost, setShowChainsCost] = useSearchParamState<boolean>("cost", {
+    defaultValue: false,
+  });
   const [tpsHoverIndex, setTpsHoverIndex] = useState<number | null>(null);
   const [costHoverIndex, setCostHoverIndex] = useState<number | null>(null);
   const [tpsIndex, setTpsIndex] = useState<number>(17);
@@ -393,9 +398,9 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
         if (chainData.hasOwnProperty(chainId)) {
           const chain = chainData[chainId]; // This is the ChainMetrics object
           const currentChainTpsHistory = newTpsHistoryState[chainId] || [];
-          if(chainId === "mantle") {
-            console.log("chain", chain);
-          }
+          // if(chainId === "mantle") {
+          //   console.log("chain", chain);
+          // }
           const tpsValue = chain.tps ?? 0;
           const updatedChainTpsHistory = [...currentChainTpsHistory, tpsValue].slice(-HISTORY_LIMIT);
 
@@ -686,12 +691,12 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
 
               <div className='w-full h-[18px] flex items-center justify-center relative z-10 cursor-pointer top-[0px] '
                 onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
+                  // e.preventDefault();
+                  // e.stopPropagation();
                   setShowChainsTPS(!showChainsTPS);
                 }}>
-                <div className={`transition-transform absolute duration-300 ${showChainsTPS ? 'rotate-180' : ''}`}><GTPIcon icon='gtp-chevrondown-monochrome' size='md' className='text-[#5A6462]' /></div>
-                <div className='absolute right-[15px]'><GTPIcon icon='gtp-info-monochrome' size='sm' className='text-[#5A6462]' /></div>
+                <div className={`pointer-events-none transition-transform absolute duration-300 ${showChainsTPS ? 'rotate-180' : ''}`}><GTPIcon icon='gtp-chevrondown-monochrome' size='md' className='text-[#5A6462]' /></div>
+                <div className='pointer-events-none absolute right-[15px]'><GTPIcon icon='gtp-info-monochrome' size='sm' className='text-[#5A6462]' /></div>
               </div>
             </div>
 
@@ -857,9 +862,9 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                             
                             const totalWidth = cumulativeWidth;
                             const startOffset = (140 - totalWidth) / 2;
-                            if(chainId === "mantle") {
-                              console.log(chainsCostHistory[chainId][index], costHistoryAvg[chainId])
-                            }
+                            // if(chainId === "mantle") {
+                            //   console.log(chainsCostHistory[chainId][index], costHistoryAvg[chainId])
+                            // }
                             return (
                             <div className={`rounded-full transition-all duration-50 absolute cursor-pointer ${index === costIndex ? 'w-[10px] h-[10px]' : costHoverIndex === index ? 'w-[8px] h-[8px] ' : 'w-[5px] h-[5px] '}`} key={index + chainId} 
                               onMouseEnter={() => setCostHoverIndex(index)}
@@ -891,12 +896,12 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
               </div>
               <div className='w-full h-[18px] flex items-center justify-center relative z-10 cursor-pointer top-[0px] '
                 onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
+                  // e.preventDefault();
+                  // e.stopPropagation();
                   setShowChainsCost(!showChainsCost);
                 }}>
-                <div className={`transition-transform absolute duration-300 ${showChainsCost ? 'rotate-180' : ''}`}><GTPIcon icon='gtp-chevrondown-monochrome' size='md' className='text-[#5A6462]' /></div>
-                <div className='absolute right-[15px]'><GTPIcon icon='gtp-info-monochrome' size='sm' className='text-[#5A6462]' /></div>
+                <div className={`pointer-events-none transition-transform absolute duration-300 ${showChainsCost ? 'rotate-180' : ''}`}><GTPIcon icon='gtp-chevrondown-monochrome' size='md' className='text-[#5A6462]' /></div>
+                <div className='pointer-events-none absolute right-[15px]'><GTPIcon icon='gtp-info-monochrome' size='sm' className='text-[#5A6462]' /></div>
               </div>
             </div>
           </div>
