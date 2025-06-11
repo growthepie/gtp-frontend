@@ -478,7 +478,12 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
           <div className='flex flex-col gap-y-[15px] bg-[#1F2726] rounded-[15px] p-[15px] min-w-0 w-full h-[306px] '>
             <div className='heading-large-md'>Ecosystem TPS</div>
             <div className='flex flex-col gap-y-[30px]'>
-              <div className='numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>{Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(globalMetrics.total_tps || 0)}</div>
+              <div className='numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
+                {Intl.NumberFormat('en-US', {
+                  minimumFractionDigits: 1,
+                  maximumFractionDigits: 1
+                }).format(globalMetrics.total_tps || 0)}
+              </div>
               <div className='w-full h-[58px] -mt-[5px] mb-[20px]'>
                 <HighchartsProvider Highcharts={Highcharts}>
                   <HighchartsChart>
@@ -665,7 +670,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                           )})}
                         </div>
                         <div className='flex flex-col items-end w-[100px] numbers-xs ml-[30px]'>
-                          <div>{Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(chainData[chainId]?.tps || 0)}</div>
+                          <div>{Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(chainData[chainId]?.tps || 0)}</div>
                           <div className='h-[2px] '
                             style={{
                               width: chainData[chainId]?.tps && globalMetrics.total_tps ? `${chainData[chainId].tps / globalMetrics.total_tps * 100}%` : '0%',
@@ -692,7 +697,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
 
           </div>
           <div className='bg-[#1F2726] rounded-[15px] py-[15px] px-[15px] min-w-0 w-full h-[306px]'>
-            <div className='heading-large-md mb-[30px]'>Average Transaction Fee</div>
+            <div className='heading-large-md mb-[30px]'>Token Transfer Fee</div>
             <div className='pt-[15px] mb-[50px]'>
               <div className='flex justify-between items-center'>
                 <div className='w-[115px] heading-small-xxs'>Ethereum Mainnet</div>
@@ -750,7 +755,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                     });
                   })()}
                 </div>
-                <div className='flex bg-gradient-to-b from-[#596780] to-[#94ABD3] bg-clip-text text-transparent flex-col items-end w-[100px] numbers-2xl'>{Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(globalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth'] || 0)}</div>
+                <div className='flex bg-gradient-to-b from-[#596780] to-[#94ABD3] bg-clip-text text-transparent flex-col items-end w-[100px] numbers-2xl'>${Intl.NumberFormat('en-US', { maximumFractionDigits: 3, minimumFractionDigits: 3 }).format(globalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth'] || 0)}</div>
               </div>
               <div className='flex justify-between items-center mt-[15px]'>
                 <div className='w-[115px] heading-small-xxs'>Layer 2s</div>
@@ -808,7 +813,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                     });
                   })()}
                 </div>
-                <div className='flex bg-gradient-to-b from-[#FE5468] to-[#FFDF27] bg-clip-text text-transparent flex-col items-end w-[100px] numbers-2xl'>{Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(globalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] || 0)}</div>
+                <div className='flex bg-gradient-to-b from-[#FE5468] to-[#FFDF27] bg-clip-text text-transparent flex-col items-end w-[100px] numbers-2xl'>${Intl.NumberFormat('en-US', { maximumFractionDigits: 3, minimumFractionDigits: 3 }).format(globalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] || 0)}</div>
               </div>
             </div>
             <div className={`relative flex flex-col gap-y-[5px] -mx-[15px] bg-[#1F2726]  z-10 rounded-b-[15px] ${showChainsCost ? 'pb-[10px] shadow-lg' : 'pb-0'}`}
@@ -871,7 +876,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                           )})}
                         </div>
                         <div className='flex flex-col items-end w-[100px] numbers-xs'>
-                          <div>{Intl.NumberFormat('en-US', { maximumFractionDigits: 5, minimumFractionDigits: 4 }).format(chainData[chainId]?.[showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] || 0)}</div>
+                          <div>${Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(chainData[chainId]?.[showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] || 0)}</div>
                           <div className='h-[2px] '
                             style={{
                               width: chainData[chainId]?.[showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] && globalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] && globalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth'] ? `${chainData[chainId][showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] / (globalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] + globalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth']) * 100}%` : '0%',

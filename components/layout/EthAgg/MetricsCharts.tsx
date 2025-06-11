@@ -178,9 +178,9 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData }: MetricsChar
     <div className='flex flex-col gap-y-[15px]'>
         <div className='flex gap-x-[8px] items-center'>
             <GTPIcon icon='gtp-metrics-economics' size='lg' className='text-[#5A6462]' />
-            <div className='heading-large-lg'>Data Availability Fee Markets</div>
+            <div className='heading-large-lg'>Economic Activity is Shifting Onchain</div>
         </div>
-        <div className='pl-[45px] text-md'>More value is locked onchain and users are paying to interact with the Ethereum Ecosystem. Ethereum Mainnet is the most trusted ledger with fast-growing Layer 2s. </div>
+        <div className='pl-[45px] text-md'>Value locked and user spending are growing across the Ethereum ecosystem, with Ethereum Mainnet remaining the most trusted ledger. </div>
         <TopRowContainer>
             <TopRowParent>
                 <div></div>
@@ -652,7 +652,7 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData }: MetricsC
               <GTPIcon icon='gtp-ecosystem-scaling' size='lg' className='text-[#5A6462]' />
               <div className='heading-large-lg'>The Ethereum Ecosystem is Scaling</div>
           </div>
-          <div className='pl-[45px] text-md'>More value is locked onchain and users are paying to interact with the Ethereum Ecosystem. Ethereum Mainnet is the most trusted ledger with fast-growing Layer 2s.</div>
+          <div className='pl-[45px] text-md'>Transaction throughput is rising across Ethereum Mainnet and its growing number of Layer 2 networks.</div>
           <TopRowContainer>
               <TopRowParent>
                   <div></div>
