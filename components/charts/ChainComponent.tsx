@@ -695,21 +695,20 @@ const ChainComponent = memo(function ChainComponent({
         let tooltipTotal = points.reduce((acc: number, point: any) => acc + (point.y || 0), 0);        
         
         tooltipPoints += `
-          <div class="flex w-full h-[15px] mt-[5px] space-x-2 items-end font-medium mb-1">
-            <div class="w-3.5 h-1.5 rounded-r-full" style="background-color: ${"transparent"
-            }"></div>
-            <div class="tooltip-point-name text-xs">${"Total"
-            }</div>
+          <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5">
+            <div class="w-4 h-1.5 rounded-r-full"></div>
+            <div class="tooltip-point-name text-xs">Total</div>
             <div class="flex-1 text-right justify-end numbers-xs flex">
-                <div class="${!prefixes[chain] && "hidden"
-            }">${prefixes[chain]}</div>
-                ${parseFloat(tooltipTotal).toLocaleString("en-GB", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
-                <div class="ml-0.5 ${!prefixes[chain] && "hidden"
-            }">${prefixes[chain]}</div>
+              <div class="${!prefixes[chain] && "hidden"}">${prefixes[chain]}</div>
+              ${parseFloat(tooltipTotal).toLocaleString("en-GB", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+              <div class="ml-0.5 ${!prefixes[chain] && "hidden"}">${prefixes[chain]}</div>
             </div>
+          </div>
+          <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+            <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
           </div>`
       }
       return tooltip + tooltipPoints + tooltipEnd;
