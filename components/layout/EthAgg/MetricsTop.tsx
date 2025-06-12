@@ -37,6 +37,7 @@ interface ChainMetrics {
 
 interface GlobalMetrics {
   total_tps?: number;
+  highest_tps?: number;
   eth_price_usd?: number;
   eth_tx_cost_usd?: number;
   avg_l2_tx_cost_usd?: number;
@@ -810,7 +811,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                       <div className='flex items-end w-full justify-end'>
                           <div className='h-[2px] '
                             style={{
-                              width: chainData[chainId]?.tps && globalMetrics.total_tps ? `${chainData[chainId].tps / globalMetrics.total_tps * 100}%` : '0%',
+                              width: chainData[chainId]?.tps && globalMetrics.highest_tps ? `${chainData[chainId].tps / globalMetrics.highest_tps * 100}%` : '0%',
                               backgroundColor: chainColor
                             }}
                           />
