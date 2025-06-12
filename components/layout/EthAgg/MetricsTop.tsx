@@ -562,7 +562,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
             <div className='heading-large-md mb-[15px]'>Ethereum Uptime</div>
             <div className='numbers-2xl mb-[30px]'>
               {(() => {
-                const uptime = formatUptime(new Date().getTime() - ETHEREUM_LAUNCH_DATE.getTime());
+                const uptime = formatUptime(new Date().getTime() - (new Date(1438269973000)).getTime());
                 return (
                   <div className='flex flex-col gap-y-[5px]'>
                     <div className='bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>{uptime.heading}</div>
