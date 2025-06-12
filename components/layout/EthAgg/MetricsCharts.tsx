@@ -8,9 +8,13 @@ import { HighchartsProvider, HighchartsChart, YAxis, XAxis, Tooltip, Chart, Line
 import useSWR from 'swr';
 import { EthAggURL } from '@/lib/urls';
 import { EthAggResponse, CountLayer2s, Tps, Stables, Gdp } from '@/types/api/EthAggResponse';
-import Highcharts from 'highcharts';
+import Highcharts, { theme } from 'highcharts';
 import "@/app/highcharts.axis.css";
 import { tooltipPositioner } from '@/lib/chartUtils';
+import { createTooltipFormatter } from '@/lib/highcharts/tooltipFormatters';
+import { BACKEND_SIMULATION_CONFIG } from '../LandingChart';
+import { PatternRegistry, initializePatterns } from "@/lib/highcharts/svgPatterns";
+import { useLocalStorage } from "usehooks-ts";
 // Define the props type for MetricsChartsComponent
 
 const CHART_MARGINS = {
@@ -67,7 +71,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
   const [selectedMode, setSelectedMode] = useState("gas_fees_usd_absolute");
   const [selectedValue, setSelectedValue] = useState("absolute");
   const [selectedTimespan, setSelectedTimespan] = useState("1y");
-  const [showUsd, setShowUsd] = useState(true);
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
 
   const timespans = useMemo(() => ({
@@ -95,10 +99,63 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
     },
   }), []);
 
+  
+  // const GDPChartConfig = {
+  //     compositions: {
+  //       layer_2s: gdpData.layer_2s.daily.values,
+  //       ethereum_mainnet: gdpData.ethereum_mainnet.daily.values,
+  //     },
+  //     types: ["unix", "usd", "eth"],
+
+  //     compositionTypes: {
+  //       layer_2s: {
+  //         description: "Layer 2s",
+  //         fill: {
+  //           type: "gradient",
+  //           config: {
+  //             type: "linearGradient",
+  //             linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+  //             stops: [[0, "#FE5468"], [1, "#FFDF27"]]
+  //           }
+  //         },
+  //         name: "Layer 2s",
+  //         order: 1,
+  //       },
+  //       ethereum_mainnet: {
+  //         description: "Ethereum Mainnet",
+  //         fill: {
+  //           type: "gradient",
+  //           config: {
+  //             type: "linearGradient",
+  //             linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+  //             stops: [[0, "#94ABD3"], [1, "#596780"]]
+  //           }
+  //         },
+  //         name: "Ethereum Mainnet",
+  //         order: 0,
+  //       }
+  //     }
+  //   };
+
+
+      
+  // const customTooltipFormatter = useCallback((chartConfig) => createTooltipFormatter({
+  //   selectedScale: "absolute",
+  //   selectedMetric: "GDP",
+  //   theme: "dark",
+  //   focusEnabled: true,
+  //   compositionTypes: chartConfig.compositionTypes,
+  //   enableTotal: true,
+  //   weeklyFormat: false,
+  // }), []);
+
+
+  // console.log(GDPChartConfig);
+
   const tooltipFormatter = useCallback(
     function (this: any) {
       const { x, points } = this;
-      console.log(points)
+    
       const date = new Date(x);
       const isMonthly = false;
       const valuePrefix = showUsd ? '$' : '';
@@ -158,8 +215,8 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
 
 
 
-          let prefix = "";
-          let suffix = "";
+          let prefix = showUsd ? "$" : "Ξ";
+          let suffix = series.valueSuffix;
           let value = y;
           let displayValue = y;
 
@@ -173,8 +230,8 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
             }">${prefix}</div>
               ${Intl.NumberFormat("en-GB", {
               notation: "standard",
-              maximumFractionDigits: 2,
-              minimumFractionDigits: 2,
+              maximumFractionDigits: 0,
+              minimumFractionDigits: 0,
             }).format(
               displayValue
             )
@@ -208,7 +265,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
         <div className='heading-large-lg'>Economic Activity is Shifting Onchain</div>
       </div>
       <div className='pl-[45px] text-md'>Value locked and user spending are growing across the Ethereum ecosystem, with Ethereum Mainnet remaining the most trusted ledger. </div>
-      <TopRowContainer>
+      {/* <TopRowContainer>
         <TopRowParent>
           <div></div>
         </TopRowParent>
@@ -230,7 +287,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
             </TopRowChild>
           ))}
         </TopRowParent>
-      </TopRowContainer>
+      </TopRowContainer> */}
       <div className='flex gap-x-[15px] w-full'>
         <div className='flex flex-col relative rounded-[15px] w-full h-[375px] bg-[#1F2726] pt-[15px] overflow-hidden'>
           <div className='flex h-[56px] px-[30px] items-start w-full'>
@@ -240,7 +297,9 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
             </div>
             <div className='flex flex-col h-full items-end pt-[5px] w-full'>
               <div className='flex items-center gap-x-[5px]'>
-                <div className='numbers-3xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>98</div>
+                <div className='numbers-3xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
+                  {showUsd ? "$" : "Ξ"}{Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(gdpData.layer_2s.daily.values[gdpData.layer_2s.daily.values.length - 1][gdpData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")] + gdpData.ethereum_mainnet.daily.values[gdpData.ethereum_mainnet.daily.values.length - 1][gdpData.ethereum_mainnet.daily.types.indexOf(showUsd ? "usd" : "eth")])}
+                </div>
                 <div className='w-[16px] h-[16px] rounded-full '
                   style={{
                     background: "linear-gradient(to bottom, #10808C, #1DF7EF)",
@@ -248,7 +307,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
                 </div>
               </div>
               <div className='flex items-center gap-x-[5px]'>
-                <div className='text-sm bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>Layer 2 Share: 39%</div>
+                <div className='text-sm bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>Layer 2 Share: {Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format((gdpData.layer_2s.daily.values[gdpData.layer_2s.daily.values.length - 1][gdpData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")]) /  (gdpData.layer_2s.daily.values[gdpData.layer_2s.daily.values.length - 1][gdpData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")] + gdpData.ethereum_mainnet.daily.values[gdpData.ethereum_mainnet.daily.values.length - 1][gdpData.ethereum_mainnet.daily.types.indexOf(showUsd ? "usd" : "eth")]) * 100)}%</div>
                 <div className='w-[16px] h-[16px] rounded-full '
                   style={{
                     background: "transparent",
@@ -292,6 +351,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
                 // marginRight={40}
                 {...CHART_MARGINS}
                 spacing={[0, 0, 0, 0]}
+
               />
               <XAxis
                 type="datetime"
@@ -339,27 +399,76 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
 
                 }}
               >
-                <Series
-                  type="area"
-                  name="Data Availability Fee Markets"
-                  marker={{
-                    enabled: false,
-                  }}
-                  color={{
+                {Object.entries(gdpData).map(([name, data]) => {
+                  const color = name === "layer_2s" ? {
                     linearGradient: {
                       x1: 0,
                       x2: 0,
                       y1: 0,
                       y2: 1,
                     },
-                    stops: [[0, "#10808C"], [0.7, "#10808C"], [0.8, "#158B99"], [0.9, "#1AC4D4"], [1, "#1DF7EF"]]
-
-                  }}
-                  data={gdpData.layer_2s.daily.values.map((value) => [value[gdpData.layer_2s.daily.types.indexOf("unix")], value[gdpData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")]])
+                    stops: [[0, "#FE5468"], [1, "#FFDF27"]]
+                  } : {
+                    linearGradient: {
+                      x1: 0,
+                      x2: 0,
+                      y1: 0,
+                      y2: 1,
+                    },
+                    stops: [[0, "#94ABD3"], [1, "#596780"]]
                   }
-                />
+                  return(
+                    <Series
+                      type="area"
+                      name={name === "layer_2s" ? "Layer 2s" : "Ethereum Mainnet"}
+                      stacking="normal"
+                      marker={{
+                        enabled: false,
+                      }}
+                      color={{
+                        linearGradient: {
+                          x1: 0,
+                          x2: 0,
+                          y1: 0,
+                          y2: 1,
+                        },
+                        stops: [[0, "#10808C"], [0.7, "#10808C"], [0.8, "#158B99"], [0.9, "#1AC4D4"], [1, "#1DF7EF"]]
+
+                      }}
+                      data={data.daily.values.map((value) => [value[data.daily.types.indexOf("unix")], value[data.daily.types.indexOf(showUsd ? "usd" : "eth")]])
+                      }
+                      key={name + "gdpData"}
+                    />
+                  )})}
               </YAxis>
-              <Tooltip />
+              <Tooltip
+                useHTML={true}
+                shared={true}
+                split={false}
+                followPointer={true}
+                followTouchMove={true}
+                backgroundColor={"#2A3433EE"}
+                padding={0}
+                hideDelay={300}
+                stickOnContact={true}
+                shape="rect"
+                borderRadius={17}
+                borderWidth={0}
+                outside={true}
+                shadow={{
+                  color: "black",
+                  opacity: 0.015,
+                  offsetX: 2,
+                  offsetY: 2,
+                }}
+                style={{
+                  color: "rgb(215, 223, 222)",
+                }}
+                formatter={tooltipFormatter}
+                // ensure tooltip is always above the chart
+                positioner={tooltipPositioner}
+
+              />
             </HighchartsChart>
           </HighchartsProvider>
 
@@ -375,7 +484,9 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
             </div>
             <div className='flex flex-col h-full items-end pt-[5px] w-full'>
               <div className='flex items-center gap-x-[5px]'>
-                <div className='numbers-3xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>98</div>
+                <div className='numbers-3xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
+                  {showUsd ? "$" : "Ξ"}{Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(stableData.layer_2s.daily.values[stableData.layer_2s.daily.values.length - 1][stableData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")] + stableData.ethereum_mainnet.daily.values[stableData.ethereum_mainnet.daily.values.length - 1][stableData.ethereum_mainnet.daily.types.indexOf(showUsd ? "usd" : "eth")])}
+                </div>
                 <div className='w-[16px] h-[16px] rounded-full '
                   style={{
                     background: "linear-gradient(to bottom, #10808C, #1DF7EF)",
@@ -383,7 +494,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
                 </div>
               </div>
               <div className='flex items-center gap-x-[5px]'>
-                <div className='text-sm bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>Layer 2 Share: 39%</div>
+                <div className='text-sm bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>Layer 2 Share: {Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format((stableData.layer_2s.daily.values[stableData.layer_2s.daily.values.length - 1][stableData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")]) /  (stableData.layer_2s.daily.values[stableData.layer_2s.daily.values.length - 1][stableData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")] + stableData.ethereum_mainnet.daily.values[stableData.ethereum_mainnet.daily.values.length - 1][stableData.ethereum_mainnet.daily.types.indexOf(showUsd ? "usd" : "eth")]) * 100)}%</div>
                 <div className='w-[16px] h-[16px] rounded-full '
                   style={{
                     background: "transparent",
@@ -414,6 +525,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
                 height={309}
                 plotOptions={{
                   series: {
+                    stacking: "normal",
                     marker: {
                       lineColor: "white",
                       radius: 0,
@@ -456,7 +568,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
                 tickAmount={4}
                 gridLineColor={"#5A6462"}
                 lineColor={"#5A6462"}
-
+              
                 labels={{
                   overflow: "allow",
                   x: 8,
@@ -481,7 +593,8 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
                     <Series
                       key={name}
                       type="area"
-                      name={name}
+                      name={name === "layer_2s" ? "Layer 2s" : "Ethereum Mainnet"}
+                      stacking="normal"
                       marker={{
                         enabled: false,
                       }}
@@ -577,7 +690,7 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
   const tooltipFormatter = useCallback(
     function (this: any) {
       const { x, points } = this;
-      console.log(points)
+      
       const date = new Date(x);
       const isMonthly = false;
       const valuePrefix = showUsd ? '$' : '';
@@ -634,38 +747,33 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
           const { name } = series;
           const nameString = name;
 
-
-
+      
+       
 
           let prefix = "";
-          let suffix = " GB";
+          let suffix =  "";
           let value = y;
           let displayValue = y;
 
           return `
-              <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${series.color}"></div>
-                <div class="tooltip-point-name text-xs">${nameString}</div>
-                <div class="flex-1 text-right justify-end flex numbers-xs">
-                  <div class="flex justify-end text-right w-full">
-                      <div class="${!prefix && "hidden"
-            }">${prefix}</div>
-                  ${Intl.NumberFormat("en-GB", {
-              notation: "standard",
-              maximumFractionDigits: 2,
-              minimumFractionDigits: 2,
-            }).format(
-              displayValue
-            )
-
-            }
-                   
-                    </div>
-                    <div class="ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
-                </div>
+            <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+              <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${series.color}"></div>
+              <div class="tooltip-point-name text-xs">${nameString}</div>
+              <div class="flex-1 text-right justify-end flex numbers-xs">
+              <div class="flex justify-end text-right w-full">
+              <div class="${!prefix && "hidden"}">${prefix}</div>
+                ${Intl.NumberFormat("en-GB", {
+                  notation: "standard",
+                  maximumFractionDigits: 2,
+                  minimumFractionDigits: 0,
+                }).format(
+                  displayValue
+                )}
+                      
               </div>
-             `;
+                <div class="ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
+              </div>
+            </div>`;
         })
         .join("");
 
@@ -685,7 +793,7 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
         <div className='heading-large-lg'>The Ethereum Ecosystem is Scaling</div>
       </div>
       <div className='pl-[45px] text-md'>Transaction throughput is rising across Ethereum Mainnet and its growing number of Layer 2 networks.</div>
-      <TopRowContainer>
+      {/* <TopRowContainer>
         <TopRowParent>
           <div></div>
         </TopRowParent>
@@ -707,7 +815,7 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
             </TopRowChild>
           ))}
         </TopRowParent>
-      </TopRowContainer>
+      </TopRowContainer> */}
       <div className='flex gap-x-[15px]'>
         <div className='flex flex-col relative rounded-[15px] w-full h-[375px] bg-[#1F2726] pt-[15px] overflow-hidden'>
           <div className='flex h-[56px] px-[30px] items-start w-full'>
@@ -718,7 +826,9 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
             <div className='flex flex-col h-full items-end pt-[5px] w-full'>
               <div className='flex items-center gap-x-[5px]'>
                 <div className='numbers-3xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
-                  {layer2Data.daily.values[layer2Data.daily.values.length - 1][layer2Data.daily.types.indexOf(showUsd ? "usd" : "eth")]}
+                  {Intl.NumberFormat("en-US", {
+                    maximumFractionDigits: 2,
+                  }).format(layer2Data.daily.values[layer2Data.daily.values.length - 1][layer2Data.daily.types.indexOf("value")])}
                 </div>
                 <div className='w-[16px] h-[16px] rounded-full '
                   style={{
@@ -986,7 +1096,7 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
               >
                 <Series
                   type="area"
-                  name="Data Availability Fee Markets"
+                  name="Transactions Per Second"
                   marker={{
                     enabled: false,
                   }}

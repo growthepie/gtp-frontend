@@ -11,6 +11,7 @@ import { Icon } from '@iconify/react';
 import { useMaster } from '@/contexts/MasterContext';
 import { useTransition, animated } from "@react-spring/web";
 import { useSearchParamState } from '@/hooks/useSearchParamState';
+import { tooltipPositioner } from '@/lib/chartUtils';
 
 // Define the props type for TopEthAggMetricsComponent
 interface TopEthAggMetricsProps {
@@ -280,6 +281,106 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
       }
     };
   }, [selectedBreakdownGroup, updateUptimeDisplay]);
+
+  const tooltipFormatter = useCallback(
+    function (this: any) {
+      const { x, points } = this;
+ 
+      const date = new Date(x);
+      const isMonthly = false;
+      const valuePrefix = showUsd ? '$' : '';
+      let dateString = date.toLocaleDateString("en-GB", {
+        month: "short",
+        day: isMonthly ? undefined : "numeric",
+        year: "numeric",
+      });
+      const chartTitle = this.series.chart.title.textStr;
+
+      // check if data steps are less than 1 day
+      // if so, add the time to the tooltip
+      const timeDiff = points[0].series.xData[1] - points[0].series.xData[0];
+      if (timeDiff < 1000 * 60 * 60 * 24) {
+        dateString +=
+          " " +
+          date.toLocaleTimeString("en-GB", {
+            hour: "numeric",
+            minute: "2-digit",
+          });
+      }
+
+      const tooltip = `<div class="mt-3 mr-3 mb-3 text-xs font-raleway">
+        <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2 "></div>`;
+      const tooltipEnd = `</div>`;
+
+      // let pointsSum = 0;
+      // if (selectedScale !== "percentage")
+      let pointsSum = points.reduce((acc: number, point: any) => {
+        acc += point.y;
+        return acc;
+      }, 0);
+
+      let pointSumNonNegative = points.reduce((acc: number, point: any) => {
+        if (point.y > 0) acc += point.y;
+        return acc;
+      }, 0);
+
+      const maxPoint = points.reduce((max: number, point: any) => {
+        if (point.y > max) max = point.y;
+        return max;
+      }, 0);
+
+      const maxPercentage = points.reduce((max: number, point: any) => {
+        if (point.percentage > max) max = point.percentage;
+        return max;
+      }, 0);
+
+
+      const tooltipPoints = points
+        .sort((a: any, b: any) => b.y - a.y)
+        .map((point: any, index: number) => {
+          const { series, y, percentage } = point;
+          const { name } = series;
+          const nameString = name;
+
+
+
+
+          let prefix = "";
+          let suffix = "";
+          let value = y;
+          let displayValue = y;
+
+          return `
+          <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${"#1DF7EF"}"></div>
+            <div class="tooltip-point-name text-xs">${""}</div>
+            <div class="flex-1 text-right justify-end flex numbers-xs">
+              <div class="flex justify-end text-right w-full">
+                  <div class="${!prefix && "hidden"
+            }">${prefix}</div>
+              ${Intl.NumberFormat("en-GB", {
+              notation: "standard",
+              maximumFractionDigits: 2,
+              minimumFractionDigits: 2,
+            }).format(
+              displayValue
+            )
+
+            }
+               
+                </div>
+                <div class="ml-0.5 ${!suffix && "hidden"
+            }">${suffix}</div>
+            </div>
+          </div>
+         `;
+        })
+        .join("");
+
+      return tooltip + tooltipPoints + tooltipEnd;
+    },
+    [],
+  );
 
   const connectSSE = useCallback(() => {
     if (eventSourceRef.current) {
@@ -610,7 +711,35 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                     
                       tickWidth={0}
                     />
-                    <Tooltip />
+                    <Tooltip
+                      useHTML={true}
+                      shared={true}
+                      split={false}
+                      followPointer={true}
+                      followTouchMove={true}
+                      backgroundColor={"#2A3433EE"}
+                      padding={0}
+                      hideDelay={300}
+                      stickOnContact={true}
+                      shape="rect"
+                      borderRadius={12}
+                      borderWidth={0}
+                      outside={true}
+                      shadow={{
+                        color: "black",
+                        opacity: 0.015,
+                        offsetX: 2,
+                        offsetY: 2,
+                      }}
+                      style={{
+                        color: "rgb(215, 223, 222)",
+                      }}
+                      formatter={tooltipFormatter}
+                      // ensure tooltip is always above the chart
+                      valuePrefix={showUsd ? "$" : ""}
+                      valueSuffix={showUsd ? "" : " Gwei"}
+                      positioner={tooltipPositioner}
+                    />
                   </HighchartsChart>
 
                 </HighchartsProvider>
@@ -635,14 +764,18 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                       <animated.div
                         key={chainId}
                         style={style}
-                        className='absolute flex w-full items-center justify-between'
+                        className='absolute flex flex-col w-full items-center justify-between'
                       >
-                        <div className='flex  w-[115px] gap-x-[5px] items-center '>
-                          <div className='w-[15px] h-[10px] rounded-r-full ' style={{ backgroundColor: chainColor }}></div>
-                          <div className="text-xs ">{chainName}</div>
+                        <div className='flex w-full items-center justify-between'>
+                          <div className='flex  w-[115px] gap-x-[5px] items-center '>
+                            <div className='w-[15px] h-[10px] rounded-r-full ' style={{ backgroundColor: chainColor }}></div>
+                            <div className="text-xs ">{chainName}</div>
+                          </div>
+                          <div className='flex items-center relative justify-end' style={{ width: '140px', height: '18px' }}>
+                          <div className='numbers-xs'>{Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(chainData[chainId]?.tps || 0)}</div>
+                          </div>
                         </div>
-                        <div className='flex items-center relative justify-center' style={{ width: '140px', height: '18px' }}>
-                          {chainsTPSHistory[chainId]?.map((tps, index) => {
+                          {/* {chainsTPSHistory[chainId]?.map((tps, index) => {
                             const totalDots = chainsTPSHistory[chainId]?.length || 0;
                             
                             // Calculate actual positions based on dot sizes (center-to-center spacing)
@@ -672,10 +805,9 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                                 backgroundColor: (chainsTPSHistory[chainId][index] > 0 && tpsHistoryAvg[chainId] > 0) && (chainsTPSHistory[chainId][index] && tpsHistoryAvg[chainId]) ? getGradientColor(100 - (((chainsTPSHistory[chainId][index] / tpsHistoryAvg[chainId]) * 100))) : '#5A6462'
                               }}
                             />
-                          )})}
-                        </div>
-                        <div className='flex flex-col items-end w-[100px] numbers-xs ml-[30px]'>
-                          <div>{Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(chainData[chainId]?.tps || 0)}</div>
+                          )})} */}
+                      
+                      <div className='flex items-end w-full justify-end'>
                           <div className='h-[2px] '
                             style={{
                               width: chainData[chainId]?.tps && globalMetrics.total_tps ? `${chainData[chainId].tps / globalMetrics.total_tps * 100}%` : '0%',
@@ -840,48 +972,51 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                       <animated.div
                         key={`cost-${chainId}`}
                         style={style}
-                        className='absolute flex w-full items-center justify-between'
+                        className='absolute flex flex-col w-full items-center justify-between'
                       >
-                        <div className='flex w-[115px] gap-x-[5px] items-center'>
-                          <div className='w-[15px] h-[10px] rounded-r-full ' style={{ backgroundColor: chainColor }}></div>
-                          <div className="text-xs ">{chainName}</div>
+                        <div className='flex justify-between w-full'>
+                          <div className='flex w-full text-end gap-x-[5px] items-center'>
+                            <div className='w-[15px] h-[10px] rounded-r-full ' style={{ backgroundColor: chainColor }}></div>
+                            <div className="text-xs ">{chainName}</div>
+                          </div>
+                          <div className='flex items-center relative justify-end' style={{ width: '140px', height: '18px' }}>
+                          <div className='numbers-xs'>${Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(chainData[chainId]?.[showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] || 0)}</div>
+
+                            {/* {chainsCostHistory[chainId]?.map((cost, index) => {
+                              const totalDots = chainsCostHistory[chainId]?.length || 0;
+                              
+                              // Calculate actual positions based on dot sizes (center-to-center spacing)
+                              let cumulativeWidth = 0;
+                              const positions: number[] = [];
+                              
+                              for (let i = 0; i < totalDots; i++) {
+                                positions.push(cumulativeWidth);
+                                let dotSize = costIndex === i ? 10 : 5; // Compare with loop variable i
+                                cumulativeWidth += dotSize + (i < totalDots - 1 ? 1 : 0); // 2px gap between dots
+                              }
+                              
+                              const totalWidth = cumulativeWidth;
+                              const startOffset = (140 - totalWidth) / 2;
+                              // if(chainId === "mantle") {
+                              //   console.log(chainsCostHistory[chainId][index], costHistoryAvg[chainId])
+                              // }
+                              return (
+                              <div className={`rounded-full transition-all duration-50 absolute cursor-pointer ${index === costIndex ? 'w-[10px] h-[10px]' : costHoverIndex === index ? 'w-[8px] h-[8px] ' : 'w-[5px] h-[5px] '}`} key={index + chainId} 
+                                onMouseEnter={() => setCostHoverIndex(index)}
+                                onMouseLeave={() => setCostHoverIndex(null)}
+                                onClick={() => setCostIndex(index)}
+                                style={{
+                                  left: `${startOffset + positions[index] + (costIndex === index ? 5 : 2.5)}px`, // Center based on actual dot size
+                                  top: '50%',
+                                  transform: 'translate(-50%, -50%)',
+                                  backgroundColor: ((chainsCostHistory[chainId][index] > 0 && costHistoryAvg[chainId] > 0) && (chainsCostHistory[chainId][index] && costHistoryAvg[chainId])) ? getGradientColor((((chainsCostHistory[chainId][index] / costHistoryAvg[chainId]) * 100))) : '#5A6462'
+                                }}
+                              
+                              />
+                            )})} */}
+                          </div>
                         </div>
-                        <div className='flex items-center relative justify-center' style={{ width: '140px', height: '18px' }}>
-                          {chainsCostHistory[chainId]?.map((cost, index) => {
-                            const totalDots = chainsCostHistory[chainId]?.length || 0;
-                            
-                            // Calculate actual positions based on dot sizes (center-to-center spacing)
-                            let cumulativeWidth = 0;
-                            const positions: number[] = [];
-                            
-                            for (let i = 0; i < totalDots; i++) {
-                              positions.push(cumulativeWidth);
-                              let dotSize = costIndex === i ? 10 : 5; // Compare with loop variable i
-                              cumulativeWidth += dotSize + (i < totalDots - 1 ? 1 : 0); // 2px gap between dots
-                            }
-                            
-                            const totalWidth = cumulativeWidth;
-                            const startOffset = (140 - totalWidth) / 2;
-                            // if(chainId === "mantle") {
-                            //   console.log(chainsCostHistory[chainId][index], costHistoryAvg[chainId])
-                            // }
-                            return (
-                            <div className={`rounded-full transition-all duration-50 absolute cursor-pointer ${index === costIndex ? 'w-[10px] h-[10px]' : costHoverIndex === index ? 'w-[8px] h-[8px] ' : 'w-[5px] h-[5px] '}`} key={index + chainId} 
-                              onMouseEnter={() => setCostHoverIndex(index)}
-                              onMouseLeave={() => setCostHoverIndex(null)}
-                              onClick={() => setCostIndex(index)}
-                              style={{
-                                left: `${startOffset + positions[index] + (costIndex === index ? 5 : 2.5)}px`, // Center based on actual dot size
-                                top: '50%',
-                                transform: 'translate(-50%, -50%)',
-                                backgroundColor: ((chainsCostHistory[chainId][index] > 0 && costHistoryAvg[chainId] > 0) && (chainsCostHistory[chainId][index] && costHistoryAvg[chainId])) ? getGradientColor((((chainsCostHistory[chainId][index] / costHistoryAvg[chainId]) * 100))) : '#5A6462'
-                              }}
-                            
-                            />
-                          )})}
-                        </div>
-                        <div className='flex flex-col items-end w-[100px] numbers-xs'>
-                          <div>${Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(chainData[chainId]?.[showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] || 0)}</div>
+                        <div className='flex items-end w-full justify-end'>
                           <div className='h-[2px] '
                             style={{
                               width: chainData[chainId]?.[showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] && globalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] && globalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth'] ? `${chainData[chainId][showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] / (globalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] + globalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth']) * 100}%` : '0%',
