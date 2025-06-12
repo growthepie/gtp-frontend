@@ -70,7 +70,7 @@ function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) 
 const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: MetricsChartsProps & { stableData: Stables, gdpData: Gdp, maxUnix: number }) => {
   const [selectedMode, setSelectedMode] = useState("gas_fees_usd_absolute");
   const [selectedValue, setSelectedValue] = useState("absolute");
-  const [selectedTimespan, setSelectedTimespan] = useState("1y");
+  const [selectedTimespan, setSelectedTimespan] = useState("max");
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
 
@@ -658,7 +658,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
 const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }: MetricsChartsProps & { layer2Data: CountLayer2s, tpsData: Tps, maxUnix: number }) => {
   const [selectedMode, setSelectedMode] = useState("gas_fees_usd_absolute");
   const [selectedValue, setSelectedValue] = useState("absolute");
-  const [selectedTimespan, setSelectedTimespan] = useState("1y");
+  const [selectedTimespan, setSelectedTimespan] = useState("max");
   const [showUsd, setShowUsd] = useState(true);
 
 
