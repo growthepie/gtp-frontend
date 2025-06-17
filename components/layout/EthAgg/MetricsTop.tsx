@@ -154,7 +154,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
 
   // Create transitions for TPS chains
   const tpsTransitions = useTransition(
-    Object.keys(chainsTPSHistory).sort((a, b) => chainsTPSHistory[b][chainsTPSHistory[b].length - 1] - chainsTPSHistory[a][chainsTPSHistory[a].length - 1]).map((chainId, index) => ({
+    Object.keys(chainsTPSHistory).filter((chain) => (chainData[chain]?.tps)).sort((a, b) => chainsTPSHistory[b][chainsTPSHistory[b].length - 1] - chainsTPSHistory[a][chainsTPSHistory[a].length - 1]).map((chainId, index) => ({
       chainId,
       y: index * 21,
       height: 18,
@@ -172,7 +172,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
 
   // Create transitions for Cost chains
   const costTransitions = useTransition(
-    Object.keys(chainsCostHistory).sort((a, b) => chainsCostHistory[b][chainsCostHistory[b].length - 1] - chainsCostHistory[a][chainsCostHistory[a].length - 1]).map((chainId, index) => ({
+    Object.keys(chainsCostHistory).filter((chain) => (chainData[chain]?.[showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] > 0)).sort((a, b) => chainsCostHistory[b][chainsCostHistory[b].length - 1] - chainsCostHistory[a][chainsCostHistory[a].length - 1]).map((chainId, index) => ({
       chainId,
       y: index * 21,
       height: 18,
@@ -474,7 +474,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
       let hasCostChanges = false;
       for (const chainId in chainData) { // Use chainId (the key from chainData) directly
 
-        if (chainData.hasOwnProperty(chainId)) {
+       if (chainData.hasOwnProperty(chainId)) {
           const chain = chainData[chainId]; // This is the ChainMetrics object
 
           const currentChainCostHistory = newCostHistoryState[chainId] || [];
