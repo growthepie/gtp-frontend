@@ -7,13 +7,27 @@ const testBite: QuickBiteData = {
     "This Quick Bite is a test to see how different types of blocks work. It's a work in progress and will be updated as we add more features to the platform.",
     "```kpi-cards",JSON.stringify(
       [
-        {
-          title: "Test",
-          value: "100",
-          description: "Test",
-          icon: "base-logo-monochrome",
-          info: "Test"
-        }
+          {
+            title: "Test",
+            value: "100",
+            description: "Test",
+            icon: "gtp-realtime",
+            info: "Test"
+          },
+          {
+            title: "Test",
+            value: "100",
+            description: "Test",
+            icon: "gtp-realtime",
+            info: "Test"
+          },
+          {
+            title: "Test",
+            value: "100",
+            description: "Test",
+            icon: "gtp-realtime",
+            info: "Test"
+          }
       ]),
     "```",
     "# Main Header",

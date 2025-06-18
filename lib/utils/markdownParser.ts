@@ -163,7 +163,9 @@ function parseKpiCardsBlock(jsonString: string): ContentBlock | null {
     const validCards = kpiCardsArray.map(card => ({
       title: card.title || '',
       value: card.value || '',
-      description: card.description || ''
+      description: card.description || '',
+      icon: card.icon || '',
+      info: card.info || ''
     }));
 
     const block = {
