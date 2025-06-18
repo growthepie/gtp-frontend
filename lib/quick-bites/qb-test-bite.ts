@@ -5,7 +5,17 @@ const testBite: QuickBiteData = {
   subtitle: "Trying out different types of blocks",
   content: [
     "This Quick Bite is a test to see how different types of blocks work. It's a work in progress and will be updated as we add more features to the platform.",
-    
+    "```kpi-cards",JSON.stringify(
+      [
+        {
+          title: "Test",
+          value: "100",
+          description: "Test",
+          icon: "base-logo-monochrome",
+          info: "Test"
+        }
+      ]),
+    "```",
     "# Main Header",
     "Some Text. This is a normal text block. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     "Now there was a line break. I can also use **bold** text. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
