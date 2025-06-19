@@ -73,6 +73,16 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
   const [selectedTimespan, setSelectedTimespan] = useState("max");
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
+  const [xAxisExtremesGdp, setXAxisExtremesGdp] = useState({
+    xMin: gdpData.ethereum_mainnet.daily.values[0][gdpData.ethereum_mainnet.daily.types.indexOf("unix")] < gdpData.layer_2s.daily.values[0][gdpData.layer_2s.daily.types.indexOf("unix")] ? gdpData.ethereum_mainnet.daily.values[0][gdpData.ethereum_mainnet.daily.types.indexOf("unix")] : gdpData.layer_2s.daily.values[0][gdpData.layer_2s.daily.types.indexOf("unix")],
+    xMax: gdpData.ethereum_mainnet.daily.values[gdpData.ethereum_mainnet.daily.values.length - 1][gdpData.ethereum_mainnet.daily.types.indexOf("unix")] > gdpData.layer_2s.daily.values[gdpData.layer_2s.daily.values.length - 1][gdpData.layer_2s.daily.types.indexOf("unix")] ? gdpData.ethereum_mainnet.daily.values[gdpData.ethereum_mainnet.daily.values.length - 1][gdpData.ethereum_mainnet.daily.types.indexOf("unix")] : gdpData.layer_2s.daily.values[gdpData.layer_2s.daily.values.length - 1][gdpData.layer_2s.daily.types.indexOf("unix")],
+  });
+
+  const [xAxisExtremesStable, setXAxisExtremesStable] = useState({
+    xMin: stableData.ethereum_mainnet.daily.values[0][stableData.ethereum_mainnet.daily.types.indexOf("unix")] < stableData.layer_2s.daily.values[0][stableData.layer_2s.daily.types.indexOf("unix")] ? stableData.ethereum_mainnet.daily.values[0][stableData.ethereum_mainnet.daily.types.indexOf("unix")] : stableData.layer_2s.daily.values[0][stableData.layer_2s.daily.types.indexOf("unix")],
+    xMax: stableData.ethereum_mainnet.daily.values[stableData.ethereum_mainnet.daily.values.length - 1][stableData.ethereum_mainnet.daily.types.indexOf("unix")] > stableData.layer_2s.daily.values[stableData.layer_2s.daily.values.length - 1][stableData.layer_2s.daily.types.indexOf("unix")] ? stableData.ethereum_mainnet.daily.values[stableData.ethereum_mainnet.daily.values.length - 1][stableData.ethereum_mainnet.daily.types.indexOf("unix")] : stableData.layer_2s.daily.values[stableData.layer_2s.daily.values.length - 1][stableData.layer_2s.daily.types.indexOf("unix")],
+  });
+
 
   const timespans = useMemo(() => ({
 
@@ -165,6 +175,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
         year: "numeric",
       });
       const chartTitle = this.series.chart.title.textStr;
+
 
       // check if data steps are less than 1 day
       // if so, add the time to the tooltip
@@ -360,6 +371,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
                 //tickInterval={timespans[selectedTimespan].xMax - timespans[selectedTimespan].xMin / 4}
                 //method for showiing set amount of ticks
                 labels={{
+                  enabled: false,
                   overflow: "allow",
                   step: 1,
                   x: 10,
@@ -472,8 +484,32 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
             </HighchartsChart>
           </HighchartsProvider>
 
-          <div className='absolute bottom-0 left-0 right-0 flex items-center px-[30px]'>
-            <div className='w-full h-[22px] bg-[#34424080] rounded-t-[15px]'></div>
+          <div className='absolute bottom-0 left-0 right-0 flex items-center px-[33px]'>
+            <div className='w-full h-[22px] bg-[#34424080] flex justify-between items-center rounded-t-[15px] px-[7px]'>
+              <div className={`flex items-center  text-xs gap-x-[2px] `}>
+                <div className='w-[6px] h-[6px] mt-0.5 bg-[#CDD8D3] rounded-full'></div>
+                <div className='text-xs'>{new Date(xAxisExtremesGdp.xMin).toLocaleDateString("en-GB", {
+
+                  year: "numeric",
+                })}</div>
+              </div>
+              {Array.from({ length: 2 }, (_, i) => (
+                <div key={i} className={`flex items-center  text-xs gap-x-[2px] ${i < 2 ? "flex-row" : "flex-row-reverse"} `}>
+                  <div className='w-[6px] h-[6px] mt-0.5 bg-[#CDD8D3] rounded-full'></div>
+                  <div className='text-xs'>{new Date(xAxisExtremesGdp.xMin + ((xAxisExtremesGdp.xMax - xAxisExtremesGdp.xMin) / 2) * (i + 1)).toLocaleDateString("en-GB", {
+
+                    year: "numeric",
+                  })}</div>
+                </div>
+              ))}
+              <div className={`flex items-center flex-row-reverse text-xs gap-x-[2px] `}>
+                <div className='w-[6px] h-[6px] mt-0.5 bg-[#CDD8D3] rounded-full'></div>
+                <div className='text-xs'>{new Date(xAxisExtremesGdp.xMax).toLocaleDateString("en-GB", {
+
+                  year: "numeric",
+                })}</div>
+              </div>
+            </div>
           </div>
         </div>
         <div className='flex flex-col relative rounded-[15px] w-full h-[375px] bg-[#1F2726] pt-[15px] overflow-hidden'>
@@ -549,6 +585,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
                 //tickInterval={timespans[selectedTimespan].xMax - timespans[selectedTimespan].xMin / 4}
                 //method for showiing set amount of ticks
                 labels={{
+                  enabled: false,
                   overflow: "allow",
                   step: 1,
                   x: 10,
@@ -582,6 +619,8 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
                   },
                   useHTML: true,
                   formatter: function () {
+
+                    
                     return Number(this.value) > 0 ? `<div class="numbers-xxxs">${this.value.toLocaleString()}</div>` : "";
                   }
 
@@ -646,8 +685,33 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
             </HighchartsChart>
           </HighchartsProvider>
 
-          <div className='absolute bottom-0 left-0 right-0 flex items-center px-[30px]'>
-            <div className='w-full h-[22px] bg-[#34424080] rounded-t-[15px]'></div>
+          <div className='absolute bottom-0 left-0 right-0 flex items-center px-[33px]'>
+
+            <div className='w-full h-[22px] flex justify-between items-center px-[7px] bg-[#34424080] rounded-t-[15px]'>
+              <div className={`flex items-center  text-xs gap-x-[2px] `}>
+                <div className='w-[6px] h-[6px] mt-0.5 bg-[#CDD8D3] rounded-full'></div>
+                <div className='text-xs'>{new Date(xAxisExtremesGdp.xMin).toLocaleDateString("en-GB", {
+
+                  year: "numeric",
+                })}</div>
+              </div>
+                {Array.from({ length: 2 }, (_, i) => (
+                  <div key={i} className={`flex items-center  text-xs gap-x-[2px] ${i < 2 ? "flex-row" : "flex-row-reverse"} `}>
+                    <div className='w-[6px] h-[6px] mt-0.5 bg-[#CDD8D3] rounded-full'></div>
+                    <div className='text-xs'>{new Date(xAxisExtremesGdp.xMin + ((xAxisExtremesGdp.xMax - xAxisExtremesGdp.xMin) / 3) * (i + 1)).toLocaleDateString("en-GB", {
+
+                      year: "numeric",
+                    })}</div>
+                  </div>
+                ))}
+                <div className={`flex items-center flex-row-reverse text-xs gap-x-[2px] `}>
+                  <div className='w-[6px] h-[6px] mt-0.5 bg-[#CDD8D3] rounded-full'></div>
+                  <div className='text-xs'>{new Date(xAxisExtremesGdp.xMax).toLocaleDateString("en-GB", {
+
+                    year: "numeric",
+                  })}</div>
+                </div>
+            </div>
           </div>
         </div>
       </div>
@@ -660,6 +724,18 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
   const [selectedValue, setSelectedValue] = useState("absolute");
   const [selectedTimespan, setSelectedTimespan] = useState("max");
   const [showUsd, setShowUsd] = useState(true);
+
+  const [xAxisExtremesL2, setXAxisExtremesL2] = useState({
+    xMin: layer2Data.daily.values[0][layer2Data.daily.types.indexOf("unix")],
+    xMax: layer2Data.daily.values[layer2Data.daily.values.length - 1][layer2Data.daily.types.indexOf("unix")],
+  });
+
+  const [xAxisExtremesTps, setXAxisExtremesTps] = useState({
+    xMin: tpsData.layer_2s.daily.values[0][tpsData.layer_2s.daily.types.indexOf("unix")],
+    xMax: tpsData.layer_2s.daily.values[tpsData.layer_2s.daily.values.length - 1][tpsData.layer_2s.daily.types.indexOf("unix")],
+  });
+
+
 
 
   const timespans = useMemo(() => ({
@@ -700,7 +776,7 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
         year: "numeric",
       });
       const chartTitle = this.series.chart.title.textStr;
-
+      
       // check if data steps are less than 1 day
       // if so, add the time to the tooltip
       const timeDiff = points[0].series.xData[1] - points[0].series.xData[0];
@@ -745,9 +821,11 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
         .map((point: any, index: number) => {
           const { series, y, percentage } = point;
           const { name } = series;
-          const nameString = name;
-
-      
+          const nameString = name === "total_l2s" ? "Total Layer 2s" : name;
+          const seriesIndex = point.point.index;
+          const l2names = name === "total_l2s" ? layer2Data.daily.values[seriesIndex][layer2Data.daily.types.indexOf("l2s_launched")] : null;
+          
+          
        
 
           let prefix = "";
@@ -756,6 +834,7 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
           let displayValue = y;
 
           return `
+          <div>
             <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
               <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${series.color}"></div>
               <div class="tooltip-point-name text-xs">${nameString}</div>
@@ -769,10 +848,24 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
                 }).format(
                   displayValue
                 )}
-                      
+                    
               </div>
                 <div class="ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
               </div>
+
+            </div>
+            <div class="flex flex-col w-full items-center font-medium mb-0.5">
+                ${l2names && Array.isArray(l2names) ? l2names.map((l2: any) => {
+                  return `
+                  <div class="flex w-full items-center font-medium mb-0.5 ml-4">
+                    <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${series.color}"></div>
+
+                    <div class="tooltip-point-name text-xs">${l2.l2beat_name}</div>
+
+                  </div>
+                  `
+                }).join("") : ""}
+            </div>
             </div>`;
         })
         .join("");
@@ -862,7 +955,7 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
               }}
             >
               <Chart
-
+          
                 backgroundColor={"transparent"}
                 type="line"
                 height={309}
@@ -886,9 +979,11 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
                 gridLineWidth={0}
                 min={timespans[selectedTimespan].xMin}
                 max={maxUnix}
+                
                 //tickInterval={timespans[selectedTimespan].xMax - timespans[selectedTimespan].xMin / 4}
                 //method for showiing set amount of ticks
                 labels={{
+                  enabled: false,
                   overflow: "allow",
                   step: 1,
                   x: 10,
@@ -909,6 +1004,7 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
                 lineColor={"#5A6462"}
 
                 labels={{
+                  
                   overflow: "allow",
                   x: 8,
                   y: 11,
@@ -928,7 +1024,7 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
               >
                 <Series
                   type="column"
-                  name="Total Layer 2s"
+                  name="total_l2s"
                   borderRadius={0}
                   borderColor={"transparent"}
                   marker={{
@@ -980,8 +1076,35 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
             </HighchartsChart>
           </HighchartsProvider>
 
-          <div className='absolute bottom-0 left-0 right-0 flex items-center px-[30px]'>
-            <div className='w-full h-[22px] bg-[#34424080] rounded-t-[15px]'></div>
+          <div className='absolute bottom-0 left-0 right-0 flex items-center px-[33px]'>
+            <div className='w-full h-[22px] flex justify-between items-center bg-[#34424080] rounded-t-[15px] px-[7px]'>
+                <div className={`flex items-center  text-xs gap-x-[2px] `}>
+                  <div className='w-[6px] h-[6px] mt-0.5 bg-[#CDD8D3] rounded-full'></div>
+                  <div className='text-xs'>{new Date(xAxisExtremesL2.xMin).toLocaleDateString("en-GB", {
+
+                    year: "numeric",
+                  })}</div>
+                </div>
+                {Array.from({ length: 2 }, (_, i) => {
+
+
+                return (  
+                  <div key={i} className={`flex items-center  text-xs gap-x-[2px] ${i < 2 ? "flex-row" : "flex-row-reverse"} `}>
+                    <div className='w-[6px] h-[6px] mt-0.5 bg-[#CDD8D3] rounded-full'></div>
+                    <div className='text-xs'>{new Date(xAxisExtremesL2.xMin + ((xAxisExtremesL2.xMax - xAxisExtremesL2.xMin) / 3) * (i + 1)).toLocaleDateString("en-GB", {
+
+                      year: "numeric",
+                    })}</div>
+                  </div>
+                )})}
+                <div className={`flex items-center flex-row-reverse text-xs gap-x-[2px] `}>
+                  <div className='w-[6px] h-[6px] mt-0.5 bg-[#CDD8D3] rounded-full'></div>
+                  <div className='text-xs'>{new Date(xAxisExtremesL2.xMax).toLocaleDateString("en-GB", {
+
+                    year: "numeric",
+                  })}</div>
+                </div>
+            </div>
           </div>
         </div>
         <div className='flex flex-col relative rounded-[15px] w-full h-[375px] bg-[#1F2726] pt-[15px] overflow-hidden'>
@@ -1056,6 +1179,7 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
                 //tickInterval={timespans[selectedTimespan].xMax - timespans[selectedTimespan].xMin / 4}
                 //method for showiing set amount of ticks
                 labels={{
+                  enabled: false,
                   overflow: "allow",
                   step: 1,
                   zIndex: 50,
@@ -1146,8 +1270,35 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
             </HighchartsChart>
           </HighchartsProvider>
 
-          <div className='absolute bottom-0 left-0 right-0 flex items-center px-[30px]'>
-            <div className='w-full h-[22px] bg-[#34424080] rounded-t-[15px]'></div>
+          <div className='absolute bottom-0 left-0 right-0 flex items-center px-[33px]'>
+            <div className='w-full h-[22px] flex justify-between items-center bg-[#34424080] rounded-t-[15px] px-[7px]'>
+              <div className={`flex items-center  text-xs gap-x-[2px] `}>
+                <div className='w-[6px] h-[6px] mt-0.5 bg-[#CDD8D3] rounded-full'></div>
+                <div className='text-xs'>{new Date(xAxisExtremesTps.xMin).toLocaleDateString("en-GB", {
+
+                  year: "numeric",
+                })}</div>
+              </div>
+
+              {Array.from({ length: 2 }, (_, i) => {
+                return (
+                  <div key={i} className={`flex items-center  text-xs gap-x-[2px] ${i < 2 ? "flex-row" : "flex-row-reverse"} `}>
+                    <div className='w-[6px] h-[6px] mt-0.5 bg-[#CDD8D3] rounded-full'></div>
+                    <div className='text-xs'>{new Date(xAxisExtremesTps.xMin + ((xAxisExtremesTps.xMax - xAxisExtremesTps.xMin) / 3) * (i + 1)).toLocaleDateString("en-GB", {
+
+                      year: "numeric",
+                    })}</div> 
+                  </div>
+                )
+              })}
+              <div className={`flex items-center flex-row-reverse text-xs gap-x-[2px] `}>
+                <div className='w-[6px] h-[6px] mt-0.5 bg-[#CDD8D3] rounded-full'></div>
+                <div className='text-xs'>{new Date(xAxisExtremesTps.xMax).toLocaleDateString("en-GB", {
+
+                  year: "numeric",
+                })}</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

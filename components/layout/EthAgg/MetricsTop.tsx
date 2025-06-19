@@ -518,23 +518,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   }, [chainData, showUsd]);
 
 
-  const tpsHistoryAvg = useMemo(() => {
-    return Object.fromEntries(
-      Object.entries(chainsTPSHistory).map(([key, value]) => [
-        key,
-        value.reduce((a, b) => a + b, 0) / (value.length || 1),
-      ]),
-    );
-  }, [chainsTPSHistory]);
 
-  const costHistoryAvg = useMemo(() => {
-    return Object.fromEntries(
-      Object.entries(chainsCostHistory).map(([key, value]) => [
-        key,
-        value.reduce((a, b) => a + b, 0) / (value.length || 1),
-      ]),
-    );
-  }, [chainsCostHistory]);
 
 
   if (selectedBreakdownGroup !== "Metrics" || globalMetrics === undefined || chainData === undefined) {
@@ -808,7 +792,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                             />
                           )})} */}
                       
-                      <div className='flex items-end w-full justify-end'>
+                        <div className='flex items-end w-full justify-end'>
                           <div className='h-[2px] '
                             style={{
                               width: chainData[chainId]?.tps && globalMetrics.highest_tps ? `${chainData[chainId].tps / globalMetrics.highest_tps * 100}%` : '0%',

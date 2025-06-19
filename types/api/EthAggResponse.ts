@@ -58,6 +58,12 @@ export type Gdp = {
 export type CountLayer2s = {
     daily: {
         types: string[];
+        l2s_launched: Object[];
         values: number[][];
     }
+}
+
+export type L2sLaunched = {
+    origin_key: string;
+    l2beat_name: string;
 }
