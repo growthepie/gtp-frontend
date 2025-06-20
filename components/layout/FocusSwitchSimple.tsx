@@ -1,0 +1,86 @@
+"use client";
+import { useState, useEffect } from "react";
+import { track } from "@vercel/analytics";
+import { Icon } from "@iconify/react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
+import useAsyncStorage from "@/hooks/useAsyncStorage";
+import { ToggleSwitch } from "./ToggleSwitch";
+
+interface FocusSwitchProps {
+  isMobile?: boolean;
+  showBorder?: boolean;
+  className?: string;
+}
+
+export default function FocusSwitchSimple({ 
+  isMobile = false, 
+  showBorder = false, 
+  className = "" 
+}: FocusSwitchProps) {
+  const [focusEnabled, setFocusEnabled] = useAsyncStorage("focusEnabled", false);
+  const [mounted, setMounted] = useState(false);
+
+  // Only show after hydration to prevent SSR mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleChange = (newValue: string) => {
+    const isL2Focus = newValue === "l2Focus";
+    setFocusEnabled(isL2Focus);
+
+    // Track the change
+    track(
+      isL2Focus ? "changed to L2 Focus" : "changed to Total Ecosystem",
+      {
+        location: isMobile ? "mobile Menu" : "desktop Header",
+        page: window.location.pathname,
+      }
+    );
+  };
+
+  if (!mounted) {
+    return null;
+  }
+
+  return (
+    <div className={`
+      relative rounded-full 
+      ${showBorder ? "border border-[#5A6462]" : ""} 
+      ${className}
+    `.trim()}>
+      <ToggleSwitch
+        values={{
+          left: {
+            value: "totalEcosystem",
+            label: "Total Ecosystem"
+          },
+          right: {
+            value: "l2Focus",
+            label: "L2 Focus"
+          }
+        }}
+        value={focusEnabled ? "l2Focus" : "totalEcosystem"}
+        onChange={handleChange}
+        size={isMobile ? "sm" : "md"}
+        rightComponent={
+          <Tooltip>
+            <TooltipTrigger>
+              <Icon icon="feather:info" className="w-4 h-4" />
+            </TooltipTrigger>
+            <TooltipContent className="z-global-search-tooltip">
+              <div className="flex flex-col items-center">
+                <div className="p-[15px] text-sm bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
+                  <div className="heading-small-xs">Total Ecosystem vs L2 Focus</div>
+                  <div className="text-xxs text-wrap">
+                    Toggling between "Total Ecosystem" and "L2 focus" allows you to include Ethereum Mainnet on our pages or to focus solely on Layer 2s.
+                  </div>
+                </div>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        }
+      />
+    </div>
+  );
+}

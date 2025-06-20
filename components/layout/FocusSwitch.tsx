@@ -22,8 +22,11 @@ export default function FocusSwitch({ isMobile, showBorder=false, className}: Fo
 
   useEffect(() => {
     const handleResize = () => {
-      setIsResizing(true);
-      setTimeout(() => setIsResizing(false), 200);
+      // Only apply resize opacity on desktop where this component is visible
+      if (window.innerWidth >= 768) { // md breakpoint
+        setIsResizing(true);
+        setTimeout(() => setIsResizing(false), 200);
+      }
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -81,7 +84,7 @@ export default function FocusSwitch({ isMobile, showBorder=false, className}: Fo
   }
 
   return (
-    <div className={`relative rounded-full ${showBorder ? "border border-[#5A6462]" : ""} ${className || ""} ${isResizing ? "opacity-0" : ""}`}>
+    <div className={`relative rounded-full ${showBorder ? "border border-[#5A6462]" : ""} ${className || ""} ${isResizing ? "opacity-0" : "opacity-100"} transition-opacity duration-200`}>
       {/* Show spinner overlay while updating */}
       {isUpdating && (
         <div className="absolute inset-0 flex items-center justify-center z-10 bg-forest-100 dark:bg-forest-950 bg-opacity-20 dark:bg-opacity-20 rounded-lg">

@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 import { FloatingBarContainer } from './FloatingBar/FloatingBarContainer';
 import { SearchInput } from './FloatingBar/SearchInput';
 import { Badge } from './FloatingBar/Badge';
-import { FloatingBarButton } from './FloatingBar/FloatingBarButton';
+import { FloatingBarButton, FloatingBarButtonContainer } from './FloatingBar/FloatingBarButton';
 import { FilterSelectionContainer } from './FloatingBar/FilterSelectionContainer';
 import { Popover } from './FloatingBar/Popover';
 import { ToggleOption } from './FloatingBar/ToggleOption';
@@ -17,26 +17,22 @@ import { useLocalStorage } from 'usehooks-ts';
 import { useSearchParams } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { SearchBar, useSearchBuckets } from '../search/Components';
-import EthUsdSwitch from './EthUsdSwitch';
-import FocusSwitch from './FocusSwitch';
+import EthUsdSwitchSimple from './EthUsdSwitchSimple';
+import FocusSwitchSimple from './FocusSwitchSimple';
 import { IconContextMenu } from './IconContextMenu';
 import { useToast } from '../toast/GTPToast';
-import { useNotifications } from '@/hooks/useNotifications';
-import NotificationInsideContent from '@/components/notifications/NotificationContent';
 import { GTPIconName } from '@/icons/gtp-icon-names';
 import { track } from '@vercel/analytics/react';
 import SharePopoverContent from './FloatingBar/SharePopoverContent';
 import MobileMenuContent from './FloatingBar/MobileMenuContent';
-import NotificationContent from './FloatingBar/NotificationContent';
+import NotificationButton from './NotificationButton';
 
 
 export default function GlobalFloatingBar() {
   const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", false);
   const { isMobile, isSidebarOpen, toggleSidebar } = useUIContext();
 
-  const { filteredData, hasUnseenNotifications, markNotificationsAsSeen, isLoading, error } = useNotifications();
   // State for controlling popover visibility
-  const [isNotificationPopoverOpen, setIsNotificationPopoverOpen] = useState(false);
   const [isMobileMenuPopoverOpen, setIsMobileMenuPopoverOpen] = useState(false);
   const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false);
 
@@ -60,7 +56,7 @@ export default function GlobalFloatingBar() {
         clearTimeout(searchTimeoutRef.current);
       }
       setIsSearchActive(true);
-      
+
       // Focus the search input after a brief delay to ensure the UI has updated
       // This is important for mobile UX - users expect to start typing immediately
       setTimeout(() => {
@@ -82,7 +78,7 @@ export default function GlobalFloatingBar() {
           searchInputRef.current.focus();
         }
       }, 50); // Adjust delay if necessary (0, 50, 100ms are common)
-      
+
       return () => clearTimeout(timerId);
     }
   }, [isMobile, isSearchActive]);
@@ -93,8 +89,8 @@ export default function GlobalFloatingBar() {
       // Use a longer delay to allow for interaction
       searchTimeoutRef.current = setTimeout(() => {
         // Check if focus is still within the search container
-        if (searchContainerRef.current && 
-            !searchContainerRef.current.contains(document.activeElement)) {
+        if (searchContainerRef.current &&
+          !searchContainerRef.current.contains(document.activeElement)) {
           setIsSearchActive(false);
         }
       }, 300); // Longer delay for better UX
@@ -115,8 +111,8 @@ export default function GlobalFloatingBar() {
     if (!isMobile || !isSearchActive) return;
 
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-      if (searchContainerRef.current && 
-          !searchContainerRef.current.contains(event.target as Node)) {
+      if (searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target as Node)) {
         // Check if the click is on the search input itself or its children.
         // If searchInputRef.current is part of searchContainerRef.current, this is fine.
         // We want to close if the click is truly outside.
@@ -172,7 +168,7 @@ export default function GlobalFloatingBar() {
           if (isMobile) {
             activateSearch(); // This will also trigger the focus via useEffect
           } else {
-            searchInputRef.current?.focus(); 
+            searchInputRef.current?.focus();
           }
         }
       } else if (event.key === 'Escape') {
@@ -182,8 +178,8 @@ export default function GlobalFloatingBar() {
             setIsSearchActive(false); // Also close the expanded mobile search on Esc
           }
         } else if (isMobile && isSearchActive) {
-            // If search is active on mobile but input not focused, Esc should still close it
-            setIsSearchActive(false);
+          // If search is active on mobile but input not focused, Esc should still close it
+          setIsSearchActive(false);
         }
       }
     };
@@ -197,18 +193,19 @@ export default function GlobalFloatingBar() {
   const handleSharePopoverOpenChange = (openState: boolean) => {
     const location = isMobile ? 'mobile' : 'desktop';
     if (openState && !isSharePopoverOpen) { // Opening
-      track("opened Share window", { 
+      track("opened Share window", {
         location,
-        page: window.location.pathname 
+        page: window.location.pathname
       });
     } else if (!openState && isSharePopoverOpen) { // Closing via overlay/escape
-      track("closed Share window by overlay/escape", { 
+      track("closed Share window by overlay/escape", {
         location,
-        page: window.location.pathname 
+        page: window.location.pathname
       });
     }
     setIsSharePopoverOpen(openState);
   };
+
 
   // Handle search submission
   const handleSearchSubmit = (query: string) => {
@@ -270,19 +267,19 @@ export default function GlobalFloatingBar() {
   };
 
   useEffect(() => {
-    if (isChangingSidebar) return; 
+    if (isChangingSidebar) return;
 
     if (isSidebarOpen) {
       if (isHoveringToggle) {
-        setRotation(HOVER_ROTATIONS.SIDEBAR_OPEN.HOVER_ON); 
+        setRotation(HOVER_ROTATIONS.SIDEBAR_OPEN.HOVER_ON);
       } else {
-        setRotation(HOVER_ROTATIONS.SIDEBAR_OPEN.DEFAULT); 
+        setRotation(HOVER_ROTATIONS.SIDEBAR_OPEN.DEFAULT);
       }
-    } else { 
+    } else {
       if (isHoveringToggle) {
-        setRotation(HOVER_ROTATIONS.SIDEBAR_CLOSED.HOVER_ON); 
+        setRotation(HOVER_ROTATIONS.SIDEBAR_CLOSED.HOVER_ON);
       } else {
-        setRotation(HOVER_ROTATIONS.SIDEBAR_CLOSED.DEFAULT); 
+        setRotation(HOVER_ROTATIONS.SIDEBAR_CLOSED.DEFAULT);
       }
     }
   }, [isHoveringToggle, isSidebarOpen, isChangingSidebar]);
@@ -296,7 +293,7 @@ export default function GlobalFloatingBar() {
         // Consider if this is truly desired for all anchor links.
         // If the goal is just to close the search bar:
         if (isMobile && isSearchActive) {
-           setIsSearchActive(false);
+          setIsSearchActive(false);
         }
         // e.preventDefault(); // Removed this to allow default anchor behavior unless specifically needed
       }
@@ -315,6 +312,7 @@ export default function GlobalFloatingBar() {
   return (
     <>
       <div className={`fixed z-global-search-backdrop bottom-[-200px] md:bottom-auto md:top-[0px] w-full max-w-[1680px] px-0 md:px-[13px] ${isSidebarOpen ? "md:ml-[253px]" : "md:ml-[94px]"} transition-[margin] duration-sidebar ease-sidebar z-50 flex justify-center w-full`}>
+
         <div className="bg-[#151a19] z-[-1] relative bottom-0 top-0 md:bottom-auto md:top-0 left-0 right-0 h-[300px] md:h-[100px] overflow-hidden pointer-events-none sidebar-bg-mask">
           <div className="background-gradient-group">
             <div className="background-gradient-yellow"></div>
@@ -331,137 +329,113 @@ export default function GlobalFloatingBar() {
       <div className="fixed z-global-search bottom-[60px] md:hidden left-0 right-0 flex justify-center w-full pointer-events-none pb-[30px] md:pb-0 md:pt-[30px]">
         <div className="w-full max-w-[1680px] px-[20px] md:px-[13px] pointer-events-auto">
           <div className="px-[5px] md:px-[15px] md:py-[10px]">
-            <Popover
-              placement='top-start'
-              isOpen={isNotificationPopoverOpen}
-              onOpenChange={setIsNotificationPopoverOpen}
-              content={
-                <NotificationContent onClose={() => setIsNotificationPopoverOpen(false)} />
-              }
-              className='flex md:hidden'
-              trigger="click"
-            >
-              <FloatingBarButton
-                icon={(hasUnseenNotifications ? "gtp-notification-new" : "gtp-notification") as GTPIconName}
-                title="Notifications"
-                className='!bg-[#344240]'
-              />
-            </Popover>
+            <NotificationButton
+              placement="top"
+              className="flex md:hidden"
+            />
           </div>
         </div>
       </div>
       <div className={`fixed z-global-search bottom-0 md:bottom-auto md:top-[0px] left-0 right-0 flex justify-center w-full pointer-events-none pb-[30px] md:pb-0 md:pt-[30px]`}>
-
         <div className="w-full max-w-[1680px] px-[20px] md:px-[13px]">
-          <FloatingBarContainer className='p-[5px] md:px-[15px] md:py-[10px]'>
-            {/* Mobile - Share Button */}
-            <Popover
-              placement="top-start"
-              isOpen={isSharePopoverOpen}
-              onOpenChange={handleSharePopoverOpenChange}
-              content={
-                <SharePopoverContent onClose={() => setIsSharePopoverOpen(false)} />
-              }
-              className='block md:hidden'
-              trigger="click"
-            >
-              <FloatingBarButton
-                icon="gtp-share"
-                title="Share"
-              />
-            </Popover>
-            {/* Desktop - Home Button */}
-            <div className={`hidden md:flex items-center justify-between w-[50.87px] ${isSidebarOpen ? "md:w-[230px]" : "md:w-[60.87px]"} transition-all duration-sidebar ease-sidebar`}>
-              <GTPLogoOld />
-              <div className="flex items-center justify-end h-full cursor-pointer " onClick={() => {
-                track("clicked Sidebar Close", {
-                  location: "desktop sidebar",
-                  page: window.location.pathname,
-                });
-                toggleSidebar();
-                setIsChangingSidebar(true);
-                setTimeout(() => {
-                  setIsChangingSidebar(false);
-                }, ANIMATION_DURATION);
-              }}>
-                <Icon
-                  icon={isSidebarOpen ? "feather:log-out" : "feather:log-in"}
-                  className={`w-[13.15px] h-[13.15px] transition-transform duration-sidebar ease-sidebar`} // MODIFIED
-                  style={{ transform: `rotate(${rotation}deg)` }}
-                  onMouseEnter={() => {
-                    setIsHoveringToggle(true);
-                  }}
-                  onMouseLeave={() => {
-                    setIsHoveringToggle(false);
-                  }}
+          <FloatingBarContainer className='p-[5px] md:px-[15px] md:py-[10px] !rounded-[27px]'>
+            <div className='w-full flex flex-col gap-y-[5px] md:flex-row'>
+              {isMobileMenuPopoverOpen && (
+                <MobileMenuContent onClose={() => setIsMobileMenuPopoverOpen(false)} />
+              )}
+              <div className={`flex tems-center w-full gap-x-[5px] md:gap-x-[15px] z-0 pointer-events-auto`}>
+                {/* Mobile - Share Button */}
+                <Popover
+                  placement="top-start"
+                  isOpen={isSharePopoverOpen}
+                  onOpenChange={handleSharePopoverOpenChange}
+                  content={
+                    <SharePopoverContent onClose={() => setIsSharePopoverOpen(false)} />
+                  }
+                  className='block md:hidden'
+                  trigger="click"
+                >
+                  <FloatingBarButton
+                    icon="gtp-share"
+                    title="Share"
+                  />
+                </Popover>
+                {/* Desktop - Home Button */}
+                <div className={`hidden md:flex items-center justify-between w-[50.87px] ${isSidebarOpen ? "md:w-[230px]" : "md:w-[60.87px]"} transition-all duration-sidebar ease-sidebar`}>
+                  <GTPLogoOld />
+                  <div className="flex items-center justify-end h-full cursor-pointer " onClick={() => {
+                    track("clicked Sidebar Close", {
+                      location: "desktop sidebar",
+                      page: window.location.pathname,
+                    });
+                    toggleSidebar();
+                    setIsChangingSidebar(true);
+                    setTimeout(() => {
+                      setIsChangingSidebar(false);
+                    }, ANIMATION_DURATION);
+                  }}>
+                    <Icon
+                      icon={isSidebarOpen ? "feather:log-out" : "feather:log-in"}
+                      className={`w-[13.15px] h-[13.15px] transition-transform duration-sidebar ease-sidebar`} // MODIFIED
+                      style={{ transform: `rotate(${rotation}deg)` }}
+                      onMouseEnter={() => {
+                        setIsHoveringToggle(true);
+                      }}
+                      onMouseLeave={() => {
+                        setIsHoveringToggle(false);
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Search Bar */}
+                <div
+                  ref={searchContainerRef}
+                  className={`flex-1 min-w-0 relative h-[44px] ${isMobile && isSearchActive ? "-mx-[55px]" : ""
+                    } transition-[margin] duration-200`}
+                  // onMouseEnter={activateSearch}
+                  // onMouseLeave={deactivateSearch}
+                  onTouchStart={activateSearch}
+                >
+                  <SearchContainer>
+                    <SearchBar
+                      ref={searchInputRef}
+                      showMore={showMore}
+                      setShowMore={setShowMore}
+                      showSearchContainer={false}
+                      onFocus={activateSearch}
+                      onBlur={deactivateSearch}
+                    />
+                  </SearchContainer>
+                </div>
+
+                {/* Active Filters Section */}
+                {activeFilters.length > 0 && (
+                  <div className="hidden md:block max-w-[300px] lg:max-w-[400px]">
+                    <FilterSelectionContainer>
+                      {filterBadges}
+                      {activeFilters.length > 0 && (
+                        <div onClick={clearAllFilters} className="cursor-pointer">
+                          <Badge
+                            rightIcon="heroicons-solid:x"
+                            rightIconColor="#FE5468"
+                            label="Clear All"
+                          />
+                        </div>
+                      )}
+                    </FilterSelectionContainer>
+                  </div>
+                )}
+                <FocusSwitchSimple showBorder={true} className='hidden md:flex' />
+                <EthUsdSwitchSimple showBorder={true} className='hidden md:flex' />
+
+                {/* Desktop - Notifications */}
+                <NotificationButton
+                  placement="bottom"
+                  className="hidden md:flex"
                 />
-              </div>
-            </div>
-
-            {/* Search Bar */}
-            <div
-              ref={searchContainerRef}
-              className={`flex-1 min-w-0 relative h-[44px] ${isMobile && isSearchActive ? "-mx-[55px]" : ""
-                } transition-[margin] duration-200`}
-              // onMouseEnter={activateSearch}
-              // onMouseLeave={deactivateSearch}
-              onTouchStart={activateSearch}
-            >
-              <SearchContainer>
-                <SearchBar
-                  ref={searchInputRef}
-                  showMore={showMore}
-                  setShowMore={setShowMore}
-                  showSearchContainer={false}
-                  onFocus={activateSearch}
-                  onBlur={deactivateSearch}
-                />
-              </SearchContainer>
-            </div>
-
-            {/* Active Filters Section */}
-            {activeFilters.length > 0 && (
-              <div className="hidden md:block max-w-[300px] lg:max-w-[400px]">
-                <FilterSelectionContainer>
-                  {filterBadges}
-                  {activeFilters.length > 0 && (
-                    <div onClick={clearAllFilters} className="cursor-pointer">
-                      <Badge
-                        rightIcon="heroicons-solid:x"
-                        rightIconColor="#FE5468"
-                        label="Clear All"
-                      />
-                    </div>
-                  )}
-                </FilterSelectionContainer>
-              </div>
-            )}
-            <FocusSwitch showBorder={true} className='hidden md:flex' />
-            <EthUsdSwitch showBorder={true} className='hidden md:flex' />
-
-            {/* Desktop - Notifications */}
-            <Popover
-              placement='bottom-end'
-              isOpen={isNotificationPopoverOpen}
-              onOpenChange={(open: boolean) => {
-                setIsNotificationPopoverOpen(open);
-                if(!open) {
-                  markNotificationsAsSeen();
-                } 
-              }}
-              content={
-                <NotificationContent onClose={() => setIsNotificationPopoverOpen(false)} />
-              }
-              className='hidden md:flex'
-              trigger="click"
-            >
-              <FloatingBarButton
-                icon={(hasUnseenNotifications ? "gtp-notification-new" : "gtp-notification") as GTPIconName}
-                title="Notifications"
-              />
-            </Popover>
-            {/* Mobile - Menu Button */}
-            <Popover
+                {/* Mobile - Menu Button */}
+                {/* <Popover
               placement='top-end'
               isOpen={isMobileMenuPopoverOpen}
               onOpenChange={setIsMobileMenuPopoverOpen}
@@ -471,12 +445,35 @@ export default function GlobalFloatingBar() {
               }
               className='flex md:hidden'
               trigger="click"
-            >
-              <FloatingBarButton
-                icon={"gtp-burger-menu" as GTPIconName}
-                title="Menu"
-              />
-            </Popover>
+            > */}
+                {/* <FloatingBarButton
+                  onClick={
+                    () => {
+                      if (isMobileMenuPopoverOpen) {
+                        setIsMobileMenuPopoverOpen(false);
+                      } else {
+                        setIsMobileMenuPopoverOpen(true);
+                      }
+                    }
+                  }
+                  icon={"gtp-burger-menu" as GTPIconName}
+                  title="Menu"
+                /> */}
+
+                <FloatingBarButton onClick={() => {
+                  if (isMobileMenuPopoverOpen) {
+                    setIsMobileMenuPopoverOpen(false);
+                  } else {
+                    setIsMobileMenuPopoverOpen(true);
+                  }
+                }}
+                icon={<AnimatedMenuIcon isOpen={isMobileMenuPopoverOpen} />}
+                >
+
+                </FloatingBarButton>
+                {/* </Popover> */}
+              </div>
+            </div>
           </FloatingBarContainer>
         </div>
       </div>
@@ -842,5 +839,82 @@ const GTPLogoNew = () => {
       </defs>
     </svg>
 
+  );
+};
+
+
+const AnimatedMenuIcon = ({ isOpen = false, className = "" }) => {
+  return (
+    <svg 
+      width="24" 
+      height="24" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <defs>
+        <linearGradient id="redYellowGradient" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="objectBoundingBox">
+          <stop stopColor="#FE5468"/>
+          <stop offset="1" stopColor="#FFDF27"/>
+        </linearGradient>
+        <linearGradient id="tealCyanGradient" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="objectBoundingBox">
+          <stop stopColor="#10808C"/>
+          <stop offset="1" stopColor="#1DF7EF"/>
+        </linearGradient>
+      </defs>
+      
+      <g clipPath="url(#clip0)">
+        {/* Top line - becomes part of first diagonal */}
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M0 5.7C0 5.03726 0.53726 4.5 1.2 4.5H22.8001C23.4628 4.5 24.0001 5.03726 24.0001 5.7C24.0001 6.36275 23.4628 6.90001 22.8001 6.90001H1.2C0.53726 6.90001 0 6.36275 0 5.7Z"
+          fill="url(#redYellowGradient)"
+          style={{
+            transformOrigin: '12px 12px',
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            transform: isOpen 
+              ? 'rotate(45deg) translateY(6.3px)' 
+              : 'rotate(0deg) translateY(0px)'
+          }}
+        />
+        
+        {/* Middle line - becomes second diagonal */}
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M0 11.9C0 11.2373 0.53726 10.7 1.2 10.7H22.8001C23.4628 10.7 24.0001 11.2373 24.0001 11.9C24.0001 12.5628 23.4628 13.1 22.8001 13.1H1.2C0.53726 13.1 0 12.5628 0 11.9Z"
+          fill="url(#tealCyanGradient)"
+          style={{
+            transformOrigin: '12px 12px',
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            transform: isOpen 
+              ? 'rotate(-45deg)' 
+              : 'rotate(0deg)',
+            opacity: isOpen ? 1 : 1
+          }}
+        />
+        
+        {/* Bottom line - becomes part of first diagonal */}
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M0 18.1C0 17.4373 0.53726 16.9 1.2 16.9H22.8001C23.4628 16.9 24.0001 17.4373 24.0001 18.1C24.0001 18.7628 23.4628 19.3 22.8001 19.3H1.2C0.53726 19.3 0 18.7628 0 18.1Z"
+          fill="url(#redYellowGradient)"
+          style={{
+            transformOrigin: '12px 12px',
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            transform: isOpen 
+              ? 'rotate(-45deg) translateY(-6.3px)' 
+              : 'rotate(0deg) translateY(0px)'
+          }}
+        />
+      </g>
+      
+      <clipPath id="clip0">
+        <rect width="24" height="24" fill="white"/>
+      </clipPath>
+    </svg>
   );
 };
