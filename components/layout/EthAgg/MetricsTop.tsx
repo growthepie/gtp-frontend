@@ -708,11 +708,11 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                 </div>
               </div>
             </div>
-            <div className={`relative flex flex-col gap-y-[5px] transition-height duration-500 -mx-[15px] z-10 bg-[#1F2726] rounded-b-[15px]  ${showChainsTPS ? 'pb-[10px] shadow-lg' : 'pb-0'} ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'h-0' : 'h-full'}`}
+            <div className={`relative flex flex-col gap-y-[5px] transition-height duration-500 -mx-[15px] z-10 bg-[#1F2726] rounded-b-[15px]  ${showChainsTPS ? 'pb-[10px] shadow-lg' : 'pb-0'} ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'h-0' : 'h-auto'}`}
             >
               <div className={`flex flex-col gap-y-[2.5px] px-[15px] duration-300  overflow-y-hidden ${!showChainsTPS ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''} `}
                 style={{
-                  height: !showChainsTPS ? `80px` : `${Object.keys(chainsTPSHistory).length * 50 + 35}px`
+                  height: !showChainsTPS ? `80px` : `${Object.keys(chainsTPSHistory).length * 21   + 35}px`
                 }}
               >
                 <div className='heading-large-md text-[#5A6462] '>Chains</div>
@@ -920,7 +920,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
             >
               <div className={`flex flex-col gap-y-[2.5px] px-[15px] transition-height duration-500 overflow-y-hidden ${!showChainsCost ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''} `}
                 style={{
-                  height: selectedBreakdownGroup === "Ethereum Ecosystem" ? '0px' : !showChainsCost ? `80px` : `${Object.keys(chainsCostHistory).length * 21 + 35}px`
+                  height: !showChainsCost ? `80px` : `${Object.keys(chainsCostHistory).filter((chain) => (chainData[chain]?.[showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] > 0)).length * 21 + 35}px`
                 }}
               >
                 <div className='heading-large-md text-[#5A6462] '>Chains</div>
