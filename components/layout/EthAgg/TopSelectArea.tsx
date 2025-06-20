@@ -15,7 +15,7 @@ export default function TopSelectArea({
     <Container style={{marginTop: "45px"}}>
         <div className="h-full w-full relative">
 
-            <div className="flex flex-row gap-x-[8px] w-full min-h-[62px] items-center">
+            <div className="flex flex-row gap-x-[8px] w-full min-h-[44px] items-center">
                 <SelectionButton selectedBreakdownGroup={selectedBreakdownGroup} setSelectedBreakdownGroup={setSelectedBreakdownGroup} breakdownGroup="Ethereum Ecosystem" icon="gtp-ethereumlogo" />
                 <SelectionButton selectedBreakdownGroup={selectedBreakdownGroup} setSelectedBreakdownGroup={setSelectedBreakdownGroup} breakdownGroup="Metrics" icon="gtp-realtime" />
                 <SelectionButton selectedBreakdownGroup={selectedBreakdownGroup} setSelectedBreakdownGroup={setSelectedBreakdownGroup} breakdownGroup="Builders & Apps" icon="gtp-project" />
@@ -43,11 +43,11 @@ const SelectionButton = ({
     const [isHovered, setIsHovered] = useState(false);
     return (
         <div className={`flex items-center justify-start w-full flex-1 flex-row gap-x-[15px] rounded-full px-[10px] py-[3px] transition-all
-            ${selectedBreakdownGroup === breakdownGroup ? "bg-active-black border-[3px] border-[#1F2726] h-[62px]" 
-                                        : "bg-medium-background hover:bg-[#5A6462] h-[36px] hover:h-[62px]"}`}
+            ${selectedBreakdownGroup === breakdownGroup ? "bg-active-black border-[3px] border-[#1F2726] h-[44px]" 
+                                        : "bg-medium-background hover:bg-[#5A6462] h-[36px] hover:h-[44px]"}`}
             onClick={() => setSelectedBreakdownGroup(breakdownGroup)}
             style={{
-                maxHeight: "62px"
+                maxHeight: "44px"
             }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}

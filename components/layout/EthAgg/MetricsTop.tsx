@@ -54,7 +54,7 @@ interface SSEData {
 
 function TopEthAggMetricsComponent({ selectedBreakdownGroup }: TopEthAggMetricsProps) {
   return (
-    <Container className="mt-[30px] min-h-[300px]"> {/* Added min-height for better loading view */}
+    <Container className="min-h-[300px]"> {/* Added min-height for better loading view */}
       <RealTimeMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
     </Container>
   );
@@ -85,10 +85,8 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   const [showChainsCost, setShowChainsCost] = useSearchParamState<boolean>("cost", {
     defaultValue: false,
   });
-  const [tpsHoverIndex, setTpsHoverIndex] = useState<number | null>(null);
-  const [costHoverIndex, setCostHoverIndex] = useState<number | null>(null);
-  const [tpsIndex, setTpsIndex] = useState<number>(17);
-  const [costIndex, setCostIndex] = useState<number>(17);
+
+ 
 
   const [ethCostHoverIndex, setEthCostHoverIndex] = useState<number | null>(null);
   const [ethCostSelectedIndex, setEthCostSelectedIndex] = useState<number>(17);
@@ -269,19 +267,13 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   }, [globalMetrics]);
 
   useEffect(() => {
-    if (selectedBreakdownGroup === "Metrics") {
-      uptimeAnimationRef.current = requestAnimationFrame(updateUptimeDisplay);
-    } else {
-      if (uptimeAnimationRef.current) {
-        cancelAnimationFrame(uptimeAnimationRef.current);
-      }
-    }
+
     return () => {
       if (uptimeAnimationRef.current) {
         cancelAnimationFrame(uptimeAnimationRef.current);
       }
     };
-  }, [selectedBreakdownGroup, updateUptimeDisplay]);
+  }, [updateUptimeDisplay]);
 
   const tooltipFormatter = useCallback(
     function (this: any) {
@@ -435,24 +427,9 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   }, []); // SSE_URL is a constant, so not needed in deps array if defined outside component
 
   useEffect(() => {
-    if (selectedBreakdownGroup === "Metrics") {
+    
       connectSSE();
-    } else {
-      setConnectionStatus('idle');
-      setChainData({});
-      setGlobalMetrics({});
-      setLastUpdated(null);
-      if (eventSourceRef.current) {
-        console.log("Closing SSE connection due to group change.");
-        eventSourceRef.current.close();
-        eventSourceRef.current = null;
-      }
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-        reconnectTimeoutRef.current = null;
-      }
-      reconnectAttemptsRef.current = 0; // Reset attempts when not active
-    }
+    
 
     return () => {
       console.log("Cleaning up RealTimeMetrics: Closing SSE connection.");
@@ -463,7 +440,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
         clearTimeout(reconnectTimeoutRef.current);
       }
     };
-  }, [selectedBreakdownGroup, connectSSE]);
+  }, [connectSSE]);
 
   useEffect(() => {
     if (!chainData || Object.keys(chainData).length === 0) return;
@@ -521,7 +498,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
 
 
 
-  if (selectedBreakdownGroup !== "Metrics" || globalMetrics === undefined || chainData === undefined) {
+  if (globalMetrics === undefined || chainData === undefined) {
     return null;
   }
 
@@ -543,7 +520,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     <>
       {connectionStatus === 'connected' && (
         <div className='flex gap-x-[15px] w-full'>
-          <div className='bg-[#1F2726] rounded-[15px] p-[15px] w-full h-[306px]'>
+          <div className={`bg-[#1F2726] rounded-[15px] p-[15px] w-full transition-height duration-300 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'h-[150px] overflow-hidden' : 'h-[306px]'}`}>
             <div className='heading-large-md mb-[15px]'>Ethereum Uptime</div>
             <div className='numbers-2xl mb-[30px]'>
               {(() => {
@@ -556,7 +533,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                 );
               })()}
             </div>
-            <div className='flex flex-col gap-y-[5px]'>
+            <div className={`flex flex-col gap-y-[5px] transition-height duration-500 overflow-hidden ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'h-0' : 'h-full'}`}>
               <div className='heading-large-md text-[#5A6462]'><span className='font-bold'>Events:</span></div>
               <div className='flex flex-col gap-y-[5px] pl-[15px]'>
                 <div className={`transition-all duration-300 cursor-default ${eventHover === 'after' ? 'text-xs' : 'text-xxxs text-[#5A6462]'} w-fit`} onMouseEnter={() => setEventHover('after')} onMouseLeave={() => setEventHover(null)}><span className={`${eventHover !== 'after' ? 'font-bold' : ''}`}>Event after:</span> </div>
@@ -566,16 +543,17 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
             </div>
 
           </div>
-          <div className='flex flex-col gap-y-[15px] bg-[#1F2726] rounded-[15px] p-[15px] min-w-0 w-full h-[306px] '>
-            <div className='heading-large-md'>Ecosystem TPS</div>
-            <div className='flex flex-col gap-y-[30px]'>
+          <div className={`flex flex-col gap-y-[15px] bg-[#1F2726] rounded-[15px] p-[15px] min-w-0   w-full transition-height duration-300 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'h-[150px] overflow-hidden' : 'h-[306px]'}`}>
+            <div className={`heading-large-md transition-transform duration-500 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'mb-[10px]' : 'mb-[0px]'}`}>{selectedBreakdownGroup === "Ethereum Ecosystem" ? 'Ecosystem Transactions Per Second' : 'Ethereum TPS'}</div>
+            <div className='flex flex-col gap-y-[30px] mb-[20px]'>
               <div className='numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
                 {Intl.NumberFormat('en-US', {
                   minimumFractionDigits: 1,
                   maximumFractionDigits: 1
                 }).format(globalMetrics.total_tps || 0)}
               </div>
-              <div className='w-full h-[58px] -mt-[5px] mb-[20px]'>
+              <div className={`w-full  -mt-[5px] `}>
+                <div className={`transition-height duration-500 overflow-hidden ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'h-0' : 'h-[58px]'}`}>
                 <HighchartsProvider Highcharts={Highcharts}>
                   <HighchartsChart>
                     <Chart
@@ -607,7 +585,6 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                           const series = chart.series[0];
 
                           if(!series) {
-                            console.error("[load] No series found in chart");
                             return;
                           }
 
@@ -726,15 +703,16 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                       positioner={tooltipPositioner}
                     />
                   </HighchartsChart>
-
-                </HighchartsProvider>
+             
+                </HighchartsProvider> 
+                </div>
               </div>
             </div>
-            <div className={`relative flex flex-col gap-y-[5px] -mx-[15px] z-10 bg-[#1F2726] rounded-b-[15px]  ${showChainsTPS ? 'pb-[10px] shadow-lg' : 'pb-0'}`}
+            <div className={`relative flex flex-col gap-y-[5px] transition-height duration-500 -mx-[15px] z-10 bg-[#1F2726] rounded-b-[15px]  ${showChainsTPS ? 'pb-[10px] shadow-lg' : 'pb-0'} ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'h-0' : 'h-full'}`}
             >
-              <div className={`flex flex-col gap-y-[2.5px] px-[15px] duration-300  overflow-y-hidden ${!showChainsTPS ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''}`}
+              <div className={`flex flex-col gap-y-[2.5px] px-[15px] duration-300  overflow-y-hidden ${!showChainsTPS ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''} `}
                 style={{
-                  height: !showChainsTPS ? `80px` : `${Object.keys(chainsTPSHistory).length * 21 + 35}px`
+                  height: !showChainsTPS ? `80px` : `${Object.keys(chainsTPSHistory).length * 50 + 35}px`
                 }}
               >
                 <div className='heading-large-md text-[#5A6462] '>Chains</div>
@@ -806,7 +784,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                 </div>
               </div>
 
-              <div className='w-full h-[18px] flex items-center justify-center relative z-10 cursor-pointer top-[0px] '
+              <div className={`w-full h-[18px] flex items-center justify-center relative z-10 cursor-pointer top-[0px] transition-opacity duration-300 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'opacity-0' : 'opacity-100'}`}
                 onClick={(e) => {
                   // e.preventDefault();
                   // e.stopPropagation();
@@ -818,8 +796,8 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
             </div>
 
           </div>
-          <div className='bg-[#1F2726] rounded-[15px] py-[15px] px-[15px] min-w-0 w-full h-[306px]'>
-            <div className='heading-large-md mb-[30px]'>Token Transfer Fee</div>
+          <div className={`bg-[#1F2726] rounded-[15px] py-[15px] px-[15px] min-w-0 w-full  transition-height duration-300 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'h-[150px] overflow-hidden' : 'h-[306px]'}`}>
+            <div className={`heading-large-md ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'mb-[10px]' : 'mb-[30px]'}`}>Token Transfer Fee</div>
             <div className='pt-[15px] mb-[50px]'>
               <div className='flex justify-between items-center'>
                 <div className='w-[115px] heading-small-xxs'>Ethereum Mainnet</div>
@@ -940,9 +918,9 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
             </div>
             <div className={`relative flex flex-col gap-y-[5px] -mx-[15px] bg-[#1F2726]  z-10 rounded-b-[15px] ${showChainsCost ? 'pb-[10px] shadow-lg' : 'pb-0'}`}
             >
-              <div className={`flex flex-col gap-y-[2.5px] px-[15px] duration-300  overflow-y-hidden ${!showChainsCost ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''}`}
+              <div className={`flex flex-col gap-y-[2.5px] px-[15px] transition-height duration-500 overflow-y-hidden ${!showChainsCost ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''} `}
                 style={{
-                  height: !showChainsCost ? `80px` : `${Object.keys(chainsCostHistory).length * 21 + 35}px`
+                  height: selectedBreakdownGroup === "Ethereum Ecosystem" ? '0px' : !showChainsCost ? `80px` : `${Object.keys(chainsCostHistory).length * 21 + 35}px`
                 }}
               >
                 <div className='heading-large-md text-[#5A6462] '>Chains</div>
@@ -1014,7 +992,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                   })}
                 </div>
               </div>
-              <div className='w-full h-[18px] flex items-center justify-center relative z-10 cursor-pointer top-[0px] '
+              <div className={`w-full h-[18px] flex items-center justify-center relative z-10 cursor-pointer top-[0px] transition-opacity duration-300 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'opacity-0' : 'opacity-100'}`}
                 onClick={(e) => {
                   // e.preventDefault();
                   // e.stopPropagation();
@@ -1031,29 +1009,6 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   );
 };
 
-const arePropsEqual = (
-  prevProps: Readonly<TopEthAggMetricsProps>,
-  nextProps: Readonly<TopEthAggMetricsProps>
-) => {
-  // This comparison means TopEthAggMetricsComponent (and thus RealTimeMetrics) will only re-evaluate 
-  // its rendering if selectedBreakdownGroup actually changes its value OR 
-  // if selectedBreakdownGroup *becomes* or *stops being* "Metrics".
-  // The RealTimeMetrics internal useEffect for SSE connection also depends on selectedBreakdownGroup === "Metrics".
 
-  // If it was not "Metrics" and is now "Metrics", re-render (to mount RealTimeMetrics properly)
-  if (prevProps.selectedBreakdownGroup !== "Metrics" && nextProps.selectedBreakdownGroup === "Metrics") {
-    return false;
-  }
-  // If it was "Metrics" and is now not "Metrics", re-render (to unmount/hide RealTimeMetrics)
-  if (prevProps.selectedBreakdownGroup === "Metrics" && nextProps.selectedBreakdownGroup !== "Metrics") {
-    return false;
-  }
 
-  if (prevProps.selectedBreakdownGroup !== "Metrics" && nextProps.selectedBreakdownGroup !== "Metrics") {
-    return true; // Effectively, don't care about changes if not displaying Metrics.
-  }
-
-  return prevProps.selectedBreakdownGroup === nextProps.selectedBreakdownGroup;
-};
-
-export default React.memo(TopEthAggMetricsComponent, arePropsEqual);
+export default TopEthAggMetricsComponent

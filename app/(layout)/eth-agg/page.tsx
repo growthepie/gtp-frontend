@@ -24,14 +24,26 @@ export default function EthAgg() {
   const [selectedBreakdownGroup, setSelectedBreakdownGroup] = useState("Metrics");
   const [selectedTimespan, setSelectedTimespan] = useState("365d");
   const [isMonthly, setIsMonthly] = useState(false);
+  const TopMetricsComponent = <TopEthAggMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
+
 
 
   return (
     <>
      <TopSelectArea selectedBreakdownGroup={selectedBreakdownGroup} setSelectedBreakdownGroup={setSelectedBreakdownGroup} />
-     <div className="mt-[30px]">
+     <div className="mt-[15px]">
+        <div className={`px-[20px] md:px-[50px] text-[#CDD8D3] overflow-hidden transition-height duration-500 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? "h-[159px]" : "h-[0px]"}`}>  
+          <div className="h-[144px] p-[15px] rounded-[15px] bg-[#1F2726] flex flex-col gap-y-[15px]">
+            <div className="heading-large-lg">What is the Ethereum Ecosystem?</div>
+            <div className="text-sm">
+              Ethereum today is a layered ecosystem: the proof‑of‑stake mainnet secures DeFi, NFT, DAO and other dApps, while over $42 billion (peak) now resides on Layer 2 rollups such as Optimism, Arbitrum, Base, ZKsync and Starknet. Since the community adopted a “rollup‑centric roadmap,” the protocol assumes most user activity migrates to these rollups, leaving Layer 1 to specialise in settlement, consensus and minimal data availability.
+            </div>
+
+          </div>
+        </div>
         <TopEthAggMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
         <MetricsCharts selectedBreakdownGroup={selectedBreakdownGroup} />
+        
      </div>
       {/* <ShowLoading
         dataLoading={[econLoading, masterLoading]}
