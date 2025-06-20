@@ -880,21 +880,7 @@ const AnimatedMenuIcon = ({ isOpen = false, className = "" }) => {
           }}
         />
         
-        {/* Middle line - becomes second diagonal */}
-        <path
-          fillRule="evenodd"
-          clipRule="evenodd"
-          d="M0 11.9C0 11.2373 0.53726 10.7 1.2 10.7H22.8001C23.4628 10.7 24.0001 11.2373 24.0001 11.9C24.0001 12.5628 23.4628 13.1 22.8001 13.1H1.2C0.53726 13.1 0 12.5628 0 11.9Z"
-          fill="url(#tealCyanGradient)"
-          style={{
-            transformOrigin: '12px 12px',
-            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-            transform: isOpen 
-              ? 'rotate(-45deg)' 
-              : 'rotate(0deg)',
-            opacity: isOpen ? 1 : 1
-          }}
-        />
+        
         
         {/* Bottom line - becomes part of first diagonal */}
         <path
@@ -908,6 +894,22 @@ const AnimatedMenuIcon = ({ isOpen = false, className = "" }) => {
             transform: isOpen 
               ? 'rotate(-45deg) translateY(-6.3px)' 
               : 'rotate(0deg) translateY(0px)'
+          }}
+        />
+
+        {/* Middle line - becomes second diagonal */}
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M0 11.9C0 11.2373 0.53726 10.7 1.2 10.7H22.8001C23.4628 10.7 24.0001 11.2373 24.0001 11.9C24.0001 12.5628 23.4628 13.1 22.8001 13.1H1.2C0.53726 13.1 0 12.5628 0 11.9Z"
+          fill="url(#tealCyanGradient)"
+          style={{
+            transformOrigin: '12px 12px',
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            transform: isOpen 
+              ? 'rotate(45deg)' 
+              : 'rotate(0deg)',
+            opacity: isOpen ? 1 : 1
           }}
         />
       </g>

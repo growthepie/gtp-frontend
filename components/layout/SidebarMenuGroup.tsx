@@ -26,12 +26,14 @@ type SidebarProps = {
   onClose?: () => void;
   children?: ReactNode;
   sidebarOpen: boolean;
+  disableAnimation?: boolean;
 };
 
 export const SidebarMenuLink = memo(({
   item,
   sidebarOpen,
   onClose, // for mobile menu
+  disableAnimation = false,
 }: SidebarProps) => {
   const { isMobile } = useUIContext();
   const pathname = usePathname();
@@ -60,6 +62,7 @@ export const SidebarMenuLink = memo(({
       hideLabel={!sidebarOpen && !isMobile}
       isActive={isActive}
       onToggle={() => {}}
+      disableAnimation={disableAnimation}
       rightContent={
         item.newChild && (
           <div className="pointer-events-none absolute bottom-[8px] right-[5px] top-[8px] flex items-center justify-center overflow-hidden text-xs font-bold transition-all duration-300 md:right-[20px]">
@@ -90,6 +93,7 @@ export const SidebarMenuGroup = memo(({
   onOpen,
   onClose,
   sidebarOpen,
+  disableAnimation = false,
 }: SidebarProps) => {
   const { isMobile } = useUIContext();
   const { data: master } = useSWR<MasterResponse>(MasterURL);
@@ -204,6 +208,7 @@ export const SidebarMenuGroup = memo(({
       hideLabel={!sidebarOpen && !isMobile}
       className=""
       accordionClassName="mb-[10px]"
+      disableAnimation={disableAnimation}
       rightContent={
         item.newChild && (
           <div className="pointer-events-none absolute bottom-[8px] right-[0px] top-[8px] flex items-center justify-center overflow-hidden text-xs font-bold transition-all duration-300 md:right-[20px]">
@@ -266,6 +271,7 @@ export const SidebarMenuGroup = memo(({
                             ? pathname.localeCompare(option.url) === 0
                             : false
                         }
+                        disableAnimation={disableAnimation}
                         rightContent={
                           option.showNew && (
                             <div className="absolute bottom-1 right-[5px] top-1 flex items-center justify-center overflow-hidden text-xs font-bold transition-all duration-300 md:right-[16px]">
@@ -348,6 +354,7 @@ export const SidebarMenuGroup = memo(({
                         ? pathname.localeCompare(option.url) === 0
                         : false
                     }
+                    disableAnimation={disableAnimation}
                     rightContent={
                       option.showNew && (
                         <div className="absolute bottom-1 right-[5px] top-1 flex items-center justify-center overflow-hidden text-xs font-bold transition-all duration-300 md:right-[16px]">
@@ -397,6 +404,7 @@ type AccordionProps = {
   onClick?: () => void;
   width?: string | undefined;
   rightContent?: ReactNode;
+  disableAnimation?: boolean;
 };
 
 export const Accordion = memo(({
@@ -419,6 +427,7 @@ export const Accordion = memo(({
   onClick = () => {},
   width = undefined,
   rightContent,
+  disableAnimation = false,
 }: AccordionProps) => {
   // const [isOpen, setIsOpen] = useState(open);
 
@@ -546,6 +555,7 @@ export const Accordion = memo(({
                 iconColor={
                   isHovered && iconHoverColor ? iconHoverColor : iconColor
                 }
+                disableAnimation={disableAnimation}
               />
               <div
                 className="flex flex-1 items-start justify-start truncate font-semibold transition-all duration-300"
@@ -590,6 +600,7 @@ export const Accordion = memo(({
                   iconColor={
                     isHovered && iconHoverColor ? iconHoverColor : iconColor
                   }
+                  disableAnimation={disableAnimation}
                 />
                 <div
                   className="flex flex-1 items-start justify-start truncate font-semibold transition-all duration-300"
@@ -607,7 +618,7 @@ export const Accordion = memo(({
       </Tooltip>
       {children && (
         <div
-          className={`overflow-hidden transition-[max-height] duration-300 ${accordionClassName}`}
+          className={`overflow-hidden ${!disableAnimation ? 'transition-[max-height] duration-300' : ''} ${accordionClassName}`}
           style={{
             maxHeight: isOpen ? childrenHeight : "0",
           }}
@@ -630,6 +641,7 @@ type DropdownIconProps = {
   iconBackground: "none" | "dark";
   showArrow: boolean;
   isOpen?: boolean;
+  disableAnimation?: boolean;
 };
 
 export const DropdownIcon = memo(({
@@ -639,6 +651,7 @@ export const DropdownIcon = memo(({
   iconBackground,
   showArrow = false,
   isOpen = false,
+  disableAnimation = false,
 }: DropdownIconProps) => {
   const iconBgSize = {
     sm: "26px",
@@ -686,7 +699,7 @@ export const DropdownIcon = memo(({
         />
 
         {showArrow && (
-          <DropdownArrow isOpen={isOpen} size={size} />
+          <DropdownArrow isOpen={isOpen} size={size} disableAnimation={disableAnimation} />
         )}
       </div>
     </div>
@@ -694,7 +707,7 @@ export const DropdownIcon = memo(({
 });
 
 
-export const DropdownArrow = ({isOpen, size}: {isOpen: boolean; size: "sm" | "md" | "lg"}) => {
+export const DropdownArrow = ({isOpen, size, disableAnimation = false}: {isOpen: boolean; size: "sm" | "md" | "lg"; disableAnimation?: boolean}) => {
   const iconSizeMap: { [key: string]: "sm" | "md" | "lg" } = {
     sm: "sm",
     md: "sm",
@@ -703,7 +716,7 @@ export const DropdownArrow = ({isOpen, size}: {isOpen: boolean; size: "sm" | "md
 
   return (
     <div
-      className={`absolute right-0 h-[10px] w-[5px] transition-all duration-300`}
+      className={`absolute right-0 h-[10px] w-[5px] ${!disableAnimation ? 'transition-all duration-300' : ''}`}
       style={{
         transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
         transformOrigin: `calc(-${GTPIconSize[iconSizeMap[size]]}/2) 50%`,

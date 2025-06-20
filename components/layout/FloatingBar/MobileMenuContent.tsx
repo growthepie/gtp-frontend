@@ -26,6 +26,7 @@ export default function MobileMenuContent({ onClose }: MobileMenuContentProps) {
   const { ChainsNavigationItems } = useMaster();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [isFirstRender, setIsFirstRender] = useState(true);
 
   const navigationItemsWithChains = useMemo(() => {
     if (ChainsNavigationItems) { // ChainsNavigationItems is already a NavigationItem | undefined
@@ -74,11 +75,21 @@ export default function MobileMenuContent({ onClose }: MobileMenuContentProps) {
     };
   }, []); // Re-run if onClose changes, though unlikely critical for height.
 
+  // Mark first render as complete after initial render
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsFirstRender(false);
+    }, 150); // Reduced to 150ms for faster responsiveness after initial load
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="flex w-full h-full items-end">
       <div
         ref={containerRef}
-        className="flex flex-col h-[calc(100dvh-120px)] w-[calc(100vw-40px)] bg-[#1F2726] rounded-[22px] max-w-full max-h-[625px]"
+        className="flex flex-col h-[calc(100dvh-120px)] w-[calc(100vw-40px)] bg-[#1F2726] rounded-[22px] max-w-full max-h-[625px] will-change-auto"
+        style={{ transform: 'translateZ(0)' }} // Hardware acceleration for smoother rendering
       >
         {/* <Backgrounds isMobileMenu /> */} {/* Optional fancy background */}
 
@@ -140,7 +151,7 @@ export default function MobileMenuContent({ onClose }: MobileMenuContentProps) {
 
         {/* Navigation Items */}
         <div className="mt-[5px] mb-[5px] flex-grow overflow-hidden pl-[5px] pr-[5px]">
-          {scrollableHeight > 0 && (
+          {scrollableHeight > 0 ? (
             <VerticalScrollContainer height={scrollableHeight} scrollbarPosition="right" scrollbarAbsolute={false} scrollbarWidth="6px">
               {navigationItemsWithChains.map((item) =>
                 item.href ? (
@@ -149,6 +160,7 @@ export default function MobileMenuContent({ onClose }: MobileMenuContentProps) {
                     item={item}
                     sidebarOpen={true} // In mobile menu, labels always visible
                     onClose={onClose}   // Pass onClose to handle popover closing
+                    disableAnimation={isFirstRender}
                   />
                 ) : (
                   <SidebarMenuGroup
@@ -156,10 +168,16 @@ export default function MobileMenuContent({ onClose }: MobileMenuContentProps) {
                     item={item}
                     sidebarOpen={true} // In mobile menu, labels always visible
                     onClose={onClose}   // Pass onClose for child links
+                    disableAnimation={isFirstRender}
                   />
                 )
               )}
             </VerticalScrollContainer>
+          ) : (
+            // Placeholder div to prevent layout shift while calculating height
+            <div className="h-full w-full flex items-center justify-center">
+              <div className="w-6 h-6 animate-spin rounded-full border-2 border-forest-500 border-t-transparent"></div>
+            </div>
           )}
         </div>
 
