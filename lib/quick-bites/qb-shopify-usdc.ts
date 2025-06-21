@@ -1,4 +1,3 @@
-// In your quick bite data file (e.g., lib/quick-bites/arbitrum-timeboost.ts)
 import { QuickBiteData } from '@/lib/types/quickBites';
 
 const shopifyUsdc: QuickBiteData = {
@@ -8,32 +7,44 @@ const shopifyUsdc: QuickBiteData = {
 
     "# Cool Stuff",
     "To be filled",
-    "> WOW!",
+    "> This is a very important message!",
+
+    "```kpi-cards",JSON.stringify(
+      [
+        {
+          title: "Total USDC Volume",
+          value: "${{shopifyVolumeUSD}}",
+          description: "Test",
+          icon: "base-logo-monochrome",
+          info: "Test"
+        }
+      ]),
+    "```",
     
     "```chart",
     JSON.stringify({
       type: "column",
-      title: "Daily Timeboost Revenue in ETH",
-      subtitle: "The revenue that the Arbitrum DAO is making from Timeboost on Arbitrum per day",
+      title: "Settled USDC Volume via Shopify Stores",
+      subtitle: "The daily volume of USDC settled through Shopify stores",
       stacking: "normal",
       showXAsDate: true,
       dataAsJson: {
         meta: [
           {
-            name: "Timeboost Fees",
-            color: "#1DF7EF",
+            name: "Volume Settled",
+            color: "#2151F5",
             xIndex: 1,
             yIndex: 0,
             suffix: null,
-            prefix: 'Ξ',
+            prefix: '$',
             tooltipDecimals: 2,
-            url: "https://api.growthepie.com/v1/quick-bites/arbitrum-timeboost.json",
-            pathToData: "data.fees_paid_priority_eth.daily.values",
+            url: "https://api.growthepie.com/v1/quick-bites/shopify-usdc.json",
+            pathToData: "data.gross_volume_usdc.daily.values",
           }
         ],
       },
       height: 400,
-      caption: "The revenue that the Arbitrum DAO is making from Timeboost on Arbitrum per day. Data updated daily.",
+      caption: "The daily volume of USDC settled through Shopify stores. Data updated daily.",
     }),
     "```",
 
