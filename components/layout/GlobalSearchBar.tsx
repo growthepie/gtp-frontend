@@ -338,12 +338,13 @@ export default function GlobalFloatingBar() {
       </div>
       <div className={`fixed z-global-search bottom-0 md:bottom-auto md:top-[0px] left-0 right-0 flex justify-center w-full pointer-events-none pb-[30px] md:pb-0 md:pt-[30px]`}>
         <div className="w-full max-w-[1680px] px-[20px] md:px-[13px]">
-          <FloatingBarContainer className='p-[5px] md:px-[15px] md:py-[10px] !rounded-[27px]'>
-            <div className='w-full flex flex-col gap-y-[5px] md:flex-row'>
-              {isMobileMenuPopoverOpen && (
-                <MobileMenuContent onClose={() => setIsMobileMenuPopoverOpen(false)} />
-              )}
-              <div className={`flex tems-center w-full gap-x-[5px] md:gap-x-[15px] z-0 pointer-events-auto`}>
+          <FloatingBarContainer className='p-[5px] md:p-[5px] md:py-[5px] !rounded-[27px]'>
+            <div className='w-full flex flex-col md:flex-row'>
+              <MobileMenuContent 
+                isOpen={isMobileMenuPopoverOpen}
+                onClose={() => setIsMobileMenuPopoverOpen(false)} 
+              />
+              <div className={`flex items-center w-full gap-x-[5px] md:gap-x-[15px] z-0 pointer-events-auto`}>
                 {/* Mobile - Share Button */}
                 <Popover
                   placement="top-start"
@@ -426,8 +427,8 @@ export default function GlobalFloatingBar() {
                     </FilterSelectionContainer>
                   </div>
                 )}
-                <FocusSwitchSimple showBorder={true} className='hidden md:flex' />
                 <EthUsdSwitchSimple showBorder={true} className='hidden md:flex' />
+                <FocusSwitchSimple showBorder={true} className='hidden md:flex' />
 
                 {/* Desktop - Notifications */}
                 <NotificationButton
@@ -461,11 +462,8 @@ export default function GlobalFloatingBar() {
                 /> */}
 
                 <FloatingBarButton onClick={() => {
-                  if (isMobileMenuPopoverOpen) {
-                    setIsMobileMenuPopoverOpen(false);
-                  } else {
-                    setIsMobileMenuPopoverOpen(true);
-                  }
+                  // Use functional update for better performance
+                  setIsMobileMenuPopoverOpen(prev => !prev);
                 }}
                 icon={<AnimatedMenuIcon isOpen={isMobileMenuPopoverOpen} />}
                 >
@@ -550,7 +548,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <div className="absolute bottom-[-5px] md:bottom-auto md:top-[-10px] left-0 w-full p-[5px] md:p-2.5 bg-[#344240] rounded-[32px] flex flex-col justify-start items-center">
+    <div className="absolute bottom-[-5px] md:bottom-auto md:top-[-5px] left-0 w-full p-[5px] md:p-[5px] bg-[#344240] rounded-[32px] flex flex-col justify-start items-center">
       {/* Add a wrapper div that will handle the overflow */}
       <div ref={contentRef} className="w-full flex-1 overflow-hidden flex flex-col min-h-0">
         <div className={`w-full bg-[#151A19] rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>

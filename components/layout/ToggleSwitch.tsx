@@ -1,5 +1,5 @@
 "use client";
-import { use, useEffect, useRef, useState } from "react";
+import { useState, useEffect } from "react";
 
 interface ToggleValue {
   value: string;
@@ -21,7 +21,7 @@ interface ToggleProps {
   textColor?: string;
   containerColor?: string;
   sliderColor?: string;
-  size?: "sm" | "md" | "lg" | "xl"
+  size?: "sm" | "md" | "lg" | "xl";
 }
 
 export function ToggleSwitch({
@@ -38,137 +38,91 @@ export function ToggleSwitch({
   containerColor = "bg-[#344240]",
   sliderColor = "bg-[#1F2726]",
 }: ToggleProps) {
-  const toggleSelectionRef = useRef<HTMLDivElement>(null);
-  const [toggleWidth, setToggleWidth] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const animationFrameRef = useRef<number | null>(null);
   const [mounted, setMounted] = useState(false);
 
+  // Prevent hydration mismatch
   useEffect(() => {
-    setTimeout(() => {
-      // Set mounted to true after a short delay to ensure the component is fully rendered
     setMounted(true);
-    }, 500);
-  }, []);
-  
-  // Measure the toggle width when the component mounts or window resizes
-  useEffect(() => {
-    const toggle = toggleSelectionRef.current;
-    if (!toggle) return;
-
-    // Debounced resize handler
-    let resizeTimeout: NodeJS.Timeout;
-    const handleResize = () => {
-      if(!mounted) return;
-      
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(() => {
-        if (toggle) {
-          setToggleWidth(toggle.getBoundingClientRect().width);
-        }
-      }, 100);
-    };
-
-    // Initial measurement using requestAnimationFrame to ensure DOM is ready
-    animationFrameRef.current = requestAnimationFrame(() => {
-      setToggleWidth(toggle.getBoundingClientRect().width);
-    });
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      clearTimeout(resizeTimeout);
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  // Handle focus styling
-  useEffect(() => {
-    const toggle = toggleSelectionRef.current;
-    if (!toggle) return;
-
-    const handleFocus = () => toggle.classList.add('focus-visible');
-    const handleBlur = () => toggle.classList.remove('focus-visible');
-
-    toggle.addEventListener('focus', handleFocus);
-    toggle.addEventListener('blur', handleBlur);
-
-    return () => {
-      toggle.removeEventListener('focus', handleFocus);
-      toggle.removeEventListener('blur', handleBlur);
-    };
   }, []);
 
   const handleToggle = () => {
-    if (disabled || isAnimating) return;
-    
-    // Set animating state to prevent multiple rapid toggles
-    setIsAnimating(true);
-
-    // Schedule the actual state change
+    if (disabled) return;
     onChange(value === values.left.value ? values.right.value : values.left.value);
-    
-    // Use requestAnimationFrame to coordinate with browser's rendering cycle
-    animationFrameRef.current = requestAnimationFrame(() => {
-      setTimeout(() => {
-        setIsAnimating(false);
-      }, 100);
-    });
   };
 
-  // Handle keyboard accessibility
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      handleToggle(); 
+      handleToggle();
     }
   };
 
-  // Determine which value is active
   const isLeftActive = value === values.left.value;
 
-  const containerHeightMap = {
-    sm: "h-[24px]",
-    md: "h-[28px]",
-    lg: "h-[32px]",
-    xl: "h-[36px]"
+  // Refactored size configurations for consistent padding and dynamic calculations
+  const sizeConfig = {
+    sm: {
+      container: "h-[18px] px-[2px]",
+      slider: "h-[14px]",
+      font: "heading-small-xxs",
+      gap: "gap-x-[8px]",
+      componentPadding: "px-[6px]",
+      minWidth: "min-w-[60px]",
+      labelPadding: "px-[8px]",
+      containerPaddingPx: 4,
+    },
+    md: {
+      container: "h-[28px] px-[2px]",
+      slider: "h-[24px]",
+      font: "heading-small-xs",
+      gap: "gap-x-[10px]",
+      componentPadding: "px-[8px]",
+      minWidth: "min-w-[70px]",
+      labelPadding: "px-[10px]",
+      containerPaddingPx: 4,
+    },
+    lg: {
+      container: "h-[32px] px-[2px]",
+      slider: "h-[28px]",
+      font: "heading-small-sm",
+      gap: "gap-x-[12px]",
+      componentPadding: "px-[10px]",
+      minWidth: "min-w-[80px]",
+      labelPadding: "px-[12px]",
+      containerPaddingPx: 4,
+    },
+    xl: {
+      container: "h-[36px] px-[3px]",
+      slider: "h-[32px]",
+      font: "heading-small",
+      gap: "gap-x-[15px]",
+      componentPadding: "px-[12px]",
+      minWidth: "min-w-[90px]",
+      labelPadding: "px-[14px]",
+      containerPaddingPx: 6,
+    }
   };
 
-  const selectionHeightMap = {
-    sm: "h-[20px]",
-    md: "h-[24px]",
-    lg: "h-[28px]",
-    xl: "h-[32px]"
-  };
+  const config = sizeConfig[size];
 
-  const fontSizeMap = {
-    sm: "heading-small-xxs",
-    md: "heading-small-xs",
-    lg: "heading-small-sm",
-    xl: "heading-small-sm"
-  };
-
-  const componentPaddingMap = {
-    sm: "px-[2px]",
-    md: "px-[4px]",
-    lg: "px-[8px]",
-    xl: "px-[12px]"
-  };
-  
-  
+  if (!mounted) {
+    return null;
+  }
 
   return (
-    <div className={`flex items-center gap-x-[10px] ${className}`}>
+    <div className={`flex items-center ${config.gap} ${className}`}>
+      {leftComponent && (
+        <div className={`flex items-center justify-center ${config.componentPadding}`}>
+          {leftComponent}
+        </div>
+      )}
+      
       <div
         className={`
-          ${fontSizeMap[size]} ${textColor} whitespace-nowrap
-          select-none rounded-full
-          ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90 active:opacity-75'}
-          transition-opacity duration-200
+          relative flex items-center rounded-full cursor-pointer
+          ${config.container} ${config.minWidth} ${containerColor}
+          ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90 active:scale-[0.98]'}
+          transition-all duration-200 ease-out
         `}
         onClick={handleToggle}
         onKeyDown={handleKeyDown}
@@ -178,55 +132,54 @@ export function ToggleSwitch({
         aria-disabled={disabled}
         tabIndex={disabled ? -1 : 0}
       >
-        {/* Background container with both labels */}
+        {/* Left option background area - uses consistent padding */}
+        <div className={`flex-1 flex items-center justify-center relative z-10 ${config.labelPadding}`}>
+          <span className={`
+            ${config.font} ${textColor} font-semibold select-none 
+            whitespace-nowrap leading-none tracking-wide
+          `}>
+            {values.left.label}
+          </span>
+        </div>
+
+        {/* Right option background area - uses consistent padding */}
+        <div className={`flex-1 flex items-center justify-center relative z-10 ${config.labelPadding}`}>
+          <span className={`
+            ${config.font} ${textColor} font-semibold select-none 
+            whitespace-nowrap leading-none tracking-wide
+          `}>
+            {values.right.label}
+          </span>
+        </div>
+
+        {/* Sliding indicator - uses consistent padding and dynamic transform */}
         <div
-          className={`flex items-center justify-between rounded-full cursor-pointer p-[2px] ${containerHeightMap[size]} ${containerColor}`}
+          className={`
+            absolute top-1/2 z-20
+            w-1/2 ${config.slider} ${config.labelPadding} ${sliderColor}
+            rounded-full flex items-center justify-center
+            shadow-sm border border-black/5
+            ${mounted ? 'transition-transform duration-300 ease-out' : ''}
+          `}
+          style={{
+            left: `${config.containerPaddingPx / 2}px`,
+            transform: `translateY(-50%) translateX(${isLeftActive ? '0%' : `calc(100% - ${config.containerPaddingPx}px)`})`
+          }}
         >
-          {leftComponent && (
-            <div className={`flex items-center justify-center ${componentPaddingMap[size]}`}>
-              {leftComponent}
-            </div>
-          )}
-          <div 
-            ref={toggleSelectionRef} 
-            className={`relative flex items-center gap-x-[19px] h-[24px] px-[10px]`}
-          >
-            <div className="flex items-center justify-center">
-              <div>
-                {values.left.label}
-              </div>
-            </div>
-            <div className="flex items-center justify-center">
-              <div>
-                {values.right.label}
-              </div>
-            </div>
-            {/* Sliding highlighter */}
-            <div
-              className={`
-                absolute left-0 ${selectionHeightMap[size]}
-                flex items-center justify-center
-                rounded-full ${sliderColor}
-                ${mounted && "transition-all duration-300 will-change-transform"}
-                px-[10px]
-              `}
-              style={{
-                transform: isLeftActive ? "translateX(0px)" : `translateX(calc(${toggleWidth}px - 100%))`,
-                maxWidth: toggleWidth
-              }}
-            >
-              <div className="flex items-center justify-center">
-                {isLeftActive ? values.left.label : values.right.label}
-              </div>
-            </div>
-          </div>
-          {rightComponent && (
-            <div className={`flex items-center justify-center ${componentPaddingMap[size]}`}>
-              {rightComponent}
-            </div>
-          )}
+          <span className={`
+            ${config.font} ${textColor} font-semibold select-none 
+            whitespace-nowrap leading-none tracking-wide
+          `}>
+            {isLeftActive ? values.left.label : values.right.label}
+          </span>
         </div>
       </div>
+
+      {rightComponent && (
+        <div className={`flex items-center justify-center ${config.componentPadding}`}>
+          {rightComponent}
+        </div>
+      )}
     </div>
   );
 }

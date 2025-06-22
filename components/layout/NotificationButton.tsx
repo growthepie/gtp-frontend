@@ -76,7 +76,7 @@ export default function NotificationButton({
         <FloatingBarButton
           icon={(hasUnseenNotifications ? "gtp-notification-new" : "gtp-notification") as GTPIconName}
           title="Notifications"
-          className={`${className?.includes('md:hidden') ? '!bg-[#344240]' : ''} ${className} shadow-[0px_0px_50px_0px_#000000]`}
+          className={`${className?.includes('md:hidden') ? '!bg-[#344240]' : ''} ${className} shadow-[0px_0px_50px_0px_#000000] md:shadow-none active:scale-[0.98]`}
         />
       </div>
 

@@ -1,12 +1,10 @@
 // components/layout/MobileMenuContent.tsx
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, memo } from "react";
 import Link from "next/link";
 import {
   navigationItems,
-  NavigationItem,
 } from "@/lib/navigation";
-import { useUIContext } from "@/contexts/UIContext";
 import { Icon } from "@iconify/react";
 import { SidebarMenuGroup, SidebarMenuLink } from "../SidebarMenuGroup";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -20,14 +18,17 @@ import { GTPIcon } from "../GTPIcon";
 
 type MobileMenuContentProps = {
   onClose: () => void;
+  isOpen: boolean;
 };
 
-export default function MobileMenuContent({ onClose }: MobileMenuContentProps) {
+const MobileMenuContent = memo(function MobileMenuContent({ onClose, isOpen }: MobileMenuContentProps) {
   const { ChainsNavigationItems } = useMaster();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isFirstRender, setIsFirstRender] = useState(true);
+  const [hasBeenOpened, setHasBeenOpened] = useState(false);
 
+  // Memoize navigation items to prevent recalculation on every render
   const navigationItemsWithChains = useMemo(() => {
     if (ChainsNavigationItems) { // ChainsNavigationItems is already a NavigationItem | undefined
       const newNavigationItems = [...navigationItems];
@@ -36,6 +37,13 @@ export default function MobileMenuContent({ onClose }: MobileMenuContentProps) {
     }
     return navigationItems;
   }, [ChainsNavigationItems]);
+
+  // Track if the menu has ever been opened to lazy-load expensive content
+  useEffect(() => {
+    if (isOpen && !hasBeenOpened) {
+      setHasBeenOpened(true);
+    }
+  }, [isOpen, hasBeenOpened]);
 
   // Close menu on internal route change
   useEffect(() => {
@@ -52,6 +60,9 @@ export default function MobileMenuContent({ onClose }: MobileMenuContentProps) {
   const [scrollableHeight, setScrollableHeight] = useState(0);
 
   useEffect(() => {
+    // Only calculate height when menu is open and has been rendered
+    if (!isOpen || !hasBeenOpened) return;
+
     const calculateHeight = () => {
       if (containerRef.current && headerRef.current && footerRef.current) {
         const totalHeight = containerRef.current.clientHeight;
@@ -64,31 +75,55 @@ export default function MobileMenuContent({ onClose }: MobileMenuContentProps) {
       }
     };
 
-    calculateHeight();
-    // Debounced resize listener or ResizeObserver might be better for performance if needed
-    window.addEventListener("resize", calculateHeight);
-    const timeoutId = setTimeout(calculateHeight, 100); // Recalculate after a short delay for dynamic content
+    // Use requestAnimationFrame for better performance
+    const timeoutId = setTimeout(() => {
+      requestAnimationFrame(calculateHeight);
+    }, 50); // Small delay to ensure DOM is ready
+
+    const handleResize = () => {
+      requestAnimationFrame(calculateHeight);
+    };
+
+    window.addEventListener("resize", handleResize);
 
     return () => {
-      window.removeEventListener("resize", calculateHeight);
+      window.removeEventListener("resize", handleResize);
       clearTimeout(timeoutId);
     };
-  }, []); // Re-run if onClose changes, though unlikely critical for height.
+  }, [isOpen, hasBeenOpened]); // Only recalculate when menu opens
 
-  // Mark first render as complete after initial render
+  // Mark first render as complete after initial render - only when menu opens
   useEffect(() => {
+    if (!isOpen) return;
+    
     const timer = setTimeout(() => {
       setIsFirstRender(false);
-    }, 150); // Reduced to 150ms for faster responsiveness after initial load
+    }, 100); // Reduced to 100ms for faster responsiveness
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [isOpen]); // Only trigger when menu opens
+
+  // Don't render anything if never opened (saves initial memory)
+  if (!hasBeenOpened && !isOpen) {
+    return null;
+  }
 
   return (
-    <div className="flex w-full h-full items-end">
+    <div 
+      className={`flex w-full h-full items-end transition-all duration-300 overflow-hidden ease-in-out ${
+        isOpen 
+          ? 'opacity-100 pointer-events-auto' 
+          : 'opacity-100 pointer-events-none'
+      }`}
+      style={{ 
+        visibility: isOpen ? 'visible' : 'hidden',
+        maxHeight: isOpen ? '630px' : '0',
+        // top: isOpen ? 'auto' : '-100%' // Move out of flow when hidden
+      }}
+    >
       <div
         ref={containerRef}
-        className="flex flex-col h-[calc(100dvh-120px)] w-[calc(100vw-40px)] bg-[#1F2726] rounded-[22px] max-w-full max-h-[625px] will-change-auto"
+        className="flex flex-col h-[calc(100dvh-120px)] w-[calc(100vw-40px)] bg-[#1F2726] rounded-[22px] max-w-full max-h-[625px] will-change-transform mb-[5px]"
         style={{ transform: 'translateZ(0)' }} // Hardware acceleration for smoother rendering
       >
         {/* <Backgrounds isMobileMenu /> */} {/* Optional fancy background */}
@@ -151,7 +186,7 @@ export default function MobileMenuContent({ onClose }: MobileMenuContentProps) {
 
         {/* Navigation Items */}
         <div className="mt-[5px] mb-[5px] flex-grow overflow-hidden pl-[5px] pr-[5px]">
-          {scrollableHeight > 0 ? (
+          {isOpen && scrollableHeight > 0 ? (
             <VerticalScrollContainer height={scrollableHeight} scrollbarPosition="right" scrollbarAbsolute={false} scrollbarWidth="6px">
               {navigationItemsWithChains.map((item) =>
                 item.href ? (
@@ -173,12 +208,12 @@ export default function MobileMenuContent({ onClose }: MobileMenuContentProps) {
                 )
               )}
             </VerticalScrollContainer>
-          ) : (
-            // Placeholder div to prevent layout shift while calculating height
+          ) : isOpen ? (
+            // Show loading only when menu is open but height not calculated yet
             <div className="h-full w-full flex items-center justify-center">
               <div className="w-6 h-6 animate-spin rounded-full border-2 border-forest-500 border-t-transparent"></div>
             </div>
-          )}
+          ) : null}
         </div>
 
         {/* Footer */}
@@ -284,4 +319,6 @@ export default function MobileMenuContent({ onClose }: MobileMenuContentProps) {
       </div>
     </div>
   );
-}
+});
+
+export default MobileMenuContent;
