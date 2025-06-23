@@ -42,6 +42,17 @@ export default function GlobalFloatingBar() {
   const pathname = usePathname();
   const isOpen = searchParams.get("search") === "true";
   const [showMore, setShowMore] = useState<{ [key: string]: boolean }>({});
+  
+  // Track if user has started typing to auto-open mobile menu
+  const query = searchParams.get("query") || "";
+
+  // Function to clear query following the same pattern as SearchBar
+  const clearQuery = useCallback(() => {
+    const newSearchParams = new URLSearchParams(window.location.search);
+    newSearchParams.delete("query");
+    const url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
+    window.history.replaceState(null, "", url);
+  }, [pathname]);
 
   // Track if the user is interacting with search (not just focused)
   const [isSearchActive, setIsSearchActive] = useState(false);
@@ -96,6 +107,47 @@ export default function GlobalFloatingBar() {
       }, 300); // Longer delay for better UX
     }
   }, [isMobile]);
+
+  // Track if the menu was manually closed to prevent auto-reopening
+  const [menuWasManuallyClosed, setMenuWasManuallyClosed] = useState(false);
+
+  // Auto-open mobile menu when user starts typing
+  const handleInputChange = useCallback(() => {
+    // Add a small delay to prevent interference with close actions
+    setTimeout(() => {
+      if (isMobile && !isMobileMenuPopoverOpen && query.trim().length > 0 && !menuWasManuallyClosed) {
+        setIsMobileMenuPopoverOpen(true);
+        setIsSearchActive(true); // Also activate search overlay
+      }
+    }, 10);
+  }, [isMobile, isMobileMenuPopoverOpen, query, menuWasManuallyClosed]);
+
+  // Effect to auto-open mobile menu when user starts typing
+  useEffect(() => {
+    handleInputChange();
+  }, [handleInputChange]);
+
+  // Reset the manual close flag when query changes (user is actively typing)
+  const prevQueryRef = useRef(query);
+  useEffect(() => {
+    // Reset when query is cleared
+    if (query.trim().length === 0) {
+      setMenuWasManuallyClosed(false);
+    }
+    // Reset when user is actively typing (query length is increasing)
+    else if (query.length > prevQueryRef.current.length) {
+      setMenuWasManuallyClosed(false);
+    }
+    prevQueryRef.current = query;
+  }, [query]);
+
+  // Stable onClose handler to prevent race condition
+  const handleMobileMenuClose = useCallback(() => {
+    setIsMobileMenuPopoverOpen(false);
+    setMenuWasManuallyClosed(true);
+    setIsSearchActive(false);
+    clearQuery();
+  }, [clearQuery]);
 
   // Clean up timeout on unmount
   useEffect(() => {
@@ -320,7 +372,7 @@ export default function GlobalFloatingBar() {
           </div>
         </div>
       </div>
-      {isMobile && isSearchActive && (
+      {isMobile && isSearchActive && !isMobileMenuPopoverOpen && (
         <div
           className="fixed inset-0 bg-black/20 z-40"
           onClick={() => setIsSearchActive(false)}
@@ -342,7 +394,7 @@ export default function GlobalFloatingBar() {
             <div className='w-full flex flex-col md:flex-row'>
               <MobileMenuWithSearch 
                 isOpen={isMobileMenuPopoverOpen}
-                onClose={() => setIsMobileMenuPopoverOpen(false)} 
+                onClose={handleMobileMenuClose}
               />
               <div className={`flex items-center w-full gap-x-[5px] md:gap-x-[15px] z-0 pointer-events-auto`}>
                 {/* Mobile - Share Button */}
@@ -427,14 +479,17 @@ export default function GlobalFloatingBar() {
                     </FilterSelectionContainer>
                   </div>
                 )}
-                <EthUsdSwitchSimple showBorder={true} className='hidden md:flex' />
-                <FocusSwitchSimple showBorder={true} className='hidden md:flex' />
-
-                {/* Desktop - Notifications */}
+                <div className='hidden md:flex items-center gap-x-[10px]'>
+                  <EthUsdSwitchSimple showBorder={true} className='hidden md:flex' />
+                  <FocusSwitchSimple showBorder={true} className='hidden md:flex' />
+                  {/* Desktop - Notifications */}
                 <NotificationButton
                   placement="bottom"
                   className="hidden md:flex"
                 />
+                </div>
+
+                
                 {/* Mobile - Menu Button */}
                 {/* <Popover
               placement='top-end'
@@ -463,7 +518,15 @@ export default function GlobalFloatingBar() {
 
                 <FloatingBarButton onClick={() => {
                   // Use functional update for better performance
-                  setIsMobileMenuPopoverOpen(prev => !prev);
+                  setIsMobileMenuPopoverOpen(prev => {
+                    const newState = !prev;
+                    // If closing the menu, use the same stable handler
+                    if (!newState) {
+                      handleMobileMenuClose();
+                      return false; // Override the state change since handleMobileMenuClose handles it
+                    }
+                    return newState;
+                  });
                 }}
                 icon={<AnimatedMenuIcon isOpen={isMobileMenuPopoverOpen} />}
                 className='block md:hidden'

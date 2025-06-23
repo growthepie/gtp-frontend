@@ -127,6 +127,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
   const containerRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
   const [scrollableHeight, setScrollableHeight] = useState(0);
 
   // Memoize navigation items to prevent recalculation on every render
@@ -246,6 +247,30 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
   useEffect(() => {
     setKeyCoords({ y: null, x: null });
   }, [memoizedQuery, allFilteredData]);
+
+  // Click outside to close mobile menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isOpen && mobileMenuRef.current) {
+        // Get the floating bar container (parent of this component)
+        const floatingBarContainer = mobileMenuRef.current.closest('[data-floating-bar]') || 
+                                   mobileMenuRef.current.closest('.p-\\[5px\\]') ||
+                                   mobileMenuRef.current.parentElement?.parentElement;
+        
+        // Close menu if click is outside the entire floating bar container
+        if (floatingBarContainer && !floatingBarContainer.contains(event.target as Node)) {
+          onClose();
+        }
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [isOpen, onClose]);
 
   // Keyboard navigation event handler (adapted from original)
   useEffect(() => {
@@ -406,6 +431,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
 
   return (
     <div 
+      ref={mobileMenuRef}
       className={`flex md:hidden w-full h-full items-end transition-all duration-300 overflow-hidden ease-in-out ${
         isOpen 
           ? 'opacity-100 pointer-events-auto' 

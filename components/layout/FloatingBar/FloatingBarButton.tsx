@@ -51,7 +51,7 @@ export const FloatingBarButton: React.FC<FloatingBarButtonProps> = ({
 
   return (
     <button
-      className={`${getBaseClasses()} ${className}`}
+      className={`${getBaseClasses()} ${className} active:scale-[0.98]`}
       onClick={onClick}
       title={title}
     >
