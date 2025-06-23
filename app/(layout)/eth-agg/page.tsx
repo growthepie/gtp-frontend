@@ -27,16 +27,22 @@ export default function EthAgg() {
   const TopMetricsComponent = <TopEthAggMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
 
 
+  
 
   return (
     <>
      <TopSelectArea selectedBreakdownGroup={selectedBreakdownGroup} setSelectedBreakdownGroup={setSelectedBreakdownGroup} />
      <div className="mt-[15px]">
-        <div className={`px-[20px] md:px-[50px] text-[#CDD8D3] overflow-hidden transition-height duration-500 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? "h-[159px]" : "h-[0px]"}`}>  
-          <div className="h-[144px] p-[15px] rounded-[15px] bg-[#1F2726] flex flex-col gap-y-[15px]">
-            <div className="heading-large-lg">What is the Ethereum Ecosystem?</div>
+        <div className={`px-[20px] md:px-[50px] text-[#CDD8D3] overflow-hidden transition-height duration-500 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? "h-[159px]" : selectedBreakdownGroup === "Builders & Apps" ? "h-[145px]" : "h-[0px]"}`}>  
+          <div className={`h-[144px] px-[30px] py-[15px] rounded-[15px] bg-[#1F2726] flex flex-col gap-y-[15px] ${selectedBreakdownGroup === "Ethereum Ecosystem" ? "h-[144px]" : selectedBreakdownGroup === "Builders & Apps" ? "h-[130px]" : "h-[0px]"}`}>
+            <div className="heading-large-lg">{selectedBreakdownGroup === "Ethereum Ecosystem" ? "What is the Ethereum Ecosystem?" : "Ethereum is for Builders and Apps"}</div>
             <div className="text-sm">
-              Ethereum today is a layered ecosystem: the proof‑of‑stake mainnet secures DeFi, NFT, DAO and other dApps, while over $42 billion (peak) now resides on Layer 2 rollups such as Optimism, Arbitrum, Base, ZKsync and Starknet. Since the community adopted a “rollup‑centric roadmap,” the protocol assumes most user activity migrates to these rollups, leaving Layer 1 to specialise in settlement, consensus and minimal data availability.
+              {selectedBreakdownGroup === "Ethereum Ecosystem" ?
+              "Ethereum today is a layered ecosystem: the proof‑of‑stake mainnet secures DeFi, NFT, DAO and other dApps, while over $42 billion (peak) now resides on Layer 2 rollups such as Optimism, Arbitrum, Base, ZKsync and Starknet. Since the community adopted a “rollup‑centric roadmap,” the protocol assumes most user activity migrates to these rollups, leaving Layer 1 to specialise in settlement, consensus and minimal data availability."
+              : 
+              "Ethereum is for everyone. Every builder who explores different use cases, from payments, to art, to identity solutions. Explore here how much builder activity there is and which apps are already out there."
+            
+              }
             </div>
 
           </div>

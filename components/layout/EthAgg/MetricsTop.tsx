@@ -520,7 +520,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     <>
       {connectionStatus === 'connected' && (
         <div className='flex gap-x-[15px] w-full'>
-          <div className={`bg-[#1F2726] rounded-[15px] p-[15px] w-full transition-height duration-300 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'h-[150px] overflow-hidden' : 'h-[306px]'}`}>
+          <div className={`bg-[#1F2726]  w-full transition-height duration-300 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'h-[150px] overflow-hidden rounded-[15px] p-[15px]' : selectedBreakdownGroup === "Builders & Apps" ? 'h-[0px] overflow-hidden p-0' : 'h-[306px] rounded-[15px] p-[15px]'}`}>
             <div className='heading-large-md mb-[15px]'>Ethereum Uptime</div>
             <div className='numbers-2xl mb-[30px]'>
               {(() => {
@@ -543,7 +543,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
             </div>
 
           </div>
-          <div className={`flex flex-col gap-y-[15px] bg-[#1F2726] rounded-[15px] p-[15px] min-w-0   w-full transition-height duration-300 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'h-[150px] overflow-hidden' : 'h-[306px]'}`}>
+          <div className={`flex flex-col gap-y-[15px] bg-[#1F2726]  min-w-0   w-full transition-height duration-300 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'h-[150px] overflow-hidden rounded-[15px] p-[15px]' : selectedBreakdownGroup === "Builders & Apps" ? 'h-[0px] overflow-hidden p-0' : 'h-[306px] rounded-[15px] p-[15px]'}`}>
             <div className={`heading-large-md transition-transform duration-500 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'mb-[10px]' : 'mb-[0px]'}`}>{selectedBreakdownGroup === "Ethereum Ecosystem" ? 'Ecosystem Transactions Per Second' : 'Ethereum TPS'}</div>
             <div className='flex flex-col gap-y-[30px] mb-[20px]'>
               <div className='numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
@@ -796,7 +796,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
             </div>
 
           </div>
-          <div className={`bg-[#1F2726] rounded-[15px] py-[15px] px-[15px] min-w-0 w-full  transition-height duration-300 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'h-[150px] overflow-hidden' : 'h-[306px]'}`}>
+            <div className={`bg-[#1F2726]  min-w-0 w-full  transition-height duration-300 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'h-[150px] overflow-hidden rounded-[15px] py-[15px] px-[15px]' : selectedBreakdownGroup === "Builders & Apps" ? 'h-[0px] overflow-hidden p-0' : 'h-[306px] rounded-[15px] py-[15px] px-[15px]'}`}>
             <div className={`heading-large-md ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'mb-[10px]' : 'mb-[30px]'}`}>Token Transfer Fee</div>
             <div className='pt-[15px] mb-[50px]'>
               <div className='flex justify-between items-center'>
