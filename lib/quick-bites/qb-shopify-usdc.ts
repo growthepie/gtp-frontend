@@ -14,12 +14,26 @@ const shopifyUsdc: QuickBiteData = {
         {
           title: "Total USDC Volume",
           value: "${{shopifyVolumeUSD}}",
-          description: "Test",
-          icon: "base-logo-monochrome",
+          description: "since launch",
+          icon: "gtp-realtime",
           info: "Test"
-        }
+        },
+          {
+            title: "Total # of Stores",
+            value: "100",
+            description: "since launch",
+            icon: "gtp-realtime",
+            info: "Test"
+          },
+          {
+            title: "Total # of Customers",
+            value: "100",
+            description: "since launch",
+            icon: "gtp-realtime",
+            info: "Test"
+          }
       ]),
-    "```",
+      "```",
     
     "```chart",
     JSON.stringify({
@@ -48,9 +62,8 @@ const shopifyUsdc: QuickBiteData = {
     }),
     "```",
 
-    "## Timeboost vs Network Fees",
-    "In addition to revenue from Timeboost, the Arbitrum DAO also receives the standard transaction fees that users pay. The following chart allows you to track the share of Timeboost fees vs Network fees in ETH.",
-
+    "## More Info",
+    "Shopify, a leading e-commerce platform, has integrated USDC as a payment option, allowing merchants to accept stablecoin payments seamlessly. This move is expected to enhance transaction speed and reduce costs for both merchants and customers.",
   ],
   image: "/images/quick-bites/placeholder.png",
   og_image: "https://api.growthepie.com/v1/og_images/quick-bites/arbitrum-timeboost.png",
