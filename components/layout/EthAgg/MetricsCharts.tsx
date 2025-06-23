@@ -8,7 +8,7 @@ import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import { HighchartsProvider, HighchartsChart, YAxis, XAxis, Tooltip, Chart, LineSeries, Series } from 'react-jsx-highcharts';
 import useSWR from 'swr';
 import { EthAggURL } from '@/lib/urls';
-import { EthAggResponse, CountLayer2s, Tps, Stables, Gdp } from '@/types/api/EthAggResponse';
+import { EthAggResponse, CountLayer2s, Tps, Stables, Gdp, MeetL2s } from '@/types/api/EthAggResponse';
 import Highcharts, { theme } from 'highcharts';
 import "@/app/highcharts.axis.css";
 import { tooltipPositioner } from '@/lib/chartUtils';
@@ -16,6 +16,10 @@ import { createTooltipFormatter } from '@/lib/highcharts/tooltipFormatters';
 import { BACKEND_SIMULATION_CONFIG } from '../LandingChart';
 import { PatternRegistry, initializePatterns } from "@/lib/highcharts/svgPatterns";
 import { useLocalStorage } from "usehooks-ts";
+import { useMaster } from "@/contexts/MasterContext";
+import { GTPIconName } from "@/icons/gtp-icon-names";
+import { Icon } from '@iconify/react';
+import Link from 'next/link';
 // Define the props type for MetricsChartsComponent
 
 const CHART_MARGINS = {
@@ -36,7 +40,7 @@ function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) 
   const gdpData = data ? data.data.gdp : null;
   const layer2Data = data ? data.data.count_layer2s : null;
   const tpsData = data ? data.data.tps : null;
-
+  const meetL2sData = data ? data.data.meet_l2s : null;
   const maxUnix = useMemo(() => {
     if(!stableData || !gdpData || !layer2Data || !tpsData) return null;
 
@@ -64,9 +68,12 @@ function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) 
     <Container className='flex flex-col gap-y-[60px] mt-[60px] w-full'>
       <EconCharts selectedBreakdownGroup={selectedBreakdownGroup} gdpData={gdpData} stableData={stableData} maxUnix={maxUnix} />
       <ScalingCharts selectedBreakdownGroup={selectedBreakdownGroup} layer2Data={layer2Data} tpsData={tpsData} maxUnix={maxUnix} />
+      <MeetLayer2s meetL2sData={meetL2sData} selectedBreakdownGroup={selectedBreakdownGroup} />
     </Container>
   );
 }
+
+
 
 const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: MetricsChartsProps & { stableData: Stables, gdpData: Gdp, maxUnix: number }) => {
   const [selectedMode, setSelectedMode] = useState("gas_fees_usd_absolute");
@@ -1332,6 +1339,105 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
       </div>
     </div>
   );
+}
+
+
+const MeetLayer2s = ({ meetL2sData, selectedBreakdownGroup }: { meetL2sData: MeetL2s | null, selectedBreakdownGroup: string }) => {
+  if (!meetL2sData) return null;
+  const { AllChainsByKeys } = useMaster(); 
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  
+  function formatNumber(number: number, decimals?: number): string {
+    if (number === 0) {
+      return "0";
+    } else if (Math.abs(number) >= 1e9) {
+      if (Math.abs(number) >= 1e12) {
+        return (number / 1e12).toFixed(2) + "T";
+      } else if (Math.abs(number) >= 1e9) {
+        return (number / 1e9).toFixed(2) + "B";
+      }
+    } else if (Math.abs(number) >= 1e6) {
+      return (number / 1e6).toFixed(2) + "M";
+    } else if (Math.abs(number) >= 1e3) {
+      const rounded = (number / 1e3).toFixed(2);
+      return `${rounded}${Math.abs(number) >= 10000 ? "k" : "k"}`;
+    } else if (Math.abs(number) >= 100) {
+      return number.toFixed(decimals ? decimals : 2);
+    } else if (Math.abs(number) >= 10) {
+      return number.toFixed(decimals ? decimals : 2);
+    } else {
+      return number.toFixed(decimals ? decimals : 2);
+    }
+  
+    // Default return if none of the conditions are met
+    return "";
+  }
+  
+  return (
+    <div className={`gap-y-[15px] ${selectedBreakdownGroup === "Metrics" ? "flex flex-col " : "hidden"}`}>
+      <div className='flex gap-x-[8px] items-center'>  
+          <GTPIcon icon='gtp-multiple-chains' size='lg' className='' />
+          <div className='heading-large-lg'>Meet L2s</div>
+      </div>
+      <div className='text-md pl-[44px]'>Ethereum scales using different Layer 2s, built by 3rd party teams. Have a closer look at each of them.</div>
+      <div className='flex gap-x-[5px]'>
+        {Object.keys(meetL2sData).map((key) => {
+          const color = AllChainsByKeys[key]?.colors["dark"][0];
+          
+          return (
+            <div key={key} className='flex flex-col gap-y-[10px] rounded-[15px] p-[15px] bg-transparent border-[1px] border-[#5A6462] w-[250px]'>
+              <div className='flex items-center w-full justify-between'>
+                <div className='flex items-center gap-x-[5px]'>
+                  <GTPIcon icon={`${AllChainsByKeys[key]?.urlKey}-logo-monochrome` as GTPIconName} size='lg' 
+                  style={{
+                    color: color,
+                  }}
+                  />
+                  <div className='heading-large-md'>{AllChainsByKeys[key]?.label}</div>
+                </div>
+                <Link href={`/chains/${key}`} className='flex items-center justify-center w-[24px] h-[24px] rounded-full bg-[#344240]'>
+                  <Icon
+                      icon="feather:arrow-right"
+                      className="w-[15px] h-[15px]"
+                    />
+                </Link>
+              </div>
+               <div className='flex gap-x-[10px] items-center'>
+                <div className='flex flex-col gap-y-[5px]'>
+                  
+                  <div className='numbers-2xl'>{formatNumber(meetL2sData[key].yesterday_aa)}</div>
+                  <div className='text-xs'>Wallets Yesterday</div>
+                </div>
+                <div className='flex flex-col gap-y-[5px]'>
+                  
+                  <div className='numbers-2xl'>{formatNumber(meetL2sData[key].total_aa)}</div>
+                  <div className='text-xs'>Total Wallets</div>
+                </div>
+
+              </div>
+              <div className='flex gap-x-[10px] items-center'>
+                <div className='flex flex-col gap-y-[5px]'>
+                  <div className='numbers-2xl'>{formatNumber(meetL2sData[key][showUsd ? "stables_mcap_usd" : "stables_mcap_eth"])}</div>
+                  <div className='text-xs'>Stablecoin Supply</div>
+                </div>
+                <div className='flex flex-col gap-y-[5px]'>
+                  <div className='numbers-2xl'>{formatNumber(meetL2sData[key].tps)}</div>
+                  <div className='text-xs'>TPS/Day</div>
+                </div>
+              </div>
+              <div className='flex flex-col gap-y-[5px]'>
+                <div className='flex items-center gap-x-[5px]'>
+                  <GTPIcon icon='gtp-crosschain' size='sm' className='' />
+                  <GTPIcon icon='gtp-defi' size='sm' className='' />
+                </div>
+                <div className='text-xs'>Predominately used for</div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
 }
 
 

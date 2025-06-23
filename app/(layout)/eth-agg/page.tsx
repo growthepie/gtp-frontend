@@ -19,6 +19,11 @@ import Container from "@/components/layout/Container";
 import TopSelectArea from "@/components/layout/EthAgg/TopSelectArea";
 import TopEthAggMetrics from "@/components/layout/EthAgg/MetricsTop";
 import MetricsCharts from "@/components/layout/EthAgg/MetricsCharts";
+import { GTPIconName } from "@/icons/gtp-icon-names";
+import { GTPIcon } from "@/components/layout/GTPIcon";
+
+
+
 export default function EthAgg() {
  
   const [selectedBreakdownGroup, setSelectedBreakdownGroup] = useState("Metrics");
@@ -33,8 +38,8 @@ export default function EthAgg() {
     <>
      <TopSelectArea selectedBreakdownGroup={selectedBreakdownGroup} setSelectedBreakdownGroup={setSelectedBreakdownGroup} />
      <div className="mt-[15px]">
-        <div className={`px-[20px] md:px-[50px] text-[#CDD8D3] overflow-hidden transition-height duration-500 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? "h-[159px]" : selectedBreakdownGroup === "Builders & Apps" ? "h-[145px]" : "h-[0px]"}`}>  
-          <div className={`h-[144px] px-[30px] py-[15px] rounded-[15px] bg-[#1F2726] flex flex-col gap-y-[15px] ${selectedBreakdownGroup === "Ethereum Ecosystem" ? "h-[144px]" : selectedBreakdownGroup === "Builders & Apps" ? "h-[130px]" : "h-[0px]"}`}>
+        <div className={`px-[20px] md:px-[50px] text-[#CDD8D3] overflow-hidden transition-height duration-500 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? "h-[159px]" : selectedBreakdownGroup === "Builders & Apps" ? "h-[141px]" : "h-[0px]"}`}>  
+          <div className={`h-[144px] px-[30px] py-[15px] rounded-[15px] bg-[#1F2726] flex flex-col gap-y-[15px] ${selectedBreakdownGroup === "Ethereum Ecosystem" ? "h-[144px]" : selectedBreakdownGroup === "Builders & Apps" ? "h-[126px]" : "h-[0px]"}`}>
             <div className="heading-large-lg">{selectedBreakdownGroup === "Ethereum Ecosystem" ? "What is the Ethereum Ecosystem?" : "Ethereum is for Builders and Apps"}</div>
             <div className="text-sm">
               {selectedBreakdownGroup === "Ethereum Ecosystem" ?
@@ -49,6 +54,9 @@ export default function EthAgg() {
         </div>
         <TopEthAggMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
         <MetricsCharts selectedBreakdownGroup={selectedBreakdownGroup} />
+        <Container>
+          <EcosystemBottom  selectedBreakdownGroup={selectedBreakdownGroup}/>
+        </Container>
         
      </div>
       {/* <ShowLoading
@@ -66,4 +74,24 @@ export default function EthAgg() {
 
     </>
   );
+}
+
+
+
+const EcosystemBottom = ({selectedBreakdownGroup}: {selectedBreakdownGroup: string}) => {
+
+  if (selectedBreakdownGroup !== "Ethereum Ecosystem") return null;
+
+  return (
+    <div className='flex flex-col gap-y-[15px]'>
+      <div className='flex items-center w-full justify-between'>
+        <div className='flex items-center gap-x-[8px]'>
+          <GTPIcon icon={"gtp-read"} size='lg'       />
+          <div className='heading-large-md'>The Why and How of the Ethereum Ecosystem</div>
+        </div>
+        
+      </div>
+      <div className='text-md pl-[44px]'>Learn why Ethereum is built the way it is, how it prioritizes security, sovereignty and freedom to use applications for everyone. </div>
+    </div>
+  )
 }

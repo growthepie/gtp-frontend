@@ -6,7 +6,19 @@ export type EthAggResponse = {
         count_layer2s: CountLayer2s;
         stables: Stables;
         gdp: Gdp;
+        meet_l2s: MeetL2s;
     };
+}
+
+
+export type MeetL2s = {
+    [key: string]: {
+        total_aa: number;
+        yesterday_aa: number;
+        stables_mcap_usd: number;
+        stables_mcap_eth: number;
+        tps: number;
+    }
 }
 
 export type Stables = {

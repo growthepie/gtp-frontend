@@ -54,7 +54,7 @@ interface SSEData {
 
 function TopEthAggMetricsComponent({ selectedBreakdownGroup }: TopEthAggMetricsProps) {
   return (
-    <Container className="min-h-[300px]"> {/* Added min-height for better loading view */}
+    <Container className=""> {/* Added min-height for better loading view */}
       <RealTimeMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
     </Container>
   );
