@@ -24,7 +24,7 @@ import { useToast } from '../toast/GTPToast';
 import { GTPIconName } from '@/icons/gtp-icon-names';
 import { track } from '@vercel/analytics/react';
 import SharePopoverContent from './FloatingBar/SharePopoverContent';
-import MobileMenuContent from './FloatingBar/MobileMenuContent';
+import MobileMenuWithSearch from './FloatingBar/MobileMenuWithSearch';
 import NotificationButton from './NotificationButton';
 
 
@@ -338,9 +338,9 @@ export default function GlobalFloatingBar() {
       </div>
       <div className={`fixed z-global-search bottom-0 md:bottom-auto md:top-[0px] left-0 right-0 flex justify-center w-full pointer-events-none pb-[30px] md:pb-0 md:pt-[30px]`}>
         <div className="w-full max-w-[1680px] px-[20px] md:px-[13px]">
-          <FloatingBarContainer className='p-[5px] md:p-[5px] md:py-[5px] !rounded-[27px]'>
+          <FloatingBarContainer className='p-[5px] md:p-[5px] md:pl-[6px] md:py-[5px] !rounded-[27px]'>
             <div className='w-full flex flex-col md:flex-row'>
-              <MobileMenuContent 
+              <MobileMenuWithSearch 
                 isOpen={isMobileMenuPopoverOpen}
                 onClose={() => setIsMobileMenuPopoverOpen(false)} 
               />
@@ -466,6 +466,7 @@ export default function GlobalFloatingBar() {
                   setIsMobileMenuPopoverOpen(prev => !prev);
                 }}
                 icon={<AnimatedMenuIcon isOpen={isMobileMenuPopoverOpen} />}
+                className='block md:hidden'
                 >
 
                 </FloatingBarButton>
@@ -481,6 +482,7 @@ export default function GlobalFloatingBar() {
 
 const SearchContainer = ({ children }: { children: React.ReactNode }) => {
   const { allFilteredData } = useSearchBuckets();
+  const { isMobile } = useUIContext();
   const searchParams = useSearchParams();
   const query = searchParams.get("query");
   const [hasOverflow, setHasOverflow] = useState(false);
@@ -494,6 +496,9 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
     allFilteredData.length > 0 &&
     isScreenTall &&
     totalResults >= 10;
+
+  // Don't show search results container on mobile - the mobile menu handles search results
+  const showSearchResults = query && allFilteredData.length > 0 && !isMobile;
 
   // Add a ref to check for overflow
   const contentRef = useRef<HTMLDivElement>(null);
@@ -546,6 +551,19 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
       window.removeEventListener('keyup', handleKeyUp);
     };
   }, []);
+
+  // Only render the search container if we should show search results
+  if (!showSearchResults) {
+    return (
+      <div className="absolute bottom-[-5px] md:bottom-auto md:top-[-5px] left-0 w-full p-[5px] md:p-[5px] bg-[#344240] rounded-[32px] flex flex-col justify-start items-center">
+        <div ref={contentRef} className="w-full flex-1 overflow-hidden flex flex-col min-h-0">
+          <div className={`w-full bg-[#151A19] rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>
+            {children}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="absolute bottom-[-5px] md:bottom-auto md:top-[-5px] left-0 w-full p-[5px] md:p-[5px] bg-[#344240] rounded-[32px] flex flex-col justify-start items-center">

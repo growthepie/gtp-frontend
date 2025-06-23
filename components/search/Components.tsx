@@ -340,7 +340,9 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               </div>
             </div>
             {/* second child: the filter selection container */}
-            <Filters showMore={showMore} setShowMore={setShowMore} />
+            <div className="hidden md:block">
+              <Filters showMore={showMore} setShowMore={setShowMore} />
+            </div>
           </div>
       );
     }
