@@ -33,6 +33,7 @@ const RelatedQuickBites: React.FC<RelatedQuickBitesProps> = ({ relatedQuickBites
             key={QuickBite.slug}
             title={QuickBite.title}
             subtitle={QuickBite.subtitle}
+            bannerImage={QuickBite.image || "https://api.growthepie.com/v1/quick-bites/banners/placeholder.png"}
             date={QuickBite.date}
             icon={QuickBite.icon}
             slug={QuickBite.slug}
