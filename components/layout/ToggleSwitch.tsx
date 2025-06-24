@@ -99,7 +99,7 @@ export function ToggleSwitch({
       componentPadding: "px-[12px]",
       minWidth: "min-w-[90px]",
       labelPadding: "px-[14px]",
-      containerPaddingPx: 6,
+      containerPaddingPx: 4,
     }
   };
 
@@ -121,7 +121,7 @@ export function ToggleSwitch({
         className={`
           relative flex items-center rounded-full cursor-pointer
           ${config.container} ${config.minWidth} ${containerColor}
-          ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90 active:scale-[0.98]'}
+          ${disabled ? 'opacity-50 cursor-default' : ''}
           transition-all duration-200 ease-out
         `}
         onClick={handleToggle}
@@ -158,7 +158,6 @@ export function ToggleSwitch({
             absolute top-1/2 z-20
             w-1/2 ${config.slider} ${config.labelPadding} ${sliderColor}
             rounded-full flex items-center justify-center
-            shadow-sm border border-black/5
             ${mounted ? 'transition-transform duration-300 ease-out' : ''}
           `}
           style={{

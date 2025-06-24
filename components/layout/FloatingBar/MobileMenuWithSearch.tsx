@@ -470,8 +470,8 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
         <div ref={footerRef} className="p-[10px] pt-0 mt-auto">
           <div className="flex flex-col justify-end pt-3 pb-0 relative">
             <div className="items-end justify-center flex gap-x-[15px] mt-[2px] mb-[0px]">
-              <FocusSwitchSimple isMobile />
-              <EthUsdSwitchSimple isMobile />
+            <EthUsdSwitchSimple isMobile showBorder={false} />
+              <FocusSwitchSimple isMobile showBorder={false} />
             </div>
           </div>
         </div>

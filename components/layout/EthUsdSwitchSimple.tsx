@@ -80,7 +80,7 @@ export default function EthUsdSwitchSimple({
         }}
         value={showUsd ? "usd" : "eth"}
         onChange={handleToggle}
-        size={isMobile ? "sm" : "xl"}
+        size={isMobile ? "xl" : "xl"}
         className={`
           ${showBorder ? "h-fit rounded-full border border-[#5A6462]" : ""} 
           ${isUpdating ? "opacity-80" : ""}
