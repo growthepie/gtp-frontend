@@ -62,12 +62,94 @@ const shopifyUsdc: QuickBiteData = {
     }),
     "```",
 
+    "Test text for the chart below. This is a placeholder for the actual chart data.",
+
+    "```chart",
+    JSON.stringify({
+      type: "column",
+      title: "Merchants Receiving USDC",
+      subtitle: "The daily number of new and returning Shopfiy merchants that received USDC",
+      stacking: "normal",
+      showXAsDate: true,
+
+      dataAsJson: {
+        meta: [{
+          name: "New Merchants",
+          color: "#19D9D6",
+          xIndex: 1,
+          yIndex: 0,
+          suffix: null,
+          prefix: null,
+          tooltipDecimals: 0,
+          url: "https://api.growthepie.com/v1/quick-bites/shopify-usdc.json",
+          pathToData: "data.new_merchants.daily.values",
+        },
+        {
+          name: "Returning Merchants",
+          color: "#FFC300",
+          xIndex: 1,
+          yIndex: 0,
+          suffix: null,
+          prefix: null,
+          tooltipDecimals: 0,
+          url: "https://api.growthepie.com/v1/quick-bites/shopify-usdc.json",
+          pathToData: "data.returning_merchants.daily.values",
+        },
+        ],
+      },
+      height: 400,
+      caption: "The daily number of new and returning Shopify merchants that received USDC. Data updated daily.",
+      seeMetricURL: null
+    }),
+    "```",
+
+    "More text for the chart below. This is a placeholder for the actual chart data.",
+
+     "```chart",
+    JSON.stringify({
+      type: "column",
+      title: "Customers Paying in USDC",
+      subtitle: "The daily number of new and returning customers that paid in USDC",
+      stacking: "normal",
+      showXAsDate: true,
+
+      dataAsJson: {
+        meta: [{
+          name: "New Customers",
+          color: "#19D9D6",
+          xIndex: 1,
+          yIndex: 0,
+          suffix: null,
+          prefix: null,
+          tooltipDecimals: 0,
+          url: "https://api.growthepie.com/v1/quick-bites/shopify-usdc.json",
+          pathToData: "data.new_payers.daily.values",
+        },
+        {
+          name: "Returning Merchants",
+          color: "#FFC300",
+          xIndex: 1,
+          yIndex: 0,
+          suffix: null,
+          prefix: null,
+          tooltipDecimals: 0,
+          url: "https://api.growthepie.com/v1/quick-bites/shopify-usdc.json",
+          pathToData: "data.returning_payers.daily.values",
+        },
+        ],
+      },
+      height: 400,
+      caption: "The daily number of new and returning customers that paid in USDC. Data updated daily.",
+      seeMetricURL: null
+    }),
+    "```",
+
     "## More Info",
     "Shopify, a leading e-commerce platform, has integrated USDC as a payment option, allowing merchants to accept stablecoin payments seamlessly. This move is expected to enhance transaction speed and reduce costs for both merchants and customers.",
   ],
   image: "https://api.growthepie.com/v1/quick-bites/banners/placeholder.png",
   og_image: "https://api.growthepie.com/v1/og_images/quick-bites/arbitrum-timeboost.png",
-  date: "2025-06-18",
+  date: "2025-06-26",
   related: [],
   author: [{
     name: "ETH Wave",

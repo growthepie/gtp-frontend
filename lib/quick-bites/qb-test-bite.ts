@@ -8,8 +8,8 @@ const testBite: QuickBiteData = {
     "```kpi-cards",JSON.stringify(
       [
           {
-            title: "Test",
-            value: "100",
+            title: "Test with Dynamic Value",
+            value: "{{timeboostTotalETH}} ETH",
             description: "Test",
             icon: "gtp-realtime",
             info: "Test"
