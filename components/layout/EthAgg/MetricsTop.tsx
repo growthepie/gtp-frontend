@@ -38,6 +38,7 @@ interface ChainMetrics {
 interface GlobalMetrics {
   total_tps?: number;
   highest_tps?: number;
+  highest_l2_cost_usd?: number;
   eth_price_usd?: number;
   ethereum_tx_cost_usd?: number;
   layer2s_tx_cost_usd?: number;
@@ -170,11 +171,22 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
 
   // Create transitions for Cost chains
   const costTransitions = useTransition(
-    Object.keys(chainsCostHistory).filter((chain) => (chainData[chain]?.[showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] > 0)).sort((a, b) => chainsCostHistory[b][chainsCostHistory[b].length - 1] - chainsCostHistory[a][chainsCostHistory[a].length - 1]).map((chainId, index) => ({
-      chainId,
-      y: index * 21,
-      height: 18,
-    })),
+    Object.keys(chainsCostHistory)
+      .filter((chain) => {
+        const costKey = showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer';
+        const cost = chainData[chain]?.[costKey];
+        const isEthereum = AllChainsByKeys[chain]?.key === 'ethereum';
+        return cost > 0 && !isEthereum;
+      })
+      .sort((a, b) =>
+        chainsCostHistory[b][chainsCostHistory[b].length - 1] -
+        chainsCostHistory[a][chainsCostHistory[a].length - 1]
+      )
+      .map((chainId, index) => ({
+        chainId,
+        y: index * 21,
+        height: 18,
+      })),
     {
       key: (item) => item.chainId,
       from: { opacity: 0, height: 0, y: 0 },
@@ -544,7 +556,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
 
           </div>
           <div className={`flex flex-col gap-y-[15px] bg-[#1F2726]  min-w-0   w-full transition-height duration-300 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'h-[150px] overflow-hidden rounded-[15px] p-[15px]' : selectedBreakdownGroup === "Builders & Apps" ? 'h-[0px] overflow-hidden p-0' : 'h-[306px] rounded-[15px] p-[15px]'}`}>
-            <div className={`heading-large-md transition-transform duration-500 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'mb-[10px]' : 'mb-[0px]'}`}>{selectedBreakdownGroup === "Ethereum Ecosystem" ? 'Ecosystem Transactions Per Second' : 'Ethereum TPS'}</div>
+            <div className={`heading-large-md transition-transform duration-500 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'mb-[10px]' : 'mb-[0px]'}`}>{selectedBreakdownGroup === "Ethereum Ecosystem" ? 'Ecosystem Transactions Per Second' : 'Ethereum Ecosystem TPS'}</div>
             <div className='flex flex-col gap-y-[30px] mb-[20px]'>
               <div className='numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
                 {Intl.NumberFormat('en-US', {
@@ -929,7 +941,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                 <div className="relative">
                   {costTransitions((style, { chainId }) => {
                     const chain = AllChainsByKeys[chainId];
-                    if (!chain || chain.key == 'ethereum') return null;
+                    if (!chain) return null;
 
                     const chainColor = chain.colors.dark[0];
                     const chainName = chain.name_short;
@@ -984,7 +996,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                         <div className='flex items-end w-full justify-end'>
                           <div className='h-[2px] '
                             style={{
-                              width: chainData[chainId]?.[showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] && globalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] ? `${chainData[chainId][showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] / Math.max(globalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth']) * 100}%` : '0%',
+                              width: chainData[chainId]?.['tx_cost_erc20_transfer_usd'] && globalMetrics['highest_l2_cost_usd'] ? `${chainData[chainId]['tx_cost_erc20_transfer_usd'] / globalMetrics.highest_l2_cost_usd * 100}%` : '0%',
                               backgroundColor: chainColor
                             }}
                           />
