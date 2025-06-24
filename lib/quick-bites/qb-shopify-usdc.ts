@@ -65,7 +65,7 @@ const shopifyUsdc: QuickBiteData = {
     "## More Info",
     "Shopify, a leading e-commerce platform, has integrated USDC as a payment option, allowing merchants to accept stablecoin payments seamlessly. This move is expected to enhance transaction speed and reduce costs for both merchants and customers.",
   ],
-  image: "/images/quick-bites/placeholder.png",
+  image: "https://api.growthepie.com/v1/quick-bites/banners/placeholder.png",
   og_image: "https://api.growthepie.com/v1/og_images/quick-bites/arbitrum-timeboost.png",
   date: "2025-06-18",
   related: [],

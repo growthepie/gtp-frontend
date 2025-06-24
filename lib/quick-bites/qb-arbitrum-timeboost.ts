@@ -115,7 +115,7 @@ const arbitrumTimeboost: QuickBiteData = {
 
     "All charts on this page are updated daily so you can track the adoption of Timeboost.",
   ],
-  image: "/images/quick-bites/placeholder.png",
+  image: "https://api.growthepie.com/v1/quick-bites/banners/placeholder.png",
   og_image: "https://api.growthepie.com/v1/og_images/quick-bites/arbitrum-timeboost.png",
   date: "2025-05-29",
   related: [],
