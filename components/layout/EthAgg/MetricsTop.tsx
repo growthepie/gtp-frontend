@@ -857,7 +857,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                     });
                   })()}
                 </div>
-                <div className='flex bg-gradient-to-b from-[#596780] to-[#94ABD3] bg-clip-text text-transparent flex-col items-end w-[100px] numbers-2xl'>${Intl.NumberFormat('en-US', { maximumFractionDigits: 3, minimumFractionDigits: 3 }).format(globalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth'] || 0)}</div>
+                <div className='flex bg-gradient-to-b from-[#596780] to-[#94ABD3] bg-clip-text text-transparent flex-col items-end w-[100px] numbers-2xl'>${Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(globalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth'] || 0)}</div>
               </div>
               <div className='flex justify-between items-center mt-[15px]'>
                 <div className='w-[115px] heading-small-xxs'>Layer 2s</div>
@@ -915,7 +915,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                     });
                   })()}
                 </div>
-                <div className='flex bg-gradient-to-b from-[#FE5468] to-[#FFDF27] bg-clip-text text-transparent flex-col items-end w-[100px] numbers-2xl'>${Intl.NumberFormat('en-US', { maximumFractionDigits: 3, minimumFractionDigits: 3 }).format(globalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] || 0)}</div>
+                <div className='flex bg-gradient-to-b from-[#FE5468] to-[#FFDF27] bg-clip-text text-transparent flex-col items-end w-[100px] numbers-2xl'>${Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(globalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] || 0)}</div>
               </div>
             </div>
             <div className={`relative flex flex-col gap-y-[5px] -mx-[15px] bg-[#1F2726]  z-10 rounded-b-[15px] ${showChainsCost ? 'pb-[10px] shadow-lg' : 'pb-0'}`}
@@ -925,11 +925,11 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                   height: !showChainsCost ? `80px` : `${Object.keys(chainsCostHistory).filter((chain) => (chainData[chain]?.[showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] > 0)).length * 21 + 35}px`
                 }}
               >
-                <div className='heading-large-md text-[#5A6462] '>Chains</div>
+                <div className='heading-large-md text-[#5A6462] '>Layer 2s</div>
                 <div className="relative">
                   {costTransitions((style, { chainId }) => {
                     const chain = AllChainsByKeys[chainId];
-                    if (!chain) return null;
+                    if (!chain || chain.key == 'ethereum') return null;
 
                     const chainColor = chain.colors.dark[0];
                     const chainName = chain.name_short;
@@ -984,7 +984,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                         <div className='flex items-end w-full justify-end'>
                           <div className='h-[2px] '
                             style={{
-                              width: chainData[chainId]?.[showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] && globalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] && globalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth'] ? `${chainData[chainId][showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] / Math.max(globalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'], globalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth']) * 100}%` : '0%',
+                              width: chainData[chainId]?.[showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] && globalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] ? `${chainData[chainId][showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] / Math.max(globalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth']) * 100}%` : '0%',
                               backgroundColor: chainColor
                             }}
                           />
