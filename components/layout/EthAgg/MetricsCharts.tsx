@@ -25,7 +25,7 @@ import Link from 'next/link';
 
 const CHART_MARGINS = {
   marginTop: 0,
-  marginRight: 38,
+  marginRight: 42,
   marginBottom: 0,
   marginLeft: 0,
 }
@@ -328,7 +328,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
       </TopRowContainer> */}
       <div className='flex gap-x-[15px] w-full'>
         <div className='flex flex-col relative rounded-[15px] w-full h-[375px] bg-[#1F2726] pt-[15px] overflow-hidden'>
-          <div className='flex h-[56px] px-[30px] items-start w-full'>
+          <div className='flex h-[56px] px-[34px] items-start w-full'>
             <div className='flex gap-x-[5px] items-center'>
               <div className='heading-large-md text-nowrap'>Gross Domestic Product</div>
               <GTPIcon icon='gtp-info-monochrome' size='sm' className='' />
@@ -457,7 +457,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
                     }
 
                     // Calculate the fraction that 42px is in relation to the pixel width of the chart
-                    const fraction = 38 / chart.chartWidth;
+                    const fraction = 42 / chart.chartWidth;
                     
                     // Create a line from the last point to the top of the chart
                     lastPointLines[dictionaryKey][lastPointLines[dictionaryKey].length] = chart.renderer
@@ -468,26 +468,14 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
                         x2: chart.chartWidth * (1 - fraction) - 0.00005,
                         y2: chart.plotTop - 6,
                         stroke: isSafariBrowser ? "#CDD8D3" : "url('#gradient0-gdp')",
-                        "stroke-dasharray": null,
+                        "stroke-dasharray": 2,
                         "stroke-width": 1,
                         rendering: "crispEdges",
                       })
                       .add();
                     
                     // Create a circle at the top
-                    lastPointLines[dictionaryKey][lastPointLines[dictionaryKey].length] = chart.renderer
-                      .circle(
-                        chart.chartWidth * (1 - fraction),
-                        chart.plotTop / 3 + 6,
-                        3,
-                      )
-                      .attr({
-                        fill: "#CDD8D3",
-                        r: 4.5,
-                        zIndex: 9999,
-                        rendering: "crispEdges",
-                      })
-                      .add();
+
                   });
                 }}
 
@@ -649,7 +637,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
           </div>
         </div>
         <div className='flex flex-col relative rounded-[15px] w-full h-[375px] bg-[#1F2726] pt-[15px] overflow-hidden'>
-          <div className='flex h-[56px] px-[30px] items-start w-full'>
+          <div className='flex h-[56px] px-[34px] items-start w-full'>
             <div className='flex gap-x-[5px] items-center'>
               <div className='heading-large-md text-nowrap'>Stablecoin Supply</div>
               <GTPIcon icon='gtp-info-monochrome' size='sm' className='' />
@@ -777,7 +765,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
                     }
 
                     // Calculate the fraction that 42px is in relation to the pixel width of the chart
-                    const fraction = 38 / chart.chartWidth;
+                    const fraction = 42 / chart.chartWidth;
                     
                     // Create a line from the last point to the top of the chart
                     lastPointLines[dictionaryKey][lastPointLines[dictionaryKey].length] = chart.renderer
@@ -788,26 +776,13 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
                         x2: chart.chartWidth * (1 - fraction) - 0.00005,
                         y2: chart.plotTop - 6,
                         stroke: isSafariBrowser ? "#CDD8D3" : "url('#gradient0-stables')",
-                        "stroke-dasharray": null,
+                        "stroke-dasharray": 2,
                         "stroke-width": 1,
                         rendering: "crispEdges",
                       })
                       .add();
                     
-                    // Create a circle at the top
-                    lastPointLines[dictionaryKey][lastPointLines[dictionaryKey].length] = chart.renderer
-                      .circle(
-                        chart.chartWidth * (1 - fraction),
-                        chart.plotTop / 3 + 6,
-                        3,
-                      )
-                      .attr({
-                        fill: "#CDD8D3",
-                        r: 4.5,
-                        zIndex: 9999,
-                        rendering: "crispEdges",
-                      })
-                      .add();
+
                   });
                 }}
               />
@@ -1163,7 +1138,7 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
       </TopRowContainer> */}
       <div className='flex gap-x-[15px]'>
         <div className='flex flex-col relative rounded-[15px] w-full h-[375px] bg-[#1F2726] pt-[15px] overflow-hidden'>
-          <div className='flex h-[56px] px-[30px] items-start w-full'>
+          <div className='flex h-[56px] px-[34px] items-start w-full'>
             <div className='flex gap-x-[5px] items-center'>
               <div className='heading-large-md text-nowrap'>Layer 2s Building on Ethereum</div>
               <GTPIcon icon='gtp-info-monochrome' size='sm' className='' />
@@ -1291,7 +1266,7 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
                     }
 
                     // Calculate the fraction that 42px is in relation to the pixel width of the chart
-                    const fraction = 38 / chart.chartWidth;
+                    const fraction = 42 / chart.chartWidth;
                     
                     // Create a line from the last point to the top of the chart
                     lastPointLinesScaling[dictionaryKey][lastPointLinesScaling[dictionaryKey].length] = chart.renderer
@@ -1302,7 +1277,7 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
                         x2: chart.chartWidth * (1 - fraction) - 0.00005,
                         y2: chart.plotTop - 6,
                         stroke: isSafariBrowser ? "#CDD8D3" : "url('#gradient0-l2count')",
-                        "stroke-dasharray": null,
+                        "stroke-dasharray": 2,
                         "stroke-width": 1,
                         rendering: "crispEdges",
                       })
@@ -1447,7 +1422,7 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
           </div>
         </div>
         <div className='flex flex-col relative rounded-[15px] w-full h-[375px] bg-[#1F2726] pt-[15px] overflow-hidden'>
-          <div className='flex h-[56px] px-[30px] items-start w-full'>
+          <div className='flex h-[56px] px-[34px] items-start w-full'>
             <div className='flex gap-x-[5px] items-center'>
               <div className='heading-large-md text-nowrap'>Average Daily TPS</div>
               <GTPIcon icon='gtp-info-monochrome' size='sm' className='' />
@@ -1575,7 +1550,7 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
                     }
 
                     // Calculate the fraction that 42px is in relation to the pixel width of the chart
-                    const fraction = 38 / chart.chartWidth;
+                    const fraction = 42 / chart.chartWidth;
                     
                     // Create a line from the last point to the top of the chart
                     lastPointLinesScaling[dictionaryKey][lastPointLinesScaling[dictionaryKey].length] = chart.renderer
@@ -1586,7 +1561,7 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
                         x2: chart.chartWidth * (1 - fraction) - 0.00005,
                         y2: chart.plotTop - 6,
                         stroke: isSafariBrowser ? "#CDD8D3" : "url('#gradient0-tps')",
-                        "stroke-dasharray": null,
+                        "stroke-dasharray": 2,
                         "stroke-width": 1,
                         rendering: "crispEdges",
                       })
