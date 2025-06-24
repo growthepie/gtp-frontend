@@ -167,7 +167,7 @@ const shopifyUsdc: QuickBiteData = {
     url: "/chains/base"
   },
   {
-    icon: "gtp-metrics-stablecoin-market-cap",
+    icon: "gtp-metrics-stablecoinmarketcap",
     name: "Stablecoins",
     url: "/fundamentals/stablecoin-market-cap"
   }],

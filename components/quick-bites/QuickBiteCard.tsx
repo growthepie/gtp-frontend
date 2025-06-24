@@ -9,6 +9,7 @@ import { GTPIconName } from '@/icons/gtp-icon-names';
 import { formatDate } from '@/lib/utils/formatters';
 import { url } from 'inspector';
 import Image from 'next/image';
+import ChartWatermark from '../layout/ChartWatermark';
 
 interface QuickBiteCardProps {
   title: string;
@@ -59,14 +60,14 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
   return (
     <Link
       href={`/quick-bites/${slug}`}
-      className={`block h-full ${className} min-w-[275px] h-[275px]`}
+      className={`block h-full ${className} min-w-[275px] !h-[275px] select-none group`}
       aria-labelledby={`card-title-${slug}`}
     >
       <div className='flex flex-col w-full h-full p-[15px] gap-y-[10px] border border-[#5A6462] rounded-[15px]'>
         <div className='flex flex-col'>
           <div className='flex justify-between h-[51px]'>
-            <div className='heading-small-xs w-[175px]'>{title}</div>
-            <div className="text-xs align-start">
+            <div className='heading-small-xs w-[175px] truncate whitespace-pre-wrap group-hover:underline'>{title}</div>
+            <div className="text-xs align-start whitespace-nowrap">
               <time dateTime={date}>{formatDate(date)}</time>
             </div>
           </div>
@@ -74,13 +75,16 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
         </div>
         <div className='flex flex-1 justify-between items-center gap-x-[15px]'>
           <div className='relative bg-[#5A6462] rounded-[15px] w-full h-full'>
-          <Image
-            src={bannerImage}
-            alt={title}
-            objectFit='cover'
-            fill
-            className='w-full h-full object-cover rounded-[15px]'
-          />
+            <Image
+              src={bannerImage}
+              alt={title}
+              objectFit='cover'
+              fill
+              className='w-full h-full object-cover rounded-[15px]'
+            />
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-50">
+              <ChartWatermark className="w-[78px] text-[#EAECEB]" />
+            </div>
           </div>
           <div className='min-w-[24px] min-h-[24px] bg-[#344240] rounded-full flex items-center justify-center'>
             <Icon icon={'fluent:arrow-right-32-filled'} className={`w-[15px] h-[15px]`} />
