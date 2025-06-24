@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useRef } from 'react';
 import { GTPIcon } from '../GTPIcon';
 import Container from '../Container';
 import { TopRowContainer } from '../TopRow';
@@ -17,6 +17,7 @@ import { BACKEND_SIMULATION_CONFIG } from '../LandingChart';
 import { PatternRegistry, initializePatterns } from "@/lib/highcharts/svgPatterns";
 import { useLocalStorage } from "usehooks-ts";
 import { useMaster } from "@/contexts/MasterContext";
+import { useUIContext } from "@/contexts/UIContext";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
@@ -24,7 +25,7 @@ import Link from 'next/link';
 
 const CHART_MARGINS = {
   marginTop: 0,
-  marginRight: 42,
+  marginRight: 38,
   marginBottom: 0,
   marginLeft: 0,
 }
@@ -83,6 +84,17 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
     useElementSizeObserver<HTMLDivElement>();
   
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const { isSafariBrowser } = useUIContext();
+  
+  // State for last point lines rendering
+  const [chartWidth, setChartWidth] = useState<number | null>(null);
+  const chartComponent = useRef<Highcharts.Chart | null>(null);
+  const lastPointLines = useMemo<{
+    [key: string]: Highcharts.SVGElement[];
+  }>(() => ({}), []);
+  const lastPointCircles = useMemo<{
+    [key: string]: Highcharts.SVGElement[];
+  }>(() => ({}), []);
 
 
 
@@ -357,8 +369,9 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
                   },
                 },
               }}
+              
             >
-              <Chart
+                            <Chart
 
                 backgroundColor={"transparent"}
                 type="line"
@@ -378,6 +391,105 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
                 // marginRight={40}
                 {...CHART_MARGINS}
                 spacing={[0, 0, 0, 0]}
+                onRender={function (chartData) {
+                  const chart = chartData.target as any;
+                  const chartRef = this;
+                  chartComponent.current = chartRef;
+                  
+                  if (!chart || !chart.series || chart.series.length === 0) return;
+
+                  // Set width for y axis label
+                  if (chartWidth === null || chartWidth !== chart.plotWidth) {
+                    setChartWidth(chart.plotWidth);
+                  }
+
+                  chart.series.forEach((series, index) => {
+                    const dictionaryKey = `${chart.series[index].name}_gdp`;
+
+                    // Check if gradient exists
+                    if (!document.getElementById("gradient0-gdp")) {
+                      chart.renderer.definition({
+                        attributes: {
+                          id: "gradient0-gdp",
+                          x1: "0%",
+                          y1: "0%",
+                          x2: "0%",
+                          y2: "95%",
+                        },
+                        children: [
+                          {
+                            tagName: "stop",
+                            attributes: {
+                              id: "stop1-gdp",
+                              offset: "0%",
+                            },
+                          },
+                          {
+                            tagName: "stop",
+                            attributes: {
+                              id: "stop2-gdp",
+                              offset: "100%",
+                            },
+                          },
+                        ],
+                        tagName: "linearGradient",
+                        textContent: "",
+                      });
+                      const stop1 = document.getElementById("stop1-gdp");
+                      const stop2 = document.getElementById("stop2-gdp");
+                      stop1?.setAttribute("stop-color", "#CDD8D3");
+                      stop1?.setAttribute("stop-opacity", "1");
+                      stop2?.setAttribute("stop-color", "#CDD8D3");
+                      stop2?.setAttribute("stop-opacity", "0.33");
+                    }
+
+                    const lastPoint: Highcharts.Point = chart.series[index].points[chart.series[index].points.length - 1];
+
+                    // Check if key exists in lastPointLines
+                    if (!lastPointLines[dictionaryKey]) {
+                      lastPointLines[dictionaryKey] = [];
+                    }
+                    if (lastPointLines[dictionaryKey] && lastPointLines[dictionaryKey].length > 0) {
+                      lastPointLines[dictionaryKey].forEach((line) => {
+                        line.destroy();
+                      });
+                      lastPointLines[dictionaryKey] = [];
+                    }
+
+                    // Calculate the fraction that 42px is in relation to the pixel width of the chart
+                    const fraction = 38 / chart.chartWidth;
+                    
+                    // Create a line from the last point to the top of the chart
+                    lastPointLines[dictionaryKey][lastPointLines[dictionaryKey].length] = chart.renderer
+                      .createElement("line")
+                      .attr({
+                        x1: chart.chartWidth * (1 - fraction) + 0.00005,
+                        y1: lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
+                        x2: chart.chartWidth * (1 - fraction) - 0.00005,
+                        y2: chart.plotTop - 6,
+                        stroke: isSafariBrowser ? "#CDD8D3" : "url('#gradient0-gdp')",
+                        "stroke-dasharray": null,
+                        "stroke-width": 1,
+                        rendering: "crispEdges",
+                      })
+                      .add();
+                    
+                    // Create a circle at the top
+                    lastPointLines[dictionaryKey][lastPointLines[dictionaryKey].length] = chart.renderer
+                      .circle(
+                        chart.chartWidth * (1 - fraction),
+                        chart.plotTop / 3 + 6,
+                        3,
+                      )
+                      .attr({
+                        fill: "#CDD8D3",
+                        r: 4.5,
+                        zIndex: 9999,
+                        rendering: "crispEdges",
+                      })
+                      .add();
+                  });
+                }}
 
               />
               <XAxis
@@ -577,11 +689,6 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
                   },
                 },
               }}
-              events={{
-                load: function (this: any) {
-                  
-                }
-              }}
             >
               <Chart
 
@@ -604,6 +711,105 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
                 // marginRight={40}
                 {...CHART_MARGINS}
                 spacing={[0, 0, 0, 0]}
+                onRender={function (chartData) {
+                  const chart = chartData.target as any;
+                  const chartRef = this;
+                  chartComponent.current = chartRef;
+                  
+                  if (!chart || !chart.series || chart.series.length === 0) return;
+
+                  // Set width for y axis label
+                  if (chartWidth === null || chartWidth !== chart.plotWidth) {
+                    setChartWidth(chart.plotWidth);
+                  }
+
+                  chart.series.forEach((series, index) => {
+                    const dictionaryKey = `${chart.series[index].name}_stables`;
+
+                    // Check if gradient exists
+                    if (!document.getElementById("gradient0-stables")) {
+                      chart.renderer.definition({
+                        attributes: {
+                          id: "gradient0-stables",
+                          x1: "0%",
+                          y1: "0%",
+                          x2: "0%",
+                          y2: "95%",
+                        },
+                        children: [
+                          {
+                            tagName: "stop",
+                            attributes: {
+                              id: "stop1-stables",
+                              offset: "0%",
+                            },
+                          },
+                          {
+                            tagName: "stop",
+                            attributes: {
+                              id: "stop2-stables",
+                              offset: "100%",
+                            },
+                          },
+                        ],
+                        tagName: "linearGradient",
+                        textContent: "",
+                      });
+                      const stop1 = document.getElementById("stop1-stables");
+                      const stop2 = document.getElementById("stop2-stables");
+                      stop1?.setAttribute("stop-color", "#CDD8D3");
+                      stop1?.setAttribute("stop-opacity", "1");
+                      stop2?.setAttribute("stop-color", "#CDD8D3");
+                      stop2?.setAttribute("stop-opacity", "0.33");
+                    }
+
+                    const lastPoint: Highcharts.Point = chart.series[index].points[chart.series[index].points.length - 1];
+
+                    // Check if key exists in lastPointLines
+                    if (!lastPointLines[dictionaryKey]) {
+                      lastPointLines[dictionaryKey] = [];
+                    }
+                    if (lastPointLines[dictionaryKey] && lastPointLines[dictionaryKey].length > 0) {
+                      lastPointLines[dictionaryKey].forEach((line) => {
+                        line.destroy();
+                      });
+                      lastPointLines[dictionaryKey] = [];
+                    }
+
+                    // Calculate the fraction that 42px is in relation to the pixel width of the chart
+                    const fraction = 38 / chart.chartWidth;
+                    
+                    // Create a line from the last point to the top of the chart
+                    lastPointLines[dictionaryKey][lastPointLines[dictionaryKey].length] = chart.renderer
+                      .createElement("line")
+                      .attr({
+                        x1: chart.chartWidth * (1 - fraction) + 0.00005,
+                        y1: lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
+                        x2: chart.chartWidth * (1 - fraction) - 0.00005,
+                        y2: chart.plotTop - 6,
+                        stroke: isSafariBrowser ? "#CDD8D3" : "url('#gradient0-stables')",
+                        "stroke-dasharray": null,
+                        "stroke-width": 1,
+                        rendering: "crispEdges",
+                      })
+                      .add();
+                    
+                    // Create a circle at the top
+                    lastPointLines[dictionaryKey][lastPointLines[dictionaryKey].length] = chart.renderer
+                      .circle(
+                        chart.chartWidth * (1 - fraction),
+                        chart.plotTop / 3 + 6,
+                        3,
+                      )
+                      .attr({
+                        fill: "#CDD8D3",
+                        r: 4.5,
+                        zIndex: 9999,
+                        rendering: "crispEdges",
+                      })
+                      .add();
+                  });
+                }}
               />
               <XAxis
                 type="datetime"
@@ -757,6 +963,17 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
   const [selectedValue, setSelectedValue] = useState("absolute");
   const [selectedTimespan, setSelectedTimespan] = useState("max");
   const [showUsd, setShowUsd] = useState(true);
+  const { isSafariBrowser } = useUIContext();
+  
+  // State for last point lines rendering
+  const [chartWidthScaling, setChartWidthScaling] = useState<number | null>(null);
+  const chartComponentScaling = useRef<Highcharts.Chart | null>(null);
+  const lastPointLinesScaling = useMemo<{
+    [key: string]: Highcharts.SVGElement[];
+  }>(() => ({}), []);
+  const lastPointCirclesScaling = useMemo<{
+    [key: string]: Highcharts.SVGElement[];
+  }>(() => ({}), []);
 
   const [xAxisExtremesL2, setXAxisExtremesL2] = useState({
     xMin: layer2Data.daily.values[0][layer2Data.daily.types.indexOf("unix")],
@@ -1008,6 +1225,93 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
                 // marginBottom={0}
                 // marginRight={40}
                 {...CHART_MARGINS}
+                onRender={function (chartData) {
+                  const chart = chartData.target as any;
+                  const chartRef = this;
+                  chartComponentScaling.current = chartRef;
+                  
+                  if (!chart || !chart.series || chart.series.length === 0) return;
+
+                  // Set width for y axis label
+                  if (chartWidthScaling === null || chartWidthScaling !== chart.plotWidth) {
+                    setChartWidthScaling(chart.plotWidth);
+                  }
+
+                  chart.series.forEach((series, index) => {
+                    const dictionaryKey = `${chart.series[index].name}_l2count`;
+
+                    // Check if gradient exists
+                    if (!document.getElementById("gradient0-l2count")) {
+                      chart.renderer.definition({
+                        attributes: {
+                          id: "gradient0-l2count",
+                          x1: "0%",
+                          y1: "0%",
+                          x2: "0%",
+                          y2: "95%",
+                        },
+                        children: [
+                          {
+                            tagName: "stop",
+                            attributes: {
+                              id: "stop1-l2count",
+                              offset: "0%",
+                            },
+                          },
+                          {
+                            tagName: "stop",
+                            attributes: {
+                              id: "stop2-l2count",
+                              offset: "100%",
+                            },
+                          },
+                        ],
+                        tagName: "linearGradient",
+                        textContent: "",
+                      });
+                      const stop1 = document.getElementById("stop1-l2count");
+                      const stop2 = document.getElementById("stop2-l2count");
+                      stop1?.setAttribute("stop-color", "#CDD8D3");
+                      stop1?.setAttribute("stop-opacity", "1");
+                      stop2?.setAttribute("stop-color", "#CDD8D3");
+                      stop2?.setAttribute("stop-opacity", "0.33");
+                    }
+
+                    const lastPoint: Highcharts.Point = chart.series[index].points[chart.series[index].points.length - 1];
+
+                    // Check if key exists in lastPointLinesScaling
+                    if (!lastPointLinesScaling[dictionaryKey]) {
+                      lastPointLinesScaling[dictionaryKey] = [];
+                    }
+                    if (lastPointLinesScaling[dictionaryKey] && lastPointLinesScaling[dictionaryKey].length > 0) {
+                      lastPointLinesScaling[dictionaryKey].forEach((line) => {
+                        line.destroy();
+                      });
+                      lastPointLinesScaling[dictionaryKey] = [];
+                    }
+
+                    // Calculate the fraction that 42px is in relation to the pixel width of the chart
+                    const fraction = 38 / chart.chartWidth;
+                    
+                    // Create a line from the last point to the top of the chart
+                    lastPointLinesScaling[dictionaryKey][lastPointLinesScaling[dictionaryKey].length] = chart.renderer
+                      .createElement("line")
+                      .attr({
+                        x1: chart.chartWidth * (1 - fraction) + 0.00005,
+                        y1: lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
+                        x2: chart.chartWidth * (1 - fraction) - 0.00005,
+                        y2: chart.plotTop - 6,
+                        stroke: isSafariBrowser ? "#CDD8D3" : "url('#gradient0-l2count')",
+                        "stroke-dasharray": null,
+                        "stroke-width": 1,
+                        rendering: "crispEdges",
+                      })
+                      .add();
+                    
+                    // Create a circle at the top
+
+                  });
+                }}
               />
               <XAxis
                 type="datetime"
@@ -1205,6 +1509,93 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
                 // marginBottom={0}
                 // marginRight={40}
                 {...CHART_MARGINS}
+                onRender={function (chartData) {
+                  const chart = chartData.target as any;
+                  const chartRef = this;
+                  chartComponentScaling.current = chartRef;
+                  
+                  if (!chart || !chart.series || chart.series.length === 0) return;
+
+                  // Set width for y axis label
+                  if (chartWidthScaling === null || chartWidthScaling !== chart.plotWidth) {
+                    setChartWidthScaling(chart.plotWidth);
+                  }
+
+                  chart.series.forEach((series, index) => {
+                    const dictionaryKey = `${chart.series[index].name}_tps`;
+
+                    // Check if gradient exists
+                    if (!document.getElementById("gradient0-tps")) {
+                      chart.renderer.definition({
+                        attributes: {
+                          id: "gradient0-tps",
+                          x1: "0%",
+                          y1: "0%",
+                          x2: "0%",
+                          y2: "95%",
+                        },
+                        children: [
+                          {
+                            tagName: "stop",
+                            attributes: {
+                              id: "stop1-tps",
+                              offset: "0%",
+                            },
+                          },
+                          {
+                            tagName: "stop",
+                            attributes: {
+                              id: "stop2-tps",
+                              offset: "100%",
+                            },
+                          },
+                        ],
+                        tagName: "linearGradient",
+                        textContent: "",
+                      });
+                      const stop1 = document.getElementById("stop1-tps");
+                      const stop2 = document.getElementById("stop2-tps");
+                      stop1?.setAttribute("stop-color", "#CDD8D3");
+                      stop1?.setAttribute("stop-opacity", "1");
+                      stop2?.setAttribute("stop-color", "#CDD8D3");
+                      stop2?.setAttribute("stop-opacity", "0.33");
+                    }
+
+                    const lastPoint: Highcharts.Point = chart.series[index].points[chart.series[index].points.length - 1];
+
+                    // Check if key exists in lastPointLinesScaling
+                    if (!lastPointLinesScaling[dictionaryKey]) {
+                      lastPointLinesScaling[dictionaryKey] = [];
+                    }
+                    if (lastPointLinesScaling[dictionaryKey] && lastPointLinesScaling[dictionaryKey].length > 0) {
+                      lastPointLinesScaling[dictionaryKey].forEach((line) => {
+                        line.destroy();
+                      });
+                      lastPointLinesScaling[dictionaryKey] = [];
+                    }
+
+                    // Calculate the fraction that 42px is in relation to the pixel width of the chart
+                    const fraction = 38 / chart.chartWidth;
+                    
+                    // Create a line from the last point to the top of the chart
+                    lastPointLinesScaling[dictionaryKey][lastPointLinesScaling[dictionaryKey].length] = chart.renderer
+                      .createElement("line")
+                      .attr({
+                        x1: chart.chartWidth * (1 - fraction) + 0.00005,
+                        y1: lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
+                        x2: chart.chartWidth * (1 - fraction) - 0.00005,
+                        y2: chart.plotTop - 6,
+                        stroke: isSafariBrowser ? "#CDD8D3" : "url('#gradient0-tps')",
+                        "stroke-dasharray": null,
+                        "stroke-width": 1,
+                        rendering: "crispEdges",
+                      })
+                      .add();
+                    
+                    // Create a circle at the top
+
+                  });
+                }}
               />
               <XAxis
                 type="datetime"
@@ -1343,9 +1734,10 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
 
 
 const MeetLayer2s = ({ meetL2sData, selectedBreakdownGroup }: { meetL2sData: MeetL2s | null, selectedBreakdownGroup: string }) => {
-  if (!meetL2sData) return null;
   const { AllChainsByKeys } = useMaster(); 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  
+  if (!meetL2sData) return null;
   
   function formatNumber(number: number, decimals?: number): string {
     if (number === 0) {

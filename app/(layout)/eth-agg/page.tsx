@@ -87,7 +87,7 @@ const EcosystemBottom = ({selectedBreakdownGroup}: {selectedBreakdownGroup: stri
       <div className='flex items-center w-full justify-between'>
         <div className='flex items-center gap-x-[8px]'>
           <GTPIcon icon={"gtp-read"} size='lg'       />
-          <div className='heading-large-md'>The Why and How of the Ethereum Ecosystem</div>
+          <div className='heading-large-lg'>The Why and How of the Ethereum Ecosystem</div>
         </div>
         
       </div>
