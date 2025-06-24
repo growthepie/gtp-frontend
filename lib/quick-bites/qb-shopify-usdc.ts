@@ -5,8 +5,8 @@ const shopifyUsdc: QuickBiteData = {
   subtitle: "A Game Changer for E-commerce",
   content: [
 
-    "# Cool Stuff",
-    "To be filled",
+    "# Bringing Traditional Commerce Onchain with Base",
+    "On June 12, 2025, Shopify announced a landmark integration with Coinbase and Stripe to enable USDC payments on Base. This page tracks the adoption of the underlying 'Commerce Payments Protocol', which brings traditional 'authorize and capture' mechanics to onchain payments.",
     "> This is a very important message!",
 
     "```kpi-cards",JSON.stringify(
@@ -62,7 +62,8 @@ const shopifyUsdc: QuickBiteData = {
     }),
     "```",
 
-    "Test text for the chart below. This is a placeholder for the actual chart data.",
+    "# Merchants Receiving USDC",
+    "Tracking the number of merchants who receive USDC payments — split between 'New' and 'Returning' merchants.",
 
     "```chart",
     JSON.stringify({
@@ -103,7 +104,8 @@ const shopifyUsdc: QuickBiteData = {
     }),
     "```",
 
-    "More text for the chart below. This is a placeholder for the actual chart data.",
+    "# Customers Paying in USDC",
+    "Tracking customer adoption by showing the number of distinct wallet addresses paying with USDC each day — split between 'New' and 'Returning' customers.",
 
      "```chart",
     JSON.stringify({
@@ -126,7 +128,7 @@ const shopifyUsdc: QuickBiteData = {
           pathToData: "data.new_payers.daily.values",
         },
         {
-          name: "Returning Merchants",
+          name: "Returning Customers",
           color: "#FFC300",
           xIndex: 1,
           yIndex: 0,
@@ -146,6 +148,13 @@ const shopifyUsdc: QuickBiteData = {
 
     "## More Info",
     "Shopify, a leading e-commerce platform, has integrated USDC as a payment option, allowing merchants to accept stablecoin payments seamlessly. This move is expected to enhance transaction speed and reduce costs for both merchants and customers.",
+    
+    'The integration is powered by the new Commerce Payments Protocol, an open-source framework developed by Coinbase. Its core innovation is an onchain escrow system that mimics the "authorize and capture" flow common in traditional finance:',
+    
+    "1. **Authorize:** When a customer pays, their USDC is placed in a secure escrow contract. This reserves the funds and guarantees payment for the merchant.",
+    '2. **Capture:** After the merchant fulfills the order (e.g., ships the product), they "capture" the funds from escrow to finalize the payment.',
+    
+    'This two-step process, managed by a permissionless "operator" like Shopify, solves many complexities of real-world commerce, such as delayed fulfillment, inventory management, and refunds, making onchain payments viable at a global scale.',
   ],
   image: "https://api.growthepie.com/v1/quick-bites/banners/placeholder.png",
   og_image: "https://api.growthepie.com/v1/og_images/quick-bites/arbitrum-timeboost.png",
