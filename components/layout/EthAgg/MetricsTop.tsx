@@ -39,8 +39,8 @@ interface GlobalMetrics {
   total_tps?: number;
   highest_tps?: number;
   eth_price_usd?: number;
-  eth_tx_cost_usd?: number;
-  avg_l2_tx_cost_usd?: number;
+  ethereum_tx_cost_usd?: number;
+  layer2s_tx_cost_usd?: number;
   avg_tx_cost_usd?: number;
 }
 
@@ -248,7 +248,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     });
 
     setEthCostLive(prevData => {
-      const newValue = globalMetrics.eth_tx_cost_usd ?? 0;
+      const newValue = globalMetrics.ethereum_tx_cost_usd ?? 0;
       if (prevData.length >= HISTORY_LIMIT) {
         return [...prevData.slice(1), newValue];
       } else {
@@ -257,7 +257,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     });
 
     setLayer2CostLive(prevData => {
-      const newValue = globalMetrics.avg_l2_tx_cost_usd ?? 0;
+      const newValue = globalMetrics.layer2s_tx_cost_usd ?? 0;
       if (prevData.length >= HISTORY_LIMIT) {
         return [...prevData.slice(1), newValue];
       } else {
@@ -812,6 +812,8 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
 
                     const maxCost = Math.max(...ethCostLive);
                     const minCost = Math.min(...ethCostLive);
+
+                    console.log("ethCostLive", ethCostLive);
 
                     for (let i = 0; i < totalDots; i++) {
                       const size = ethCostSelectedIndex === i ? 10 : 5;
