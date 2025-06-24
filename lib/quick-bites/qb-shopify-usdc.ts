@@ -2,12 +2,18 @@ import { QuickBiteData } from '@/lib/types/quickBites';
 
 const shopifyUsdc: QuickBiteData = {
   title: "Shopify's USDC Adoption",
-  subtitle: "A Game Changer for E-commerce",
+  subtitle: "A game changer for E-commerce, stablecoins are going mainstream",
   content: [
 
-    "# Cool Stuff",
-    "To be filled",
-    "> This is a very important message!",
+    'On June 12, 2025, Shopify announced a landmark integration with Coinbase and Stripe. This enables USDC payments on Base to "bring frictionless, secure stablecoin payments to merchants around the world".',
+    "> USDC is a token that is pegged to the value of the US dollar, backed by treasuries (commonly known as stablecoins). It has over $60 Billion in circulation and is one of the most widely adopted stablecoins ranking in the top 10 for all crypto assets by market cap. ",
+    "## Why Shopify Chose USDC/Base:",
+    "- Faster - Payments on Base can settle in as little as 200 milliseconds across international borders, improving cashflow management.",
+    "- Cheaper - Transaction fees on Base are significantly cheaper and are independent of the value of goods sold, improving profit margins.",
+    "- Globally Accessible - Opening up new markets with a onchain, internet native currency, improving market penetration.",
+    "- Composable - Reducing complexity and middlemen by using a single, shared source of truth, improving operational efficiency.",
+    "Note: These benefits are largely merchant focused with traditional card payment networks often blocking alternatives from providing discounts, this may make changing current customer behavior challenging. For emerging economies with less access to traditional payment options USDC may prove to be highly favorable and this could be part of Shopify's USDC strategy.",
+    "# Shopify's USDC Adoption Metrics (All-Time)",
 
     "```kpi-cards",JSON.stringify(
       [
@@ -34,7 +40,10 @@ const shopifyUsdc: QuickBiteData = {
           }
       ]),
       "```",
-    
+      "> Shopify enables $500 Billion in annualized merchant revenue with over 5.5 million stores, and more than 2 million daily active users.",
+    "## Shopify's USDC Volumes (Daily)",
+    "Initial adoption is expected to be gradual but if successful, this is a metric that should grow over a longer time period. With Shopify's impressive market size there is a lot of growth potential particularly for products that are not yet seen on-chain.",
+
     "```chart",
     JSON.stringify({
       type: "column",
@@ -62,8 +71,9 @@ const shopifyUsdc: QuickBiteData = {
     }),
     "```",
 
-    "Test text for the chart below. This is a placeholder for the actual chart data.",
-
+    "# Adoption: New vs Returning",
+    "## Merchants (Daily)",
+    "Initially, we have seen a number of test transactions and new merchants exploring USDC as a payment method. Over the long term, we would hope to see increased returning merchants, laying the foundation for sustainable growth.",
     "```chart",
     JSON.stringify({
       type: "column",
@@ -103,7 +113,8 @@ const shopifyUsdc: QuickBiteData = {
     }),
     "```",
 
-    "More text for the chart below. This is a placeholder for the actual chart data.",
+    "## Customers (Daily)",
+    "Long term growth in this metric will likely drive merchant adoption as USDC payments become increasingly established. Again initially we have seen test transactions and new customers exploring USDC as a payment method.",
 
      "```chart",
     JSON.stringify({
@@ -126,7 +137,7 @@ const shopifyUsdc: QuickBiteData = {
           pathToData: "data.new_payers.daily.values",
         },
         {
-          name: "Returning Merchants",
+          name: "Returning Customers",
           color: "#FFC300",
           xIndex: 1,
           yIndex: 0,
@@ -144,8 +155,11 @@ const shopifyUsdc: QuickBiteData = {
     }),
     "```",
 
-    "## More Info",
-    "Shopify, a leading e-commerce platform, has integrated USDC as a payment option, allowing merchants to accept stablecoin payments seamlessly. This move is expected to enhance transaction speed and reduce costs for both merchants and customers.",
+    "## Implementation",
+    'The integration is powered by the new Commerce Payments Protocol, an open-source framework developed by Coinbase. Its core innovation is an onchain escrow system that mimics the "authorize and capture" flow common in traditional finance.',
+    "Image 1 - caption: 6 core payment operations outlined by Shopify",
+    "Image 2 - caption: Example payment flow illustrated by Shopify",
+    "Further implementation documentation can be seen here: https://shopify.engineering/commerce-payments-protocol.",
   ],
   image: "https://api.growthepie.com/v1/quick-bites/banners/placeholder.png",
   og_image: "https://api.growthepie.com/v1/og_images/quick-bites/arbitrum-timeboost.png",
@@ -167,7 +181,7 @@ const shopifyUsdc: QuickBiteData = {
     url: "/chains/base"
   },
   {
-    icon: "gtp-metrics-stablecoin-market-cap",
+    icon: "gtp-metrics-stablecoinmarketcap",
     name: "Stablecoins",
     url: "/fundamentals/stablecoin-market-cap"
   }],
