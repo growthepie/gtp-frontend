@@ -16,21 +16,21 @@ const shopifyUsdc: QuickBiteData = {
           value: "${{shopifyVolumeUSD}}",
           description: "since launch",
           icon: "gtp-realtime",
-          info: "Test"
+          info: "Volume Settled describes the total amount of USDC that was paid out to merchants.",
         },
           {
-            title: "Total # of Stores",
-            value: "100",
+            title: "Total # of Merchants",
+            value: "{{shopifyMerchants}}",
             description: "since launch",
             icon: "gtp-realtime",
-            info: "Test"
+            info: "The number of unique wallets that have received USDC payments through Shopify.",
           },
           {
             title: "Total # of Customers",
-            value: "100",
+            value: "{{shopifyCustomers}}",
             description: "since launch",
             icon: "gtp-realtime",
-            info: "Test"
+            info: "The number of unique wallets that have made purchases using USDC on Shopify stores.",
           }
       ]),
       "```",

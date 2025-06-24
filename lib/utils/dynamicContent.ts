@@ -45,11 +45,24 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
           maximumFractionDigits: 0
         });
 
-        // if (timeboostDataETHRounded) {
-        //   processedItem = processedItem.replace('{{timeboostTotalETH}}', timeboostDataETHRounded);
-        // }
+        const shopifyMerchants = parseFloat(shopifyData.data.total_unique_merchants.total).toLocaleString("en-GB", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0
+        });
+
+        const shopifyCustomers = parseFloat(shopifyData.data.total_unique_payers.total).toLocaleString("en-GB", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0
+        });
+
         if (shopifyVolumeUSD) {
           processedItem = processedItem.replace('{{shopifyVolumeUSD}}', shopifyVolumeUSD);
+        }
+        if (shopifyMerchants) {
+          processedItem = processedItem.replace('{{shopifyMerchants}}', shopifyMerchants);
+        }
+        if (shopifyCustomers) {
+          processedItem = processedItem.replace('{{shopifyCustomers}}', shopifyCustomers);
         }
       }
 
