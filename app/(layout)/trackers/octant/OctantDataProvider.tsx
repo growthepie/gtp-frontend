@@ -437,6 +437,7 @@ type SummaryResponse = {
       num_users_locked_glm_change: number
     }
   }
+  total_funding_amount: number
   median_reward_amounts: { [epoch: string]: number | null }
 }
 
