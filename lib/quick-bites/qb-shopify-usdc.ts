@@ -200,8 +200,16 @@ const shopifyUsdc: QuickBiteData = {
     icon: "gtp-metrics-stablecoinmarketcap",
     name: "Stablecoins",
     url: "/fundamentals/stablecoin-market-cap"
-  }],
-  icon: "arbitrum-logo-monochrome"
+  }
+  // ,
+  // {
+  //   icon: "gtp-metrics-stablecoinmarketcap",
+  //   name: "Real world use-case",
+  //   url: "/fundamentals/stablecoin-market-cap"
+  // }
+],
+icon: "base-logo-monochrome"
 };
+
 
 export default shopifyUsdc;
