@@ -507,7 +507,34 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   }, [chainData, showUsd]);
 
 
-
+  function formatNumber(number: number, decimals?: number): string {
+    const decimalPlaces = decimals !== undefined ? decimals : 2;
+    
+    if (number === 0) {
+      return "0";
+    } else if (Math.abs(number) >= 1e9) {
+      if (Math.abs(number) >= 1e12) {
+        return (number / 1e12).toFixed(decimalPlaces) + "T";
+      } else if (Math.abs(number) >= 1e9) {
+        return (number / 1e9).toFixed(decimalPlaces) + "B";
+      }
+    } else if (Math.abs(number) >= 1e6) {
+      return (number / 1e6).toFixed(decimalPlaces) + "M";
+    } else if (Math.abs(number) >= 1e3) {
+      const rounded = (number / 1e3).toFixed(decimalPlaces);
+      return `${rounded}${Math.abs(number) >= 10000 ? "k" : "k"}`;
+    } else if (Math.abs(number) >= 100) {
+      return number.toFixed(decimalPlaces);
+    } else if (Math.abs(number) >= 10) {
+      return number.toFixed(decimalPlaces);
+    } else {
+      return number.toFixed(decimalPlaces);
+    }
+  
+    // Default return if none of the conditions are met
+    return "";
+  }
+  
 
 
   if (globalMetrics === undefined || chainData === undefined) {
@@ -825,7 +852,6 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                     const maxCost = Math.max(...ethCostLive);
                     const minCost = Math.min(...ethCostLive);
 
-                    console.log("ethCostLive", ethCostLive);
 
                     for (let i = 0; i < totalDots; i++) {
                       const size = ethCostSelectedIndex === i ? 10 : 5;
@@ -869,7 +895,10 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                     });
                   })()}
                 </div>
-                <div className='flex bg-gradient-to-b from-[#596780] to-[#94ABD3] bg-clip-text text-transparent flex-col items-end w-[100px] numbers-2xl'>${Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(globalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth'] || 0)}</div>
+                <div className='flex bg-gradient-to-b from-[#596780] to-[#94ABD3] bg-clip-text text-transparent  justify-end text-end items-end w-[100px] numbers-2xl'>
+                  {showUsd ? "$" + Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(globalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth'] || 0)
+                  : formatNumber(((globalMetrics['ethereum_tx_cost_eth'] || 0) * 1000000000), 0)}<span className={`heading-small-xxs mb-0.5 ${showUsd ? "hidden" : "block"}`}> Gwei</span>
+                </div>
               </div>
               <div className='flex justify-between items-center mt-[15px]'>
                 <div className='w-[115px] heading-small-xxs'>Layer 2s</div>
@@ -927,7 +956,8 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                     });
                   })()}
                 </div>
-                <div className='flex bg-gradient-to-b from-[#FE5468] to-[#FFDF27] bg-clip-text text-transparent flex-col items-end w-[100px] numbers-2xl'>${Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(globalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] || 0)}</div>
+                <div className='flex bg-gradient-to-b from-[#FE5468] to-[#FFDF27] bg-clip-text  justify-end text-end text-transparent items-end w-[100px] numbers-2xl'> {showUsd ? "$" + Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(globalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] || 0)
+                  : formatNumber(((globalMetrics['layer2s_tx_cost_eth'] || 0) * 1000000000), 0)}<span className={`heading-small-xxs mb-0.5 ${showUsd ? "hidden" : "block"}`}> Gwei</span></div>
               </div>
             </div>
             <div className={`relative flex flex-col gap-y-[5px] -mx-[15px] bg-[#1F2726]  z-10 rounded-b-[15px] ${showChainsCost ? 'pb-[10px] shadow-lg' : 'pb-0'}`}
@@ -957,7 +987,8 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                             <div className="text-xs ">{chainName}</div>
                           </div>
                           <div className='flex items-center relative justify-end' style={{ width: '140px', height: '18px' }}>
-                          <div className='numbers-xs'>${Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(chainData[chainId]?.[showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] || 0)}</div>
+                          <div className='flex gap-x-[2px] items-center numbers-xs h-[10px] '>{showUsd ? "$" + Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(chainData[chainId]?.[showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] || 0)
+                          : formatNumber(((chainData[chainId]?.[showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] || 0) * 1000000000), 0)}<span className={`heading-small-xxxs pt-[2px] ${showUsd ? "hidden" : "block"}`}> Gwei</span></div>
 
                             {/* {chainsCostHistory[chainId]?.map((cost, index) => {
                               const totalDots = chainsCostHistory[chainId]?.length || 0;

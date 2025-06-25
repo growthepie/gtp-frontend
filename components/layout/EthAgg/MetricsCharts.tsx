@@ -24,7 +24,7 @@ import Link from 'next/link';
 // Define the props type for MetricsChartsComponent
 
 const CHART_MARGINS = {
-  marginTop: 0,
+  marginTop: 76,
   marginRight: 42,
   marginBottom: 0,
   marginLeft: 0,
@@ -82,6 +82,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, appData, maxUnix }: Me
   const [selectedTimespan, setSelectedTimespan] = useState("max");
   const [chartContainerRef, { width: chartContainerWidth }] =
     useElementSizeObserver<HTMLDivElement>();
+  const { AllChainsByKeys } = useMaster();
   
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { isSafariBrowser } = useUIContext();
@@ -338,7 +339,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, appData, maxUnix }: Me
                 <div className='numbers-3xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
                   {showUsd ? "$" : "Ξ"}{Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(appData.layer_2s.daily.values[appData.layer_2s.daily.values.length - 1][appData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")] + appData.ethereum_mainnet.daily.values[appData.ethereum_mainnet.daily.values.length - 1][appData.ethereum_mainnet.daily.types.indexOf(showUsd ? "usd" : "eth")])}
                 </div>
-                <div className='w-[16px] h-[16px] rounded-full '
+                <div className='w-[16px] h-[16px] rounded-full z-20'
                   style={{
                     background: "linear-gradient(to bottom, #10808C, #1DF7EF)",
                   }}>
@@ -355,7 +356,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, appData, maxUnix }: Me
 
             </div>
           </div>
-          <div ref={chartContainerRef} className='w-full h-full'>
+          <div ref={chartContainerRef} className='w-full  absolute bottom-0 '>
           <HighchartsProvider Highcharts={Highcharts}>
             <HighchartsChart
               plotOptions={{
@@ -370,12 +371,13 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, appData, maxUnix }: Me
                 },
               }}
               
+              
             >
-                            <Chart
-
+              <Chart
+                
                 backgroundColor={"transparent"}
                 type="line"
-                height={309}
+                height={380}
                 plotOptions={{
                   series: {
                     marker: {
@@ -461,18 +463,21 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, appData, maxUnix }: Me
                     
                     // Create a line from the last point to the top of the chart
                     lastPointLines[dictionaryKey][lastPointLines[dictionaryKey].length] = chart.renderer
-                      .createElement("line")
-                      .attr({
-                        x1: chart.chartWidth * (1 - fraction) + 0.00005,
-                        y1: lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
-                        x2: chart.chartWidth * (1 - fraction) - 0.00005,
-                        y2: chart.plotTop - 6,
-                        stroke: isSafariBrowser ? "#CDD8D3" : "url('#gradient0-gdp')",
-                        "stroke-dasharray": 2,
-                        "stroke-width": 1,
-                        rendering: "crispEdges",
-                      })
-                      .add();
+                    .createElement("line")
+                    .attr({
+                      x1: chart.chartWidth * (1 - fraction) + 0.00005,
+                      y1: lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
+                      x2: chart.chartWidth * (1 - fraction) - 0.00005,
+                      y2: chart.plotTop - 30, // This will now be within the expanded margin
+                      stroke: "#10808C",
+                      "stroke-dasharray": 2,
+                      "stroke-width": 1,
+                      rendering: "crispEdges",
+                      zIndex: 0,
+                      // This allows the line to overflow the chart boundaries
+                      clipPath: false
+                    })
+                    .add(); // Add to an unclipped group
                     
                     // Create a circle at the top
 
@@ -553,15 +558,31 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, appData, maxUnix }: Me
                       marker={{
                         enabled: false,
                       }}
+                      lineColor={{                       
+                        linearGradient: {
+                          x1: 0,
+                          y1: 0,
+                          x2: 1,
+                          y2: 0,
+                        },
+                        stops: [
+                          [0, AllChainsByKeys[name === "layer_2s" ? "all_l2s" : "ethereum"]?.colors["dark"][0]],
+                          // [0.33, AllChainsByKeys[series.name].colors[1]],
+                          [1, AllChainsByKeys[name === "layer_2s" ? "all_l2s" : "ethereum"]?.colors["dark"][1]],
+                        ]
+                      }}
                       color={{
                         linearGradient: {
                           x1: 0,
-                          x2: 0,
                           y1: 0,
-                          y2: 1,
+                          x2: 1,
+                          y2: 0,
                         },
-                        stops: [[0, "#10808C"], [0.7, "#10808C"], [0.8, "#158B99"], [0.9, "#1AC4D4"], [1, "#1DF7EF"]]
-
+                        stops: [
+                          [0, AllChainsByKeys[name === "layer_2s" ? "all_l2s" : "ethereum"]?.colors["dark"][0] + "33"],
+                          // [0.33, AllChainsByKeys[series.name].colors[1]],
+                          [1, AllChainsByKeys[name === "layer_2s" ? "all_l2s" : "ethereum"]?.colors["dark"][1] + "33"],
+                        ],
                       }}
                       data={data.daily.values.map((value) => [value[data.daily.types.indexOf("unix")], value[data.daily.types.indexOf(showUsd ? "usd" : "eth")]])
                       }
@@ -647,7 +668,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, appData, maxUnix }: Me
                 <div className='numbers-3xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
                   {showUsd ? "$" : "Ξ"}{Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(stableData.layer_2s.daily.values[stableData.layer_2s.daily.values.length - 1][stableData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")] + stableData.ethereum_mainnet.daily.values[stableData.ethereum_mainnet.daily.values.length - 1][stableData.ethereum_mainnet.daily.types.indexOf(showUsd ? "usd" : "eth")])}
                 </div>
-                <div className='w-[16px] h-[16px] rounded-full '
+                <div className='w-[16px] h-[16px] rounded-full z-20 '
                   style={{
                     background: "linear-gradient(to bottom, #10808C, #1DF7EF)",
                   }}>
@@ -664,6 +685,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, appData, maxUnix }: Me
 
             </div>
           </div>
+          <div className='w-full  absolute bottom-0 '>
           <HighchartsProvider Highcharts={Highcharts}>
             <HighchartsChart
               plotOptions={{
@@ -682,7 +704,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, appData, maxUnix }: Me
 
                 backgroundColor={"transparent"}
                 type="line"
-                height={309}
+                height={380}
                 plotOptions={{
                   series: {
                     stacking: "normal",
@@ -774,8 +796,8 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, appData, maxUnix }: Me
                         x1: chart.chartWidth * (1 - fraction) + 0.00005,
                         y1: lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
                         x2: chart.chartWidth * (1 - fraction) - 0.00005,
-                        y2: chart.plotTop - 6,
-                        stroke: isSafariBrowser ? "#CDD8D3" : "url('#gradient0-stables')",
+                        y2: chart.plotTop - 30,
+                        stroke: "#10808C",
                         "stroke-dasharray": 2,
                         "stroke-width": 1,
                         rendering: "crispEdges",
@@ -847,15 +869,31 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, appData, maxUnix }: Me
                       marker={{
                         enabled: false,
                       }}
+                      lineColor={{                       
+                        linearGradient: {
+                          x1: 0,
+                          y1: 0,
+                          x2: 1,
+                          y2: 0,
+                        },
+                        stops: [
+                          [0, AllChainsByKeys[name === "layer_2s" ? "all_l2s" : "ethereum"]?.colors["dark"][0]],
+                          // [0.33, AllChainsByKeys[series.name].colors[1]],
+                          [1, AllChainsByKeys[name === "layer_2s" ? "all_l2s" : "ethereum"]?.colors["dark"][1]],
+                        ]
+                      }}
                       color={{
                         linearGradient: {
                           x1: 0,
-                          x2: 0,
                           y1: 0,
-                          y2: 1,
+                          x2: 1,
+                          y2: 0,
                         },
-                        stops: [[0, "#10808C"], [0.7, "#10808C"], [0.8, "#158B99"], [0.9, "#1AC4D4"], [1, "#1DF7EF"]]
-
+                        stops: [
+                          [0, AllChainsByKeys[name === "layer_2s" ? "all_l2s" : "ethereum"]?.colors["dark"][0] + "33"],
+                          // [0.33, AllChainsByKeys[series.name].colors[1]],
+                          [1, AllChainsByKeys[name === "layer_2s" ? "all_l2s" : "ethereum"]?.colors["dark"][1] + "33"],
+                        ],
                       }}
 
                       data={data.daily.values.map((value) => [value[data.daily.types.indexOf("unix")], value[data.daily.types.indexOf(showUsd ? "usd" : "eth")]])}
@@ -894,7 +932,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, appData, maxUnix }: Me
               />
             </HighchartsChart>
           </HighchartsProvider>
-
+          </div>
           <div className='absolute bottom-0 left-0 right-0 flex items-center px-[33px]'>
 
             <div className='w-full h-[22px] flex justify-between items-center px-[7px] bg-[#34424080] rounded-t-[15px]'>
@@ -1150,7 +1188,7 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
                     maximumFractionDigits: 2,
                   }).format(layer2Data.daily.values[layer2Data.daily.values.length - 1][layer2Data.daily.types.indexOf("value")])}
                 </div>
-                <div className='w-[16px] h-[16px] rounded-full '
+                <div className='w-[16px] h-[16px] rounded-full z-20 '
                   style={{
                     background: "linear-gradient(to bottom, #10808C, #1DF7EF)",
                   }}>
@@ -1167,27 +1205,13 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
 
             </div>
           </div>
-          <HighchartsProvider Highcharts={Highcharts}>
-            <HighchartsChart
-              plotOptions={{
-                series: {
-                  zIndex: 10,
-                  animation: false,
-                  marker: {
-                    lineColor: "white",
-                    radius: 0,
-                    symbol: "circle",
-                  },
-                },
-              }}
-            >
-              <Chart
-          
-                backgroundColor={"transparent"}
-                type="line"
-                height={309}
+          <div className='w-full  absolute bottom-0 '>
+            <HighchartsProvider Highcharts={Highcharts}>
+              <HighchartsChart
                 plotOptions={{
                   series: {
+                    zIndex: 10,
+                    animation: false,
                     marker: {
                       lineColor: "white",
                       radius: 0,
@@ -1195,201 +1219,217 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
                     },
                   },
                 }}
-                // marginLeft={-5}
-                // // marginRight={0}
-                // marginBottom={0}
-                // marginRight={40}
-                {...CHART_MARGINS}
-                onRender={function (chartData) {
-                  const chart = chartData.target as any;
-                  const chartRef = this;
-                  chartComponentScaling.current = chartRef;
-                  
-                  if (!chart || !chart.series || chart.series.length === 0) return;
-
-                  // Set width for y axis label
-                  if (chartWidthScaling === null || chartWidthScaling !== chart.plotWidth) {
-                    setChartWidthScaling(chart.plotWidth);
-                  }
-
-                  chart.series.forEach((series, index) => {
-                    const dictionaryKey = `${chart.series[index].name}_l2count`;
-
-                    // Check if gradient exists
-                    if (!document.getElementById("gradient0-l2count")) {
-                      chart.renderer.definition({
-                        attributes: {
-                          id: "gradient0-l2count",
-                          x1: "0%",
-                          y1: "0%",
-                          x2: "0%",
-                          y2: "95%",
-                        },
-                        children: [
-                          {
-                            tagName: "stop",
-                            attributes: {
-                              id: "stop1-l2count",
-                              offset: "0%",
-                            },
-                          },
-                          {
-                            tagName: "stop",
-                            attributes: {
-                              id: "stop2-l2count",
-                              offset: "100%",
-                            },
-                          },
-                        ],
-                        tagName: "linearGradient",
-                        textContent: "",
-                      });
-                      const stop1 = document.getElementById("stop1-l2count");
-                      const stop2 = document.getElementById("stop2-l2count");
-                      stop1?.setAttribute("stop-color", "#CDD8D3");
-                      stop1?.setAttribute("stop-opacity", "1");
-                      stop2?.setAttribute("stop-color", "#CDD8D3");
-                      stop2?.setAttribute("stop-opacity", "0.33");
-                    }
-
-                    const lastPoint: Highcharts.Point = chart.series[index].points[chart.series[index].points.length - 1];
-
-                    // Check if key exists in lastPointLinesScaling
-                    if (!lastPointLinesScaling[dictionaryKey]) {
-                      lastPointLinesScaling[dictionaryKey] = [];
-                    }
-                    if (lastPointLinesScaling[dictionaryKey] && lastPointLinesScaling[dictionaryKey].length > 0) {
-                      lastPointLinesScaling[dictionaryKey].forEach((line) => {
-                        line.destroy();
-                      });
-                      lastPointLinesScaling[dictionaryKey] = [];
-                    }
-
-                    // Calculate the fraction that 42px is in relation to the pixel width of the chart
-                    const fraction = 42 / chart.chartWidth;
-                    
-                    // Create a line from the last point to the top of the chart
-                    lastPointLinesScaling[dictionaryKey][lastPointLinesScaling[dictionaryKey].length] = chart.renderer
-                      .createElement("line")
-                      .attr({
-                        x1: chart.chartWidth * (1 - fraction) + 0.00005,
-                        y1: lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
-                        x2: chart.chartWidth * (1 - fraction) - 0.00005,
-                        y2: chart.plotTop - 6,
-                        stroke: isSafariBrowser ? "#CDD8D3" : "url('#gradient0-l2count')",
-                        "stroke-dasharray": 2,
-                        "stroke-width": 1,
-                        rendering: "crispEdges",
-                      })
-                      .add();
-                    
-                    // Create a circle at the top
-
-                  });
-                }}
-              />
-              <XAxis
-                type="datetime"
-                gridLineWidth={0}
-                min={timespans[selectedTimespan].xMin}
-                max={maxUnix}
-                
-                //tickInterval={timespans[selectedTimespan].xMax - timespans[selectedTimespan].xMin / 4}
-                //method for showiing set amount of ticks
-                labels={{
-                  enabled: false,
-                  overflow: "allow",
-                  step: 1,
-                  x: 10,
-                  y: -10,
-                  align: "center",
-                  distance: 10,
-                  style: {
-                    color: "#D7DFDE",
-                    fontSize: "9px",
-                    fontFamily: "Fira Sans",
-                  }
-                }}
-              />
-              <YAxis
-                gridLineWidth={1}
-                tickAmount={4}
-                gridLineColor={"#5A6462"}
-                lineColor={"#5A6462"}
-
-                labels={{
-                  
-                  overflow: "allow",
-                  x: 8,
-                  y: 11,
-                  align: "left",
-                  distance: 5,
-                  style: {
-                    color: "#CDD8D3",
-                    fontSize: "9px",
-                    fontFamily: "Raleway",
-                  },
-                  useHTML: true,
-                  formatter: function () {
-                    return Number(this.value) > 0 ? `<div class="numbers-xxxs">${this.value.toLocaleString()}</div>` : "";
-                  }
-
-                }}
               >
-                <Series
-                  type="column"
-                  name="total_l2s"
-                  borderRadius={0}
-                  borderColor={"transparent"}
-                  marker={{
-                    enabled: false,
-                  }}
-                  color={{
-                    linearGradient: {
-                      x1: 0,
-                      x2: 0,
-                      y1: 0,
-                      y2: 1,
+                <Chart
+            
+                  backgroundColor={"transparent"}
+                  type="line"
+                  height={380}
+                  plotOptions={{
+                    series: {
+                      marker: {
+                        lineColor: "white",
+                        radius: 0,
+                        symbol: "circle",
+                      },
                     },
-                    stops: [[0, "#10808C"], [0.7, "#10808C"], [0.8, "#158B99"], [0.9, "#1AC4D4"], [1, "#1DF7EF"]]
+                  }}
+                  // marginLeft={-5}
+                  // // marginRight={0}
+                  // marginBottom={0}
+                  // marginRight={40}
+                  {...CHART_MARGINS}
+                  marginRight={40}
+                  onRender={function (chartData) {
+                    const chart = chartData.target as any;
+                    const chartRef = this;
+                    chartComponentScaling.current = chartRef;
+                    
+                    if (!chart || !chart.series || chart.series.length === 0) return;
+
+                    // Set width for y axis label
+                    if (chartWidthScaling === null || chartWidthScaling !== chart.plotWidth) {
+                      setChartWidthScaling(chart.plotWidth);
+                    }
+
+                    chart.series.forEach((series, index) => {
+                      const dictionaryKey = `${chart.series[index].name}_l2count`;
+
+                      // Check if gradient exists
+                      if (!document.getElementById("gradient0-l2count")) {
+                        chart.renderer.definition({
+                          attributes: {
+                            id: "gradient0-l2count",
+                            x1: "0%",
+                            y1: "0%",
+                            x2: "0%",
+                            y2: "95%",
+                          },
+                          children: [
+                            {
+                              tagName: "stop",
+                              attributes: {
+                                id: "stop1-l2count",
+                                offset: "0%",
+                              },
+                            },
+                            {
+                              tagName: "stop",
+                              attributes: {
+                                id: "stop2-l2count",
+                                offset: "100%",
+                              },
+                            },
+                          ],
+                          tagName: "linearGradient",
+                          textContent: "",
+                        });
+                        const stop1 = document.getElementById("stop1-l2count");
+                        const stop2 = document.getElementById("stop2-l2count");
+                        stop1?.setAttribute("stop-color", "#CDD8D3");
+                        stop1?.setAttribute("stop-opacity", "1");
+                        stop2?.setAttribute("stop-color", "#CDD8D3");
+                        stop2?.setAttribute("stop-opacity", "0.33");
+                      }
+
+                      const lastPoint: Highcharts.Point = chart.series[index].points[chart.series[index].points.length - 1];
+
+                      // Check if key exists in lastPointLinesScaling
+                      if (!lastPointLinesScaling[dictionaryKey]) {
+                        lastPointLinesScaling[dictionaryKey] = [];
+                      }
+                      if (lastPointLinesScaling[dictionaryKey] && lastPointLinesScaling[dictionaryKey].length > 0) {
+                        lastPointLinesScaling[dictionaryKey].forEach((line) => {
+                          line.destroy();
+                        });
+                        lastPointLinesScaling[dictionaryKey] = [];
+                      }
+
+                      // Calculate the fraction that 42px is in relation to the pixel width of the chart
+                      const fraction = 42 / chart.chartWidth;
+                      
+                      // Create a line from the last point to the top of the chart
+                      lastPointLinesScaling[dictionaryKey][lastPointLinesScaling[dictionaryKey].length] = chart.renderer
+                        .createElement("line")
+                        .attr({
+                          x1: chart.chartWidth * (1 - fraction) + 0.00005,
+                          y1: lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
+                          x2: chart.chartWidth * (1 - fraction) - 0.00005,
+                          y2: chart.plotTop - 30,
+                          stroke: "#10808C",
+                          "stroke-dasharray": 2,
+                          "stroke-width": 1,
+                          rendering: "crispEdges",
+                        })
+                        .add();
+                      
+                      // Create a circle at the top
+
+                    });
+                  }}
+                />
+                <XAxis
+                  type="datetime"
+                  gridLineWidth={0}
+                  min={xAxisExtremesL2.xMin}
+                  max={xAxisExtremesL2.xMax}
+                  
+                  //tickInterval={timespans[selectedTimespan].xMax - timespans[selectedTimespan].xMin / 4}
+                  //method for showiing set amount of ticks
+                  labels={{
+                    enabled: false,
+                    overflow: "allow",
+                    step: 1,
+                    x: 10,
+                    y: -10,
+                    align: "center",
+                    distance: 10,
+                    style: {
+                      color: "#D7DFDE",
+                      fontSize: "9px",
+                      fontFamily: "Fira Sans",
+                    }
+                  }}
+                />
+                <YAxis
+                  gridLineWidth={1}
+                  tickAmount={4}
+                  gridLineColor={"#5A6462"}
+                  lineColor={"#5A6462"}
+
+                  labels={{
+                    
+                    overflow: "allow",
+                    x: 8,
+                    y: 11,
+                    align: "left",
+                    distance: 5,
+                    style: {
+                      color: "#CDD8D3",
+                      fontSize: "9px",
+                      fontFamily: "Raleway",
+                    },
+                    useHTML: true,
+                    formatter: function () {
+                      return Number(this.value) > 0 ? `<div class="numbers-xxxs">${this.value.toLocaleString()}</div>` : "";
+                    }
 
                   }}
-                  data={layer2Data.daily.values.map((value) => [value[layer2Data.daily.types.indexOf("unix")], value[layer2Data.daily.types.indexOf("value")]])
-                  }
-                />
-              </YAxis>
-              <Tooltip
-                useHTML={true}
-                shared={true}
-                split={false}
-                followPointer={true}
-                followTouchMove={true}
-                backgroundColor={"#2A3433EE"}
-                padding={0}
-                hideDelay={300}
-                stickOnContact={true}
-                shape="rect"
-                borderRadius={17}
-                borderWidth={0}
-                outside={true}
-                shadow={{
-                  color: "black",
-                  opacity: 0.015,
-                  offsetX: 2,
-                  offsetY: 2,
-                }}
-                style={{
-                  color: "rgb(215, 223, 222)",
-                }}
-                formatter={tooltipFormatter}
-                // ensure tooltip is always above the chart
-                positioner={tooltipPositioner}
-                valuePrefix={showUsd ? "$" : ""}
-                valueSuffix={showUsd ? "" : " Gwei"}
-              />
-            </HighchartsChart>
-          </HighchartsProvider>
+                >
+                  <Series
+                    type="column"
+                    name="total_l2s"
+                    borderRadius={0}
+                    borderColor={"transparent"}
+                    marker={{
+                      enabled: false,
+                    }}
+                    color={{
+                      linearGradient: {
+                        x1: 0,
+                        x2: 0,
+                        y1: 0,
+                        y2: 1,
+                      },
+                      stops: [[0, "#10808C"], [0.7, "#10808C"], [0.8, "#158B99"], [0.9, "#1AC4D4"], [1, "#1DF7EF"]]
 
+                    }}
+                    data={layer2Data.daily.values.map((value) => [value[layer2Data.daily.types.indexOf("unix")], value[layer2Data.daily.types.indexOf("value")]])
+                    }
+                  />
+                </YAxis>
+                <Tooltip
+                  useHTML={true}
+                  shared={true}
+                  split={false}
+                  followPointer={true}
+                  followTouchMove={true}
+                  backgroundColor={"#2A3433EE"}
+                  padding={0}
+                  hideDelay={300}
+                  stickOnContact={true}
+                  shape="rect"
+                  borderRadius={17}
+                  borderWidth={0}
+                  outside={true}
+                  shadow={{
+                    color: "black",
+                    opacity: 0.015,
+                    offsetX: 2,
+                    offsetY: 2,
+                  }}
+                  style={{
+                    color: "rgb(215, 223, 222)",
+                  }}
+                  formatter={tooltipFormatter}
+                  // ensure tooltip is always above the chart
+                  positioner={tooltipPositioner}
+                  valuePrefix={showUsd ? "$" : ""}
+                  valueSuffix={showUsd ? "" : " Gwei"}
+                />
+              </HighchartsChart>
+            </HighchartsProvider>
+          </div>
           <div className='absolute bottom-0 left-0 right-0 flex items-center px-[33px]'>
             <div className='w-full h-[22px] flex justify-between items-center bg-[#34424080] rounded-t-[15px] px-[7px]'>
                 <div className={`flex items-center  text-xs gap-x-[2px] `}>
@@ -1434,7 +1474,7 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
                     maximumFractionDigits: 2,
                   }).format(tpsData.layer_2s.daily.values[tpsData.layer_2s.daily.values.length - 1][tpsData.layer_2s.daily.types.indexOf("value")])}
                 </div>
-                <div className='w-[16px] h-[16px] rounded-full '
+                <div className='w-[16px] h-[16px] rounded-full z-20 '
                   style={{
                     background: "linear-gradient(to bottom, #10808C, #1DF7EF)",
                   }}>
@@ -1451,6 +1491,7 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
 
             </div>
           </div>
+          <div className='w-full  absolute bottom-0 '>
           <HighchartsProvider Highcharts={Highcharts}>
             <HighchartsChart
               plotOptions={{
@@ -1469,7 +1510,7 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
 
                 backgroundColor={"transparent"}
                 type="line"
-                height={309}
+                height={380}
                 plotOptions={{
                   series: {
                     marker: {
@@ -1559,8 +1600,8 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
                         x1: chart.chartWidth * (1 - fraction) + 0.00005,
                         y1: lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
                         x2: chart.chartWidth * (1 - fraction) - 0.00005,
-                        y2: chart.plotTop - 6,
-                        stroke: isSafariBrowser ? "#CDD8D3" : "url('#gradient0-tps')",
+                        y2: chart.plotTop - 30,
+                        stroke: "#10808C",
                         "stroke-dasharray": 2,
                         "stroke-width": 1,
                         rendering: "crispEdges",
@@ -1575,8 +1616,8 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
               <XAxis
                 type="datetime"
                 gridLineWidth={0}
-                min={timespans[selectedTimespan].xMin}
-                max={maxUnix}
+                min={xAxisExtremesTps.xMin}
+                max={xAxisExtremesTps.xMax}
                 //tickInterval={timespans[selectedTimespan].xMax - timespans[selectedTimespan].xMin / 4}
                 //method for showiing set amount of ticks
                 labels={{
@@ -1670,7 +1711,7 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
               />
             </HighchartsChart>
           </HighchartsProvider>
-
+          </div>
           <div className='absolute bottom-0 left-0 right-0 flex items-center px-[33px]'>
             <div className='w-full h-[22px] flex justify-between items-center bg-[#34424080] rounded-t-[15px] px-[7px]'>
               <div className={`flex items-center  text-xs gap-x-[2px] `}>
@@ -1741,18 +1782,19 @@ const MeetLayer2s = ({ meetL2sData, selectedBreakdownGroup }: { meetL2sData: Mee
   }
   
   return (
-    <div className={`gap-y-[15px] ${selectedBreakdownGroup === "Metrics" ? "flex flex-col " : "hidden"}`}>
+    <div className={`gap-y-[15px] w-full overflow-hidden ${selectedBreakdownGroup === "Metrics" ? "flex flex-col " : "hidden"}`}>
       <div className='flex gap-x-[8px] items-center'>  
           <GTPIcon icon='gtp-multiple-chains' size='lg' className='' />
           <div className='heading-large-lg'>Meet L2s</div>
       </div>
-      <div className='text-md pl-[44px]'>Ethereum scales using different Layer 2s, built by 3rd party teams. Have a closer look at each of them.</div>
-      <div className='flex gap-x-[5px]'>
-        {Object.keys(meetL2sData).map((key) => {
-          const color = AllChainsByKeys[key]?.colors["dark"][0];
-          
-          return (
-            <div key={key} className='flex flex-col gap-y-[10px] rounded-[15px] p-[15px] bg-transparent border-[1px] border-[#5A6462] w-[250px]'>
+      <div className='text-md pl-[44px] overflow-visible'>Ethereum scales using different Layer 2s, built by 3rd party teams. Have a closer look at each of them.</div>
+        <div className='flex w-full gap-x-[5px] '>
+          {Object.keys(meetL2sData).map((key, index) => {
+            const color = AllChainsByKeys[key]?.colors["dark"][0];
+            
+            return (
+              <div key={key} className='flex flex-col gap-y-[10px] rounded-[15px] p-[15px] bg-transparent border-[1px] border-[#5A6462] min-w-[250px] w-[250px]'>
+
               <div className='flex items-center w-full justify-between'>
                 <div className='flex items-center gap-x-[5px]'>
                   <GTPIcon icon={`${AllChainsByKeys[key]?.urlKey}-logo-monochrome` as GTPIconName} size='lg' 
