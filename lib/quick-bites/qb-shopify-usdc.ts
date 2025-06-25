@@ -74,91 +74,107 @@ const shopifyUsdc: QuickBiteData = {
     "# Adoption: New vs Returning",
     "## Merchants (Daily)",
     "Initially, we have seen a number of test transactions and new merchants exploring USDC as a payment method. Over the long term, we would hope to see increased returning merchants, laying the foundation for sustainable growth.",
-    // "```chart",
-    // JSON.stringify({
-    //   type: "column",
-    //   title: "Merchants Receiving USDC",
-    //   subtitle: "The daily number of new and returning Shopify merchants that received USDC",
-    //   stacking: "normal",
-    //   showXAsDate: true,
+    "```chart",
+    JSON.stringify({
+      type: "column",
+      title: "Merchants Receiving USDC",
+      subtitle: "The daily number of new and returning Shopify merchants that received USDC",
+      stacking: "normal",
+      showXAsDate: true,
 
-    //   dataAsJson: {
-    //     meta: [{
-    //       name: "New Merchants",
-    //       color: "#19D9D6",
-    //       xIndex: 1,
-    //       yIndex: 0,
-    //       suffix: null,
-    //       prefix: null,
-    //       tooltipDecimals: 0,
-    //       url: "https://api.growthepie.com/v1/quick-bites/shopify-usdc.json",
-    //       pathToData: "data.new_merchants.daily.values",
-    //     },
-    //     {
-    //       name: "Returning Merchants",
-    //       color: "#FFC300",
-    //       xIndex: 1,
-    //       yIndex: 0,
-    //       suffix: null,
-    //       prefix: null,
-    //       tooltipDecimals: 0,
-    //       url: "https://api.growthepie.com/v1/quick-bites/shopify-usdc.json",
-    //       pathToData: "data.returning_merchants.daily.values",
-    //     },
-    //     ],
-    //   },
-    //   height: 400,
-    //   caption: "The daily number of new and returning Shopify merchants that received USDC. Data updated daily.",
-    //   seeMetricURL: null
-    // }),
-    // "```",
+      dataAsJson: {
+        meta: [{
+          name: "New Merchants",
+          color: "#19D9D6",
+          xIndex: 1,
+          yIndex: 0,
+          suffix: null,
+          prefix: null,
+          tooltipDecimals: 0,
+          url: "https://api.growthepie.com/v1/quick-bites/shopify-usdc.json",
+          pathToData: "data.new_merchants.daily.values",
+        },
+        {
+          name: "Returning Merchants",
+          color: "#FFC300",
+          xIndex: 1,
+          yIndex: 0,
+          suffix: null,
+          prefix: null,
+          tooltipDecimals: 0,
+          url: "https://api.growthepie.com/v1/quick-bites/shopify-usdc.json",
+          pathToData: "data.returning_merchants.daily.values",
+        },
+        ],
+      },
+      height: 400,
+      caption: "The daily number of new and returning Shopify merchants that received USDC. Data updated daily.",
+      seeMetricURL: null
+    }),
+    "```",
 
     "## Customers (Daily)",
     "Long term growth in this metric will likely drive merchant adoption as USDC payments become increasingly established. Again initially we have seen test transactions and new customers exploring USDC as a payment method.",
 
-    //  "```chart",
-    // JSON.stringify({
-    //   type: "column",
-    //   title: "Customers Paying in USDC",
-    //   subtitle: "The daily number of new and returning customers that paid in USDC",
-    //   stacking: "normal",
-    //   showXAsDate: true,
+     "```chart",
+    JSON.stringify({
+      type: "column",
+      title: "Customers Paying in USDC",
+      subtitle: "The daily number of new and returning customers that paid in USDC",
+      stacking: "normal",
+      showXAsDate: true,
 
-    //   dataAsJson: {
-    //     meta: [{
-    //       name: "New Customers",
-    //       color: "#19D9D6",
-    //       xIndex: 1,
-    //       yIndex: 0,
-    //       suffix: null,
-    //       prefix: null,
-    //       tooltipDecimals: 0,
-    //       url: "https://api.growthepie.com/v1/quick-bites/shopify-usdc.json",
-    //       pathToData: "data.new_payers.daily.values",
-    //     },
-    //     {
-    //       name: "Returning Customers",
-    //       color: "#FFC300",
-    //       xIndex: 1,
-    //       yIndex: 0,
-    //       suffix: null,
-    //       prefix: null,
-    //       tooltipDecimals: 0,
-    //       url: "https://api.growthepie.com/v1/quick-bites/shopify-usdc.json",
-    //       pathToData: "data.returning_payers.daily.values",
-    //     },
-    //     ],
-    //   },
-    //   height: 400,
-    //   caption: "The daily number of new and returning customers that paid in USDC. Data updated daily.",
-    //   seeMetricURL: null
-    // }),
-    // "```",
+      dataAsJson: {
+        meta: [{
+          name: "New Customers",
+          color: "#19D9D6",
+          xIndex: 1,
+          yIndex: 0,
+          suffix: null,
+          prefix: null,
+          tooltipDecimals: 0,
+          url: "https://api.growthepie.com/v1/quick-bites/shopify-usdc.json",
+          pathToData: "data.new_payers.daily.values",
+        },
+        {
+          name: "Returning Customers",
+          color: "#FFC300",
+          xIndex: 1,
+          yIndex: 0,
+          suffix: null,
+          prefix: null,
+          tooltipDecimals: 0,
+          url: "https://api.growthepie.com/v1/quick-bites/shopify-usdc.json",
+          pathToData: "data.returning_payers.daily.values",
+        },
+        ],
+      },
+      height: 400,
+      caption: "The daily number of new and returning customers that paid in USDC. Data updated daily.",
+      seeMetricURL: null
+    }),
+    "```",
 
     "# Implementation",
     'The integration is powered by the new Commerce Payments Protocol, an open-source framework developed by Coinbase. Its core innovation is an onchain escrow system that mimics the "authorize and capture" flow common in traditional finance.',
-    "Image 1 - caption: 6 core payment operations outlined by Shopify",
-    "Image 2 - caption: Example payment flow illustrated by Shopify",
+    "```image",
+    JSON.stringify({
+      src: "https://api.growthepie.com/v1/quick-bites/shopify-payment-operations.png", // should allow link to our API
+      alt: "6 core payment operations outlined by Shopify",
+      width: "600",
+      height: "330",
+      caption: "6 core payment operations outlined by Shopify",
+    }),
+    "```",
+    "```image",
+    JSON.stringify({
+      src: "https://api.growthepie.com/v1/quick-bites/shopify-payment-example.png", // should allow link to our API
+      alt: "Example payment flow illustrated by Shopify",
+      width: "600",
+      height: "600",
+      caption: "Example payment flow illustrated by Shopify",
+    }),
+    "```",
     "Further implementation documentation can be seen here: https://shopify.engineering/commerce-payments-protocol.",
   ],
   image: "https://api.growthepie.com/v1/quick-bites/banners/placeholder.png",
@@ -184,8 +200,16 @@ const shopifyUsdc: QuickBiteData = {
     icon: "gtp-metrics-stablecoinmarketcap",
     name: "Stablecoins",
     url: "/fundamentals/stablecoin-market-cap"
-  }],
-  icon: "arbitrum-logo-monochrome"
+  }
+  // ,
+  // {
+  //   icon: "gtp-metrics-stablecoinmarketcap",
+  //   name: "Real world use-case",
+  //   url: "/fundamentals/stablecoin-market-cap"
+  // }
+],
+icon: "base-logo-monochrome"
 };
+
 
 export default shopifyUsdc;
