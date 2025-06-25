@@ -623,12 +623,12 @@ export default function Page() {
               }
             >
               <div
-                className={`group relative flex min-h-[111px] flex-col justify-between overflow-hidden rounded-[15px] bg-forest-50 bg-clip-border px-[10px] py-[10px] transition-opacity duration-300 dark:bg-[#1F2726] lg:max-h-[111px]`}
+                className={`group relative flex min-h-[111px] flex-col justify-between overflow-hidden rounded-[15px] bg-forest-50 bg-clip-border px-[10px] py-[8px] transition-opacity duration-300 dark:bg-[#1F2726] lg:max-h-[111px]`}
               >
                 <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[398px]:opacity-0"></div>
                 <div className="flex h-auto w-full flex-col justify-between gap-y-[5px] lg:h-[calc(111px-20px)] lg:w-[378px]">
                   <div className="w-full">
-                    <div className="text-[10px] font-semibold text-[#5A6462]">
+                    <div className="text-xs font-semibold text-[#5A6462]">
                       Background Information
                     </div>
                     <div
@@ -663,7 +663,7 @@ export default function Page() {
                   <div className="relative flex min-h-[111px] items-center justify-between gap-x-[5px] overflow-hidden rounded-[15px] bg-forest-50 bg-clip-border px-[5px] py-[10px] dark:bg-[#1F2726] lg:max-h-[111px]">
                     <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[228px]:opacity-0"></div>
                     <div className="flex flex-col pl-[5px]">
-                      <div className="text-[10px] font-semibold text-[#5A6462]">
+                      <div className="text-xs font-semibold text-[#5A6462]">
                         User Wallets with GLM locked
                       </div>
                       <div
@@ -675,7 +675,7 @@ export default function Page() {
                           Epoch.
                         </div>
                         <div className="flex w-full justify-between pt-[5px]">
-                          <div className="flex h-[43px] w-[135px] items-center justify-center gap-x-[6px] rounded-[11px] bg-[#5A6462] px-[13px] py-[5px]">
+                          <div className="flex h-[43px] w-full items-center justify-center gap-x-[6px] rounded-[11px] bg-[#5A6462] px-[13px] py-[5px]">
                             <svg
                               width="24"
                               height="25"
@@ -754,10 +754,10 @@ export default function Page() {
                                     .num_users_locked_glm
                                 }
                               </div>
-                              <div className="text-[9px]">Total Wallets</div>
+                              <div className="text-xxs">Total Wallets</div>
                             </div>
                           </div>
-                          <div className="flex h-[43px] w-[135px] items-center justify-center gap-x-[6px] rounded-[11px] bg-[#5A6462] px-[13px] py-[5px]">
+                          {/* <div className="flex h-[43px] w-[135px] items-center justify-center gap-x-[6px] rounded-[11px] bg-[#5A6462] px-[13px] py-[5px]">
                             <svg
                               width="25"
                               height="25"
@@ -833,7 +833,7 @@ export default function Page() {
                               )}
                               <div className="text-[9px]">in last week</div>
                             </div>
-                          </div>
+                          </div> */}
                         </div>
                       </div>
                     </div>
@@ -853,17 +853,15 @@ export default function Page() {
                     <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[232px]:opacity-0"></div>
                   }
                 >
-                  <div className="group relative flex h-[111px] gap-x-[5px] overflow-hidden rounded-[15px] bg-forest-50 px-[10px] py-[10px] dark:bg-[#1F2726]">
+                  <div className="group relative flex h-[111px] gap-x-[5px] overflow-hidden rounded-[15px] bg-forest-50 px-[10px] py-[8px] dark:bg-[#1F2726]">
                     <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[232px]:opacity-0"></div>
                     <div className="flex flex-col">
-                      <div className="text-[10px] font-semibold text-[#5A6462]">
-                        Total Funding Paid Out to Projects
+                      <div className="text-xs font-semibold text-[#5A6462]">
+                        Total Funding Paid Out
                       </div>
                       <div className={`w-full text-[10px] leading-[150%]`}>
                         <div>
-                          Funding that has been paid out over all Epochs to
-                          date, from donations and matching from the Golem
-                          Foundation.
+                          Funding paid out over all Epochs from donations and matching.
                         </div>
                         <div className="flex w-full justify-between gap-x-[5px] pt-[5px]">
                           <div className="flex h-[43px] w-[135px] items-center justify-center gap-x-[6px] rounded-[11px] bg-[#5A6462] px-[13px] py-[5px]">
@@ -896,12 +894,12 @@ export default function Page() {
                             </svg>
                             <div className="flex flex-col items-center pt-[5px]">
                               <div className="text-[20px] font-semibold">
-                                1145{" "}
+                                {summaryData?.total_funding_amount.toFixed(0)}
                                 <span className="text-[14px] font-normal">
-                                  ETH
+                                  {" Ξ"}
                                 </span>
                               </div>
-                              <div className="text-[9px]">Total Funded</div>
+                              <div className="text-xxs">Total Funded</div>
                             </div>
                           </div>
                           <div className="flex h-[43px] w-[135px] items-center justify-center gap-x-[6px] rounded-[11px] bg-[#5A6462] px-[13px] py-[5px]">
@@ -961,15 +959,15 @@ export default function Page() {
                             </svg>
                             <div className="flex flex-col items-center pt-[5px]">
                               <div className="text-[20px] font-semibold">
-                                6.67{" "}
+                                {summaryData?.median_reward_amounts.all?.toFixed(2)}
                                 <span className="text-[14px] font-normal">
-                                  ETH
+                                  {" Ξ"}
                                 </span>
                               </div>
                               <div className="whitespace-nowrap text-[9px]">
                                 Mdn. Project Funding
                               </div>
-                            </div>
+                            </div> 
                           </div>
                         </div>
                       </div>
