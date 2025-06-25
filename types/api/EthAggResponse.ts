@@ -5,7 +5,7 @@ export type EthAggResponse = {
         tps: Tps;
         count_layer2s: CountLayer2s;
         stables: Stables;
-        gdp: Gdp;
+        app_fees: Gdp;
         meet_l2s: MeetL2s;
     };
 }

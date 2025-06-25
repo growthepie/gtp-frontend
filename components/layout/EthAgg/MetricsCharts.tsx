@@ -38,36 +38,36 @@ function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) 
   const { data, error, isLoading } = useSWR<EthAggResponse>(EthAggURL);
 
   const stableData = data ? data.data.stables : null;
-  const gdpData = data ? data.data.gdp : null;
+  const appData = data ? data.data.app_fees : null;
   const layer2Data = data ? data.data.count_layer2s : null;
   const tpsData = data ? data.data.tps : null;
   const meetL2sData = data ? data.data.meet_l2s : null;
   const maxUnix = useMemo(() => {
-    if(!stableData || !gdpData || !layer2Data || !tpsData) return null;
+    if(!stableData || !appData || !layer2Data || !tpsData) return null;
 
     // get the max unix from the daily values of each data
     const stableDataSeries = Object.values(stableData);
-    const gdpDataSeries = Object.values(gdpData);
+    const appDataSeries = Object.values(appData);
     const layer2DataSeries = layer2Data;
     const tpsDataSeries = Object.values(tpsData);
 
     const maxUnix = Math.max(
       ...stableDataSeries.map(series => series.daily.values.reduce((max: number, value: any) => Math.max(max, value[series.daily.types.indexOf("unix")]), 0)),
-      ...gdpDataSeries.map(series => series.daily.values.reduce((max: number, value: any) => Math.max(max, value[series.daily.types.indexOf("unix")]), 0)),
+      ...appDataSeries.map(series => series.daily.values.reduce((max: number, value: any) => Math.max(max, value[series.daily.types.indexOf("unix")]), 0)),
       layer2DataSeries.daily.values.reduce((max: number, value: any) => Math.max(max, value[layer2DataSeries.daily.types.indexOf("unix")]), 0),
       ...tpsDataSeries.map(series => series.daily.values.reduce((max: number, value: any) => Math.max(max, value[series.daily.types.indexOf("unix")]), 0))
     );
     return maxUnix;
-  }, [stableData, gdpData, layer2Data, tpsData]);
+  }, [stableData, appData, layer2Data, tpsData]);
 
 
 
 
-  if (!stableData || !gdpData || !layer2Data || !tpsData || !maxUnix) return;
+  if (!stableData || !appData || !layer2Data || !tpsData || !maxUnix) return;
 
   return (
     <Container className='flex flex-col gap-y-[60px] mt-[60px] w-full'>
-      <EconCharts selectedBreakdownGroup={selectedBreakdownGroup} gdpData={gdpData} stableData={stableData} maxUnix={maxUnix} />
+      <EconCharts selectedBreakdownGroup={selectedBreakdownGroup} appData={appData} stableData={stableData} maxUnix={maxUnix} />
       <ScalingCharts selectedBreakdownGroup={selectedBreakdownGroup} layer2Data={layer2Data} tpsData={tpsData} maxUnix={maxUnix} />
       <MeetLayer2s meetL2sData={meetL2sData} selectedBreakdownGroup={selectedBreakdownGroup} />
     </Container>
@@ -76,7 +76,7 @@ function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) 
 
 
 
-const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: MetricsChartsProps & { stableData: Stables, gdpData: Gdp, maxUnix: number }) => {
+const EconCharts = ({ selectedBreakdownGroup, stableData, appData, maxUnix }: MetricsChartsProps & { stableData: Stables, appData: Gdp, maxUnix: number }) => {
   const [selectedMode, setSelectedMode] = useState("gas_fees_usd_absolute");
   const [selectedValue, setSelectedValue] = useState("absolute");
   const [selectedTimespan, setSelectedTimespan] = useState("max");
@@ -99,8 +99,8 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
 
 
   const [xAxisExtremesGdp, setXAxisExtremesGdp] = useState({
-    xMin: gdpData.ethereum_mainnet.daily.values[0][gdpData.ethereum_mainnet.daily.types.indexOf("unix")] < gdpData.layer_2s.daily.values[0][gdpData.layer_2s.daily.types.indexOf("unix")] ? gdpData.ethereum_mainnet.daily.values[0][gdpData.ethereum_mainnet.daily.types.indexOf("unix")] : gdpData.layer_2s.daily.values[0][gdpData.layer_2s.daily.types.indexOf("unix")],
-    xMax: gdpData.ethereum_mainnet.daily.values[gdpData.ethereum_mainnet.daily.values.length - 1][gdpData.ethereum_mainnet.daily.types.indexOf("unix")] > gdpData.layer_2s.daily.values[gdpData.layer_2s.daily.values.length - 1][gdpData.layer_2s.daily.types.indexOf("unix")] ? gdpData.ethereum_mainnet.daily.values[gdpData.ethereum_mainnet.daily.values.length - 1][gdpData.ethereum_mainnet.daily.types.indexOf("unix")] : gdpData.layer_2s.daily.values[gdpData.layer_2s.daily.values.length - 1][gdpData.layer_2s.daily.types.indexOf("unix")],
+    xMin: appData.ethereum_mainnet.daily.values[0][appData.ethereum_mainnet.daily.types.indexOf("unix")] < appData.layer_2s.daily.values[0][appData.layer_2s.daily.types.indexOf("unix")] ? appData.ethereum_mainnet.daily.values[0][appData.ethereum_mainnet.daily.types.indexOf("unix")] : appData.layer_2s.daily.values[0][appData.layer_2s.daily.types.indexOf("unix")],
+    xMax: appData.ethereum_mainnet.daily.values[appData.ethereum_mainnet.daily.values.length - 1][appData.ethereum_mainnet.daily.types.indexOf("unix")] > appData.layer_2s.daily.values[appData.layer_2s.daily.values.length - 1][appData.layer_2s.daily.types.indexOf("unix")] ? appData.ethereum_mainnet.daily.values[appData.ethereum_mainnet.daily.values.length - 1][appData.ethereum_mainnet.daily.types.indexOf("unix")] : appData.layer_2s.daily.values[appData.layer_2s.daily.values.length - 1][appData.layer_2s.daily.types.indexOf("unix")],
   });
 
   const [xAxisExtremesStable, setXAxisExtremesStable] = useState({
@@ -137,8 +137,8 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
   
   // const GDPChartConfig = {
   //     compositions: {
-  //       layer_2s: gdpData.layer_2s.daily.values,
-  //       ethereum_mainnet: gdpData.ethereum_mainnet.daily.values,
+  //       layer_2s: appData.layer_2s.daily.values,
+  //       ethereum_mainnet: appData.ethereum_mainnet.daily.values,
   //     },
   //     types: ["unix", "usd", "eth"],
 
@@ -330,13 +330,13 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
         <div className='flex flex-col relative rounded-[15px] w-full h-[375px] bg-[#1F2726] pt-[15px] overflow-hidden'>
           <div className='flex h-[56px] px-[34px] items-start w-full'>
             <div className='flex gap-x-[5px] items-center'>
-              <div className='heading-large-md text-nowrap'>Gross Domestic Product</div>
+              <div className='heading-large-md text-nowrap'>Application Revenue</div>
               <GTPIcon icon='gtp-info-monochrome' size='sm' className='' />
             </div>
             <div className='flex flex-col h-full items-end pt-[5px] w-full'>
               <div className='flex items-center gap-x-[5px]'>
                 <div className='numbers-3xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
-                  {showUsd ? "$" : "Ξ"}{Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(gdpData.layer_2s.daily.values[gdpData.layer_2s.daily.values.length - 1][gdpData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")] + gdpData.ethereum_mainnet.daily.values[gdpData.ethereum_mainnet.daily.values.length - 1][gdpData.ethereum_mainnet.daily.types.indexOf(showUsd ? "usd" : "eth")])}
+                  {showUsd ? "$" : "Ξ"}{Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(appData.layer_2s.daily.values[appData.layer_2s.daily.values.length - 1][appData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")] + appData.ethereum_mainnet.daily.values[appData.ethereum_mainnet.daily.values.length - 1][appData.ethereum_mainnet.daily.types.indexOf(showUsd ? "usd" : "eth")])}
                 </div>
                 <div className='w-[16px] h-[16px] rounded-full '
                   style={{
@@ -345,7 +345,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
                 </div>
               </div>
               <div className='flex items-center gap-x-[5px]'>
-                <div className='text-sm bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>Layer 2 Share: {Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format((gdpData.layer_2s.daily.values[gdpData.layer_2s.daily.values.length - 1][gdpData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")]) /  (gdpData.layer_2s.daily.values[gdpData.layer_2s.daily.values.length - 1][gdpData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")] + gdpData.ethereum_mainnet.daily.values[gdpData.ethereum_mainnet.daily.values.length - 1][gdpData.ethereum_mainnet.daily.types.indexOf(showUsd ? "usd" : "eth")]) * 100)}%</div>
+                <div className='text-sm bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>Layer 2 Share: {Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format((appData.layer_2s.daily.values[appData.layer_2s.daily.values.length - 1][appData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")]) /  (appData.layer_2s.daily.values[appData.layer_2s.daily.values.length - 1][appData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")] + appData.ethereum_mainnet.daily.values[appData.ethereum_mainnet.daily.values.length - 1][appData.ethereum_mainnet.daily.types.indexOf(showUsd ? "usd" : "eth")]) * 100)}%</div>
                 <div className='w-[16px] h-[16px] rounded-full '
                   style={{
                     background: "transparent",
@@ -527,7 +527,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
 
                 }}
               >
-                {Object.entries(gdpData).map(([name, data]) => {
+                {Object.entries(appData).map(([name, data]) => {
                   const color = name === "layer_2s" ? {
                     linearGradient: {
                       x1: 0,
@@ -565,7 +565,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, gdpData, maxUnix }: Me
                       }}
                       data={data.daily.values.map((value) => [value[data.daily.types.indexOf("unix")], value[data.daily.types.indexOf(showUsd ? "usd" : "eth")]])
                       }
-                      key={name + "gdpData"}
+                      key={name + "appData"}
                     />
                   )})}
               </YAxis>
