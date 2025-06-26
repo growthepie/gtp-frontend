@@ -113,6 +113,7 @@ module.exports = {
         'global-search': '8000',
         'global-search-backdrop': '7000',
         'dropdown': '1000',
+        'dropdown-background': '999',
         'chart': '20',
       },
       transitionDuration: {

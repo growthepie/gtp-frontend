@@ -374,6 +374,13 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
 
   return (
     <>
+      {showChainsCost || showChainsTPS ? (
+        <div className='fixed inset-0 bg-black/30 z-dropdown-background' onClick={() => {
+          setShowChainsCost(false);
+          setShowChainsTPS(false);
+        }} />
+      ) : null}
+        
       {connectionStatus === 'connected' && (
         <div className='flex flex-col xl:flex-row gap-[15px] w-full'>
           <div className={`bg-[#1F2726]  w-full transition-height duration-300 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'h-[150px] overflow-hidden rounded-[15px] p-[15px]' : selectedBreakdownGroup === "Builders & Apps" ? 'h-[0px] overflow-hidden p-0' : 'h-[306px] rounded-[15px] p-[15px]'}`}>
@@ -397,9 +404,8 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                 <div className={`transition-all duration-300 cursor-default ${eventHover === 'before' ? 'text-xs' : 'text-xxxs text-[#5A6462]'} w-fit`} onMouseEnter={() => setEventHover('before')} onMouseLeave={() => setEventHover(null)}><span className={`${eventHover !== 'before' ? 'font-bold' : ''}`}>Event before:</span></div>
               </div>
             </div>
-
           </div>
-          <div className={`flex flex-col gap-y-[15px] bg-[#1F2726]  min-w-0   w-full transition-height duration-300 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'h-[150px] overflow-hidden rounded-[15px] p-[15px]' : selectedBreakdownGroup === "Builders & Apps" ? 'h-[0px] overflow-hidden p-0' : 'h-[306px] rounded-[15px] p-[15px]'}`}>
+          <div className={`flex flex-col gap-y-[15px] bg-[#1F2726]  min-w-0   w-full transition-height duration-300 ${showChainsTPS && 'z-dropdown'} ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'h-[150px] overflow-hidden rounded-[15px] p-[15px]' : selectedBreakdownGroup === "Builders & Apps" ? 'h-[0px] overflow-hidden p-0' : 'h-[306px] rounded-[15px] p-[15px]'}`}>
             <div className={`heading-large-md transition-transform duration-500 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'mb-[10px]' : 'mb-[0px]'}`}>{selectedBreakdownGroup === "Ethereum Ecosystem" ? 'Ecosystem Transactions Per Second' : 'Ethereum Ecosystem TPS'}</div>
             <div className='flex flex-col gap-y-[30px] mb-[20px]'>
               <div className='numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
@@ -564,7 +570,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                 </div>
               </div>
             </div>
-            <div className={`relative z-dropdown flex flex-col gap-y-[5px] transition-height duration-500 -mx-[15px] bg-[#1F2726] rounded-b-[15px]  ${showChainsTPS ? 'pb-[10px] shadow-lg' : 'pb-0'} ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'h-0' : 'h-auto'}`}
+            <div className={`relative flex flex-col gap-y-[5px] transition-height duration-500 -mx-[15px] bg-[#1F2726] rounded-b-[15px]  ${showChainsTPS ? 'pb-[10px] shadow-lg' : 'pb-0'} ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'h-0' : 'h-auto'}`}
             >
               <div className={`flex flex-col gap-y-[2.5px] px-[15px] duration-300  overflow-y-hidden ${!showChainsTPS ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''} `}
                 style={{
@@ -651,7 +657,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
               </div>
             </div>
           </div>
-          <div className={`bg-[#1F2726] z-dropdown min-w-0 w-full  transition-height duration-300 ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'h-[150px] overflow-hidden rounded-[15px] py-[15px] px-[15px]' : selectedBreakdownGroup === "Builders & Apps" ? 'h-[0px] overflow-hidden p-0' : 'h-[306px] rounded-[15px] py-[15px] px-[15px]'}`}>
+          <div className={`bg-[#1F2726] min-w-0 w-full  transition-height duration-300 ${showChainsCost && 'z-dropdown'} ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'h-[150px] overflow-hidden rounded-[15px] py-[15px] px-[15px]' : selectedBreakdownGroup === "Builders & Apps" ? 'h-[0px] overflow-hidden p-0' : 'h-[306px] rounded-[15px] py-[15px] px-[15px]'}`}>
             <div className={`heading-large-md ${selectedBreakdownGroup === "Ethereum Ecosystem" ? 'mb-[10px]' : 'mb-[30px]'}`}>Token Transfer Fee</div>
             <div className='pt-[15px] mb-[35px] flex flex-col gap-y-[15px]'>
               <FeeDisplayRow
@@ -682,7 +688,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
               />
             </div>
 
-            <div className={`relative flex flex-col gap-y-[5px] -mx-[15px] bg-[#1F2726]  z-10 rounded-b-[15px] ${showChainsCost ? 'pb-[10px] shadow-lg' : 'pb-0'}`}
+            <div className={`relative flex flex-col gap-y-[5px] -mx-[15px] bg-[#1F2726]  z-10 rounded-b-[15px] ${showChainsCost ? 'z-dropdown pb-[10px] shadow-lg' : 'pb-0'}`}
             >
               <div className={`flex flex-col gap-y-[2.5px] px-[15px] transition-height duration-500 overflow-y-hidden ${!showChainsCost ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''} `}
                 style={{
