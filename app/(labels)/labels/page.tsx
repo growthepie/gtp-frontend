@@ -45,6 +45,7 @@ import { useMaster } from "@/contexts/MasterContext";
 import { useUIContext } from "@/contexts/UIContext";
 import SVGSparkline, { SVGSparklineProvider, useSVGSparkline } from "./SVGSparkline";
 import { GridTableChainIcon, GridTableHeader, GridTableRow } from "@/components/layout/GridTable";
+import { GTPTooltipNew, OLIContractTooltip } from "@/components/tooltip/GTPTooltip";
 
 const devMiddleware = (useSWRNext) => {
   return (key, fetcher, config) => {
@@ -1256,9 +1257,26 @@ export default function LabelsPage() {
 
                           </div>
                         ) : (
-                          <div className="flex h-full items-center gap-x-[3px] text-[#5A6462] text-[10px]">
-                            Not Available
-                          </div>
+                          <GTPTooltipNew
+                            placement="bottom-start"
+                            allowInteract={true}
+                            trigger={
+                              <div className="flex h-full items-center gap-x-[3px] text-[#5A6462] text-[10px] cursor-pointer select-none">
+                                Not Available
+                              </div>
+                            }
+                            containerClass="flex flex-col gap-y-[10px]"
+                            positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+                          >
+                            <OLIContractTooltip 
+                              icon="gtp-project-monochrome" 
+                              iconClassName="text-[#5A6462]" 
+                              project_name="Not Available" 
+                              message="Project information not available."
+                              contractAddress={filteredLabelsData[item.index].address}
+                              chain={filteredLabelsData[item.index].origin_key}
+                            />
+                          </GTPTooltipNew>
                         )}
                       </div>
 
@@ -1291,9 +1309,26 @@ export default function LabelsPage() {
                             )}
                           </div>
                         ) : (
-                          <div className="flex h-full items-center gap-x-[3px] text-[#5A6462] text-[10px]">
-                            Not Available
-                          </div>
+                          <GTPTooltipNew
+                            placement="bottom-start"
+                            allowInteract={true}
+                            trigger={
+                              <div className="flex h-full items-center gap-x-[3px] text-[#5A6462] text-[10px] cursor-pointer select-none">
+                                Not Available
+                              </div>
+                            }
+                            containerClass="flex flex-col gap-y-[10px]"
+                            positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+                          >
+                            <OLIContractTooltip 
+                              icon="gtp-project-monochrome" 
+                              iconClassName="text-[#5A6462]" 
+                              project_name="Not Available" 
+                              message="Contract information not available."
+                              contractAddress={filteredLabelsData[item.index].address}
+                              chain={filteredLabelsData[item.index].origin_key}
+                            />
+                          </GTPTooltipNew>
                         )}
                       </div>
 
