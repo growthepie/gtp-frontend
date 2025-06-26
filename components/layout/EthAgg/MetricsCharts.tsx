@@ -205,16 +205,24 @@ function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) 
     prefix: "",
     seriesConfigs: [
       {
-        name: "Max TPS",
-        key: "max_tps",
+        name: "Layer 2s",
+        key: "all_l2s",
         type: 'area',
-        dataExtractor: (data) => (data as Tps['layer_2s']).daily.values.map(v => [v[tpsUnixIndex], v[tpsValueIndex]]),
-      }
+        stacking: 'normal',
+        dataExtractor: (data) => (data as Tps).layer_2s.daily.values.map(v => [v[tpsUnixIndex], v[tpsValueIndex]]),
+      },
+      {
+        name: "Ethereum Mainnet",
+        key: "ethereum",
+        type: 'area',
+        stacking: 'normal',
+        dataExtractor: (data) => (data as Tps).ethereum_mainnet.daily.values.map(v => [v[tpsUnixIndex], v[tpsValueIndex]]),
+      },
     ],
     totalValueExtractor: (data) => {
-      const d = data as Tps['layer_2s'];
-      const lastValue = d.daily.values.slice(-1)[0][tpsValueIndex];
-      return formatNumber(lastValue);
+      const d = data as Tps;
+      const total = d.layer_2s.daily.values.slice(-1)[0][tpsValueIndex] + d.ethereum_mainnet.daily.values.slice(-1)[0][tpsValueIndex];
+      return formatNumber(total);
     }
   };
 
@@ -247,7 +255,7 @@ function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) 
         <div className='pl-[45px] text-md'>Transaction throughput is rising across Ethereum Mainnet and its growing number of Layer 2 networks.</div>
         <div className='flex flex-col xl:flex-row gap-[15px] w-full'>
           <AggChart dataSource={layer2Data} {...l2CountConfig} />
-          <AggChart dataSource={tpsData.layer_2s} {...tpsConfig} />
+          <AggChart dataSource={tpsData} {...tpsConfig} />
         </div>
       </div>
       <MeetLayer2s meetL2sData={meetL2sData} selectedBreakdownGroup={selectedBreakdownGroup} />
