@@ -451,7 +451,14 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict }) => {
             allowInteract={true}
             trigger={<div className="w-full h-[30px] flex items-center"><GridTableAddressCell address={contract.address as string} showCopyIcon={false} /></div>}
           >
-            <OLIContractTooltip icon="gtp-project-monochrome" iconClassName="text-[#5A6462]" project_name={owner_project} href="https://www.openlabelsinitiative.org/attest" message="Contract information not available." />
+            <OLIContractTooltip 
+              icon="gtp-project-monochrome" 
+              iconClassName="text-[#5A6462]" 
+              project_name={owner_project} 
+              message="Contract information not available."
+              contractAddress={contract.address as string}
+              chain={contract.origin_key}
+            />
           </GTPTooltipNew>
         )}
         <div className="flex items-center gap-x-[5px]">
