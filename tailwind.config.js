@@ -109,9 +109,11 @@ module.exports = {
       zIndex: { 
         ...defaultTheme.zIndex,
         'context-menu': '9000',
-        'global-search-tooltip': '8500',
-        'global-search': '8000',
-        'global-search-backdrop': '7000',
+        'global-search-tooltip': '8100',
+        'global-search': '8001',
+        'global-search-backdrop': '8000',
+        'dropdown': '100',
+        'chart': '20',
       },
       transitionDuration: {
         ...defaultTheme.transitionDuration,
