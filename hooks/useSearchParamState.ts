@@ -1,4 +1,4 @@
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'; // 1. Import usePathname
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 type ParserFunction<T> = (value: string | null) => T;
@@ -63,7 +63,8 @@ export function useSearchParamState<T>(
 
   const searchParams = useSearchParams();
   const router = useRouter();
-  
+  const pathname = usePathname(); // 2. Get the current pathname
+
   // Use refs to track values and avoid stale closures
   const lastUrlValueRef = useRef<T | null>(null);
   const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -81,6 +82,7 @@ export function useSearchParamState<T>(
 
   // Debounced URL update function
   const updateUrl = useCallback((newValue: T) => {
+    const scrollY = window.scrollY; // Save before update
     if (updateTimeoutRef.current) {
       clearTimeout(updateTimeoutRef.current);
     }
@@ -113,8 +115,10 @@ export function useSearchParamState<T>(
         }
       }
       
-      const newUrl = newParams.toString() ? `?${newParams.toString()}` : '';
-      
+      // 3. Construct the full URL with the pathname
+      const newQueryString = newParams.toString();
+      const newUrl = newQueryString ? `${pathname}?${newQueryString}` : pathname;
+
       if (updateMode === 'replace') {
         router.replace(newUrl);
       } else {
@@ -125,8 +129,25 @@ export function useSearchParamState<T>(
       setTimeout(() => {
         isUpdatingUrlRef.current = false;
       }, 50);
+      
+      // Restore after update
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: scrollY, behavior: 'instant' });
+      });
     }, debounceMs);
-  }, [searchParams, paramName, defaultValue, serializer, updateMode, router, skipUrlUpdate, debounceMs]);
+
+
+  }, [
+    pathname, // 4. Add pathname to dependency array
+    searchParams, 
+    paramName, 
+    defaultValue, 
+    serializer, 
+    updateMode, 
+    router, 
+    skipUrlUpdate, 
+    debounceMs
+  ]);
 
   // Sync state with URL changes (only from external navigation)
   useEffect(() => {
@@ -177,7 +198,8 @@ export function useSearchParamState<T>(
   return [state, setStateAndUrl];
 }
 
-// Optimized parsers with error handling
+// --- The rest of the file remains the same ---
+// ... (parsers, serializers, and specific hooks)
 export const parsers = {
   number: (value: string | null): number => {
     if (value === null) return 0;

@@ -10,7 +10,7 @@ import { GTPIcon } from '../GTPIcon';
 import { Icon } from '@iconify/react';
 import { useMaster } from '@/contexts/MasterContext';
 import { useTransition, animated } from "@react-spring/web";
-import { useSearchParamState } from '@/hooks/useSearchParamState';
+import { useSearchParamBoolean, useSearchParamState } from '@/hooks/useSearchParamState';
 import { tooltipPositioner } from '@/lib/chartUtils';
 import { useSSEMetrics } from './useSSEMetrics';
 import { FeeDisplayRow } from './FeeDisplayRow';
@@ -460,11 +460,11 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   });
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const [showChainsTPS, setShowChainsTPS] = useSearchParamState<boolean>("tps", {
-    defaultValue: false,
+  const [showChainsTPS, setShowChainsTPS] = useSearchParamBoolean("tps", false, {
+    debounceMs: 150, // Longer debounce for UI toggles
   });
-  const [showChainsCost, setShowChainsCost] = useSearchParamState<boolean>("cost", {
-    defaultValue: false,
+  const [showChainsCost, setShowChainsCost] = useSearchParamBoolean("cost", false, {
+    debounceMs: 150,
   });
 
   // Memoized calculations

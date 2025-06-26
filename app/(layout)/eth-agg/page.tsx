@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Heading from "@/components/layout/Heading";
 import useSWR from "swr";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { EconomicsURL } from "@/lib/urls";
 import {
   EconomicsResponse,
@@ -25,11 +25,16 @@ import { GTPIcon } from "@/components/layout/GTPIcon";
 
 
 export default function EthAgg() {
- 
   const [selectedBreakdownGroup, setSelectedBreakdownGroup] = useState("Metrics");
   const [selectedTimespan, setSelectedTimespan] = useState("365d");
   const [isMonthly, setIsMonthly] = useState(false);
   const TopMetricsComponent = <TopEthAggMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
+
+  useEffect(() => {
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+  }, []);
 
 
   const titles = {
@@ -56,13 +61,13 @@ export default function EthAgg() {
             </div>
           </div>
         </Container>
-          
+
         <TopEthAggMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
         <MetricsCharts selectedBreakdownGroup={selectedBreakdownGroup} />
         <Container className="pt-[30px]">
-          <EcosystemBottom  selectedBreakdownGroup={selectedBreakdownGroup}/>
+          <EcosystemBottom selectedBreakdownGroup={selectedBreakdownGroup} />
         </Container>
-        
+
       </div>
       {/* <ShowLoading
         dataLoading={[econLoading, masterLoading]}
@@ -75,7 +80,7 @@ export default function EthAgg() {
         </div>
         {econData && master && <ChainBreakdown data={Object.fromEntries(Object.entries(econData.data.chain_breakdown).filter(([key]) => key !== "totals"))} master={master} selectedTimespan={selectedTimespan} setSelectedTimespan={setSelectedTimespan} isMonthly={isMonthly} setIsMonthly={setIsMonthly} totals={econData.data.chain_breakdown["totals"]} />}
       </div> */}
-       
+
 
     </>
   );
@@ -83,7 +88,7 @@ export default function EthAgg() {
 
 
 
-const EcosystemBottom = ({selectedBreakdownGroup}: {selectedBreakdownGroup: string}) => {
+const EcosystemBottom = ({ selectedBreakdownGroup }: { selectedBreakdownGroup: string }) => {
 
   if (selectedBreakdownGroup !== "Ethereum Ecosystem") return null;
 
@@ -91,10 +96,10 @@ const EcosystemBottom = ({selectedBreakdownGroup}: {selectedBreakdownGroup: stri
     <div className='flex flex-col gap-y-[15px]'>
       <div className='flex items-center w-full justify-between'>
         <div className='flex items-center gap-x-[8px]'>
-          <GTPIcon icon={"gtp-read"} size='lg'       />
+          <GTPIcon icon={"gtp-read"} size='lg' />
           <div className='heading-large-lg'>The Why and How of the Ethereum Ecosystem</div>
         </div>
-        
+
       </div>
       <div className='text-md pl-[44px]'>Learn why Ethereum is built the way it is, how it prioritizes security, sovereignty and freedom to use applications for everyone. </div>
     </div>
