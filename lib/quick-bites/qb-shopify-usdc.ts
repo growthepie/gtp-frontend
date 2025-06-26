@@ -177,8 +177,8 @@ const shopifyUsdc: QuickBiteData = {
     "```",
     "Further implementation documentation can be seen here: https://shopify.engineering/commerce-payments-protocol.",
   ],
-  image: "https://api.growthepie.com/v1/quick-bites/banners/placeholder.png",
-  og_image: "https://api.growthepie.com/v1/og_images/quick-bites/arbitrum-timeboost.png",
+  image: "https://api.growthepie.com/v1/quick-bites/banners/shopify.png",
+  og_image: "https://api.growthepie.com/v1/quick-bites/banners/shopify.png",
   date: "2025-06-26",
   related: [],
   author: [{
