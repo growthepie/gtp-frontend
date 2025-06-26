@@ -65,8 +65,8 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
     >
       <div className='flex flex-col w-full h-full p-[15px] gap-y-[10px] border border-[#5A6462] rounded-[15px]'>
         <div className='flex flex-col'>
-          <div className='flex justify-between h-[51px]'>
-            <div className='heading-small-xs w-[175px] truncate whitespace-pre-wrap group-hover:underline'>{title}</div>
+          <div className='flex justify-between h-[51px] gap-x-[15px]'>
+            <div className='heading-small-xs group-hover:underline line-clamp-3'>{title}</div>
             <div className="text-xs align-start whitespace-nowrap">
               <time dateTime={date}>{formatDate(date)}</time>
             </div>
