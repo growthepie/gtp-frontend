@@ -32,7 +32,7 @@ export default function QuickBitesPage() {
           Short and focused analyses of specific topics or trends in the Ethereum ecosystem.
         </p>
         
-        <QuickBitesGrid QuickBites={sortedQuickBites} />
+        <QuickBitesGrid QuickBites={sortedQuickBites} IsLanding={false} />
       </PageContainer>
     </div>
   );
