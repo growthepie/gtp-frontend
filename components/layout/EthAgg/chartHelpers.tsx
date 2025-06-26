@@ -55,7 +55,7 @@ export const createChartOnRender = (
 };
 
 // --- Tooltip Formatter ---
-export const createTooltipFormatter = (showUsd: boolean) => {
+export const createTooltipFormatter = (prefix: string) => {
   return function (this: Highcharts.TooltipFormatterContextObject) {
     const { x, points } = this;
     if (!points) return "";
@@ -68,7 +68,7 @@ export const createTooltipFormatter = (showUsd: boolean) => {
     });
 
 
-    const tooltipHeader = `<div class="mt-3 mr-3 mb-3 text-xs font-raleway">
+    const tooltipHeader = `<div class="mt-3 mr-3 mb-3 text-xs font-raleway min-w-[200px]">
       <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2 ">${dateString}</div>`;
 
     const tooltipFooter = `</div>`;
@@ -77,7 +77,6 @@ export const createTooltipFormatter = (showUsd: boolean) => {
       .sort((a, b) => (b.y || 0) - (a.y || 0))
       .map((point) => {
         const { series, y } = point;
-        const prefix = showUsd ? "$" : "Ξ";
         const displayValue = Intl.NumberFormat("en-GB", {
           notation: "compact",
           maximumFractionDigits: 2,

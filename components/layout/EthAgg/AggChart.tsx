@@ -13,6 +13,8 @@ import { useElementSizeObserver } from '@/hooks/useElementSizeObserver';
 import { tooltipPositioner } from '@/lib/chartUtils';
 import { useMaster } from '@/contexts/MasterContext';
 import { AggChartProps } from './MetricsCharts';
+import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
+import { GTPIcon } from '../GTPIcon';
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -37,6 +39,8 @@ function formatNumber(number: number, decimals = 2): string {
 
 export function AggChart({
   title,
+  tooltipContent,
+  prefix,
   dataSource,
   seriesConfigs,
   totalValueExtractor,
@@ -76,14 +80,10 @@ export function AggChart({
   const lastPointLines = useRef<{ [key: string]: Highcharts.SVGElement[] }>({}).current;
   const onRender = useMemo(() => createChartOnRender(lastPointLines, uniqueId), [lastPointLines, uniqueId]);
   // Memoize the tooltip formatter
-  const tooltipFormatter = useMemo(() => createTooltipFormatter(showUsd), [showUsd]);
+  const tooltipFormatter = useMemo(() => createTooltipFormatter(prefix), [prefix]);
 
-  const getSeriesName = (key: string) => (key === 'layer_2s' ? 'Layer 2s' : 'Ethereum Mainnet');
-  const getChainKey = (key: string) => (key === 'layer_2s' ? 'all_l2s' : 'ethereum');
   const [chartContainerRef, { width: chartContainerWidth }] =
     useElementSizeObserver<HTMLDivElement>();
-
-  const prefix = showUsd ? "$" : "Ξ";
 
   const xAxisExtremes = useMemo(() => {
     const xMin = xAxisMin !== null ? xAxisMin : (seriesData[0]?.values[0]?.[0] || 0);
@@ -110,7 +110,7 @@ export function AggChart({
       };
 
       let number = formatLargeNumber(val);
-      if (true) {
+      if (prefix !== "") {
         if (showUsd) {
           if (val < 1) {
             number = prefix + val.toFixed(2);
@@ -121,7 +121,7 @@ export function AggChart({
           number = prefix + formatLargeNumber(val);
         }
       } else {
-        number = number + " GB";
+        number = number;
       }
 
       return number;
@@ -134,8 +134,24 @@ export function AggChart({
     <div className='group/chart flex flex-col relative rounded-[15px] w-full h-[375px] bg-[#1F2726] pt-[15px] overflow-hidden'>
       {/* Header */}
       <div className='flex h-[56px] px-[34px] items-start w-full'>
-        <div className='flex gap-x-[5px] items-center'>
+        <div className='flex gap-x-[10px] items-center z-[10]'>
           <div className='heading-large-md text-nowrap'>{title}</div>
+          <GTPTooltipNew
+            placement="top-start"
+            allowInteract={true}
+            trigger={
+              <div>
+                <GTPIcon icon="gtp-info-monochrome" size='sm' className='pointer-events-auto' />
+              </div>
+            }
+            containerClass="flex flex-col gap-y-[10px]"
+            positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+            size='md'
+          >
+            <TooltipBody>
+              <div className="pl-[20px]">{tooltipContent}</div>
+            </TooltipBody>
+          </GTPTooltipNew>
         </div>
         <div className='flex flex-col h-full items-end pt-[5px] w-full'>
           <div className='flex items-center gap-x-[5px]'>
