@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Heading from "@/components/layout/Heading";
 import useSWR from "swr";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { EconomicsURL } from "@/lib/urls";
 import {
   EconomicsResponse,
@@ -19,20 +19,56 @@ import Container from "@/components/layout/Container";
 import TopSelectArea from "@/components/layout/EthAgg/TopSelectArea";
 import TopEthAggMetrics from "@/components/layout/EthAgg/MetricsTop";
 import MetricsCharts from "@/components/layout/EthAgg/MetricsCharts";
+import { GTPIconName } from "@/icons/gtp-icon-names";
+import { GTPIcon } from "@/components/layout/GTPIcon";
+
+
+
 export default function EthAgg() {
- 
   const [selectedBreakdownGroup, setSelectedBreakdownGroup] = useState("Metrics");
   const [selectedTimespan, setSelectedTimespan] = useState("365d");
   const [isMonthly, setIsMonthly] = useState(false);
+  const TopMetricsComponent = <TopEthAggMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
 
+  useEffect(() => {
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+  }, []);
+
+
+  const titles = {
+    "Ethereum Ecosystem": "What is the Ethereum Ecosystem?",
+    Metrics: null,
+
+    "Builders & Apps": "Ethereum is for Builders and Apps",
+  };
+  const Messages = {
+    "Ethereum Ecosystem": "Ethereum today is a layered ecosystem: the proof‑of‑stake mainnet secures DeFi, NFT, DAO and other dApps, while over $42 billion (peak) now resides on Layer 2 rollups such as Optimism, Arbitrum, Base, ZKsync and Starknet. Since the community adopted a “rollup‑centric roadmap,” the protocol assumes most user activity migrates to these rollups, leaving Layer 1 to specialise in settlement, consensus and minimal data availability.",
+    Metrics: null,
+    "Builders & Apps": "Ethereum is for everyone. Every builder who explores different use cases, from payments, to art, to identity solutions. Explore here how much builder activity there is and which apps are already out there.",
+  };
 
   return (
     <>
-     <TopSelectArea selectedBreakdownGroup={selectedBreakdownGroup} setSelectedBreakdownGroup={setSelectedBreakdownGroup} />
-     <div className="mt-[30px]">
+      <TopSelectArea selectedBreakdownGroup={selectedBreakdownGroup} setSelectedBreakdownGroup={setSelectedBreakdownGroup} />
+      <div className="flex flex-col pt-[15px]">
+        <Container className={`transition-[max-height,opacity] duration-500 ${selectedBreakdownGroup === "Metrics" ? 'max-h-[0px] opacity-0' : 'max-h-[200px] opacity-100 mb-[15px]'}  overflow-hidden`}>
+          <div className={`px-[30px] py-[15px] rounded-[15px] bg-[#1F2726] flex flex-col gap-y-[15px] transition-[max-height,opacity] ${selectedBreakdownGroup === "Metrics" ? 'max-h-[0px] opacity-0' : 'max-h-[200px] opacity-100'}  overflow-hidden`}>
+            <div className="heading-large-lg">{titles[selectedBreakdownGroup]}</div>
+            <div className="text-sm">
+              {Messages[selectedBreakdownGroup]}
+            </div>
+          </div>
+        </Container>
+
         <TopEthAggMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
         <MetricsCharts selectedBreakdownGroup={selectedBreakdownGroup} />
-     </div>
+        <Container className="pt-[30px]">
+          <EcosystemBottom selectedBreakdownGroup={selectedBreakdownGroup} />
+        </Container>
+
+      </div>
       {/* <ShowLoading
         dataLoading={[econLoading, masterLoading]}
         dataValidating={[econValidating, masterValidating]}
@@ -44,8 +80,28 @@ export default function EthAgg() {
         </div>
         {econData && master && <ChainBreakdown data={Object.fromEntries(Object.entries(econData.data.chain_breakdown).filter(([key]) => key !== "totals"))} master={master} selectedTimespan={selectedTimespan} setSelectedTimespan={setSelectedTimespan} isMonthly={isMonthly} setIsMonthly={setIsMonthly} totals={econData.data.chain_breakdown["totals"]} />}
       </div> */}
-       
+
 
     </>
   );
+}
+
+
+
+const EcosystemBottom = ({ selectedBreakdownGroup }: { selectedBreakdownGroup: string }) => {
+
+  if (selectedBreakdownGroup !== "Ethereum Ecosystem") return null;
+
+  return (
+    <div className='flex flex-col gap-y-[15px]'>
+      <div className='flex items-center w-full justify-between'>
+        <div className='flex items-center gap-x-[8px]'>
+          <GTPIcon icon={"gtp-read"} size='lg' />
+          <div className='heading-large-lg'>The Why and How of the Ethereum Ecosystem</div>
+        </div>
+
+      </div>
+      <div className='text-md pl-[44px]'>Learn why Ethereum is built the way it is, how it prioritizes security, sovereignty and freedom to use applications for everyone. </div>
+    </div>
+  )
 }

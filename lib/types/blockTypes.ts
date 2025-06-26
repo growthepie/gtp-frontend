@@ -12,7 +12,8 @@ export type BlockType =
   | 'container'  // Container can hold multiple blocks horizontally
   | 'spacer'      // For vertical spacing
   | 'iframe'
-  | 'list';      // For list items
+  | 'list'      // For list items
+  | 'kpi-cards'; // For KPI card blocks
 
 export interface BaseBlock {
   id: string;
@@ -132,6 +133,16 @@ export interface ListBlock extends BaseBlock {
   className?: string;
 }
 
+export interface KpiCardsBlock extends BaseBlock {
+  type: 'kpi-cards';
+  items: Array<{
+    title: string;
+    value: string | number;
+    description?: string;
+  }>;
+  className?: string;
+}
+
 export type ContentBlock = 
   | ParagraphBlock
   | HeadingBlock
@@ -144,7 +155,8 @@ export type ContentBlock =
   | ContainerBlock
   | SpacerBlock
   | IframeBlock
-  | ListBlock;
+  | ListBlock
+  | KpiCardsBlock;
 
 // Helper function to generate a unique ID for blocks
 export const generateBlockId = (): string => {

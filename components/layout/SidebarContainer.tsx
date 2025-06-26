@@ -77,7 +77,12 @@ export default function SidebarContainer() {
               href="/"
               className={`${isSidebarOpen ? "relative h-[45.07px] w-[192.87px] block" : "relative h-[45.07px] w-[62px] overflow-clip"} transition-[width] duration-sidebar ease-sidebar`}
             >
-              <IconContextMenu getSvgData={getLogoSvgData} itemName="gtp-logo-full" wrapperClassName="block h-full w-full">
+              <IconContextMenu 
+                getSvgData={getLogoSvgData} 
+                itemName="gtp-logo-full" 
+                wrapperClassName="block h-full w-full"
+                isLogo={true}
+              >
               <div className={`h-[45.07px] w-[192.87px] relative ${isSidebarOpen ? "scale-100  translate-x-[1.5px] translate-y-[0px]" : "scale-[0.5325] translate-x-[1.5px] translate-y-[2px]"} transition-transform duration-sidebar ease-sidebar`} style={{ transformOrigin: "21px 27px" }}>
                 <svg className="absolute" viewBox="0 0 194 46" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M12.4274 14.7805C12.3502 13.704 12.6434 12.7156 13.2724 11.7572C13.6935 11.1201 14.2907 10.4321 14.9496 9.67423C16.6496 7.7165 18.7553 5.29317 19.2708 2.08203C20.3917 4.54348 19.848 6.93686 18.6073 9.13783C18.0491 10.1271 17.4311 10.8378 16.8411 11.5158C16.1468 12.3136 15.4924 13.066 15.0222 14.1724C14.7636 14.7741 14.6165 15.3504 14.5476 15.9141L12.4274 14.7805Z" fill="url(#paint0_radial_12827_73007)"/>

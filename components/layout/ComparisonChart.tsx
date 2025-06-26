@@ -1788,6 +1788,17 @@ export default function ComparisonChart({
     return "Daily";
   }, [avg, monthly_agg, selectedTimeInterval, selectedTimespan]);
 
+  // Add this condition to check if stacking/percentage should be disabled
+  const shouldDisableStacking = useMemo(() => {
+    if (!master || !metric_id) return false;
+    
+    const metricInfo = master[metric_info_key]?.[metric_id];
+    if (!metricInfo) return false;
+    
+    // Disable stacking/percentage if all_l2s_aggregate is not 'sum'
+    return metricInfo.all_l2s_aggregate !== 'sum';
+  }, [master, metric_id, metric_info_key]);
+
   if (is_embed)
     return (
       <EmbedContainer
@@ -2190,7 +2201,7 @@ export default function ComparisonChart({
                   >
                     Absolute
                   </button>
-                  {metric_id !== "txcosts" && (
+                  {!shouldDisableStacking && (
                     <>
                       <button
                         disabled={metric_id === "txcosts"}
@@ -2267,7 +2278,7 @@ export default function ComparisonChart({
                   >
                     Absolute
                   </button>
-                  {metric_id !== "txcosts" && (
+                  {!shouldDisableStacking && (
                     <>
                       <button
                         className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"stacked" === selectedScale

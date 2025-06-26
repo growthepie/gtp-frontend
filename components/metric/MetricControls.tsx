@@ -282,6 +282,7 @@ export const MetricBottomControls = ({ metric, is_embed = false }: { metric: str
     chainKeys,
   } = useMetricData();
 
+  const { data: master } = useMaster();
 
   const {
     selectedScale,
@@ -292,6 +293,20 @@ export const MetricBottomControls = ({ metric, is_embed = false }: { metric: str
 
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
 
+  const shouldDisableStacking = useMemo(() => {
+    if (!master || !metric_id) return false;
+    
+    const metricInfoKey = Object.keys(master).find(key => 
+      master[key] && typeof master[key] === 'object' && metric_id in master[key]
+    );
+    
+    if (!metricInfoKey) return false;
+    
+    const metricInfo = master[metricInfoKey][metric_id];
+    if (!metricInfo) return false;
+    
+    return metricInfo.all_l2s_aggregate !== 'sum';
+  }, [master, metric_id]);
 
   const SourcesDisplay = useMemo(() => {
     return sources && sources.length > 0 ? (
@@ -312,7 +327,6 @@ export const MetricBottomControls = ({ metric, is_embed = false }: { metric: str
       <>Unavailable</>
     );
   }, [sources]);
-
 
   return (
     <>
@@ -383,7 +397,7 @@ export const MetricBottomControls = ({ metric, is_embed = false }: { metric: str
                 >
                   Absolute
                 </button>
-                {metric_id !== "txcosts" && (
+                {!shouldDisableStacking && (
                   <>
                     <button
                       disabled={metric_id === "txcosts"}
@@ -460,7 +474,7 @@ export const MetricBottomControls = ({ metric, is_embed = false }: { metric: str
                 >
                   Absolute
                 </button>
-                {metric_id !== "txcosts" && (
+                {!shouldDisableStacking && (
                   <>
                     <button
                       className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"stacked" === selectedScale

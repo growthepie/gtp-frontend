@@ -91,8 +91,8 @@ const arbitrumTimeboost: QuickBiteData = {
     JSON.stringify({
       src: "https://api.growthepie.com/v1/quick-bites/timeboost-express-lane.png",
       alt: "Timeboost Express Lane",
-      width: "800",
-      height: "400",
+      width: "1920",
+      height: "1073",
       caption: "Timeboost Express Lane",
     }),
     "```",
@@ -103,8 +103,8 @@ const arbitrumTimeboost: QuickBiteData = {
     JSON.stringify({
       src: "https://api.growthepie.com/v1/quick-bites/timeboost-auction-flow.png",
       alt: "Timeboost Auction Flow",
-      width: "800",
-      height: "400",
+      width: "1920",
+      height: "1069",
       caption: "Timeboost Auction Flow",
     }),
     "```",
@@ -115,7 +115,7 @@ const arbitrumTimeboost: QuickBiteData = {
 
     "All charts on this page are updated daily so you can track the adoption of Timeboost.",
   ],
-  image: "/images/quick-bites/placeholder.png",
+  image: "https://api.growthepie.com/v1/quick-bites/banners/timeboost.png",
   og_image: "https://api.growthepie.com/v1/og_images/quick-bites/arbitrum-timeboost.png",
   date: "2025-05-29",
   related: [],

@@ -20,6 +20,8 @@ interface IconContextMenuProps {
   iconPageUrl?: string;
   // Optional class name for the wrapper div
   wrapperClassName?: string;
+  // Whether this is the logo (to show "Open in new tab" option)
+  isLogo?: boolean;
 }
 
 export const IconContextMenu = ({
@@ -28,6 +30,7 @@ export const IconContextMenu = ({
   itemName,
   iconPageUrl = "https://icons.growthepie.xyz", // Default URL
   wrapperClassName,
+  isLogo = false, // Default to false
 }: IconContextMenuProps) => {
   const toast = useToast();
   const [isOpen, setIsOpen] = useState(false);
@@ -38,6 +41,13 @@ export const IconContextMenu = ({
     right?: number | undefined;
   }>({ top: undefined, left: undefined, bottom: undefined, right: undefined });
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Add effect to log menu options when menu is open
+  useEffect(() => {
+    if (isOpen) {
+      console.log("Context menu options:", options.map(option => option.label));
+    }
+  }, [isOpen]);
 
   // Close menu on outside click
   useOutsideAlerter(menuRef, () => {
@@ -139,7 +149,14 @@ export const IconContextMenu = ({
     setIsOpen(false);
   };
 
+  // Add new handler for opening homepage in new tab
+  const handleOpenInNewTab = () => {
+    window.open("/", "_blank");
+    setIsOpen(false);
+  };
+
   const options = [
+    ...(isLogo ? [{ icon: "gtp-open-in-new", label: "Open in new tab", onClick: handleOpenInNewTab }] : []),
     { icon: "gtp-copy", label: "Copy", onClick: handleCopy },
     { icon: "gtp-download", label: "Download", onClick: handleDownload },
     ...(iconPageUrl ? [{ icon: "gtp-growthepie-icons", label: "See more icons", onClick: handleGoToIconsPage }] : [])

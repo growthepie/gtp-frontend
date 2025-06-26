@@ -9,6 +9,7 @@ export async function markdownToHtml(markdown: string): Promise<string> {
 }
 
 // Process markdown array into structured blocks
+// Process markdown array into structured blocks
 export async function processMarkdownContent(content: string[]): Promise<ContentBlock[]> {
   if (!content || !Array.isArray(content)) {
     console.warn('Invalid content provided to processMarkdownContent');
@@ -23,12 +24,10 @@ export async function processMarkdownContent(content: string[]): Promise<Content
       
       // Handle chart blocks
       if (text.startsWith('```chart')) {
-        // Check if next line contains JSON data
+        // ... (existing chart logic is correct)
         if (i + 1 < content.length) {
           const jsonString = content[i + 1];
-          // And check if the line after that is the closing marker
           const closingMarker = i + 2 < content.length && content[i + 2] === '```';
-          
           if (closingMarker) {
             const chartBlock = parseChartBlock(jsonString);
             if (chartBlock) {
@@ -41,12 +40,10 @@ export async function processMarkdownContent(content: string[]): Promise<Content
       }
       // Handle iframe blocks
       else if (text.startsWith('```iframe')) {
-        // Check if next line contains JSON data
+        // ... (existing iframe logic is correct)
         if (i + 1 < content.length) {
           const jsonString = content[i + 1];
-          // And check if the line after that is the closing marker
           const closingMarker = i + 2 < content.length && content[i + 2] === '```';
-          
           if (closingMarker) {
             const iframeBlock = parseIframeBlock(jsonString);
             if (iframeBlock) {
@@ -59,10 +56,10 @@ export async function processMarkdownContent(content: string[]): Promise<Content
       }
       // Handle image blocks (JSON format)
       else if (text.startsWith('```image')) {
+        // ... (existing image logic is correct)
         if (i + 1 < content.length) {
           const jsonString = content[i + 1];
           const closingMarker = i + 2 < content.length && content[i + 2] === '```';
-
           if (closingMarker) {
             const imageJsonBlock = parseImageJsonBlock(jsonString);
             if (imageJsonBlock) {
@@ -73,51 +70,52 @@ export async function processMarkdownContent(content: string[]): Promise<Content
           }
         }
       }
+      // START OF FIX: Correctly handle kpi-cards blocks
+      else if (text.startsWith('```kpi-cards')) {
+        // Check if the next line contains JSON data
+        if (i + 1 < content.length) {
+          const jsonString = content[i + 1];
+          // And check if the line after that is the closing marker
+          const closingMarker = i + 2 < content.length && content[i + 2] === '```';
+          
+          if (closingMarker) {
+            const kpiCardsBlock = parseKpiCardsBlock(jsonString);
+            if (kpiCardsBlock) {
+              blocks.push(kpiCardsBlock);
+              i += 2; // Important: Skip the JSON and closing marker lines
+              continue;
+            }
+          }
+        }
+      }
+      // END OF FIX
       // Handle code blocks
       else if (text.startsWith('```')) {
+        // ... (existing code block logic is correct)
         const language = text.substring(3).trim();
         let codeContent = '';
         let j = i + 1;
-        
-        // Collect all content until closing ```
         while (j < content.length && !content[j].startsWith('```')) {
           codeContent += content[j] + '\n';
           j++;
         }
-        
         if (j < content.length && content[j] === '```') {
-          blocks.push({
-            id: generateBlockId(),
-            type: 'code',
-            content: codeContent.trim(),
-            language
-          });
-          
-          i = j; // Skip to after the closing ```
+          blocks.push({ id: generateBlockId(), type: 'code', content: codeContent.trim(), language });
+          i = j;
           continue;
         }
       }
       // Handle headings
       else if (/^#{1,6}\s/.test(text)) {
+        // ... (existing heading logic is correct)
         const match = text.match(/^(#{1,6})\s/);
         if (!match) {
-          // If no match (shouldn't happen due to the test above, but TypeScript needs this)
-          blocks.push({
-            id: generateBlockId(),
-            type: 'paragraph',
-            content: text
-          });
+          blocks.push({ id: generateBlockId(), type: 'paragraph', content: text });
           continue;
         }
         const level = match[1].length;
         const content = text.replace(/^#{1,6}\s/, '');
-        
-        blocks.push({
-          id: generateBlockId(),
-          type: 'heading',
-          content,
-          level: level as 1 | 2 | 3 | 4 | 5 | 6
-        });
+        blocks.push({ id: generateBlockId(), type: 'heading', content, level: level as 1 | 2 | 3 | 4 | 5 | 6 });
         continue;
       }
       // Handle images with special attributes
@@ -126,51 +124,61 @@ export async function processMarkdownContent(content: string[]): Promise<Content
       }
       // Handle callouts/blockquotes
       else if (text.startsWith('> ')) {
-        blocks.push({
-          id: generateBlockId(),
-          type: 'callout',
-          content: text.substring(2), // No HTML conversion
-          icon: 'gtp-info'
-        });
+        blocks.push({ id: generateBlockId(), type: 'callout', content: text.substring(2), icon: 'gtp-info' });
       }
       // Handle dividers
       else if (text === '---') {
-        blocks.push({
-          id: generateBlockId(),
-          type: 'divider'
-        });
+        blocks.push({ id: generateBlockId(), type: 'divider' });
       }
       // Handle list items
       else if (text.startsWith('- ')) {
-        blocks.push({
-          id: generateBlockId(),
-          type: 'list',
-          content: text.substring(2), // Remove the '- ' prefix
-          items: [text.substring(2)] // Start with the first item
-        });
+        blocks.push({ id: generateBlockId(), type: 'list', content: text.substring(2), items: [text.substring(2)] });
       }
       // Default to paragraph
       else {
-        blocks.push({
-          id: generateBlockId(),
-          type: 'paragraph',
-          content: parseBoldText(text) // Process bold text in paragraphs
-        });
+        blocks.push({ id: generateBlockId(), type: 'paragraph', content: parseBoldText(text) });
       }
     } catch (error) {
       console.error(`Error processing content block at index ${i}:`, error);
-      // Add a fallback paragraph block with error info in development
       if (process.env.NODE_ENV === 'development') {
-        blocks.push({
-          id: generateBlockId(),
-          type: 'paragraph',
-          content: `Error processing content: ${error.message}`
-        });
+        blocks.push({ id: generateBlockId(), type: 'paragraph', content: `Error processing content: ${error.message}` });
       }
     }
   }
   
   return blocks;
+}
+
+// Corrected helper function to parse kpi-cards blocks
+function parseKpiCardsBlock(jsonString: string): ContentBlock | null {
+  try {
+    const kpiCardsArray = JSON.parse(jsonString);
+
+    if (!Array.isArray(kpiCardsArray)) {
+      console.error('Error parsing kpi cards data: The provided JSON is not an array.');
+      return null;
+    }
+
+    // Ensure each item has the correct structure
+    const validCards = kpiCardsArray.map(card => ({
+      title: card.title || '',
+      value: card.value || '',
+      description: card.description || '',
+      icon: card.icon || '',
+      info: card.info || ''
+    }));
+
+    const block = {
+      id: generateBlockId(),
+      type: 'kpi-cards' as const,
+      items: validCards,
+      className: ''
+    };
+    return block;
+  } catch (error) {
+    console.error('Error parsing kpi cards data:', error);
+    return null;
+  }
 }
 
 // Helper function to parse chart blocks

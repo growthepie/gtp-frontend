@@ -1,5 +1,6 @@
 // File: lib/types/QuickBites.ts
 import type { DashStyleValue, Options } from 'highcharts';
+import { GTPIconName } from '@/icons/gtp-icon-names';
 
 export interface Author {
     name: string;
@@ -38,6 +39,15 @@ export interface Author {
     related: string[];
     author?: Author[];
     topics?: Topic[];
+    KpiCards?: KpiCard[];
+  }
+
+  export interface KpiCard {
+    title: string;
+    value: string | number;
+    description?: string;
+    icon?: string;
+    info?: string;
   }
   
   export interface QuickBiteWithSlug extends QuickBiteData {

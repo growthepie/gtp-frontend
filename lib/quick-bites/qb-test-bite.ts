@@ -5,7 +5,31 @@ const testBite: QuickBiteData = {
   subtitle: "Trying out different types of blocks",
   content: [
     "This Quick Bite is a test to see how different types of blocks work. It's a work in progress and will be updated as we add more features to the platform.",
-    
+    "```kpi-cards",JSON.stringify(
+      [
+          {
+            title: "Test with Dynamic Value",
+            value: "{{timeboostTotalETH}} ETH",
+            description: "Test",
+            icon: "gtp-realtime",
+            info: "Test"
+          },
+          {
+            title: "Test",
+            value: "100",
+            description: "Test",
+            icon: "gtp-realtime",
+            info: "Test"
+          },
+          {
+            title: "Test",
+            value: "100",
+            description: "Test",
+            icon: "gtp-realtime",
+            info: "Test"
+          }
+      ]),
+    "```",
     "# Main Header",
     "Some Text. This is a normal text block. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     "Now there was a line break. I can also use **bold** text. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
@@ -249,7 +273,7 @@ const testBite: QuickBiteData = {
 
     "The improved developer experience has also attracted hundreds of new projects to the platform, creating a rich ecosystem of applications across DeFi, gaming, and social platforms."
   ],
-  image: "/images/quick-bites/arbitrum-nitro.png",
+  image: "https://api.growthepie.com/v1/quick-bites/banners/placeholder.png",
   date: "2025-01-15",
   icon: "arbitrum-logo-monochrome",
   related: [],

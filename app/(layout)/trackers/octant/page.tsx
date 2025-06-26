@@ -45,6 +45,31 @@ import {
   useOctantData,
 } from "./OctantDataProvider";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
+import React from "react";
+
+const useProcessedCommunityData = (
+  communityData: any[],
+  communityEpoch: number,
+  Epochs: any[]
+) => {
+  return useMemo(() => {
+    if (!communityData) return [];
+    
+    const epochString = Epochs[communityEpoch]?.epoch || "all";
+    
+    // Pre-process data once instead of in every filter/map operation
+    return communityData.map(userData => ({
+      ...userData,
+      currentEpochData: {
+        locked: userData.lockeds[epochString] || 0,
+        budget: userData.budget_amounts[epochString] || 0,
+        allocation: userData.allocation_amounts[epochString] || 0,
+        projectCount: userData.allocated_to_project_counts[epochString] || 0,
+        projectKeys: userData.allocated_to_project_keys[epochString] || [],
+      }
+    }));
+  }, [communityData, communityEpoch, Epochs]);
+};
 
 const CircleChart = dynamic(
   () => import("../../../../components/layout/CircleChart"),
@@ -54,31 +79,42 @@ const CircleChart = dynamic(
   },
 );
 
-function formatNumber(number: number, decimals?: number): string {
-  if (number === 0) {
-    return "0";
-  } else if (Math.abs(number) >= 1e9) {
-    if (Math.abs(number) >= 1e12) {
-      return (number / 1e12).toFixed(2) + "T";
-    } else if (Math.abs(number) >= 1e9) {
-      return (number / 1e9).toFixed(2) + "B";
+const formatNumberMemo = (() => {
+  const cache = new Map<string, string>();
+  
+  return (number: number, decimals?: number): string => {
+    const key = `${number}-${decimals}`;
+    if (cache.has(key)) {
+      return cache.get(key)!;
     }
-  } else if (Math.abs(number) >= 1e6) {
-    return (number / 1e6).toFixed(2) + "M";
-  } else if (Math.abs(number) >= 1e3) {
-    const rounded = (number / 1e3).toFixed(2);
-    return `${rounded}${Math.abs(number) >= 10000 ? "k" : "k"}`;
-  } else if (Math.abs(number) >= 100) {
-    return number.toFixed(decimals ? decimals : 2);
-  } else if (Math.abs(number) >= 10) {
-    return number.toFixed(decimals ? decimals : 2);
-  } else {
-    return number.toFixed(decimals ? decimals : 2);
-  }
 
-  // Default return if none of the conditions are met
-  return "";
-}
+    let result: string;
+    
+    if (number === 0) {
+      result = "0";
+    } else if (Math.abs(number) >= 1e12) {
+      result = (number / 1e12).toFixed(2) + "T";
+    } else if (Math.abs(number) >= 1e9) {
+      result = (number / 1e9).toFixed(2) + "B";
+    } else if (Math.abs(number) >= 1e6) {
+      result = (number / 1e6).toFixed(2) + "M";
+    } else if (Math.abs(number) >= 1e3) {
+      const rounded = (number / 1e3).toFixed(2);
+      result = `${rounded}k`;
+    } else {
+      result = number.toFixed(decimals ?? 2);
+    }
+
+    // Cache the result (limit cache size to prevent memory leaks)
+    if (cache.size > 1000) {
+      const firstKey = cache.keys().next().value;
+      cache.delete(firstKey);
+    }
+    cache.set(key, result);
+    
+    return result;
+  };
+})();
 
 export default function Page() {
   const isMobile = useMediaQuery("(max-width: 1024px)");
@@ -297,90 +333,106 @@ export default function Page() {
       : "1";
   }, [summaryData]);
 
-  const VirtualizedList = ({ communityEpoch, projectMetadataData, Epochs }) => {
-    const parentRef = useRef(null);
+  interface VirtualizedListProps {
+  communityEpoch: number;
+  projectMetadataData: any;
+  Epochs: { epoch: string; label: string }[];
+  communityDataSortedAndFiltered: any[];
+}
 
-    // const measureElement = (
-    //   element: Element,
-    //   entry: ResizeObserverEntry | undefined,
-    //   instance: any,
-    // ) => {
-    //   const size = measureElement(element, entry, instance);
-    //   return size;
-    // };
+const VirtualizedList = React.memo<VirtualizedListProps>(({ 
+  communityEpoch, 
+  projectMetadataData, 
+  Epochs,
+  communityDataSortedAndFiltered 
+}) => {
+  const parentRef = useRef<HTMLDivElement>(null);
 
-    const virtualizer = useVirtualizer({
-      count: communityDataSortedAndFiltered.length,
-      getScrollElement: () => parentRef.current,
-      estimateSize: () => 37, // You can start with an estimated size
-      overscan: 10, // Load additional items off-screen for smoother scrolling
+  // Memoize the current epoch string to avoid recalculation
+  const currentEpochString = useMemo(() => 
+    Epochs[communityEpoch]?.epoch || "all", 
+    [Epochs, communityEpoch]
+  );
+
+  // Memoize processed user data to avoid recalculating on every render
+  const processedUserData = useMemo(() => {
+    return communityDataSortedAndFiltered.map((userData) => {
+      const userLockedEpochs = Object.keys(userData.lockeds).filter(
+        (e) => e !== "all"
+      );
+      
+      return {
+        user: userData.user,
+        locked: userData.lockeds[currentEpochString] || 0,
+        min: userData.mins[currentEpochString] || 0,
+        max: userData.lockeds[currentEpochString] || 0,
+        budget_amount: userData.budget_amounts[currentEpochString] || 0,
+        allocation_amount: userData.allocation_amounts[currentEpochString] || 0,
+        allocated_to_project_count: userData.allocated_to_project_counts[currentEpochString] || 0,
+        allocated_to_project_keys: userData.allocated_to_project_keys[currentEpochString] || [],
+        activeSinceEpoch: userLockedEpochs.length > 0 
+          ? Math.min(...userLockedEpochs.map((epoch) => parseInt(epoch)))
+          : 0,
+      };
     });
+  }, [communityDataSortedAndFiltered, currentEpochString]);
 
-    const items = virtualizer.getVirtualItems();
+  // Optimize virtualizer configuration
+  const virtualizer = useVirtualizer({
+    count: processedUserData.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 37,
+    overscan: 5, // Reduced from 10 for better performance
+    measureElement: (element) => {
+      // Enable dynamic measurement if needed
+      return element?.getBoundingClientRect().height ?? 37;
+    },
+  });
+
+  // Memoize the render function for virtual items
+  const renderVirtualItem = useCallback((virtualRow: any) => {
+    const user = processedUserData[virtualRow.index];
+    if (!user) return null;
 
     return (
-      <VerticalScrollContainer ref={parentRef} height={250}>
-        <div
-          style={{
-            height: virtualizer.getTotalSize(),
-            position: "relative",
-          }}
-        >
-          {virtualizer.getVirtualItems().map((virtualRow) => {
-            const userData = communityDataSortedAndFiltered[virtualRow.index];
-            const userLockedEpochs = Object.keys(userData.lockeds).filter(
-              (e) => e !== "all",
-            );
-            const user = {
-              user: userData.user,
-              locked: userData.lockeds[Epochs[communityEpoch].epoch] || 0,
-
-              min: userData.lockeds[Epochs[communityEpoch].epoch] || 0,
-              max: userData.lockeds[Epochs[communityEpoch].epoch] || 0,
-
-              budget_amount:
-                userData.budget_amounts[Epochs[communityEpoch].epoch] || 0,
-              allocation_amount:
-                userData.allocation_amounts[Epochs[communityEpoch].epoch] || 0,
-              allocated_to_project_count:
-                userData.allocated_to_project_counts[
-                  Epochs[communityEpoch].epoch
-                ] || 0,
-              allocated_to_project_keys:
-                userData.allocated_to_project_keys[
-                  Epochs[communityEpoch].epoch
-                ] || [],
-              activeSinceEpoch: Math.min(
-                ...userLockedEpochs.map((epoch) => parseInt(epoch)),
-              ),
-            };
-            return (
-              <div
-                key={virtualRow.key}
-                data-index={virtualRow.index}
-                ref={(ref) => virtualizer.measureElement(ref)}
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: "100%",
-                  transform: `translateY(${virtualRow.start}px)`,
-                }}
-              >
-                <MemoizedCommunityTableRow
-                  key={virtualRow.key}
-                  user={user}
-                  communityEpoch={communityEpoch}
-                  projectMetadataData={projectMetadataData}
-                  Epochs={Epochs}
-                />
-              </div>
-            );
-          })}
-        </div>
-      </VerticalScrollContainer>
+      <div
+        key={virtualRow.key}
+        data-index={virtualRow.index}
+        ref={(ref) => virtualizer.measureElement(ref)}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          transform: `translateY(${virtualRow.start}px)`,
+        }}
+      >
+        <CommunityTableRow
+          key={`${user.user}-${communityEpoch}`} // Better key for re-renders
+          user={user}
+          communityEpoch={communityEpoch}
+          projectMetadataData={projectMetadataData}
+          Epochs={Epochs}
+        />
+      </div>
     );
-  };
+  }, [processedUserData, virtualizer, communityEpoch, projectMetadataData, Epochs]);
+
+  return (
+    <VerticalScrollContainer ref={parentRef} height={250}>
+      <div
+        style={{
+          height: virtualizer.getTotalSize(),
+          position: "relative",
+        }}
+      >
+        {virtualizer.getVirtualItems().map(renderVirtualItem)}
+      </div>
+    </VerticalScrollContainer>
+  );
+});
+
+VirtualizedList.displayName = 'VirtualizedList';
 
   return (
     <div className="w-full">
@@ -1188,6 +1240,7 @@ export default function Page() {
               </GridTableHeaderCell>
             </GridTableHeader>
             <VirtualizedList
+              communityDataSortedAndFiltered={communityDataSortedAndFiltered}
               communityEpoch={communityEpoch}
               projectMetadataData={projectMetadataData}
               Epochs={Epochs}
@@ -1749,7 +1802,7 @@ export default function Page() {
                         <div className="flex items-center justify-end whitespace-nowrap">
                           {communityEpoch != 0 && user.min > 0 ? (
                             <div className="text-[#CDD8D3]">
-                              {formatNumber(user.min, 2)}{" "}
+                              {formatNumberMemo(user.min, 2)}{" "}
                               {/* {user.min.toLocaleString("en-GB", {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
@@ -2301,7 +2354,7 @@ export default function Page() {
                     : 0;
                   const lastEpochProjectMetadata = latestProjectMetadatas[
                     project_key
-                  ] || { address: "", name: "" };
+                  ] || null;
                   const project: {
                     project_key: string;
                     owner_project: string;
@@ -2344,7 +2397,7 @@ export default function Page() {
                         ? projectMetadataData[fundingRow.project_key][
                             Epochs[fundingEpoch].epoch
                           ].address
-                        : lastEpochProjectMetadata.address || "",
+                        : lastEpochProjectMetadata?.address || "",
                     donors:
                       fundingRow.donor_counts[Epochs[fundingEpoch].epoch] || 0,
                     allocation:
@@ -2842,24 +2895,48 @@ type CommunityTableRowProps = {
   Epochs: { epoch: string; label: string }[];
 };
 
-const CommunityTableRow = ({
+const CommunityTableRow = React.memo<CommunityTableRowProps>(({
   user,
   communityEpoch,
   projectMetadataData,
   Epochs,
-}: CommunityTableRowProps) => {
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
-
   const copyTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  const handleCopyAddress = (address: string) => {
+  // Memoize expensive calculations
+  const formattedUser = useMemo(() => {
+    const userStart = user.user.slice(0, user.user.length - 6);
+    const userEnd = user.user.slice(-6);
+    return { userStart, userEnd };
+  }, [user.user]);
+
+  const donationPercentages = useMemo(() => {
+    if (user.budget_amount === 0) return { donated: 0, kept: 0 };
+    
+    const donated = (user.allocation_amount / user.budget_amount) * 100;
+    const kept = ((user.budget_amount - user.allocation_amount) / user.budget_amount) * 100;
+    
+    return { donated, kept };
+  }, [user.allocation_amount, user.budget_amount]);
+
+  const handleCopyAddress = useCallback((address: string) => {
     navigator.clipboard.writeText(address);
     setCopiedAddress(address);
+    
+    if (copyTimeout.current) {
+      clearTimeout(copyTimeout.current);
+    }
+    
     copyTimeout.current = setTimeout(() => {
       setCopiedAddress(null);
     }, 1000);
-  };
+  }, []);
+
+  const toggleOpen = useCallback(() => {
+    setIsOpen(prev => !prev);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -2869,8 +2946,24 @@ const CommunityTableRow = ({
     };
   }, []);
 
+  // Memoize project rendering to avoid re-renders
+  const projectElements = useMemo(() => {
+    if (user.allocated_to_project_keys.length === 0) return null;
+
+    return user.allocated_to_project_keys.map((project_key, index) => (
+      <div
+        key={`${project_key}-${index}`}
+        className="flex items-center gap-x-[5px] rounded-[15px] bg-[#344240] py-[0px] pl-[0px] pr-[6px] text-[10px]"
+      >
+        {/* Project image rendering logic here */}
+        {project_key}
+      </div>
+    ));
+  }, [user.allocated_to_project_keys, communityEpoch, projectMetadataData, Epochs]);
+
+  // Rest of the component remains the same but with optimized rendering
   return (
-    <div>
+        <div>
       <div className="pb-[3px]">
         <GridTableRow
           gridDefinitionColumns="grid-cols-[20px,minmax(80px,1600px),118px,72px,69px]"
@@ -2997,7 +3090,7 @@ const CommunityTableRow = ({
           <div className="flex items-center justify-end whitespace-nowrap">
             {communityEpoch != 0 && user.min > 0 ? (
               <div className="text-[#CDD8D3]">
-                {formatNumber(user.min, 2)}{" "}
+                {formatNumberMemo(user.min, 2)}{" "}
                 {/* {user.min.toLocaleString("en-GB", {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
@@ -3199,9 +3292,17 @@ const CommunityTableRow = ({
       </div>
     </div>
   );
-};
-
-const MemoizedCommunityTableRow = memo(CommunityTableRow);
+}, (prevProps, nextProps) => {
+  // Custom comparison function for better memoization
+  return (
+    prevProps.user.user === nextProps.user.user &&
+    prevProps.communityEpoch === nextProps.communityEpoch &&
+    prevProps.user.allocation_amount === nextProps.user.allocation_amount &&
+    prevProps.user.budget_amount === nextProps.user.budget_amount &&
+    JSON.stringify(prevProps.user.allocated_to_project_keys) === JSON.stringify(nextProps.user.allocated_to_project_keys)
+  );
+});
+CommunityTableRow.displayName = "CommunityTableRow";
 
 type TableRowProps = {
   row: {
