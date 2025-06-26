@@ -344,9 +344,26 @@ type OLIContractTooltipProps = {
   project_name: string;
   message?: string | React.ReactNode;
   href?: string;
+  contractAddress?: string;
+  chain?: string | number;
 }
 
-export const OLIContractTooltip = ({ icon, project_name, iconClassName, iconStyle, message="Contract information not available.", href="https://www.openlabelsinitiative.org/" }: OLIContractTooltipProps) => {
+export const OLIContractTooltip = ({ icon, project_name, iconClassName, iconStyle, message="Contract information not available.", href, contractAddress, chain }: OLIContractTooltipProps) => {
+  // Generate the OLI attestation URL with contract address and chain parameters
+  const generateOLIUrl = () => {
+    if (contractAddress && chain) {
+      const baseURL = 'https://www.openlabelsinitiative.org/attest';
+      const params = new URLSearchParams({
+        address: contractAddress,
+        chain: chain.toString()
+      });
+      return `${baseURL}?${params.toString()}#single-attestation`;
+    }
+    return 'https://www.openlabelsinitiative.org/attest';
+  };
+
+  const attestationUrl = href || generateOLIUrl();
+
   return (
     <>
       <TooltipHeader title={project_name} icon={
@@ -361,9 +378,11 @@ export const OLIContractTooltip = ({ icon, project_name, iconClassName, iconStyl
         <div className="pl-[20px] flex flex-col gap-y-[5px]">
           <div className="text-xxs">Are you the developer or you know the project's contracts?</div>
           {/* OLI Button */}
-          <Link href={href} target="_blank" className="mx-auto flex items-center justify-center p-[1px] rounded-full bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)] w-fit h-[24px]">
+          <Link href={attestationUrl} target="_blank" className="mx-auto flex items-center justify-center p-[1px] rounded-full bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)] w-fit h-[24px]">
             <div className="flex items-center pl-[15px] pr-[5px] gap-x-[8px] h-full bg-forest-50 dark:bg-forest-900 rounded-full transition-all duration-300" style={{ width: "fit-content" }}>
-              <div className="whitespace-nowrap overflow-hidden heading-small-xxs">See more here.</div>
+              <div className="whitespace-nowrap overflow-hidden heading-small-xxs">
+                {contractAddress && chain ? 'Attest this contract' : 'See more here.'}
+              </div>
               <div className="size-[15px] bg-[#344240] rounded-full flex items-center justify-center">
                 <div className="size-[15px] flex items-center justify-center">
                   <GTPIcon icon={"feather:arrow-right" as GTPIconName} size="sm" />

@@ -403,7 +403,14 @@ export default function ContractRow({
               containerClass="flex flex-col gap-y-[10px]"
               positionOffset={{ mainAxis: 0, crossAxis: 20 }}
             >
-              <OLIContractTooltip icon="gtp-project-monochrome" iconClassName="text-[#5A6462]" project_name="Not Available" message="Project information not available." />
+              <OLIContractTooltip 
+                icon="gtp-project-monochrome" 
+                iconClassName="text-[#5A6462]" 
+                project_name="Not Available" 
+                message="Project information not available."
+                contractAddress={sortedContracts[rowKey].address}
+                chain={sortedContracts[rowKey].chain}
+              />
             </GTPTooltipNew>
           )}
         </div>
