@@ -112,6 +112,8 @@ module.exports = {
         'global-search-tooltip': '8500',
         'global-search': '8000',
         'global-search-backdrop': '7000',
+        'dropdown': '1000',
+        'chart': '20',
       },
       transitionDuration: {
         ...defaultTheme.transitionDuration,
