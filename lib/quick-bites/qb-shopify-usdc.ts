@@ -162,8 +162,8 @@ const shopifyUsdc: QuickBiteData = {
     JSON.stringify({
       src: "https://api.growthepie.com/v1/quick-bites/shopify/shopify-payment-operations.png", // should allow link to our API
       alt: "6 core payment operations outlined by Shopify",
-      width: "687",
-      height: "390",
+      width: "1600",
+      height: "1188",
       caption: "6 core payment operations outlined by Shopify",
     }),
     "```",
@@ -171,12 +171,12 @@ const shopifyUsdc: QuickBiteData = {
     JSON.stringify({
       src: "https://api.growthepie.com/v1/quick-bites/shopify/shopify-payment-example.png", // should allow link to our API
       alt: "Example payment flow illustrated by Shopify",
-      width: "638",
-      height: "647",
+      width: "1600",
+      height: "1187",
       caption: "Example payment flow illustrated by Shopify",
     }),
     "```",
-    "Further implementation documentation can be seen here: https://shopify.engineering/commerce-payments-protocol.",
+    "Further implementation documentation can be seen here: [https://shopify.engineering/commerce-payments-protocol](https://shopify.engineering/commerce-payments-protocol).",
   ],
   image: "https://api.growthepie.com/v1/quick-bites/banners/shopify.png",
   og_image: "https://api.growthepie.com/v1/quick-bites/banners/shopify.png",
