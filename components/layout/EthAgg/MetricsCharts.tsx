@@ -21,6 +21,8 @@ import { useUIContext } from "@/contexts/UIContext";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
+import "@/app/highcharts.axis.css";
+import ChartWatermark, { ChartWatermarkWithMetricName } from '../ChartWatermark';
 // Define the props type for MetricsChartsComponent
 
 const CHART_MARGINS = {
@@ -336,17 +338,17 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, appData, maxUnix }: Me
             </div>
             <div className='flex flex-col h-full items-end pt-[5px] w-full'>
               <div className='flex items-center gap-x-[5px]'>
-                <div className='numbers-3xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
+                <div className='numbers-xl bg-gradient-to-b bg-[#CDD8D3] bg-clip-text text-transparent'>
                   {showUsd ? "$" : "Ξ"}{Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(appData.layer_2s.daily.values[appData.layer_2s.daily.values.length - 1][appData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")] + appData.ethereum_mainnet.daily.values[appData.ethereum_mainnet.daily.values.length - 1][appData.ethereum_mainnet.daily.types.indexOf(showUsd ? "usd" : "eth")])}
                 </div>
                 <div className='w-[16px] h-[16px] rounded-full z-20'
                   style={{
-                    background: "linear-gradient(to bottom, #10808C, #1DF7EF)",
+                    background: "#CDD8D3",
                   }}>
                 </div>
               </div>
               <div className='flex items-center gap-x-[5px]'>
-                <div className='text-sm bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>Layer 2 Share: {Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format((appData.layer_2s.daily.values[appData.layer_2s.daily.values.length - 1][appData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")]) /  (appData.layer_2s.daily.values[appData.layer_2s.daily.values.length - 1][appData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")] + appData.ethereum_mainnet.daily.values[appData.ethereum_mainnet.daily.values.length - 1][appData.ethereum_mainnet.daily.types.indexOf(showUsd ? "usd" : "eth")]) * 100)}%</div>
+                <div className='text-sm bg-gradient-to-b from-[#FE5468] to-[#FFDF27] bg-clip-text text-transparent'>Layer 2 Share: {Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format((appData.layer_2s.daily.values[appData.layer_2s.daily.values.length - 1][appData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")]) /  (appData.layer_2s.daily.values[appData.layer_2s.daily.values.length - 1][appData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")] + appData.ethereum_mainnet.daily.values[appData.ethereum_mainnet.daily.values.length - 1][appData.ethereum_mainnet.daily.types.indexOf(showUsd ? "usd" : "eth")]) * 100)}%</div>
                 <div className='w-[16px] h-[16px] rounded-full '
                   style={{
                     background: "transparent",
@@ -355,6 +357,11 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, appData, maxUnix }: Me
               </div>
 
             </div>
+          </div>
+          <div className="absolute bottom-[40.5%] left-0 right-0 flex flex-col gap-y-[3px] items-center justify-center pointer-events-none z-0 opacity-20">
+            <ChartWatermarkWithMetricName className="w-[128.67px] h-[36x] md:w-[193px] md:h-[58px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten z-30" 
+             metricName="Application Revenue"
+            />
           </div>
           <div ref={chartContainerRef} className='w-full  absolute bottom-0 '>
           <HighchartsProvider Highcharts={Highcharts}>
@@ -468,9 +475,9 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, appData, maxUnix }: Me
                       x1: chart.chartWidth * (1 - fraction) + 0.00005,
                       y1: lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
                       x2: chart.chartWidth * (1 - fraction) - 0.00005,
-                      y2: chart.plotTop - 30, // This will now be within the expanded margin
-                      stroke: "#10808C",
-                      "stroke-dasharray": 2,
+                      y2: chart.plotTop - 35, // This will now be within the expanded margin
+                      stroke: "#CDD8D3",
+                      "stroke-dasharray": 0,
                       "stroke-width": 1,
                       rendering: "crispEdges",
                       zIndex: 0,
@@ -665,17 +672,17 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, appData, maxUnix }: Me
             </div>
             <div className='flex flex-col h-full items-end pt-[5px] w-full'>
               <div className='flex items-center gap-x-[5px]'>
-                <div className='numbers-3xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
+                <div className='numbers-xl bg-gradient-to-b bg-[#CDD8D3] bg-clip-text text-transparent'>
                   {showUsd ? "$" : "Ξ"}{Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(stableData.layer_2s.daily.values[stableData.layer_2s.daily.values.length - 1][stableData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")] + stableData.ethereum_mainnet.daily.values[stableData.ethereum_mainnet.daily.values.length - 1][stableData.ethereum_mainnet.daily.types.indexOf(showUsd ? "usd" : "eth")])}
                 </div>
                 <div className='w-[16px] h-[16px] rounded-full z-20 '
                   style={{
-                    background: "linear-gradient(to bottom, #10808C, #1DF7EF)",
+                    background: "#CDD8D3",
                   }}>
                 </div>
               </div>
               <div className='flex items-center gap-x-[5px]'>
-                <div className='text-sm bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>Layer 2 Share: {Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format((stableData.layer_2s.daily.values[stableData.layer_2s.daily.values.length - 1][stableData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")]) /  (stableData.layer_2s.daily.values[stableData.layer_2s.daily.values.length - 1][stableData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")] + stableData.ethereum_mainnet.daily.values[stableData.ethereum_mainnet.daily.values.length - 1][stableData.ethereum_mainnet.daily.types.indexOf(showUsd ? "usd" : "eth")]) * 100)}%</div>
+                <div className='text-sm bg-gradient-to-b from-[#FE5468] to-[#FFDF27] bg-clip-text text-transparent'>Layer 2 Share: {Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format((stableData.layer_2s.daily.values[stableData.layer_2s.daily.values.length - 1][stableData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")]) /  (stableData.layer_2s.daily.values[stableData.layer_2s.daily.values.length - 1][stableData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")] + stableData.ethereum_mainnet.daily.values[stableData.ethereum_mainnet.daily.values.length - 1][stableData.ethereum_mainnet.daily.types.indexOf(showUsd ? "usd" : "eth")]) * 100)}%</div>
                 <div className='w-[16px] h-[16px] rounded-full '
                   style={{
                     background: "transparent",
@@ -685,7 +692,14 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, appData, maxUnix }: Me
 
             </div>
           </div>
+          <div className="absolute bottom-[40.5%] left-0 right-0 flex flex-col gap-y-[3px] items-center justify-center pointer-events-none z-0 opacity-20">
+            <ChartWatermarkWithMetricName className="w-[128.67px] h-[36x] md:w-[193px] md:h-[58px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten z-30" 
+             metricName="Stablecoin Supply"
+            />
+          </div>
+
           <div className='w-full  absolute bottom-0 '>
+
           <HighchartsProvider Highcharts={Highcharts}>
             <HighchartsChart
               plotOptions={{
@@ -796,9 +810,9 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, appData, maxUnix }: Me
                         x1: chart.chartWidth * (1 - fraction) + 0.00005,
                         y1: lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
                         x2: chart.chartWidth * (1 - fraction) - 0.00005,
-                        y2: chart.plotTop - 30,
-                        stroke: "#10808C",
-                        "stroke-dasharray": 2,
+                        y2: chart.plotTop - 35,
+                        stroke: "#CDD8D3",
+                        "stroke-dasharray": 0,
                         "stroke-width": 1,
                         rendering: "crispEdges",
                       })
@@ -1183,14 +1197,14 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
             </div>
             <div className='flex flex-col h-full items-end pt-[5px] w-full'>
               <div className='flex items-center gap-x-[5px]'>
-                <div className='numbers-3xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
+                <div className='numbers-xl bg-gradient-to-b bg-[#CDD8D3] bg-clip-text text-transparent'>
                   {Intl.NumberFormat("en-US", {
                     maximumFractionDigits: 2,
                   }).format(layer2Data.daily.values[layer2Data.daily.values.length - 1][layer2Data.daily.types.indexOf("value")])}
                 </div>
                 <div className='w-[16px] h-[16px] rounded-full z-20 '
                   style={{
-                    background: "linear-gradient(to bottom, #10808C, #1DF7EF)",
+                    background: "#CDD8D3",
                   }}>
                 </div>
               </div>
@@ -1204,6 +1218,11 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
               </div>
 
             </div>
+          </div>
+          <div className="absolute bottom-[40.5%] left-0 right-0 flex flex-col gap-y-[3px] items-center justify-center pointer-events-none z-0 opacity-20">
+            <ChartWatermarkWithMetricName className="w-[128.67px] h-[36x] md:w-[193px] md:h-[58px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten z-30" 
+             metricName="L2s Building on Ethereum"
+            />
           </div>
           <div className='w-full  absolute bottom-0 '>
             <HighchartsProvider Highcharts={Highcharts}>
@@ -1315,9 +1334,9 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
                           x1: chart.chartWidth * (1 - fraction) + 0.00005,
                           y1: lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
                           x2: chart.chartWidth * (1 - fraction) - 0.00005,
-                          y2: chart.plotTop - 30,
-                          stroke: "#10808C",
-                          "stroke-dasharray": 2,
+                          y2: chart.plotTop - 35,
+                          stroke: "#CDD8D3",
+                          "stroke-dasharray": 0,
                           "stroke-width": 1,
                           rendering: "crispEdges",
                         })
@@ -1469,14 +1488,14 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
             </div>
             <div className='flex flex-col h-full items-end pt-[5px] w-full'>
               <div className='flex items-center gap-x-[5px]'>
-                <div className='numbers-3xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
+                <div className='numbers-xl bg-gradient-to-b bg-[#CDD8D3] bg-clip-text text-transparent'>
                   {Intl.NumberFormat("en-US", {
                     maximumFractionDigits: 2,
                   }).format(tpsData.layer_2s.daily.values[tpsData.layer_2s.daily.values.length - 1][tpsData.layer_2s.daily.types.indexOf("value")])}
                 </div>
                 <div className='w-[16px] h-[16px] rounded-full z-20 '
                   style={{
-                    background: "linear-gradient(to bottom, #10808C, #1DF7EF)",
+                    background: "#CDD8D3",
                   }}>
                 </div>
               </div>
@@ -1490,6 +1509,11 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
               </div>
 
             </div>
+          </div>
+          <div className="absolute bottom-[40.5%] left-0 right-0 flex flex-col gap-y-[3px] items-center justify-center pointer-events-none z-0 opacity-20">
+            <ChartWatermarkWithMetricName className="w-[128.67px] h-[36x] md:w-[193px] md:h-[58px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten z-30" 
+             metricName="Average Daily TPS"
+            />
           </div>
           <div className='w-full  absolute bottom-0 '>
           <HighchartsProvider Highcharts={Highcharts}>
@@ -1600,9 +1624,9 @@ const ScalingCharts = ({ selectedBreakdownGroup, layer2Data, tpsData, maxUnix }:
                         x1: chart.chartWidth * (1 - fraction) + 0.00005,
                         y1: lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
                         x2: chart.chartWidth * (1 - fraction) - 0.00005,
-                        y2: chart.plotTop - 30,
-                        stroke: "#10808C",
-                        "stroke-dasharray": 2,
+                        y2: chart.plotTop - 35,
+                        stroke: "#CDD8D3",
+                        "stroke-dasharray": 0,
                         "stroke-width": 1,
                         rendering: "crispEdges",
                       })
