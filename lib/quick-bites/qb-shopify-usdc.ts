@@ -190,7 +190,13 @@ const shopifyUsdc: QuickBiteData = {
     xUsername: "manishiwa"
   }
 ],
-  topics: [{
+  topics: [
+    {
+    icon: "gtp-categories",
+    name: "Real World Use-Case",
+    url: "",
+   },
+    {
     icon: "base-logo-monochrome",
     color: "#2151F5",
     name: "Base",
@@ -201,12 +207,6 @@ const shopifyUsdc: QuickBiteData = {
     name: "Stablecoins",
     url: "/fundamentals/stablecoin-market-cap"
   }
-  // ,
-  // {
-  //   icon: "gtp-metrics-stablecoinmarketcap",
-  //   name: "Real world use-case",
-  //   url: "/fundamentals/stablecoin-market-cap"
-  // }
 ],
 icon: "base-logo-monochrome"
 };
