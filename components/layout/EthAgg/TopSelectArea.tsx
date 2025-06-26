@@ -3,6 +3,7 @@ import Container from "../Container";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useState } from "react";
+import { IS_PRODUCTION } from "@/lib/helpers";
 
 export default function TopSelectArea({
   selectedBreakdownGroup,
@@ -45,7 +46,7 @@ const ComingSoonButton = ( {
         <div className={`flex items-center justify-between w-full flex-1 flex-row gap-x-[15px] rounded-full px-[10px] py-[3px] transition-all text-[#344240]
             ${selectedBreakdownGroup === breakdownGroup ? "bg-active-black border-[0px] border-[#1F2726] h-[44px] " 
                                         : "bg-[#5A6462] h-[36px]"}`}
-            onClick={() => setSelectedBreakdownGroup(breakdownGroup)}
+            onClick={() => !IS_PRODUCTION ? setSelectedBreakdownGroup(breakdownGroup) : null}
             style={{
                 maxHeight: "44px"
             }}
@@ -76,7 +77,7 @@ const SelectionButton = ({
 
     const [isHovered, setIsHovered] = useState(false);
     return (
-        <div className={`flex items-center justify-start w-full flex-1 flex-row gap-x-[15px] rounded-full px-[10px] py-[3px] transition-all
+        <div className={`flex items-center justify-start w-full flex-1 flex-row gap-x-[15px] rounded-full px-[10px] py-[3px] transition-all cursor-pointer
             ${selectedBreakdownGroup === breakdownGroup ? "bg-active-black border-[3px] border-[#1F2726] h-[44px]" 
                                         : "bg-medium-background hover:bg-[#5A6462] h-[36px] hover:h-[44px]"}`}
             onClick={() => setSelectedBreakdownGroup(breakdownGroup)}
