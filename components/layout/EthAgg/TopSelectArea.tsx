@@ -16,9 +16,12 @@ export default function TopSelectArea({
         <div className="h-full w-full relative">
 
             <div className="flex flex-row gap-x-[8px] w-full min-h-[44px] items-center">
-                <SelectionButton selectedBreakdownGroup={selectedBreakdownGroup} setSelectedBreakdownGroup={setSelectedBreakdownGroup} breakdownGroup="Ethereum Ecosystem" icon="gtp-ethereumlogo" />
                 <SelectionButton selectedBreakdownGroup={selectedBreakdownGroup} setSelectedBreakdownGroup={setSelectedBreakdownGroup} breakdownGroup="Metrics" icon="gtp-realtime" />
-                <SelectionButton selectedBreakdownGroup={selectedBreakdownGroup} setSelectedBreakdownGroup={setSelectedBreakdownGroup} breakdownGroup="Builders & Apps" icon="gtp-project" />
+                {/* <SelectionButton selectedBreakdownGroup={selectedBreakdownGroup} setSelectedBreakdownGroup={setSelectedBreakdownGroup} breakdownGroup="Ethereum Ecosystem" icon="gtp-ethereumlogo" />
+                
+                <SelectionButton selectedBreakdownGroup={selectedBreakdownGroup} setSelectedBreakdownGroup={setSelectedBreakdownGroup} breakdownGroup="Builders & Apps" icon="gtp-project" /> */}
+                <ComingSoonButton selectedBreakdownGroup={selectedBreakdownGroup} setSelectedBreakdownGroup={setSelectedBreakdownGroup} breakdownGroup="Ethereum Ecosystem" icon="gtp-ethereumlogo-monochrome" />
+                <ComingSoonButton selectedBreakdownGroup={selectedBreakdownGroup} setSelectedBreakdownGroup={setSelectedBreakdownGroup} breakdownGroup="Builders & Apps" icon="gtp-project-monochrome" />
             </div>
             <div className="absolute bottom-[0px] left-0 w-full h-[34px] z-[-1] bg-[#1F2726] rounded-full mr-[10px]"></div>
         </div>
@@ -26,7 +29,38 @@ export default function TopSelectArea({
   );
 }
 
+const ComingSoonButton = ( {
+    selectedBreakdownGroup,
+    setSelectedBreakdownGroup,
+    breakdownGroup,
+    icon,
+}: {
+    selectedBreakdownGroup: string;
+    setSelectedBreakdownGroup: (selectedBreakdownGroup: string) => void;
+    breakdownGroup: string;
+    icon: GTPIconName;
+}) => {
+   
+    return (
+        <div className={`flex items-center justify-between w-full flex-1 flex-row gap-x-[15px] rounded-full px-[10px] py-[3px] transition-all text-[#344240]
+            ${selectedBreakdownGroup === breakdownGroup ? "bg-active-black border-[0px] border-[#1F2726] h-[44px] " 
+                                        : "bg-[#5A6462] h-[36px]"}`}
+            onClick={() => setSelectedBreakdownGroup(breakdownGroup)}
+            style={{
+                maxHeight: "44px"
+            }}
 
+        >
+            <div className="flex items-center gap-x-[15px]">
+                <GTPIcon icon={icon} size={"md"} className={`transition-all relative ${breakdownGroup === "Builders & Apps" ? "bottom-[2px] " : ""}`}/>
+                <div className={`${"heading-large-sm"} transition-all text-nowrap `}>{breakdownGroup}</div>
+            </div>
+            <div className="flex items-center py-[2px] px-[10px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] rounded-full">
+                <div className={`${"heading-large-sm"} transition-all text-nowrap heading-small-xxxs `}>SOON</div>
+            </div>
+        </div>
+    )
+}
 
 const SelectionButton = ({
     selectedBreakdownGroup,
