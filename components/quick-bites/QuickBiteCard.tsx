@@ -71,7 +71,7 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
               <time dateTime={date}>{formatDate(date)}</time>
             </div>
           </div>
-          <div className='text-xxs h-[30px]'>{subtitle}</div>
+          <div className='text-xs h-[30px]'>{subtitle}</div>
         </div>
         <div className='flex flex-1 justify-between items-center gap-x-[15px]'>
           <div className='relative bg-[#5A6462] rounded-[15px] w-full h-full'>
