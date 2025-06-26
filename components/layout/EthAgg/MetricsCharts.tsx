@@ -190,6 +190,32 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, appData, maxUnix }: Me
 
   // console.log(GDPChartConfig);
 
+  function formatNumber(number: number, decimals?: number): string {
+    if (number === 0) {
+      return "0";
+    } else if (Math.abs(number) >= 1e9) {
+      if (Math.abs(number) >= 1e12) {
+        return (number / 1e12).toFixed(2) + "T";
+      } else if (Math.abs(number) >= 1e9) {
+        return (number / 1e9).toFixed(2) + "B";
+      }
+    } else if (Math.abs(number) >= 1e6) {
+      return (number / 1e6).toFixed(2) + "M";
+    } else if (Math.abs(number) >= 1e3) {
+      const rounded = (number / 1e3).toFixed(2);
+      return `${rounded}${Math.abs(number) >= 10000 ? "k" : "k"}`;
+    } else if (Math.abs(number) >= 100) {
+      return number.toFixed(decimals ? decimals : 2);
+    } else if (Math.abs(number) >= 10) {
+      return number.toFixed(decimals ? decimals : 2);
+    } else {
+      return number.toFixed(decimals ? decimals : 2);
+    }
+  
+    // Default return if none of the conditions are met
+    return "";
+  }
+
   const tooltipFormatter = useCallback(
     function (this: any) {
       const { x, points } = this;
@@ -339,7 +365,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, appData, maxUnix }: Me
             <div className='flex flex-col h-full items-end pt-[5px] w-full'>
               <div className='flex items-center gap-x-[5px]'>
                 <div className='numbers-xl bg-gradient-to-b bg-[#CDD8D3] bg-clip-text text-transparent'>
-                  {showUsd ? "$" : "Ξ"}{Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(appData.layer_2s.daily.values[appData.layer_2s.daily.values.length - 1][appData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")] + appData.ethereum_mainnet.daily.values[appData.ethereum_mainnet.daily.values.length - 1][appData.ethereum_mainnet.daily.types.indexOf(showUsd ? "usd" : "eth")])}
+                  {showUsd ? "$" : "Ξ"}{formatNumber(appData.layer_2s.daily.values[appData.layer_2s.daily.values.length - 1][appData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")] + appData.ethereum_mainnet.daily.values[appData.ethereum_mainnet.daily.values.length - 1][appData.ethereum_mainnet.daily.types.indexOf(showUsd ? "usd" : "eth")], 0)}
                 </div>
                 <div className='w-[16px] h-[16px] rounded-full z-20'
                   style={{
@@ -673,7 +699,7 @@ const EconCharts = ({ selectedBreakdownGroup, stableData, appData, maxUnix }: Me
             <div className='flex flex-col h-full items-end pt-[5px] w-full'>
               <div className='flex items-center gap-x-[5px]'>
                 <div className='numbers-xl bg-gradient-to-b bg-[#CDD8D3] bg-clip-text text-transparent'>
-                  {showUsd ? "$" : "Ξ"}{Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(stableData.layer_2s.daily.values[stableData.layer_2s.daily.values.length - 1][stableData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")] + stableData.ethereum_mainnet.daily.values[stableData.ethereum_mainnet.daily.values.length - 1][stableData.ethereum_mainnet.daily.types.indexOf(showUsd ? "usd" : "eth")])}
+                  {showUsd ? "$" : "Ξ"}{formatNumber(stableData.layer_2s.daily.values[stableData.layer_2s.daily.values.length - 1][stableData.layer_2s.daily.types.indexOf(showUsd ? "usd" : "eth")] + stableData.ethereum_mainnet.daily.values[stableData.ethereum_mainnet.daily.values.length - 1][stableData.ethereum_mainnet.daily.types.indexOf(showUsd ? "usd" : "eth")], 0)}
                 </div>
                 <div className='w-[16px] h-[16px] rounded-full z-20 '
                   style={{
@@ -1811,13 +1837,13 @@ const MeetLayer2s = ({ meetL2sData, selectedBreakdownGroup }: { meetL2sData: Mee
           <GTPIcon icon='gtp-multiple-chains' size='lg' className='' />
           <div className='heading-large-lg'>Meet L2s</div>
       </div>
-      <div className='text-md pl-[44px] overflow-visible'>Ethereum scales using different Layer 2s, built by 3rd party teams. Have a closer look at each of them.</div>
-        <div className='flex w-full gap-x-[5px] '>
+      <div className='text-md pl-[44px] overflow-hidden'>Ethereum scales using different Layer 2s, built by 3rd party teams. Have a closer look at each of them.</div>
+        <div className='flex w-full gap-[5px] overflow-hidden'>
           {Object.keys(meetL2sData).map((key, index) => {
             const color = AllChainsByKeys[key]?.colors["dark"][0];
             
             return (
-              <div key={key} className='flex flex-col gap-y-[10px] rounded-[15px] p-[15px] bg-transparent border-[1px] border-[#5A6462] min-w-[250px] w-[250px]'>
+              <div key={key} className='flex flex-col gap-y-[10px] rounded-[15px] p-[15px] bg-transparent border-[1px] border-[#5A6462] flex-shrink-0 w-full sm:w-[calc(50%-2.5px)] lg:w-[calc(33.333%-3.33px)] xl:w-[calc(25%-3.75px)] 2xl:w-[calc(20%-4px)]'>
 
               <div className='flex items-center w-full justify-between'>
                 <div className='flex items-center gap-x-[5px]'>
