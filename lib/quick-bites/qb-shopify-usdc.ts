@@ -35,7 +35,7 @@ const shopifyUsdc: QuickBiteData = {
           }
       ]),
       "```",
-      "> Shopify enables $500 Billion in annualized merchant revenue with over 5.5 million stores, and more than 2 million daily active users.",
+      "> Shopify enables $500 Billion in annualized merchant revenue with over 5.5 Million stores, and more than 2 Million daily active users.",
     "## Shopify's USDC Volumes (Daily)",
     "Initial adoption is expected to be gradual but if successful, this is a metric that should grow over a longer time period. With Shopify's impressive market size there is a lot of growth potential particularly for products that are not yet seen on-chain.",
 
