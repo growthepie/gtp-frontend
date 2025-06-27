@@ -97,8 +97,8 @@ const EmbedContainer = ({
           <div className="block md:hidden text-[0.6rem] md:text-inherit">
             More on
           </div>
-          <div className="relative w-[135px] h-[36px] md:w-[145px] md:h-[36px] pl-[8px] pr-[2.5px] pb-[4px] md:pl-[4px] md:pr-[5px] md:pb-[8px]">
-            <svg width="132" height="31" viewBox="0 0 155 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-[132px] h-[31px] md:w-[155px] md:h-[36px] md:-mt-[3px]">
+          <div className="relative w-[113px] h-[36px] md:w-[145px] md:h-[36px] pl-[8px] pr-[2.5px] pb-[4px] md:pl-[4px] md:pr-[5px] md:pb-[8px]">
+            <svg width="132" height="31" viewBox="0 0 155 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-[108px] h-[25px] md:w-[155px] md:h-[36px] md:-mt-[3px] mt-[3px]">
               <path d="M10.7093 11.175C10.6414 10.2278 10.8994 9.35794 11.4529 8.51448C11.8235 7.95377 12.3491 7.34833 12.929 6.68139C14.425 4.95852 16.278 2.82591 16.7317 0C17.7181 2.16616 17.2397 4.27241 16.1478 6.20934C15.6566 7.07995 15.1127 7.70536 14.5935 8.30201C13.9825 9.0041 13.4066 9.66625 12.9929 10.6399C12.7652 11.1695 12.6358 11.6767 12.5751 12.1727L10.7093 11.175Z" fill="url(#paint0_radial_22630_130036)" />
               <path d="M13.9106 12.889C14.1383 12.0535 14.532 11.2724 15.0552 10.5144C15.4881 9.88177 15.8939 9.41292 16.2581 8.99199C17.4833 7.57424 18.2437 6.69404 18.0209 1.94238C18.1639 2.2475 18.3052 2.54143 18.4426 2.82498L18.4434 2.82658C19.6383 5.30744 20.477 7.04707 19.068 9.43608C18.3715 10.6166 17.8635 11.2037 17.4146 11.7228C16.9091 12.3067 16.4777 12.8059 15.9354 13.9673L13.9106 12.889Z" fill="url(#paint1_radial_22630_130036)" />
               <path d="M19.1575 12.1405C18.608 12.7914 17.711 13.6892 17.6703 13.7483L22.7462 10.9104C22.64 9.96472 21.9427 8.85049 21.0857 7.2666C21.259 9.35449 20.4443 10.6157 19.1575 12.1405Z" fill="url(#paint2_radial_22630_130036)" />
@@ -157,7 +157,7 @@ const EmbedContainer = ({
                 </radialGradient>
               </defs>
             </svg>
-          </div>
+            </div>
           <div className="w-[20px] h-[20px] md:w-[24px] md:h-[24px] mr-[10px] md:mr-[0px] md:ml-[5px]">
             <Icon
               className="w-[20px] h-[20px] md:w-[24px] md:h-[24px] font-semibold"
