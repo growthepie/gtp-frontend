@@ -156,7 +156,7 @@ export const IconContextMenu = ({
   };
 
   const options = [
-    ...(isLogo ? [{ icon: "gtp-open-in-new", label: "Open in new tab", onClick: handleOpenInNewTab }] : []),
+    ...(isLogo ? [{ icon: "gtp-plus", label: "Open in new tab", onClick: handleOpenInNewTab }] : []),
     { icon: "gtp-copy", label: "Copy", onClick: handleCopy },
     { icon: "gtp-download", label: "Download", onClick: handleDownload },
     ...(iconPageUrl ? [{ icon: "gtp-growthepie-icons", label: "See more icons", onClick: handleGoToIconsPage }] : [])
