@@ -5,8 +5,8 @@ const shopifyUsdc: QuickBiteData = {
   subtitle: "A game changer for E-commerce, stablecoins are going mainstream",
   content: [
 
-    'On June 12, 2025, Shopify announced a landmark integration with Coinbase and Stripe. This enables USDC payments on Base to "bring frictionless, secure stablecoin payments to merchants around the world".',
-    "> USDC is a token that is pegged to the value of the US dollar, backed by treasuries (commonly known as stablecoins). It has over $60 Billion in circulation and is one of the most widely adopted stablecoins ranking in the top 10 for all crypto assets by market cap. ",
+    'On June 12, 2025, Shopify announced a landmark integration with Coinbase and Stripe. This enables USDC payments on Base to "bring frictionless, secure stablecoin payments to merchants around the world". ([1])[https://www.shopify.com/news/stablecoins-on-shopify]',
+    "> USDC is a token that is pegged to the value of the US dollar, backed by treasuries (commonly known as stablecoins). It has over $60 Billion in circulation and is one of the most widely adopted stablecoins ranking in the top 10 for all crypto assets by market cap. ([2])[https://www.coingecko.com/en/coins/usdc]",
   
     "# Shopify's USDC Adoption Metrics (All-Time)",
 
@@ -35,7 +35,7 @@ const shopifyUsdc: QuickBiteData = {
           }
       ]),
       "```",
-      "> Shopify enables $500 Billion in annualized merchant revenue with over 5.5 Million stores, and more than 2 Million daily active users.",
+      "> Shopify enables $500 Billion in annualized merchant revenue with over 5.5 Million stores, and more than 2 Million daily active users. ([3a])[https://www.mobiloud.com/blog/shopify-statistics] ([3b])[https://craftberry.co/articles/how-many-shopify-stores-are-there] ([3c])[https://www.yaguara.co/shopify-statistics/#:~:text=There%20are%209.55%20million%20Shopify,are%20currently%20live%20on%20Shopify]",
     "## Shopify's USDC Volumes (Daily)",
     "Initial adoption is expected to be gradual but if successful, this is a metric that should grow over a longer time period. With Shopify's impressive market size there is a lot of growth potential particularly for products that are not yet seen on-chain.",
 
@@ -150,10 +150,10 @@ const shopifyUsdc: QuickBiteData = {
     }),
     "```",
     "# Why Shopify Chose USDC/Base:",
-    "- Faster - Payments on Base can settle in as little as 200 milliseconds across international borders, improving cashflow management.",
-    "- Cheaper - Transaction fees on Base are significantly cheaper and are independent of the value of goods sold, improving profit margins.",
-    "- Globally Accessible - Opening up new markets with a onchain, internet native currency, improving market penetration.",
-    "- Composable - Reducing complexity and middlemen by using a single, shared source of truth, improving operational efficiency.",
+    "- Faster - Payments on Base can settle in as little as 200 milliseconds across international borders, improving cashflow management. ([4])[https://shopify.engineering/commerce-payments-protocol]",
+    "- Cheaper - Transaction fees on Base are significantly cheaper and are independent of the value of goods sold, improving profit margins. ([4])[https://shopify.engineering/commerce-payments-protocol]",
+    "- Globally Accessible - Opening up new markets with a onchain, internet native currency, improving market penetration. ([4])[https://shopify.engineering/commerce-payments-protocol]",
+    "- Composable - Reducing complexity and middlemen by using a single, shared source of truth, improving operational efficiency. ([4])[https://shopify.engineering/commerce-payments-protocol]",
     "Note: These benefits are largely merchant focused with traditional card payment networks often blocking alternatives from providing discounts, this may make changing current customer behavior challenging. For emerging economies with less access to traditional payment options USDC may prove to be highly favorable and this could be part of Shopify's USDC strategy.",
     
     "# Implementation",
@@ -164,7 +164,7 @@ const shopifyUsdc: QuickBiteData = {
       alt: "6 core payment operations outlined by Shopify",
       width: "1600",
       height: "1188",
-      caption: "6 core payment operations outlined by Shopify",
+      caption: "6 core payment operations outlined by Shopify ([4])[https://shopify.engineering/commerce-payments-protocol]",
     }),
     "```",
     "```image",
@@ -173,7 +173,7 @@ const shopifyUsdc: QuickBiteData = {
       alt: "Example payment flow illustrated by Shopify",
       width: "1600",
       height: "1187",
-      caption: "Example payment flow illustrated by Shopify",
+      caption: "Example payment flow illustrated by Shopify ([4])[https://shopify.engineering/commerce-payments-protocol]",
     }),
     "```",
     "Further implementation documentation can be seen here: [https://shopify.engineering/commerce-payments-protocol](https://shopify.engineering/commerce-payments-protocol).",

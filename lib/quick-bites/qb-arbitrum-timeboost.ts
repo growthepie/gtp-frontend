@@ -111,7 +111,7 @@ const arbitrumTimeboost: QuickBiteData = {
     
     "- An auction contract deployed on the target chain to serve as the canonical source of truth for the auction results and handling of auction proceeds.",
 
-    "A more detailed explanation of Timeboost can be found here: https://docs.arbitrum.io/how-arbitrum-works/timeboost/gentle-introduction",
+    "A more detailed explanation of Timeboost can be found here: [https://docs.arbitrum.io/how-arbitrum-works/timeboost/gentle-introduction](https://docs.arbitrum.io/how-arbitrum-works/timeboost/gentle-introduction)",
 
     "All charts on this page are updated daily so you can track the adoption of Timeboost.",
   ],

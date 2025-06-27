@@ -8,13 +8,23 @@ interface ParagraphBlockProps {
 
 const parseMarkdownLinksToHtml = (text: string): string => {
   if (!text) return '';
-  // Regex to find links in markdown format [text](url)
-  const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
-  // Replace with HTML anchor tags, adding styling and security attributes
-  return text.replace(
-    linkRegex,
+  // Regex to find links in markdown format [text](url) or (text)[url]
+  const standardLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+  const reverseLinkRegex = /\(([^)]+)\)\[(https?:\/\/[^\]]+)\]/g;
+  
+  // Replace standard format [text](url)
+  let result = text.replace(
+    standardLinkRegex,
     '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-500 dark:text-blue-400 hover:underline">$1</a>'
   );
+  
+  // Replace reverse format (text)[url]
+  result = result.replace(
+    reverseLinkRegex,
+    '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-500 dark:text-blue-400 hover:underline">$1</a>'
+  );
+  
+  return result;
 };
 
 export const ParagraphBlock: React.FC<ParagraphBlockProps> = ({ block }) => {

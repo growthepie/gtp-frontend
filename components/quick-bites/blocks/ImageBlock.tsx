@@ -7,6 +7,34 @@ interface ImageBlockProps {
   block: ImageBlockType;
 }
 
+const parseMarkdownLinksToHtml = (text: string): string => {
+  if (!text) return '';
+  // Regex to find links in markdown format [text](url) or (text)[url] or [(text)[url]]
+  const standardLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+  const reverseLinkRegex = /\(([^)]+)\)\[(https?:\/\/[^\]]+)\]/g;
+  const doubleBracketLinkRegex = /\[\(([^)]+)\)\[(https?:\/\/[^\]]+)\]\]/g;
+  
+  // Replace standard format [text](url)
+  let result = text.replace(
+    standardLinkRegex,
+    '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-500 dark:text-blue-400 hover:underline">$1</a>'
+  );
+  
+  // Replace reverse format (text)[url]
+  result = result.replace(
+    reverseLinkRegex,
+    '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-500 dark:text-blue-400 hover:underline">$1</a>'
+  );
+  
+  // Replace double bracket format [(text)[url]]
+  result = result.replace(
+    doubleBracketLinkRegex,
+    '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-500 dark:text-blue-400 hover:underline">$1</a>'
+  );
+  
+  return result;
+};
+
 export const ImageBlock: React.FC<ImageBlockProps> = ({ block }) => {
   // State to control the modal's visibility
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -31,6 +59,9 @@ export const ImageBlock: React.FC<ImageBlockProps> = ({ block }) => {
   const alt = block.alt || 'Displayed image';
   const src = block.src || '';
   const caption = block.caption || '';
+
+  // Process caption for links
+  const captionWithLinks = parseMarkdownLinksToHtml(caption);
 
   // Check if the image source is valid enough to be displayed and opened
   const isImageAvailable = !!src;
@@ -72,7 +103,7 @@ export const ImageBlock: React.FC<ImageBlockProps> = ({ block }) => {
         </div>
         {caption && (
           <figcaption className="text-center text-xs mt-2 text-forest-700 dark:text-forest-400 italic">
-            {caption}
+            <span dangerouslySetInnerHTML={{ __html: captionWithLinks }} />
           </figcaption>
         )}
       </figure>
@@ -84,7 +115,7 @@ export const ImageBlock: React.FC<ImageBlockProps> = ({ block }) => {
           onClose={() => setIsModalOpen(false)}
           src={src}
           alt={alt}
-          caption={caption}
+          caption={captionWithLinks}
         />
       )}
     </>
@@ -157,7 +188,7 @@ export const ImageModal: React.FC<ImageModalProps> = ({ src, alt, caption, isOpe
         
         {caption && (
           <figcaption className="mt-3 flex-shrink-0 text-center text-sm text-neutral-600 dark:text-neutral-400">
-            {caption}
+            <span dangerouslySetInnerHTML={{ __html: caption }} />
           </figcaption>
         )}
       </div>
