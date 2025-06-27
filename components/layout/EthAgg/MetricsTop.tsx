@@ -54,6 +54,8 @@ interface UptimeDisplayProps {
   setEventHover: (value: string | null) => void;
 }
 
+
+
 const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEventHover }: UptimeDisplayProps) => {
   const uptimeData = useMemo(() => {
     return formatUptime(new Date().getTime() - new Date(1438269973000).getTime());
@@ -121,6 +123,7 @@ const EventItem = React.memo(({ eventKey, eventHover, setEventHover, text }: Eve
     onMouseEnter={() => setEventHover(eventKey)}
     onMouseLeave={() => setEventHover(null)}
   >
+    <GTPIcon icon={"gtp-calendar"} size='md' />
     <span className={`${eventHover !== eventKey ? 'font-bold' : ''}`}>{text}</span>
   </div>
 ));
@@ -607,6 +610,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   const isCompact = selectedBreakdownGroup === "Ethereum Ecosystem";
   const isHidden = selectedBreakdownGroup === "Builders & Apps";
 
+
   return (
     <>
       {(showChainsCost || showChainsTPS) && (
@@ -636,11 +640,15 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
             </div>
 
             <div className='flex flex-col gap-y-[30px] mb-[20px]'>
-              <div className='numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
-                {Intl.NumberFormat('en-US', {
-                  minimumFractionDigits: 1,
-                  maximumFractionDigits: 1
-                }).format(globalMetrics.total_tps || 0)}
+              <div className="flex flex-row justify-between">
+                <div className='numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
+                  {Intl.NumberFormat('en-US', {
+                    minimumFractionDigits: 1,
+                    maximumFractionDigits: 1
+                  }).format(globalMetrics.total_tps || 0)}
+                </div>
+                <div className='numbers-xs flex items-center gap-x-0.5'><span className='text-xs'>Max (24h):</span>{globalMetrics.total_tps_24h_high || 0}</div>
+                <div className='numbers-xs flex items-center gap-x-0.5'><span className='text-xs'>ATH:</span>{globalMetrics.total_tps_ath || 0}</div>
               </div>
 
               <div className={`w-full -mt-[5px]`}>
@@ -708,7 +716,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
               Token Transfer Fee
             </div>
 
-            <div className='pt-[15px] mb-[35px] flex flex-col gap-y-[15px]'>
+            <div className='pt-[15px] mb-[50px] flex flex-col gap-y-[15px]'>
               <FeeDisplayRow
                 title="Ethereum Mainnet"
                 costValue={globalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth'] || 0}
