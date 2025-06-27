@@ -479,11 +479,13 @@ export const useSearchBuckets = () => {
           color: undefined
         })),
         ...Object.entries(ownerProjectToProjectData)
-          .filter(([owner, project]) => project.logo_path && project.on_apps_page)
+          .filter(([owner, project]) => project.on_apps_page)
           .map(([owner, project]) => ({
             label: project.display_name,
             url: `/applications/${project.owner_project}`,
-            icon: `https://api.growthepie.xyz/v1/apps/logos/${project.logo_path}`,
+            icon: project.logo_path 
+              ? `https://api.growthepie.xyz/v1/apps/logos/${project.logo_path}`
+              : "gtp-project-monochrome",
             color: undefined
           }))
       ]
@@ -724,6 +726,24 @@ export const SearchBadge = memo(({
     if (leftIcon?.startsWith("http")) {
       return <Image src={leftIcon} alt={label as string} className="rounded-full w-[15px] h-[15px]" width={15} height={15} />;
     }
+    
+    // Check if it's the specific GTP project monochrome icon
+    if (leftIcon === "gtp-project-monochrome") {
+      return (
+        <div className="flex items-center justify-center w-[15px] h-[15px] pl-[2px]">
+          <GTPIcon
+            icon={leftIcon as GTPIconName}
+            size="sm"
+            className="!size-[12px]"
+            style={{
+              color: "#5A6462", // Force the grey color for GTP icons
+            }}
+          />
+        </div>
+      );
+    }
+    
+    // Regular Iconify icon
     return (
       <div className="flex items-center justify-center w-[15px] h-[15px]">
         <Icon
@@ -734,8 +754,7 @@ export const SearchBadge = memo(({
           }}
         />
       </div>
-    )
-
+    );
   }
 
   return (
