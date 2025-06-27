@@ -7,9 +7,10 @@ import { QuickBiteWithSlug } from '@/lib/types/quickBites';
 
 interface QuickBitesGridProps {
   QuickBites: QuickBiteWithSlug[];
+  IsLanding?: boolean; // Optional prop to indicate if this is the landing page
 }
 
-const QuickBitesGrid: React.FC<QuickBitesGridProps> = ({ QuickBites }) => {
+const QuickBitesGrid: React.FC<QuickBitesGridProps> = ({ QuickBites, IsLanding = true }) => {
   if (!QuickBites || QuickBites.length === 0) {
     return (
       <div className="w-full py-8 text-center">
@@ -17,11 +18,34 @@ const QuickBitesGrid: React.FC<QuickBitesGridProps> = ({ QuickBites }) => {
       </div>
     );
   }
+
+  if(!IsLanding) {
+    return (
+      <div className='w-full @container'>
+        <div className="w-full grid gap-[10px] grid-cols-1 @[560px]:grid-cols-2 @[845px]:grid-cols-3">
+          {QuickBites.filter((QuickBite) => QuickBite.slug !== "test-bite").map((QuickBite, index) => (
+            <QuickBiteCard 
+              key={QuickBite.slug || index}
+              title={QuickBite.title}
+              bannerImage={QuickBite.image || "https://api.growthepie.com/v1/quick-bites/banners/placeholder.png"}
+              subtitle={QuickBite.subtitle}
+              date={QuickBite.date}
+              icon={QuickBite.icon}
+              slug={QuickBite.slug}
+              author={QuickBite.author}
+              topics={QuickBite.topics}
+              
+            />
+          ))}
+        </div>
+      </div>
+    );
+}
   
   return (
     <div className='w-full h-[275px] overflow-hidden @container'>
       <div className="w-full grid gap-[10px] grid-cols-1 @[560px]:grid-cols-2 @[845px]:grid-cols-3 h-[275px]">
-        {QuickBites.map((QuickBite, index) => (
+        {QuickBites.filter((QuickBite) => QuickBite.slug !== "test-bite").map((QuickBite, index) => (
           <QuickBiteCard 
             key={QuickBite.slug || index}
             title={QuickBite.title}
