@@ -15,7 +15,9 @@ import { tooltipPositioner } from '@/lib/chartUtils';
 import { useSSEMetrics } from './useSSEMetrics';
 import { FeeDisplayRow } from './FeeDisplayRow';
 import { formatDuration, formatUptime, getGradientColor } from './helpers';
-
+import { EthereumEvents } from '@/types/api/MasterResponse';
+import CalendarIcon from '@/icons/svg/GTP-Calendar.svg';
+import Image from 'next/image';
 // Define the props type for TopEthAggMetricsComponent
 interface TopEthAggMetricsProps {
   selectedBreakdownGroup: string;
@@ -52,20 +54,33 @@ interface UptimeDisplayProps {
   selectedBreakdownGroup: string;
   eventHover: string | null;
   setEventHover: (value: string | null) => void;
+  showEvents: boolean;
+  handleToggleEvents: (e: React.MouseEvent) => void;
 }
 
 
 
-const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEventHover }: UptimeDisplayProps) => {
+const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEventHover, showEvents, handleToggleEvents }: UptimeDisplayProps) => {
   const uptimeData = useMemo(() => {
     return formatUptime(new Date().getTime() - new Date(1438269973000).getTime());
   }, []);
+
+  const { data: masterData } = useMaster();
+
+  const reversedEvents = useMemo(() => {
+    return masterData ? [...masterData.ethereum_events].reverse() : [];
+  }, [masterData]);
+
+  if (!masterData) {
+    return null;
+  }
 
   const isCompact = selectedBreakdownGroup === "Ethereum Ecosystem";
   const isHidden = selectedBreakdownGroup === "Builders & Apps";
 
   return (
-    <div className={`bg-[#1F2726] w-full transition-height duration-300 ${isCompact ? 'h-[150px] overflow-hidden rounded-[15px] p-[15px]'
+    <div className={`bg-[#1F2726] w-full transition-height duration-300 ${showEvents && 'z-dropdown'
+      } ${isCompact ? 'h-[150px] overflow-hidden rounded-[15px] p-[15px]'
         : isHidden ? 'h-[0px] overflow-hidden p-0'
           : 'h-[306px] rounded-[15px] p-[15px]'
       }`}>
@@ -79,28 +94,66 @@ const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEvent
         </div>
       </div>
 
-      <div className={`flex flex-col gap-y-[5px] transition-height duration-500 overflow-hidden ${isCompact ? 'h-0' : 'h-full'
-        }`}>
-        <div className='heading-large-md text-[#5A6462]'>
-          <span className='font-bold'>Events:</span>
+      {/* Events Section */}
+      <div className={`relative flex flex-col overflow-hidden gap-y-[5px] transition-height duration-500 -mx-[15px] bg-[#1F2726] rounded-b-[15px] ${showEvents ? 'pb-[10px] shadow-lg' : 'pb-0'
+        } ${isCompact ? 'h-0' : 'h-auto'}`}>
+
+        <div className={`flex flex-col gap-y-[2.5px] px-[15px] duration-300 overflow-y-hidden ${!showEvents ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''
+          }`}
+          style={{
+            height: !showEvents ? `130px` : `${reversedEvents.length * 21 + 35}px`
+          }}
+        >
+          <div className='heading-large-md text-[#5A6462]'>Events</div>
+                    <div className="relative">
+            {reversedEvents.map((event: any, index: number) => {
+              const isThisEventHovered = eventHover === event.date;
+              const isNextEventHovered = eventHover === reversedEvents[index + 1]?.date;
+
+              return (
+                <div key={event.date}>
+                  {/* Event Item */}
+                  <div
+                    className="absolute w-full"
+                    style={{ top: `${index * 21}px` }}
+                  >
+                    <EventItem
+                      eventKey={event.date}
+                      eventHover={eventHover}
+                      setEventHover={setEventHover}
+                      event={event}
+                      index={index}
+                    />
+                  </div>
+                  
+                  {/* Separator Dots - only if not the last item */}
+                  {index < reversedEvents.length - 1 && !isThisEventHovered && !isNextEventHovered && (index !== 0 || eventHover !== null) && (
+                    <div
+                      className="absolute flex-col gap-y-[3px] pt-[2px] flex items-center gap-x-[2px]"
+                      style={{ 
+                        top: `${index * 21 + 21 - 5}px`, // Position between items
+                        left: '11px' // Center under the icon
+                      }}
+                    >
+                      <div className="w-[2px] h-[2px] bg-[#5A6462] rounded-full"></div>
+                      <div className="w-[2px] h-[2px] bg-[#5A6462] rounded-full"></div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            </div>
         </div>
-        <div className='flex flex-col gap-y-[5px] pl-[15px]'>
-          <EventItem
-            eventKey="after"
-            eventHover={eventHover}
-            setEventHover={setEventHover}
-            text="Event after:"
-          />
-          <div className={`transition-all duration-300 cursor-default ${eventHover === null ? 'text-xs' : 'text-xxxs text-[#5A6462] w-fit'
+
+        <div className={`w-full h-[18px] flex items-center justify-center relative z-10 cursor-pointer top-[0px] transition-opacity duration-300 ${isCompact ? 'opacity-0' : 'opacity-100'
+          }`} onClick={handleToggleEvents}>
+          <div className={`pointer-events-none transition-transform absolute duration-300 ${showEvents ? 'rotate-180' : ''
             }`}>
-            <span className={`${eventHover !== null ? 'font-bold' : ''}`}>Main event</span>
+            <GTPIcon icon='gtp-chevrondown-monochrome' size='md' className='text-[#5A6462]' />
           </div>
-          <EventItem
-            eventKey="before"
-            eventHover={eventHover}
-            setEventHover={setEventHover}
-            text="Event before:"
-          />
+          <div className='pointer-events-none absolute right-[15px]'>
+            <GTPIcon icon='gtp-info-monochrome' size='sm' className='text-[#5A6462]' />
+          </div>
         </div>
       </div>
     </div>
@@ -113,18 +166,68 @@ interface EventItemProps {
   eventKey: string;
   eventHover: string | null;
   setEventHover: (value: string | null) => void;
-  text: string;
+  event: EthereumEvents;
+  index: number;
 }
 
-const EventItem = React.memo(({ eventKey, eventHover, setEventHover, text }: EventItemProps) => (
+const EventIcon = ({ event, eventHover, index }: { event: EthereumEvents, eventHover: string | null, index: number }) => {
+  const getMonthDisplay = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      const fullMonth = date.toLocaleDateString('en-US', { month: 'long' }).toUpperCase();
+      const shortMonth = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+      
+      // If full month name is 4 characters or shorter, use it; otherwise use short version
+      return fullMonth.length <= 4 ? fullMonth : shortMonth;
+    } catch {
+      return 'JULY'; // fallback
+    }
+  };
+
+  const eventHoverOverride = index === 0 && eventHover === null;
+
+  const isThisEventHovered = eventHover === event.date;
+
+  const showCalendar = isThisEventHovered || eventHoverOverride;
+
+  return (
+    <div className="relative min-w-[24px] min-h-[24px]">
+      {/* Calendar */}
+      <div className={`absolute inset-0 transition-all duration-300 ease-in-out ${
+        showCalendar 
+          ? 'opacity-100 scale-100' 
+          : 'opacity-0 scale-90 pointer-events-none'
+      }`}>
+        <Image src={CalendarIcon} alt="Calendar" width={24} height={24} />
+        <div className='absolute text-[#1F2726] -top-[0.5px] left-0 right-0 heading-small-xxxxxs text-center'>
+          {getMonthDisplay(event.date)}
+        </div>
+        <div className='absolute text-[#1F2726] bottom-[5px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] bg-clip-text text-transparent left-0 right-0 numbers-xxxs text-center'>
+          {Intl.DateTimeFormat('en-US', { day: 'numeric' }).format(new Date(event.date))}
+        </div>
+      </div>
+      
+      {/* Circle */}
+      <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ease-in-out ${
+        !showCalendar 
+          ? 'opacity-100 scale-100' 
+          : 'opacity-0 scale-75 pointer-events-none'
+      }`}>
+        <div className='w-[8px] h-[8px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] rounded-full'></div>
+      </div>
+    </div>
+  )
+}
+
+const EventItem = React.memo(({ eventKey, eventHover, setEventHover, event, index }: EventItemProps) => (
   <div
-    className={`transition-all duration-300 cursor-default ${eventHover === eventKey ? 'text-xs' : 'text-xxxs text-[#5A6462]'
+    className={`transition-all h-[24px] text-truncate flex items-center gap-x-[2px] duration-300 cursor-default ${eventHover === eventKey || (eventHover === null && index === 0) ? 'text-xs' : 'text-xxxs text-[#5A6462]'
       } w-fit`}
     onMouseEnter={() => setEventHover(eventKey)}
     onMouseLeave={() => setEventHover(null)}
   >
-    <GTPIcon icon={"gtp-calendar"} size='md' />
-    <span className={`${eventHover !== eventKey ? 'font-bold' : ''}`}>{text}</span>
+    <EventIcon event={event} eventHover={eventHover} index={index} />
+    <span className={`font-bold`}>{event.title}</span>
   </div>
 ));
 
@@ -469,6 +572,9 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   const [showChainsCost, setShowChainsCost] = useSearchParamBoolean("cost", false, {
     debounceMs: 150,
   });
+  const [showEvents, setShowEvents] = useSearchParamBoolean("events", false, {
+    debounceMs: 150,
+  });
 
   // Memoized calculations
   const filteredTPSChains = useMemo(() => {
@@ -538,10 +644,17 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     setShowChainsCost(!showChainsCost);
   }, [showChainsCost, setShowChainsCost]);
 
+  const handleToggleEvents = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowEvents(!showEvents);
+  }, [showEvents, setShowEvents]);
+
   const handleCloseModals = useCallback(() => {
     setShowChainsCost(false);
     setShowChainsTPS(false);
-  }, [setShowChainsCost, setShowChainsTPS]);
+    setShowEvents(false);
+  }, [setShowChainsCost, setShowChainsTPS, setShowEvents]);
 
   // Optimized effects
   useEffect(() => {
@@ -613,7 +726,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
 
   return (
     <>
-      {(showChainsCost || showChainsTPS) && (
+      {(showChainsCost || showChainsTPS || showEvents) && (
         <div
           className='fixed inset-0 bg-black/30 z-dropdown-background'
           onClick={handleCloseModals}
@@ -626,6 +739,8 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
             selectedBreakdownGroup={selectedBreakdownGroup}
             eventHover={uiState.eventHover}
             setEventHover={(value) => setUiState(prev => ({ ...prev, eventHover: value }))}
+            showEvents={showEvents}
+            handleToggleEvents={handleToggleEvents}
           />
 
           {/* TPS Section */}
