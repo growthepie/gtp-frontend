@@ -36,6 +36,8 @@ const XAxisLabels = React.memo(({ xMin, xMax }: { xMin: number, xMax: number }) 
   </div>
 ));
 
+XAxisLabels.displayName = 'XAxisLabels';
+
 // Optimized number formatting function
 const formatNumber = (number: number, prefix = "", showUsd = true): string => {
   if (number === 0) return "0";
@@ -231,17 +233,19 @@ export function AggChart({
 
   
 
+  // Memoized series colors
+  const seriesColors = useMemo(() => ({
+    "Total L2s": "#1DF7EF", 
+    "Ethereum Mainnet": AllChainsByKeys["ethereum"]?.colors.dark[0],
+    "Layer 2s": AllChainsByKeys["all_l2s"]?.colors.dark[0],
+  }), [AllChainsByKeys]);
+
   // Advanced tooltip formatter similar to Highcharts version
   const createEchartsTooltipFormatter = useCallback((options: {
     maxPointsToShow?: number;
     enableTotal?: boolean;
   } = {}) => {
     const { maxPointsToShow = 10, enableTotal = false } = options;
-    const SERIES_COLORS = {
-      "Total L2s": "#1DF7EF", 
-      "Ethereum Mainnet": AllChainsByKeys["ethereum"]?.colors.dark[0],
-      "Layer 2s": AllChainsByKeys["all_l2s"]?.colors.dark[0],
-    }
     return (params: any[]) => {
       if (!params?.length) return '';
       
@@ -289,7 +293,7 @@ export function AggChart({
         
                 tooltip += `
           <div class="flex w-full h-[15px] space-x-2 items-center font-medium mb-0.5">
-            <div class="w-[15px] h-[10px] rounded-r-full relative overflow-hidden" style="background-color: ${SERIES_COLORS[param.seriesName]};">
+            <div class="w-[15px] h-[10px] rounded-r-full relative overflow-hidden" style="background-color: ${seriesColors[param.seriesName]};">
               <div class="h-full rounded-r-full" style="background-color: ${param.color}; width: ${barWidth}%;"></div>
             </div>
             <div class="text-xs flex-1 text-left">${param.seriesName}</div>
@@ -316,7 +320,7 @@ export function AggChart({
           // Fallback for when layer2Data is just a count
           tooltip += `
             <div class="flex w-full h-[15px] space-x-2 items-center font-medium mb-0.5 opacity-80">
-              <div class="w-[15px] h-[10px] rounded-r-full relative overflow-hidden" style="background-color: ${SERIES_COLORS[param.seriesName]};">
+              <div class="w-[15px] h-[10px] rounded-r-full relative overflow-hidden" style="background-color: ${seriesColors[param.seriesName]};">
                 <div class="h-full rounded-r-full" style="background-color: ${param.color}; width: 50%;"></div>
               </div>
               <div class="text-xs flex-1 text-left">L2s Launched</div>
@@ -363,7 +367,7 @@ export function AggChart({
       tooltip += `</div>`;
       return tooltip;
     };
-  }, [formatNumberCallback]);
+  }, [formatNumberCallback, dataSource]);
 
   // Memoized ECharts option configuration
   const option = useMemo(() => {

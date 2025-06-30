@@ -261,9 +261,9 @@ const MeetLayer2s = React.memo(({ meetL2sData, selectedBreakdownGroup }: { meetL
   const { AllChainsByKeys } = useMaster();
   const [showUsd] = useLocalStorage("showUsd", true);
 
-  if (!meetL2sData || selectedBreakdownGroup !== "Metrics") return null;
+  const l2Keys = useMemo(() => meetL2sData ? Object.keys(meetL2sData) : [], [meetL2sData]);
 
-  const l2Keys = useMemo(() => Object.keys(meetL2sData), [meetL2sData]);
+  if (!meetL2sData || selectedBreakdownGroup !== "Metrics") return null;
 
   return (
     <div className="flex flex-col gap-y-[15px] w-full overflow-hidden">
@@ -327,5 +327,7 @@ const MeetLayer2s = React.memo(({ meetL2sData, selectedBreakdownGroup }: { meetL
     </div>
   );
 });
+
+MeetLayer2s.displayName = 'MeetLayer2s';
 
 export default MetricsChartsComponent;
