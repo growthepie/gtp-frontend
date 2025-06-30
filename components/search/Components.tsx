@@ -244,8 +244,8 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     };
 
     // Create a debounced version of the search update function
-    const debouncedUpdateSearch = useCallback(
-      debounce((newValue: string) => {
+    const debouncedUpdateSearch = useMemo(
+      () => debounce((newValue: string) => {
         // get existing query params
         let newSearchParams = new URLSearchParams(window.location.search);
         newSearchParams.set("query", newValue);
@@ -534,8 +534,14 @@ export const useSearchBuckets = () => {
 
       const groupOptionsMatches = groupOptions?.filter(group => {
         const lowerLabel = normalizeString(group.label);
-        return lowerLabel !== lowerQuery && // not an exact match
-          lowerLabel.includes(lowerQuery);
+        const normalizedQuery = normalizeString(query || "");
+        
+        // Only search stacks if query is 3 characters or more
+        if (normalizedQuery.length < 3) {
+          return false;
+        }
+        
+        return lowerLabel.includes(normalizedQuery);
       });
 
       return {
@@ -549,7 +555,7 @@ export const useSearchBuckets = () => {
 
     // Filter out empty buckets from regular results first
     const filteredRegularResults = regularSearchResults.filter(bucket =>
-      bucket.filteredData.length > 0
+      bucket.filteredData.length > 0 || (bucket.filteredGroupData && bucket.filteredGroupData.length > 0)
     );
 
     // Sort regular results
@@ -587,7 +593,18 @@ export const useSearchBuckets = () => {
   }, [query, searchBuckets]);
 
   // Calculate total matches for the counter
-  const totalMatches = allFilteredData.reduce((total, { filteredData }) => total + filteredData.length, 0);
+  const totalMatches = allFilteredData.reduce((total, { filteredData, filteredGroupData }) => {
+    let bucketTotal = filteredData.length;
+    
+    // Add stack results to the count
+    if (filteredGroupData && filteredGroupData.length > 0) {
+      filteredGroupData.forEach(group => {
+        bucketTotal += group.options.length;
+      });
+    }
+    
+    return total + bucketTotal;
+  }, 0);
 
   return {
     allFilteredData,
@@ -791,7 +808,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
   const [keyPressed, setKeyPressed] = useState('');
   const [forceUpdate, setForceUpdate] = useState(0);
   const [lastBucketIndeces, setLastBucketIndeces] = useState<{ [key: string]: { x: number, y: number } }>({});
-  const childRefs = useRef<{ [key: string]: HTMLAnchorElement | null }>({});
+  const childRefs = useRef<{ [key: string]: HTMLAnchorElement | HTMLDivElement | null }>({});
   const measurementsRef = useRef<{ [key: string]: DOMRect }>({});
 
   const searchParams = useSearchParams();
@@ -810,10 +827,9 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
 
   useEffect(() => {
     // reset lastBucketIndeces
-    //
     setShowMore({});
     setLastBucketIndeces({});
-  }, [memoizedQuery]);
+  }, [memoizedQuery, setShowMore]);
 
   const keyMapping = useMemo(() => {
     const dataMap: string[][] = [[]];
@@ -833,13 +849,11 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
       let currentRow: string[] = [];
       let lastTop: number | null = null;
 
-
+      // Process regular chain results
       filteredData.forEach((item, itemIndex) => {
         if (localYIndex > 2 && !isShowMore) {
-
           return
         };
-
 
         const key = getKey(item.label, type);
         const rect = measurementsRef.current[key];
@@ -849,10 +863,8 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
         if (lastTop === null || itemTop === lastTop) {
           currentRow.push(key);
           // 1. make sure we're currently in the third row
-
           if (localYIndex === 2 && !isShowMore) {
             // 2. make sure there's a next item
-
             const nextItem = filteredData[itemIndex + 1];
             if (nextItem) {
               // 3. make sure the next item is in the NEXT row
@@ -860,14 +872,10 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
               const nextItemRect = measurementsRef.current[nextItemKey];
               const nextItemTop = nextItemRect?.top;
               const lastYIndex = localYIndex;
-              // if(nextItemTop !== itemTop){
-              //   setLastBucketIndeces(prev => ({...prev, [key]: {x: currentRow.length - 1, y: lastYIndex}}));
-              // }
               if (nextItemTop !== itemTop) {
                 newLastBucketIndeces[key] = { x: currentRow.length - 1, y: lastYIndex };
               };
             }
-
           }
         } else {
           // If top position is different, start a new row
@@ -882,17 +890,68 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
         lastTop = itemTop || lastTop;
         dataMap[yIndex] = currentRow;
       });
-    });
 
-    // // Filter out empty arrays
-    // return dataMap.filter(arr => arr.length > 0);
+      // Process stack results
+      if (filteredGroupData && filteredGroupData.length > 0) {
+        filteredGroupData.forEach((group) => {
+          const isStackShowMore = showMore[`${group.label}::${type}`];
+          
+          // Start a new row for each stack group
+          yIndex++;
+          dataMap[yIndex] = [];
+          currentRow = [];
+          lastTop = null;
+          let localStackYIndex = 0;
+
+          // Process all stack options (no slicing here since container handles it)
+          group.options.forEach((option, optionIndex) => {
+            if (localStackYIndex > 2 && !isStackShowMore) {
+              return;
+            }
+
+            const key = getKey(option.label, `${group.label}::${type}`);
+            const rect = measurementsRef.current[key];
+            const itemTop = rect?.top;
+
+            // If this is the first item or has same top position as previous items, add to current row
+            if (lastTop === null || itemTop === lastTop) {
+              currentRow.push(key);
+              // Check if this should be the "See more" item (3rd row, not expanded, more items exist)
+              if (localStackYIndex === 2 && !isStackShowMore) {
+                // Check if there's a next item that would be in the next row
+                const nextItem = group.options[optionIndex + 1];
+                if (nextItem) {
+                  const nextItemKey = getKey(nextItem.label, `${group.label}::${type}`);
+                  const nextItemRect = measurementsRef.current[nextItemKey];
+                  const nextItemTop = nextItemRect?.top;
+                  if (nextItemTop !== itemTop) {
+                    newLastBucketIndeces[key] = { x: currentRow.length - 1, y: localStackYIndex };
+                  }
+                }
+              }
+            } else {
+              // If top position is different, start a new row
+              localStackYIndex++;
+              if (localStackYIndex > 2 && !isStackShowMore) return;
+              yIndex++;
+              dataMap[yIndex] = [];
+              currentRow = [key];
+            }
+
+            // Update lastTop and add current row to dataMap
+            lastTop = itemTop || lastTop;
+            dataMap[yIndex] = currentRow;
+          });
+        });
+      }
+    });
 
     // commit the built map
     setLastBucketIndeces(newLastBucketIndeces);
 
     // filter out empty arrays
     return dataMap.filter(arr => arr.length > 0);
-  }, [allFilteredData, forceUpdate, memoizedQuery, showMore, measurementsRef]);
+  }, [allFilteredData, showMore, measurementsRef]);
 
 
   // Setup resize observer
@@ -933,7 +992,43 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
     setKeyCoords({ y: null, x: null });
   }, [memoizedQuery, allFilteredData])
 
+  // Add state to track keyboard-triggered expansions
+  const [keyboardExpandedStacks, setKeyboardExpandedStacks] = useState<Set<string>>(new Set());
 
+  // Modify the useEffect to only select first item for keyboard-triggered expansions
+  useEffect(() => {
+    if (memoizedQuery && allFilteredData.length > 0 && keyboardExpandedStacks.size > 0) {
+      // Find the first expanded stack and select its first newly revealed result
+      for (const expandedStack of keyboardExpandedStacks) {
+        // Find the bucket and group that was expanded
+        const [groupLabel, bucketType] = expandedStack.split('::');
+        
+        // Find the bucket in allFilteredData
+        const bucket = allFilteredData.find(b => b.type === bucketType);
+        if (bucket && bucket.filteredGroupData) {
+          // Find the group that was expanded
+          const group = bucket.filteredGroupData.find(g => g.label === groupLabel);
+          if (group && group.options.length > 9) {
+            // Find the position of the first newly revealed result in keyMapping
+            // The first 9 results were already visible, so we want the 10th result (index 9)
+            const firstNewResult = group.options[9];
+            const firstNewResultKey = getKey(firstNewResult.label, `${groupLabel}::${bucketType}`);
+            
+            // Find this key in the keyMapping
+            for (let y = 0; y < keyMapping.length; y++) {
+              for (let x = 0; x < keyMapping[y].length; x++) {
+                if (keyMapping[y][x] === firstNewResultKey) {
+                  setKeyCoords({ x, y });
+                  setKeyboardExpandedStacks(new Set()); // Clear the flag
+                  return;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }, [memoizedQuery, allFilteredData, keyboardExpandedStacks, keyMapping, getKey, setKeyCoords]);
 
   // Add keyboard navigation
   useEffect(() => {
@@ -1000,19 +1095,23 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
         className="flex flex-col pt-[10px] pb-[15px] pl-[10px] pr-[25px] gap-y-[15px] text-[10px]">
         {allFilteredData.map(({ type, icon, filteredData, filteredGroupData, isBucketMatch }) => {
           const isShowMore = showMore[type] && type !== "Applications";
+          
+          // Limit chain results when stack results are present and "See more" is not expanded
+          const hasStackResults = filteredGroupData && filteredGroupData.length > 0;
+          const shouldLimitChains = hasStackResults && !isShowMore && type === "Chains";
+          
           // Limit Applications bucket to 20 results unless showMore is true
           const resultsToRender =
             type === "Applications" && !isShowMore
               ? filteredData.slice(0, 20)
-              : filteredData;
+              : shouldLimitChains
+                ? filteredData.slice(0, 6) // Show fewer chains when stack results are present
+                : filteredData;
           
           return (
             <div 
               key={type} 
-              className={`flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start overflow-y-hidden ${isShowMore ? "max-h-full" : "max-h-[118px] md:max-h-[87px] "}`}
-              // style={{
-              //   maxHeight: isShowMore ? "100%" : `calc(87px + ${groupHeight}px)`
-              // }}
+              className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start overflow-y-hidden"
             >
               <div className="flex gap-x-[10px] items-center shrink-0">
                 <GTPIcon
@@ -1029,57 +1128,93 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
                 </div>
                 <div className="w-[6px] h-[6px] bg-[#344240] rounded-full max-sm:mt-[-3px]" />
               </div>
-              {/* <div className="flex flex-col gap-[5px]"> */}
-                <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
-                  {resultsToRender.map((item) => {
-                    const itemKey = getKey(item.label, type);
-                    const isSelected = keyCoords.y !== null &&
-                      keyCoords.x !== null &&
-                      keyMapping[keyCoords.y]?.[keyCoords.x] === itemKey;
+              
+              <div className="flex flex-col gap-[5px]">
+                {/* Chain results in separate container */}
+                {filteredData.length > 0 && (
+                  <div className={`overflow-y-hidden ${
+                    isShowMore 
+                      ? "max-h-full" 
+                      : "max-h-[118px] md:max-h-[87px]"
+                  }`}>
+                    <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
+                      {filteredData.map((item) => {
+                        const itemKey = getKey(item.label, type);
+                        const isSelected = keyCoords.y !== null &&
+                          keyCoords.x !== null &&
+                          keyMapping[keyCoords.y]?.[keyCoords.x] === itemKey;
 
-                    return (
-                      <BucketItem
-                        key={itemKey}
-                        item={item}
-                        itemKey={itemKey}
-                        isSelected={isSelected}
-                        childRefs={childRefs}
-                        lastBucketIndeces={lastBucketIndeces}
-                        bucket={type}
-                        query={memoizedQuery}
-                        showMore={showMore}
-                        setShowMore={setShowMore}
-                      />
-                    )
-                  })}
-                </div>
-                {/* {filteredGroupData && (
-                  <div ref={groupRef} className="flex flex-col gap-[5px]">
-                    {filteredGroupData.map((group) => (
-                      <div key={group.label} className="flex flex-col gap-[5px]">
-                        <div className="text-xxs">{type} that are part of the &apos;{group.label}&apos;</div>
-                        <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
-                          {group.options.map((option) => (
-                            <BucketItem
-                              key={option.label}
-                              item={option}
-                              itemKey={`${group.label}::${option.label}`}
-                              isSelected={false}
-                              childRefs={childRefs}
-                              lastBucketIndeces={lastBucketIndeces}
-                              bucket={type}
-                              query={memoizedQuery}
-                              showMore={showMore}
-                              setShowMore={setShowMore}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    ))}
+                        return (
+                          <BucketItem
+                            key={itemKey}
+                            item={item}
+                            itemKey={itemKey}
+                            isSelected={isSelected}
+                            childRefs={childRefs}
+                            lastBucketIndeces={lastBucketIndeces}
+                            bucket={type}
+                            query={memoizedQuery}
+                            showMore={showMore}
+                            setShowMore={setShowMore}
+                            setKeyboardExpandedStacks={setKeyboardExpandedStacks}
+                          />
+                        )
+                      })}
+                    </div>
                   </div>
-                )} */}
-              {/* </div> */}
-            </div>  
+                )}
+                
+                {/* Stack results in separate container */}
+                {filteredGroupData && (
+                  <div ref={groupRef} className="flex flex-col gap-[5px]">
+                    {filteredGroupData.map((group) => {
+                      const isShowMore = showMore[`${group.label}::${type}`];
+                      
+                      return (
+                        <div key={group.label} className="flex flex-col gap-[5px]">
+                          <div className="text-xxs" style={{ color: '#5A6462' }}>
+                            <span>Chains that are part of the &quot;</span>
+                            <OpacityUnmatchedText text={group.label} query={memoizedQuery || ""} />
+                            <span>&quot;:</span>
+                          </div>
+                          {/* Stack results in separate container with height constraints */}
+                          <div className={`overflow-y-hidden ${
+                            isShowMore 
+                              ? "max-h-full" 
+                              : "max-h-[118px] md:max-h-[87px]"
+                          }`}>
+                            <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
+                              {group.options.map((option) => {
+                                const itemKey = getKey(option.label, `${group.label}::${type}`);
+                                const isSelected = keyCoords.y !== null &&
+                                  keyCoords.x !== null &&
+                                  keyMapping[keyCoords.y]?.[keyCoords.x] === itemKey;
+
+                                return (
+                                  <BucketItem
+                                    key={option.label}
+                                    item={option}
+                                    itemKey={itemKey}
+                                    isSelected={isSelected}
+                                    childRefs={childRefs}
+                                    lastBucketIndeces={lastBucketIndeces}
+                                    bucket={`${group.label}::${type}`}
+                                    query={query || ""}
+                                    showMore={showMore}
+                                    setShowMore={setShowMore}
+                                    setKeyboardExpandedStacks={setKeyboardExpandedStacks}
+                                  />
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
           );
         })}
       </div>}
@@ -1097,7 +1232,8 @@ const BucketItem = ({
   bucket,
   query,
   showMore,
-  setShowMore
+  setShowMore,
+  setKeyboardExpandedStacks
 }: {
   item: any,
   itemKey: string,
@@ -1107,10 +1243,16 @@ const BucketItem = ({
   bucket: string,
   query: string,
   showMore: { [key: string]: boolean },
-  setShowMore: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>
+  setShowMore: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>,
+  setKeyboardExpandedStacks: React.Dispatch<React.SetStateAction<Set<string>>>
 }) => {
   const isApps = bucket === "Applications";
-
+  
+  // Check if this is a stack result (itemKey contains "::")
+  const isStackResult = itemKey.includes("::");
+  
+  // For stack results, check if the item matches the query
+  const shouldGreyOut = isStackResult && query && !normalizeString(item.label).includes(normalizeString(query));
 
   return (
     <Link
@@ -1134,6 +1276,11 @@ const BucketItem = ({
           if (lastBucketIndeces[itemKey] && !showMore[bucket]) {
             if (!isApps) {
               setShowMore(prev => ({ ...prev, [bucket]: true }));
+              setKeyboardExpandedStacks(prev => {
+                const newSet = new Set(prev);
+                newSet.add(itemKey);
+                return newSet;
+              });
             }
           }
         }
@@ -1142,21 +1289,18 @@ const BucketItem = ({
     >
       {lastBucketIndeces[itemKey] && !showMore[bucket] && (
         <div className={`absolute inset-[-1px] z-20 pl-[5px] flex items-center justify-start rounded-full whitespace-nowrap ${isSelected ? "underline" : "text-[#5A6462]"} hover:underline bg-[#151A19] text-xxs`}>
-          {isApps ? (
-            <div>See more...</div>
-          ) : (
-            <div>See more...</div>
-          )}
+          <div>See more...</div>
         </div>
       )}
       <SearchBadge
         className={`!cursor-pointer ${isSelected ? "!bg-[#5A6462]" : ""}`}
         label={
-          // Use OpacityUnmatchedText for startsWith/contains matches, plain for exact
-          (normalizeString(item.label).startsWith(normalizeString(query)) && normalizeString(item.label) !== normalizeString(query)) ||
-            (normalizeString(item.label).includes(normalizeString(query)) && !normalizeString(item.label).startsWith(normalizeString(query)))
-            ? <OpacityUnmatchedText text={item.label} query={query} />
-            : item.label
+          shouldGreyOut 
+            ? <span className="opacity-50">{item.label}</span> // Grey out entire text for unmatched stack results
+            : (normalizeString(item.label).startsWith(normalizeString(query)) && normalizeString(item.label) !== normalizeString(query)) ||
+              (normalizeString(item.label).includes(normalizeString(query)) && !normalizeString(item.label).startsWith(normalizeString(query)))
+              ? <OpacityUnmatchedText text={item.label} query={query} />
+              : item.label
         }
         leftIcon={`${item.icon}` as GTPIconName}
         leftIconColor={item.color || "white"}
