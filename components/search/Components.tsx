@@ -537,7 +537,7 @@ export const useSearchBuckets = () => {
         const normalizedQuery = normalizeString(query || "");
         
         // Only search stacks if query is 3 characters or more
-        if (normalizedQuery.length < 3) {
+        if (normalizedQuery.length < 1) {
           return false;
         }
         
@@ -816,9 +816,9 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
   const { allFilteredData, totalMatches } = useSearchBuckets();
   const router = useRouter();
 
-  const getKey = (label: string, type: string) => {
+  const getKey = useCallback((label: string, type: string) => {
     return String(`${type}::${label}`);
-  }
+  }, []);
 
   const memoizedQuery = useMemo(() => {
     // trim the query
@@ -859,15 +859,35 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
         const rect = measurementsRef.current[key];
         const itemTop = rect?.top;
 
-        // If this is the first item or has same top position as previous items, add to current row
+        // If measurements aren't available yet, use a simple fallback layout
+        if (!rect) {
+          // Simple fallback: assume items are in rows of 3
+          const itemsPerRow = 3;
+          const rowIndex = Math.floor(itemIndex / itemsPerRow);
+          const colIndex = itemIndex % itemsPerRow;
+          
+          if (rowIndex > 2 && !isShowMore) {
+            return;
+          }
+          
+          if (rowIndex >= dataMap.length) {
+            dataMap[rowIndex] = [];
+          }
+          dataMap[rowIndex].push(key);
+          
+          // Set "See more" for the last item in row 2 if there are more items
+          if (rowIndex === 2 && !isShowMore && itemIndex < filteredData.length - 1) {
+            newLastBucketIndeces[key] = { x: colIndex, y: rowIndex };
+          }
+          return;
+        }
+
+        // Original logic for when measurements are available
         if (lastTop === null || itemTop === lastTop) {
           currentRow.push(key);
-          // 1. make sure we're currently in the third row
           if (localYIndex === 2 && !isShowMore) {
-            // 2. make sure there's a next item
             const nextItem = filteredData[itemIndex + 1];
             if (nextItem) {
-              // 3. make sure the next item is in the NEXT row
               const nextItemKey = getKey(nextItem.label, type);
               const nextItemRect = measurementsRef.current[nextItemKey];
               const nextItemTop = nextItemRect?.top;
@@ -878,7 +898,6 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
             }
           }
         } else {
-          // If top position is different, start a new row
           localYIndex++;
           if (localYIndex > 2 && !isShowMore) return;
           yIndex++;
@@ -886,24 +905,21 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
           currentRow = [key];
         }
 
-        // Update lastTop and add current row to dataMap
         lastTop = itemTop || lastTop;
         dataMap[yIndex] = currentRow;
       });
 
-      // Process stack results
+      // Similar fallback logic for stack results...
       if (filteredGroupData && filteredGroupData.length > 0) {
         filteredGroupData.forEach((group) => {
           const isStackShowMore = showMore[`${group.label}::${type}`];
           
-          // Start a new row for each stack group
           yIndex++;
           dataMap[yIndex] = [];
           currentRow = [];
           lastTop = null;
           let localStackYIndex = 0;
 
-          // Process all stack options (no slicing here since container handles it)
           group.options.forEach((option, optionIndex) => {
             if (localStackYIndex > 2 && !isStackShowMore) {
               return;
@@ -913,12 +929,31 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
             const rect = measurementsRef.current[key];
             const itemTop = rect?.top;
 
-            // If this is the first item or has same top position as previous items, add to current row
+            // Fallback for stack results too
+            if (!rect) {
+              const itemsPerRow = 3;
+              const rowIndex = Math.floor(optionIndex / itemsPerRow);
+              const colIndex = optionIndex % itemsPerRow;
+              
+              if (rowIndex > 2 && !isStackShowMore) {
+                return;
+              }
+              
+              if (rowIndex >= dataMap.length) {
+                dataMap[rowIndex] = [];
+              }
+              dataMap[rowIndex].push(key);
+              
+              if (rowIndex === 2 && !isStackShowMore && optionIndex < group.options.length - 1) {
+                newLastBucketIndeces[key] = { x: colIndex, y: rowIndex };
+              }
+              return;
+            }
+
+            // Original stack logic...
             if (lastTop === null || itemTop === lastTop) {
               currentRow.push(key);
-              // Check if this should be the "See more" item (3rd row, not expanded, more items exist)
               if (localStackYIndex === 2 && !isStackShowMore) {
-                // Check if there's a next item that would be in the next row
                 const nextItem = group.options[optionIndex + 1];
                 if (nextItem) {
                   const nextItemKey = getKey(nextItem.label, `${group.label}::${type}`);
@@ -930,7 +965,6 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
                 }
               }
             } else {
-              // If top position is different, start a new row
               localStackYIndex++;
               if (localStackYIndex > 2 && !isStackShowMore) return;
               yIndex++;
@@ -938,7 +972,6 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
               currentRow = [key];
             }
 
-            // Update lastTop and add current row to dataMap
             lastTop = itemTop || lastTop;
             dataMap[yIndex] = currentRow;
           });
@@ -946,12 +979,9 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
       }
     });
 
-    // commit the built map
     setLastBucketIndeces(newLastBucketIndeces);
-
-    // filter out empty arrays
     return dataMap.filter(arr => arr.length > 0);
-  }, [allFilteredData, showMore, measurementsRef]);
+  }, [allFilteredData, showMore, measurementsRef, forceUpdate, getKey]);
 
 
   // Setup resize observer
@@ -1087,6 +1117,19 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
 
   const [groupRef, { height: groupHeight }] =
   useElementSizeObserver<HTMLDivElement>();
+
+  // In the Filters component, add a useEffect to recalculate layout after initial render
+  useEffect(() => {
+    // Force a recalculation of the layout after the initial render
+    if (memoizedQuery && allFilteredData.length > 0) {
+      // Use a small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        setForceUpdate(prev => prev + 1);
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [memoizedQuery, allFilteredData.length]); // Only run when query or data changes
 
   return (
     <div className="flex flex-col !pt-0 !pb-[0px] pl-[0px] pr-[0px] gap-y-[10px] max-h-[calc(100vh-220px)] overflow-y-auto">
@@ -1266,6 +1309,10 @@ const BucketItem = ({
         if (lastBucketIndeces[itemKey] && !showMore[bucket]) {
           if (!isApps) {
             setShowMore(prev => ({ ...prev, [bucket]: true }));
+            // Blur to remove focus rectangle on mouse click
+            if (e.currentTarget instanceof HTMLElement) {
+              e.currentTarget.blur();
+            }
           }
           return;
         }
