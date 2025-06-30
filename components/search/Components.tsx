@@ -537,7 +537,7 @@ export const useSearchBuckets = () => {
         const normalizedQuery = normalizeString(query || "");
         
         // Only search stacks if query is 3 characters or more
-        if (normalizedQuery.length < 1) {
+        if (normalizedQuery.length < 3) {
           return false;
         }
         
