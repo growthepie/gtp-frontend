@@ -762,8 +762,8 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                     maximumFractionDigits: 1
                   }).format(globalMetrics.total_tps || 0)}
                 </div>
-                <div className='numbers-xs flex items-center gap-x-0.5'><span className='text-xs'>Max (24h):</span>{globalMetrics.total_tps_24h_high || 0}</div>
-                <div className='numbers-xs flex items-center gap-x-0.5'><span className='text-xs'>ATH:</span>{globalMetrics.total_tps_ath || 0}</div>
+                <div className='numbers-xs flex items-center gap-x-0.5'><span className='text-xs'>Max (24h):</span>{globalMetrics.total_tps_24h_high || 0} TPS</div>
+                <div className='numbers-xs flex items-center gap-x-0.5'><span className='text-xs'>ATH:</span>{globalMetrics.total_tps_ath || 0} TPS</div>
               </div>
 
               <div className={`w-full -mt-[5px]`}>
