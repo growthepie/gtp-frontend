@@ -25,6 +25,19 @@ const COLORS = {
   ANNOTATION_BG: "rgb(215, 223, 222)",
 };
 
+const XAxisLabels = ({ xMin, xMax, isColumnChart }: { xMin: number, xMax: number, isColumnChart: boolean }) => {
+  return (
+    <div className={`absolute bottom-0 left-0 right-0 flex w-full justify-between items-center pl-[15px] pr-[34px]  opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 pointer-events-none`}>      
+      <div className='text-xxs flex gap-x-[2px] items-center bg-[#34424080] rounded-full px-[5px] py-[2px]'><div className='w-[6px] rounded-full h-[6px] bg-[#CDD8D3]' />{new Date(xMin).toLocaleDateString("en-GB", {
+        year: "numeric",
+      })}</div>
+      <div className='text-xxs flex gap-x-[2px] items-center bg-[#34424080] rounded-full px-[5px] py-[2px]'>{new Date(xMax).toLocaleDateString("en-GB", {
+        year: "numeric",
+      })}<div className='w-[6px] rounded-full h-[6px] bg-[#CDD8D3]' /></div>
+    </div>
+  )
+}
+
 
 // --- Helper Functions (can be in this file or a utils file) ---
 function formatNumber(number: number, decimals = 2): string {
@@ -78,7 +91,8 @@ export function AggChart({
 
   // The rest of the component remains largely the same, but it now uses the internally calculated values.
   const lastPointLines = useRef<{ [key: string]: Highcharts.SVGElement[] }>({}).current;
-  const onRender = useMemo(() => createChartOnRender(lastPointLines, uniqueId), [lastPointLines, uniqueId]);
+  const isColumnChart = seriesConfigs.some(config => config.type === 'column');
+  const onRender = useMemo(() => createChartOnRender(lastPointLines, uniqueId, isColumnChart), [lastPointLines, uniqueId, isColumnChart]);
   // Memoize the tooltip formatter
   const tooltipFormatter = useMemo(() => createTooltipFormatter(prefix), [prefix]);
 
@@ -191,6 +205,7 @@ export function AggChart({
               height={380}
               spacing={[0, 0, 0, 0]}
               {...CHART_MARGINS}
+            
               onRender={onRender}
               animation={false}
             />
@@ -205,6 +220,7 @@ export function AggChart({
               }}
               min={xAxisMin}
               max={xAxisMax}
+              
             />
             <YAxis
               opposite={false}
@@ -403,41 +419,7 @@ export function AggChart({
         </HighchartsProvider>
       </div>
       {/* Custom X-Axis Timeline (This could also be its own component later) */}
-      <div className='absolute bottom-0 left-0 right-0 flex items-center px-[33px] opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 pointer-events-none'>
-        <div className='w-full h-[22px] bg-[#34424080] flex items-center rounded-t-[15px] px-[7px]'>
-          <div className={`flex items-center  text-xs gap-x-[2px] flex-1`}>
-            <div className='min-w-[6px] min-h-[6px] mt-0.5 bg-[#CDD8D3] rounded-full'></div>
-            <div className='text-xs'>{new Date(xAxisExtremes.xMin + 43 * (xAxisExtremes.xMax - xAxisExtremes.xMin) / (chartContainerWidth - 44)).toLocaleDateString("en-GB", {
-              year: "numeric",
-            })}
-            </div>
-            <div className=' w-full h-[1px] bg-[#344240]' />
-          </div>
-          {Array.from({ length: 2 }, (_, i) => (
-            <div key={i} className={`flex  flex-1 items-center  text-xs gap-x-[2px]  `}>
-              <div className={`${i < 1 ? "w-[6px] h-[6px]" : "w-0 h-0"}  mt-0.5 bg-[#CDD8D3] rounded-full`}></div>
-              <div className='text-xs'>{new Date((xAxisExtremes.xMin + ((xAxisExtremes.xMax - xAxisExtremes.xMin) / 3) * (i + 1)) * ((chartContainerWidth - 44) / chartContainerWidth)).toLocaleDateString("en-GB", {
-
-                year: "numeric",
-              })}</div>
-              <div className={`${i >= 1 ? "min-w-[6px] min-h-[6px]" : "w-0 h-0"}  mt-0.5 bg-[#CDD8D3] rounded-full`}></div>
-
-              <div className=' w-full h-[1px] bg-[#344240]' />
-
-
-
-
-            </div>
-          ))}
-          <div className={`flex items-center flex-row-reverse text-xs gap-x-[2px] `}>
-            <div className='min-w-[6px] min-h-[6px] mt-0.5 bg-[#CDD8D3] rounded-full'></div>
-            <div className='text-xs'>{new Date(xAxisExtremes.xMax).toLocaleDateString("en-GB", {
-
-              year: "numeric",
-            })}</div>
-          </div>
-        </div>
-      </div>
+      <XAxisLabels xMin={xAxisExtremes.xMin} xMax={xAxisExtremes.xMax} isColumnChart={isColumnChart} />
     </div>
   );
 }

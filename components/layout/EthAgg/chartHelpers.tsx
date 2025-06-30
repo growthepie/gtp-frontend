@@ -13,7 +13,8 @@ export const CHART_MARGINS = {
 // This helps manage state (like lastPointLines) outside the component's render cycle.
 export const createChartOnRender = (
   lastPointLines: { [key: string]: Highcharts.SVGElement[] },
-  uniqueChartId: string
+  uniqueChartId: string,
+  isColumnChart: boolean
 ) => {
   return function (this: Highcharts.Chart) {
     const chart = this;
