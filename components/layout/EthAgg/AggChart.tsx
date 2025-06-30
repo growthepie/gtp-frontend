@@ -1,10 +1,10 @@
 // components/layout/EthAgg/DashboardChart.tsx
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import ReactECharts from 'echarts-for-react';
 import * as echarts from 'echarts';
 import { useId } from 'react';
 import { ChartWatermarkWithMetricName } from '../ChartWatermark';
-import { useLocalStorage } from 'usehooks-ts';
+import { useLocalStorage, useResizeObserver } from 'usehooks-ts';
 import { useElementSizeObserver } from '@/hooks/useElementSizeObserver';
 import { useMaster } from '@/contexts/MasterContext';
 import { AggChartProps } from './MetricsCharts';
@@ -19,6 +19,9 @@ const COLORS = {
   TOOLTIP_BG: "#1b2135",
   ANNOTATION_BG: "rgb(215, 223, 222)",
 };
+
+
+
 
 const XAxisLabels = React.memo(({ xMin, xMax }: { xMin: number, xMax: number }) => (
   <div className="absolute bottom-0 left-0 right-0 flex w-full justify-between items-center pl-[15px] pr-[34px] opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 pointer-events-none">      
@@ -96,6 +99,29 @@ export function AggChart({
   const { AllChainsByKeys } = useMaster();
   const [showUsd] = useLocalStorage("showUsd", true);
   const chartRef = useRef<ReactECharts>(null);
+  const circleRef = useRef<HTMLDivElement>(null);
+  const mainContainerRef = useRef<HTMLDivElement>(null);
+  const { width: containerWidth, height: containerHeight } = useResizeObserver({
+    ref: mainContainerRef,
+    box: 'border-box',
+  });
+  
+  // Debounced dimensions to allow chart to finish readjusting
+  const [debouncedDimensions, setDebouncedDimensions] = useState({ 
+    width: containerWidth, 
+    height: containerHeight 
+  });
+  const [isDebouncing, setIsDebouncing] = useState(false);
+  
+  useEffect(() => {
+    setIsDebouncing(true);
+    const timeout = setTimeout(() => {
+      setDebouncedDimensions({ width: containerWidth, height: containerHeight });
+      setIsDebouncing(false);
+    }, 150); // 150ms delay to allow chart to finish adjusting
+    
+    return () => clearTimeout(timeout);
+  }, [containerWidth, containerHeight]);
 
   const { totalValue, shareValue, seriesData, categories, xAxisMin, xAxisMax } = useMemo(() => {
     const total = totalValueExtractor(dataSource, showUsd);
@@ -126,6 +152,66 @@ export function AggChart({
     };
   }, [dataSource, seriesConfigs, showUsd, totalValueExtractor, shareValueExtractor]);
 
+  // Function to get pixel coordinates from data values
+  const getPixelCoordinates = useCallback((seriesIndex: number, dataIndex: number) => {
+    const chartInstance = chartRef.current?.getEchartsInstance();
+    if (!chartInstance) return null;
+    
+    // Convert data coordinates to pixel coordinates
+    const pixelCoords = chartInstance.convertToPixel('grid', [dataIndex, seriesData[seriesIndex]?.[dataIndex]]);
+    return pixelCoords; // Returns [x, y] in pixels
+  }, [seriesData]);
+
+  // Function to get data coordinates from pixel coordinates
+  const getDataCoordinates = useCallback((x: number, y: number) => {
+    const chartInstance = chartRef.current?.getEchartsInstance();
+    if (!chartInstance) return null;
+    
+    // Convert pixel coordinates to data coordinates
+    const dataCoords = chartInstance.convertFromPixel('grid', [x, y]);
+    return dataCoords; // Returns [categoryIndex, value]
+  }, []);
+
+    
+  const lastDataPointPixelCoords = useMemo(() => {
+    if (!seriesData || seriesData.length === 0 || !categories || categories.length === 0) return null;
+
+    const chartInstance = chartRef.current?.getEchartsInstance();
+    const circleElement = circleRef.current;
+    if (!chartInstance || !circleElement) return null;
+    
+    // Get the last data point index (rightmost on x-axis)
+    const lastDataIndex = categories.length - 1;
+    
+    // Calculate the stacked/cumulative value at the last data point
+    // This gives us the topmost visual point of the stack
+    let stackedValue = 0;
+    seriesData.forEach((series) => {
+      const value = series[lastDataIndex];
+      if (value != null && value > 0) {
+        stackedValue += value;
+      }
+    });
+    
+    if (stackedValue === 0) return null;
+    
+    // Convert data coordinates to pixel coordinates
+    const pixelCoords = chartInstance.convertToPixel('grid', [lastDataIndex, stackedValue]);
+    
+    // Get circle position relative to chart container
+    const circleRect = circleElement.getBoundingClientRect();
+    const chartContainer = chartRef.current?.ele;
+    if (!chartContainer) return pixelCoords;
+    
+    const chartRect = chartContainer.getBoundingClientRect();
+    const circleY = circleRect.top + circleRect.height / 2 - chartRect.top;
+    
+    return [...pixelCoords, circleY]; // Returns [x, y, circleY] in pixels
+  }, [seriesData, categories, debouncedDimensions.width, debouncedDimensions.height]); 
+
+  
+
+
   const isColumnChart = useMemo(() => 
     seriesConfigs.some(config => config.type === 'column'), 
     [seriesConfigs]
@@ -143,6 +229,142 @@ export function AggChart({
     [showUsd, prefix]
   );
 
+  
+
+  // Advanced tooltip formatter similar to Highcharts version
+  const createEchartsTooltipFormatter = useCallback((options: {
+    maxPointsToShow?: number;
+    enableTotal?: boolean;
+  } = {}) => {
+    const { maxPointsToShow = 10, enableTotal = false } = options;
+    const SERIES_COLORS = {
+      "Total L2s": "#1DF7EF", 
+      "Ethereum Mainnet": AllChainsByKeys["ethereum"]?.colors.dark[0],
+      "Layer 2s": AllChainsByKeys["all_l2s"]?.colors.dark[0],
+    }
+    return (params: any[]) => {
+      if (!params?.length) return '';
+      
+      // Format the date for the header
+      const date = new Date(params[0].axisValueLabel);
+      const dateStr = date.toLocaleDateString("en-GB", {
+        year: "numeric", month: "short", day: "numeric"
+      });
+
+     
+      // Sort points by value (highest first)
+      const sortedParams = [...params]
+        .filter(param => param.value != null)
+        .sort((a, b) => b.value - a.value);
+      
+      const visibleParams = sortedParams.slice(0, maxPointsToShow);
+      const restParams = sortedParams.slice(maxPointsToShow);
+      
+     
+      // Calculate max value for bar scaling
+      const maxValue = Math.max(...sortedParams.map(param => param.value));
+      
+      // Start building tooltip
+      let tooltip = `
+        <div class="mt-2 mr-2 mb-3 -ml-2.5 min-w-60 text-xs font-raleway">
+          <div class="flex-1 heading-small-xs ml-6 mb-2">${dateStr}</div>
+      `;
+
+      // Add visible points
+      visibleParams.forEach(param => {
+        // Type guard to check if dataSource has daily property (CountLayer2s type)
+        const hasDaily = 'daily' in dataSource && dataSource.daily;
+
+                 let layer2Index = param.seriesName === "Total L2s" && hasDaily 
+           ? dataSource.daily.values.findIndex(data => {
+             
+             return new Date(data[dataSource.daily.types.indexOf("unix")]).toISOString().split('T')[0] === params[0].axisValueLabel
+           })       
+           
+           : null;
+         const barWidth = maxValue > 0 ? (param.value / maxValue) * 100 : 0;
+         const layer2Data = param.seriesName === "Total L2s" && hasDaily && layer2Index !== null && layer2Index >= 0
+           ? dataSource.daily.values[layer2Index][dataSource.daily.types.indexOf("l2s_launched")]
+           : null;
+        
+                tooltip += `
+          <div class="flex w-full h-[15px] space-x-2 items-center font-medium mb-0.5">
+            <div class="w-[15px] h-[10px] rounded-r-full relative overflow-hidden" style="background-color: ${SERIES_COLORS[param.seriesName]};">
+              <div class="h-full rounded-r-full" style="background-color: ${param.color}; width: ${barWidth}%;"></div>
+            </div>
+            <div class="text-xs flex-1 text-left">${param.seriesName}</div>
+            <div class="text-right numbers-xs">${Intl.NumberFormat('en-US', { notation: 'standard', maximumFractionDigits: 2 }).format(param.value)}</div>
+          </div>
+        `;
+        
+        // Add additional layer2 info if available
+        if (layer2Data && Array.isArray(layer2Data) && layer2Data.length > 0) {
+          layer2Data.forEach((l2Item, index) => {
+           
+            const l2Name = l2Item.l2beat_name;
+            tooltip += `
+              <div class="flex w-full h-[15px] space-x-2 items-center font-medium mb-0.5 opacity-80">
+                <div class="w-[15px] h-[10px] rounded-r-full relative overflow-hidden" style="background-color: transparent;">
+                  <div class="h-full rounded-r-full" style="background-color: transparent; width: 50%;"></div>
+                </div>
+                <div class="text-xs flex-1 text-left">${l2Name}</div>
+             
+              </div>
+            `;
+          });
+        } else if (layer2Data && typeof layer2Data === 'number' && layer2Data > 0) {
+          // Fallback for when layer2Data is just a count
+          tooltip += `
+            <div class="flex w-full h-[15px] space-x-2 items-center font-medium mb-0.5 opacity-80">
+              <div class="w-[15px] h-[10px] rounded-r-full relative overflow-hidden" style="background-color: ${SERIES_COLORS[param.seriesName]};">
+                <div class="h-full rounded-r-full" style="background-color: ${param.color}; width: 50%;"></div>
+              </div>
+              <div class="text-xs flex-1 text-left">L2s Launched</div>
+              <div class="text-right numbers-xs">${layer2Data}</div>
+            </div>
+          `;
+        }
+        
+      });
+      
+      // Add "Others" row if necessary
+      if (restParams.length > 0) {
+        const othersTotal = restParams.reduce((sum, param) => sum + param.value, 0);
+        const othersValue = formatNumberCallback(othersTotal);
+        const othersBarWidth = maxValue > 0 ? (othersTotal / maxValue) * 100 : 0;
+        
+        tooltip += `
+          <div class="flex w-full h-[15px] space-x-2 items-center font-medium mb-0.5 opacity-70">
+            <div class="w-4 h-1.5 rounded-r-full relative overflow-hidden" style="background-color: #94a3b820;">
+              <div class="h-full rounded-r-full" style="background-color: #94a3b8; width: ${othersBarWidth}%;"></div>
+            </div>
+            <div class="tooltip-point-name flex-1 text-left">Others (${restParams.length})</div>
+            <div class="text-right numbers-xs">${othersValue}</div>
+          </div>
+        `;
+      }
+
+     
+      
+      // Add total if enabled and multiple series
+      if (enableTotal && visibleParams.length > 1) {
+        const totalValue = visibleParams.reduce((sum, param) => sum + param.value, 0);
+        const totalFormatted = formatNumberCallback(totalValue);
+        
+        tooltip += `
+          <div class="flex w-full h-[15px] mt-[5px] space-x-2 items-center font-medium mb-0.5 border-t border-gray-600 pt-1">
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: transparent;"></div>
+            <div class="tooltip-point-name flex-1 text-left font-bold">Total</div>
+            <div class="text-right numbers-xs font-bold">${totalFormatted}</div>
+          </div>
+        `;
+      }
+      
+      tooltip += `</div>`;
+      return tooltip;
+    };
+  }, [formatNumberCallback]);
+
   // Memoized ECharts option configuration
   const option = useMemo(() => {
     const series = seriesConfigs.map((config, index) => {
@@ -155,7 +377,7 @@ export function AggChart({
         stack: config.stacking,
         smooth: true,
         symbol: 'circle',
-        symbolSize: 0,
+        symbolSize: 12,
         lineStyle: { width: 1.5 },
         itemStyle: {
           color: config.type === 'column' 
@@ -169,10 +391,12 @@ export function AggChart({
               ])
         },
         emphasis: {
-          focus: 'series',
+          symbolSize: 8,
+          symbol: 'circle',
           itemStyle: {
-            shadowBlur: 5,
-            shadowColor: colors[1] + "CC",
+            color: colors[1] + "80", // Series color with 50% opacity
+            borderWidth: 0,
+            shadowBlur: 0,
           }
         }
       };
@@ -196,7 +420,7 @@ export function AggChart({
     return {
       animation: false,
       backgroundColor: 'transparent',
-      grid: { left: 15, right: 34, top: 20, bottom: 40 },
+      grid: { left: 0, right: 42, top: 20, bottom: 0 },
       xAxis: {
         type: 'category',
         data: categories || [],
@@ -207,7 +431,7 @@ export function AggChart({
       },
       yAxis: {
         type: 'value',
-        splitNumber: 4,
+        splitNumber: 3,
         axisLine: { show: false },
         axisTick: { show: false },
         splitLine: {
@@ -216,11 +440,14 @@ export function AggChart({
         },
         axisLabel: {
           show: true,
-          margin: 5,
+          margin: -1,
+          padding: [3, 0, 0, 0],
           color: '#CDD8D3',
           fontSize: 9,
           fontWeight: 500,
-          fontFamily: 'var(--font-raleway), sans-serif',
+          fontFamily: 'Raleway, sans-serif',
+          align: 'left',
+          verticalAlign: 'top',
           formatter: formatNumberCallback,
         }
       },
@@ -233,38 +460,18 @@ export function AggChart({
         textStyle: { color: 'rgb(215, 223, 222)', fontSize: 12 },
         axisPointer: {
           type: 'line',
-          lineStyle: { color: COLORS.PLOT_LINE, width: 0.5 }
+          lineStyle: { color: COLORS.PLOT_LINE, width: 1, type: 'solid' }
         },
-        formatter: (params: any) => {
-          if (!params?.length) return '';
-          
-          const date = new Date(params[0].axisValueLabel);
-          const dateStr = date.toLocaleDateString("en-GB", {
-            year: "numeric", month: "short", day: "numeric"
-          });
-          
-          let content = `<div style="margin-bottom: 5px; font-weight: bold;">${dateStr}</div>`;
-          
-          params.forEach((param: any) => {
-            if (param.value != null) {
-              const value = formatNumberCallback(param.value);
-              content += `
-                <div style="display: flex; align-items: center; margin: 2px 0;">
-                  <span style="display: inline-block; width: 10px; height: 10px; background: ${param.color}; border-radius: 50%; margin-right: 8px;"></span>
-                  <span>${param.seriesName}: ${value}</span>
-                </div>
-              `;
-            }
-          });
-          
-          return content;
-        }
+        formatter: createEchartsTooltipFormatter({
+          maxPointsToShow: 10,
+          enableTotal: false
+        })
       }
     };
   }, [seriesConfigs, seriesData, categories, AllChainsByKeys, chartContainerWidth, formatNumberCallback]);
 
   return (
-    <div className='group/chart flex flex-col relative rounded-[15px] w-full h-[375px] bg-[#1F2726] pt-[15px] overflow-hidden'>
+    <div ref={mainContainerRef} className='group/chart flex flex-col relative rounded-[15px] w-full h-[375px] bg-[#1F2726] pt-[15px] overflow-hidden'>
       {/* Header */}
       <div className='flex h-[56px] px-[34px] items-start w-full'>
         <div className='flex gap-x-[10px] items-center z-[10]'>
@@ -289,7 +496,7 @@ export function AggChart({
         <div className='flex flex-col h-full items-end pt-[5px] w-full'>
           <div className='flex items-center gap-x-[5px]'>
             <div className='numbers-xl bg-gradient-to-b bg-[#CDD8D3] bg-clip-text text-transparent'>{totalValue}</div>
-            <div className='w-[16px] h-[16px] rounded-full z-chart bg-[#CDD8D3]' />
+            <div ref={circleRef} className='w-[16px] h-[16px] rounded-full z-chart bg-[#CDD8D3]' />
           </div>
           {shareValue && (
             <div className='flex items-center gap-x-[5px]'>
@@ -306,21 +513,33 @@ export function AggChart({
       </div>
       
       {/* ECharts Chart */}
-      <div className='w-full absolute bottom-0' ref={chartContainerRef}>
+      <div className='w-full absolute bottom-0 left-0 right-0' style={{ height: '304px' }} ref={chartContainerRef}>
         <ReactECharts
           ref={chartRef}
           option={option}
-          style={{ height: '380px', width: '100%' }}
+          style={{ height: '100%', width: '100%' }}
           opts={{ 
             renderer: 'canvas',
             width: chartContainerWidth || undefined,
-            height: 380 
+            height: 304,
           }}
           notMerge={true}
           lazyUpdate={true}
         />
       </div>
-      
+  
+      {lastDataPointPixelCoords && lastDataPointPixelCoords.length === 3 && !isDebouncing && (
+        <div 
+          className='absolute w-[1px] bg-[#CDD8D3] pointer-events-none z-10' 
+          style={{ 
+            left: `${lastDataPointPixelCoords[0]}px`,
+            bottom: `${304 - lastDataPointPixelCoords[1]}px`,
+            height: `${lastDataPointPixelCoords[1] - lastDataPointPixelCoords[2]}px`,
+            transform: 'translateX(-50%)'
+          }}
+        />
+      )}
+
       {/* Custom X-Axis Timeline */}
       <XAxisLabels xMin={xAxisExtremes.xMin} xMax={xAxisExtremes.xMax} />
     </div>
