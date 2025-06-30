@@ -1,16 +1,11 @@
 // components/layout/EthAgg/DashboardChart.tsx
 import React, { useCallback, useMemo, useRef } from 'react';
-import { HighchartsProvider, HighchartsChart, Chart, XAxis, YAxis, Series, Tooltip, ColumnSeries } from 'react-jsx-highcharts';
-import Highcharts from 'highcharts';
+import ReactECharts from 'echarts-for-react';
+import * as echarts from 'echarts';
 import { useId } from 'react';
 import { ChartWatermarkWithMetricName } from '../ChartWatermark';
-import { CHART_MARGINS, createChartOnRender, createTooltipFormatter } from './chartHelpers';
-import { Gdp, Stables, CountLayer2s, Tps } from '@/types/api/EthAggResponse';
-import * as d3 from 'd3';
-import "@/app/highcharts.axis.css";
 import { useLocalStorage } from 'usehooks-ts';
 import { useElementSizeObserver } from '@/hooks/useElementSizeObserver';
-import { tooltipPositioner } from '@/lib/chartUtils';
 import { useMaster } from '@/contexts/MasterContext';
 import { AggChartProps } from './MetricsCharts';
 import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
@@ -25,30 +20,68 @@ const COLORS = {
   ANNOTATION_BG: "rgb(215, 223, 222)",
 };
 
-const XAxisLabels = ({ xMin, xMax, isColumnChart }: { xMin: number, xMax: number, isColumnChart: boolean }) => {
-  return (
-    <div className={`absolute bottom-0 left-0 right-0 flex w-full justify-between items-center pl-[15px] pr-[34px]  opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 pointer-events-none`}>      
-      <div className='text-xxs flex gap-x-[2px] items-center bg-[#34424080] rounded-full px-[5px] py-[2px]'><div className='w-[6px] rounded-full h-[6px] bg-[#CDD8D3]' />{new Date(xMin).toLocaleDateString("en-GB", {
-        year: "numeric",
-      })}</div>
-      <div className='text-xxs flex gap-x-[2px] items-center bg-[#34424080] rounded-full px-[5px] py-[2px]'>{new Date(xMax).toLocaleDateString("en-GB", {
-        year: "numeric",
-      })}<div className='w-[6px] rounded-full h-[6px] bg-[#CDD8D3]' /></div>
+const XAxisLabels = React.memo(({ xMin, xMax }: { xMin: number, xMax: number }) => (
+  <div className="absolute bottom-0 left-0 right-0 flex w-full justify-between items-center pl-[15px] pr-[34px] opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 pointer-events-none">      
+    <div className='text-xxs flex gap-x-[2px] items-center bg-[#34424080] rounded-full px-[5px] py-[2px]'>
+      <div className='w-[6px] rounded-full h-[6px] bg-[#CDD8D3]' />
+      {new Date(xMin).getFullYear()}
     </div>
-  )
-}
+    <div className='text-xxs flex gap-x-[2px] items-center bg-[#34424080] rounded-full px-[5px] py-[2px]'>
+      {new Date(xMax).getFullYear()}
+      <div className='w-[6px] rounded-full h-[6px] bg-[#CDD8D3]' />
+    </div>
+  </div>
+));
 
-
-// --- Helper Functions (can be in this file or a utils file) ---
-function formatNumber(number: number, decimals = 2): string {
+// Optimized number formatting function
+const formatNumber = (number: number, prefix = "", showUsd = true): string => {
   if (number === 0) return "0";
-  if (Math.abs(number) >= 1e12) return (number / 1e12).toFixed(decimals) + "T";
-  if (Math.abs(number) >= 1e9) return (number / 1e9).toFixed(decimals) + "B";
-  if (Math.abs(number) >= 1e6) return (number / 1e6).toFixed(decimals) + "M";
-  if (Math.abs(number) >= 1e3) return (number / 1e3).toFixed(decimals) + "k";
-  return number.toFixed(decimals);
-}
+  
+  const absNumber = Math.abs(number);
+  let formatted: string;
+  
+  if (absNumber >= 1e12) formatted = (number / 1e12).toFixed(2) + "T";
+  else if (absNumber >= 1e9) formatted = (number / 1e9).toFixed(2) + "B";
+  else if (absNumber >= 1e6) formatted = (number / 1e6).toFixed(2) + "M";
+  else if (absNumber >= 1e3) formatted = (number / 1e3).toFixed(2) + "k";
+  else formatted = number.toFixed(2);
 
+  return prefix + formatted;
+};
+
+// Optimized data processing functions
+const extractCategories = (seriesData: [number, number][][]): string[] => {
+  const timestampSet = new Set<number>();
+  seriesData.forEach(series => {
+    series.forEach(([timestamp]) => timestampSet.add(timestamp));
+  });
+  
+  return Array.from(timestampSet)
+    .sort((a, b) => a - b)
+    .map(timestamp => {
+      const date = timestamp > 1e10 ? new Date(timestamp) : new Date(timestamp * 1000);
+      return date.toISOString().split('T')[0];
+    });
+};
+
+const alignDataForStacking = (seriesData: [number, number][][], categories: string[]): number[][] => {
+  const timestampToIndex = new Map(
+    categories.map((category, index) => [category, index])
+  );
+  
+  return seriesData.map(series => {
+    const alignedData = new Array(categories.length).fill(null);
+    series.forEach(([timestamp, value]) => {
+      const date = timestamp > 1e10 ? new Date(timestamp) : new Date(timestamp * 1000);
+      const formattedDate = date.toISOString().split('T')[0];
+      const index = timestampToIndex.get(formattedDate);
+      if (index !== undefined) {
+        alignedData[index] = value;
+      }
+    });
+    return alignedData;
+  });
+};
 
 export function AggChart({
   title,
@@ -62,16 +95,16 @@ export function AggChart({
   const uniqueId = useId();
   const { AllChainsByKeys } = useMaster();
   const [showUsd] = useLocalStorage("showUsd", true);
+  const chartRef = useRef<ReactECharts>(null);
 
-  // --- INTERNAL CALCULATION USING CONFIGS ---
-  const { totalValue, shareValue, seriesData, xAxisMin, xAxisMax } = useMemo(() => {
+  const { totalValue, shareValue, seriesData, categories, xAxisMin, xAxisMax } = useMemo(() => {
     const total = totalValueExtractor(dataSource, showUsd);
-    const share = shareValueExtractor ? shareValueExtractor(dataSource, showUsd) : undefined;
+    const share = shareValueExtractor?.(dataSource, showUsd);
 
     let minX = Infinity;
     let maxX = -Infinity;
 
-    const dataForSeries = seriesConfigs.map(config => {
+    const rawSeriesData = seriesConfigs.map(config => {
       const dataPoints = config.dataExtractor(dataSource, showUsd);
       if (dataPoints.length > 0) {
         minX = Math.min(minX, dataPoints[0][0]);
@@ -80,69 +113,155 @@ export function AggChart({
       return dataPoints;
     });
 
+    const categories = extractCategories(rawSeriesData);
+    const alignedData = alignDataForStacking(rawSeriesData, categories);
+
     return {
       totalValue: total,
       shareValue: share,
-      seriesData: dataForSeries,
+      seriesData: alignedData,
+      categories,
       xAxisMin: isFinite(minX) ? minX : null,
       xAxisMax: isFinite(maxX) ? maxX : Date.now(),
     };
   }, [dataSource, seriesConfigs, showUsd, totalValueExtractor, shareValueExtractor]);
 
-  // The rest of the component remains largely the same, but it now uses the internally calculated values.
-  const lastPointLines = useRef<{ [key: string]: Highcharts.SVGElement[] }>({}).current;
-  const isColumnChart = seriesConfigs.some(config => config.type === 'column');
-  const onRender = useMemo(() => createChartOnRender(lastPointLines, uniqueId, isColumnChart), [lastPointLines, uniqueId, isColumnChart]);
-  // Memoize the tooltip formatter
-  const tooltipFormatter = useMemo(() => createTooltipFormatter(prefix), [prefix]);
-
-  const [chartContainerRef, { width: chartContainerWidth }] =
-    useElementSizeObserver<HTMLDivElement>();
-
-  const xAxisExtremes = useMemo(() => {
-    const xMin = xAxisMin !== null ? xAxisMin : (seriesData[0]?.values[0]?.[0] || 0);
-    const xMax = xAxisMax || (seriesData[0]?.values[seriesData[0].values.length - 1]?.[0] || Date.now());
-    return { xMin, xMax };
-  }, [xAxisMin, xAxisMax, seriesData]);
-
-
-  const formatNumberOther = useCallback(
-    (value: number | string) => {
-      let val = parseFloat(value as string);
-
-      // Function to format large numbers with at least 2 decimals
-      const formatLargeNumber = (num) => {
-        let formatted = d3.format(".2s")(num).replace(/G/, "B");
-        if (/(\.\dK|\.\dM|\.\dB)$/.test(formatted)) {
-          formatted = d3.format(".3s")(num).replace(/G/, "B");
-        } else if (/(\.\d\dK|\.\d\dM|\.\d\dB)$/.test(formatted)) {
-          formatted = d3.format(".4s")(num).replace(/G/, "B");
-        } else {
-          formatted = d3.format(".2s")(num).replace(/G/, "B");
-        }
-        return formatted;
-      };
-
-      let number = formatLargeNumber(val);
-      if (prefix !== "") {
-        if (showUsd) {
-          if (val < 1) {
-            number = prefix + val.toFixed(2);
-          } else {
-            number = prefix + formatLargeNumber(val);
-          }
-        } else {
-          number = prefix + formatLargeNumber(val);
-        }
-      } else {
-        number = number;
-      }
-
-      return number;
-    },
-    [showUsd],
+  const isColumnChart = useMemo(() => 
+    seriesConfigs.some(config => config.type === 'column'), 
+    [seriesConfigs]
   );
 
+  const [chartContainerRef, { width: chartContainerWidth }] = useElementSizeObserver<HTMLDivElement>();
+
+  const xAxisExtremes = useMemo(() => ({
+    xMin: xAxisMin ?? 0,
+    xMax: xAxisMax ?? Date.now()
+  }), [xAxisMin, xAxisMax]);
+
+  const formatNumberCallback = useCallback(
+    (value: number | string) => formatNumber(parseFloat(value as string), prefix, showUsd),
+    [showUsd, prefix]
+  );
+
+  // Memoized ECharts option configuration
+  const option = useMemo(() => {
+    const series = seriesConfigs.map((config, index) => {
+      const colors = AllChainsByKeys[config.key]?.colors.dark ?? ["#10808C", "#1DF7EF"];
+      
+      const baseConfig: any = {
+        name: config.name,
+        type: config.type === 'column' ? 'bar' : 'line',
+        data: seriesData[index] || [],
+        stack: config.stacking,
+        smooth: true,
+        symbol: 'circle',
+        symbolSize: 0,
+        lineStyle: { width: 1.5 },
+        itemStyle: {
+          color: config.type === 'column' 
+            ? new echarts.graphic.LinearGradient(0, 1, 0, 0, [
+                { offset: 0, color: colors[0] },
+                { offset: 1, color: colors[1] }
+              ])
+            : new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                { offset: 0, color: colors[0] + "CC" },
+                { offset: 1, color: colors[1] + "CC" }
+              ])
+        },
+        emphasis: {
+          focus: 'series',
+          itemStyle: {
+            shadowBlur: 5,
+            shadowColor: colors[1] + "CC",
+          }
+        }
+      };
+
+      if (config.type !== 'column') {
+        baseConfig.areaStyle = {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: colors[1] + "33" },
+            { offset: 1, color: colors[0] + "33" }
+          ])
+        };
+      }
+
+      if (config.type === 'column' && chartContainerWidth) {
+        baseConfig.barWidth = (chartContainerWidth - 44) / (categories?.length || 1) * 0.7;
+      }
+
+      return baseConfig;
+    });
+
+    return {
+      animation: false,
+      backgroundColor: 'transparent',
+      grid: { left: 15, right: 34, top: 20, bottom: 40 },
+      xAxis: {
+        type: 'category',
+        data: categories || [],
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: { show: false },
+        splitLine: { show: false },
+      },
+      yAxis: {
+        type: 'value',
+        splitNumber: 4,
+        axisLine: { show: false },
+        axisTick: { show: false },
+        splitLine: {
+          show: true,
+          lineStyle: { color: '#5A64624F', width: 1 }
+        },
+        axisLabel: {
+          show: true,
+          margin: 5,
+          color: '#CDD8D3',
+          fontSize: 9,
+          fontWeight: 500,
+          fontFamily: 'var(--font-raleway), sans-serif',
+          formatter: formatNumberCallback,
+        }
+      },
+      series,
+      tooltip: {
+        trigger: 'axis',
+        backgroundColor: '#2A3433EE',
+        borderWidth: 0,
+        borderRadius: 17,
+        textStyle: { color: 'rgb(215, 223, 222)', fontSize: 12 },
+        axisPointer: {
+          type: 'line',
+          lineStyle: { color: COLORS.PLOT_LINE, width: 0.5 }
+        },
+        formatter: (params: any) => {
+          if (!params?.length) return '';
+          
+          const date = new Date(params[0].axisValueLabel);
+          const dateStr = date.toLocaleDateString("en-GB", {
+            year: "numeric", month: "short", day: "numeric"
+          });
+          
+          let content = `<div style="margin-bottom: 5px; font-weight: bold;">${dateStr}</div>`;
+          
+          params.forEach((param: any) => {
+            if (param.value != null) {
+              const value = formatNumberCallback(param.value);
+              content += `
+                <div style="display: flex; align-items: center; margin: 2px 0;">
+                  <span style="display: inline-block; width: 10px; height: 10px; background: ${param.color}; border-radius: 50%; margin-right: 8px;"></span>
+                  <span>${param.seriesName}: ${value}</span>
+                </div>
+              `;
+            }
+          });
+          
+          return content;
+        }
+      }
+    };
+  }, [seriesConfigs, seriesData, categories, AllChainsByKeys, chartContainerWidth, formatNumberCallback]);
 
   return (
     <div className='group/chart flex flex-col relative rounded-[15px] w-full h-[375px] bg-[#1F2726] pt-[15px] overflow-hidden'>
@@ -185,241 +304,25 @@ export function AggChart({
       <div className="absolute bottom-[40.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-20">
         <ChartWatermarkWithMetricName className="w-[128.67px] h-[36px] md:w-[193px] md:h-[58px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten z-30" metricName={title} />
       </div>
+      
+      {/* ECharts Chart */}
       <div className='w-full absolute bottom-0' ref={chartContainerRef}>
-        <HighchartsProvider Highcharts={Highcharts}>
-          <HighchartsChart
-            plotOptions={{
-              series: {
-                zIndex: 10,
-                animation: false,
-                marker: {
-                  lineColor: "white",
-                  radius: 0,
-                  symbol: "circle",
-                },
-              },
-            }}
-          >
-            <Chart
-              backgroundColor={"transparent"}
-              height={380}
-              spacing={[0, 0, 0, 0]}
-              {...CHART_MARGINS}
-            
-              onRender={onRender}
-              animation={false}
-            />
-            <XAxis
-              type="datetime"
-              gridLineWidth={0}
-              labels={{ enabled: false }}
-              crosshair={{
-                width: 0.5,
-                color: COLORS.PLOT_LINE,
-                snap: false,
-              }}
-              min={xAxisMin}
-              max={xAxisMax}
-              
-            />
-            <YAxis
-              opposite={false}
-              type="linear"
-              gridLineWidth={1}
-              gridLineColor={"#5A64624F"}
-              showFirstLabel={false}
-              // showLastLabel={false}
-              tickAmount={5}
-              labels={{
-                useHTML: true,
-                align: "left",
-                y: 15,
-                x: 5,
-                style: {
-                  backgroundColor: "transparent",
-                  whiteSpace: "nowrap",
-                  color: "#CDD8D3",
-                  fontSize: "9px",
-                  fontWeight: "500",
-                  fontFamily: "var(--font-raleway), sans-serif",
-                },
-                formatter: function (
-                  t: Highcharts.AxisLabelsFormatterContextObject,
-                ) {
-                  return formatNumberOther(t.value);
-                },
-              }}
-            >
-              {seriesConfigs.map((config, index) => {
-                const colors = AllChainsByKeys[config.key] ? AllChainsByKeys[config.key].colors.dark : ["#10808C", "#1DF7EF"];
-                // Dynamically create Series or ColumnSeries based on config
-                const commonProps = {
-                  name: config.name,
-                  data: seriesData[index],
-                  color: colors[0],
-                  stacking: config.stacking,
-                  marker: { enabled: false },
-
-                };
-
-                if (config.type === 'column') {
-                  return <ColumnSeries
-
-                    key={index}
-                    {...commonProps}
-                    clip={false}
-                    borderRadius={0}
-                    borderColor="transparent"
-                    // pointPadding={0}
-                    // groupPadding={0}
-                    pointWidth={((chartContainerWidth - 44) / seriesData[index].length) * 0.7}
-                    pointPlacement="on"
-                    crisp={true}
-                    color={{
-                      linearGradient: {
-                        x1: 0,
-                        y1: 1,
-                        x2: 0,
-                        y2: 0,
-                      },
-                      stops: [
-                        [0, colors[0]],
-                        // [0.33, AllChainsByKeys[series.name].colors[1]],
-                        [1, colors[1]],
-                      ],
-                    }}
-                    fillColor={{
-                      linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 0,
-                        y2: 1,
-                      },
-                      stops: [
-                        [
-                          0,
-                          colors[1] + "33",
-                        ],
-
-                        [
-                          1,
-                          colors[0] + "33",
-                        ],
-                      ],
-                    }}
-                    shadow={{
-                      color: colors[1] + "CC",
-                      width: 5,
-                    }}
-                    states={{
-                      hover: {
-                        halo: {
-                          size: 5,
-                          opacity: 1,
-                          attributes: {
-                            fill:
-                              colors[0] + "99",
-                            stroke:
-                              colors[0] + "66",
-                            "stroke-width": 0,
-                          },
-
-                        },
-                        brightness: 0.3,
-                      },
-                      inactive: {
-                        enabled: true,
-                        opacity: 0.6,
-                      },
-                    }}
-                  />;
-                }
-                return <Series key={index} type="area" {...commonProps}
-                  lineWidth={1.5}
-                  crisp={true}
-                  color={{
-                    linearGradient: {
-                      x1: 0,
-                      y1: 0,
-                      x2: 1,
-                      y2: 0,
-                    },
-                    stops: [
-                      [0, colors[0] + "CC"],
-                      // [0.33, AllChainsByKeys[series.name].colors[1]],
-                      [1, colors[1] + "CC"],
-                    ],
-                  }}
-                  fillColor={{
-                    linearGradient: {
-                      x1: 0,
-                      y1: 0,
-                      x2: 0,
-                      y2: 1,
-                    },
-                    stops: [
-                      [
-                        0,
-                        colors[1] + "33",
-                      ],
-
-                      [
-                        1,
-                        colors[0] + "33",
-                      ],
-                    ],
-                  }}
-                  shadow={{
-                    color: colors[1] + "CC",
-                    width: 5,
-                  }}
-                  states={{
-                    hover: {
-                      halo: {
-                        size: 5,
-                        opacity: 1,
-                        attributes: {
-                          fill:
-                            colors[0] + "99",
-                          stroke:
-                            colors[0] + "66",
-                          "stroke-width": 0,
-                        },
-
-                      },
-                      brightness: 0.3,
-                    },
-                    inactive: {
-                      enabled: true,
-                      opacity: 0.6,
-                    },
-                    selection: {
-                      enabled: false,
-                    },
-                  }}
-                />;
-              })}
-            </YAxis>
-            <Tooltip
-              useHTML={true} shared={true} split={false} followPointer={true}
-              backgroundColor={"#2A3433EE"} padding={0} hideDelay={300} stickOnContact={true}
-              shape="rect" borderRadius={17} borderWidth={0} outside={true}
-              style={{ color: "rgb(215, 223, 222)" }}
-              formatter={tooltipFormatter}
-              positioner={tooltipPositioner}
-              // ADDED SHADOW HERE
-              shadow={{
-                color: "black",
-                opacity: 0.015,
-                offsetX: 2,
-                offsetY: 2,
-              }}
-            />
-          </HighchartsChart>
-        </HighchartsProvider>
+        <ReactECharts
+          ref={chartRef}
+          option={option}
+          style={{ height: '380px', width: '100%' }}
+          opts={{ 
+            renderer: 'canvas',
+            width: chartContainerWidth || undefined,
+            height: 380 
+          }}
+          notMerge={true}
+          lazyUpdate={true}
+        />
       </div>
-      {/* Custom X-Axis Timeline (This could also be its own component later) */}
-      <XAxisLabels xMin={xAxisExtremes.xMin} xMax={xAxisExtremes.xMax} isColumnChart={isColumnChart} />
+      
+      {/* Custom X-Axis Timeline */}
+      <XAxisLabels xMin={xAxisExtremes.xMin} xMax={xAxisExtremes.xMax} />
     </div>
   );
 }
