@@ -802,7 +802,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
 
             <div className={`heading-large-md transition-transform duration-500 ${isCompact ? 'mb-[10px]' : 'mb-[0px]'
               }`}>
-              {isCompact ? 'Ecosystem Transactions Per Second' : 'Ethereum Ecosystem TPS'}
+              {isCompact ? 'Ecosystem Transactions Per Second' : 'Ecosystem TPS'}
             </div>
 
             <div className='flex flex-col gap-y-[30px] mb-[20px]'>
