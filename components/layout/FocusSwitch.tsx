@@ -5,6 +5,7 @@ import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import useAsyncStorage from "@/hooks/useAsyncStorage";
 import { ToggleSwitch } from "./ToggleSwitch";
+import { useUIContext } from "@/contexts/UIContext";
 
 type FocusSwitchProps = {
   isMobile?: boolean;
@@ -13,6 +14,7 @@ type FocusSwitchProps = {
 };
 
 export default function FocusSwitch({ isMobile, showBorder=false, className}: FocusSwitchProps) {
+  const { focusSwitchEnabled } = useUIContext();
   const [mounted, setMounted] = useState(false);
   const [focusEnabled, setFocusEnabled] = useAsyncStorage("focusEnabled", false);
   const [isChanging, setIsChanging] = useState(false);
@@ -102,7 +104,7 @@ export default function FocusSwitch({ isMobile, showBorder=false, className}: Fo
         value={focusEnabled ? "l2Focus" : "totalEcosystem"}
         onChange={handleChange}
         size={isMobile ? "sm" : "md"}
-        disabled={isUpdating}
+        disabled={isUpdating || !focusSwitchEnabled}
         rightComponent={
           <Tooltip>
             <TooltipTrigger>

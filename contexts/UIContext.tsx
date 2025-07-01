@@ -25,6 +25,8 @@ type UIContextState = {
   setIsDragging: (isDragging: boolean) => void;
   dragChartId: string;
   setDragChartId: (dragChartId: string) => void;
+  focusSwitchEnabled: boolean;
+  setFocusSwitchEnabled: (focusSwitchEnabled: boolean) => void;
 };
 
 const UIContext = createContext<UIContextState>({
@@ -40,6 +42,8 @@ const UIContext = createContext<UIContextState>({
   setIsDragging: () => { },
   dragChartId: "",
   setDragChartId: () => { },
+  focusSwitchEnabled: true,
+  setFocusSwitchEnabled: () => { },
 });
 
 export const useUIContext = () => useContext(UIContext);
@@ -58,6 +62,8 @@ export const UIContextProvider = ({ children }) => {
     setIsDragging: () => { },
     dragChartId: "",
     setDragChartId: () => { },
+    focusSwitchEnabled: true,
+    setFocusSwitchEnabled: () => { },
   });
 
   const prevWindowWidthRef = useRef(typeof window !== 'undefined' ? window.innerWidth : 0);
@@ -158,11 +164,15 @@ export const UIContextProvider = ({ children }) => {
   const toggleSidebar = () => setState(prevState => ({ ...prevState, isSidebarOpen: !prevState.isSidebarOpen }));
   const toggleMobileSidebar = () => setState(prevState => ({ ...prevState, isMobileSidebarOpen: !prevState.isMobileSidebarOpen }));
 
+  const setFocusSwitchEnabled = (focusSwitchEnabled: boolean) => setState(prevState => ({ ...prevState, focusSwitchEnabled }));
+
   const contextValue = {
     ...state,
     toggleSidebar,
     toggleMobileSidebar,
     setEmbedData,
+    focusSwitchEnabled: state.focusSwitchEnabled,
+    setFocusSwitchEnabled,
   };
 
   useEffect(() => {

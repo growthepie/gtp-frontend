@@ -167,8 +167,8 @@ export function ToggleSwitch({
         className={`
           ${fontSizeMap[size]} ${textColor} whitespace-nowrap
           select-none rounded-full
-          ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90 active:opacity-75'}
           transition-opacity duration-200
+          disabled:opacity-50 disabled:cursor-not-allowed
         `}
         onClick={handleToggle}
         onKeyDown={handleKeyDown}
@@ -177,10 +177,11 @@ export function ToggleSwitch({
         aria-label={ariaLabel}
         aria-disabled={disabled}
         tabIndex={disabled ? -1 : 0}
+
       >
         {/* Background container with both labels */}
         <div
-          className={`flex items-center justify-between rounded-full cursor-pointer p-[2px] ${containerHeightMap[size]} ${containerColor}`}
+          className={`flex items-center justify-between rounded-full p-[2px] ${containerHeightMap[size]} ${containerColor} ${disabled ? 'cursor-default !bg-[#5a6462] !text-[#344240]' : 'hover:opacity-90 active:opacity-75 cursor-pointer'}`}
         >
           {leftComponent && (
             <div className={`flex items-center justify-center ${componentPaddingMap[size]}`}>
@@ -206,7 +207,7 @@ export function ToggleSwitch({
               className={`
                 absolute left-0 ${selectionHeightMap[size]}
                 flex items-center justify-center
-                rounded-full ${sliderColor}
+                rounded-full ${sliderColor} ${disabled && `opacity-75 cursor-default ${textColor} text-opacity-50`}
                 ${mounted && "transition-all duration-300 will-change-transform"}
                 px-[10px]
               `}
