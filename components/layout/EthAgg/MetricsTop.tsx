@@ -54,13 +54,15 @@ interface UptimeDisplayProps {
   selectedBreakdownGroup: string;
   eventHover: string | null;
   setEventHover: (value: string | null) => void;
+  eventExpanded: string | null;
+  handleToggleEventExpansion: (eventKey: string) => void;
   showEvents: boolean;
   handleToggleEvents: (e: React.MouseEvent) => void;
 }
 
 
 
-const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEventHover, showEvents, handleToggleEvents }: UptimeDisplayProps) => {
+const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEventHover, eventExpanded, handleToggleEventExpansion, showEvents, handleToggleEvents }: UptimeDisplayProps) => {
   const uptimeData = useMemo(() => {
     return formatUptime(new Date().getTime() - new Date(1438269973000).getTime());
   }, []);
@@ -101,37 +103,45 @@ const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEvent
         <div className={`flex flex-col gap-y-[2.5px] px-[15px] duration-300 overflow-y-hidden ${!showEvents ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''
           }`}
           style={{
-            height: !showEvents ? `130px` : `${reversedEvents.length * 21 + 35}px`
+            height: !showEvents ? `130px` : `${reversedEvents.reduce((acc, event) => acc + (eventExpanded === event.date ? 101 : 28), 35)}px`
           }}
         >
-          <div className='heading-large-md text-[#5A6462]'>Events</div>
+          <div className='heading-large-md text-[#5A6462] mb-2'>Events</div>
                     <div className="relative">
             {reversedEvents.map((event: any, index: number) => {
               const isThisEventHovered = eventHover === event.date;
               const isNextEventHovered = eventHover === reversedEvents[index + 1]?.date;
+              
+              // Calculate cumulative height including expanded events above this one
+              const topPosition = reversedEvents.slice(0, index).reduce((acc, prevEvent) => {
+                return acc + (eventExpanded === prevEvent.date ? 101 : 28);
+              }, 0);
 
               return (
                 <div key={event.date}>
                   {/* Event Item */}
                   <div
                     className="absolute w-full"
-                    style={{ top: `${index * 21}px` }}
+                    style={{ top: `${topPosition}px` }}
                   >
                     <EventItem
                       eventKey={event.date}
                       eventHover={eventHover}
                       setEventHover={setEventHover}
+                      eventExpanded={eventExpanded}
+                      handleToggleEventExpansion={handleToggleEventExpansion}
                       event={event}
                       index={index}
+                      nextEvent={reversedEvents[index + 1]}
                     />
                   </div>
                   
                   {/* Separator Dots - only if not the last item */}
-                  {index < reversedEvents.length - 1 && !isThisEventHovered && !isNextEventHovered && (index !== 0 || eventHover !== null) && (
+                  {index < reversedEvents.length - 1 && !isThisEventHovered && !isNextEventHovered && (index !== 0 || eventHover !== null || eventExpanded === reversedEvents[index + 1]?.date) && eventExpanded !== event.date && eventExpanded !== reversedEvents[index + 1]?.date && (
                     <div
-                      className="absolute flex-col gap-y-[3px] pt-[2px] flex items-center gap-x-[2px]"
+                      className="absolute flex-col gap-y-[4px] pt-[3px] flex items-center gap-x-[2px] "
                       style={{ 
-                        top: `${index * 21 + 21 - 5}px`, // Position between items
+                        top: `${topPosition + (eventExpanded === event.date ? 101 : 26) - 5}px`, // Position after current item
                         left: '11px' // Center under the icon
                       }}
                     >
@@ -166,11 +176,14 @@ interface EventItemProps {
   eventKey: string;
   eventHover: string | null;
   setEventHover: (value: string | null) => void;
+  eventExpanded: string | null;
+  handleToggleEventExpansion: (eventKey: string) => void;
   event: EthereumEvents;
   index: number;
+  nextEvent?: EthereumEvents;
 }
 
-const EventIcon = ({ event, eventHover, index }: { event: EthereumEvents, eventHover: string | null, index: number }) => {
+const EventIcon = ({ event, eventHover, index, eventExpanded }: { event: EthereumEvents, eventHover: string | null, index: number, eventExpanded: string | null }) => {
   const getMonthDisplay = (dateString: string) => {
     try {
       const date = new Date(dateString);
@@ -184,16 +197,17 @@ const EventIcon = ({ event, eventHover, index }: { event: EthereumEvents, eventH
     }
   };
 
-  const eventHoverOverride = index === 0 && eventHover === null;
-
   const isThisEventHovered = eventHover === event.date;
+  const isThisEventExpanded = eventExpanded === event.date;
+  const eventHoverOverride = eventHover === null && (isThisEventExpanded || (index === 0 && eventExpanded === null));
 
   const showCalendar = isThisEventHovered || eventHoverOverride;
 
   return (
-    <div className="relative min-w-[24px] min-h-[24px]">
+    <div className="relative min-w-[24px] min-h-[32px]">
       {/* Calendar */}
-      <div className={`absolute inset-0 transition-all duration-300 ease-in-out ${
+      <span className='absolute inset-0 '></span>
+      <div className={`absolute inset-0 transition-all duration-300 ease-in-out top-[8px] ${
         showCalendar 
           ? 'opacity-100 scale-100' 
           : 'opacity-0 scale-90 pointer-events-none'
@@ -219,17 +233,44 @@ const EventIcon = ({ event, eventHover, index }: { event: EthereumEvents, eventH
   )
 }
 
-const EventItem = React.memo(({ eventKey, eventHover, setEventHover, event, index }: EventItemProps) => (
-  <div
-    className={`transition-all h-[24px] text-truncate flex items-center gap-x-[2px] duration-300 cursor-default ${eventHover === eventKey || (eventHover === null && index === 0) ? 'text-xs' : 'text-xxxs text-[#5A6462]'
-      } w-fit`}
-    onMouseEnter={() => setEventHover(eventKey)}
-    onMouseLeave={() => setEventHover(null)}
-  >
-    <EventIcon event={event} eventHover={eventHover} index={index} />
-    <span className={`font-bold`}>{event.title}</span>
-  </div>
-));
+const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpanded, handleToggleEventExpansion, event, index, nextEvent }: EventItemProps) => {
+  const isExpanded = eventExpanded === eventKey;
+  
+  return (
+    <div className={`transition-all flex flex-col duration-300 cursor-pointer ${isExpanded ? 'h-[101px]' : 'h-[28px]'} w-full`}>
+      <div className={`${isExpanded ? 'h-[14px]' : 'h-0'}  flex relative top-[2px] w-[24px] justify-center text-[#5A6462] overflow-hidden gap-x-[2px] text-xxxs`}>{Intl.DateTimeFormat('en-US', { year: 'numeric' }).format(new Date(event.date))}</div>
+              <div
+          className={`flex items-center gap-x-[5px] ${eventHover === eventKey || (eventHover === null && (eventExpanded === eventKey || (index === 0 && eventExpanded === null))) ? 'text-xs' : 'text-xxxs text-[#5A6462]'
+            } w-fit h-[24px]`}
+        onMouseEnter={() => setEventHover(eventKey)}
+        onMouseLeave={() => setEventHover(null)}
+        onClick={() => handleToggleEventExpansion(eventKey)}
+      >
+        <EventIcon event={event} eventHover={eventHover} index={index} eventExpanded={eventExpanded} />
+        <span className={`relative top-[3px] ${eventHover === eventKey || (eventHover === null && (eventExpanded === eventKey || (index === 0 && eventExpanded === null))) ? 'heading-small-xs' : 'heading-small-xxxs'} `}>{event.title}</span>
+      </div>
+      
+     
+        <div className={` flex w-full justify-between pl-0 transition-height duration-100 overflow-hidden ${isExpanded ? 'h-[80px] mt-0' : 'h-0 mt-0'}`}>
+          <div className='flex flex-col justify-between gap-y-[4px] h-full overflow-y-hidden min-w-[24px] max-w-[24px] items-center '>
+            <div className='flex flex-col gap-y-[6px] overflow-y-hidden pt-1'>
+              {Array.from({ length: 10 }).map((_, i) => (
+                <div key={i + "event-item-description"} className='bg-[#5A6462] w-[2px] h-[2px] rounded-full flex-shrink-0' />
+              ))}
+            </div>
+            <div className='rounded-full min-h-[12px] text-xxxs text-[#5A6462]'>{nextEvent ? new Date(nextEvent.date).toLocaleDateString('en-US', { year: 'numeric' }) : ''}</div>
+          </div>
+          <div className="text-xxs flex h-full items-center pb-4 pl-1.5 w-full">
+
+            <div className=" leading-relaxed overflow-y-auto max-h-[70px]">
+              {event.description || event.title}
+            </div>
+          </div>
+        </div>
+  
+    </div>
+  );
+});
 
 EventItem.displayName = "EventItem";
 
@@ -550,6 +591,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   // Consolidated state
   const [uiState, setUiState] = useState({
     eventHover: null as string | null,
+    eventExpanded: null as string | null,
     ethCostHoverIndex: null as number | null,
     ethCostSelectedIndex: 17,
     l2CostHoverIndex: null as number | null,
@@ -656,6 +698,13 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     setShowEvents(false);
   }, [setShowChainsCost, setShowChainsTPS, setShowEvents]);
 
+  const handleToggleEventExpansion = useCallback((eventKey: string) => {
+    setUiState(prev => ({
+      ...prev,
+      eventExpanded: prev.eventExpanded === eventKey ? null : eventKey
+    }));
+  }, []);
+
   // Optimized effects
   useEffect(() => {
     if (!globalMetrics) return;
@@ -739,6 +788,8 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
             selectedBreakdownGroup={selectedBreakdownGroup}
             eventHover={uiState.eventHover}
             setEventHover={(value) => setUiState(prev => ({ ...prev, eventHover: value }))}
+            eventExpanded={uiState.eventExpanded}
+            handleToggleEventExpansion={handleToggleEventExpansion}
             showEvents={showEvents}
             handleToggleEvents={handleToggleEvents}
           />
