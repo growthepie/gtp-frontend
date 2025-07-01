@@ -284,7 +284,7 @@ const TPSChart = React.memo(({ totalTPSLive, globalMetrics, showUsd }: TPSChartP
   const tooltipFormatter = useCallback(function (this: any) {
     const { x, points } = this;
     const date = new Date(x);
-    const valuePrefix = showUsd ? '$' : '';
+    const valuePrefix = '';
 
     let dateString = date.toLocaleDateString("en-GB", {
       month: "short",
