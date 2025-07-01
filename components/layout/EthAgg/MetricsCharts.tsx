@@ -252,7 +252,7 @@ function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) 
           <GTPIcon icon='gtp-ecosystem-scaling' size='lg' className='text-[#5A6462]' />
           <div className='heading-large-lg'>The Ethereum Ecosystem is Scaling</div>
         </div>
-        <div className='pl-[45px] text-md'>Transaction capacity is rising across Ethereum Mainnet and its growing number of Layer 2 networks.</div>
+        <div className='pl-[45px] text-md'>Transaction capacity is rising across Ethereum Mainnet and its growing number of Layer 2 scaling solutions.</div>
         <div className='flex flex-col xl:flex-row gap-[15px] w-full'>
           <AggChart dataSource={chartData.layer2Data} {...chartConfigs.l2Count} />
           <AggChart dataSource={chartData.tpsData} {...chartConfigs.tps} />
@@ -277,7 +277,7 @@ const MeetLayer2s = React.memo(({ meetL2sData, selectedBreakdownGroup }: { meetL
         <GTPIcon icon='gtp-multiple-chains' size='lg' />
         <div className='heading-large-lg'>Meet L2s</div>
       </div>
-      <div className='text-md pl-[44px] overflow-hidden'>Ethereum scales using different Layer 2s, built by 3rd party teams. Have a closer look at each of them.</div>
+      <div className='text-md pl-[44px] overflow-hidden'>Ethereum scales using a wide set of different Layer 2s, built by 3rd party teams. Take a closer look at them on our platform. </div>
       <div className='flex w-full gap-[5px] overflow-hidden'>
         {l2Keys.map((key) => {
           const l2Data = meetL2sData[key];
