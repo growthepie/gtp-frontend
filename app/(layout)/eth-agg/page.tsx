@@ -21,19 +21,30 @@ import TopEthAggMetrics from "@/components/layout/EthAgg/MetricsTop";
 import MetricsCharts from "@/components/layout/EthAgg/MetricsCharts";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { GTPIcon } from "@/components/layout/GTPIcon";
-
+import { useUIContext } from "@/contexts/UIContext";
 
 
 export default function EthAgg() {
+  const { setFocusSwitchEnabled } = useUIContext();
   const [selectedBreakdownGroup, setSelectedBreakdownGroup] = useState("Metrics");
   const [selectedTimespan, setSelectedTimespan] = useState("365d");
   const [isMonthly, setIsMonthly] = useState(false);
   const TopMetricsComponent = <TopEthAggMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
 
   useEffect(() => {
+    // Disable scroll restoration
     if ('scrollRestoration' in history) {
       history.scrollRestoration = 'manual';
     }
+
+    // set focus switch enabled to false
+    setFocusSwitchEnabled(false);
+
+    return () => {
+      setFocusSwitchEnabled(true);
+    };
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
 
