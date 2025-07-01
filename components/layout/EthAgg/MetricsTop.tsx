@@ -63,9 +63,20 @@ interface UptimeDisplayProps {
 
 
 const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEventHover, eventExpanded, handleToggleEventExpansion, showEvents, handleToggleEvents }: UptimeDisplayProps) => {
-  const uptimeData = useMemo(() => {
-    return formatUptime(new Date().getTime() - new Date(1438269973000).getTime());
+  const [currentTime, setCurrentTime] = useState(new Date().getTime());
+  
+  // Update the time every second for live counter
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date().getTime());
+    }, 1000);
+    
+    return () => clearInterval(interval);
   }, []);
+
+  const uptimeData = useMemo(() => {
+    return formatUptime(currentTime - new Date(1438269973000).getTime());
+  }, [currentTime]);
 
   const { data: masterData } = useMaster();
 

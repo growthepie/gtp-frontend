@@ -31,24 +31,7 @@ export default async function Layout({
     <>
 
       <div className="mb-[30px]">{children}</div>
-      <Container>
-        <QuestionAnswer
-          startOpen={true}
-          // className="px-[0px]"
-          // questionClassName="px-[30px]"
-          question="Details"
-          answer={
-            <>
 
-            </>
-          }
-          note={
-            <>
-
-            </>
-          }
-        />
-      </Container >
     </>
   );
 }

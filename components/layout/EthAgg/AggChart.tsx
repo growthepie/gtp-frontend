@@ -20,7 +20,7 @@ const COLORS = {
   ANNOTATION_BG: "rgb(215, 223, 222)",
 };
 
-
+const UNLISTED_CHAIN_COLORS = ["#7D8887", "#717D7C","#667170","#5A6665","#4F5B5A","#43504F","#384443","#2C3938"]
 
 
 const XAxisLabels = React.memo(({ xMin, xMax, rightMargin }: { xMin: number, xMax: number, rightMargin?: string }) => (
@@ -120,6 +120,14 @@ export function AggChart({
     height: containerHeight 
   });
   const [isDebouncing, setIsDebouncing] = useState(false);
+  
+  // Custom tooltip state
+  const [customTooltip, setCustomTooltip] = useState<{
+    visible: boolean;
+    x: number;
+    y: number;
+    data: any[];
+  }>({ visible: false, x: 0, y: 0, data: [] });
   
   useEffect(() => {
     setIsDebouncing(true);
@@ -263,149 +271,154 @@ export function AggChart({
     [showUsd, prefix]
   );
 
+
+
   
 
   // Memoized series colors
   const seriesColors = useMemo(() => ({
-    "Total L2s": "#1DF7EF", 
+    "Total L2s": AllChainsByKeys["all_l2s"]?.colors.dark[0], 
     "Ethereum Mainnet": AllChainsByKeys["ethereum"]?.colors.dark[0],
     "Layer 2s": AllChainsByKeys["all_l2s"]?.colors.dark[0],
   }), [AllChainsByKeys]);
 
-  // Advanced tooltip formatter similar to Highcharts version
-  const createEchartsTooltipFormatter = useCallback((options: {
-    maxPointsToShow?: number;
-    enableTotal?: boolean;
-  } = {}) => {
-    const { maxPointsToShow = 10, enableTotal = false } = options;
-    return (params: any[]) => {
-      if (!params?.length) return '';
-      
-      // Format the date for the header
-      const date = new Date(params[0].axisValueLabel);
-      const dateStr = date.toLocaleDateString("en-GB", {
-        year: "numeric", month: "short", day: "numeric"
-      });
+  // Custom Tooltip Component
+  const CustomTooltip = useCallback(({ data, x, y }: { data: any[], x: number, y: number }) => {
+    if (!data.length) return null;
 
+    const date = new Date(data[0].categoryLabel);
+    const dateStr = date.toLocaleDateString("en-GB", {
+      year: "numeric", month: "short", day: "numeric"
+    });
+
+    // Sort by value (highest first)
+    const sortedData = [...data].sort((a, b) => b.value - a.value);
+    
+    // Get layer2Data for "Total L2s" series
+    const hasDaily = 'daily' in dataSource && dataSource.daily;
+    const layer2Index = hasDaily 
+      ? dataSource.daily.values.findIndex(dataItem => 
+          new Date(dataItem[dataSource.daily.types.indexOf("unix")]).toISOString().split('T')[0] === data[0].categoryLabel
+        )
+      : -1;
+    
+    const layer2Data = hasDaily && layer2Index >= 0 
+      ? dataSource.daily.values[layer2Index][dataSource.daily.types.indexOf("l2s_launched")]
+      : null;
+
+    const totalL2sItem = sortedData.find(item => item.seriesName === "Total L2s");
+    const showL2List = totalL2sItem && layer2Data && Array.isArray(layer2Data) && layer2Data.length > 0;
+
+         const tooltipWidth = 256; // max-w-64 = 256px
+     const baseHeight = 80; // base tooltip height
+     const itemHeight = 20; // height per data item
+     const l2SectionHeight = showL2List ? 60 + (layer2Data.length * 32) : 0; // L2 section height
+     const tooltipHeight = baseHeight + (sortedData.length * itemHeight) + l2SectionHeight;
      
-      // Sort points by value (highest first)
-      const sortedParams = [...params]
-        .filter(param => param.value != null)
-        .sort((a, b) => b.value - a.value);
-      
-      const visibleParams = sortedParams.slice(0, maxPointsToShow);
-      const restParams = sortedParams.slice(maxPointsToShow);
-      // Use the prefix prop directly instead of trying to access it from seriesConfigs
-      const tooltipPrefix = prefix;
+     const containerW = containerWidth || 800;
+     const containerH = 304; // chart height
+     const margin = 10; // margin from edges
+     const cursorOffset = 12; // offset from cursor
      
-      // Calculate max value for bar scaling
-      const maxValue = Math.max(...sortedParams.map(param => param.value));
-      
-      // Start building tooltip
-      let tooltip = `
-        <div class="mt-2 mr-2 mb-3 -ml-2.5 min-w-60 text-xs font-raleway">
-          <div class="flex-1 heading-small-xs ml-6 mb-2">${dateStr}</div>
-      `;
+     // Chart grid area (accounting for ECharts margins)
+     const gridLeft = 0;
+     const gridRight = containerW - 42; // ECharts right margin
+     const gridTop = 20; // ECharts top margin  
+     const gridBottom = containerH;
+     
+     // Initial positioning - prefer top-right of cursor
+     let tooltipX = x + cursorOffset;
+     let tooltipY = y - tooltipHeight - cursorOffset;
+     
+     // Horizontal positioning logic
+     if (tooltipX + tooltipWidth > gridRight - margin) {
+       // Not enough space on right, try left
+       tooltipX = x - tooltipWidth - cursorOffset;
+       // If still doesn't fit on left, clamp to right edge
+       if (tooltipX < gridLeft + margin) {
+         tooltipX = gridRight - tooltipWidth - margin;
+       }
+     }
+     
+     // Vertical positioning logic  
+     if (tooltipY < gridTop + margin) {
+       // Not enough space above, position below cursor
+       tooltipY = y + cursorOffset;
+       // If doesn't fit below either, position at bottom of available space
+       if (tooltipY + tooltipHeight > gridBottom - margin) {
+         tooltipY = gridBottom - tooltipHeight - margin;
+       }
+     }
+     
+     // Final bounds checking
+     tooltipX = Math.max(gridLeft + margin, Math.min(tooltipX, gridRight - tooltipWidth - margin));
+     tooltipY = Math.max(gridTop + margin, Math.min(tooltipY, gridBottom - tooltipHeight - margin));
 
-      // Add visible points
-      visibleParams.forEach(param => {
-        // Type guard to check if dataSource has daily property (CountLayer2s type)
-        const hasDaily = 'daily' in dataSource && dataSource.daily;
-
-                 let layer2Index = param.seriesName === "Total L2s" && hasDaily 
-           ? dataSource.daily.values.findIndex(data => {
-             
-             return new Date(data[dataSource.daily.types.indexOf("unix")]).toISOString().split('T')[0] === params[0].axisValueLabel
-           })       
-           
-           : null;
-         const barWidth = maxValue > 0 ? (param.value / maxValue) * 100 : 0;
-         const layer2Data = param.seriesName === "Total L2s" && hasDaily && layer2Index !== null && layer2Index >= 0
-           ? dataSource.daily.values[layer2Index][dataSource.daily.types.indexOf("l2s_launched")]
-           : null;
+     return (
+       <div 
+         className="absolute pointer-events-none z-[999] bg-[#2A3433EE] rounded-xl p-3 min-w-60 max-w-64 text-xs font-raleway shadow-lg"
+         style={{
+           left: tooltipX,
+           top: tooltipY,
+         }}
+       >
+        <div className="heading-small-xs mb-2 pl-2.5">{dateStr}</div>
         
-                tooltip += `
-          <div class="flex w-full h-[15px] space-x-2 items-center font-medium mb-0.5">
-            <div class="w-[15px] h-[10px] rounded-r-full relative overflow-hidden" style="background-color: ${seriesColors[param.seriesName]};">
-              <div class="h-full rounded-r-full" style="background-color: ${param.color}; width: ${barWidth}%;"></div>
-            </div>
-            <div class="text-xs flex-1 text-left">${param.seriesName}</div>
-            <div class="text-right numbers-xs">${tooltipPrefix}${Intl.NumberFormat('en-US', { notation: 'standard', maximumFractionDigits: 2 }).format(param.value)}</div>
-          </div>
-        `;
-        
-        // Add additional layer2 info if available
-        if (layer2Data && Array.isArray(layer2Data) && layer2Data.length > 0) {
-          layer2Data.forEach((l2Item, index) => {
-           
-            const l2Name = l2Item.l2beat_name;
-            tooltip += `
-              <div class="flex w-full h-[15px] space-x-2 items-center font-medium mb-0.5 opacity-80">
-                <div class="w-[15px] h-[10px] rounded-r-full relative overflow-hidden" style="background-color: transparent;">
-                  <div class="h-full rounded-r-full" style="background-color: transparent; width: 50%;"></div>
-                </div>
-                <div class="text-xs flex-1 text-left">${l2Name}</div>
-             
+        {sortedData.map((item, index) => {
+          const maxValue = Math.max(...sortedData.map(d => d.value));
+          const barWidth = maxValue > 0 ? (item.value / maxValue) * 100 : 0;
+          
+          return (
+            <div key={index} className="flex w-full h-[15px] space-x-2 items-center font-medium mb-0.5">
+              <div className="w-[15px] h-[10px] rounded-r-full relative overflow-hidden -ml-3" style={{ backgroundColor: item.color }}>
+                <div className="h-full rounded-r-full" style={{ backgroundColor: item.color, width: `${barWidth}%` }}></div>
               </div>
-            `;
-          });
-        } else if (layer2Data && typeof layer2Data === 'number' && layer2Data > 0) {
-          // Fallback for when layer2Data is just a count
-          tooltip += `
-            <div class="flex w-full h-[15px] space-x-2 items-center font-medium mb-0.5 opacity-80">
-              <div class="w-[15px] h-[10px] rounded-r-full relative overflow-hidden" style="background-color: ${seriesColors[param.seriesName]};">
-                <div class="h-full rounded-r-full" style="background-color: ${param.color}; width: 50%;"></div>
+              <div className="text-xs flex-1 text-left text-nowrap">{item.seriesName}</div>
+              <div className="text-right numbers-xs">
+                {prefix}{Intl.NumberFormat('en-US', { notation: 'standard', maximumFractionDigits: 2 }).format(item.value)}
               </div>
-              <div class="text-xs flex-1 text-left">L2s Launched</div>
-              <div class="text-right numbers-xs">${layer2Data}</div>
             </div>
-          `;
-        }
-        
-      });
-      
-      // Add "Others" row if necessary
-      if (restParams.length > 0) {
-        const othersTotal = restParams.reduce((sum, param) => sum + param.value, 0);
-        const othersValue = formatNumberCallback(othersTotal);
-        const othersBarWidth = maxValue > 0 ? (othersTotal / maxValue) * 100 : 0;
-        
-        tooltip += `
-          <div class="flex w-full h-[15px] space-x-2 items-center font-medium mb-0.5 opacity-70">
-            <div class="w-4 h-1.5 rounded-r-full relative overflow-hidden" style="background-color: #94a3b820;">
-              <div class="h-full rounded-r-full" style="background-color: #94a3b8; width: ${othersBarWidth}%;"></div>
-            </div>
-            <div class="tooltip-point-name flex-1 text-left">Others (${restParams.length})</div>
-            <div class="text-right numbers-xs">${othersValue}</div>
-          </div>
-        `;
-      }
+          );
+        })}
 
-     
-      
-      // Add total if enabled and multiple series
-      if (enableTotal && visibleParams.length > 1) {
-        const totalValue = visibleParams.reduce((sum, param) => sum + param.value, 0);
-        const totalFormatted = formatNumberCallback(totalValue);
-        
-        tooltip += `
-          <div class="flex w-full h-[15px] mt-[5px] space-x-2 items-center font-medium mb-0.5 border-t border-gray-600 pt-1">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: transparent;"></div>
-            <div class="tooltip-point-name flex-1 text-left font-bold">Total</div>
-            <div class="text-right numbers-xs font-bold">${totalFormatted}</div>
+        {showL2List && (
+          <div className='pl-3'>
+            <div className="heading-small-xxs mt-1">L2s Launched this Month</div>
+            <div className="flex flex-wrap items-center gap-x-[5px] gap-y-[5px] h-fit mt-2 mb-1">
+              {layer2Data.map((l2Item: any, index: number) => {
+                const chainInfo = AllChainsByKeys[l2Item.origin_key];
+                const chainIcon = chainInfo ? `${chainInfo.urlKey}-logo-monochrome` : "chain-dark";
+                const chainColor = chainInfo?.colors.dark[0] || UNLISTED_CHAIN_COLORS[index % UNLISTED_CHAIN_COLORS.length];
+                
+                return (
+                  <div key={index} className="flex items-center bg-[#344240] text-[10px] rounded-full pl-[3px] pr-[6px] py-[3px] gap-x-[4px] max-w-full">
+                    <div className="flex items-center justify-center w-[12px] h-[12px]">
+                      <GTPIcon 
+                        icon={chainIcon as any} 
+                        style={{ color: chainColor }} 
+                        size="sm" 
+                        className="w-[10px] h-[10px]"
+                      />
+                    </div>
+                    <div className="text-[#CDD8D3] leading-[120%] text-[10px] truncate">
+                      {l2Item.l2beat_name}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        `;
-      }
-      
-      tooltip += `</div>`;
-      return tooltip;
-    };
-  }, [formatNumberCallback, dataSource, prefix]);
+        )}
+      </div>
+    );
+     }, [prefix, dataSource, AllChainsByKeys, containerWidth]);
+
+
 
   // Memoized ECharts option configuration
   const option = useMemo(() => {
     const series = seriesConfigs.map((config, index) => {
-      const colors = AllChainsByKeys[config.key]?.colors.dark ?? ["#10808C", "#1DF7EF"];
+      const colors = AllChainsByKeys[config.key]?.colors.dark ?? AllChainsByKeys["all_l2s"]?.colors.dark;
       
       const baseConfig: any = {
         name: config.name,
@@ -419,8 +432,8 @@ export function AggChart({
         itemStyle: {
           color: config.type === 'column' 
             ? new echarts.graphic.LinearGradient(0, 1, 0, 0, [
-                { offset: 0, color: colors[0] },
-                { offset: 1, color: colors[1] }
+                { offset: 0, color: colors[1] },
+                { offset: 1, color: colors[0] }
               ])
             : new echarts.graphic.LinearGradient(0, 0, 1, 0, [
                 { offset: 0, color: colors[0] + "CC" },
@@ -490,24 +503,24 @@ export function AggChart({
       },
       series,
       tooltip: {
+        show: true,
         trigger: 'axis',
-        backgroundColor: '#2A3433EE',
+        formatter: () => '', // Return empty string to hide tooltip content but keep axisPointer
+        backgroundColor: 'transparent',
         borderWidth: 0,
-        borderRadius: 17,
-        textStyle: { color: 'rgb(215, 223, 222)', fontSize: 12 },
         axisPointer: {
           type: 'line',
-          lineStyle: { color: COLORS.PLOT_LINE, width: 1, type: 'solid' }
-        },
-        formatter: createEchartsTooltipFormatter({
-          maxPointsToShow: 10,
-          enableTotal: false
-        })
+          lineStyle: { 
+            color: COLORS.PLOT_LINE, 
+            width: 1, 
+            type: 'solid' 
+          }
+        }
       }
     };
   }, [seriesConfigs, seriesData, categories, AllChainsByKeys, chartContainerWidth, formatNumberCallback]);
 
-  console.log(allChartCoordinates);
+  
 
   return (
     <div ref={mainContainerRef} className='group/chart flex flex-col relative rounded-[15px] w-full h-[375px] bg-[#1F2726] pt-[15px] overflow-hidden'>
@@ -534,7 +547,7 @@ export function AggChart({
         </div>
         <div className='flex flex-col h-full items-end pt-[5px] w-full'>
           
-            <div className={`flex items-center gap-x-[5px]`} style={{ marginRight: allChartCoordinates[chartKey]?.x && allChartCoordinates["tps"]?.x ? `${allChartCoordinates["tps"]?.x - allChartCoordinates[chartKey]?.x}px` : "0px" }}>
+            <div className={`flex items-center gap-x-[5px]`} style={{ marginRight: allChartCoordinates[chartKey]?.x && allChartCoordinates["tps"]?.x ? `${allChartCoordinates["tps"]?.x  - allChartCoordinates[chartKey]?.x}px` : "0px" }}>
             <div className='numbers-xl bg-gradient-to-b bg-[#CDD8D3] bg-clip-text text-transparent'>{totalValue}</div>
             <div ref={circleRef} className='w-[16px] h-[16px] rounded-full z-chart bg-[#CDD8D3]' />
           </div>
@@ -549,12 +562,49 @@ export function AggChart({
       </div>
 
       {/* Watermark */}
-      <div className="absolute bottom-[40.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-20">
+      <div className="absolute bottom-[39.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-20">
         <ChartWatermarkWithMetricName className="w-[128.67px] h-[36px] md:w-[193px] md:h-[58px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten z-30" metricName={title} />
       </div>
       
       {/* ECharts Chart */}
-      <div className='w-full absolute bottom-0 left-0 right-0' style={{ height: '304px' }} ref={chartContainerRef}>
+      <div 
+        className='w-full absolute bottom-0 left-0 right-0' 
+        style={{ height: '304px' }} 
+        ref={chartContainerRef}
+        onMouseMove={(e) => {
+          const chartInstance = chartRef.current?.getEchartsInstance();
+          if (chartInstance && chartContainerRef.current) {
+            const rect = chartContainerRef.current.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const dataPoint = chartInstance.convertFromPixel('grid', [x, y]);
+            
+            if (dataPoint && dataPoint[0] >= 0 && dataPoint[0] < categories.length) {
+              const categoryIndex = Math.round(dataPoint[0]);
+              const tooltipData = seriesConfigs.map((config, seriesIndex) => ({
+                seriesName: config.name,
+                value: seriesData[seriesIndex]?.[categoryIndex] || 0,
+                color: AllChainsByKeys[config.key]?.colors.dark?.[0] || '#CDD8D3',
+                categoryIndex,
+                categoryLabel: categories[categoryIndex]
+              })).filter(item => item.value > 0);
+
+              setCustomTooltip({
+                visible: tooltipData.length > 0,
+                x: x,
+                y: y,
+                data: tooltipData
+              });
+            } else {
+              setCustomTooltip(prev => ({ ...prev, visible: false }));
+            }
+          }
+        }}
+        onMouseLeave={() => {
+          setCustomTooltip(prev => ({ ...prev, visible: false }));
+        }}
+      >
         <ReactECharts
           ref={chartRef}
           option={option}
@@ -567,6 +617,15 @@ export function AggChart({
           notMerge={true}
           lazyUpdate={true}
         />
+        
+        {/* Custom React Tooltip */}
+        {customTooltip.visible && (
+          <CustomTooltip 
+            data={customTooltip.data}
+            x={customTooltip.x}
+            y={customTooltip.y}
+          />
+        )}
       </div>
   
       {lastDataPointPixelCoords && lastDataPointPixelCoords.length === 3 && !isDebouncing && (
@@ -582,7 +641,7 @@ export function AggChart({
       )}
 
       {/* Custom X-Axis Timeline */}
-      <XAxisLabels xMin={xAxisExtremes.xMin} xMax={xAxisExtremes.xMax} rightMargin={allChartCoordinates[chartKey]?.x && allChartCoordinates["tps"]?.x ? `${allChartCoordinates["tps"]?.x - allChartCoordinates[chartKey]?.x}px` : "0px"} />
+      <XAxisLabels xMin={xAxisExtremes.xMin} xMax={xAxisExtremes.xMax} rightMargin={allChartCoordinates[chartKey]?.x && allChartCoordinates["tps"]?.x ? `${allChartCoordinates["tps"]?.x + 1 - allChartCoordinates[chartKey]?.x}px` : "0px"} />
     </div>
   );
 }
