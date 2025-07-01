@@ -23,13 +23,15 @@ const COLORS = {
 
 
 
-const XAxisLabels = React.memo(({ xMin, xMax }: { xMin: number, xMax: number }) => (
+const XAxisLabels = React.memo(({ xMin, xMax, rightMargin }: { xMin: number, xMax: number, rightMargin?: string }) => (
   <div className="absolute bottom-0 left-0 right-0 flex w-full justify-between items-center pl-[15px] pr-[34px] opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 pointer-events-none">      
     <div className='text-xxs flex gap-x-[2px] items-center bg-[#34424080] rounded-full px-[5px] py-[2px]'>
       <div className='w-[6px] rounded-full h-[6px] bg-[#CDD8D3]' />
       {new Date(xMin).getFullYear()}
     </div>
-    <div className='text-xxs flex gap-x-[2px] items-center bg-[#34424080] rounded-full px-[5px] py-[2px]'>
+    <div className='text-xxs flex gap-x-[2px] items-center bg-[#34424080] rounded-full px-[5px] py-[2px]'
+      style={{ marginRight: rightMargin }}
+    >
       {new Date(xMax).getFullYear()}
       <div className='w-[6px] rounded-full h-[6px] bg-[#CDD8D3]' />
     </div>
@@ -96,6 +98,9 @@ export function AggChart({
   seriesConfigs,
   totalValueExtractor,
   shareValueExtractor,
+  chartKey,
+  onCoordinatesUpdate,
+  allChartCoordinates,
 }: AggChartProps) {
   const uniqueId = useId();
   const { AllChainsByKeys } = useMaster();
@@ -103,6 +108,7 @@ export function AggChart({
   const chartRef = useRef<ReactECharts>(null);
   const circleRef = useRef<HTMLDivElement>(null);
   const mainContainerRef = useRef<HTMLDivElement>(null);
+  const prevCoordinatesRef = useRef<{ x: number; y: number; circleY: number } | null>(null);
   const { width: containerWidth, height: containerHeight } = useResizeObserver({
     ref: mainContainerRef,
     box: 'border-box',
@@ -211,8 +217,34 @@ export function AggChart({
     return [...pixelCoords, circleY]; // Returns [x, y, circleY] in pixels
   }, [seriesData, categories, debouncedDimensions.width, debouncedDimensions.height]); 
 
-  
-
+  // Update coordinates in parent component when they change
+  useEffect(() => {
+    let newCoords: { x: number; y: number; circleY: number } | null = null;
+    
+    if (lastDataPointPixelCoords && lastDataPointPixelCoords.length === 3) {
+      newCoords = {
+        x: lastDataPointPixelCoords[0],
+        y: lastDataPointPixelCoords[1],
+        circleY: lastDataPointPixelCoords[2]
+      };
+    }
+    
+    // Only update if coordinates have actually changed
+    const prevCoords = prevCoordinatesRef.current;
+    const coordsChanged = 
+      (!newCoords && prevCoords) ||
+      (!prevCoords && newCoords) ||
+      (newCoords && prevCoords && (
+        prevCoords.x !== newCoords.x ||
+        prevCoords.y !== newCoords.y ||
+        prevCoords.circleY !== newCoords.circleY
+      ));
+    
+    if (coordsChanged) {
+      prevCoordinatesRef.current = newCoords;
+      onCoordinatesUpdate(chartKey, newCoords);
+    }
+  }, [lastDataPointPixelCoords, chartKey, onCoordinatesUpdate]);
 
   const isColumnChart = useMemo(() => 
     seriesConfigs.some(config => config.type === 'column'), 
@@ -263,7 +295,8 @@ export function AggChart({
       
       const visibleParams = sortedParams.slice(0, maxPointsToShow);
       const restParams = sortedParams.slice(maxPointsToShow);
-      
+      // Use the prefix prop directly instead of trying to access it from seriesConfigs
+      const tooltipPrefix = prefix;
      
       // Calculate max value for bar scaling
       const maxValue = Math.max(...sortedParams.map(param => param.value));
@@ -297,7 +330,7 @@ export function AggChart({
               <div class="h-full rounded-r-full" style="background-color: ${param.color}; width: ${barWidth}%;"></div>
             </div>
             <div class="text-xs flex-1 text-left">${param.seriesName}</div>
-            <div class="text-right numbers-xs">${Intl.NumberFormat('en-US', { notation: 'standard', maximumFractionDigits: 2 }).format(param.value)}</div>
+            <div class="text-right numbers-xs">${tooltipPrefix}${Intl.NumberFormat('en-US', { notation: 'standard', maximumFractionDigits: 2 }).format(param.value)}</div>
           </div>
         `;
         
@@ -367,7 +400,7 @@ export function AggChart({
       tooltip += `</div>`;
       return tooltip;
     };
-  }, [formatNumberCallback, dataSource]);
+  }, [formatNumberCallback, dataSource, prefix]);
 
   // Memoized ECharts option configuration
   const option = useMemo(() => {
@@ -474,6 +507,8 @@ export function AggChart({
     };
   }, [seriesConfigs, seriesData, categories, AllChainsByKeys, chartContainerWidth, formatNumberCallback]);
 
+  console.log(allChartCoordinates);
+
   return (
     <div ref={mainContainerRef} className='group/chart flex flex-col relative rounded-[15px] w-full h-[375px] bg-[#1F2726] pt-[15px] overflow-hidden'>
       {/* Header */}
@@ -498,10 +533,12 @@ export function AggChart({
           </GTPTooltipNew>
         </div>
         <div className='flex flex-col h-full items-end pt-[5px] w-full'>
-          <div className='flex items-center gap-x-[5px]'>
+          
+            <div className={`flex items-center gap-x-[5px]`} style={{ marginRight: allChartCoordinates[chartKey]?.x && allChartCoordinates["tps"]?.x ? `${allChartCoordinates["tps"]?.x - allChartCoordinates[chartKey]?.x}px` : "0px" }}>
             <div className='numbers-xl bg-gradient-to-b bg-[#CDD8D3] bg-clip-text text-transparent'>{totalValue}</div>
             <div ref={circleRef} className='w-[16px] h-[16px] rounded-full z-chart bg-[#CDD8D3]' />
           </div>
+          
           {shareValue && (
             <div className='flex items-center gap-x-[5px]'>
               <div className='text-sm bg-gradient-to-b from-[#FE5468] to-[#FFDF27] bg-clip-text text-transparent'>{shareValue}</div>
@@ -545,7 +582,7 @@ export function AggChart({
       )}
 
       {/* Custom X-Axis Timeline */}
-      <XAxisLabels xMin={xAxisExtremes.xMin} xMax={xAxisExtremes.xMax} />
+      <XAxisLabels xMin={xAxisExtremes.xMin} xMax={xAxisExtremes.xMax} rightMargin={allChartCoordinates[chartKey]?.x && allChartCoordinates["tps"]?.x ? `${allChartCoordinates["tps"]?.x - allChartCoordinates[chartKey]?.x}px` : "0px"} />
     </div>
   );
 }

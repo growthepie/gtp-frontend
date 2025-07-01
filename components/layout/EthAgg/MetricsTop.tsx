@@ -529,7 +529,10 @@ const ChainTransitionItem = React.memo(({
           maximumFractionDigits: 4,
           minimumFractionDigits: 4
         }).format(value)
-        : formatNumber(value * 1000000000, 0);
+        : Intl.NumberFormat('en-US', {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0
+        }).format(value * 1000000000);
     }
   }, [value, type, showUsd]);
 

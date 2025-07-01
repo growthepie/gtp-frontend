@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { GTPIcon } from '../GTPIcon';
 import Container from '../Container';
 import useSWR from 'swr';
@@ -35,6 +35,9 @@ export interface AggChartProps {
   seriesConfigs: SeriesConfig[];
   totalValueExtractor: (data: ChartDataSource, showUsd: boolean) => string;
   shareValueExtractor?: (data: ChartDataSource, showUsd: boolean) => string;
+  chartKey: string;
+  onCoordinatesUpdate: (chartKey: string, coordinates: { x: number; y: number; circleY: number } | null) => void;
+  allChartCoordinates: Record<string, { x: number; y: number; circleY: number } | null>;
 }
 
 // Optimized shared formatting function
@@ -54,6 +57,29 @@ function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) 
   const { data, error, isLoading } = useSWR<EthAggResponse>(EthAggURL);
   const [showUsd] = useLocalStorage("showUsd", true);
   const { AllChainsByKeys } = useMaster();
+
+  // State to store last point coordinates for each chart
+  const [chartCoordinates, setChartCoordinates] = useState<Record<string, { x: number; y: number; circleY: number } | null>>({});
+
+  // Callback to update coordinates for a specific chart
+  const handleCoordinatesUpdate = useCallback((chartKey: string, coordinates: { x: number; y: number; circleY: number } | null) => {
+    setChartCoordinates(prev => {
+      // Only update if coordinates have actually changed
+      const currentCoords = prev[chartKey];
+      if (!coordinates && !currentCoords) return prev;
+      if (!coordinates || !currentCoords) {
+        return { ...prev, [chartKey]: coordinates };
+      }
+      if (
+        currentCoords.x === coordinates.x &&
+        currentCoords.y === coordinates.y &&
+        currentCoords.circleY === coordinates.circleY
+      ) {
+        return prev; // No change, return same object
+      }
+      return { ...prev, [chartKey]: coordinates };
+    });
+  }, []);
 
   // Memoized data extraction
   const chartData = useMemo(() => {
@@ -194,7 +220,7 @@ function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) 
              dataExtractor: ((data) => (data as CountLayer2s).daily.values.map(v => [v[count.unix], v[count.launched]] as [number, number])) as (data: ChartDataSource, showUsd: boolean) => [number, number][],
            }
         ],
-        totalValueExtractor: (data) => formatNumber((data as CountLayer2s).daily.values.slice(-1)[0][count.value]),
+        totalValueExtractor: (data) => formatNumber((data as CountLayer2s).daily.values.slice(-1)[0][count.value], 0),
       },
       tps: {
         title: "Average Daily TPS",
@@ -237,8 +263,8 @@ function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) 
         </div>
         <div className='pl-[45px] text-md'>Value locked and user spending are growing across the Ethereum ecosystem, with Ethereum Mainnet remaining the most trusted ledger.</div>
         <div className='flex flex-col xl:flex-row gap-[15px] w-full'>
-          <AggChart dataSource={chartData.appData} {...chartConfigs.appRevenue} />
-          <AggChart dataSource={chartData.stableData} {...chartConfigs.stablecoin} />
+          <AggChart dataSource={chartData.appData} {...chartConfigs.appRevenue} chartKey="appRevenue" onCoordinatesUpdate={handleCoordinatesUpdate} allChartCoordinates={chartCoordinates} />
+          <AggChart dataSource={chartData.stableData} {...chartConfigs.stablecoin} chartKey="stablecoin" onCoordinatesUpdate={handleCoordinatesUpdate} allChartCoordinates={chartCoordinates} />
         </div>
       </div>
       <div className='flex flex-col gap-y-[15px]'>
@@ -248,8 +274,8 @@ function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) 
         </div>
         <div className='pl-[45px] text-md'>Transaction throughput is rising across Ethereum Mainnet and its growing number of Layer 2 networks.</div>
         <div className='flex flex-col xl:flex-row gap-[15px] w-full'>
-          <AggChart dataSource={chartData.layer2Data} {...chartConfigs.l2Count} />
-          <AggChart dataSource={chartData.tpsData} {...chartConfigs.tps} />
+          <AggChart dataSource={chartData.layer2Data} {...chartConfigs.l2Count} chartKey="l2Count" onCoordinatesUpdate={handleCoordinatesUpdate} allChartCoordinates={chartCoordinates} />
+          <AggChart dataSource={chartData.tpsData} {...chartConfigs.tps} chartKey="tps" onCoordinatesUpdate={handleCoordinatesUpdate} allChartCoordinates={chartCoordinates} />
         </div>
       </div>
       <MeetLayer2s meetL2sData={chartData.meetL2sData} selectedBreakdownGroup={selectedBreakdownGroup} />
