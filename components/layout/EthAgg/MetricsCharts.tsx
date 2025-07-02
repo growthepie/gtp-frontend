@@ -265,9 +265,9 @@ function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) 
       <div className='flex flex-col gap-y-[15px]'>
         <div className='flex gap-x-[8px] items-center'>
           <GTPIcon icon='gtp-metrics-economics' size='lg' className='text-[#5A6462]' />
-          <div className='heading-large-lg'>Economic Activity is Shifting Onchain</div>
+          <div className='heading-large-lg select-auto'>Economic Activity is Shifting Onchain</div>
         </div>
-        <div className='pl-[45px] text-md'>Revenue generated and value locked are growing across the Ethereum ecosystem, with Ethereum Mainnet remaining the most trusted ledger.</div>
+        <div className='pl-[45px] text-md select-auto'>Revenue generated and value locked are growing across the Ethereum ecosystem, with Ethereum Mainnet remaining the most trusted ledger.</div>
         <div className='flex flex-col xl:flex-row gap-[15px] w-full'>
           <AggChart dataSource={chartData.appData} {...chartConfigs.appRevenue} chartKey="appRevenue" onCoordinatesUpdate={handleCoordinatesUpdate} allChartCoordinates={chartCoordinates} />
           <AggChart dataSource={chartData.stableData} {...chartConfigs.stablecoin} chartKey="stablecoin" onCoordinatesUpdate={handleCoordinatesUpdate} allChartCoordinates={chartCoordinates} />
@@ -276,9 +276,9 @@ function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) 
       <div className='flex flex-col gap-y-[15px]'>
         <div className='flex gap-x-[8px] items-center'>
           <GTPIcon icon='gtp-ecosystem-scaling' size='lg' className='text-[#5A6462]' />
-          <div className='heading-large-lg'>The Ethereum Ecosystem is Scaling</div>
+          <div className='heading-large-lg select-auto'>The Ethereum Ecosystem is Scaling</div>
         </div>
-        <div className='pl-[45px] text-md'>Transaction capacity is rising across Ethereum Mainnet and its growing number of Layer 2 scaling solutions.</div>
+        <div className='pl-[45px] text-md select-auto'>Transaction capacity is rising across Ethereum Mainnet and its growing number of Layer 2 scaling solutions.</div>
         <div className='flex flex-col xl:flex-row gap-[15px] w-full'>
           <AggChart dataSource={chartData.layer2Data} {...chartConfigs.l2Count} chartKey="l2Count" onCoordinatesUpdate={handleCoordinatesUpdate} allChartCoordinates={chartCoordinates} />
           <AggChart dataSource={chartData.tpsData} {...chartConfigs.tps} chartKey="tps" onCoordinatesUpdate={handleCoordinatesUpdate} allChartCoordinates={chartCoordinates} />
@@ -301,9 +301,9 @@ const MeetLayer2s = React.memo(({ meetL2sData, selectedBreakdownGroup }: { meetL
     <div className="flex flex-col gap-y-[15px] w-full overflow-hidden">
       <div className='flex gap-x-[8px] items-center'>
         <GTPIcon icon='gtp-multiple-chains' size='lg' />
-        <div className='heading-large-lg'>Meet L2s</div>
+        <div className='heading-large-lg select-auto'>Meet L2s</div>
       </div>
-      <div className='text-md pl-[44px] overflow-hidden'>Ethereum scales using a wide set of different Layer 2s, built by 3rd party teams. Take a closer look at them on our platform. </div>
+      <div className='text-md pl-[44px] overflow-hidden select-auto'>Ethereum scales using a wide set of different Layer 2s, built by 3rd party teams. Take a closer look at them on our platform. </div>
       <div className='flex w-full gap-[5px] overflow-hidden'>
         {l2Keys.map((key) => {
           const l2Data = meetL2sData[key];
@@ -311,7 +311,7 @@ const MeetLayer2s = React.memo(({ meetL2sData, selectedBreakdownGroup }: { meetL
           const color = chainInfo?.colors?.dark?.[0];
 
           return (
-            <div key={key} className='flex flex-col gap-y-[10px] rounded-[15px] p-[15px] bg-transparent border-[1px] border-[#5A6462] flex-shrink-0 w-full sm:w-[calc(50%-2.5px)] lg:w-[calc(33.333%-3.33px)] xl:w-[calc(25%-3.75px)] 2xl:w-[calc(20%-4px)]'>
+            <Link href={`/chains/${key}`} key={key} className='group cursor-pointer flex flex-col gap-y-[10px] rounded-[15px] p-[15px] bg-transparent border-[1px] border-[#5A6462] flex-shrink-0 w-full sm:w-[calc(50%-2.5px)] lg:w-[calc(33.333%-3.33px)] xl:w-[calc(25%-3.75px)] 2xl:w-[calc(20%-4px)]'>
               <div className='flex items-center w-full justify-between'>
                 <div className='flex items-center gap-x-[5px]'>
                   <GTPIcon 
@@ -319,11 +319,11 @@ const MeetLayer2s = React.memo(({ meetL2sData, selectedBreakdownGroup }: { meetL
                     size='lg'
                     style={{ color }}
                   />
-                  <div className='heading-large-md'>{chainInfo?.label}</div>
+                  <div className='heading-large-md select-auto group-hover:underline'>{chainInfo?.label}</div>
                 </div>
-                <Link href={`/chains/${key}`} className='flex items-center justify-center w-[24px] h-[24px] rounded-full bg-[#344240]'>
+                <div className='flex items-center justify-center w-[24px] h-[24px] rounded-full bg-[#344240]'>
                   <Icon icon="feather:arrow-right" className="w-[15px] h-[15px]" />
-                </Link>
+                </div>
               </div>
               <div className='flex gap-x-[10px] items-center'>
                 <div className='flex flex-col gap-y-[5px]'>
@@ -352,7 +352,7 @@ const MeetLayer2s = React.memo(({ meetL2sData, selectedBreakdownGroup }: { meetL
                 </div>
                 <div className='text-xs'>Predominately used for</div>
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>

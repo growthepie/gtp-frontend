@@ -66,8 +66,8 @@ export default function EthAgg() {
       <div className="flex flex-col pt-[15px]">
         <Container className={`transition-[max-height,opacity] duration-500 ${selectedBreakdownGroup === "Metrics" ? 'max-h-[0px] opacity-0' : 'max-h-[200px] opacity-100 mb-[15px]'}  overflow-hidden`}>
           <div className={`px-[30px] py-[15px] rounded-[15px] bg-[#1F2726] flex flex-col gap-y-[15px] transition-[max-height,opacity] ${selectedBreakdownGroup === "Metrics" ? 'max-h-[0px] opacity-0' : 'max-h-[200px] opacity-100'}  overflow-hidden`}>
-            <div className="heading-large-lg">{titles[selectedBreakdownGroup]}</div>
-            <div className="text-sm">
+            <div className="heading-large-lg select-auto">{titles[selectedBreakdownGroup]}</div>
+            <div className="text-sm select-auto">
               {Messages[selectedBreakdownGroup]}
             </div>
           </div>

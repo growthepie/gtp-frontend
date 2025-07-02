@@ -30,7 +30,7 @@ export default async function Layout({
   return (
     <>
 
-      <div className="mb-[30px]">{children}</div>
+      <div className="mb-[30px] select-none">{children}</div>
 
     </>
   );
