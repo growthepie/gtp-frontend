@@ -36,6 +36,36 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
         }
       }
 
+      // Handle shopify data placeholders
+      if (processedItem.includes('{{shopify')) {
+        const shopifyData = await fetchData('shopify', "https://api.growthepie.xyz/v1/quick-bites/shopify-usdc.json");
+        //const shopifyDataETH = shopifyData.data.gross_volume_usdc.total.toFixed(2);
+        const shopifyVolumeUSD = parseFloat(shopifyData.data.gross_volume_usdc.total).toLocaleString("en-GB", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0
+        });
+
+        const shopifyMerchants = parseFloat(shopifyData.data.total_unique_merchants.total).toLocaleString("en-GB", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0
+        });
+
+        const shopifyCustomers = parseFloat(shopifyData.data.total_unique_payers.total).toLocaleString("en-GB", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0
+        });
+
+        if (shopifyVolumeUSD) {
+          processedItem = processedItem.replace('{{shopifyVolumeUSD}}', shopifyVolumeUSD);
+        }
+        if (shopifyMerchants) {
+          processedItem = processedItem.replace('{{shopifyMerchants}}', shopifyMerchants);
+        }
+        if (shopifyCustomers) {
+          processedItem = processedItem.replace('{{shopifyCustomers}}', shopifyCustomers);
+        }
+      }
+
       // Add more API data sources here
       // Example for Ethereum data:
       // if (processedItem.includes('{{ethereum')) {

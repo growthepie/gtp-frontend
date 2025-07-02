@@ -35,16 +35,18 @@ const KpiBlock: React.FC<KpiBlockProps> = ({ block }) => {
             <div className="flex-1 flex justify-end">
               {card.info && (
                 <GTPTooltipNew
-                  placement="bottom-start"
+                  placement="bottom-end"
                   allowInteract={true}
                   size="md"
                   trigger={
-                    <GTPIcon icon="gtp-info-monochrome" size="sm"/>
+                    <div className="flex items-center justify-end w-full">
+                      <GTPIcon icon="gtp-info-monochrome" size="sm"/>
+                    </div>
                   }
                   containerClass="flex flex-col gap-y-[10px]"
                   positionOffset={{ mainAxis: 0, crossAxis: 20 }}
                 >
-                  <div className="">{card.info}</div>
+                  <div className="px-[15px]">{card.info}</div>
                 </GTPTooltipNew>
               )}
             </div>

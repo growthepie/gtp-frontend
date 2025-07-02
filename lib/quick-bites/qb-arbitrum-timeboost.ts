@@ -91,8 +91,8 @@ const arbitrumTimeboost: QuickBiteData = {
     JSON.stringify({
       src: "https://api.growthepie.com/v1/quick-bites/timeboost-express-lane.png",
       alt: "Timeboost Express Lane",
-      width: "800",
-      height: "400",
+      width: "1920",
+      height: "1073",
       caption: "Timeboost Express Lane",
     }),
     "```",
@@ -103,19 +103,19 @@ const arbitrumTimeboost: QuickBiteData = {
     JSON.stringify({
       src: "https://api.growthepie.com/v1/quick-bites/timeboost-auction-flow.png",
       alt: "Timeboost Auction Flow",
-      width: "800",
-      height: "400",
+      width: "1920",
+      height: "1069",
       caption: "Timeboost Auction Flow",
     }),
     "```",
     
     "- An auction contract deployed on the target chain to serve as the canonical source of truth for the auction results and handling of auction proceeds.",
 
-    "A more detailed explanation of Timeboost can be found here: https://docs.arbitrum.io/how-arbitrum-works/timeboost/gentle-introduction",
+    "A more detailed explanation of Timeboost can be found here: [https://docs.arbitrum.io/how-arbitrum-works/timeboost/gentle-introduction](https://docs.arbitrum.io/how-arbitrum-works/timeboost/gentle-introduction)",
 
     "All charts on this page are updated daily so you can track the adoption of Timeboost.",
   ],
-  image: "/images/quick-bites/placeholder.png",
+  image: "https://api.growthepie.com/v1/quick-bites/banners/timeboost.png",
   og_image: "https://api.growthepie.com/v1/og_images/quick-bites/arbitrum-timeboost.png",
   date: "2025-05-29",
   related: [],

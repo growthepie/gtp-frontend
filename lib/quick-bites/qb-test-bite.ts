@@ -8,8 +8,8 @@ const testBite: QuickBiteData = {
     "```kpi-cards",JSON.stringify(
       [
           {
-            title: "Test",
-            value: "100",
+            title: "Test with Dynamic Value",
+            value: "{{timeboostTotalETH}} ETH",
             description: "Test",
             icon: "gtp-realtime",
             info: "Test"
@@ -273,7 +273,7 @@ const testBite: QuickBiteData = {
 
     "The improved developer experience has also attracted hundreds of new projects to the platform, creating a rich ecosystem of applications across DeFi, gaming, and social platforms."
   ],
-  image: "/images/quick-bites/arbitrum-nitro.png",
+  image: "https://api.growthepie.com/v1/quick-bites/banners/placeholder.png",
   date: "2025-01-15",
   icon: "arbitrum-logo-monochrome",
   related: [],

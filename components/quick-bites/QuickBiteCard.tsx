@@ -8,6 +8,8 @@ import { Icon } from '@iconify/react';
 import { GTPIconName } from '@/icons/gtp-icon-names';
 import { formatDate } from '@/lib/utils/formatters';
 import { url } from 'inspector';
+import Image from 'next/image';
+import ChartWatermark from '../layout/ChartWatermark';
 
 interface QuickBiteCardProps {
   title: string;
@@ -15,6 +17,7 @@ interface QuickBiteCardProps {
   date: string;
   icon: string;
   slug: string;
+  bannerImage: string;
   author?: {
     name: string;
     xUsername: string;
@@ -32,7 +35,7 @@ interface QuickBiteCardProps {
     color?: string;
     name: string;
     url: string;
-  }[];  
+  }[];
 }
 
 const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
@@ -41,6 +44,7 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
   date,
   icon,
   slug,
+  bannerImage,
   author,
   topics,
   className = '',
@@ -51,89 +55,103 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
     e.stopPropagation();
     e.preventDefault();
   };
-  
+
+
   return (
-    <Link 
-      href={`/quick-bites/${slug}`} 
-      className={`block h-full ${className}`}
+    <Link
+      href={`/quick-bites/${slug}`}
+      className={`block h-full ${className} min-w-[275px] !h-[275px] select-none group`}
       aria-labelledby={`card-title-${slug}`}
     >
-      <div className='w-full h-full p-[15px] bg-transparent border border-[#5A6462] rounded-[15px]'>
-        <div className='flex flex-col gap-y-[15px]'>
-          <div className='flex justify-between'>
-            <span className='heading-small-xs'>{title}</span>
-            <div className="text-xs align-start">
+      <div className='flex flex-col w-full h-full p-[15px] gap-y-[10px] border border-[#5A6462] rounded-[15px]'>
+        <div className='flex flex-col'>
+          <div className='flex justify-between h-[51px] gap-x-[15px]'>
+            <div className='heading-small-xs group-hover:underline line-clamp-3'>{title}</div>
+            <div className="text-xs align-start whitespace-nowrap">
               <time dateTime={date}>{formatDate(date)}</time>
             </div>
           </div>
-          <div className='flex justify-between items-center gap-x-[15px]'>
-            <div className='bg-[#5A6462] rounded-[15px] w-full min-h-[100px] lg:min-h-[150px]'></div>
-            <div className='min-w-[24px] min-h-[24px] bg-[#344240] rounded-full flex items-center justify-center'>
-              <Icon icon={'fluent:arrow-right-32-filled'} className={`w-[15px] h-[15px]`}  />
-            </div>
-          </div>
-          <div className='flex justify-between items-center relative '>
-            {author && author.length > 0 && (
-            
-              <div className=" flex items-center gap-x-2 ">
-                {author.map((authorItem, index) => (
-                  <div key={authorItem.name}>
-                    <div className="flex items-center gap-x-0.5 -mr-[5px] relative">
-                      {index > 0 ? (
-                        <span className=" hover:underline mt-[1px] text-xxs">{`+${(author.length - 1)} More`}</span>
-                      ) : (
-                        <button 
-                          onClick={(e) => {
-                            handleAuthorClick(e);
-                            window.open(`https://x.com/${authorItem.xUsername}`, '_blank', 'noopener,noreferrer');
-                          }}
-                          className="flex items-center text-xs  hover:underline"
-                          aria-label={`Author: ${authorItem.name} (opens in a new tab)`}
-                        >
-                          <Icon icon="ri:twitter-x-fill" className="w-[15px] h-[15px] mr-[5px]" aria-hidden="true" />
-                          <span>{authorItem.name}</span>
-                        </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-            )}
-            <div className='flex justify-end'>
-              {topics && topics.length > 0 && (() => {
-                const compareTopics = (mainTopics && mainTopics.length && isRelatedPage)
-
-                return (
-                  <div className="flex gap-x-[5px]">
-                    {topics.map((topic) => {
-                      const showColor = compareTopics ? mainTopics.some(mainTopic => topic.name === mainTopic.name) : true;
-                      return (
-                        <Link
-                          key={topic.name}
-                          href={topic.url}
-                          onClick={(e) => e.stopPropagation()}
-                          className="flex items-center py-1 rounded-full text-xs"
-                          style={{
-                            color: showColor ? topic.color || '#344240' : '#344240'
-                          }}
-                        >
-                          <GTPIcon icon={topic.icon as GTPIconName} size="sm" />
-                        </Link>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
-            </div>
-          </div>
-          
+          <div className='text-xs h-[30px]'>{subtitle}</div>
         </div>
+        <div className='flex flex-1 justify-between items-center gap-x-[15px]'>
+          <div className='relative bg-[#5A6462] rounded-[15px] w-full h-full'>
+            <Image
+              src={bannerImage}
+              alt={title}
+              objectFit='cover'
+              fill
+              className='w-full h-full object-cover rounded-[15px]'
+            />
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-50">
+              <ChartWatermark className="w-[78px] text-[#EAECEB]" />
+            </div>
+          </div>
+          <div className='min-w-[24px] min-h-[24px] bg-[#344240] rounded-full flex items-center justify-center'>
+            <Icon icon={'fluent:arrow-right-32-filled'} className={`w-[15px] h-[15px]`} />
+          </div>
+        </div>
+        <div className='flex justify-between items-center relative h-fit'>
+          {author && author.length > 0 && (
+
+            <div className="flex items-center gap-x-[5px] h-fit">
+              <GTPIcon icon="twitter" size="sm" />
+              {author.map((authorItem, index) => (
+                <React.Fragment key={authorItem.name}>
+                    {index > 0 ? (
+                      <div className=" hover:underline text-xxs h-[15px] pt-[1px]">{`+${(author.length - 1)} More`}</div>
+                    ) : (
+                      <div
+                        onClick={(e) => {
+                          handleAuthorClick(e);
+                          window.open(`https://x.com/${authorItem.xUsername}`, '_blank', 'noopener,noreferrer');
+                        }}
+
+                        className="text-xs hover:underline h-[15px]"
+                        aria-label={`Author: ${authorItem.name} (opens in a new tab)`}
+                      >
+                        
+                        {authorItem.name}
+                      </div>
+                    )}
+                </React.Fragment>
+              ))}
+            </div>
+          )}
+          <div className='flex justify-end'>
+            {topics && topics.length > 0 && (() => {
+              const compareTopics = (mainTopics && mainTopics.length && isRelatedPage)
+
+              return (
+                <div className="flex gap-x-[5px]">
+                  {topics.map((topic) => {
+                    const showColor = compareTopics ? mainTopics.some(mainTopic => topic.name === mainTopic.name) : true;
+                    return (
+                      <Link
+                        key={topic.name}
+                        href={topic.url}
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center rounded-full text-xs"
+                        style={{
+                          color: showColor ? topic.color || '#344240' : '#344240'
+                        }}
+                      >
+                        <GTPIcon icon={topic.icon as GTPIconName} size="sm" />
+                      </Link>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+
+
       </div>
     </Link>
   );
 };
 
-        {/* {topics && topics.length > 0 && (
+{/* {topics && topics.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-4">
             {topics.map((topic) => (
               <Link
@@ -153,7 +171,7 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
           </div>
         )} */}
 
-        {/* {author && author.length > 0 && (
+{/* {author && author.length > 0 && (
           <div className="absolute bottom-4 left-4 flex items-center gap-x-2">
             {author.map((authorItem, index) => (
               <div key={authorItem.name}>

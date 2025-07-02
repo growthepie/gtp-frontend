@@ -58,6 +58,9 @@ export default async function Page() {
         <LandingSecondHeaders />
       </Container>
       <LandingUserBaseChart />
+      {/* {!IS_PRODUCTION && ( */}
+        <QuickBitesSection />
+      {/* )} */}
       <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
@@ -81,9 +84,6 @@ export default async function Page() {
       <Container className="">
         <LandingTopContracts />
       </Container>
-      {!IS_PRODUCTION && (
-        <QuickBitesSection />
-      )}
       <Container>
         <div className="flex mt-[25px] md:mt-[60px] mb-[25px] md:mb-[30px] ml-1.5 md:ml-0 space-x-2 items-center">
           <GTPIcon

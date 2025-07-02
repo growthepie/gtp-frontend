@@ -3,10 +3,27 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { OctantURLs } from '@/lib/urls'
 import useSWR from 'swr'
-import { has } from 'lodash';
+
+// Utility function for safe numeric sorting with better null handling
+const getSortValue = (item: any, metric: string, epochString: string): number => {
+  if (metric === "user") return 0; // Handle string sorting separately
+  
+  const value = item[metric]?.[epochString];
+  return typeof value === 'number' ? value : 0;
+};
+
+// Optimized string comparison function
+const compareStrings = (a: string, b: string, sortOrder: string): number => {
+  return sortOrder === "asc" ? a.localeCompare(b) : b.localeCompare(a);
+};
+
+// Optimized numeric comparison function
+const compareNumbers = (a: number, b: number, sortOrder: string): number => {
+  return sortOrder === "asc" ? a - b : b - a;
+};
+
 
 export const OctantProviders = ({ children }) => {
-
   return (
     <OctantDataProvider>
       {children}
@@ -37,7 +54,6 @@ export const OctantDataContext = createContext<{
   setCommunityTablePageSize: (pageSize: number) => void;
   communityTablePageMax: number;
 
-
   communityUserSelection: string;
   handleCommunityUserSelection: (userType: string) => void;
   communitySearch: string;
@@ -62,7 +78,7 @@ export const OctantDataContext = createContext<{
   setFundingTableSort: (sort: { metric: string, sortOrder: string }) => void;
 
   fundingDataSortedAndFiltered: ProjectFundingResponse;
-  latestProjectMetadatas: { [project_key: string]: OctantProjectMetadata } | null;
+  latestProjectMetadatas: { [project_key: string]: OctantProjectMetadata | null } | null;
 }>({
   Epochs: [],
   communityEpoch: 0,
@@ -123,251 +139,242 @@ export const OctantDataProvider = ({ children }) => {
     }
   }
 
+  // Memoize epochs calculation with better dependency management
   const Epochs = useMemo<{ epoch: string; label: string; hasAllocationStarted: boolean }[]>(() => {
-    let base = [{
+    const base = [{
       epoch: "all",
       label: "All Epochs",
       hasAllocationStarted: true
-    }]
-    if (!summaryData) return base;
+    }];
+    
+    if (!summaryData?.epochs) return base;
 
-    return [...base, ...Object.keys(summaryData.epochs).map((epoch) => ({
-      epoch,
-      label: `Epoch ${epoch}`,
-      hasAllocationStarted: summaryData.epochs[epoch].has_allocation_started
-    }))]
-  }, [summaryData]);
+    const epochEntries = Object.entries(summaryData.epochs)
+      .map(([epoch, data]) => ({
+        epoch,
+        label: `Epoch ${epoch}`,
+        hasAllocationStarted: data.has_allocation_started
+      }))
+      .sort((a, b) => parseInt(a.epoch) - parseInt(b.epoch));
 
-
-
-
+    return [...base, ...epochEntries];
+  }, [summaryData?.epochs]);
 
   const [communityEpoch, setCommunityEpoch] = useState(0);
   const [fundingEpoch, setFundingEpoch] = useState(0);
 
-
-
+  // Memoize available epochs to avoid recalculating
+  const availableEpochs = useMemo(() => 
+    Epochs.filter(e => e.hasAllocationStarted), 
+    [Epochs]
+  );
 
   const handlePrevCommunityEpoch = useCallback(() => {
-    if (communityEpoch === 0)
-      setCommunityEpoch(Epochs.filter(e => e.hasAllocationStarted).length - 1);
-    else
-      setCommunityEpoch(communityEpoch - 1);
-  }, [communityEpoch, Epochs]);
+    const maxIndex = availableEpochs.length - 1;
+    setCommunityEpoch(prev => prev === 0 ? maxIndex : prev - 1);
+  }, [availableEpochs.length]);
 
   const handleNextCommunityEpoch = useCallback(() => {
-    if (communityEpoch === Epochs.filter(e => e.hasAllocationStarted).length - 1)
-      setCommunityEpoch(0);
-    else
-      setCommunityEpoch(communityEpoch + 1);
-  }, [communityEpoch, Epochs]);
+    const maxIndex = availableEpochs.length - 1;
+    setCommunityEpoch(prev => prev === maxIndex ? 0 : prev + 1);
+  }, [availableEpochs.length]);
 
   const handlePrevFundingEpoch = useCallback(() => {
-    if (fundingEpoch === 0)
-      setFundingEpoch(Epochs.filter(e => e.hasAllocationStarted).length - 1);
-    else
-      setFundingEpoch(fundingEpoch - 1);
-  }, [fundingEpoch, Epochs]);
+    const maxIndex = availableEpochs.length - 1;
+    setFundingEpoch(prev => prev === 0 ? maxIndex : prev - 1);
+  }, [availableEpochs.length]);
 
   const handleNextFundingEpoch = useCallback(() => {
-    if (fundingEpoch === Epochs.filter(e => e.hasAllocationStarted).length - 1)
-      setFundingEpoch(0);
-    else
-      setFundingEpoch(fundingEpoch + 1);
-  }, [fundingEpoch, Epochs]);
-
+    const maxIndex = availableEpochs.length - 1;
+    setFundingEpoch(prev => prev === maxIndex ? 0 : prev + 1);
+  }, [availableEpochs.length]);
 
   const [communityUserSelection, setCommunityUserSelection] = useState("All");
-
-  const handleCommunityUserSelection = (userType: string) => {
-    setCommunityUserSelection(userType);
-  }
-
   const [communitySearch, setCommunitySearch] = useState("");
-
   const [communityTableSort, setCommunityTableSort] = useState({
     metric: "allocation_amounts",
     sortOrder: "desc",
   });
 
+  const handleCommunityUserSelection = useCallback((userType: string) => {
+    setCommunityUserSelection(userType);
+  }, []);
 
-
+  // Memoize epoch strings
   const communityEpochString = useMemo(() => {
-    if (!summaryData) return "all";
-    return Epochs[communityEpoch].epoch;
+    return summaryData ? Epochs[communityEpoch]?.epoch || "all" : "all";
   }, [communityEpoch, Epochs, summaryData]);
 
+  const fundingEpochString = useMemo(() => {
+    return summaryData ? Epochs[fundingEpoch]?.epoch || "all" : "all";
+  }, [fundingEpoch, Epochs, summaryData]);
+
+  // Optimized community data filtering and sorting
   const communityDataSortedAndFiltered = useMemo(() => {
     if (!communityData) return [];
 
-    // filter out users that don't have a lock for the current epoch
-    let filteredData = [...communityData].filter(userRow => userRow.maxs[communityEpochString] !== undefined);
-
-    // filter out users that didn't donate in the current epoch if the user selection is Donating
-    if (communityUserSelection === "Donating") {
-      filteredData = filteredData.filter(userRow => userRow.allocation_amounts[communityEpochString] !== undefined && userRow.allocation_amounts[communityEpochString] > 0);
-    }
-
-    // filter out users that don't match the search string
-    if (communitySearch) {
-      filteredData = filteredData.filter(row => row.user.toLowerCase().includes(communitySearch.toLowerCase()));
-    }
-
-
-    filteredData.sort((a, b) => {
-      if (communityTableSort.metric == "user") {
-        let aVal = a.user;
-        let bVal = b.user;
-
-        if (communityTableSort.sortOrder === "asc") {
-          return aVal.localeCompare(bVal);
-        } else {
-          return bVal.localeCompare(aVal);
-        }
-
-      } else {
-        let aVal = a[communityTableSort.metric] && a[communityTableSort.metric][communityEpochString] || 0;
-        let bVal = b[communityTableSort.metric] && b[communityTableSort.metric][communityEpochString] || 0;
-
-        if (communityTableSort.sortOrder === "asc") {
-          return aVal - bVal;
-        } else {
-          return bVal - aVal;
-        }
+    // Use a more efficient filtering approach
+    let filteredData = communityData.filter(userRow => {
+      // Filter by epoch availability
+      if (!userRow.maxs[communityEpochString]) return false;
+      
+      // Filter by donation status
+      if (communityUserSelection === "Donating") {
+        const allocation = userRow.allocation_amounts[communityEpochString];
+        if (!allocation || allocation <= 0) return false;
       }
-
-
+      
+      // Filter by search
+      if (communitySearch) {
+        return userRow.user.toLowerCase().includes(communitySearch.toLowerCase());
+      }
+      
+      return true;
     });
 
-
+    // Optimized sorting with better handling of edge cases
+    filteredData.sort((a, b) => {
+      if (communityTableSort.metric === "user") {
+        return compareStrings(a.user, b.user, communityTableSort.sortOrder);
+      }
+      
+      const aVal = getSortValue(a, communityTableSort.metric, communityEpochString);
+      const bVal = getSortValue(b, communityTableSort.metric, communityEpochString);
+      
+      return compareNumbers(aVal, bVal, communityTableSort.sortOrder);
+    });
 
     return filteredData;
-  }, [communityData, communityUserSelection, communitySearch, communityEpochString, communityTableSort.metric, communityTableSort.sortOrder]);
+  }, [
+    communityData, 
+    communityUserSelection, 
+    communitySearch, 
+    communityEpochString, 
+    communityTableSort.metric, 
+    communityTableSort.sortOrder
+  ]);
 
   const [communityTablePage, setCommunityTablePage] = useState(0);
   const [communityTablePageSize, setCommunityTablePageSize] = useState(8);
 
   const communityTablePageMax = useMemo(() => {
     return Math.ceil(communityDataSortedAndFiltered.length / communityTablePageSize);
-  }, [communityDataSortedAndFiltered, communityTablePageSize]);
+  }, [communityDataSortedAndFiltered.length, communityTablePageSize]);
 
+  // Reset page when data changes
   useEffect(() => {
-    if (communityTablePage >= communityTablePageMax) {
+    if (communityTablePage >= communityTablePageMax && communityTablePageMax > 0) {
       setCommunityTablePage(0);
     }
-  }, [communityDataSortedAndFiltered.length, communityTablePage, communityTablePageMax, communityTablePageSize]);
-
-
+  }, [communityTablePageMax, communityTablePage]);
 
   const [fundingSearch, setFundingSearch] = useState("");
-
   const [fundingTableSort, setFundingTableSort] = useState({
     metric: "total",
     sortOrder: "desc",
   });
 
-
-  const fundingEpochString = useMemo(() => {
-    if (!summaryData) return "all";
-    return Epochs[fundingEpoch].epoch;
-  }, [fundingEpoch, Epochs, summaryData]);
-
+  // Memoize project mappings for better performance
   const projectKeyToName = useMemo(() => {
     if (!projectMetadataData) return {};
 
-    let projectKeyToName = {};
-    for (let projectKey in projectMetadataData) {
-      projectKeyToName[projectKey] = projectMetadataData[projectKey][fundingEpochString]?.name || projectKey;
-    }
-
-    return projectKeyToName;
+    return Object.fromEntries(
+      Object.entries(projectMetadataData).map(([projectKey, metadata]) => [
+        projectKey,
+        metadata[fundingEpochString]?.name || projectKey
+      ])
+    );
   }, [projectMetadataData, fundingEpochString]);
 
   const projectKeyToAddress = useMemo(() => {
     if (!projectMetadataData) return {};
 
-    let projectKeyToAddress = {};
-    for (let projectKey in projectMetadataData) {
-      projectKeyToAddress[projectKey] = projectMetadataData[projectKey][fundingEpochString]?.address || projectKey;
-    }
-
-    return projectKeyToAddress;
+    return Object.fromEntries(
+      Object.entries(projectMetadataData).map(([projectKey, metadata]) => [
+        projectKey,
+        metadata[fundingEpochString]?.address || projectKey
+      ])
+    );
   }, [projectMetadataData, fundingEpochString]);
 
+  // Optimized funding data filtering and sorting
   const fundingDataSortedAndFiltered = useMemo(() => {
     if (!projectFundingData) return [];
 
-    // filter out projects that don't have an allocation for the current epoch
-    let filteredData = [...projectFundingData].filter(projectRow => projectRow.allocations[fundingEpochString] !== undefined);
+    let filteredData = projectFundingData.filter(projectRow => {
+      // Filter by epoch availability
+      if (projectRow.allocations[fundingEpochString] === undefined) return false;
+      
+      // Filter by search
+      if (fundingSearch) {
+        const projectName = projectKeyToName[projectRow.project_key];
+        return projectName.toLowerCase().includes(fundingSearch.toLowerCase());
+      }
+      
+      return true;
+    });
 
-    // filter out projects that don't match the search string
-    if (fundingSearch) {
-      filteredData = filteredData.filter(row => projectKeyToName[row.project_key].toLowerCase().includes(fundingSearch.toLowerCase()));
-    }
-
+    // Optimized sorting with proper total calculation
     filteredData.sort((a, b) => {
-      let isTotal = fundingTableSort.metric === "total";
-      let metric = fundingTableSort.metric === "total" ? "allocations" : fundingTableSort.metric;
-
-      if (metric == "project") {
-        let aVal = projectKeyToName[a.project_key];
-        let bVal = projectKeyToName[b.project_key];
-
-        if (fundingTableSort.sortOrder === "asc") {
-          return aVal.localeCompare(bVal);
-        } else {
-          return bVal.localeCompare(aVal);
-        }
-
+      const { metric, sortOrder } = fundingTableSort;
+      
+      if (metric === "project") {
+        const aVal = projectKeyToName[a.project_key] || "";
+        const bVal = projectKeyToName[b.project_key] || "";
+        return compareStrings(aVal, bVal, sortOrder);
       }
-      else if (metric == "address") {
-        let aVal = projectKeyToAddress[a.project_key];
-        let bVal = projectKeyToAddress[b.project_key];
-
-        if (fundingTableSort.sortOrder === "asc") {
-          return aVal.localeCompare(bVal);
-        } else {
-          return bVal.localeCompare(aVal);
-        }
-      } else {
-        let aVal = a[metric] && a[metric][fundingEpochString] !== undefined ? a[metric][fundingEpochString] : 0;
-        let bVal = b[metric] && b[metric][fundingEpochString] !== undefined ? b[metric][fundingEpochString] : 0;
-
-        if (isTotal) {
-          // add matched rewards to the total
-          aVal = aVal + (a.matched_rewards[fundingEpochString] || 0);
-          bVal = bVal + (b.matched_rewards[fundingEpochString] || 0);
-        }
-
-        if (fundingTableSort.sortOrder === "asc") {
-          return aVal - bVal;
-        } else {
-          return bVal - aVal;
-        }
+      
+      if (metric === "address") {
+        const aVal = projectKeyToAddress[a.project_key] || "";
+        const bVal = projectKeyToAddress[b.project_key] || "";
+        return compareStrings(aVal, bVal, sortOrder);
       }
-
+      
+      // Handle numeric sorting
+      const isTotal = metric === "total";
+      const sortMetric = isTotal ? "allocations" : metric;
+      
+      let aVal = a[sortMetric]?.[fundingEpochString] || 0;
+      let bVal = b[sortMetric]?.[fundingEpochString] || 0;
+      
+      // Add matched rewards for total calculation
+      if (isTotal) {
+        aVal += a.matched_rewards[fundingEpochString] || 0;
+        bVal += b.matched_rewards[fundingEpochString] || 0;
+      }
+      
+      return compareNumbers(aVal, bVal, sortOrder);
     });
 
     return filteredData;
+  }, [
+    projectFundingData, 
+    fundingSearch, 
+    fundingEpochString, 
+    projectKeyToName, 
+    projectKeyToAddress,
+    fundingTableSort.metric, 
+    fundingTableSort.sortOrder
+  ]);
 
-  }, [projectFundingData, fundingSearch, fundingEpochString, projectKeyToName, fundingTableSort.metric, fundingTableSort.sortOrder, projectKeyToAddress]);
-
-
+  // Optimized latest project metadata calculation
   const latestProjectMetadatas = useMemo(() => {
     if (!projectMetadataData) return null;
 
-    let latestProjectMetadatas = {};
-    for (let projectKey in projectMetadataData) {
-      const epochs = Object.keys(projectMetadataData[projectKey]).filter(epoch => epoch !== "all").map(epoch => parseInt(epoch));
-
-      let latestEpoch = Math.max(...epochs);
-
-      latestProjectMetadatas[projectKey] = projectMetadataData[projectKey][latestEpoch];
-    }
-
-    return latestProjectMetadatas;
+    return Object.fromEntries(
+      Object.entries(projectMetadataData).map(([projectKey, metadata]) => {
+        const epochs = Object.keys(metadata)
+          .filter(epoch => epoch !== "all")
+          .map(epoch => parseInt(epoch))
+          .filter(epoch => !isNaN(epoch));
+        
+        if (epochs.length === 0) return [projectKey, null];
+        
+        const latestEpoch = Math.max(...epochs);
+        return [projectKey, metadata[latestEpoch]];
+      })
+    );
   }, [projectMetadataData]);
-
 
   return (
     <OctantDataContext.Provider value={{
@@ -393,17 +400,21 @@ export const OctantDataProvider = ({ children }) => {
       setCommunityTablePageSize,
       communityTablePageMax,
 
-
       communityUserSelection,
       handleCommunityUserSelection,
       communitySearch,
-      setCommunitySearch,
+      setCommunitySearch: useCallback((search: string) => {
+        setCommunitySearch(search);
+        setCommunityTablePage(0); // Reset page when searching
+      }, []),
       communityTableSort,
       setCommunityTableSort,
       UserTypes,
 
       fundingSearch,
-      setFundingSearch,
+      setFundingSearch: useCallback((search: string) => {
+        setFundingSearch(search);
+      }, []),
       fundingTableSort,
       setFundingTableSort,
 
@@ -437,6 +448,7 @@ type SummaryResponse = {
       num_users_locked_glm_change: number
     }
   }
+  total_funding_amount: number
   median_reward_amounts: { [epoch: string]: number | null }
 }
 
@@ -496,14 +508,3 @@ export type OctantProjectMetadata = {
 }
 
 export type OctantProjectMetadataOrNone = OctantProjectMetadata | null;
-
-
-// export type ProjectsByWebsiteResponse = {
-//   [website: string]: {
-//     owner_project: string
-//     display_name: string
-//     description: string
-//     main_github: string
-//     twitter: string
-//   }
-// }

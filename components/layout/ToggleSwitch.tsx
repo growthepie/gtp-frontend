@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
 interface ToggleValue {
   value: string;
@@ -39,6 +40,10 @@ export function ToggleSwitch({
   sliderColor = "bg-[#1F2726]",
 }: ToggleProps) {
   const [mounted, setMounted] = useState(false);
+  const [
+    containerRef,
+    { width: containerWidth}
+  ] = useElementSizeObserver<HTMLDivElement>();
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -118,6 +123,7 @@ export function ToggleSwitch({
       )}
       
       <div
+        ref={containerRef}
         className={`
           relative flex items-center rounded-full cursor-pointer
           ${config.container} ${config.minWidth} ${containerColor}
@@ -156,13 +162,13 @@ export function ToggleSwitch({
         <div
           className={`
             absolute top-1/2 z-20
-            w-1/2 ${config.slider} ${config.labelPadding} ${sliderColor}
+            ${config.slider} ${config.labelPadding} ${sliderColor}
             rounded-full flex items-center justify-center
             ${mounted ? 'transition-transform duration-300 ease-out' : ''}
           `}
           style={{
             left: `${config.containerPaddingPx / 2}px`,
-            transform: `translateY(-50%) translateX(${isLeftActive ? '0%' : `calc(100% - ${config.containerPaddingPx}px)`})`
+            transform: `translateY(-50%) ${isLeftActive ? 'translateX(0%)' : `translateX(calc(${containerWidth}px - 100% - 5px))`}`
           }}
         >
           <span className={`
