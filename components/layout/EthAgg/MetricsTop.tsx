@@ -64,6 +64,8 @@ interface UptimeDisplayProps {
 
 const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEventHover, eventExpanded, handleToggleEventExpansion, showEvents, handleToggleEvents }: UptimeDisplayProps) => {
   const [currentTime, setCurrentTime] = useState(new Date().getTime());
+  const [isEventsHovered, setIsEventsHovered] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   // Update the time every second for live counter
   useEffect(() => {
@@ -84,6 +86,52 @@ const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEvent
     return masterData ? [...masterData.ethereum_events].reverse() : [];
   }, [masterData]);
 
+  // Handle wheel scroll navigation
+  const handleDocumentWheel = useCallback((e: WheelEvent) => {
+    if (!containerRef.current || !isEventsHovered) return;
+    
+    // Check if the target is within our container
+    const target = e.target as Node;
+    if (containerRef.current.contains(target)) {
+      // Only prevent scrolling and navigate if an event is already expanded
+      if (!showEvents || reversedEvents.length === 0 || !eventExpanded) return;
+      
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const currentIndex = reversedEvents.findIndex(event => event.date === eventExpanded);
+      if (currentIndex === -1) return;
+      
+      const isScrollingDown = e.deltaY > 0;
+      
+      if (isScrollingDown) {
+        // Scroll down - next event
+        const nextIndex = currentIndex + 1;
+        if (nextIndex < reversedEvents.length) {
+          handleToggleEventExpansion(reversedEvents[nextIndex].date);
+        }
+      } else {
+        // Scroll up - previous event
+        if (currentIndex > 0) {
+          handleToggleEventExpansion(reversedEvents[currentIndex - 1].date);
+        }
+      }
+    }
+  }, [isEventsHovered, showEvents, reversedEvents, eventExpanded, handleToggleEventExpansion]);
+
+  // Add/remove document wheel listener when hovering
+  useEffect(() => {
+    if (isEventsHovered) {
+      document.addEventListener('wheel', handleDocumentWheel, { passive: false });
+    } else {
+      document.removeEventListener('wheel', handleDocumentWheel);
+    }
+    
+    return () => {
+      document.removeEventListener('wheel', handleDocumentWheel);
+    };
+  }, [isEventsHovered, handleDocumentWheel]);
+
   if (!masterData) {
     return null;
   }
@@ -92,11 +140,16 @@ const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEvent
   const isHidden = selectedBreakdownGroup === "Builders & Apps";
 
   return (
-    <div className={`bg-[#1F2726] w-full transition-height duration-300 ${showEvents && 'z-dropdown'
-      } ${isCompact ? 'h-[150px] overflow-hidden rounded-[15px] p-[15px]'
-        : isHidden ? 'h-[0px] overflow-hidden p-0'
-          : 'h-[306px] rounded-[15px] p-[15px]'
-      }`}>
+    <div 
+      ref={containerRef}
+      className={`bg-[#1F2726] w-full transition-height duration-300 ${showEvents && 'z-dropdown'
+        } ${isCompact ? 'h-[150px] overflow-hidden rounded-[15px] p-[15px]'
+          : isHidden ? 'h-[0px] overflow-hidden p-0'
+            : 'h-[306px] rounded-[15px] p-[15px]'
+        }`}
+      onMouseEnter={() => setIsEventsHovered(true)}
+      onMouseLeave={() => setIsEventsHovered(false)}
+    >
       <div className='heading-large-md mb-[15px]'>Ethereum Uptime</div>
       <div className='numbers-2xl mb-[30px]'>
         <div className='flex flex-col gap-y-[5px]'>
@@ -210,9 +263,8 @@ const EventIcon = ({ event, eventHover, index, eventExpanded }: { event: Ethereu
 
   const isThisEventHovered = eventHover === event.date;
   const isThisEventExpanded = eventExpanded === event.date;
-  const eventHoverOverride = eventHover === null && (isThisEventExpanded || (index === 0 && eventExpanded === null));
 
-  const showCalendar = isThisEventHovered || eventHoverOverride;
+  const showCalendar = isThisEventHovered || isThisEventExpanded;
 
   return (
     <div className="relative min-w-[24px] min-h-[32px]">
@@ -246,19 +298,21 @@ const EventIcon = ({ event, eventHover, index, eventExpanded }: { event: Ethereu
 
 const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpanded, handleToggleEventExpansion, event, index, nextEvent }: EventItemProps) => {
   const isExpanded = eventExpanded === eventKey;
-  
+  const eventLength = event.description?.length || 0;
   return (
-    <div className={`transition-all flex flex-col duration-300 cursor-pointer ${isExpanded ? 'h-[101px]' : 'h-[28px]'} w-full`}>
-      <div className={`${isExpanded ? 'h-[14px]' : 'h-0'}  flex relative top-[2px] w-[24px] justify-center text-[#5A6462] overflow-hidden gap-x-[2px] text-xxxs`}>{Intl.DateTimeFormat('en-US', { year: 'numeric' }).format(new Date(event.date))}</div>
+    <div className={`transition-all flex flex-col duration-300 cursor-pointer ${isExpanded ? 'h-[101px]' : 'h-[28px]'} w-full`} 
+      onMouseEnter={() => setEventHover(eventKey)}
+      onMouseLeave={() => setEventHover(null)}
+      onClick={() => handleToggleEventExpansion(eventKey)}
+    >
+      <div className={`${isExpanded ? 'h-[14px]' : 'h-0'}  flex relative top-[2px] w-[24px] justify-center overflow-hidden gap-x-[2px] text-xxxs`}>{Intl.DateTimeFormat('en-US', { year: 'numeric' }).format(new Date(event.date))}</div>
               <div
-          className={`flex items-center gap-x-[5px] ${eventHover === eventKey || (eventHover === null && (eventExpanded === eventKey || (index === 0 && eventExpanded === null))) ? 'text-xs' : 'text-xxxs text-[#5A6462]'
+          className={`flex items-center gap-x-[5px] ${eventHover === eventKey || ((index === 0 && eventExpanded === null)) ? 'text-xs' : 'text-xxxs text-[#5A6462]'
             } w-fit h-[24px]`}
-        onMouseEnter={() => setEventHover(eventKey)}
-        onMouseLeave={() => setEventHover(null)}
-        onClick={() => handleToggleEventExpansion(eventKey)}
+
       >
         <EventIcon event={event} eventHover={eventHover} index={index} eventExpanded={eventExpanded} />
-        <span className={`relative top-[3px] ${eventHover === eventKey || (eventHover === null && (eventExpanded === eventKey || (index === 0 && eventExpanded === null))) ? 'heading-small-xs' : 'heading-small-xxxs'} `}>{event.title}</span>
+        <span className={`relative top-[3px] ${eventHover === eventKey || ((eventExpanded === eventKey || (index === 0 && eventExpanded === null))) ? 'heading-small-xs text-[#C8D8D3]' : 'heading-small-xxxs text-[#5A6462]'} `}>{event.title}</span>
       </div>
       
      
@@ -271,7 +325,7 @@ const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpand
             </div>
             <div className='rounded-full min-h-[12px] text-xxxs text-[#5A6462]'>{nextEvent ? new Date(nextEvent.date).toLocaleDateString('en-US', { year: 'numeric' }) : ''}</div>
           </div>
-          <div className="text-xxs flex h-full items-center pb-4 pl-1.5 w-full">
+          <div className={`text-xxs flex h-full items-center pl-1.5 w-full ${eventLength > 100 ? 'pb-0' : 'pb-2'}`}>
 
             <div className=" leading-relaxed overflow-y-auto max-h-[70px]">
               {event.description || event.title}
