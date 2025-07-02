@@ -18,6 +18,7 @@ import { formatDuration, formatUptime, getGradientColor } from './helpers';
 import { EthereumEvents } from '@/types/api/MasterResponse';
 import CalendarIcon from '@/icons/svg/GTP-Calendar.svg';
 import Image from 'next/image';
+import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
 // Define the props type for TopEthAggMetricsComponent
 interface TopEthAggMetricsProps {
   selectedBreakdownGroup: string;
@@ -67,13 +68,13 @@ const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEvent
   const [currentTime, setCurrentTime] = useState(new Date().getTime());
   const [isEventsHovered, setIsEventsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   // Update the time every second for live counter
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(new Date().getTime());
     }, 1000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -90,21 +91,21 @@ const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEvent
   // Handle wheel scroll navigation
   const handleDocumentWheel = useCallback((e: WheelEvent) => {
     if (!containerRef.current || !isEventsHovered) return;
-    
+
     // Check if the target is within our container
     const target = e.target as Node;
     if (containerRef.current.contains(target)) {
       // Only prevent scrolling and navigate if an event is already expanded
       if (!showEvents || reversedEvents.length === 0 || !eventExpanded) return;
-      
+
       e.preventDefault();
       e.stopPropagation();
-      
+
       const currentIndex = reversedEvents.findIndex(event => event.date === eventExpanded);
       if (currentIndex === -1) return;
-      
+
       const isScrollingDown = e.deltaY > 0;
-      
+
       if (isScrollingDown) {
         // Scroll down - next event
         const nextIndex = currentIndex + 1;
@@ -127,7 +128,7 @@ const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEvent
     } else {
       document.removeEventListener('wheel', handleDocumentWheel);
     }
-    
+
     return () => {
       document.removeEventListener('wheel', handleDocumentWheel);
     };
@@ -141,7 +142,7 @@ const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEvent
   const isHidden = selectedBreakdownGroup === "Builders & Apps";
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className={`bg-[#1F2726] w-full transition-height duration-300 ${showEvents && 'z-dropdown'
         } ${isCompact ? 'h-[150px] overflow-hidden rounded-[15px] p-[15px]'
@@ -172,11 +173,11 @@ const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEvent
           }}
         >
           <div className='heading-large-md text-[#5A6462] mb-2'>Events</div>
-                    <div className="relative">
+          <div className="relative">
             {reversedEvents.map((event: any, index: number) => {
               const isThisEventHovered = eventHover === event.date;
               const isNextEventHovered = eventHover === reversedEvents[index + 1]?.date;
-              
+
               // Calculate cumulative height including expanded events above this one
               const topPosition = reversedEvents.slice(0, index).reduce((acc, prevEvent) => {
                 return acc + (eventExpanded === prevEvent.date ? 101 : 28);
@@ -200,12 +201,12 @@ const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEvent
                       nextEvent={reversedEvents[index + 1]}
                     />
                   </div>
-                  
+
                   {/* Separator Dots - only if not the last item */}
                   {index < reversedEvents.length - 1 && !isThisEventHovered && !isNextEventHovered && (index !== 0 || eventHover !== null || eventExpanded === reversedEvents[index + 1]?.date) && eventExpanded !== event.date && eventExpanded !== reversedEvents[index + 1]?.date && (
                     <div
                       className="absolute flex-col gap-y-[4px] pt-[3px] flex items-center gap-x-[2px] "
-                      style={{ 
+                      style={{
                         top: `${topPosition + (eventExpanded === event.date ? 101 : 26) - 5}px`, // Position after current item
                         left: '11px' // Center under the icon
                       }}
@@ -217,7 +218,7 @@ const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEvent
                 </div>
               );
             })}
-            </div>
+          </div>
         </div>
 
         <div className={`w-full h-[18px] flex items-center justify-center relative z-10 cursor-pointer top-[0px] transition-opacity duration-300 ${isCompact ? 'opacity-0' : 'opacity-100'
@@ -254,7 +255,7 @@ const EventIcon = ({ event, eventHover, index, eventExpanded }: { event: Ethereu
       const date = new Date(dateString);
       const fullMonth = date.toLocaleDateString('en-US', { month: 'long' }).toUpperCase();
       const shortMonth = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-      
+
       // If full month name is 4 characters or shorter, use it; otherwise use short version
       return fullMonth.length <= 4 ? fullMonth : shortMonth;
     } catch {
@@ -271,11 +272,10 @@ const EventIcon = ({ event, eventHover, index, eventExpanded }: { event: Ethereu
     <div className="relative min-w-[24px] min-h-[32px]">
       {/* Calendar */}
       <span className='absolute inset-0 '></span>
-      <div className={`absolute inset-0 transition-all duration-300 ease-in-out top-[8px] ${
-        showCalendar 
-          ? 'opacity-100 scale-100' 
+      <div className={`absolute inset-0 transition-all duration-300 ease-in-out top-[8px] ${showCalendar
+          ? 'opacity-100 scale-100'
           : 'opacity-0 scale-90 pointer-events-none'
-      }`}>
+        }`}>
         <Image src={CalendarIcon} alt="Calendar" width={24} height={24} />
         <div className='absolute text-[#1F2726] -top-[0.5px] left-0 right-0 heading-small-xxxxxs text-center'>
           {getMonthDisplay(event.date)}
@@ -284,13 +284,12 @@ const EventIcon = ({ event, eventHover, index, eventExpanded }: { event: Ethereu
           {Intl.DateTimeFormat('en-US', { day: 'numeric' }).format(new Date(event.date))}
         </div>
       </div>
-      
+
       {/* Circle */}
-      <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ease-in-out ${
-        !showCalendar 
-          ? 'opacity-100 scale-100' 
+      <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ease-in-out ${!showCalendar
+          ? 'opacity-100 scale-100'
           : 'opacity-0 scale-75 pointer-events-none'
-      }`}>
+        }`}>
         <div className='w-[8px] h-[8px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] rounded-full'></div>
       </div>
     </div>
@@ -301,39 +300,39 @@ const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpand
   const isExpanded = eventExpanded === eventKey;
   const eventLength = event.description?.length || 0;
   return (
-    <div className={`transition-all flex flex-col duration-300 cursor-pointer ${isExpanded ? 'h-[101px]' : 'h-[28px]'} w-full`} 
+    <div className={`transition-all flex flex-col duration-300 cursor-pointer ${isExpanded ? 'h-[101px]' : 'h-[28px]'} w-full`}
       onMouseEnter={() => setEventHover(eventKey)}
       onMouseLeave={() => setEventHover(null)}
       onClick={() => handleToggleEventExpansion(eventKey)}
     >
       <div className={`${isExpanded ? 'h-[14px]' : 'h-0'}  flex relative top-[2px] w-[24px] justify-center overflow-hidden gap-x-[2px] text-xxxs`}>{Intl.DateTimeFormat('en-US', { year: 'numeric' }).format(new Date(event.date))}</div>
-              <div
-          className={`flex items-center gap-x-[5px] ${eventHover === eventKey || ((index === 0 && eventExpanded === null)) ? 'text-xs' : 'text-xxxs text-[#5A6462]'
-            } w-fit h-[24px]`}
+      <div
+        className={`flex items-center gap-x-[5px] ${eventHover === eventKey || ((index === 0 && eventExpanded === null)) ? 'text-xs' : 'text-xxxs text-[#5A6462]'
+          } w-fit h-[24px]`}
 
       >
         <EventIcon event={event} eventHover={eventHover} index={index} eventExpanded={eventExpanded} />
         <span className={`relative top-[3px] ${eventHover === eventKey || ((eventExpanded === eventKey || (index === 0 && eventExpanded === null))) ? 'heading-small-xs text-[#C8D8D3]' : 'heading-small-xxxs text-[#5A6462]'} `}>{event.title}</span>
       </div>
-      
-     
-        <div className={` flex w-full justify-between pl-0 transition-height duration-100 overflow-hidden ${isExpanded ? 'h-[80px] mt-0' : 'h-0 mt-0'}`}>
-          <div className='flex flex-col justify-between gap-y-[4px] h-full overflow-y-hidden min-w-[24px] max-w-[24px] items-center '>
-            <div className='flex flex-col gap-y-[6px] overflow-y-hidden pt-1'>
-              {Array.from({ length: 10 }).map((_, i) => (
-                <div key={i + "event-item-description"} className='bg-[#5A6462] w-[2px] h-[2px] rounded-full flex-shrink-0' />
-              ))}
-            </div>
-            <div className='rounded-full min-h-[12px] text-xxxs text-[#5A6462]'>{nextEvent ? new Date(nextEvent.date).toLocaleDateString('en-US', { year: 'numeric' }) : ''}</div>
-          </div>
-          <div className={`text-xxs flex h-full items-center pl-1.5 w-full ${eventLength > 100 ? 'pb-0' : 'pb-2'}`}>
 
-            <div className=" leading-relaxed overflow-y-auto max-h-[70px]">
-              {event.description || event.title}
-            </div>
+
+      <div className={` flex w-full justify-between pl-0 transition-height duration-100 overflow-hidden ${isExpanded ? 'h-[80px] mt-0' : 'h-0 mt-0'}`}>
+        <div className='flex flex-col justify-between gap-y-[4px] h-full overflow-y-hidden min-w-[24px] max-w-[24px] items-center '>
+          <div className='flex flex-col gap-y-[6px] overflow-y-hidden pt-1'>
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div key={i + "event-item-description"} className='bg-[#5A6462] w-[2px] h-[2px] rounded-full flex-shrink-0' />
+            ))}
+          </div>
+          <div className='rounded-full min-h-[12px] text-xxxs text-[#5A6462]'>{nextEvent ? new Date(nextEvent.date).toLocaleDateString('en-US', { year: 'numeric' }) : ''}</div>
+        </div>
+        <div className={`text-xxs flex h-full items-center pl-1.5 w-full ${eventLength > 100 ? 'pb-0' : 'pb-2'}`}>
+
+          <div className=" leading-relaxed overflow-y-auto max-h-[70px]">
+            {event.description || event.title}
           </div>
         </div>
-  
+      </div>
+
     </div>
   );
 });
@@ -986,36 +985,47 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
             <div className={`heading-large-md ${isCompact ? 'mb-[10px]' : 'mb-[30px]'}`}>
               Token Transfer Fee
             </div>
-
-            <div className='pt-[15px] mb-[50px] flex flex-col gap-y-[15px]'>
-              <FeeDisplayRow
-                title="Ethereum Mainnet"
-                costValue={activeGlobalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth'] || 0}
-                costHistory={historyState.ethCostLive}
-                showUsd={showUsd}
-                gradientClass="from-[#596780] to-[#94ABD3]"
-                selectedIndex={uiState.ethCostSelectedIndex}
-                hoverIndex={uiState.ethCostHoverIndex}
-                onSelect={(index) => setUiState(prev => ({ ...prev, ethCostSelectedIndex: index }))}
-                onHover={(index) => setUiState(prev => ({ ...prev, ethCostHoverIndex: index }))}
-                getGradientColor={getGradientColor}
-                formatNumber={formatNumber}
-              />
-              <FeeDisplayRow
-                title="Layer 2s"
-                costValue={activeGlobalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] || 0}
-                costHistory={historyState.layer2CostLive}
-                showUsd={showUsd}
-                gradientClass="from-[#FE5468] to-[#FFDF27]"
-                selectedIndex={uiState.l2CostSelectedIndex}
-                hoverIndex={uiState.l2CostHoverIndex}
-                onSelect={(index) => setUiState(prev => ({ ...prev, l2CostSelectedIndex: index }))}
-                onHover={(index) => setUiState(prev => ({ ...prev, l2CostHoverIndex: index }))}
-                getGradientColor={getGradientColor}
-                formatNumber={formatNumber}
-              />
-            </div>
-
+            <GTPTooltipNew
+              size="md"
+              placement="top-start"
+              allowInteract={true}
+              trigger={
+                <div className='pt-[15px] mb-[50px] flex flex-col gap-y-[15px]'>
+                  <FeeDisplayRow
+                    title="Ethereum Mainnet"
+                    costValue={activeGlobalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth'] || 0}
+                    costHistory={historyState.ethCostLive}
+                    showUsd={showUsd}
+                    gradientClass="from-[#596780] to-[#94ABD3]"
+                    selectedIndex={uiState.ethCostSelectedIndex}
+                    hoverIndex={uiState.ethCostHoverIndex}
+                    onSelect={(index) => setUiState(prev => ({ ...prev, ethCostSelectedIndex: index }))}
+                    onHover={(index) => setUiState(prev => ({ ...prev, ethCostHoverIndex: index }))}
+                    getGradientColor={getGradientColor}
+                    formatNumber={formatNumber}
+                  />
+                  <FeeDisplayRow
+                    title="Layer 2s"
+                    costValue={activeGlobalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] || 0}
+                    costHistory={historyState.layer2CostLive}
+                    showUsd={showUsd}
+                    gradientClass="from-[#FE5468] to-[#FFDF27]"
+                    selectedIndex={uiState.l2CostSelectedIndex}
+                    hoverIndex={uiState.l2CostHoverIndex}
+                    onSelect={(index) => setUiState(prev => ({ ...prev, l2CostSelectedIndex: index }))}
+                    onHover={(index) => setUiState(prev => ({ ...prev, l2CostHoverIndex: index }))}
+                    getGradientColor={getGradientColor}
+                    formatNumber={formatNumber}
+                  />
+                </div>
+              }
+              containerClass="flex flex-col gap-y-[10px]"
+              positionOffset={{ mainAxis: -20, crossAxis: 0 }}
+            >
+              <TooltipBody className='pl-[20px]'>
+                This is a tooltip
+              </TooltipBody>
+            </GTPTooltipNew>
             {/* Cost Chains List */}
             <div className={`relative flex flex-col gap-y-[5px] -mx-[15px] bg-[#1F2726] z-10 rounded-b-[15px] ${showChainsCost ? 'z-dropdown pb-[10px] shadow-lg' : 'pb-0'
               }`}>

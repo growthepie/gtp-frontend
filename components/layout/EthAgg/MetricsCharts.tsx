@@ -12,6 +12,7 @@ import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import "@/app/highcharts.axis.css";
 import { AggChart } from './AggChart';
+import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
 
 interface MetricsChartsProps {
   selectedBreakdownGroup: string;
@@ -347,8 +348,39 @@ const MeetLayer2s = React.memo(({ meetL2sData, selectedBreakdownGroup }: { meetL
               </div>
               <div className='flex flex-col gap-y-[5px]'>
                 <div className='flex items-center gap-x-[5px]'>
-                  <GTPIcon icon='gtp-crosschain' size='sm' />
-                  <GTPIcon icon='gtp-defi' size='sm' />
+                <GTPTooltipNew
+                  size="md"
+                  placement="bottom-start"
+                  allowInteract={true}
+                  trigger={
+                    <div>
+                      <GTPIcon icon='gtp-crosschain' size='sm' />
+                    </div>
+                  }
+                  containerClass="flex flex-col gap-y-[10px]"
+                  positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+                >
+                  <TooltipBody className='pl-[20px]'>
+                    This is a tooltip
+                  </TooltipBody>
+                </GTPTooltipNew>
+                <GTPTooltipNew
+                  size="md"
+                  placement="bottom-start"
+                  allowInteract={true}
+                  trigger={
+                    <div>
+                      <GTPIcon icon='gtp-defi' size='sm' />
+                    </div>
+                  }
+                  containerClass="flex flex-col gap-y-[10px]"
+                  positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+                >
+                  <TooltipBody className='pl-[20px]'>
+                    This is a tooltip
+                  </TooltipBody>
+                </GTPTooltipNew>
+                  
                 </div>
                 <div className='text-xs'>Predominately used for</div>
               </div>

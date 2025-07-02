@@ -10,7 +10,7 @@ import { getPageMetadata } from "@/lib/metadata";
 
 export async function generateMetadata(): Promise<Metadata> {  
   const metadata = await getPageMetadata(
-    '/eth-agg',
+    '/ethereum-ecosystem',
     {}
   );
   return {

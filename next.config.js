@@ -202,6 +202,11 @@ const nextConfig = {
           "https://arbiscan.io/address/0x18f79D6d2166997c9A237C25c4692647CD4faf59",
         permanent: true,
       },
+      {
+        source: "/ethereum-ecosystem",
+        destination: "/ethereum-ecosystem/metrics",
+        permanent: false,
+      }
     ];
   },
   images: {
