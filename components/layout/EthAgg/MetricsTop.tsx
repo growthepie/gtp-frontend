@@ -56,13 +56,14 @@ interface UptimeDisplayProps {
   setEventHover: (value: string | null) => void;
   eventExpanded: string | null;
   handleToggleEventExpansion: (eventKey: string) => void;
+  handleSetExpandedEvent: (eventKey: string) => void;
   showEvents: boolean;
   handleToggleEvents: (e: React.MouseEvent) => void;
 }
 
 
 
-const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEventHover, eventExpanded, handleToggleEventExpansion, showEvents, handleToggleEvents }: UptimeDisplayProps) => {
+const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEventHover, eventExpanded, handleToggleEventExpansion, handleSetExpandedEvent, showEvents, handleToggleEvents }: UptimeDisplayProps) => {
   const [currentTime, setCurrentTime] = useState(new Date().getTime());
   const [isEventsHovered, setIsEventsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -108,16 +109,16 @@ const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEvent
         // Scroll down - next event
         const nextIndex = currentIndex + 1;
         if (nextIndex < reversedEvents.length) {
-          handleToggleEventExpansion(reversedEvents[nextIndex].date);
+          handleSetExpandedEvent(reversedEvents[nextIndex].date);
         }
       } else {
         // Scroll up - previous event
         if (currentIndex > 0) {
-          handleToggleEventExpansion(reversedEvents[currentIndex - 1].date);
+          handleSetExpandedEvent(reversedEvents[currentIndex - 1].date);
         }
       }
     }
-  }, [isEventsHovered, showEvents, reversedEvents, eventExpanded, handleToggleEventExpansion]);
+  }, [isEventsHovered, showEvents, reversedEvents, eventExpanded, handleSetExpandedEvent]);
 
   // Add/remove document wheel listener when hovering
   useEffect(() => {
@@ -656,6 +657,17 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   const { chainData, globalMetrics, lastUpdated, connectionStatus } = useSSEMetrics();
   const { AllChainsByKeys } = useMaster();
 
+  // Cached data state to maintain previous values when SSE fails
+  const [cachedData, setCachedData] = useState<{
+    chainData: any;
+    globalMetrics: any;
+    hasInitialData: boolean;
+  }>({
+    chainData: undefined,
+    globalMetrics: undefined,
+    hasInitialData: false,
+  });
+
   // Consolidated state
   const [uiState, setUiState] = useState({
     eventHover: null as string | null,
@@ -686,10 +698,25 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     debounceMs: 150,
   });
 
+  // Update cached data when new SSE data arrives
+  useEffect(() => {
+    if (chainData !== undefined && globalMetrics !== undefined) {
+      setCachedData({
+        chainData,
+        globalMetrics,
+        hasInitialData: true,
+      });
+    }
+  }, [chainData, globalMetrics]);
+
+  // Use cached data if available, otherwise use current SSE data
+  const activeChainData = cachedData.chainData || chainData;
+  const activeGlobalMetrics = cachedData.globalMetrics || globalMetrics;
+
   // Memoized calculations
   const filteredTPSChains = useMemo(() => {
     return Object.keys(historyState.chainsTPSHistory)
-      .filter((chain) => chainData[chain]?.tps)
+      .filter((chain) => activeChainData?.[chain]?.tps)
       .sort((a, b) =>
         historyState.chainsTPSHistory[b][historyState.chainsTPSHistory[b].length - 1] -
         historyState.chainsTPSHistory[a][historyState.chainsTPSHistory[a].length - 1]
@@ -699,13 +726,13 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
         y: index * 21,
         height: 18,
       }));
-  }, [historyState.chainsTPSHistory, chainData]);
+  }, [historyState.chainsTPSHistory, activeChainData]);
 
   const filteredCostChains = useMemo(() => {
     const costKey = showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer';
     return Object.keys(historyState.chainsCostHistory)
       .filter((chain) => {
-        const cost = chainData[chain]?.[costKey];
+        const cost = activeChainData?.[chain]?.[costKey];
         const isEthereum = AllChainsByKeys[chain]?.key === 'ethereum';
         return cost > 0 && !isEthereum;
       })
@@ -718,7 +745,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
         y: index * 21,
         height: 18,
       }));
-  }, [historyState.chainsCostHistory, chainData, showUsd, AllChainsByKeys]);
+  }, [historyState.chainsCostHistory, activeChainData, showUsd, AllChainsByKeys]);
 
   // Optimized transitions
   const tpsTransitions = useTransition(filteredTPSChains, {
@@ -773,35 +800,43 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     }));
   }, []);
 
+  // Separate function for scroll navigation that directly sets expanded event (no toggle)
+  const handleSetExpandedEvent = useCallback((eventKey: string) => {
+    setUiState(prev => ({
+      ...prev,
+      eventExpanded: eventKey
+    }));
+  }, []);
+
   // Optimized effects
   useEffect(() => {
-    if (!globalMetrics) return;
+    if (!activeGlobalMetrics) return;
 
     setHistoryState(prev => ({
       ...prev,
       totalTPSLive: prev.totalTPSLive.length >= TPS_HISTORY_LIMIT
-        ? [...prev.totalTPSLive.slice(1), globalMetrics.total_tps ?? 0]
-        : [...prev.totalTPSLive, globalMetrics.total_tps ?? 0],
+        ? [...prev.totalTPSLive.slice(1), activeGlobalMetrics.total_tps ?? 0]
+        : [...prev.totalTPSLive, activeGlobalMetrics.total_tps ?? 0],
       ethCostLive: prev.ethCostLive.length >= HISTORY_LIMIT
-        ? [...prev.ethCostLive.slice(1), globalMetrics.ethereum_tx_cost_usd ?? 0]
-        : [...prev.ethCostLive, globalMetrics.ethereum_tx_cost_usd ?? 0],
+        ? [...prev.ethCostLive.slice(1), activeGlobalMetrics.ethereum_tx_cost_usd ?? 0]
+        : [...prev.ethCostLive, activeGlobalMetrics.ethereum_tx_cost_usd ?? 0],
       layer2CostLive: prev.layer2CostLive.length >= HISTORY_LIMIT
-        ? [...prev.layer2CostLive.slice(1), globalMetrics.layer2s_tx_cost_usd ?? 0]
-        : [...prev.layer2CostLive, globalMetrics.layer2s_tx_cost_usd ?? 0],
+        ? [...prev.layer2CostLive.slice(1), activeGlobalMetrics.layer2s_tx_cost_usd ?? 0]
+        : [...prev.layer2CostLive, activeGlobalMetrics.layer2s_tx_cost_usd ?? 0],
     }));
-  }, [globalMetrics]);
+  }, [activeGlobalMetrics]);
 
   useEffect(() => {
-    if (!chainData || Object.keys(chainData).length === 0) return;
+    if (!activeChainData || Object.keys(activeChainData).length === 0) return;
 
     setHistoryState(prev => {
       const newCostHistory = { ...prev.chainsCostHistory };
       const newTpsHistory = { ...prev.chainsTPSHistory };
       let hasChanges = false;
 
-      for (const chainId in chainData) {
-        if (chainData.hasOwnProperty(chainId)) {
-          const chain = chainData[chainId];
+      for (const chainId in activeChainData) {
+        if (activeChainData.hasOwnProperty(chainId)) {
+          const chain = activeChainData[chainId];
 
           // Update cost history
           const costValue = chain[showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] ?? 0;
@@ -831,9 +866,10 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
         chainsTPSHistory: newTpsHistory,
       } : prev;
     });
-  }, [chainData, showUsd]);
+  }, [activeChainData, showUsd]);
 
-  if (globalMetrics === undefined || chainData === undefined) {
+  // Don't show anything until we have initial data
+  if (!cachedData.hasInitialData) {
     return null;
   }
 
@@ -850,7 +886,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
         />
       )}
 
-      {connectionStatus === 'connected' && (
+      {(
         <div className='flex flex-col xl:flex-row gap-[15px] w-full'>
           <UptimeDisplay
             selectedBreakdownGroup={selectedBreakdownGroup}
@@ -858,6 +894,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
             setEventHover={(value) => setUiState(prev => ({ ...prev, eventHover: value }))}
             eventExpanded={uiState.eventExpanded}
             handleToggleEventExpansion={handleToggleEventExpansion}
+            handleSetExpandedEvent={handleSetExpandedEvent}
             showEvents={showEvents}
             handleToggleEvents={handleToggleEvents}
           />
@@ -879,10 +916,10 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                   {Intl.NumberFormat('en-US', {
                     minimumFractionDigits: 1,
                     maximumFractionDigits: 1
-                  }).format(globalMetrics.total_tps || 0)}
+                  }).format(activeGlobalMetrics.total_tps || 0)}
                 </div>
-                <div className='numbers-xs flex items-center gap-x-0.5'><span className='text-xs'>Max (24h):</span>{globalMetrics.total_tps_24h_high || 0} TPS</div>
-                <div className='numbers-xs flex items-center gap-x-0.5'><span className='text-xs'>ATH:</span>{globalMetrics.total_tps_ath || 0} TPS</div>
+                <div className='numbers-xs flex items-center gap-x-0.5'><span className='text-xs'>Max (24h):</span>{activeGlobalMetrics.total_tps_24h_high || 0} TPS</div>
+                <div className='numbers-xs flex items-center gap-x-0.5'><span className='text-xs'>ATH:</span>{activeGlobalMetrics.total_tps_ath || 0} TPS</div>
               </div>
 
               <div className={`w-full -mt-[5px]`}>
@@ -890,7 +927,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                   }`}>
                   <TPSChart
                     totalTPSLive={historyState.totalTPSLive}
-                    globalMetrics={globalMetrics}
+                    globalMetrics={activeGlobalMetrics}
                     showUsd={showUsd}
                   />
                 </div>
@@ -917,9 +954,9 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                     >
                       <ChainTransitionItem
                         chainId={chainId}
-                        chainData={chainData}
+                        chainData={activeChainData}
                         AllChainsByKeys={AllChainsByKeys}
-                        globalMetrics={globalMetrics}
+                        globalMetrics={activeGlobalMetrics}
                         type="tps"
                       />
                     </animated.div>
@@ -953,7 +990,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
             <div className='pt-[15px] mb-[50px] flex flex-col gap-y-[15px]'>
               <FeeDisplayRow
                 title="Ethereum Mainnet"
-                costValue={globalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth'] || 0}
+                costValue={activeGlobalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth'] || 0}
                 costHistory={historyState.ethCostLive}
                 showUsd={showUsd}
                 gradientClass="from-[#596780] to-[#94ABD3]"
@@ -966,7 +1003,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
               />
               <FeeDisplayRow
                 title="Layer 2s"
-                costValue={globalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] || 0}
+                costValue={activeGlobalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] || 0}
                 costHistory={historyState.layer2CostLive}
                 showUsd={showUsd}
                 gradientClass="from-[#FE5468] to-[#FFDF27]"
@@ -999,9 +1036,9 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                     >
                       <ChainTransitionItem
                         chainId={chainId}
-                        chainData={chainData}
+                        chainData={activeChainData}
                         AllChainsByKeys={AllChainsByKeys}
-                        globalMetrics={globalMetrics}
+                        globalMetrics={activeGlobalMetrics}
                         type="cost"
                         showUsd={showUsd}
                       />
