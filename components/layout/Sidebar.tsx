@@ -19,6 +19,7 @@ import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import FocusSwitch from "./FocusSwitch";
 import { GTPIcon } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import { useLocalStorage } from "usehooks-ts";
 
 type SidebarProps = {
   className?: string;
@@ -29,6 +30,8 @@ type SidebarProps = {
 export default function Sidebar({ isMobile = false }: SidebarProps) {
   const { isSidebarOpen, isMobileSidebarOpen, toggleMobileSidebar } =
     useUIContext();
+  const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", false);
+
 
   const { ChainsNavigationItems } = useMaster();
 
@@ -90,7 +93,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
     }
   }, [isMobileSidebarOpen]);
 
-  if (isMobile)
+  if (isMobile && !showGlobalSearchBar)
     return (
       <>
         <button
