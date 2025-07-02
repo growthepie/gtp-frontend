@@ -309,7 +309,7 @@ export function AggChart({
     const totalL2sItem = sortedData.find(item => item.seriesName === "Total L2s");
     const showL2List = totalL2sItem && layer2Data && Array.isArray(layer2Data) && layer2Data.length > 0;
 
-         const tooltipWidth = 256; // max-w-64 = 256px
+     const tooltipWidth = 256; // max-w-64 = 256px
      const baseHeight = 80; // base tooltip height
      const itemHeight = 20; // height per data item
      const l2SectionHeight = showL2List ? 60 + (layer2Data.length * 32) : 0; // L2 section height
@@ -356,7 +356,7 @@ export function AggChart({
 
      return (
        <div 
-         className="absolute pointer-events-none z-[999] bg-[#2A3433EE] rounded-xl p-3 min-w-60 max-w-64 text-xs font-raleway shadow-lg"
+         className="absolute pointer-events-none z-[999] bg-[#2A3433EE] rounded-xl p-3 min-w-60 max-w-80 text-xs font-raleway shadow-lg"
          style={{
            left: tooltipX,
            top: tooltipY,
@@ -381,9 +381,19 @@ export function AggChart({
           );
         })}
 
-        {showL2List && (
+        {/* Only show this list for the l2 count chart */}
+        {chartKey != "l2Count" && ( 
+        <div className="flex w-full h-[15px] space-x-2 items-center font-medium mt-2 pl-3">
+          <div className="text-xs flex-1 text-left text-nowrap">Total</div>
+          <div className="text-right numbers-xs">
+            {prefix}{Intl.NumberFormat('en-US', { notation: 'standard', maximumFractionDigits: 2 }).format(sortedData.reduce((sum, item) => sum + item.value, 0))}
+          </div>
+        </div>
+        )}
+
+        {showL2List && (  
           <div className='pl-3'>
-            <div className="heading-small-xxs mt-1">L2s Launched this Month</div>
+            <div className="heading-small-xxs mt-3">Launched this Month  </div>
             <div className="flex flex-wrap items-center gap-x-[5px] gap-y-[5px] h-fit mt-2 mb-1">
               {layer2Data.map((l2Item: any, index: number) => {
                 const chainInfo = AllChainsByKeys[l2Item.origin_key];
