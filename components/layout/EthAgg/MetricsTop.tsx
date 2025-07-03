@@ -172,7 +172,7 @@ const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEvent
             height: !showEvents ? `130px` : `${reversedEvents.reduce((acc, event) => acc + (eventExpanded === event.date ? 101 : 28), 35)}px`
           }}
         >
-          <div className='heading-large-md text-[#5A6462] mb-2'>Events</div>
+          <div className='heading-large-md text-[#5A6462] mb-2'>Network Upgrades</div>
           <div className="relative">
             {reversedEvents.map((event: any, index: number) => {
               const isThisEventHovered = eventHover === event.date;
@@ -1023,7 +1023,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
               positionOffset={{ mainAxis: -20, crossAxis: 0 }}
             >
               <TooltipBody className='pl-[20px]'>
-                This is a tooltip
+                Ethereum Mainnet only produces a new block about every 12 seconds, whereas Layer 2s update in intervals between 200ms and 2s.
               </TooltipBody>
             </GTPTooltipNew>
             {/* Cost Chains List */}
