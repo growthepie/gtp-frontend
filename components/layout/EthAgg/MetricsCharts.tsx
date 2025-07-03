@@ -302,7 +302,7 @@ const MeetLayer2s = React.memo(({ meetL2sData, selectedBreakdownGroup }: { meetL
     <div className="flex flex-col gap-y-[15px] w-full overflow-hidden">
       <div className='flex gap-x-[8px] items-center'>
         <GTPIcon icon='gtp-multiple-chains' size='lg' />
-        <div className='heading-large-lg select-auto'>Meet L2s</div>
+        <div className='heading-large-lg select-auto'>Meet Layer 2s</div>
       </div>
       <div className='text-md pl-[44px] overflow-hidden select-auto'>Ethereum scales using a wide set of different Layer 2s, built by 3rd party teams. Take a closer look at them on our platform. </div>
       <div className='flex w-full gap-[5px] overflow-hidden'>
