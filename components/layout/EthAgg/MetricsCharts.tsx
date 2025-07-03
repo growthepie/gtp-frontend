@@ -338,7 +338,7 @@ const MeetLayer2s = React.memo(({ meetL2sData, selectedBreakdownGroup }: { meetL
               </div>
               <div className='flex gap-x-[10px] items-center'>
                 <div className='flex flex-col gap-y-[5px]'>
-                  <div className='numbers-2xl'>{formatNumber(l2Data[showUsd ? "stables_mcap_usd" : "stables_mcap_eth"])}</div>
+                  <div className='numbers-2xl'>${formatNumber(l2Data[showUsd ? "stables_mcap_usd" : "stables_mcap_eth"])}</div>
                   <div className='text-xs'>Stablecoin Supply</div>
                 </div>
                 <div className='flex flex-col gap-y-[5px]'>
