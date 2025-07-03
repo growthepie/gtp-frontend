@@ -375,7 +375,7 @@ export function AggChart({
               </div>
               <div className="text-xs flex-1 text-left text-nowrap">{item.seriesName}</div>
               <div className="text-right numbers-xs">
-                {prefix}{Intl.NumberFormat('en-US', { notation: 'standard', maximumFractionDigits: 2 }).format(item.value)}
+                {prefix}{Intl.NumberFormat('en-US', { notation: 'standard', maximumFractionDigits: chartKey === "tps" ? 2 : 0  }).format(item.value)}
               </div>
             </div>
           );
@@ -386,7 +386,7 @@ export function AggChart({
         <div className="flex w-full h-[15px] space-x-2 items-center font-medium mt-2 pl-3">
           <div className="text-xs flex-1 text-left text-nowrap">Total</div>
           <div className="text-right numbers-xs">
-            {prefix}{Intl.NumberFormat('en-US', { notation: 'standard', maximumFractionDigits: 2 }).format(sortedData.reduce((sum, item) => sum + item.value, 0))}
+            {prefix}{Intl.NumberFormat('en-US', { notation: 'standard', maximumFractionDigits: chartKey === "tps" ? 2 : 0 }).format(sortedData.reduce((sum, item) => sum + item.value, 0))}
           </div>
         </div>
         )}
