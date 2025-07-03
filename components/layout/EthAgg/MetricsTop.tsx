@@ -569,9 +569,8 @@ const ChainTransitionItem = React.memo(({
 }: ChainTransitionItemProps) => {
   const chain = AllChainsByKeys[chainId];
 
-
-  const chainColor = chain.colors.dark[0];
-  const chainName = chain.name_short;
+  const chainColor = chain?.colors?.dark?.[0] || "#7D8887";
+  const chainName = chain?.name_short || chainData[chainId]?.display_name ;
 
   const value = useMemo(() => {
     if (type === 'tps') {
@@ -611,7 +610,7 @@ const ChainTransitionItem = React.memo(({
     }
   }, [value, globalMetrics, type, chainData, chainId]);
 
-  if (!chain) return null;
+  //if (!chain) return null;
 
   return (
     <div className='flex flex-col w-full items-center justify-between'>
