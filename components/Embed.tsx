@@ -118,7 +118,7 @@ export default function Embed() {
                 >
                   {`<iframe width="950" height="950" src="${pathToEmbed(
                     pathname ?? "",
-                  )}" title="growthepie.xyz"></iframe>`}
+                  )}" title="growthepie.com"></iframe>`}
                 </textarea>
               </div>
               <div className="flex mt-[15px]">
@@ -128,7 +128,7 @@ export default function Embed() {
                     copyText(
                       `<iframe width="950" height="950" src="${pathToEmbed(
                         pathname ?? "",
-                      )}" title="growthepie.xyz"></iframe>`,
+                      )}" title="growthepie.com"></iframe>`,
                     );
                     triggerCopy();
                   }}

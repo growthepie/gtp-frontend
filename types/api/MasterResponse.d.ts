@@ -12,7 +12,20 @@
   maturity_levels: { [key: string]: MaturityLevels};
   composition_types: { [key: string]: CompositionTypes};
   last_updated_utc: string;
+  ethereum_events: EthereumEvents[];
 }
+
+export interface EthereumEvents {
+  date: string;
+  description: string;
+  issuance: string;
+  short_title: string;
+  show_in_chart: boolean;
+  source: string;
+  title: string;
+  type: string;
+}
+
 
 export interface CompositionTypes {
   name: string;

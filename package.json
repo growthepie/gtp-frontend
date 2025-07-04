@@ -27,6 +27,8 @@
     "cookies-next": "^2.1.1",
     "crossoriginworker": "^1.1.0",
     "crypto-browserify": "^3.12.1",
+    "echarts": "^5.6.0",
+    "echarts-for-react": "^3.0.2",
     "file-saver": "^2.0.5",
     "framer-motion": "^10.3.2",
     "graphql": "^16.7.1",

@@ -10,7 +10,7 @@ import { getPageMetadata } from "@/lib/metadata";
 
 export async function generateMetadata(): Promise<Metadata> {  
   const metadata = await getPageMetadata(
-    '/eth-agg',
+    '/ethereum-ecosystem',
     {}
   );
   return {
@@ -30,25 +30,8 @@ export default async function Layout({
   return (
     <>
 
-      <div className="mb-[30px]">{children}</div>
-      <Container>
-        <QuestionAnswer
-          startOpen={true}
-          // className="px-[0px]"
-          // questionClassName="px-[30px]"
-          question="Details"
-          answer={
-            <>
+      <div className="mb-[30px] select-none">{children}</div>
 
-            </>
-          }
-          note={
-            <>
-
-            </>
-          }
-        />
-      </Container >
     </>
   );
 }

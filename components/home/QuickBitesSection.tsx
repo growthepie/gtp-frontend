@@ -22,7 +22,7 @@ const QuickBitesSection: React.FC = () => {
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
           <GTPIcon
-            icon="gtp-metrics-activeaddresses"
+            icon="gtp-quick-bites"
             size="lg"
           />
           <Heading

@@ -15,7 +15,10 @@ import { tooltipPositioner } from '@/lib/chartUtils';
 import { useSSEMetrics } from './useSSEMetrics';
 import { FeeDisplayRow } from './FeeDisplayRow';
 import { formatDuration, formatUptime, getGradientColor } from './helpers';
-
+import { EthereumEvents } from '@/types/api/MasterResponse';
+import CalendarIcon from '@/icons/svg/GTP-Calendar.svg';
+import Image from 'next/image';
+import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
 // Define the props type for TopEthAggMetricsComponent
 interface TopEthAggMetricsProps {
   selectedBreakdownGroup: string;
@@ -52,21 +55,103 @@ interface UptimeDisplayProps {
   selectedBreakdownGroup: string;
   eventHover: string | null;
   setEventHover: (value: string | null) => void;
+  eventExpanded: string | null;
+  handleToggleEventExpansion: (eventKey: string) => void;
+  handleSetExpandedEvent: (eventKey: string) => void;
+  showEvents: boolean;
+  handleToggleEvents: (e: React.MouseEvent) => void;
 }
 
-const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEventHover }: UptimeDisplayProps) => {
-  const uptimeData = useMemo(() => {
-    return formatUptime(new Date().getTime() - new Date(1438269973000).getTime());
+
+
+const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEventHover, eventExpanded, handleToggleEventExpansion, handleSetExpandedEvent, showEvents, handleToggleEvents }: UptimeDisplayProps) => {
+  const [currentTime, setCurrentTime] = useState(new Date().getTime());
+  const [isEventsHovered, setIsEventsHovered] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Update the time every second for live counter
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date().getTime());
+    }, 1000);
+
+    return () => clearInterval(interval);
   }, []);
+
+  const uptimeData = useMemo(() => {
+    return formatUptime(currentTime - new Date(1438269973000).getTime());
+  }, [currentTime]);
+
+  const { data: masterData } = useMaster();
+
+  const reversedEvents = useMemo(() => {
+    return masterData ? [...masterData.ethereum_events].reverse() : [];
+  }, [masterData]);
+
+  // Handle wheel scroll navigation
+  const handleDocumentWheel = useCallback((e: WheelEvent) => {
+    if (!containerRef.current || !isEventsHovered) return;
+
+    // Check if the target is within our container
+    const target = e.target as Node;
+    if (containerRef.current.contains(target)) {
+      // Only prevent scrolling and navigate if an event is already expanded
+      if (!showEvents || reversedEvents.length === 0 || !eventExpanded) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const currentIndex = reversedEvents.findIndex(event => event.date === eventExpanded);
+      if (currentIndex === -1) return;
+
+      const isScrollingDown = e.deltaY > 0;
+
+      if (isScrollingDown) {
+        // Scroll down - next event
+        const nextIndex = currentIndex + 1;
+        if (nextIndex < reversedEvents.length) {
+          handleSetExpandedEvent(reversedEvents[nextIndex].date);
+        }
+      } else {
+        // Scroll up - previous event
+        if (currentIndex > 0) {
+          handleSetExpandedEvent(reversedEvents[currentIndex - 1].date);
+        }
+      }
+    }
+  }, [isEventsHovered, showEvents, reversedEvents, eventExpanded, handleSetExpandedEvent]);
+
+  // Add/remove document wheel listener when hovering
+  useEffect(() => {
+    if (isEventsHovered) {
+      document.addEventListener('wheel', handleDocumentWheel, { passive: false });
+    } else {
+      document.removeEventListener('wheel', handleDocumentWheel);
+    }
+
+    return () => {
+      document.removeEventListener('wheel', handleDocumentWheel);
+    };
+  }, [isEventsHovered, handleDocumentWheel]);
+
+  if (!masterData) {
+    return null;
+  }
 
   const isCompact = selectedBreakdownGroup === "Ethereum Ecosystem";
   const isHidden = selectedBreakdownGroup === "Builders & Apps";
 
   return (
-    <div className={`bg-[#1F2726] w-full transition-height duration-300 ${isCompact ? 'h-[150px] overflow-hidden rounded-[15px] p-[15px]'
-        : isHidden ? 'h-[0px] overflow-hidden p-0'
-          : 'h-[306px] rounded-[15px] p-[15px]'
-      }`}>
+    <div
+      ref={containerRef}
+      className={`bg-[#1F2726] w-full transition-height duration-300 ${showEvents && 'z-dropdown'
+        } ${isCompact ? 'h-[150px] overflow-hidden rounded-[15px] p-[15px]'
+          : isHidden ? 'h-[0px] overflow-hidden p-0'
+            : 'h-[306px] rounded-[15px] p-[15px]'
+        }`}
+      onMouseEnter={() => setIsEventsHovered(true)}
+      onMouseLeave={() => setIsEventsHovered(false)}
+    >
       <div className='heading-large-md mb-[15px]'>Ethereum Uptime</div>
       <div className='numbers-2xl mb-[30px]'>
         <div className='flex flex-col gap-y-[5px]'>
@@ -77,28 +162,74 @@ const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEvent
         </div>
       </div>
 
-      <div className={`flex flex-col gap-y-[5px] transition-height duration-500 overflow-hidden ${isCompact ? 'h-0' : 'h-full'
-        }`}>
-        <div className='heading-large-md text-[#5A6462]'>
-          <span className='font-bold'>Events:</span>
-        </div>
-        <div className='flex flex-col gap-y-[5px] pl-[15px]'>
-          <EventItem
-            eventKey="after"
-            eventHover={eventHover}
-            setEventHover={setEventHover}
-            text="Event after:"
-          />
-          <div className={`transition-all duration-300 cursor-default ${eventHover === null ? 'text-xs' : 'text-xxxs text-[#5A6462] w-fit'
-            }`}>
-            <span className={`${eventHover !== null ? 'font-bold' : ''}`}>Main event</span>
+      {/* Events Section */}
+      <div className={`relative flex flex-col overflow-hidden gap-y-[5px] transition-height duration-500 -mx-[15px] bg-[#1F2726] rounded-b-[15px] ${showEvents ? 'pb-[10px] shadow-lg' : 'pb-0'
+        } ${isCompact ? 'h-0' : 'h-auto'}`}>
+
+        <div className={`flex flex-col gap-y-[2.5px] px-[15px] duration-300 overflow-y-hidden ${!showEvents ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''
+          }`}
+          style={{
+            height: !showEvents ? `130px` : `${reversedEvents.reduce((acc, event) => acc + (eventExpanded === event.date ? 101 : 28), 35)}px`
+          }}
+        >
+          <div className='heading-large-md text-[#5A6462] mb-2'>Network Upgrades</div>
+          <div className="relative">
+            {reversedEvents.map((event: any, index: number) => {
+              const isThisEventHovered = eventHover === event.date;
+              const isNextEventHovered = eventHover === reversedEvents[index + 1]?.date;
+
+              // Calculate cumulative height including expanded events above this one
+              const topPosition = reversedEvents.slice(0, index).reduce((acc, prevEvent) => {
+                return acc + (eventExpanded === prevEvent.date ? 101 : 28);
+              }, 0);
+
+              return (
+                <div key={event.date}>
+                  {/* Event Item */}
+                  <div
+                    className="absolute w-full"
+                    style={{ top: `${topPosition}px` }}
+                  >
+                    <EventItem
+                      eventKey={event.date}
+                      eventHover={eventHover}
+                      setEventHover={setEventHover}
+                      eventExpanded={eventExpanded}
+                      handleToggleEventExpansion={handleToggleEventExpansion}
+                      event={event}
+                      index={index}
+                      nextEvent={reversedEvents[index + 1]}
+                    />
+                  </div>
+
+                  {/* Separator Dots - only if not the last item */}
+                  {index < reversedEvents.length - 1 && !isThisEventHovered && !isNextEventHovered && (index !== 0 || eventHover !== null || eventExpanded === reversedEvents[index + 1]?.date) && eventExpanded !== event.date && eventExpanded !== reversedEvents[index + 1]?.date && (
+                    <div
+                      className="absolute flex-col gap-y-[4px] pt-[3px] flex items-center gap-x-[2px] "
+                      style={{
+                        top: `${topPosition + (eventExpanded === event.date ? 101 : 26) - 5}px`, // Position after current item
+                        left: '11px' // Center under the icon
+                      }}
+                    >
+                      <div className="w-[2px] h-[2px] bg-[#5A6462] rounded-full"></div>
+                      <div className="w-[2px] h-[2px] bg-[#5A6462] rounded-full"></div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
-          <EventItem
-            eventKey="before"
-            eventHover={eventHover}
-            setEventHover={setEventHover}
-            text="Event before:"
-          />
+        </div>
+
+        <div className={`w-full h-[18px] flex items-center justify-center relative z-10 cursor-pointer top-[0px] transition-opacity duration-300 ${isCompact ? 'opacity-0' : 'opacity-100'
+          }`} onClick={handleToggleEvents}>
+          <div className={`pointer-events-none transition-transform absolute duration-300 ${showEvents ? 'rotate-180' : ''
+            }`}>
+            <GTPIcon icon='gtp-chevrondown-monochrome' size='md' className='text-[#5A6462]' />
+          </div>
+          <div className='pointer-events-none absolute right-[15px]'>
+            <GTPIcon icon='gtp-info-monochrome' size='sm' className='text-[#5A6462]' />
+          </div>
         </div>
       </div>
     </div>
@@ -111,19 +242,100 @@ interface EventItemProps {
   eventKey: string;
   eventHover: string | null;
   setEventHover: (value: string | null) => void;
-  text: string;
+  eventExpanded: string | null;
+  handleToggleEventExpansion: (eventKey: string) => void;
+  event: EthereumEvents;
+  index: number;
+  nextEvent?: EthereumEvents;
 }
 
-const EventItem = React.memo(({ eventKey, eventHover, setEventHover, text }: EventItemProps) => (
-  <div
-    className={`transition-all duration-300 cursor-default ${eventHover === eventKey ? 'text-xs' : 'text-xxxs text-[#5A6462]'
-      } w-fit`}
-    onMouseEnter={() => setEventHover(eventKey)}
-    onMouseLeave={() => setEventHover(null)}
-  >
-    <span className={`${eventHover !== eventKey ? 'font-bold' : ''}`}>{text}</span>
-  </div>
-));
+const EventIcon = ({ event, eventHover, index, eventExpanded }: { event: EthereumEvents, eventHover: string | null, index: number, eventExpanded: string | null }) => {
+  const getMonthDisplay = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      const fullMonth = date.toLocaleDateString('en-US', { month: 'long' }).toUpperCase();
+      const shortMonth = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+
+      // If full month name is 4 characters or shorter, use it; otherwise use short version
+      return fullMonth.length <= 4 ? fullMonth : shortMonth;
+    } catch {
+      return 'JULY'; // fallback
+    }
+  };
+
+  const isThisEventHovered = eventHover === event.date;
+  const isThisEventExpanded = eventExpanded === event.date;
+
+  const showCalendar = isThisEventHovered || isThisEventExpanded;
+
+  return (
+    <div className="relative min-w-[24px] min-h-[32px]">
+      {/* Calendar */}
+      <span className='absolute inset-0 '></span>
+      <div className={`absolute inset-0 transition-all duration-300 ease-in-out top-[8px] ${showCalendar
+          ? 'opacity-100 scale-100'
+          : 'opacity-0 scale-90 pointer-events-none'
+        }`}>
+        <Image src={CalendarIcon} alt="Calendar" width={24} height={24} />
+        <div className='absolute text-[#1F2726] -top-[0.5px] left-0 right-0 heading-small-xxxxxs text-center'>
+          {getMonthDisplay(event.date)}
+        </div>
+        <div className='absolute text-[#1F2726] bottom-[5px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] bg-clip-text text-transparent left-0 right-0 numbers-xxxs text-center'>
+          {Intl.DateTimeFormat('en-US', { day: 'numeric' }).format(new Date(event.date))}
+        </div>
+      </div>
+
+      {/* Circle */}
+      <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ease-in-out ${!showCalendar
+          ? 'opacity-100 scale-100'
+          : 'opacity-0 scale-75 pointer-events-none'
+        }`}>
+        <div className='w-[8px] h-[8px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] rounded-full'></div>
+      </div>
+    </div>
+  )
+}
+
+const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpanded, handleToggleEventExpansion, event, index, nextEvent }: EventItemProps) => {
+  const isExpanded = eventExpanded === eventKey;
+  const eventLength = event.description?.length || 0;
+  return (
+    <div className={`transition-all flex flex-col duration-300 cursor-pointer ${isExpanded ? 'h-[101px]' : 'h-[28px]'} w-full`}
+      onMouseEnter={() => setEventHover(eventKey)}
+      onMouseLeave={() => setEventHover(null)}
+      onClick={() => handleToggleEventExpansion(eventKey)}
+    >
+      <div className={`${isExpanded ? 'h-[14px]' : 'h-0'}  flex relative top-[2px] w-[24px] justify-center overflow-hidden gap-x-[2px] text-xxxs`}>{Intl.DateTimeFormat('en-US', { year: 'numeric' }).format(new Date(event.date))}</div>
+      <div
+        className={`flex items-center gap-x-[5px] ${eventHover === eventKey || ((index === 0 && eventExpanded === null)) ? 'text-xs' : 'text-xxxs text-[#5A6462]'
+          } w-fit h-[24px]`}
+
+      >
+        <EventIcon event={event} eventHover={eventHover} index={index} eventExpanded={eventExpanded} />
+        <span className={`relative top-[3px] ${eventHover === eventKey || ((eventExpanded === eventKey || (index === 0 && eventExpanded === null))) ? 'heading-small-xs text-[#C8D8D3]' : 'heading-small-xxxs text-[#5A6462]'} `}>{event.title}</span>
+      </div>
+
+
+      <div className={` flex w-full justify-between pl-0 transition-height duration-100 overflow-hidden ${isExpanded ? 'h-[80px] mt-0' : 'h-0 mt-0'}`}>
+        <div className='flex flex-col justify-between gap-y-[4px] h-full overflow-y-hidden min-w-[24px] max-w-[24px] items-center '>
+          <div className='flex flex-col gap-y-[6px] overflow-y-hidden pt-1'>
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div key={i + "event-item-description"} className='bg-[#5A6462] w-[2px] h-[2px] rounded-full flex-shrink-0' />
+            ))}
+          </div>
+          <div className='rounded-full min-h-[12px] text-xxxs text-[#5A6462]'>{nextEvent ? new Date(nextEvent.date).toLocaleDateString('en-US', { year: 'numeric' }) : ''}</div>
+        </div>
+        <div className={`text-xxs flex h-full items-center pl-1.5 w-full ${eventLength > 100 ? 'pb-0' : 'pb-2'}`}>
+
+          <div className=" leading-relaxed overflow-y-auto max-h-[70px]">
+            {event.description || event.title}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  );
+});
 
 EventItem.displayName = "EventItem";
 
@@ -137,7 +349,7 @@ const TPSChart = React.memo(({ totalTPSLive, globalMetrics, showUsd }: TPSChartP
   const tooltipFormatter = useCallback(function (this: any) {
     const { x, points } = this;
     const date = new Date(x);
-    const valuePrefix = showUsd ? '$' : '';
+    const valuePrefix = '';
 
     let dateString = date.toLocaleDateString("en-GB", {
       month: "short",
@@ -357,9 +569,8 @@ const ChainTransitionItem = React.memo(({
 }: ChainTransitionItemProps) => {
   const chain = AllChainsByKeys[chainId];
 
-
-  const chainColor = chain.colors.dark[0];
-  const chainName = chain.name_short;
+  const chainColor = chain?.colors?.dark?.[0] || "#7D8887";
+  const chainName = chain?.name_short || chainData[chainId]?.display_name ;
 
   const value = useMemo(() => {
     if (type === 'tps') {
@@ -382,7 +593,10 @@ const ChainTransitionItem = React.memo(({
           maximumFractionDigits: 4,
           minimumFractionDigits: 4
         }).format(value)
-        : formatNumber(value * 1000000000, 0);
+        : Intl.NumberFormat('en-US', {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0
+        }).format(value * 1000000000);
     }
   }, [value, type, showUsd]);
 
@@ -396,7 +610,7 @@ const ChainTransitionItem = React.memo(({
     }
   }, [value, globalMetrics, type, chainData, chainId]);
 
-  if (!chain) return null;
+  //if (!chain) return null;
 
   return (
     <div className='flex flex-col w-full items-center justify-between'>
@@ -441,9 +655,21 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   const { chainData, globalMetrics, lastUpdated, connectionStatus } = useSSEMetrics();
   const { AllChainsByKeys } = useMaster();
 
+  // Cached data state to maintain previous values when SSE fails
+  const [cachedData, setCachedData] = useState<{
+    chainData: any;
+    globalMetrics: any;
+    hasInitialData: boolean;
+  }>({
+    chainData: undefined,
+    globalMetrics: undefined,
+    hasInitialData: false,
+  });
+
   // Consolidated state
   const [uiState, setUiState] = useState({
     eventHover: null as string | null,
+    eventExpanded: null as string | null,
     ethCostHoverIndex: null as number | null,
     ethCostSelectedIndex: 17,
     l2CostHoverIndex: null as number | null,
@@ -466,11 +692,29 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   const [showChainsCost, setShowChainsCost] = useSearchParamBoolean("cost", false, {
     debounceMs: 150,
   });
+  const [showEvents, setShowEvents] = useSearchParamBoolean("events", false, {
+    debounceMs: 150,
+  });
+
+  // Update cached data when new SSE data arrives
+  useEffect(() => {
+    if (chainData !== undefined && globalMetrics !== undefined) {
+      setCachedData({
+        chainData,
+        globalMetrics,
+        hasInitialData: true,
+      });
+    }
+  }, [chainData, globalMetrics]);
+
+  // Use cached data if available, otherwise use current SSE data
+  const activeChainData = cachedData.chainData || chainData;
+  const activeGlobalMetrics = cachedData.globalMetrics || globalMetrics;
 
   // Memoized calculations
   const filteredTPSChains = useMemo(() => {
     return Object.keys(historyState.chainsTPSHistory)
-      .filter((chain) => chainData[chain]?.tps)
+      .filter((chain) => activeChainData?.[chain]?.tps)
       .sort((a, b) =>
         historyState.chainsTPSHistory[b][historyState.chainsTPSHistory[b].length - 1] -
         historyState.chainsTPSHistory[a][historyState.chainsTPSHistory[a].length - 1]
@@ -480,13 +724,13 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
         y: index * 21,
         height: 18,
       }));
-  }, [historyState.chainsTPSHistory, chainData]);
+  }, [historyState.chainsTPSHistory, activeChainData]);
 
   const filteredCostChains = useMemo(() => {
     const costKey = showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer';
     return Object.keys(historyState.chainsCostHistory)
       .filter((chain) => {
-        const cost = chainData[chain]?.[costKey];
+        const cost = activeChainData?.[chain]?.[costKey];
         const isEthereum = AllChainsByKeys[chain]?.key === 'ethereum';
         return cost > 0 && !isEthereum;
       })
@@ -499,7 +743,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
         y: index * 21,
         height: 18,
       }));
-  }, [historyState.chainsCostHistory, chainData, showUsd, AllChainsByKeys]);
+  }, [historyState.chainsCostHistory, activeChainData, showUsd, AllChainsByKeys]);
 
   // Optimized transitions
   const tpsTransitions = useTransition(filteredTPSChains, {
@@ -535,40 +779,62 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     setShowChainsCost(!showChainsCost);
   }, [showChainsCost, setShowChainsCost]);
 
+  const handleToggleEvents = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowEvents(!showEvents);
+  }, [showEvents, setShowEvents]);
+
   const handleCloseModals = useCallback(() => {
     setShowChainsCost(false);
     setShowChainsTPS(false);
-  }, [setShowChainsCost, setShowChainsTPS]);
+    setShowEvents(false);
+  }, [setShowChainsCost, setShowChainsTPS, setShowEvents]);
+
+  const handleToggleEventExpansion = useCallback((eventKey: string) => {
+    setUiState(prev => ({
+      ...prev,
+      eventExpanded: prev.eventExpanded === eventKey ? null : eventKey
+    }));
+  }, []);
+
+  // Separate function for scroll navigation that directly sets expanded event (no toggle)
+  const handleSetExpandedEvent = useCallback((eventKey: string) => {
+    setUiState(prev => ({
+      ...prev,
+      eventExpanded: eventKey
+    }));
+  }, []);
 
   // Optimized effects
   useEffect(() => {
-    if (!globalMetrics) return;
+    if (!activeGlobalMetrics) return;
 
     setHistoryState(prev => ({
       ...prev,
       totalTPSLive: prev.totalTPSLive.length >= TPS_HISTORY_LIMIT
-        ? [...prev.totalTPSLive.slice(1), globalMetrics.total_tps ?? 0]
-        : [...prev.totalTPSLive, globalMetrics.total_tps ?? 0],
+        ? [...prev.totalTPSLive.slice(1), activeGlobalMetrics.total_tps ?? 0]
+        : [...prev.totalTPSLive, activeGlobalMetrics.total_tps ?? 0],
       ethCostLive: prev.ethCostLive.length >= HISTORY_LIMIT
-        ? [...prev.ethCostLive.slice(1), globalMetrics.ethereum_tx_cost_usd ?? 0]
-        : [...prev.ethCostLive, globalMetrics.ethereum_tx_cost_usd ?? 0],
+        ? [...prev.ethCostLive.slice(1), activeGlobalMetrics.ethereum_tx_cost_usd ?? 0]
+        : [...prev.ethCostLive, activeGlobalMetrics.ethereum_tx_cost_usd ?? 0],
       layer2CostLive: prev.layer2CostLive.length >= HISTORY_LIMIT
-        ? [...prev.layer2CostLive.slice(1), globalMetrics.layer2s_tx_cost_usd ?? 0]
-        : [...prev.layer2CostLive, globalMetrics.layer2s_tx_cost_usd ?? 0],
+        ? [...prev.layer2CostLive.slice(1), activeGlobalMetrics.layer2s_tx_cost_usd ?? 0]
+        : [...prev.layer2CostLive, activeGlobalMetrics.layer2s_tx_cost_usd ?? 0],
     }));
-  }, [globalMetrics]);
+  }, [activeGlobalMetrics]);
 
   useEffect(() => {
-    if (!chainData || Object.keys(chainData).length === 0) return;
+    if (!activeChainData || Object.keys(activeChainData).length === 0) return;
 
     setHistoryState(prev => {
       const newCostHistory = { ...prev.chainsCostHistory };
       const newTpsHistory = { ...prev.chainsTPSHistory };
       let hasChanges = false;
 
-      for (const chainId in chainData) {
-        if (chainData.hasOwnProperty(chainId)) {
-          const chain = chainData[chainId];
+      for (const chainId in activeChainData) {
+        if (activeChainData.hasOwnProperty(chainId)) {
+          const chain = activeChainData[chainId];
 
           // Update cost history
           const costValue = chain[showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer'] ?? 0;
@@ -598,30 +864,37 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
         chainsTPSHistory: newTpsHistory,
       } : prev;
     });
-  }, [chainData, showUsd]);
+  }, [activeChainData, showUsd]);
 
-  if (globalMetrics === undefined || chainData === undefined) {
+  // Don't show anything until we have initial data
+  if (!cachedData.hasInitialData) {
     return null;
   }
 
   const isCompact = selectedBreakdownGroup === "Ethereum Ecosystem";
   const isHidden = selectedBreakdownGroup === "Builders & Apps";
 
+
   return (
     <>
-      {(showChainsCost || showChainsTPS) && (
+      {(showChainsCost || showChainsTPS || showEvents) && (
         <div
           className='fixed inset-0 bg-black/30 z-dropdown-background'
           onClick={handleCloseModals}
         />
       )}
 
-      {connectionStatus === 'connected' && (
+      {(
         <div className='flex flex-col xl:flex-row gap-[15px] w-full'>
           <UptimeDisplay
             selectedBreakdownGroup={selectedBreakdownGroup}
             eventHover={uiState.eventHover}
             setEventHover={(value) => setUiState(prev => ({ ...prev, eventHover: value }))}
+            eventExpanded={uiState.eventExpanded}
+            handleToggleEventExpansion={handleToggleEventExpansion}
+            handleSetExpandedEvent={handleSetExpandedEvent}
+            showEvents={showEvents}
+            handleToggleEvents={handleToggleEvents}
           />
 
           {/* TPS Section */}
@@ -636,11 +909,15 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
             </div>
 
             <div className='flex flex-col gap-y-[30px] mb-[20px]'>
-              <div className='numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
-                {Intl.NumberFormat('en-US', {
-                  minimumFractionDigits: 1,
-                  maximumFractionDigits: 1
-                }).format(globalMetrics.total_tps || 0)}
+              <div className="flex flex-row justify-between">
+                <div className='numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
+                  {Intl.NumberFormat('en-US', {
+                    minimumFractionDigits: 1,
+                    maximumFractionDigits: 1
+                  }).format(activeGlobalMetrics.total_tps || 0)}
+                </div>
+                <div className='numbers-xs flex items-center gap-x-0.5'><span className='text-xs'>Max (24h):</span>{activeGlobalMetrics.total_tps_24h_high || 0} TPS</div>
+                <div className='numbers-xs flex items-center gap-x-0.5'><span className='text-xs'>ATH:</span>{activeGlobalMetrics.total_tps_ath || 0} TPS</div>
               </div>
 
               <div className={`w-full -mt-[5px]`}>
@@ -648,7 +925,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                   }`}>
                   <TPSChart
                     totalTPSLive={historyState.totalTPSLive}
-                    globalMetrics={globalMetrics}
+                    globalMetrics={activeGlobalMetrics}
                     showUsd={showUsd}
                   />
                 </div>
@@ -675,9 +952,9 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                     >
                       <ChainTransitionItem
                         chainId={chainId}
-                        chainData={chainData}
+                        chainData={activeChainData}
                         AllChainsByKeys={AllChainsByKeys}
-                        globalMetrics={globalMetrics}
+                        globalMetrics={activeGlobalMetrics}
                         type="tps"
                       />
                     </animated.div>
@@ -707,36 +984,47 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
             <div className={`heading-large-md ${isCompact ? 'mb-[10px]' : 'mb-[30px]'}`}>
               Token Transfer Fee
             </div>
-
-            <div className='pt-[15px] mb-[35px] flex flex-col gap-y-[15px]'>
-              <FeeDisplayRow
-                title="Ethereum Mainnet"
-                costValue={globalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth'] || 0}
-                costHistory={historyState.ethCostLive}
-                showUsd={showUsd}
-                gradientClass="from-[#596780] to-[#94ABD3]"
-                selectedIndex={uiState.ethCostSelectedIndex}
-                hoverIndex={uiState.ethCostHoverIndex}
-                onSelect={(index) => setUiState(prev => ({ ...prev, ethCostSelectedIndex: index }))}
-                onHover={(index) => setUiState(prev => ({ ...prev, ethCostHoverIndex: index }))}
-                getGradientColor={getGradientColor}
-                formatNumber={formatNumber}
-              />
-              <FeeDisplayRow
-                title="Layer 2s"
-                costValue={globalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] || 0}
-                costHistory={historyState.layer2CostLive}
-                showUsd={showUsd}
-                gradientClass="from-[#FE5468] to-[#FFDF27]"
-                selectedIndex={uiState.l2CostSelectedIndex}
-                hoverIndex={uiState.l2CostHoverIndex}
-                onSelect={(index) => setUiState(prev => ({ ...prev, l2CostSelectedIndex: index }))}
-                onHover={(index) => setUiState(prev => ({ ...prev, l2CostHoverIndex: index }))}
-                getGradientColor={getGradientColor}
-                formatNumber={formatNumber}
-              />
-            </div>
-
+            <GTPTooltipNew
+              size="md"
+              placement="top-start"
+              allowInteract={true}
+              trigger={
+                <div className='pt-[15px] mb-[50px] flex flex-col gap-y-[15px]'>
+                  <FeeDisplayRow
+                    title="Ethereum Mainnet"
+                    costValue={activeGlobalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth'] || 0}
+                    costHistory={historyState.ethCostLive}
+                    showUsd={showUsd}
+                    gradientClass="from-[#596780] to-[#94ABD3]"
+                    selectedIndex={uiState.ethCostSelectedIndex}
+                    hoverIndex={uiState.ethCostHoverIndex}
+                    onSelect={(index) => setUiState(prev => ({ ...prev, ethCostSelectedIndex: index }))}
+                    onHover={(index) => setUiState(prev => ({ ...prev, ethCostHoverIndex: index }))}
+                    getGradientColor={getGradientColor}
+                    formatNumber={formatNumber}
+                  />
+                  <FeeDisplayRow
+                    title="Layer 2s"
+                    costValue={activeGlobalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] || 0}
+                    costHistory={historyState.layer2CostLive}
+                    showUsd={showUsd}
+                    gradientClass="from-[#FE5468] to-[#FFDF27]"
+                    selectedIndex={uiState.l2CostSelectedIndex}
+                    hoverIndex={uiState.l2CostHoverIndex}
+                    onSelect={(index) => setUiState(prev => ({ ...prev, l2CostSelectedIndex: index }))}
+                    onHover={(index) => setUiState(prev => ({ ...prev, l2CostHoverIndex: index }))}
+                    getGradientColor={getGradientColor}
+                    formatNumber={formatNumber}
+                  />
+                </div>
+              }
+              containerClass="flex flex-col gap-y-[10px]"
+              positionOffset={{ mainAxis: -20, crossAxis: 0 }}
+            >
+              <TooltipBody className='pl-[20px]'>
+                Ethereum Mainnet only produces a new block about every 12 seconds, whereas Layer 2s update in intervals between 200ms and 2s.
+              </TooltipBody>
+            </GTPTooltipNew>
             {/* Cost Chains List */}
             <div className={`relative flex flex-col gap-y-[5px] -mx-[15px] bg-[#1F2726] z-10 rounded-b-[15px] ${showChainsCost ? 'z-dropdown pb-[10px] shadow-lg' : 'pb-0'
               }`}>
@@ -757,9 +1045,9 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
                     >
                       <ChainTransitionItem
                         chainId={chainId}
-                        chainData={chainData}
+                        chainData={activeChainData}
                         AllChainsByKeys={AllChainsByKeys}
-                        globalMetrics={globalMetrics}
+                        globalMetrics={activeGlobalMetrics}
                         type="cost"
                         showUsd={showUsd}
                       />

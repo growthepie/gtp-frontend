@@ -205,6 +205,8 @@ module.exports = {
           '6xl': '92px',
         },
         'heading-small': {
+          'xxxxxs': '7px',
+          'xxxxs': '8px',
           'xxxs': '10px',
           'xxs': '12px',
           'xs': '14px',
