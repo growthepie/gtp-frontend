@@ -482,7 +482,7 @@ export function AggChart({
         smooth: true,
         symbol: 'circle',
         symbolSize: 12,
-        lineStyle: { width: 1.5 },
+        lineStyle: { width: 2 },
         itemStyle: {
           color: config.type === 'column'
             ? new echarts.graphic.LinearGradient(0, 1, 0, 0, [

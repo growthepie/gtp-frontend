@@ -15,6 +15,7 @@ interface FeeDisplayRowProps {
   onHover: (index: number | null) => void;
   getGradientColor: (percentage: number) => string;
   formatNumber: (num: number, decimals?: number) => string;
+  hoverText?: string;
 }
 
 export function FeeDisplayRow({
@@ -29,10 +30,18 @@ export function FeeDisplayRow({
   onHover,
   getGradientColor,
   formatNumber,
+  hoverText,
 }: FeeDisplayRowProps) {
   return (
     <div className='flex justify-between items-center'>
-      <div className='w-[115px] heading-small-xxs whitespace-nowrap'>{title}</div>
+      <div className='relative w-[115px] heading-small-xxs whitespace-nowrap'>
+        {title}
+        {hoverText && (
+          <div className="text-[#5A6462] group-hover:opacity-100 opacity-0 transition-opacity duration-300 absolute -bottom-[14px] left-0 text-xxxs">
+            {hoverText}
+          </div>
+        )}
+      </div>
 
       <div className="flex-1 flex justify-end max-w-full min-w-[30px] px-[5px] overflow-x-hidden">
         <div className="flex-1 h-[18px]"></div>

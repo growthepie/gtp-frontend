@@ -362,7 +362,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
             <div>{Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(activeGlobalMetrics.total_tps || 0)}</div>
             {isCompact && <div>TPS</div>}
           </div>
-          <div className={`justify-between ${isCompact ? 'hidden' : 'flex w-[70%]'}`}>
+          <div className={`justify-between ${isCompact ? 'hidden' : 'flex w-[73%]'}`}>
             <div className='numbers-xs flex items-center gap-x-1'><span className='text-xs'>Max (24h):</span>{activeGlobalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) || 0} TPS</div>
             <div className='numbers-xs flex items-center gap-x-1'><span className='text-xs'>ATH:</span>{activeGlobalMetrics.total_tps_ath?.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) || 0} TPS</div>
           </div>
@@ -482,12 +482,12 @@ export const TokenTransferFeeCard = React.memo(({
       <div className={`heading-large-md ${isCompact ? 'mb-[0px]' : 'mb-[30px]'}`}>
         Token Transfer Fees
       </div>
-      <GTPTooltipNew
+      {/* <GTPTooltipNew
         size="md"
         placement="top-start"
         allowInteract={true}
-        trigger={
-          <div className={`pt-[15px] flex flex-col gap-y-[15px] ${isCompact ? '' : 'h-[108px]'}`}>
+        trigger={ */}
+          <div className={`group pt-[15px] flex flex-col gap-y-[15px] ${isCompact ? '' : 'h-[108px]'}`}>
             <FeeDisplayRow
               title="Ethereum Mainnet"
               costValue={activeGlobalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth'] || 0}
@@ -500,6 +500,7 @@ export const TokenTransferFeeCard = React.memo(({
               onHover={(index) => setEthCostHoverIndex(index)}
               getGradientColor={getGradientColor}
               formatNumber={formatNumber}
+              hoverText="new block every ~12s"
             />
             <FeeDisplayRow
               title="Layer 2s"
@@ -513,16 +514,17 @@ export const TokenTransferFeeCard = React.memo(({
               onHover={(index) => setL2CostHoverIndex(index)}
               getGradientColor={getGradientColor}
               formatNumber={formatNumber}
+              hoverText="new block every ~200ms to ~2s"
             />
           </div>
-        }
+        {/* }
         containerClass="flex flex-col gap-y-[10px]"
         positionOffset={{ mainAxis: -20, crossAxis: 0 }}
       >
         <TooltipBody className='pl-[20px]'>
           Ethereum Mainnet only produces a new block about every 12 seconds, whereas Layer 2s update in intervals between 200ms and 2s.
         </TooltipBody>
-      </GTPTooltipNew>
+      </GTPTooltipNew> */}
 
       {/* Cost Chains List */}
       <div className={`relative flex flex-col gap-y-[5px] -mx-[15px] bg-[#1F2726] z-10 rounded-b-[15px] ${isCompact ? 'h-0' : 'h-auto'}`}>
