@@ -74,7 +74,7 @@ export const formatUptime = (durationMs: number) => {
 
   // Calculate months (approximate - using 30.44 days per month average)
   const months = Math.floor(remainingDaysAfterYears / 30.44);
-  const days = Math.floor(remainingDaysAfterYears - (months * 30.44));
+  const days = Math.floor(remainingDaysAfterYears - (months * 30.44))-1;
 
   // Calculate remaining time units
   const hours = totalHours % 24;
