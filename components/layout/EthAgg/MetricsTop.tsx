@@ -1122,6 +1122,11 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   }, [setShowChainsCost, setShowChainsTPS, setShowEvents]);
 
   const handleToggleEventExpansion = useCallback((eventKey: string) => {
+    // if the Uptime section isn't expanded, expand it
+    if (!showEvents) {
+      setShowEvents(true);
+    }
+
     setUiState(prev => ({
       ...prev,
       eventExpanded: prev.eventExpanded === eventKey ? null : eventKey
