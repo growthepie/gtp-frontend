@@ -26,6 +26,11 @@ export default function Footer() {
               MORE CONTENT
             </FooterSectionHeader>
             <FooterLink
+              leftIcon={<GTPIcon icon="gtp-quick-bites" size="md" />}
+              label="Quick Bites"
+              href="https://www.growthepie.com/quick-bites"
+            />
+            <FooterLink
               leftIcon={<GTPIcon icon="gtp-book-open" size="md" />}
               label="Knowledge"
               href="https://docs.growthepie.xyz/"
