@@ -436,7 +436,7 @@ export function AggChart({
         )}
 
         {/* {showL2List && ( */}
-        <div className={`pl-3 transition-all duration-50 ${showL2List ? 'max-h-[120px] overflow-y-auto' : 'max-h-0 overflow-y-hidden'}`}>
+        <div className={`pl-3 transition-all duration-50 ${showL2List ? 'max-h-[120px]' : 'max-h-0 overflow-y-hidden'}`}>
           <div className="heading-small-xxs mt-3">Launched this Month</div>
           <div className="flex flex-wrap items-center gap-x-[5px] gap-y-[5px] h-fit mt-2 mb-1">
             {layer2Data && typeof layer2Data === 'object' && (layer2Data as any[]).length > 0 && (layer2Data as any[]).map((l2Item: any, index: number) => {
@@ -577,7 +577,7 @@ export function AggChart({
 
 
   return (
-    <div ref={mainContainerRef} className='group/chart flex flex-col relative rounded-[15px] w-full h-[375px] bg-[#1F2726] pt-[15px] overflow-hidden'>
+    <div ref={mainContainerRef} className='group/chart flex flex-col relative rounded-[15px] w-full h-[375px] bg-[#1F2726] pt-[15px]'>
       {/* Header */}
       <div className='flex h-[56px] px-[34px] items-start w-full'>
         <div className='flex gap-x-[10px] items-center z-[10]'>
@@ -662,7 +662,7 @@ export function AggChart({
         <ReactECharts
           ref={chartRef}
           option={option}
-          style={{ height: '100%', width: '100%' }}
+          style={{ height: '100%', width: '100%', borderRadius: '0 0 15px 15px', overflow: 'hidden' }}
           opts={{
             renderer: 'canvas',
             width: chartContainerWidth || undefined,
