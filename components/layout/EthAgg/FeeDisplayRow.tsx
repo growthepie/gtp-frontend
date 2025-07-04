@@ -32,19 +32,23 @@ export function FeeDisplayRow({
 }: FeeDisplayRowProps) {
   return (
     <div className='flex justify-between items-center'>
-      <div className='w-[115px] heading-small-xxs'>{title}</div>
-      
-          <div className='relative flex items-center justify-center' style={{ width: '140px', height: '18px' }}>
-            <HistoryDots
-              data={costHistory}
-              selectedIndex={selectedIndex}
-              hoverIndex={hoverIndex}
-              onSelect={onSelect}
-              onHover={onHover}
-              getGradientColor={getGradientColor}
-            />
-          </div>
-        
+      <div className='w-[115px] heading-small-xxs whitespace-nowrap'>{title}</div>
+
+      <div className="flex-1 flex justify-end max-w-full min-w-[30px] px-[5px] overflow-x-hidden">
+        <div className="flex-1 h-[18px]"></div>
+        <div className='relative flex gap-[1px] items-center justify-center h-[18px]'>
+          <HistoryDots
+            data={costHistory}
+            selectedIndex={selectedIndex}
+            hoverIndex={hoverIndex}
+            onSelect={onSelect}
+            onHover={onHover}
+            getGradientColor={getGradientColor}
+          />
+        </div>
+        <div className="flex-1 h-[18px]"></div>
+      </div>
+
 
       <div className={`flex bg-gradient-to-b ${gradientClass} bg-clip-text text-transparent justify-end text-end items-end w-[100px] numbers-2xl`}>
         {showUsd

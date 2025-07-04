@@ -120,8 +120,10 @@ export function useSearchParamState<T>(
       const newUrl = newQueryString ? `${pathname}?${newQueryString}` : pathname;
 
       if (updateMode === 'replace') {
-        router.replace(newUrl);
+        console.log('replace', newUrl);
+        router.replace(newUrl, { scroll: false });
       } else {
+        console.log('push', newUrl);
         router.push(newUrl);
       }
       
