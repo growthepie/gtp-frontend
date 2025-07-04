@@ -273,8 +273,8 @@ const EventIcon = ({ event, eventHover, index, eventExpanded }: { event: Ethereu
       {/* Calendar */}
       <span className='absolute inset-0 '></span>
       <div className={`absolute inset-0 transition-all duration-300 ease-in-out top-[8px] ${showCalendar
-          ? 'opacity-100 scale-100'
-          : 'opacity-0 scale-90 pointer-events-none'
+        ? 'opacity-100 scale-100'
+        : 'opacity-0 scale-90 pointer-events-none'
         }`}>
         <Image src={CalendarIcon} alt="Calendar" width={24} height={24} />
         <div className='absolute text-[#1F2726] -top-[0.5px] left-0 right-0 heading-small-xxxxxs text-center'>
@@ -287,8 +287,8 @@ const EventIcon = ({ event, eventHover, index, eventExpanded }: { event: Ethereu
 
       {/* Circle */}
       <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ease-in-out ${!showCalendar
-          ? 'opacity-100 scale-100'
-          : 'opacity-0 scale-75 pointer-events-none'
+        ? 'opacity-100 scale-100'
+        : 'opacity-0 scale-75 pointer-events-none'
         }`}>
         <div className='w-[8px] h-[8px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] rounded-full'></div>
       </div>
@@ -350,6 +350,7 @@ const TPSChart = React.memo(({ totalTPSLive, globalMetrics, showUsd }: TPSChartP
     const { x, points } = this;
     const date = new Date(x);
     const valuePrefix = '';
+    const valueSuffix = "TPS";
 
     let dateString = date.toLocaleDateString("en-GB", {
       month: "short",
@@ -385,6 +386,7 @@ const TPSChart = React.memo(({ totalTPSLive, globalMetrics, showUsd }: TPSChartP
           maximumFractionDigits: 2,
           minimumFractionDigits: 2,
         }).format(y)}
+        <div class="${!valueSuffix ? "hidden" : "pl-1"}">${valueSuffix}</div>
             </div>
           </div>
         </div>`;
@@ -392,7 +394,7 @@ const TPSChart = React.memo(({ totalTPSLive, globalMetrics, showUsd }: TPSChartP
       .join("");
 
     return tooltip + tooltipPoints + tooltipEnd;
-  }, [showUsd]);
+  }, []);
 
 
   return <HighchartsProvider Highcharts={Highcharts}>
@@ -570,7 +572,7 @@ const ChainTransitionItem = React.memo(({
   const chain = AllChainsByKeys[chainId];
 
   const chainColor = chain?.colors?.dark?.[0] || "#7D8887";
-  const chainName = chain?.name_short || chainData[chainId]?.display_name ;
+  const chainName = chain?.name_short || chainData[chainId]?.display_name;
 
   const value = useMemo(() => {
     if (type === 'tps') {
@@ -626,7 +628,10 @@ const ChainTransitionItem = React.memo(({
           <div className='numbers-xs flex gap-x-[2px] items-center h-[10px]'>
             {displayValue}
             {!showUsd && type === 'cost' && (
-              <span className="heading-small-xxxs pt-[2px]"> Gwei</span>
+              <span className="heading-small-xxxs pt-[1px]"> Gwei</span>
+            )}
+            {type === 'tps' && (
+              <span className="">TPS</span>
             )}
           </div>
         </div>
