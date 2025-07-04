@@ -19,6 +19,7 @@ import { EthereumEvents } from '@/types/api/MasterResponse';
 import CalendarIcon from '@/icons/svg/GTP-Calendar.svg';
 import Image from 'next/image';
 import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
+import { useElementSizeObserver } from '@/hooks/useElementSizeObserver';
 // Define the props type for TopEthAggMetricsComponent
 interface TopEthAggMetricsProps {
   selectedBreakdownGroup: string;
@@ -50,8 +51,78 @@ const displayValue = (value: number | string | undefined, unit: string = '') => 
   return `${formattedValue}${unit}`;
 };
 
-// --- Sub-components ---
-interface UptimeDisplayProps {
+
+
+
+interface ExpandableCardContainerProps {
+  /** The content of the card. */
+  children: React.ReactNode;
+  /** Controls the expanded/collapsed state of the card. */
+  isExpanded: boolean;
+  /** Callback function to toggle the expansion state. */
+  onToggleExpand: (e: React.MouseEvent) => void;
+  /** If true, the card is in a compact state, hiding the expansion button and content. */
+  isCompact?: boolean;
+  /** Optional className for the main container `div`. */
+  className?: string;
+  /** A slot for a component, like an icon with a tooltip, on the right side of the expand button. */
+  infoSlot?: React.ReactNode;
+}
+
+/**
+ * A reusable container for cards that can be expanded to show more details.
+ * It provides the background, the main content area, an expandable content area,
+ * and a button to control the expansion.
+ */
+export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = ({
+  children,
+  isExpanded,
+  onToggleExpand,
+  isCompact = false,
+  className = '',
+  infoSlot,
+}) => {
+  // The button at the bottom for expanding/collapsing the card
+  const ExpandButton = (
+    <div
+      className="absolute bottom-0 left-0 right-0 w-full p-[15px] h-fit flex items-center justify-center z-10 cursor-pointer"
+      onClick={onToggleExpand}
+    >
+      <div className="flex items-center justify-between w-full">
+        <div className="w-[15px] h-fit" />
+        <div className={`pointer-events-none transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
+          <GTPIcon icon="gtp-chevrondown-monochrome" size="md" className="text-[#5A6462]" />
+        </div>
+        <div className="pointer-events-none">
+          {/* Default info icon can be overridden by the infoSlot prop */}
+          {infoSlot ?? <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-[#5A6462]" />}
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="relative h-full w-full">
+      <div
+        className={`w-full bg-[#1F2726] rounded-[15px] transition-all duration-500 flex flex-col p-[15px]
+          ${isExpanded && !isCompact
+            ? 'absolute top-0 left-0 h-auto z-dropdown shadow-card-dark'
+            : 'relative min-h-full overflow-hidden'
+          }
+          ${className}`
+        }
+      >
+        {/* <div className="relative flex flex-col overflow-hidden gap-y-[5px] p-[15px] pb-[calc(15px+18px)] h-full"> */}
+          {children}
+          {!isCompact && ExpandButton}
+        {/* </div> */}
+      </div>
+    </div>
+  );
+};
+
+// --- Ethereum Uptime Card ---
+interface EthereumUptimeCardProps {
   selectedBreakdownGroup: string;
   eventHover: string | null;
   setEventHover: (value: string | null) => void;
@@ -62,13 +133,10 @@ interface UptimeDisplayProps {
   handleToggleEvents: (e: React.MouseEvent) => void;
 }
 
-
-
-const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEventHover, eventExpanded, handleToggleEventExpansion, handleSetExpandedEvent, showEvents, handleToggleEvents }: UptimeDisplayProps) => {
+const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, setEventHover, eventExpanded, handleToggleEventExpansion, handleSetExpandedEvent, showEvents, handleToggleEvents }: EthereumUptimeCardProps) => {
   const [currentTime, setCurrentTime] = useState(new Date().getTime());
   const [isEventsHovered, setIsEventsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-
   // Update the time every second for live counter
   useEffect(() => {
     const interval = setInterval(() => {
@@ -92,10 +160,8 @@ const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEvent
   const handleDocumentWheel = useCallback((e: WheelEvent) => {
     if (!containerRef.current || !isEventsHovered) return;
 
-    // Check if the target is within our container
     const target = e.target as Node;
     if (containerRef.current.contains(target)) {
-      // Only prevent scrolling and navigate if an event is already expanded
       if (!showEvents || reversedEvents.length === 0 || !eventExpanded) return;
 
       e.preventDefault();
@@ -107,13 +173,11 @@ const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEvent
       const isScrollingDown = e.deltaY > 0;
 
       if (isScrollingDown) {
-        // Scroll down - next event
         const nextIndex = currentIndex + 1;
         if (nextIndex < reversedEvents.length) {
           handleSetExpandedEvent(reversedEvents[nextIndex].date);
         }
       } else {
-        // Scroll up - previous event
         if (currentIndex > 0) {
           handleSetExpandedEvent(reversedEvents[currentIndex - 1].date);
         }
@@ -121,7 +185,6 @@ const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEvent
     }
   }, [isEventsHovered, showEvents, reversedEvents, eventExpanded, handleSetExpandedEvent]);
 
-  // Add/remove document wheel listener when hovering
   useEffect(() => {
     if (isEventsHovered) {
       document.addEventListener('wheel', handleDocumentWheel, { passive: false });
@@ -133,27 +196,26 @@ const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEvent
       document.removeEventListener('wheel', handleDocumentWheel);
     };
   }, [isEventsHovered, handleDocumentWheel]);
+  // ---
+
+  const [listRef, { height: listHeight }] = useElementSizeObserver<HTMLDivElement>();
 
   if (!masterData) {
     return null;
   }
 
+  const UNEXPANDED_LIST_HEIGHT = 130;
+  const EXPANDED_LIST_HEIGHT = listHeight + 35 + 50;
+
+
   const isCompact = selectedBreakdownGroup === "Ethereum Ecosystem";
   const isHidden = selectedBreakdownGroup === "Builders & Apps";
 
-  return (
-    <div
-      ref={containerRef}
-      className={`bg-[#1F2726] w-full transition-height duration-300 ${showEvents && 'z-dropdown'
-        } ${isCompact ? 'h-[150px] overflow-hidden rounded-[15px] p-[15px]'
-          : isHidden ? 'h-[0px] overflow-hidden p-0'
-            : 'h-[306px] rounded-[15px] p-[15px]'
-        }`}
-      onMouseEnter={() => setIsEventsHovered(true)}
-      onMouseLeave={() => setIsEventsHovered(false)}
-    >
-      <div className='heading-large-md mb-[15px]'>Ethereum Uptime</div>
-      <div className='numbers-2xl mb-[30px]'>
+  // Define the main content to pass to the container
+  const mainContent = (
+    <>
+      <div className='heading-large-md pb-[15px]'>Ethereum Uptime</div>
+      <div className='numbers-2xl pb-[30px]'>
         <div className='flex flex-col gap-y-[5px]'>
           <div className='bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
             {uptimeData.heading}
@@ -161,82 +223,340 @@ const UptimeDisplay = React.memo(({ selectedBreakdownGroup, eventHover, setEvent
           <div className='numbers-sm text-[#5A6462]'>{uptimeData.subheading}</div>
         </div>
       </div>
+    </>
+  );
 
-      {/* Events Section */}
-      <div className={`relative flex flex-col overflow-hidden gap-y-[5px] transition-height duration-500 -mx-[15px] bg-[#1F2726] rounded-b-[15px] ${showEvents ? 'pb-[10px] shadow-lg' : 'pb-0'
-        } ${isCompact ? 'h-0' : 'h-auto'}`}>
-
-        <div className={`flex flex-col gap-y-[2.5px] px-[15px] duration-300 overflow-y-hidden ${!showEvents ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''
-          }`}
-          style={{
-            height: !showEvents ? `130px` : `${reversedEvents.reduce((acc, event) => acc + (eventExpanded === event.date ? 101 : 28), 35)}px`
-          }}
-        >
-          <div className='heading-large-md text-[#5A6462] mb-2'>Network Upgrades</div>
-          <div className="relative">
-            {reversedEvents.map((event: any, index: number) => {
-              const isThisEventHovered = eventHover === event.date;
-              const isNextEventHovered = eventHover === reversedEvents[index + 1]?.date;
-
-              // Calculate cumulative height including expanded events above this one
-              const topPosition = reversedEvents.slice(0, index).reduce((acc, prevEvent) => {
-                return acc + (eventExpanded === prevEvent.date ? 101 : 28);
-              }, 0);
-
-              return (
-                <div key={event.date}>
-                  {/* Event Item */}
-                  <div
-                    className="absolute w-full"
-                    style={{ top: `${topPosition}px` }}
-                  >
-                    <EventItem
-                      eventKey={event.date}
-                      eventHover={eventHover}
-                      setEventHover={setEventHover}
-                      eventExpanded={eventExpanded}
-                      handleToggleEventExpansion={handleToggleEventExpansion}
-                      event={event}
-                      index={index}
-                      nextEvent={reversedEvents[index + 1]}
-                    />
-                  </div>
-
-                  {/* Separator Dots - only if not the last item */}
-                  {index < reversedEvents.length - 1 && !isThisEventHovered && !isNextEventHovered && (index !== 0 || eventHover !== null || eventExpanded === reversedEvents[index + 1]?.date) && eventExpanded !== event.date && eventExpanded !== reversedEvents[index + 1]?.date && (
-                    <div
-                      className="absolute flex-col gap-y-[4px] pt-[3px] flex items-center gap-x-[2px] "
-                      style={{
-                        top: `${topPosition + (eventExpanded === event.date ? 101 : 26) - 5}px`, // Position after current item
-                        left: '11px' // Center under the icon
-                      }}
-                    >
-                      <div className="w-[2px] h-[2px] bg-[#5A6462] rounded-full"></div>
-                      <div className="w-[2px] h-[2px] bg-[#5A6462] rounded-full"></div>
-                    </div>
-                  )}
+  // Define the expanded content to pass to the container
+  const expandedContent = (
+    <div className={`relative flex flex-col overflow-hidden gap-y-[5px] transition-height duration-500 -mx-[15px] bg-[#1F2726] rounded-b-[15px] ${showEvents ? 'pb-[10px]' : 'pb-0'} ${isCompact ? 'h-0' : 'h-auto'}`}>
+      <div
+        className={`flex flex-col gap-y-[2.5px] px-[15px] transition-height duration-300 overflow-y-hidden ${!showEvents ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''}`}
+        style={{
+          height: !showEvents ? `${UNEXPANDED_LIST_HEIGHT}px` : `${listHeight + 35}px`
+        }}
+      >
+        <div className='heading-large-md text-[#5A6462] mb-2'>Network Upgrades</div>
+        <div ref={listRef} className="relative">
+          {reversedEvents.map((event: any, index: number) => {
+            return (
+              <div key={event.date}>
+                  <EventItem eventKey={event.date} eventHover={eventHover} setEventHover={setEventHover} eventExpanded={eventExpanded} handleToggleEventExpansion={handleToggleEventExpansion} event={event} index={index} nextEvent={reversedEvents[index + 1]} />
                 </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className={`w-full h-[18px] flex items-center justify-center relative z-10 cursor-pointer top-[0px] transition-opacity duration-300 ${isCompact ? 'opacity-0' : 'opacity-100'
-          }`} onClick={handleToggleEvents}>
-          <div className={`pointer-events-none transition-transform absolute duration-300 ${showEvents ? 'rotate-180' : ''
-            }`}>
-            <GTPIcon icon='gtp-chevrondown-monochrome' size='md' className='text-[#5A6462]' />
-          </div>
-          <div className='pointer-events-none absolute right-[15px]'>
-            <GTPIcon icon='gtp-info-monochrome' size='sm' className='text-[#5A6462]' />
-          </div>
+            )
+          })}
+          {/* {reversedEvents.map((event: any, index: number) => {
+            const isThisEventHovered = eventHover === event.date;
+            const isNextEventHovered = eventHover === reversedEvents[index + 1]?.date;
+            const topPosition = reversedEvents.slice(0, index).reduce((acc, prevEvent) => acc + (eventExpanded === prevEvent.date ? 101 : 28), 0);
+            return (
+              <div key={event.date}>
+                <div className="absolute w-full" style={{ top: `${topPosition}px` }}>
+                  <EventItem eventKey={event.date} eventHover={eventHover} setEventHover={setEventHover} eventExpanded={eventExpanded} handleToggleEventExpansion={handleToggleEventExpansion} event={event} index={index} nextEvent={reversedEvents[index + 1]} />
+                </div>
+                {index < reversedEvents.length - 1 && !isThisEventHovered && !isNextEventHovered && (index !== 0 || eventHover !== null || eventExpanded === reversedEvents[index + 1]?.date) && eventExpanded !== event.date && eventExpanded !== reversedEvents[index + 1]?.date && (
+                  <div className="absolute flex-col gap-y-[4px] pt-[3px] flex items-center gap-x-[2px]" style={{ top: `${topPosition + (eventExpanded === event.date ? 101 : 26) - 5}px`, left: '11px' }}>
+                    <div className="w-[2px] h-[2px] bg-[#5A6462] rounded-full"></div>
+                    <div className="w-[2px] h-[2px] bg-[#5A6462] rounded-full"></div>
+                  </div>
+                )}
+              </div>
+            );
+          })} */}
         </div>
       </div>
     </div>
   );
+
+  return (
+    <div
+      ref={containerRef}
+      className={`w-full transition-height duration-300
+        ${isCompact ? 'h-[150px]'
+          : isHidden ? 'h-[0px] overflow-hidden'
+            : 'h-[306px] min-h-[306px]'
+        }`}
+      onMouseEnter={() => setIsEventsHovered(true)}
+      onMouseLeave={() => setIsEventsHovered(false)}
+    >
+      <ExpandableCardContainer
+        isExpanded={showEvents}
+        onToggleExpand={handleToggleEvents}
+        isCompact={isCompact}
+        // infoSlot could be used here to add a tooltip if needed
+        infoSlot={<GTPIcon icon="gtp-info-monochrome" size="sm" className="text-[#5A6462]" />}
+      >
+        {mainContent}
+
+        {expandedContent}
+      </ExpandableCardContainer>
+    </div>
+  );
 });
 
-UptimeDisplay.displayName = "UptimeDisplay";
+EthereumUptimeCard.displayName = "EthereumUptimeCard";
+
+
+// --- Ethereum Ecosystem TPS Card ---
+interface EthereumEcosystemTPSCardProps {
+  selectedBreakdownGroup: string;
+  showChainsTPS: boolean;
+  handleToggleTPS: (e: React.MouseEvent) => void;
+  activeGlobalMetrics: any;
+  activeChainData: any;
+  chainsTPSHistory: { [key: string]: number[] };
+  totalTPSLive: number[];
+  AllChainsByKeys: any;
+  showUsd: boolean;
+}
+
+export const EthereumEcosystemTPSCard = React.memo(({
+  selectedBreakdownGroup,
+  showChainsTPS,
+  handleToggleTPS,
+  activeGlobalMetrics,
+  activeChainData,
+  chainsTPSHistory,
+  totalTPSLive,
+  AllChainsByKeys,
+  showUsd,
+}: EthereumEcosystemTPSCardProps) => {
+  const isCompact = selectedBreakdownGroup === "Ethereum Ecosystem";
+  const isHidden = selectedBreakdownGroup === "Builders & Apps";
+
+  const filteredTPSChains = useMemo(() => {
+    return Object.keys(chainsTPSHistory)
+      .filter((chain) => activeChainData?.[chain]?.tps)
+      .sort((a, b) =>
+        chainsTPSHistory[b][chainsTPSHistory[b].length - 1] -
+        chainsTPSHistory[a][chainsTPSHistory[a].length - 1]
+      )
+      .map((chainId, index) => ({
+        chainId,
+        y: index * 21,
+        height: 18,
+      }));
+  }, [chainsTPSHistory, activeChainData]);
+
+  const tpsTransitions = useTransition(filteredTPSChains, {
+    key: (item) => item.chainId,
+    from: { opacity: 0, height: 0, y: 0 },
+    leave: { opacity: 0, height: 0 },
+    enter: ({ y, height }) => ({ opacity: 1, y, height }),
+    update: ({ y, height }) => ({ opacity: 1, y, height }),
+    config: { mass: 1, tension: 280, friction: 60 },
+    trail: 25,
+  });
+
+  const UNEXPANDED_LIST_HEIGHT = 80;
+  const EXPANDED_LIST_HEIGHT = 35 + filteredTPSChains.length * 21;
+
+  const content = (
+    <>
+      <div className={`heading-large-md transition-transform duration-500 pb-[15px]`}>
+        {isCompact ? 'Ecosystem Transactions Per Second' : 'Ethereum Ecosystem TPS'}
+      </div>
+
+      <div className='flex flex-col gap-y-[30px] mb-[20px]'>
+        <div className="flex flex-row justify-between">
+          <div className='numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
+            {Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(activeGlobalMetrics.total_tps || 0)}
+          </div>
+          <div className='numbers-xs flex items-center gap-x-0.5'><span className='text-xs'>Max (24h):</span>{activeGlobalMetrics.total_tps_24h_high || 0} TPS</div>
+          <div className='numbers-xs flex items-center gap-x-0.5'><span className='text-xs'>ATH:</span>{activeGlobalMetrics.total_tps_ath || 0} TPS</div>
+        </div>
+        <div className={`w-full -mt-[5px]`}>
+          <div className={`transition-height duration-500 overflow-hidden ${isCompact ? 'h-0' : 'h-[58px]'}`}>
+            <TPSChart totalTPSLive={totalTPSLive} globalMetrics={activeGlobalMetrics} showUsd={showUsd} />
+          </div>
+        </div>
+      </div>
+
+      {/* TPS Chains List */}
+      <div className={`relative flex flex-col gap-y-[5px] transition-height duration-500 -mx-[15px] bg-[#1F2726] rounded-b-[15px] ${isCompact ? 'h-0' : 'h-auto'}`}>
+        <div
+          className={`flex flex-col gap-y-[2.5px] px-[15px] duration-300 overflow-y-hidden ${!showChainsTPS ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''}`}
+          style={{ height: !showChainsTPS ? `${UNEXPANDED_LIST_HEIGHT}px` : `${EXPANDED_LIST_HEIGHT}px` }}
+        >
+          <div className='heading-large-md text-[#5A6462]'>Chains</div>
+          <div className="relative">
+            {tpsTransitions((style, { chainId }) => (
+              <animated.div key={chainId} style={style} className='absolute w-full'>
+                <ChainTransitionItem chainId={chainId} chainData={activeChainData} AllChainsByKeys={AllChainsByKeys} globalMetrics={activeGlobalMetrics} type="tps" />
+              </animated.div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+
+  return (
+    <div className={`w-full min-w-0 transition-height duration-300
+      ${isCompact ? 'h-[150px]'
+        : isHidden ? 'h-[0px] overflow-hidden'
+          : 'h-[306px] min-h-[306px]'
+      }`}>
+      <ExpandableCardContainer
+        isExpanded={showChainsTPS}
+        onToggleExpand={handleToggleTPS}
+        isCompact={isCompact}
+        infoSlot={<GTPIcon icon="gtp-info-monochrome" size="sm" className="text-[#5A6462]" />}
+      >
+        {content}
+      </ExpandableCardContainer>
+  </div>
+  );
+});
+
+EthereumEcosystemTPSCard.displayName = 'EthereumEcosystemTPSCard';
+interface TokenTransferFeeCardProps {
+  selectedBreakdownGroup: string;
+  showChainsCost: boolean;
+  handleToggleCost: (e: React.MouseEvent) => void;
+  activeGlobalMetrics: any;
+  activeChainData: any;
+  ethCostLive: number[];
+  layer2CostLive: number[];
+  chainsCostHistory: { [key: string]: number[] };
+  AllChainsByKeys: any;
+  showUsd: boolean;
+}
+
+export const TokenTransferFeeCard = React.memo(({
+  selectedBreakdownGroup,
+  showChainsCost,
+  handleToggleCost,
+  activeGlobalMetrics,
+  activeChainData,
+  ethCostLive,
+  layer2CostLive,
+  chainsCostHistory,
+  AllChainsByKeys,
+  showUsd,
+}: TokenTransferFeeCardProps) => {
+  const [ethCostHoverIndex, setEthCostHoverIndex] = useState<number | null>(null);
+  const [ethCostSelectedIndex, setEthCostSelectedIndex] = useState<number>(17);
+  const [l2CostHoverIndex, setL2CostHoverIndex] = useState<number | null>(null);
+  const [l2CostSelectedIndex, setL2CostSelectedIndex] = useState<number>(17);
+
+  const isCompact = selectedBreakdownGroup === "Ethereum Ecosystem";
+  const isHidden = selectedBreakdownGroup === "Builders & Apps";
+
+  const filteredCostChains = useMemo(() => {
+    const costKey = showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer';
+    return Object.keys(chainsCostHistory)
+      .filter((chain) => {
+        const cost = activeChainData?.[chain]?.[costKey];
+        const isEthereum = AllChainsByKeys[chain]?.key === 'ethereum';
+        return cost > 0 && !isEthereum;
+      })
+      .sort((a, b) =>
+        chainsCostHistory[b][chainsCostHistory[b].length - 1] -
+        chainsCostHistory[a][chainsCostHistory[a].length - 1]
+      )
+      .map((chainId, index) => ({
+        chainId,
+        y: index * 21,
+        height: 18,
+      }));
+  }, [chainsCostHistory, activeChainData, showUsd, AllChainsByKeys]);
+
+  const costTransitions = useTransition(filteredCostChains, {
+    key: (item) => `cost-${item.chainId}`,
+    from: { opacity: 0, height: 0, y: 0 },
+    leave: { opacity: 0, height: 0 },
+    enter: ({ y, height }) => ({ opacity: 1, y, height }),
+    update: ({ y, height }) => ({ opacity: 1, y, height }),
+    config: { mass: 1, tension: 280, friction: 60 },
+    trail: 25,
+  });
+
+  const UNEXPANDED_LIST_HEIGHT = 80;
+  const EXPANDED_LIST_HEIGHT = 35 + filteredCostChains.length * 20 + 50;
+
+  const content = (
+    <>
+      <div className={`heading-large-md ${isCompact ? 'mb-[10px]' : 'mb-[30px]'}`}>
+        Token Transfer Fee
+      </div>
+      <GTPTooltipNew
+        size="md"
+        placement="top-start"
+        allowInteract={true}
+        trigger={
+          <div className='pt-[15px] flex flex-col gap-y-[15px]'>
+            <FeeDisplayRow
+              title="Ethereum Mainnet"
+              costValue={activeGlobalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth'] || 0}
+              costHistory={ethCostLive}
+              showUsd={showUsd}
+              gradientClass="from-[#596780] to-[#94ABD3]"
+              selectedIndex={ethCostSelectedIndex}
+              hoverIndex={ethCostHoverIndex}
+              onSelect={(index) => setEthCostSelectedIndex(index)}
+              onHover={(index) => setEthCostHoverIndex(index)}
+              getGradientColor={getGradientColor}
+              formatNumber={formatNumber}
+            />
+            <FeeDisplayRow
+              title="Layer 2s"
+              costValue={activeGlobalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] || 0}
+              costHistory={layer2CostLive}
+              showUsd={showUsd}
+              gradientClass="from-[#FE5468] to-[#FFDF27]"
+              selectedIndex={l2CostSelectedIndex}
+              hoverIndex={l2CostHoverIndex}
+              onSelect={(index) => setL2CostSelectedIndex(index)}
+              onHover={(index) => setL2CostHoverIndex(index)}
+              getGradientColor={getGradientColor}
+              formatNumber={formatNumber}
+            />
+          </div>
+        }
+        containerClass="flex flex-col gap-y-[10px]"
+        positionOffset={{ mainAxis: -20, crossAxis: 0 }}
+      >
+        <TooltipBody className='pl-[20px]'>
+          Ethereum Mainnet only produces a new block about every 12 seconds, whereas Layer 2s update in intervals between 200ms and 2s.
+        </TooltipBody>
+      </GTPTooltipNew>
+
+      {/* Cost Chains List */}
+      <div className={`relative flex flex-col gap-y-[5px] -mx-[15px] bg-[#1F2726] z-10 rounded-b-[15px] ${isCompact ? 'h-0' : 'h-auto'}`}>
+        <div className={`flex flex-col gap-y-[2.5px] px-[15px] transition-height duration-500 overflow-y-hidden ${!showChainsCost ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''}`} 
+        style={{ height: !showChainsCost ? `${UNEXPANDED_LIST_HEIGHT}px` : `${EXPANDED_LIST_HEIGHT}px` }}>
+          <div className='heading-large-md text-[#5A6462]'>Layer 2s</div>
+          <div className="relative">
+            {costTransitions((style, { chainId }) => (
+              <animated.div key={`cost-${chainId}`} style={style} className='absolute w-full'>
+                <ChainTransitionItem chainId={chainId} chainData={activeChainData} AllChainsByKeys={AllChainsByKeys} globalMetrics={activeGlobalMetrics} type="cost" showUsd={showUsd} />
+              </animated.div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+
+  return (
+    <div className={`w-full min-w-0 transition-height duration-300
+      ${isCompact ? 'h-[150px]'
+        : isHidden ? 'h-[0px] overflow-hidden'
+          : 'h-[306px] min-h-[306px]'
+      }`}>
+      <ExpandableCardContainer
+        isExpanded={showChainsCost}
+        onToggleExpand={handleToggleCost}
+        isCompact={isCompact}
+        infoSlot={<GTPIcon icon="gtp-info-monochrome" size="sm" className="text-[#5A6462]" />}
+      >
+        {content}
+      </ExpandableCardContainer>
+  </div>
+  );
+});
+
+TokenTransferFeeCard.displayName = 'TokenTransferFeeCard';
 
 interface EventItemProps {
   eventKey: string;
@@ -273,8 +593,8 @@ const EventIcon = ({ event, eventHover, index, eventExpanded }: { event: Ethereu
       {/* Calendar */}
       <span className='absolute inset-0 '></span>
       <div className={`absolute inset-0 transition-all duration-300 ease-in-out top-[8px] ${showCalendar
-          ? 'opacity-100 scale-100'
-          : 'opacity-0 scale-90 pointer-events-none'
+        ? 'opacity-100 scale-100'
+        : 'opacity-0 scale-90 pointer-events-none'
         }`}>
         <Image src={CalendarIcon} alt="Calendar" width={24} height={24} />
         <div className='absolute text-[#1F2726] -top-[0.5px] left-0 right-0 heading-small-xxxxxs text-center'>
@@ -287,8 +607,8 @@ const EventIcon = ({ event, eventHover, index, eventExpanded }: { event: Ethereu
 
       {/* Circle */}
       <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ease-in-out ${!showCalendar
-          ? 'opacity-100 scale-100'
-          : 'opacity-0 scale-75 pointer-events-none'
+        ? 'opacity-100 scale-100'
+        : 'opacity-0 scale-75 pointer-events-none'
         }`}>
         <div className='w-[8px] h-[8px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] rounded-full'></div>
       </div>
@@ -570,7 +890,7 @@ const ChainTransitionItem = React.memo(({
   const chain = AllChainsByKeys[chainId];
 
   const chainColor = chain?.colors?.dark?.[0] || "#7D8887";
-  const chainName = chain?.name_short || chainData[chainId]?.display_name ;
+  const chainName = chain?.name_short || chainData[chainId]?.display_name;
 
   const value = useMemo(() => {
     if (type === 'tps') {
@@ -871,22 +1191,18 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     return null;
   }
 
-  const isCompact = selectedBreakdownGroup === "Ethereum Ecosystem";
-  const isHidden = selectedBreakdownGroup === "Builders & Apps";
-
-
   return (
     <>
       {(showChainsCost || showChainsTPS || showEvents) && (
         <div
-          className='fixed inset-0 bg-black/30 z-dropdown-background'
+          className='fixed inset-0 bg-[#1F2726]/75 z-dropdown-background'
           onClick={handleCloseModals}
         />
       )}
 
       {(
         <div className='flex flex-col xl:flex-row gap-[15px] w-full'>
-          <UptimeDisplay
+          <EthereumUptimeCard
             selectedBreakdownGroup={selectedBreakdownGroup}
             eventHover={uiState.eventHover}
             setEventHover={(value) => setUiState(prev => ({ ...prev, eventHover: value }))}
@@ -897,177 +1213,30 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
             handleToggleEvents={handleToggleEvents}
           />
 
-          {/* TPS Section */}
-          <div className={`flex flex-col gap-y-[15px] bg-[#1F2726] min-w-0 w-full transition-height duration-300 ${showChainsTPS && 'z-dropdown'
-            } ${isCompact ? 'h-[150px] overflow-hidden rounded-[15px] p-[15px]'
-              : isHidden ? 'h-[0px] overflow-hidden p-0'
-                : 'h-[306px] rounded-[15px] p-[15px]'}`}>
+          <EthereumEcosystemTPSCard
+            selectedBreakdownGroup={selectedBreakdownGroup}
+            showChainsTPS={showChainsTPS}
+            handleToggleTPS={handleToggleTPS}
+            activeGlobalMetrics={activeGlobalMetrics}
+            activeChainData={activeChainData}
+            chainsTPSHistory={historyState.chainsTPSHistory}
+            totalTPSLive={historyState.totalTPSLive}
+            AllChainsByKeys={AllChainsByKeys}
+            showUsd={showUsd}
+          />
 
-            <div className={`heading-large-md transition-transform duration-500 ${isCompact ? 'mb-[10px]' : 'mb-[0px]'
-              }`}>
-              {isCompact ? 'Ecosystem Transactions Per Second' : 'Ethereum Ecosystem TPS'}
-            </div>
-
-            <div className='flex flex-col gap-y-[30px] mb-[20px]'>
-              <div className="flex flex-row justify-between">
-                <div className='numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
-                  {Intl.NumberFormat('en-US', {
-                    minimumFractionDigits: 1,
-                    maximumFractionDigits: 1
-                  }).format(activeGlobalMetrics.total_tps || 0)}
-                </div>
-                <div className='numbers-xs flex items-center gap-x-0.5'><span className='text-xs'>Max (24h):</span>{activeGlobalMetrics.total_tps_24h_high || 0} TPS</div>
-                <div className='numbers-xs flex items-center gap-x-0.5'><span className='text-xs'>ATH:</span>{activeGlobalMetrics.total_tps_ath || 0} TPS</div>
-              </div>
-
-              <div className={`w-full -mt-[5px]`}>
-                <div className={`transition-height duration-500 overflow-hidden ${isCompact ? 'h-0' : 'h-[58px]'
-                  }`}>
-                  <TPSChart
-                    totalTPSLive={historyState.totalTPSLive}
-                    globalMetrics={activeGlobalMetrics}
-                    showUsd={showUsd}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* TPS Chains List */}
-            <div className={`relative flex flex-col gap-y-[5px] transition-height duration-500 -mx-[15px] bg-[#1F2726] rounded-b-[15px] ${showChainsTPS ? 'pb-[10px] shadow-lg' : 'pb-0'
-              } ${isCompact ? 'h-0' : 'h-auto'}`}>
-
-              <div className={`flex flex-col gap-y-[2.5px] px-[15px] duration-300 overflow-y-hidden ${!showChainsTPS ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''
-                }`}
-                style={{
-                  height: !showChainsTPS ? `80px` : `${filteredTPSChains.length * 21 + 35}px`
-                }}
-              >
-                <div className='heading-large-md text-[#5A6462]'>Chains</div>
-                <div className="relative">
-                  {tpsTransitions((style, { chainId }) => (
-                    <animated.div
-                      key={chainId}
-                      style={style}
-                      className='absolute w-full'
-                    >
-                      <ChainTransitionItem
-                        chainId={chainId}
-                        chainData={activeChainData}
-                        AllChainsByKeys={AllChainsByKeys}
-                        globalMetrics={activeGlobalMetrics}
-                        type="tps"
-                      />
-                    </animated.div>
-                  ))}
-                </div>
-              </div>
-
-              <div className={`w-full h-[18px] flex items-center justify-center relative z-10 cursor-pointer top-[0px] transition-opacity duration-300 ${isCompact ? 'opacity-0' : 'opacity-100'
-                }`} onClick={handleToggleTPS}>
-                <div className={`pointer-events-none transition-transform absolute duration-300 ${showChainsTPS ? 'rotate-180' : ''
-                  }`}>
-                  <GTPIcon icon='gtp-chevrondown-monochrome' size='md' className='text-[#5A6462]' />
-                </div>
-                <div className='pointer-events-none absolute right-[15px]'>
-                  <GTPIcon icon='gtp-info-monochrome' size='sm' className='text-[#5A6462]' />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Cost Section */}
-          <div className={`bg-[#1F2726] min-w-0 w-full transition-height duration-300 ${showChainsCost && 'z-dropdown'
-            } ${isCompact ? 'h-[150px] overflow-hidden rounded-[15px] py-[15px] px-[15px]'
-              : isHidden ? 'h-[0px] overflow-hidden p-0'
-                : 'h-[306px] rounded-[15px] py-[15px] px-[15px]'}`}>
-
-            <div className={`heading-large-md ${isCompact ? 'mb-[10px]' : 'mb-[30px]'}`}>
-              Token Transfer Fee
-            </div>
-            <GTPTooltipNew
-              size="md"
-              placement="top-start"
-              allowInteract={true}
-              trigger={
-                <div className='pt-[15px] mb-[50px] flex flex-col gap-y-[15px]'>
-                  <FeeDisplayRow
-                    title="Ethereum Mainnet"
-                    costValue={activeGlobalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth'] || 0}
-                    costHistory={historyState.ethCostLive}
-                    showUsd={showUsd}
-                    gradientClass="from-[#596780] to-[#94ABD3]"
-                    selectedIndex={uiState.ethCostSelectedIndex}
-                    hoverIndex={uiState.ethCostHoverIndex}
-                    onSelect={(index) => setUiState(prev => ({ ...prev, ethCostSelectedIndex: index }))}
-                    onHover={(index) => setUiState(prev => ({ ...prev, ethCostHoverIndex: index }))}
-                    getGradientColor={getGradientColor}
-                    formatNumber={formatNumber}
-                  />
-                  <FeeDisplayRow
-                    title="Layer 2s"
-                    costValue={activeGlobalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] || 0}
-                    costHistory={historyState.layer2CostLive}
-                    showUsd={showUsd}
-                    gradientClass="from-[#FE5468] to-[#FFDF27]"
-                    selectedIndex={uiState.l2CostSelectedIndex}
-                    hoverIndex={uiState.l2CostHoverIndex}
-                    onSelect={(index) => setUiState(prev => ({ ...prev, l2CostSelectedIndex: index }))}
-                    onHover={(index) => setUiState(prev => ({ ...prev, l2CostHoverIndex: index }))}
-                    getGradientColor={getGradientColor}
-                    formatNumber={formatNumber}
-                  />
-                </div>
-              }
-              containerClass="flex flex-col gap-y-[10px]"
-              positionOffset={{ mainAxis: -20, crossAxis: 0 }}
-            >
-              <TooltipBody className='pl-[20px]'>
-                Ethereum Mainnet only produces a new block about every 12 seconds, whereas Layer 2s update in intervals between 200ms and 2s.
-              </TooltipBody>
-            </GTPTooltipNew>
-            {/* Cost Chains List */}
-            <div className={`relative flex flex-col gap-y-[5px] -mx-[15px] bg-[#1F2726] z-10 rounded-b-[15px] ${showChainsCost ? 'z-dropdown pb-[10px] shadow-lg' : 'pb-0'
-              }`}>
-
-              <div className={`flex flex-col gap-y-[2.5px] px-[15px] transition-height duration-500 overflow-y-hidden ${!showChainsCost ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''
-                }`}
-                style={{
-                  height: !showChainsCost ? `80px` : `${filteredCostChains.length * 21 + 35}px`
-                }}
-              >
-                <div className='heading-large-md text-[#5A6462]'>Layer 2s</div>
-                <div className="relative">
-                  {costTransitions((style, { chainId }) => (
-                    <animated.div
-                      key={`cost-${chainId}`}
-                      style={style}
-                      className='absolute w-full'
-                    >
-                      <ChainTransitionItem
-                        chainId={chainId}
-                        chainData={activeChainData}
-                        AllChainsByKeys={AllChainsByKeys}
-                        globalMetrics={activeGlobalMetrics}
-                        type="cost"
-                        showUsd={showUsd}
-                      />
-                    </animated.div>
-                  ))}
-                </div>
-              </div>
-
-              <div className={`w-full h-[18px] flex items-center justify-center relative z-10 cursor-pointer top-[0px] transition-opacity duration-300 ${isCompact ? 'opacity-0' : 'opacity-100'
-                }`} onClick={handleToggleCost}>
-                <div className={`pointer-events-none transition-transform absolute duration-300 ${showChainsCost ? 'rotate-180' : ''
-                  }`}>
-                  <GTPIcon icon='gtp-chevrondown-monochrome' size='md' className='text-[#5A6462]' />
-                </div>
-                <div className='pointer-events-none absolute right-[15px]'>
-                  <GTPIcon icon='gtp-info-monochrome' size='sm' className='text-[#5A6462]' />
-                </div>
-              </div>
-            </div>
-          </div>
+          <TokenTransferFeeCard
+            selectedBreakdownGroup={selectedBreakdownGroup}
+            showChainsCost={showChainsCost}
+            handleToggleCost={handleToggleCost}
+            activeGlobalMetrics={activeGlobalMetrics}
+            activeChainData={activeChainData}
+            ethCostLive={historyState.ethCostLive}
+            layer2CostLive={historyState.layer2CostLive}
+            chainsCostHistory={historyState.chainsCostHistory}
+            AllChainsByKeys={AllChainsByKeys}
+            showUsd={showUsd}
+          />
         </div>
       )}
     </>
