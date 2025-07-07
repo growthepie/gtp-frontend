@@ -1246,8 +1246,8 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
       )}
 
       {(
-        <div className='grid grid-cols-3 gap-[15px] w-full'>
-          <div className="col-span-3 2xl:col-span-1">
+        <div className='grid grid-cols-3 gap-[15px] w-full @container'>
+          <div className="col-span-3 @[1040px]:col-span-1">
             <EthereumUptimeCard
               selectedBreakdownGroup={selectedBreakdownGroup}
               eventHover={uiState.eventHover}
@@ -1259,7 +1259,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
               handleToggleEvents={handleToggleEvents}
             />
           </div>
-          <div className="flex flex-col lg:flex-row gap-[15px] col-span-3 2xl:col-span-2">
+          <div className="flex flex-col lg:flex-row gap-[15px] col-span-3 @[1040px]:col-span-2">
             <EthereumEcosystemTPSCard
               selectedBreakdownGroup={selectedBreakdownGroup}
               showChainsTPS={showChainsTPS}
