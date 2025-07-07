@@ -113,8 +113,8 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
         }
       >
         {/* <div className="relative flex flex-col overflow-hidden gap-y-[5px] p-[15px] pb-[calc(15px+18px)] h-full"> */}
-          {children}
-          {!isCompact && ExpandButton}
+        {children}
+        {!isCompact && ExpandButton}
         {/* </div> */}
       </div>
     </div>
@@ -240,8 +240,8 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
           {reversedEvents.map((event: any, index: number) => {
             return (
               <div key={event.date}>
-                  <EventItem eventKey={event.date} eventHover={eventHover} setEventHover={setEventHover} eventExpanded={eventExpanded} handleToggleEventExpansion={handleToggleEventExpansion} event={event} index={index} nextEvent={reversedEvents[index + 1]} />
-                </div>
+                <EventItem eventKey={event.date} eventHover={eventHover} setEventHover={setEventHover} eventExpanded={eventExpanded} handleToggleEventExpansion={handleToggleEventExpansion} event={event} index={index} nextEvent={reversedEvents[index + 1]} />
+              </div>
             )
           })}
           {/* {reversedEvents.map((event: any, index: number) => {
@@ -334,7 +334,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
         chainId,
         y: index * 21,
         height: 18,
-      }));
+      }))
   }, [chainsTPSHistory, activeChainData]);
 
   const tpsTransitions = useTransition(filteredTPSChains, {
@@ -358,10 +358,14 @@ export const EthereumEcosystemTPSCard = React.memo(({
 
       <div className='flex flex-col gap-y-[30px] mb-[20px]'>
         <div className="flex flex-row justify-between">
-          <div className='flex flex-1 gap-x-1 numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent whitespace-nowrap'>
-            <div>{Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(activeGlobalMetrics.total_tps || 0)}</div>
-            {isCompact && <div>TPS</div>}
+          <div>
+            <div className='flex flex-1 gap-x-1 numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent whitespace-nowrap'>
+              <div>{Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(activeGlobalMetrics.total_tps || 0)}</div>
+              <div className={`${isCompact ? '' : 'hidden'}`}>TPS</div>
+            </div>
+            {isCompact && <div className='heading-small-xs text-[#5A6462] pt-[5px]'>all chains combined</div>}
           </div>
+
           <div className={`justify-between ${isCompact ? 'hidden' : 'flex w-[73%]'}`}>
             <div className='numbers-xs flex items-center gap-x-1'><span className='text-xs'>Max (24h):</span>{activeGlobalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) || 0} TPS</div>
             <div className='numbers-xs flex items-center gap-x-1'><span className='text-xs'>ATH:</span>{activeGlobalMetrics.total_tps_ath?.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) || 0} TPS</div>
@@ -372,6 +376,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
             <TPSChart totalTPSLive={totalTPSLive} globalMetrics={activeGlobalMetrics} showUsd={showUsd} />
           </div>
         </div>
+
       </div>
 
       {/* TPS Chains List */}
@@ -407,7 +412,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
       >
         {content}
       </ExpandableCardContainer>
-  </div>
+    </div>
   );
 });
 
@@ -445,6 +450,17 @@ export const TokenTransferFeeCard = React.memo(({
   const isCompact = selectedBreakdownGroup === "Ethereum Ecosystem";
   const isHidden = selectedBreakdownGroup === "Builders & Apps";
 
+  const ethDisplayValue = useMemo(() => {
+    const index = ethCostHoverIndex !== null ? ethCostHoverIndex : ethCostSelectedIndex;
+    // Fallback to the last known value if the index is out of bounds
+    return ethCostLive[index] ?? ethCostLive[ethCostLive.length - 1] ?? 0;
+  }, [ethCostHoverIndex, ethCostSelectedIndex, ethCostLive]);
+
+  const l2DisplayValue = useMemo(() => {
+    const index = l2CostHoverIndex !== null ? l2CostHoverIndex : l2CostSelectedIndex;
+    return layer2CostLive[index] ?? layer2CostLive[layer2CostLive.length - 1] ?? 0;
+  }, [l2CostHoverIndex, l2CostSelectedIndex, layer2CostLive]);
+
   const filteredCostChains = useMemo(() => {
     const costKey = showUsd ? 'tx_cost_erc20_transfer_usd' : 'tx_cost_erc20_transfer';
     return Object.keys(chainsCostHistory)
@@ -456,7 +472,7 @@ export const TokenTransferFeeCard = React.memo(({
       .sort((a, b) =>
         chainsCostHistory[b][chainsCostHistory[b].length - 1] -
         chainsCostHistory[a][chainsCostHistory[a].length - 1]
-      )
+      ).reverse()
       .map((chainId, index) => ({
         chainId,
         y: index * 21,
@@ -487,37 +503,37 @@ export const TokenTransferFeeCard = React.memo(({
         placement="top-start"
         allowInteract={true}
         trigger={ */}
-          <div className={`group pt-[15px] flex flex-col gap-y-[15px] ${isCompact ? '' : 'h-[108px]'}`}>
-            <FeeDisplayRow
-              title="Ethereum Mainnet"
-              costValue={activeGlobalMetrics[showUsd ? 'ethereum_tx_cost_usd' : 'ethereum_tx_cost_eth'] || 0}
-              costHistory={ethCostLive}
-              showUsd={showUsd}
-              gradientClass="from-[#596780] to-[#94ABD3]"
-              selectedIndex={ethCostSelectedIndex}
-              hoverIndex={ethCostHoverIndex}
-              onSelect={(index) => setEthCostSelectedIndex(index)}
-              onHover={(index) => setEthCostHoverIndex(index)}
-              getGradientColor={getGradientColor}
-              formatNumber={formatNumber}
-              hoverText="new block every ~12s"
-            />
-            <FeeDisplayRow
-              title="Layer 2s"
-              costValue={activeGlobalMetrics[showUsd ? 'layer2s_tx_cost_usd' : 'layer2s_tx_cost_eth'] || 0}
-              costHistory={layer2CostLive}
-              showUsd={showUsd}
-              gradientClass="from-[#FE5468] to-[#FFDF27]"
-              selectedIndex={l2CostSelectedIndex}
-              hoverIndex={l2CostHoverIndex}
-              onSelect={(index) => setL2CostSelectedIndex(index)}
-              onHover={(index) => setL2CostHoverIndex(index)}
-              getGradientColor={getGradientColor}
-              formatNumber={formatNumber}
-              hoverText="new block every ~200ms to ~2s"
-            />
-          </div>
-        {/* }
+      <div className={`group pt-[15px] flex flex-col gap-y-[15px] ${isCompact ? '' : 'h-[108px]'}`}>
+        <FeeDisplayRow
+          title="Ethereum Mainnet"
+          costValue={ethDisplayValue}
+          costHistory={ethCostLive}
+          showUsd={showUsd}
+          gradientClass="from-[#596780] to-[#94ABD3]"
+          selectedIndex={ethCostSelectedIndex}
+          hoverIndex={ethCostHoverIndex}
+          onSelect={(index) => setEthCostSelectedIndex(index)}
+          onHover={(index) => setEthCostHoverIndex(index)}
+          getGradientColor={getGradientColor}
+          formatNumber={formatNumber}
+          hoverText="new block every ~12s"
+        />
+        <FeeDisplayRow
+          title="Layer 2s"
+          costValue={l2DisplayValue}
+          costHistory={layer2CostLive}
+          showUsd={showUsd}
+          gradientClass="from-[#FE5468] to-[#FFDF27]"
+          selectedIndex={l2CostSelectedIndex}
+          hoverIndex={l2CostHoverIndex}
+          onSelect={(index) => setL2CostSelectedIndex(index)}
+          onHover={(index) => setL2CostHoverIndex(index)}
+          getGradientColor={getGradientColor}
+          formatNumber={formatNumber}
+          hoverText="new block every ~200ms to ~2s"
+        />
+      </div>
+      {/* }
         containerClass="flex flex-col gap-y-[10px]"
         positionOffset={{ mainAxis: -20, crossAxis: 0 }}
       >
@@ -528,8 +544,8 @@ export const TokenTransferFeeCard = React.memo(({
 
       {/* Cost Chains List */}
       <div className={`relative flex flex-col gap-y-[5px] -mx-[15px] bg-[#1F2726] z-10 rounded-b-[15px] ${isCompact ? 'h-0' : 'h-auto'}`}>
-        <div className={`flex flex-col gap-y-[2.5px] px-[15px] transition-height duration-500 overflow-y-hidden ${!showChainsCost && !isCompact ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''}`} 
-        style={{ height: !showChainsCost ? `${UNEXPANDED_LIST_HEIGHT}px` : `${EXPANDED_LIST_HEIGHT}px` }}>
+        <div className={`flex flex-col gap-y-[2.5px] px-[15px] transition-height duration-500 overflow-y-hidden ${!showChainsCost && !isCompact ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''}`}
+          style={{ height: !showChainsCost ? `${UNEXPANDED_LIST_HEIGHT}px` : `${EXPANDED_LIST_HEIGHT}px` }}>
           <div className='heading-large-md text-[#5A6462]'>Layer 2 Chains</div>
           <div className="relative">
             {costTransitions((style, { chainId }) => (
@@ -557,7 +573,7 @@ export const TokenTransferFeeCard = React.memo(({
       >
         {content}
       </ExpandableCardContainer>
-  </div>
+    </div>
   );
 });
 
@@ -915,15 +931,21 @@ const ChainTransitionItem = React.memo(({
         maximumFractionDigits: 1
       }).format(value);
     } else {
-      return showUsd
-        ? "$" + Intl.NumberFormat('en-US', {
-          maximumFractionDigits: 4,
-          minimumFractionDigits: 4
-        }).format(value)
-        : Intl.NumberFormat('en-US', {
+      if(showUsd) {
+        if(value < 0.0001) {
+          return '< $0.0001';
+        } else {
+          return `$${Intl.NumberFormat('en-US', {
+            maximumFractionDigits: 4,
+            minimumFractionDigits: 4
+          }).format(value)}`;
+        }
+      } else {
+        return Intl.NumberFormat('en-US', { 
           minimumFractionDigits: 0,
           maximumFractionDigits: 0
         }).format(value * 1000000000);
+      }
     }
   }, [value, type, showUsd]);
 
@@ -1145,6 +1167,14 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   useEffect(() => {
     if (!activeGlobalMetrics) return;
 
+    const ethCostValue = showUsd 
+        ? activeGlobalMetrics.ethereum_tx_cost_usd 
+        : activeGlobalMetrics.ethereum_tx_cost_eth;
+      
+      const layer2CostValue = showUsd 
+        ? activeGlobalMetrics.layer2s_tx_cost_usd 
+        : activeGlobalMetrics.layer2s_tx_cost_eth;
+
     setHistoryState(prev => ({
       ...prev,
       totalTPSLive: prev.totalTPSLive.length >= TPS_HISTORY_LIMIT
@@ -1218,41 +1248,41 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
       {(
         <div className='grid grid-cols-3 gap-[15px] w-full'>
           <div className="col-span-3 2xl:col-span-1">
-          <EthereumUptimeCard
-            selectedBreakdownGroup={selectedBreakdownGroup}
-            eventHover={uiState.eventHover}
-            setEventHover={(value) => setUiState(prev => ({ ...prev, eventHover: value }))}
-            eventExpanded={uiState.eventExpanded}
-            handleToggleEventExpansion={handleToggleEventExpansion}
-            handleSetExpandedEvent={handleSetExpandedEvent}
-            showEvents={showEvents}
-            handleToggleEvents={handleToggleEvents}
-          />
+            <EthereumUptimeCard
+              selectedBreakdownGroup={selectedBreakdownGroup}
+              eventHover={uiState.eventHover}
+              setEventHover={(value) => setUiState(prev => ({ ...prev, eventHover: value }))}
+              eventExpanded={uiState.eventExpanded}
+              handleToggleEventExpansion={handleToggleEventExpansion}
+              handleSetExpandedEvent={handleSetExpandedEvent}
+              showEvents={showEvents}
+              handleToggleEvents={handleToggleEvents}
+            />
           </div>
           <div className="flex flex-col lg:flex-row gap-[15px] col-span-3 2xl:col-span-2">
-          <EthereumEcosystemTPSCard
-            selectedBreakdownGroup={selectedBreakdownGroup}
-            showChainsTPS={showChainsTPS}
-            handleToggleTPS={handleToggleTPS}
-            activeGlobalMetrics={activeGlobalMetrics}
-            activeChainData={activeChainData}
-            chainsTPSHistory={historyState.chainsTPSHistory}
-            totalTPSLive={historyState.totalTPSLive}
-            AllChainsByKeys={AllChainsByKeys}
-            showUsd={showUsd}
-          />
-          <TokenTransferFeeCard
-            selectedBreakdownGroup={selectedBreakdownGroup}
-            showChainsCost={showChainsCost}
-            handleToggleCost={handleToggleCost}
-            activeGlobalMetrics={activeGlobalMetrics}
-            activeChainData={activeChainData}
-            ethCostLive={historyState.ethCostLive}
-            layer2CostLive={historyState.layer2CostLive}
-            chainsCostHistory={historyState.chainsCostHistory}
-            AllChainsByKeys={AllChainsByKeys}
-            showUsd={showUsd}
-          />
+            <EthereumEcosystemTPSCard
+              selectedBreakdownGroup={selectedBreakdownGroup}
+              showChainsTPS={showChainsTPS}
+              handleToggleTPS={handleToggleTPS}
+              activeGlobalMetrics={activeGlobalMetrics}
+              activeChainData={activeChainData}
+              chainsTPSHistory={historyState.chainsTPSHistory}
+              totalTPSLive={historyState.totalTPSLive}
+              AllChainsByKeys={AllChainsByKeys}
+              showUsd={showUsd}
+            />
+            <TokenTransferFeeCard
+              selectedBreakdownGroup={selectedBreakdownGroup}
+              showChainsCost={showChainsCost}
+              handleToggleCost={handleToggleCost}
+              activeGlobalMetrics={activeGlobalMetrics}
+              activeChainData={activeChainData}
+              ethCostLive={historyState.ethCostLive}
+              layer2CostLive={historyState.layer2CostLive}
+              chainsCostHistory={historyState.chainsCostHistory}
+              AllChainsByKeys={AllChainsByKeys}
+              showUsd={showUsd}
+            />
           </div>
         </div>
       )}

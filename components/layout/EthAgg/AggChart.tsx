@@ -10,6 +10,7 @@ import { useMaster } from '@/contexts/MasterContext';
 import { AggChartProps } from './MetricsCharts';
 import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
 import { GTPIcon } from '../GTPIcon';
+import moment from 'moment';
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -286,11 +287,7 @@ export function AggChart({
   // Custom Tooltip Component
   const CustomTooltip = useCallback(({ data, x, y, metricName }: { data: any[], x: number, y: number, metricName: string }) => {
     if (!data.length) return null;
-
-    const date = new Date(data[0].categoryLabel);
-    const dateStr = date.toLocaleDateString("en-GB", {
-      year: "numeric", month: "short", day: "numeric"
-    });
+    const dateStr = moment.utc(data[0].categoryLabel).utc().locale("en-GB").format("DD MMM YYYY");
 
 
     const isMobile = useMediaQuery("(max-width: 768px)");
@@ -583,19 +580,18 @@ export function AggChart({
   return (
     <div ref={mainContainerRef} className='group/chart flex flex-col relative rounded-[15px] w-full h-[375px] bg-[#1F2726] pt-[15px]'>
       {/* Header */}
-      <div className={`flex h-[56px] pl-[34px] pr-[${isMobile ? "2px" : "20px"}] items-start w-full`}>
-        <div className='flex gap-x-[10px] items-center z-[10]'>
-          <div className='heading-large-md text-nowrap'>{title}</div>
+      <div className={`flex h-[56px] pl-[34px] ${isMobile ? "pr-[2px]" : "pr-[20px]"} items-start w-full`}>
+        <div className='flex gap-x-[10px] items-center z-[10] flex-1'>
+          <div className='heading-large-sm md:heading-large-md'>{title}</div>
           <GTPTooltipNew
             placement="top-start"
-            allowInteract={true}
             trigger={
               <div>
                 <GTPIcon icon="gtp-info-monochrome" size='sm' className='pointer-events-auto' />
               </div>
             }
             containerClass="flex flex-col gap-y-[10px]"
-            positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+            positionOffset={{ mainAxis: 0, crossAxis: 0 }}
             size='md'
           >
             <TooltipBody>
@@ -603,7 +599,7 @@ export function AggChart({
             </TooltipBody>
           </GTPTooltipNew>
         </div>
-        <div className='flex flex-col h-full items-end pt-[5px] w-full'>
+        <div className='flex flex-col h-full items-end pt-[5px]'>
 
           <div className={`flex items-center gap-x-[5px]`} style={{ marginRight: allChartCoordinates[chartKey]?.x && allChartCoordinates["tps"]?.x ? `${allChartCoordinates["tps"]?.x - allChartCoordinates[chartKey]?.x}px` : "0px" }}>
             <div className='numbers-xl bg-gradient-to-b bg-[#CDD8D3] bg-clip-text text-transparent'>{totalValue}</div>
@@ -661,6 +657,36 @@ export function AggChart({
         }}
         onMouseLeave={() => {
           setCustomTooltip(prev => ({ ...prev, visible: false }));
+        }}
+        onTouchMove={(e) => {
+          const chartInstance = chartRef.current?.getEchartsInstance();
+          if (chartInstance && chartContainerRef.current) {
+            const rect = chartContainerRef.current.getBoundingClientRect();
+            const x = e.touches[0].clientX - rect.left;
+            const y = e.touches[0].clientY - rect.top;
+
+            const dataPoint = chartInstance.convertFromPixel('grid', [x, y]);
+
+            if (dataPoint && dataPoint[0] >= 0 && dataPoint[0] < categories.length) {
+              const categoryIndex = Math.round(dataPoint[0]);
+              const tooltipData = seriesConfigs.map((config, seriesIndex) => ({
+                seriesName: config.name,
+                value: seriesData[seriesIndex]?.[categoryIndex] || 0,
+                color: AllChainsByKeys[config.key]?.colors.dark?.[0] || '#CDD8D3',
+                categoryIndex,
+                categoryLabel: categories[categoryIndex]
+              })).filter(item => item.value > 0);
+
+              setCustomTooltip({
+                visible: tooltipData.length > 0,
+                x: x,
+                y: y,
+                data: tooltipData
+              });
+            } else {
+              setCustomTooltip(prev => ({ ...prev, visible: false }));
+            }
+          }
         }}
       >
         <ReactECharts

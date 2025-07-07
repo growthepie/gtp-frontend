@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import React, { useMemo, useState, useCallback, useEffect, memo } from 'react';
 import { GTPIcon } from '../GTPIcon';
 import Container from '../Container';
 import useSWR from 'swr';
@@ -13,10 +13,12 @@ import Link from 'next/link';
 import "@/app/highcharts.axis.css";
 import { AggChart } from './AggChart';
 import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
-import { Splide, SplideSlide } from '@splidejs/react-splide';
+import { Splide, SplideSlide, SplideTrack } from '@splidejs/react-splide';
 import '@splidejs/react-splide/css';
 import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { ApplicationIcon } from '@/app/(layout)/applications/_components/Components';
+import { track } from '@vercel/analytics/react';
+import SwiperContainer from '../SwiperContainer';
 
 interface MetricsChartsProps {
   selectedBreakdownGroup: string;
@@ -266,7 +268,8 @@ function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) 
   if (!chartData || !chartConfigs) return null;
 
   return (
-    <Container className='flex flex-col gap-y-[60px] mt-[60px] w-full'>
+    <>
+    <Container className='flex flex-col gap-y-[60px] pt-[60px] w-full'>
       <div className='flex flex-col gap-y-[15px]'>
         <div className='flex gap-x-[8px] items-center'>
           <GTPIcon icon='gtp-metrics-economics' size='lg' className='text-[#5A6462]' />
@@ -289,8 +292,10 @@ function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) 
           <AggChart dataSource={chartData.tpsData} {...chartConfigs.tps} chartKey="tps" onCoordinatesUpdate={handleCoordinatesUpdate} allChartCoordinates={chartCoordinates} />
         </div>
       </div>
-      <MeetLayer2s meetL2sData={chartData.meetL2sData} selectedBreakdownGroup={selectedBreakdownGroup} />
     </Container>
+      <MeetLayer2s meetL2sData={chartData.meetL2sData} selectedBreakdownGroup={selectedBreakdownGroup} />
+      </>
+
   );
 }
 
@@ -326,179 +331,89 @@ const MeetLayer2s = React.memo(({ meetL2sData, selectedBreakdownGroup }: { meetL
 
 
   return (
-    <div className="flex flex-col gap-y-[15px] w-full h-full overflow-hidden">
-      <div className='flex gap-x-[8px] items-center'>
-        <GTPIcon icon='gtp-multiple-chains' size='lg' />
-        <div className='heading-large-lg select-auto'>Meet Layer 2s</div>
-      </div>
-      <div className='text-md pl-[44px] overflow-hidden select-auto'>Ethereum scales using a wide set of different Layer 2s, built by 3rd party teams. Take a closer look at them on our platform. </div>
-      {isMobile ? (
-        <Splide 
-          options={{
-            perPage: 1,
-            gap: '10px',
-            pagination: false,
-            arrows: false,
-            padding: { left: '20px', right: '20px' },
-            breakpoints: {
-              640: {
-                perPage: 1,
-                gap: '10px',
-              },
-            },
-          }}
-          className='w-full h-full overflow-visible'
-        >
-          {l2Keys.map((key) => {
-            const l2Data = meetL2sData[key];
-            const chainInfo = AllChainsByKeys[key];
-            const color = chainInfo?.colors?.dark?.[0];
+    <div className="flex flex-col gap-y-[15px] w-full overflow-hidden pt-[60px]">
+      <Container className='flex flex-col gap-y-[15px]'>
+        <div className='flex gap-x-[8px] items-center'>
+          <GTPIcon icon='gtp-multiple-chains' size='lg' />
+          <div className='heading-large-lg select-auto'>Meet Layer 2s</div>
+        </div>
+        <div className='text-md pl-[44px] overflow-hidden select-auto'>Ethereum scales using a wide set of different Layer 2s, built by 3rd party teams. Take a closer look at them on our platform. </div>
+      </Container>
+      <SwiperContainer ariaId={"meet-layer-2s-title"} size="meet-layer-2s">
+        <MeetL2sSlider meetL2sData={meetL2sData} ProjectData={ProjectData} />
+      </SwiperContainer>
+    </div>
+  );
 
-            return (
-              <SplideSlide key={key}>
-                <Link href={`/chains/${key}`} className='group cursor-pointer flex flex-col gap-y-[10px] rounded-[15px] p-[15px] bg-transparent border-[1px] border-[#5A6462] flex-shrink-0 w-full mx-[1px]'>
-                  <div className='flex items-center w-full justify-between'>
-                    <div className='flex items-center gap-x-[5px]'>
-                      <GTPIcon
-                        icon={`${chainInfo?.urlKey}-logo-monochrome` as GTPIconName}
-                        size='lg'
-                        style={{ color }}
-                      />
-                      <div className='heading-large-md select-auto group-hover:underline'>{chainInfo?.label}</div>
-                    </div>
-                    <div className='flex items-center justify-center w-[24px] h-[24px] rounded-full bg-[#344240]'>
-                      <Icon icon="feather:arrow-right" className="w-[15px] h-[15px]" />
-                    </div>
-                  </div>
-                  <div className='flex gap-x-[10px] items-center'>
-                    <div className='flex flex-col gap-y-[5px]'>
-                      <div className='numbers-2xl'>{formatNumber(l2Data.yesterday_aa)}</div>
-                      <div className='text-xs'>Wallets Yesterday</div>
-                    </div>
-                    <div className='flex flex-col gap-y-[5px]'>
-                      <div className='numbers-2xl'>{formatNumber(l2Data.total_aa)}</div>
-                      <div className='text-xs'>Total Wallets</div>
-                    </div>
-                  </div>
-                  <div className='flex gap-x-[10px] items-center'>
-                    <div className='flex flex-col gap-y-[5px]'>
-                      <div className='numbers-2xl'>${formatNumber(l2Data[showUsd ? "stables_mcap_usd" : "stables_mcap_eth"])}</div>
-                      <div className='text-xs'>Stablecoin Supply</div>
-                    </div>
-                    <div className='flex flex-col gap-y-[5px]'>
-                      <div className='numbers-2xl'>{formatNumber(l2Data.tps)}</div>
-                      <div className='text-xs'>TPS/Day</div>
-                    </div>
-                  </div>
-                  <div className='flex flex-col gap-y-[5px]'>
-                    <div className='flex items-center gap-x-[5px]'>
-                      {ProjectData[key].length === 0 ? (
-                        <div className='heading-small-xxxs bg-[#344240] rounded-full w-[24px] h-[24px] flex items-center justify-center'>N/A</div>
-                      ) : (
-                        ProjectData[key].map((project: any) => (
-                        <GTPTooltipNew
-                          size="md"
-                          placement="top-start"
-                          allowInteract={true}
-                          trigger={
-                            <Link href={`/applications/${project.owner_project}`} className='w-fit h-fit'>
-                              <ApplicationIcon owner_project={project.owner_project} size='sm' />
-                            </Link>
-                          }
-                          containerClass="flex flex-col gap-y-[10px]"
-                          positionOffset={{ mainAxis: 0, crossAxis: 20 }}
-                        >
-                          <TooltipBody className='pl-[20px]'>
-                            {project.description}
-                          </TooltipBody>
-                        </GTPTooltipNew>
-                        ))
-                      )}
-                      {/* <GTPTooltipNew
-                        size="md"
-                        placement="bottom-start"
-                        allowInteract={true}
-                        trigger={
-                          <div>
-                            <GTPIcon icon='gtp-crosschain' size='sm' />
-                          </div>
-                        }
-                        containerClass="flex flex-col gap-y-[10px]"
-                        positionOffset={{ mainAxis: 0, crossAxis: 20 }}
-                      >
-                        <TooltipBody className='pl-[20px]'>
-                          This is a tooltip
-                        </TooltipBody>
-                      </GTPTooltipNew>
-                      <GTPTooltipNew
-                        size="md"
-                        placement="bottom-start"
-                        allowInteract={true}
-                        trigger={
-                          <div>
-                            <GTPIcon icon='gtp-defi' size='sm' />
-                          </div>
-                        }
-                        containerClass="flex flex-col gap-y-[10px]"
-                        positionOffset={{ mainAxis: 0, crossAxis: 20 }}
-                      >
-                        <TooltipBody className='pl-[20px]'>
-                          This is a tooltip
-                        </TooltipBody>
-                      </GTPTooltipNew> */}
-                    </div>
-                    <div className='text-xs'>Predominately used for</div>
-                  </div>
-                </Link>
-              </SplideSlide>
-            );
-          })}
-        </Splide>
-      ) : (
-        <div className='flex w-full gap-[5px] overflow-hidden'>
-          {l2Keys.map((key) => {
-            const l2Data = meetL2sData[key];
-            const chainInfo = AllChainsByKeys[key];
-            const color = chainInfo?.colors?.dark?.[0];
+});
 
-            return (
-              <Link href={`/chains/${key}`} key={key} className='group cursor-pointer flex flex-col gap-y-[10px] rounded-[15px] p-[15px] bg-transparent border-[1px] border-[#5A6462] flex-shrink-0 w-full sm:w-[calc(50%-2.5px)] lg:w-[calc(33.333%-3.33px)] xl:w-[calc(25%-3.75px)] 2xl:w-[calc(20%-4px)]'>
-                <div className='flex items-center w-full justify-between'>
-                  <div className='flex items-center gap-x-[5px]'>
-                    <GTPIcon
-                      icon={`${chainInfo?.urlKey}-logo-monochrome` as GTPIconName}
-                      size='lg'
-                      style={{ color }}
-                    />
-                    <div className='heading-large-md select-auto group-hover:underline'>{chainInfo?.label}</div>
-                  </div>
-                  <div className='flex items-center justify-center w-[24px] h-[24px] rounded-full bg-[#344240]'>
-                    <Icon icon="feather:arrow-right" className="w-[15px] h-[15px]" />
-                  </div>
+MeetLayer2s.displayName = 'MeetLayer2s';
+
+export default MetricsChartsComponent;
+
+
+interface MeetL2sSliderProps {
+  meetL2sData: MeetL2s | null | undefined;
+  ProjectData: Record<string, any>;
+}
+
+const MeetL2sSlider = React.memo(({ meetL2sData, ProjectData }: MeetL2sSliderProps) => {
+  const { AllChainsByKeys } = useMaster();
+  const [showUsd] = useLocalStorage("showUsd", true);
+
+  const l2Keys = useMemo(() => (meetL2sData ? Object.keys(meetL2sData) : []), [meetL2sData]);
+
+  if (!meetL2sData) {
+    // Optional: Add a loading skeleton here
+    return null;
+  }
+
+  return (
+    <SplideTrack>
+      {l2Keys.map((key) => {
+        const l2Data = meetL2sData[key];
+        const chainInfo = AllChainsByKeys[key];
+        const color = chainInfo?.colors?.dark?.[0];
+
+        return (
+          <SplideSlide key={key}>
+            <Link href={`/chains/${key}`} className='group cursor-pointer flex flex-col gap-y-[10px] rounded-[15px] p-[15px] bg-transparent border-[1px] border-[#5A6462] h-full'>
+              <div className='flex items-center w-full justify-between'>
+                <div className='flex items-center gap-x-[5px]'>
+                  <GTPIcon
+                    icon={`${chainInfo?.urlKey}-logo-monochrome` as GTPIconName}
+                    size='lg'
+                    style={{ color }}
+                  />
+                  <div className='heading-large-md select-auto group-hover:underline'>{chainInfo?.label}</div>
                 </div>
-                <div className='flex gap-x-[10px] items-center'>
-                  <div className='flex flex-col gap-y-[5px]'>
-                    <div className='numbers-2xl'>{formatNumber(l2Data.yesterday_aa)}</div>
-                    <div className='text-xs'>Wallets Yesterday</div>
-                  </div>
-                  <div className='flex flex-col gap-y-[5px]'>
-                    <div className='numbers-2xl'>{formatNumber(l2Data.total_aa)}</div>
-                    <div className='text-xs'>Total Wallets</div>
-                  </div>
+                <div className='flex items-center justify-center w-[24px] h-[24px] rounded-full bg-[#344240]'>
+                  <Icon icon="feather:arrow-right" className="w-[15px] h-[15px]" />
                 </div>
-                <div className='flex gap-x-[10px] items-center'>
-                  <div className='flex flex-col gap-y-[5px]'>
-                    <div className='numbers-2xl'>${formatNumber(l2Data[showUsd ? "stables_mcap_usd" : "stables_mcap_eth"])}</div>
-                    <div className='text-xs'>Stablecoin Supply</div>
-                  </div>
-                  <div className='flex flex-col gap-y-[5px]'>
-                    <div className='numbers-2xl'>{formatNumber(l2Data.tps)}</div>
-                    <div className='text-xs'>TPS/Day</div>
-                  </div>
+              </div>
+              <div className='flex gap-x-[10px] items-center'>
+                <div className='flex flex-col gap-y-[5px]'>
+                  <div className='numbers-2xl'>{formatNumber(l2Data.yesterday_aa)}</div>
+                  <div className='text-xs'>Wallets Yesterday</div>
                 </div>
                 <div className='flex flex-col gap-y-[5px]'>
-                  <div className='flex items-center gap-x-[5px] min-h-[26px]'>
-                    {ProjectData[key].length === 0 ? (
+                  <div className='numbers-2xl'>{formatNumber(l2Data.total_aa)}</div>
+                  <div className='text-xs'>Total Wallets</div>
+                </div>
+              </div>
+              <div className='flex gap-x-[10px] items-center'>
+                <div className='flex flex-col gap-y-[5px]'>
+                  <div className='numbers-2xl'>${formatNumber(l2Data[showUsd ? "stables_mcap_usd" : "stables_mcap_eth"])}</div>
+                  <div className='text-xs'>Stablecoin Supply</div>
+                </div>
+                <div className='flex flex-col gap-y-[5px]'>
+                  <div className='numbers-2xl'>{formatNumber(l2Data.tps)}</div>
+                  <div className='text-xs'>TPS/Day</div>
+                </div>
+              </div>
+              <div className='flex flex-col gap-y-[5px] mt-auto pt-[10px]'>
+                <div className='flex items-center gap-x-[5px]'>
+                  {ProjectData[key].length === 0 ? (
                       <div className='heading-small-xxxs bg-[#344240]  rounded-full w-[24px] h-[24px] flex items-center justify-center'>
                         <div className='opacity-90'>N/A</div>
                       </div>
@@ -523,18 +438,15 @@ const MeetLayer2s = React.memo(({ meetL2sData, selectedBreakdownGroup }: { meetL
                         </GTPTooltipNew>
                       ))
                     )}
-                  </div>
-                  <div className='text-xs'>Predominately used for</div>
                 </div>
-              </Link>
-            );
-          })}
-        </div>
-      )}
-    </div>
+                <div className='text-xs'>Predominately used for</div>
+              </div>
+            </Link>
+          </SplideSlide>
+        );
+      })}
+    </SplideTrack>
   );
 });
 
-MeetLayer2s.displayName = 'MeetLayer2s';
-
-export default MetricsChartsComponent;
+MeetL2sSlider.displayName = 'MeetL2sSlider';

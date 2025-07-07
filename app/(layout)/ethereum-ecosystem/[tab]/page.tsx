@@ -22,11 +22,24 @@ import MetricsCharts from "@/components/layout/EthAgg/MetricsCharts";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { useUIContext } from "@/contexts/UIContext";
+import { useParams } from "next/navigation";
 
+const DEFAULT_TAB = "Metrics";
+
+const TABS = {
+  "metrics": "Metrics",
+  "ethereum-ecosystem": "Ethereum Ecosystem",
+  "builders-and-apps": "Builders & Apps",
+}
 
 export default function EthAgg() {
+  const params = useParams();
+
+  const tab = params.tab as string;
+
   const { setFocusSwitchEnabled } = useUIContext();
-  const [selectedBreakdownGroup, setSelectedBreakdownGroup] = useState("Metrics");
+
+  const [selectedBreakdownGroup, setSelectedBreakdownGroup] = useState(TABS[tab as keyof typeof TABS] || DEFAULT_TAB);
   const [selectedTimespan, setSelectedTimespan] = useState("365d");
   const [isMonthly, setIsMonthly] = useState(false);
   const TopMetricsComponent = <TopEthAggMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
@@ -64,14 +77,18 @@ export default function EthAgg() {
     <>
       <TopSelectArea selectedBreakdownGroup={selectedBreakdownGroup} setSelectedBreakdownGroup={setSelectedBreakdownGroup} />
       <div className="flex flex-col pt-[15px]">
-        <Container className={`transition-[max-height,opacity] duration-500 ${selectedBreakdownGroup === "Metrics" ? 'max-h-[0px] opacity-0' : 'max-h-[200px] opacity-100 mb-[15px]'}  overflow-hidden`}>
-          <div className={`px-[30px] py-[15px] rounded-[15px] bg-[#1F2726] flex flex-col gap-y-[15px] transition-[max-height,opacity] ${selectedBreakdownGroup === "Metrics" ? 'max-h-[0px] opacity-0' : 'max-h-[200px] opacity-100'}  overflow-hidden`}>
-            <div className="heading-large-lg select-auto">{titles[selectedBreakdownGroup]}</div>
-            <div className="text-sm select-auto">
-              {Messages[selectedBreakdownGroup]}
-            </div>
+        <div className={`grid transition-[grid-template-rows] duration-500 ease-in-out ${selectedBreakdownGroup === "Metrics" ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]'}`}>
+          <div className="overflow-hidden">
+            <Container className="mb-[15px]">
+              <div className="px-[30px] py-[15px] rounded-[15px] bg-[#1F2726] flex flex-col gap-y-[15px]">
+                <div className="heading-large-lg select-auto">{titles[selectedBreakdownGroup]}</div>
+                <div className="text-sm select-auto">
+                  {Messages[selectedBreakdownGroup]}
+                </div>
+              </div>
+            </Container>
           </div>
-        </Container>
+        </div>
 
         <TopEthAggMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
         <MetricsCharts selectedBreakdownGroup={selectedBreakdownGroup} />
