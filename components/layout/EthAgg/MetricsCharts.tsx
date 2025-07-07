@@ -433,9 +433,9 @@ const MeetL2sSlider = React.memo(({ meetL2sData, ProjectData }: MeetL2sSliderPro
                           placement="top-start"
                           allowInteract={true}
                           trigger={
-                                                          <Link href={`/applications/${project.owner_project}`} className='w-fit h-fit'>
-                                <ApplicationIcon owner_project={project.owner_project} size='sm' />
-                              </Link>
+                            <Link href={`/applications/${project.owner_project}`} className='w-fit h-fit'>
+                              <ApplicationIcon owner_project={project.owner_project} size='sm' />
+                            </Link>
                           }
                           containerClass="flex flex-col gap-y-[10px]"
                           positionOffset={{ mainAxis: 0, crossAxis: 20 }}

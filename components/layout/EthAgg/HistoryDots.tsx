@@ -67,7 +67,7 @@ export function HistoryDots({
               className={`rounded-full transition-all duration-50 absolute w-[5px] h-[5px] cursor-pointer`}
               onMouseEnter={() => onHover(index)}
               onMouseLeave={() => onHover(null)}
-              onClick={() => onSelect(index)}
+             
               style={{
                 backgroundColor: color,
                 transform: `scale(${scale})`,

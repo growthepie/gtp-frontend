@@ -131,6 +131,18 @@ export function AggChart({
     data: any[];
   }>({ visible: false, x: 0, y: 0, data: [] });
 
+  // Track if user is interacting (touching/moving) on mobile
+  const [isInteracting, setIsInteracting] = useState(false);
+
+  // Hide tooltip after a delay on mobile, but only if not interacting
+  useEffect(() => {
+    if (!isMobile || !customTooltip.visible || isInteracting) return;
+    const timeout = setTimeout(() => {
+      setCustomTooltip(prev => ({ ...prev, visible: false }));
+    }, 2500); // 2.5 seconds
+    return () => clearTimeout(timeout);
+  }, [isMobile, customTooltip.visible, isInteracting]);
+
   useEffect(() => {
     setIsDebouncing(true);
     const timeout = setTimeout(() => {
@@ -545,7 +557,7 @@ export function AggChart({
           margin: -1,
           padding: [3, 0, 0, 0],
           color: '#CDD8D3',
-          fontSize: 9,
+          fontSize: isMobile ? 8 : 9,
           fontWeight: 500,
           fontFamily: 'Raleway, sans-serif',
           align: 'left',
@@ -577,9 +589,9 @@ export function AggChart({
   return (
     <div ref={mainContainerRef} className='group/chart flex flex-col relative rounded-[15px] w-full h-[375px] bg-[#1F2726] pt-[15px]'>
       {/* Header */}
-      <div className={`flex h-[56px] pl-[34px] ${isMobile ? "pr-[2px]" : "pr-[20px]"} items-start w-full`}>
-        <div className='flex gap-x-[10px] items-center z-[10] flex-1'>
-          <div className='heading-large-sm md:heading-large-md'>{title}</div>
+      <div className={`flex h-[56px] pl-[24px] sm:pl-[34px] ${isMobile ? "pr-[2px]" : "pr-[20px]"} items-start w-full`}>
+        <div className='flex gap-x-[5px] sm:gap-x-[10px] items-center z-[10] flex-1 sm:pt-0 pt-[5px]'>
+          <div className='heading-large-xs sm:heading-large-sm md:heading-large-md'>{title}</div>
           <GTPTooltipNew
             placement="top-start"
             trigger={
@@ -598,14 +610,14 @@ export function AggChart({
         </div>
         <div className='flex flex-col h-full items-end pt-[5px]'>
 
-          <div className={`flex items-center gap-x-[5px]`} style={{ marginRight: allChartCoordinates[chartKey]?.x && allChartCoordinates["tps"]?.x ? `${allChartCoordinates["tps"]?.x - allChartCoordinates[chartKey]?.x}px` : "0px" }}>
-            <div className='numbers-xl bg-gradient-to-b bg-[#CDD8D3] bg-clip-text text-transparent'>{totalValue}</div>
-            <div ref={circleRef} className='w-[16px] h-[16px] rounded-full z-chart bg-[#CDD8D3]' />
+          <div className={`flex items-center gap-x-[5px] sm:pr-0 pr-[2px]`} style={{ marginRight: allChartCoordinates[chartKey]?.x && allChartCoordinates["tps"]?.x ? `${allChartCoordinates["tps"]?.x - allChartCoordinates[chartKey]?.x}px` : "0px" }}>
+            <div className='numbers-lg sm:numbers-xl bg-gradient-to-b bg-[#CDD8D3] bg-clip-text text-transparent'>{totalValue}</div>
+            <div ref={circleRef} className='w-[12px] h-[12px] sm:w-[16px] sm:h-[16px] rounded-full z-chart bg-[#CDD8D3]' />
           </div>
 
           {shareValue && (
             <div className='flex items-center gap-x-[5px]'>
-              <div className='text-sm bg-gradient-to-b from-[#FE5468] to-[#FFDF27] bg-clip-text text-transparent'>{shareValue}</div>
+              <div className='text-xs sm:text-sm bg-gradient-to-b from-[#FE5468] to-[#FFDF27] bg-clip-text text-transparent'>{shareValue}</div>
               <div className='w-[16px] h-[16px] rounded-full bg-transparent' />
             </div>
           )}
@@ -654,8 +666,13 @@ export function AggChart({
         }}
         onMouseLeave={() => {
           setCustomTooltip(prev => ({ ...prev, visible: false }));
+          setIsInteracting(false);
+        }}
+        onTouchStart={() => {
+          setIsInteracting(true);
         }}
         onTouchMove={(e) => {
+          setIsInteracting(true);
           const chartInstance = chartRef.current?.getEchartsInstance();
           if (chartInstance && chartContainerRef.current) {
             const rect = chartContainerRef.current.getBoundingClientRect();
@@ -684,6 +701,9 @@ export function AggChart({
               setCustomTooltip(prev => ({ ...prev, visible: false }));
             }
           }
+        }}
+        onTouchEnd={() => {
+          setIsInteracting(false);
         }}
       >
         <ReactECharts
