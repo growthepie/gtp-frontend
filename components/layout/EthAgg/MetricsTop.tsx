@@ -381,8 +381,8 @@ export const EthereumEcosystemTPSCard = React.memo(({
           </div>
 
           <div className={`justify-between ${isCompact ? 'hidden' : 'flex w-[73%]'}`}>
-            <div className='numbers-xs flex items-center gap-x-1'><span className='text-xs'>Max (24h):</span>{activeGlobalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) || 0} TPS</div>
-            <div className='numbers-xs flex items-center gap-x-1'><span className='text-xs'>ATH:</span>{activeGlobalMetrics.total_tps_ath?.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) || 0} TPS</div>
+            <div className='numbers-xs flex items-center gap-x-1'><span className='text-xs'>Max (24h):</span>{activeGlobalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
+            <div className='numbers-xs flex items-center gap-x-1'><span className='text-xs'>ATH:</span>{activeGlobalMetrics.total_tps_ath?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
           </div>
         </div>
         <div className={`w-full -mt-[5px]`}>
