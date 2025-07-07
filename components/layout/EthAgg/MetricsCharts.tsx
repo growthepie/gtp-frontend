@@ -440,7 +440,7 @@ const MeetL2sSlider = React.memo(({ meetL2sData, ProjectData }: MeetL2sSliderPro
                       ))
                     )}
                 </div>
-                <div className='text-xs'>Predominately used for</div>
+                <div className='text-xs'>Most used apps</div>
               </div>
             </Link>
           </SplideSlide>
