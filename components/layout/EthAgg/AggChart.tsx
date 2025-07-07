@@ -4,7 +4,7 @@ import ReactECharts from 'echarts-for-react';
 import * as echarts from 'echarts';
 import { useId } from 'react';
 import { ChartWatermarkWithMetricName } from '../ChartWatermark';
-import { useLocalStorage, useResizeObserver } from 'usehooks-ts';
+import { useLocalStorage, useMediaQuery, useResizeObserver } from 'usehooks-ts';
 import { useElementSizeObserver } from '@/hooks/useElementSizeObserver';
 import { useMaster } from '@/contexts/MasterContext';
 import { AggChartProps } from './MetricsCharts';
@@ -23,8 +23,8 @@ const COLORS = {
 const UNLISTED_CHAIN_COLORS = ["#7D8887", "#717D7C", "#667170", "#5A6665", "#4F5B5A", "#43504F", "#384443", "#2C3938"]
 
 
-const XAxisLabels = React.memo(({ xMin, xMax, rightMargin }: { xMin: number, xMax: number, rightMargin?: string }) => (
-  <div className="absolute bottom-0 left-0 right-0 flex w-full justify-between items-center pl-[15px] pr-[34px] opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 pointer-events-none">
+const XAxisLabels = React.memo(({ xMin, xMax, rightMargin, isMobile }: { xMin: number, xMax: number, rightMargin?: string, isMobile: boolean }) => (
+  <div className={`absolute bottom-0 left-0 right-0 flex w-full justify-between items-center pl-[15px] ${isMobile ? "pr-[3px]" : "pr-[19px]"} opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 pointer-events-none`}>
     <div className='text-xxs flex gap-x-[2px] items-center bg-[#34424080] rounded-full px-[5px] py-[2px]'>
       <div className='w-[6px] rounded-full h-[6px] bg-[#CDD8D3]' />
       {new Date(xMin).getFullYear()}
@@ -105,6 +105,7 @@ export function AggChart({
   const uniqueId = useId();
   const { AllChainsByKeys } = useMaster();
   const [showUsd] = useLocalStorage("showUsd", true);
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const chartRef = useRef<ReactECharts>(null);
   const circleRef = useRef<HTMLDivElement>(null);
   const mainContainerRef = useRef<HTMLDivElement>(null);
@@ -290,6 +291,9 @@ export function AggChart({
     const dateStr = date.toLocaleDateString("en-GB", {
       year: "numeric", month: "short", day: "numeric"
     });
+
+
+    const isMobile = useMediaQuery("(max-width: 768px)");
 
     // sum of all values
     const pointsSum = data.reduce((acc: number, point: any) => acc + point.value, 0);
@@ -524,7 +528,7 @@ export function AggChart({
     return {
       animation: false,
       backgroundColor: 'transparent',
-      grid: { left: 0, right: 42, top: 20, bottom: 0 },
+      grid: { left: 0, right: isMobile ? 10   : 28, top: 20, bottom: 0 },
       xAxis: {
         type: 'category',
         data: categories || [],
@@ -579,7 +583,7 @@ export function AggChart({
   return (
     <div ref={mainContainerRef} className='group/chart flex flex-col relative rounded-[15px] w-full h-[375px] bg-[#1F2726] pt-[15px]'>
       {/* Header */}
-      <div className='flex h-[56px] px-[34px] items-start w-full'>
+      <div className={`flex h-[56px] pl-[34px] pr-[${isMobile ? "2px" : "20px"}] items-start w-full`}>
         <div className='flex gap-x-[10px] items-center z-[10]'>
           <div className='heading-large-md text-nowrap'>{title}</div>
           <GTPTooltipNew
@@ -696,7 +700,7 @@ export function AggChart({
       )}
 
       {/* Custom X-Axis Timeline */}
-      <XAxisLabels xMin={xAxisExtremes.xMin} xMax={xAxisExtremes.xMax} rightMargin={allChartCoordinates[chartKey]?.x && allChartCoordinates["tps"]?.x ? `${allChartCoordinates["tps"]?.x + 1 - allChartCoordinates[chartKey]?.x}px` : "0px"} />
+      <XAxisLabels xMin={xAxisExtremes.xMin} xMax={xAxisExtremes.xMax} rightMargin={allChartCoordinates[chartKey]?.x && allChartCoordinates["tps"]?.x ? `${allChartCoordinates["tps"]?.x + 1 - allChartCoordinates[chartKey]?.x}px` : "0px"} isMobile={isMobile} />
     </div>
   );
 }
