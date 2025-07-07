@@ -93,10 +93,24 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
         <div className={`pointer-events-none transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
           <GTPIcon icon="gtp-chevrondown-monochrome" size="md" className="text-[#5A6462]" />
         </div>
-        <div className="pointer-events-none">
+        
           {/* Default info icon can be overridden by the infoSlot prop */}
-          {infoSlot ?? <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-[#5A6462]" />}
-        </div>
+        <GTPTooltipNew
+          placement="top-start"
+          allowInteract={true}
+          trigger={
+            <div className="w-[15px] h-fit">
+              <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-[#5A6462]" />
+            </div>
+          }
+          containerClass="flex flex-col gap-y-[10px]"
+          positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+        >
+          <div>
+            {infoSlot}
+          </div>
+        </GTPTooltipNew>
+        
       </div>
     </div>
   );
@@ -283,7 +297,7 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
         onToggleExpand={handleToggleEvents}
         isCompact={isCompact}
         // infoSlot could be used here to add a tooltip if needed
-        infoSlot={<GTPIcon icon="gtp-info-monochrome" size="sm" className="text-[#5A6462]" />}
+        infoSlot={"Uptime Text ||matze"}
       >
         {mainContent}
 
@@ -408,7 +422,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
         isExpanded={showChainsTPS}
         onToggleExpand={handleToggleTPS}
         isCompact={isCompact}
-        infoSlot={<GTPIcon icon="gtp-info-monochrome" size="sm" className="text-[#5A6462]" />}
+        infoSlot={"TPS Text ||matze"}
       >
         {content}
       </ExpandableCardContainer>
@@ -569,7 +583,7 @@ export const TokenTransferFeeCard = React.memo(({
         isExpanded={showChainsCost}
         onToggleExpand={handleToggleCost}
         isCompact={isCompact}
-        infoSlot={<GTPIcon icon="gtp-info-monochrome" size="sm" className="text-[#5A6462]" />}
+        infoSlot={"Transfer Text ||matze"}
       >
         {content}
       </ExpandableCardContainer>
