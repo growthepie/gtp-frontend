@@ -420,6 +420,7 @@ const MeetL2sSlider = React.memo(({ meetL2sData, ProjectData }: MeetL2sSliderPro
                     ) : (
                       ProjectData[key].map((project: any) => (
                         <GTPTooltipNew
+                          key={project.owner_project}
                           size="md"
                           placement="top-start"
                           allowInteract={true}

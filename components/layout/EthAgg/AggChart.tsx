@@ -225,7 +225,7 @@ export function AggChart({
     const circleY = circleRect.top + circleRect.height / 2 - chartRect.top;
 
     return [...pixelCoords, circleY]; // Returns [x, y, circleY] in pixels
-  }, [seriesData, categories, debouncedDimensions.width, debouncedDimensions.height]);
+  }, [seriesData, categories]);
 
   // Update coordinates in parent component when they change
   useEffect(() => {
@@ -288,9 +288,6 @@ export function AggChart({
   const CustomTooltip = useCallback(({ data, x, y, metricName }: { data: any[], x: number, y: number, metricName: string }) => {
     if (!data.length) return null;
     const dateStr = moment.utc(data[0].categoryLabel).utc().locale("en-GB").format("DD MMM YYYY");
-
-
-    const isMobile = useMediaQuery("(max-width: 768px)");
 
     // sum of all values
     const pointsSum = data.reduce((acc: number, point: any) => acc + point.value, 0);
@@ -466,7 +463,7 @@ export function AggChart({
         {/* )} */}
       </div>
     );
-  }, [dataSource, containerWidth, chartKey, prefix, AllChainsByKeys]);
+  }, [dataSource, containerWidth, chartKey, prefix, AllChainsByKeys, isMobile]);
 
 
 
