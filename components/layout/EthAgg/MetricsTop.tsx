@@ -20,6 +20,8 @@ import CalendarIcon from '@/icons/svg/GTP-Calendar.svg';
 import Image from 'next/image';
 import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
 import { useElementSizeObserver } from '@/hooks/useElementSizeObserver';
+import useSWR from 'swr';
+import { HistoryData } from './types';
 // Define the props type for TopEthAggMetricsComponent
 interface TopEthAggMetricsProps {
   selectedBreakdownGroup: string;
@@ -1022,6 +1024,7 @@ interface RealTimeMetricsProps {
 const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   const { chainData, globalMetrics, lastUpdated, connectionStatus } = useSSEMetrics();
   const { AllChainsByKeys } = useMaster();
+  const history = useSWR<HistoryData>("https://sse.growthepie.com/api/history")
 
   // Cached data state to maintain previous values when SSE fails
   const [cachedData, setCachedData] = useState<{
@@ -1052,6 +1055,9 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     chainsCostHistory: {} as { [key: string]: number[] },
     chainsTPSHistory: {} as { [key: string]: number[] },
   });
+
+  // Track whether we've initialized with historical data
+  const [hasInitializedWithHistory, setHasInitializedWithHistory] = useState(false);
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [showChainsTPS, setShowChainsTPS] = useSearchParamBoolean("tps", false, {
@@ -1179,7 +1185,26 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     }));
   }, []);
 
-  // Optimized effects
+  // Initialize totalTPSLive with historical data when available
+  useEffect(() => {
+    if (!history.data?.history || hasInitializedWithHistory) return;
+
+    const historicalTPS = history.data.history
+      .slice(0, 40)
+      .map(item => item.tps || 0);
+
+    if (historicalTPS.length > 0) {
+      setHistoryState(prev => ({
+        ...prev,
+        totalTPSLive: historicalTPS,
+      }));
+      setHasInitializedWithHistory(true);
+    }
+  }, [history.data, hasInitializedWithHistory]);
+
+
+  
+  // Optimized effects - append SSE data
   useEffect(() => {
     if (!activeGlobalMetrics) return;
 
@@ -1248,7 +1273,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   }, [activeChainData, showUsd]);
 
   // Don't show anything until we have initial data
-  if (!cachedData.hasInitialData) {
+  if (!cachedData.hasInitialData && !hasInitializedWithHistory) {
     return null;
   }
 
