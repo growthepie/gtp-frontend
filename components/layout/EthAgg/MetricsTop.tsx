@@ -107,7 +107,9 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
           positionOffset={{ mainAxis: 0, crossAxis: 20 }}
         >
           <div>
+          <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
             {infoSlot}
+          </TooltipBody>
           </div>
         </GTPTooltipNew>
         
@@ -297,7 +299,7 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
         onToggleExpand={handleToggleEvents}
         isCompact={isCompact}
         // infoSlot could be used here to add a tooltip if needed
-        infoSlot={"Uptime Text ||matze"}
+        infoSlot={"Uptime shows how long Ethereum has been running without interruptions. It is calculated from the genesis block on July 30, 2015."}
       >
         {mainContent}
 
@@ -422,7 +424,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
         isExpanded={showChainsTPS}
         onToggleExpand={handleToggleTPS}
         isCompact={isCompact}
-        infoSlot={"TPS Text ||matze"}
+        infoSlot={"TPS (Transactions-per-second) values are calculated by analyzing recent blocks on Ethereum Mainnet and Layer 2s. Please reach out to us if your Layer 2 is missing. Source: growthepie"}
       >
         {content}
       </ExpandableCardContainer>
@@ -583,7 +585,7 @@ export const TokenTransferFeeCard = React.memo(({
         isExpanded={showChainsCost}
         onToggleExpand={handleToggleCost}
         isCompact={isCompact}
-        infoSlot={"Transfer Text ||matze"}
+        infoSlot={"Costs are based on gas fees paid in recent blocks. For token transfers (ERC20), we assume a gas usage of 65,000 gas. Source: growthepie"}
       >
         {content}
       </ExpandableCardContainer>
