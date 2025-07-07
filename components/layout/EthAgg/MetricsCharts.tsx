@@ -377,7 +377,15 @@ const MeetL2sSlider = React.memo(({ meetL2sData, ProjectData }: MeetL2sSliderPro
 
         return (
           <SplideSlide key={key}>
-            <Link href={`/chains/${key}`} className='group cursor-pointer flex flex-col gap-y-[10px] rounded-[15px] p-[15px] bg-transparent border-[1px] border-[#5A6462] h-full'>
+            <div 
+              onClick={(e) => {
+                // Only navigate if we didn't click on a nested link
+                if (!(e.target as HTMLElement).closest('a')) {
+                  window.location.href = `/chains/${key}`;
+                }
+              }}
+              className='group cursor-pointer flex flex-col gap-y-[10px] rounded-[15px] p-[15px] bg-transparent border-[1px] border-[#5A6462] h-full'
+            >
               <div className='flex items-center w-full justify-between'>
                 <div className='flex items-center gap-x-[5px]'>
                   <GTPIcon
@@ -425,9 +433,9 @@ const MeetL2sSlider = React.memo(({ meetL2sData, ProjectData }: MeetL2sSliderPro
                           placement="top-start"
                           allowInteract={true}
                           trigger={
-                            <Link href={`/applications/${project.owner_project}`} className='w-fit h-fit'>
-                              <ApplicationIcon owner_project={project.owner_project} size='sm' />
-                            </Link>
+                                                          <Link href={`/applications/${project.owner_project}`} className='w-fit h-fit'>
+                                <ApplicationIcon owner_project={project.owner_project} size='sm' />
+                              </Link>
                           }
                           containerClass="flex flex-col gap-y-[10px]"
                           positionOffset={{ mainAxis: 0, crossAxis: 20 }}
@@ -442,7 +450,7 @@ const MeetL2sSlider = React.memo(({ meetL2sData, ProjectData }: MeetL2sSliderPro
                 </div>
                 <div className='text-xs'>Most used apps</div>
               </div>
-            </Link>
+            </div>
           </SplideSlide>
         );
       })}

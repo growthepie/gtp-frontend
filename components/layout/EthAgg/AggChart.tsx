@@ -403,7 +403,7 @@ export function AggChart({
           const barWidth = maxValue > 0 ? (item.value / maxValue) * 100 : 0;
 
           return (
-            <>
+            <div key={index}>
               <div key={index} className="flex w-full h-[15px] space-x-2 items-center font-medium mb-0.5">
                 <div className="w-[15px] h-[10px] rounded-r-full relative overflow-hidden -ml-3" style={{ backgroundColor: item.color }}>
                   <div className="h-full rounded-r-full" style={{ backgroundColor: item.color, width: `${barWidth}%` }}></div>
@@ -419,7 +419,7 @@ export function AggChart({
                   style={{ width: `${(Math.max(0, item.value) / maxPoint) * 100}%`, backgroundColor: `${item.color}99` }}></div>
               </div>
 
-            </>
+            </div>
           );
         })}
 
