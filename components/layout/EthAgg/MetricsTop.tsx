@@ -22,6 +22,8 @@ import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
 import { useElementSizeObserver } from '@/hooks/useElementSizeObserver';
 import useSWR from 'swr';
 import { HistoryData } from './types';
+import { useMediaQuery } from 'usehooks-ts';
+
 // Define the props type for TopEthAggMetricsComponent
 interface TopEthAggMetricsProps {
   selectedBreakdownGroup: string;
@@ -85,11 +87,20 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
   infoSlot,
 }) => {
   // The button at the bottom for expanding/collapsing the card
+
+  const isMobile = useMediaQuery("(max-width: 768px)"); 
   const ExpandButton = (
-    <div
-      className="absolute bottom-0 left-0 right-0 w-full py-[15px] px-[30px] h-fit flex items-center justify-center z-10 cursor-pointer"
-      onClick={onToggleExpand}
-    >
+      <div
+        className="absolute bottom-0 left-0 right-0 w-full py-[15px] px-[30px] h-fit flex items-center justify-center z-10 cursor-pointer"
+        onClick={(e) => {
+          // Don't expand if clicking on the tooltip trigger
+          const target = e.target as HTMLElement;
+          const isTooltipTrigger = target.closest('[data-tooltip-trigger]');
+          if (!isTooltipTrigger || !isMobile) {
+            onToggleExpand(e);
+          }
+        }}
+      >
       <div className="flex items-center justify-between w-full">
         <div className="w-[15px] h-fit" />
         <div className={`pointer-events-none transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
@@ -97,24 +108,29 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
         </div>
         
           {/* Default info icon can be overridden by the infoSlot prop */}
-        <GTPTooltipNew
-          placement="top-start"
-          allowInteract={true}
-          trigger={
-            <div className="w-[15px] h-fit">
-              <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-[#5A6462]" />
+                 <div className='w-[15px] h-fit z-30'>
+           <GTPTooltipNew
+             placement="top-start"
+             allowInteract={true}
+             trigger={
+               <div 
+                 className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'}`}
+                 data-tooltip-trigger
+               >
+                 <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-[#5A6462]" />
+               </div>
+             }
+            containerClass="flex flex-col gap-y-[10px]"
+            positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+
+          >
+            <div>
+            <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
+              {infoSlot}
+            </TooltipBody>
             </div>
-          }
-          containerClass="flex flex-col gap-y-[10px]"
-          positionOffset={{ mainAxis: 0, crossAxis: 20 }}
-        >
-          <div>
-          <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
-            {infoSlot}
-          </TooltipBody>
-          </div>
-        </GTPTooltipNew>
-        
+          </GTPTooltipNew>
+        </div>
       </div>
     </div>
   );
@@ -1142,20 +1158,17 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
 
   // Optimized event handlers
   const handleToggleTPS = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+
     setShowChainsTPS(!showChainsTPS);
   }, [showChainsTPS, setShowChainsTPS]);
 
   const handleToggleCost = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+
     setShowChainsCost(!showChainsCost);
   }, [showChainsCost, setShowChainsCost]);
 
   const handleToggleEvents = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+
     setShowEvents(!showEvents);
   }, [showEvents, setShowEvents]);
 
