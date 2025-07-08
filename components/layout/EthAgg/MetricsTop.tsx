@@ -399,10 +399,10 @@ export const EthereumEcosystemTPSCard = React.memo(({
             {isCompact && <div className='heading-small-xs text-[#5A6462] pt-[5px] h-0 overflow-visible'>all chains combined</div>}
           </div>
 
-          <div className={`justify-end ${isCompact ? 'hidden' : 'flex'}`}>
-            {/* <div className='numbers-xs flex items-center gap-x-1'><span className='text-xs'>Max (24h):</span>{activeGlobalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div> */}
+          {/* <div className={`justify-between ${isCompact ? 'hidden' : 'flex'} w-[60%]`}> */}
+            <div className='numbers-xs flex items-center gap-x-1'><span className='text-xs'>24h:</span>{activeGlobalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
             <div className='numbers-xs flex items-center gap-x-1'><span className='text-xs'>ATH:</span>{activeGlobalMetrics.total_tps_ath?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
-          </div>
+          {/* </div> */}
         </div>
         <div className={`relative transition-height duration-500 w-full ${isCompact ? 'h-0 overflow-hidden' : 'h-[58px] overflow-visible '}`}>
           <TPSChart totalTPSLive={totalTPSLive} />
