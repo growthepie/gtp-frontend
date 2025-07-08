@@ -381,7 +381,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
               <div>{Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(activeGlobalMetrics.total_tps || 0)}</div>
               <div className={`${isCompact ? '' : 'hidden'}`}>TPS</div>
             </div>
-            {isCompact && <div className='heading-small-xs text-[#5A6462] pt-[5px]'>all chains combined</div>}
+            {isCompact && <div className='heading-small-xs text-[#5A6462] pt-[5px] h-0 overflow-visible'>all chains combined</div>}
           </div>
 
           <div className={`justify-between ${isCompact ? 'hidden' : 'flex w-[73%]'}`}>
