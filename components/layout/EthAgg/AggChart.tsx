@@ -656,9 +656,9 @@ export function AggChart({
         </div>
         <div className='flex flex-col h-full items-end pt-[5px]'>
 
-          <div className={`flex items-center gap-x-[5px] sm:pr-0 pr-[2px]`} style={{ marginRight: allChartCoordinates[chartKey]?.x && allChartCoordinates["tps"]?.x ? `${allChartCoordinates["tps"]?.x - allChartCoordinates[chartKey]?.x}px` : "0px" }}>
+          <div className={`flex items-center gap-x-[5px] pr-[4px] sm:pr-[4px]`} style={{ marginRight: allChartCoordinates[chartKey]?.x && allChartCoordinates["tps"]?.x ? `${allChartCoordinates["tps"]?.x - allChartCoordinates[chartKey]?.x}px` : "0px" }}>
             <div className='numbers-lg sm:numbers-xl bg-gradient-to-b bg-[#CDD8D3] bg-clip-text text-transparent'>{totalValue}</div>
-            <div ref={circleRef} className='w-[12px] h-[12px] sm:w-[16px] sm:h-[16px] rounded-full z-chart bg-[#CDD8D3]' />
+            <div ref={circleRef} className='w-[9px] h-[9px] sm:w-[9px] sm:h-[9px] rounded-full z-chart bg-[#CDD8D3]' />
           </div>
 
           {shareValue && (
