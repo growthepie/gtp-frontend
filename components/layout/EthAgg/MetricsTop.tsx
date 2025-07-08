@@ -22,7 +22,9 @@ import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
 import { useElementSizeObserver } from '@/hooks/useElementSizeObserver';
 import useSWR from 'swr';
 import { HistoryData } from './types';
-import {TPSChart} from './TPSChart';
+import { TPSChart } from './TPSChart';
+import { throttle } from 'lodash';
+
 // Define the props type for TopEthAggMetricsComponent
 interface TopEthAggMetricsProps {
   selectedBreakdownGroup: string;
@@ -96,8 +98,8 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
         <div className={`pointer-events-none transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
           <GTPIcon icon="gtp-chevrondown-monochrome" size="md" className="text-[#5A6462]" />
         </div>
-        
-          {/* Default info icon can be overridden by the infoSlot prop */}
+
+        {/* Default info icon can be overridden by the infoSlot prop */}
         <GTPTooltipNew
           placement="top-start"
           allowInteract={true}
@@ -110,12 +112,12 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
           positionOffset={{ mainAxis: 0, crossAxis: 20 }}
         >
           <div>
-          <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
-            {infoSlot}
-          </TooltipBody>
+            <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
+              {infoSlot}
+            </TooltipBody>
           </div>
         </GTPTooltipNew>
-        
+
       </div>
     </div>
   );
@@ -175,47 +177,61 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
     return masterData ? [...masterData.ethereum_events].reverse() : [];
   }, [masterData]);
 
-  // Handle wheel scroll navigation
-  const handleDocumentWheel = useCallback((e: WheelEvent) => {
-    if (!containerRef.current || !isEventsHovered) return;
 
-    const target = e.target as Node;
-    if (containerRef.current.contains(target)) {
-      if (!showEvents || reversedEvents.length === 0 || !eventExpanded) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      const currentIndex = reversedEvents.findIndex(event => event.date === eventExpanded);
-      if (currentIndex === -1) return;
-
-      const isScrollingDown = e.deltaY > 0;
-
-      if (isScrollingDown) {
-        const nextIndex = currentIndex + 1;
-        if (nextIndex < reversedEvents.length) {
-          handleSetExpandedEvent(reversedEvents[nextIndex].date);
-        }
-      } else {
-        if (currentIndex > 0) {
-          handleSetExpandedEvent(reversedEvents[currentIndex - 1].date);
-        }
-      }
-    }
-  }, [isEventsHovered, showEvents, reversedEvents, eventExpanded, handleSetExpandedEvent]);
+  // 1. Stable refs that always hold the latest values
+  const showEventsRef = useRef(showEvents);
+  const reversedEventsRef = useRef(reversedEvents);
+  const eventExpandedRef = useRef(eventExpanded);
 
   useEffect(() => {
-    if (isEventsHovered) {
-      document.addEventListener('wheel', handleDocumentWheel, { passive: false });
-    } else {
-      document.removeEventListener('wheel', handleDocumentWheel);
-    }
+    showEventsRef.current = showEvents;
+    reversedEventsRef.current = reversedEvents;
+    eventExpandedRef.current = eventExpanded;
+  });
 
-    return () => {
-      document.removeEventListener('wheel', handleDocumentWheel);
+  // 2. Create the throttled function once (1000 ms lock)
+  const throttledWheelHandlerRef = useRef<(e: WheelEvent) => void>();
+  if (!throttledWheelHandlerRef.current) {
+    throttledWheelHandlerRef.current = throttle(
+      (e: WheelEvent) => {
+        if (
+          !showEventsRef.current ||
+          reversedEventsRef.current.length === 0 ||
+          !eventExpandedRef.current
+        ) {
+          return;
+        }
+
+        const idx = reversedEventsRef.current.findIndex(
+          ev => ev.date === eventExpandedRef.current
+        );
+        if (idx === -1) return;
+
+        const next = e.deltaY > 0 ? idx + 1 : idx - 1;
+        if (next >= 0 && next < reversedEventsRef.current.length) {
+          handleSetExpandedEvent(reversedEventsRef.current[next].date);
+        }
+      },
+      300,                       // ← throttle interval
+      { leading: true, trailing: false }
+    );
+  }
+
+  // 3. Attach / detach on hover
+  useEffect(() => {
+    if (!isEventsHovered) return;
+
+    const wheelListener = (e: WheelEvent) => {
+      if (!containerRef.current?.contains(e.target as Node)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      throttledWheelHandlerRef.current!(e);
     };
-  }, [isEventsHovered, handleDocumentWheel]);
-  // ---
+
+    document.addEventListener('wheel', wheelListener, { passive: false });
+    return () => document.removeEventListener('wheel', wheelListener);
+  }, [isEventsHovered]);
+
 
   const [listRef, { height: listHeight }] = useElementSizeObserver<HTMLDivElement>();
 
@@ -263,24 +279,6 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
               </div>
             )
           })}
-          {/* {reversedEvents.map((event: any, index: number) => {
-            const isThisEventHovered = eventHover === event.date;
-            const isNextEventHovered = eventHover === reversedEvents[index + 1]?.date;
-            const topPosition = reversedEvents.slice(0, index).reduce((acc, prevEvent) => acc + (eventExpanded === prevEvent.date ? 101 : 28), 0);
-            return (
-              <div key={event.date}>
-                <div className="absolute w-full" style={{ top: `${topPosition}px` }}>
-                  <EventItem eventKey={event.date} eventHover={eventHover} setEventHover={setEventHover} eventExpanded={eventExpanded} handleToggleEventExpansion={handleToggleEventExpansion} event={event} index={index} nextEvent={reversedEvents[index + 1]} />
-                </div>
-                {index < reversedEvents.length - 1 && !isThisEventHovered && !isNextEventHovered && (index !== 0 || eventHover !== null || eventExpanded === reversedEvents[index + 1]?.date) && eventExpanded !== event.date && eventExpanded !== reversedEvents[index + 1]?.date && (
-                  <div className="absolute flex-col gap-y-[4px] pt-[3px] flex items-center gap-x-[2px]" style={{ top: `${topPosition + (eventExpanded === event.date ? 101 : 26) - 5}px`, left: '11px' }}>
-                    <div className="w-[2px] h-[2px] bg-[#5A6462] rounded-full"></div>
-                    <div className="w-[2px] h-[2px] bg-[#5A6462] rounded-full"></div>
-                  </div>
-                )}
-              </div>
-            );
-          })} */}
         </div>
       </div>
     </div>
@@ -658,35 +656,36 @@ const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpand
   const isExpanded = eventExpanded === eventKey;
   const eventLength = event.description?.length || 0;
   return (
-    <div className={`transition-all flex flex-col duration-300 cursor-pointer ${isExpanded ? 'max-h-[201px]' : 'max-h-[28px]'} w-full`}
+    <div className={`transition-all flex flex-col duration-300 cursor-pointer ${isExpanded ? 'max-h-[200px] delay-0' : 'max-h-[28px] delay-300'} w-full`}
       onMouseEnter={() => setEventHover(eventKey)}
       onMouseLeave={() => setEventHover(null)}
       onClick={() => handleToggleEventExpansion(eventKey)}
     >
-      <div className={`${isExpanded ? 'h-[14px]' : 'h-0'}  flex relative top-[2px] w-[24px] justify-center overflow-hidden gap-x-[2px] text-xxxs`}>{Intl.DateTimeFormat('en-GB', { year: 'numeric' }).format(new Date(event.date))}</div>
+      <div className={`${isExpanded ? 'max-h-[50px]' : 'h-0'}  flex relative items-center top-[2px] w-[24px] justify-center overflow-hidden gap-x-[2px] text-xxxs`}>{Intl.DateTimeFormat('en-GB', { year: 'numeric' }).format(new Date(event.date))}</div>
       <div
-        className={`flex items-center gap-x-[5px] ${eventHover === eventKey || ((index === 0 && eventExpanded === null)) ? 'text-xs' : 'text-xxxs text-[#5A6462]'
-          } w-fit h-[24px]`}
+        className={`flex items-start gap-x-[5px] min-h-[32px] h-fit ${eventHover === eventKey || ((index === 0 && eventExpanded === null)) ? 'text-xs' : 'text-xxxs text-[#5A6462]'
+          } w-fit`}
 
       >
         <EventIcon event={event} eventHover={eventHover} index={index} eventExpanded={eventExpanded} />
-        <span className={`relative top-[3px] ${eventHover === eventKey || ((eventExpanded === eventKey || (index === 0 && eventExpanded === null))) ? 'heading-small-xs text-[#C8D8D3]' : 'heading-small-xxxs text-[#5A6462]'} `}>{event.title}</span>
+        <div className={`relative pt-[12px] mb-[5px] ${eventHover === eventKey || ((eventExpanded === eventKey || (index === 0 && eventExpanded === null))) ? 'heading-small-xs text-[#C8D8D3]' : 'heading-small-xxxs text-[#5A6462]'} `}>{event.title}</div>
       </div>
 
 
-      <div className={` flex w-full justify-between pl-0 transition-height duration-100 overflow-hidden ${isExpanded ? 'max-h-[200px] mt-0' : 'max-h-0 mt-0'}`}>
-        <div className='flex flex-col justify-between gap-y-[4px] h-full overflow-y-hidden min-w-[24px] max-w-[24px] items-center '>
+      <div className={`relative flex w-full justify-between pl-0 transition-[max-height,opacity] duration-100 overflow-hidden ${isExpanded ? 'max-h-[200px] mt-0 opacity-100' : 'max-h-0 mt-0 opacity-0'}`}>
+        <div className='absolute left-0 top-0 flex flex-col justify-between gap-y-[4px] h-full overflow-y-hidden min-w-[24px] max-w-[24px] items-center '>
           <div className='flex flex-col gap-y-[6px] overflow-y-hidden pt-1'>
-            {Array.from({ length: 10 }).map((_, i) => (
+            {Array.from({ length: 20 }).map((_, i) => (
               <div key={i + "event-item-description"} className='bg-[#5A6462] w-[2px] h-[2px] rounded-full flex-shrink-0' />
             ))}
           </div>
           <div className='rounded-full min-h-[12px] text-xxxs text-[#5A6462]'>{nextEvent ? new Date(nextEvent.date).toLocaleDateString('en-GB', { year: 'numeric' }) : ''}</div>
         </div>
-        <div className={`text-xxs flex h-full items-center pl-1.5 w-full ${eventLength > 100 ? 'pb-0' : 'pb-2'}`}>
-
-          <div className=" leading-relaxed overflow-y-auto max-h-[70px]">
+        {/* <div className={`text-xxs flex h-full items-center pl-1.5 w-full ${eventLength > 100 ? 'pb-0' : 'pb-2'}`}> */}
+        <div className={`pl-[30px] text-xxs flex items-center w-full ${eventExpanded === eventKey ? 'pb-[0px]' : 'pb-0'}`}>
+          <div className="leading-relaxed overflow-y-auto pb-[15px]">
             {event.description || event.title}
+            {/* Genesis of Ethereum: bla bla bla bla bla bla bla bla bla bla... This is an events text and provides further details about the upgrades, etc. Genesis of Ethereum: bla bla bla bla bla bla bla bla bla bla... This is an events text and provides further details about the upgrades, etc. Genesis of Ethereum: bla bla bla bla bla bla bla bla bla bla... This is an events text and provides further details about the upgrades, etc. */}
           </div>
         </div>
       </div>
@@ -948,8 +947,8 @@ const ChainTransitionItem = React.memo(({
         maximumFractionDigits: 1
       }).format(value);
     } else {
-      if(showUsd) {
-        if(value < 0.0001) {
+      if (showUsd) {
+        if (value < 0.0001) {
           return '< $0.0001';
         } else {
           return `$${Intl.NumberFormat('en-GB', {
@@ -958,7 +957,7 @@ const ChainTransitionItem = React.memo(({
           }).format(value)}`;
         }
       } else {
-        return Intl.NumberFormat('en-GB', { 
+        return Intl.NumberFormat('en-GB', {
           minimumFractionDigits: 0,
           maximumFractionDigits: 0
         }).format(value * 1000000000);
@@ -1202,18 +1201,18 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   }, [history.data, hasInitializedWithHistory]);
 
 
-  
+
   // Optimized effects - append SSE data
   useEffect(() => {
     if (!activeGlobalMetrics) return;
 
-    const ethCostValue = showUsd 
-        ? activeGlobalMetrics.ethereum_tx_cost_usd 
-        : activeGlobalMetrics.ethereum_tx_cost_eth;
-      
-      const layer2CostValue = showUsd 
-        ? activeGlobalMetrics.layer2s_tx_cost_usd 
-        : activeGlobalMetrics.layer2s_tx_cost_eth;
+    const ethCostValue = showUsd
+      ? activeGlobalMetrics.ethereum_tx_cost_usd
+      : activeGlobalMetrics.ethereum_tx_cost_eth;
+
+    const layer2CostValue = showUsd
+      ? activeGlobalMetrics.layer2s_tx_cost_usd
+      : activeGlobalMetrics.layer2s_tx_cost_eth;
 
     setHistoryState(prev => ({
       ...prev,
