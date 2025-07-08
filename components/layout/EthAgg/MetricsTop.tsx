@@ -698,7 +698,7 @@ const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpand
           <div className='rounded-full min-h-[12px] text-xxxs text-[#5A6462]'>{nextEvent ? new Date(nextEvent.date).toLocaleDateString('en-GB', { year: 'numeric' }) : ''}</div>
         </div>
         {/* <div className={`text-xxs flex h-full items-center pl-1.5 w-full ${eventLength > 100 ? 'pb-0' : 'pb-2'}`}> */}
-        <div className={`pl-[30px] text-xxs flex items-center w-full ${eventExpanded === eventKey ? 'pb-[0px]' : 'pb-0'}`}>
+        <div className={`pl-[30px] text-xs flex items-center w-full ${eventExpanded === eventKey ? 'pb-[0px]' : 'pb-0'}`}>
           <div className="leading-relaxed overflow-y-auto pb-[15px]">
             {event.description || event.title}
             {/* Genesis of Ethereum: bla bla bla bla bla bla bla bla bla bla... This is an events text and provides further details about the upgrades, etc. Genesis of Ethereum: bla bla bla bla bla bla bla bla bla bla... This is an events text and provides further details about the upgrades, etc. Genesis of Ethereum: bla bla bla bla bla bla bla bla bla bla... This is an events text and provides further details about the upgrades, etc. */}
