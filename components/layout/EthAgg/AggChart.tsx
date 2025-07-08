@@ -12,6 +12,48 @@ import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
 import { GTPIcon } from '../GTPIcon';
 import moment from 'moment';
 
+
+function formatNumberWithSI(num: number): string {
+  if (num === 0) {
+    return "0";
+  }
+
+  const sign = num < 0 ? "-" : "";
+  const absNum = Math.abs(num);
+
+  const tiers = [
+    { value: 1e12, symbol: "T" }, // Trillions
+    { value: 1e9,  symbol: "B" }, // Billions
+    { value: 1e6,  symbol: "M" }, // Millions
+    { value: 1e3,  symbol: "k" }, // Thousands
+  ];
+
+  const tier = tiers.find(t => absNum >= t.value);
+
+  if (!tier) {
+    return sign + Math.round(absNum).toString();
+  }
+
+  const scaledValue = absNum / tier.value;
+  let formattedValue: string;
+
+  if (scaledValue < 10) {
+    // For values like 1.23M, show one decimal place (e.g., "1.2")
+    formattedValue = scaledValue.toFixed(1);
+  } else {
+    // For values like 12.3M or 123B, round to the nearest integer
+    formattedValue = Math.round(scaledValue).toString();
+  }
+
+  // 7. A final cleanup to remove ".0" if toFixed() created it (e.g., 9.95 -> "10.0")
+  if (formattedValue.endsWith(".0")) {
+    formattedValue = formattedValue.slice(0, -2);
+  }
+
+  // 8. Combine the sign, formatted value, and SI symbol
+  return sign + formattedValue + tier.symbol;
+}
+
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
   PLOT_LINE: "rgb(215, 223, 222)",
@@ -41,23 +83,7 @@ const XAxisLabels = React.memo(({ xMin, xMax, rightMargin, isMobile }: { xMin: n
 
 XAxisLabels.displayName = 'XAxisLabels';
 
-// Optimized number formatting function
-const formatNumber = (number: number, prefix = "", showUsd = true): string => {
-  if (number === 0) return "0";
 
-  const absNumber = Math.abs(number);
-  let formatted: string;
-
-  if (absNumber >= 1e12) formatted = (number / 1e12).toFixed(2) + "T";
-  else if (absNumber >= 1e9) formatted = (number / 1e9).toFixed(2) + "B";
-  else if (absNumber >= 1e6) formatted = (number / 1e6).toFixed(2) + "M";
-  else if (absNumber >= 1e3) formatted = (number / 1e3).toFixed(2) + "k";
-  else formatted = number.toFixed(2);
-
-  return prefix + formatted;
-};
-
-// Optimized data processing functions
 const extractCategories = (seriesData: [number, number][][]): string[] => {
   const timestampSet = new Set<number>();
   seriesData.forEach(series => {
@@ -203,43 +229,63 @@ export function AggChart({
   }, []);
 
 
-  const lastDataPointPixelCoords = useMemo(() => {
-    if (!seriesData || seriesData.length === 0 || !categories || categories.length === 0) return null;
-
+  const [lastDataPointPixelCoords, setLastDataPointPixelCoords] = useState<[number, number, number] | null>(null);
+  
+  useEffect(() => {
     const chartInstance = chartRef.current?.getEchartsInstance();
     const circleElement = circleRef.current;
-    if (!chartInstance || !circleElement) return null;
 
-    // Get the last data point index (rightmost on x-axis)
-    const lastDataIndex = categories.length - 1;
+    if (
+      isDebouncing ||
+      !chartInstance ||
+      !circleElement ||
+      !seriesData || seriesData.length === 0 ||
+      !categories || categories.length === 0
+    ) {
+      setLastDataPointPixelCoords(null);
+      return;
+    }
+    
+    const timer = setTimeout(() => {
+        const lastDataIndex = categories.length - 1;
+        let stackedValue = 0;
+        seriesData.forEach((series) => {
+          const value = series[lastDataIndex];
+          if (value != null && value > 0) {
+            stackedValue += value;
+          }
+        });
 
-    // Calculate the stacked/cumulative value at the last data point
-    // This gives us the topmost visual point of the stack
-    let stackedValue = 0;
-    seriesData.forEach((series) => {
-      const value = series[lastDataIndex];
-      if (value != null && value > 0) {
-        stackedValue += value;
-      }
-    });
+        if (stackedValue === 0) {
+          setLastDataPointPixelCoords(null);
+          return;
+        }
 
-    if (stackedValue === 0) return null;
+        const pixelCoords = chartInstance.convertToPixel('grid', [lastDataIndex, stackedValue]);
+        if (!pixelCoords) {
+            setLastDataPointPixelCoords(null);
+            return;
+        }
 
-    // Convert data coordinates to pixel coordinates
-    const pixelCoords = chartInstance.convertToPixel('grid', [lastDataIndex, stackedValue]);
+        const circleRect = circleElement.getBoundingClientRect();
+        const chartContainer = chartRef.current?.ele;
+        if (!chartContainer) {
+            setLastDataPointPixelCoords(null);
+            return;
+        }
 
-    // Get circle position relative to chart container
-    const circleRect = circleElement.getBoundingClientRect();
-    const chartContainer = chartRef.current?.ele;
-    if (!chartContainer) return pixelCoords;
+        const chartRect = chartContainer.getBoundingClientRect();
+        const circleY = circleRect.top + circleRect.height / 2 - chartRect.top;
 
-    const chartRect = chartContainer.getBoundingClientRect();
-    const circleY = circleRect.top + circleRect.height / 2 - chartRect.top;
+        // Set the state with the newly calculated coordinates
+        setLastDataPointPixelCoords([pixelCoords[0], pixelCoords[1], circleY]);
+    }, 50); // A small delay like 50ms is often enough for ECharts to catch up.
 
-    return [...pixelCoords, circleY]; // Returns [x, y, circleY] in pixels
-  }, [seriesData, categories]);
+    return () => clearTimeout(timer); // Cleanup the timeout
 
-  // Update coordinates in parent component when they change
+  }, [seriesData, categories, debouncedDimensions, isDebouncing]); // Dependencies remain the same
+
+  // This effect correctly sends updates to the parent component whenever our state changes.
   useEffect(() => {
     let newCoords: { x: number; y: number; circleY: number } | null = null;
 
@@ -251,7 +297,6 @@ export function AggChart({
       };
     }
 
-    // Only update if coordinates have actually changed
     const prevCoords = prevCoordinatesRef.current;
     const coordsChanged =
       (!newCoords && prevCoords) ||
@@ -279,22 +324,6 @@ export function AggChart({
     xMin: xAxisMin ?? 0,
     xMax: xAxisMax ?? Date.now()
   }), [xAxisMin, xAxisMax]);
-
-  const formatNumberCallback = useCallback(
-    (value: number | string) => formatNumber(parseFloat(value as string), prefix, showUsd),
-    [showUsd, prefix]
-  );
-
-
-
-
-
-  // Memoized series colors
-  // const seriesColors = useMemo(() => ({
-  //   "Total L2s": AllChainsByKeys["all_l2s"]?.colors.dark[0], 
-  //   "Ethereum Mainnet": AllChainsByKeys["ethereum"]?.colors.dark[0],
-  //   "Layer 2s": AllChainsByKeys["all_l2s"]?.colors.dark[0],
-  // }), [AllChainsByKeys]);
 
   // Custom Tooltip Component
   const CustomTooltip = useCallback(({ data, x, y, metricName }: { data: any[], x: number, y: number, metricName: string }) => {
@@ -531,6 +560,12 @@ export function AggChart({
       return baseConfig;
     });
 
+    const fortyPixelsToPercent = 40 / chartContainerWidth;
+    // ensure gradient stop is less than 1 and greater than 0
+    const gradientStop = Math.min(Math.max(fortyPixelsToPercent, 0), 1);
+
+    console.log("gradientStop", gradientStop);
+
     return {
       animation: false,
       backgroundColor: 'transparent',
@@ -550,19 +585,30 @@ export function AggChart({
         axisTick: { show: false },
         splitLine: {
           show: true,
-          lineStyle: { color: '#5A64624F', width: 1 }
+          lineStyle: { 
+            // color: '#5A64624F',
+            // top, bottom, left, right
+            color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+              { offset: 0, color: '#5A646200' },
+              { offset: gradientStop, color: '#5A64624F' },
+              { offset: 1, color: '#5A64624F' }
+            ]),
+            width: 1
+          }
         },
         axisLabel: {
           show: true,
           margin: -1,
-          padding: [3, 0, 0, 0],
+          padding: [5, 0, 0, 6],
           color: '#CDD8D3',
           fontSize: isMobile ? 8 : 9,
           fontWeight: 500,
-          fontFamily: 'Raleway, sans-serif',
+          fontFamily: 'var(--font-fira-sans), sans-serif !important;',
           align: 'left',
           verticalAlign: 'top',
-          formatter: formatNumberCallback,
+          formatter: (value: number) => {
+            return prefix + formatNumberWithSI(value);
+          }
         }
       },
       series,
@@ -582,7 +628,7 @@ export function AggChart({
         }
       }
     };
-  }, [seriesConfigs, seriesData, categories, AllChainsByKeys, chartContainerWidth, formatNumberCallback]);
+  }, [seriesConfigs, seriesData, categories, AllChainsByKeys, chartContainerWidth, prefix, showUsd]);
 
 
 
@@ -708,7 +754,7 @@ export function AggChart({
       >
         <ReactECharts
           ref={chartRef}
-          option={option}
+          option={{...option}}
           style={{ height: '100%', width: '100%', borderRadius: '0 0 15px 15px', overflow: 'hidden' }}
           opts={{
             renderer: 'canvas',
@@ -716,7 +762,7 @@ export function AggChart({
             height: 304,
           }}
           notMerge={true}
-          lazyUpdate={true}
+          lazyUpdate={false}
         />
 
         {/* Custom React Tooltip */}
@@ -728,22 +774,30 @@ export function AggChart({
             metricName={title}
           />
         )}
+        {lastDataPointPixelCoords && lastDataPointPixelCoords.length === 3 && (
+          <svg
+            className='absolute top-[-41px] left-0 w-full h-full pointer-events-none z-10'
+            // The SVG viewport matches the chart container dimensions
+          >
+            <line
+              x1={lastDataPointPixelCoords[0]} // X position
+              y1={lastDataPointPixelCoords[2]} // Start Y (center of the circle in the header)
+              x2={lastDataPointPixelCoords[0]} // X position (same for a vertical line)
+              y2={lastDataPointPixelCoords[1] + 41} // End Y (the data point on the chart)
+              stroke="#CDD8D3" // Line color (kept from your original implementation)
+              strokeWidth="1"
+              strokeDasharray="2 2" // 2px dash, 2px gap. You can adjust this!
+            />
+          </svg>
+        )}
       </div>
 
-      {lastDataPointPixelCoords && lastDataPointPixelCoords.length === 3 && !isDebouncing && (
-        <div
-          className='absolute w-[1px] bg-[#CDD8D3] pointer-events-none z-10'
-          style={{
-            left: `${lastDataPointPixelCoords[0]}px`,
-            bottom: `${304 - lastDataPointPixelCoords[1]}px`,
-            height: `${lastDataPointPixelCoords[1] - lastDataPointPixelCoords[2]}px`,
-            transform: 'translateX(-50%)'
-          }}
-        />
-      )}
+    
+      
 
       {/* Custom X-Axis Timeline */}
       <XAxisLabels xMin={xAxisExtremes.xMin} xMax={xAxisExtremes.xMax} rightMargin={allChartCoordinates[chartKey]?.x && allChartCoordinates["tps"]?.x ? `${allChartCoordinates["tps"]?.x + 1 - allChartCoordinates[chartKey]?.x}px` : "0px"} isMobile={isMobile} />
     </div>
+
   );
 }
