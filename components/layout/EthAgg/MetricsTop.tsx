@@ -24,6 +24,7 @@ import useSWR from 'swr';
 import { HistoryData } from './types';
 import { useMediaQuery } from 'usehooks-ts';
 
+import {TPSChart} from './TPSChart';
 // Define the props type for TopEthAggMetricsComponent
 interface TopEthAggMetricsProps {
   selectedBreakdownGroup: string;
@@ -394,7 +395,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
         <div className="flex flex-row justify-between">
           <div>
             <div className='flex flex-1 gap-x-1 numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent whitespace-nowrap'>
-              <div>{Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(activeGlobalMetrics.total_tps || 0)}</div>
+              <div>{Intl.NumberFormat('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(activeGlobalMetrics.total_tps || 0)}</div>
               <div className={`${isCompact ? '' : 'hidden'}`}>TPS</div>
             </div>
             {isCompact && <div className='heading-small-xs text-[#5A6462] pt-[5px] h-0 overflow-visible'>all chains combined</div>}
@@ -405,10 +406,8 @@ export const EthereumEcosystemTPSCard = React.memo(({
             <div className='numbers-xs flex items-center gap-x-1'><span className='text-xs'>ATH:</span>{activeGlobalMetrics.total_tps_ath?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
           </div>
         </div>
-        <div className={`w-full -mt-[5px]`}>
-          <div className={`transition-height duration-500 overflow-hidden ${isCompact ? 'h-0' : 'h-[58px]'}`}>
-            <TPSChart totalTPSLive={totalTPSLive} globalMetrics={activeGlobalMetrics} showUsd={showUsd} />
-          </div>
+        <div className={`relative transition-height duration-500 w-full ${isCompact ? 'h-0 overflow-hidden' : 'h-[58px] overflow-visible '}`}>
+          <TPSChart totalTPSLive={totalTPSLive} />
         </div>
 
       </div>
@@ -628,8 +627,8 @@ const EventIcon = ({ event, eventHover, index, eventExpanded }: { event: Ethereu
   const getMonthDisplay = (dateString: string) => {
     try {
       const date = new Date(dateString);
-      const fullMonth = date.toLocaleDateString('en-US', { month: 'long' }).toUpperCase();
-      const shortMonth = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+      const fullMonth = date.toLocaleDateString('en-GB', { month: 'long' }).toUpperCase();
+      const shortMonth = date.toLocaleDateString('en-GB', { month: 'short' }).toUpperCase();
 
       // If full month name is 4 characters or shorter, use it; otherwise use short version
       return fullMonth.length <= 4 ? fullMonth : shortMonth;
@@ -656,7 +655,7 @@ const EventIcon = ({ event, eventHover, index, eventExpanded }: { event: Ethereu
           {getMonthDisplay(event.date)}
         </div>
         <div className='absolute text-[#1F2726] bottom-[5px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] bg-clip-text text-transparent left-0 right-0 numbers-xxxs text-center'>
-          {Intl.DateTimeFormat('en-US', { day: 'numeric' }).format(new Date(event.date))}
+          {Intl.DateTimeFormat('en-GB', { day: 'numeric' }).format(new Date(event.date))}
         </div>
       </div>
 
@@ -675,12 +674,12 @@ const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpand
   const isExpanded = eventExpanded === eventKey;
   const eventLength = event.description?.length || 0;
   return (
-    <div className={`transition-all flex flex-col duration-300 cursor-pointer ${isExpanded ? 'h-[101px]' : 'h-[28px]'} w-full`}
+    <div className={`transition-all flex flex-col duration-300 cursor-pointer ${isExpanded ? 'max-h-[201px]' : 'max-h-[28px]'} w-full`}
       onMouseEnter={() => setEventHover(eventKey)}
       onMouseLeave={() => setEventHover(null)}
       onClick={() => handleToggleEventExpansion(eventKey)}
     >
-      <div className={`${isExpanded ? 'h-[14px]' : 'h-0'}  flex relative top-[2px] w-[24px] justify-center overflow-hidden gap-x-[2px] text-xxxs`}>{Intl.DateTimeFormat('en-US', { year: 'numeric' }).format(new Date(event.date))}</div>
+      <div className={`${isExpanded ? 'h-[14px]' : 'h-0'}  flex relative top-[2px] w-[24px] justify-center overflow-hidden gap-x-[2px] text-xxxs`}>{Intl.DateTimeFormat('en-GB', { year: 'numeric' }).format(new Date(event.date))}</div>
       <div
         className={`flex items-center gap-x-[5px] ${eventHover === eventKey || ((index === 0 && eventExpanded === null)) ? 'text-xs' : 'text-xxxs text-[#5A6462]'
           } w-fit h-[24px]`}
@@ -691,14 +690,14 @@ const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpand
       </div>
 
 
-      <div className={` flex w-full justify-between pl-0 transition-height duration-100 overflow-hidden ${isExpanded ? 'h-[80px] mt-0' : 'h-0 mt-0'}`}>
+      <div className={` flex w-full justify-between pl-0 transition-height duration-100 overflow-hidden ${isExpanded ? 'max-h-[200px] mt-0' : 'max-h-0 mt-0'}`}>
         <div className='flex flex-col justify-between gap-y-[4px] h-full overflow-y-hidden min-w-[24px] max-w-[24px] items-center '>
           <div className='flex flex-col gap-y-[6px] overflow-y-hidden pt-1'>
             {Array.from({ length: 10 }).map((_, i) => (
               <div key={i + "event-item-description"} className='bg-[#5A6462] w-[2px] h-[2px] rounded-full flex-shrink-0' />
             ))}
           </div>
-          <div className='rounded-full min-h-[12px] text-xxxs text-[#5A6462]'>{nextEvent ? new Date(nextEvent.date).toLocaleDateString('en-US', { year: 'numeric' }) : ''}</div>
+          <div className='rounded-full min-h-[12px] text-xxxs text-[#5A6462]'>{nextEvent ? new Date(nextEvent.date).toLocaleDateString('en-GB', { year: 'numeric' }) : ''}</div>
         </div>
         <div className={`text-xxs flex h-full items-center pl-1.5 w-full ${eventLength > 100 ? 'pb-0' : 'pb-2'}`}>
 
@@ -720,212 +719,212 @@ interface TPSChartProps {
   showUsd: boolean;
 }
 
-const TPSChart = React.memo(({ totalTPSLive, globalMetrics, showUsd }: TPSChartProps) => {
-  const tooltipFormatter = useCallback(function (this: any) {
-    const { x, points } = this;
-    const date = new Date(x);
-    const valuePrefix = '';
-    const valueSuffix = "TPS";
+// const TPSChart = React.memo(({ totalTPSLive, globalMetrics, showUsd }: TPSChartProps) => {
+//   const tooltipFormatter = useCallback(function (this: any) {
+//     const { x, points } = this;
+//     const date = new Date(x);
+//     const valuePrefix = '';
+//     const valueSuffix = "TPS";
 
-    let dateString = date.toLocaleDateString("en-GB", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+//     let dateString = date.toLocaleDateString("en-GB", {
+//       month: "short",
+//       day: "numeric",
+//       year: "numeric",
+//     });
 
-    const timeDiff = points[0].series.xData[1] - points[0].series.xData[0];
-    if (timeDiff < 1000 * 60 * 60 * 24) {
-      dateString += " " + date.toLocaleTimeString("en-GB", {
-        hour: "numeric",
-        minute: "2-digit",
-      });
-    }
+//     const timeDiff = points[0].series.xData[1] - points[0].series.xData[0];
+//     if (timeDiff < 1000 * 60 * 60 * 24) {
+//       dateString += " " + date.toLocaleTimeString("en-GB", {
+//         hour: "numeric",
+//         minute: "2-digit",
+//       });
+//     }
 
-    const tooltip = `<div class="mt-3 mr-3 mb-3 text-xs font-raleway">
-      <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2"></div>`;
-    const tooltipEnd = `</div>`;
+//     const tooltip = `<div class="mt-3 mr-3 mb-3 text-xs font-raleway">
+//       <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2"></div>`;
+//     const tooltipEnd = `</div>`;
 
-    const tooltipPoints = points
-      .sort((a: any, b: any) => b.y - a.y)
-      .map((point: any) => {
-        const { y } = point;
-        return `
-        <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-          <div class="w-4 h-1.5 rounded-r-full" style="background-color: #1DF7EF"></div>
-          <div class="tooltip-point-name text-xs"></div>
-          <div class="flex-1 text-right justify-end flex numbers-xs">
-            <div class="flex justify-end text-right w-full">
-              <div class="${!valuePrefix && "hidden"}">${valuePrefix}</div>
-              ${Intl.NumberFormat("en-GB", {
-          notation: "standard",
-          maximumFractionDigits: 2,
-          minimumFractionDigits: 2,
-        }).format(y)}
-        <div class="${!valueSuffix ? "hidden" : "pl-1"}">${valueSuffix}</div>
-            </div>
-          </div>
-        </div>`;
-      })
-      .join("");
+//     const tooltipPoints = points
+//       .sort((a: any, b: any) => b.y - a.y)
+//       .map((point: any) => {
+//         const { y } = point;
+//         return `
+//         <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+//           <div class="w-4 h-1.5 rounded-r-full" style="background-color: #1DF7EF"></div>
+//           <div class="tooltip-point-name text-xs"></div>
+//           <div class="flex-1 text-right justify-end flex numbers-xs">
+//             <div class="flex justify-end text-right w-full">
+//               <div class="${!valuePrefix && "hidden"}">${valuePrefix}</div>
+//               ${Intl.NumberFormat("en-GB", {
+//           notation: "standard",
+//           maximumFractionDigits: 2,
+//           minimumFractionDigits: 2,
+//         }).format(y)}
+//         <div class="${!valueSuffix ? "hidden" : "pl-1"}">${valueSuffix}</div>
+//             </div>
+//           </div>
+//         </div>`;
+//       })
+//       .join("");
 
-    return tooltip + tooltipPoints + tooltipEnd;
-  }, []);
-
-
-  return <HighchartsProvider Highcharts={Highcharts}>
-    <HighchartsChart>
-      <Chart
-        backgroundColor={"transparent"}
-        type="column"
-        colors={['#10808C', '#1DF7EF']}
-        panning={{
-          enabled: false,
-          type: "x",
-        }}
-        panKey="shift"
-        zooming={{
-          mouseWheel: {
-            enabled: false,
-          },
-        }}
-        animation={{
-          duration: 50,
-        }}
-        marginBottom={5}
-        marginTop={5}
-        marginLeft={40}
-        marginRight={0}
-        height={58} // 48 (figma) + 5 (marginBottom) + 5 (marginTop) = 58
-        events={{
-          redraw: function () {
-
-            const chart = this;
-            const series = chart.series[0];
-
-            if (!series) {
-              return;
-            }
-
-            const PLOT_WIDTH = chart.plotWidth; // Pixel width of plot area
-            const BARS_VISIBLE = 40; // Number of bars to show
-            const GAP_PX = 3; // pixel gap between bars
-
-            const BAR_WIDTH_PX = (PLOT_WIDTH / BARS_VISIBLE) - GAP_PX;
+//     return tooltip + tooltipPoints + tooltipEnd;
+//   }, []);
 
 
-            series.update({
-              type: 'column',
-              pointWidth: BAR_WIDTH_PX,
-            }, false); // Update series with fixed point width
+//   return <HighchartsProvider Highcharts={Highcharts}>
+//     <HighchartsChart>
+//       <Chart
+//         backgroundColor={"transparent"}
+//         type="column"
+//         colors={['#10808C', '#1DF7EF']}
+//         panning={{
+//           enabled: false,
+//           type: "x",
+//         }}
+//         panKey="shift"
+//         zooming={{
+//           mouseWheel: {
+//             enabled: false,
+//           },
+//         }}
+//         animation={{
+//           duration: 50,
+//         }}
+//         marginBottom={5}
+//         marginTop={5}
+//         marginLeft={40}
+//         marginRight={0}
+//         height={58} // 48 (figma) + 5 (marginBottom) + 5 (marginTop) = 58
+//         events={{
+//           redraw: function () {
+
+//             const chart = this;
+//             const series = chart.series[0];
+
+//             if (!series) {
+//               return;
+//             }
+
+//             const PLOT_WIDTH = chart.plotWidth; // Pixel width of plot area
+//             const BARS_VISIBLE = 40; // Number of bars to show
+//             const GAP_PX = 3; // pixel gap between bars
+
+//             const BAR_WIDTH_PX = (PLOT_WIDTH / BARS_VISIBLE) - GAP_PX;
 
 
-          },
+//             series.update({
+//               type: 'column',
+//               pointWidth: BAR_WIDTH_PX,
+//             }, false); // Update series with fixed point width
 
-        }}
 
-      />
-      <YAxis
-        visible={true}
-        type="linear"
-        gridLineWidth={1}
-        gridLineColor={"#5A6462"}
-        gridLineDashStyle={"Solid"}
-        startOnTick={true}
-        endOnTick={true}
-        tickAmount={2}
-        gridZIndex={10}
-        min={0}
-        labels={{
-          distance: 10,
-          align: "right",
-          useHTML: true,
-          style: {
-            whiteSpace: "nowrap",
-            textAlign: "right",
-            color: "rgb(215, 223, 222)",
-            fontSize: "10px",
-            fontWeight: "700",
-            fontFamily: "Fira Sans",
-          },
-        }}
-        zoomEnabled={false}
-      >
-        <ColumnSeries
-          type="column"
-          data={totalTPSLive}
-          color={{
-            linearGradient: { x1: 0, y1: 1, x2: 0, y2: 0 },
-            stops: [
-              [0, '#10808C'],
-              [1, '#1DF7EF']
-            ]
-          }}
-          shadow={{
-            color: '#CDD8D3',
-            offsetX: 0,
-            offsetY: 0,
-            opacity: 0.05,
-            width: 2
-          }}
+//           },
 
-          // pointPadding={4}
-          // pointWidth={8}
-          // groupPadding={0}
-          colorByPoint={false}
-          borderRadius={0}
-          borderColor={"transparent"}
-          animation={false}
-        />
-      </YAxis>
-      <XAxis
-        type="linear"
-        gridLineWidth={0}
-        lineWidth={0}
-        tickLength={10}
-        labels={{
-          enabled: false
-        }}
-        min={0}
-        max={39}
-        tickColor={"#5A6462"}
+//         }}
 
-        tickWidth={0}
-      />
-      <Tooltip
-        useHTML={true}
-        shared={true}
-        split={false}
-        followPointer={true}
-        followTouchMove={true}
-        backgroundColor={"#2A3433EE"}
-        padding={0}
-        hideDelay={300}
-        stickOnContact={true}
-        shape="rect"
-        borderRadius={12}
-        borderWidth={0}
-        outside={true}
-        shadow={{
-          color: "black",
-          opacity: 0.015,
-          offsetX: 2,
-          offsetY: 2,
-        }}
-        style={{
-          color: "rgb(215, 223, 222)",
-        }}
-        formatter={tooltipFormatter}
-        // ensure tooltip is always above the chart
-        valuePrefix={showUsd ? "$" : ""}
-        valueSuffix={showUsd ? "" : " Gwei"}
-        positioner={tooltipPositioner}
-      />
-    </HighchartsChart>
+//       />
+//       <YAxis
+//         visible={true}
+//         type="linear"
+//         gridLineWidth={1}
+//         gridLineColor={"#5A6462"}
+//         gridLineDashStyle={"Solid"}
+//         startOnTick={true}
+//         endOnTick={true}
+//         tickAmount={2}
+//         gridZIndex={10}
+//         min={0}
+//         labels={{
+//           distance: 10,
+//           align: "right",
+//           useHTML: true,
+//           style: {
+//             whiteSpace: "nowrap",
+//             textAlign: "right",
+//             color: "rgb(215, 223, 222)",
+//             fontSize: "10px",
+//             fontWeight: "700",
+//             fontFamily: "Fira Sans",
+//           },
+//         }}
+//         zoomEnabled={false}
+//       >
+//         <ColumnSeries
+//           type="column"
+//           data={totalTPSLive}
+//           color={{
+//             linearGradient: { x1: 0, y1: 1, x2: 0, y2: 0 },
+//             stops: [
+//               [0, '#10808C'],
+//               [1, '#1DF7EF']
+//             ]
+//           }}
+//           shadow={{
+//             color: '#CDD8D3',
+//             offsetX: 0,
+//             offsetY: 0,
+//             opacity: 0.05,
+//             width: 2
+//           }}
 
-  </HighchartsProvider>;
-});
+//           // pointPadding={4}
+//           // pointWidth={8}
+//           // groupPadding={0}
+//           colorByPoint={false}
+//           borderRadius={0}
+//           borderColor={"transparent"}
+//           animation={false}
+//         />
+//       </YAxis>
+//       <XAxis
+//         type="linear"
+//         gridLineWidth={0}
+//         lineWidth={0}
+//         tickLength={10}
+//         labels={{
+//           enabled: false
+//         }}
+//         min={0}
+//         max={39}
+//         tickColor={"#5A6462"}
 
-TPSChart.displayName = "TPSChart";
+//         tickWidth={0}
+//       />
+//       <Tooltip
+//         useHTML={true}
+//         shared={true}
+//         split={false}
+//         followPointer={true}
+//         followTouchMove={true}
+//         backgroundColor={"#2A3433EE"}
+//         padding={0}
+//         hideDelay={300}
+//         stickOnContact={true}
+//         shape="rect"
+//         borderRadius={12}
+//         borderWidth={0}
+//         outside={true}
+//         shadow={{
+//           color: "black",
+//           opacity: 0.015,
+//           offsetX: 2,
+//           offsetY: 2,
+//         }}
+//         style={{
+//           color: "rgb(215, 223, 222)",
+//         }}
+//         formatter={tooltipFormatter}
+//         // ensure tooltip is always above the chart
+//         valuePrefix={showUsd ? "$" : ""}
+//         valueSuffix={showUsd ? "" : " Gwei"}
+//         positioner={tooltipPositioner}
+//       />
+//     </HighchartsChart>
+
+//   </HighchartsProvider>;
+// });
+
+// TPSChart.displayName = "TPSChart";
 
 interface ChainTransitionItemProps {
   chainId: string;
@@ -960,7 +959,7 @@ const ChainTransitionItem = React.memo(({
 
   const displayValue = useMemo(() => {
     if (type === 'tps') {
-      return Intl.NumberFormat('en-US', {
+      return Intl.NumberFormat('en-GB', {
         minimumFractionDigits: 1,
         maximumFractionDigits: 1
       }).format(value);
@@ -969,13 +968,13 @@ const ChainTransitionItem = React.memo(({
         if(value < 0.0001) {
           return '< $0.0001';
         } else {
-          return `$${Intl.NumberFormat('en-US', {
+          return `$${Intl.NumberFormat('en-GB', {
             maximumFractionDigits: 4,
             minimumFractionDigits: 4
           }).format(value)}`;
         }
       } else {
-        return Intl.NumberFormat('en-US', { 
+        return Intl.NumberFormat('en-GB', { 
           minimumFractionDigits: 0,
           maximumFractionDigits: 0
         }).format(value * 1000000000);

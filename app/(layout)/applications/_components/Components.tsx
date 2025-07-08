@@ -639,6 +639,69 @@ export const ApplicationTooltip = ({ application }: { application: AggregatedDat
 
 ApplicationTooltip.displayName = 'ApplicationTooltip';
 
+export const ApplicationTooltipAlt = ({ owner_project }: { owner_project: string }) => {
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+  const searchParams = useSearchParams();
+
+  const descriptionPreview = useMemo(() => {
+    if (!ownerProjectToProjectData[owner_project] || !ownerProjectToProjectData[owner_project].description) return "";
+    const chars = ownerProjectToProjectData[owner_project].description.length;
+    const firstPart = ownerProjectToProjectData[owner_project].description.slice(0, Math.min(100, chars));
+
+    return firstPart.split(" ").slice(0, -1).join(" ");
+
+  }, [owner_project, ownerProjectToProjectData]);
+
+  if (!ownerProjectToProjectData) return null;
+
+  return (
+    // <div
+    //   className="cursor-default z-[99] p-[15px] left-[20px] w-[300px] md:w-[345px] top-[32px] bg-[#1F2726] rounded-[15px] transition-opacity duration-300"
+    //   style={{
+    //     boxShadow: "0px 0px 30px #000000",
+    //     // left: `${mouseOffsetX}px`,
+    //   }}
+    //   onClick={(e) => {
+    //     e.stopPropagation();
+    //   }}
+    // >
+    <TooltipBody className="pl-[15px]">
+      <div className="flex flex-col pl-[5px] gap-y-[10px]">
+        <Link className="flex gap-x-[5px] items-center justify-between" href={{ pathname: `/applications/${owner_project}`, query: searchParams.toString().replace(/%2C/g, ",") }} onClick={(e)=> e.stopPropagation()}>
+          <div className="flex gap-x-[5px] items-center">
+            {ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].logo_path ? (
+              <Image
+                src={`https://api.growthepie.com/v1/apps/logos/${ownerProjectToProjectData[owner_project].logo_path}`}
+                width={15} height={15}
+                className="select-none rounded-full size-[15px]"
+                alt={owner_project}
+                onDragStart={(e) => e.preventDefault()}
+                loading="eager"
+                priority={true}
+              />
+            ) : (
+              <div className={`flex items-center justify-center size-[15px] bg-[#151A19] rounded-full`}>
+                <GTPIcon icon="gtp-project-monochrome" size="sm" className="!size-[12px] text-[#5A6462]" containerClassName="flex items-center justify-center" />
+              </div>
+            )}
+            <div className="heading-small-xs">{ownerProjectToProjectData[owner_project] ? ownerProjectToProjectData[owner_project].display_name : owner_project}</div>
+          </div>
+          <div className="cursor-pointer size-[20px] bg-[#344240] rounded-full flex justify-center items-center">
+            <Icon icon="feather:arrow-right" className="w-[13px] h-[13px] text-[#CDD8D3]" />
+          </div>
+        </Link>
+        <div className="text-xs">
+          {descriptionPreview}...
+        </div>
+        <Links owner_project={owner_project} showUrl={true} />
+      </div>
+      </TooltipBody>
+    // </div>
+  )
+};
+
+ApplicationTooltip.displayName = 'ApplicationTooltip';
+
 export const TopGainersAndLosersTooltip = ({ metric }: { metric: string }) => {
   const { metricsDef } = useMetrics();
   const { timespans, selectedTimespan } = useTimespan();

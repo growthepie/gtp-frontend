@@ -16,7 +16,7 @@ import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
 import { Splide, SplideSlide, SplideTrack } from '@splidejs/react-splide';
 import '@splidejs/react-splide/css';
 import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
-import { ApplicationIcon } from '@/app/(layout)/applications/_components/Components';
+import { ApplicationIcon, ApplicationTooltipAlt } from '@/app/(layout)/applications/_components/Components';
 import { track } from '@vercel/analytics/react';
 import SwiperContainer from '../SwiperContainer';
 
@@ -440,10 +440,11 @@ const MeetL2sSlider = React.memo(({ meetL2sData, ProjectData }: MeetL2sSliderPro
                           containerClass="flex flex-col gap-y-[10px]"
                           positionOffset={{ mainAxis: 0, crossAxis: 20 }}
                         >
-                          <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
+                          {/* <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
                             <div className='heading-small-xxs'>{project.display_name}</div>
                             <div className='text-xs'>{project.description}</div>
-                          </TooltipBody>
+                          </TooltipBody> */}
+                          <ApplicationTooltipAlt owner_project={project.owner_project} />
                         </GTPTooltipNew>
                       ))
                     )}
