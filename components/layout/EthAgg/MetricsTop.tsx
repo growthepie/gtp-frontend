@@ -656,7 +656,7 @@ const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpand
   const isExpanded = eventExpanded === eventKey;
   const eventLength = event.description?.length || 0;
   return (
-    <div className={`transition-all flex flex-col duration-300 cursor-pointer ${isExpanded ? 'max-h-[200px] delay-0' : 'max-h-[28px] delay-300'} w-full`}
+    <div className={`transition-all flex flex-col duration-500 cursor-pointer ${isExpanded ? 'max-h-[200px] delay-0' : 'max-h-[28px] delay-1000'} w-full`}
       onMouseEnter={() => setEventHover(eventKey)}
       onMouseLeave={() => setEventHover(null)}
       onClick={() => handleToggleEventExpansion(eventKey)}
@@ -672,7 +672,7 @@ const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpand
       </div>
 
 
-      <div className={`relative flex w-full justify-between pl-0 transition-[max-height,opacity] duration-100 overflow-hidden ${isExpanded ? 'max-h-[200px] mt-0 opacity-100' : 'max-h-0 mt-0 opacity-0'}`}>
+      <div className={`relative flex w-full justify-between pl-0 transition-[max-height,opacity] duration-500 overflow-hidden ${isExpanded ? 'max-h-[200px] mt-0 opacity-100' : 'max-h-0 mt-0 opacity-0'}`}>
         <div className='absolute left-0 top-0 flex flex-col justify-between gap-y-[4px] h-full overflow-y-hidden min-w-[24px] max-w-[24px] items-center '>
           <div className='flex flex-col gap-y-[6px] overflow-y-hidden pt-1'>
             {Array.from({ length: 20 }).map((_, i) => (
