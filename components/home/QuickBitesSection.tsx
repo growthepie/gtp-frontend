@@ -31,7 +31,7 @@ const QuickBitesSection: React.FC = () => {
             Quick Bites
           </Heading>
         </div>
-        <SectionButtonLink href="/quick-bites" label="See all quick bites" shortLabel="More dives" />
+        <SectionButtonLink href="/quick-bites" label="See all quick bites" shortLabel="More bites" />
       </div>
       
       <div className="text-md px-[5px] lg:px-[45px]">
