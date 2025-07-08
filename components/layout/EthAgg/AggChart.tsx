@@ -564,8 +564,6 @@ export function AggChart({
     // ensure gradient stop is less than 1 and greater than 0
     const gradientStop = Math.min(Math.max(fortyPixelsToPercent, 0), 1);
 
-    console.log("gradientStop", gradientStop);
-
     return {
       animation: false,
       backgroundColor: 'transparent',

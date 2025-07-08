@@ -379,7 +379,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
         <div className="flex flex-row justify-between">
           <div>
             <div className='flex flex-1 gap-x-1 numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent whitespace-nowrap'>
-              <div>{Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(activeGlobalMetrics.total_tps || 0)}</div>
+              <div>{Intl.NumberFormat('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(activeGlobalMetrics.total_tps || 0)}</div>
               <div className={`${isCompact ? '' : 'hidden'}`}>TPS</div>
             </div>
             {isCompact && <div className='heading-small-xs text-[#5A6462] pt-[5px] h-0 overflow-visible'>all chains combined</div>}
@@ -611,8 +611,8 @@ const EventIcon = ({ event, eventHover, index, eventExpanded }: { event: Ethereu
   const getMonthDisplay = (dateString: string) => {
     try {
       const date = new Date(dateString);
-      const fullMonth = date.toLocaleDateString('en-US', { month: 'long' }).toUpperCase();
-      const shortMonth = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+      const fullMonth = date.toLocaleDateString('en-GB', { month: 'long' }).toUpperCase();
+      const shortMonth = date.toLocaleDateString('en-GB', { month: 'short' }).toUpperCase();
 
       // If full month name is 4 characters or shorter, use it; otherwise use short version
       return fullMonth.length <= 4 ? fullMonth : shortMonth;
@@ -639,7 +639,7 @@ const EventIcon = ({ event, eventHover, index, eventExpanded }: { event: Ethereu
           {getMonthDisplay(event.date)}
         </div>
         <div className='absolute text-[#1F2726] bottom-[5px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] bg-clip-text text-transparent left-0 right-0 numbers-xxxs text-center'>
-          {Intl.DateTimeFormat('en-US', { day: 'numeric' }).format(new Date(event.date))}
+          {Intl.DateTimeFormat('en-GB', { day: 'numeric' }).format(new Date(event.date))}
         </div>
       </div>
 
@@ -663,7 +663,7 @@ const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpand
       onMouseLeave={() => setEventHover(null)}
       onClick={() => handleToggleEventExpansion(eventKey)}
     >
-      <div className={`${isExpanded ? 'h-[14px]' : 'h-0'}  flex relative top-[2px] w-[24px] justify-center overflow-hidden gap-x-[2px] text-xxxs`}>{Intl.DateTimeFormat('en-US', { year: 'numeric' }).format(new Date(event.date))}</div>
+      <div className={`${isExpanded ? 'h-[14px]' : 'h-0'}  flex relative top-[2px] w-[24px] justify-center overflow-hidden gap-x-[2px] text-xxxs`}>{Intl.DateTimeFormat('en-GB', { year: 'numeric' }).format(new Date(event.date))}</div>
       <div
         className={`flex items-center gap-x-[5px] ${eventHover === eventKey || ((index === 0 && eventExpanded === null)) ? 'text-xs' : 'text-xxxs text-[#5A6462]'
           } w-fit h-[24px]`}
@@ -681,7 +681,7 @@ const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpand
               <div key={i + "event-item-description"} className='bg-[#5A6462] w-[2px] h-[2px] rounded-full flex-shrink-0' />
             ))}
           </div>
-          <div className='rounded-full min-h-[12px] text-xxxs text-[#5A6462]'>{nextEvent ? new Date(nextEvent.date).toLocaleDateString('en-US', { year: 'numeric' }) : ''}</div>
+          <div className='rounded-full min-h-[12px] text-xxxs text-[#5A6462]'>{nextEvent ? new Date(nextEvent.date).toLocaleDateString('en-GB', { year: 'numeric' }) : ''}</div>
         </div>
         <div className={`text-xxs flex h-full items-center pl-1.5 w-full ${eventLength > 100 ? 'pb-0' : 'pb-2'}`}>
 
@@ -943,7 +943,7 @@ const ChainTransitionItem = React.memo(({
 
   const displayValue = useMemo(() => {
     if (type === 'tps') {
-      return Intl.NumberFormat('en-US', {
+      return Intl.NumberFormat('en-GB', {
         minimumFractionDigits: 1,
         maximumFractionDigits: 1
       }).format(value);
@@ -952,13 +952,13 @@ const ChainTransitionItem = React.memo(({
         if(value < 0.0001) {
           return '< $0.0001';
         } else {
-          return `$${Intl.NumberFormat('en-US', {
+          return `$${Intl.NumberFormat('en-GB', {
             maximumFractionDigits: 4,
             minimumFractionDigits: 4
           }).format(value)}`;
         }
       } else {
-        return Intl.NumberFormat('en-US', { 
+        return Intl.NumberFormat('en-GB', { 
           minimumFractionDigits: 0,
           maximumFractionDigits: 0
         }).format(value * 1000000000);
