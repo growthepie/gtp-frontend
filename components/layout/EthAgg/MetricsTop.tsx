@@ -235,7 +235,7 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
 
   // 3. Attach / detach on hover
   useEffect(() => {
-    if (!isEventsHovered) return;
+    if (!isEventsHovered || !showEvents || showEvents && !eventExpanded) return;
 
     const wheelListener = (e: WheelEvent) => {
       if (!containerRef.current?.contains(e.target as Node)) return;
@@ -246,7 +246,7 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
 
     document.addEventListener('wheel', wheelListener, { passive: false });
     return () => document.removeEventListener('wheel', wheelListener);
-  }, [isEventsHovered]);
+  }, [isEventsHovered, showEvents, eventExpanded]);
 
 
   const [listRef, { height: listHeight }] = useElementSizeObserver<HTMLDivElement>();
