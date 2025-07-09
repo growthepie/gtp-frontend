@@ -1,9 +1,9 @@
-import React, { useLayoutEffect, useMemo } from 'react';
+import React, { useLayoutEffect, useMemo, useRef, useCallback } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { EChartsOption } from 'echarts';
-import moment from 'moment';
-import { p } from 'million/dist/shared/million.485bbee4';
+import { throttle } from 'lodash'; // Make sure lodash is installed: npm install lodash @types/lodash
 
+// Your existing formatNumberWithSI function...
 function formatNumberWithSI(num: number): string {
   if (num === 0) {
     return "0";
@@ -13,10 +13,10 @@ function formatNumberWithSI(num: number): string {
   const absNum = Math.abs(num);
 
   const tiers = [
-    { value: 1e12, symbol: "T" }, // Trillions
-    { value: 1e9,  symbol: "B" }, // Billions
-    { value: 1e6,  symbol: "M" }, // Millions
-    { value: 1e3,  symbol: "k" }, // Thousands
+    { value: 1e12, symbol: "T" },
+    { value: 1e9,  symbol: "B" },
+    { value: 1e6,  symbol: "M" },
+    { value: 1e3,  symbol: "k" },
   ];
 
   const tier = tiers.find(t => absNum >= t.value);
@@ -29,21 +29,18 @@ function formatNumberWithSI(num: number): string {
   let formattedValue: string;
 
   if (scaledValue < 10) {
-    // For values like 1.23M, show one decimal place (e.g., "1.2")
     formattedValue = scaledValue.toFixed(1);
   } else {
-    // For values like 12.3M or 123B, round to the nearest integer
     formattedValue = Math.round(scaledValue).toString();
   }
 
-  // 7. A final cleanup to remove ".0" if toFixed() created it (e.g., 9.95 -> "10.0")
   if (formattedValue.endsWith(".0")) {
     formattedValue = formattedValue.slice(0, -2);
   }
 
-  // 8. Combine the sign, formatted value, and SI symbol
   return sign + formattedValue + tier.symbol;
 }
+
 
 interface TPSChartProps {
   totalTPSLive: number[];
@@ -51,22 +48,39 @@ interface TPSChartProps {
 
 export const TPSChart = React.memo(({ totalTPSLive }: TPSChartProps) => {
   const chartRef = React.useRef<ReactECharts>(null);
+  const containerRef = useRef<HTMLDivElement>(null); // Ref for the container div
 
   useLayoutEffect(() => {
-    const timer = setTimeout(() => {
-      chartRef.current?.getEchartsInstance().resize();
-    }, 200);
+    const chartInstance = chartRef.current?.getEchartsInstance();
+    const container = containerRef.current;
 
-    // Cleanup function: clears the timeout if the component unmounts
+    if (!chartInstance || !container) {
+      return;
+    }
+
+    // Throttle the resize function to avoid performance issues on rapid changes
+    const handleResize = throttle(() => {
+      chartInstance.resize();
+    }, 150, { leading: true, trailing: true });
+
+    // Initial resize
+    handleResize();
+
+    const resizeObserver = new ResizeObserver(handleResize);
+    resizeObserver.observe(container);
+
     return () => {
-      clearTimeout(timer);
+      handleResize.cancel();
+      resizeObserver.disconnect();
     };
   }, []);
 
-  // useMemo will re-calculate the chart options only when the data changes.
   const option = useMemo<EChartsOption>(() => {
     const dataCount = totalTPSLive.length;
     const startIndex = Math.max(0, dataCount - 40);
+
+    const maxValue = Math.max(...totalTPSLive);
+    const yAxisMax = Math.ceil(maxValue / 100) * 100; // Round up to the nearest 100
 
     return {
       backgroundColor: 'transparent',
@@ -83,24 +97,23 @@ export const TPSChart = React.memo(({ totalTPSLive }: TPSChartProps) => {
       },
       yAxis: {
         type: 'value',
-        min: 0,
+        
         minorSplitLine: {
           show: false,
         },
-        splitNumber: 1,
+        // splitNumber: 1,
+        interval: yAxisMax,
         axisLabel: {
           color: 'rgb(215, 223, 222)',
           fontSize: 10,
           fontWeight: 700,
           fontFamily: 'var(--font-raleway), var(--font-fira-sans), sans-serif',
           align: 'right',
-          margin: 10, 
-          formatter: (value) => formatNumberWithSI(value),
+          margin: 10,
+          formatter: (value) => [0, yAxisMax].includes(value) ? formatNumberWithSI(value) : '',
         },
         splitLine: {
           show: true,
-          showMinLine: true,
-          showMaxLine: true,
           lineStyle: {
             color: '#5A6462',
             type: 'solid',
@@ -112,9 +125,13 @@ export const TPSChart = React.memo(({ totalTPSLive }: TPSChartProps) => {
         axisTick: {
           show: false,
         },
+        min: 0,
+        max: yAxisMax, // Round up to the nearest 100
       },
       tooltip: {
         trigger: 'axis',
+        renderMode: 'html',
+        appendToBody: true,
         confine: false,
         axisPointer: { type: 'line', lineStyle: { color: 'rgb(215, 223, 222)', width: 1, type: 'solid' } },
         backgroundColor: '#2A3433EE',
@@ -123,17 +140,16 @@ export const TPSChart = React.memo(({ totalTPSLive }: TPSChartProps) => {
         padding: 0,
         textStyle: { color: 'rgb(215, 223, 222)' },
         formatter: (params) => {
-          if (!params || params.length === 0) {
+          if (!Array.isArray(params) || params.length === 0) {
             return '';
           }
           
           const point = params[0];
-          if (!point || !point.data) {
+          if (!point || typeof point.data !== 'number') {
             return '';
           }
           const series = point.seriesName;
           const value = point.data as number;
-          // const color = point.color as any;
           const gradient = (point.color as any);
           const barColor = gradient?.colorStops?.[1]?.color ?? gradient;
           
@@ -176,7 +192,7 @@ export const TPSChart = React.memo(({ totalTPSLive }: TPSChartProps) => {
           type: 'bar',
           data: totalTPSLive,
           animation: false,
-          barWidth: '60%',
+          barGap: '3px',
           itemStyle: {
             borderRadius: 0,
             color: {
@@ -196,10 +212,10 @@ export const TPSChart = React.memo(({ totalTPSLive }: TPSChartProps) => {
       ],
       animationDuration: 50,
     };
-  }, [totalTPSLive]);
+  }, [totalTPSLive, containerRef.current]);
 
   return (
-    <div className="w-full h-[58px] -mt-[5px]">
+    <div ref={containerRef} className="w-full h-[58px] -mt-[5px]">
       <ReactECharts
         ref={chartRef}
         option={option}
@@ -212,4 +228,3 @@ export const TPSChart = React.memo(({ totalTPSLive }: TPSChartProps) => {
 });
 
 TPSChart.displayName = "TPSChart";
-

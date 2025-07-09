@@ -1,10 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Container from '../Container';
-import HighchartsReact from 'highcharts-react-official';
-import { HighchartsProvider, HighchartsChart, YAxis, Series, XAxis, Tooltip, Chart, ColumnSeries } from 'react-jsx-highcharts';
-import Highcharts from 'highcharts';
-import "@/app/highcharts.axis.css";
 import { useLocalStorage } from 'usehooks-ts';
 import { GTPIcon } from '../GTPIcon';
 import { Icon } from '@iconify/react';
@@ -14,7 +10,7 @@ import { useSearchParamBoolean, useSearchParamState } from '@/hooks/useSearchPar
 import { tooltipPositioner } from '@/lib/chartUtils';
 import { useSSEMetrics } from './useSSEMetrics';
 import { FeeDisplayRow } from './FeeDisplayRow';
-import { formatDuration, formatUptime, getGradientColor } from './helpers';
+import { formatUptime, getGradientColor } from './helpers';
 import { EthereumEvents } from '@/types/api/MasterResponse';
 import CalendarIcon from '@/icons/svg/GTP-Calendar.svg';
 import Image from 'next/image';
@@ -94,7 +90,7 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
   const isMobile = useMediaQuery("(max-width: 768px)");
   const ExpandButton = (
     <div
-      className="absolute bottom-0 left-0 right-0 w-full py-[15px] px-[30px] h-fit flex items-center justify-center z-10 cursor-pointer"
+      className="absolute bottom-0 left-0 right-0 w-full py-[15px] px-[15px] h-fit flex items-center justify-center z-10 cursor-pointer"
       onClick={(e) => {
         // Don't expand if clicking on the tooltip trigger
         const target = e.target as HTMLElement;
@@ -405,7 +401,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
           <div className='numbers-xs flex items-center gap-x-1'><span className='text-xs'>ATH:</span>{activeGlobalMetrics.total_tps_ath?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
           {/* </div> */}
         </div>
-        <div className={`relative transition-height duration-500 w-full ${isCompact ? 'h-0 overflow-hidden' : 'h-[58px] overflow-visible '}`}>
+        <div className={`relative transition-height duration-500 w-full ${isCompact ? 'h-0 overflow-hidden' : 'h-[63px] overflow-visible '}`}>
           <TPSChart totalTPSLive={totalTPSLive} />
         </div>
 
@@ -530,12 +526,7 @@ export const TokenTransferFeeCard = React.memo(({
       <div className={`heading-large-md ${isCompact ? 'mb-[0px]' : 'mb-[30px]'}`}>
         Token Transfer Fees
       </div>
-      {/* <GTPTooltipNew
-        size="md"
-        placement="top-start"
-        allowInteract={true}
-        trigger={ */}
-      <div className={`group pt-[15px] flex flex-col gap-y-[15px] ${isCompact ? '' : 'h-[108px]'}`}>
+      <div className={`group pt-[15px] flex flex-col gap-y-[15px] ${isCompact ? '' : 'h-[123px]'}`}>
         <FeeDisplayRow
           title="Ethereum Mainnet"
           costValue={ethDisplayValue}
@@ -565,15 +556,6 @@ export const TokenTransferFeeCard = React.memo(({
           hoverText="new block every ~200ms to ~2s"
         />
       </div>
-      {/* }
-        containerClass="flex flex-col gap-y-[10px]"
-        positionOffset={{ mainAxis: -20, crossAxis: 0 }}
-      >
-        <TooltipBody className='pl-[20px]'>
-          Ethereum Mainnet only produces a new block about every 12 seconds, whereas Layer 2s update in intervals between 200ms and 2s.
-        </TooltipBody>
-      </GTPTooltipNew> */}
-
       {/* Cost Chains List */}
       <div className={`relative flex flex-col gap-y-[5px] -mx-[15px] bg-[#1F2726] z-10 rounded-b-[15px] ${isCompact ? 'h-0' : 'h-auto'}`}>
         <div className={`flex flex-col gap-y-[2.5px] px-[15px] transition-height duration-500 overflow-y-hidden ${!showChainsCost && !isCompact ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''}`}
@@ -718,213 +700,6 @@ interface TPSChartProps {
   globalMetrics: any;
   showUsd: boolean;
 }
-
-// const TPSChart = React.memo(({ totalTPSLive, globalMetrics, showUsd }: TPSChartProps) => {
-//   const tooltipFormatter = useCallback(function (this: any) {
-//     const { x, points } = this;
-//     const date = new Date(x);
-//     const valuePrefix = '';
-//     const valueSuffix = "TPS";
-
-//     let dateString = date.toLocaleDateString("en-GB", {
-//       month: "short",
-//       day: "numeric",
-//       year: "numeric",
-//     });
-
-//     const timeDiff = points[0].series.xData[1] - points[0].series.xData[0];
-//     if (timeDiff < 1000 * 60 * 60 * 24) {
-//       dateString += " " + date.toLocaleTimeString("en-GB", {
-//         hour: "numeric",
-//         minute: "2-digit",
-//       });
-//     }
-
-//     const tooltip = `<div class="mt-3 mr-3 mb-3 text-xs font-raleway">
-//       <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2"></div>`;
-//     const tooltipEnd = `</div>`;
-
-//     const tooltipPoints = points
-//       .sort((a: any, b: any) => b.y - a.y)
-//       .map((point: any) => {
-//         const { y } = point;
-//         return `
-//         <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-//           <div class="w-4 h-1.5 rounded-r-full" style="background-color: #1DF7EF"></div>
-//           <div class="tooltip-point-name text-xs"></div>
-//           <div class="flex-1 text-right justify-end flex numbers-xs">
-//             <div class="flex justify-end text-right w-full">
-//               <div class="${!valuePrefix && "hidden"}">${valuePrefix}</div>
-//               ${Intl.NumberFormat("en-GB", {
-//           notation: "standard",
-//           maximumFractionDigits: 2,
-//           minimumFractionDigits: 2,
-//         }).format(y)}
-//         <div class="${!valueSuffix ? "hidden" : "pl-1"}">${valueSuffix}</div>
-//             </div>
-//           </div>
-//         </div>`;
-//       })
-//       .join("");
-
-//     return tooltip + tooltipPoints + tooltipEnd;
-//   }, []);
-
-
-//   return <HighchartsProvider Highcharts={Highcharts}>
-//     <HighchartsChart>
-//       <Chart
-//         backgroundColor={"transparent"}
-//         type="column"
-//         colors={['#10808C', '#1DF7EF']}
-//         panning={{
-//           enabled: false,
-//           type: "x",
-//         }}
-//         panKey="shift"
-//         zooming={{
-//           mouseWheel: {
-//             enabled: false,
-//           },
-//         }}
-//         animation={{
-//           duration: 50,
-//         }}
-//         marginBottom={5}
-//         marginTop={5}
-//         marginLeft={40}
-//         marginRight={0}
-//         height={58} // 48 (figma) + 5 (marginBottom) + 5 (marginTop) = 58
-//         events={{
-//           redraw: function () {
-
-//             const chart = this;
-//             const series = chart.series[0];
-
-//             if (!series) {
-//               return;
-//             }
-
-//             const PLOT_WIDTH = chart.plotWidth; // Pixel width of plot area
-//             const BARS_VISIBLE = 40; // Number of bars to show
-//             const GAP_PX = 3; // pixel gap between bars
-
-//             const BAR_WIDTH_PX = (PLOT_WIDTH / BARS_VISIBLE) - GAP_PX;
-
-
-//             series.update({
-//               type: 'column',
-//               pointWidth: BAR_WIDTH_PX,
-//             }, false); // Update series with fixed point width
-
-
-//           },
-
-//         }}
-
-//       />
-//       <YAxis
-//         visible={true}
-//         type="linear"
-//         gridLineWidth={1}
-//         gridLineColor={"#5A6462"}
-//         gridLineDashStyle={"Solid"}
-//         startOnTick={true}
-//         endOnTick={true}
-//         tickAmount={2}
-//         gridZIndex={10}
-//         min={0}
-//         labels={{
-//           distance: 10,
-//           align: "right",
-//           useHTML: true,
-//           style: {
-//             whiteSpace: "nowrap",
-//             textAlign: "right",
-//             color: "rgb(215, 223, 222)",
-//             fontSize: "10px",
-//             fontWeight: "700",
-//             fontFamily: "Fira Sans",
-//           },
-//         }}
-//         zoomEnabled={false}
-//       >
-//         <ColumnSeries
-//           type="column"
-//           data={totalTPSLive}
-//           color={{
-//             linearGradient: { x1: 0, y1: 1, x2: 0, y2: 0 },
-//             stops: [
-//               [0, '#10808C'],
-//               [1, '#1DF7EF']
-//             ]
-//           }}
-//           shadow={{
-//             color: '#CDD8D3',
-//             offsetX: 0,
-//             offsetY: 0,
-//             opacity: 0.05,
-//             width: 2
-//           }}
-
-//           // pointPadding={4}
-//           // pointWidth={8}
-//           // groupPadding={0}
-//           colorByPoint={false}
-//           borderRadius={0}
-//           borderColor={"transparent"}
-//           animation={false}
-//         />
-//       </YAxis>
-//       <XAxis
-//         type="linear"
-//         gridLineWidth={0}
-//         lineWidth={0}
-//         tickLength={10}
-//         labels={{
-//           enabled: false
-//         }}
-//         min={0}
-//         max={39}
-//         tickColor={"#5A6462"}
-
-//         tickWidth={0}
-//       />
-//       <Tooltip
-//         useHTML={true}
-//         shared={true}
-//         split={false}
-//         followPointer={true}
-//         followTouchMove={true}
-//         backgroundColor={"#2A3433EE"}
-//         padding={0}
-//         hideDelay={300}
-//         stickOnContact={true}
-//         shape="rect"
-//         borderRadius={12}
-//         borderWidth={0}
-//         outside={true}
-//         shadow={{
-//           color: "black",
-//           opacity: 0.015,
-//           offsetX: 2,
-//           offsetY: 2,
-//         }}
-//         style={{
-//           color: "rgb(215, 223, 222)",
-//         }}
-//         formatter={tooltipFormatter}
-//         // ensure tooltip is always above the chart
-//         valuePrefix={showUsd ? "$" : ""}
-//         valueSuffix={showUsd ? "" : " Gwei"}
-//         positioner={tooltipPositioner}
-//       />
-//     </HighchartsChart>
-
-//   </HighchartsProvider>;
-// });
-
-// TPSChart.displayName = "TPSChart";
 
 interface ChainTransitionItemProps {
   chainId: string;
