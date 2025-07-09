@@ -639,7 +639,7 @@ export function AggChart({
           <GTPTooltipNew
             placement="top-start"
             trigger={
-              <div>
+              <div className='hover:cursor-pointer'>
                 <GTPIcon icon="gtp-info-monochrome" size='sm' className='pointer-events-auto' />
               </div>
             }
