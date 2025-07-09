@@ -34,8 +34,8 @@ export function FeeDisplayRow({
 }: FeeDisplayRowProps) {
   return (
     <div className='flex justify-between items-center'>
-      <div className='relative w-[115px] heading-small-xxs whitespace-nowrap'>
-        {title}
+      <div className='relative w-[90px] 2xl:w-[115px] heading-small-xxs whitespace-nowrap'>
+        {title === "Ethereum Mainnet" ? <><div className='hidden 2xl:block'>Ethereum Mainnet</div><div className='block 2xl:hidden'>Ethereum L1</div></> : title}
         {hoverText && (
           <div className="text-[#5A6462] group-hover:opacity-100 opacity-0 transition-opacity duration-300 absolute -bottom-[14px] left-0 text-xxxs">
             {hoverText}

@@ -16,7 +16,7 @@ import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
 import { Splide, SplideSlide, SplideTrack } from '@splidejs/react-splide';
 import '@splidejs/react-splide/css';
 import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
-import { ApplicationIcon } from '@/app/(layout)/applications/_components/Components';
+import { ApplicationIcon, ApplicationTooltipAlt } from '@/app/(layout)/applications/_components/Components';
 import { track } from '@vercel/analytics/react';
 import SwiperContainer from '../SwiperContainer';
 
@@ -377,7 +377,15 @@ const MeetL2sSlider = React.memo(({ meetL2sData, ProjectData }: MeetL2sSliderPro
 
         return (
           <SplideSlide key={key}>
-            <Link href={`/chains/${key}`} className='group cursor-pointer flex flex-col gap-y-[10px] rounded-[15px] p-[15px] bg-transparent border-[1px] border-[#5A6462] h-full'>
+            <div 
+              onClick={(e) => {
+                // Only navigate if we didn't click on a nested link
+                if (!(e.target as HTMLElement).closest('a')) {
+                  window.location.href = `/chains/${key}`;
+                }
+              }}
+              className='group cursor-pointer flex flex-col gap-y-[10px] rounded-[15px] p-[15px] bg-transparent border-[1px] border-[#5A6462] h-full'
+            >
               <div className='flex items-center w-full justify-between'>
                 <div className='flex items-center gap-x-[5px]'>
                   <GTPIcon
@@ -432,17 +440,18 @@ const MeetL2sSlider = React.memo(({ meetL2sData, ProjectData }: MeetL2sSliderPro
                           containerClass="flex flex-col gap-y-[10px]"
                           positionOffset={{ mainAxis: 0, crossAxis: 20 }}
                         >
-                          <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
+                          {/* <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
                             <div className='heading-small-xxs'>{project.display_name}</div>
                             <div className='text-xs'>{project.description}</div>
-                          </TooltipBody>
+                          </TooltipBody> */}
+                          <ApplicationTooltipAlt owner_project={project.owner_project} />
                         </GTPTooltipNew>
                       ))
                     )}
                 </div>
-                <div className='text-xs'>Predominately used for</div>
+                <div className='text-xs'>Most used apps</div>
               </div>
-            </Link>
+            </div>
           </SplideSlide>
         );
       })}

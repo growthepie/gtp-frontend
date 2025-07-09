@@ -156,7 +156,7 @@ const BreakdownButton = ({
 
     return (
         <div
-            className={`group flex items-center flex-row gap-x-[15px] rounded-full px-[10px] py-[3px] transition-all ${IS_BREAKDOWN_GROUP_SELECTED && "flex-1"} ${justifyContentClass} ${selectedBreakdownGroupClass} ${!isComingSoon && "cursor-pointer"}`}
+            className={`group flex items-center flex-row gap-x-[15px] rounded-full px-[10px] py-[3px] transition-all lg:min-w-fit lg:w-1/3 ${IS_BREAKDOWN_GROUP_SELECTED && "flex-1 lg:flex-initial"} ${justifyContentClass} ${selectedBreakdownGroupClass} ${!isComingSoon && "cursor-pointer"}`}
             onClick={handleClick}
         >
             <div className={`flex items-center gap-x-[15px] text-nowrap origin-left transition-all ${iconContainerClass || ''}`}>

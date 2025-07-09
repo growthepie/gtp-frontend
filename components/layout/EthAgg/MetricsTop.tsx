@@ -20,6 +20,13 @@ import CalendarIcon from '@/icons/svg/GTP-Calendar.svg';
 import Image from 'next/image';
 import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
 import { useElementSizeObserver } from '@/hooks/useElementSizeObserver';
+import useSWR from 'swr';
+import { HistoryData } from './types';
+import { useMediaQuery } from 'usehooks-ts';
+
+import { TPSChart } from './TPSChart';
+import { throttle } from 'lodash';
+
 // Define the props type for TopEthAggMetricsComponent
 interface TopEthAggMetricsProps {
   selectedBreakdownGroup: string;
@@ -83,19 +90,49 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
   infoSlot,
 }) => {
   // The button at the bottom for expanding/collapsing the card
+
+  const isMobile = useMediaQuery("(max-width: 768px)"); 
   const ExpandButton = (
-    <div
-      className="absolute bottom-0 left-0 right-0 w-full py-[15px] px-[30px] h-fit flex items-center justify-center z-10 cursor-pointer"
-      onClick={onToggleExpand}
-    >
+      <div
+        className="absolute bottom-0 left-0 right-0 w-full py-[15px] px-[30px] h-fit flex items-center justify-center z-10 cursor-pointer"
+        onClick={(e) => {
+          // Don't expand if clicking on the tooltip trigger
+          const target = e.target as HTMLElement;
+          const isTooltipTrigger = target.closest('[data-tooltip-trigger]');
+          if (!isTooltipTrigger || !isMobile) {
+            onToggleExpand(e);
+          }
+        }}
+      >
       <div className="flex items-center justify-between w-full">
         <div className="w-[15px] h-fit" />
         <div className={`pointer-events-none transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
           <GTPIcon icon="gtp-chevrondown-monochrome" size="md" className="text-[#5A6462]" />
         </div>
-        <div className="pointer-events-none">
+        
           {/* Default info icon can be overridden by the infoSlot prop */}
-          {infoSlot ?? <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-[#5A6462]" />}
+                 <div className='w-[15px] h-fit z-30'>
+           <GTPTooltipNew
+             placement="top-start"
+             allowInteract={true}
+             trigger={
+               <div 
+                 className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'}`}
+                 data-tooltip-trigger
+               >
+                 <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-[#5A6462]" />
+               </div>
+             }
+            containerClass="flex flex-col gap-y-[10px]"
+            positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+
+          >
+            <div>
+            <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
+              {infoSlot}
+            </TooltipBody>
+            </div>
+          </GTPTooltipNew>
         </div>
       </div>
     </div>
@@ -156,47 +193,61 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
     return masterData ? [...masterData.ethereum_events].reverse() : [];
   }, [masterData]);
 
-  // Handle wheel scroll navigation
-  const handleDocumentWheel = useCallback((e: WheelEvent) => {
-    if (!containerRef.current || !isEventsHovered) return;
 
-    const target = e.target as Node;
-    if (containerRef.current.contains(target)) {
-      if (!showEvents || reversedEvents.length === 0 || !eventExpanded) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      const currentIndex = reversedEvents.findIndex(event => event.date === eventExpanded);
-      if (currentIndex === -1) return;
-
-      const isScrollingDown = e.deltaY > 0;
-
-      if (isScrollingDown) {
-        const nextIndex = currentIndex + 1;
-        if (nextIndex < reversedEvents.length) {
-          handleSetExpandedEvent(reversedEvents[nextIndex].date);
-        }
-      } else {
-        if (currentIndex > 0) {
-          handleSetExpandedEvent(reversedEvents[currentIndex - 1].date);
-        }
-      }
-    }
-  }, [isEventsHovered, showEvents, reversedEvents, eventExpanded, handleSetExpandedEvent]);
+  // 1. Stable refs that always hold the latest values
+  const showEventsRef = useRef(showEvents);
+  const reversedEventsRef = useRef(reversedEvents);
+  const eventExpandedRef = useRef(eventExpanded);
 
   useEffect(() => {
-    if (isEventsHovered) {
-      document.addEventListener('wheel', handleDocumentWheel, { passive: false });
-    } else {
-      document.removeEventListener('wheel', handleDocumentWheel);
-    }
+    showEventsRef.current = showEvents;
+    reversedEventsRef.current = reversedEvents;
+    eventExpandedRef.current = eventExpanded;
+  });
 
-    return () => {
-      document.removeEventListener('wheel', handleDocumentWheel);
+  // 2. Create the throttled function once (1000 ms lock)
+  const throttledWheelHandlerRef = useRef<(e: WheelEvent) => void>();
+  if (!throttledWheelHandlerRef.current) {
+    throttledWheelHandlerRef.current = throttle(
+      (e: WheelEvent) => {
+        if (
+          !showEventsRef.current ||
+          reversedEventsRef.current.length === 0 ||
+          !eventExpandedRef.current
+        ) {
+          return;
+        }
+
+        const idx = reversedEventsRef.current.findIndex(
+          ev => ev.date === eventExpandedRef.current
+        );
+        if (idx === -1) return;
+
+        const next = e.deltaY > 0 ? idx + 1 : idx - 1;
+        if (next >= 0 && next < reversedEventsRef.current.length) {
+          handleSetExpandedEvent(reversedEventsRef.current[next].date);
+        }
+      },
+      300,                       // ← throttle interval
+      { leading: true, trailing: false }
+    );
+  }
+
+  // 3. Attach / detach on hover
+  useEffect(() => {
+    if (!isEventsHovered || !showEvents || showEvents && !eventExpanded) return;
+
+    const wheelListener = (e: WheelEvent) => {
+      if (!containerRef.current?.contains(e.target as Node)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      throttledWheelHandlerRef.current!(e);
     };
-  }, [isEventsHovered, handleDocumentWheel]);
-  // ---
+
+    document.addEventListener('wheel', wheelListener, { passive: false });
+    return () => document.removeEventListener('wheel', wheelListener);
+  }, [isEventsHovered, showEvents, eventExpanded]);
+
 
   const [listRef, { height: listHeight }] = useElementSizeObserver<HTMLDivElement>();
 
@@ -244,24 +295,6 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
               </div>
             )
           })}
-          {/* {reversedEvents.map((event: any, index: number) => {
-            const isThisEventHovered = eventHover === event.date;
-            const isNextEventHovered = eventHover === reversedEvents[index + 1]?.date;
-            const topPosition = reversedEvents.slice(0, index).reduce((acc, prevEvent) => acc + (eventExpanded === prevEvent.date ? 101 : 28), 0);
-            return (
-              <div key={event.date}>
-                <div className="absolute w-full" style={{ top: `${topPosition}px` }}>
-                  <EventItem eventKey={event.date} eventHover={eventHover} setEventHover={setEventHover} eventExpanded={eventExpanded} handleToggleEventExpansion={handleToggleEventExpansion} event={event} index={index} nextEvent={reversedEvents[index + 1]} />
-                </div>
-                {index < reversedEvents.length - 1 && !isThisEventHovered && !isNextEventHovered && (index !== 0 || eventHover !== null || eventExpanded === reversedEvents[index + 1]?.date) && eventExpanded !== event.date && eventExpanded !== reversedEvents[index + 1]?.date && (
-                  <div className="absolute flex-col gap-y-[4px] pt-[3px] flex items-center gap-x-[2px]" style={{ top: `${topPosition + (eventExpanded === event.date ? 101 : 26) - 5}px`, left: '11px' }}>
-                    <div className="w-[2px] h-[2px] bg-[#5A6462] rounded-full"></div>
-                    <div className="w-[2px] h-[2px] bg-[#5A6462] rounded-full"></div>
-                  </div>
-                )}
-              </div>
-            );
-          })} */}
         </div>
       </div>
     </div>
@@ -283,7 +316,7 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
         onToggleExpand={handleToggleEvents}
         isCompact={isCompact}
         // infoSlot could be used here to add a tooltip if needed
-        infoSlot={<GTPIcon icon="gtp-info-monochrome" size="sm" className="text-[#5A6462]" />}
+        infoSlot={"Uptime shows how long Ethereum has been running without interruptions. It is calculated from the genesis block on July 30, 2015."}
       >
         {mainContent}
 
@@ -360,21 +393,19 @@ export const EthereumEcosystemTPSCard = React.memo(({
         <div className="flex flex-row justify-between">
           <div>
             <div className='flex flex-1 gap-x-1 numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent whitespace-nowrap'>
-              <div>{Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(activeGlobalMetrics.total_tps || 0)}</div>
+              <div>{Intl.NumberFormat('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(activeGlobalMetrics.total_tps || 0)}</div>
               <div className={`${isCompact ? '' : 'hidden'}`}>TPS</div>
             </div>
-            {isCompact && <div className='heading-small-xs text-[#5A6462] pt-[5px]'>all chains combined</div>}
+            {isCompact && <div className='heading-small-xs text-[#5A6462] pt-[5px] h-0 overflow-visible'>all chains combined</div>}
           </div>
 
-          <div className={`justify-between ${isCompact ? 'hidden' : 'flex w-[73%]'}`}>
-            <div className='numbers-xs flex items-center gap-x-1'><span className='text-xs'>Max (24h):</span>{activeGlobalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) || 0} TPS</div>
-            <div className='numbers-xs flex items-center gap-x-1'><span className='text-xs'>ATH:</span>{activeGlobalMetrics.total_tps_ath?.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) || 0} TPS</div>
-          </div>
+          {/* <div className={`justify-between ${isCompact ? 'hidden' : 'flex'} w-[60%]`}> */}
+            <div className='numbers-xs flex items-center gap-x-1'><span className='text-xs'>24h:</span>{activeGlobalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
+            <div className='numbers-xs flex items-center gap-x-1'><span className='text-xs'>ATH:</span>{activeGlobalMetrics.total_tps_ath?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
+          {/* </div> */}
         </div>
-        <div className={`w-full -mt-[5px]`}>
-          <div className={`transition-height duration-500 overflow-hidden ${isCompact ? 'h-0' : 'h-[58px]'}`}>
-            <TPSChart totalTPSLive={totalTPSLive} globalMetrics={activeGlobalMetrics} showUsd={showUsd} />
-          </div>
+        <div className={`relative transition-height duration-500 w-full ${isCompact ? 'h-0 overflow-hidden' : 'h-[58px] overflow-visible '}`}>
+          <TPSChart totalTPSLive={totalTPSLive} />
         </div>
 
       </div>
@@ -408,7 +439,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
         isExpanded={showChainsTPS}
         onToggleExpand={handleToggleTPS}
         isCompact={isCompact}
-        infoSlot={<GTPIcon icon="gtp-info-monochrome" size="sm" className="text-[#5A6462]" />}
+        infoSlot={"TPS (Transactions-per-second) values are calculated by analyzing recent blocks on Ethereum Mainnet and Layer 2s. Please reach out to us if your Layer 2 is missing. Source: growthepie"}
       >
         {content}
       </ExpandableCardContainer>
@@ -569,7 +600,7 @@ export const TokenTransferFeeCard = React.memo(({
         isExpanded={showChainsCost}
         onToggleExpand={handleToggleCost}
         isCompact={isCompact}
-        infoSlot={<GTPIcon icon="gtp-info-monochrome" size="sm" className="text-[#5A6462]" />}
+        infoSlot={"Costs are based on gas fees paid in recent blocks. For token transfers (ERC20), we assume a gas usage of 65,000 gas. Source: growthepie"}
       >
         {content}
       </ExpandableCardContainer>
@@ -594,8 +625,8 @@ const EventIcon = ({ event, eventHover, index, eventExpanded }: { event: Ethereu
   const getMonthDisplay = (dateString: string) => {
     try {
       const date = new Date(dateString);
-      const fullMonth = date.toLocaleDateString('en-US', { month: 'long' }).toUpperCase();
-      const shortMonth = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+      const fullMonth = date.toLocaleDateString('en-GB', { month: 'long' }).toUpperCase();
+      const shortMonth = date.toLocaleDateString('en-GB', { month: 'short' }).toUpperCase();
 
       // If full month name is 4 characters or shorter, use it; otherwise use short version
       return fullMonth.length <= 4 ? fullMonth : shortMonth;
@@ -622,7 +653,7 @@ const EventIcon = ({ event, eventHover, index, eventExpanded }: { event: Ethereu
           {getMonthDisplay(event.date)}
         </div>
         <div className='absolute text-[#1F2726] bottom-[5px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] bg-clip-text text-transparent left-0 right-0 numbers-xxxs text-center'>
-          {Intl.DateTimeFormat('en-US', { day: 'numeric' }).format(new Date(event.date))}
+          {Intl.DateTimeFormat('en-GB', { day: 'numeric' }).format(new Date(event.date))}
         </div>
       </div>
 
@@ -641,35 +672,36 @@ const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpand
   const isExpanded = eventExpanded === eventKey;
   const eventLength = event.description?.length || 0;
   return (
-    <div className={`transition-all flex flex-col duration-300 cursor-pointer ${isExpanded ? 'h-[101px]' : 'h-[28px]'} w-full`}
+    <div className={`transition-all flex flex-col duration-500 cursor-pointer ${isExpanded ? 'max-h-[200px] delay-0' : 'max-h-[28px] delay-1000'} w-full`}
       onMouseEnter={() => setEventHover(eventKey)}
       onMouseLeave={() => setEventHover(null)}
       onClick={() => handleToggleEventExpansion(eventKey)}
     >
-      <div className={`${isExpanded ? 'h-[14px]' : 'h-0'}  flex relative top-[2px] w-[24px] justify-center overflow-hidden gap-x-[2px] text-xxxs`}>{Intl.DateTimeFormat('en-US', { year: 'numeric' }).format(new Date(event.date))}</div>
+      <div className={`${isExpanded ? 'max-h-[50px]' : 'h-0'}  flex relative items-center top-[2px] w-[24px] justify-center overflow-hidden gap-x-[2px] text-xxxs`}>{Intl.DateTimeFormat('en-GB', { year: 'numeric' }).format(new Date(event.date))}</div>
       <div
-        className={`flex items-center gap-x-[5px] ${eventHover === eventKey || ((index === 0 && eventExpanded === null)) ? 'text-xs' : 'text-xxxs text-[#5A6462]'
-          } w-fit h-[24px]`}
+        className={`flex items-start gap-x-[5px] min-h-[32px] h-fit ${eventHover === eventKey || ((index === 0 && eventExpanded === null)) ? 'text-xs' : 'text-xxxs text-[#5A6462]'
+          } w-fit`}
 
       >
         <EventIcon event={event} eventHover={eventHover} index={index} eventExpanded={eventExpanded} />
-        <span className={`relative top-[3px] ${eventHover === eventKey || ((eventExpanded === eventKey || (index === 0 && eventExpanded === null))) ? 'heading-small-xs text-[#C8D8D3]' : 'heading-small-xxxs text-[#5A6462]'} `}>{event.title}</span>
+        <div className={`relative pt-[12px] mb-[5px] ${eventHover === eventKey || ((eventExpanded === eventKey || (index === 0 && eventExpanded === null))) ? 'heading-small-xs text-[#C8D8D3]' : 'heading-small-xxxs text-[#5A6462]'} `}>{event.title}</div>
       </div>
 
 
-      <div className={` flex w-full justify-between pl-0 transition-height duration-100 overflow-hidden ${isExpanded ? 'h-[80px] mt-0' : 'h-0 mt-0'}`}>
-        <div className='flex flex-col justify-between gap-y-[4px] h-full overflow-y-hidden min-w-[24px] max-w-[24px] items-center '>
+      <div className={`relative flex w-full justify-between pl-0 transition-[max-height,opacity] duration-500 overflow-hidden ${isExpanded ? 'max-h-[200px] mt-0 opacity-100' : 'max-h-0 mt-0 opacity-0'}`}>
+        <div className='absolute left-0 top-0 flex flex-col justify-between gap-y-[4px] h-full overflow-y-hidden min-w-[24px] max-w-[24px] items-center '>
           <div className='flex flex-col gap-y-[6px] overflow-y-hidden pt-1'>
-            {Array.from({ length: 10 }).map((_, i) => (
+            {Array.from({ length: 20 }).map((_, i) => (
               <div key={i + "event-item-description"} className='bg-[#5A6462] w-[2px] h-[2px] rounded-full flex-shrink-0' />
             ))}
           </div>
-          <div className='rounded-full min-h-[12px] text-xxxs text-[#5A6462]'>{nextEvent ? new Date(nextEvent.date).toLocaleDateString('en-US', { year: 'numeric' }) : ''}</div>
+          <div className='rounded-full min-h-[12px] text-xxxs text-[#5A6462]'>{nextEvent ? new Date(nextEvent.date).toLocaleDateString('en-GB', { year: 'numeric' }) : ''}</div>
         </div>
-        <div className={`text-xxs flex h-full items-center pl-1.5 w-full ${eventLength > 100 ? 'pb-0' : 'pb-2'}`}>
-
-          <div className=" leading-relaxed overflow-y-auto max-h-[70px]">
+        {/* <div className={`text-xxs flex h-full items-center pl-1.5 w-full ${eventLength > 100 ? 'pb-0' : 'pb-2'}`}> */}
+        <div className={`pl-[30px] text-xs flex items-center w-full ${eventExpanded === eventKey ? 'pb-[0px]' : 'pb-0'}`}>
+          <div className="leading-relaxed overflow-y-auto pb-[15px]">
             {event.description || event.title}
+            {/* Genesis of Ethereum: bla bla bla bla bla bla bla bla bla bla... This is an events text and provides further details about the upgrades, etc. Genesis of Ethereum: bla bla bla bla bla bla bla bla bla bla... This is an events text and provides further details about the upgrades, etc. Genesis of Ethereum: bla bla bla bla bla bla bla bla bla bla... This is an events text and provides further details about the upgrades, etc. */}
           </div>
         </div>
       </div>
@@ -686,212 +718,212 @@ interface TPSChartProps {
   showUsd: boolean;
 }
 
-const TPSChart = React.memo(({ totalTPSLive, globalMetrics, showUsd }: TPSChartProps) => {
-  const tooltipFormatter = useCallback(function (this: any) {
-    const { x, points } = this;
-    const date = new Date(x);
-    const valuePrefix = '';
-    const valueSuffix = "TPS";
+// const TPSChart = React.memo(({ totalTPSLive, globalMetrics, showUsd }: TPSChartProps) => {
+//   const tooltipFormatter = useCallback(function (this: any) {
+//     const { x, points } = this;
+//     const date = new Date(x);
+//     const valuePrefix = '';
+//     const valueSuffix = "TPS";
 
-    let dateString = date.toLocaleDateString("en-GB", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+//     let dateString = date.toLocaleDateString("en-GB", {
+//       month: "short",
+//       day: "numeric",
+//       year: "numeric",
+//     });
 
-    const timeDiff = points[0].series.xData[1] - points[0].series.xData[0];
-    if (timeDiff < 1000 * 60 * 60 * 24) {
-      dateString += " " + date.toLocaleTimeString("en-GB", {
-        hour: "numeric",
-        minute: "2-digit",
-      });
-    }
+//     const timeDiff = points[0].series.xData[1] - points[0].series.xData[0];
+//     if (timeDiff < 1000 * 60 * 60 * 24) {
+//       dateString += " " + date.toLocaleTimeString("en-GB", {
+//         hour: "numeric",
+//         minute: "2-digit",
+//       });
+//     }
 
-    const tooltip = `<div class="mt-3 mr-3 mb-3 text-xs font-raleway">
-      <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2"></div>`;
-    const tooltipEnd = `</div>`;
+//     const tooltip = `<div class="mt-3 mr-3 mb-3 text-xs font-raleway">
+//       <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2"></div>`;
+//     const tooltipEnd = `</div>`;
 
-    const tooltipPoints = points
-      .sort((a: any, b: any) => b.y - a.y)
-      .map((point: any) => {
-        const { y } = point;
-        return `
-        <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-          <div class="w-4 h-1.5 rounded-r-full" style="background-color: #1DF7EF"></div>
-          <div class="tooltip-point-name text-xs"></div>
-          <div class="flex-1 text-right justify-end flex numbers-xs">
-            <div class="flex justify-end text-right w-full">
-              <div class="${!valuePrefix && "hidden"}">${valuePrefix}</div>
-              ${Intl.NumberFormat("en-GB", {
-          notation: "standard",
-          maximumFractionDigits: 2,
-          minimumFractionDigits: 2,
-        }).format(y)}
-        <div class="${!valueSuffix ? "hidden" : "pl-1"}">${valueSuffix}</div>
-            </div>
-          </div>
-        </div>`;
-      })
-      .join("");
+//     const tooltipPoints = points
+//       .sort((a: any, b: any) => b.y - a.y)
+//       .map((point: any) => {
+//         const { y } = point;
+//         return `
+//         <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+//           <div class="w-4 h-1.5 rounded-r-full" style="background-color: #1DF7EF"></div>
+//           <div class="tooltip-point-name text-xs"></div>
+//           <div class="flex-1 text-right justify-end flex numbers-xs">
+//             <div class="flex justify-end text-right w-full">
+//               <div class="${!valuePrefix && "hidden"}">${valuePrefix}</div>
+//               ${Intl.NumberFormat("en-GB", {
+//           notation: "standard",
+//           maximumFractionDigits: 2,
+//           minimumFractionDigits: 2,
+//         }).format(y)}
+//         <div class="${!valueSuffix ? "hidden" : "pl-1"}">${valueSuffix}</div>
+//             </div>
+//           </div>
+//         </div>`;
+//       })
+//       .join("");
 
-    return tooltip + tooltipPoints + tooltipEnd;
-  }, []);
-
-
-  return <HighchartsProvider Highcharts={Highcharts}>
-    <HighchartsChart>
-      <Chart
-        backgroundColor={"transparent"}
-        type="column"
-        colors={['#10808C', '#1DF7EF']}
-        panning={{
-          enabled: false,
-          type: "x",
-        }}
-        panKey="shift"
-        zooming={{
-          mouseWheel: {
-            enabled: false,
-          },
-        }}
-        animation={{
-          duration: 50,
-        }}
-        marginBottom={5}
-        marginTop={5}
-        marginLeft={40}
-        marginRight={0}
-        height={58} // 48 (figma) + 5 (marginBottom) + 5 (marginTop) = 58
-        events={{
-          redraw: function () {
-
-            const chart = this;
-            const series = chart.series[0];
-
-            if (!series) {
-              return;
-            }
-
-            const PLOT_WIDTH = chart.plotWidth; // Pixel width of plot area
-            const BARS_VISIBLE = 40; // Number of bars to show
-            const GAP_PX = 3; // pixel gap between bars
-
-            const BAR_WIDTH_PX = (PLOT_WIDTH / BARS_VISIBLE) - GAP_PX;
+//     return tooltip + tooltipPoints + tooltipEnd;
+//   }, []);
 
 
-            series.update({
-              type: 'column',
-              pointWidth: BAR_WIDTH_PX,
-            }, false); // Update series with fixed point width
+//   return <HighchartsProvider Highcharts={Highcharts}>
+//     <HighchartsChart>
+//       <Chart
+//         backgroundColor={"transparent"}
+//         type="column"
+//         colors={['#10808C', '#1DF7EF']}
+//         panning={{
+//           enabled: false,
+//           type: "x",
+//         }}
+//         panKey="shift"
+//         zooming={{
+//           mouseWheel: {
+//             enabled: false,
+//           },
+//         }}
+//         animation={{
+//           duration: 50,
+//         }}
+//         marginBottom={5}
+//         marginTop={5}
+//         marginLeft={40}
+//         marginRight={0}
+//         height={58} // 48 (figma) + 5 (marginBottom) + 5 (marginTop) = 58
+//         events={{
+//           redraw: function () {
+
+//             const chart = this;
+//             const series = chart.series[0];
+
+//             if (!series) {
+//               return;
+//             }
+
+//             const PLOT_WIDTH = chart.plotWidth; // Pixel width of plot area
+//             const BARS_VISIBLE = 40; // Number of bars to show
+//             const GAP_PX = 3; // pixel gap between bars
+
+//             const BAR_WIDTH_PX = (PLOT_WIDTH / BARS_VISIBLE) - GAP_PX;
 
 
-          },
+//             series.update({
+//               type: 'column',
+//               pointWidth: BAR_WIDTH_PX,
+//             }, false); // Update series with fixed point width
 
-        }}
 
-      />
-      <YAxis
-        visible={true}
-        type="linear"
-        gridLineWidth={1}
-        gridLineColor={"#5A6462"}
-        gridLineDashStyle={"Solid"}
-        startOnTick={true}
-        endOnTick={true}
-        tickAmount={2}
-        gridZIndex={10}
-        min={0}
-        labels={{
-          distance: 10,
-          align: "right",
-          useHTML: true,
-          style: {
-            whiteSpace: "nowrap",
-            textAlign: "right",
-            color: "rgb(215, 223, 222)",
-            fontSize: "10px",
-            fontWeight: "700",
-            fontFamily: "Fira Sans",
-          },
-        }}
-        zoomEnabled={false}
-      >
-        <ColumnSeries
-          type="column"
-          data={totalTPSLive}
-          color={{
-            linearGradient: { x1: 0, y1: 1, x2: 0, y2: 0 },
-            stops: [
-              [0, '#10808C'],
-              [1, '#1DF7EF']
-            ]
-          }}
-          shadow={{
-            color: '#CDD8D3',
-            offsetX: 0,
-            offsetY: 0,
-            opacity: 0.05,
-            width: 2
-          }}
+//           },
 
-          // pointPadding={4}
-          // pointWidth={8}
-          // groupPadding={0}
-          colorByPoint={false}
-          borderRadius={0}
-          borderColor={"transparent"}
-          animation={false}
-        />
-      </YAxis>
-      <XAxis
-        type="linear"
-        gridLineWidth={0}
-        lineWidth={0}
-        tickLength={10}
-        labels={{
-          enabled: false
-        }}
-        min={0}
-        max={39}
-        tickColor={"#5A6462"}
+//         }}
 
-        tickWidth={0}
-      />
-      <Tooltip
-        useHTML={true}
-        shared={true}
-        split={false}
-        followPointer={true}
-        followTouchMove={true}
-        backgroundColor={"#2A3433EE"}
-        padding={0}
-        hideDelay={300}
-        stickOnContact={true}
-        shape="rect"
-        borderRadius={12}
-        borderWidth={0}
-        outside={true}
-        shadow={{
-          color: "black",
-          opacity: 0.015,
-          offsetX: 2,
-          offsetY: 2,
-        }}
-        style={{
-          color: "rgb(215, 223, 222)",
-        }}
-        formatter={tooltipFormatter}
-        // ensure tooltip is always above the chart
-        valuePrefix={showUsd ? "$" : ""}
-        valueSuffix={showUsd ? "" : " Gwei"}
-        positioner={tooltipPositioner}
-      />
-    </HighchartsChart>
+//       />
+//       <YAxis
+//         visible={true}
+//         type="linear"
+//         gridLineWidth={1}
+//         gridLineColor={"#5A6462"}
+//         gridLineDashStyle={"Solid"}
+//         startOnTick={true}
+//         endOnTick={true}
+//         tickAmount={2}
+//         gridZIndex={10}
+//         min={0}
+//         labels={{
+//           distance: 10,
+//           align: "right",
+//           useHTML: true,
+//           style: {
+//             whiteSpace: "nowrap",
+//             textAlign: "right",
+//             color: "rgb(215, 223, 222)",
+//             fontSize: "10px",
+//             fontWeight: "700",
+//             fontFamily: "Fira Sans",
+//           },
+//         }}
+//         zoomEnabled={false}
+//       >
+//         <ColumnSeries
+//           type="column"
+//           data={totalTPSLive}
+//           color={{
+//             linearGradient: { x1: 0, y1: 1, x2: 0, y2: 0 },
+//             stops: [
+//               [0, '#10808C'],
+//               [1, '#1DF7EF']
+//             ]
+//           }}
+//           shadow={{
+//             color: '#CDD8D3',
+//             offsetX: 0,
+//             offsetY: 0,
+//             opacity: 0.05,
+//             width: 2
+//           }}
 
-  </HighchartsProvider>;
-});
+//           // pointPadding={4}
+//           // pointWidth={8}
+//           // groupPadding={0}
+//           colorByPoint={false}
+//           borderRadius={0}
+//           borderColor={"transparent"}
+//           animation={false}
+//         />
+//       </YAxis>
+//       <XAxis
+//         type="linear"
+//         gridLineWidth={0}
+//         lineWidth={0}
+//         tickLength={10}
+//         labels={{
+//           enabled: false
+//         }}
+//         min={0}
+//         max={39}
+//         tickColor={"#5A6462"}
 
-TPSChart.displayName = "TPSChart";
+//         tickWidth={0}
+//       />
+//       <Tooltip
+//         useHTML={true}
+//         shared={true}
+//         split={false}
+//         followPointer={true}
+//         followTouchMove={true}
+//         backgroundColor={"#2A3433EE"}
+//         padding={0}
+//         hideDelay={300}
+//         stickOnContact={true}
+//         shape="rect"
+//         borderRadius={12}
+//         borderWidth={0}
+//         outside={true}
+//         shadow={{
+//           color: "black",
+//           opacity: 0.015,
+//           offsetX: 2,
+//           offsetY: 2,
+//         }}
+//         style={{
+//           color: "rgb(215, 223, 222)",
+//         }}
+//         formatter={tooltipFormatter}
+//         // ensure tooltip is always above the chart
+//         valuePrefix={showUsd ? "$" : ""}
+//         valueSuffix={showUsd ? "" : " Gwei"}
+//         positioner={tooltipPositioner}
+//       />
+//     </HighchartsChart>
+
+//   </HighchartsProvider>;
+// });
+
+// TPSChart.displayName = "TPSChart";
 
 interface ChainTransitionItemProps {
   chainId: string;
@@ -926,22 +958,22 @@ const ChainTransitionItem = React.memo(({
 
   const displayValue = useMemo(() => {
     if (type === 'tps') {
-      return Intl.NumberFormat('en-US', {
+      return Intl.NumberFormat('en-GB', {
         minimumFractionDigits: 1,
         maximumFractionDigits: 1
       }).format(value);
     } else {
-      if(showUsd) {
-        if(value < 0.0001) {
+      if (showUsd) {
+        if (value < 0.0001) {
           return '< $0.0001';
         } else {
-          return `$${Intl.NumberFormat('en-US', {
+          return `$${Intl.NumberFormat('en-GB', {
             maximumFractionDigits: 4,
             minimumFractionDigits: 4
           }).format(value)}`;
         }
       } else {
-        return Intl.NumberFormat('en-US', { 
+        return Intl.NumberFormat('en-GB', {
           minimumFractionDigits: 0,
           maximumFractionDigits: 0
         }).format(value * 1000000000);
@@ -1006,6 +1038,7 @@ interface RealTimeMetricsProps {
 const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   const { chainData, globalMetrics, lastUpdated, connectionStatus } = useSSEMetrics();
   const { AllChainsByKeys } = useMaster();
+  const history = useSWR<HistoryData>("https://sse.growthepie.com/api/history")
 
   // Cached data state to maintain previous values when SSE fails
   const [cachedData, setCachedData] = useState<{
@@ -1036,6 +1069,9 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     chainsCostHistory: {} as { [key: string]: number[] },
     chainsTPSHistory: {} as { [key: string]: number[] },
   });
+
+  // Track whether we've initialized with historical data
+  const [hasInitializedWithHistory, setHasInitializedWithHistory] = useState(false);
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [showChainsTPS, setShowChainsTPS] = useSearchParamBoolean("tps", false, {
@@ -1120,20 +1156,17 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
 
   // Optimized event handlers
   const handleToggleTPS = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+
     setShowChainsTPS(!showChainsTPS);
   }, [showChainsTPS, setShowChainsTPS]);
 
   const handleToggleCost = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+
     setShowChainsCost(!showChainsCost);
   }, [showChainsCost, setShowChainsCost]);
 
   const handleToggleEvents = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+
     setShowEvents(!showEvents);
   }, [showEvents, setShowEvents]);
 
@@ -1163,17 +1196,36 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     }));
   }, []);
 
-  // Optimized effects
+  // Initialize totalTPSLive with historical data when available
+  useEffect(() => {
+    if (!history.data?.history || hasInitializedWithHistory) return;
+
+    const historicalTPS = history.data.history
+      .slice(0, 40)
+      .map(item => item.tps || 0);
+
+    if (historicalTPS.length > 0) {
+      setHistoryState(prev => ({
+        ...prev,
+        totalTPSLive: historicalTPS,
+      }));
+      setHasInitializedWithHistory(true);
+    }
+  }, [history.data, hasInitializedWithHistory]);
+
+
+
+  // Optimized effects - append SSE data
   useEffect(() => {
     if (!activeGlobalMetrics) return;
 
-    const ethCostValue = showUsd 
-        ? activeGlobalMetrics.ethereum_tx_cost_usd 
-        : activeGlobalMetrics.ethereum_tx_cost_eth;
-      
-      const layer2CostValue = showUsd 
-        ? activeGlobalMetrics.layer2s_tx_cost_usd 
-        : activeGlobalMetrics.layer2s_tx_cost_eth;
+    const ethCostValue = showUsd
+      ? activeGlobalMetrics.ethereum_tx_cost_usd
+      : activeGlobalMetrics.ethereum_tx_cost_eth;
+
+    const layer2CostValue = showUsd
+      ? activeGlobalMetrics.layer2s_tx_cost_usd
+      : activeGlobalMetrics.layer2s_tx_cost_eth;
 
     setHistoryState(prev => ({
       ...prev,
@@ -1232,7 +1284,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   }, [activeChainData, showUsd]);
 
   // Don't show anything until we have initial data
-  if (!cachedData.hasInitialData) {
+  if (!cachedData.hasInitialData && !hasInitializedWithHistory) {
     return null;
   }
 
@@ -1246,8 +1298,8 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
       )}
 
       {(
-        <div className='grid grid-cols-3 gap-[15px] w-full'>
-          <div className="col-span-3 2xl:col-span-1">
+        <div className='grid grid-cols-3 gap-[15px] w-full @container'>
+          <div className="col-span-3 @[1040px]:col-span-1">
             <EthereumUptimeCard
               selectedBreakdownGroup={selectedBreakdownGroup}
               eventHover={uiState.eventHover}
@@ -1259,7 +1311,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
               handleToggleEvents={handleToggleEvents}
             />
           </div>
-          <div className="flex flex-col lg:flex-row gap-[15px] col-span-3 2xl:col-span-2">
+          <div className="flex flex-col lg:flex-row gap-[15px] col-span-3 @[1040px]:col-span-2">
             <EthereumEcosystemTPSCard
               selectedBreakdownGroup={selectedBreakdownGroup}
               showChainsTPS={showChainsTPS}
