@@ -55,7 +55,7 @@ export const TPSChart = React.memo(({ totalTPSLive }: TPSChartProps) => {
   useLayoutEffect(() => {
     const timer = setTimeout(() => {
       chartRef.current?.getEchartsInstance().resize();
-    }, 100);
+    }, 200);
 
     // Cleanup function: clears the timeout if the component unmounts
     return () => {

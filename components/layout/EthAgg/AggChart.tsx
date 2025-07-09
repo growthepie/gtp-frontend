@@ -409,6 +409,7 @@ export function AggChart({
     // Final bounds checking
     tooltipX = Math.max(gridLeft + margin, Math.min(tooltipX, gridRight - tooltipWidth - margin));
     tooltipY = y - tooltipHeight / 3;
+
     if (metricName === "# Layer 2s Live") {
       tooltipY = y - 50;
     }
@@ -422,6 +423,10 @@ export function AggChart({
     let heightClassNames = "min-h-[50px]";
     if (metricName === "# Layer 2s Live") {
       heightClassNames = "min-h-[50px]";
+    }
+
+    if(isMobile){
+      tooltipY = 0;
     }
 
     return (

@@ -35,8 +35,8 @@ interface GTPTooltipNewProps {
 const GTPTooltipSizeClassMap = {
   fit: "w-fit",
   sm: "w-[245px]",
-  md: "w-[350px]",
-  lg: "w-[350px] md:w-[460px]",
+  md: "w-[350px] max-w-[calc(100vw-30px)]",
+  lg: "w-[350px] md:w-[460px] max-w-[calc(100vw-30px)]",
 }
 
 export const GTPTooltipNew = ({

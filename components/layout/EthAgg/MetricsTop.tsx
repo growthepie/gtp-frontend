@@ -91,46 +91,47 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
 }) => {
   // The button at the bottom for expanding/collapsing the card
 
-  const isMobile = useMediaQuery("(max-width: 768px)"); 
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const ExpandButton = (
-      <div
-        className="absolute bottom-0 left-0 right-0 w-full py-[15px] px-[30px] h-fit flex items-center justify-center z-10 cursor-pointer"
-        onClick={(e) => {
-          // Don't expand if clicking on the tooltip trigger
-          const target = e.target as HTMLElement;
-          const isTooltipTrigger = target.closest('[data-tooltip-trigger]');
-          if (!isTooltipTrigger || !isMobile) {
-            onToggleExpand(e);
-          }
-        }}
-      >
+    <div
+      className="absolute bottom-0 left-0 right-0 w-full py-[15px] px-[30px] h-fit flex items-center justify-center z-10 cursor-pointer"
+      onClick={(e) => {
+        // Don't expand if clicking on the tooltip trigger
+        const target = e.target as HTMLElement;
+        const isTooltipTrigger = target.closest('[data-tooltip-trigger]');
+        if (!isTooltipTrigger || !isMobile) {
+          onToggleExpand(e);
+        }
+      }}
+    >
       <div className="flex items-center justify-between w-full">
         <div className="w-[15px] h-fit" />
         <div className={`pointer-events-none transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
           <GTPIcon icon="gtp-chevrondown-monochrome" size="md" className="text-[#5A6462]" />
         </div>
-        
-          {/* Default info icon can be overridden by the infoSlot prop */}
-                 <div className='w-[15px] h-fit z-30'>
-           <GTPTooltipNew
-             placement="top-start"
-             allowInteract={true}
-             trigger={
-               <div 
-                 className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'}`}
-                 data-tooltip-trigger
-               >
-                 <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-[#5A6462]" />
-               </div>
-             }
+
+        {/* Default info icon can be overridden by the infoSlot prop */}
+        <div className='w-[15px] h-fit z-30'>
+          <GTPTooltipNew
+            placement="top-start"
+            size="md"
+            allowInteract={true}
+            trigger={
+              <div
+                className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'}`}
+                data-tooltip-trigger
+              >
+                <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-[#5A6462]" />
+              </div>
+            }
             containerClass="flex flex-col gap-y-[10px]"
             positionOffset={{ mainAxis: 0, crossAxis: 20 }}
 
           >
             <div>
-            <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
-              {infoSlot}
-            </TooltipBody>
+              <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
+                {infoSlot}
+              </TooltipBody>
             </div>
           </GTPTooltipNew>
         </div>
@@ -400,8 +401,8 @@ export const EthereumEcosystemTPSCard = React.memo(({
           </div>
 
           {/* <div className={`justify-between ${isCompact ? 'hidden' : 'flex'} w-[60%]`}> */}
-            <div className='numbers-xs flex items-center gap-x-1'><span className='text-xs'>24h:</span>{activeGlobalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
-            <div className='numbers-xs flex items-center gap-x-1'><span className='text-xs'>ATH:</span>{activeGlobalMetrics.total_tps_ath?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
+          <div className='numbers-xs flex items-center gap-x-1'><span className='text-xs'>24h:</span>{activeGlobalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
+          <div className='numbers-xs flex items-center gap-x-1'><span className='text-xs'>ATH:</span>{activeGlobalMetrics.total_tps_ath?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
           {/* </div> */}
         </div>
         <div className={`relative transition-height duration-500 w-full ${isCompact ? 'h-0 overflow-hidden' : 'h-[58px] overflow-visible '}`}>
