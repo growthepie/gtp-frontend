@@ -26,7 +26,7 @@ export default function SwiperContainer({
     landing: "h-[145px] md:h-[183px]",
     "data-availability": "h-[232px]",
     economics: "h-[197px]",
-    "meet-layer-2s": "h-[255px]",
+    "meet-layer-2s": "h-[270px]",
   };
 
   const splideRef = React.useRef<Splide>(null);
