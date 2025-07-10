@@ -158,8 +158,6 @@ export const CircleChart = ({ title, data, valuePrefix = "", size = 250, strokeW
           let displayValue = y;
           // let color = colors ? colors[point.index] : point.color;
 
-          console.log("point", point);
-
           const svgLegend = `
           <svg width="16" height="6">
             <rect width="16" height="6" class="${point.className}" />
