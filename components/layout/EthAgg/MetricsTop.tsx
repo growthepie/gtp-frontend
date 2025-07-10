@@ -171,6 +171,7 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
   const [currentTime, setCurrentTime] = useState(new Date().getTime());
   const [isEventsHovered, setIsEventsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
   // Update the time every second for live counter
   useEffect(() => {
     const interval = setInterval(() => {
@@ -276,7 +277,12 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
 
   // Define the expanded content to pass to the container
   const expandedContent = (
-    <div className={`relative flex flex-col overflow-hidden gap-y-[5px] transition-height duration-500 -mx-[15px] bg-[#1F2726] rounded-b-[15px] ${showEvents ? 'pb-[10px]' : 'pb-0'} ${isCompact ? 'h-0' : 'h-auto'}`}>
+    <div 
+      className={`relative flex flex-col overflow-hidden gap-y-[5px] transition-[max-height] duration-500 -mx-[15px] bg-[#1F2726] rounded-b-[15px] ${showEvents ? 'pb-[10px]' : 'pb-0'}`}
+      style={{
+        maxHeight: showEvents ? `${EXPANDED_LIST_HEIGHT+10}px` : `${UNEXPANDED_LIST_HEIGHT+10}px`,
+      }}
+    >
       <div
         className={`flex flex-col gap-y-[2.5px] px-[15px] transition-height duration-300 overflow-y-hidden ${!showEvents && !isCompact ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''}`}
         style={{
@@ -623,28 +629,53 @@ const EventIcon = ({ event, eventHover, index, eventExpanded }: { event: Ethereu
 
   const showCalendar = isThisEventHovered || isThisEventExpanded;
 
-  return (
-    <div className="relative min-w-[24px] min-h-[32px]">
-      {/* Calendar */}
-      <span className='absolute inset-0 '></span>
-      <div className={`absolute inset-0 transition-all duration-300 ease-in-out top-[8px] ${showCalendar
-        ? 'opacity-100 scale-100'
-        : 'opacity-0 scale-90 pointer-events-none'
-        }`}>
-        <Image src={CalendarIcon} alt="Calendar" width={24} height={24} />
-        <div className='absolute text-[#1F2726] -top-[0.5px] left-0 right-0 heading-small-xxxxxs text-center'>
-          {getMonthDisplay(event.date)}
-        </div>
-        <div className='absolute text-[#1F2726] bottom-[5px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] bg-clip-text text-transparent left-0 right-0 numbers-xxxs text-center'>
-          {Intl.DateTimeFormat('en-GB', { day: 'numeric' }).format(new Date(event.date))}
-        </div>
-      </div>
 
+  const svgClasses = showCalendar ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none';
+
+  const circleClasses = !showCalendar ? 'opacity-100 scale-100' : 'opacity-0 scale-75 pointer-events-none';
+
+
+  return (
+    <div className="relative flex items-end size-[24px]">
+      {/* Calendar */}
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={`transition-[opacity,scale] duration-300 ease-in-out ${svgClasses}`}>
+        <g clip-path="url(#clip0_1314_55745)">
+          <path fill-rule="evenodd" clip-rule="evenodd"
+            d="M0 20V7H1.5V20C1.5 21.3807 2.61929 22.5 4 22.5H16V20C16 17.7909 17.7909 16 20 16H22.5V7H24V16L16 24H4C1.79086 24 0 22.2091 0 20ZM17 20C17 18.3431 18.3431 17 20 17H21.5858L17 21.5858V20Z"
+            fill="url(#paint0_linear_1314_55745)" />
+          <path fill-rule="evenodd" clip-rule="evenodd"
+            d="M20 0C22.2091 0 24 1.79086 24 4V7H0V4C2.57702e-07 1.79086 1.79086 0 4 0H20Z"
+            fill="url(#paint1_linear_1314_55745)" />
+        </g>
+        <text x="50%" y="4" fill='#1F2726' text-anchor="middle" dominant-baseline="middle" font-size="7" font-weight="bold" className='font-raleway'>
+          {getMonthDisplay(event.date)}
+        </text>
+        <text x="50%" y="14" fill='url(#orange-day-gradient)' text-anchor="middle" dominant-baseline="middle" font-size="10" font-weight="medium" className='numbers-xxs'>
+          {Intl.DateTimeFormat('en-GB', { day: 'numeric' }).format(new Date(event.date))}
+        </text>
+        <defs>
+          <linearGradient id="paint0_linear_1314_55745" x1="12" y1="7" x2="12" y2="24"
+            gradientUnits="userSpaceOnUse">
+            <stop stop-color="#10808C" />
+            <stop offset="1" stop-color="#1DF7EF" />
+          </linearGradient>
+          <linearGradient id="paint1_linear_1314_55745" x1="12" y1="0" x2="12" y2="7"
+            gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FE5468" />
+            <stop offset="1" stop-color="#FFDF27" />
+          </linearGradient>
+          <linearGradient id="orange-day-gradient"
+            gradientUnits="objectBoundingBox" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#FE5468" />
+            <stop offset="1" stop-color="#FFDF27" />
+          </linearGradient>
+          <clipPath id="clip0_1314_55745">
+            <rect width="24" height="24" fill="white" />
+          </clipPath>
+        </defs>
+      </svg>
       {/* Circle */}
-      <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ease-in-out ${!showCalendar
-        ? 'opacity-100 scale-100'
-        : 'opacity-0 scale-75 pointer-events-none'
-        }`}>
+      <div className={`absolute inset-0 flex items-center justify-center transition-[opacity,transform] duration-300 ease-in-out ${circleClasses}`}>
         <div className='w-[8px] h-[8px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] rounded-full'></div>
       </div>
     </div>
@@ -653,42 +684,38 @@ const EventIcon = ({ event, eventHover, index, eventExpanded }: { event: Ethereu
 
 const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpanded, handleToggleEventExpansion, event, index, nextEvent }: EventItemProps) => {
   const isExpanded = eventExpanded === eventKey;
-  const eventLength = event.description?.length || 0;
   return (
-    <div className={`transition-all flex flex-col duration-500 cursor-pointer ${isExpanded ? 'max-h-[200px] delay-0' : 'max-h-[28px] delay-1000'} w-full`}
+    <div className={`relative transition-all flex flex-col duration-500 cursor-pointer ${isExpanded ? 'max-h-[230px]' : 'min-h-[28px] max-h-[38px]'} w-full`}
       onMouseEnter={() => setEventHover(eventKey)}
       onMouseLeave={() => setEventHover(null)}
       onClick={() => handleToggleEventExpansion(eventKey)}
     >
-      <div className={`${isExpanded ? 'max-h-[50px]' : 'h-0'}  flex relative items-center top-[2px] w-[24px] justify-center overflow-hidden gap-x-[2px] text-xxxs`}>{Intl.DateTimeFormat('en-GB', { year: 'numeric' }).format(new Date(event.date))}</div>
+      <div className={`${isExpanded ? 'max-h-[50px]' : 'h-0'} flex relative items-center top-[2px] w-[24px] justify-center overflow-hidden gap-x-[2px] text-xxxs mb-[5px]`}>{Intl.DateTimeFormat('en-GB', { year: 'numeric' }).format(new Date(event.date))}</div>
       <div
-        className={`flex items-start gap-x-[5px] min-h-[32px] h-fit ${eventHover === eventKey || ((index === 0 && eventExpanded === null)) ? 'text-xs' : 'text-xxxs text-[#5A6462]'
-          } w-fit`}
+        className={`flex items-start gap-x-[5px] ${eventHover === eventKey || ((index === 0 && eventExpanded === null)) ? 'text-xs' : 'text-xxxs text-[#5A6462]'} w-fit`}
 
       >
         <EventIcon event={event} eventHover={eventHover} index={index} eventExpanded={eventExpanded} />
-        <div className={`relative pt-[12px] mb-[5px] ${eventHover === eventKey || ((eventExpanded === eventKey || (index === 0 && eventExpanded === null))) ? 'heading-small-xs text-[#C8D8D3]' : 'heading-small-xxxs text-[#5A6462]'} `}>{event.title}</div>
+        <div className={`relative h-full flex items-start pt-[5px] ${eventHover === eventKey || ((eventExpanded === eventKey || (index === 0 && eventExpanded === null))) ? 'heading-small-xs text-[#C8D8D3]' : 'heading-small-xxxs text-[#5A6462]'} `}>{event.title}</div>
       </div>
 
 
-      <div className={`relative flex w-full justify-between pl-0 transition-[max-height,opacity] duration-500 overflow-hidden ${isExpanded ? 'max-h-[200px] mt-0 opacity-100' : 'max-h-0 mt-0 opacity-0'}`}>
-        <div className='absolute left-0 top-0 flex flex-col justify-between gap-y-[4px] h-full overflow-y-hidden min-w-[24px] max-w-[24px] items-center '>
-          <div className='flex flex-col gap-y-[6px] overflow-y-hidden pt-1'>
-            {Array.from({ length: 20 }).map((_, i) => (
-              <div key={i + "event-item-description"} className='bg-[#5A6462] w-[2px] h-[2px] rounded-full flex-shrink-0' />
-            ))}
-          </div>
-          <div className='rounded-full min-h-[12px] text-xxxs text-[#5A6462]'>{nextEvent ? new Date(nextEvent.date).toLocaleDateString('en-GB', { year: 'numeric' }) : ''}</div>
-        </div>
-        {/* <div className={`text-xxs flex h-full items-center pl-1.5 w-full ${eventLength > 100 ? 'pb-0' : 'pb-2'}`}> */}
-        <div className={`pl-[30px] text-xs flex items-center w-full ${eventExpanded === eventKey ? 'pb-[0px]' : 'pb-0'}`}>
+      <div className={`flex w-full justify-between pl-0 transition-[max-height,opacity] duration-500 overflow-hidden ${isExpanded ? 'max-h-[200px] mt-0 opacity-100' : 'max-h-0 mt-0 opacity-0'}`}>
+        <div className={`pl-[30px] text-xs flex items-center w-full mt-[5px]`}>
           <div className="leading-relaxed overflow-y-auto pb-[15px]">
             {event.description || event.title}
-            {/* Genesis of Ethereum: bla bla bla bla bla bla bla bla bla bla... This is an events text and provides further details about the upgrades, etc. Genesis of Ethereum: bla bla bla bla bla bla bla bla bla bla... This is an events text and provides further details about the upgrades, etc. Genesis of Ethereum: bla bla bla bla bla bla bla bla bla bla... This is an events text and provides further details about the upgrades, etc. */}
           </div>
         </div>
       </div>
-
+      {/* Dots on the left side */}
+      <div className={`absolute left-0 top-[38px] bottom-[-10px] flex flex-col justify-between gap-y-[4px] overflow-y-hidden min-w-[24px] max-w-[24px] items-center ${isExpanded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500`}>
+        <div className='flex flex-col gap-y-[6px] overflow-y-hidden pt-1'>
+          {Array.from({ length: 20 }).map((_, i) => (
+            <div key={i + "event-item-description"} className='bg-[#5A6462] w-[2px] h-[2px] rounded-full flex-shrink-0' />
+          ))}
+        </div>
+        <div className='rounded-full text-xxxs text-[#5A6462]'>{nextEvent ? new Date(nextEvent.date).toLocaleDateString('en-GB', { year: 'numeric' }) : ''}</div>
+      </div>
     </div>
   );
 });
