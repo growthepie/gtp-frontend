@@ -409,6 +409,7 @@ export function AggChart({
     // Final bounds checking
     tooltipX = Math.max(gridLeft + margin, Math.min(tooltipX, gridRight - tooltipWidth - margin));
     tooltipY = y - tooltipHeight / 3;
+
     if (metricName === "# Layer 2s Live") {
       tooltipY = y - 50;
     }
@@ -422,6 +423,10 @@ export function AggChart({
     let heightClassNames = "min-h-[50px]";
     if (metricName === "# Layer 2s Live") {
       heightClassNames = "min-h-[50px]";
+    }
+
+    if(isMobile){
+      tooltipY = 0;
     }
 
     return (
@@ -656,7 +661,7 @@ export function AggChart({
 
           <div className={`flex items-center gap-x-[5px] pr-[4px] sm:pr-[4px]`} style={{ marginRight: allChartCoordinates[chartKey]?.x && allChartCoordinates["tps"]?.x ? `${allChartCoordinates["tps"]?.x - allChartCoordinates[chartKey]?.x}px` : "0px" }}>
             <div className='numbers-lg sm:numbers-xl bg-gradient-to-b bg-[#CDD8D3] bg-clip-text text-transparent'>{totalValue}</div>
-            <div ref={circleRef} className='w-[9px] h-[9px] sm:w-[9px] sm:h-[9px] rounded-full z-chart bg-[#CDD8D3]' />
+            <div ref={circleRef} className='w-[9px] h-[9px] sm:w-[9px] sm:h-[9px] rounded-full z-chart bg-transparent' />
           </div>
 
           {shareValue && (
@@ -774,14 +779,23 @@ export function AggChart({
         )}
         {lastDataPointPixelCoords && lastDataPointPixelCoords.length === 3 && (
           <svg
-            className='absolute top-[-41px] left-0 w-full h-full pointer-events-none z-10'
+            className='absolute top-[-46px] left-0 w-full h-full pointer-events-none z-10'
             // The SVG viewport matches the chart container dimensions
           >
+            <circle
+              cx={lastDataPointPixelCoords[0]} // X position
+              cy={5} // Y position (center of the circle in the header)
+              r={4.5} // Circle radius
+              fill="#CDD8D3" // Circle color (kept from your original implementation)
+              stroke="#CDD8D3" // Circle stroke color (kept from your original implementation)
+              strokeWidth="1"
+            />
+            {/* Vertical dashed line from the circle to the data point */}
             <line
               x1={lastDataPointPixelCoords[0]} // X position
               y1={lastDataPointPixelCoords[2]} // Start Y (center of the circle in the header)
               x2={lastDataPointPixelCoords[0]} // X position (same for a vertical line)
-              y2={lastDataPointPixelCoords[1] + 41} // End Y (the data point on the chart)
+              y2={lastDataPointPixelCoords[1] + 46} // End Y (the data point on the chart)
               stroke="#CDD8D3" // Line color (kept from your original implementation)
               strokeWidth="1"
               strokeDasharray="2 2" // 2px dash, 2px gap. You can adjust this!
