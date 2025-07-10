@@ -8,11 +8,25 @@ import Link from "next/link";
 import { Metadata } from "next";
 import { getPageMetadata } from "@/lib/metadata";
 
-export async function generateMetadata(): Promise<Metadata> {  
+type Props = {
+  params: Promise<{ tab: string }>,
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const tab = (await params).tab;
+
   const metadata = await getPageMetadata(
-    '/ethereum-ecosystem',
+    `/ethereum-ecosystem/${tab}`,
     {}
   );
+
+  if (!metadata) {
+    return {
+      title: "Ethereum Ecosystem",
+      description: "Explore the Ethereum ecosystem, including projects, applications, and more.",
+    };
+  }
+
   return {
     title: metadata.title,
     description: metadata.description,
