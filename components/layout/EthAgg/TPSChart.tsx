@@ -192,7 +192,7 @@ export const TPSChart = React.memo(({ totalTPSLive }: TPSChartProps) => {
           type: 'bar',
           data: totalTPSLive,
           animation: false,
-          barGap: '3px',
+          barCategoryGap: '3px',
           itemStyle: {
             borderRadius: 0,
             color: {
