@@ -395,13 +395,13 @@ export const EthereumEcosystemTPSCard = React.memo(({
 
       <div className='relative flex flex-col gap-y-[30px] mb-[20px]'>
         <div className={`grid ${isCompact ? 'grid-cols-[0fr_0fr_1fr] ' : 'grid-cols-[1fr_1fr_1fr] '} justify-between items-center transition-[grid-template-columns] duration-500`}>
-        <div className={`numbers-xs flex flex-col gap-x-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}>
+        <div className={`flex flex-col gap-y-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}>
           <div className='heading-small-xxxs text-[#5A6462]'>24h Peak</div>
-          <div>{activeGlobalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
+          <div className='numbers-sm'>{activeGlobalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
         </div>
-        <div className={`numbers-xs flex flex-col gap-x-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'}`}>
+        <div className={`flex flex-col gap-y-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'}`}>
           <div className='heading-small-xxxs text-[#5A6462]'>All-Time High</div>
-          <div>{activeGlobalMetrics.total_tps_ath?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
+          <div className='numbers-sm'>{activeGlobalMetrics.total_tps_ath?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
         </div>
         <div className={`flex flex-col ${isCompact ? 'items-start' : 'items-end '} transition-[justify-items] duration-500`}>
           <div className='flex flex-1 gap-x-1 numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent whitespace-nowrap'>
