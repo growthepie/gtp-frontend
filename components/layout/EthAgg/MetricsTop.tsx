@@ -393,13 +393,13 @@ export const EthereumEcosystemTPSCard = React.memo(({
         {isCompact ? 'Ecosystem Transactions Per Second' : 'Ethereum Ecosystem TPS'}
       </div>
 
-      <div className='flex flex-col gap-y-[30px] mb-[20px]'>
-        <div className="flex flex-row justify-between">
-        <div className='numbers-xs flex flex-col gap-x-1'>
+      <div className='relative flex flex-col gap-y-[30px] mb-[20px]'>
+        <div className={`grid ${isCompact ? 'grid-cols-[0fr_0fr_1fr] ' : 'grid-cols-[1fr_1fr_1fr] '} justify-between items-center transition-[grid-template-columns] duration-500`}>
+        <div className={`numbers-xs flex flex-col gap-x-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}>
           <div className='heading-small-xxxs text-[#5A6462]'>24h Peak</div>
           <div>{activeGlobalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
         </div>
-        <div className='numbers-xs flex flex-col gap-x-1'>
+        <div className={`numbers-xs flex flex-col gap-x-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'}`}>
           <div className='heading-small-xxxs text-[#5A6462]'>All-Time High</div>
           <div>{activeGlobalMetrics.total_tps_ath?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
         </div>
@@ -408,7 +408,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
               <div>{Intl.NumberFormat('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(activeGlobalMetrics.total_tps || 0)}</div>
               <div className={`${isCompact ? '' : ''}`}>TPS</div>
             </div>
-            {isCompact && <div className='heading-small-xs text-[#5A6462] pt-[5px] h-0 overflow-visible'>all chains combined</div>}
+            {isCompact && <div className='absolute heading-small-xs text-[#5A6462] pt-[5px] h-0 overflow-visible'>all chains combined</div>}
           </div>
         </div>
         <div className={`relative transition-height duration-500 w-full ${isCompact ? 'h-0 overflow-hidden' : 'h-[63px] overflow-visible '}`}>

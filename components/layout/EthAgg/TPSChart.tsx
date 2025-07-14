@@ -85,7 +85,7 @@ export const TPSChart = React.memo(({ totalTPSLive }: TPSChartProps) => {
     return {
       backgroundColor: 'transparent',
       grid: {
-        left: 42,
+        left: 37,
         right: 0,
         top: 5,
         bottom: 5,
