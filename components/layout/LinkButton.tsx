@@ -34,7 +34,10 @@ export const LinkButton = ({ href, children, icon, iconClassName }: LinkButtonPr
 
   if(icon) {
     return (
-      <Link className="flex py-[2px] px-[3px] bg-[#344240] rounded-full items-center gap-x-[5px] relative top-[1px]" href={href} target={href.includes("http") ? "_blank" : "_self"} onClick={handleClick}>
+      <Link className="flex py-[2px] px-[3px] bg-[#344240] rounded-full items-center gap-x-[5px] relative top-[1px]" href={href} target={href.includes("http") ? "_blank" : "_self"} onClick={(e) => {
+        e.stopPropagation();
+        handleClick();
+      }}>
         <GTPIcon icon={icon} size="sm" className={iconClassName} />
         <div className="text-xxs text-nowrap">{children}</div>
         <GTPIcon icon={"feather:arrow-right" as GTPIconName} size="sm" className="!size-[11px]" containerClassName="!size-[11px]" />
@@ -43,7 +46,10 @@ export const LinkButton = ({ href, children, icon, iconClassName }: LinkButtonPr
   }
 
   return (
-    <Link className="flex py-[2px] pl-[5px] pr-[3px] bg-[#344240] rounded-full items-center gap-x-[5px] relative top-[1px]" href={href} target={href.includes("http") ? "_blank" : "_self"} onClick={handleClick}>
+    <Link className="flex py-[2px] pl-[5px] pr-[3px] bg-[#344240] rounded-full items-center gap-x-[5px] relative top-[1px]" href={href} target={href.includes("http") ? "_blank" : "_self"} onClick={(e) => {
+      e.stopPropagation();
+      handleClick();
+    }}>
       <div className="text-xxs text-nowrap">{children}</div>
       <GTPIcon icon={"feather:arrow-right" as GTPIconName} size="sm" className="!size-[11px]" containerClassName="!size-[11px]" />
     </Link>
