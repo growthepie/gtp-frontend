@@ -1,5 +1,17 @@
 import { QuickBiteData } from '@/lib/types/quickBites';
 
+/**
+ * Test Quick Bite - Example implementation showcasing all available content blocks
+ * 
+ * 📖 For complete documentation on creating Quick Bites, see: ./README.md
+ * 
+ * This file demonstrates:
+ * - All content block types (kpi-cards, charts, iframes, images, code, text)
+ * - Chart configurations (line, column, area charts with different stacking)
+ * - Dynamic value interpolation ({{variableName}})
+ * - Text formatting (headers, bold, callouts, lists)
+ */
+
 const testBite: QuickBiteData = {
   title: "This is a Test Quick Bite",
   subtitle: "Trying out different types of blocks",

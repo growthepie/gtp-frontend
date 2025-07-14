@@ -117,6 +117,11 @@ export default function FocusSwitch({ isMobile, showBorder=false, className}: Fo
                   <div className="text-xxs text-wrap">
                     Toggling between "Total Ecosystem" and "L2 focus" allows you to include Ethereum Mainnet on our pages or to focus solely on Layer 2s.
                   </div>
+                  {!focusSwitchEnabled && (
+                    <div className="text-xxs text-wrap text-forest-400">
+                      Currently disabled because current page encompasses the full Ethereum Ecosystem, therefore the focus switch is not applicable.
+                    </div>
+                  )}
                 </div>
               </div>
             </TooltipContent>
