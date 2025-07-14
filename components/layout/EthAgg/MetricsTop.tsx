@@ -403,13 +403,13 @@ export const EthereumEcosystemTPSCard = React.memo(({
           <div className='heading-small-xxxs text-[#5A6462]'>All-Time High</div>
           <div>{activeGlobalMetrics.total_tps_ath?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
         </div>
-          <div>
-            <div className='flex flex-1 gap-x-1 numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent whitespace-nowrap'>
-              <div>{Intl.NumberFormat('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(activeGlobalMetrics.total_tps || 0)}</div>
-              <div className={`${isCompact ? '' : ''}`}>TPS</div>
-            </div>
-            {isCompact && <div className='absolute heading-small-xs text-[#5A6462] pt-[5px] h-0 overflow-visible'>all chains combined</div>}
+        <div className={`flex flex-col ${isCompact ? 'items-start' : 'items-end '} transition-[justify-items] duration-500`}>
+          <div className='flex flex-1 gap-x-1 numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent whitespace-nowrap'>
+            <div>{Intl.NumberFormat('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(activeGlobalMetrics.total_tps || 0)}</div>
+            <div className={`${isCompact ? '' : ''}`}>TPS</div>
           </div>
+          {isCompact && <div className='h-0 overflow-visible heading-small-xs text-[#5A6462] pt-[5px] whitespace-nowrap'>all chains combined</div>}
+        </div>
         </div>
         <div className={`relative transition-height duration-500 w-full ${isCompact ? 'h-0 overflow-hidden' : 'h-[63px] overflow-visible '}`}>
           <TPSChart totalTPSLive={totalTPSLive} />
