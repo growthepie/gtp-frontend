@@ -22,6 +22,7 @@ import { useMediaQuery } from 'usehooks-ts';
 
 import { TPSChart } from './TPSChart';
 import { throttle } from 'lodash';
+import { LinkButton } from '../LinkButton';
 
 // Define the props type for TopEthAggMetricsComponent
 interface TopEthAggMetricsProps {
@@ -394,18 +395,21 @@ export const EthereumEcosystemTPSCard = React.memo(({
 
       <div className='flex flex-col gap-y-[30px] mb-[20px]'>
         <div className="flex flex-row justify-between">
+        <div className='numbers-xs flex flex-col gap-x-1'>
+          <div className='heading-small-xxxs text-[#5A6462]'>24h Peak</div>
+          <div>{activeGlobalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
+        </div>
+        <div className='numbers-xs flex flex-col gap-x-1'>
+          <div className='heading-small-xxxs text-[#5A6462]'>All-Time High</div>
+          <div>{activeGlobalMetrics.total_tps_ath?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
+        </div>
           <div>
             <div className='flex flex-1 gap-x-1 numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent whitespace-nowrap'>
               <div>{Intl.NumberFormat('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(activeGlobalMetrics.total_tps || 0)}</div>
-              <div className={`${isCompact ? '' : 'hidden'}`}>TPS</div>
+              <div className={`${isCompact ? '' : ''}`}>TPS</div>
             </div>
             {isCompact && <div className='heading-small-xs text-[#5A6462] pt-[5px] h-0 overflow-visible'>all chains combined</div>}
           </div>
-
-          {/* <div className={`justify-between ${isCompact ? 'hidden' : 'flex'} w-[60%]`}> */}
-          <div className='numbers-xs flex items-center gap-x-1'><span className='text-xs'>24h:</span>{activeGlobalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
-          <div className='numbers-xs flex items-center gap-x-1'><span className='text-xs'>ATH:</span>{activeGlobalMetrics.total_tps_ath?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
-          {/* </div> */}
         </div>
         <div className={`relative transition-height duration-500 w-full ${isCompact ? 'h-0 overflow-hidden' : 'h-[63px] overflow-visible '}`}>
           <TPSChart totalTPSLive={totalTPSLive} />
@@ -599,18 +603,14 @@ export const TokenTransferFeeCard = React.memo(({
 
 TokenTransferFeeCard.displayName = 'TokenTransferFeeCard';
 
-interface EventItemProps {
-  eventKey: string;
-  eventHover: string | null;
-  setEventHover: (value: string | null) => void;
-  eventExpanded: string | null;
-  handleToggleEventExpansion: (eventKey: string) => void;
+interface EventIconProps {
   event: EthereumEvents;
+  eventHover: string | null;
   index: number;
-  nextEvent?: EthereumEvents;
+  eventExpanded: string | null;
 }
 
-const EventIcon = ({ event, eventHover, index, eventExpanded }: { event: EthereumEvents, eventHover: string | null, index: number, eventExpanded: string | null }) => {
+const EventIcon = ({ event, eventHover, index, eventExpanded }: EventIconProps) => {
   const getMonthDisplay = (dateString: string) => {
     try {
       const date = new Date(dateString);
@@ -682,6 +682,17 @@ const EventIcon = ({ event, eventHover, index, eventExpanded }: { event: Ethereu
   )
 }
 
+interface EventItemProps {
+  eventKey: string;
+  eventHover: string | null;
+  setEventHover: (value: string | null) => void;
+  eventExpanded: string | null;
+  handleToggleEventExpansion: (eventKey: string) => void;
+  event: EthereumEvents;
+  index: number;
+  nextEvent?: EthereumEvents;
+}
+
 const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpanded, handleToggleEventExpansion, event, index, nextEvent }: EventItemProps) => {
   const isExpanded = eventExpanded === eventKey;
   return (
@@ -701,9 +712,10 @@ const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpand
 
 
       <div className={`flex w-full justify-between pl-0 transition-[max-height,opacity] duration-500 overflow-hidden ${isExpanded ? 'max-h-[200px] mt-0 opacity-100' : 'max-h-0 mt-0 opacity-0'}`}>
-        <div className={`pl-[30px] text-xs flex items-center w-full mt-[5px]`}>
-          <div className="leading-relaxed overflow-y-auto pb-[15px]">
-            {event.description || event.title}
+        <div className={`flex flex-col pl-[30px] text-xs items-center w-full mt-[5px]`}>
+          <div className="leading-relaxed overflow-y-hidden pb-[15px] flex flex-col w-full gap-y-[5px]">
+            <div>{event.description || event.title}</div>
+            {event.source && <div className="flex-1 flex justify-end"><LinkButton href={event.source}>More about this event</LinkButton></div>}
           </div>
         </div>
       </div>
@@ -715,6 +727,7 @@ const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpand
           ))}
         </div>
         <div className='rounded-full text-xxxs text-[#5A6462]'>{nextEvent ? new Date(nextEvent.date).toLocaleDateString('en-GB', { year: 'numeric' }) : ''}</div>
+        
       </div>
     </div>
   );
