@@ -926,9 +926,9 @@ export default function ChainBreakdown({
                 )[0];
                
 
-                console.log(((data[item.key][selectedTimespan].revenue
-                  .total[dataIndex]) /
-                maxRevenue) + " " + item.key);
+                // console.log(((data[item.key][selectedTimespan].revenue
+                //   .total[dataIndex]) /
+                // maxRevenue) + " " + item.key);
 
                 return (
                   <animated.div
