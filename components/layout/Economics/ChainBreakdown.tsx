@@ -103,6 +103,13 @@ export default function ChainBreakdown({
         });
       }
 
+      if (x.includes("EigenDA")) {
+        retObject.push({
+          icon: "customoffchain",
+          label: "EigenDA",
+        });
+      }
+
       if (x.includes("DAC")) {
         retObject.push({
           icon: "committee",
