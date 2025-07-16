@@ -17,12 +17,13 @@ import Image from 'next/image';
 import { GTPTooltipNew, TooltipBody } from '@/components/tooltip/GTPTooltip';
 import { useElementSizeObserver } from '@/hooks/useElementSizeObserver';
 import useSWR from 'swr';
-import { HistoryData } from './types';
+import { ChainMetrics, HistoryData, HistoryItem } from './types';
 import { useMediaQuery } from 'usehooks-ts';
 
 import { TPSChart } from './TPSChart';
 import { throttle } from 'lodash';
 import { LinkButton } from '../LinkButton';
+import moment from 'moment';
 
 // Define the props type for TopEthAggMetricsComponent
 interface TopEthAggMetricsProps {
@@ -88,10 +89,12 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
 }) => {
   // The button at the bottom for expanding/collapsing the card
 
+  const [isExpandButtonHovered, setIsExpandButtonHovered] = useState(false);
+
   const isMobile = useMediaQuery("(max-width: 768px)");
   const ExpandButton = (
     <div
-      className="absolute bottom-0 left-0 right-0 w-full py-[15px] px-[15px] h-fit flex items-center justify-center z-10 cursor-pointer"
+      className="expandable-card-expand-button absolute bottom-0 left-0 right-0 w-full py-[15px] px-[15px] h-fit flex items-center justify-center  z-[999] cursor-pointer"
       onClick={(e) => {
         // Don't expand if clicking on the tooltip trigger
         const target = e.target as HTMLElement;
@@ -139,13 +142,16 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
   return (
     <div className="relative h-full w-full">
       <div
-        className={`w-full bg-[#1F2726] rounded-[15px] transition-all duration-500 flex flex-col py-[15px] px-[30px]
+        className={`expandable-card-container w-full bg-[#1F2726] rounded-[15px] transition-all duration-500 flex flex-col py-[15px] px-[30px]
           ${isExpanded && !isCompact
-            ? 'absolute top-0 left-0 h-auto z-dropdown shadow-card-dark'
+            ? 'absolute top-0 left-0 h-auto z-[1001] shadow-card-dark'
             : 'relative min-h-full overflow-hidden'
           }
+          ${isExpandButtonHovered && '!z-[1001]'}
           ${className}`
         }
+        onMouseEnter={() => setIsExpandButtonHovered(true)}
+        onMouseLeave={() => setIsExpandButtonHovered(false)}
       >
         {/* <div className="relative flex flex-col overflow-hidden gap-y-[5px] p-[15px] pb-[calc(15px+18px)] h-full"> */}
         {children}
@@ -338,54 +344,101 @@ interface EthereumEcosystemTPSCardProps {
   selectedBreakdownGroup: string;
   showChainsTPS: boolean;
   handleToggleTPS: (e: React.MouseEvent) => void;
-  activeGlobalMetrics: any;
-  activeChainData: any;
-  chainsTPSHistory: { [key: string]: number[] };
-  totalTPSLive: number[];
-  AllChainsByKeys: any;
-  showUsd: boolean;
+  // activeGlobalMetrics: any;
+  // activeChainData: any;
+  // chainsTPSHistory: { [key: string]: number[] };
+  // totalTPSLive: number[];
+  // AllChainsByKeys: any;
+  // showUsd: boolean;
 }
+
+// Define the type for a single history item for clarity
+export type TPSChartHistoryItem = {
+  tps: number;
+  timestamp: string;
+};
 
 export const EthereumEcosystemTPSCard = React.memo(({
   selectedBreakdownGroup,
   showChainsTPS,
   handleToggleTPS,
-  activeGlobalMetrics,
-  activeChainData,
-  chainsTPSHistory,
-  totalTPSLive,
-  AllChainsByKeys,
-  showUsd,
 }: EthereumEcosystemTPSCardProps) => {
+  const { AllChainsByKeys } = useMaster();
+  // const [showChainsTPS, setShowChainsTPS] = useSearchParamBoolean("showChainsTPS", false);
+
+  // --- DATA FETCHING ---
+  const { data: initialHistory } = useSWR<HistoryData>("https://sse.growthepie.com/api/history");
+  const { chainData, globalMetrics, lastUpdated } = useSSEMetrics();
+
+  // --- STATE MANAGEMENT ---
+
+  // State for the TPS chart. Combines initial history with live updates.
+  const [tpsHistory, setTpsHistory] = useState<TPSChartHistoryItem[]>([]);
+
+  // 1. Initialize the chart's history from the initial API fetch.
+  // The history is reversed to display time chronologically from left to right.
+  useEffect(() => {
+    if (initialHistory?.history) {
+      setTpsHistory([...initialHistory.history].reverse());
+    }
+  }, [initialHistory]);
+
+  // 2. Append new live data points from the SSE stream to the chart's history.
+  useEffect(() => {
+    if (globalMetrics.total_tps && lastUpdated && tpsHistory.length > 0) {
+      const newPoint: TPSChartHistoryItem = {
+        tps: globalMetrics.total_tps,
+        timestamp: lastUpdated.toISOString(),
+      };
+
+      // Prevent adding duplicate points for the same timestamp
+      if (tpsHistory[tpsHistory.length - 1]?.timestamp !== newPoint.timestamp) {
+        setTpsHistory((prev) => {
+          const updatedHistory = [...prev, newPoint];
+          // Keep the chart performant by only showing the last ~100 data points
+          return updatedHistory.slice(-100);
+        });
+      }
+    }
+  }, [globalMetrics.total_tps, lastUpdated]); // Note: tpsHistory is intentionally omitted from deps
+
   const isCompact = selectedBreakdownGroup === "Ethereum Ecosystem";
   const isHidden = selectedBreakdownGroup === "Builders & Apps";
 
+  // --- MEMOIZED CALCULATIONS ---
+
+  // Correctly derive the sorted list of chains for display directly from the live `chainData`
   const filteredTPSChains = useMemo(() => {
-    return Object.keys(chainsTPSHistory)
-      .filter((chain) => activeChainData?.[chain]?.tps)
-      .sort((a, b) =>
-        chainsTPSHistory[b][chainsTPSHistory[b].length - 1] -
-        chainsTPSHistory[a][chainsTPSHistory[a].length - 1]
-      )
-      .map((chainId, index) => ({
-        chainId,
+    return Object.entries(chainData)
+      .map(([chainId, metrics]) => ({ ...metrics, chainId })) // Add chainId to the object
+      .filter((data) => data.tps && data.tps > 0)
+      .sort((a, b) => (b.tps || 0) - (a.tps || 0))
+      .map((data, index) => ({
+        chainId: data.chainId,
         y: index * 21,
         height: 18,
-      }))
-  }, [chainsTPSHistory, activeChainData]);
+      }));
+  }, [chainData]);
 
   const tpsTransitions = useTransition(filteredTPSChains, {
     key: (item) => item.chainId,
     from: { opacity: 0, height: 0, y: 0 },
-    leave: { opacity: 0, height: 0 },
     enter: ({ y, height }) => ({ opacity: 1, y, height }),
     update: ({ y, height }) => ({ opacity: 1, y, height }),
-    config: { mass: 1, tension: 280, friction: 60 },
+    leave: { opacity: 0, height: 0 },
+    config: { mass: 0.5, tension: 100, friction: 10, duration: 300 },
     trail: 25,
   });
 
+  // const handleToggleTPS = useCallback((e: React.MouseEvent) => {
+  //   e.preventDefault();
+  //   setShowChainsTPS(!showChainsTPS);
+  // }, [showChainsTPS, setShowChainsTPS]);
+
   const UNEXPANDED_LIST_HEIGHT = 80;
   const EXPANDED_LIST_HEIGHT = filteredTPSChains.length * 21 + 24 + 50;
+
+  // --- RENDER LOGIC ---
 
   const content = (
     <>
@@ -394,27 +447,37 @@ export const EthereumEcosystemTPSCard = React.memo(({
       </div>
 
       <div className='relative flex flex-col gap-y-[30px] mb-[20px]'>
-        <div className={`grid ${isCompact ? 'grid-cols-[0fr_0fr_1fr] ' : 'grid-cols-[1fr_1fr_1fr] '} justify-between items-center transition-[grid-template-columns] duration-500`}>
-        <div className={`flex flex-col gap-y-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}>
-          <div className='heading-small-xxxs text-[#5A6462]'>24h Peak</div>
-          <div className='numbers-sm'>{activeGlobalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
-        </div>
-        <div className={`flex flex-col gap-y-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'}`}>
-          <div className='heading-small-xxxs text-[#5A6462]'>All-Time High</div>
-          <div className='numbers-sm'>{activeGlobalMetrics.total_tps_ath?.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || 0} TPS</div>
-        </div>
-        <div className={`flex flex-col ${isCompact ? 'items-start' : 'items-end '} transition-[justify-items] duration-500`}>
-          <div className='flex flex-1 gap-x-1 numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent whitespace-nowrap'>
-            <div>{Intl.NumberFormat('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(activeGlobalMetrics.total_tps || 0)}</div>
-            <div className={`${isCompact ? '' : ''}`}>TPS</div>
+        <div className={`grid ${isCompact ? 'grid-cols-[0fr,0fr,1fr] ' : 'grid-cols-[1fr,1fr,1fr] '} justify-between items-center transition-[grid-template-columns] duration-500`}>
+          {/* 24h Peak */}
+          <div className={`group flex flex-col gap-y-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}>
+            <div className='heading-small-xxxs text-[#5A6462]'>
+              <div className='group-hover:hidden'>24h Peak</div>
+              <div className='hidden group-hover:block'>{moment.utc(globalMetrics.total_tps_24h_high_timestamp).format("D MMM YYYY HH:mm UTC")}</div>
+            </div>
+            <div className='numbers-sm'>{globalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { maximumFractionDigits: 0 }) || 0} TPS</div>
           </div>
-          {isCompact && <div className='h-0 overflow-visible heading-small-xs text-[#5A6462] pt-[5px] whitespace-nowrap'>all chains combined</div>}
-        </div>
-        </div>
-        <div className={`relative transition-height duration-500 w-full ${isCompact ? 'h-0 overflow-hidden' : 'h-[63px] overflow-visible '}`}>
-          <TPSChart totalTPSLive={totalTPSLive} />
+          {/* All-Time High */}
+          <div className={`group flex flex-col gap-y-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'}`}>
+            <div className='heading-small-xxxs text-[#5A6462]'>
+              <div className='group-hover:hidden'>All-Time High</div>
+              <div className='hidden group-hover:block'>{moment.utc(globalMetrics.total_tps_ath_timestamp).format("D MMM YYYY HH:mm UTC")}</div>
+            </div>
+            <div className='numbers-sm'>{globalMetrics.total_tps_ath?.toLocaleString("en-GB", { maximumFractionDigits: 0 }) || 0} TPS</div>
+          </div>
+          {/* Live TPS */}
+          <div className={`flex flex-col ${isCompact ? 'items-start' : 'items-end '} transition-[justify-items] duration-500`}>
+            <div className='flex flex-1 gap-x-1 numbers-2xl bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent whitespace-nowrap'>
+              <div>{Intl.NumberFormat('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(globalMetrics.total_tps || 0)}</div>
+              <div>TPS</div>
+            </div>
+            {isCompact && <div className='h-0 overflow-visible heading-small-xs text-[#5A6462] pt-[5px] whitespace-nowrap'>all chains combined</div>}
+          </div>
         </div>
 
+        {/* TPS Chart - Pass the combined historical and live data */}
+        <div className={`relative transition-height duration-500 w-full ${isCompact ? 'h-0 overflow-hidden' : 'h-[63px] overflow-visible '}`}>
+          <TPSChart data={tpsHistory} />
+        </div>
       </div>
 
       {/* TPS Chains List */}
@@ -427,7 +490,8 @@ export const EthereumEcosystemTPSCard = React.memo(({
           <div className="relative">
             {tpsTransitions((style, { chainId }) => (
               <animated.div key={chainId} style={style} className='absolute w-full'>
-                <ChainTransitionItem chainId={chainId} chainData={activeChainData} AllChainsByKeys={AllChainsByKeys} globalMetrics={activeGlobalMetrics} type="tps" />
+                {/* Pass the complete `chainData` object */}
+                <ChainTransitionItem chainId={chainId} chainData={chainData} AllChainsByKeys={AllChainsByKeys} globalMetrics={globalMetrics} type="tps" />
               </animated.div>
             ))}
           </div>
@@ -521,10 +585,10 @@ export const TokenTransferFeeCard = React.memo(({
   const costTransitions = useTransition(filteredCostChains, {
     key: (item) => `cost-${item.chainId}`,
     from: { opacity: 0, height: 0, y: 0 },
-    leave: { opacity: 0, height: 0 },
     enter: ({ y, height }) => ({ opacity: 1, y, height }),
     update: ({ y, height }) => ({ opacity: 1, y, height }),
-    config: { mass: 1, tension: 280, friction: 60 },
+    leave: { opacity: 0, height: 0 },
+    config: { mass: 0.5, tension: 200, friction: 10, duration: 200 },
     trail: 25,
   });
 
@@ -743,7 +807,7 @@ interface TPSChartProps {
 
 interface ChainTransitionItemProps {
   chainId: string;
-  chainData: any;
+  chainData: Record<string, ChainMetrics>;
   AllChainsByKeys: any;
   globalMetrics: any;
   type: 'tps' | 'cost';
@@ -761,7 +825,7 @@ const ChainTransitionItem = React.memo(({
   const chain = AllChainsByKeys[chainId];
 
   const chainColor = chain?.colors?.dark?.[0] || "#7D8887";
-  const chainName = chain?.name_short || chainData[chainId]?.display_name;
+  const chainName = chain?.name_short || chainData[chainId].display_name;
 
   const value = useMemo(() => {
     if (type === 'tps') {
@@ -833,7 +897,7 @@ const ChainTransitionItem = React.memo(({
       </div>
       <div className='flex items-end w-full justify-end'>
         <div
-          className='h-[2px]'
+          className='h-[2px] transition-[width] duration-300'
           style={{
             width: barWidth,
             backgroundColor: chainColor
@@ -986,11 +1050,11 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     setShowEvents(!showEvents);
   }, [showEvents, setShowEvents]);
 
-  const handleCloseModals = useCallback(() => {
-    setShowChainsCost(false);
-    setShowChainsTPS(false);
-    setShowEvents(false);
-  }, [setShowChainsCost, setShowChainsTPS, setShowEvents]);
+  // const handleCloseModals = useCallback(() => {
+  //   setShowChainsCost(false);
+  //   setShowChainsTPS(false);
+  //   setShowEvents(false);
+  // }, [setShowChainsCost, setShowChainsTPS, setShowEvents]);
 
   const handleToggleEventExpansion = useCallback((eventKey: string) => {
     // if the Uptime section isn't expanded, expand it
@@ -1099,6 +1163,24 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     });
   }, [activeChainData, showUsd]);
 
+  const handleCloseModals = (e: MouseEvent) => {
+    if (e.target instanceof HTMLElement && e.target.closest('.expandable-card-expand-button')) {
+      return;
+    }
+    setShowChainsCost(false);
+    setShowChainsTPS(false);
+    setShowEvents(false);
+  };
+
+  // add an event listener for closing the modals to the page body
+  useEffect(() => {
+    
+    document.body.addEventListener('click', handleCloseModals, true);
+    return () => {
+      document.body.removeEventListener('click', handleCloseModals, true);
+    };
+  }, []);
+
   // Don't show anything until we have initial data
   if (!cachedData.hasInitialData && !hasInitializedWithHistory) {
     return null;
@@ -1107,10 +1189,17 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   return (
     <>
       {(showChainsCost || showChainsTPS || showEvents) && (
+        <>
         <div
-          className='fixed inset-0 bg-[#1F2726]/75 z-dropdown-background'
-          onClick={handleCloseModals}
+          className='fixed inset-0 bg-[#1F2726]/75 z-[1000] pointer-events-none'
         />
+        {/* <div
+          className='fixed inset-0 z-[998] cursor-pointer'
+          onClick={(e) => {
+            handleCloseModals();
+          }}
+        /> */}
+        </>
       )}
 
       {(
@@ -1132,12 +1221,12 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
               selectedBreakdownGroup={selectedBreakdownGroup}
               showChainsTPS={showChainsTPS}
               handleToggleTPS={handleToggleTPS}
-              activeGlobalMetrics={activeGlobalMetrics}
-              activeChainData={activeChainData}
-              chainsTPSHistory={historyState.chainsTPSHistory}
-              totalTPSLive={historyState.totalTPSLive}
-              AllChainsByKeys={AllChainsByKeys}
-              showUsd={showUsd}
+              // activeGlobalMetrics={activeGlobalMetrics}
+              // activeChainData={activeChainData}
+              // chainsTPSHistory={historyState.chainsTPSHistory}
+              // totalTPSLive={historyState.totalTPSLive}
+              // AllChainsByKeys={AllChainsByKeys}
+              // showUsd={showUsd}
             />
             <TokenTransferFeeCard
               selectedBreakdownGroup={selectedBreakdownGroup}
