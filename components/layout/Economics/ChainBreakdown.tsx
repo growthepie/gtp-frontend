@@ -105,7 +105,7 @@ export default function ChainBreakdown({
 
       if (x.includes("EigenDA")) {
         retObject.push({
-          icon: "customoffchain",
+          icon: "da-eigenda-logo-monochrome",
           label: "EigenDA",
         });
       }
