@@ -1,73 +1,64 @@
-import React, { useLayoutEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useLayoutEffect, useMemo, useRef } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { EChartsOption } from 'echarts';
-import { throttle } from 'lodash'; // Make sure lodash is installed: npm install lodash @types/lodash
+import { throttle } from 'lodash';
+
+// It's good practice to define the shape of your data
+type HistoryItem = {
+  tps: number;
+  timestamp: string;
+};
+
+interface TPSChartProps {
+  // The prop is updated to accept an array of HistoryItem objects
+  data: HistoryItem[];
+}
 
 // Your existing formatNumberWithSI function...
 function formatNumberWithSI(num: number): string {
   if (num === 0) {
     return "0";
   }
-
   const sign = num < 0 ? "-" : "";
   const absNum = Math.abs(num);
-
   const tiers = [
     { value: 1e12, symbol: "T" },
     { value: 1e9,  symbol: "B" },
     { value: 1e6,  symbol: "M" },
     { value: 1e3,  symbol: "k" },
   ];
-
   const tier = tiers.find(t => absNum >= t.value);
-
   if (!tier) {
     return sign + Math.round(absNum).toString();
   }
-
   const scaledValue = absNum / tier.value;
   let formattedValue: string;
-
   if (scaledValue < 10) {
     formattedValue = scaledValue.toFixed(1);
   } else {
     formattedValue = Math.round(scaledValue).toString();
   }
-
   if (formattedValue.endsWith(".0")) {
     formattedValue = formattedValue.slice(0, -2);
   }
-
   return sign + formattedValue + tier.symbol;
 }
 
-
-interface TPSChartProps {
-  totalTPSLive: number[];
-}
-
-export const TPSChart = React.memo(({ totalTPSLive }: TPSChartProps) => {
+export const TPSChart = React.memo(({ data }: TPSChartProps) => {
   const chartRef = React.useRef<ReactECharts>(null);
-  const containerRef = useRef<HTMLDivElement>(null); // Ref for the container div
+  const containerRef = useRef<HTMLDivElement>(null);
 
+  // This layout effect for resizing is correct and does not need changes.
   useLayoutEffect(() => {
     const chartInstance = chartRef.current?.getEchartsInstance();
     const container = containerRef.current;
+    if (!chartInstance || !container) return;
 
-    if (!chartInstance || !container) {
-      return;
-    }
-
-    // Throttle the resize function to avoid performance issues on rapid changes
-    const handleResize = throttle(() => {
-      chartInstance.resize();
-    }, 150, { leading: true, trailing: true });
-
-    // Initial resize
-    handleResize();
-
+    const handleResize = throttle(() => chartInstance.resize(), 150);
     const resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(container);
+
+    handleResize(); // Initial resize
 
     return () => {
       handleResize.cancel();
@@ -76,32 +67,26 @@ export const TPSChart = React.memo(({ totalTPSLive }: TPSChartProps) => {
   }, []);
 
   const option = useMemo<EChartsOption>(() => {
-    const dataCount = totalTPSLive.length;
+    // Extract TPS values and timestamps from the data prop
+    const tpsValues = data.map(item => item.tps);
+    const timestamps = data.map(item => item.timestamp);
+    const dataCount = tpsValues.length;
     const startIndex = Math.max(0, dataCount - 40);
 
-    const maxValue = Math.max(...totalTPSLive);
-    const yAxisMax = Math.ceil(maxValue / 100) * 100; // Round up to the nearest 100
+    const maxValue = Math.max(...tpsValues);
+    const yAxisMax = Math.ceil(maxValue / 100) * 100;
 
     return {
       backgroundColor: 'transparent',
-      grid: {
-        left: 37,
-        right: 0,
-        top: 5,
-        bottom: 5,
-        containLabel: false, 
-      },
+      grid: { left: 37, right: 0, top: 5, bottom: 5, containLabel: false },
       xAxis: {
         type: 'category',
         show: false,
+        // Provide timestamps to the x-axis for the tooltip to use
+        data: timestamps,
       },
       yAxis: {
         type: 'value',
-        
-        minorSplitLine: {
-          show: false,
-        },
-        // splitNumber: 1,
         interval: yAxisMax,
         axisLabel: {
           color: 'rgb(215, 223, 222)',
@@ -112,21 +97,11 @@ export const TPSChart = React.memo(({ totalTPSLive }: TPSChartProps) => {
           margin: 10,
           formatter: (value) => [0, yAxisMax].includes(value) ? formatNumberWithSI(value) : '',
         },
-        splitLine: {
-          show: true,
-          lineStyle: {
-            color: '#5A6462',
-            type: 'solid',
-          },
-        },
-        axisLine: {
-          show: false,
-        },
-        axisTick: {
-          show: false,
-        },
+        splitLine: { show: true, lineStyle: { color: '#5A6462', type: 'solid' } },
+        axisLine: { show: false },
+        axisTick: { show: false },
         min: 0,
-        max: yAxisMax, // Round up to the nearest 100
+        max: yAxisMax,
       },
       tooltip: {
         trigger: 'axis',
@@ -137,41 +112,44 @@ export const TPSChart = React.memo(({ totalTPSLive }: TPSChartProps) => {
         backgroundColor: '#2A3433EE',
         borderRadius: 15,
         borderWidth: 0,
-        padding: 0,
+        padding: [10, 12], // Adjusted padding
         textStyle: { color: 'rgb(215, 223, 222)' },
+        // Updated formatter to include the timestamp
         formatter: (params) => {
-          if (!Array.isArray(params) || params.length === 0) {
-            return '';
-          }
+          if (!Array.isArray(params) || params.length === 0) return '';
           
           const point = params[0];
-          if (!point || typeof point.data !== 'number') {
-            return '';
-          }
-          const series = point.seriesName;
+          if (!point || typeof point.data !== 'number') return '';
+          
           const value = point.data as number;
+          const timestamp = point.axisValue as string; // Get timestamp from x-axis
           const gradient = (point.color as any);
           const barColor = gradient?.colorStops?.[1]?.color ?? gradient;
-          
-          const valueSuffix = "TPS";
-          
+
           const formattedValue = new Intl.NumberFormat("en-GB", {
-            notation: "standard",
-            maximumFractionDigits: 2,
-            minimumFractionDigits: 2,
+            maximumFractionDigits: 1,
+            minimumFractionDigits: 1,
           }).format(value);
-          
+
+          // Format the date for display in the tooltip
+          const formattedDate = new Intl.DateTimeFormat("en-GB", {
+            month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+            hour12: false
+          }).format(new Date(timestamp));
+
           return `
-            <div class="p-3 pl-0 text-xs font-raleway">
-              <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${barColor}"></div>
-                <div class="tooltip-point-name text-xs">${series}</div>
+            <div class="text-xs font-raleway flex flex-col gap-y-1">
+              <div class="flex w-full space-x-2 items-center font-medium">
+                <div class="w-2 h-2 rounded-full" style="background-color: ${barColor}"></div>
+                <div class="tooltip-point-name text-xs">Total TPS</div>
                 <div class="flex-1 text-right justify-end flex numbers-xs">
-                  <div class="flex justify-end text-right w-full">
-                    ${formattedValue}
-                    <div class="pl-1">${valueSuffix}</div>
-                  </div>
+                  ${formattedValue}
+                  <span class="pl-1">TPS</span>
                 </div>
+              </div>
+              <div class="text-center text-[#9ca3af] numbers-xs">
+                ${formattedDate.replace(',', ' -')}
               </div>
             </div>`;
         },
@@ -184,13 +162,13 @@ export const TPSChart = React.memo(({ totalTPSLive }: TPSChartProps) => {
           zoomLock: true,
         },
       ],
-
       series: [
         {
           id: 'total-tps',
           name: 'Total Ecosystem',
           type: 'bar',
-          data: totalTPSLive,
+          // Use the extracted TPS values for the series data
+          data: tpsValues,
           animation: false,
           barCategoryGap: '3px',
           itemStyle: {
@@ -203,16 +181,12 @@ export const TPSChart = React.memo(({ totalTPSLive }: TPSChartProps) => {
                 { offset: 1, color: '#1DF7EF' }
               ],
             },
-            shadowBlur: 5,
-            shadowColor: 'rgba(205, 216, 211, 0.05)',
-            shadowOffsetX: 0,
-            shadowOffsetY: 0,
           },
         },
       ],
       animationDuration: 50,
     };
-  }, [totalTPSLive, containerRef.current]);
+  }, [data]); // The hook now depends on the `data` prop
 
   return (
     <div ref={containerRef} className="w-full h-[58px] -mt-[5px]">

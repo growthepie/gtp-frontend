@@ -1,6 +1,7 @@
 // --- Types for SSE Data (adjust based on your actual data structure) ---
 export interface ChainMetrics {
   name: string;
+  display_name: string;
   tps?: number;
   cost?: number;
   tx_cost_native_usd?: number;
