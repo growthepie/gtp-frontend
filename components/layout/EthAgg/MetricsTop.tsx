@@ -359,7 +359,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
   showChainsTPS,
   handleToggleTPS,
 }: EthereumEcosystemTPSCardProps) => {
-  const { AllChainsByKeys } = useMaster();
+  const { AllChainsByKeys, SupportedChainKeys } = useMaster();
   // const [showChainsTPS, setShowChainsTPS] = useSearchParamBoolean("showChainsTPS", false);
 
   // --- DATA FETCHING ---
@@ -407,14 +407,14 @@ export const EthereumEcosystemTPSCard = React.memo(({
   const filteredTPSChains = useMemo(() => {
     return Object.entries(chainData)
       .map(([chainId, metrics]) => ({ ...metrics, chainId })) // Add chainId to the object
-      .filter((data) => data.tps && data.tps > 0)
+      .filter((data) => data.tps && data.tps > 0 && SupportedChainKeys.includes(data.chainId))
       .sort((a, b) => (b.tps || 0) - (a.tps || 0))
       .map((data, index) => ({
         chainId: data.chainId,
         y: index * 21,
         height: 18,
       }));
-  }, [chainData]);
+  }, [chainData, SupportedChainKeys]);
 
   const tpsTransitions = useTransition(filteredTPSChains, {
     key: (item) => item.chainId,
@@ -540,6 +540,7 @@ export const TokenTransferFeeCard = React.memo(({
   AllChainsByKeys,
   showUsd,
 }: TokenTransferFeeCardProps) => {
+  const { SupportedChainKeys } = useMaster();
   const [ethCostHoverIndex, setEthCostHoverIndex] = useState<number | null>(null);
   const [ethCostSelectedIndex, setEthCostSelectedIndex] = useState<number>(17);
   const [l2CostHoverIndex, setL2CostHoverIndex] = useState<number | null>(null);
@@ -565,7 +566,7 @@ export const TokenTransferFeeCard = React.memo(({
       .filter((chain) => {
         const cost = activeChainData?.[chain]?.[costKey];
         const isEthereum = AllChainsByKeys[chain]?.key === 'ethereum';
-        return cost > 0 && !isEthereum;
+        return cost > 0 && !isEthereum && SupportedChainKeys.includes(chain);
       })
       .sort((a, b) =>
         chainsCostHistory[b][chainsCostHistory[b].length - 1] -
@@ -576,7 +577,7 @@ export const TokenTransferFeeCard = React.memo(({
         y: index * 21,
         height: 18,
       }));
-  }, [chainsCostHistory, activeChainData, showUsd, AllChainsByKeys]);
+  }, [chainsCostHistory, activeChainData, showUsd, AllChainsByKeys, SupportedChainKeys]);
 
   const costTransitions = useTransition(filteredCostChains, {
     key: (item) => `cost-${item.chainId}`,
@@ -756,7 +757,7 @@ interface EventItemProps {
 const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpanded, handleToggleEventExpansion, event, index, nextEvent }: EventItemProps) => {
   const isExpanded = eventExpanded === eventKey;
   return (
-    <div className={`event-item relative transition-all flex flex-col duration-500 cursor-pointer ${isExpanded ? 'max-h-[230px]' : 'min-h-[28px] max-h-[38px]'} w-full`}
+    <div className={`relative transition-all flex flex-col duration-500 cursor-pointer ${isExpanded ? 'max-h-[230px]' : 'min-h-[28px] max-h-[38px]'} w-full`}
       onMouseEnter={() => setEventHover(eventKey)}
       onMouseLeave={() => setEventHover(null)}
       onClick={(e) => {
@@ -766,7 +767,7 @@ const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpand
     >
       <div className={`${isExpanded ? 'max-h-[50px]' : 'h-0'} flex relative items-center top-[2px] w-[24px] justify-center overflow-hidden gap-x-[2px] text-xxxs mb-[5px]`}>{Intl.DateTimeFormat('en-GB', { year: 'numeric' }).format(new Date(event.date))}</div>
       <div
-        className={`flex items-start gap-x-[5px] ${eventHover === eventKey || ((index === 0 && eventExpanded === null)) ? 'text-xs' : 'text-xxxs text-[#5A6462]'} w-fit`}
+        className={`event-item flex items-start gap-x-[5px] ${eventHover === eventKey || ((index === 0 && eventExpanded === null)) ? 'text-xs' : 'text-xxxs text-[#5A6462]'} w-fit`}
 
       >
         <EventIcon event={event} eventHover={eventHover} index={index} eventExpanded={eventExpanded} />
