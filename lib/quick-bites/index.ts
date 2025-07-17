@@ -10,7 +10,7 @@ const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "test-bite": testBite,
   "pectra-upgrade": pectraUpgrade,
   "arbitrum-timeboost": arbitrumTimeboost,
-  "shopify-usdc": shopifyUsdc
+  "base-commerce": shopifyUsdc
 };
 
 export default QUICK_BITES_DATA; 

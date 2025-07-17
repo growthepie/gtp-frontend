@@ -206,6 +206,11 @@ const nextConfig = {
         source: "/ethereum-ecosystem",
         destination: "/ethereum-ecosystem/metrics",
         permanent: false,
+      },
+      {
+        source: "/quick-bites/shopify-usdc",
+        destination: "/quick-bites/base-commerce",
+        permanent: true,
       }
     ];
   },

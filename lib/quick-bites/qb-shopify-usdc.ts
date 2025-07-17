@@ -1,14 +1,14 @@
 import { QuickBiteData } from '@/lib/types/quickBites';
 
-const shopifyUsdc: QuickBiteData = {
-  title: "Shopify's USDC Adoption",
+const BaseCommercePaymentProtocol: QuickBiteData = {
+  title: "Base: Commerce Payment Protocol (+Shopify)",
   subtitle: "A game changer for E-commerce, stablecoins are going mainstream",
   content: [
 
-    'On June 12, 2025, Shopify announced a landmark integration with Coinbase and Stripe. This enables USDC payments on Base to "bring frictionless, secure stablecoin payments to merchants around the world". ([1])[https://www.shopify.com/news/stablecoins-on-shopify]',
+    'On June 12, 2025, Shopify announced a landmark integration with Coinbase and Stripe. This enables USDC payments on Base to "bring frictionless, secure stablecoin payments to merchants around the world". ([1])[https://www.shopify.com/news/stablecoins-on-shopify] This marked the birth of the Commerce Payment Protocol on Base (Layer 2) bringing tradtional E-commerce onchain.',
     "> USDC is a token that is pegged to the value of the US dollar, backed by treasuries (commonly known as stablecoins). It has over $60 Billion in circulation and is one of the most widely adopted stablecoins ranking in the top 10 for all crypto assets by market cap. ([2])[https://www.coingecko.com/en/coins/usdc]",
   
-    "# Shopify's USDC Adoption Metrics (All-Time)",
+    "# Commerce Payment Protocol Metrics (All-Time)",
 
     "```kpi-cards",JSON.stringify(
       [
@@ -24,26 +24,26 @@ const shopifyUsdc: QuickBiteData = {
             value: "{{shopifyMerchants}}",
             description: "since launch",
             icon: "gtp-realtime",
-            info: "The number of unique wallets that have received USDC payments through Shopify.",
+            info: "The number of unique wallets that have received USDC payments through Commerce Payment Protocol.",
           },
           {
             title: "Total # of Customers",
             value: "{{shopifyCustomers}}",
             description: "since launch",
             icon: "gtp-realtime",
-            info: "The number of unique wallets that have made purchases using USDC on Shopify stores.",
+            info: "The number of unique wallets that have made purchases using USDC on Commerce Payment Protocol.",
           }
       ]),
       "```",
-      "> Shopify enables $500 Billion in annualized merchant revenue with over 5.5 Million stores, and more than 2 Million daily active users. ([3a])[https://www.mobiloud.com/blog/shopify-statistics] ([3b])[https://craftberry.co/articles/how-many-shopify-stores-are-there] ([3c])[https://www.yaguara.co/shopify-statistics/#:~:text=There%20are%209.55%20million%20Shopify,are%20currently%20live%20on%20Shopify]",
-    "## Shopify's USDC Volumes (Daily)",
-    "Initial adoption is expected to be gradual but if successful, this is a metric that should grow over a longer time period. With Shopify's impressive market size there is a lot of growth potential particularly for products that are not yet seen on-chain.",
+      "> Commerce Payment Protocol is used by multiple companies including Shopify, however it is by design not possible to trace which payments are linked to each company. Shopify enables $500 Billion in annualized merchant revenue with over 5.5 Million stores, and more than 2 Million daily active users. ([3a])[https://www.mobiloud.com/blog/shopify-statistics] ([3b])[https://craftberry.co/articles/how-many-shopify-stores-are-there] ([3c])[https://www.yaguara.co/shopify-statistics/#:~:text=There%20are%209.55%20million%20Shopify,are%20currently%20live%20on%20Shopify]",
+    "## Commerce Payment Protocol USDC Volumes (Daily)",
+    "Initial adoption is expected to be gradual but if successful, this is a metric that should grow over a longer time period. With Shopify's impressive market size there is a lot of growth potential particularly for products that are not yet seen onchain.",
 
     "```chart",
     JSON.stringify({
       type: "column",
-      title: "Settled USDC Volume via Shopify Stores",
-      subtitle: "The daily volume of USDC settled through Shopify stores",
+      title: "Settled USDC Volume",
+      subtitle: "The daily volume of USDC settled through Commerce Payment Protocol",
       stacking: "normal",
       showXAsDate: true,
       dataAsJson: {
@@ -62,7 +62,7 @@ const shopifyUsdc: QuickBiteData = {
         ],
       },
       height: 400,
-      caption: "The daily volume of USDC settled through Shopify stores. Data updated daily.",
+      caption: "The daily volume of USDC settled through Commerce Payment Protocol. Data updated daily.",
     }),
     "```",
 
@@ -73,7 +73,7 @@ const shopifyUsdc: QuickBiteData = {
     JSON.stringify({
       type: "column",
       title: "Merchants Receiving USDC",
-      subtitle: "The daily number of new and returning Shopify merchants that received USDC",
+      subtitle: "The daily number of new and returning merchants that received USDC",
       stacking: "normal",
       showXAsDate: true,
 
@@ -103,7 +103,7 @@ const shopifyUsdc: QuickBiteData = {
         ],
       },
       height: 400,
-      caption: "The daily number of new and returning Shopify merchants that received USDC. Data updated daily.",
+      caption: "The daily number of new and returning merchants that received USDC. Data updated daily.",
       seeMetricURL: null
     }),
     "```",
@@ -213,4 +213,4 @@ icon: "base-logo-monochrome"
 };
 
 
-export default shopifyUsdc;
+export default BaseCommercePaymentProtocol;
