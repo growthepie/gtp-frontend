@@ -112,7 +112,7 @@ export const TPSChart = React.memo(({ data }: TPSChartProps) => {
         backgroundColor: '#2A3433EE',
         borderRadius: 15,
         borderWidth: 0,
-        padding: [10, 12], // Adjusted padding
+        padding: [15, 15, 15, 0], // Adjusted padding
         textStyle: { color: 'rgb(215, 223, 222)' },
         // Updated formatter to include the timestamp
         formatter: (params) => {
@@ -133,23 +133,27 @@ export const TPSChart = React.memo(({ data }: TPSChartProps) => {
 
           // Format the date for display in the tooltip
           const formattedDate = new Intl.DateTimeFormat("en-GB", {
-            month: 'short', day: 'numeric',
+            // month: 'short', day: 'numeric', year: 'numeric',
             hour: '2-digit', minute: '2-digit', second: '2-digit',
-            hour12: false
+            hour12: false,
           }).format(new Date(timestamp));
 
           return `
-            <div class="text-xs font-raleway flex flex-col gap-y-1">
-              <div class="flex w-full space-x-2 items-center font-medium">
-                <div class="w-2 h-2 rounded-full" style="background-color: ${barColor}"></div>
-                <div class="tooltip-point-name text-xs">Total TPS</div>
+            <div class="text-xs font-raleway flex flex-col gap-y-[5px] w-[200px]">
+            <div class="flex w-full gap-x-[5px] items-center font-medium">
+              <div class="heading-small-xs !pl-[20px] !text-left">
+                ${formattedDate.replace(',', '  ')} UTC
+              </div>
+              <div class="flex-1 text-right justify-end flex text-xs">
+                TPS
+              </div>
+            </div>
+              <div class="flex w-full gap-x-[5px] items-center font-medium">
+                <div class="w-[15px] h-[10px] rounded-r-full" style="background-color: ${barColor}"></div>
+                <div class="tooltip-point-name text-xs">Ethereum Ecosystem</div>
                 <div class="flex-1 text-right justify-end flex numbers-xs">
                   ${formattedValue}
-                  <span class="pl-1">TPS</span>
                 </div>
-              </div>
-              <div class="text-center text-[#9ca3af] numbers-xs">
-                ${formattedDate.replace(',', ' -')}
               </div>
             </div>`;
         },

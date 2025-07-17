@@ -87,14 +87,12 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
   className = '',
   infoSlot,
 }) => {
-  // The button at the bottom for expanding/collapsing the card
-
   const [isExpandButtonHovered, setIsExpandButtonHovered] = useState(false);
 
   const isMobile = useMediaQuery("(max-width: 768px)");
   const ExpandButton = (
     <div
-      className="expandable-card-expand-button absolute bottom-0 left-0 right-0 w-full py-[15px] px-[15px] h-fit flex items-center justify-center  z-[999] cursor-pointer"
+      className="expandable-card-expand-button absolute bottom-0 left-0 right-0 w-full py-[15px] px-[15px] h-fit flex items-center justify-center cursor-pointer"
       onClick={(e) => {
         // Don't expand if clicking on the tooltip trigger
         const target = e.target as HTMLElement;
@@ -142,10 +140,10 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
   return (
     <div className="relative h-full w-full">
       <div
-        className={`expandable-card-container w-full bg-[#1F2726] rounded-[15px] transition-all duration-500 flex flex-col py-[15px] px-[30px]
+        className={`expandable-card-container w-full bg-[#1F2726] rounded-[15px] transition-all duration-300 flex flex-col py-[15px] px-[30px]
           ${isExpanded && !isCompact
             ? 'absolute top-0 left-0 h-auto z-[1001] shadow-card-dark'
-            : 'relative min-h-full overflow-hidden'
+            : 'relative min-h-full overflow-hidden duration-500'
           }
           ${isExpandButtonHovered && '!z-[1001]'}
           ${className}`
@@ -153,10 +151,8 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
         onMouseEnter={() => setIsExpandButtonHovered(true)}
         onMouseLeave={() => setIsExpandButtonHovered(false)}
       >
-        {/* <div className="relative flex flex-col overflow-hidden gap-y-[5px] p-[15px] pb-[calc(15px+18px)] h-full"> */}
         {children}
         {!isCompact && ExpandButton}
-        {/* </div> */}
       </div>
     </div>
   );
@@ -760,10 +756,13 @@ interface EventItemProps {
 const EventItem = React.memo(({ eventKey, eventHover, setEventHover, eventExpanded, handleToggleEventExpansion, event, index, nextEvent }: EventItemProps) => {
   const isExpanded = eventExpanded === eventKey;
   return (
-    <div className={`relative transition-all flex flex-col duration-500 cursor-pointer ${isExpanded ? 'max-h-[230px]' : 'min-h-[28px] max-h-[38px]'} w-full`}
+    <div className={`event-item relative transition-all flex flex-col duration-500 cursor-pointer ${isExpanded ? 'max-h-[230px]' : 'min-h-[28px] max-h-[38px]'} w-full`}
       onMouseEnter={() => setEventHover(eventKey)}
       onMouseLeave={() => setEventHover(null)}
-      onClick={() => handleToggleEventExpansion(eventKey)}
+      onClick={(e) => {
+        e.stopPropagation();
+        handleToggleEventExpansion(eventKey);
+      }}
     >
       <div className={`${isExpanded ? 'max-h-[50px]' : 'h-0'} flex relative items-center top-[2px] w-[24px] justify-center overflow-hidden gap-x-[2px] text-xxxs mb-[5px]`}>{Intl.DateTimeFormat('en-GB', { year: 'numeric' }).format(new Date(event.date))}</div>
       <div
@@ -1164,7 +1163,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   }, [activeChainData, showUsd]);
 
   const handleCloseModals = (e: MouseEvent) => {
-    if (e.target instanceof HTMLElement && e.target.closest('.expandable-card-expand-button')) {
+    if (e.target instanceof HTMLElement && (e.target.closest('.expandable-card-expand-button') || e.target instanceof HTMLElement && e.target.closest('.event-item'))) {
       return;
     }
     setShowChainsCost(false);
