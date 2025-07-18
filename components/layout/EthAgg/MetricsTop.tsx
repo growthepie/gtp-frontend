@@ -138,12 +138,12 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
   );
 
   return (
-    <div className="relative h-full w-full">
+    <div className="relative h-full min-h-[306px] w-full">
       <div
-        className={`expandable-card-container w-full bg-[#1F2726] rounded-[15px] transition-all duration-300 flex flex-col py-[15px] px-[30px]
+        className={`@container expandable-card-container w-full bg-[#1F2726] rounded-[15px] transition-all duration-300 flex flex-col py-[15px] px-[30px]
           ${isExpanded && !isCompact
-            ? 'absolute top-0 left-0 h-auto z-[1001] shadow-card-dark'
-            : 'relative min-h-full overflow-hidden duration-500'
+            ? 'relative @[1040px]:absolute top-0 left-0 h-auto z-[1001] shadow-card-dark'
+            : 'relative overflow-hidden duration-500'
           }
           ${isExpandButtonHovered && '!z-[1001]'}
           ${className}`
@@ -256,7 +256,7 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
     return null;
   }
 
-  const UNEXPANDED_LIST_HEIGHT = 130;
+  const UNEXPANDED_LIST_HEIGHT = 164;
   const EXPANDED_LIST_HEIGHT = listHeight + 24 + 50;
 
 
@@ -267,7 +267,7 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
   const mainContent = (
     <>
       <div className='heading-large-md pb-[15px]'>Ethereum Uptime</div>
-      <div className='numbers-2xl pb-[30px]'>
+      <div className='numbers-2xl pb-[30px] h-[73px] overflow-visible'>
         <div className='flex flex-col gap-y-[5px]'>
           <div className='bg-gradient-to-b from-[#10808C] to-[#1DF7EF] bg-clip-text text-transparent'>
             {uptimeData.heading}
@@ -309,10 +309,10 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
   return (
     <div
       ref={containerRef}
-      className={`w-full transition-height duration-300
+      className={`@container w-full transition-height duration-300
         ${isCompact ? 'h-[150px]'
           : isHidden ? 'h-[0px] overflow-hidden'
-            : 'h-[306px] min-h-[306px]'
+            : '@[1040px]:h-[306px] min-h-[306px]'
         }`}
       onMouseEnter={() => setIsEventsHovered(true)}
       onMouseLeave={() => setIsEventsHovered(false)}
@@ -321,6 +321,7 @@ const EthereumUptimeCard = React.memo(({ selectedBreakdownGroup, eventHover, set
         isExpanded={showEvents}
         onToggleExpand={handleToggleEvents}
         isCompact={isCompact}
+        // this expandable card should have a higher z-index than the rest
         // infoSlot could be used here to add a tooltip if needed
         infoSlot={"Uptime shows how long Ethereum has been running without interruptions. It is calculated from the genesis block on July 30, 2015."}
       >
@@ -359,7 +360,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
   showChainsTPS,
   handleToggleTPS,
 }: EthereumEcosystemTPSCardProps) => {
-  const { AllChainsByKeys, SupportedChainKeys } = useMaster();
+  const { AllChainsByKeys } = useMaster();
   // const [showChainsTPS, setShowChainsTPS] = useSearchParamBoolean("showChainsTPS", false);
 
   // --- DATA FETCHING ---
@@ -407,14 +408,14 @@ export const EthereumEcosystemTPSCard = React.memo(({
   const filteredTPSChains = useMemo(() => {
     return Object.entries(chainData)
       .map(([chainId, metrics]) => ({ ...metrics, chainId })) // Add chainId to the object
-      .filter((data) => data.tps && data.tps > 0 && SupportedChainKeys.includes(data.chainId))
+      .filter((data) => data.tps && data.tps > 0 )
       .sort((a, b) => (b.tps || 0) - (a.tps || 0))
       .map((data, index) => ({
         chainId: data.chainId,
         y: index * 21,
         height: 18,
       }));
-  }, [chainData, SupportedChainKeys]);
+  }, [chainData]);
 
   const tpsTransitions = useTransition(filteredTPSChains, {
     key: (item) => item.chainId,
@@ -431,7 +432,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
   //   setShowChainsTPS(!showChainsTPS);
   // }, [showChainsTPS, setShowChainsTPS]);
 
-  const UNEXPANDED_LIST_HEIGHT = 80;
+  const UNEXPANDED_LIST_HEIGHT = 96;
   const EXPANDED_LIST_HEIGHT = filteredTPSChains.length * 21 + 24 + 50;
 
   // --- RENDER LOGIC ---
@@ -497,10 +498,10 @@ export const EthereumEcosystemTPSCard = React.memo(({
   );
 
   return (
-    <div className={`w-full min-w-0 transition-height duration-300
+    <div className={`@container w-full min-w-0 transition-height duration-300
       ${isCompact ? 'h-[150px]'
         : isHidden ? 'h-[0px] overflow-hidden'
-          : 'h-[306px] min-h-[306px]'
+          : '@[1040px]:h-[306px] min-h-[306px]'
       }`}>
       <ExpandableCardContainer
         isExpanded={showChainsTPS}
@@ -540,7 +541,6 @@ export const TokenTransferFeeCard = React.memo(({
   AllChainsByKeys,
   showUsd,
 }: TokenTransferFeeCardProps) => {
-  const { SupportedChainKeys } = useMaster();
   const [ethCostHoverIndex, setEthCostHoverIndex] = useState<number | null>(null);
   const [ethCostSelectedIndex, setEthCostSelectedIndex] = useState<number>(17);
   const [l2CostHoverIndex, setL2CostHoverIndex] = useState<number | null>(null);
@@ -566,7 +566,7 @@ export const TokenTransferFeeCard = React.memo(({
       .filter((chain) => {
         const cost = activeChainData?.[chain]?.[costKey];
         const isEthereum = AllChainsByKeys[chain]?.key === 'ethereum';
-        return cost > 0 && !isEthereum && SupportedChainKeys.includes(chain);
+        return cost > 0 && !isEthereum;
       })
       .sort((a, b) =>
         chainsCostHistory[b][chainsCostHistory[b].length - 1] -
@@ -577,7 +577,7 @@ export const TokenTransferFeeCard = React.memo(({
         y: index * 21,
         height: 18,
       }));
-  }, [chainsCostHistory, activeChainData, showUsd, AllChainsByKeys, SupportedChainKeys]);
+  }, [chainsCostHistory, activeChainData, showUsd, AllChainsByKeys]);
 
   const costTransitions = useTransition(filteredCostChains, {
     key: (item) => `cost-${item.chainId}`,
@@ -589,7 +589,7 @@ export const TokenTransferFeeCard = React.memo(({
     trail: 25,
   });
 
-  const UNEXPANDED_LIST_HEIGHT = 80;
+  const UNEXPANDED_LIST_HEIGHT = 96;
   const EXPANDED_LIST_HEIGHT = 35 + filteredCostChains.length * 20 + 50;
 
   const content = (
@@ -628,7 +628,7 @@ export const TokenTransferFeeCard = React.memo(({
         />
       </div>
       {/* Cost Chains List */}
-      <div className={`relative flex flex-col gap-y-[5px] mt-[3px] -mx-[15px] bg-[#1F2726] z-10 rounded-b-[15px] ${isCompact ? 'h-0' : 'h-auto'}`}>
+      <div className={`relative flex flex-col gap-y-[5px] mt-[3px] -mx-[15px] bg-[#1F2726] rounded-b-[15px] ${isCompact ? 'h-0' : 'h-auto'}`}>
         <div className={`flex flex-col gap-y-[2.5px] px-[15px] transition-height duration-500 overflow-y-hidden ${!showChainsCost && !isCompact ? 'after:content-[""] after:absolute after:bottom-0 after:left-[5px] after:right-[5px] after:h-[50px] after:bg-gradient-to-t after:from-[#1F2726] after:via-[#1F2726]/80 after:to-[#1F2726]/20 after:pointer-events-none' : ''}`}
           style={{ height: !showChainsCost ? `${UNEXPANDED_LIST_HEIGHT}px` : `${EXPANDED_LIST_HEIGHT}px` }}>
           <div className='heading-large-md text-[#5A6462]'>Layer 2 Chains</div>
@@ -645,10 +645,10 @@ export const TokenTransferFeeCard = React.memo(({
   );
 
   return (
-    <div className={`w-full min-w-0 transition-height duration-300
+    <div className={`@container w-full min-w-0 transition-height duration-300
       ${isCompact ? 'h-[150px]'
         : isHidden ? 'h-[0px] overflow-hidden'
-          : 'h-[306px] min-h-[306px]'
+          : '@[1040px]:h-[306px] min-h-[306px]'
       }`}>
       <ExpandableCardContainer
         isExpanded={showChainsCost}
@@ -1167,6 +1167,12 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     if (e.target instanceof HTMLElement && (e.target.closest('.expandable-card-expand-button') || e.target instanceof HTMLElement && e.target.closest('.event-item'))) {
       return;
     }
+
+    // if on mobile, return
+    // if (window.innerWidth < 1040) {
+    //   return;
+    // }
+
     setShowChainsCost(false);
     setShowChainsTPS(false);
     setShowEvents(false);
@@ -1181,6 +1187,12 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     };
   }, []);
 
+  // const ethereumUptimeCardRef = useRef<HTMLDivElement>(null);
+  const [
+    ethereumUptimeCardRef,
+    {height: ethereumUptimeCardHeight}
+  ] = useElementSizeObserver<HTMLDivElement>();
+
   // Don't show anything until we have initial data
   if (!cachedData.hasInitialData && !hasInitializedWithHistory) {
     return null;
@@ -1189,21 +1201,18 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
   return (
     <>
       {(showChainsCost || showChainsTPS || showEvents) && (
-        <>
         <div
           className='fixed inset-0 bg-[#1F2726]/75 z-[1000] pointer-events-none'
         />
-        {/* <div
-          className='fixed inset-0 z-[998] cursor-pointer'
-          onClick={(e) => {
-            handleCloseModals();
-          }}
-        /> */}
-        </>
       )}
 
       {(
-        <div className='grid grid-cols-3 gap-[15px] w-full @container'>
+        <div 
+          className='grid grid-cols-[1fr,1fr,1fr] gap-[15px] w-full @container'
+          // style={{
+          //   gridTemplateRows: `auto, 306px`,
+          // }}
+        >
           <div className="col-span-3 @[1040px]:col-span-1">
             <EthereumUptimeCard
               selectedBreakdownGroup={selectedBreakdownGroup}
