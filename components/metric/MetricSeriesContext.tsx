@@ -71,8 +71,10 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
         // show column chart for ethereum if monthly and stacked
         if (selectedTimeInterval === "monthly" && selectedScale === "stacked")
           return "column";
-        // else show area
-        return "area";
+        // else respect the selectedScale for ethereum
+        if (selectedScale === "percentage") return "area";
+        if (selectedScale === "stacked") return "area";
+        return "line"; // for absolute scale
       }
      
       if (selectedScale === "percentage") return "area";
@@ -81,7 +83,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
 
       return "line";
     },
-    [selectedScale, selectedTimeInterval],
+    [selectedScale, selectedTimeInterval, focusEnabled],
   );
 
   const MetadataByKeys = useMemo(() => {

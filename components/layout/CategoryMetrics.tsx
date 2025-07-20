@@ -40,6 +40,7 @@ import { GTPIconName } from "@/icons/gtp-icon-names";
 import { TitleButtonLink } from "./TextHeadingComponents";
 import { ContractProvider } from "./BlockspaceOverview/Contracts/ContractContext";
 import ContractContainer from "./BlockspaceOverview/Contracts/ContractContainer";
+import { GridTableHeader, GridTableHeaderCell } from "./GridTable";
 
 export default function CategoryMetrics({
   data,
@@ -898,64 +899,123 @@ export default function CategoryMetrics({
 
             <Container>
               <div className="mx-auto mb-[20px] mt-[20px] flex w-[98.5%] flex-col justify-between gap-y-8 lg:mb-0 lg:mt-[30px] lg:flex-row">
-                <VerticalScrollContainer
-                  height={468}
-                  className="flex w-full flex-col justify-between lg:w-[44%]"
-                >
-                  <div
-                    ref={chainAnimationsContainer}
-                    className="relative mt-4 overflow-hidden"
-                    style={{
-                      height: height,
-                      minHeight: isMobile ? undefined : "500px",
-                    }}
-                  >
-                    {sortedChainValues &&
-                      sortedChainValuesWithPlaceholder &&
-                      master &&
-                      transitions((style, item) => (
-                        <animated.div
-                          className="absolute w-full"
-                          key={item.item}
-                          style={style}
+                <div className="flex w-full flex-col justify-between lg:w-[44%] -mt-[14px]">
+                  <div>
+                    <div className="relative pr-[0px] lg:pr-[45px]">
+                      <GridTableHeader
+                        gridDefinitionColumns="grid-cols-[26px_minmax(30px,2000px)_61px_61px_61px_61px]"
+                        className="z-[2] flex h-[30px] select-none items-center gap-x-[10px] !pb-0 !pl-[5px] !pr-[21px] !pt-0 text-[12px] !font-bold"
+                      >
+                        <GridTableHeaderCell>
+                          <div></div>
+                        </GridTableHeaderCell>
+                        <GridTableHeaderCell>Chain</GridTableHeaderCell>
+                      </GridTableHeader>
+                      <div className="absolute right-[37px] top-[5px] cursor-pointer">
+                        <div 
+                          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-full" 
+                          style={{ color: "rgb(90, 100, 98)" }}
                         >
-                          {item.item !== "placeholder" ? (
-                            <ChainAnimations
-                              chain={item.item}
-                              value={item.value}
-                              index={sortedChainValues.findIndex(
-                                (chain) => chain[0] === item.item,
-                              )}
-                              sortedValues={sortedChainValues}
-                              selectedValue={selectedValue}
-                              selectedMode={selectedMode}
-                              selectedChains={selectedChains}
-                              setSelectedChains={setSelectedChains}
-                              selectedCategory={selectedCategory}
-                              parentContainerWidth={
-                                chainAnimationsContainerWidth
-                              }
-                              master={master}
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="h-6 w-6 opacity-0"
+                          >
+                            <circle
+                              xmlns="http://www.w3.org/2000/svg"
+                              cx="12"
+                              cy="12"
+                              r="8"
                             />
-                          ) : (
-                            <div
-                              className={`flex items-center transition-opacity duration-[1500ms] ${
-                                updatePlaceholderOpacity
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              }`}
-                            >
-                              <div className="flex-grow border-t border-[#5A6462]"></div>
-                              <span className="mx-4 text-[12px] font-semibold text-[#CDD8D3]">
-                                Not showing in chart
-                              </span>
-                              <div className="flex-grow border-t border-[#5A6462]"></div>
-                            </div>
-                          )}
-                        </animated.div>
-                      ))}
+                          </svg>
+                        </div>
+                        <div className="rounded-full p-1 bg-white dark:bg-forest-1000">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            xmlnsXlink="http://www.w3.org/1999/xlink"
+                            aria-hidden="true"
+                            role="img"
+                            className="h-[15px] w-[15px] opacity-100 iconify iconify--feather"
+                            width="1em"
+                            height="1em"
+                            viewBox="0 0 24 24"
+                            style={{ color: "rgb(90, 100, 98)" }}
+                          >
+                            <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2">
+                              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                              <path d="M22 4L12 14.01l-3-3"></path>
+                            </g>
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </VerticalScrollContainer>
+                  <VerticalScrollContainer
+                    height={452}
+                    className="flex w-full flex-col justify-between"
+                  >
+                    <div
+                      ref={chainAnimationsContainer}
+                      className="relative overflow-hidden"
+                      style={{
+                        height: height,
+                        minHeight: isMobile ? undefined : "500px",
+                      }}
+                    >
+                      {sortedChainValues &&
+                        sortedChainValuesWithPlaceholder &&
+                        master &&
+                        transitions((style, item) => (
+                          <animated.div
+                            className="absolute w-full"
+                            key={item.item}
+                            style={style}
+                          >
+                            {item.item !== "placeholder" ? (
+                              <ChainAnimations
+                                chain={item.item}
+                                value={item.value}
+                                index={sortedChainValues.findIndex(
+                                  (chain) => chain[0] === item.item,
+                                )}
+                                sortedValues={sortedChainValues}
+                                selectedValue={selectedValue}
+                                selectedMode={selectedMode}
+                                selectedChains={selectedChains}
+                                setSelectedChains={setSelectedChains}
+                                selectedCategory={selectedCategory}
+                                parentContainerWidth={
+                                  chainAnimationsContainerWidth
+                                }
+                                master={master}
+                              />
+                            ) : (
+                              <div
+                                className={`flex items-center transition-opacity duration-[1500ms] ${
+                                  updatePlaceholderOpacity
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                }`}
+                              >
+                                <div className="flex-grow border-t border-[#5A6462]"></div>
+                                <span className="mx-4 text-[12px] font-semibold text-[#CDD8D3]">
+                                  Not showing in chart
+                                </span>
+                                <div className="flex-grow border-t border-[#5A6462]"></div>
+                              </div>
+                            )}
+                          </animated.div>
+                        ))}
+                    </div>
+                  </VerticalScrollContainer>
+                </div>
                 <div className="relative bottom-2 mb-[30px] mt-1 h-[320px] w-full lg:mt-0 lg:h-auto lg:w-[56%]">
                   {chartSeries && (
                     <Chart
