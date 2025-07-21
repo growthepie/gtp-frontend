@@ -19,7 +19,7 @@ import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/Proje
 import { ApplicationIcon, ApplicationTooltipAlt } from '@/app/(layout)/applications/_components/Components';
 import { track } from '@vercel/analytics/react';
 import SwiperContainer from '../SwiperContainer';
-
+import SwiperComponent from '@/components/SwiperComponent';
 interface MetricsChartsProps {
   selectedBreakdownGroup: string;
 }
@@ -339,9 +339,9 @@ const MeetLayer2s = React.memo(({ meetL2sData, selectedBreakdownGroup }: { meetL
         </div>
         <div className='text-md pl-[44px] overflow-hidden select-auto'>Ethereum scales using a wide set of different Layer 2s, built by 3rd party teams. Take a closer look at them on our platform. </div>
       </Container>
-      <SwiperContainer ariaId={"meet-layer-2s-title"} size="meet-layer-2s">
-        <MeetL2sSlider meetL2sData={meetL2sData} ProjectData={ProjectData} />
-      </SwiperContainer>
+      
+      <MeetL2sSlider meetL2sData={meetL2sData} ProjectData={ProjectData} />
+    
     </div>
   );
 
@@ -369,93 +369,92 @@ const MeetL2sSlider = React.memo(({ meetL2sData, ProjectData }: MeetL2sSliderPro
   }
 
   return (
-    <SplideTrack>
+    <SwiperComponent>
       {l2Keys.map((key) => {
         const l2Data = meetL2sData[key];
         const chainInfo = AllChainsByKeys[key];
         const color = chainInfo?.colors?.dark?.[0];
 
         return (
-          <SplideSlide key={key}>
-            <div 
-              onClick={(e) => {
-                // Only navigate if we didn't click on a nested link
-                if (!(e.target as HTMLElement).closest('a')) {
-                  window.location.href = `/chains/${key}`;
-                }
-              }}
-              className='group cursor-pointer flex flex-col gap-y-[10px] rounded-[15px] p-[15px] bg-transparent border-[1px] border-[#5A6462] h-full'
-            >
-              <div className='flex items-center w-full justify-between'>
-                <div className='flex items-center gap-x-[5px]'>
-                  <GTPIcon
-                    icon={`${chainInfo?.urlKey}-logo-monochrome` as GTPIconName}
-                    size='lg'
-                    style={{ color }}
-                  />
-                  <div className='heading-large-md select-auto group-hover:underline'>{chainInfo?.label}</div>
-                </div>
-                <div className='flex items-center justify-center w-[24px] h-[24px] rounded-full bg-[#344240]'>
-                  <Icon icon="feather:arrow-right" className="w-[15px] h-[15px]" />
-                </div>
+          <div 
+            key={key}
+            onClick={(e) => {
+              // Only navigate if we didn't click on a nested link
+              if (!(e.target as HTMLElement).closest('a')) {
+                window.location.href = `/chains/${key}`;
+              }
+            }}
+            className='group cursor-pointer flex flex-col gap-y-[10px] rounded-[15px] p-[15px] bg-transparent border-[1px] border-[#5A6462] h-full'
+          >
+            <div className='flex items-center w-full justify-between'>
+              <div className='flex items-center gap-x-[5px]'>
+                <GTPIcon
+                  icon={`${chainInfo?.urlKey}-logo-monochrome` as GTPIconName}
+                  size='lg'
+                  style={{ color }}
+                />
+                <div className='heading-large-md select-auto group-hover:underline'>{chainInfo?.label}</div>
               </div>
-              <div className='flex gap-x-[10px] items-center'>
-                <div className='flex flex-col gap-y-[5px]'>
-                  <div className='numbers-2xl'>{formatNumber(l2Data.yesterday_aa)}</div>
-                  <div className='text-xs'>Wallets Yesterday</div>
-                </div>
-                <div className='flex flex-col gap-y-[5px]'>
-                  <div className='numbers-2xl'>{formatNumber(l2Data.total_aa)}</div>
-                  <div className='text-xs'>Total Wallets</div>
-                </div>
-              </div>
-              <div className='flex gap-x-[10px] items-center'>
-                <div className='flex flex-col gap-y-[5px]'>
-                  <div className='numbers-2xl'>${formatNumber(l2Data[showUsd ? "stables_mcap_usd" : "stables_mcap_eth"])}</div>
-                  <div className='text-xs'>Stablecoin Supply</div>
-                </div>
-                <div className='flex flex-col gap-y-[5px]'>
-                  <div className='numbers-2xl'>{formatNumber(l2Data.tps)}</div>
-                  <div className='text-xs'>TPS/Day</div>
-                </div>
-              </div>
-              <div className='flex flex-col gap-y-[5px] mt-auto pt-[10px]'>
-                <div className='flex items-center gap-x-[5px]'>
-                  {ProjectData[key].length === 0 ? (
-                      <div className='heading-small-xxxs bg-[#344240]  rounded-full w-[24px] h-[24px] flex items-center justify-center'>
-                        <div className='opacity-90'>N/A</div>
-                      </div>
-                    ) : (
-                      ProjectData[key].map((project: any) => (
-                        <GTPTooltipNew
-                          key={project.owner_project}
-                          size="md"
-                          placement="top-start"
-                          allowInteract={true}
-                          trigger={
-                            <Link href={`/applications/${project.owner_project}`} className='w-fit h-fit'>
-                              <ApplicationIcon owner_project={project.owner_project} size='sm' />
-                            </Link>
-                          }
-                          containerClass="flex flex-col gap-y-[10px]"
-                          positionOffset={{ mainAxis: 0, crossAxis: 20 }}
-                        >
-                          {/* <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
-                            <div className='heading-small-xxs'>{project.display_name}</div>
-                            <div className='text-xs'>{project.description}</div>
-                          </TooltipBody> */}
-                          <ApplicationTooltipAlt owner_project={project.owner_project} />
-                        </GTPTooltipNew>
-                      ))
-                    )}
-                </div>
-                <div className='text-xs'>Most used apps</div>
+              <div className='flex items-center justify-center w-[24px] h-[24px] rounded-full bg-[#344240]'>
+                <Icon icon="feather:arrow-right" className="w-[15px] h-[15px]" />
               </div>
             </div>
-          </SplideSlide>
+            <div className='flex gap-x-[10px] items-center'>
+              <div className='flex flex-col gap-y-[5px]'>
+                <div className='numbers-2xl'>{formatNumber(l2Data.yesterday_aa)}</div>
+                <div className='text-xs'>Wallets Yesterday</div>
+              </div>
+              <div className='flex flex-col gap-y-[5px]'>
+                <div className='numbers-2xl'>{formatNumber(l2Data.total_aa)}</div>
+                <div className='text-xs'>Total Wallets</div>
+              </div>
+            </div>
+            <div className='flex gap-x-[10px] items-center'>
+              <div className='flex flex-col gap-y-[5px]'>
+                <div className='numbers-2xl'>${formatNumber(l2Data[showUsd ? "stables_mcap_usd" : "stables_mcap_eth"])}</div>
+                <div className='text-xs'>Stablecoin Supply</div>
+              </div>
+              <div className='flex flex-col gap-y-[5px]'>
+                <div className='numbers-2xl'>{formatNumber(l2Data.tps)}</div>
+                <div className='text-xs'>TPS/Day</div>
+              </div>
+            </div>
+            <div className='flex flex-col gap-y-[5px] mt-auto pt-[10px]'>
+              <div className='flex items-center gap-x-[5px]'>
+                {ProjectData[key].length === 0 ? (
+                    <div className='heading-small-xxxs bg-[#344240]  rounded-full w-[24px] h-[24px] flex items-center justify-center'>
+                      <div className='opacity-90'>N/A</div>
+                    </div>
+                  ) : (
+                    ProjectData[key].map((project: any) => (
+                      <GTPTooltipNew
+                        key={project.owner_project}
+                        size="md"
+                        placement="top-start"
+                        allowInteract={true}
+                        trigger={
+                          <Link href={`/applications/${project.owner_project}`} className='w-fit h-fit'>
+                            <ApplicationIcon owner_project={project.owner_project} size='sm' />
+                          </Link>
+                        }
+                        containerClass="flex flex-col gap-y-[10px]"
+                        positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+                      >
+                        {/* <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
+                          <div className='heading-small-xxs'>{project.display_name}</div>
+                          <div className='text-xs'>{project.description}</div>
+                        </TooltipBody> */}
+                        <ApplicationTooltipAlt owner_project={project.owner_project} />
+                      </GTPTooltipNew>
+                    ))
+                  )}
+              </div>
+              <div className='text-xs'>Most used apps</div>
+            </div>
+          </div>
         );
       })}
-    </SplideTrack>
+    </SwiperComponent>
   );
 });
 
