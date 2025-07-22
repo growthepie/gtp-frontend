@@ -207,9 +207,8 @@ const dataAvailabilityGroup: NavigationItem = {
   ],
 };
 
-export const navigationItems: NavigationItem[] = [
-  ...(!IS_PRODUCTION
-    ? [{ 
+    export const navigationItems: NavigationItem[] = [
+      { 
         name: "Ecosystem",
         label: "Ecosystem",
         icon: "gtp-ethereumlogo",
@@ -231,9 +230,8 @@ export const navigationItems: NavigationItem[] = [
         ],
         href: "/ethereum-ecosystem",
         newChild: true,
-      }] 
-    : []) as NavigationItem[],
-  {
+      },
+    {
     name: "Fundamentals",
     label: "Fundamentals",
     key: "metrics",

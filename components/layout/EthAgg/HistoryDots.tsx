@@ -49,26 +49,35 @@ export function HistoryDots({
         const percentage = range > 0 ? ((cost - minCost) / range) * 100 : 50; // default to 50 if no range
         const color = getGradientColor(percentage);
 
+        const scale = selectedIndex === index ? 2 : hoverIndex === index ? 1.5 : 1;
+        const size = selectedIndex === index ? 10 : hoverIndex === index ? 5 : 5;
+        const zIndex = selectedIndex === index ? 10 : hoverIndex === index ? 5 : 0;
+
         return (
-          <div
-            key={index}
-            className={`rounded-full transition-all duration-50 absolute cursor-pointer ${
-              selectedIndex === index
-                ? 'w-[10px] h-[10px]'
-                : hoverIndex === index
-                ? 'w-[8px] h-[8px]'
-                : 'w-[5px] h-[5px]'
-            }`}
-            onMouseEnter={() => onHover(index)}
-            onMouseLeave={() => onHover(null)}
-            onClick={() => onSelect(index)}
-            style={{
-              backgroundColor: color,
-              left: `${startOffset + positions[index] + halfDotSize}px`,
-              top: '50%',
-              transform: 'translate(-50%, -50%)',
-            }}
-          />
+          <div 
+          key={index} 
+          className='relative flex items-center justify-center'
+          style={{
+            width: `${size}px`,
+            height: `${size}px`,
+            zIndex: zIndex,
+          }}
+          >
+            <div
+              className={`rounded-full transition-all duration-50 absolute w-[5px] h-[5px] cursor-pointer`}
+              onMouseEnter={() => onHover(index)}
+              onMouseLeave={() => onHover(null)}
+             
+              style={{
+                backgroundColor: color,
+                transform: `scale(${scale})`,
+                // zIndex: zIndex,
+                // left: `${startOffset + positions[index] + halfDotSize}px`,
+                // top: '50%',
+                // transform: 'translate(-50%, -50%)',
+              }}
+            />
+          </div>
         );
       })}
     </>

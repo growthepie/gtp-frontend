@@ -92,7 +92,8 @@ export const IconContextMenu = ({
     setIsOpen(true);
   };
 
-  const handleCopy = async () => {
+  const handleCopy = async (event: React.MouseEvent) => {
+    event.stopPropagation(); // Add this line
     const data = await getSvgData();
     if (!data?.svgString) {
       toast.addToast({
@@ -112,7 +113,8 @@ export const IconContextMenu = ({
     setIsOpen(false);
   };
 
-  const handleDownload = async () => {
+  const handleDownload = async (event: React.MouseEvent) => {
+    event.stopPropagation(); // Add this line
     const data = await getSvgData();
     if (!data?.svgString) {
       toast.addToast({
@@ -142,7 +144,8 @@ export const IconContextMenu = ({
     setIsOpen(false);
   };
 
-  const handleGoToIconsPage = () => {
+  const handleGoToIconsPage = (event: React.MouseEvent) => {
+    event.stopPropagation(); // Add this line
     if (iconPageUrl) {
         window.open(iconPageUrl, "_blank");
     }
@@ -150,7 +153,8 @@ export const IconContextMenu = ({
   };
 
   // Add new handler for opening homepage in new tab
-  const handleOpenInNewTab = () => {
+  const handleOpenInNewTab = (event: React.MouseEvent) => {
+    event.stopPropagation(); // Add this line
     window.open("/", "_blank");
     setIsOpen(false);
   };

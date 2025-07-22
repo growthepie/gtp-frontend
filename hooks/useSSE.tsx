@@ -11,27 +11,52 @@ interface UseSSEOptions {
 
 /**
  * A generic hook for managing a Server-Sent Events (SSE) connection.
+ * It automatically pauses the connection when the tab is hidden and resumes when it's focused.
  * @param url The URL of the SSE endpoint.
  * @param options Callbacks for message, error, and open events.
  */
 export function useSSE(url: string | null, { onMessage, onError, onOpen }: UseSSEOptions) {
   const [readyState, setReadyState] = useState<ReadyState>(0); // Starts as CONNECTING
   const eventSourceRef = useRef<EventSource | null>(null);
+  
+  // NEW: State to track if the page is visible. Initialize based on the current state.
+  const [isPageVisible, setIsPageVisible] = useState(!document.hidden);
+
+  // NEW: Effect to listen for page visibility changes.
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsPageVisible(!document.hidden);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // Cleanup the event listener on unmount
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []); // Empty dependency array means this runs once on mount.
 
   useEffect(() => {
-    // Don't connect if the URL is null or not provided
-    if (!url || !onMessage) {
+    // We now check for the URL, onMessage, AND if the page is visible.
+    if (!url || !onMessage || !isPageVisible) {
+      // If we have a connection but shouldn't, close it.
+      if (eventSourceRef.current) {
+        console.log(`Closing SSE connection to ${url} due to page visibility or config change.`);
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+        setReadyState(2); // Manually set to CLOSED
+      }
       return;
     }
 
+    // If we get here, it means we should have an active connection.
+    console.log(`Opening SSE connection to ${url}`);
     const eventSource = new EventSource(url);
     eventSourceRef.current = eventSource;
-    // FIX: Assert the type of eventSource.readyState to our specific ReadyState type
     setReadyState(eventSource.readyState as ReadyState);
 
     eventSource.onopen = (event) => {
       console.log(`SSE connection opened to ${url}`);
-      // FIX: Assert the type here as well
       setReadyState(eventSource.readyState as ReadyState);
       onOpen?.(event);
     };
@@ -42,20 +67,21 @@ export function useSSE(url: string | null, { onMessage, onError, onOpen }: UseSS
 
     eventSource.onerror = (error) => {
       console.error(`SSE error on connection to ${url}:`, error);
-      // FIX: And assert the type here
       setReadyState(eventSource.readyState as ReadyState);
       onError?.(error);
-      // EventSource will automatically try to reconnect per the spec.
-      // Calling close() here would prevent that. We only close in the cleanup function.
     };
 
     return () => {
-      console.log(`Closing SSE connection to ${url}`);
-      eventSource.close();
-      // When closed manually, the readyState becomes 2
-      setReadyState(2);
+      // This cleanup runs when dependencies change or the component unmounts.
+      if (eventSourceRef.current) {
+        console.log(`Closing SSE connection to ${url}`);
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+        setReadyState(2); // Manually set to CLOSED
+      }
     };
-  }, [url, onMessage, onError, onOpen]); // Re-establish connection if URL or callbacks change
+    // Re-run this effect if the URL, callbacks, or page visibility changes.
+  }, [url, onMessage, onError, onOpen, isPageVisible]); 
 
   return { readyState };
 }

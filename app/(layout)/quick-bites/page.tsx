@@ -24,7 +24,7 @@ export default function QuickBitesPage() {
       <PageContainer>
         <Title
           title="Quick Bites"
-          icon="gtp-metrics-activeaddresses"
+          icon="gtp-quick-bites"
           as="h1"
         />
         

@@ -124,6 +124,9 @@ module.exports = {
         ...defaultTheme.transitionTimingFunction,
         'sidebar': 'cubic-bezier(0.5, 0, 0.5, 1.0)',
       },
+      boxShadow: {
+        'card-dark': '0px 0px 27px #151A19',
+      },
     },
   },
   plugins: [

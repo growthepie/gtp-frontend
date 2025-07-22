@@ -196,6 +196,12 @@ const hardcodedMetadataArray = [
     "Title Template": "{{chainName}} Metrics | growthepie",
     "Description Template": "Get to know {{chainName}} and learn about the chain's usage using fundamental and economic metrics as well as its tracked applications.",
     "Status": "Published"
+  },
+  {
+    "Path": "/ethereum-ecosystem/metrics",
+    "Title Template": "Ethereum Ecosystem Metrics | growthepie",
+    "Description Template": "Explore real-time metrics for the Ethereum Ecosystem (Mainnet & Layer 2s): Track uptime, TPS, fees, and analyze its growth.",
+    "Status": "Published"
   }
 ];
 
