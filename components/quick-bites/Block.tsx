@@ -9,6 +9,7 @@ import { CodeBlock } from './blocks/CodeBlock';
 import { IframeBlock } from './blocks/IframeBlock';
 import { ListBlock } from './blocks/ListBlock';
 import KpiBlock from './blocks/KpiBlock';
+import { TableBlock } from './blocks/TableBlock';
 
 interface BlockProps {
   block: ContentBlock;
@@ -37,6 +38,8 @@ const Block: React.FC<BlockProps> = ({ block }) => {
     case 'kpi-cards':
       console.log('Rendering KPI cards block with items:', (block as any).items);
       return <KpiBlock block={block} />;
+    case 'table':
+      return <TableBlock block={block} />;
     default:
       console.warn(`Unknown block type: ${(block as any).type}`);
       return null;

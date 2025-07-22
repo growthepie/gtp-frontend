@@ -13,7 +13,8 @@ export type BlockType =
   | 'spacer'      // For vertical spacing
   | 'iframe'
   | 'list'      // For list items
-  | 'kpi-cards'; // For KPI card blocks
+  | 'kpi-cards' // For KPI card blocks
+  | 'table'; // For table blocks
 
 export interface BaseBlock {
   id: string;
@@ -41,6 +42,30 @@ export interface ImageBlock extends BaseBlock {
   width?: number | string;
   height?: number | string;
   className?: string;
+}
+
+
+export interface TableBlock extends BaseBlock {
+  type: 'table';
+  content: string;
+  className?: string;
+  columnKeys: {
+    [key: string]: {
+      sortByValue: boolean;
+      label?: string;
+    };
+  };
+  columnSortBy: "value" | "name" | undefined;
+  rowData: {
+    [key: string]: {
+      [columnKey: string]: {
+        value: number | string | undefined;
+        icon: string | undefined;
+        color: string | undefined;
+        link: string | undefined;
+      };
+    };
+  };
 }
 
 export interface ChartBlock extends BaseBlock {
@@ -147,6 +172,7 @@ export type ContentBlock =
   | ParagraphBlock
   | HeadingBlock
   | ImageBlock
+  | TableBlock
   | ChartBlock
   | CalloutBlock
   | CodeBlock

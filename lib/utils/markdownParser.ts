@@ -38,6 +38,24 @@ export async function processMarkdownContent(content: string[]): Promise<Content
           }
         }
       }
+      // Handle table blocks
+      else if (text.startsWith('```table')) {
+        // Check if the next line contains JSON data
+        if (i + 1 < content.length) {
+          const jsonString = content[i + 1];
+          // And check if the line after that is the closing marker
+          const closingMarker = i + 2 < content.length && content[i + 2] === '```';
+          
+          if (closingMarker) {
+            const tableBlock = parseTableBlock(jsonString);
+            if (tableBlock) {
+              blocks.push(tableBlock);
+              i += 2; // Important: Skip the JSON and closing marker lines
+              continue;
+            }
+          }
+        }
+      }
       // Handle iframe blocks
       else if (text.startsWith('```iframe')) {
         // ... (existing iframe logic is correct)
@@ -203,6 +221,45 @@ function parseChartBlock(jsonString: string): ContentBlock | null {
     };
   } catch (error) {
     console.error('Error parsing chart data:', error);
+    return null;
+  }
+}
+
+// Helper function to parse table blocks
+function parseTableBlock(jsonString: string): ContentBlock | null {
+  try {
+    const tableConfig = JSON.parse(jsonString);
+
+    if (!tableConfig.columnKeys || typeof tableConfig.columnKeys !== 'object') {
+      console.error('Error parsing table data: columnKeys must be an object');
+      return null;
+    }
+
+    if (!tableConfig.rowData || typeof tableConfig.rowData !== 'object') {
+      console.error('Error parsing table data: rowData must be an object');
+      return null;
+    }
+
+    // Validate that each column key has the required structure
+    for (const [key, config] of Object.entries(tableConfig.columnKeys)) {
+      if (!config || typeof config !== 'object' || typeof (config as any).sortByValue !== 'boolean') {
+        console.error(`Error parsing table data: columnKeys.${key} must have sortByValue boolean property`);
+        return null;
+      }
+    }
+
+    const block = {
+      id: generateBlockId(),
+      type: 'table' as const,
+      content: tableConfig.content || '',
+      className: tableConfig.className || '',
+      columnKeys: tableConfig.columnKeys,
+      columnSortBy: tableConfig.columnSortBy || undefined,
+      rowData: tableConfig.rowData
+    };
+    return block;
+  } catch (error) {
+    console.error('Error parsing table data:', error);
     return null;
   }
 }
