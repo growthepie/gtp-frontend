@@ -445,21 +445,21 @@ export const EthereumEcosystemTPSCard = React.memo(({
 
       <div className='relative flex flex-col gap-y-[30px] mb-[20px]'>
         <div className={`grid ${isCompact ? 'grid-cols-[0fr,0fr,1fr] ' : 'grid-cols-[1fr,1fr,1fr] '} justify-between items-center transition-[grid-template-columns] duration-500`}>
-          {/* 24h Peak */}
-          <div className={`group flex flex-col gap-y-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}>
-            <div className='heading-small-xxxs text-[#5A6462]'>
-              <div className='group-hover:hidden'>24h Peak</div>
-              <div className='hidden group-hover:block'>{moment.utc(globalMetrics.total_tps_24h_high_timestamp).format("D MMM YYYY HH:mm UTC")}</div>
-            </div>
-            <div className='numbers-sm'>{globalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { maximumFractionDigits: 0 }) || 0} TPS</div>
-          </div>
           {/* All-Time High */}
           <div className={`group flex flex-col gap-y-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'}`}>
             <div className='heading-small-xxxs text-[#5A6462]'>
               <div className='group-hover:hidden'>All-Time High</div>
-              <div className='hidden group-hover:block'>{moment.utc(globalMetrics.total_tps_ath_timestamp).format("D MMM YYYY HH:mm UTC")}</div>
+              <div className='hidden group-hover:block'>{moment.utc(globalMetrics.total_tps_ath_timestamp).format("D/M/Y HH:mm UTC")}</div>
             </div>
             <div className='numbers-sm'>{globalMetrics.total_tps_ath?.toLocaleString("en-GB", { maximumFractionDigits: 0 }) || 0} TPS</div>
+          </div>
+          {/* 24h Peak */}
+          <div className={`group flex flex-col gap-y-[2px] overflow-hidden ${isCompact ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}>
+            <div className='heading-small-xxxs text-[#5A6462]'>
+              <div className='group-hover:hidden'>24h Peak</div>
+              <div className='hidden group-hover:block'>{moment.utc(globalMetrics.total_tps_24h_high_timestamp).format("D/M/Y HH:mm UTC")}</div>
+            </div>
+            <div className='numbers-sm'>{globalMetrics.total_tps_24h_high?.toLocaleString("en-GB", { maximumFractionDigits: 0 }) || 0} TPS</div>
           </div>
           {/* Live TPS */}
           <div className={`flex flex-col ${isCompact ? 'items-start' : 'items-end '} transition-[justify-items] duration-500`}>
