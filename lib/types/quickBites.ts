@@ -8,7 +8,7 @@ export interface Author {
   }
   
   export interface Topic {
-    icon: string;
+    icon: GTPIconName;
     name: string;
     url: string;
     color?: string;

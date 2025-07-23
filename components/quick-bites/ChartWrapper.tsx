@@ -321,7 +321,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               crosshair={{
                 width: 0.5,
                 color: theme === 'dark' ? '#CDD8D3' : '#293332',
-                snap: false,
+                snap: true,
               }}
               labels={{
                 style: {

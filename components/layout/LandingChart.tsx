@@ -873,6 +873,11 @@ export default function LandingChart({
         minTickInterval: 30 * 24 * 3600 * 1000,
         minPadding: 0,
         maxPadding: 0,
+        crosshair: {
+            width: 0.5,
+            color: COLORS.PLOT_LINE,
+            snap: true,
+        },
         labels: {
           align: undefined,
           rotation: 0,

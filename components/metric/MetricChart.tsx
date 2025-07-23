@@ -1153,7 +1153,7 @@ function MetricChart({
               crosshair={{
                 width: 0.5,
                 color: COLORS.PLOT_LINE,
-                snap: false,
+                snap: true,
               }}
               tickColor="#5A6462"
               tickmarkPlacement="on"

@@ -149,9 +149,9 @@ const arbitrumTimeboost: QuickBiteData = {
     url: "/chains/arbitrum"
   },
   {
-    icon: "gtp-metrics-economics",
-    name: "Economics",
-    url: "/economics"
+    icon: "gtp-metrics-feespaidbyusers",
+    name: "Revenue",
+    url: "/fundamentals/fees-paid-by-users"
   }],
   icon: "arbitrum-logo-monochrome"
 };
