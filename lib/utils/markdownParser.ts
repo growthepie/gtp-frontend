@@ -230,34 +230,62 @@ function parseTableBlock(jsonString: string): ContentBlock | null {
   try {
     const tableConfig = JSON.parse(jsonString);
 
-    if (!tableConfig.columnKeys || typeof tableConfig.columnKeys !== 'object') {
-      console.error('Error parsing table data: columnKeys must be an object');
-      return null;
-    }
-
-    if (!tableConfig.rowData || typeof tableConfig.rowData !== 'object') {
-      console.error('Error parsing table data: rowData must be an object');
-      return null;
-    }
-
-    // Validate that each column key has the required structure
-    for (const [key, config] of Object.entries(tableConfig.columnKeys)) {
-      if (!config || typeof config !== 'object' || typeof (config as any).sortByValue !== 'boolean') {
-        console.error(`Error parsing table data: columnKeys.${key} must have sortByValue boolean property`);
+    // Check if this is a JSON-based table (reads from external source)
+    if (tableConfig.readFromJSON === true) {
+      // Validate JSON data configuration
+      if (!tableConfig.jsonData || typeof tableConfig.jsonData !== 'object') {
+        console.error('Error parsing table data: jsonData must be provided when readFromJSON is true');
         return null;
       }
-    }
 
-    const block = {
-      id: generateBlockId(),
-      type: 'table' as const,
-      content: tableConfig.content || '',
-      className: tableConfig.className || '',
-      columnKeys: tableConfig.columnKeys,
-      columnSortBy: tableConfig.columnSortBy || undefined,
-      rowData: tableConfig.rowData
-    };
-    return block;
+      const { url, pathToRowData, pathToColumnKeys, pathToTypes } = tableConfig.jsonData;
+      if (!url || !pathToRowData || !pathToColumnKeys || !pathToTypes) {
+        console.error('Error parsing table data: jsonData must include url, pathToRowData, pathToColumnKeys, and pathToTypes');
+        return null;
+      }
+
+      const block = {
+        id: generateBlockId(),
+        type: 'table' as const,
+        content: tableConfig.content || '',
+        className: tableConfig.className || '',
+        columnSortBy: tableConfig.columnSortBy || undefined,
+        readFromJSON: true,
+        jsonData: tableConfig.jsonData
+      };
+      return block;
+    } else {
+      // Original inline data structure
+      if (!tableConfig.columnKeys || typeof tableConfig.columnKeys !== 'object') {
+        console.error('Error parsing table data: columnKeys must be an object when readFromJSON is false');
+        return null;
+      }
+
+      if (!tableConfig.rowData || typeof tableConfig.rowData !== 'object') {
+        console.error('Error parsing table data: rowData must be an object when readFromJSON is false');
+        return null;
+      }
+
+      // Validate that each column key has the required structure
+      for (const [key, config] of Object.entries(tableConfig.columnKeys)) {
+        if (!config || typeof config !== 'object' || typeof (config as any).sortByValue !== 'boolean') {
+          console.error(`Error parsing table data: columnKeys.${key} must have sortByValue boolean property`);
+          return null;
+        }
+      }
+
+      const block = {
+        id: generateBlockId(),
+        type: 'table' as const,
+        content: tableConfig.content || '',
+        className: tableConfig.className || '',
+        columnKeys: tableConfig.columnKeys,
+        columnSortBy: tableConfig.columnSortBy || undefined,
+        readFromJSON: false,
+        rowData: tableConfig.rowData
+      };
+      return block;
+    }
   } catch (error) {
     console.error('Error parsing table data:', error);
     return null;

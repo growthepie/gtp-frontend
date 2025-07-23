@@ -49,20 +49,28 @@ export interface TableBlock extends BaseBlock {
   type: 'table';
   content: string;
   className?: string;
-  columnKeys: {
+  columnKeys?: {
     [key: string]: {
       sortByValue: boolean;
       label?: string;
     };
   };
   columnSortBy: "value" | "name" | undefined;
-  rowData: {
+  readFromJSON: boolean;
+  jsonData?: {
+    url: string;
+    pathToRowData: string;
+    pathToColumnKeys: string;
+    pathToTypes: string;
+  }
+
+  rowData?: {
     [key: string]: {
       [columnKey: string]: {
         value: number | string | undefined;
-        icon: string | undefined;
-        color: string | undefined;
-        link: string | undefined;
+        icon?: string | undefined;
+        color?: string | undefined;
+        link?: string | undefined;
       };
     };
   };

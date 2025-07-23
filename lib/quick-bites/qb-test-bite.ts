@@ -47,96 +47,14 @@ const testBite: QuickBiteData = {
     "```table",
     JSON.stringify({
       content: "Comparison of Layer 2 networks by key metrics",
-      columnKeys: {
-        name: {
-          sortByValue: false,
-          label: "Name"
-        },
-        tvl: {
-          sortByValue: true,
-          label: "TVL"
-        },
-        daily_txns: {
-          sortByValue: true,
-          label: "Daily Txns"
-        },
-        avg_fee: {
-          sortByValue: true,
-          label: "Avg Fee"
-        }
-      },
-      columnSortBy: "value",
-      rowData: {
-        "Arbitrum": {
-          name: {
-            value: "Arbitrum",
-            icon: "arbitrum-logo-monochrome",
-            color: "#28A0F0",
-            link: "/chains/arbitrum"
-          },
-          tvl: {
-            value: 18500000000,
-            icon: undefined,
-            color: undefined
-          },
-          daily_txns: {
-            value: 1200000,
-            icon: undefined,
-            color: undefined
-          },
-          avg_fee: {
-            value: 0.25,
-            icon: undefined,
-            color: undefined
-          }
-        },
-        "Optimism": {
-          name: {
-            value: "Optimism",
-            icon: "optimism-logo-monochrome",
-            color: "#FF0420",
-            link: "/chains/optimism"
-          },
-          tvl: {
-            value: 8200000000,
-            icon: undefined,
-            color: undefined
-          },
-          daily_txns: {
-            value: 800000,
-            icon: undefined,
-            color: undefined
-          },
-          avg_fee: {
-            value: 0.12,
-            icon: undefined,
-            color: undefined
-          }
-        },
-        "Base": {
-          name: {
-            value: "Base",
-            icon: "base-logo-monochrome",
-            color: "#2151F5",
-            link: "/chains/base"
-          },
-          tvl: {
-            value: 12800000000,
-            icon: undefined,
-            color: undefined
-          },
-          daily_txns: {
-            value: 2100000,
-            icon: undefined,
-            color: undefined
-          },
-          avg_fee: {
-            value: 0.08,
-            icon: undefined,
-            color: undefined
-          }
-        }
+      readFromJSON: true,
+      jsonData: {
+        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood_stock_table.json",
+        pathToRowData: "data.stocks.rows",
+        pathToColumnKeys: "data.stocks.columns",
+        pathToTypes: "data.stocks.types"
       }
+      
     }),
     "```",
     "# Main Header",
