@@ -74,7 +74,8 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
         // else respect the selectedScale for ethereum
         if (selectedScale === "percentage") return "area";
         if (selectedScale === "stacked") return "area";
-        return "line"; // for absolute scale
+        // Change this line to show area (stacked style) instead of line for absolute scale
+        return "area"; // for absolute scale - changed from "line" to "area"
       }
      
       if (selectedScale === "percentage") return "area";
