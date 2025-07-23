@@ -67,7 +67,7 @@ const hardcodedMetadataArray = [
   },
   {
     "Path": "/fundamentals/stablecoin-market-cap",
-    "Title Template": "Stablecoin Market Capitalization | growthepie",
+    "Title Template": "Stablecoin Supply | growthepie",
     "Description Template": "Analyze the distribution and growth of stablecoins across Ethereum and its scaling layers.",
     "Status": "Published"
   },
