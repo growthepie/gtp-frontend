@@ -60,39 +60,49 @@ export default function GlobalFloatingBar() {
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Handle search activation
-  const activateSearch = useCallback(() => {
+  const activateSearch = useCallback((event?: React.MouseEvent | React.TouchEvent) => {
     if (isMobile) {
+      // Prevent default to avoid any browser interference
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      
       // Clear any pending deactivation
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
       }
+      
       setIsSearchActive(true);
-
-      // Focus the search input after a brief delay to ensure the UI has updated
-      // This is important for mobile UX - users expect to start typing immediately
-      setTimeout(() => {
-        if (searchInputRef.current && !searchInputRef.current.matches(':focus')) {
+      
+      // Use multiple strategies to ensure focus works
+      const focusInput = () => {
+        if (searchInputRef.current) {
+          // Method 1: Direct focus
           searchInputRef.current.focus();
+          
+          // Method 2: For stubborn mobile browsers
+          searchInputRef.current.click();
+          
+          // Method 3: Set selection range to trigger keyboard
+          try {
+            searchInputRef.current.setSelectionRange(
+              searchInputRef.current.value.length,
+              searchInputRef.current.value.length
+            );
+          } catch (e) {
+            // Some input types don't support setSelectionRange
+          }
         }
-      }, 50);
+      };
+      
+      // Try immediate focus
+      focusInput();
+      
+      // Also try with requestAnimationFrame for browsers that need a paint cycle
+      requestAnimationFrame(focusInput);
     }
   }, [isMobile]);
-
-  // Effect to focus the search input when the search bar becomes active on mobile
-  useEffect(() => {
-    if (isMobile && isSearchActive) {
-      // Delay focusing slightly to allow UI transitions/updates to settle.
-      // The search bar container has a `transition-[margin] duration-200`.
-      // A small delay like 50ms should be enough for the input to be ready and avoid focus issues during animation.
-      const timerId = setTimeout(() => {
-        if (searchInputRef.current && document.activeElement !== searchInputRef.current) {
-          searchInputRef.current.focus();
-        }
-      }, 50); // Adjust delay if necessary (0, 50, 100ms are common)
-
-      return () => clearTimeout(timerId);
-    }
-  }, [isMobile, isSearchActive]);
 
   // Handle search deactivation with intelligent delay
   const deactivateSearch = useCallback(() => {
@@ -445,7 +455,7 @@ export default function GlobalFloatingBar() {
                 <div
                   ref={searchContainerRef}
                   className={`flex-1 min-w-0 relative h-[44px] ${isMobile && isSearchActive ? "-mx-[55px]" : ""
-                    } transition-[margin] duration-200`}
+                    } transition-[margin] duration-200 max-h-[calc(100vh-200px)]`}
                   // onMouseEnter={activateSearch}
                   // onMouseLeave={deactivateSearch}
                   onTouchStart={activateSearch}
@@ -456,7 +466,7 @@ export default function GlobalFloatingBar() {
                       showMore={showMore}
                       setShowMore={setShowMore}
                       showSearchContainer={false}
-                      onFocus={activateSearch}
+                      // onFocus={activateSearch}
                       onBlur={deactivateSearch}
                     />
                     
@@ -617,17 +627,17 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   // Only render the search container if we should show search results
-  if (!showSearchResults) {
-    return (
-      <div className="absolute bottom-[-5px] md:bottom-auto md:top-[-5px] left-0 w-full p-[5px] md:p-[5px] bg-[#344240] rounded-[32px] flex flex-col justify-start items-center">
-        <div ref={contentRef} className="w-full flex-1 overflow-hidden flex flex-col min-h-0">
-          <div className={`w-full bg-[#151A19] rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>
-            {children}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // if (!showSearchResults) {
+  //   return (
+  //     <div className="absolute bottom-[-5px] md:bottom-auto md:top-[-5px] left-0 w-full p-[5px] md:p-[5px] bg-[#344240] rounded-[32px] flex flex-col justify-start items-center">
+  //       <div ref={contentRef} className="w-full flex-1 overflow-hidden flex flex-col min-h-0">
+  //         <div className={`w-full bg-[#151A19] rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>
+  //           {children}
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="absolute bottom-[-5px] md:bottom-auto md:top-[-5px] left-0 w-full p-[5px] md:p-[5px] bg-[#344240] rounded-[32px] flex flex-col justify-start items-center">
@@ -638,7 +648,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
         </div>
       </div>
       {/* Keyboard shortcuts will now stay at the bottom */}
-      <div className={`flex px-[10px] pt-2 pb-[5px] items-start gap-[15px] self-stretch flex-shrink-0 ${!showKeyboardShortcuts ? 'hidden' : ''} max-sm:hidden`}>
+      <div className={`${showSearchResults ? 'flex' : 'hidden'} px-[10px] pt-2 pb-[5px] items-start gap-[15px] self-stretch flex-shrink-0 ${!showKeyboardShortcuts ? 'hidden' : ''} max-sm:hidden`}>
         <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px]">
           <svg xmlns="http://www.w3.org/2000/svg" width="70" height="21" viewBox="0 0 70 21" fill="none">
             {/* Up arrow */}

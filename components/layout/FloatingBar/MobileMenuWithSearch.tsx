@@ -357,7 +357,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
     if (allFilteredData.length === 0) {
       // No search results
       return (
-        <div className="flex flex-col items-center justify-center py-[40px] text-center">
+        <div className="flex flex-col items-center justify-center py-[40px] text-center h-full">
           <GTPIcon icon="gtp-search" size="lg" className="text-[#5A6462] mb-[10px]" />
           <div className="text-[#CDD8D3] text-sm mb-[5px]">No results found</div>
           <div className="text-[#5A6462] text-xs">Try searching for chains, features, or applications</div>
@@ -439,12 +439,12 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
       }`}
       style={{ 
         visibility: isOpen ? 'visible' : 'hidden',
-        maxHeight: isOpen ? '630px' : '0',
+        maxHeight: isOpen ? '40vh' : '0',
       }}
     >
       <div
         ref={containerRef}
-        className="flex flex-col h-[calc(100dvh-120px)] w-[calc(100vw-40px)] bg-[#1F2726] rounded-[22px] max-w-full max-h-[625px] will-change-transform mb-[5px]"
+        className="flex flex-col h-[calc(100vh-120px)] w-[calc(100vw-40px)] bg-[#1F2726] rounded-[22px] max-w-full max-h-[calc(40vh-5px)] will-change-transform mb-[5px]"
         style={{ transform: 'translateZ(0)' }}
       >
         {/* Header - minimal spacing only */}
@@ -455,7 +455,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
         <div className="flex-grow overflow-hidden px-[5px]">
           {isOpen && scrollableHeight > 0 ? (
             <VerticalScrollContainer height={scrollableHeight} scrollbarPosition="right" scrollbarAbsolute={false} scrollbarWidth="6px">
-              <div className="transition-all duration-300 ease-in-out">
+              <div className="transition-all duration-300 ease-in-out pb-[50px]">
                 {renderContent()}
               </div>
             </VerticalScrollContainer>
