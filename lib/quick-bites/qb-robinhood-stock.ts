@@ -5,15 +5,41 @@ const robinhoodStock: QuickBiteData = {
   title: "Robinhood Tokenized Stock Tracker",
   subtitle: "Tracking the adoption of Robinhood's tokenized stock on Arbitrum One",
   content: [
-
-    "# Title1",
+    "# Robinhood Tokenized Stocks",
     "blablabla...",
+
+    "```kpi-cards",JSON.stringify(
+      [
+        {
+          title: "Number of Stocks Tokenized",
+          value: "{{robinhood_stockCount}}",
+          description: "since launch",
+          icon: "gtp-realtime",
+          info: "Total number of stocks Robinhood tokenized on Arbitrum One.",
+        },
+        {
+          title: "Total Outstanding Tokenized Stock",
+          value: "${{robinhood_total_market_value_sum_usd}}",
+          description: "since launch",
+          icon: "gtp-realtime",
+          info: "Total outstanding USD value of tokenized stock by Robinhood on Arbitrum One.",
+        },
+        {
+          title: "Change in Total Outstanding Tokenized Stock",
+          value: "{{robinhood_perc_change_market_value_usd_7d}}%",
+          description: "change over the last 7 days",
+          icon: "gtp-realtime",
+          info: "Percentage change in total outstanding USD value of tokenized stock by Robinhood on Arbitrum One over the last 7 days.",
+        },
+      ]
+    ),
+    "```",
 
     "```chart",
     JSON.stringify({
       type: "column",
-      title: "Outstanding Tokenized Stock",
-      subtitle: "test",
+      title: "Total Value of Tokenized Stock",
+      subtitle: "USD value of all tokenized stocks on Arbitrum One over time.",
       stacking: "normal",
       showXAsDate: true,
       dataAsJson: {
@@ -26,7 +52,7 @@ const robinhoodStock: QuickBiteData = {
             suffix: null,
             prefix: '$',
             tooltipDecimals: 2,
-            url: "https://api.growthepie.com/v1/quick-bites/robinhood_totals.json",
+            url: "https://api.growthepie.com/v1/quick-bites/robinhood/totals.json",
             pathToData: "data.total_market_value_sum.daily.values",
           }
         ],
@@ -35,48 +61,20 @@ const robinhoodStock: QuickBiteData = {
       caption: "Outstanding tokenized stock USD value by Robinhood on Arbitrum One.",
     }),
     "```",
+
     "## Stock Table",
     "```table",
     JSON.stringify({
-      content: "Stock List",
-      columnKeys: {
-        contract_address: {
-          sortByValue: false,
-          label: "Contract Address",
-          link: "https://arbiscan.io/address/{{value}}",
-        },
-        ticker: {
-          sortByValue: true,
-          label: "Ticker"
-        },
-        name: {
-          sortByValue: true,
-          label: "Stock Name"
-        },
-        usd_outstanding: {
-          sortByValue: true,
-          label: "USD Tokenized"
-        },
-        stocks_tokenized: {
-          sortByValue: true,
-          label: "Stocks Tokenized"
-        },
-        usd_stock_price: {
-          sortByValue: true,
-          label: "USD Stock Price"
-        }
+      content: "All stocks robinhood has tokenized on Arbitrum One so far.",
+      readFromJSON: true,
+      jsonData: {
+        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood_stock_table.json",
+        pathToRowData: "data.stocks.rows",
+        pathToColumnKeys: "data.stocks.columns",
+        pathToTypes: "data.stocks.types"
       },
-      columnSortBy: "value",
-      dataAsJson: {
-        meta: [
-          {
-            url: "https://api.growthepie.xyz/v1/quick-bites/robinhood_stock_table.json",
-            pathToData: "data.stocks.rows",
-          }
-        ]
-      }
     }),
-    "```",
+    "```"
 
   ],
   image: "https://api.growthepie.com/v1/quick-bites/banners/timeboost.png",

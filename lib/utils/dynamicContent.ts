@@ -66,6 +66,28 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
         }
       }
 
+      // Handle Robinhood stock data placeholders
+      if (processedItem.includes('{{robinhood')) {
+        
+        const robinhoodData = await fetchData('robinhood', "https://api.growthepie.xyz/v1/quick-bites/robinhood/totals.json");
+        const robinhoodData2 = await fetchData('robinhood2', "https://api.growthepie.xyz/v1/quick-bites/robinhood/stock_table.json");
+        
+        //const total_market_value_sum_usd = robinhoodData?.data?.total_market_value_sum_usd?.toFixed(2);
+        const perc_change_market_value_usd_7d = robinhoodData?.data?.perc_change_market_value_usd_7d?.toFixed(2);
+        const stockCount = robinhoodData2?.data?.stockCount?.toString();
+
+        const total_market_value_sum_usd = parseFloat(robinhoodData.data.total_market_value_sum_usd).toLocaleString("en-GB", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 2
+        });
+
+        // Replace all placeholders regardless of individual checks
+        processedItem = processedItem
+          .replace('{{robinhood_total_market_value_sum_usd}}', total_market_value_sum_usd || 'N/A')
+          .replace('{{robinhood_perc_change_market_value_usd_7d}}', perc_change_market_value_usd_7d || 'N/A')
+          .replace('{{robinhood_stockCount}}', stockCount || 'N/A');
+      }
+
       // Add more API data sources here
       // Example for Ethereum data:
       // if (processedItem.includes('{{ethereum')) {
