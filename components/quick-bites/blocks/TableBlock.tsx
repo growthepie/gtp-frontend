@@ -13,7 +13,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     direction: 'asc' | 'desc';
   } | null>(null);
 
-  const { data: jsonData } = useSWR(block.readFromJSON ? block.jsonData?.url : null);
+  const { data: jsonData, error, isLoading } = useSWR(block.readFromJSON ? block.jsonData?.url : null);
 
   // Get the actual data source - either from block or from JSON
   const tableData = React.useMemo(() => {
@@ -25,64 +25,143 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
         data = data[part];
       }
       
-      // Convert array to rowData format
+      // Debug logging
+      if (process.env.NODE_ENV === 'development') {
+        console.log('TableBlock Data Debug:', {
+          pathToRowData: block.jsonData.pathToRowData,
+          dataType: Array.isArray(data) ? 'array' : typeof data,
+          dataLength: Array.isArray(data) ? data.length : 'not array',
+          firstItem: Array.isArray(data) && data.length > 0 ? data[0] : 'no first item'
+        });
+      }
+      
+      // Convert array format to rowData object format
       if (Array.isArray(data)) {
         const rowData: typeof block.rowData = {};
-        data.forEach((item, index) => {
-          const rowKey = item.name || item.id || `row-${index}`;
-          rowData[rowKey] = {};
+        data.forEach((rowItem, index) => {
+          // Generate a row key - try to use a meaningful identifier from the data
+          const tickerValue = rowItem.ticker?.value;
+          const nameValue = rowItem.name?.value;
+          const contractValue = rowItem.contract_address?.value;
+          const rowKey = tickerValue || nameValue || contractValue || `row-${index}`;
           
-          // Get the actual property values in order (by index, not by key name)
-          const dataValues = Object.values(item);
-          
-          // Map each data value to its corresponding column index
-          dataValues.forEach((value, columnIndex) => {
-            // Use column index as the key so it matches with dynamicColumnKeys
-            rowData[rowKey][`col_${columnIndex}`] = {
-              value: value as string | number
-              // icon, color, and link are optional and will be undefined by default
-            };
-          });
+          rowData[rowKey] = rowItem;
         });
+        
+        // Debug logging
+        if (process.env.NODE_ENV === 'development') {
+          console.log('TableBlock Converted Data:', {
+            originalArrayLength: data.length,
+            convertedObjectKeys: Object.keys(rowData).length,
+            sampleRowKey: Object.keys(rowData)[0],
+            sampleRowData: Object.keys(rowData).length > 0 ? rowData[Object.keys(rowData)[0]] : 'no rows'
+          });
+        }
+        
         return rowData;
       }
+      
+      // If it's already an object, use it directly
+      return data || {};
     }
     return block.rowData || {};
   }, [block.readFromJSON, block.rowData, block.jsonData, jsonData]);
 
   // Get the column keys - either from block or from JSON
   const dynamicColumnKeys = React.useMemo(() => {
-    if (block.readFromJSON && jsonData && block.jsonData?.pathToColumnKeys && block.jsonData?.pathToTypes) {
-      // Get columns array from JSON
+    if (block.readFromJSON && jsonData && block.jsonData?.pathToColumnKeys) {
+      // Get columnKeys from JSON if path is specified
       const columnPathParts = block.jsonData.pathToColumnKeys.split('.');
-      let columns = jsonData;
+      let columnKeys = jsonData;
       for (const part of columnPathParts) {
-        columns = columns[part];
+        columnKeys = columnKeys[part];
       }
-
-      // Get types array from JSON
-      const typePathParts = block.jsonData.pathToTypes.split('.');
-      let types = jsonData;
-      for (const part of typePathParts) {
-        types = types[part];
+      
+      // Debug logging
+      if (process.env.NODE_ENV === 'development') {
+        console.log('TableBlock ColumnKeys Debug (explicit path):', {
+          pathToColumnKeys: block.jsonData.pathToColumnKeys,
+          columnKeysType: typeof columnKeys,
+          columnKeysKeys: columnKeys && typeof columnKeys === 'object' ? Object.keys(columnKeys) : 'not object'
+        });
       }
-
-      // Build columnKeys object using index-based keys to match data
-      if (Array.isArray(columns) && Array.isArray(types)) {
-        const dynamicColumnKeys: typeof block.columnKeys = {};
-        columns.forEach((columnName: string, index: number) => {
-          const columnType = types[index] || 'string';
-          // Use col_${index} as key to match the data structure
-          dynamicColumnKeys[`col_${index}`] = {
-            sortByValue: columnType === 'number',
-            label: columnName // Use the column name directly as the label
+      
+      return columnKeys || {};
+    }
+    // If no specific path for columnKeys, try to infer from the same parent as rowData
+    if (block.readFromJSON && jsonData && block.jsonData?.pathToRowData) {
+      // Navigate to the parent path and look for columnKeys
+      const pathParts = block.jsonData.pathToRowData.split('.');
+      // Remove the last part (e.g., "rowData") to get the parent path
+      const parentPath = pathParts.slice(0, -1);
+      let parent = jsonData;
+      for (const part of parentPath) {
+        parent = parent[part];
+      }
+      // Try to find columnKeys in the same parent
+      if (parent && parent.columnKeys) {
+        // Debug logging
+        if (process.env.NODE_ENV === 'development') {
+          console.log('TableBlock ColumnKeys Debug (auto-discovered):', {
+            parentPath: parentPath.join('.'),
+            hasColumnKeys: !!parent.columnKeys,
+            columnKeysKeys: Object.keys(parent.columnKeys)
+          });
+        }
+        return parent.columnKeys;
+      }
+    }
+    // If no specific path for columnKeys, try to infer from the first row of data
+    if (block.readFromJSON && jsonData) {
+      const firstRowKey = Object.keys(tableData)[0];
+      if (firstRowKey && tableData[firstRowKey]) {
+        const inferredColumnKeys: typeof block.columnKeys = {};
+        Object.keys(tableData[firstRowKey]).forEach(columnKey => {
+          inferredColumnKeys[columnKey] = {
+            sortByValue: true, // Default to sortable
+            label: columnKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
           };
         });
-        return dynamicColumnKeys;
+        
+        // Debug logging
+        if (process.env.NODE_ENV === 'development') {
+          console.log('TableBlock ColumnKeys Debug (inferred):', {
+            inferredFrom: 'first row data',
+            columnKeysKeys: Object.keys(inferredColumnKeys)
+          });
+        }
+        
+        return inferredColumnKeys;
       }
     }
     return block.columnKeys || {};
-  }, [block.readFromJSON, block.columnKeys, block.jsonData, jsonData]);
+  }, [block.readFromJSON, block.columnKeys, block.jsonData, jsonData, tableData]);
+
+  // Helper function to determine if a column is primarily numeric
+  const isColumnNumeric = React.useMemo(() => {
+    const columnTypes: Record<string, boolean> = {};
+    const rowKeys = Object.keys(tableData);
+    
+    Object.keys(dynamicColumnKeys).forEach(columnKey => {
+      let numericCount = 0;
+      let totalCount = 0;
+      
+      rowKeys.forEach(rowKey => {
+        const cellData = tableData[rowKey]?.[columnKey];
+        if (cellData?.value !== undefined && cellData?.value !== null) {
+          totalCount++;
+          if (typeof cellData.value === 'number') {
+            numericCount++;
+          }
+        }
+      });
+      
+      // Consider a column numeric if more than 50% of non-empty values are numbers
+      columnTypes[columnKey] = totalCount > 0 && (numericCount / totalCount) > 0.5;
+    });
+    
+    return columnTypes;
+  }, [tableData, dynamicColumnKeys]);
 
   // Sort data based on current sort configuration
   const sortedRowKeys = React.useMemo(() => {
@@ -137,6 +216,51 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     });
   }, [tableData, dynamicColumnKeys, block.columnSortBy, sortConfig]);
 
+  // Add debug logging for development
+  React.useEffect(() => {
+    if (block.readFromJSON && process.env.NODE_ENV === 'development') {
+      console.log('TableBlock Debug:', {
+        url: block.jsonData?.url,
+        isLoading,
+        error,
+        hasData: !!jsonData,
+        jsonData: jsonData ? 'Data received' : 'No data'
+      });
+    }
+  }, [block.readFromJSON, block.jsonData?.url, isLoading, error, jsonData]);
+
+  // Show loading state
+  if (block.readFromJSON && isLoading) {
+    return (
+      <div className={`my-8 ${block.className || ''}`}>
+        {block.content && (
+          <div className="mb-4 text-sm text-forest-700 dark:text-forest-300">
+            {block.content}
+          </div>
+        )}
+        <div className="flex items-center justify-center p-8 text-forest-600 dark:text-forest-400">
+          Loading table data...
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (block.readFromJSON && error) {
+    return (
+      <div className={`my-8 ${block.className || ''}`}>
+        {block.content && (
+          <div className="mb-4 text-sm text-forest-700 dark:text-forest-300">
+            {block.content}
+          </div>
+        )}
+        <div className="flex items-center justify-center p-8 text-red-600 dark:text-red-400">
+          Error loading table data: {error.message}
+        </div>
+      </div>
+    );
+  }
+
   const handleSort = (key: string) => {
     setSortConfig(prevConfig => {
       if (prevConfig?.key === key) {
@@ -178,6 +302,22 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
   const columnKeyNames = Object.keys(dynamicColumnKeys);
   const gridDefinitionColumns = `${columnKeyNames.map(() => 'minmax(100px,1fr)').join(' ')}`;
 
+  // Show empty state if no data
+  if (Object.keys(tableData).length === 0 || columnKeyNames.length === 0) {
+    return (
+      <div className={`my-8 ${block.className || ''}`}>
+        {block.content && (
+          <div className="mb-4 text-sm text-forest-700 dark:text-forest-300">
+            {block.content}
+          </div>
+        )}
+        <div className="flex items-center justify-center p-8 text-forest-600 dark:text-forest-400">
+          No data available to display
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`my-8 ${block.className || ''}`}>
       {block.content && (
@@ -197,20 +337,28 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
             
             }}
           >
-            {Object.entries(dynamicColumnKeys).map(([columnKey, columnConfig]) => (
-              <div 
-                key={columnKey}
-                className="text-left px-4 py-2 heading-small-xxs cursor-pointer transition-colors"
-                onClick={() => columnConfig.sortByValue && handleSort(columnKey)}
-
-              >
-                <div className={`flex items-center gap-2 ${columnKey === "name" ? 'relative left-[15px]' : ''}`}>
-                  {columnConfig.label || columnKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                  
-                  {columnConfig.sortByValue && getSortIcon(columnKey)}
+            {Object.entries(dynamicColumnKeys).map(([columnKey, columnConfig]) => {
+              // Use the consistent column type detection
+              const isNumericColumn = isColumnNumeric[columnKey];
+              
+              return (
+                <div 
+                  key={columnKey}
+                  className={`px-4 py-2 heading-small-xxs cursor-pointer transition-colors ${
+                    isNumericColumn ? 'text-right' : 'text-left'
+                  }`}
+                  onClick={() => (columnConfig as any)?.sortByValue && handleSort(columnKey)}
+                >
+                  <div className={`flex items-center gap-2  ${
+                    isNumericColumn ? 'justify-end' : ''
+                  }`}>
+                    {(columnConfig as any)?.label || columnKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    
+                    {(columnConfig as any)?.sortByValue && getSortIcon(columnKey)}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           
           {/* Scrollable Data Container */}
@@ -231,11 +379,14 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                   >
                     {Object.keys(dynamicColumnKeys).map((columnKey) => {
                       const cellData = tableData[rowKey]?.[columnKey];
+                      // Use the consistent column type detection
+                      const isNumericColumn = isColumnNumeric[columnKey];
+                      
                       return (
-                        <div key={`${rowKey}-${columnKey}`} className={`flex items-center py-2 overflow-hidden ${columnKey === "name" ? 'relative right-[8px] px-4' : 'px-4'}`}
-                          
+                        <div key={`${rowKey}-${columnKey}`} className={`flex items-center py-2 overflow-hidden px-4 `}
+
                         >
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 w-full">
                             {cellData?.icon && (
                               <GTPIcon 
                                 icon={cellData.icon as GTPIconName} 
@@ -246,7 +397,9 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                             {cellData?.link ? (
                               <Link href={cellData.link}>
                                 <span 
-                                  className={`flex h-full w-full items-center hover:underline ${cellData?.value && typeof cellData?.value === 'number' ? 'numbers-xs' : 'text-xs '}`}
+                                  className={`flex h-full w-full items-center hover:underline ${
+                                    isNumericColumn ? 'numbers-xs justify-end' : 'text-xs'
+                                  }`}
                                 >
                                   {cellData?.value && typeof cellData?.value === 'number' && formatValue(cellData?.value)}
                                   {cellData?.value && typeof cellData?.value === 'string' && cellData?.value}
@@ -254,7 +407,9 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                               </Link>
                             ) : (
                               <span 
-                                className={`flex h-full w-full items-center truncate ${cellData?.value && typeof cellData?.value === 'number' ? 'numbers-xs text-right' : 'text-xs text-left'}`}
+                                className={`flex h-full w-full items-center truncate ${
+                                  isNumericColumn ? 'numbers-xs justify-end' : 'text-xs text-left'
+                                }`}
                               >
                                 {cellData?.value && typeof cellData?.value === 'number' && formatValue(cellData?.value)}
                                 {cellData?.value && typeof cellData?.value === 'string' && cellData?.value}

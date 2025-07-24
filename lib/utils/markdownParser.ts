@@ -251,9 +251,9 @@ function parseTableBlock(jsonString: string): ContentBlock | null {
         return null;
       }
 
-      const { url, pathToRowData, pathToColumnKeys, pathToTypes } = tableConfig.jsonData;
-      if (!url || !pathToRowData || !pathToColumnKeys || !pathToTypes) {
-        console.error('Error parsing table data: jsonData must include url, pathToRowData, pathToColumnKeys, and pathToTypes');
+      const { url, pathToRowData, pathToColumnKeys } = tableConfig.jsonData;
+      if (!url || !pathToRowData) {
+        console.error('Error parsing table data: jsonData must include url and pathToRowData');
         return null;
       }
 
@@ -264,7 +264,11 @@ function parseTableBlock(jsonString: string): ContentBlock | null {
         className: tableConfig.className || '',
         columnSortBy: tableConfig.columnSortBy || undefined,
         readFromJSON: true,
-        jsonData: tableConfig.jsonData,
+        jsonData: {
+          url,
+          pathToRowData,
+          pathToColumnKeys // Optional - component will auto-discover if not provided
+        },
         showInMenu: parseShowInMenu(tableConfig)
       };
       return block;

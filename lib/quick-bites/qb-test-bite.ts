@@ -49,10 +49,9 @@ const testBite: QuickBiteData = {
       content: "Comparison of Layer 2 networks by key metrics",
       readFromJSON: true,
       jsonData: {
-        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood_stock_table.json",
-        pathToRowData: "data.stocks.rows",
-        pathToColumnKeys: "data.stocks.columns",
-        pathToTypes: "data.stocks.types"
+        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood/stock_table.json",
+        pathToRowData: "data.stocks.rowData",
+        pathToColumnKeys: "data.stocks.columnKeys",
       }
       
     }),

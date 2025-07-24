@@ -62,8 +62,7 @@ export interface TableBlock extends BaseBlock {
   jsonData?: {
     url: string;
     pathToRowData: string;
-    pathToColumnKeys: string;
-    pathToTypes: string;
+    pathToColumnKeys?: string; // Optional - if not provided, will look for columnKeys in the same parent as rowData
   }
 
   rowData?: {
