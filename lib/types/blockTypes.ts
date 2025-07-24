@@ -6,7 +6,6 @@ export type BlockType =
   | 'image' 
   | 'chart' 
   | 'callout'
-  | 'code'
   | 'quote'
   | 'divider'
   | 'container'  // Container can hold multiple blocks horizontally
@@ -14,6 +13,7 @@ export type BlockType =
   | 'iframe'
   | 'list'      // For list items
   | 'kpi-cards' // For KPI card blocks
+  | 'dropdown'   // For dropdown blocks
   | 'table'; // For table blocks
 
 export interface BaseBlock {
@@ -44,7 +44,6 @@ export interface ImageBlock extends BaseBlock {
   height?: number | string;
   className?: string;
 }
-
 
 export interface TableBlock extends BaseBlock {
   type: 'table';
@@ -118,13 +117,6 @@ export interface CalloutBlock extends BaseBlock {
   className?: string;
 }
 
-export interface CodeBlock extends BaseBlock {
-  type: 'code';
-  content: string;
-  language?: string;
-  className?: string;
-}
-
 export interface QuoteBlock extends BaseBlock {
   type: 'quote';
   content: string;
@@ -177,14 +169,25 @@ export interface KpiCardsBlock extends BaseBlock {
   className?: string;
 }
 
+import { DropdownOption } from '@/components/quick-bites/Dropdown';
+export interface DropdownBlock extends BaseBlock {
+  type: 'dropdown';
+  label?: string;
+  placeholder?: string;
+  options: DropdownOption[];
+  defaultValue?: string;
+  searchable?: boolean;
+  disabled?: boolean;
+}
+
 export type ContentBlock = 
   | ParagraphBlock
   | HeadingBlock
   | ImageBlock
   | TableBlock
+  | DropdownBlock
   | ChartBlock
   | CalloutBlock
-  | CodeBlock
   | QuoteBlock
   | DividerBlock
   | ContainerBlock

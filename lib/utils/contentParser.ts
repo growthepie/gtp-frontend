@@ -1,4 +1,4 @@
-import { ContentBlock, ParagraphBlock, HeadingBlock, ImageBlock, CalloutBlock, ChartBlock, IframeBlock, CodeBlock, QuoteBlock, DividerBlock, generateBlockId } from '@/lib/types/blockTypes';
+import { ContentBlock, generateBlockId } from '@/lib/types/blockTypes';
 
 /**
  * Transforms an array of text content into structured content blocks
@@ -174,24 +174,6 @@ export function transformContentToBlocks(content: string[]): ContentBlock[] {
         j++;
       }
       
-      if (j < content.length && content[j] === '```') {
-        blocks.push({
-          id: generateBlockId(),
-          type: 'code',
-          content: codeContent.trim(),
-          language
-        });
-        
-        i = j; // Skip to after the closing ```
-        continue;
-      } else {
-        // If no closing tag, treat as regular paragraph
-        blocks.push({
-          id: generateBlockId(),
-          type: 'paragraph',
-          content: text
-        });
-      }
     }
     // Handle callouts
     else if (text.startsWith('> ')) {

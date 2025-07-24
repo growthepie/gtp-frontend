@@ -42,6 +42,82 @@ const testBite: QuickBiteData = {
           }
       ]),
     "```",
+
+      "## Interactive Dropdown Example",
+    "Here's an example of a searchable dropdown component for selecting blockchain networks:",
+    
+   "```dropdown",
+    JSON.stringify({
+      label: "Select a Blockchain Network",
+      placeholder: "Choose a network...",
+      searchable: true,
+      defaultValue: "arbitrum",
+      options: [
+        {
+          value: "ethereum",
+          label: "Ethereum Mainnet",
+          icon: "simple-icons:ethereum",
+          color: "#627EEA"
+        },
+        {
+          value: "arbitrum",
+          label: "Arbitrum One",
+          color: "#2D374B"
+        },
+        {
+          value: "base",
+          label: "Base",
+          icon: "simple-icons:coinbase",
+          color: "#2151F5"
+        },
+        {
+          value: "optimism",
+          label: "OP Mainnet",
+          icon: "simple-icons:optimism",
+          color: "#FE5468"
+        },
+        {
+          value: "polygon",
+          label: "Polygon PoS",
+          icon: "simple-icons:polygon",
+          color: "#8247E5"
+        },
+        {
+          value: "blast",
+          label: "Blast",
+          icon: "fluent:rocket-24-filled",
+          color: "#FCFC03"
+        },
+        {
+          value: "scroll",
+          label: "Scroll",
+          icon: "material-symbols:scroll",
+          color: "#FFEEDA"
+        },
+        {
+          value: "zksync",
+          label: "zkSync Era",
+          icon: "simple-icons:zksync",
+          color: "#1E69FF"
+        },
+        {
+          value: "linea",
+          label: "Linea",
+          icon: "material-symbols:line-curve",
+          color: "#61DFFF"
+        },
+        {
+          value: "mantle",
+          label: "Mantle",
+          icon: "material-symbols:layers",
+          color: "#000000"
+        }
+      ]
+    }),
+    "```",
+
+
+
     "## Table Example",
     "Here's an example of a sortable table showing L2 metrics:",
     "```table",
