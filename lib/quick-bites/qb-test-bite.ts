@@ -313,7 +313,8 @@ const testBite: QuickBiteData = {
     color: "#2151F5",
     name: "Base",
     url: "/chains/base"
-  }]
+  }],
+  showInMenu: false
 };
 
 export default testBite; 

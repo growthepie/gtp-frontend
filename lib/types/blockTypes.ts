@@ -19,6 +19,7 @@ export type BlockType =
 export interface BaseBlock {
   id: string;
   type: BlockType;
+  showInMenu?: boolean; // Optional property to control block visibility in menus, defaults to true
 }
 
 export interface ParagraphBlock extends BaseBlock {

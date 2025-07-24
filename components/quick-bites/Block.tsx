@@ -18,6 +18,11 @@ interface BlockProps {
 const Block: React.FC<BlockProps> = ({ block }) => {
   console.log('Rendering block:', block.type, block);
   
+  // Check if block should be hidden from menu
+  if (block.showInMenu === false) {
+    return null;
+  }
+  
   switch (block.type) {
     case 'paragraph':
       return <ParagraphBlock block={block} />;
@@ -36,7 +41,7 @@ const Block: React.FC<BlockProps> = ({ block }) => {
     case 'list':
       return <ListBlock block={block} />;
     case 'kpi-cards':
-      console.log('Rendering KPI cards block with items:', (block as any).items);
+     
       return <KpiBlock block={block} />;
     case 'table':
       return <TableBlock block={block} />;

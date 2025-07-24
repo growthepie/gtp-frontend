@@ -8,6 +8,14 @@ export async function markdownToHtml(markdown: string): Promise<string> {
   return markdown;
 }
 
+// Helper function to parse showInMenu from JSON configurations
+function parseShowInMenu(config: any): boolean | undefined {
+  if (config && typeof config.showInMenu === 'boolean') {
+    return config.showInMenu;
+  }
+  return undefined; // Default to showing in menu
+}
+
 // Process markdown array into structured blocks
 // Process markdown array into structured blocks
 export async function processMarkdownContent(content: string[]): Promise<ContentBlock[]> {
@@ -170,12 +178,15 @@ export async function processMarkdownContent(content: string[]): Promise<Content
 // Corrected helper function to parse kpi-cards blocks
 function parseKpiCardsBlock(jsonString: string): ContentBlock | null {
   try {
-    const kpiCardsArray = JSON.parse(jsonString);
+    const kpiCardsConfig = JSON.parse(jsonString);
 
-    if (!Array.isArray(kpiCardsArray)) {
-      console.error('Error parsing kpi cards data: The provided JSON is not an array.');
+    if (!Array.isArray(kpiCardsConfig.items) && !Array.isArray(kpiCardsConfig)) {
+      console.error('Error parsing kpi cards data: The provided JSON must contain an items array or be an array itself.');
       return null;
     }
+
+    // Handle both formats: direct array or object with items property
+    const kpiCardsArray = Array.isArray(kpiCardsConfig) ? kpiCardsConfig : kpiCardsConfig.items;
 
     // Ensure each item has the correct structure
     const validCards = kpiCardsArray.map(card => ({
@@ -190,7 +201,8 @@ function parseKpiCardsBlock(jsonString: string): ContentBlock | null {
       id: generateBlockId(),
       type: 'kpi-cards' as const,
       items: validCards,
-      className: ''
+      className: kpiCardsConfig.className || '',
+      showInMenu: parseShowInMenu(kpiCardsConfig)
     };
     return block;
   } catch (error) {
@@ -217,7 +229,8 @@ function parseChartBlock(jsonString: string): ContentBlock | null {
       stacking: chartConfig.stacking || null,
       showXAsDate: chartConfig.showXAsDate || false,
       dataAsJson: chartConfig.dataAsJson || null,
-      seeMetricURL: chartConfig.seeMetricURL || null
+      seeMetricURL: chartConfig.seeMetricURL || null,
+      showInMenu: parseShowInMenu(chartConfig)
     };
   } catch (error) {
     console.error('Error parsing chart data:', error);
@@ -251,7 +264,8 @@ function parseTableBlock(jsonString: string): ContentBlock | null {
         className: tableConfig.className || '',
         columnSortBy: tableConfig.columnSortBy || undefined,
         readFromJSON: true,
-        jsonData: tableConfig.jsonData
+        jsonData: tableConfig.jsonData,
+        showInMenu: parseShowInMenu(tableConfig)
       };
       return block;
     } else {
@@ -282,7 +296,8 @@ function parseTableBlock(jsonString: string): ContentBlock | null {
         columnKeys: tableConfig.columnKeys,
         columnSortBy: tableConfig.columnSortBy || undefined,
         readFromJSON: false,
-        rowData: tableConfig.rowData
+        rowData: tableConfig.rowData,
+        showInMenu: parseShowInMenu(tableConfig)
       };
       return block;
     }
@@ -303,7 +318,8 @@ function parseIframeBlock(jsonString: string): ContentBlock | null {
       title: iframeConfig.title || 'Embedded content',
       width: iframeConfig.width || '100%',
       height: iframeConfig.height || '500px',
-      caption: iframeConfig.caption || ''
+      caption: iframeConfig.caption || '',
+      showInMenu: parseShowInMenu(iframeConfig)
     };
   } catch (error) {
     console.error('Error parsing iframe data:', error);
@@ -323,7 +339,8 @@ function parseImageJsonBlock(jsonString: string): ContentBlock | null {
       width: imageConfig.width, // Keep as string/number or undefined
       height: imageConfig.height, // Keep as string/number or undefined
       caption: imageConfig.caption || '',
-      className: imageConfig.className || ''
+      className: imageConfig.className || '',
+      showInMenu: parseShowInMenu(imageConfig)
     };
   } catch (error) {
     console.error('Error parsing image JSON data:', error);
@@ -346,7 +363,7 @@ function parseImageBlock(imageText: string): ContentBlock {
   const attributesMatch = imageText.match(/\|\s*(.*?)\)/);
   const attributes = attributesMatch ? attributesMatch[1] : '';
   
-  let width, height, align;
+  let width, height, align, showInMenu;
   
   if (attributes) {
     attributes.split(',').forEach(attr => {
@@ -354,6 +371,7 @@ function parseImageBlock(imageText: string): ContentBlock {
       if (key === 'width') width = value;
       if (key === 'height') height = value;
       if (key === 'align') align = value;
+      if (key === 'showInMenu') showInMenu = value === 'true';
     });
   }
   
@@ -365,7 +383,8 @@ function parseImageBlock(imageText: string): ContentBlock {
     caption,
     width: width || '100%',
     height: height || 'auto',
-    className: align ? `text-${align}` : ''
+    className: align ? `text-${align}` : '',
+    showInMenu
   };
 }
 
