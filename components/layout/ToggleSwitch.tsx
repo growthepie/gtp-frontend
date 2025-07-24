@@ -104,11 +104,29 @@ export function ToggleSwitch({
       componentPadding: "px-[12px]",
       minWidth: "min-w-[90px]",
       labelPadding: "px-[14px]",
-      containerPaddingPx: 4,
+      containerPaddingPx: 3, // Matches px-[3px] - this is the single side padding
     }
   };
 
   const config = sizeConfig[size];
+
+  // Calculate the transform - handle undefined containerWidth gracefully
+  const getSliderTransform = () => {
+    const baseTransform = 'translateY(-50%)';
+    
+    if (!mounted || !containerWidth || containerWidth === 0) {
+      // Default to left position while container width is being measured
+      return `${baseTransform} translateX(0%)`;
+    }
+    
+    if (isLeftActive) {
+      return `${baseTransform} translateX(0%)`;
+    } else {
+      // Calculate right position: total width minus slider width minus padding
+      const rightOffset = containerWidth - (containerWidth / 2) - config.containerPaddingPx;
+      return `${baseTransform} translateX(${rightOffset}px)`;
+    }
+  };
 
   if (!mounted) {
     return null;
@@ -161,14 +179,14 @@ export function ToggleSwitch({
         {/* Sliding indicator - uses consistent padding and dynamic transform */}
         <div
           className={`
-            absolute top-1/2 z-20
+            absolute top-1/2 z-20 w-1/2
             ${config.slider} ${config.labelPadding} ${sliderColor}
             rounded-full flex items-center justify-center
-            ${mounted ? 'transition-transform duration-300 ease-out' : ''}
+            ${mounted && containerWidth ? 'transition-transform duration-300 ease-out' : ''}
           `}
           style={{
             left: `${config.containerPaddingPx / 2}px`,
-            transform: `translateY(-50%) ${isLeftActive ? 'translateX(0%)' : `translateX(calc(${containerWidth}px - 100% - 5px))`}`
+            transform: getSliderTransform()
           }}
         >
           <span className={`

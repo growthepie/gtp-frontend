@@ -459,6 +459,7 @@ export default function GlobalFloatingBar() {
                       onFocus={activateSearch}
                       onBlur={deactivateSearch}
                     />
+                    
                   </SearchContainer>
                 </div>
 

@@ -221,8 +221,10 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     const query = searchParams.get("query") || "";
     const [localQuery, setLocalQuery] = useState(query);
     const { totalMatches } = useSearchBuckets();
+    const [isFocused, setIsFocused] = useState(false);
 
     const handleInternalFocus = (event: React.FocusEvent<HTMLInputElement>) => {
+      setIsFocused(true);
       // Call original onFocus if provided for SearchBar's internal logic
       if (onFocus) {
         onFocus(event);
@@ -234,6 +236,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     };
 
     const handleInternalBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+      setIsFocused(false);
       // Call original onBlur if provided for SearchBar's internal logic
       if (onBlur) {
         onBlur(event);
@@ -294,7 +297,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       return (
         <div className={`flex w-full flex-col-reverse md:flex-col`}>
             {/* first child: the search bar w/ Icon and input */}
-            <div className="flex w-full gap-x-[10px] items-center bg-[#1F2726] rounded-[22px] h-[44px] p-2.5">
+            <div className="flex w-full gap-x-[10px] items-center bg-[#1F2726] rounded-[22px] h-[44px] p-[10px]">
               {localQuery.length > 0 ? (
                 <div className="flex items-center justify-center w-[24px] h-[24px]">
                   <Icon icon="feather:chevron-down" className="w-[24px] h-[24px]" />
@@ -313,7 +316,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                 onFocus={handleInternalFocus}
                 onBlur={handleInternalBlur}
               />
-              <div className={`absolute flex items-center gap-x-[10px] right-[20px] text-[8px] text-[#CDD8D3] font-medium ${localQuery.length > 0 ? "opacity-100" : "opacity-0 pointer-events-none"} transition-opacity duration-200`}>
+              <div className={`absolute flex items-center gap-x-[10px] right-[15px] text-[8px] text-[#CDD8D3] font-medium ${localQuery.length > 0 ? "opacity-100" : "opacity-0 pointer-events-none"} transition-opacity duration-200`}>
                 <div className="flex items-center px-[15px] h-[24px] border border-[#CDD8D3] rounded-full select-none">
                   <div className="text-xxxs text-[#CDD8D3] font-medium font-raleway -mb-[1px]">
                     {totalMatches} {totalMatches === 1 ? "result" : "results"}
@@ -338,6 +341,9 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                     </defs>
                   </svg>
                 </div>
+              </div>
+              <div className={`flex items-center justify-center size-[18px] rounded-[5px] bg-[#344240] pointer-events-none transition-opacity duration-200 ${isFocused || localQuery.length > 0 ? "opacity-0" : "opacity-100"}`}>
+                <div className="heading-small-sm text-[#CDD8D3]">/</div>
               </div>
             </div>
             {/* second child: the filter selection container */}

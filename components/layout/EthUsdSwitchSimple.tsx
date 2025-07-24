@@ -87,13 +87,6 @@ export default function EthUsdSwitchSimple({
           ${className}
         `.trim()}
       />
-      
-      {/* Subtle loading indicator when data is updating */}
-      {/* {isUpdating && (
-        <div className="absolute -top-[2px] -right-[2px] w-2 h-2 rounded-full bg-forest-500 animate-pulse">
-          <div className="absolute inset-0 rounded-full bg-forest-500 animate-ping opacity-75"></div>
-        </div>
-      )} */}
     </div>
   );
 }

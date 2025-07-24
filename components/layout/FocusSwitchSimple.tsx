@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { track } from "@vercel/analytics";
 import useAsyncStorage from "@/hooks/useAsyncStorage";
 import { ToggleSwitch } from "./ToggleSwitch";
+import { GTPTooltipNew, TooltipBody, TooltipHeader } from "../tooltip/GTPTooltip";
+import { useUIContext } from "@/contexts/UIContext";
 
 interface FocusSwitchProps {
   isMobile?: boolean;
@@ -15,6 +17,7 @@ export default function FocusSwitchSimple({
   className = "",
   showBorder = false,
 }: FocusSwitchProps) {
+  const { focusSwitchEnabled } = useUIContext();
   const [focusEnabled, setFocusEnabled] = useAsyncStorage("focusEnabled", false);
   const [mounted, setMounted] = useState(false);
 
@@ -42,27 +45,49 @@ export default function FocusSwitchSimple({
   }
 
   return (
-    <div className={`flex flex-col items-center gap-y-[5px] ${className}`.trim()}>
-      <span className="heading-small-xxxs text-[#5A6462]">
-        Total Ecosystem
-      </span>
-      <ToggleSwitch
-        values={{
-          left: {
-            value: "totalEcosystem",
-            label: "ON",
-          },
-          right: {
-            value: "l2Focus",
-            label: "OFF",
-          },
-        }}
-        value={focusEnabled ? "l2Focus" : "totalEcosystem"}
-        onChange={handleChange}
-        size={isMobile ? "sm" : "sm"}
-        // Removed redundant `className` prop which is already on the parent div
-        className={`${showBorder ? "rounded-full border border-[#5A6462]" : ""}`.trim()}
-      />
-    </div>
+    <GTPTooltipNew
+      placement="bottom-start"
+      trigger={
+        <div className={`flex flex-col items-center gap-y-[5px] ${className}`.trim()}>
+          <span className="heading-small-xxxs text-[#5A6462]">
+            Total Ecosystem
+          </span>
+          <ToggleSwitch
+            values={{
+              left: {
+                value: "totalEcosystem",
+                label: "ON",
+              },
+              right: {
+                value: "l2Focus",
+                label: "OFF",
+              },
+            }}
+            value={focusEnabled ? "l2Focus" : "totalEcosystem"}
+            onChange={handleChange}
+            size={isMobile ? "sm" : "sm"}
+            disabled={!focusSwitchEnabled}
+            // Removed redundant `className` prop which is already on the parent div
+            className={`${showBorder ? "rounded-full border border-[#5A6462]" : ""}`.trim()}
+          />
+        </div>
+      }
+      containerClass="flex flex-col gap-y-[10px] z-global-search-tooltip"
+      positionOffset={{ mainAxis: 12, crossAxis: 0 }}
+      size='md'
+    >
+      <TooltipHeader title={"Total Ecosystem vs L2 Focus"} />
+      <TooltipBody className='flex flex-col gap-y-[5px] pl-[20px]'>
+          <div>
+            Toggling between "Total Ecosystem" and "L2 focus" allows you to include Ethereum Mainnet on our pages or to focus solely on Layer 2s.
+          </div>
+        {!focusSwitchEnabled && (
+          <div className="text-xxs text-wrap text-forest-400">
+            Currently disabled because current page encompasses the full Ethereum Ecosystem, therefore the focus switch is not applicable.
+          </div>
+        )}
+      </TooltipBody>
+
+    </GTPTooltipNew>
   );
 }

@@ -97,7 +97,7 @@ export default function FocusSwitch({ isMobile, showBorder=false, className}: Fo
         values={{
           left: {
             value: "totalEcosystem",
-            label: "Total Ecosystem"
+            label: "Ecosystem"
           },
           right: {
             value: "l2Focus",

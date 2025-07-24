@@ -104,12 +104,13 @@ export default function Header() {
                   <>
                     <Notification />
                     <HeaderSearchButton />
-                  </>
-                )}
+                
 
                 <div className="w-auto">
                   <Sidebar isMobile={true} />
                 </div>
+                </>
+                )}
               </div>
             </div>
           </div>
