@@ -75,7 +75,7 @@ const Chain = ({ params }: { params: any }) => {
       Title: "Fees Paid By Users",
     },
     stables_mcap: {
-      Title: "Stablecoin Market Cap",
+      Title: "Stablecoin Supply",
     },
     profit: {
       Title: "Onchain Profit",

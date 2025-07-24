@@ -992,7 +992,7 @@ export default function EconHeadCharts({
                               crosshair={{
                                 width: 0.5,
                                 color: COLORS.PLOT_LINE,
-                                snap: false,
+                                snap: true,
                               }}
                               tickmarkPlacement="on"
                               tickWidth={0}

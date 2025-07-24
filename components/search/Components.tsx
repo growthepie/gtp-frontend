@@ -18,6 +18,7 @@ import { HeaderButton } from "../layout/HeaderButton";
 import { debounce } from "lodash";
 import { numberFormat } from "highcharts";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+import { getAllQuickBites } from "@/lib/quick-bites/quickBites";
 import type { InputHTMLAttributes } from 'react';
 
 function normalizeString(str: string) {
@@ -437,62 +438,88 @@ export const useSearchBuckets = () => {
   };
 
   // first bucket = chains
-  const searchBuckets: SearchBucket[] = useMemo(() => [
-    {
-      label: "Chains",
-      icon: "gtp-chain",
-      options: Object.entries(AllChainsByKeys)
-        .filter(([key]) => key !== "all_l2s" && key !== "multiple")
-        .map(([_, chain]) => ({
-          label: chain.label,
-          url: `/chains/${chain.urlKey}`,
-          icon: `gtp:${chain.urlKey}-logo-monochrome`,
-          color: chain.colors.dark[0]
-        })),
-      groupOptions: Object.entries(AllChainsByStacks)
-        .map(([bucket, chains]) => ({
-          label: bucket,
-          options: chains.map(chain => ({
-            label: chain.name,
-            url: `/chains/${chain.url_key}`,
-            icon: `gtp:${chain.url_key}-logo-monochrome`,
+  const searchBuckets: SearchBucket[] = useMemo(() => {
+    // Get all quick bites for the Quick Bites bucket
+    const allQuickBites = getAllQuickBites()
+      .filter(quickBite => quickBite.slug !== "test-bite"); // Filter out test quick bite
+    
+    // Process navigation items and insert Quick Bites before Blockspace
+    const processedNavigationItems = navigationItems
+      .reduce((acc, navItem) => {
+        // If this is Blockspace, insert Quick Bites first
+        if (navItem.name === "Blockspace") {
+          acc.push({
+            label: "Quick Bites",
+            icon: "gtp-quick-bites",
+            options: allQuickBites.map(quickBite => ({
+              label: quickBite.title,
+              url: `/quick-bites/${quickBite.slug}`,
+              icon: "gtp-quick-bites",
+              color: undefined
+            }))
+          });
+        }
+        
+        // Add the current navigation item
+        acc.push({
+          label: navItem.name,
+          icon: navItem.icon,
+          options: navItem.name === "Applications" 
+            ? [
+                ...navItem.options.map(option => ({
+                  label: option.label,
+                  url: option.url || "",
+                  icon: `gtp:${option.icon}`,
+                  color: undefined
+                })),
+                ...Object.entries(ownerProjectToProjectData)
+                  .filter(([owner, project]) => project.on_apps_page)
+                  .map(([owner, project]) => ({
+                    label: project.display_name,
+                    url: `/applications/${project.owner_project}`,
+                    icon: project.logo_path 
+                      ? `https://api.growthepie.xyz/v1/apps/logos/${project.logo_path}`
+                      : "gtp-project-monochrome",
+                    color: undefined
+                  }))
+              ]
+            : navItem.options.map(option => ({
+                label: option.label,
+                url: option.url || "",
+                icon: `gtp:${option.icon}`,
+                color: undefined
+              }))
+        });
+        
+        return acc;
+      }, [] as SearchBucket[]);
+
+    return [
+      {
+        label: "Chains",
+        icon: "gtp-chain",
+        options: Object.entries(AllChainsByKeys)
+          .filter(([key]) => key !== "all_l2s" && key !== "multiple")
+          .map(([_, chain]) => ({
+            label: chain.label,
+            url: `/chains/${chain.urlKey}`,
+            icon: `gtp:${chain.urlKey}-logo-monochrome`,
             color: chain.colors.dark[0]
+          })),
+        groupOptions: Object.entries(AllChainsByStacks)
+          .map(([bucket, chains]) => ({
+            label: bucket,
+            options: chains.map(chain => ({
+              label: chain.name,
+              url: `/chains/${chain.url_key}`,
+              icon: `gtp:${chain.url_key}-logo-monochrome`,
+              color: chain.colors.dark[0]
+            }))
           }))
-        }))
-    },
-    ...navigationItems.filter(navItem => navItem.name !== "Applications").map(navItem => ({
-      label: navItem.name,
-      icon: navItem.icon,
-      options: navItem.options.map(option => ({
-        label: option.label,
-        url: option.url || "",
-        icon: `gtp:${option.icon}`,
-        color: undefined
-      }))
-    })),
-    {
-      label: "Applications",
-      icon: "gtp-project",
-      options: [
-        ...navigationItems.filter(navItem => navItem.name === "Applications")[0].options.map(option => ({
-          label: option.label,
-          url: option.url || "",
-          icon: `gtp:${option.icon}`,
-          color: undefined
-        })),
-        ...Object.entries(ownerProjectToProjectData)
-          .filter(([owner, project]) => project.on_apps_page)
-          .map(([owner, project]) => ({
-            label: project.display_name,
-            url: `/applications/${project.owner_project}`,
-            icon: project.logo_path 
-              ? `https://api.growthepie.xyz/v1/apps/logos/${project.logo_path}`
-              : "gtp-project-monochrome",
-            color: undefined
-          }))
-      ]
-    }
-  ], [AllChainsByKeys, ownerProjectToProjectData, AllChainsByStacks]);
+      },
+      ...processedNavigationItems,
+    ];
+  }, [AllChainsByKeys, ownerProjectToProjectData, AllChainsByStacks]);
 
 
   const allFilteredData = useMemo(() => {
@@ -500,40 +527,40 @@ export const useSearchBuckets = () => {
     const bucketMatch = query ? searchBuckets.find(bucket => {
       const bucketName = normalizeString(bucket.label);
       const searchQuery = normalizeString(query);
-
+  
       // Calculate the minimum length needed (40% of bucket name)
       const minQueryLength = Math.ceil(bucketName.length * 0.4);
-
+  
       // Check if query is long enough and matches from the start
       return searchQuery.length >= minQueryLength &&
         bucketName.startsWith(searchQuery);
     }) : null;
-
+  
     // Get regular search results
     const regularSearchResults = searchBuckets.map(bucket => {
       const bucketOptions = bucket.options;
       const lowerQuery = normalizeString(query || "");
-
+  
       // Split into three categories
       const exactMatches = bucketOptions.filter(option =>
         normalizeString(option.label) === lowerQuery
       );
-
+  
       const startsWithMatches = bucketOptions.filter(option => {
         const lowerLabel = normalizeString(option.label);
         return lowerLabel !== lowerQuery && // not an exact match
           lowerLabel.startsWith(lowerQuery);
       });
-
+  
       const containsMatches = bucketOptions.filter(option => {
         const lowerLabel = normalizeString(option.label);
         return lowerLabel !== lowerQuery && // not an exact match
           !lowerLabel.startsWith(lowerQuery) && // not a starts with match
           lowerLabel.includes(lowerQuery);
       });
-
+  
       const groupOptions = bucket.groupOptions;
-
+  
       const groupOptionsMatches = groupOptions?.filter(group => {
         const lowerLabel = normalizeString(group.label);
         const normalizedQuery = normalizeString(query || "");
@@ -545,7 +572,7 @@ export const useSearchBuckets = () => {
         
         return lowerLabel.includes(normalizedQuery);
       });
-
+  
       return {
         type: bucket.label,
         icon: bucket.icon,
@@ -554,34 +581,35 @@ export const useSearchBuckets = () => {
         isBucketMatch: false
       };
     });
-
+  
     // Filter out empty buckets from regular results first
     const filteredRegularResults = regularSearchResults.filter(bucket =>
       bucket.filteredData.length > 0 || (bucket.filteredGroupData && bucket.filteredGroupData.length > 0)
     );
-
+  
     // Sort regular results
     const sortedRegularResults = filteredRegularResults.sort((a, b) => {
       // First, prioritize Chains bucket
       if (a.type === "Chains" && b.type !== "Chains") return -1;
       if (b.type === "Chains" && a.type !== "Chains") return 1;
-
-      // For remaining items, maintain the order from navigationItems
-      const aIndex = navigationItems.findIndex(item => item.name === a.type);
-      const bIndex = navigationItems.findIndex(item => item.name === b.type);
-
-      // If both items are found in navigationItems, sort by their order
+  
+      // For remaining items, maintain the order from processedNavigationItems
+      // Find the indices in the original searchBuckets array
+      const aIndex = searchBuckets.findIndex(bucket => bucket.label === a.type);
+      const bIndex = searchBuckets.findIndex(bucket => bucket.label === b.type);
+  
+      // If both items are found in searchBuckets, sort by their order
       if (aIndex !== -1 && bIndex !== -1) {
         return aIndex - bIndex;
       }
-
-      // If one item is not in navigationItems, put it last
+  
+      // If one item is not in searchBuckets, put it last
       if (aIndex === -1) return 1;
       if (bIndex === -1) return -1;
-
+  
       return 0;
     });
-
+  
     // Add bucket match at the end if it exists
     return bucketMatch && bucketMatch.options.length > 0
       ? [...sortedRegularResults, {
@@ -741,7 +769,20 @@ export const SearchBadge = memo(({
 
   const getLeftIcon = () => {
     if (!leftIcon) return null;
-    // if the icon is a url, return an image
+
+    // Check if the icon is for Quick Bites results
+    if (leftIcon === "gtp-quick-bites") {
+      return (
+        <div className="flex items-center justify-center w-[15px] h-[15px] pl-[2px]">
+          <GTPIcon
+            icon="gtp-quick-bites"
+            size="sm"
+          />
+        </div>
+      );
+    }
+
+    // If the icon is a URL, return an image
     if (leftIcon?.startsWith("http")) {
       return <Image src={leftIcon} alt={label as string} className="rounded-full w-[15px] h-[15px]" width={15} height={15} />;
     }
@@ -1291,7 +1332,13 @@ const BucketItem = ({
   setShowMore: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>,
   setKeyboardExpandedStacks: React.Dispatch<React.SetStateAction<Set<string>>>
 }) => {
-  const isApps = bucket === "Applications";
+  // Handle bucket match with trailing space
+  const cleanBucket = bucket.trim();
+  const isApps = cleanBucket === "Applications";
+  const isQuickBites = cleanBucket === "Quick Bites";
+  
+  // Check if this is a bucket match (bucket name has trailing space)
+  const isBucketMatch = bucket.endsWith(" ");
   
   // Check if this is a stack result (itemKey contains "::")
   const isStackResult = itemKey.includes("::");
@@ -1301,7 +1348,15 @@ const BucketItem = ({
 
   return (
     <Link
-      href={lastBucketIndeces[itemKey] && !showMore[bucket] ? isApps ? `/applications?q=${query}&timespan=max` : `` : item.url}
+      href={lastBucketIndeces[itemKey] && !showMore[bucket] 
+        ? isApps 
+          ? isBucketMatch 
+            ? `/applications` // No search params for Applications bucket match
+            : `/applications?q=${query}&timespan=max` // Search params for normal Applications results
+          : isQuickBites 
+            ? `/quick-bites` 
+            : ``
+        : item.url}
       key={item.label}
       ref={(el) => {
         childRefs.current[itemKey] = el;
@@ -1309,13 +1364,17 @@ const BucketItem = ({
 
       onClick={(e) => {
         if (lastBucketIndeces[itemKey] && !showMore[bucket]) {
-          if (!isApps) {
-            setShowMore(prev => ({ ...prev, [bucket]: true }));
-            // Blur to remove focus rectangle on mouse click
-            if (e.currentTarget instanceof HTMLElement) {
-              e.currentTarget.blur();
-            }
+          // For Quick Bites and Applications, let the Link navigate naturally
+          if (isQuickBites || isApps) {
+            return; // Don't prevent default, let Link handle navigation
           }
+          // For other buckets, expand the results
+          setShowMore(prev => ({ ...prev, [bucket]: true }));
+          // Blur to remove focus rectangle on mouse click
+          if (e.currentTarget instanceof HTMLElement) {
+            e.currentTarget.blur();
+          }
+          e.preventDefault(); // Prevent navigation for expansion
           return;
         }
       }}
@@ -1323,14 +1382,18 @@ const BucketItem = ({
       onKeyDown={(e) => {
         if (e.key === 'Enter') {
           if (lastBucketIndeces[itemKey] && !showMore[bucket]) {
-            if (!isApps) {
-              setShowMore(prev => ({ ...prev, [bucket]: true }));
-              setKeyboardExpandedStacks(prev => {
-                const newSet = new Set(prev);
-                newSet.add(itemKey);
-                return newSet;
-              });
+            // For Quick Bites and Applications, let the Link navigate naturally
+            if (isQuickBites || isApps) {
+              return; // Don't prevent default, let Link handle navigation
             }
+            // For other buckets, expand the results
+            setShowMore(prev => ({ ...prev, [bucket]: true }));
+            setKeyboardExpandedStacks(prev => {
+              const newSet = new Set(prev);
+              newSet.add(itemKey);
+              return newSet;
+            });
+            e.preventDefault(); // Prevent navigation for expansion
           }
         }
       }}

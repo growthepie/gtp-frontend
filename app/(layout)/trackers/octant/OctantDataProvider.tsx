@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { OctantURLs } from '@/lib/urls'
 import useSWR from 'swr'
+import moment from 'moment';
 
 // Utility function for safe numeric sorting with better null handling
 const getSortValue = (item: any, metric: string, epochString: string): number => {
@@ -153,7 +154,7 @@ export const OctantDataProvider = ({ children }) => {
       .map(([epoch, data]) => ({
         epoch,
         label: `Epoch ${epoch}`,
-        hasAllocationStarted: data.has_allocation_started
+        hasAllocationStarted: moment.utc(data.allocationStart).isBefore(moment.utc()) === true
       }))
       .sort((a, b) => parseInt(a.epoch) - parseInt(b.epoch));
 

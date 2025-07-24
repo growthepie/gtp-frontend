@@ -343,7 +343,7 @@ export default function FeesPage() {
 
       if (x.includes("mantleda") || x.includes("eigenda")) {
         retObject.push({
-          icon: "customoffchain",
+          icon: "da-eigenda-logo-monochrome",
           label: "EigenDA",
         });
       }

@@ -103,6 +103,13 @@ export default function ChainBreakdown({
         });
       }
 
+      if (x.includes("EigenDA")) {
+        retObject.push({
+          icon: "da-eigenda-logo-monochrome",
+          label: "EigenDA",
+        });
+      }
+
       if (x.includes("DAC")) {
         retObject.push({
           icon: "committee",
@@ -919,9 +926,9 @@ export default function ChainBreakdown({
                 )[0];
                
 
-                console.log(((data[item.key][selectedTimespan].revenue
-                  .total[dataIndex]) /
-                maxRevenue) + " " + item.key);
+                // console.log(((data[item.key][selectedTimespan].revenue
+                //   .total[dataIndex]) /
+                // maxRevenue) + " " + item.key);
 
                 return (
                   <animated.div

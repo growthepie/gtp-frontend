@@ -52,7 +52,7 @@ export const metricItems: MetricItem[] = [
     page: {
       title: "Active Addresses",
       description:
-        "The number of distinct addresses that interacted with a chain.",
+        "The number of distinct addresses that interacted with a chain. This only includes addresses that initiated a transaction or interacted with a smart contract.",
       why: "Active addresses is a widely used metric for estimating the engagement on a blockchain network. Although it is not a perfect metric due to the possibility of a single person owning multiple addresses, it can still provide valuable insights into the overall activity of a chain. It is worth noting, however, that this metric can be influenced by Sybil attacks, where an attacker creates a large number of fake identities to artificially inflate the active address count. Therefore, while active addresses can be a useful measure, it should be used in conjunction with other metrics to provide a more comprehensive analysis of a chain's user activity.",
       icon: "gtp-metrics-activeaddresses",
     },
@@ -82,7 +82,7 @@ export const metricItems: MetricItem[] = [
     page: {
       title: "Throughput",
       description:
-        "A chains throughput measured in gas per second. We only include EVM equivalent Layer 2 gas usage.",
+        "Throughput is the amount of gas used per second, reflecting how much computational work the network is handling. We only include EVM equivalent Layer 2 gas usage.",
       why: "Throughput is a crucial metric for assessing scalability, reflecting a blockchain's actual compute capacity more accurately than transaction counts, which can vary in complexity (i.e. 21,000 gas for an eth transfer vs 280,000 gas for a simple Uniswap swap). Similarly to how modern storage devices are marketed with specs on read/write speeds rather than the number of files they can process, throughput provides a direct measure of a blockchain's ability to handle compute effectively. Throughput also reveals how close a chain is to its operational limits. This metric is essential for app developers and Layer 2 teams to gauge growth potential, potential cost implications, and performance constraints.",
       icon: "gtp-metrics-throughput",
     },
@@ -92,13 +92,13 @@ export const metricItems: MetricItem[] = [
     urlKey: "throughput",
   },
   {
-    label: "Stablecoin Market Cap",
+    label: "Stablecoin Supply",
     category: "value-locked",
     page: {
-      title: "Stablecoin Market Cap",
+      title: "Stablecoin Supply",
       description:
-        "The sum of all tracked stablecoins that are secured by the chain.",
-      why: "Stablecoin market cap is a crucial metric for evaluating the growth and development of a blockchain's use-cases. Stablecoins are a popular choice for use in DeFi applications such as lending, borrowing, and trading as well as payments. Since stablecoins are usually 1:1 backed by real-world assets, this metric is harder to inflate than Total Value Secured which includes all types of tokens.",
+        "The value of all stablecoins that are secured by the chain. Stablecoins are cryptocurrencies that attempt to peg their market value to a fiat currency like the U.S. dollar or Euro.",
+      why: "Stablecoin supply is a crucial metric for evaluating the growth and development of a blockchain's use-cases. Stablecoins are a popular choice for use in DeFi applications such as lending, borrowing, and trading as well as payments. Since stablecoins are usually 1:1 backed by real-world assets, this metric is harder to inflate than Total Value Secured which includes all types of tokens.",
       icon: "gtp-metrics-stablecoinmarketcap",
     },
     icon: "gtp-metrics-stablecoinmarketcap",
@@ -112,7 +112,7 @@ export const metricItems: MetricItem[] = [
     page: {
       title: "Total Value Secured",
       description:
-        "The sum of all funds secured by the chain. Methodology and data is derived from L2Beat.com.",
+        "The sum of all assets secured by the chain, including canonically bridged, externally bridged, and natively issued tokens. Methodology and data is derived from L2Beat.com.",
       why: "Total Value Secured is a crucial metric for assessing the success in a blockchain. High TVS indicates that users have significant trust in the chain's security and reliability, as well as confidence in the usefulness and functionality of the various applications available on the chain.",
       icon: "gtp-metrics-totalvaluelocked",
     },
@@ -127,14 +127,14 @@ export const metricItems: MetricItem[] = [
     category: "convenience",
     page: {
       title: "Transaction Costs",
-      description: "The median amount that is paid per transaction.",
+      description: "The median amount that a user pays to execute a transaction on a chain. This metric can be influenced by the complexity of the transaction, which is measured in gas.",
       note: (
         <>
           1 Billion <b className="font-semibold">Gwei</b> equals 1{" "}
           <b className="font-semibold">ETH</b>.
         </>
       ),
-      why: "This is the amount that users pay per transaction. On EVM chains, transaction costs depend on the complexity of the transaction (which is measured in gas). A simple transaction, e.g. a native ETH transfer, uses less gas than a more complex transaction, e.g. an ERC20 swap. Hence, we calculated this metric by looking at the median transaction costs. IMX doesn't charge transaction costs.",
+      why: "This is the amount that users pay per transaction. On EVM chains, transaction costs depend on the complexity of the transaction (which is measured in gas). A simple transaction, e.g. a native ETH transfer, uses less gas than a more complex transaction, e.g. an ERC20 swap. Hence, we calculated this metric by looking at the median transaction costs.",
       icon: "gtp-metrics-transactioncosts",
       showGwei: true,
       reversePerformer: true,
@@ -151,7 +151,7 @@ export const metricItems: MetricItem[] = [
     page: {
       title: "Revenue",
       description:
-        "The sum of fees that were paid by users of the chain in gas fees.",
+        "The total amount of network fees that were paid by users of the chain to execute transactions. These fees are collected by the chain's sequencers.",
       why: "Revenue is a critical metric for measuring a blockchain's adoption and is the sum of all gas fees paid by users. A high fee revenue can be an indication that users find the chain's applications and security valuable, and are willing to pay for it. The Revenue metric reflects the total amount of onchain income generated by the network.",
       icon: "gtp-metrics-feespaidbyusers",
     },
@@ -166,7 +166,7 @@ export const metricItems: MetricItem[] = [
     page: {
       title: "Rent Paid to L1",
       description:
-        "The gas fees paid by Layer 2s to post transaction data & verification states onto Ethereum. For data availability: Ethereum Calldata and Ethereum Blobs are tracked here.",
+        "The fees paid by Layer 2s to post transaction data & verification states onto Ethereum. For data availability: Ethereum Calldata and Ethereum Blobs are tracked here.",
       why: "Rent paid to L1 quantifies the expenses associated with posting L2 transaction data and proofs onto the Ethereum blockchain. The term 'rent' signifies the gas fees L2s incur to leverage the security of the Ethereum blockchain. This metric provides valuable insights into the value accrual for ETH holders.",
       icon: "gtp-metrics-rentpaidtol1",
     },

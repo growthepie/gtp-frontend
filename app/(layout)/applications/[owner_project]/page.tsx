@@ -38,6 +38,7 @@ export default function Page({ params: { owner_project } }: Props) {
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { selectedMetrics } = useMetrics();
   const { data: master } = useMaster();
+  const { selectedTimespan } = useTimespan();
 
   const SourcesDisplay = useMemo(() => {
     if (!master)
@@ -127,7 +128,7 @@ export default function Page({ params: { owner_project } }: Props) {
               </div>
             </div>
             <div className="text-xs">
-              See the most active contracts for {ownerProjectToProjectData[owner_project] ? ` for ${ownerProjectToProjectData[owner_project].display_name}` : ""} (All Time).
+              See the most active contracts for {ownerProjectToProjectData[owner_project] ? ` ${ownerProjectToProjectData[owner_project].display_name}` : ""} ({selectedTimespan === "max" ? "All Time" : `last  ${selectedTimespan.replace("d", "")} days`}).
             </div>
           </div>
         </div>

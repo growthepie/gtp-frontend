@@ -18,6 +18,7 @@ import {LandingFirstHeaders, LandingSecondHeaders} from "@/components/home/Landi
 import { getPageMetadata } from "@/lib/metadata";
 import QuickBitesSection from "@/components/home/QuickBitesSection"; // Import the new component
 import { IS_PRODUCTION } from "@/lib/helpers";
+import { LinkButton } from "@/components/layout/LinkButton";
 
 export async function generateMetadata(): Promise<Metadata> {
   const metadata = await getPageMetadata(
@@ -41,11 +42,9 @@ export default async function Page() {
           <Subheading className="text-lg md:text-xl">
             Ethereum is more than one blockchain. It&apos;s many.
           </Subheading>
-          <a className="flex p-[3px] bg-[#344240] rounded-full items-center gap-x-[2px] md:gap-x-[4px] relative top-[1px]" href="https://ethereum.org/" target="_blank">
-              <GTPIcon icon={"ethereum-logo-monochrome"} size="sm" className="" />
-              <div className="text-xxs md:text-xs text-nowrap">What is Ethereum?</div>
-              <Icon icon="feather:arrow-right" className="w-[9px] h-[9px]" />
-          </a>
+          <LinkButton href="https://ethereum.org/" icon="ethereum-logo-monochrome" iconClassName="text-[#94ABD3]">
+            What is Ethereum?
+          </LinkButton>
         </div>
       </Container>
       <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[30px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">

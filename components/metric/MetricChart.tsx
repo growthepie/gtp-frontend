@@ -268,7 +268,6 @@ function MetricChart({
     //return navigationItems[1].options.find((item) => item.key === metric_id);
 
   }, [metric_id, metric_type]);
-  console.log(navItem);
 
   const urlKey = useMemo(() => {
     if (!navItem) return null;
@@ -1154,7 +1153,7 @@ function MetricChart({
               crosshair={{
                 width: 0.5,
                 color: COLORS.PLOT_LINE,
-                snap: false,
+                snap: true,
               }}
               tickColor="#5A6462"
               tickmarkPlacement="on"

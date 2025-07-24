@@ -218,7 +218,7 @@ const MetricTable = ({
         let types = data.chains[chain][lastValueTimeIntervalKey].types;
         let values =
           data.chains[chain][lastValueTimeIntervalKey].data[
-            data.chains[chain][lastValueTimeIntervalKey].data.length - 1
+          data.chains[chain][lastValueTimeIntervalKey].data.length - 1
           ];
         let lastVal = values[valueIndex];
 
@@ -267,12 +267,12 @@ const MetricTable = ({
     return chainKeys
       .filter(
         (chain) =>
-          (chain !== "ethereum" ? true : !focusEnabled ) &&
+          (chain !== "ethereum" ? true : !focusEnabled) &&
           Object.keys(allChainsByKeys).includes(chain) &&
           allChainsByKeys[chain],
       )
       .map((chain: any) => {
-       
+
         return {
           data: data.chains[chain],
           chain: allChainsByKeys[chain],
@@ -325,26 +325,105 @@ const MetricTable = ({
     focusEnabled
   ]);
 
+  const [sort, setSort] = useState<{ metric: string; sortOrder: string }>({
+    metric: "lastVal",
+    sortOrder: "desc",
+  });
+
+  const lastValueLabels = {
+    monthly: "last 30d",
+    daily: "Yesterday",
+    daily_7d_rolling: "Yesterday",
+  };
+
+  const timespanLabels = {
+    "1d": "24h",
+    // "7d": "7 days",
+    "30d": "30 days",
+    "365d": "1 year",
+  };
+
+  const timespanLabelsMonthly = {
+    "30d": "1 month",
+    // "90d": "3 months",
+    "180d": "6 months",
+    "365d": "1 year",
+  };
+
   let height = 0;
   const transitions = useTransition(
-    rows().map((data) => ({
+    rows().sort((a, b) => {
+      const aIsSelected = selectedChains.includes(a.chain.key);
+      const bIsSelected = selectedChains.includes(b.chain.key);
+      if (sort.metric === "lastVal") {
+        if (aIsSelected && !bIsSelected) {
+          return -1;
+        }
+        if (!aIsSelected && bIsSelected) {
+          return 1;
+        }
+        return sort.sortOrder === "desc" ? b.lastVal - a.lastVal : a.lastVal - b.lastVal;
+      }
+      else if (sort.metric === "chain") {
+        if (aIsSelected && !bIsSelected) {
+          return -1;
+        }
+        if (!aIsSelected && bIsSelected) {
+          return 1;
+        }
+        return sort.sortOrder === "desc" ? b.chain.key.localeCompare(a.chain.key) : a.chain.key.localeCompare(b.chain.key);
+      }
+      // if sort.metric is a timespan, sort by the timespan value
+      else if (Object.keys(timespanLabels).includes(sort.metric)) {
+        const timespanIndex = Object.keys(timespanLabels).indexOf(sort.metric);
+        const bVal = b.data[changesKey][Object.keys(timespanLabels)[timespanIndex]][0];
+        const aVal = a.data[changesKey][Object.keys(timespanLabels)[timespanIndex]][0];
+
+        if (aIsSelected && !bIsSelected) {
+          return -1;
+        }
+        if (!aIsSelected && bIsSelected) {
+          return 1;
+        }
+        if (bVal === null && aVal === null) {
+          return 0;
+        }
+        if (bVal === null && aVal !== null) {
+          return -1;
+        }
+        if (bVal !== null && aVal === null) {
+          return 1;
+        }
+
+        return sort.sortOrder === "desc" ? bVal - aVal : aVal - bVal;
+      }
+      return 0;
+    }).map((data) => ({
       ...data,
       y: (height += 39) - 39,
       height: 39,
     })),
     {
       key: (d) => d.chain.key,
-      from: { opacity: 0, height: 0 },
-      leave: { opacity: 0, height: 0 },
+      from: ({ y, height }) => ({ opacity: 0, y, height }),
       enter: ({ y, height }) => ({ opacity: 1, y, height }),
-      update: ({ y, height }) => ({ y, height }),
-      config: { mass: 5, tension: 500, friction: 100 },
-      trail: 25,
+      update: ({ y, height }) => ({ y, height }),            // smooth reordering
+      leave: ({ y, height }) => ({ opacity: 0, y, height }),
+
+      trail: 6, // tiny cascade
+
+      config: (item, idx, phase) => ({
+        mass: 0.6,
+        tension: 520,
+        friction: 40,
+        clamp: phase === 'leave',
+        precision: 0.01,
+      }),
     },
   );
 
   function formatNumber(number: number, decimals?: number): string {
-    
+
     if (number === 0) {
       return "0";
     } else if (Math.abs(number) >= 1e9) {
@@ -398,7 +477,7 @@ const MetricTable = ({
       let types = item.data[lastValueTimeIntervalKey].types;
       let values =
         item.data[lastValueTimeIntervalKey].data[
-          item.data[lastValueTimeIntervalKey].data.length - 1
+        item.data[lastValueTimeIntervalKey].data.length - 1
         ];
       // let value = formatNumber(
       //   item.data[lastValueTimeIntervalKey].data[
@@ -413,12 +492,12 @@ const MetricTable = ({
       }
 
       let value;
-      if(!focusEnabled && item.chain.key !== "ethereum") {
+      if (!focusEnabled && item.chain.key !== "ethereum") {
         value = formatNumber(lastValues[item.chain.key]);
-      }else if(lastValues[item.chain.key] !== undefined) {
-      
+      } else if (lastValues[item.chain.key] !== undefined) {
+
         value = formatNumber(lastValues[item.chain.key]);
-      }else {
+      } else {
         value = lastValues[item.chain.key];
       }
 
@@ -452,26 +531,6 @@ const MetricTable = ({
     ],
   );
 
-  const lastValueLabels = {
-    monthly: "last 30d",
-    daily: "Yesterday",
-    daily_7d_rolling: "Yesterday",
-  };
-
-  const timespanLabels = {
-    "1d": "24h",
-    // "7d": "7 days",
-    "30d": "30 days",
-    "365d": "1 year",
-  };
-
-  const timespanLabelsMonthly = {
-    "30d": "1 month",
-    // "90d": "3 months",
-    "180d": "6 months",
-    "365d": "1 year",
-  };
-
   if (!data) return null;
 
   return (
@@ -490,21 +549,44 @@ const MetricTable = ({
             <div className="relative pr-[0px] lg:pr-[45px]">
               <GridTableHeader
                 gridDefinitionColumns="grid-cols-[26px_minmax(30px,2000px)_61px_61px_61px_61px]"
-                className="z-[2] flex h-[30px] select-none items-center gap-x-[10px] !pb-0 !pl-[5px] !pr-[21px] !pt-0 text-[12px] !font-bold"
+                className="z-[20] md:z-[2] flex h-[30px] select-none items-center gap-x-[10px] !pb-0 !pl-[5px] !pr-[25px] !pt-0 text-[12px] !font-bold"
               >
+                {/* Icon */}
                 <GridTableHeaderCell>
                   <div></div>
                 </GridTableHeaderCell>
-                <GridTableHeaderCell>Chain</GridTableHeaderCell>
-                <GridTableHeaderCell justify="end" className="truncate">
+                <GridTableHeaderCell
+                  metric="chain"
+                  className="heading-small-xxs"
+                  sort={sort}
+                  setSort={setSort}
+                >
+                  Chain
+                </GridTableHeaderCell>
+                {/* Last Value */}
+                <GridTableHeaderCell
+                  metric="lastVal"
+                  justify="end"
+                  className="truncate heading-small-xxs"
+                  sort={sort}
+                  setSort={setSort}
+                >
                   {lastValueLabels[timeIntervalKey]}
                 </GridTableHeaderCell>
+                {/* Timespans */}
                 {Object.entries(
                   timeIntervalKey === "monthly"
                     ? timespanLabelsMonthly
                     : timespanLabels,
                 ).map(([timespan, label]) => (
-                  <GridTableHeaderCell key={timespan} justify="end">
+                  <GridTableHeaderCell
+                    key={timespan}
+                    metric={timespan}
+                    justify="end"
+                    className="heading-small-xxs"
+                    sort={sort}
+                    setSort={setSort}
+                  >
                     {label}
                   </GridTableHeaderCell>
                 ))}
@@ -530,11 +612,10 @@ const MetricTable = ({
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className={`h-6 w-6 ${
-                      chainSelectToggleState === "none"
+                    className={`h-6 w-6 ${chainSelectToggleState === "none"
                         ? "opacity-100"
                         : "opacity-0"
-                    }`}
+                      }`}
                   >
                     <circle
                       xmlns="http://www.w3.org/2000/svg"
@@ -545,19 +626,17 @@ const MetricTable = ({
                   </svg>
                 </div>
                 <div
-                  className={`rounded-full p-1 ${
-                    chainSelectToggleState === "none"
+                  className={`rounded-full p-1 ${chainSelectToggleState === "none"
                       ? "bg-forest-50 dark:bg-[#1F2726]"
                       : "bg-white dark:bg-forest-1000"
-                  }`}
+                    }`}
                 >
                   <Icon
                     icon="feather:check-circle"
-                    className={`h-[15px] w-[15px] ${
-                      chainSelectToggleState === "none"
+                    className={`h-[15px] w-[15px] ${chainSelectToggleState === "none"
                         ? "opacity-0"
                         : "opacity-100"
-                    }`}
+                      }`}
                     style={{
                       color:
                         chainSelectToggleState === "all"
@@ -582,21 +661,30 @@ const MetricTable = ({
           <div className="relative pr-[16px] lg:pr-[45px]">
             <GridTableHeader
               gridDefinitionColumns="grid-cols-[26px_minmax(30px,2000px)_61px_61px_61px_61px]"
-              className="z-[2] flex h-[30px] select-none items-center gap-x-[10px] !pb-0 !pl-[5px] !pr-[21px] !pt-0 text-[12px] !font-bold"
+              className="z-[2] flex h-[30px] select-none items-center gap-x-[10px] !pb-0 !pl-[5px] !pr-[25px] !pt-0 text-[12px] !font-bold"
             >
+              {/* Icon */}
               <GridTableHeaderCell>
                 <div></div>
               </GridTableHeaderCell>
-              <GridTableHeaderCell>Chain</GridTableHeaderCell>
-              <GridTableHeaderCell justify="end" className="truncate">
+              {/* Chain */}
+              <GridTableHeaderCell
+                metric="chain"
+                className="heading-small-xxs"
+                sort={sort}
+                setSort={setSort}
+              >Chain</GridTableHeaderCell>
+              {/* Last Value */}
+              <GridTableHeaderCell metric="lastVal" justify="end" className="truncate heading-small-xxs" sort={sort} setSort={setSort}>
                 {lastValueLabels[timeIntervalKey]}
               </GridTableHeaderCell>
+              {/* Timespans */}
               {Object.entries(
                 timeIntervalKey === "monthly"
                   ? timespanLabelsMonthly
                   : timespanLabels,
               ).map(([timespan, label]) => (
-                <GridTableHeaderCell key={timespan} justify="end">
+                <GridTableHeaderCell key={timespan} metric={timespan} justify="end" className="heading-small-xxs" sort={sort} setSort={setSort}>
                   {label}
                 </GridTableHeaderCell>
               ))}
@@ -622,11 +710,10 @@ const MetricTable = ({
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className={`h-6 w-6 ${
-                    chainSelectToggleState === "none"
+                  className={`h-6 w-6 ${chainSelectToggleState === "none"
                       ? "opacity-100"
                       : "opacity-0"
-                  }`}
+                    }`}
                 >
                   <circle
                     xmlns="http://www.w3.org/2000/svg"
@@ -637,19 +724,17 @@ const MetricTable = ({
                 </svg>
               </div>
               <div
-                className={`rounded-full p-1 ${
-                  chainSelectToggleState === "none"
+                className={`rounded-full p-1 ${chainSelectToggleState === "none"
                     ? "bg-forest-50 dark:bg-[#1F2726]"
                     : "bg-white dark:bg-forest-1000"
-                }`}
+                  }`}
               >
                 <Icon
                   icon="feather:check-circle"
-                  className={`h-[15px] w-[15px] ${
-                    chainSelectToggleState === "none"
+                  className={`h-[15px] w-[15px] ${chainSelectToggleState === "none"
                       ? "opacity-0"
                       : "opacity-100"
-                  }`}
+                    }`}
                   style={{
                     color:
                       chainSelectToggleState === "all"
@@ -664,23 +749,22 @@ const MetricTable = ({
           </div>
         </div>
         <div style={{ height: `${rows().length * 37}px` }}>
-          {transitions((style, item, t, index) => (
+          {transitions((styles, item, t, index) => (
             <animated.div
               className="absolute w-full select-none pr-[16px] lg:pr-[45px]"
               style={{
                 zIndex: chainKeys.length - index,
-                ...style,
+                ...styles,
               }}
             >
               <div className="group relative">
                 <GridTableRow
                   key={item.chain.key}
                   gridDefinitionColumns="grid-cols-[26px_minmax(30px,2000px)_61px_61px_61px_61px]"
-                  className={`z-[2] flex h-[34px] cursor-pointer select-none items-center gap-x-[10px] !pb-0 !pl-[5px] !pr-[21px] !pt-0 text-[14px] ${
-                    selectedChains.includes(item.chain.key)
+                  className={`z-[2] flex h-[34px] cursor-pointer select-none items-center gap-x-[10px] !pb-0 !pl-[5px] !pr-[25px] !pt-0 text-[14px] ${selectedChains.includes(item.chain.key)
                       ? "border-black/[16%] group-hover:bg-forest-500/10 dark:border-[#5A6462]"
                       : "border-black/[16%] transition-all duration-100 group-hover:bg-forest-500/5 dark:border-[#5A6462]"
-                  }`}
+                    }`}
                   onClick={() => handleChainClick(item.chain.key)}
                   bar={{
                     width: item.barWidth,
@@ -713,7 +797,7 @@ const MetricTable = ({
                   </div>
                   <div className="text-xs">
                     {metric_type === "fundamentals" &&
-                    ChainsNavigationItemsByKeys[item.chain.key] ? (
+                      ChainsNavigationItemsByKeys[item.chain.key] ? (
                       <Link
                         href={`/chains/${ChainsNavigationItemsByKeys[item.chain.key].urlKey}`}
                         className={`truncate hover:underline`}
@@ -746,7 +830,7 @@ const MetricTable = ({
                   ).map((timespan) => (
                     <div key={timespan} className="w-full text-right">
                       {item.data[changesKey][timespan][changesValueIndex] ===
-                      null ? (
+                        null ? (
                         <span className="inline-block text-center text-gray-500 numbers-xs">
                           —
                         </span>
@@ -754,9 +838,9 @@ const MetricTable = ({
                         <>
                           {(reversePerformer ? -1.0 : 1.0) *
                             item.data[changesKey][timespan][
-                              changesValueIndex
+                            changesValueIndex
                             ] >=
-                          0 ? (
+                            0 ? (
                             <div
                               className={`text-positive numbers-xs`}
                               style={{
@@ -770,7 +854,7 @@ const MetricTable = ({
                                 const rawPercentage = Math.abs(
                                   Math.round(
                                     item.data[changesKey][timespan][
-                                      changesValueIndex
+                                    changesValueIndex
                                     ] * 1000,
                                   ) / 10,
                                 ).toFixed(1);
@@ -806,7 +890,7 @@ const MetricTable = ({
                               {Math.abs(
                                 Math.round(
                                   item.data[changesKey][timespan][
-                                    changesValueIndex
+                                  changesValueIndex
                                   ] * 1000,
                                 ) / 10,
                               ).toFixed(1)}
@@ -840,11 +924,10 @@ const MetricTable = ({
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className={`h-6 w-6 ${
-                           selectedChains.includes(item.chain.key)
-                            ? "opacity-0"
-                            : "opacity-100"
-                      }`}
+                      className={`h-6 w-6 ${selectedChains.includes(item.chain.key)
+                          ? "opacity-0"
+                          : "opacity-100"
+                        }`}
                     >
                       <circle
                         xmlns="http://www.w3.org/2000/svg"
@@ -855,19 +938,17 @@ const MetricTable = ({
                     </svg>
                   </div>
                   <div
-                    className={`rounded-full p-1 ${
-                      selectedChains.includes(item.chain.key)
+                    className={`rounded-full p-1 ${selectedChains.includes(item.chain.key)
                         ? "bg-white dark:bg-forest-1000"
                         : "bg-forest-50 dark:bg-[#1F2726]"
-                    }`}
+                      }`}
                   >
                     <Icon
                       icon="feather:check-circle"
-                      className={`h-[24px] w-[24px] ${
-                         selectedChains.includes(item.chain.key)
-                            ? "opacity-100"
-                            : "opacity-0"
-                      }`}
+                      className={`h-[24px] w-[24px] ${selectedChains.includes(item.chain.key)
+                          ? "opacity-100"
+                          : "opacity-0"
+                        }`}
                       style={{
                         color: selectedChains.includes(item.chain.key)
                           ? undefined

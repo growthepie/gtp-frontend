@@ -18,6 +18,7 @@ export type MeetL2s = {
         stables_mcap_usd: number;
         stables_mcap_eth: number;
         tps: number;
+        top_apps: string[];
     }
 }
 

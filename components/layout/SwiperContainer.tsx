@@ -10,7 +10,7 @@ export type SwiperContainerProps = {
   ariaId?: string;
   // chrildren should be SplideTrack
   children: React.ReactElement<typeof SplideTrack>;
-  size?: "landing" | "data-availability" | "economics";
+  size?: "landing" | "data-availability" | "economics" | "meet-layer-2s";
 };
 
 export default function SwiperContainer({
@@ -26,6 +26,7 @@ export default function SwiperContainer({
     landing: "h-[145px] md:h-[183px]",
     "data-availability": "h-[232px]",
     economics: "h-[197px]",
+    "meet-layer-2s": "h-[270px]",
   };
 
   const splideRef = React.useRef<Splide>(null);
@@ -42,6 +43,50 @@ export default function SwiperContainer({
   //   }
   // }, []);
 
+  let breakpoints: { [key: number]: { perPage: number } } = {
+    640: {
+      perPage: 1,
+    },
+    900: {
+      perPage: isSidebarOpen ? 1 : 2,
+    },
+    1100: {
+      perPage: 2,
+    },
+    1250: {
+      perPage: isSidebarOpen ? 2 : 3,
+    },
+    1450: {
+      perPage: 3,
+    },
+    1600: {
+      perPage: 3,
+    },
+    6000: {
+      perPage: 3,
+    },
+  }
+
+  if(size === "meet-layer-2s") {
+    breakpoints = {
+      640: {
+        perPage: 1,
+      },
+      900: {
+        perPage: 2,
+      },
+      1250: {
+        perPage: 3,
+      },
+      1600: {
+        perPage: 4,
+      },
+      6000: {
+        perPage: 5,
+      }
+    }
+  }
+
   return (
     <Container className="!px-0 fade-edge-div pb-[24px] -mb-[24px]">
       <div className={`relative wrapper w-full ${sizeClassMap[size]}`}>
@@ -55,29 +100,7 @@ export default function SwiperContainer({
               left: isMobile ? "30px" : "50px",
               right: isMobile ? "30px" : "50px",
             },
-            breakpoints: {
-              640: {
-                perPage: 1,
-              },
-              900: {
-                perPage: isSidebarOpen ? 1 : 2,
-              },
-              1100: {
-                perPage: 2,
-              },
-              1250: {
-                perPage: isSidebarOpen ? 2 : 3,
-              },
-              1450: {
-                perPage: 3,
-              },
-              1600: {
-                perPage: 3,
-              },
-              6000: {
-                perPage: 3,
-              },
-            },
+            breakpoints: breakpoints,
           }}
           onResized={(splide) => {
             splide.on("overflow", function (isOverflow) {

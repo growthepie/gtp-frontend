@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Heading from "@/components/layout/Heading";
 import useSWR from "swr";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { EconomicsURL } from "@/lib/urls";
 import {
   EconomicsResponse,
@@ -16,8 +16,10 @@ import ShowLoading from "@/components/layout/ShowLoading";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { MasterURL } from "@/lib/urls";
 import Container from "@/components/layout/Container";
+import { useMaster } from "@/contexts/MasterContext";
 
 export default function Economics() {
+  const { SupportedChainKeys } = useMaster();
   const {
     data: econData,
     error: econError,
@@ -35,6 +37,12 @@ export default function Economics() {
   const [selectedTimespan, setSelectedTimespan] = useState("365d");
   const [isMonthly, setIsMonthly] = useState(false);
 
+
+  const chainBreakdownData = useMemo(() => {
+    if (!econData) return {};
+    return Object.fromEntries(Object.entries(econData.data.chain_breakdown).filter(([chain]) => SupportedChainKeys.includes(chain)));
+  }, [econData, SupportedChainKeys]);
+
   return (
     <>
       <ShowLoading
@@ -46,7 +54,7 @@ export default function Economics() {
         <div className={`flex flex-col gap-y-[15px]`}>
           {econData && <EconHeadCharts chart_data={econData.data.all_l2s} selectedTimespan={selectedTimespan} setSelectedTimespan={setSelectedTimespan} isMonthly={isMonthly} setIsMonthly={setIsMonthly} />}
         </div>
-        {econData && master && <ChainBreakdown data={Object.fromEntries(Object.entries(econData.data.chain_breakdown).filter(([key]) => key !== "totals"))} master={master} selectedTimespan={selectedTimespan} setSelectedTimespan={setSelectedTimespan} isMonthly={isMonthly} setIsMonthly={setIsMonthly} totals={econData.data.chain_breakdown["totals"]} />}
+        {econData && master && <ChainBreakdown data={chainBreakdownData} master={master} selectedTimespan={selectedTimespan} setSelectedTimespan={setSelectedTimespan} isMonthly={isMonthly} setIsMonthly={setIsMonthly} totals={econData.data.chain_breakdown["totals"]} />}
       </div>
     </>
   );

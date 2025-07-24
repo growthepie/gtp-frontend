@@ -8,11 +8,25 @@ import Link from "next/link";
 import { Metadata } from "next";
 import { getPageMetadata } from "@/lib/metadata";
 
-export async function generateMetadata(): Promise<Metadata> {  
+type Props = {
+  params: Promise<{ tab: string }>,
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const tab = (await params).tab;
+
   const metadata = await getPageMetadata(
-    '/eth-agg',
+    `/ethereum-ecosystem/${tab}`,
     {}
   );
+
+  if (!metadata) {
+    return {
+      title: "Ethereum Ecosystem",
+      description: "Explore the Ethereum ecosystem, including projects, applications, and more.",
+    };
+  }
+
   return {
     title: metadata.title,
     description: metadata.description,
@@ -30,25 +44,8 @@ export default async function Layout({
   return (
     <>
 
-      <div className="mb-[30px]">{children}</div>
-      <Container>
-        <QuestionAnswer
-          startOpen={true}
-          // className="px-[0px]"
-          // questionClassName="px-[30px]"
-          question="Details"
-          answer={
-            <>
+      <div className="mb-[30px] select-none">{children}</div>
 
-            </>
-          }
-          note={
-            <>
-
-            </>
-          }
-        />
-      </Container >
     </>
   );
 }
