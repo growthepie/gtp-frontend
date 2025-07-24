@@ -53,6 +53,7 @@ export interface TableBlock extends BaseBlock {
     [key: string]: {
       sortByValue: boolean;
       label?: string;
+      type?: string;
     };
   };
   columnSortBy: "value" | "name" | undefined;

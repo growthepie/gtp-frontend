@@ -232,8 +232,8 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                     {Object.keys(dynamicColumnKeys).map((columnKey) => {
                       const cellData = tableData[rowKey]?.[columnKey];
                       return (
-                        <div key={`${rowKey}-${columnKey}`} className={`py-2 ${columnKey === "name" ? 'relative right-[8px] px-4' : 'px-4'}`}
-
+                        <div key={`${rowKey}-${columnKey}`} className={`flex items-center py-2 overflow-hidden ${columnKey === "name" ? 'relative right-[8px] px-4' : 'px-4'}`}
+                          
                         >
                           <div className="flex items-center gap-2">
                             {cellData?.icon && (
@@ -254,7 +254,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                               </Link>
                             ) : (
                               <span 
-                                className={`flex h-full w-full items-center truncate ${cellData?.value && typeof cellData?.value === 'number' ? 'numbers-xs' : 'text-xs '}`}
+                                className={`flex h-full w-full items-center truncate ${cellData?.value && typeof cellData?.value === 'number' ? 'numbers-xs text-right' : 'text-xs text-left'}`}
                               >
                                 {cellData?.value && typeof cellData?.value === 'number' && formatValue(cellData?.value)}
                                 {cellData?.value && typeof cellData?.value === 'string' && cellData?.value}
