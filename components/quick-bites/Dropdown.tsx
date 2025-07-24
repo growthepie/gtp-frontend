@@ -34,7 +34,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const optionsListRef = useRef<HTMLDivElement>(null);
 
   // Filter options based on search term
@@ -72,10 +72,8 @@ const Dropdown: React.FC<DropdownProps> = ({
         const optionRect = optionElement.getBoundingClientRect();
         
         if (optionRect.bottom > listRect.bottom) {
-          // Scroll down if option is below visible area
           optionsListRef.current.scrollTop += optionRect.bottom - listRect.bottom;
         } else if (optionRect.top < listRect.top) {
-          // Scroll up if option is above visible area
           optionsListRef.current.scrollTop -= listRect.top - optionRect.top;
         }
       }
@@ -104,6 +102,9 @@ const Dropdown: React.FC<DropdownProps> = ({
           event.preventDefault();
           if (highlightedIndex >= 0 && filteredOptions[highlightedIndex]) {
             handleSelect(filteredOptions[highlightedIndex].value);
+          } else if (searchTerm && filteredOptions.length > 0) {
+            // If no option is highlighted but there's a search term, select the first filtered option
+            handleSelect(filteredOptions[0].value);
           }
           break;
         case 'Escape':
@@ -116,12 +117,12 @@ const Dropdown: React.FC<DropdownProps> = ({
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, highlightedIndex, filteredOptions]);
+  }, [isOpen, highlightedIndex, filteredOptions, searchTerm]);
 
-  // Focus search input when dropdown opens
+  // Focus input when dropdown opens
   useEffect(() => {
-    if (isOpen && searchable && searchInputRef.current) {
-      searchInputRef.current.focus();
+    if (isOpen && searchable && inputRef.current) {
+      inputRef.current.focus();
     }
   }, [isOpen, searchable]);
 
@@ -137,109 +138,93 @@ const Dropdown: React.FC<DropdownProps> = ({
     setHighlightedIndex(-1);
   };
 
-  const toggleDropdown = () => {
+  const handleContainerClick = () => {
     if (disabled) return;
-    setIsOpen(!isOpen);
+    setIsOpen(true);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
     if (!isOpen) {
-      setSearchTerm('');
-      setHighlightedIndex(-1);
+      setIsOpen(true);
     }
   };
 
+  // Function to display content in the trigger
+  const getDisplayContent = () => {
+    if (isOpen && searchable) {
+      return searchTerm;
+    }
+    return selectedOption?.label || '';
+  };
+
+  const getPlaceholderText = () => {
+    if (isOpen && searchable) {
+      return "Search options...";
+    }
+    return placeholder;
+  };
+
   return (
-    <div className={`relative w-full ${className}`} ref={dropdownRef}>
-      {/* Trigger Button */}
-      <button
-        type="button"
-        onClick={toggleDropdown}
-        disabled={disabled}
-        className={`
-          w-full px-[15px] py-[10px] 
-          bg-[#344240] hover:bg-[#5A6462] 
-          rounded-[15px] 
-          text-left text-xs
-          flex items-center justify-between
-          transition-colors duration-200
-          ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-        `}
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-      >
-        <div className="flex items-center gap-x-[8px] flex-1 min-w-0">
-          {/* {selectedOption?.icon && (
-            <Icon 
-              icon={selectedOption.icon} 
-              className="w-[16px] h-[16px] flex-shrink-0"
-              style={{ color: selectedOption.color }}
-            />
-          )} */}
-          <span className="truncate">
-            {selectedOption?.label || placeholder}
-          </span>
-        </div>
-        <Icon
-          icon={isOpen ? 'feather:chevron-up' : 'feather:chevron-down'}
-          className="w-[16px] h-[16px] flex-shrink-0 ml-2"
-        />
-      </button>
-
-      {/* Dropdown Menu */}
+    <>
+      {/* Background overlay when dropdown is open */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 z-50 mt-1">
-          <div className="bg-[#2A3433] border border-[#FFFFFF] rounded-[15px] shadow-lg max-h-[250px] overflow-hidden">
-            {/* Search Input */}
-            {searchable && (
-              <div className="p-[10px] border-b border-[#5A6462]">
-                <div className="relative">
-                  <Icon
-                    icon="feather:search"
-                    className="absolute left-[10px] top-1/2 transform -translate-y-1/2 w-[14px] h-[14px] text-[#CDD8D3] opacity-60"
-                  />
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => {
-                      setSearchTerm(e.target.value);
-                      setHighlightedIndex(-1);
-                    }}
-                    placeholder="Search options..."
-                    className="w-full pl-[32px] pr-[10px] py-[6px] bg-[#344240] rounded-[8px] text-xs placeholder-[#CDD8D3] placeholder-opacity-60 focus:outline-none"
-                  />
-                </div>
+        <div 
+          className="hidden md:block fixed inset-0 bg-black/10 z-[15]"
+          style={{
+            opacity: isOpen ? 0.5 : 0,
+            pointerEvents: isOpen ? "auto" : "none",
+          }}
+          onMouseDown={() => {
+            setIsOpen(false);
+            setSearchTerm('');
+            setHighlightedIndex(-1);
+          }}
+        />
+      )}
+      
+      <div className={`relative w-full ${className}`} ref={dropdownRef}>
+        {/* Dropdown Menu - Positioned Behind Main Container */}
+        <div
+          className={`
+            ${isOpen ? "max-h-[400px]" : "max-h-0"} 
+            transition-[max-height] duration-300 overflow-hidden
+            absolute left-0 right-0 top-[22px] z-[16]
+            bg-[#151A19] rounded-b-[22px] shadow-[0px_0px_50px_0px_#000000]
+          `}
+        >
+          {/* Options List */}
+          <div 
+            ref={optionsListRef}
+            className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#344240] hover:scrollbar-thumb-[#5A6462] pt-[25px] px-[10px] pb-[10px]"
+            style={{
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#344240 transparent'
+            }}
+          >
+            {filteredOptions.length === 0 ? (
+              <div className="px-[15px] py-[15px] text-xs text-[#CDD8D3] opacity-60 text-center">
+                No options found
               </div>
-            )}
-
-            {/* Options List with Scrolling */}
-            <div 
-              ref={optionsListRef}
-              className="max-h-[200px] overflow-y-auto scrollbar-thin scrollbar-track-[#2A3433] scrollbar-thumb-[#5A6462] hover:scrollbar-thumb-[#6B7473]"
-              style={{
-                scrollbarWidth: 'thin',
-                scrollbarColor: '#5A6462 #2A3433'
-              }}
-            >
-              {filteredOptions.length === 0 ? (
-                <div className="px-[15px] py-[10px] text-xs text-[#CDD8D3] opacity-60">
-                  No options found
-                </div>
-              ) : (
-                filteredOptions.map((option, index) => (
-                  <button
+            ) : (
+              <div className="space-y-[5px]">
+                {filteredOptions.map((option, index) => (
+                  <div
                     key={option.value}
-                    type="button"
                     onClick={() => handleSelect(option.value)}
                     onMouseEnter={() => setHighlightedIndex(index)}
                     className={`
-                      w-full px-[15px] py-[8px] text-left text-xs
-                      flex items-center gap-x-[8px]
-                      transition-colors duration-150
+                      w-full px-[15px] py-[10px] text-left text-xs
+                      flex items-center gap-x-[10px]
+                      rounded-[15px]
+                      transition-all duration-150
+                      cursor-pointer
                       ${index === highlightedIndex 
                         ? 'bg-[#5A6462]' 
                         : 'hover:bg-[#344240]'
                       }
                       ${option.value === value 
-                        ? 'bg-[#151A19] bg-opacity-20' 
+                        ? 'bg-[#344240]' 
                         : ''
                       }
                     `}
@@ -250,24 +235,67 @@ const Dropdown: React.FC<DropdownProps> = ({
                       <Icon 
                         icon={option.icon} 
                         className="w-[16px] h-[16px] flex-shrink-0"
-                        style={{ color: option.color }}
+                        style={{ color: option.color || '#CDD8D3' }}
                       />
                     )} */}
-                    <span className="truncate flex-1">{option.label}</span>
+                    <span className="truncate flex-1 text-[#CDD8D3]">{option.label}</span>
                     {option.value === value && (
                       <Icon
                         icon="feather:check"
-                        className="w-[14px] h-[14px] flex-shrink-0"
+                        className="w-[16px] h-[16px] flex-shrink-0 text-[#CDD8D3]"
                       />
                     )}
-                  </button>
-                ))
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Main Container - Always on Top */}
+        <div
+          onClick={handleContainerClick}
+          className={`
+            relative w-full min-h-[44px] 
+            bg-[#1F2726] hover:bg-[#344240] 
+            rounded-[22px] 
+            transition-all duration-300
+            cursor-pointer z-[18]
+            ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+          `}
+        >
+          <div className="flex items-center w-full min-h-[44px] px-[15px] gap-x-[10px]">
+
+            {/* Input/Display Area */}
+            <div className="flex-1 min-w-0">
+              {searchable ? (
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={getDisplayContent()}
+                  onChange={handleInputChange}
+                  placeholder={getPlaceholderText()}
+                  className="w-full bg-transparent text-[#CDD8D3] placeholder-[#CDD8D3] placeholder-opacity-60 border-none outline-none text-xs"
+                  disabled={disabled}
+                />
+              ) : (
+                <span className="text-[#CDD8D3] text-xs truncate">
+                  {selectedOption?.label || placeholder}
+                </span>
               )}
+            </div>
+
+            {/* Right Icon */}
+            <div className="flex items-center justify-center w-[24px] h-[24px]">
+              <Icon
+                icon={isOpen ? 'feather:chevron-up' : 'feather:chevron-down'}
+                className="w-[16px] h-[16px] text-[#CDD8D3]"
+              />
             </div>
           </div>
         </div>
-      )}
-    </div>
+      </div>
+    </>
   );
 };
 
