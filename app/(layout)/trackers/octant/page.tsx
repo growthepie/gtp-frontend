@@ -3255,7 +3255,7 @@ const CommunityTableRow = React.memo<CommunityTableRowProps>(({
                             </div>
                           ) : (
                             <div className="h-6 w-6 overflow-hidden rounded-full border border-forest-900/20 dark:border-forest-500/20">
-                              {projectMetadataData &&
+                              {projectMetadataData && projectMetadataData[project_key] &&
                                 projectMetadataData[project_key][
                                   Epochs[communityEpoch].epoch
                                 ] && (
