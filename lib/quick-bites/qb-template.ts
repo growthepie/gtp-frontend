@@ -68,7 +68,7 @@ const myQuickBite: QuickBiteData = {
     xUsername: "your_twitter"
   }],
   topics: [{
-    icon: "chain-logo-monochrome",
+    icon: "loopring-logo-monochrome",
     color: "#2151F5",
     name: "Topic Name",
     url: "/relevant/path"
