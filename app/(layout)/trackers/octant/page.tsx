@@ -253,7 +253,7 @@ export default function Page() {
 
     // console.log("curr", curr, "next", next, "countdownEnd", countdownEnd);
 
-    setCountdownTime(countdownEnd - now + 3600);
+    setCountdownTime(countdownEnd - now + 7200);
   }, [summaryData]);
 
   useEffect(() => {
