@@ -331,22 +331,6 @@ const testBite: QuickBiteData = {
     }),
     "```",
 
-    "## Code Example",
-    "Here's a sample code block showing how to use the QuickBiteData type",
-
-    "```typescript",
-    "interface QuickBiteData {",
-    "  title: string;",
-    "  subtitle: string;",
-    "  content: string[];",
-    "  related: string[];",
-    "  author: {",
-    "    name: string;",
-    "    xUsername: string;",
-    "  }[];",
-    "}",
-    "```",
-
     "## Sample Image",
     "Here's an example of how to include an image in your quick bite:",
 
