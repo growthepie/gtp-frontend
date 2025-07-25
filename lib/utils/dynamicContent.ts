@@ -69,14 +69,12 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
       // Handle Robinhood stock data placeholders
       if (processedItem.includes('{{robinhood')) {
         
-        const robinhoodData = await fetchData('robinhood', "https://api.growthepie.xyz/v1/quick-bites/robinhood/totals.json");
-        const robinhoodData2 = await fetchData('robinhood2', "https://api.growthepie.xyz/v1/quick-bites/robinhood/stock_table.json");
+        const robinhoodkpi = await fetchData('robinhood', "https://api.growthepie.com/v1/quick-bites/robinhood/kpi.json");
         
-        //const total_market_value_sum_usd = robinhoodData?.data?.total_market_value_sum_usd?.toFixed(2);
-        const perc_change_market_value_usd_7d = robinhoodData?.data?.perc_change_market_value_usd_7d?.toFixed(2);
-        const stockCount = robinhoodData2?.data?.stockCount?.toString();
+        const perc_change_market_value_usd_7d = robinhoodkpi?.data?.perc_change_market_value_usd_7d?.toFixed(2);
+        const stockCount = robinhoodkpi?.data?.stockCount?.toString();
 
-        const total_market_value_sum_usd = parseFloat(robinhoodData.data.total_market_value_sum_usd).toLocaleString("en-GB", {
+        const total_market_value_sum_usd = parseFloat(robinhoodkpi.data.total_market_value_sum_usd).toLocaleString("en-GB", {
           minimumFractionDigits: 0,
           maximumFractionDigits: 2
         });
