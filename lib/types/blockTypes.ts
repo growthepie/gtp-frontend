@@ -174,10 +174,20 @@ export interface DropdownBlock extends BaseBlock {
   type: 'dropdown';
   label?: string;
   placeholder?: string;
-  options: DropdownOption[];
   defaultValue?: string;
   searchable?: boolean;
   disabled?: boolean;
+
+  // For inline options (when readFromJSON is false or not specified)
+  options?: DropdownOption[];
+
+  readFromJSON?: boolean;
+  jsonData?: {
+    url: string;
+    pathToOptions: string;
+    valueField?: string; // Field to use for option value (defaults to 'value')
+    labelField?: string; // Field to use for option label (defaults to 'label')
+  };
 }
 
 export type ContentBlock = 

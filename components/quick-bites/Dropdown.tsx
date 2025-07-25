@@ -7,8 +7,6 @@ import { Icon } from '@iconify/react';
 export interface DropdownOption {
   value: string;
   label: string;
-  icon?: string;
-  color?: string;
 }
 
 interface DropdownProps {

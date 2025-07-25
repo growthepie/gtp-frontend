@@ -43,8 +43,8 @@ const testBite: QuickBiteData = {
       ]),
     "```",
 
-      "## Interactive Dropdown Example",
-    "Here's an example of a searchable dropdown component for selecting blockchain networks:",
+    "## Dropdown Examples ",
+    "With hardcoded options:",
     
    "```dropdown",
     JSON.stringify({
@@ -55,64 +55,51 @@ const testBite: QuickBiteData = {
       options: [
         {
           value: "ethereum",
-          label: "Ethereum Mainnet",
-          icon: "simple-icons:ethereum",
-          color: "#627EEA"
+          label: "Ethereum Mainnet"
         },
         {
           value: "arbitrum",
-          label: "Arbitrum One",
-          color: "#2D374B"
+          label: "Arbitrum One"
         },
         {
           value: "base",
-          label: "Base",
-          icon: "simple-icons:coinbase",
-          color: "#2151F5"
+          label: "Base"
         },
         {
           value: "optimism",
-          label: "OP Mainnet",
-          icon: "simple-icons:optimism",
-          color: "#FE5468"
+          label: "OP Mainnet"
         },
         {
           value: "polygon",
-          label: "Polygon PoS",
-          icon: "simple-icons:polygon",
-          color: "#8247E5"
+          label: "Polygon PoS"
         },
         {
           value: "blast",
-          label: "Blast",
-          icon: "fluent:rocket-24-filled",
-          color: "#FCFC03"
+          label: "Blast"
         },
         {
           value: "scroll",
-          label: "Scroll",
-          icon: "material-symbols:scroll",
-          color: "#FFEEDA"
-        },
-        {
-          value: "zksync",
-          label: "zkSync Era",
-          icon: "simple-icons:zksync",
-          color: "#1E69FF"
-        },
-        {
-          value: "linea",
-          label: "Linea",
-          icon: "material-symbols:line-curve",
-          color: "#61DFFF"
-        },
-        {
-          value: "mantle",
-          label: "Mantle",
-          icon: "material-symbols:layers",
-          color: "#000000"
+          label: "Scroll"
         }
       ]
+    }),
+    "```",
+
+    "With options loaded from JSON:",
+    
+   "```dropdown",
+    JSON.stringify({
+      label: "Select a Ticker",
+      placeholder: "Choose a token...",
+      searchable: true,
+      readFromJSON: true,
+      jsonData: {
+        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood/dropdown.json",
+        pathToOptions: "dropdown_values",
+        valueField: "ticker",     // Use 'ticker' field as the option value
+        labelField: "name_extended"        // Use 'name' field as the option label
+        // Assumes API returns: { tokens: [{ symbol: "ETH", name: "Ethereum" }] }
+      }
     }),
     "```",
 
