@@ -3,6 +3,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
+import { GTPIcon } from "@/components/layout/GTPIcon";
 
 export interface DropdownOption {
   value: string;
@@ -214,7 +215,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                     className={`
                       w-full px-[15px] py-[10px] text-left text-xs
                       flex items-center gap-x-[10px]
-                      rounded-[15px]
+                      rounded-[22px]
                       transition-all duration-150
                       cursor-pointer
                       ${index === highlightedIndex 
@@ -229,6 +230,11 @@ const Dropdown: React.FC<DropdownProps> = ({
                     role="option"
                     aria-selected={option.value === value}
                   >
+                    {selectedOption === option ? (
+                                <GTPIcon icon="gtp-checkmark-checked-monochrome" size="sm" />
+                              ) : (
+                                <GTPIcon icon="gtp-checkmark-unchecked-monochrome" size="sm" className="text-[#5A6462]" />
+                              )}
                     {/* {option.icon && (
                       <Icon 
                         icon={option.icon} 
@@ -237,12 +243,14 @@ const Dropdown: React.FC<DropdownProps> = ({
                       />
                     )} */}
                     <span className="truncate flex-1 text-[#CDD8D3]">{option.label}</span>
-                    {option.value === value && (
-                      <Icon
-                        icon="feather:check"
-                        className="w-[16px] h-[16px] flex-shrink-0 text-[#CDD8D3]"
-                      />
-                    )}
+                    {option.value === value 
+                    // && (
+                    //   <Icon
+                    //     icon="feather:check"
+                    //     className="w-[16px] h-[16px] flex-shrink-0 text-[#CDD8D3]"
+                    //   />
+                    // )
+                    }
                   </div>
                 ))}
               </div>
