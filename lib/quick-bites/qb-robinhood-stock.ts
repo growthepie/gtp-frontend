@@ -77,7 +77,7 @@ const robinhoodStock: QuickBiteData = {
     "```"
 
   ],
-  image: "https://api.growthepie.com/v1/quick-bites/banners/timeboost.png",
+  image: "https://api.growthepie.com/v1/quick-bites/banners/robinhood.png",
   og_image: "",
   date: "2025-07-25",
   related: [],
