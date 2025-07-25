@@ -1,3 +1,4 @@
+// File: lib/utils/markdownParser.ts
 import { ContentBlock, generateBlockId } from '@/lib/types/blockTypes';
 
 // Simple utility to convert markdown to raw HTML without remark
@@ -17,7 +18,6 @@ function parseShowInMenu(config: any): boolean | undefined {
 }
 
 // Process markdown array into structured blocks
-// Process markdown array into structured blocks
 export async function processMarkdownContent(content: string[]): Promise<ContentBlock[]> {
   if (!content || !Array.isArray(content)) {
     console.warn('Invalid content provided to processMarkdownContent');
@@ -30,9 +30,26 @@ export async function processMarkdownContent(content: string[]): Promise<Content
     try {
       const text = content[i];
       
+      // Handle dropdown blocks - ADD THIS SECTION
+      if (text.startsWith('```dropdown')) {
+        // Check if the next line contains JSON data
+        if (i + 1 < content.length) {
+          const jsonString = content[i + 1];
+          // And check if the line after that is the closing marker
+          const closingMarker = i + 2 < content.length && content[i + 2] === '```';
+          
+          if (closingMarker) {
+            const dropdownBlock = parseDropdownBlock(jsonString);
+            if (dropdownBlock) {
+              blocks.push(dropdownBlock);
+              i += 2; // Important: Skip the JSON and closing marker lines
+              continue;
+            }
+          }
+        }
+      }
       // Handle chart blocks
-      if (text.startsWith('```chart')) {
-        // ... (existing chart logic is correct)
+      else if (text.startsWith('```chart')) {
         if (i + 1 < content.length) {
           const jsonString = content[i + 1];
           const closingMarker = i + 2 < content.length && content[i + 2] === '```';
@@ -66,7 +83,6 @@ export async function processMarkdownContent(content: string[]): Promise<Content
       }
       // Handle iframe blocks
       else if (text.startsWith('```iframe')) {
-        // ... (existing iframe logic is correct)
         if (i + 1 < content.length) {
           const jsonString = content[i + 1];
           const closingMarker = i + 2 < content.length && content[i + 2] === '```';
@@ -82,7 +98,6 @@ export async function processMarkdownContent(content: string[]): Promise<Content
       }
       // Handle image blocks (JSON format)
       else if (text.startsWith('```image')) {
-        // ... (existing image logic is correct)
         if (i + 1 < content.length) {
           const jsonString = content[i + 1];
           const closingMarker = i + 2 < content.length && content[i + 2] === '```';
@@ -96,7 +111,7 @@ export async function processMarkdownContent(content: string[]): Promise<Content
           }
         }
       }
-      // START OF FIX: Correctly handle kpi-cards blocks
+      // Handle kpi-cards blocks
       else if (text.startsWith('```kpi-cards')) {
         // Check if the next line contains JSON data
         if (i + 1 < content.length) {
@@ -114,26 +129,8 @@ export async function processMarkdownContent(content: string[]): Promise<Content
           }
         }
       }
-      // END OF FIX
-      // Handle code blocks
-      else if (text.startsWith('```')) {
-        // ... (existing code block logic is correct)
-        const language = text.substring(3).trim();
-        let codeContent = '';
-        let j = i + 1;
-        while (j < content.length && !content[j].startsWith('```')) {
-          codeContent += content[j] + '\n';
-          j++;
-        }
-        if (j < content.length && content[j] === '```') {
-          blocks.push({ id: generateBlockId(), type: 'code', content: codeContent.trim(), language });
-          i = j;
-          continue;
-        }
-      }
       // Handle headings
       else if (/^#{1,6}\s/.test(text)) {
-        // ... (existing heading logic is correct)
         const match = text.match(/^(#{1,6})\s/);
         if (!match) {
           blocks.push({ id: generateBlockId(), type: 'paragraph', content: text });
@@ -173,6 +170,88 @@ export async function processMarkdownContent(content: string[]): Promise<Content
   }
   
   return blocks;
+}
+
+function parseDropdownBlock(jsonString: string): ContentBlock | null {
+  try {
+    const dropdownConfig = JSON.parse(jsonString);
+    
+    // Handle JSON-based dropdown (loads options from API)
+    if (dropdownConfig.readFromJSON === true) {
+      // Validate JSON data configuration
+      if (!dropdownConfig.jsonData || typeof dropdownConfig.jsonData !== 'object') {
+        console.error('Error parsing dropdown data: jsonData must be provided when readFromJSON is true');
+        return null;
+      }
+
+      const { url, pathToOptions, valueField, labelField } = dropdownConfig.jsonData;
+      if (!url || !pathToOptions) {
+        console.error('Error parsing dropdown data: jsonData must include url and pathToOptions');
+        return null;
+      }
+
+      const block = {
+        id: generateBlockId(),
+        type: 'dropdown' as const,
+        label: dropdownConfig.label || '',
+        placeholder: dropdownConfig.placeholder || 'Select an option...',
+        description: dropdownConfig.description || '',
+        defaultValue: dropdownConfig.defaultValue || '',
+        searchable: dropdownConfig.searchable !== false, // Default to true
+        disabled: dropdownConfig.disabled || false,
+        className: dropdownConfig.className || '',
+        readFromJSON: true,
+        jsonData: {
+          url,
+          pathToOptions,
+          valueField: valueField || 'value', // Default to 'value'
+          labelField: labelField || 'label'  // Default to 'label'
+        },
+        showInMenu: parseShowInMenu(dropdownConfig)
+      };
+      
+      return block;
+    } else {
+      // Handle inline options (original behavior)
+      // Validate required fields for inline options
+      if (!Array.isArray(dropdownConfig.options)) {
+        console.error('Error parsing dropdown data: options must be an array when readFromJSON is false or not specified');
+        return null;
+      }
+
+      // Validate each option has required fields
+      const validOptions = dropdownConfig.options.every((option: any) => 
+        option && 
+        typeof option.value === 'string' && 
+        typeof option.label === 'string'
+      );
+
+      if (!validOptions) {
+        console.error('Error parsing dropdown data: each option must have value and label properties');
+        return null;
+      }
+
+      const block = {
+        id: generateBlockId(),
+        type: 'dropdown' as const,
+        label: dropdownConfig.label || '',
+        placeholder: dropdownConfig.placeholder || 'Select an option...',
+        description: dropdownConfig.description || '',
+        options: dropdownConfig.options,
+        defaultValue: dropdownConfig.defaultValue || '',
+        searchable: dropdownConfig.searchable !== false, // Default to true
+        disabled: dropdownConfig.disabled || false,
+        className: dropdownConfig.className || '',
+        readFromJSON: false,
+        showInMenu: parseShowInMenu(dropdownConfig)
+      };
+      
+      return block;
+    }
+  } catch (error) {
+    console.error('Error parsing dropdown data:', error);
+    return null;
+  }
 }
 
 // Corrected helper function to parse kpi-cards blocks

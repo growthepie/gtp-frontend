@@ -42,6 +42,69 @@ const testBite: QuickBiteData = {
           }
       ]),
     "```",
+
+    "## Dropdown Examples ",
+    "With hardcoded options:",
+    
+   "```dropdown",
+    JSON.stringify({
+      label: "Select a Blockchain Network",
+      placeholder: "Choose a network...",
+      searchable: true,
+      defaultValue: "arbitrum",
+      options: [
+        {
+          value: "ethereum",
+          label: "Ethereum Mainnet"
+        },
+        {
+          value: "arbitrum",
+          label: "Arbitrum One"
+        },
+        {
+          value: "base",
+          label: "Base"
+        },
+        {
+          value: "optimism",
+          label: "OP Mainnet"
+        },
+        {
+          value: "polygon",
+          label: "Polygon PoS"
+        },
+        {
+          value: "blast",
+          label: "Blast"
+        },
+        {
+          value: "scroll",
+          label: "Scroll"
+        }
+      ]
+    }),
+    "```",
+
+    "With options loaded from JSON:",
+    
+   "```dropdown",
+    JSON.stringify({
+      label: "Select a Ticker",
+      placeholder: "Choose a token...",
+      searchable: true,
+      readFromJSON: true,
+      jsonData: {
+        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood/dropdown.json",
+        pathToOptions: "dropdown_values",
+        valueField: "ticker",     // Use 'ticker' field as the option value
+        labelField: "name_extended"        // Use 'name' field as the option label
+        // Assumes API returns: { tokens: [{ symbol: "ETH", name: "Ethereum" }] }
+      }
+    }),
+    "```",
+
+
+
     "## Table Example",
     "Here's an example of a sortable table showing L2 metrics:",
     "```table",
