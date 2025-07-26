@@ -4,6 +4,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { GTPIcon } from "@/components/layout/GTPIcon";
+import VerticalScrollContainer from '../VerticalScrollContainer';
 
 export interface DropdownOption {
   value: string;
@@ -69,7 +70,7 @@ const Dropdown: React.FC<DropdownProps> = ({
       if (optionElement) {
         const listRect = optionsListRef.current.getBoundingClientRect();
         const optionRect = optionElement.getBoundingClientRect();
-        
+
         if (optionRect.bottom > listRect.bottom) {
           optionsListRef.current.scrollTop += optionRect.bottom - listRect.bottom;
         } else if (optionRect.top < listRect.top) {
@@ -168,7 +169,7 @@ const Dropdown: React.FC<DropdownProps> = ({
     <>
       {/* Background overlay when dropdown is open */}
       {isOpen && (
-        <div 
+        <div
           className="hidden md:block fixed inset-0 bg-black/10 z-[15]"
           style={{
             opacity: isOpen ? 0.5 : 0,
@@ -181,81 +182,62 @@ const Dropdown: React.FC<DropdownProps> = ({
           }}
         />
       )}
-      
-      <div className={`relative w-full ${className}`} ref={dropdownRef}>
+
+      <div className={`relative w-full ${className} ${isOpen ? "z-[18]" : "z-[16]"}`} ref={dropdownRef}>
         {/* Dropdown Menu - Positioned Behind Main Container */}
         <div
           className={`
             ${isOpen ? "max-h-[400px]" : "max-h-0"} 
             transition-[max-height] duration-300 overflow-hidden
             absolute left-0 right-0 top-[22px] z-[16]
-            bg-[#151A19] rounded-b-[22px] shadow-[0px_0px_50px_0px_#000000]
+            bg-[#151A19] rounded-b-[22px] ${isOpen ? "shadow-[0px_0px_50px_0px_#000000]" : ""}
+            
           `}
         >
-          {/* Options List */}
-          <div 
-            ref={optionsListRef}
-            className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#344240] hover:scrollbar-thumb-[#5A6462] pt-[25px] px-[10px] pb-[10px]"
-            style={{
-              scrollbarWidth: 'thin',
-              scrollbarColor: '#344240 transparent'
-            }}
-          >
-            {filteredOptions.length === 0 ? (
-              <div className="px-[15px] py-[15px] text-xs text-[#CDD8D3] opacity-60 text-center">
-                No options found
-              </div>
-            ) : (
-              <div className="space-y-[5px]">
-                {filteredOptions.map((option, index) => (
-                  <div
-                    key={option.value}
-                    onClick={() => handleSelect(option.value)}
-                    onMouseEnter={() => setHighlightedIndex(index)}
-                    className={`
-                      w-full px-[15px] py-[10px] text-left text-xs
-                      flex items-center gap-x-[10px]
-                      rounded-[22px]
-                      transition-all duration-150
-                      cursor-pointer
-                      ${index === highlightedIndex 
-                        ? 'bg-[#5A6462]' 
-                        : 'hover:bg-[#344240]'
-                      }
-                      ${option.value === value 
-                        ? 'bg-[#344240]' 
-                        : ''
-                      }
-                    `}
-                    role="option"
-                    aria-selected={option.value === value}
-                  >
-                    {selectedOption === option ? (
-                                <GTPIcon icon="gtp-checkmark-checked-monochrome" size="sm" />
-                              ) : (
-                                <GTPIcon icon="gtp-checkmark-unchecked-monochrome" size="sm" className="text-[#5A6462]" />
-                              )}
-                    {/* {option.icon && (
-                      <Icon 
-                        icon={option.icon} 
-                        className="w-[16px] h-[16px] flex-shrink-0"
-                        style={{ color: option.color || '#CDD8D3' }}
-                      />
-                    )} */}
-                    <span className="truncate flex-1 text-[#CDD8D3]">{option.label}</span>
-                    {option.value === value 
-                    // && (
-                    //   <Icon
-                    //     icon="feather:check"
-                    //     className="w-[16px] h-[16px] flex-shrink-0 text-[#CDD8D3]"
-                    //   />
-                    // )
-                    }
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+            <div className='h-[30px]' />
+            {/* Options List */}
+            <VerticalScrollContainer
+              // ref={optionsListRef}
+              height={300}
+              className=''
+              scrollbarPosition='right'
+             
+            >
+              {filteredOptions.length === 0 ? (
+                <div className="px-[15px] text-xs text-[#CDD8D3] opacity-60 text-center">
+                  No options found
+                </div>
+              ) : (
+                <div className="space-y-[5px]">
+                  {filteredOptions.map((option, index) => (
+                    <div
+                      key={option.value}
+                      onClick={() => handleSelect(option.value)}
+                      onMouseEnter={() => setHighlightedIndex(index)}
+                      className={`
+                        w-full px-[15px] py-[10px] text-left text-xs
+                        flex items-center gap-x-[10px]
+                        cursor-pointer
+                        ${option.value === value
+                          ? 'bg-[#344240] hover:bg-[#5A6462]'
+                          : 'hover:bg-[#344240]'
+                        }
+                      `}
+                      role="option"
+                      aria-selected={option.value === value}
+                    >
+                      {selectedOption === option ? (
+                        <GTPIcon icon="gtp-checkmark-single-select-monochrome" size="sm" />
+                      ) : (
+                        <GTPIcon icon="gtp-checkmark-unchecked-monochrome" size="sm" />
+                      )}
+                      <span className="truncate flex-1 text-[#CDD8D3]">{option.label}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </VerticalScrollContainer>
+            <div className='h-[10px]' />
         </div>
 
         {/* Main Container - Always on Top */}
@@ -281,7 +263,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                   value={getDisplayContent()}
                   onChange={handleInputChange}
                   placeholder={getPlaceholderText()}
-                  className="w-full bg-transparent text-[#CDD8D3] placeholder-[#CDD8D3] placeholder-opacity-60 border-none outline-none text-xs"
+                  className={`w-full bg-transparent text-[#CDD8D3] placeholder-[#CDD8D3] placeholder-opacity-60 border-none outline-none text-xs ${!isOpen ? 'cursor-pointer' : ''}`}
                   disabled={disabled}
                 />
               ) : (
@@ -292,12 +274,12 @@ const Dropdown: React.FC<DropdownProps> = ({
             </div>
 
             {/* Right Icon */}
-            <div className="flex items-center justify-center w-[24px] h-[24px]">
-              <Icon
-                icon={isOpen ? 'feather:chevron-up' : 'feather:chevron-down'}
-                className="w-[16px] h-[16px] text-[#CDD8D3]"
+              <GTPIcon  
+                icon="gtp-chevrondown-monochrome"
+                className={`!size-[12px] transition-transform duration-150 ${isOpen ? 'rotate-180' : ''}`}
+                containerClassName='!size-[12px]'
+                size="sm"
               />
-            </div>
           </div>
         </div>
       </div>
