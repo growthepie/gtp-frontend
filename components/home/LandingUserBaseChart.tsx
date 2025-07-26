@@ -17,7 +17,7 @@ import { isMobile } from "react-device-detect";
 import { useMaster } from "@/contexts/MasterContext";
 import { useLocalStorage } from "usehooks-ts";
 
-export default function LandingUserBaseChart() {
+export default function LandingUserBaseChart({isLoading = false}: {isLoading?: boolean}) {
   const [isSidebarOpen] = useState(false);
   const [focusEnabled] = useLocalStorage("focusEnabled", false)
   const { AllChains, AllChainsByKeys } = useMaster();
@@ -61,7 +61,9 @@ export default function LandingUserBaseChart() {
         dataLoading={[masterLoading, landingLoading]}
         dataValidating={[masterValidating, landingValidating]}
         fullScreen={true}
+
       />
+
       {data && landing && master && AllChainsByKeys ? (
         <>
           <Container
