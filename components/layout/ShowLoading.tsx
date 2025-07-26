@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import LoadingAnimation from "./LoadingAnimation";
 import { useGlobalConfetti } from "../animations/ConfettiProvider";
 import ConfettiAnimation from "../animations/ConfettiAnimation";
-import { IS_DEVELOPMENT } from "@/lib/helpers";
+import { IS_DEVELOPMENT, IS_PRODUCTION } from "@/lib/helpers";
 
 type Props = {
   dataLoading?: boolean[];
@@ -24,7 +24,7 @@ export default function ShowLoading({
   const [confettiTriggered, setConfettiTriggered] = useState(false);
   const [confettiStartTime, setConfettiStartTime] = useState<number | null>(null);
   const { triggerConfetti } = useGlobalConfetti(fullScreen);
-  const [showBirthday, setShowBirthday] = useState(IS_DEVELOPMENT);
+  const [showBirthday, setShowBirthday] = useState(!IS_PRODUCTION);
   
   // Local confetti state for non-fullscreen mode
   const [localConfettiActive, setLocalConfettiActive] = useState(false);
