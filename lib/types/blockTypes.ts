@@ -49,21 +49,33 @@ export interface TableBlock extends BaseBlock {
   type: 'table';
   content: string;
   className?: string;
-  columnKeys?: {
+  columnDefinitions: {
     [key: string]: {
       sortByValue: boolean;
       label?: string;
       type?: string;
+      isNumeric?: boolean;
+      minWidth?: number;
+      units?: {
+        [key: string]: {
+          decimals?: number;
+          prefix?: string;
+          suffix?: string;
+        };
+      };
     };
   };
   columnSortBy: "value" | "name" | undefined;
   readFromJSON: boolean;
+  filterOnStateKey?: {
+    stateKey: string;
+    columnKey: string;
+  };
   jsonData?: {
-    url: string;
+    url?: string;
     pathToRowData: string;
     pathToColumnKeys?: string; // Optional - if not provided, will look for columnKeys in the same parent as rowData
   }
-
   rowData?: {
     [key: string]: {
       [columnKey: string]: {
@@ -177,7 +189,8 @@ export interface DropdownBlock extends BaseBlock {
   defaultValue?: string;
   searchable?: boolean;
   disabled?: boolean;
-
+  stateKey?: string; // Key to use for storing the value in the shared state
+  multiSelect?: boolean;
   // For inline options (when readFromJSON is false or not specified)
   options?: DropdownOption[];
 

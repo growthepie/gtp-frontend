@@ -63,6 +63,22 @@ const robinhoodStock: QuickBiteData = {
     "```",
 
     "## Stock Table",
+    "```dropdown",
+    JSON.stringify({
+      label: "Select a Ticker",
+      placeholder: "Choose a token...",
+      searchable: true,
+      stateKey: "selectedTicker",
+      defaultValue: "all",
+      readFromJSON: true,
+      jsonData: {
+        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood/dropdown.json",
+        pathToOptions: "dropdown_values",
+        valueField: "ticker",
+        labelField: "name_extended"
+      }
+    }),
+    "```",
     "```table",
     JSON.stringify({
       content: "All stocks robinhood has tokenized on Arbitrum One so far.",
@@ -71,11 +87,75 @@ const robinhoodStock: QuickBiteData = {
         url: "https://api.growthepie.xyz/v1/quick-bites/robinhood_stock_table.json",
         pathToRowData: "data.stocks.rows",
         pathToColumnKeys: "data.stocks.columns",
-        pathToTypes: "data.stocks.types"
+        pathToTypes: "data.stocks.types",
       },
+      columnDefinitions: {
+        contract_address: {
+          label: "Contract Address",
+          type: "address",
+          minWidth: 160,
+          isNumeric: false,
+          sortByValue: false
+        },
+        ticker: {
+          label: "Ticker",
+          type: "string",
+          minWidth: 80,
+          isNumeric: false,
+          sortByValue: true
+        },
+        name: {
+          label: "Name",
+          type: "string",
+          minWidth: 120,
+          isNumeric: false,
+          sortByValue: true
+        },
+        usd_outstanding: {
+          label: "USD Outstanding",
+          type: "number",
+          minWidth: 100,
+          isNumeric: true,
+          sortByValue: true,
+          units: {
+            "usd": {
+              decimals: 2,
+              prefix: "$",
+            },
+          }
+        },
+        stocks_tokenized: {
+          label: "Stocks Tokenized",
+          type: "number",
+          minWidth: 100,
+          isNumeric: true,
+          sortByValue: true,
+          units: {
+            "value": {
+              decimals: 0,
+            },
+          }
+        },
+        usd_stock_price: {
+          label: "USD Stock Price",
+          type: "number",
+          minWidth: 100,
+          isNumeric: true,
+          sortByValue: true,
+          units: {
+            "usd": {
+              decimals: 2,
+              prefix: "$",
+            },
+          }
+        }
+      },
+      filterOnStateKey: {
+        stateKey: "selectedTicker",
+        columnKey: "ticker",
+      }
     }),
     "```"
-
   ],
   image: "https://api.growthepie.com/v1/quick-bites/banners/robinhood.png",
   og_image: "",
@@ -96,5 +176,7 @@ const robinhoodStock: QuickBiteData = {
   }],
   icon: "arbitrum-logo-monochrome"
 };
+
+console.log("robinhoodStock", robinhoodStock);
 
 export default robinhoodStock;

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { DropdownBlock as DropdownBlockType } from '@/lib/types/blockTypes';
 import Dropdown, { DropdownOption } from '@/components/quick-bites/Dropdown';
+import { useQuickBite } from '@/contexts/QuickBiteContext';
 import useSWR from 'swr';
 
 interface DropdownBlockProps {
@@ -10,7 +11,9 @@ interface DropdownBlockProps {
 }
 
 export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
-  const [selectedValue, setSelectedValue] = useState<string>(block.defaultValue || '');
+  const { sharedState, setSharedState } = useQuickBite();
+  const stateKey = block.stateKey || 'defaultDropdown';
+  const selectedValue = sharedState[stateKey] || block.defaultValue || '';
 
   const { data: jsonData, error, isLoading } = useSWR(block.readFromJSON ? block.jsonData?.url : null);
 
@@ -97,10 +100,7 @@ export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
   }, [block.readFromJSON, block.jsonData?.url, isLoading, error, jsonData, dropdownOptions.length]);
 
   const handleChange = (value: string) => {
-    setSelectedValue(value);
-    // You can add additional logic here to handle the selection
-    // For example, trigger API calls, update parent state, etc.
-    console.log('Dropdown selection changed:', value);
+    setSharedState(stateKey, value);
   };
 
   // Show loading state
