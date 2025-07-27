@@ -18,6 +18,7 @@ import { ContentBlock } from '@/lib/types/blockTypes';
 import { Fragment, useEffect, useState } from 'react';
 import ShowLoading from '@/components/layout/ShowLoading';
 import { processDynamicContent } from '@/lib/utils/dynamicContent'; // Import the new utility
+import { QuickBiteProvider } from '@/contexts/QuickBiteContext';
 
 type Props = {
   params: { slug: string };
@@ -134,13 +135,16 @@ export default function QuickBitePage({ params }: Props) {
           </div>
           
           {/* Main content with blocks */}
-          <div className="lg:pl-[45px] lg:pr-[120px]">
-            <div className=" md:mx-auto">
-              {contentBlocks.map((block) => (
-                <Block key={block.id} block={block} />
-              ))}
+          <QuickBiteProvider>
+            <div className="lg:pl-[45px] lg:pr-[120px]">
+              <div className=" md:mx-auto">
+                {contentBlocks.map((block) => {
+                  console.log("block", block);
+                  return <Block key={block.id} block={block} />
+                })}
+              </div>
             </div>
-          </div>
+          </QuickBiteProvider>
 
           {/* Content metadata and tags */}
           <div className="h-[34px] px-[15px] py-[5px] bg-[#1F2726] rounded-full flex items-center gap-x-[10px]">

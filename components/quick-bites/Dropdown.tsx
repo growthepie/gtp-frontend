@@ -5,6 +5,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import VerticalScrollContainer from '../VerticalScrollContainer';
+import { Badge } from '../layout/FloatingBar/Badge';
 
 export interface DropdownOption {
   value: string;
@@ -191,20 +192,19 @@ const Dropdown: React.FC<DropdownProps> = ({
             transition-[max-height] duration-300 overflow-hidden
             absolute left-0 right-0 top-[22px] z-[16]
             bg-[#151A19] rounded-b-[22px] ${isOpen ? "shadow-[0px_0px_50px_0px_#000000]" : ""}
-            
           `}
         >
             <div className='h-[30px]' />
             {/* Options List */}
             <VerticalScrollContainer
               // ref={optionsListRef}
-              height={300}
+              height={Math.min(Math.max(filteredOptions.length * 38 + (filteredOptions.length - 1) * 5, 34), 300)}
               className=''
               scrollbarPosition='right'
              
             >
               {filteredOptions.length === 0 ? (
-                <div className="px-[15px] text-xs text-[#CDD8D3] opacity-60 text-center">
+                <div className="px-[15px] py-[5px] text-xs text-[#CDD8D3] opacity-60 text-center">
                   No options found
                 </div>
               ) : (
@@ -255,12 +255,23 @@ const Dropdown: React.FC<DropdownProps> = ({
           <div className="flex items-center w-full min-h-[44px] px-[15px] gap-x-[10px]">
 
             {/* Input/Display Area */}
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 flex items-center gap-[10px]">
+              {selectedOption && (
+                <div className="flex items-center gap-x-[10px]">
+                  <Badge 
+                    label={selectedOption.label.split('|')[0]}
+                    leftIcon="feather:tag"
+                    rightIcon="heroicons-solid:x-circle"
+                    rightIconColor="#FE5468"
+                    onClick={() => handleSelect('')}
+                   />
+                </div>
+              )}
               {searchable ? (
                 <input
                   ref={inputRef}
                   type="text"
-                  value={getDisplayContent()}
+                  value={searchTerm}
                   onChange={handleInputChange}
                   placeholder={getPlaceholderText()}
                   className={`w-full bg-transparent text-[#CDD8D3] placeholder-[#CDD8D3] placeholder-opacity-60 border-none outline-none text-xs ${!isOpen ? 'cursor-pointer' : ''}`}

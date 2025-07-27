@@ -207,7 +207,8 @@ function parseDropdownBlock(jsonString: string): ContentBlock | null {
           valueField: valueField || 'value', // Default to 'value'
           labelField: labelField || 'label'  // Default to 'label'
         },
-        showInMenu: parseShowInMenu(dropdownConfig)
+        showInMenu: parseShowInMenu(dropdownConfig),
+        stateKey: dropdownConfig.stateKey || undefined
       };
       
       return block;
@@ -243,7 +244,8 @@ function parseDropdownBlock(jsonString: string): ContentBlock | null {
         disabled: dropdownConfig.disabled || false,
         className: dropdownConfig.className || '',
         readFromJSON: false,
-        showInMenu: parseShowInMenu(dropdownConfig)
+        showInMenu: parseShowInMenu(dropdownConfig),
+        multiSelect: dropdownConfig.multiSelect || false
       };
       
       return block;
@@ -342,13 +344,15 @@ function parseTableBlock(jsonString: string): ContentBlock | null {
         content: tableConfig.content || '',
         className: tableConfig.className || '',
         columnSortBy: tableConfig.columnSortBy || undefined,
+        columnDefinitions: tableConfig.columnDefinitions || {},
         readFromJSON: true,
         jsonData: {
           url,
           pathToRowData,
           pathToColumnKeys // Optional - component will auto-discover if not provided
         },
-        showInMenu: parseShowInMenu(tableConfig)
+        showInMenu: parseShowInMenu(tableConfig),
+        filterOnStateKey: tableConfig.filterOnStateKey || undefined
       };
       return block;
     } else {
@@ -376,11 +380,12 @@ function parseTableBlock(jsonString: string): ContentBlock | null {
         type: 'table' as const,
         content: tableConfig.content || '',
         className: tableConfig.className || '',
-        columnKeys: tableConfig.columnKeys,
+        columnDefinitions: tableConfig.columnDefinitions || {},
         columnSortBy: tableConfig.columnSortBy || undefined,
         readFromJSON: false,
         rowData: tableConfig.rowData,
-        showInMenu: parseShowInMenu(tableConfig)
+        showInMenu: parseShowInMenu(tableConfig),
+        filterOnStateKey: tableConfig.filterOnStateKey || undefined
       };
       return block;
     }
