@@ -149,7 +149,6 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
 
   return (
     <div className={`my-8 ${block.className || ''}`}>
-      <div>"test"</div>
       {block.content && <div className="mb-4 text-sm text-forest-700 dark:text-forest-300">{block.content}</div>}
 
       <HorizontalScrollContainer includeMargin={isMobile}>
