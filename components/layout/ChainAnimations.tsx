@@ -19,6 +19,7 @@ export default function ChainAnimations({
   selectedCategory,
   parentContainerWidth,
   master,
+  disableAutoSelection = false,
 }: {
   chain: string;
   value: number;
@@ -31,6 +32,7 @@ export default function ChainAnimations({
   selectedCategory: string;
   parentContainerWidth: number;
   master: MasterResponse;
+  disableAutoSelection?: boolean;
 }) {
   const { theme } = useTheme();
   const { AllChainsByKeys } = useMaster();
@@ -74,43 +76,17 @@ export default function ChainAnimations({
     }
   }, [selectedChains, selectedMode, sortedValues]);
 
-  const changeMode = useMemo(() => {
-    if (
-      selectedMode === "gas_fees_" &&
-      selectedChains["imx"] &&
-      Object.keys(selectedChains).filter((chain) => selectedChains[chain])
-        .length === 1
-    ) {
-      setSelectedChains((prevSelectedChains) => {
-        // Create a copy of the previous selectedChains with all chains set to true
-        const updatedSelectedChains = { ...prevSelectedChains };
-        for (const chain in updatedSelectedChains) {
-          updatedSelectedChains[chain] = true;
-        }
-        return updatedSelectedChains;
-      });
-    }
-  }, [selectedChains, selectedMode, setSelectedChains]);
-
-  const changeCategory = useMemo(() => {
+  // Conditional auto-selection
+  useEffect(() => {
+    if (disableAutoSelection) return; // Skip if auto-selection is disabled
+    
     let allFalse = true;
-
     for (const key in sortedValues) {
       const element = sortedValues[key];
-
       if (selectedChains[element[0]]) {
-        /*
-        // console.log("--------------");
-        // console.log(element[0]);
-        // console.log(selectedCategory);
-        // console.log(element);
-        // console.log(selectedChains);
-        // console.log("--------------");
-        */
         allFalse = false;
       }
     }
-
     if (allFalse) {
       for (const key in sortedValues) {
         const element = sortedValues[key];
@@ -120,7 +96,7 @@ export default function ChainAnimations({
         }));
       }
     }
-  }, [selectedChains, setSelectedChains, sortedValues]);
+  }, [selectedChains, setSelectedChains, sortedValues, disableAutoSelection]);
 
   // useEffect(() => {
   //   if (sortedValues && value && selectedChains) {

@@ -41,6 +41,7 @@ import { TitleButtonLink } from "./TextHeadingComponents";
 import { ContractProvider } from "./BlockspaceOverview/Contracts/ContractContext";
 import ContractContainer from "./BlockspaceOverview/Contracts/ContractContainer";
 import { GridTableHeader, GridTableHeaderCell } from "./GridTable";
+import { intersection } from 'lodash';
 
 export default function CategoryMetrics({
   data,
@@ -801,7 +802,81 @@ export default function CategoryMetrics({
   const [chainAnimationsContainer, { width: chainAnimationsContainerWidth }] =
     useElementSizeObserver<HTMLDivElement>();
 
-  // console.log(sortedChainValues);
+  // Chain select toggle state logic
+  const chainSelectToggleState = useMemo(() => {
+    if (!sortedChainValues) return "normal";
+    
+    const availableChainKeys = sortedChainValues.map(([key]) => key);
+    
+  
+    const allAvailableSelected = availableChainKeys.every(key => selectedChains[key]);
+    const noneAvailableSelected = availableChainKeys.every(key => !selectedChains[key]);
+    
+    if (noneAvailableSelected) {
+      return "none";
+    }
+    
+    if (allAvailableSelected) {
+      return "all";
+    }
+    
+    return "normal";
+  }, [sortedChainValues, selectedChains]);
+
+  
+  const [hasExplicitlyDeselectedAll, setHasExplicitlyDeselectedAll] = useState(false);
+
+  const [lastSelectedChains, setLastSelectedChains] = useSessionStorage(
+    "categoryComparisonLastSelectedChains",
+    Object.keys(AllChainsByKeys).filter(key => 
+      Get_SupportedChainKeys(master).includes(AllChainsByKeys[key].key)
+    )
+  );
+
+
+  const onChainSelectToggle = useCallback(() => {
+    if (!sortedChainValues) return;
+    
+    const availableChainKeys = sortedChainValues.map(([key]) => key);
+    
+    if (chainSelectToggleState === "all") {
+      setHasExplicitlyDeselectedAll(true);
+      const newSelectedChains = { ...selectedChains };
+      availableChainKeys.forEach(key => {
+        newSelectedChains[key] = false;
+      });
+      setSelectedChains(newSelectedChains);
+    } else if (chainSelectToggleState === "none") {
+      setHasExplicitlyDeselectedAll(false);
+      const newSelectedChains = { ...selectedChains };
+      lastSelectedChains.forEach(key => {
+        if (availableChainKeys.includes(key)) {
+          newSelectedChains[key] = true;
+        }
+      });
+      setSelectedChains(newSelectedChains);
+    } else {
+      setHasExplicitlyDeselectedAll(false);
+      const newSelectedChains = { ...selectedChains };
+      availableChainKeys.forEach(key => {
+        newSelectedChains[key] = true;
+      });
+      setSelectedChains(newSelectedChains);
+    }
+  }, [chainSelectToggleState, sortedChainValues, selectedChains, setSelectedChains]); // Remove lastSelectedChains from dependencies
+
+  // Wrapper function that handles the lastSelectedChains logic
+  const handleSetSelectedChains = useCallback((updater: (prev: { [key: string]: boolean }) => { [key: string]: boolean }) => {
+    setSelectedChains(prevSelectedChains => {
+      const newSelectedChains = updater(prevSelectedChains);
+      
+      // Save the current selection for the "last selected" functionality
+      const currentlySelected = Object.keys(newSelectedChains).filter(key => newSelectedChains[key]);
+      setLastSelectedChains(currentlySelected);
+      
+      return newSelectedChains;
+    });
+  }, [setSelectedChains, setLastSelectedChains]);
 
   return (
     <>
@@ -899,7 +974,7 @@ export default function CategoryMetrics({
 
             <Container>
               <div className="mx-auto mb-[20px] mt-[20px] flex w-[98.5%] flex-col justify-between gap-y-8 lg:mb-0 lg:mt-[30px] lg:flex-row">
-                <div className="flex w-full flex-col justify-between lg:w-[44%] -mt-[14px]">
+                <div className="flex w-full flex-col justify-between lg:w-[44%] -mt-[25px]">
                   <div>
                     <div className="relative pr-[0px] lg:pr-[45px]">
                       <GridTableHeader
@@ -910,11 +985,23 @@ export default function CategoryMetrics({
                           <div></div>
                         </GridTableHeaderCell>
                         <GridTableHeaderCell>Chain</GridTableHeaderCell>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div className="text-xxs pt-[3px] text-end font-normal">Select all</div>
+                  
                       </GridTableHeader>
-                      <div className="absolute right-[37px] top-[5px] cursor-pointer">
+                      
+                      {/* Desktop select all button */}
+                      <div 
+                        className="absolute right-[37px] top-[5px] cursor-pointer hidden lg:block"
+                        onClick={onChainSelectToggle}
+                      >
                         <div 
                           className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-full" 
-                          style={{ color: "rgb(90, 100, 98)" }}
+                          style={{
+                            color: chainSelectToggleState === "all" ? undefined : "#5A6462",
+                          }}
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -926,7 +1013,9 @@ export default function CategoryMetrics({
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            className="h-6 w-6 opacity-0"
+                            className={`h-6 w-6 ${
+                              chainSelectToggleState === "none" ? "opacity-100" : "opacity-0"
+                            }`}
                           >
                             <circle
                               xmlns="http://www.w3.org/2000/svg"
@@ -936,30 +1025,104 @@ export default function CategoryMetrics({
                             />
                           </svg>
                         </div>
-                        <div className="rounded-full p-1 bg-white dark:bg-forest-1000">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            xmlnsXlink="http://www.w3.org/1999/xlink"
-                            aria-hidden="true"
-                            role="img"
-                            className="h-[15px] w-[15px] opacity-100 iconify iconify--feather"
-                            width="1em"
-                            height="1em"
-                            viewBox="0 0 24 24"
-                            style={{ color: "rgb(90, 100, 98)" }}
+                        <div 
+                          className={`rounded-full p-1 ${
+                            chainSelectToggleState === "none"
+                              ? "bg-forest-50 dark:bg-[#1F2726]"
+                              : "bg-white dark:bg-forest-1000"
+                          }`}
+                        >
+                          <Icon
+                            icon="feather:check-circle"
+                            className={`h-[15px] w-[15px] ${
+                              chainSelectToggleState === "none" ? "opacity-0" : "opacity-100"
+                            }`}
+                            style={{
+                              color:
+                                chainSelectToggleState === "all"
+                                  ? undefined
+                                  : chainSelectToggleState === "normal"
+                                    ? "#5A6462"
+                                    : "#5A6462",
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Mobile select all button - separate from desktop */}
+                    <div className="block lg:hidden">
+                      <div className="relative pr-[16px] lg:pr-[45px]">
+                        <GridTableHeader
+                          gridDefinitionColumns="grid-cols-[26px_minmax(30px,2000px)_61px_61px_61px_61px]"
+                          className="z-[2] flex h-[30px] select-none items-center gap-x-[10px] !pb-0 !pl-[5px] !pr-[21px] !pt-0 text-[12px] !font-bold"
+                        >
+                          <GridTableHeaderCell>
+                            <div></div>
+                          </GridTableHeaderCell>
+                          <GridTableHeaderCell>Chain</GridTableHeaderCell>
+                        </GridTableHeader>
+                        <div 
+                          className="absolute right-[5px] top-[5px] cursor-pointer"
+                          onClick={onChainSelectToggle}
+                        >
+                          <div 
+                            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-full" 
+                            style={{
+                              color: chainSelectToggleState === "all" ? undefined : "#5A6462",
+                            }}
                           >
-                            <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2">
-                              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                              <path d="M22 4L12 14.01l-3-3"></path>
-                            </g>
-                          </svg>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className={`h-6 w-6 ${
+                                chainSelectToggleState === "none" ? "opacity-100" : "opacity-0"
+                              }`}
+                            >
+                              <circle
+                                xmlns="http://www.w3.org/2000/svg"
+                                cx="12"
+                                cy="12"
+                                r="8"
+                              />
+                            </svg>
+                          </div>
+                          <div 
+                            className={`rounded-full p-1 ${
+                              chainSelectToggleState === "none"
+                                ? "bg-forest-50 dark:bg-[#1F2726]"
+                                : "bg-white dark:bg-forest-1000"
+                            }`}
+                          >
+                            <Icon
+                              icon="feather:check-circle"
+                              className={`h-[15px] w-[15px] ${
+                                chainSelectToggleState === "none" ? "opacity-0" : "opacity-100"
+                              }`}
+                              style={{
+                                color:
+                                  chainSelectToggleState === "all"
+                                    ? undefined
+                                    : chainSelectToggleState === "normal"
+                                      ? "#5A6462"
+                                      : "#5A6462",
+                              }}
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                   <VerticalScrollContainer
                     height={452}
-                    className="flex w-full flex-col justify-between"
+                    className="flex w-full flex-col justify-between mt-[8px] "
                   >
                     <div
                       ref={chainAnimationsContainer}
@@ -989,12 +1152,13 @@ export default function CategoryMetrics({
                                 selectedValue={selectedValue}
                                 selectedMode={selectedMode}
                                 selectedChains={selectedChains}
-                                setSelectedChains={setSelectedChains}
+                                setSelectedChains={handleSetSelectedChains} // Use the wrapper function
                                 selectedCategory={selectedCategory}
                                 parentContainerWidth={
                                   chainAnimationsContainerWidth
                                 }
                                 master={master}
+                                disableAutoSelection={true} // Disable auto-selection
                               />
                             ) : (
                               <div
