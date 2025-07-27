@@ -111,10 +111,71 @@ const testBite: QuickBiteData = {
     JSON.stringify({
       content: "Comparison of Layer 2 networks by key metrics",
       readFromJSON: true,
+      columnDefinitions: {
+        contract_address: {
+          label: "Contract Address",
+          type: "address",
+          minWidth: 160,
+          isNumeric: false,
+          sortByValue: false
+        },
+        ticker: {
+          label: "Ticker",
+          type: "string",
+          minWidth: 80,
+          isNumeric: false,
+          sortByValue: true
+        },
+        name: {
+          label: "Name",
+          type: "string",
+          minWidth: 120,
+          isNumeric: false,
+          sortByValue: true
+        },
+        usd_outstanding: {
+          label: "USD Outstanding",
+          type: "number",
+          minWidth: 100,
+          isNumeric: true,
+          sortByValue: true,
+          units: {
+            "usd": {
+              decimals: 2,
+              prefix: "$",
+            },
+          }
+        },
+        stocks_tokenized: {
+          label: "Stocks Tokenized",
+          type: "number",
+          minWidth: 100,
+          isNumeric: true,
+          sortByValue: true,
+          units: {
+            "value": {
+              decimals: 0,
+            },
+          }
+        },
+        usd_stock_price: {
+          label: "USD Stock Price",
+          type: "number",
+          minWidth: 100,
+          isNumeric: true,
+          sortByValue: true,
+          units: {
+            "usd": {
+              decimals: 2,
+              prefix: "$",
+            },
+          }
+        }
+      },
       jsonData: {
-        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood/stock_table.json",
-        pathToRowData: "data.stocks.rowData",
-        pathToColumnKeys: "data.stocks.columnKeys",
+        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood_stock_table.json",
+        pathToRowData: "data.stocks.rows",
+        pathToColumnKeys: "data.stocks.columns",
       }
       
     }),
