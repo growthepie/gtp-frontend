@@ -20,13 +20,17 @@ interface ConfettiAnimationProps {
   duration?: number;
   particleCount?: number;
   fullScreen?: boolean;
+  showFullAnimation?: boolean;
+  isLoading?: boolean;
 }
 
 const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
   isActive,
   duration = 10000,
-  particleCount = 150,
+  particleCount = 200,
   fullScreen = false,
+  showFullAnimation = false,
+  isLoading = false,
 }) => {
   const [confettiPieces, setConfettiPieces] = useState<ConfettiPiece[]>([]);
   const { AllChains } = useMaster();
@@ -35,6 +39,7 @@ const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
   const animationRunning = useRef(false);
   const fadeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const hideTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const loadingWasTrue = useRef(false);
   const { isSidebarOpen } = useUIContext();
 
   const colors = [
@@ -56,6 +61,7 @@ const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
     if (isActive && !animationRunning.current) {
       console.log('🎊 Starting confetti animation with duration:', duration);
       animationRunning.current = true;
+      loadingWasTrue.current = true;
       
       const pieces: ConfettiPiece[] = [];
       for (let i = 0; i < particleCount; i++) {
@@ -63,7 +69,7 @@ const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
         pieces.push({
           id: i,
           left: Math.random() * 100,
-          animationDelay: Math.random() * 8,
+          animationDelay: Math.random() * 10,
           color: AllChains[iconIndex].colors.dark[0],
           size: Math.random() * 10 + 15, // Slightly larger for icons
           icon: `gtp:${AllChains[iconIndex].key}-logo-monochrome` as GTPIconName,
@@ -73,21 +79,51 @@ const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
       setShowConfetti(true);
       setFadeOut(false);
       
-      // Start fade out 2 seconds before the end
-      fadeTimerRef.current = setTimeout(() => {
-        console.log('🎊 Starting fadeOut at:', Date.now());
-        setFadeOut(true);
-      }, duration - 2000);
+      if (showFullAnimation) {
+        // Original behavior: fade out 2 seconds before the end
+        fadeTimerRef.current = setTimeout(() => {
+          console.log('🎊 Starting fadeOut at:', Date.now());
+          setFadeOut(true);
+        }, duration - 2000);
 
+        // Hide completely after fade transition completes
+        hideTimerRef.current = setTimeout(() => {
+          console.log('🎊 Hiding confetti completely at:', Date.now());
+          setShowConfetti(false);
+          setFadeOut(false);
+          animationRunning.current = false;
+        }, duration + 500);
+      }
+    }
+  }, [isActive, duration, particleCount, showFullAnimation]);
+
+  // New effect to handle loading state changes
+  useEffect(() => {
+    if (!showFullAnimation && loadingWasTrue.current && !isLoading && showConfetti) {
+      console.log('🎊 Loading completed, starting fadeOut');
+      // Clear any existing timers
+      if (fadeTimerRef.current) {
+        clearTimeout(fadeTimerRef.current);
+        fadeTimerRef.current = null;
+      }
+      if (hideTimerRef.current) {
+        clearTimeout(hideTimerRef.current);
+        hideTimerRef.current = null;
+      }
+      
+      // Start immediate fade out
+      setFadeOut(true);
+      
       // Hide completely after fade transition completes
       hideTimerRef.current = setTimeout(() => {
-        console.log('🎊 Hiding confetti completely at:', Date.now());
+        console.log('🎊 Hiding confetti completely after loading finished');
         setShowConfetti(false);
         setFadeOut(false);
         animationRunning.current = false;
-      }, duration + 500);
+        loadingWasTrue.current = false;
+      }, 2000); // Match the fade transition duration
     }
-  }, [isActive]); // Trigger only, no cleanup here
+  }, [isLoading, showFullAnimation, showConfetti]);
 
   // Cleanup only on component unmount
   useEffect(() => {
@@ -123,7 +159,7 @@ const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
       {confettiPieces.map((piece) => (
         <div
           key={piece.id}
-          className="confetti-piece absolute"
+          className="confetti-piece -mt-8 absolute"
           style={{
             left: `${piece.left}%`,
             animationDelay: `${piece.animationDelay}s`,

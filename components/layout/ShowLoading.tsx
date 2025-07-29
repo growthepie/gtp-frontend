@@ -10,6 +10,7 @@ type Props = {
   dataValidating?: boolean[];
   fullScreen?: boolean;
   section?: boolean;
+  showFullAnimation?: boolean;
 };
 
 export default function ShowLoading({
@@ -17,7 +18,7 @@ export default function ShowLoading({
   dataValidating,
   fullScreen,
   section,
-
+  showFullAnimation = false,
 }: Props) {
   const [showLoading, setShowLoading] = useState(true);
   const [loadingTimeoutSeconds, setLoadingTimeoutSeconds] = useState(0);
@@ -30,6 +31,9 @@ export default function ShowLoading({
   const [localConfettiActive, setLocalConfettiActive] = useState(false);
 
   const CONFETTI_DURATION = 10000; // 10 seconds to match default confetti duration
+  
+  // Determine if currently loading
+  const isCurrentlyLoading = dataLoading?.some((loading) => loading) || false;
 
   useEffect(() => {
     if (dataLoading?.some((loading) => loading)) {
@@ -41,7 +45,13 @@ export default function ShowLoading({
       if (showBirthday && !confettiTriggered) {
         if (fullScreen) {
           // Use global confetti for fullscreen
-          triggerConfetti({ duration: CONFETTI_DURATION, particleCount: 150, fullScreen: true });
+          triggerConfetti({ 
+            duration: CONFETTI_DURATION, 
+            particleCount: 150, 
+            fullScreen: true,
+            showFullAnimation,
+            isLoading: isCurrentlyLoading
+          });
         } else {
           // Use local confetti for non-fullscreen
           setLocalConfettiActive(true);
@@ -52,8 +62,8 @@ export default function ShowLoading({
     }
 
     if (dataLoading?.every((loading) => !loading)) {
-      if (showBirthday && confettiStartTime && confettiTriggered) {
-        // If confetti is active, wait for it to complete its full duration
+      if (showBirthday && showFullAnimation && confettiStartTime && confettiTriggered) {
+        // If showFullAnimation is true, wait for confetti to complete its full duration
         const elapsed = Date.now() - confettiStartTime;
         const remainingTime = Math.max(0, CONFETTI_DURATION - elapsed);
         
@@ -63,15 +73,24 @@ export default function ShowLoading({
           setConfettiStartTime(null);
           setLocalConfettiActive(false);
         }, remainingTime);
+      } else if (showBirthday && !showFullAnimation) {
+        // With new logic, confetti will fade when loading completes
+        // Add a small delay to ensure confetti has time to start fading
+        setTimeout(() => {
+          setShowLoading(false);
+          setConfettiTriggered(false);
+          setConfettiStartTime(null);
+          setLocalConfettiActive(false);
+        }, 2500); // Slightly longer than confetti fade duration
       } else {
-        // Normal loading behavior or birthday without confetti
-        const timeout = showBirthday ? 1000 : loadingTimeoutSeconds; // Shorter timeout for birthday
+        // Normal loading behavior without birthday
+        const timeout = loadingTimeoutSeconds;
         setTimeout(() => {
           setShowLoading(false);
         }, timeout);
       }
     }
-  }, [dataLoading, dataValidating, loadingTimeoutSeconds, showBirthday, confettiTriggered, confettiStartTime, triggerConfetti, fullScreen]);
+  }, [dataLoading, dataValidating, loadingTimeoutSeconds, showBirthday, confettiTriggered, confettiStartTime, triggerConfetti, fullScreen, showFullAnimation, isCurrentlyLoading]);
 
   // Reset confetti state when showBirthday changes
   useEffect(() => {
@@ -106,6 +125,8 @@ export default function ShowLoading({
             duration={CONFETTI_DURATION}
             particleCount={150}
             fullScreen={false}
+            showFullAnimation={showFullAnimation}
+            isLoading={isCurrentlyLoading}
           />
         )}
       </div>
@@ -141,6 +162,8 @@ export default function ShowLoading({
             duration={CONFETTI_DURATION}
             particleCount={150}
             fullScreen={false}
+            showFullAnimation={showFullAnimation}
+            isLoading={isCurrentlyLoading}
           />
         )}
       </div>
