@@ -155,7 +155,46 @@ const robinhoodStock: QuickBiteData = {
         columnKey: "ticker",
       }
     }),
-    "```"
+    "```",
+
+    "```chart",
+    JSON.stringify({
+      type: "line",
+      title: "Selected Stock: HOOD",
+      subtitle: "Outstanding shares & stock price.",
+      stacking: "normal",
+      showXAsDate: true,
+      dataAsJson: {
+        meta: [
+          {
+            name: "Price",
+            color: "#00C805",
+            xIndex: 0,
+            yIndex: 1,
+            suffix: null,
+            prefix: '$',
+            tooltipDecimals: 2,
+            url: "https://api.growthepie.com/v1/quick-bites/robinhood/stocks/HOOD.json",
+            pathToData: "data.HOOD.daily.values",
+          },
+          {
+            name: "Stocks Outstanding",
+            color: "#00C805",
+            xIndex: 0,
+            yIndex: 2,
+            suffix: null,
+            prefix: '',
+            tooltipDecimals: 0,
+            url: "https://api.growthepie.com/v1/quick-bites/robinhood/stocks/HOOD.json",
+            pathToData: "data.HOOD.daily.values",
+          }
+        ],
+      },
+      height: 400,
+      caption: "Outstanding shares and stock price over time.",
+    }),
+    "```",
+    
   ],
   image: "https://api.growthepie.com/v1/quick-bites/banners/robinhood.png",
   og_image: "",
