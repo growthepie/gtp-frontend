@@ -4,6 +4,7 @@ import LoadingAnimation from "./LoadingAnimation";
 import { useGlobalConfetti } from "../animations/ConfettiProvider";
 import ConfettiAnimation from "../animations/ConfettiAnimation";
 import { IS_DEVELOPMENT, IS_PRODUCTION } from "@/lib/helpers";
+import { dateFormat } from "highcharts";
 
 type Props = {
   dataLoading?: boolean[];
@@ -12,6 +13,9 @@ type Props = {
   section?: boolean;
   showFullAnimation?: boolean;
 };
+const ETHEREUM_LAUNCH_TIMESTAMP = 1438269973000; // July 30, 2015
+const TEN_YEARS_IN_MS = 10 * 365.25 * 24 * 60 * 60 * 1000; // ~315,576,000,000 ms
+
 
 export default function ShowLoading({
   dataLoading,
@@ -25,7 +29,7 @@ export default function ShowLoading({
   const [confettiTriggered, setConfettiTriggered] = useState(false);
   const [confettiStartTime, setConfettiStartTime] = useState<number | null>(null);
   const { triggerConfetti } = useGlobalConfetti(fullScreen);
-  const [showBirthday, setShowBirthday] = useState(!IS_PRODUCTION);
+  const [showBirthday, setShowBirthday] = useState(new Date().getTime() >= ETHEREUM_LAUNCH_TIMESTAMP + TEN_YEARS_IN_MS);
   
   // Local confetti state for non-fullscreen mode
   const [localConfettiActive, setLocalConfettiActive] = useState(false);

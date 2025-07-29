@@ -25,6 +25,8 @@ import { useUIContext } from "@/contexts/UIContext";
 import { useParams } from "next/navigation";
 import { EthAggResponse } from "@/types/api/EthAggResponse";
 import { HistoryData } from "@/components/layout/EthAgg/types";
+import { useBirthdayAnimation } from "@/components/animations/useBirthdayAnimation";
+import ConfettiAnimation from "@/components/animations/ConfettiAnimation";
 
 const DEFAULT_TAB = "Metrics";
 
@@ -44,6 +46,7 @@ export default function EthAgg() {
   const tab = params.tab as string;
 
   const { setFocusSwitchEnabled } = useUIContext();
+  const { showBirthdayAnimation } = useBirthdayAnimation();
 
   const [selectedBreakdownGroup, setSelectedBreakdownGroup] = useState(TABS[tab as keyof typeof TABS] || DEFAULT_TAB);
   const [selectedTimespan, setSelectedTimespan] = useState("365d");
@@ -81,6 +84,17 @@ export default function EthAgg() {
 
   return (
     <>
+      {/* Birthday Animation Overlay */}
+      {showBirthdayAnimation && (
+        <ConfettiAnimation 
+          isActive={true}
+          duration={10000}
+          particleCount={200}
+          fullScreen={true}
+          showFullAnimation={true}
+        />
+      )}
+      
       <ShowLoading dataLoading={[isEcosystemLoading, isHistoryLoading]} dataValidating={[isEcosystemValidating, isHistoryValidating]} />
       <TopSelectArea selectedBreakdownGroup={selectedBreakdownGroup} setSelectedBreakdownGroup={setSelectedBreakdownGroup} />
       <div className="flex flex-col pt-[15px]">
