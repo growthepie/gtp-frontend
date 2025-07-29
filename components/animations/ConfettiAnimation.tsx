@@ -2,6 +2,9 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { GTPIcon } from "@/components/layout/GTPIcon";
+import { GTPIconName } from "@/icons/gtp-icon-names";
+import { useMaster } from '@/contexts/MasterContext';
+import { useUIContext } from '@/contexts/UIContext';
 
 interface ConfettiPiece {
   id: number;
@@ -9,6 +12,7 @@ interface ConfettiPiece {
   animationDelay: number;
   color: string;
   size: number;
+  icon: GTPIconName;
 }
 
 interface ConfettiAnimationProps {
@@ -25,11 +29,13 @@ const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
   fullScreen = false,
 }) => {
   const [confettiPieces, setConfettiPieces] = useState<ConfettiPiece[]>([]);
+  const { AllChains } = useMaster();
   const [showConfetti, setShowConfetti] = useState(false);
   const [fadeOut, setFadeOut] = useState(false);
   const animationRunning = useRef(false);
   const fadeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const hideTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const { isSidebarOpen } = useUIContext();
 
   const colors = [
     '#ff6b6b',
@@ -44,6 +50,8 @@ const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
     '#85c1e9',
   ];
 
+  // Array of celebratory and themed GTP icons for confetti
+  
   useEffect(() => {
     if (isActive && !animationRunning.current) {
       console.log('🎊 Starting confetti animation with duration:', duration);
@@ -51,12 +59,14 @@ const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
       
       const pieces: ConfettiPiece[] = [];
       for (let i = 0; i < particleCount; i++) {
+        const iconIndex = Math.floor(Math.random() * AllChains.length);
         pieces.push({
           id: i,
           left: Math.random() * 100,
           animationDelay: Math.random() * 8,
-          color: colors[Math.floor(Math.random() * colors.length)],
-          size: Math.random() * 10 + 5,
+          color: AllChains[iconIndex].colors.dark[0],
+          size: Math.random() * 10 + 15, // Slightly larger for icons
+          icon: `gtp:${AllChains[iconIndex].key}-logo-monochrome` as GTPIconName,
         });
       }
       setConfettiPieces(pieces);
@@ -100,9 +110,9 @@ const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
 
   return (
     <div 
-      className={`pointer-events-none z-[9999] overflow-hidden  ${
+      className={`pointer-events-none z-[9999] ${
         fullScreen 
-          ? 'fixed inset-0 bg-forest-900/90' 
+          ? 'fixed inset-0 bg-forest-900/90 overflow-hidden' 
           : 'absolute inset-0 bg-forest-900/20'
       }`}
       style={{
@@ -116,31 +126,47 @@ const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
           className="confetti-piece absolute"
           style={{
             left: `${piece.left}%`,
-            backgroundColor: piece.color,
-            width: `${piece.size}px`,
-            height: `${piece.size}px`,
             animationDelay: `${piece.animationDelay}s`,
           }}
-        />
-      ))}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
-        style={{
-          bottom: fullScreen ? '0px' : '35%',
-          right: fullScreen ? '0px' : '5%',
-        }}
         >
           <GTPIcon 
-            className="animate-pulse w-32 h-32 drop-shadow-2xl text-white" 
-            icon={"ethereum-logo-monochrome"} 
-            size="xl"
+            icon={piece.icon}
+            size="sm"
+            style={{ 
+              color: piece.color,
+              fontSize: `${piece.size}px`,
+              width: `${piece.size}px`,
+              height: `${piece.size}px`,
+            }}
+            className="drop-shadow-sm"
           />
-          <span className="heading-large-lg">Happy Birthday Ethereum!</span>
         </div>
+      ))}
+        
+      {/* Text container with proper positioning for each mode */}
+      <div 
+        className={`flex items-center justify-center pointer-events-none z-[400] ${
+          fullScreen 
+            ? 'absolute' 
+            : isSidebarOpen ? 'fixed bottom-0 top-0 left-32 right-0' : 'fixed bottom-0 top-0 left-4 right-0'
+        }`}
+        style={fullScreen ? {
+          bottom: '50%',
+          right: '50%',
+          transform: 'translate(50%, 50%)',
+        } : {}}
+      >
+        <GTPIcon 
+          className="animate-pulse w-32 h-32 drop-shadow-2xl text-white" 
+          icon={"ethereum-logo-monochrome"} 
+          size="xl"
+        />
+        <span className="heading-large-lg text-white drop-shadow-lg ml-4">Happy Birthday Ethereum!</span>
+      </div>
 
       <style jsx>{`
         .confetti-piece {
           animation: confetti-fall 5s linear forwards;
-          border-radius: 2px;
         }
 
         @keyframes confetti-fall {
