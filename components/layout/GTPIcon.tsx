@@ -14,21 +14,23 @@ type GTPIconProps = {
   icon: GTPIconName;
   className?: string;
   containerClassName?: string;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
   showContextMenu?: boolean;
 } & React.ComponentProps<typeof Icon>;
-type sizes = "sm" | "md" | "lg";
+type sizes = "sm" | "md" | "lg" | "xl";
 
 export const GTPIconSize: { [key in sizes]: string } = {
   sm: "15px",
   md: "24px",
   lg: "36px",
+  xl: "64px",
 };
 
 export const sizeClassMap = {
   sm: "w-[15px] h-[15px]",
   md: "w-[24px] h-[24px]",
   lg: "w-[36px] h-[36px]",
+  xl: "w-[64px] h-[64px]",
 };
 
 /**

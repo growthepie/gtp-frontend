@@ -110,6 +110,71 @@ JSON.stringify({
 "```"
 ```
 
+#### Tables
+```typescript
+"```table",
+JSON.stringify({
+  content: "Comparison of Layer 2 networks by key metrics",
+  columnKeys: {
+    name: {
+      sortByValue: false,
+      label: "Network"
+    },
+    tvl: {
+      sortByValue: true,
+      label: "TVL (USD)"
+    },
+    daily_txns: {
+      sortByValue: true,
+      label: "Daily Transactions"
+    },
+    avg_fee: {
+      sortByValue: true,
+      label: "Average Fee"
+    }
+  },
+  columnSortBy: "value", // "value", "name", or undefined
+  rowData: {
+    "Arbitrum": {
+      name: {
+        value: "Arbitrum",
+        icon: "arbitrum-logo-monochrome",
+        color: "#28A0F0",
+        link: "/chains/arbitrum"
+      },
+      tvl: {
+        value: 18500000000,
+        icon: undefined,
+        color: undefined,
+        link: undefined
+      },
+      daily_txns: {
+        value: 1200000,
+        icon: undefined,
+        color: undefined,
+        link: undefined
+      },
+      avg_fee: {
+        value: 0.25,
+        icon: undefined,
+        color: undefined,
+        link: undefined
+      }
+    }
+    // ... more rows
+  }
+}),
+"```"
+```
+
+**Table Features:**
+- **Sortable columns**: Click headers to sort (only when `sortByValue: true`)
+- **Custom labels**: Use `label` property for display names
+- **Icons and colors**: Add visual elements to cells
+- **Clickable links**: Add `link` property for navigation
+- **Responsive design**: Horizontal scroll on mobile devices
+- **Value formatting**: Numbers automatically formatted with commas
+
 #### Embedded iFrames
 ```typescript
 "```iframe",
@@ -251,6 +316,95 @@ content: [
 ]
 ```
 
+### Table with Sortable Columns
+```typescript
+content: [
+  "## L2 Ecosystem Comparison",
+  "Here's how the major Layer 2 networks compare across key metrics:",
+  "",
+  "```table",
+  JSON.stringify({
+    content: "Data as of January 2025",
+    columnKeys: {
+      network: {
+        sortByValue: false,
+        label: "Network"
+      },
+      tvl: {
+        sortByValue: true,
+        label: "TVL"
+      },
+      tps: {
+        sortByValue: true,
+        label: "TPS"
+      },
+      cost: {
+        sortByValue: true,
+        label: "Avg Cost"
+      }
+    },
+    columnSortBy: "value",
+    rowData: {
+      "Arbitrum": {
+        network: {
+          value: "Arbitrum",
+          icon: "arbitrum-logo-monochrome",
+          color: "#28A0F0",
+          link: "/chains/arbitrum"
+        },
+        tvl: {
+          value: 18500000000,
+          icon: undefined,
+          color: undefined,
+          link: undefined
+        },
+        tps: {
+          value: 4000,
+          icon: undefined,
+          color: undefined,
+          link: undefined
+        },
+        cost: {
+          value: 0.25,
+          icon: undefined,
+          color: undefined,
+          link: undefined
+        }
+      },
+      "Base": {
+        network: {
+          value: "Base",
+          icon: "base-logo-monochrome",
+          color: "#2151F5",
+          link: "/chains/base"
+        },
+        tvl: {
+          value: 12800000000,
+          icon: undefined,
+          color: undefined,
+          link: undefined
+        },
+        tps: {
+          value: 8000,
+          icon: undefined,
+          color: undefined,
+          link: undefined
+        },
+        cost: {
+          value: 0.08,
+          icon: undefined,
+          color: undefined,
+          link: undefined
+        }
+      }
+    }
+  }),
+  "```",
+  "",
+  "The table above shows real-time data with sortable columns for easy comparison."
+]
+```
+
 ## Publishing
 
 ### Step 1: Add to Index
@@ -278,10 +432,15 @@ Your Quick Bite will be available at:
 
 1. **Content Structure**: Start broad, then dive into specifics
 2. **Chart Selection**: Choose chart type based on data characteristics
-3. **Color Consistency**: Use brand colors from existing palette
-4. **Data Sources**: Prefer API endpoints over static data for freshness
-5. **Performance**: Limit charts to 5 series maximum for readability
-6. **Mobile**: Test content on mobile devices (charts auto-scale)
+3. **Table Design**: 
+   - Limit to 3-6 columns for readability
+   - Use sorting only for numerical/comparable data
+   - Include icons for visual hierarchy
+   - Add links for navigation to detailed pages
+4. **Color Consistency**: Use brand colors from existing palette
+5. **Data Sources**: Prefer API endpoints over static data for freshness
+6. **Performance**: Limit charts to 5 series maximum for readability
+7. **Mobile**: Test content on mobile devices (charts auto-scale, tables scroll horizontally)
 
 ## Need Help?
 

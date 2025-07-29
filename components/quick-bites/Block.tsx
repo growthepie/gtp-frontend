@@ -1,3 +1,4 @@
+// File: components/quick-bites/Block.tsx (Updated version)
 import React from 'react';
 import { ContentBlock } from '@/lib/types/blockTypes';
 import { ParagraphBlock } from './blocks/ParagraphBlock';
@@ -5,10 +6,11 @@ import { HeadingBlock } from './blocks/HeadingBlock';
 import { ImageBlock } from './blocks/ImageBlock';
 import { ChartBlock } from './blocks/ChartBlock';
 import { CalloutBlock } from './blocks/CalloutBlock';
-import { CodeBlock } from './blocks/CodeBlock';
 import { IframeBlock } from './blocks/IframeBlock';
 import { ListBlock } from './blocks/ListBlock';
 import KpiBlock from './blocks/KpiBlock';
+import { TableBlock } from './blocks/TableBlock';
+import { DropdownBlock } from './blocks/DropdownBlock';
 
 interface BlockProps {
   block: ContentBlock;
@@ -16,6 +18,11 @@ interface BlockProps {
 
 const Block: React.FC<BlockProps> = ({ block }) => {
   console.log('Rendering block:', block.type, block);
+  
+  // Check if block should be hidden from menu
+  if (block.showInMenu === false) {
+    return null;
+  }
   
   switch (block.type) {
     case 'paragraph':
@@ -28,15 +35,16 @@ const Block: React.FC<BlockProps> = ({ block }) => {
       return <ChartBlock block={block} />;
     case 'callout':
       return <CalloutBlock block={block} />;
-    case 'code':
-      return <CodeBlock block={block} />;
     case 'iframe':
       return <IframeBlock block={block} />;
     case 'list':
       return <ListBlock block={block} />;
     case 'kpi-cards':
-      console.log('Rendering KPI cards block with items:', (block as any).items);
       return <KpiBlock block={block} />;
+    case 'table':
+      return <TableBlock block={block} />;
+    case 'dropdown': // Add this case
+      return <DropdownBlock block={block} />;
     default:
       console.warn(`Unknown block type: ${(block as any).type}`);
       return null;

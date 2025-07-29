@@ -10,6 +10,7 @@ import { IS_PRODUCTION } from "@/lib/helpers";
 import { MasterProvider } from "@/contexts/MasterContext";
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { ToastProvider } from "@/components/toast/GTPToast";
+import { ConfettiProvider } from "@/components/animations/ConfettiProvider";
 
 // load icons
 addCollection(GTPIcons);
@@ -90,7 +91,9 @@ export function Providers({ children, forcedTheme }: ProvidersProps) {
             <ProjectsMetadataProvider>
               <UIContextProvider>
               <ToastProvider>
-                {children}
+                <ConfettiProvider>
+                  {children}
+                </ConfettiProvider>
               </ToastProvider>
             </UIContextProvider>
           </ProjectsMetadataProvider>

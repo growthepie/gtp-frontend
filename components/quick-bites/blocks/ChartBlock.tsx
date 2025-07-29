@@ -4,6 +4,7 @@
 import React from 'react';
 import { ChartBlock as ChartBlockType } from '@/lib/types/blockTypes';
 import dynamic from 'next/dynamic';
+import { useQuickBite } from '@/contexts/QuickBiteContext';
 import useSWR from 'swr';
  
 const fetcher = (url: string) => fetch(url).then(res => res.json());
@@ -41,8 +42,12 @@ interface JsonMeta {
 }
 
 export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
+  const { sharedState } = useQuickBite();
+  const urls = block.dataAsJson?.meta.map(meta => {
+    return meta.url;
+  }).filter(Boolean) as string[] || [];
+
   // Fetch data for all meta entries
-  const urls = block.dataAsJson?.meta.map(meta => meta.url) || [];
   const { data: unProcessedData, error } = useSWR(
     urls.length > 0 ? urls : null,
     urls.length > 0 ? (urls: string[]) => Promise.all(urls.map(url => fetcher(url))) : null

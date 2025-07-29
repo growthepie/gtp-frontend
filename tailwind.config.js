@@ -132,7 +132,6 @@ module.exports = {
   plugins: [
     require("tailwind-scrollbar")({ nocompatible: true }),
     require("@tailwindcss/container-queries"),
-    require('@tailwindcss/line-clamp'),
     function ({ addUtilities }) {
       const newUtilities = {
         ".scrollbar-utility": {

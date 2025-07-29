@@ -6,18 +6,20 @@ export type BlockType =
   | 'image' 
   | 'chart' 
   | 'callout'
-  | 'code'
   | 'quote'
   | 'divider'
   | 'container'  // Container can hold multiple blocks horizontally
   | 'spacer'      // For vertical spacing
   | 'iframe'
   | 'list'      // For list items
-  | 'kpi-cards'; // For KPI card blocks
+  | 'kpi-cards' // For KPI card blocks
+  | 'dropdown'   // For dropdown blocks
+  | 'table'; // For table blocks
 
 export interface BaseBlock {
   id: string;
   type: BlockType;
+  showInMenu?: boolean; // Optional property to control block visibility in menus, defaults to true
 }
 
 export interface ParagraphBlock extends BaseBlock {
@@ -41,6 +43,49 @@ export interface ImageBlock extends BaseBlock {
   width?: number | string;
   height?: number | string;
   className?: string;
+}
+
+export interface TableBlock extends BaseBlock {
+  type: 'table';
+  content: string;
+  className?: string;
+  columnDefinitions: {
+    [key: string]: {
+      sortByValue: boolean;
+      label?: string;
+      type?: string;
+      isNumeric?: boolean;
+      minWidth?: number;
+      units?: {
+        [key: string]: {
+          decimals?: number;
+          prefix?: string;
+          suffix?: string;
+        };
+      };
+    };
+  };
+  columnSortBy: "value" | "name" | undefined;
+  readFromJSON: boolean;
+  filterOnStateKey?: {
+    stateKey: string;
+    columnKey: string;
+  };
+  jsonData?: {
+    url?: string;
+    pathToRowData: string;
+    pathToColumnKeys?: string; // Optional - if not provided, will look for columnKeys in the same parent as rowData
+  }
+  rowData?: {
+    [key: string]: {
+      [columnKey: string]: {
+        value: number | string | undefined;
+        icon?: string | undefined;
+        color?: string | undefined;
+        link?: string | undefined;
+      };
+    };
+  };
 }
 
 export interface ChartBlock extends BaseBlock {
@@ -81,13 +126,6 @@ export interface CalloutBlock extends BaseBlock {
   content: string;
   icon?: string;
   color?: string;
-  className?: string;
-}
-
-export interface CodeBlock extends BaseBlock {
-  type: 'code';
-  content: string;
-  language?: string;
   className?: string;
 }
 
@@ -143,13 +181,36 @@ export interface KpiCardsBlock extends BaseBlock {
   className?: string;
 }
 
+import { DropdownOption } from '@/components/quick-bites/Dropdown';
+export interface DropdownBlock extends BaseBlock {
+  type: 'dropdown';
+  label?: string;
+  placeholder?: string;
+  defaultValue?: string;
+  searchable?: boolean;
+  disabled?: boolean;
+  stateKey?: string; // Key to use for storing the value in the shared state
+  multiSelect?: boolean;
+  // For inline options (when readFromJSON is false or not specified)
+  options?: DropdownOption[];
+
+  readFromJSON?: boolean;
+  jsonData?: {
+    url: string;
+    pathToOptions: string;
+    valueField?: string; // Field to use for option value (defaults to 'value')
+    labelField?: string; // Field to use for option label (defaults to 'label')
+  };
+}
+
 export type ContentBlock = 
   | ParagraphBlock
   | HeadingBlock
   | ImageBlock
+  | TableBlock
+  | DropdownBlock
   | ChartBlock
   | CalloutBlock
-  | CodeBlock
   | QuoteBlock
   | DividerBlock
   | ContainerBlock

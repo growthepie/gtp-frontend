@@ -75,8 +75,8 @@ const MetricTable = ({
 
     if (chainKeys.includes("ethereum")) {
       if (
-        intersection(selectedChains, chainKeys).length >=
-        chainKeys.length - 1
+        intersection(selectedChains, chainKeys).length ===
+        chainKeys.length
       )
         return "all";
     } else {

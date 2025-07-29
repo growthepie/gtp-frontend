@@ -19,11 +19,16 @@ const QuickBitesGrid: React.FC<QuickBitesGridProps> = ({ QuickBites, IsLanding =
     );
   }
 
+  // Filter function to exclude test-bite and respect showInMenu property
+  const filterQuickBites = (QuickBite: QuickBiteWithSlug) => {
+    return  QuickBite.showInMenu !== false;
+  };
+
   if(!IsLanding) {
     return (
       <div className='w-full @container'>
         <div className="w-full grid gap-[10px] grid-cols-1 @[560px]:grid-cols-2 @[845px]:grid-cols-3">
-          {QuickBites.filter((QuickBite) => QuickBite.slug !== "test-bite").map((QuickBite, index) => (
+          {QuickBites.filter(filterQuickBites).map((QuickBite, index) => (
             <QuickBiteCard 
               key={QuickBite.slug || index}
               title={QuickBite.title}
@@ -45,7 +50,7 @@ const QuickBitesGrid: React.FC<QuickBitesGridProps> = ({ QuickBites, IsLanding =
   return (
     <div className='w-full h-[275px] overflow-hidden @container'>
       <div className="w-full grid gap-[10px] grid-cols-1 @[560px]:grid-cols-2 @[845px]:grid-cols-3 h-[275px]">
-        {QuickBites.filter((QuickBite) => QuickBite.slug !== "test-bite").map((QuickBite, index) => (
+        {QuickBites.filter(filterQuickBites).map((QuickBite, index) => (
           <QuickBiteCard 
             key={QuickBite.slug || index}
             title={QuickBite.title}
