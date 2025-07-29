@@ -872,11 +872,7 @@ function BreakdownCharts({
           <div className="w-[5px] h-[5px] bg-[#FFDF27] rounded-full" />
           <div className="text-xxxs">Loss</div>
         </div>
-        <div className="absolute w-full h-full flex justify-center bottom-[18px] items-center bg-opacity-50 z-20 rounded-full opacity-50 gap-x-[2px] px-[3px]">
-          <ChartWatermark
-              className={`  w-[128px] md:w-[163px] text-forest-300 dark:text-[#EAECEB]`}
-          />
-        </div>
+
         <HighchartsProvider Highcharts={Highcharts}>
           {" "}
           <HighchartsChart
