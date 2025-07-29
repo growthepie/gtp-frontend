@@ -59,7 +59,7 @@ const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
   
   useEffect(() => {
     if (isActive && !animationRunning.current) {
-      console.log('🎊 Starting confetti animation with duration:', duration);
+  
       animationRunning.current = true;
       loadingWasTrue.current = true;
       

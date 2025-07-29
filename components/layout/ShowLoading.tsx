@@ -30,7 +30,7 @@ export default function ShowLoading({
   // Local confetti state for non-fullscreen mode
   const [localConfettiActive, setLocalConfettiActive] = useState(false);
 
-  const CONFETTI_DURATION = 10000; // 10 seconds to match default confetti duration
+  const CONFETTI_DURATION = 5000; // 10 seconds to match default confetti duration
   
   // Determine if currently loading
   const isCurrentlyLoading = dataLoading?.some((loading) => loading) || false;
@@ -47,7 +47,7 @@ export default function ShowLoading({
           // Use global confetti for fullscreen
           triggerConfetti({ 
             duration: CONFETTI_DURATION, 
-            particleCount: 150, 
+            particleCount: 250, 
             fullScreen: true,
             showFullAnimation,
             isLoading: isCurrentlyLoading
