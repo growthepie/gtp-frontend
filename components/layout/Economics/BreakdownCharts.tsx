@@ -34,6 +34,7 @@ import {
 import { useUIContext } from "@/contexts/UIContext";
 import { useMaster } from "@/contexts/MasterContext";
 import { times } from "lodash";
+import ChartWatermark from "../ChartWatermark";
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
   PLOT_LINE: "rgb(215, 223, 222)",
@@ -558,6 +559,11 @@ function BreakdownCharts({
           <div className="w-[5px] h-[5px] bg-[#FE5468] rounded-full" />
           <div className="text-xxxs">Cost</div>
         </div>
+        <div className="absolute w-full h-full flex justify-center items-center bg-opacity-50 z-20 rounded-full opacity-50 gap-x-[2px] px-[3px]">
+          <ChartWatermark
+              className={`  w-[128px] md:w-[163px] text-forest-300 dark:text-[#EAECEB]`}
+          />
+        </div>
         <HighchartsProvider Highcharts={Highcharts}>
           <HighchartsChart
             containerProps={{
@@ -865,6 +871,11 @@ function BreakdownCharts({
         <div className="absolute bottom-[36px] left-[50px] w-[36px] h-[16px] bg-[#344240AA] bg-opacity-50 rounded-full flex items-center z-20  gap-x-[2px] px-[3px]">
           <div className="w-[5px] h-[5px] bg-[#FFDF27] rounded-full" />
           <div className="text-xxxs">Loss</div>
+        </div>
+        <div className="absolute w-full h-full flex justify-center bottom-[18px] items-center bg-opacity-50 z-20 rounded-full opacity-50 gap-x-[2px] px-[3px]">
+          <ChartWatermark
+              className={`  w-[128px] md:w-[163px] text-forest-300 dark:text-[#EAECEB]`}
+          />
         </div>
         <HighchartsProvider Highcharts={Highcharts}>
           {" "}
