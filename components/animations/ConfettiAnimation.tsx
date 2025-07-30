@@ -219,7 +219,7 @@ const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
             Happy Birthday Ethereum!
           </span>
         </div>
-        <Image src="/anniversary.svg" alt="Confetti" loading="eager" width={250} height={100} className="object-contain relative top-[280px] left-1/4 fade-in" />
+        <Image src="/anniversary.svg" alt="Confetti" loading="eager" width={250} height={100} className={`object-contain relative top-[280px] fade-in ${isSidebarOpen ? 'left-[40%]' : 'left-1/4'}`} />
 
       </div>
 
