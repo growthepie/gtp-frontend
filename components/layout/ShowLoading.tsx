@@ -14,8 +14,8 @@ type Props = {
   showFullAnimation?: boolean;
 };
 const ETHEREUM_LAUNCH_TIMESTAMP = 1438269973000; // July 30, 2015
-// Exact 10-year anniversary: July 30, 2025 15:12:53 GMT
-const ETHEREUM_10TH_ANNIVERSARY = 1753889173000;
+// Exact 10-year anniversary: July 30, 2025 16:26:00 GMT (11:26 EST)
+const ETHEREUM_10TH_ANNIVERSARY = 1753892760000;
 
 
 export default function ShowLoading({
