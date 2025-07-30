@@ -182,7 +182,7 @@ async function downloadSVG(url: string, savePath: string) {
  */
 async function main() {
   try {
-    console.log("Fetching Figma file data...");
+    console.log("Fetching Figma file data...", FIGMA_FILE_KEY, FIGMA_ACCESS_TOKEN);
     const figmaData = await fetchFigmaFile(FIGMA_FILE_KEY, FIGMA_ACCESS_TOKEN);
 
     console.log('Traversing document to find "GTP-" component sets...');

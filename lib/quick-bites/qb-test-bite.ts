@@ -42,6 +42,144 @@ const testBite: QuickBiteData = {
           }
       ]),
     "```",
+
+    "## Dropdown Examples ",
+    "With hardcoded options:",
+    
+   "```dropdown",
+    JSON.stringify({
+      label: "Select a Blockchain Network",
+      placeholder: "Choose a network...",
+      searchable: true,
+      defaultValue: "arbitrum",
+      options: [
+        {
+          value: "ethereum",
+          label: "Ethereum Mainnet"
+        },
+        {
+          value: "arbitrum",
+          label: "Arbitrum One"
+        },
+        {
+          value: "base",
+          label: "Base"
+        },
+        {
+          value: "optimism",
+          label: "OP Mainnet"
+        },
+        {
+          value: "polygon",
+          label: "Polygon PoS"
+        },
+        {
+          value: "blast",
+          label: "Blast"
+        },
+        {
+          value: "scroll",
+          label: "Scroll"
+        }
+      ]
+    }),
+    "```",
+
+    "With options loaded from JSON:",
+    
+   "```dropdown",
+    JSON.stringify({
+      label: "Select a Ticker",
+      placeholder: "Choose a token...",
+      searchable: true,
+      readFromJSON: true,
+      jsonData: {
+        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood/dropdown.json",
+        pathToOptions: "dropdown_values",
+        valueField: "ticker",     // Use 'ticker' field as the option value
+        labelField: "name_extended"        // Use 'name' field as the option label
+        // Assumes API returns: { tokens: [{ symbol: "ETH", name: "Ethereum" }] }
+      }
+    }),
+    "```",
+
+
+
+    "## Table Example",
+    "Here's an example of a sortable table showing L2 metrics:",
+    "```table",
+    JSON.stringify({
+      content: "Comparison of Layer 2 networks by key metrics",
+      readFromJSON: true,
+      columnDefinitions: {
+        contract_address: {
+          label: "Contract Address",
+          type: "address",
+          minWidth: 160,
+          isNumeric: false,
+          sortByValue: false
+        },
+        ticker: {
+          label: "Ticker",
+          type: "string",
+          minWidth: 80,
+          isNumeric: false,
+          sortByValue: true
+        },
+        name: {
+          label: "Name",
+          type: "string",
+          minWidth: 120,
+          isNumeric: false,
+          sortByValue: true
+        },
+        usd_outstanding: {
+          label: "USD Outstanding",
+          type: "number",
+          minWidth: 100,
+          isNumeric: true,
+          sortByValue: true,
+          units: {
+            "usd": {
+              decimals: 2,
+              prefix: "$",
+            },
+          }
+        },
+        stocks_tokenized: {
+          label: "Stocks Tokenized",
+          type: "number",
+          minWidth: 100,
+          isNumeric: true,
+          sortByValue: true,
+          units: {
+            "value": {
+              decimals: 0,
+            },
+          }
+        },
+        usd_stock_price: {
+          label: "USD Stock Price",
+          type: "number",
+          minWidth: 100,
+          isNumeric: true,
+          sortByValue: true,
+          units: {
+            "usd": {
+              decimals: 2,
+              prefix: "$",
+            },
+          }
+        }
+      },
+      jsonData: {
+        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood_stock_table.json",
+        pathToRowData: "data.stocks.rows",
+        pathToColumnKeys: "data.stocks.columns",
+      }
+      
+    }),
+    "```",
     "# Main Header",
     "Some Text. This is a normal text block. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     "Now there was a line break. I can also use **bold** text. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
@@ -254,22 +392,6 @@ const testBite: QuickBiteData = {
     }),
     "```",
 
-    "## Code Example",
-    "Here's a sample code block showing how to use the QuickBiteData type",
-
-    "```typescript",
-    "interface QuickBiteData {",
-    "  title: string;",
-    "  subtitle: string;",
-    "  content: string[];",
-    "  related: string[];",
-    "  author: {",
-    "    name: string;",
-    "    xUsername: string;",
-    "  }[];",
-    "}",
-    "```",
-
     "## Sample Image",
     "Here's an example of how to include an image in your quick bite:",
 
@@ -298,7 +420,8 @@ const testBite: QuickBiteData = {
     color: "#2151F5",
     name: "Base",
     url: "/chains/base"
-  }]
+  }],
+  showInMenu: false
 };
 
 export default testBite; 

@@ -40,6 +40,7 @@ export interface Author {
     author?: Author[];
     topics?: Topic[];
     KpiCards?: KpiCard[];
+    showInMenu?: boolean; // Optional property to control menu visibility, defaults to true
   }
 
   export interface KpiCard {

@@ -20,6 +20,11 @@ import { numberFormat } from "highcharts";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import { getAllQuickBites } from "@/lib/quick-bites/quickBites";
 import type { InputHTMLAttributes } from 'react';
+import { Get_SupportedChainKeys } from "@/lib/chains";
+import { IS_DEVELOPMENT, IS_PREVIEW } from "@/lib/helpers";
+import useSWR from "swr";
+import { MasterURL } from "@/lib/urls";
+import { MasterResponse } from "@/types/api/MasterResponse";
 
 function normalizeString(str: string) {
   return str.toLowerCase().replace(/\s+/g, '');
@@ -96,25 +101,47 @@ export const HeaderSearchButton = () => {
         }
       }
 
-      // on 'esc' press, close search with a small delay
-      if (e.key === "Escape") {
-        e.preventDefault();
-        e.stopPropagation();
-        if (query !== "") {
-          handleClearQuery();
-        } else {
-          // Add a small delay before closing to allow visual feedback
-          setTimeout(() => {
-            handleCloseSearch();
-          }, 200); // 200ms delay to match the visual feedback duration
+      // Handle ESC when search is open and keyboard navigation is not active
+      if (e.key === "Escape" && isOpen) {
+        // Check if keyboard navigation is active by looking for selected elements
+        const hasSelectedElement = document.querySelector('[data-selected="true"]');
+        
+        if (!hasSelectedElement) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          if (query !== "") {
+            handleClearQuery();
+          } else {
+            setTimeout(() => {
+              handleCloseSearch();
+            }, 200);
+          }
         }
+        // If keyboard navigation is active, let the Filters component handle it
       }
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     }
-  }, [handleClearQuery, handleCloseSearch, handleOpenSearch, isOpen, query]);
+  }, [handleCloseSearch, handleOpenSearch, isOpen, query, handleClearQuery]);
+
+  // Listen for clear search or close event
+  useEffect(() => {
+    const handleClearSearchOrClose = () => {
+      if (query !== "") {
+        handleClearQuery();
+      } else {
+        setTimeout(() => {
+          handleCloseSearch();
+        }, 200);
+      }
+    };
+
+    window.addEventListener('clearSearchOrClose', handleClearSearchOrClose);
+    return () => window.removeEventListener('clearSearchOrClose', handleClearSearchOrClose);
+  }, [query, handleClearQuery, handleCloseSearch]);
 
   if(isMobile){
     return (
@@ -411,13 +438,13 @@ SearchBar.displayName = "SearchBar";
 
 // hook to get search buckets and total matches
 export const useSearchBuckets = () => {
-  const { AllChainsByKeys } = useMaster();
+  const { AllChainsByKeys, AllChainsByStacks } = useMaster();
   const searchParams = useSearchParams();
-
   const query = searchParams.get("query")?.trim();
-
   const { ownerProjectToProjectData } = useProjectsMetadata();
-  const { AllChainsByStacks } = useMaster();
+
+  // Get the master data to check deployment status
+  const { data: master } = useSWR<MasterResponse>(MasterURL);
 
   // search buckets structure
   type SearchBucket = {
@@ -437,6 +464,9 @@ export const useSearchBuckets = () => {
 
   // first bucket = chains
   const searchBuckets: SearchBucket[] = useMemo(() => {
+    // Get supported chain keys based on deployment status
+    const supportedChainKeys = master ? Get_SupportedChainKeys(master) : [];
+    
     // Get all quick bites for the Quick Bites bucket
     const allQuickBites = getAllQuickBites()
       .filter(quickBite => quickBite.slug !== "test-bite"); // Filter out test quick bite
@@ -498,6 +528,8 @@ export const useSearchBuckets = () => {
         icon: "gtp-chain",
         options: Object.entries(AllChainsByKeys)
           .filter(([key]) => key !== "all_l2s" && key !== "multiple")
+          // Add production check filter here
+          .filter(([key]) => supportedChainKeys.includes(key))
           .map(([_, chain]) => ({
             label: chain.label,
             url: `/chains/${chain.urlKey}`,
@@ -507,17 +539,27 @@ export const useSearchBuckets = () => {
         groupOptions: Object.entries(AllChainsByStacks)
           .map(([bucket, chains]) => ({
             label: bucket,
-            options: chains.map(chain => ({
-              label: chain.name,
-              url: `/chains/${chain.url_key}`,
-              icon: `gtp:${chain.url_key}-logo-monochrome`,
-              color: chain.colors.dark[0]
-            }))
+            options: chains
+              // Add production check filter here for stack chains
+              .filter(chain => {
+                const chainKey = Object.keys(AllChainsByKeys).find(key => 
+                  AllChainsByKeys[key].urlKey === chain.url_key
+                );
+                return chainKey && supportedChainKeys.includes(chainKey);
+              })
+              .map(chain => ({
+                label: chain.name,
+                url: `/chains/${chain.url_key}`,
+                icon: `gtp:${chain.url_key}-logo-monochrome`,
+                color: chain.colors.dark[0]
+              }))
           }))
+          // Filter out empty stack groups
+          .filter(group => group.options.length > 0)
       },
       ...processedNavigationItems,
     ];
-  }, [AllChainsByKeys, ownerProjectToProjectData, AllChainsByStacks]);
+  }, [AllChainsByKeys, ownerProjectToProjectData, AllChainsByStacks, master]);
 
 
   const allFilteredData = useMemo(() => {
@@ -1110,8 +1152,6 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
       const currentY = keyCoords.y ?? 0;
       const currentX = keyCoords.x ?? 0;
 
-
-
       if (event.key === 'ArrowUp') {
         event.preventDefault();
         if (isCoordsNull) {
@@ -1136,7 +1176,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
       } else if (event.key === 'ArrowRight') {
         event.preventDefault();
         if (isCoordsNull) {
-          setKeyCoords({ y: 0, x: 0 });
+          setKeyCoords({ y: currentY, x: currentX + 1 });
         } else if (currentX !== keyMapping[currentY].length - 1) {
           setKeyCoords({ y: currentY, x: currentX + 1 });
         }
@@ -1146,6 +1186,17 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
         const selectedElement = childRefs.current[selectedKey];
         if (selectedElement) {
           selectedElement.click();
+        }
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        // If keyboard navigation is active, exit it first
+        if (!isCoordsNull) {
+          setKeyCoords({ y: null, x: null });
+        } else {
+          // If no keyboard navigation, dispatch event to handle clear/close
+          window.dispatchEvent(new CustomEvent('clearSearchOrClose'));
         }
       }
     };
@@ -1171,6 +1222,16 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
       return () => clearTimeout(timer);
     }
   }, [memoizedQuery, allFilteredData.length]); // Only run when query or data changes
+
+  // Listen for exit keyboard navigation event
+  useEffect(() => {
+    const handleExitKeyboardNav = () => {
+      setKeyCoords({ y: null, x: null });
+    };
+
+    window.addEventListener('exitKeyboardNav', handleExitKeyboardNav);
+    return () => window.removeEventListener('exitKeyboardNav', handleExitKeyboardNav);
+  }, []);
 
   return (
     <div className="flex flex-col !pt-0 !pb-[0px] pl-[0px] pr-[0px] gap-y-[10px] max-h-[calc(100vh-220px)] overflow-y-auto">
@@ -1346,6 +1407,7 @@ const BucketItem = ({
 
   return (
     <Link
+      data-selected={isSelected ? "true" : "false"}
       href={lastBucketIndeces[itemKey] && !showMore[bucket] 
         ? isApps 
           ? isBucketMatch 
