@@ -69,7 +69,7 @@ const robinhoodStock: QuickBiteData = {
       placeholder: "Choose a token...",
       searchable: true,
       stateKey: "selectedTicker",
-      defaultValue: "all",
+      defaultValue: "AAPL",
       readFromJSON: true,
       jsonData: {
         url: "https://api.growthepie.xyz/v1/quick-bites/robinhood/dropdown.json",
@@ -79,12 +79,13 @@ const robinhoodStock: QuickBiteData = {
       }
     }),
     "```",
+
     "```table",
     JSON.stringify({
       content: "All stocks robinhood has tokenized on Arbitrum One so far.",
       readFromJSON: true,
       jsonData: {
-        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood_stock_table.json",
+        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood/stock_table.json",
         pathToRowData: "data.stocks.rows",
         pathToColumnKeys: "data.stocks.columns",
         pathToTypes: "data.stocks.types",
@@ -174,8 +175,8 @@ const robinhoodStock: QuickBiteData = {
             suffix: null,
             prefix: '$',
             tooltipDecimals: 2,
-            url: "https://api.growthepie.com/v1/quick-bites/robinhood/stocks/HOOD.json",
-            pathToData: "data.HOOD.daily.values",
+            url: "https://api.growthepie.com/v1/quick-bites/robinhood/stocks/{{selectedTicker}}.json",
+            pathToData: "data.daily.values",
           },
           {
             name: "Stocks Outstanding",
@@ -185,8 +186,8 @@ const robinhoodStock: QuickBiteData = {
             suffix: null,
             prefix: '',
             tooltipDecimals: 0,
-            url: "https://api.growthepie.com/v1/quick-bites/robinhood/stocks/HOOD.json",
-            pathToData: "data.HOOD.daily.values",
+            url: "https://api.growthepie.com/v1/quick-bites/robinhood/stocks/{{selectedTicker}}.json",
+            pathToData: "data.daily.values",
           }
         ],
       },
