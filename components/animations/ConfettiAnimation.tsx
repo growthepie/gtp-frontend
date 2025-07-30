@@ -182,7 +182,7 @@ const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
         
       {/* Text container with proper positioning for each mode */}
       <div 
-        className={`pointer-events-none z-[400] ${
+        className={`pointer-events-none w-full  z-[400] ${
           fullScreen 
             ? 'absolute' 
             : isSidebarOpen ? 'fixed' : 'fixed'
@@ -219,8 +219,9 @@ const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
             Happy Birthday Ethereum!
           </span>
         </div>
-        <Image src="/anniversary.svg" alt="Confetti" loading="eager" width={250} height={100} className={`object-contain relative top-[300px] fade-in ${isSidebarOpen ? fullScreen ? 'left-[26%]' : 'left-[40%]' : 'left-1/5'}`} />
-
+        <div className="flex items-center justify-center">
+        <Image src="/anniversary.svg" alt="Confetti" loading="eager" width={250} height={100} className={`object-contain relative top-[300px] fade-in `} />
+        </div>
       </div>
 
       <style jsx>{`
