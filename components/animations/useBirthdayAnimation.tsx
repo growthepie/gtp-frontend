@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 
 const ETHEREUM_LAUNCH_TIMESTAMP = 1438269973000; // July 30, 2015
-const TEN_YEARS_IN_MS = 10 * 365.25 * 24 * 60 * 60 * 1000; // ~315,576,000,000 ms
+const TEN_YEARS_IN_MS = 1753889173000; // ~315,576,000,000 ms
 
 export const useBirthdayAnimation = () => {
   const showBirthdayAnimation = useMemo(() => {

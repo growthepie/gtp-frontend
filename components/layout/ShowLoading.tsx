@@ -14,7 +14,8 @@ type Props = {
   showFullAnimation?: boolean;
 };
 const ETHEREUM_LAUNCH_TIMESTAMP = 1438269973000; // July 30, 2015
-const TEN_YEARS_IN_MS = 10 * 365.25 * 24 * 60 * 60 * 1000; // ~315,576,000,000 ms
+// Exact 10-year anniversary: July 30, 2025 15:12:53 GMT
+const ETHEREUM_10TH_ANNIVERSARY = 1753889173000;
 
 
 export default function ShowLoading({
@@ -29,8 +30,7 @@ export default function ShowLoading({
   const [confettiTriggered, setConfettiTriggered] = useState(false);
   const [confettiStartTime, setConfettiStartTime] = useState<number | null>(null);
   const { triggerConfetti } = useGlobalConfetti(fullScreen);
-  const [showBirthday, setShowBirthday] = useState(new Date().getTime() >= ETHEREUM_LAUNCH_TIMESTAMP + TEN_YEARS_IN_MS);
-  //new Date().getTime() >= ETHEREUM_LAUNCH_TIMESTAMP + TEN_YEARS_IN_MS
+  const [showBirthday, setShowBirthday] = useState(new Date().getTime() >= ETHEREUM_10TH_ANNIVERSARY);
   // Local confetti state for non-fullscreen mode
   const [localConfettiActive, setLocalConfettiActive] = useState(false);
 
