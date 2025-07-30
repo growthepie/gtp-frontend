@@ -12,7 +12,8 @@ import {
   LineSeries,
   AreaSeries,
   ColumnSeries,
-  PieSeries
+  PieSeries,
+  Series
 } from 'react-jsx-highcharts';
 import highchartsAnnotations from 'highcharts/modules/annotations';
 import highchartsRoundedCorners from 'highcharts-rounded-corners';
@@ -25,6 +26,7 @@ import { GTPIcon } from "../layout/GTPIcon";
 import { Icon } from "@iconify/react";
 import type { AxisLabelsFormatterContextObject } from 'highcharts';
 import moment from "moment";
+import { format as d3Format } from "d3"
 
 let highchartsInitialized = false;
 interface ChartWrapperProps {
@@ -35,14 +37,16 @@ interface ChartWrapperProps {
   height?: number | string;
   title?: string;
   subtitle?: string;
-  stacking?: "normal" | "percent" | null;
   jsonData?: any;
   jsonMeta?: {
     meta: {
+      type?: string,
       name: string,
       color: string,
+      stacking?: "normal" | "percent" | null;
       xIndex: number,
       yIndex: number,
+      oppositeYAxis?: boolean,
       suffix?: string,
       prefix?: string,
       tooltipDecimals?: number,
@@ -61,7 +65,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   height = 400,
   title,
   subtitle,
-  stacking,
+  // stacking,
   jsonData,
   jsonMeta,
   seeMetricURL,
@@ -73,6 +77,77 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [filteredNames, setFilteredNames] = useState<string[]>([]);
+
+  const formatNumber = useCallback(
+    (value: number | string, isAxis = false, selectedScale = "normal") => {
+      // let prefix = valuePrefix;
+      // let suffix = "";
+      let val = parseFloat(value as string);
+
+      // const units = metricsDict[metric_id].units;
+      // const unitKeys = Object.keys(units);
+      // const unitKey =
+      //   unitKeys.find((unit) => unit !== "usd" && unit !== "eth") ||
+      //   (showUsd ? "usd" : "eth");
+
+      // let prefix = metricsDict[metric_id].units[unitKey].prefix
+      //   ? metricsDict[metric_id].units[unitKey].prefix
+      //   : "";
+      // let suffix = metricsDict[metric_id].units[unitKey].suffix
+      //   ? metricsDict[metric_id].units[unitKey].suffix
+      //   : "";
+
+      // if (
+      //   !showUsd &&
+      //   seriesData[0].types.includes("eth") &&
+      //   selectedScale !== "percentage"
+      // ) {
+      //   if (showGwei) {
+      //     prefix = "";
+      //     suffix = " Gwei";
+      //   }
+      // }
+
+      let number = d3Format(`.2~s`)(val).replace(/G/, "B");
+
+      let absVal = Math.abs(val);
+
+      // let formatStringPrefix = units[unitKey].currency ? "." : "~."
+
+      if (isAxis) {
+        if (selectedScale === "percentage") {
+          number = d3Format(".2~s")(val).replace(/G/, "B") + "%";
+        } else {
+          // if (prefix || suffix) {
+          //   // for small USD amounts, show 2 decimals
+          //   if (absVal === 0) number = "0";
+          //   else if (absVal < 1) number = val.toFixed(2);
+          //   else if (absVal < 10)
+          //     number = units[unitKey].currency ? val.toFixed(2) :
+          //       d3Format(`~.3s`)(val).replace(/G/, "B");
+          //   else if (absVal < 100)
+          //     number = units[unitKey].currency ? d3Format(`s`)(val).replace(/G/, "B") :
+          //       d3Format(`~.4s`)(val).replace(/G/, "B")
+          //   else
+          //     number = units[unitKey].currency ? d3Format(`s`)(val).replace(/G/, "B") :
+          //       d3Format(`~.2s`)(val).replace(/G/, "B");
+          // } else {
+            if (absVal === 0) number = "0";
+            else if (absVal < 1) number = val.toFixed(2);
+            else if (absVal < 10)
+              d3Format(`.2s`)(val).replace(/G/, "B")
+            else number = d3Format(`s`)(val).replace(/G/, "B");
+          // }
+          // for negative values, add a minus sign before the prefix
+          // number = `${prefix}${number} ${suffix}`.replace(`${prefix}-`, `\u2212${prefix}`);
+          number = `${number}`
+        }
+      }
+
+      return number;
+    },
+    [],
+  );
 
   
   // Add timespans and selectedTimespan
@@ -142,11 +217,17 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         return acc;
       }, 0);
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3  text-xs font-raleway rounded-full bg-opacity-60">
+      const tooltip = `<div class="mt-3 mr-3 mb-3  text-xs font-raleway rounded-full bg-opacity-60 min-w-[240px]">
         <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2 ">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
       const tooltipPoints = points
+        // order by value
+        .sort((a: any, b: any) => {
+          const aValue = parseFloat(a.y);
+          const bValue = parseFloat(b.y);
+          return bValue - aValue;
+        })
         .map((point: any, index: number) => {
           const { series, y, percentage } = point;
           const { name } = series;
@@ -165,7 +246,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           });
 
           let displayText;
-          if (stacking === "percent") {
+          /* this might be wrong */
+          if (jsonMeta?.meta[index].stacking === "percent") {
             const percentageValue = ((y / total) * 100).toFixed(1); // keep 1 decimal
             displayText = `${currentPrefix}${displayValue}${currentSuffix} (${percentageValue}%)`;
         } else {
@@ -189,6 +271,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     },
     [jsonMeta],
   );
+
+  const hasOppositeYAxis = jsonMeta?.meta.some((series: any) => series.oppositeYAxis === true);
 
   
   if (loading) {
@@ -239,22 +323,6 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 },
                 area: {
                   lineWidth: 1.5,
-
-
-
-                  // marker: {
-                  //   radius: 12,
-                  //   lineWidth: 4,
-                  // },
-
-                  // shadow: {
-                  //   color:
-                  //     AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1] + "33",
-                  //   width: 10,
-                  // },
-
-                  // borderColor: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
-                  // borderWidth: 1,
                 },
                 column: {
                   
@@ -309,11 +377,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               }}
               marginBottom={showXAsDate ? 32 : 20}
               marginLeft={50}
-              marginRight={5}
+              marginRight={hasOppositeYAxis ? 50 : 5}
               marginTop={15}
-              
-               
-
             />
             
             
@@ -376,33 +441,185 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               tickAmount={5}
               tickLength={15}
             />
-            
-            <YAxis 
+            <YAxis
+              id="0"
               labels={{
                 style: {
                   color: theme === 'dark' ? '#CDD8D3' : '#293332',
                   fontSize: '8px',
                 },
-                formatter: function (this: any) {
-
-                
-                  if (jsonMeta?.meta[0]?.suffix) {
-                    return this.value.toLocaleString("en-GB", {
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 2
-                    }) + jsonMeta.meta[0].suffix;
-                  } else {
-                    return this.value.toLocaleString("en-GB", {
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 2
-                    });
-                  }
-                }
+                // formatter: function (this: any) {
+                //   if (jsonMeta?.meta[0]?.suffix) {
+                //     return this.value.toLocaleString("en-GB", {
+                //       minimumFractionDigits: 0,
+                //       maximumFractionDigits: 2
+                //     }) + jsonMeta.meta[0].suffix;
+                //   } else {
+                //     return this.value.toLocaleString("en-GB", {
+                //       minimumFractionDigits: 0,
+                //       maximumFractionDigits: 2
+                //     });
+                //   }
+                // }
+                formatter: function (t: AxisLabelsFormatterContextObject) {
+                  const filteredSeries = jsonMeta?.meta.filter((series: any) => series.yIndex === 0 && (filteredNames.length === 0 || filteredNames.includes(series.name)));
+                  return formatNumber(t.value, true, filteredSeries?.[0]?.stacking || "normal");
+                },
               }}
-              
               gridLineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.11)' : 'rgba(41, 51, 50, 0.11)'}
             >
-              {chartType === 'line' && (
+              {jsonMeta && jsonMeta.meta && jsonMeta.meta
+              .map((series: any, index: number) => {
+                // filter out series that are not on the opposite y axis and not filtered out
+                const showSeries = !series.oppositeYAxis && (filteredNames.length === 0 || filteredNames.includes(series.name));
+                if(!showSeries) return null;
+
+                // use the type from the jsonMeta if it exists, otherwise use the chartType
+                const type = series.type || chartType;
+                // use the yaxis from the jsonMeta if it exists, otherwise use 0
+                const chartYaxis = series.oppositeYAxis === true ? 1 : 0;
+                const seriesData = jsonData ? jsonData[index].map((item: any) => [
+                  item[series.xIndex], // x value
+                  item[series.yIndex]  // y value
+                ]) : series.data;
+
+                console.log("seriesDebug", {seriesName: series.name, seriesOppositeYAxis: series.oppositeYAxis, type, chartYaxis, seriesData, color: series.color, name: series.name, xIndex: series.xIndex, yIndex: series.yIndex, dashStyle: series.dashStyle})
+                
+                const fillOpacity = type === "area" ? 0.3 : undefined;
+
+                return (
+                  <Series 
+                    key={series.name}
+                    type={type}
+                    name={series.name}
+                    yAxis={chartYaxis}
+                    data={seriesData} 
+                    color={series.color}
+                    fillOpacity={fillOpacity}
+                    dashStyle={series.dashStyle ? series.dashStyle : undefined}
+                    animation={true}
+                    stacking={series.stacking ? series.stacking : undefined}
+                    borderRadius={type === "column" ? "8%" : undefined}
+                    marker={{
+                      enabled: false,
+                    }}
+                    states={{
+                      hover: {
+                        enabled: true,
+                        brightness: 0.1,
+                      },
+                      inactive: {
+                        opacity: 0.6,
+                      },
+                    }}
+                  />
+                )
+              })}
+            </YAxis>
+            <YAxis
+              id="1"
+              opposite={true}
+              labels={{
+                style: {
+                  color: theme === 'dark' ? '#CDD8D3' : '#293332',
+                  fontSize: '8px',
+                },
+                // formatter: function (this: any) {
+                //   if (jsonMeta?.meta[0]?.suffix) {
+                //     return this.value.toLocaleString("en-GB", {
+                //       minimumFractionDigits: 0,
+                //       maximumFractionDigits: 2
+                //     }) + jsonMeta.meta[0].suffix;
+                //   } else {
+                //     return this.value.toLocaleString("en-GB", {
+                //       minimumFractionDigits: 0,
+                //       maximumFractionDigits: 2
+                //     });
+                //   }
+                // }
+                formatter: function (t: AxisLabelsFormatterContextObject) {
+                  const filteredSeries = jsonMeta?.meta.filter((series: any) => series.yIndex === 0 && (filteredNames.length === 0 || filteredNames.includes(series.name)));
+                  return formatNumber(t.value, true, filteredSeries?.[0]?.stacking || "normal");
+                },
+              }}
+              gridLineColor={theme === 'dark' ? 'rgba(215, 223, 222, 0.11)' : 'rgba(41, 51, 50, 0.11)'}
+              
+            >
+              {jsonMeta && jsonMeta.meta && jsonMeta.meta
+              .map((series: any, index: number) => {
+                // filter out series that are not on the opposite y axis and not filtered out
+                const showSeries = series.oppositeYAxis === true && (filteredNames.length === 0 || filteredNames.includes(series.name));
+                if(!showSeries) return null;
+
+                // use the type from the jsonMeta if it exists, otherwise use the chartType
+                const type = series.type || chartType;
+                // use the yaxis from the jsonMeta if it exists, otherwise use 0
+                const chartYaxis = series.oppositeYAxis === true ? 1 : 0;
+                const seriesData = jsonData ? jsonData[index].map((item: any) => [
+                  item[series.xIndex], // x value
+                  item[series.yIndex]  // y value
+                ]) : series.data;
+
+                console.log("seriesDebug", {seriesName: series.name, type, seriesOppositeYAxis: series.oppositeYAxis, chartYaxis, seriesData, color: series.color, name: series.name, xIndex: series.xIndex, yIndex: series.yIndex, dashStyle: series.dashStyle})
+
+                const fillOpacity = type === "area" ? 0.3 : undefined;
+                
+                return (
+                  <Series 
+                    key={series.name}
+                    type={type}
+                    name={series.name}
+                    yAxis={chartYaxis}
+                    data={seriesData} 
+                    color={series.color} 
+                    fillOpacity={fillOpacity}
+                    dashStyle={series.dashStyle ? series.dashStyle : undefined}
+                    animation={true}
+                    stacking={series.stacking ? series.stacking : undefined}
+                    borderRadius={type === "column" ? "8%" : undefined}
+                    marker={{
+                      enabled: false,
+                    }}
+                    states={{
+                      hover: {
+                        enabled: true,
+                        brightness: 0.1,
+                      },
+                      inactive: {
+                        opacity: 0.6,
+                      },
+                    }}
+                  />
+                )
+              })}
+            </YAxis>
+            {/* {chartType === 'column' && (
+                (jsonMeta ? jsonMeta.meta : data).map((series: any, index: number) => {
+                  const useJson = jsonMeta ? true : false;
+                  const seriesData = jsonData ? jsonData[index].map((item: any) => [
+                    item[series.xIndex], // x value
+                    item[series.yIndex]  // y value
+                  ]) : series.data;
+
+              
+                  if(!filteredNames.includes(series.name) && filteredNames.length > 0) return null;
+                  return(
+                    <ColumnSeries
+                      borderRadius="8%"
+                      stacking={stacking ? stacking : undefined}
+                      borderColor="transparent"
+                      pointPlacement="on"
+                      data={seriesData}
+                      color={series.color}
+                      name={series.name}
+                      key={series.name}
+                      dashStyle={series.dashStyle ? series.dashStyle : undefined}
+                    />
+                  )
+                })
+              )} */}
+
+              {/* {chartType === 'line' && (
                 (jsonMeta ? jsonMeta.meta : data).map((series: any, index: number) => {
                   if(!filteredNames.includes(series.name) && filteredNames.length > 0) return null;
                   const seriesData = jsonData ? jsonData[index].map((item: any) => [
@@ -505,8 +722,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                   }}
                   showInLegend={true}
                 />
-              )}
-            </YAxis >
+              )} */}
             
             <Tooltip 
               useHTML={true}
@@ -546,39 +762,67 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
         </div>
         {/*Footer*/}
-        <div className="md:pl-[40px] relative bottom-[2px] flex flex-col justify-between gap-y-[5px] md:gap-y-0">
+        <div className="md:px-[50px] relative bottom-[2px] flex flex-col justify-between gap-y-[5px] md:gap-y-0">
           <div className="flex flex-col gap-y-[5px]">
             {/*Categories*/}
-            <div className="flex gap-x-[5px] md:items-stretch items-center md:justify-normal justify-center">
-              {(jsonMeta?.meta || data).map((category) => {
-                let bgBorderClass = "border-[1px] border-[#344240] bg-[#344240] hover:border-[#5A6462] hover:bg-[#5A6462] ";
-                if(filteredNames.length > 0 && (!filteredNames.includes(category.name))) {
-                  bgBorderClass = "border-[1px] border-[#344240] bg-transparent hover:border-[#5A6462] hover:bg-[#5A6462]";
-                }
-                
-                return (
-                  <div key={category.name} className={`bg-[#344240] hover:bg-[#5A6462] flex items-center justify-center rounded-full gap-x-[2px] px-[3px] h-[18px] cursor-pointer ${bgBorderClass}`} onClick={() => {
-                    
-                    if(!filteredNames.includes(category.name)) {
-                      setFilteredNames((prev) => {
-                        const newFilteredNames = [...prev, category.name];
-                        // Check if we would have all categories selected
-                        if (newFilteredNames.length === (jsonMeta?.meta || data).length) {
-                          return []; // Reset to empty if all would be selected
-                        }
-                        return newFilteredNames;
-                      });
-                    } else {
-                      setFilteredNames((prev) => prev.filter((name) => name !== category.name));
-                    }
-                  }}>
-                    <div className="w-[5px] h-[5px] rounded-full" style={{ backgroundColor: category.color }}></div>
-                    <div className="text-xxxs !leading-[9px]">{category.name}</div>
-                  </div>
-                )
-              })}
+            <div className="flex justify-between gap-x-[10px]">
+              <div className="flex gap-x-[5px] md:items-stretch items-center md:justify-normal justify-center">
+                {(jsonMeta?.meta || data).filter((series: any) => !series.oppositeYAxis).map((category) => {
+                  let bgBorderClass = "border-[1px] border-[#344240] bg-[#344240] hover:border-[#5A6462] hover:bg-[#5A6462] ";
+                  if(filteredNames.length > 0 && (!filteredNames.includes(category.name))) {
+                    bgBorderClass = "border-[1px] border-[#344240] bg-transparent hover:border-[#5A6462] hover:bg-[#5A6462]";
+                  }
+                  
+                  return (
+                    <div key={category.name} className={`bg-[#344240] hover:bg-[#5A6462] flex items-center justify-center rounded-full gap-x-[2px] px-[3px] h-[18px] cursor-pointer ${bgBorderClass}`} onClick={() => {
+                      if(!filteredNames.includes(category.name)) {
+                        setFilteredNames((prev) => {
+                          const newFilteredNames = [...prev, category.name];
+                          // Check if we would have all categories selected
+                          if (newFilteredNames.length === (jsonMeta?.meta || data).length) {
+                            return []; // Reset to empty if all would be selected
+                          }
+                          return newFilteredNames;
+                        });
+                      } else {
+                        setFilteredNames((prev) => prev.filter((name) => name !== category.name));
+                      }
+                    }}>
+                      <div className="w-[5px] h-[5px] rounded-full" style={{ backgroundColor: category.color }}></div>
+                      <div className="text-xxxs !leading-[9px]">{category.name}</div>
+                    </div>
+                  )
+                })}
+              </div>
+              <div className="flex gap-x-[5px] md:items-stretch items-center md:justify-normal justify-center">
+                {(jsonMeta?.meta || data).filter((series: any) => series.oppositeYAxis === true).map((category) => {
+                  let bgBorderClass = "border-[1px] border-[#344240] bg-[#344240] hover:border-[#5A6462] hover:bg-[#5A6462] ";
+                  if(filteredNames.length > 0 && (!filteredNames.includes(category.name))) {
+                    bgBorderClass = "border-[1px] border-[#344240] bg-transparent hover:border-[#5A6462] hover:bg-[#5A6462]";
+                  }
+                  
+                  return (
+                    <div key={category.name} className={`bg-[#344240] hover:bg-[#5A6462] flex items-center justify-center rounded-full gap-x-[2px] px-[3px] h-[18px] cursor-pointer ${bgBorderClass}`} onClick={() => {
+                      if(!filteredNames.includes(category.name)) {
+                        setFilteredNames((prev) => {
+                          const newFilteredNames = [...prev, category.name];
+                          // Check if we would have all categories selected
+                          if (newFilteredNames.length === (jsonMeta?.meta || data).length) {
+                            return []; // Reset to empty if all would be selected
+                          }
+                          return newFilteredNames;
+                        });
+                      } else {
+                        setFilteredNames((prev) => prev.filter((name) => name !== category.name));
+                      }
+                    }}>
+                      <div className="w-[5px] h-[5px] rounded-full" style={{ backgroundColor: category.color }}></div>
+                      <div className="text-xxxs !leading-[9px]">{category.name}</div>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
-
           </div>
           <div className="h-full flex md:flex-row flex-col justify-between md:items-end items-center ">
             <div className="flex flex-row md:flex-col gap-y-[2px]">
@@ -606,3 +850,113 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 };
 
 export default ChartWrapper;
+
+
+// const GetSeriesComponent = (series: any, jsonMeta: any, data: any, jsonData: any, filteredNames: string[], stacking: string, chartType: string) => {
+//   {chartType === 'line' && (
+//     (jsonMeta ? jsonMeta.meta : data).map((series: any, index: number) => {
+//       if(!filteredNames.includes(series.name) && filteredNames.length > 0) return null;
+//       const seriesData = jsonData ? jsonData[index].map((item: any) => [
+//         item[series.xIndex], // x value
+//         item[series.yIndex]  // y value
+//       ]) : series.data;
+     
+//       return (
+//         <LineSeries
+//           animation={true}
+//           key={series.name}
+//           name={series.name}
+//           data={seriesData}
+//           color={series.color}
+//           dashStyle={series.dashStyle ? series.dashStyle : undefined}
+//         />
+//       );
+//     })
+//   )}  
+  
+//   {chartType === 'area' && (
+//     (jsonMeta ? jsonMeta.meta : data).map((series: any, index: number) => {
+//       if(!filteredNames.includes(series.name) && filteredNames.length > 0) return null;
+//       const seriesData = jsonData ? jsonData[index].map((item: any) => [
+//         item[series.xIndex], // x value
+//         item[series.yIndex]  // y value
+//       ]) : series.data;
+      
+//       return (
+//         <AreaSeries
+//           stacking={stacking ? stacking : undefined}
+//           key={series.name}
+//           name={series.name}
+//           data={seriesData}
+//           color={series.color}
+//           animation={true}
+//           states={{
+//             hover: {
+//               enabled: true,
+//               brightness: 0.1,
+//             },
+//             inactive: {
+//               opacity: 0.6,
+//             },
+//           }}
+//           fillOpacity={0.3}
+//           marker={{
+//             enabled: false,
+//           }}
+//           dashStyle={series.dashStyle ? series.dashStyle : undefined}
+//         />
+//       );
+//     })
+//   )}
+  
+//   if(series.type === "column") {
+//     return (jsonMeta ? jsonMeta.meta : data).map((series: any, index: number) => {
+//       const useJson = jsonMeta ? true : false;
+//       const seriesData = jsonData ? jsonData[index].map((item: any) => [
+//         item[series.xIndex], // x value
+//         item[series.yIndex]  // y value
+//       ]) : series.data;
+
+  
+//       if(!filteredNames.includes(series.name) && filteredNames.length > 0) return null;
+//       return(
+//         <ColumnSeries
+//           borderRadius="8%"
+//           stacking={stacking ? stacking : undefined}
+//           borderColor="transparent"
+//           pointPlacement="on"
+//           data={seriesData}
+//           color={series.color}
+//           name={series.name}
+//           key={series.name}
+//           dashStyle={series.dashStyle ? series.dashStyle : undefined}
+//         />
+//       )
+//     })
+//   }
+  
+//   if(series.type === "pie") {
+//     return (
+//     <PieSeries
+//       animation={true}
+//       states={{
+//         hover: {
+//           enabled: true,
+//           brightness: 0.1,
+//         },
+//         inactive: {
+//           opacity: 0.6,
+//         },
+//       }}
+//       allowPointSelect={true}
+//       cursor="pointer"
+//       borderWidth={0}
+//       borderRadius={5}
+//       dataLabels={{
+//         enabled: false,
+//       }}
+//       showInLegend={true}
+//     />
+//     )
+//   }
+// }

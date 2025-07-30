@@ -29,10 +29,13 @@ interface ChartBlockProps {
 interface JsonMeta {
   seriesAmount: number,
   meta: {
+    type?: string,
     name: string,
     color: string,
+    stacking?: string,
     xIndex: number,
     yIndex: number,
+    yaxis?: number,
     suffix?: string,
     prefix?: string,
     url?: string,
@@ -64,6 +67,7 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
 
 
   return (
+    <>
     <div className={`my-8 ${block.className || ''}`}>
       {passChartData && (
         <ChartWrapper
@@ -74,7 +78,7 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
           height={block.height || 400}
           title={block.title}
           subtitle={block.subtitle}
-          stacking={block.stacking}
+          // stacking={block.stacking}
           jsonData={nestedData}
           showXAsDate={block.showXAsDate}
           jsonMeta={
@@ -91,5 +95,6 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
         </figcaption>
       )}
     </div>
+    </>
   );
 };

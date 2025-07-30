@@ -44,13 +44,13 @@ const BaseCommercePaymentProtocol: QuickBiteData = {
       type: "column",
       title: "Settled USDC Volume",
       subtitle: "The daily volume of USDC settled through Commerce Payment Protocol",
-      stacking: "normal",
       showXAsDate: true,
       dataAsJson: {
         meta: [
           {
             name: "Volume Settled",
             color: "#2151F5",
+            stacking: "normal",
             xIndex: 1,
             yIndex: 0,
             suffix: null,
@@ -74,13 +74,12 @@ const BaseCommercePaymentProtocol: QuickBiteData = {
       type: "column",
       title: "Merchants Receiving USDC",
       subtitle: "The daily number of new and returning merchants that received USDC",
-      stacking: "normal",
       showXAsDate: true,
-
       dataAsJson: {
         meta: [{
           name: "New Merchants",
           color: "#19D9D6",
+          stacking: "normal",
           xIndex: 1,
           yIndex: 0,
           suffix: null,
@@ -92,6 +91,7 @@ const BaseCommercePaymentProtocol: QuickBiteData = {
         {
           name: "Returning Merchants",
           color: "#FFC300",
+          stacking: "normal",
           xIndex: 1,
           yIndex: 0,
           suffix: null,
@@ -116,13 +116,12 @@ const BaseCommercePaymentProtocol: QuickBiteData = {
       type: "column",
       title: "Customers Paying in USDC",
       subtitle: "The daily number of new and returning customers that paid in USDC",
-      stacking: "normal",
       showXAsDate: true,
-
       dataAsJson: {
         meta: [{
           name: "New Customers",
           color: "#19D9D6",
+          stacking: "normal",
           xIndex: 1,
           yIndex: 0,
           suffix: null,
@@ -134,6 +133,7 @@ const BaseCommercePaymentProtocol: QuickBiteData = {
         {
           name: "Returning Customers",
           color: "#FFC300",
+          stacking: "normal",
           xIndex: 1,
           yIndex: 0,
           suffix: null,

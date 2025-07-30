@@ -307,11 +307,11 @@ function parseChartBlock(jsonString: string): ContentBlock | null {
       width: chartConfig.width || '100%',
       height: chartConfig.height || 400,
       caption: chartConfig.caption,
-      stacking: chartConfig.stacking || null,
+      // stacking: chartConfig.stacking || null,
       showXAsDate: chartConfig.showXAsDate || false,
       dataAsJson: chartConfig.dataAsJson || null,
       seeMetricURL: chartConfig.seeMetricURL || null,
-      showInMenu: parseShowInMenu(chartConfig)
+      showInMenu: parseShowInMenu(chartConfig),
     };
   } catch (error) {
     console.error('Error parsing chart data:', error);

@@ -22,7 +22,6 @@ const pectraUpgrade: QuickBiteData = {
       type: "line",
       title: "Submitted Blobs per Block",
       subtitle: "Compare the average #Blobs per block before and after the Pectra upgrade",
-      stacking: "normal",
       showXAsDate: true,
       dataAsJson: {
         meta: [{
@@ -64,13 +63,12 @@ const pectraUpgrade: QuickBiteData = {
       type: "column",
       title: "Transactions that trigger smart wallet upgrades and downgrades",
       subtitle: "The number of Set Code transactions on EVM chains (aka Type 4 transactions)",
-      stacking: "normal",
       showXAsDate: true,
-
       dataAsJson: {
         meta: [{
           name: "Ethereum",
           color: "#94ABD3",
+          stacking: "normal",
           xIndex: 1,
           yIndex: 0,
           suffix: null,
@@ -81,6 +79,7 @@ const pectraUpgrade: QuickBiteData = {
         {
           name: "Base",
           color: "#2151F5",
+          stacking: "normal",
           xIndex: 1,
           yIndex: 0,
           suffix: null,
@@ -91,6 +90,7 @@ const pectraUpgrade: QuickBiteData = {
         {
           name: "OP Mainnet",
           color: "#FE5468",
+          stacking: "normal",
           xIndex: 1,
           yIndex: 0,
           suffix: null,
@@ -101,6 +101,7 @@ const pectraUpgrade: QuickBiteData = {
         {
           name: "Unichain",
           color: "#FF47BB",
+          stacking: "normal",
           xIndex: 1,
           yIndex: 0,
           suffix: null,
@@ -111,6 +112,7 @@ const pectraUpgrade: QuickBiteData = {
         {
           name: "Arbitrum",
           color: "#1DF7EF",
+          stacking: "normal",
           xIndex: 1,
           yIndex: 0,
           suffix: null,

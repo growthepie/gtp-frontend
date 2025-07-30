@@ -99,7 +99,6 @@ export interface ChartBlock extends BaseBlock {
   subtitle?: string;
   caption?: string;
   className?: string;
-  stacking?: "normal" | "percent" | null;
   chartCategories?: {
     name: string;
     color: string;
@@ -107,10 +106,13 @@ export interface ChartBlock extends BaseBlock {
   showXAsDate?: boolean;
   dataAsJson?: {
     meta: {
+      type?: string;
       name: string;
       color: string;
+      stacking?: "normal" | "percent" | null;
       xIndex: number;
       yIndex: number;
+      yaxis?: number;
       suffix?: string;
       prefix?: string;
       url?: string;
