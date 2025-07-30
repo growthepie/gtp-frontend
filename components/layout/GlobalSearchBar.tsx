@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 import { FloatingBarContainer } from './FloatingBar/FloatingBarContainer';
 import { SearchInput } from './FloatingBar/SearchInput';
 import { Badge } from './FloatingBar/Badge';
-import { FloatingBarButton, FloatingBarButtonContainer } from './FloatingBar/FloatingBarButton';
+import { FloatingBarButton } from './FloatingBar/FloatingBarButton';
 import { FilterSelectionContainer } from './FloatingBar/FilterSelectionContainer';
 import { Popover } from './FloatingBar/Popover';
 import { ToggleOption } from './FloatingBar/ToggleOption';
@@ -42,7 +42,7 @@ export default function GlobalFloatingBar() {
   const pathname = usePathname();
   const isOpen = searchParams.get("search") === "true";
   const [showMore, setShowMore] = useState<{ [key: string]: boolean }>({});
-  
+
   // Track if user has started typing to auto-open mobile menu
   const query = searchParams.get("query") || "";
 
@@ -67,23 +67,23 @@ export default function GlobalFloatingBar() {
         event.preventDefault();
         event.stopPropagation();
       }
-      
+
       // Clear any pending deactivation
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
       }
-      
+
       setIsSearchActive(true);
-      
+
       // Use multiple strategies to ensure focus works
       const focusInput = () => {
         if (searchInputRef.current) {
           // Method 1: Direct focus
           searchInputRef.current.focus();
-          
+
           // Method 2: For stubborn mobile browsers
           searchInputRef.current.click();
-          
+
           // Method 3: Set selection range to trigger keyboard
           try {
             searchInputRef.current.setSelectionRange(
@@ -95,10 +95,10 @@ export default function GlobalFloatingBar() {
           }
         }
       };
-      
+
       // Try immediate focus
       focusInput();
-      
+
       // Also try with requestAnimationFrame for browsers that need a paint cycle
       requestAnimationFrame(focusInput);
     }
@@ -317,14 +317,14 @@ export default function GlobalFloatingBar() {
 
   const HOVER_ROTATIONS = {
     SIDEBAR_OPEN: {
-      HOVER_ON: 180,
-      HOVER_OFF: 0,
-      DEFAULT: 0
-    },
-    SIDEBAR_CLOSED: {
       HOVER_ON: 0,
       HOVER_OFF: 180,
       DEFAULT: 180
+    },
+    SIDEBAR_CLOSED: {
+      HOVER_ON: 180,
+      HOVER_OFF: 0,
+      DEFAULT: 0
     }
   };
 
@@ -399,10 +399,10 @@ export default function GlobalFloatingBar() {
         </div>
       </div>
       <div className={`fixed z-global-search bottom-0 md:bottom-auto md:top-[0px] left-0 right-0 flex justify-center w-full pointer-events-none pb-[30px] md:pb-0 md:pt-[30px]`}>
-        <div className="w-full max-w-[1680px] px-[20px] md:px-[13px]">
+        <div className="w-full max-w-[1680px] px-[20px] md:px-[30px]">
           <FloatingBarContainer className='p-[5px] md:p-[5px] md:pl-[6px] md:py-[5px] !rounded-[27px]'>
             <div className='w-full flex flex-col md:flex-row'>
-              <MobileMenuWithSearch 
+              <MobileMenuWithSearch
                 isOpen={isMobileMenuPopoverOpen}
                 onClose={handleMobileMenuClose}
               />
@@ -424,29 +424,40 @@ export default function GlobalFloatingBar() {
                   />
                 </Popover>
                 {/* Desktop - Home Button */}
-                <div className={`hidden md:flex items-center justify-between w-[50.87px] ${isSidebarOpen ? "md:w-[230px]" : "md:w-[60.87px]"} transition-all duration-sidebar ease-sidebar`}>
+                <div className={`hidden md:flex items-center justify-between h-[44px] w-[58.87px] pl-[8px] pb-[2px] ${isSidebarOpen ? "md:w-[251px]" : "md:w-[90.87px]"} transition-all duration-sidebar ease-sidebar`}>
                   <GTPLogoOld />
-                  <div className="flex items-center justify-end h-full cursor-pointer " onClick={() => {
-                    track("clicked Sidebar Close", {
-                      location: "desktop sidebar",
-                      page: window.location.pathname,
-                    });
-                    toggleSidebar();
-                    setIsChangingSidebar(true);
-                    setTimeout(() => {
-                      setIsChangingSidebar(false);
-                    }, ANIMATION_DURATION);
-                  }}>
-                    <Icon
-                      icon={isSidebarOpen ? "feather:log-out" : "feather:log-in"}
-                      className={`w-[13.15px] h-[13.15px] transition-transform duration-sidebar ease-sidebar`} // MODIFIED
-                      style={{ transform: `rotate(${rotation}deg)` }}
-                      onMouseEnter={() => {
-                        setIsHoveringToggle(true);
-                      }}
-                      onMouseLeave={() => {
-                        setIsHoveringToggle(false);
-                      }}
+                  <div 
+                    style={{ transform: `rotate(${rotation}deg)` }}
+                    className="relative flex w-[20px] h-[20px] top-[1px] cursor-pointer transition-transform duration-sidebar ease-sidebar w-[13.15px] h-[13.15px]"
+                    onClick={() => {
+                      track("clicked Sidebar Close", {
+                        location: "desktop sidebar",
+                        page: window.location.pathname,
+                      });
+                      toggleSidebar();
+                      setIsChangingSidebar(true);
+                      setTimeout(() => {
+                        setIsChangingSidebar(false);
+                      }, ANIMATION_DURATION);
+                    }}
+                    onMouseEnter={() => {
+                      setIsHoveringToggle(true);
+                    }}
+                    onMouseLeave={() => {
+                      setIsHoveringToggle(false);
+                    }}
+                  >
+                    <GTPIcon
+                      icon={"feather:log-in" as GTPIconName}
+                      size="sm"
+                      containerClassName="w-[13.15px] h-[13.15px]"
+                      className={`w-[13.15px] h-[13.15px] absolute top-[calc(50%-6.575px)] ${isSidebarOpen || (!isSidebarOpen && isHoveringToggle) ? "opacity-0" : "opacity-100"} transition-opacity duration-sidebar ease-sidebar`}
+                    />
+                    <GTPIcon
+                      icon={"feather:log-out" as GTPIconName}
+                      size="sm"
+                      containerClassName="w-[13.15px] h-[13.15px]"
+                      className={`w-[13.15px] h-[13.15px] absolute top-[calc(50%-6.575px)] ${isSidebarOpen || (!isSidebarOpen && isHoveringToggle) ? "opacity-100" : "opacity-0"} transition-opacity duration-sidebar ease-sidebar`}
                     />
                   </div>
                 </div>
@@ -469,7 +480,7 @@ export default function GlobalFloatingBar() {
                       // onFocus={activateSearch}
                       onBlur={deactivateSearch}
                     />
-                    
+
                   </SearchContainer>
                 </div>
 
@@ -494,13 +505,13 @@ export default function GlobalFloatingBar() {
                   <EthUsdSwitchSimple showBorder={true} className='hidden md:flex' />
                   <FocusSwitchSimple showBorder={true} className='hidden md:flex' />
                   {/* Desktop - Notifications */}
-                <NotificationButton
-                  placement="bottom"
-                  className="hidden md:flex"
-                />
+                  <NotificationButton
+                    placement="bottom"
+                    className="hidden md:flex"
+                  />
                 </div>
 
-                
+
                 {/* Mobile - Menu Button */}
                 {/* <Popover
               placement='top-end'
@@ -527,20 +538,21 @@ export default function GlobalFloatingBar() {
                   title="Menu"
                 /> */}
 
-                <FloatingBarButton onClick={() => {
-                  // Use functional update for better performance
-                  setIsMobileMenuPopoverOpen(prev => {
-                    const newState = !prev;
-                    // If closing the menu, use the same stable handler
-                    if (!newState) {
-                      handleMobileMenuClose();
-                      return false; // Override the state change since handleMobileMenuClose handles it
-                    }
-                    return newState;
-                  });
-                }}
-                icon={<AnimatedMenuIcon isOpen={isMobileMenuPopoverOpen} />}
-                className='block md:hidden'
+                <FloatingBarButton
+                  onClick={() => {
+                    // Use functional update for better performance
+                    setIsMobileMenuPopoverOpen(prev => {
+                      const newState = !prev;
+                      // If closing the menu, use the same stable handler
+                      if (!newState) {
+                        handleMobileMenuClose();
+                        return false; // Override the state change since handleMobileMenuClose handles it
+                      }
+                      return newState;
+                    });
+                  }}
+                  icon={<AnimatedMenuIcon isOpen={isMobileMenuPopoverOpen} /> as unknown as GTPIconName}
+                  className='block md:hidden'
                 >
 
                 </FloatingBarButton>
@@ -794,9 +806,9 @@ const GTPLogoOld = () => {
   return (
     <Link
       href="/"
-      className={`${isSidebarOpen ? "relative h-[45.07px] w-[192.87px] block" : "relative h-[45.07px] w-[62px] overflow-clip"} transition-all duration-sidebar ease-sidebar`}
+      className={`${isSidebarOpen ? "relative h-[45.07px] w-[192.87px] block" : "relative h-[45.07px] w-[42px] overflow-clip"} transition-all duration-sidebar ease-sidebar`}
     >
-      <IconContextMenu getSvgData={getLogoSvgData} itemName="gtp-logo-full" wrapperClassName="block h-full w-full">
+      <IconContextMenu getSvgData={getLogoSvgData} itemName="gtp-logo-full" wrapperClassName="block h-full w-full" isLogo={true}>
         <div className={`h-[45.07px] w-[192.87px] relative ${isSidebarOpen ? "translate-x-[1.5px]" : "translate-x-[1.5px]"} transition-all duration-sidebar ease-sidebar`} style={{ transformOrigin: "21px 27px" }}>
           <svg className="absolute" viewBox="0 0 194 46" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M13.1034 14.7805C13.0263 13.704 13.3194 12.7156 13.9484 11.7572C14.3695 11.1201 14.9667 10.4321 15.6257 9.67423C17.3256 7.7165 19.4313 5.29317 19.9468 2.08203C21.0677 4.54348 20.5241 6.93686 19.2833 9.13783C18.7252 10.1271 18.1071 10.8378 17.5171 11.5158C16.8228 12.3136 16.1684 13.066 15.6983 14.1724C15.4396 14.7741 15.2926 15.3504 15.2236 15.9141L13.1034 14.7805Z" fill="url(#paint0_radial_22480_56536)" />
@@ -935,25 +947,25 @@ const GTPLogoNew = () => {
 
 const AnimatedMenuIcon = ({ isOpen = false, className = "" }) => {
   return (
-    <svg 
-      width="24" 
-      height="24" 
-      viewBox="0 0 24 24" 
-      fill="none" 
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
       <defs>
         <linearGradient id="redYellowGradient" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="objectBoundingBox">
-          <stop stopColor="#FE5468"/>
-          <stop offset="1" stopColor="#FFDF27"/>
+          <stop stopColor="#FE5468" />
+          <stop offset="1" stopColor="#FFDF27" />
         </linearGradient>
         <linearGradient id="tealCyanGradient" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="objectBoundingBox">
-          <stop stopColor="#10808C"/>
-          <stop offset="1" stopColor="#1DF7EF"/>
+          <stop stopColor="#10808C" />
+          <stop offset="1" stopColor="#1DF7EF" />
         </linearGradient>
       </defs>
-      
+
       <g clipPath="url(#clip0)">
         {/* Top line - becomes part of first diagonal */}
         <path
@@ -964,14 +976,14 @@ const AnimatedMenuIcon = ({ isOpen = false, className = "" }) => {
           style={{
             transformOrigin: '12px 12px',
             transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-            transform: isOpen 
-              ? 'rotate(45deg) translateY(6.3px)' 
+            transform: isOpen
+              ? 'rotate(45deg) translateY(6.3px)'
               : 'rotate(0deg) translateY(0px)'
           }}
         />
-        
-        
-        
+
+
+
         {/* Bottom line - becomes part of first diagonal */}
         <path
           fillRule="evenodd"
@@ -981,8 +993,8 @@ const AnimatedMenuIcon = ({ isOpen = false, className = "" }) => {
           style={{
             transformOrigin: '12px 12px',
             transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-            transform: isOpen 
-              ? 'rotate(-45deg) translateY(-6.3px)' 
+            transform: isOpen
+              ? 'rotate(-45deg) translateY(-6.3px)'
               : 'rotate(0deg) translateY(0px)'
           }}
         />
@@ -996,16 +1008,16 @@ const AnimatedMenuIcon = ({ isOpen = false, className = "" }) => {
           style={{
             transformOrigin: '12px 12px',
             transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-            transform: isOpen 
-              ? 'rotate(45deg)' 
+            transform: isOpen
+              ? 'rotate(45deg)'
               : 'rotate(0deg)',
             opacity: isOpen ? 1 : 1
           }}
         />
       </g>
-      
+
       <clipPath id="clip0">
-        <rect width="24" height="24" fill="white"/>
+        <rect width="24" height="24" fill="white" />
       </clipPath>
     </svg>
   );

@@ -1,0 +1,3483 @@
+{
+  "data": {
+    "metric_id": "txcount" (string)
+    "metric_name": "Transaction Count" (string)
+    "source": [ (array with 2 items)
+"growthepie" (string)
+"IMX API" (string)
+    ]
+    "avg": true (boolean)
+    "monthly_agg": "sum" (string)
+    "chains": {
+      "arbitrum": {
+        "chain_name": "Arbitrum One" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.143 (number)
+          ]
+          "7d": [ (array with 1 items)
+0.0355 (number)
+          ]
+          "30d": [ (array with 1 items)
+0.7358 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.6231 (number)
+          ]
+          "180d": [ (array with 1 items)
+0.9835 (number)
+          ]
+          "365d": [ (array with 1 items)
+0.9657 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+0.249 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.304 (number)
+          ]
+          "180d": [ (array with 1 items)
+0.3562 (number)
+          ]
+          "365d": [ (array with 1 items)
+0.3243 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 1522 items)
+[ (array with 2 items)
+1622246400000 (number)
+9 (number)
+            ]
+            ... (1520 more items)
+[ (array with 2 items)
+1753660800000 (number)
+2925688 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+74326838 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 51 items)
+[ (array with 2 items)
+1619827200000 (number)
+105 (number)
+            ]
+            ... (49 more items)
+[ (array with 2 items)
+1751328000000 (number)
+71428258 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 1522 items)
+[ (array with 2 items)
+1622246400000 (number)
+9 (number)
+            ]
+            ... (1520 more items)
+[ (array with 2 items)
+1753660800000 (number)
+2839734.43 (number)
+            ]
+          ]
+        }
+      }
+      "arbitrum_nova": {
+        "chain_name": "Arbitrum Nova" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.1922 (number)
+          ]
+          "7d": [ (array with 1 items)
+-0.0491 (number)
+          ]
+          "30d": [ (array with 1 items)
+0.4389 (number)
+          ]
+          "90d": [ (array with 1 items)
+-0.4534 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.8856 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.8534 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+0.1449 (number)
+          ]
+          "90d": [ (array with 1 items)
+-0.6476 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.9026 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.8762 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 1120 items)
+[ (array with 2 items)
+1656115200000 (number)
+2 (number)
+            ]
+            ... (1118 more items)
+[ (array with 2 items)
+1753660800000 (number)
+4547 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+116304 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 38 items)
+[ (array with 2 items)
+1654041600000 (number)
+38 (number)
+            ]
+            ... (36 more items)
+[ (array with 2 items)
+1751328000000 (number)
+112456 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 1120 items)
+[ (array with 2 items)
+1656115200000 (number)
+2 (number)
+            ]
+            ... (1118 more items)
+[ (array with 2 items)
+1753660800000 (number)
+4231.29 (number)
+            ]
+          ]
+        }
+      }
+      "base": {
+        "chain_name": "Base Chain" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+-0.0219 (number)
+          ]
+          "7d": [ (array with 1 items)
+-0.0428 (number)
+          ]
+          "30d": [ (array with 1 items)
+0.156 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.2269 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.0725 (number)
+          ]
+          "365d": [ (array with 1 items)
+1.3428 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+-0.0806 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.2809 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.1618 (number)
+          ]
+          "365d": [ (array with 1 items)
+1.562 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 766 items)
+[ (array with 2 items)
+1686787200000 (number)
+9 (number)
+            ]
+            ... (764 more items)
+[ (array with 2 items)
+1753660800000 (number)
+8544265 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+260240390 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 26 items)
+[ (array with 2 items)
+1685577600000 (number)
+58 (number)
+            ]
+            ... (24 more items)
+[ (array with 2 items)
+1751328000000 (number)
+250859665 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 766 items)
+[ (array with 2 items)
+1686787200000 (number)
+9 (number)
+            ]
+            ... (764 more items)
+[ (array with 2 items)
+1753660800000 (number)
+8858959 (number)
+            ]
+          ]
+        }
+      }
+      "blast": {
+        "chain_name": "Blast" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+-0.0013 (number)
+          ]
+          "7d": [ (array with 1 items)
+-0.065 (number)
+          ]
+          "30d": [ (array with 1 items)
+-0.1528 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.6242 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.0281 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.4081 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+0.0515 (number)
+          ]
+          "90d": [ (array with 1 items)
+-0.1449 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.0595 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.4142 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 520 items)
+[ (array with 2 items)
+1708819200000 (number)
+5 (number)
+            ]
+            ... (518 more items)
+[ (array with 2 items)
+1753660800000 (number)
+391265 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+10649061 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 18 items)
+[ (array with 2 items)
+1706745600000 (number)
+374585 (number)
+            ]
+            ... (16 more items)
+[ (array with 2 items)
+1751328000000 (number)
+10216309 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 520 items)
+[ (array with 2 items)
+1708819200000 (number)
+5 (number)
+            ]
+            ... (518 more items)
+[ (array with 2 items)
+1753660800000 (number)
+395310.86 (number)
+            ]
+          ]
+        }
+      }
+      "celo": {
+        "chain_name": "Celo" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.0345 (number)
+          ]
+          "7d": [ (array with 1 items)
+-0.0731 (number)
+          ]
+          "30d": [ (array with 1 items)
+0.0052 (number)
+          ]
+          "90d": [ (array with 1 items)
+-0.1569 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.1436 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.1428 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+0.1581 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.0098 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.1945 (number)
+          ]
+          "365d": [ (array with 1 items)
+0.3269 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 1924 items)
+[ (array with 2 items)
+1587513600000 (number)
+617 (number)
+            ]
+            ... (1922 more items)
+[ (array with 2 items)
+1753660800000 (number)
+1168779 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+34575312 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 64 items)
+[ (array with 2 items)
+1585699200000 (number)
+5638 (number)
+            ]
+            ... (62 more items)
+[ (array with 2 items)
+1751328000000 (number)
+33357308 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 1924 items)
+[ (array with 2 items)
+1587513600000 (number)
+617 (number)
+            ]
+            ... (1922 more items)
+[ (array with 2 items)
+1753660800000 (number)
+1222069.29 (number)
+            ]
+          ]
+        }
+      }
+      "derive": {
+        "chain_name": "Derive" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.3174 (number)
+          ]
+          "7d": [ (array with 1 items)
+-0.0097 (number)
+          ]
+          "30d": [ (array with 1 items)
+0.5649 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.4033 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.497 (number)
+          ]
+          "365d": [ (array with 1 items)
+3.4276 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+0.1187 (number)
+          ]
+          "90d": [ (array with 1 items)
+-0.03 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.7526 (number)
+          ]
+          "365d": [ (array with 1 items)
+1.966 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 612 items)
+[ (array with 2 items)
+1700092800000 (number)
+91 (number)
+            ]
+            ... (610 more items)
+[ (array with 2 items)
+1753660800000 (number)
+12663 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+315948 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 21 items)
+[ (array with 2 items)
+1698796800000 (number)
+357 (number)
+            ]
+            ... (19 more items)
+[ (array with 2 items)
+1751328000000 (number)
+305988 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 612 items)
+[ (array with 2 items)
+1700092800000 (number)
+91 (number)
+            ]
+            ... (610 more items)
+[ (array with 2 items)
+1753660800000 (number)
+11534.14 (number)
+            ]
+          ]
+        }
+      }
+      "ethereum": {
+        "chain_name": "Ethereum Mainnet" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.0909 (number)
+          ]
+          "7d": [ (array with 1 items)
+0.0036 (number)
+          ]
+          "30d": [ (array with 1 items)
+0.2397 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.2508 (number)
+          ]
+          "180d": [ (array with 1 items)
+0.3728 (number)
+          ]
+          "365d": [ (array with 1 items)
+0.5466 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+0.0476 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.1924 (number)
+          ]
+          "180d": [ (array with 1 items)
+0.2047 (number)
+          ]
+          "365d": [ (array with 1 items)
+0.2881 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 2036 items)
+[ (array with 2 items)
+1577836800000 (number)
+466526 (number)
+            ]
+            ... (2034 more items)
+[ (array with 2 items)
+1753660800000 (number)
+1611238 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+42750598 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 67 items)
+[ (array with 2 items)
+1577836800000 (number)
+17703536 (number)
+            ]
+            ... (65 more items)
+[ (array with 2 items)
+1751328000000 (number)
+41323150 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 2036 items)
+[ (array with 2 items)
+1577836800000 (number)
+466526 (number)
+            ]
+            ... (2034 more items)
+[ (array with 2 items)
+1753660800000 (number)
+1582418.57 (number)
+            ]
+          ]
+        }
+      }
+      "fraxtal": {
+        "chain_name": "Fraxtal" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.0673 (number)
+          ]
+          "7d": [ (array with 1 items)
+0.195 (number)
+          ]
+          "30d": [ (array with 1 items)
+0.6664 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.3058 (number)
+          ]
+          "180d": [ (array with 1 items)
+0.2891 (number)
+          ]
+          "365d": [ (array with 1 items)
+2.402 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+-0.1973 (number)
+          ]
+          "90d": [ (array with 1 items)
+-0.126 (number)
+          ]
+          "180d": [ (array with 1 items)
+0.7507 (number)
+          ]
+          "365d": [ (array with 1 items)
+2.1679 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 538 items)
+[ (array with 2 items)
+1707004800000 (number)
+23 (number)
+            ]
+            ... (536 more items)
+[ (array with 2 items)
+1753660800000 (number)
+19065 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+493103 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 18 items)
+[ (array with 2 items)
+1706745600000 (number)
+45266 (number)
+            ]
+            ... (16 more items)
+[ (array with 2 items)
+1751328000000 (number)
+482987 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 538 items)
+[ (array with 2 items)
+1707004800000 (number)
+23 (number)
+            ]
+            ... (536 more items)
+[ (array with 2 items)
+1753660800000 (number)
+19261.86 (number)
+            ]
+          ]
+        }
+      }
+      "gravity": {
+        "chain_name": "Gravity" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.495 (number)
+          ]
+          "7d": [ (array with 1 items)
+-0.167 (number)
+          ]
+          "30d": [ (array with 1 items)
+0.4604 (number)
+          ]
+          "90d": [ (array with 1 items)
+1.2563 (number)
+          ]
+          "180d": [ (array with 1 items)
+0.4821 (number)
+          ]
+          "365d": [ (array with 1 items)
+99.99 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+0.0992 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.202 (number)
+          ]
+          "180d": [ (array with 1 items)
+0.0215 (number)
+          ]
+          "365d": [ (array with 1 items)
+99.99 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 428 items)
+[ (array with 2 items)
+1715990400000 (number)
+24 (number)
+            ]
+            ... (426 more items)
+[ (array with 2 items)
+1753660800000 (number)
+729655 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+18790841 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 15 items)
+[ (array with 2 items)
+1714521600000 (number)
+186 (number)
+            ]
+            ... (13 more items)
+[ (array with 2 items)
+1751328000000 (number)
+17944032 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 428 items)
+[ (array with 2 items)
+1715990400000 (number)
+24 (number)
+            ]
+            ... (426 more items)
+[ (array with 2 items)
+1753660800000 (number)
+576106.29 (number)
+            ]
+          ]
+        }
+      }
+      "imx": {
+        "chain_name": "Immutable X" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.5526 (number)
+          ]
+          "7d": [ (array with 1 items)
+0.6667 (number)
+          ]
+          "30d": [ (array with 1 items)
+0.5865 (number)
+          ]
+          "90d": [ (array with 1 items)
+-0.3884 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.483 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.9203 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+0.12 (number)
+          ]
+          "90d": [ (array with 1 items)
+-0.4905 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.5723 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.7986 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 1583 items)
+[ (array with 2 items)
+1616544000000 (number)
+1 (number)
+            ]
+            ... (1581 more items)
+[ (array with 2 items)
+1753660800000 (number)
+111127 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+2497286 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 53 items)
+[ (array with 2 items)
+1614556800000 (number)
+1194280 (number)
+            ]
+            ... (51 more items)
+[ (array with 2 items)
+1751328000000 (number)
+2394641 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 1583 items)
+[ (array with 2 items)
+1616544000000 (number)
+1 (number)
+            ]
+            ... (1581 more items)
+[ (array with 2 items)
+1753660800000 (number)
+78001.86 (number)
+            ]
+          ]
+        }
+      }
+      "ink": {
+        "chain_name": "Ink" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.0881 (number)
+          ]
+          "7d": [ (array with 1 items)
+0.5678 (number)
+          ]
+          "30d": [ (array with 1 items)
+-0.1172 (number)
+          ]
+          "90d": [ (array with 1 items)
+1.4613 (number)
+          ]
+          "180d": [ (array with 1 items)
+1.7482 (number)
+          ]
+          "365d": [ (array with 1 items)
+null
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+0.0847 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.8359 (number)
+          ]
+          "180d": [ (array with 1 items)
+6.4038 (number)
+          ]
+          "365d": [ (array with 1 items)
+null
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 232 items)
+[ (array with 2 items)
+1733702400000 (number)
+67 (number)
+            ]
+            ... (230 more items)
+[ (array with 2 items)
+1753660800000 (number)
+415496 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+13415292 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 8 items)
+[ (array with 2 items)
+1733011200000 (number)
+367966 (number)
+            ]
+            ... (6 more items)
+[ (array with 2 items)
+1751328000000 (number)
+12956074 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 232 items)
+[ (array with 2 items)
+1733702400000 (number)
+67 (number)
+            ]
+            ... (230 more items)
+[ (array with 2 items)
+1753660800000 (number)
+407967 (number)
+            ]
+          ]
+        }
+      }
+      "linea": {
+        "chain_name": "Linea" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.2304 (number)
+          ]
+          "7d": [ (array with 1 items)
+-0.5071 (number)
+          ]
+          "30d": [ (array with 1 items)
+1.0596 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.0089 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.0586 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.8748 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+0.3128 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.1141 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.3355 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.9079 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 751 items)
+[ (array with 2 items)
+1688601600000 (number)
+5 (number)
+            ]
+            ... (749 more items)
+[ (array with 2 items)
+1753660800000 (number)
+106085 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+2886467 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 25 items)
+[ (array with 2 items)
+1688169600000 (number)
+1527534 (number)
+            ]
+            ... (23 more items)
+[ (array with 2 items)
+1751328000000 (number)
+2813116 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 751 items)
+[ (array with 2 items)
+1688601600000 (number)
+5 (number)
+            ]
+            ... (749 more items)
+[ (array with 2 items)
+1753660800000 (number)
+147015.86 (number)
+            ]
+          ]
+        }
+      }
+      "lisk": {
+        "chain_name": "Lisk" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.0939 (number)
+          ]
+          "7d": [ (array with 1 items)
+0.708 (number)
+          ]
+          "30d": [ (array with 1 items)
+-0.2884 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.438 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.9046 (number)
+          ]
+          "365d": [ (array with 1 items)
+99.99 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+-0.0894 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.1194 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.9079 (number)
+          ]
+          "365d": [ (array with 1 items)
+99.99 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 446 items)
+[ (array with 2 items)
+1714953600000 (number)
+21 (number)
+            ]
+            ... (444 more items)
+[ (array with 2 items)
+1753660800000 (number)
+54632 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+1370728 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 15 items)
+[ (array with 2 items)
+1714521600000 (number)
+1753 (number)
+            ]
+            ... (13 more items)
+[ (array with 2 items)
+1751328000000 (number)
+1290006 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 446 items)
+[ (array with 2 items)
+1714953600000 (number)
+21 (number)
+            ]
+            ... (444 more items)
+[ (array with 2 items)
+1753660800000 (number)
+45637.71 (number)
+            ]
+          ]
+        }
+      }
+      "loopring": {
+        "chain_name": "Loopring" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+-0.674 (number)
+          ]
+          "7d": [ (array with 1 items)
+-0.3147 (number)
+          ]
+          "30d": [ (array with 1 items)
+-0.9446 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.794 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.2573 (number)
+          ]
+          "365d": [ (array with 1 items)
+0.0089 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+-0.4314 (number)
+          ]
+          "90d": [ (array with 1 items)
+4.9031 (number)
+          ]
+          "180d": [ (array with 1 items)
+1.9091 (number)
+          ]
+          "365d": [ (array with 1 items)
+2.5471 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 1706 items)
+[ (array with 2 items)
+1606348800000 (number)
+23 (number)
+            ]
+            ... (1704 more items)
+[ (array with 2 items)
+1753660800000 (number)
+1019 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+142264 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 57 items)
+[ (array with 2 items)
+1604188800000 (number)
+4720 (number)
+            ]
+            ... (55 more items)
+[ (array with 2 items)
+1751328000000 (number)
+67708 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 1706 items)
+[ (array with 2 items)
+1606348800000 (number)
+23 (number)
+            ]
+            ... (1704 more items)
+[ (array with 2 items)
+1753660800000 (number)
+1732 (number)
+            ]
+          ]
+        }
+      }
+      "manta": {
+        "chain_name": "Manta Pacific" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+-0.0134 (number)
+          ]
+          "7d": [ (array with 1 items)
+-0.1596 (number)
+          ]
+          "30d": [ (array with 1 items)
+-0.261 (number)
+          ]
+          "90d": [ (array with 1 items)
+-0.5512 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.5601 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.1109 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+-0.2617 (number)
+          ]
+          "90d": [ (array with 1 items)
+-0.5311 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.5382 (number)
+          ]
+          "365d": [ (array with 1 items)
+0.0697 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 688 items)
+[ (array with 2 items)
+1694217600000 (number)
+7 (number)
+            ]
+            ... (686 more items)
+[ (array with 2 items)
+1753660800000 (number)
+80901 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+2154254 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 23 items)
+[ (array with 2 items)
+1693526400000 (number)
+48112 (number)
+            ]
+            ... (21 more items)
+[ (array with 2 items)
+1751328000000 (number)
+2107170 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 688 items)
+[ (array with 2 items)
+1694217600000 (number)
+7 (number)
+            ]
+            ... (686 more items)
+[ (array with 2 items)
+1753660800000 (number)
+83510.57 (number)
+            ]
+          ]
+        }
+      }
+      "mantle": {
+        "chain_name": "Mantle" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.0297 (number)
+          ]
+          "7d": [ (array with 1 items)
+-0.0077 (number)
+          ]
+          "30d": [ (array with 1 items)
+0.7461 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.5116 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.1778 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.3562 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+0.2389 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.0203 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.3411 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.452 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 748 items)
+[ (array with 2 items)
+1688342400000 (number)
+342 (number)
+            ]
+            ... (746 more items)
+[ (array with 2 items)
+1753660800000 (number)
+305922 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+6886521 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 25 items)
+[ (array with 2 items)
+1688169600000 (number)
+416621 (number)
+            ]
+            ... (23 more items)
+[ (array with 2 items)
+1751328000000 (number)
+6705400 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 748 items)
+[ (array with 2 items)
+1688342400000 (number)
+342 (number)
+            ]
+            ... (746 more items)
+[ (array with 2 items)
+1753660800000 (number)
+306073.14 (number)
+            ]
+          ]
+        }
+      }
+      "metis": {
+        "chain_name": "Metis" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+-0.0085 (number)
+          ]
+          "7d": [ (array with 1 items)
+-0.2589 (number)
+          ]
+          "30d": [ (array with 1 items)
+-0.2025 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.015 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.3604 (number)
+          ]
+          "365d": [ (array with 1 items)
+0.4152 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+-0.202 (number)
+          ]
+          "90d": [ (array with 1 items)
+-0.2903 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.6287 (number)
+          ]
+          "365d": [ (array with 1 items)
+0.4876 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 1348 items)
+[ (array with 2 items)
+1637280000000 (number)
+178 (number)
+            ]
+            ... (1346 more items)
+[ (array with 2 items)
+1753660800000 (number)
+26370 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+987506 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 45 items)
+[ (array with 2 items)
+1635724800000 (number)
+16601 (number)
+            ]
+            ... (43 more items)
+[ (array with 2 items)
+1751328000000 (number)
+941192 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 1348 items)
+[ (array with 2 items)
+1637280000000 (number)
+178 (number)
+            ]
+            ... (1346 more items)
+[ (array with 2 items)
+1753660800000 (number)
+36486.71 (number)
+            ]
+          ]
+        }
+      }
+      "mint": {
+        "chain_name": "Mint" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+2.5707 (number)
+          ]
+          "7d": [ (array with 1 items)
+-0.6624 (number)
+          ]
+          "30d": [ (array with 1 items)
+-0.6023 (number)
+          ]
+          "90d": [ (array with 1 items)
+2.0221 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.9215 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.6536 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+-0.3144 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.6674 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.8456 (number)
+          ]
+          "365d": [ (array with 1 items)
+1.2918 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 441 items)
+[ (array with 2 items)
+1715644800000 (number)
+22 (number)
+            ]
+            ... (439 more items)
+[ (array with 2 items)
+1753660800000 (number)
+20771 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+1231011 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 15 items)
+[ (array with 2 items)
+1714521600000 (number)
+249018 (number)
+            ]
+            ... (13 more items)
+[ (array with 2 items)
+1751328000000 (number)
+1178780 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 441 items)
+[ (array with 2 items)
+1715644800000 (number)
+22 (number)
+            ]
+            ... (439 more items)
+[ (array with 2 items)
+1753660800000 (number)
+19876 (number)
+            ]
+          ]
+        }
+      }
+      "mode": {
+        "chain_name": "Mode Network" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+-0.0111 (number)
+          ]
+          "7d": [ (array with 1 items)
+0.264 (number)
+          ]
+          "30d": [ (array with 1 items)
+0.074 (number)
+          ]
+          "90d": [ (array with 1 items)
+1.3455 (number)
+          ]
+          "180d": [ (array with 1 items)
+4.5812 (number)
+          ]
+          "365d": [ (array with 1 items)
+0.3864 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+0.0213 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.7871 (number)
+          ]
+          "180d": [ (array with 1 items)
+2.5254 (number)
+          ]
+          "365d": [ (array with 1 items)
+0.4553 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 549 items)
+[ (array with 2 items)
+1706313600000 (number)
+225 (number)
+            ]
+            ... (547 more items)
+[ (array with 2 items)
+1753660800000 (number)
+193757 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+5381675 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 19 items)
+[ (array with 2 items)
+1704067200000 (number)
+37321 (number)
+            ]
+            ... (17 more items)
+[ (array with 2 items)
+1751328000000 (number)
+5167406 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 549 items)
+[ (array with 2 items)
+1706313600000 (number)
+225 (number)
+            ]
+            ... (547 more items)
+[ (array with 2 items)
+1753660800000 (number)
+190463.71 (number)
+            ]
+          ]
+        }
+      }
+      "optimism": {
+        "chain_name": "OP Mainnet" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.3482 (number)
+          ]
+          "7d": [ (array with 1 items)
+0.0627 (number)
+          ]
+          "30d": [ (array with 1 items)
+0.7693 (number)
+          ]
+          "90d": [ (array with 1 items)
+1.681 (number)
+          ]
+          "180d": [ (array with 1 items)
+1.7002 (number)
+          ]
+          "365d": [ (array with 1 items)
+5.0071 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+0.2218 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.4747 (number)
+          ]
+          "180d": [ (array with 1 items)
+0.7084 (number)
+          ]
+          "365d": [ (array with 1 items)
+1.8899 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 1356 items)
+[ (array with 2 items)
+1636588800000 (number)
+555 (number)
+            ]
+            ... (1354 more items)
+[ (array with 2 items)
+1753660800000 (number)
+2095502 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+39150841 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 45 items)
+[ (array with 2 items)
+1635724800000 (number)
+594394 (number)
+            ]
+            ... (43 more items)
+[ (array with 2 items)
+1751328000000 (number)
+37870058 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 1356 items)
+[ (array with 2 items)
+1636588800000 (number)
+555 (number)
+            ]
+            ... (1354 more items)
+[ (array with 2 items)
+1753660800000 (number)
+1726137.86 (number)
+            ]
+          ]
+        }
+      }
+      "orderly": {
+        "chain_name": "Orderly" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.1561 (number)
+          ]
+          "7d": [ (array with 1 items)
+-0.246 (number)
+          ]
+          "30d": [ (array with 1 items)
+2.7272 (number)
+          ]
+          "90d": [ (array with 1 items)
+1.4386 (number)
+          ]
+          "180d": [ (array with 1 items)
+1.4277 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.5751 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+2.2378 (number)
+          ]
+          "90d": [ (array with 1 items)
+2.2071 (number)
+          ]
+          "180d": [ (array with 1 items)
+1.9288 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.5815 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 658 items)
+[ (array with 2 items)
+1696896000000 (number)
+99 (number)
+            ]
+            ... (656 more items)
+[ (array with 2 items)
+1753660800000 (number)
+16802 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+660345 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 22 items)
+[ (array with 2 items)
+1696118400000 (number)
+35002 (number)
+            ]
+            ... (20 more items)
+[ (array with 2 items)
+1751328000000 (number)
+654288 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 658 items)
+[ (array with 2 items)
+1696896000000 (number)
+99 (number)
+            ]
+            ... (656 more items)
+[ (array with 2 items)
+1753660800000 (number)
+22912.71 (number)
+            ]
+          ]
+        }
+      }
+      "plume": {
+        "chain_name": "Plume Network" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.0662 (number)
+          ]
+          "7d": [ (array with 1 items)
+3.6345 (number)
+          ]
+          "30d": [ (array with 1 items)
+7.2249 (number)
+          ]
+          "90d": [ (array with 1 items)
+37.6734 (number)
+          ]
+          "180d": [ (array with 1 items)
+null
+          ]
+          "365d": [ (array with 1 items)
+null
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+2.453 (number)
+          ]
+          "90d": [ (array with 1 items)
+19.5214 (number)
+          ]
+          "180d": [ (array with 1 items)
+null
+          ]
+          "365d": [ (array with 1 items)
+null
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 156 items)
+[ (array with 2 items)
+1740009600000 (number)
+15 (number)
+            ]
+            ... (154 more items)
+[ (array with 2 items)
+1753660800000 (number)
+2497492 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+24255952 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 6 items)
+[ (array with 2 items)
+1738368000000 (number)
+7277 (number)
+            ]
+            ... (4 more items)
+[ (array with 2 items)
+1751328000000 (number)
+24027521 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 156 items)
+[ (array with 2 items)
+1740009600000 (number)
+15 (number)
+            ]
+            ... (154 more items)
+[ (array with 2 items)
+1753660800000 (number)
+2532439.43 (number)
+            ]
+          ]
+        }
+      }
+      "polygon_zkevm": {
+        "chain_name": "Polygon zkEVM" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.2075 (number)
+          ]
+          "7d": [ (array with 1 items)
+0.0384 (number)
+          ]
+          "30d": [ (array with 1 items)
+0.2148 (number)
+          ]
+          "90d": [ (array with 1 items)
+-0.3088 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.4756 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.6051 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+0.0083 (number)
+          ]
+          "90d": [ (array with 1 items)
+-0.1339 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.4462 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.6267 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 858 items)
+[ (array with 2 items)
+1679616000000 (number)
+27 (number)
+            ]
+            ... (856 more items)
+[ (array with 2 items)
+1753660800000 (number)
+5027 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+158643 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 29 items)
+[ (array with 2 items)
+1677628800000 (number)
+34172 (number)
+            ]
+            ... (27 more items)
+[ (array with 2 items)
+1751328000000 (number)
+149793 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 858 items)
+[ (array with 2 items)
+1679616000000 (number)
+27 (number)
+            ]
+            ... (856 more items)
+[ (array with 2 items)
+1753660800000 (number)
+5345 (number)
+            ]
+          ]
+        }
+      }
+      "redstone": {
+        "chain_name": "Redstone" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.3418 (number)
+          ]
+          "7d": [ (array with 1 items)
+0.1087 (number)
+          ]
+          "30d": [ (array with 1 items)
+-0.5635 (number)
+          ]
+          "90d": [ (array with 1 items)
+99.99 (number)
+          ]
+          "180d": [ (array with 1 items)
+3.6535 (number)
+          ]
+          "365d": [ (array with 1 items)
+8.2015 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+0.1482 (number)
+          ]
+          "90d": [ (array with 1 items)
+50.4016 (number)
+          ]
+          "180d": [ (array with 1 items)
+1.6533 (number)
+          ]
+          "365d": [ (array with 1 items)
+3.4193 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 474 items)
+[ (array with 2 items)
+1712188800000 (number)
+2 (number)
+            ]
+            ... (472 more items)
+[ (array with 2 items)
+1753660800000 (number)
+82418 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+2954772 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 16 items)
+[ (array with 2 items)
+1711929600000 (number)
+66217 (number)
+            ]
+            ... (14 more items)
+[ (array with 2 items)
+1751328000000 (number)
+2732113 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 474 items)
+[ (array with 2 items)
+1712188800000 (number)
+2 (number)
+            ]
+            ... (472 more items)
+[ (array with 2 items)
+1753660800000 (number)
+107616.71 (number)
+            ]
+          ]
+        }
+      }
+      "scroll": {
+        "chain_name": "Scroll" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.1498 (number)
+          ]
+          "7d": [ (array with 1 items)
+-0.1959 (number)
+          ]
+          "30d": [ (array with 1 items)
+1.5999 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.0518 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.0101 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.8118 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+0.3204 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.0691 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.2084 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.8778 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 658 items)
+[ (array with 2 items)
+1696896000000 (number)
+2034 (number)
+            ]
+            ... (656 more items)
+[ (array with 2 items)
+1753660800000 (number)
+49396 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+1184733 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 22 items)
+[ (array with 2 items)
+1696118400000 (number)
+1752811 (number)
+            ]
+            ... (20 more items)
+[ (array with 2 items)
+1751328000000 (number)
+1152925 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 658 items)
+[ (array with 2 items)
+1696896000000 (number)
+2034 (number)
+            ]
+            ... (656 more items)
+[ (array with 2 items)
+1753660800000 (number)
+53672.29 (number)
+            ]
+          ]
+        }
+      }
+      "soneium": {
+        "chain_name": "Soneium" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+-0.1077 (number)
+          ]
+          "7d": [ (array with 1 items)
+0.1066 (number)
+          ]
+          "30d": [ (array with 1 items)
+-0.5999 (number)
+          ]
+          "90d": [ (array with 1 items)
+-0.4054 (number)
+          ]
+          "180d": [ (array with 1 items)
+0.3083 (number)
+          ]
+          "365d": [ (array with 1 items)
+null
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+-0.3289 (number)
+          ]
+          "90d": [ (array with 1 items)
+-0.2188 (number)
+          ]
+          "180d": [ (array with 1 items)
+3.7935 (number)
+          ]
+          "365d": [ (array with 1 items)
+null
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 236 items)
+[ (array with 2 items)
+1733184000000 (number)
+9 (number)
+            ]
+            ... (234 more items)
+[ (array with 2 items)
+1753660800000 (number)
+804030 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+23344821 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 8 items)
+[ (array with 2 items)
+1733011200000 (number)
+24400 (number)
+            ]
+            ... (6 more items)
+[ (array with 2 items)
+1751328000000 (number)
+20971617 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 236 items)
+[ (array with 2 items)
+1733184000000 (number)
+9 (number)
+            ]
+            ... (234 more items)
+[ (array with 2 items)
+1753660800000 (number)
+920974 (number)
+            ]
+          ]
+        }
+      }
+      "starknet": {
+        "chain_name": "Starknet" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.2331 (number)
+          ]
+          "7d": [ (array with 1 items)
+0.3754 (number)
+          ]
+          "30d": [ (array with 1 items)
+0.6984 (number)
+          ]
+          "90d": [ (array with 1 items)
+-0.5861 (number)
+          ]
+          "180d": [ (array with 1 items)
+1.0029 (number)
+          ]
+          "365d": [ (array with 1 items)
+1.8217 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+0.8503 (number)
+          ]
+          "90d": [ (array with 1 items)
+-0.2751 (number)
+          ]
+          "180d": [ (array with 1 items)
+4.623 (number)
+          ]
+          "365d": [ (array with 1 items)
+3.5792 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 1351 items)
+[ (array with 2 items)
+1637020800000 (number)
+69 (number)
+            ]
+            ... (1349 more items)
+[ (array with 2 items)
+1753660800000 (number)
+170823 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+10728486 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 45 items)
+[ (array with 2 items)
+1635724800000 (number)
+5107 (number)
+            ]
+            ... (43 more items)
+[ (array with 2 items)
+1751328000000 (number)
+10198637 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 1351 items)
+[ (array with 2 items)
+1637020800000 (number)
+69 (number)
+            ]
+            ... (1349 more items)
+[ (array with 2 items)
+1753660800000 (number)
+176761 (number)
+            ]
+          ]
+        }
+      }
+      "swell": {
+        "chain_name": "Swellchain" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.0172 (number)
+          ]
+          "7d": [ (array with 1 items)
+-0.04 (number)
+          ]
+          "30d": [ (array with 1 items)
+0.0125 (number)
+          ]
+          "90d": [ (array with 1 items)
+6.7159 (number)
+          ]
+          "180d": [ (array with 1 items)
+7.193 (number)
+          ]
+          "365d": [ (array with 1 items)
+null
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+-0.7313 (number)
+          ]
+          "90d": [ (array with 1 items)
+6.8832 (number)
+          ]
+          "180d": [ (array with 1 items)
+7.8799 (number)
+          ]
+          "365d": [ (array with 1 items)
+null
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 242 items)
+[ (array with 2 items)
+1732752000000 (number)
+316 (number)
+            ]
+            ... (240 more items)
+[ (array with 2 items)
+1753660800000 (number)
+45709 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+1225278 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 9 items)
+[ (array with 2 items)
+1730419200000 (number)
+319 (number)
+            ]
+            ... (7 more items)
+[ (array with 2 items)
+1751328000000 (number)
+1179260 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 242 items)
+[ (array with 2 items)
+1732752000000 (number)
+316 (number)
+            ]
+            ... (240 more items)
+[ (array with 2 items)
+1753660800000 (number)
+47524.14 (number)
+            ]
+          ]
+        }
+      }
+      "taiko": {
+        "chain_name": "Taiko Alethia" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.0483 (number)
+          ]
+          "7d": [ (array with 1 items)
+-0.1651 (number)
+          ]
+          "30d": [ (array with 1 items)
+-0.3115 (number)
+          ]
+          "90d": [ (array with 1 items)
+-0.434 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.6611 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.3267 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+-0.1997 (number)
+          ]
+          "90d": [ (array with 1 items)
+-0.4081 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.4838 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.0594 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 429 items)
+[ (array with 2 items)
+1716595200000 (number)
+2 (number)
+            ]
+            ... (427 more items)
+[ (array with 2 items)
+1753660800000 (number)
+864592 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+34914642 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 15 items)
+[ (array with 2 items)
+1714521600000 (number)
+231058 (number)
+            ]
+            ... (13 more items)
+[ (array with 2 items)
+1751328000000 (number)
+33703560 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 429 items)
+[ (array with 2 items)
+1716595200000 (number)
+2 (number)
+            ]
+            ... (427 more items)
+[ (array with 2 items)
+1753660800000 (number)
+907196 (number)
+            ]
+          ]
+        }
+      }
+      "unichain": {
+        "chain_name": "Unichain" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.1018 (number)
+          ]
+          "7d": [ (array with 1 items)
+-0.1719 (number)
+          ]
+          "30d": [ (array with 1 items)
+-0.1519 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.5711 (number)
+          ]
+          "180d": [ (array with 1 items)
+99.99 (number)
+          ]
+          "365d": [ (array with 1 items)
+null
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+-0.0614 (number)
+          ]
+          "90d": [ (array with 1 items)
+1.029 (number)
+          ]
+          "180d": [ (array with 1 items)
+99.99 (number)
+          ]
+          "365d": [ (array with 1 items)
+null
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 266 items)
+[ (array with 2 items)
+1730678400000 (number)
+1 (number)
+            ]
+            ... (264 more items)
+[ (array with 2 items)
+1753660800000 (number)
+1198461 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+39888686 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 9 items)
+[ (array with 2 items)
+1730419200000 (number)
+71226 (number)
+            ]
+            ... (7 more items)
+[ (array with 2 items)
+1751328000000 (number)
+38367730 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 266 items)
+[ (array with 2 items)
+1730678400000 (number)
+1 (number)
+            ]
+            ... (264 more items)
+[ (array with 2 items)
+1753660800000 (number)
+1139778.71 (number)
+            ]
+          ]
+        }
+      }
+      "worldchain": {
+        "chain_name": "World Chain" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.0382 (number)
+          ]
+          "7d": [ (array with 1 items)
+0.0959 (number)
+          ]
+          "30d": [ (array with 1 items)
+0.1001 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.7129 (number)
+          ]
+          "180d": [ (array with 1 items)
+1.0537 (number)
+          ]
+          "365d": [ (array with 1 items)
+null
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+0.0567 (number)
+          ]
+          "90d": [ (array with 1 items)
+1.5198 (number)
+          ]
+          "180d": [ (array with 1 items)
+1.0392 (number)
+          ]
+          "365d": [ (array with 1 items)
+null
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 300 items)
+[ (array with 2 items)
+1727827200000 (number)
+8524 (number)
+            ]
+            ... (298 more items)
+[ (array with 2 items)
+1753660800000 (number)
+1698264 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+44843474 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 10 items)
+[ (array with 2 items)
+1727740800000 (number)
+9013652 (number)
+            ]
+            ... (8 more items)
+[ (array with 2 items)
+1751328000000 (number)
+43374309 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 300 items)
+[ (array with 2 items)
+1727827200000 (number)
+8524 (number)
+            ]
+            ... (298 more items)
+[ (array with 2 items)
+1753660800000 (number)
+1575520.43 (number)
+            ]
+          ]
+        }
+      }
+      "zircuit": {
+        "chain_name": "Zircuit" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.617 (number)
+          ]
+          "7d": [ (array with 1 items)
+0.5711 (number)
+          ]
+          "30d": [ (array with 1 items)
+0.1757 (number)
+          ]
+          "90d": [ (array with 1 items)
+1.6399 (number)
+          ]
+          "180d": [ (array with 1 items)
+0.6836 (number)
+          ]
+          "365d": [ (array with 1 items)
+8.5952 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+0.44 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.638 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.0241 (number)
+          ]
+          "365d": [ (array with 1 items)
+24.2908 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 392 items)
+[ (array with 2 items)
+1719878400000 (number)
+5 (number)
+            ]
+            ... (390 more items)
+[ (array with 2 items)
+1753660800000 (number)
+11898 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+287910 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 13 items)
+[ (array with 2 items)
+1719792000000 (number)
+15376 (number)
+            ]
+            ... (11 more items)
+[ (array with 2 items)
+1751328000000 (number)
+280097 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 392 items)
+[ (array with 2 items)
+1719878400000 (number)
+5 (number)
+            ]
+            ... (390 more items)
+[ (array with 2 items)
+1753660800000 (number)
+16261.29 (number)
+            ]
+          ]
+        }
+      }
+      "zksync_era": {
+        "chain_name": "ZKsync Era" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.2911 (number)
+          ]
+          "7d": [ (array with 1 items)
+0.0165 (number)
+          ]
+          "30d": [ (array with 1 items)
+0.7767 (number)
+          ]
+          "90d": [ (array with 1 items)
+0.2242 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.4458 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.7193 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+0.147 (number)
+          ]
+          "90d": [ (array with 1 items)
+-0.0967 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.5918 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.8009 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 896 items)
+[ (array with 2 items)
+1676332800000 (number)
+6 (number)
+            ]
+            ... (894 more items)
+[ (array with 2 items)
+1753660800000 (number)
+68065 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+1808277 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 30 items)
+[ (array with 2 items)
+1675209600000 (number)
+1365 (number)
+            ]
+            ... (28 more items)
+[ (array with 2 items)
+1751328000000 (number)
+1756419 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 896 items)
+[ (array with 2 items)
+1676332800000 (number)
+6 (number)
+            ]
+            ... (894 more items)
+[ (array with 2 items)
+1753660800000 (number)
+61351.71 (number)
+            ]
+          ]
+        }
+      }
+      "zora": {
+        "chain_name": "Zora" (string)
+        "changes": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "1d": [ (array with 1 items)
+0.4481 (number)
+          ]
+          "7d": [ (array with 1 items)
+0.8503 (number)
+          ]
+          "30d": [ (array with 1 items)
+0.8435 (number)
+          ]
+          "90d": [ (array with 1 items)
+-0.4639 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.5527 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.8408 (number)
+          ]
+        }
+        "changes_monthly": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "30d": [ (array with 1 items)
+-0.4066 (number)
+          ]
+          "90d": [ (array with 1 items)
+-0.7327 (number)
+          ]
+          "180d": [ (array with 1 items)
+-0.8042 (number)
+          ]
+          "365d": [ (array with 1 items)
+-0.9343 (number)
+          ]
+        }
+        "daily": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 769 items)
+[ (array with 2 items)
+1687305600000 (number)
+775 (number)
+            ]
+            ... (767 more items)
+[ (array with 2 items)
+1753660800000 (number)
+16547 (number)
+            ]
+          ]
+        }
+        "last_30d": {
+          "types": [ (array with 1 items)
+"value" (string)
+          ]
+          "data": [ (array with 1 items)
+221507 (number)
+          ]
+        }
+        "monthly": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 26 items)
+[ (array with 2 items)
+1685577600000 (number)
+61999 (number)
+            ]
+            ... (24 more items)
+[ (array with 2 items)
+1751328000000 (number)
+213758 (number)
+            ]
+          ]
+        }
+        "daily_7d_rolling": {
+          "types": [ (array with 2 items)
+"unix" (string)
+"value" (string)
+          ]
+          "data": [ (array with 769 items)
+[ (array with 2 items)
+1687305600000 (number)
+775 (number)
+            ]
+            ... (767 more items)
+[ (array with 2 items)
+1753660800000 (number)
+9626.29 (number)
+            ]
+          ]
+        }
+      }
+    }
+  }
+  "last_updated_utc": "2025-07-29 05:32:09" (string)
+}

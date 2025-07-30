@@ -110,6 +110,8 @@ export default function ShowLoading({
     return <LoadingAnimation />;
   };
 
+  return null;
+
   if (section)
     return (
       <div

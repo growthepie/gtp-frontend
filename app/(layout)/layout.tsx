@@ -212,24 +212,26 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <Providers>
+          <div
+            id="background-container"
+            className="background-container !fixed"
+          >
+            <div className="background-gradient-group">
+              <div className="background-gradient-yellow"></div>
+              <div className="background-gradient-green"></div>
+            </div>
+          </div>
           <div className="flex h-fit w-full justify-center">
-            <div className="flex min-h-screen w-full max-w-[1680px]">
-              {!IS_PRODUCTION && <GlobalSearchBar />}
+            <div className="flex min-h-screen w-full max-w-[1680px] px-[30px]">
+              {!IS_PRODUCTION && (
+                <GlobalSearchBar />
+              )}
               <SidebarContainer />
               <div
                 id="content-panel"
                 className="relative z-10 flex min-h-full flex-1 flex-col overflow-y-auto overflow-x-hidden bg-white dark:bg-inherit"
               >
                 <div className="relative min-h-full w-full">
-                  <div
-                    id="background-container"
-                    className="background-container !fixed"
-                  >
-                    <div className="background-gradient-group">
-                      <div className="background-gradient-yellow"></div>
-                      <div className="background-gradient-green"></div>
-                    </div>
-                  </div>
                   <Header />
                   <main className="z-10 mx-auto min-h-[calc(100vh-218px-56px)] w-full flex-1 pb-[165px] md:min-h-[calc(100vh-207px-80px)]">
                     {children}

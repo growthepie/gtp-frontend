@@ -347,10 +347,20 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
       </>
     );
 
+  let sidebarWidths = {
+    open: "w-[260px]",
+    closed: "w-[92px]",
+  }
+
+  if (showGlobalSearchBar) {
+    sidebarWidths.open = "w-[260px]";
+    sidebarWidths.closed = "w-[64px]";
+  }
+
   return (
     <div
       ref={ref}
-      className={`flex-1 flex flex-col justify-items-start select-none overflow-y-hidden overflow-x-hidden -ml-[20px] will-change-[width] ${isSidebarOpen ? "w-[260px]" : "w-[92px]"} transition-all duration-300`}
+      className={`flex-1 flex flex-col justify-items-start select-none overflow-y-hidden overflow-x-hidden -ml-[20px] will-change-[width] ${isSidebarOpen ? sidebarWidths.open : sidebarWidths.closed} transition-all duration-300`}
     // animate={{
     //   width: isSidebarOpen ? "229px" : "72px",
     // }}
