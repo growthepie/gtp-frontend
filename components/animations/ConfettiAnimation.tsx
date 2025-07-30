@@ -5,6 +5,7 @@ import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useMaster } from '@/contexts/MasterContext';
 import { useUIContext } from '@/contexts/UIContext';
+import Image from 'next/image';
 
 interface ConfettiPiece {
   id: number;
@@ -181,7 +182,7 @@ const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
         
       {/* Text container with proper positioning for each mode */}
       <div 
-        className={`flex items-center justify-center pointer-events-none z-[400] ${
+        className={` pointer-events-none z-[400] ${
           fullScreen 
             ? 'absolute' 
             : isSidebarOpen ? 'fixed bottom-0 top-0 left-32 right-0' : 'fixed bottom-0 top-0 left-4 right-0'
@@ -192,12 +193,16 @@ const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
           transform: 'translate(50%, 50%)',
         } : {}}
       >
-        <GTPIcon 
-          className="animate-pulse w-32 h-32 drop-shadow-2xl text-white" 
-          icon={"ethereum-logo-monochrome"} 
-          size="xl"
-        />
-        <span className="heading-large-lg text-white drop-shadow-lg ml-4">Happy Birthday Ethereum!</span>
+        <div className="flex items-center justify-center">
+          <GTPIcon 
+            className="animate-pulse w-32 h-32 drop-shadow-2xl text-white" 
+            icon={"ethereum-logo-monochrome"} 
+            size="xl"
+          />
+          <span className="heading-large-lg text-white drop-shadow-lg ml-4">Happy Birthday Ethereum!</span>
+        </div>
+        <Image src="/anniversary.svg" alt="Confetti" loading="eager" width={250} height={100} className="object-contain relative top-[250px] left-1/3 fade-in" />
+
       </div>
 
       <style jsx>{`

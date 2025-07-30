@@ -29,8 +29,8 @@ export default function ShowLoading({
   const [confettiTriggered, setConfettiTriggered] = useState(false);
   const [confettiStartTime, setConfettiStartTime] = useState<number | null>(null);
   const { triggerConfetti } = useGlobalConfetti(fullScreen);
-  const [showBirthday, setShowBirthday] = useState(new Date().getTime() >= ETHEREUM_LAUNCH_TIMESTAMP + TEN_YEARS_IN_MS);
-  
+  const [showBirthday, setShowBirthday] = useState(true);
+  //new Date().getTime() >= ETHEREUM_LAUNCH_TIMESTAMP + TEN_YEARS_IN_MS
   // Local confetti state for non-fullscreen mode
   const [localConfettiActive, setLocalConfettiActive] = useState(false);
 
