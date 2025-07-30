@@ -182,16 +182,32 @@ const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
         
       {/* Text container with proper positioning for each mode */}
       <div 
-        className={` pointer-events-none z-[400] ${
+        className={`pointer-events-none z-[400] ${
           fullScreen 
             ? 'absolute' 
-            : isSidebarOpen ? 'fixed bottom-0 top-0 left-32 right-0' : 'fixed bottom-0 top-0 left-4 right-0'
+            : isSidebarOpen ? 'fixed' : 'fixed'
         }`}
-        style={fullScreen ? {
-          bottom: '50%',
-          right: '50%',
-          transform: 'translate(50%, 50%)',
-        } : {}}
+        style={
+          fullScreen
+            ? {
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+              }
+            : isSidebarOpen
+              ? {
+                  top: '50%',
+                  left: 'calc(100px + 50%)',
+                  right: 0,
+                  transform: 'translate(-50%, -50%)',
+                }
+              : {
+                  top: '50%',
+                  left: 'calc(24px + 50%)',
+                  right: 0,
+                  transform: 'translate(-50%, -50%)',
+                }
+        }
       >
         <div className="flex items-center justify-center">
           <GTPIcon 
@@ -199,9 +215,11 @@ const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
             icon={"ethereum-logo-monochrome"} 
             size="xl"
           />
-          <span className="heading-large-lg text-white drop-shadow-lg ml-4">Happy Birthday Ethereum!</span>
+          <span className="heading-large-lg drop-shadow-lg ml-4" style={{ color: '#CDD8D3' }}>
+            Happy Birthday Ethereum!
+          </span>
         </div>
-        <Image src="/anniversary.svg" alt="Confetti" loading="eager" width={250} height={100} className="object-contain relative top-[250px] left-1/3 fade-in" />
+        <Image src="/anniversary.svg" alt="Confetti" loading="eager" width={250} height={100} className="object-contain relative top-[280px] left-1/4 fade-in" />
 
       </div>
 
