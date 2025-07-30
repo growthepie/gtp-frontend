@@ -215,11 +215,11 @@ const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
             icon={"ethereum-logo-monochrome"} 
             size="xl"
           />
-          <span className="heading-large-lg drop-shadow-lg ml-4" style={{ color: '#CDD8D3' }}>
+          <span className="heading-large-lg drop-shadow-lg ml-4 text-[#CDD8D3]" style={{ color: '#CDD8D3' }}>
             Happy Birthday Ethereum!
           </span>
         </div>
-        <Image src="/anniversary.svg" alt="Confetti" loading="eager" width={250} height={100} className={`object-contain relative top-[280px] fade-in ${isSidebarOpen ? fullScreen ? 'left-[30%]' : 'left-[40%]' : 'left-1/5'}`} />
+        <Image src="/anniversary.svg" alt="Confetti" loading="eager" width={250} height={100} className={`object-contain relative top-[300px] fade-in ${isSidebarOpen ? fullScreen ? 'left-[26%]' : 'left-[40%]' : 'left-1/5'}`} />
 
       </div>
 
