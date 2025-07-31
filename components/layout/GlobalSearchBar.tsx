@@ -29,7 +29,8 @@ import NotificationButton from './NotificationButton';
 
 
 export default function GlobalFloatingBar() {
-  const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", false);
+  // const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", true);
+  const showGlobalSearchBar = true;
   const { isMobile, isSidebarOpen, toggleSidebar } = useUIContext();
 
   // State for controlling popover visibility

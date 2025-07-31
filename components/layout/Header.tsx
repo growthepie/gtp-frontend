@@ -19,7 +19,8 @@ import { LogoContextMenu } from "./SidebarContainer";
 export default function Header() {
   // const [isOpen, setIsOpen] = useState<boolean>(false)
   const isMobile = useMediaQuery("(max-width: 767px)");
-  const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", false);
+  // const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", true);
+  const showGlobalSearchBar = true;
 
   return (
     <>

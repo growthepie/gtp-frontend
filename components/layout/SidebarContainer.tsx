@@ -18,7 +18,8 @@ import { IconContextMenu } from "./IconContextMenu";
 
 export default function SidebarContainer() {
   const { isSidebarOpen, toggleSidebar } = useUIContext();
-  const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", false);
+  // const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", true);
+  const showGlobalSearchBar = true;
 
   const toast = useToast(); // Keep toast for fetch error
   const [logoFullSVG, setLogoFullSVG] = useState<string | null>(null);

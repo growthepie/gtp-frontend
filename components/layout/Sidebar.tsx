@@ -30,7 +30,8 @@ type SidebarProps = {
 export default function Sidebar({ isMobile = false }: SidebarProps) {
   const { isSidebarOpen, isMobileSidebarOpen, toggleMobileSidebar } =
     useUIContext();
-  const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", false);
+  // const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", true);
+  const showGlobalSearchBar = true;
 
 
   const { ChainsNavigationItems } = useMaster();
