@@ -236,6 +236,7 @@ const dataAvailabilityGroup: NavigationItem = {
     label: "Fundamentals",
     key: "metrics",
     icon: "gtp-fundamentals",
+    newChild: true,
     options: [
       {
         label: "Active Addresses",
@@ -252,6 +253,7 @@ const dataAvailabilityGroup: NavigationItem = {
         rootKey: "metricsDailyActiveAddresses",
         urlKey: "daily-active-addresses",
         url: "/fundamentals/daily-active-addresses",
+        showNew: true,
       },
       {
         label: "Transaction Count",

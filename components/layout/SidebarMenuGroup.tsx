@@ -74,8 +74,8 @@ export const SidebarMenuLink = memo(({
                   : "translate-x-0 opacity-100 delay-300 ease-in-out"
               }`}
             >
-              <div className="hard-shine-2 absolute inset-0 flex items-center justify-end rounded-full pr-[8px] text-xs font-bold text-forest-900 transition-all duration-300 md:rounded-br-none md:rounded-tr-none">
-                NEW!
+              <div className="hard-shine-2 absolute inset-0 flex items-center justify-end rounded-full pr-[8px] heading-small-xs text-forest-900 transition-all duration-300 md:rounded-br-none md:rounded-tr-none">
+                NEW
               </div>
             </div>
           </div>
@@ -220,8 +220,8 @@ export const SidebarMenuGroup = memo(({
                   : "translate-x-0 opacity-100 delay-300 ease-in-out"
               }`}
             >
-              <div className="hard-shine-2 absolute inset-0 flex items-center justify-end rounded-full pr-[8px] text-xs font-bold text-forest-900 transition-all duration-300 md:rounded-br-none md:rounded-tr-none">
-                NEW!
+              <div className="hard-shine-2 absolute inset-0 flex items-center justify-end rounded-full pr-[8px] heading-small-xs text-forest-900 transition-all duration-300 md:rounded-br-none md:rounded-tr-none">
+                NEW
               </div>
             </div>
           </div>
@@ -282,8 +282,8 @@ export const SidebarMenuGroup = memo(({
                                     : "translate-x-[60px] opacity-0 ease-in-out"
                                 }`}
                               >
-                                <div className="hard-shine-2 absolute inset-0 flex items-center justify-end rounded-full pr-[8px] text-xs font-bold text-forest-900 transition-all duration-300 md:rounded-br-none md:rounded-tr-none">
-                                  NEW!
+                                <div className="hard-shine-2 absolute inset-0 flex items-center justify-end rounded-full pr-[8px] heading-small-xs text-forest-900 transition-all duration-300 md:rounded-br-none md:rounded-tr-none">
+                                  NEW
                                 </div>
                               </div>
                             </div>
@@ -364,8 +364,8 @@ export const SidebarMenuGroup = memo(({
                                 : "translate-x-[60px] opacity-0 ease-in-out"
                             }`}
                           >
-                            <div className="hard-shine-2 absolute inset-0 flex items-center justify-end rounded-full pr-[8px] text-xs font-bold text-forest-900 transition-all duration-300 md:rounded-br-none md:rounded-tr-none">
-                              NEW!
+                            <div className="hard-shine-2 absolute inset-0 flex items-center justify-end rounded-full pr-[8px] heading-small-xs text-forest-900 transition-all duration-300 md:rounded-br-none md:rounded-tr-none">
+                              NEW
                             </div>
                           </div>
                         </div>
