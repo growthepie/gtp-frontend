@@ -69,7 +69,7 @@ const robinhoodStock: QuickBiteData = {
       placeholder: "Choose a token...",
       searchable: true,
       stateKey: "selectedTicker",
-      defaultValue: "AAPL",
+      defaultValue: null,
       readFromJSON: true,
       jsonData: {
         url: "https://api.growthepie.xyz/v1/quick-bites/robinhood/dropdown.json",
@@ -158,37 +158,42 @@ const robinhoodStock: QuickBiteData = {
     }),
     "```",
 
+    "## Column Chart",
+    "Usage: When you want to show the growth of 2-5 entities over time with limited timestamps (max 180) ",
     "```chart",
     JSON.stringify({
-      type: "line",
-      title: "Selected Stock: HOOD",
+      type: "column",
+      title: "Selected Stock: {{selectedTicker}}", // How to set this to the selected ticker dynamically? 
       subtitle: "Outstanding shares & stock price.",
-      stacking: "normal",
       showXAsDate: true,
       dataAsJson: {
-        meta: [
-          {
+        meta: [{
             name: "Price",
-            color: "#00C805",
+            color: "#ffffffff",
+            stacking: "normal",
+            oppositeYAxis: false,
+            type: "line",
             xIndex: 0,
             yIndex: 1,
             suffix: null,
             prefix: '$',
-            tooltipDecimals: 2,
-            url: "https://api.growthepie.com/v1/quick-bites/robinhood/stocks/{{selectedTicker}}.json",
+            tooltipDecimals: 0,
+            url: "https://api.growthepie.com/v1/quick-bites/robinhood/stocks/HOOD.json", // here too
             pathToData: "data.daily.values",
           },
           {
-            name: "Stocks Outstanding",
+            name: "Stock Outstanding",
             color: "#00C805",
+            stacking: "normal",
+            oppositeYAxis: true,
             xIndex: 0,
             yIndex: 2,
             suffix: null,
-            prefix: '',
+            prefix: null,
             tooltipDecimals: 0,
-            url: "https://api.growthepie.com/v1/quick-bites/robinhood/stocks/{{selectedTicker}}.json",
+            url: "https://api.growthepie.com/v1/quick-bites/robinhood/stocks/HOOD.json",  // here too
             pathToData: "data.daily.values",
-          }
+          },
         ],
       },
       height: 400,
