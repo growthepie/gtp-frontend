@@ -109,14 +109,11 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
   if (block.filterOnStateKey && !unProcessedData) {
     const title = block.title && block.title.includes("{{") ? Mustache.render(block.title, sharedState) : block.title;
     return (
-      // <div className={`my-8 ${block.className || ''}`}>
-      //   <div className="w-full h-[400px] flex flex-col items-center justify-center bg-forest-50 dark:bg-forest-900/50 rounded-lg">
-      //     <h3 className="text-lg font-bold text-forest-900 dark:text-forest-100">{title}</h3>
-      //     <p className="text-forest-700 dark:text-forest-400">Please make a selection to view the chart.</p>
-      //   </div>
-      // </div>
-      <div className='w-full h-[400px] flex flex-col items-center justify-center bg-forest-50 dark:bg-forest-900/50 rounded-lg'>
-        <ShowLoading dataLoading={[true]} dataValidating={[true]} section={true} />
+      <div className={`my-8 ${block.className || ''}`}>
+        <div className="w-full h-[400px] flex flex-col items-center justify-center bg-forest-50 dark:bg-forest-900/50 rounded-lg">
+          <h3 className="text-lg font-bold text-forest-900 dark:text-forest-100">{title}</h3>
+          <p className="text-forest-700 dark:text-forest-400">Please make a selection to view the chart.</p>
+        </div>
       </div>
     );
   }
