@@ -121,6 +121,10 @@ export interface ChartBlock extends BaseBlock {
     }[];
   } | null;
   seeMetricURL?: string | null;
+  filterOnStateKey?: {
+    stateKey: string;
+    columnKey: string;
+  };
 }
 
 export interface CalloutBlock extends BaseBlock {
@@ -189,6 +193,7 @@ export interface DropdownBlock extends BaseBlock {
   label?: string;
   placeholder?: string;
   defaultValue?: string;
+  allowEmpty?: boolean;
   searchable?: boolean;
   disabled?: boolean;
   stateKey?: string; // Key to use for storing the value in the shared state

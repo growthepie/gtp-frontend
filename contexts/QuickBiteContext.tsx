@@ -21,6 +21,9 @@ export const QuickBiteProvider = ({ children }: { children: React.ReactNode }) =
   const [sharedState, setSharedStateInternal] = useState<QuickBiteState>({});
 
   const setSharedState = (key: string, value: any) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`QuickBite state update: ${key} =`, value);
+    }
     setSharedStateInternal(prevState => ({
       ...prevState,
       [key]: value,

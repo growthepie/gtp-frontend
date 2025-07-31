@@ -1,6 +1,6 @@
 // File: components/quick-bites/ChartWrapper.tsx
 'use client';
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import Highcharts from 'highcharts/highstock';
 import {
   HighchartsProvider,
@@ -80,66 +80,19 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
   const formatNumber = useCallback(
     (value: number | string, isAxis = false, selectedScale = "normal") => {
-      // let prefix = valuePrefix;
-      // let suffix = "";
       let val = parseFloat(value as string);
-
-      // const units = metricsDict[metric_id].units;
-      // const unitKeys = Object.keys(units);
-      // const unitKey =
-      //   unitKeys.find((unit) => unit !== "usd" && unit !== "eth") ||
-      //   (showUsd ? "usd" : "eth");
-
-      // let prefix = metricsDict[metric_id].units[unitKey].prefix
-      //   ? metricsDict[metric_id].units[unitKey].prefix
-      //   : "";
-      // let suffix = metricsDict[metric_id].units[unitKey].suffix
-      //   ? metricsDict[metric_id].units[unitKey].suffix
-      //   : "";
-
-      // if (
-      //   !showUsd &&
-      //   seriesData[0].types.includes("eth") &&
-      //   selectedScale !== "percentage"
-      // ) {
-      //   if (showGwei) {
-      //     prefix = "";
-      //     suffix = " Gwei";
-      //   }
-      // }
-
       let number = d3Format(`.2~s`)(val).replace(/G/, "B");
-
       let absVal = Math.abs(val);
-
-      // let formatStringPrefix = units[unitKey].currency ? "." : "~."
 
       if (isAxis) {
         if (selectedScale === "percentage") {
           number = d3Format(".2~s")(val).replace(/G/, "B") + "%";
         } else {
-          // if (prefix || suffix) {
-          //   // for small USD amounts, show 2 decimals
-          //   if (absVal === 0) number = "0";
-          //   else if (absVal < 1) number = val.toFixed(2);
-          //   else if (absVal < 10)
-          //     number = units[unitKey].currency ? val.toFixed(2) :
-          //       d3Format(`~.3s`)(val).replace(/G/, "B");
-          //   else if (absVal < 100)
-          //     number = units[unitKey].currency ? d3Format(`s`)(val).replace(/G/, "B") :
-          //       d3Format(`~.4s`)(val).replace(/G/, "B")
-          //   else
-          //     number = units[unitKey].currency ? d3Format(`s`)(val).replace(/G/, "B") :
-          //       d3Format(`~.2s`)(val).replace(/G/, "B");
-          // } else {
             if (absVal === 0) number = "0";
             else if (absVal < 1) number = val.toFixed(2);
             else if (absVal < 10)
               d3Format(`.2s`)(val).replace(/G/, "B")
             else number = d3Format(`s`)(val).replace(/G/, "B");
-          // }
-          // for negative values, add a minus sign before the prefix
-          // number = `${prefix}${number} ${suffix}`.replace(`${prefix}-`, `\u2212${prefix}`);
           number = `${number}`
         }
       }
@@ -148,6 +101,24 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     },
     [],
   );
+
+  const processedSeriesData = useMemo(() => {
+    if (!jsonMeta?.meta || !jsonData) return [];
+    
+    return jsonMeta.meta.map((series: any, index: number) => ({
+      ...series,
+      processedData: jsonData[index]?.map((item: any) => [
+        item[series.xIndex],
+        item[series.yIndex]
+      ]) || []
+    }));
+  }, [jsonMeta, jsonData]);
+
+  const filteredSeries = useMemo(() => {
+    return processedSeriesData.filter(series => 
+      filteredNames.length === 0 || filteredNames.includes(series.name)
+    );
+  }, [processedSeriesData, filteredNames]);
 
   
   // Add timespans and selectedTimespan
@@ -462,7 +433,6 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 //   }
                 // }
                 formatter: function (t: AxisLabelsFormatterContextObject) {
-                  const filteredSeries = jsonMeta?.meta.filter((series: any) => series.yIndex === 0 && (filteredNames.length === 0 || filteredNames.includes(series.name)));
                   return formatNumber(t.value, true, filteredSeries?.[0]?.stacking || "normal");
                 },
               }}
@@ -478,13 +448,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 const type = series.type || chartType;
                 // use the yaxis from the jsonMeta if it exists, otherwise use 0
                 const chartYaxis = series.oppositeYAxis === true ? 1 : 0;
-                const seriesData = jsonData ? jsonData[index].map((item: any) => [
-                  item[series.xIndex], // x value
-                  item[series.yIndex]  // y value
-                ]) : series.data;
 
-                console.log("seriesDebug", {seriesName: series.name, seriesOppositeYAxis: series.oppositeYAxis, type, chartYaxis, seriesData, color: series.color, name: series.name, xIndex: series.xIndex, yIndex: series.yIndex, dashStyle: series.dashStyle})
-                
                 const fillOpacity = type === "area" ? 0.3 : undefined;
 
                 return (
@@ -493,7 +457,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                     type={type}
                     name={series.name}
                     yAxis={chartYaxis}
-                    data={seriesData} 
+                    data={processedSeriesData[index].processedData} 
                     color={series.color}
                     fillOpacity={fillOpacity}
                     dashStyle={series.dashStyle ? series.dashStyle : undefined}
@@ -512,6 +476,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                         opacity: 0.6,
                       },
                     }}
+                    zIndex={type === "column" ? 0 : 1}
                   />
                 )
               })}
@@ -538,7 +503,6 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 //   }
                 // }
                 formatter: function (t: AxisLabelsFormatterContextObject) {
-                  const filteredSeries = jsonMeta?.meta.filter((series: any) => series.yIndex === 0 && (filteredNames.length === 0 || filteredNames.includes(series.name)));
                   return formatNumber(t.value, true, filteredSeries?.[0]?.stacking || "normal");
                 },
               }}
@@ -555,13 +519,6 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                 const type = series.type || chartType;
                 // use the yaxis from the jsonMeta if it exists, otherwise use 0
                 const chartYaxis = series.oppositeYAxis === true ? 1 : 0;
-                const seriesData = jsonData ? jsonData[index].map((item: any) => [
-                  item[series.xIndex], // x value
-                  item[series.yIndex]  // y value
-                ]) : series.data;
-
-                console.log("seriesDebug", {seriesName: series.name, type, seriesOppositeYAxis: series.oppositeYAxis, chartYaxis, seriesData, color: series.color, name: series.name, xIndex: series.xIndex, yIndex: series.yIndex, dashStyle: series.dashStyle})
-
                 const fillOpacity = type === "area" ? 0.3 : undefined;
                 
                 return (
@@ -570,7 +527,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                     type={type}
                     name={series.name}
                     yAxis={chartYaxis}
-                    data={seriesData} 
+                    data={processedSeriesData[index].processedData} 
                     color={series.color} 
                     fillOpacity={fillOpacity}
                     dashStyle={series.dashStyle ? series.dashStyle : undefined}
@@ -589,6 +546,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
                         opacity: 0.6,
                       },
                     }}
+                    zIndex={type === "column" ? 0 : 1}
                   />
                 )
               })}
