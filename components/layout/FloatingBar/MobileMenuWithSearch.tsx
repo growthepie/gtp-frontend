@@ -325,6 +325,21 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
     }
   }, [keyCoords, keyMapping, memoizedQuery, allFilteredData, isSearchActive]);
 
+  const [viewportHeight, setViewportHeight] = useState(0);
+
+  // event listener for visualViewport resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (!window.visualViewport) return;
+      setViewportHeight(window.visualViewport.height);
+    };
+    window.addEventListener('resize', handleResize);
+
+    handleResize();
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Don't render anything if never opened (saves initial memory)
   if (!hasBeenOpened && !isOpen) {
     return null;
@@ -439,13 +454,13 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
       }`}
       style={{ 
         visibility: isOpen ? 'visible' : 'hidden',
-        maxHeight: isOpen ? '40vh' : '0',
+        maxHeight: isOpen ? `${viewportHeight}px` : '0px',
       }}
     >
       <div
         ref={containerRef}
-        className="flex flex-col h-[calc(100vh-120px)] w-[calc(100vw-40px)] bg-[#1F2726] rounded-[22px] max-w-full max-h-[calc(40vh-5px)] will-change-transform mb-[5px]"
-        style={{ transform: 'translateZ(0)' }}
+        className="flex flex-col h-[calc(100vh-120px)] w-[calc(100vw-40px)] bg-[#1F2726] rounded-[22px] max-w-full will-change-transform mb-[5px]"
+        style={{ transform: 'translateZ(0)', maxHeight: `${viewportHeight}px`}}
       >
         {/* Header - minimal spacing only */}
         <div ref={headerRef} className="p-[10px] pb-[5px]">
@@ -455,7 +470,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
         <div className="flex-grow overflow-hidden px-[5px]">
           {isOpen && scrollableHeight > 0 ? (
             <VerticalScrollContainer height={scrollableHeight} scrollbarPosition="right" scrollbarAbsolute={false} scrollbarWidth="6px">
-              <div className="transition-all duration-300 ease-in-out pb-[50px]">
+              <div className="transition-all duration-300 ease-in-out pb-[30px]">
                 {renderContent()}
               </div>
             </VerticalScrollContainer>
@@ -470,8 +485,8 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
         <div ref={footerRef} className="p-[10px] pt-0 mt-auto">
           <div className="flex flex-col justify-end pt-3 pb-0 relative">
             <div className="items-end justify-center flex gap-x-[15px] mt-[2px] mb-[0px]">
-            <EthUsdSwitchSimple isMobile showBorder={false} />
-              <FocusSwitchSimple isMobile showBorder={false} />
+              <EthUsdSwitchSimple isMobile showBorder={false} className={searchQuery ? 'hidden' : ''} />
+              <FocusSwitchSimple isMobile showBorder={false} className={searchQuery ? 'hidden' : ''} />
             </div>
           </div>
         </div>

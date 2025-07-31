@@ -195,25 +195,9 @@ export default function GlobalFloatingBar() {
     };
   }, [isMobile, isSearchActive]);
 
-  const [isSearchInputFocusedMobile, setIsSearchInputFocusedMobile] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Handlers for search input focus/blur
-  const handleSearchInputFocus = useCallback(() => {
-    if (isMobile) {
-      setIsSearchInputFocusedMobile(true);
-    }
-  }, [isMobile]);
-
-  const handleSearchInputBlur = useCallback(() => {
-    // Delay blur handling to allow clicks on search results or other UI elements
-    setTimeout(() => {
-      if (isMobile) {
-        setIsSearchInputFocusedMobile(false);
-      }
-    }, 150); // 150ms delay, adjust if needed
-  }, [isMobile]);
 
   // Effect for '/' and 'Escape' key press
   useEffect(() => {
@@ -449,7 +433,7 @@ export default function GlobalFloatingBar() {
                 {/* Search Bar */}
                 <div
                   ref={searchContainerRef}
-                  className={`flex-1 min-w-0 relative h-[44px] ${isMobile && isSearchActive ? "-mx-[55px]" : ""
+                  className={`flex-1 min-w-0 relative h-[44px] ${isMobile && isSearchActive ? "-ml-[55px]" : ""
                     } transition-[margin] duration-200 max-h-[calc(100vh-200px)]`}
                   // onMouseEnter={activateSearch}
                   // onMouseLeave={deactivateSearch}
@@ -485,9 +469,9 @@ export default function GlobalFloatingBar() {
                     </FilterSelectionContainer>
                   </div>
                 )}
-                <div className='hidden md:flex items-center gap-x-[10px]'>
-                  <EthUsdSwitchSimple showBorder={true} className='hidden md:flex' />
-                  <FocusSwitchSimple showBorder={true} className='hidden md:flex' />
+                <div className={`hidden md:flex items-center gap-x-[10px]`}>
+                  <EthUsdSwitchSimple showBorder={true} className={'hidden md:flex'} />
+                  <FocusSwitchSimple showBorder={true} className={'hidden md:flex'} />
                   {/* Desktop - Notifications */}
                   <NotificationButton
                     placement="bottom"
