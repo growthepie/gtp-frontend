@@ -49,7 +49,7 @@ export default function FocusSwitchSimple({
       placement="bottom-start"
       trigger={
         <div className={`flex flex-col items-center gap-y-[5px] ${className}`.trim()}>
-          <span className="heading-small-xxxs text-[#5A6462]">
+          <span className={`heading-small-xxxs ${focusEnabled ? "text-[#5A6462]" : ""}`.trim()}>
             Total Ecosystem
           </span>
           <ToggleSwitch

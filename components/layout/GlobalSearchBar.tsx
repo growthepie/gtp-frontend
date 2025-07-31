@@ -424,40 +424,24 @@ export default function GlobalFloatingBar() {
                   />
                 </Popover>
                 {/* Desktop - Home Button */}
-                <div className={`hidden md:flex items-center justify-between h-[44px] w-[58.87px] pl-[8px] pb-[2px] ${isSidebarOpen ? "md:w-[251px]" : "md:w-[90.87px]"} transition-all duration-sidebar ease-sidebar`}>
+                <div className={`hidden md:flex items-center h-[44px] w-[58.87px] pl-[8px] pb-[2px] gap-x-[15px] ${isSidebarOpen ? "md:w-[245px] justify-between" : "md:w-[71.15px] justify-start"} transition-all duration-sidebar ease-sidebar`}>
                   <GTPLogoOld />
                   <div 
-                    style={{ transform: `rotate(${rotation}deg)` }}
-                    className="relative flex w-[20px] h-[20px] top-[1px] cursor-pointer transition-transform duration-sidebar ease-sidebar w-[13.15px] h-[13.15px]"
+                    // style={{ transform: `rotate(${rotation}deg)` }}
+                    className={`relative flex w-[20px] h-[20px] top-[1px] cursor-pointer transition-transform duration-sidebar ease-sidebar !size-[13.15px] ${isSidebarOpen ? "hover:rotate-0 rotate-180" : "hover:rotate-180 rotate-0"}`}
                     onClick={() => {
                       track("clicked Sidebar Close", {
                         location: "desktop sidebar",
                         page: window.location.pathname,
                       });
                       toggleSidebar();
-                      setIsChangingSidebar(true);
-                      setTimeout(() => {
-                        setIsChangingSidebar(false);
-                      }, ANIMATION_DURATION);
-                    }}
-                    onMouseEnter={() => {
-                      setIsHoveringToggle(true);
-                    }}
-                    onMouseLeave={() => {
-                      setIsHoveringToggle(false);
                     }}
                   >
                     <GTPIcon
-                      icon={"feather:log-in" as GTPIconName}
-                      size="sm"
-                      containerClassName="w-[13.15px] h-[13.15px]"
-                      className={`w-[13.15px] h-[13.15px] absolute top-[calc(50%-6.575px)] ${isSidebarOpen || (!isSidebarOpen && isHoveringToggle) ? "opacity-0" : "opacity-100"} transition-opacity duration-sidebar ease-sidebar`}
-                    />
-                    <GTPIcon
                       icon={"feather:log-out" as GTPIconName}
                       size="sm"
-                      containerClassName="w-[13.15px] h-[13.15px]"
-                      className={`w-[13.15px] h-[13.15px] absolute top-[calc(50%-6.575px)] ${isSidebarOpen || (!isSidebarOpen && isHoveringToggle) ? "opacity-100" : "opacity-0"} transition-opacity duration-sidebar ease-sidebar`}
+                      containerClassName="size-[13.15px]"
+                      className={`!size-[13.15px]`}
                     />
                   </div>
                 </div>
@@ -806,7 +790,7 @@ const GTPLogoOld = () => {
   return (
     <Link
       href="/"
-      className={`${isSidebarOpen ? "relative h-[45.07px] w-[192.87px] block" : "relative h-[45.07px] w-[42px] overflow-clip"} transition-all duration-sidebar ease-sidebar`}
+      className={`${isSidebarOpen ? "relative h-[45.07px] w-[192.87px] block" : "relative h-[45.07px] w-[40.91px] overflow-clip"} transition-all duration-sidebar ease-sidebar`}
     >
       <IconContextMenu getSvgData={getLogoSvgData} itemName="gtp-logo-full" wrapperClassName="block h-full w-full" isLogo={true}>
         <div className={`h-[45.07px] w-[192.87px] relative ${isSidebarOpen ? "translate-x-[1.5px]" : "translate-x-[1.5px]"} transition-all duration-sidebar ease-sidebar`} style={{ transformOrigin: "21px 27px" }}>

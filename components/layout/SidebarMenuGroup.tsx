@@ -17,7 +17,8 @@ import {
 import { GTPIcon, GTPIconSize } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useMaster } from "@/contexts/MasterContext";
-import { useUIContext } from "@/contexts/UIContext";
+import { MOBILE_BREAKPOINT, useUIContext } from "@/contexts/UIContext";
+import { useMediaQuery } from "usehooks-ts";
 
 type SidebarProps = {
   item: NavigationItem;
@@ -35,7 +36,7 @@ export const SidebarMenuLink = memo(({
   onClose, // for mobile menu
   disableAnimation = false,
 }: SidebarProps) => {
-  const { isMobile } = useUIContext();
+  const isMobile = useMediaQuery(`(max-width: ${MOBILE_BREAKPOINT}px)`);
   const pathname = usePathname();
 
   const isActive = useMemo(() => {
@@ -236,8 +237,7 @@ export const SidebarMenuGroup = memo(({
               return (
                 <div key={bucket} className="flex w-full flex-col">
                   <div
-                    className="px-[5px] py-[5px] text-[14px] font-bold text-[#5A6462]"
-                    style={{ fontVariant: "all-small-caps" }}
+                    className="px-[5px] py-[5px] heading-caps-xs text-[#5A6462]"
                   >
                     {sidebarOpen ? bucket.toUpperCase() : <span>&nbsp;</span>}
                   </div>
@@ -297,7 +297,7 @@ export const SidebarMenuGroup = memo(({
             })}
         </div>
       ) : (
-        <div className="w-full gap-y-[-5px] px-[3px]">
+        <div className="w-full space-y-[-5px] md:space-y-[0px] px-[3px]">
           {item.options
             .filter((o) => o.hide !== true)
             .map((option, i) => {
@@ -312,8 +312,7 @@ export const SidebarMenuGroup = memo(({
                 ) {
                   label = (
                     <div
-                      className="p-[5px] text-[14px] font-bold text-[#5A6462]"
-                      style={{ fontVariant: "all-small-caps" }}
+                      className="p-[5px] heading-caps-xs text-[#5A6462]"
                     >
                       {!sidebarOpen && !isMobile ? (
                         <span>&nbsp;</span>
@@ -473,11 +472,17 @@ export const Accordion = memo(({
     "dark-border": "2px solid #151A19",
   };
 
-  const fontSize = {
-    sm: "14px",
-    md: "14px",
-    lg: "20px",
-  };
+  // const fontSize = {
+  //   sm: "14px",
+  //   md: "14px",
+  //   lg: "20px",
+  // };
+
+  const fontClass = {
+    sm: "heading-large-xs",
+    md: "heading-large-xs",
+    lg: "heading-large-md",
+  }
 
   // Click handler for the main clickable element (Link or div)
   const handleElementClick = (event: React.MouseEvent) => {
@@ -558,9 +563,8 @@ export const Accordion = memo(({
                 disableAnimation={disableAnimation}
               />
               <div
-                className="flex flex-1 items-start justify-start truncate font-semibold transition-all duration-300"
+                className={`flex flex-1 items-start justify-start truncate transition-all duration-300 ${fontClass[size]}`}
                 style={{
-                  fontSize: fontSize[size],
                   opacity: hideLabel ? 0 : 1,
                 }}
               >
@@ -603,11 +607,7 @@ export const Accordion = memo(({
                   disableAnimation={disableAnimation}
                 />
                 <div
-                  className="flex flex-1 items-start justify-start truncate font-semibold transition-all duration-300"
-                  style={{
-                    fontSize: fontSize[size],
-                    // opacity: hideLabel ? 0 : 1,
-                  }}
+                  className={`flex flex-1 items-start justify-start truncate transition-all duration-300 ${fontClass[size]}`}
                 >
                   {label}
                 </div>

@@ -3,6 +3,8 @@ import { createContext, useContext, useState, useMemo, useEffect, useLayoutEffec
 import { debounce } from 'lodash';
 import Highcharts from "highcharts/highstock";
 
+export const MOBILE_BREAKPOINT = 768;
+
 export type EmbedData = {
   width: number;
   height: number;
