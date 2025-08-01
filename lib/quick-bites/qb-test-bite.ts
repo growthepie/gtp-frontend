@@ -217,12 +217,12 @@ const testBite: QuickBiteData = {
       type: "line",
       title: "Submitted Blobs per Block",
       subtitle: "Compare the average #Blobs per block before and after the Pectra upgrade",
-      stacking: "normal",
       showXAsDate: true,
       dataAsJson: {
         meta: [{
           name: "Blob Count",
           color: "#FFC300",
+          stacking: "normal",
           xIndex: 0,
           yIndex: 1,
           suffix: null,
@@ -234,6 +234,7 @@ const testBite: QuickBiteData = {
         {
           name: "Target",
           color: "#19D9D6",
+          stacking: "normal",
           xIndex: 0,
           yIndex: 1,
           suffix: null,
@@ -257,13 +258,12 @@ const testBite: QuickBiteData = {
       type: "column",
       title: "Transactions that trigger smart wallet upgrades and downgrades",
       subtitle: "The number of Set Code transactions on EVM chains (aka Type 4 transactions)",
-      stacking: "normal",
       showXAsDate: true,
-
       dataAsJson: {
         meta: [{
           name: "Ethereum",
           color: "#94ABD3",
+          stacking: "normal",
           xIndex: 1,
           yIndex: 0,
           suffix: null,
@@ -275,6 +275,9 @@ const testBite: QuickBiteData = {
         {
           name: "Base",
           color: "#2151F5",
+          stacking: "normal",
+          oppositeYAxis: true,
+          type: "line",
           xIndex: 1,
           yIndex: 0,
           suffix: null,
@@ -286,6 +289,7 @@ const testBite: QuickBiteData = {
         {
           name: "OP Mainnet",
           color: "#FE5468",
+          stacking: "normal",
           xIndex: 1,
           yIndex: 0,
           suffix: null,
@@ -297,6 +301,7 @@ const testBite: QuickBiteData = {
         {
           name: "Unichain",
           color: "#FF47BB",
+          stacking: "normal",
           xIndex: 1,
           yIndex: 0,
           suffix: null,
@@ -319,13 +324,13 @@ const testBite: QuickBiteData = {
       type: "area",
       title: "Daily Timeboost Revenue in ETH",
       subtitle: "The amount of money that Arbitrum DAO is making from Timeboost per day",
-      stacking: "normal",
       showXAsDate: true,
       dataAsJson: {
         meta: [
           {
             name: "Timeboost Fees",
             color: "#19D9D6",
+            stacking: "normal",
             xIndex: 1,
             yIndex: 0,
             suffix: null,
@@ -337,6 +342,7 @@ const testBite: QuickBiteData = {
           {
             name: "Network Fees",
             color: "#FFC300",
+            stacking: "normal",
             xIndex: 1,
             yIndex: 0,
             suffix: 'ETH',
@@ -359,13 +365,13 @@ const testBite: QuickBiteData = {
       type: "area",
       title: "Daily Timeboost Revenue in ETH",
       subtitle: "The amount of money that Arbitrum DAO is making from Timeboost per day",
-      stacking: "percent",
       showXAsDate: true,
       dataAsJson: {
         meta: [
           {
             name: "Timeboost Fees",
             color: "#19D9D6",
+            stacking: "percent",
             xIndex: 1,
             yIndex: 0,
             suffix: ' ETH',
@@ -377,6 +383,7 @@ const testBite: QuickBiteData = {
           {
             name: "Network Fees",
             color: "#FFC300",
+            stacking: "percent",
             xIndex: 1,
             yIndex: 0,
             suffix: ' ETH',

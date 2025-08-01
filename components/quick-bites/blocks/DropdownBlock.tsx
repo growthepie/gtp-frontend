@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DropdownBlock as DropdownBlockType } from '@/lib/types/blockTypes';
 import Dropdown, { DropdownOption } from '@/components/quick-bites/Dropdown';
 import { useQuickBite } from '@/contexts/QuickBiteContext';
@@ -13,9 +13,15 @@ interface DropdownBlockProps {
 export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
   const { sharedState, setSharedState } = useQuickBite();
   const stateKey = block.stateKey || 'defaultDropdown';
-  const selectedValue = sharedState[stateKey] || block.defaultValue || '';
-
+  const selectedValue = stateKey in sharedState ? sharedState[stateKey] : block.defaultValue || null;
   const { data: jsonData, error, isLoading } = useSWR(block.readFromJSON ? block.jsonData?.url : null);
+
+  // on mount, set the shared state to the default value if it's not already set
+  useEffect(() => {
+    if (!sharedState[stateKey] && block.defaultValue) {
+      setSharedState(stateKey, block.defaultValue || null);
+    }
+  }, []);
 
   // Get the actual options source - either from block or from JSON
   const dropdownOptions = React.useMemo((): DropdownOption[] => {
@@ -99,8 +105,13 @@ export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
     }
   }, [block.readFromJSON, block.jsonData?.url, isLoading, error, jsonData, dropdownOptions.length]);
 
-  const handleChange = (value: string) => {
-    setSharedState(stateKey, value);
+  const handleChange = (value: string | null) => {
+    console.log('handleChange', value);
+    if (value === null && block.allowEmpty) {
+      setSharedState(stateKey, null);
+    } else {
+      setSharedState(stateKey, value);
+    }
   };
 
   // Show loading state
@@ -139,8 +150,8 @@ export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
     );
   }
 
-  // Show empty state if no options
-  if (dropdownOptions.length === 0) {
+  // Show empty state if no options and not loading
+  if (dropdownOptions.length === 0 && !isLoading) {
     return (
       <div className="my-6">
         {block.label && (
@@ -168,6 +179,7 @@ export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
       <div className="w-full">
         <Dropdown
           options={dropdownOptions}
+          allowEmpty={block.allowEmpty}
           value={selectedValue}
           placeholder={block.placeholder}
           onChange={handleChange}

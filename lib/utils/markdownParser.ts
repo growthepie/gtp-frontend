@@ -197,6 +197,7 @@ function parseDropdownBlock(jsonString: string): ContentBlock | null {
         placeholder: dropdownConfig.placeholder || 'Select an option...',
         description: dropdownConfig.description || '',
         defaultValue: dropdownConfig.defaultValue || '',
+        allowEmpty: dropdownConfig.allowEmpty || false,
         searchable: dropdownConfig.searchable !== false, // Default to true
         disabled: dropdownConfig.disabled || false,
         className: dropdownConfig.className || '',
@@ -240,6 +241,7 @@ function parseDropdownBlock(jsonString: string): ContentBlock | null {
         description: dropdownConfig.description || '',
         options: dropdownConfig.options,
         defaultValue: dropdownConfig.defaultValue || '',
+        allowEmpty: dropdownConfig.allowEmpty || false,
         searchable: dropdownConfig.searchable !== false, // Default to true
         disabled: dropdownConfig.disabled || false,
         className: dropdownConfig.className || '',
@@ -307,11 +309,12 @@ function parseChartBlock(jsonString: string): ContentBlock | null {
       width: chartConfig.width || '100%',
       height: chartConfig.height || 400,
       caption: chartConfig.caption,
-      stacking: chartConfig.stacking || null,
+      // stacking: chartConfig.stacking || null,
       showXAsDate: chartConfig.showXAsDate || false,
       dataAsJson: chartConfig.dataAsJson || null,
       seeMetricURL: chartConfig.seeMetricURL || null,
-      showInMenu: parseShowInMenu(chartConfig)
+      showInMenu: parseShowInMenu(chartConfig),
+      filterOnStateKey: chartConfig.filterOnStateKey || undefined
     };
   } catch (error) {
     console.error('Error parsing chart data:', error);

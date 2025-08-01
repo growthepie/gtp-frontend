@@ -99,7 +99,6 @@ export interface ChartBlock extends BaseBlock {
   subtitle?: string;
   caption?: string;
   className?: string;
-  stacking?: "normal" | "percent" | null;
   chartCategories?: {
     name: string;
     color: string;
@@ -107,10 +106,13 @@ export interface ChartBlock extends BaseBlock {
   showXAsDate?: boolean;
   dataAsJson?: {
     meta: {
+      type?: string;
       name: string;
       color: string;
+      stacking?: "normal" | "percent" | null;
       xIndex: number;
       yIndex: number;
+      yaxis?: number;
       suffix?: string;
       prefix?: string;
       url?: string;
@@ -119,6 +121,10 @@ export interface ChartBlock extends BaseBlock {
     }[];
   } | null;
   seeMetricURL?: string | null;
+  filterOnStateKey?: {
+    stateKey: string;
+    columnKey: string;
+  };
 }
 
 export interface CalloutBlock extends BaseBlock {
@@ -187,6 +193,7 @@ export interface DropdownBlock extends BaseBlock {
   label?: string;
   placeholder?: string;
   defaultValue?: string;
+  allowEmpty?: boolean;
   searchable?: boolean;
   disabled?: boolean;
   stateKey?: string; // Key to use for storing the value in the shared state
