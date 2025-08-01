@@ -222,7 +222,7 @@ export default function RootLayout({
             </div>
           </div>
           <div className="flex h-fit w-full justify-center">
-            <div className="flex min-h-screen w-full max-w-[1680px] px-[30px]">
+            <div className="flex min-h-screen w-full max-w-[1680px] md:pl-[30px]">
               {!IS_PRODUCTION && (
                 <GlobalSearchBar />
               )}
