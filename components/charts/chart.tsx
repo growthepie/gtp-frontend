@@ -765,7 +765,7 @@ export const Chart = ({
               </div>
             </div>
             {series.length === 0 && (
-              <div className="absolute top-[calc(50%+1.5rem)] left-[0px] text-xs font-medium flex justify-center w-full text-forest-500/60">
+              <div className="absolute top-[calc(50%+40px)] left-[0px] text-xs font-medium flex justify-center w-full text-forest-500/60">
                 No chain(s) selected for comparison. Please select at least one.
               </div>
             )}

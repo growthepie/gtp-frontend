@@ -1162,17 +1162,17 @@ export default function CategoryMetrics({
                               />
                             ) : (
                               <div
-                                className={`flex items-center transition-opacity duration-[1500ms] ${
+                                className={`flex items-center transition-opacity duration-[1500ms] gap-x-[5px] ${
                                   updatePlaceholderOpacity
                                     ? "opacity-100"
                                     : "opacity-0"
                                 }`}
                               >
-                                <div className="flex-grow border-t border-[#5A6462]"></div>
-                                <span className="mx-4 text-[12px] font-semibold text-[#CDD8D3]">
+                                <div className="-mb-[3px] flex-grow border-t border-[#5A6462]"></div>
+                                <span className=" heading-caps-xxs text-[#CDD8D3]">
                                   Not showing in chart
                                 </span>
-                                <div className="flex-grow border-t border-[#5A6462]"></div>
+                                <div className="-mb-[3px] flex-grow border-t border-[#5A6462]"></div>
                               </div>
                             )}
                           </animated.div>
