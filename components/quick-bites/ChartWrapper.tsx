@@ -290,10 +290,10 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           <HighchartsChart chart={chartRef.current} options={options}
               plotOptions={{
                 line: {
-                  lineWidth: 1.5,
+                  lineWidth: 3,
                 },
                 area: {
-                  lineWidth: 1.5,
+                  lineWidth: 2,
                 },
                 column: {
                   
