@@ -56,8 +56,8 @@ const OpacityUnmatchedText = ({ text, query }: { text: string; query: string }) 
 };
 
 // Mobile search badge wrapper component
-const MobileSearchBadge = memo(({ 
-  item, 
+const MobileSearchBadge = memo(({
+  item,
   searchQuery,
   onClose,
   isSelected = false,
@@ -97,9 +97,9 @@ type MobileMenuWithSearchProps = {
   isOpen: boolean;
 };
 
-const MobileMenuWithSearch = memo(function MobileMenuWithSearch({ 
-  onClose, 
-  isOpen 
+const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
+  onClose,
+  isOpen
 }: MobileMenuWithSearchProps) {
   const { ChainsNavigationItems } = useMaster();
   const pathname = usePathname();
@@ -107,22 +107,22 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
   const [isFirstRender, setIsFirstRender] = useState(true);
   const [hasBeenOpened, setHasBeenOpened] = useState(false);
   const [showMore, setShowMore] = useState<{ [key: string]: boolean }>({});
-  
+
   // Keyboard navigation state (from original search component)
   const [keyCoords, setKeyCoords] = useState<{ y: number | null, x: number | null }>({ y: null, x: null });
   const [forceUpdate, setForceUpdate] = useState(0);
   const childRefs = useRef<{ [key: string]: HTMLAnchorElement | null }>({});
   const measurementsRef = useRef<{ [key: string]: DOMRect }>({});
-  
+
   // Get search query from URL params (same as existing SearchBar)
   const searchQuery = searchParams.get("query") || "";
-  
+
   // Derived state - no separate mode state needed
   const isSearchActive = searchQuery.trim().length > 0;
-  
+
   // Get search results using existing hook
   const { allFilteredData } = useSearchBuckets();
-  
+
   // Refs for DOM manipulation
   const containerRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
@@ -180,7 +180,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
   // Mark first render as complete after initial render
   useEffect(() => {
     if (!isOpen) return;
-    
+
     const timer = setTimeout(() => {
       setIsFirstRender(false);
     }, 100);
@@ -221,7 +221,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
       }
 
       let currentRow: string[] = [];
-      
+
       resultsToShow.forEach((item, itemIndex) => {
         const key = getKey(item.label, type);
         const rect = measurementsRef.current[key];
@@ -253,10 +253,10 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
     const handleClickOutside = (event: MouseEvent) => {
       if (isOpen && mobileMenuRef.current) {
         // Get the floating bar container (parent of this component)
-        const floatingBarContainer = mobileMenuRef.current.closest('[data-floating-bar]') || 
-                                   mobileMenuRef.current.closest('.p-\\[5px\\]') ||
-                                   mobileMenuRef.current.parentElement?.parentElement;
-        
+        const floatingBarContainer = mobileMenuRef.current.closest('[data-floating-bar]') ||
+          mobileMenuRef.current.closest('.p-\\[5px\\]') ||
+          mobileMenuRef.current.parentElement?.parentElement;
+
         // Close menu if click is outside the entire floating bar container
         if (floatingBarContainer && !floatingBarContainer.contains(event.target as Node)) {
           onClose();
@@ -329,15 +329,26 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
 
   // event listener for visualViewport resize
   useEffect(() => {
-    const handleResize = () => {
+    const handleViewportChange = () => {
       if (!window.visualViewport) return;
       setViewportHeight(window.visualViewport.height);
     };
-    window.addEventListener('resize', handleResize);
 
-    handleResize();
+    if (window.visualViewport) {
+      // Listen to resize and scroll events on visualViewport
+      window.visualViewport.addEventListener('resize', handleViewportChange);
+      window.visualViewport.addEventListener('scroll', handleViewportChange);
 
-    return () => window.removeEventListener('resize', handleResize);
+      // Set initial height
+      handleViewportChange();
+    }
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleViewportChange);
+        window.visualViewport.removeEventListener('scroll', handleViewportChange);
+      }
+    };
   }, []);
 
   // Don't render anything if never opened (saves initial memory)
@@ -425,15 +436,15 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
                 );
               })}
             </div>
-            
+
             {/* Show More/Less Button */}
             {hasMoreResults && (
               <button
                 onClick={() => setShowMore(prev => ({ ...prev, [type]: !isShowMoreActive }))}
                 className="text-xs text-[#5A6462] hover:text-[#CDD8D3] transition-colors px-[6px] py-[2px] rounded-[3px] hover:bg-[#344240]"
               >
-                {isShowMoreActive 
-                  ? `Show less` 
+                {isShowMoreActive
+                  ? `Show less`
                   : `+${filteredData.length - maxResults} more`
                 }
               </button>
@@ -445,14 +456,13 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
   };
 
   return (
-    <div 
+    <div
       ref={mobileMenuRef}
-      className={`flex md:hidden w-full h-full items-end transition-all duration-300 overflow-hidden ease-in-out ${
-        isOpen 
-          ? 'opacity-100 pointer-events-auto' 
+      className={`flex md:hidden w-full h-full items-end transition-all duration-300 overflow-hidden ease-in-out ${isOpen
+          ? 'opacity-100 pointer-events-auto'
           : 'opacity-100 pointer-events-none'
-      }`}
-      style={{ 
+        }`}
+      style={{
         visibility: isOpen ? 'visible' : 'hidden',
         maxHeight: isOpen ? `${viewportHeight}px` : '0px',
       }}
@@ -460,7 +470,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
       <div
         ref={containerRef}
         className="flex flex-col h-[calc(100vh-120px)] w-[calc(100vw-40px)] bg-[#1F2726] rounded-[22px] max-w-full will-change-transform mb-[5px]"
-        style={{ transform: 'translateZ(0)', maxHeight: `${viewportHeight}px`}}
+        style={{ transform: 'translateZ(0)', maxHeight: `${viewportHeight}px` }}
       >
         {/* Header - minimal spacing only */}
         <div ref={headerRef} className="p-[10px] pb-[5px]">
@@ -468,6 +478,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
 
         {/* Content Area */}
         <div className="flex-grow overflow-hidden px-[5px]">
+          <div>{viewportHeight}</div>
           {isOpen && scrollableHeight > 0 ? (
             <VerticalScrollContainer height={scrollableHeight} scrollbarPosition="right" scrollbarAbsolute={false} scrollbarWidth="6px">
               <div className="transition-all duration-300 ease-in-out pb-[30px]">
