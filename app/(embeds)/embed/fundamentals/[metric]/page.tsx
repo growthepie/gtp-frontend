@@ -31,6 +31,7 @@ const Chain = ({ params }: { params: any }) => {
   const queryScale = searchParams ? searchParams.get("scale") : null;
   const queryZoomed = searchParams ? searchParams.get("zoomed") : null;
   const queryInterval = searchParams ? searchParams.get("interval") : null;
+  const queryFocusEnabled = searchParams ? searchParams.get("focusEnabled") : null;
   const queryShowMainnet = searchParams
     ? searchParams.get("showMainnet")
     : null;
@@ -128,6 +129,8 @@ const Chain = ({ params }: { params: any }) => {
     queryInterval ?? "daily",
   );
 
+  const [focusEnabled, setFocusEnabled] = useState(queryFocusEnabled === "true");
+
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(
     queryShowMainnet === "true",
   );
@@ -200,6 +203,7 @@ const Chain = ({ params }: { params: any }) => {
           showTimeIntervals={true}
           sources={metricData.data.source}
           avg={metricData.data.avg}
+          focusEnabled={focusEnabled}
           showEthereumMainnet={showEthereumMainnet}
           setShowEthereumMainnet={setShowEthereumMainnet}
           selectedTimespan={selectedTimespan}

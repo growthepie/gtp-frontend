@@ -171,6 +171,7 @@ export default function ComparisonChart({
   children,
   sources,
   avg,
+  focusEnabled,
   showEthereumMainnet,
   setShowEthereumMainnet,
   selectedTimespan,
@@ -196,6 +197,7 @@ export default function ComparisonChart({
   children?: ReactNode;
   sources: string[];
   avg?: boolean;
+  focusEnabled: boolean;
   showEthereumMainnet: boolean;
   setShowEthereumMainnet: (show: boolean) => void;
   selectedTimespan: string;
@@ -339,7 +341,7 @@ export default function ComparisonChart({
 
   const getSeriesType = useCallback(
     (name: string) => {
-      if (name === "ethereum") {
+      if (name === "ethereum" && focusEnabled) {
         // show column chart for ethereum if monthly and stacked
         if (selectedTimeInterval === "monthly" && selectedScale === "stacked")
           return "column";
@@ -352,7 +354,7 @@ export default function ComparisonChart({
 
       return "line";
     },
-    [selectedScale, selectedTimeInterval],
+    [selectedScale, selectedTimeInterval, focusEnabled],
   );
 
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
