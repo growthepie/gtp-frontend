@@ -34,13 +34,13 @@ const arbitrumTimeboost: QuickBiteData = {
       type: "column",
       title: "Daily Timeboost Revenue in ETH",
       subtitle: "The revenue that the Arbitrum DAO is making from Timeboost on Arbitrum per day",
-      stacking: "normal",
       showXAsDate: true,
       dataAsJson: {
         meta: [
           {
             name: "Timeboost Fees",
             color: "#1DF7EF",
+            stacking: "normal",
             xIndex: 1,
             yIndex: 0,
             suffix: null,
@@ -64,13 +64,13 @@ const arbitrumTimeboost: QuickBiteData = {
       type: "area",
       title: "Timeboost vs Network Fees in ETH",
       subtitle: "The share of Revenue that the Arbitrum DAO is making from Timeboost vs Network Fees",
-      stacking: "percent",
       showXAsDate: true,
       dataAsJson: {
         meta: [
           {
             name: "Timeboost Fees",
             color: "#1DF7EF",
+            stacking: "percent",
             xIndex: 1,
             yIndex: 0,
             suffix: null,
@@ -82,6 +82,7 @@ const arbitrumTimeboost: QuickBiteData = {
           {
             name: "Network Fees",
             color: "#FFDF27",
+            stacking: "percent",
             xIndex: 1,
             yIndex: 0,
             suffix: null,

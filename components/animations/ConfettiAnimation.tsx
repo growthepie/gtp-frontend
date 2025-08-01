@@ -5,6 +5,7 @@ import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useMaster } from '@/contexts/MasterContext';
 import { useUIContext } from '@/contexts/UIContext';
+import Image from 'next/image';
 
 interface ConfettiPiece {
   id: number;
@@ -59,7 +60,7 @@ const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
   
   useEffect(() => {
     if (isActive && !animationRunning.current) {
-      console.log('🎊 Starting confetti animation with duration:', duration);
+  
       animationRunning.current = true;
       loadingWasTrue.current = true;
       
@@ -181,23 +182,45 @@ const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
         
       {/* Text container with proper positioning for each mode */}
       <div 
-        className={`flex items-center justify-center pointer-events-none z-[400] ${
+        className={`pointer-events-none z-[400] ${
           fullScreen 
             ? 'absolute' 
-            : isSidebarOpen ? 'fixed bottom-0 top-0 left-32 right-0' : 'fixed bottom-0 top-0 left-4 right-0'
+            : isSidebarOpen ? 'fixed' : 'fixed'
         }`}
-        style={fullScreen ? {
-          bottom: '50%',
-          right: '50%',
-          transform: 'translate(50%, 50%)',
-        } : {}}
+        style={
+          fullScreen
+            ? {
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+              }
+            : isSidebarOpen
+              ? {
+                  top: '50%',
+                  left: 'calc(100px + 50%)',
+                  right: 0,
+                  transform: 'translate(-50%, -50%)',
+                }
+              : {
+                  top: '50%',
+                  left: 'calc(24px + 50%)',
+                  right: 0,
+                  transform: 'translate(-50%, -50%)',
+                }
+        }
       >
-        <GTPIcon 
-          className="animate-pulse w-32 h-32 drop-shadow-2xl text-white" 
-          icon={"ethereum-logo-monochrome"} 
-          size="xl"
-        />
-        <span className="heading-large-lg text-white drop-shadow-lg ml-4">Happy Birthday Ethereum!</span>
+        <div className="flex items-center justify-center">
+          <GTPIcon 
+            className="animate-pulse w-32 h-32 drop-shadow-2xl text-white" 
+            icon={"ethereum-logo-monochrome"} 
+            size="xl"
+          />
+          <span className="heading-large-lg drop-shadow-lg ml-4" style={{ color: '#CDD8D3' }}>
+            Happy Birthday Ethereum!
+          </span>
+        </div>
+        <Image src="/anniversary.svg" alt="Confetti" loading="eager" width={250} height={100} className={`object-contain relative top-[280px] fade-in ${isSidebarOpen ? 'left-[40%]' : 'left-1/4'}`} />
+
       </div>
 
       <style jsx>{`

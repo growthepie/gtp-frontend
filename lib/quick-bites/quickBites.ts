@@ -31,6 +31,7 @@ export const getRelatedQuickBites = (slugs: string[]): QuickBiteWithSlug[] => {
 // Get featured quick bites for homepage
 export const getFeaturedQuickBites = (count: number = 3): (QuickBiteData & { slug: string })[] => {
   return getAllQuickBites()
+    .filter(item => item.showInMenu !== false) // Exclude items where showInMenu is explicitly false
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, count);
 };

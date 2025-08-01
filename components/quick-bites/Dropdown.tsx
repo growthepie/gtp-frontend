@@ -1,7 +1,7 @@
 // File: components/ui/Dropdown.tsx
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Icon } from '@iconify/react';
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import VerticalScrollContainer from '../VerticalScrollContainer';
@@ -16,7 +16,8 @@ interface DropdownProps {
   options: DropdownOption[];
   value?: string;
   placeholder?: string;
-  onChange: (value: string) => void;
+  allowEmpty?: boolean;
+  onChange: (value: string | null) => void;
   searchable?: boolean;
   className?: string;
   disabled?: boolean;
@@ -25,6 +26,7 @@ interface DropdownProps {
 const Dropdown: React.FC<DropdownProps> = ({
   options,
   value,
+  allowEmpty = false,
   placeholder = "Select an option...",
   onChange,
   searchable = true,
@@ -48,7 +50,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   }, [options, searchTerm]);
 
   // Get selected option
-  const selectedOption = options.find(option => option.value === value);
+  const selectedOption = useMemo(() => options.find(option => option.value === value), [options, value]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -132,7 +134,7 @@ const Dropdown: React.FC<DropdownProps> = ({
     setHighlightedIndex(-1);
   }, [searchTerm]);
 
-  const handleSelect = (selectedValue: string) => {
+  const handleSelect = (selectedValue: string | null) => {
     onChange(selectedValue);
     setIsOpen(false);
     setSearchTerm('');
@@ -263,7 +265,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                     leftIcon="feather:tag"
                     rightIcon="heroicons-solid:x-circle"
                     rightIconColor="#FE5468"
-                    onClick={() => handleSelect('')}
+                    onClick={() => handleSelect(null)}
                    />
                 </div>
               )}

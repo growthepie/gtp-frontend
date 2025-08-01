@@ -69,7 +69,8 @@ const robinhoodStock: QuickBiteData = {
       placeholder: "Choose a token...",
       searchable: true,
       stateKey: "selectedTicker",
-      defaultValue: "all",
+      defaultValue: "HOOD",
+      allowEmpty: true,
       readFromJSON: true,
       jsonData: {
         url: "https://api.growthepie.xyz/v1/quick-bites/robinhood/dropdown.json",
@@ -79,12 +80,13 @@ const robinhoodStock: QuickBiteData = {
       }
     }),
     "```",
+
     "```table",
     JSON.stringify({
       content: "All stocks robinhood has tokenized on Arbitrum One so far.",
       readFromJSON: true,
       jsonData: {
-        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood_stock_table.json",
+        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood/stock_table.json",
         pathToRowData: "data.stocks.rows",
         pathToColumnKeys: "data.stocks.columns",
         pathToTypes: "data.stocks.types",
@@ -150,43 +152,53 @@ const robinhoodStock: QuickBiteData = {
           }
         }
       },
-      filterOnStateKey: {
-        stateKey: "selectedTicker",
-        columnKey: "ticker",
-      }
+      // filterOnStateKey: {
+      //   stateKey: "selectedTicker",
+      //   columnKey: "ticker",
+      // }
     }),
     "```",
 
+    "## Column Chart",
+    "Usage: When you want to show the growth of 2-5 entities over time with limited timestamps (max 180) ",
     "```chart",
     JSON.stringify({
-      type: "line",
-      title: "Selected Stock: HOOD",
+      type: "column",
+      title: "Selected Stock: {{selectedTicker}}", // Now using mustache to dynamically set the title within the ChartBlock component
       subtitle: "Outstanding shares & stock price.",
-      stacking: "normal",
       showXAsDate: true,
+      filterOnStateKey: {
+        stateKey: "selectedTicker",
+        columnKey: "ticker",
+      },
       dataAsJson: {
         meta: [
           {
             name: "Price",
-            color: "#00C805",
+            color: "#ffffffff",
+            stacking: "normal",
+            oppositeYAxis: false,
+            type: "line",
             xIndex: 0,
             yIndex: 1,
             suffix: null,
             prefix: '$',
-            tooltipDecimals: 2,
-            url: "https://api.growthepie.com/v1/quick-bites/robinhood/stocks/HOOD.json",
-            pathToData: "data.HOOD.daily.values",
+            tooltipDecimals: 0,
+            url: "https://api.growthepie.com/v1/quick-bites/robinhood/stocks/{{selectedTicker}}.json", // here too
+            pathToData: "data.daily.values",
           },
           {
-            name: "Stocks Outstanding",
+            name: "Stock Outstanding",
             color: "#00C805",
+            stacking: "normal",
+            oppositeYAxis: true,
             xIndex: 0,
             yIndex: 2,
             suffix: null,
-            prefix: '',
+            prefix: null,
             tooltipDecimals: 0,
-            url: "https://api.growthepie.com/v1/quick-bites/robinhood/stocks/HOOD.json",
-            pathToData: "data.HOOD.daily.values",
+            url: "https://api.growthepie.com/v1/quick-bites/robinhood/stocks/{{selectedTicker}}.json",  // here too
+            pathToData: "data.daily.values",
           }
         ],
       },
@@ -213,7 +225,8 @@ const robinhoodStock: QuickBiteData = {
     name: "Economics",
     url: "/economics"
   }],
-  icon: "arbitrum-logo-monochrome"
+  icon: "arbitrum-logo-monochrome",
+  showInMenu: false
 };
 
 console.log("robinhoodStock", robinhoodStock);
