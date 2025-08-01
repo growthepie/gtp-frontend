@@ -1376,7 +1376,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
 }
 
 
-const BucketItem = ({
+export const BucketItem = ({
   item,
   itemKey,
   isSelected,

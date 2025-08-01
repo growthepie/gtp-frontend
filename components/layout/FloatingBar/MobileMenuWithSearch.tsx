@@ -13,9 +13,12 @@ import FocusSwitchSimple from "../FocusSwitchSimple";
 import EthUsdSwitchSimple from "../EthUsdSwitchSimple";
 import { GTPIcon } from "../GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
-import { useSearchBuckets, SearchBadge } from "../../search/Components";
+import { useSearchBuckets, SearchBadge, BucketItem } from "../../search/Components";
+import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
-// No need for debounce since we're using URL-based search
+function normalizeString(str: string) {
+  return str.toLowerCase().replace(/\s+/g, '');
+}
 
 // Text highlighting component (simplified from original)
 const OpacityUnmatchedText = ({ text, query }: { text: string; query: string }) => {
@@ -111,14 +114,15 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
   // Keyboard navigation state (from original search component)
   const [keyCoords, setKeyCoords] = useState<{ y: number | null, x: number | null }>({ y: null, x: null });
   const [forceUpdate, setForceUpdate] = useState(0);
+  const [lastBucketIndeces, setLastBucketIndeces] = useState<{ [key: string]: { x: number, y: number } }>({});
   const childRefs = useRef<{ [key: string]: HTMLAnchorElement | null }>({});
   const measurementsRef = useRef<{ [key: string]: DOMRect }>({});
 
   // Get search query from URL params (same as existing SearchBar)
-  const searchQuery = searchParams.get("query") || "";
+  const query = searchParams.get("query") || "";
 
   // Derived state - no separate mode state needed
-  const isSearchActive = searchQuery.trim().length > 0;
+  const isSearchActive = query.trim().length > 0;
 
   // Get search results using existing hook
   const { allFilteredData } = useSearchBuckets();
@@ -126,6 +130,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
   // Refs for DOM manipulation
   const containerRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const [scrollableHeight, setScrollableHeight] = useState(0);
@@ -147,12 +152,14 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
     }
   }, [isOpen, hasBeenOpened]);
 
+
+
   // Calculate scrollable height
   useEffect(() => {
     if (!isOpen || !hasBeenOpened) return;
 
     const calculateHeight = () => {
-      if (containerRef.current && headerRef.current && footerRef.current) {
+      if (containerRef.current && headerRef.current && footerRef.current && contentRef.current) {
         const totalHeight = containerRef.current.clientHeight;
         const headerHeight = headerRef.current.offsetHeight;
         const footerHeight = footerRef.current.offsetHeight;
@@ -177,6 +184,39 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
     };
   }, [isOpen, hasBeenOpened]);
 
+  const [viewportHeight, setViewportHeight] = useState(0);
+
+  // event listener for visualViewport resize
+  useEffect(() => {
+    const handleViewportChange = () => {
+      if (!window.visualViewport) return;
+      setViewportHeight(window.visualViewport.height);
+    };
+
+    if (window.visualViewport) {
+      // Listen to resize and scroll events on visualViewport
+      window.visualViewport.addEventListener('resize', handleViewportChange);
+      window.visualViewport.addEventListener('scroll', handleViewportChange);
+
+      // Set initial height
+      handleViewportChange();
+    }
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleViewportChange);
+        window.visualViewport.removeEventListener('scroll', handleViewportChange);
+      }
+    };
+  }, []);
+
+  const [contentHeight, setContentHeight] = useState(0);
+  useEffect(() => {
+    if (contentRef.current && isOpen) {
+      setContentHeight(contentRef.current.clientHeight);
+    }
+  }, [contentRef.current, isOpen]);
+
   // Mark first render as complete after initial render
   useEffect(() => {
     if (!isOpen) return;
@@ -191,91 +231,256 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
   // Reset showMore when search changes
   useEffect(() => {
     setShowMore({});
-  }, [searchQuery]);
+  }, [query]);
 
-  // Helper function for generating item keys (from original search component)
-  const getKey = (label: string, type: string) => {
+  const getKey = useCallback((label: string, type: string) => {
     return String(`${type}::${label}`);
-  };
+  }, []);
 
-  // Memoized query for keyboard navigation
   const memoizedQuery = useMemo(() => {
-    return searchQuery.toLowerCase().replace(/\s+/g, '');
-  }, [searchQuery]);
+    // trim the query
+    return normalizeString(query || "");
+  }, [query]);
 
-  // Create key mapping for keyboard navigation (adapted from original)
+  useEffect(() => {
+    // reset lastBucketIndeces
+    setShowMore({});
+    setLastBucketIndeces({});
+  }, [memoizedQuery, setShowMore]);
+
   const keyMapping = useMemo(() => {
-    if (!isSearchActive || allFilteredData.length === 0) return [];
-
     const dataMap: string[][] = [[]];
+    const newLastBucketIndeces: { [key: string]: { x: number, y: number } } = {};
     let yIndex = 0;
 
-    allFilteredData.forEach(({ type, filteredData }, bucketIndex) => {
-      const isShowMoreActive = showMore[type];
-      const maxResults = type === "Applications" ? 8 : 6;
-      const resultsToShow = isShowMoreActive ? filteredData : filteredData.slice(0, maxResults);
+    allFilteredData.forEach(({ type, icon, filteredData, filteredGroupData, isBucketMatch }, bucketIndex) => {
+      const isShowMore = showMore[type] && type !== "Applications";
+      let localYIndex = 0;
 
       if (bucketIndex > 0) {
         yIndex++;
+        localYIndex = 0;
         dataMap[yIndex] = [];
       }
 
       let currentRow: string[] = [];
+      let lastTop: number | null = null;
 
-      resultsToShow.forEach((item, itemIndex) => {
+      // Process regular chain results
+      filteredData.forEach((item, itemIndex) => {
+        if (localYIndex > 2 && !isShowMore) {
+          return
+        };
+
         const key = getKey(item.label, type);
         const rect = measurementsRef.current[key];
         const itemTop = rect?.top;
 
-        // Simple row-based layout for mobile (since we use flex-wrap)
-        if (itemIndex % 3 === 0 && itemIndex > 0) { // Assume ~3 items per row on mobile
+        // If measurements aren't available yet, use a simple fallback layout
+        if (!rect) {
+          // Simple fallback: assume items are in rows of 3
+          const itemsPerRow = 3;
+          const rowIndex = Math.floor(itemIndex / itemsPerRow);
+          const colIndex = itemIndex % itemsPerRow;
+
+          if (rowIndex > 2 && !isShowMore) {
+            return;
+          }
+
+          if (rowIndex >= dataMap.length) {
+            dataMap[rowIndex] = [];
+          }
+          dataMap[rowIndex].push(key);
+
+          // Set "See more" for the last item in row 2 if there are more items
+          if (rowIndex === 2 && !isShowMore && itemIndex < filteredData.length - 1) {
+            newLastBucketIndeces[key] = { x: colIndex, y: rowIndex };
+          }
+          return;
+        }
+
+        // Original logic for when measurements are available
+        if (lastTop === null || itemTop === lastTop) {
+          currentRow.push(key);
+          if (localYIndex === 2 && !isShowMore) {
+            const nextItem = filteredData[itemIndex + 1];
+            if (nextItem) {
+              const nextItemKey = getKey(nextItem.label, type);
+              const nextItemRect = measurementsRef.current[nextItemKey];
+              const nextItemTop = nextItemRect?.top;
+              const lastYIndex = localYIndex;
+              if (nextItemTop !== itemTop) {
+                newLastBucketIndeces[key] = { x: currentRow.length - 1, y: lastYIndex };
+              };
+            }
+          }
+        } else {
+          localYIndex++;
+          if (localYIndex > 2 && !isShowMore) return;
           yIndex++;
           dataMap[yIndex] = [];
           currentRow = [key];
-        } else {
-          currentRow.push(key);
         }
 
+        lastTop = itemTop || lastTop;
         dataMap[yIndex] = currentRow;
       });
+
+      // Similar fallback logic for stack results...
+      if (filteredGroupData && filteredGroupData.length > 0) {
+        filteredGroupData.forEach((group) => {
+          const isStackShowMore = showMore[`${group.label}::${type}`];
+
+          yIndex++;
+          dataMap[yIndex] = [];
+          currentRow = [];
+          lastTop = null;
+          let localStackYIndex = 0;
+
+          group.options.forEach((option, optionIndex) => {
+            if (localStackYIndex > 2 && !isStackShowMore) {
+              return;
+            }
+
+            const key = getKey(option.label, `${group.label}::${type}`);
+            const rect = measurementsRef.current[key];
+            const itemTop = rect?.top;
+
+            // Fallback for stack results too
+            if (!rect) {
+              const itemsPerRow = 3;
+              const rowIndex = Math.floor(optionIndex / itemsPerRow);
+              const colIndex = optionIndex % itemsPerRow;
+
+              if (rowIndex > 2 && !isStackShowMore) {
+                return;
+              }
+
+              if (rowIndex >= dataMap.length) {
+                dataMap[rowIndex] = [];
+              }
+              dataMap[rowIndex].push(key);
+
+              if (rowIndex === 2 && !isStackShowMore && optionIndex < group.options.length - 1) {
+                newLastBucketIndeces[key] = { x: colIndex, y: rowIndex };
+              }
+              return;
+            }
+
+            // Original stack logic...
+            if (lastTop === null || itemTop === lastTop) {
+              currentRow.push(key);
+              if (localStackYIndex === 2 && !isStackShowMore) {
+                const nextItem = group.options[optionIndex + 1];
+                if (nextItem) {
+                  const nextItemKey = getKey(nextItem.label, `${group.label}::${type}`);
+                  const nextItemRect = measurementsRef.current[nextItemKey];
+                  const nextItemTop = nextItemRect?.top;
+                  if (nextItemTop !== itemTop) {
+                    newLastBucketIndeces[key] = { x: currentRow.length - 1, y: localStackYIndex };
+                  }
+                }
+              }
+            } else {
+              localStackYIndex++;
+              if (localStackYIndex > 2 && !isStackShowMore) return;
+              yIndex++;
+              dataMap[yIndex] = [];
+              currentRow = [key];
+            }
+
+            lastTop = itemTop || lastTop;
+            dataMap[yIndex] = currentRow;
+          });
+        });
+      }
     });
 
+    setLastBucketIndeces(newLastBucketIndeces);
     return dataMap.filter(arr => arr.length > 0);
-  }, [allFilteredData, showMore, isSearchActive, memoizedQuery, forceUpdate]);
+  }, [allFilteredData, showMore, measurementsRef, forceUpdate, getKey]);
 
-  // Reset keyboard coordinates when search changes
+
+  // Setup resize observer
+  useEffect(() => {
+    const observer = new ResizeObserver((entries) => {
+      let hasChanges = false;
+
+      entries.forEach(entry => {
+        const element = entry.target as HTMLElement;
+        const key = element.getAttribute('data-key');
+        if (!key) return;
+
+        const rect = element.getBoundingClientRect();
+        const oldRect = measurementsRef.current[key];
+
+        if (!oldRect || oldRect.top !== rect.top || oldRect.left !== rect.left) {
+          measurementsRef.current[key] = rect;
+          hasChanges = true;
+        }
+      });
+
+      if (hasChanges) {
+        setForceUpdate(prev => prev + 1);
+      }
+    });
+
+    Object.entries(childRefs.current).forEach(([key, element]) => {
+      if (element) {
+        element.setAttribute('data-key', key);
+        observer.observe(element);
+      }
+    });
+
+    return () => observer.disconnect();
+  }, [allFilteredData]);
+
   useEffect(() => {
     setKeyCoords({ y: null, x: null });
-  }, [memoizedQuery, allFilteredData]);
+  }, [memoizedQuery, allFilteredData])
 
-  // Click outside to close mobile menu
+  // Add state to track keyboard-triggered expansions
+  const [keyboardExpandedStacks, setKeyboardExpandedStacks] = useState<Set<string>>(new Set());
+
+  // Modify the useEffect to only select first item for keyboard-triggered expansions
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (isOpen && mobileMenuRef.current) {
-        // Get the floating bar container (parent of this component)
-        const floatingBarContainer = mobileMenuRef.current.closest('[data-floating-bar]') ||
-          mobileMenuRef.current.closest('.p-\\[5px\\]') ||
-          mobileMenuRef.current.parentElement?.parentElement;
+    if (memoizedQuery && allFilteredData.length > 0 && keyboardExpandedStacks.size > 0) {
+      // Find the first expanded stack and select its first newly revealed result
+      for (const expandedStack of keyboardExpandedStacks) {
+        // Find the bucket and group that was expanded
+        const [groupLabel, bucketType] = expandedStack.split('::');
 
-        // Close menu if click is outside the entire floating bar container
-        if (floatingBarContainer && !floatingBarContainer.contains(event.target as Node)) {
-          onClose();
+        // Find the bucket in allFilteredData
+        const bucket = allFilteredData.find(b => b.type === bucketType);
+        if (bucket && bucket.filteredGroupData) {
+          // Find the group that was expanded
+          const group = bucket.filteredGroupData.find(g => g.label === groupLabel);
+          if (group && group.options.length > 9) {
+            // Find the position of the first newly revealed result in keyMapping
+            // The first 9 results were already visible, so we want the 10th result (index 9)
+            const firstNewResult = group.options[9];
+            const firstNewResultKey = getKey(firstNewResult.label, `${groupLabel}::${bucketType}`);
+
+            // Find this key in the keyMapping
+            for (let y = 0; y < keyMapping.length; y++) {
+              for (let x = 0; x < keyMapping[y].length; x++) {
+                if (keyMapping[y][x] === firstNewResultKey) {
+                  setKeyCoords({ x, y });
+                  setKeyboardExpandedStacks(new Set()); // Clear the flag
+                  return;
+                }
+              }
+            }
+          }
         }
       }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
     }
-  }, [isOpen, onClose]);
+  }, [memoizedQuery, allFilteredData, keyboardExpandedStacks, keyMapping, getKey, setKeyCoords]);
 
-  // Keyboard navigation event handler (adapted from original)
+  // Add keyboard navigation
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!keyMapping.length || !isSearchActive) return;
+      if (!keyMapping.length) return;
 
       const isCoordsNull = keyCoords.y === null || keyCoords.x === null;
       const currentY = keyCoords.y ?? 0;
@@ -305,7 +510,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
       } else if (event.key === 'ArrowRight') {
         event.preventDefault();
         if (isCoordsNull) {
-          setKeyCoords({ y: 0, x: 0 });
+          setKeyCoords({ y: currentY, x: currentX + 1 });
         } else if (currentX !== keyMapping[currentY].length - 1) {
           setKeyCoords({ y: currentY, x: currentX + 1 });
         }
@@ -316,6 +521,17 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
         if (selectedElement) {
           selectedElement.click();
         }
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+
+        // If keyboard navigation is active, exit it first
+        if (!isCoordsNull) {
+          setKeyCoords({ y: null, x: null });
+        } else {
+          // If no keyboard navigation, dispatch event to handle clear/close
+          window.dispatchEvent(new CustomEvent('clearSearchOrClose'));
+        }
       }
     };
 
@@ -323,33 +539,34 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
       window.addEventListener('keydown', handleKeyDown);
       return () => window.removeEventListener('keydown', handleKeyDown);
     }
-  }, [keyCoords, keyMapping, memoizedQuery, allFilteredData, isSearchActive]);
+  }, [keyCoords, keyMapping, memoizedQuery, allFilteredData]);
 
-  const [viewportHeight, setViewportHeight] = useState(0);
+  const [groupRef, { height: groupHeight }] =
+    useElementSizeObserver<HTMLDivElement>();
 
-  // event listener for visualViewport resize
+  // In the Filters component, add a useEffect to recalculate layout after initial render
   useEffect(() => {
-    const handleViewportChange = () => {
-      if (!window.visualViewport) return;
-      setViewportHeight(window.visualViewport.height);
-    };
+    // Force a recalculation of the layout after the initial render
+    if (memoizedQuery && allFilteredData.length > 0) {
+      // Use a small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        setForceUpdate(prev => prev + 1);
+      }, 100);
 
-    if (window.visualViewport) {
-      // Listen to resize and scroll events on visualViewport
-      window.visualViewport.addEventListener('resize', handleViewportChange);
-      window.visualViewport.addEventListener('scroll', handleViewportChange);
-
-      // Set initial height
-      handleViewportChange();
+      return () => clearTimeout(timer);
     }
+  }, [memoizedQuery, allFilteredData.length]); // Only run when query or data changes
 
-    return () => {
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', handleViewportChange);
-        window.visualViewport.removeEventListener('scroll', handleViewportChange);
-      }
+  // Listen for exit keyboard navigation event
+  useEffect(() => {
+    const handleExitKeyboardNav = () => {
+      setKeyCoords({ y: null, x: null });
     };
+
+    window.addEventListener('exitKeyboardNav', handleExitKeyboardNav);
+    return () => window.removeEventListener('exitKeyboardNav', handleExitKeyboardNav);
   }, []);
+
 
   // Don't render anything if never opened (saves initial memory)
   if (!hasBeenOpened && !isOpen) {
@@ -380,6 +597,8 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
       );
     }
 
+
+
     if (allFilteredData.length === 0) {
       // No search results
       return (
@@ -392,62 +611,123 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
     }
 
     // Show search results organized by sections (like the original menu structure)
-    return allFilteredData.map(({ type, icon, filteredData }) => {
-      const isShowMoreActive = showMore[type];
-      const maxResults = type === "Applications" ? 8 : 6;
-      const resultsToShow = isShowMoreActive ? filteredData : filteredData.slice(0, maxResults);
-      const hasMoreResults = filteredData.length > maxResults;
+    return allFilteredData.map(({ type, icon, filteredData, filteredGroupData, isBucketMatch }) => {
+      const isShowMore = showMore[type] && type !== "Applications";
+
+      // Limit chain results when stack results are present and "See more" is not expanded
+      const hasStackResults = filteredGroupData && filteredGroupData.length > 0;
+      const shouldLimitChains = hasStackResults && !isShowMore && type === "Chains";
+
+      // Limit Applications bucket to 20 results unless showMore is true
+      const resultsToRender =
+        type === "Applications" && !isShowMore
+          ? filteredData.slice(0, 20)
+          : shouldLimitChains
+            ? filteredData.slice(0, 6) // Show fewer chains when stack results are present
+            : filteredData;
 
       return (
-        <div key={type} className="mb-[10px]">
-          {/* Section Header - matches SidebarMenuGroup style */}
-          <div className="flex items-center gap-x-[8px] px-[15px] py-[8px] mb-[5px]">
+        <div
+          key={type}
+          className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start overflow-y-hidden"
+        >
+          <div className="flex gap-x-[10px] items-center shrink-0">
             <GTPIcon
               icon={icon as GTPIconName}
-              size="sm"
-              className="text-[#5A6462]"
+              size="md"
+              className="max-sm:size-[15px] max-sm:mt-[3px]"
             />
-            <span className="text-sm font-medium text-[#CDD8D3] flex-1">
-              <OpacityUnmatchedText text={type} query={searchQuery} />
-            </span>
-            <div className="w-[4px] h-[4px] bg-[#5A6462] rounded-full" />
-            <span className="text-xs text-[#5A6462]">{filteredData.length}</span>
+            <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default max-sm:ml-[-10px] max-sm:mt-[-3px]">
+              {isBucketMatch ? (
+                <OpacityUnmatchedText text={type} query={memoizedQuery || ""} />
+              ) : (
+                <span className="text-white">{type}</span>
+              )}
+            </div>
+            <div className="w-[6px] h-[6px] bg-[#344240] rounded-full max-sm:mt-[-3px]" />
           </div>
 
-          {/* Section Content - shows search results as badges */}
-          <div className="px-[15px] mb-[5px]">
-            <div className="flex flex-wrap gap-[3px] mb-[5px]">
-              {resultsToShow.map((item) => {
-                const itemKey = getKey(item.label, type);
-                const isSelected = keyCoords.y !== null &&
-                  keyCoords.x !== null &&
-                  keyMapping[keyCoords.y]?.[keyCoords.x] === itemKey;
+          <div className="flex flex-col gap-[5px]">
+            {/* Chain results in separate container */}
+            {filteredData.length > 0 && (
+              <div className={`overflow-y-hidden ${isShowMore
+                  ? "max-h-full"
+                  : "max-h-[118px] md:max-h-[87px]"
+                }`}>
+                <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
+                  {filteredData.map((item) => {
+                    const itemKey = getKey(item.label, type);
+                    const isSelected = keyCoords.y !== null &&
+                      keyCoords.x !== null &&
+                      keyMapping[keyCoords.y]?.[keyCoords.x] === itemKey;
 
-                return (
-                  <MobileSearchBadge
-                    key={itemKey}
-                    item={item}
-                    searchQuery={searchQuery}
-                    onClose={onClose}
-                    isSelected={isSelected}
-                    itemKey={itemKey}
-                    childRefs={childRefs}
-                  />
-                );
-              })}
-            </div>
+                    return (
+                      <BucketItem
+                        key={itemKey}
+                        item={item}
+                        itemKey={itemKey}
+                        isSelected={isSelected}
+                        childRefs={childRefs}
+                        lastBucketIndeces={lastBucketIndeces}
+                        bucket={type}
+                        query={memoizedQuery}
+                        showMore={showMore}
+                        setShowMore={setShowMore}
+                        setKeyboardExpandedStacks={setKeyboardExpandedStacks}
+                      />
+                    )
+                  })}
+                </div>
+              </div>
+            )}
 
-            {/* Show More/Less Button */}
-            {hasMoreResults && (
-              <button
-                onClick={() => setShowMore(prev => ({ ...prev, [type]: !isShowMoreActive }))}
-                className="text-xs text-[#5A6462] hover:text-[#CDD8D3] transition-colors px-[6px] py-[2px] rounded-[3px] hover:bg-[#344240]"
-              >
-                {isShowMoreActive
-                  ? `Show less`
-                  : `+${filteredData.length - maxResults} more`
-                }
-              </button>
+            {/* Stack results in separate container */}
+            {filteredGroupData && (
+              <div ref={groupRef} className="flex flex-col gap-[5px]">
+                {filteredGroupData.map((group) => {
+                  const isShowMore = showMore[`${group.label}::${type}`];
+
+                  return (
+                    <div key={group.label} className="flex flex-col gap-[5px]">
+                      <div className="text-xxs" style={{ color: '#5A6462' }}>
+                        <span>Chains that are part of the &quot;</span>
+                        <OpacityUnmatchedText text={group.label} query={memoizedQuery || ""} />
+                        <span>&quot;:</span>
+                      </div>
+                      {/* Stack results in separate container with height constraints */}
+                      <div className={`overflow-y-hidden ${isShowMore
+                          ? "max-h-full"
+                          : "max-h-[118px] md:max-h-[87px]"
+                        }`}>
+                        <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
+                          {group.options.map((option) => {
+                            const itemKey = getKey(option.label, `${group.label}::${type}`);
+                            const isSelected = keyCoords.y !== null &&
+                              keyCoords.x !== null &&
+                              keyMapping[keyCoords.y]?.[keyCoords.x] === itemKey;
+
+                            return (
+                              <BucketItem
+                                key={option.label}
+                                item={option}
+                                itemKey={itemKey}
+                                isSelected={isSelected}
+                                childRefs={childRefs}
+                                lastBucketIndeces={lastBucketIndeces}
+                                bucket={`${group.label}::${type}`}
+                                query={query || ""}
+                                showMore={showMore}
+                                setShowMore={setShowMore}
+                                setKeyboardExpandedStacks={setKeyboardExpandedStacks}
+                              />
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
         </div>
@@ -455,33 +735,33 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
     });
   };
 
+
   return (
     <div
       ref={mobileMenuRef}
       className={`flex md:hidden w-full h-full items-end transition-all duration-300 overflow-hidden ease-in-out ${isOpen
-          ? 'opacity-100 pointer-events-auto'
-          : 'opacity-100 pointer-events-none'
+        ? 'opacity-100 pointer-events-auto'
+        : 'opacity-100 pointer-events-none'
         }`}
       style={{
         visibility: isOpen ? 'visible' : 'hidden',
-        maxHeight: isOpen ? `${viewportHeight}px` : '0px',
+        maxHeight: isOpen ? `${viewportHeight - 60}px` : '0px',
       }}
     >
       <div
         ref={containerRef}
-        className="flex flex-col h-[calc(100vh-120px)] w-[calc(100vw-40px)] bg-[#1F2726] rounded-[22px] max-w-full will-change-transform mb-[5px]"
-        style={{ transform: 'translateZ(0)', maxHeight: `${viewportHeight}px` }}
+        className="flex flex-col w-[calc(100vw-40px)] bg-[#1F2726] rounded-[22px] max-w-full will-change-transform mb-[5px]"
+        style={{ transform: 'translateZ(0)', maxHeight: `${viewportHeight - 120}px` }}
       >
         {/* Header - minimal spacing only */}
         <div ref={headerRef} className="p-[10px] pb-[5px]">
         </div>
 
         {/* Content Area */}
-        <div className="flex-grow overflow-hidden px-[5px]">
-          <div>{viewportHeight}</div>
-          {isOpen && scrollableHeight > 0 ? (
+        <div className="flex-grow overflow-hidden px-[5px]" style={{ height: `${Math.min(contentHeight + 30, viewportHeight - 120)}px` }}>
+          {isOpen ? (
             <VerticalScrollContainer height={scrollableHeight} scrollbarPosition="right" scrollbarAbsolute={false} scrollbarWidth="6px">
-              <div className="transition-all duration-300 ease-in-out pb-[30px]">
+              <div ref={contentRef} className="transition-all duration-300 ease-in-out pb-[30px]">
                 {renderContent()}
               </div>
             </VerticalScrollContainer>
@@ -496,8 +776,8 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
         <div ref={footerRef} className="p-[10px] pt-0 mt-auto">
           <div className="flex flex-col justify-end pt-3 pb-0 relative">
             <div className="items-end justify-center flex gap-x-[15px] mt-[2px] mb-[0px]">
-              <EthUsdSwitchSimple isMobile showBorder={false} className={searchQuery ? 'hidden' : ''} />
-              <FocusSwitchSimple isMobile showBorder={false} className={searchQuery ? 'hidden' : ''} />
+              <EthUsdSwitchSimple isMobile showBorder={false} className={query ? 'hidden' : ''} />
+              <FocusSwitchSimple isMobile showBorder={false} className={query ? 'hidden' : ''} />
             </div>
           </div>
         </div>
