@@ -8,6 +8,7 @@ const robinhoodStock: QuickBiteData = {
     "# Phase 1 (of 3):",
     "The first step toward self-custodial stocks and the integration of stocks into DeFi (Decentralized Finance) began with Robinhood's announcement on June 30th. Robinhood announced the launch of tokenized stocks within the EU, with plans to expand to more countries soon. This is the first of three phases, initially launching on Arbitrum One. Robinhood also plans to launch its own Layer 2, built on the Arbitrum Orbit Stack. In this first phase, stocks are traded solely within the Robinhood app (offchain), and the stock tokens are custodied by Robinhood. We explore this phase and future phases in further detail at the end of this quick bite.",
 
+  
     "```kpi-cards",JSON.stringify(
       [
         {
@@ -34,7 +35,6 @@ const robinhoodStock: QuickBiteData = {
       ]
     ),
     "```",
-    "> Shares are 1 to 1 backed and currently only include publicly listed companies. Publicly listed shares are held by a US-licensed broker-dealer. We have excluded $1.5M of privately listed shares (Space X and OpenAI), which were given away to Robinhood users, these shares are not yet tradable and are awaiting further regulatory clarity. The tokens relating to these stocks have been burned (destroyed) and the shares relating to these stocks are held by a “Special Purpose Vehicle”. In phase 1 the amount of tokenized shares is updated daily so any change reflects a net change rather than individual trades. ",
 
     "```chart",
     JSON.stringify({
@@ -63,8 +63,10 @@ const robinhoodStock: QuickBiteData = {
     }),
     "```",
 
-    "## Stock Table",
-    "All stocks Robinhood has tokenized on Arbitrum One to date exsluding $1.5M of privately listed shares (Space X and OpenAI), which were given away to Robinhood users. These shares are not yet tradable and are awaiting further regulatory clarity, the tokens relating to these stocks have been burned (destroyed).",
+    "> Shares are 1 to 1 backed and currently only include publicly listed companies. Publicly listed shares are held by a US-licensed broker-dealer. We have excluded $1.5M of privately listed shares (Space X and OpenAI), which were given away to Robinhood users, these shares are not yet tradable and are awaiting further regulatory clarity. The tokens relating to these stocks have been burned (destroyed) and the shares relating to these stocks are held by a “Special Purpose Vehicle”. In phase 1 the amount of tokenized shares is updated daily so any change reflects a net change rather than individual trades.",
+
+    "# Individual Stocks",
+    "All stocks Robinhood has tokenized on Arbitrum One to date exsluding the privately listed shares mentioned above.",
     "```table",
     JSON.stringify({
       readFromJSON: true,
