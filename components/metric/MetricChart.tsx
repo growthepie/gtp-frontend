@@ -292,7 +292,8 @@ function MetricChart({
       timespan: selectedTimespan,
       scale: selectedScale,
       interval: selectedTimeInterval,
-      showMainnet: showEthereumMainnet ? "true" : "false",
+      // showMainnet: showEthereumMainnet ? "true" : "false",
+      showMainnet: "true",
       chains: seriesData.map((d) => d.name).join(","),
     };
 
@@ -317,6 +318,7 @@ function MetricChart({
       src: src,
       zoomed: zoomed,
       timeframe: zoomed ? "absolute" : embedData.timeframe,
+      focusEnabled: focusEnabled,
     }));
   }, [
     embedData.timeframe,
@@ -335,6 +337,7 @@ function MetricChart({
     zoomMax,
     zoomMin,
     zoomed,
+    focusEnabled,
   ]);
 
   const yScale: string = "linear";
@@ -453,7 +456,8 @@ function MetricChart({
       timespan: selectedTimespan,
       scale: selectedScale,
       interval: selectedTimeInterval,
-      showMainnet: showEthereumMainnet ? "true" : "false",
+      // showMainnet: showEthereumMainnet ? "true" : "false",
+      showMainnet: "true",
       chains: seriesData.map((d) => d.name).join(","),
     };
 
@@ -479,6 +483,7 @@ function MetricChart({
       src: src,
       zoomed: zoomed,
       timeframe: zoomed ? "absolute" : embedData.timeframe,
+      focusEnabled: focusEnabled,
     }));
   }, [
     embedData.timeframe,
@@ -497,6 +502,7 @@ function MetricChart({
     zoomMax,
     zoomMin,
     zoomed,
+    focusEnabled,
   ]);
 
   useEffect(() => {

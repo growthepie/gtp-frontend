@@ -5,27 +5,28 @@ const robinhoodStock: QuickBiteData = {
   title: "Robinhood Tokenized Stock Tracker",
   subtitle: "Tracking the adoption of Robinhood's tokenized stock on Arbitrum One",
   content: [
-    "# Robinhood Tokenized Stocks",
-    "blablabla...",
+    "# Phase 1 (of 3):",
+    "The first step toward self-custodial stocks and the integration of stocks into DeFi (Decentralized Finance) began with Robinhood's announcement on June 30th. Robinhood announced the launch of tokenized stocks within the EU, with plans to expand to more countries soon. This is the first of three phases, initially launching on Arbitrum One. Robinhood also plans to launch its own Layer 2, built on the Arbitrum Orbit Stack. In this first phase, stocks are traded solely within the Robinhood app (offchain), and the stock tokens are custodied by Robinhood. We explore this phase and future phases in further detail at the end of this quick bite.",
 
+  
     "```kpi-cards",JSON.stringify(
       [
         {
-          title: "Number of Stocks Tokenized",
+          title: "Stocks Tokenized",
           value: "{{robinhood_stockCount}}",
           description: "since launch",
           icon: "gtp-realtime",
           info: "Total number of stocks Robinhood tokenized on Arbitrum One.",
         },
         {
-          title: "Total Outstanding Tokenized Stock",
+          title: "Tokenized Shares Value (Total)",
           value: "${{robinhood_total_market_value_sum_usd}}",
           description: "since launch",
           icon: "gtp-realtime",
           info: "Total outstanding USD value of tokenized stock by Robinhood on Arbitrum One.",
         },
         {
-          title: "Change in Total Outstanding Tokenized Stock",
+          title: "Change in Tokenized Shares Value",
           value: "{{robinhood_perc_change_market_value_usd_7d}}%",
           description: "change over the last 7 days",
           icon: "gtp-realtime",
@@ -38,15 +39,15 @@ const robinhoodStock: QuickBiteData = {
     "```chart",
     JSON.stringify({
       type: "column",
-      title: "Total Value of Tokenized Stock",
+      title: "Total Value of Tokenized Shares",
       subtitle: "USD value of all tokenized stocks on Arbitrum One over time.",
       stacking: "normal",
       showXAsDate: true,
       dataAsJson: {
         meta: [
           {
-            name: "Total Tokenized Stock",
-            color: "#00C805",
+            name: "Tokenized Shares Total Value",
+            color: "#ccff00",
             xIndex: 1,
             yIndex: 0,
             suffix: null,
@@ -62,28 +63,12 @@ const robinhoodStock: QuickBiteData = {
     }),
     "```",
 
-    "## Stock Table",
-    "```dropdown",
-    JSON.stringify({
-      label: "Select a Ticker",
-      placeholder: "Choose a token...",
-      searchable: true,
-      stateKey: "selectedTicker",
-      defaultValue: "HOOD",
-      allowEmpty: true,
-      readFromJSON: true,
-      jsonData: {
-        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood/dropdown.json",
-        pathToOptions: "dropdown_values",
-        valueField: "ticker",
-        labelField: "name_extended"
-      }
-    }),
-    "```",
+    "> Shares are 1 to 1 backed and currently only include publicly listed companies. Publicly listed shares are held by a US-licensed broker-dealer. We have excluded $1.5M of privately listed shares (Space X and OpenAI), which were given away to Robinhood users, these shares are not yet tradable and are awaiting further regulatory clarity. The tokens relating to these stocks have been burned (destroyed) and the shares relating to these stocks are held by a “Special Purpose Vehicle”. In phase 1 the amount of tokenized shares is updated daily so any change reflects a net change rather than individual trades.",
 
+    "# Individual Stocks",
+    "All stocks Robinhood has tokenized on Arbitrum One to date exsluding the privately listed shares mentioned above.",
     "```table",
     JSON.stringify({
-      content: "All stocks robinhood has tokenized on Arbitrum One so far.",
       readFromJSON: true,
       jsonData: {
         url: "https://api.growthepie.xyz/v1/quick-bites/robinhood/stock_table.json",
@@ -159,8 +144,23 @@ const robinhoodStock: QuickBiteData = {
     }),
     "```",
 
-    "## Column Chart",
-    "Usage: When you want to show the growth of 2-5 entities over time with limited timestamps (max 180) ",
+  "```dropdown",
+    JSON.stringify({
+      label: "Select a Ticker to filter the table and update the chart - HOOD displayed by default",
+      placeholder: "Choose a token...",
+      searchable: true,
+      stateKey: "selectedTicker",
+      defaultValue: "HOOD",
+      allowEmpty: true,
+      readFromJSON: true,
+      jsonData: {
+        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood/dropdown.json",
+        pathToOptions: "dropdown_values",
+        valueField: "ticker",
+        labelField: "name_extended"
+      }
+    }),
+    "```",
     "```chart",
     JSON.stringify({
       type: "column",
@@ -175,7 +175,7 @@ const robinhoodStock: QuickBiteData = {
         meta: [
           {
             name: "Price",
-            color: "#ffffffff",
+            color: "#ccff00",
             stacking: "normal",
             oppositeYAxis: false,
             type: "line",
@@ -189,7 +189,7 @@ const robinhoodStock: QuickBiteData = {
           },
           {
             name: "Stock Outstanding",
-            color: "#00C805",
+            color: "#00c805",
             stacking: "normal",
             oppositeYAxis: true,
             xIndex: 0,
@@ -206,6 +206,12 @@ const robinhoodStock: QuickBiteData = {
       caption: "Outstanding shares and stock price over time.",
     }),
     "```",
+    "# To Catch A Token - Robinhood's presentation",
+    "## Phase 1 - Continued",
+    "## Phase 2",
+    "## Phase 3",
+    '## Private listed stocks - "A special purpose vehicle"',
+    "Saving these links for sources - https://www.youtube.com/watch?v=WNMaXVweaiY - https://www.youtube.com/watch?v=FBHmAq5lmZQ",
     
   ],
   image: "https://api.growthepie.com/v1/quick-bites/banners/robinhood.png",
@@ -220,11 +226,24 @@ const robinhoodStock: QuickBiteData = {
     name: "ETH Wave",
     xUsername: "TrueWaveBreak"
   }],
-  topics: [{
+  topics: [
+    {
+    icon: "gtp-categories",
+    name: "Real World Use-Case",
+    url: "",
+   },
+    {
+    icon: "arbitrum-logo-monochrome",
+    color: "#1DF7EF",
+    name: "Abritrum One",
+    url: "/chains/arbitrum"
+  },
+  {
     icon: "gtp-metrics-economics",
     name: "Economics",
     url: "/economics"
-  }],
+  },
+],
   icon: "arbitrum-logo-monochrome",
   showInMenu: false
 };

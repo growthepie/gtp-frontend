@@ -11,7 +11,7 @@ interface DropdownBlockProps {
 }
 
 export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
-  const { sharedState, setSharedState } = useQuickBite();
+  const { sharedState, setSharedState, exclusiveFilterKeys, setExclusiveFilterKeys, inclusiveFilterKeys, setInclusiveFilterKeys } = useQuickBite();
   const stateKey = block.stateKey || 'defaultDropdown';
   const selectedValue = stateKey in sharedState ? sharedState[stateKey] : block.defaultValue || null;
   const { data: jsonData, error, isLoading } = useSWR(block.readFromJSON ? block.jsonData?.url : null);
@@ -20,6 +20,11 @@ export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
   useEffect(() => {
     if (!sharedState[stateKey] && block.defaultValue) {
       setSharedState(stateKey, block.defaultValue || null);
+      if (block.exclusive) {
+        setExclusiveFilterKeys({ categoryKey: null, valueKey: block.defaultValue });
+      } else if (block.inclusive) {
+        setInclusiveFilterKeys({ categoryKey: null, valueKey: block.defaultValue });
+      }
     }
   }, []);
 
@@ -27,22 +32,13 @@ export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
   const dropdownOptions = React.useMemo((): DropdownOption[] => {
     if (block.readFromJSON && jsonData && block.jsonData?.pathToOptions) {
       // Navigate to the path in the JSON data
+
       const pathParts = block.jsonData.pathToOptions.split('.');
       let data = jsonData;
       for (const part of pathParts) {
         data = data[part];
       }
-      
-      // Debug logging
-      if (process.env.NODE_ENV === 'development') {
-        console.log('DropdownBlock Options Debug:', {
-          pathToOptions: block.jsonData.pathToOptions,
-          dataType: Array.isArray(data) ? 'array' : typeof data,
-          dataLength: Array.isArray(data) ? data.length : 'not array',
-          firstItem: Array.isArray(data) && data.length > 0 ? data[0] : 'no first item'
-        });
-      }
-      
+   
       // Convert array format to DropdownOption format
       if (Array.isArray(data)) {
         return data.map((item, index) => {
@@ -91,28 +87,26 @@ export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
     return block.options || [];
   }, [block.readFromJSON, block.options, block.jsonData, jsonData]);
 
-  // Add debug logging for development
-  React.useEffect(() => {
-    if (block.readFromJSON && process.env.NODE_ENV === 'development') {
-      console.log('DropdownBlock Debug:', {
-        url: block.jsonData?.url,
-        isLoading,
-        error,
-        hasData: !!jsonData,
-        optionsCount: dropdownOptions.length,
-        jsonData: jsonData ? 'Data received' : 'No data'
-      });
-    }
-  }, [block.readFromJSON, block.jsonData?.url, isLoading, error, jsonData, dropdownOptions.length]);
-
-  const handleChange = (value: string | null) => {
+  const handleChange = (value: string | null, categoryKey?: string | null) => {
     console.log('handleChange', value);
     if (value === null && block.allowEmpty) {
       setSharedState(stateKey, null);
-    } else {
+      setExclusiveFilterKeys({ categoryKey: null, valueKey: null });
+      setInclusiveFilterKeys({ categoryKey: null, valueKey: null });
+    } else if (value !== null) {
+
       setSharedState(stateKey, value);
+
+      if (block.exclusive) {
+        setExclusiveFilterKeys({ categoryKey: categoryKey || null, valueKey: value });
+      } else if (block.inclusive) {
+        setInclusiveFilterKeys({ categoryKey: categoryKey || null, valueKey: value });
+      }
     }
   };
+
+
+
 
   // Show loading state
   if (block.readFromJSON && isLoading) {

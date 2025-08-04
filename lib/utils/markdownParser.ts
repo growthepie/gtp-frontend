@@ -201,6 +201,8 @@ function parseDropdownBlock(jsonString: string): ContentBlock | null {
         searchable: dropdownConfig.searchable !== false, // Default to true
         disabled: dropdownConfig.disabled || false,
         className: dropdownConfig.className || '',
+        exclusive: dropdownConfig.exclusive || false,
+        inclusive: dropdownConfig.inclusive || false,
         readFromJSON: true,
         jsonData: {
           url,
@@ -244,6 +246,8 @@ function parseDropdownBlock(jsonString: string): ContentBlock | null {
         allowEmpty: dropdownConfig.allowEmpty || false,
         searchable: dropdownConfig.searchable !== false, // Default to true
         disabled: dropdownConfig.disabled || false,
+        exclusive: dropdownConfig.exclusive || false,
+        inclusive: dropdownConfig.inclusive || false,
         className: dropdownConfig.className || '',
         readFromJSON: false,
         showInMenu: parseShowInMenu(dropdownConfig),
