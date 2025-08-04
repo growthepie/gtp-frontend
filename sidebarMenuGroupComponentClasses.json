@@ -1,0 +1,230 @@
+{
+  "filePath": "/mnt/c/Projects/ef-grant-frontend/components/layout/SidebarMenuGroup.tsx",
+  "exportedComponents": [
+    {
+      "componentName": "SidebarMenuLink",
+      "conditionalRenders": [
+        {
+          "condition": "default",
+          "render": {
+            "tag": "Fragment",
+            "classNames": [],
+            "dynamicClassNames": [],
+            "children": [
+              {
+                "tag": "Accordion",
+                "classNames": [],
+                "dynamicClassNames": [],
+                "children": []
+              },
+              {
+                "tag": "div",
+                "classNames": [
+                  "mb-[10px]"
+                ],
+                "dynamicClassNames": [],
+                "children": []
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "componentName": "SidebarMenuGroup",
+      "conditionalRenders": [
+        {
+          "condition": "default",
+          "render": {
+            "tag": "Accordion",
+            "classNames": [],
+            "dynamicClassNames": [],
+            "children": []
+          }
+        }
+      ]
+    },
+    {
+      "componentName": "Accordion",
+      "conditionalRenders": [
+        {
+          "condition": "default",
+          "render": {
+            "tag": "Tooltip",
+            "source": "./Tooltip",
+            "classNames": [],
+            "dynamicClassNames": [],
+            "children": [
+              {
+                "tag": "TooltipTrigger",
+                "source": "./Tooltip",
+                "classNames": [
+                  "w-full"
+                ],
+                "dynamicClassNames": [],
+                "children": [
+                  {
+                    "tag": "InteractiveWrapper",
+                    "classNames": [
+                      "relative",
+                      "flex",
+                      "w-full",
+                      "flex-col",
+                      "overflow-visible"
+                    ],
+                    "dynamicClassNames": [
+                      {
+                        "condition": "(children && [...code])",
+                        "className": "cursor-pointer"
+                      },
+                      {
+                        "condition": "!((children && [...code]))",
+                        "className": ""
+                      }
+                    ],
+                    "children": [
+                      {
+                        "tag": "div",
+                        "classNames": [
+                          "flex",
+                          "w-full",
+                          "items-center",
+                          "justify-between"
+                        ],
+                        "dynamicClassNames": [
+                          {
+                            "condition": "hideLabel",
+                            "className": "rounded-full"
+                          },
+                          {
+                            "condition": "!(hideLabel)",
+                            "className": "rounded-full"
+                          },
+                          {
+                            "condition": "children",
+                            "className": "cursor-pointer"
+                          },
+                          {
+                            "condition": "!(children)",
+                            "className": ""
+                          },
+                          {
+                            "condition": "isActive",
+                            "className": "!bg-[#151A19]"
+                          },
+                          {
+                            "condition": "(link && [...code])",
+                            "className": "hover:!bg-[#5A6462]"
+                          }
+                        ],
+                        "children": [
+                          {
+                            "tag": "DropdownIcon",
+                            "classNames": [],
+                            "dynamicClassNames": [],
+                            "children": []
+                          },
+                          {
+                            "tag": "div",
+                            "classNames": [
+                              "flex",
+                              "flex-1",
+                              "items-start",
+                              "justify-start",
+                              "truncate",
+                              "font-semibold",
+                              "transition-all",
+                              "duration-300"
+                            ],
+                            "dynamicClassNames": [],
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "componentName": "DropdownIcon",
+      "conditionalRenders": [
+        {
+          "condition": "default",
+          "render": {
+            "tag": "div",
+            "classNames": [
+              "flex",
+              "items-center",
+              "justify-center",
+              "rounded-full"
+            ],
+            "dynamicClassNames": [],
+            "children": [
+              {
+                "tag": "div",
+                "classNames": [
+                  "relative",
+                  "flex",
+                  "h-full",
+                  "items-center",
+                  "justify-center",
+                  "px-[5px]"
+                ],
+                "dynamicClassNames": [],
+                "children": [
+                  {
+                    "tag": "GTPIcon",
+                    "source": "./GTPIcon",
+                    "classNames": [],
+                    "dynamicClassNames": [],
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "componentName": "DropdownArrow",
+      "conditionalRenders": [
+        {
+          "condition": "default",
+          "render": {
+            "tag": "div",
+            "classNames": [
+              "absolute",
+              "right-0",
+              "h-[10px]",
+              "w-[5px]",
+              "transition-all",
+              "duration-300"
+            ],
+            "dynamicClassNames": [],
+            "children": [
+              {
+                "tag": "svg",
+                "classNames": [],
+                "dynamicClassNames": [],
+                "children": [
+                  {
+                    "tag": "path",
+                    "classNames": [],
+                    "dynamicClassNames": [],
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

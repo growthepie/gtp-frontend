@@ -15,6 +15,7 @@ import { GTPIcon } from "../GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useSearchBuckets, SearchBadge, BucketItem } from "../../search/Components";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+import Sidebar from "@/components/sidebar/Sidebar";
 
 function normalizeString(str: string) {
   return str.toLowerCase().replace(/\s+/g, '');
@@ -576,25 +577,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
   const renderContent = () => {
     if (!isSearchActive) {
       // Show default navigation menu
-      return navigationItemsWithChains.map((item) =>
-        item.href ? (
-          <SidebarMenuLink
-            key={item.name + "_mobile_link"}
-            item={item}
-            sidebarOpen={true}
-            onClose={onClose}
-            disableAnimation={isFirstRender}
-          />
-        ) : (
-          <SidebarMenuGroup
-            key={item.name + "_mobile_item"}
-            item={item}
-            sidebarOpen={true}
-            onClose={onClose}
-            disableAnimation={isFirstRender}
-          />
-        )
-      );
+      return <Sidebar isOpen={true} />
     }
 
 

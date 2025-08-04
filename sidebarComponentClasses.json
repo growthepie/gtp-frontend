@@ -1,0 +1,691 @@
+{
+  "filePath": "/mnt/c/Projects/ef-grant-frontend/components/layout/Sidebar.tsx",
+  "exportedComponents": [
+    {
+      "componentName": "Sidebar",
+      "conditionalRenders": [
+        {
+          "condition": "if (isMobile)",
+          "render": {
+            "tag": "Fragment",
+            "classNames": [],
+            "dynamicClassNames": [],
+            "children": [
+              {
+                "tag": "button",
+                "classNames": [
+                  "z-[999]",
+                  "transition-colors",
+                  "duration-200",
+                  "p-[5px]"
+                ],
+                "dynamicClassNames": [
+                  {
+                    "condition": "isMobileSidebarOpen",
+                    "className": "hidden"
+                  },
+                  {
+                    "condition": "!(isMobileSidebarOpen)",
+                    "className": "block"
+                  },
+                  {
+                    "condition": "(scrollHeight > 0)",
+                    "className": "fixed bg-white dark:bg-forest-1000 shadow-md rounded-full border-2 border-forest-900 dark:border-forest-200 right-[17px] top-[26px]"
+                  }
+                ],
+                "children": [
+                  {
+                    "tag": "GTPIcon",
+                    "source": "./GTPIcon",
+                    "classNames": [],
+                    "dynamicClassNames": [],
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "tag": "div",
+                "classNames": [
+                  "fixed",
+                  "top-0",
+                  "right-0",
+                  "z-[998]",
+                  "flex",
+                  "justify-end",
+                  "transform",
+                  "transition-transform",
+                  "duration-300",
+                  "ease-in-out",
+                  "will-change-transform"
+                ],
+                "dynamicClassNames": [
+                  {
+                    "condition": "isMobileSidebarOpen",
+                    "className": "translate-x-0"
+                  },
+                  {
+                    "condition": "!(isMobileSidebarOpen)",
+                    "className": "translate-x-full"
+                  }
+                ],
+                "children": [
+                  {
+                    "tag": "div",
+                    "classNames": [
+                      "relative",
+                      "w-screen",
+                      "p-[20px]",
+                      "z-[999]",
+                      "flex",
+                      "flex-col",
+                      "justify-items-start",
+                      "select-none",
+                      "overflow-hidden"
+                    ],
+                    "dynamicClassNames": [],
+                    "children": [
+                      {
+                        "tag": "div",
+                        "classNames": [
+                          "flex",
+                          "px-[5px]",
+                          "justify-between",
+                          "gap-x-[20px]",
+                          "items-end",
+                          "w-full",
+                          "pointer-events-auto"
+                        ],
+                        "dynamicClassNames": [],
+                        "children": [
+                          {
+                            "tag": "Link",
+                            "source": "next/link",
+                            "classNames": [
+                              "h-[36px]",
+                              "w-[33.44px]",
+                              "relative"
+                            ],
+                            "dynamicClassNames": [],
+                            "children": [
+                              {
+                                "tag": "svg",
+                                "classNames": [],
+                                "dynamicClassNames": [],
+                                "children": [
+                                  {
+                                    "tag": "path",
+                                    "classNames": [],
+                                    "dynamicClassNames": [],
+                                    "children": []
+                                  },
+                                  {
+                                    "tag": "path",
+                                    "classNames": [],
+                                    "dynamicClassNames": [],
+                                    "children": []
+                                  },
+                                  {
+                                    "tag": "path",
+                                    "classNames": [],
+                                    "dynamicClassNames": [],
+                                    "children": []
+                                  },
+                                  {
+                                    "tag": "path",
+                                    "classNames": [],
+                                    "dynamicClassNames": [],
+                                    "children": []
+                                  },
+                                  {
+                                    "tag": "path",
+                                    "classNames": [],
+                                    "dynamicClassNames": [],
+                                    "children": []
+                                  },
+                                  {
+                                    "tag": "path",
+                                    "classNames": [],
+                                    "dynamicClassNames": [],
+                                    "children": []
+                                  },
+                                  {
+                                    "tag": "path",
+                                    "classNames": [],
+                                    "dynamicClassNames": [],
+                                    "children": []
+                                  },
+                                  {
+                                    "tag": "path",
+                                    "classNames": [],
+                                    "dynamicClassNames": [],
+                                    "children": []
+                                  },
+                                  {
+                                    "tag": "path",
+                                    "classNames": [],
+                                    "dynamicClassNames": [],
+                                    "children": []
+                                  },
+                                  {
+                                    "tag": "defs",
+                                    "classNames": [],
+                                    "dynamicClassNames": [],
+                                    "children": [
+                                      {
+                                        "tag": "radialGradient",
+                                        "classNames": [],
+                                        "dynamicClassNames": [],
+                                        "children": [
+                                          {
+                                            "tag": "stop",
+                                            "classNames": [],
+                                            "dynamicClassNames": [],
+                                            "children": []
+                                          },
+                                          {
+                                            "tag": "stop",
+                                            "classNames": [],
+                                            "dynamicClassNames": [],
+                                            "children": []
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "tag": "radialGradient",
+                                        "classNames": [],
+                                        "dynamicClassNames": [],
+                                        "children": [
+                                          {
+                                            "tag": "stop",
+                                            "classNames": [],
+                                            "dynamicClassNames": [],
+                                            "children": []
+                                          },
+                                          {
+                                            "tag": "stop",
+                                            "classNames": [],
+                                            "dynamicClassNames": [],
+                                            "children": []
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "tag": "radialGradient",
+                                        "classNames": [],
+                                        "dynamicClassNames": [],
+                                        "children": [
+                                          {
+                                            "tag": "stop",
+                                            "classNames": [],
+                                            "dynamicClassNames": [],
+                                            "children": []
+                                          },
+                                          {
+                                            "tag": "stop",
+                                            "classNames": [],
+                                            "dynamicClassNames": [],
+                                            "children": []
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "tag": "radialGradient",
+                                        "classNames": [],
+                                        "dynamicClassNames": [],
+                                        "children": [
+                                          {
+                                            "tag": "stop",
+                                            "classNames": [],
+                                            "dynamicClassNames": [],
+                                            "children": []
+                                          },
+                                          {
+                                            "tag": "stop",
+                                            "classNames": [],
+                                            "dynamicClassNames": [],
+                                            "children": []
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "tag": "radialGradient",
+                                        "classNames": [],
+                                        "dynamicClassNames": [],
+                                        "children": [
+                                          {
+                                            "tag": "stop",
+                                            "classNames": [],
+                                            "dynamicClassNames": [],
+                                            "children": []
+                                          },
+                                          {
+                                            "tag": "stop",
+                                            "classNames": [],
+                                            "dynamicClassNames": [],
+                                            "children": []
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "tag": "radialGradient",
+                                        "classNames": [],
+                                        "dynamicClassNames": [],
+                                        "children": [
+                                          {
+                                            "tag": "stop",
+                                            "classNames": [],
+                                            "dynamicClassNames": [],
+                                            "children": []
+                                          },
+                                          {
+                                            "tag": "stop",
+                                            "classNames": [],
+                                            "dynamicClassNames": [],
+                                            "children": []
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "tag": "radialGradient",
+                                        "classNames": [],
+                                        "dynamicClassNames": [],
+                                        "children": [
+                                          {
+                                            "tag": "stop",
+                                            "classNames": [],
+                                            "dynamicClassNames": [],
+                                            "children": []
+                                          },
+                                          {
+                                            "tag": "stop",
+                                            "classNames": [],
+                                            "dynamicClassNames": [],
+                                            "children": []
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "tag": "radialGradient",
+                                        "classNames": [],
+                                        "dynamicClassNames": [],
+                                        "children": [
+                                          {
+                                            "tag": "stop",
+                                            "classNames": [],
+                                            "dynamicClassNames": [],
+                                            "children": []
+                                          },
+                                          {
+                                            "tag": "stop",
+                                            "classNames": [],
+                                            "dynamicClassNames": [],
+                                            "children": []
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "tag": "radialGradient",
+                                        "classNames": [],
+                                        "dynamicClassNames": [],
+                                        "children": [
+                                          {
+                                            "tag": "stop",
+                                            "classNames": [],
+                                            "dynamicClassNames": [],
+                                            "children": []
+                                          },
+                                          {
+                                            "tag": "stop",
+                                            "classNames": [],
+                                            "dynamicClassNames": [],
+                                            "children": []
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "tag": "div",
+                            "classNames": [
+                              "flex",
+                              "gap-x-[20px]",
+                              "items-end"
+                            ],
+                            "dynamicClassNames": [],
+                            "children": [
+                              {
+                                "tag": "div",
+                                "classNames": [
+                                  "z-[999]",
+                                  "flex",
+                                  "items-center",
+                                  "space-x-[16px]",
+                                  "mb-0.5",
+                                  "w-full"
+                                ],
+                                "dynamicClassNames": [],
+                                "children": [
+                                  {
+                                    "tag": "Link",
+                                    "source": "next/link",
+                                    "classNames": [
+                                      "dark:text-forest-200",
+                                      "text-forest-900"
+                                    ],
+                                    "dynamicClassNames": [],
+                                    "children": [
+                                      {
+                                        "tag": "Icon",
+                                        "source": "@iconify/react",
+                                        "classNames": [
+                                          "h-[19px]",
+                                          "w-[19px]"
+                                        ],
+                                        "dynamicClassNames": [],
+                                        "children": []
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "tag": "Link",
+                                    "source": "next/link",
+                                    "classNames": [
+                                      "dark:text-forest-200",
+                                      "text-forest-900"
+                                    ],
+                                    "dynamicClassNames": [],
+                                    "children": [
+                                      {
+                                        "tag": "Icon",
+                                        "source": "@iconify/react",
+                                        "classNames": [
+                                          "h-[19px]",
+                                          "w-[19px]"
+                                        ],
+                                        "dynamicClassNames": [],
+                                        "children": []
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "tag": "Link",
+                                    "source": "next/link",
+                                    "classNames": [],
+                                    "dynamicClassNames": [],
+                                    "children": [
+                                      {
+                                        "tag": "Icon",
+                                        "source": "@iconify/react",
+                                        "classNames": [
+                                          "h-[19px]",
+                                          "w-[19px]"
+                                        ],
+                                        "dynamicClassNames": [],
+                                        "children": []
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "tag": "Link",
+                                    "source": "next/link",
+                                    "classNames": [
+                                      "dark:text-forest-200",
+                                      "text-forest-900"
+                                    ],
+                                    "dynamicClassNames": [],
+                                    "children": [
+                                      {
+                                        "tag": "Icon",
+                                        "source": "@iconify/react",
+                                        "classNames": [
+                                          "h-[19px]",
+                                          "w-[24px]"
+                                        ],
+                                        "dynamicClassNames": [],
+                                        "children": []
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "tag": "Link",
+                                    "source": "next/link",
+                                    "classNames": [
+                                      "dark:text-forest-200",
+                                      "text-forest-900"
+                                    ],
+                                    "dynamicClassNames": [],
+                                    "children": [
+                                      {
+                                        "tag": "Icon",
+                                        "source": "@iconify/react",
+                                        "classNames": [
+                                          "h-[19px]",
+                                          "w-[19px]"
+                                        ],
+                                        "dynamicClassNames": [],
+                                        "children": []
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "tag": "button",
+                                "classNames": [
+                                  "flex",
+                                  "h-full",
+                                  "items-center",
+                                  "pr-[13px]"
+                                ],
+                                "dynamicClassNames": [],
+                                "children": [
+                                  {
+                                    "tag": "svg",
+                                    "classNames": [],
+                                    "dynamicClassNames": [],
+                                    "children": [
+                                      {
+                                        "tag": "path",
+                                        "classNames": [],
+                                        "dynamicClassNames": [],
+                                        "children": []
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "tag": "div",
+                        "classNames": [
+                          "z-[999]",
+                          "mt-[30px]",
+                          "h-[calc(100vh-100px)]",
+                          "w-full",
+                          "flex",
+                          "flex-col",
+                          "justify-between",
+                          "overflow-hidden",
+                          "relative",
+                          "pointer-events-auto"
+                        ],
+                        "dynamicClassNames": [],
+                        "children": [
+                          {
+                            "tag": "VerticalScrollContainer",
+                            "source": "../VerticalScrollContainer",
+                            "classNames": [],
+                            "dynamicClassNames": [],
+                            "children": []
+                          },
+                          {
+                            "tag": "div",
+                            "classNames": [
+                              "flex",
+                              "flex-col",
+                              "justify-end",
+                              "pt-3",
+                              "pb-6",
+                              "relative",
+                              "mb-[17px]",
+                              "pointer-events-auto"
+                            ],
+                            "dynamicClassNames": [],
+                            "children": [
+                              {
+                                "tag": "div",
+                                "classNames": [
+                                  "text-[0.7rem]",
+                                  "flex",
+                                  "justify-evenly",
+                                  "w-full",
+                                  "gap-x-12",
+                                  "text-inherit",
+                                  "leading-[1]",
+                                  "px-2",
+                                  "mb-[17px]"
+                                ],
+                                "dynamicClassNames": [],
+                                "children": [
+                                  {
+                                    "tag": "Link",
+                                    "source": "next/link",
+                                    "classNames": [],
+                                    "dynamicClassNames": [],
+                                    "children": []
+                                  },
+                                  {
+                                    "tag": "Link",
+                                    "source": "next/link",
+                                    "classNames": [],
+                                    "dynamicClassNames": [],
+                                    "children": []
+                                  },
+                                  {
+                                    "tag": "Link",
+                                    "source": "next/link",
+                                    "classNames": [],
+                                    "dynamicClassNames": [],
+                                    "children": []
+                                  }
+                                ]
+                              },
+                              {
+                                "tag": "div",
+                                "classNames": [
+                                  "items-end",
+                                  "justify-center",
+                                  "z-[999]",
+                                  "flex",
+                                  "space-x-[15px]",
+                                  "mt-[2px]",
+                                  "mb-[17px]"
+                                ],
+                                "dynamicClassNames": [],
+                                "children": [
+                                  {
+                                    "tag": "FocusSwitch",
+                                    "source": "./FocusSwitch",
+                                    "classNames": [],
+                                    "dynamicClassNames": [],
+                                    "children": []
+                                  },
+                                  {
+                                    "tag": "EthUsdSwitch",
+                                    "source": "./EthUsdSwitch",
+                                    "classNames": [],
+                                    "dynamicClassNames": [],
+                                    "children": []
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "tag": "Backgrounds",
+                    "source": "./Backgrounds",
+                    "classNames": [],
+                    "dynamicClassNames": [],
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "condition": "default",
+          "render": {
+            "tag": "div",
+            "classNames": [
+              "flex-1",
+              "flex",
+              "flex-col",
+              "justify-items-start",
+              "select-none",
+              "overflow-y-hidden",
+              "overflow-x-hidden",
+              "-ml-[20px]",
+              "will-change-[width]",
+              "transition-all",
+              "duration-300"
+            ],
+            "dynamicClassNames": [
+              {
+                "condition": "isSidebarOpen",
+                "className": "w-[260px]"
+              },
+              {
+                "condition": "!(isSidebarOpen)",
+                "className": "w-[92px]"
+              }
+            ],
+            "children": [
+              {
+                "tag": "VerticalScrollContainer",
+                "source": "../VerticalScrollContainer",
+                "classNames": [],
+                "dynamicClassNames": [],
+                "children": [
+                  {
+                    "tag": "div",
+                    "classNames": [
+                      "pl-[20px]",
+                      "w-[270px]"
+                    ],
+                    "dynamicClassNames": [],
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "tag": "div",
+                "classNames": [
+                  "flex",
+                  "flex-col",
+                  "justify-end",
+                  "pt-6",
+                  "pb-3",
+                  "relative"
+                ],
+                "dynamicClassNames": [],
+                "children": []
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

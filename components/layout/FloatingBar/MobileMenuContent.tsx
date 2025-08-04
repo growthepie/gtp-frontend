@@ -14,6 +14,7 @@ import { track } from "@vercel/analytics";
 import FocusSwitch from "../FocusSwitch";
 import EthUsdSwitch from "../EthUsdSwitch";
 import { GTPIcon } from "../GTPIcon";
+import Sidebar from "@/components/sidebar/Sidebar";
 // import Backgrounds from "./Backgrounds"; // Optional: if you want the visual effect
 
 type MobileMenuContentProps = {
@@ -188,7 +189,7 @@ const MobileMenuContent = memo(function MobileMenuContent({ onClose, isOpen }: M
         <div className="mt-[5px] mb-[5px] flex-grow overflow-hidden pl-[5px] pr-[5px]">
           {isOpen && scrollableHeight > 0 ? (
             <VerticalScrollContainer height={scrollableHeight} scrollbarPosition="right" scrollbarAbsolute={false} scrollbarWidth="6px">
-              {navigationItemsWithChains.map((item) =>
+              {/* {navigationItemsWithChains.map((item) =>
                 item.href ? (
                   <SidebarMenuLink
                     key={item.name + "_mobile_link"}
@@ -206,7 +207,8 @@ const MobileMenuContent = memo(function MobileMenuContent({ onClose, isOpen }: M
                     disableAnimation={isFirstRender}
                   />
                 )
-              )}
+              )} */}
+              <Sidebar isOpen={true} />
             </VerticalScrollContainer>
           ) : isOpen ? (
             // Show loading only when menu is open but height not calculated yet
