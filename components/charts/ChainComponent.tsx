@@ -1,9 +1,7 @@
 "use client";
 
-import HighchartsReact from "highcharts-react-official";
-import Highcharts from "highcharts/highstock";
-import highchartsAnnotations from "highcharts/modules/annotations";
-// import highchartsDebug from "highcharts/modules/debugger";
+import ReactECharts from 'echarts-for-react';
+import * as echarts from 'echarts';
 import {
   useState,
   useEffect,
@@ -14,9 +12,7 @@ import {
   ReactNode,
   memo,
 } from "react";
-import { useLocalStorage, useWindowSize, useIsMounted } from "usehooks-ts";
-import fullScreen from "highcharts/modules/full-screen";
-import _merge from "lodash/merge";
+import { useLocalStorage, useWindowSize, useIsMounted, useResizeObserver } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
@@ -78,7 +74,15 @@ const ChainComponent = memo(function ChainComponent({
   const isMobile = useMediaQuery("(max-width: 767px)");
 
   const metric_index = metricItems.findIndex((item) => item.key === category);
-  const chartComponents = useRef<Highcharts.Chart[]>([]);
+  const chartComponents = useRef<echarts.ECharts[]>([]);
+  const chartRef = useRef<ReactECharts>(null);
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Use resize observer to handle chart repositioning
+  const { width: containerWidth = 0, height: containerHeight = 0 } = useResizeObserver({
+    ref: chartContainerRef,
+    box: 'border-box',
+  });
 
   const [zoomMargin, setZoomMargin] = useState([1, 15, 0, 0]);
   const [defaultMargin, setDefaultMargin] = useState([1, 15, 0, 0]);
@@ -246,72 +250,58 @@ const ChainComponent = memo(function ChainComponent({
     return Math.max(...maxUnixtimes);
   }, [data]);
 
-  const onXAxisSetExtremes =
-    useCallback<Highcharts.AxisSetExtremesEventCallbackFunction>(
-      function (e: Highcharts.AxisSetExtremesEventObject) {
-        // if (e.trigger === "pan") return;
+  const onDataZoom = useCallback(
+    (params: any) => {
+      if (!params || !params.batch) return;
+      
+      const batch = params.batch[0];
+      if (!batch) return;
 
-        const { min, max } = e;
+      const { startValue, endValue } = batch;
+      const min = startValue;
+      const max = endValue;
 
-        // set to nearest day at 08:00 UTC
-        let minDay = new Date(min);
-        let maxDay = new Date(max);
+      // set to nearest day at 08:00 UTC
+      let minDay = new Date(min);
+      let maxDay = new Date(max);
 
-        let minHours = minDay.getUTCHours();
-        let maxHours = maxDay.getUTCHours();
+      let minHours = minDay.getUTCHours();
+      let maxHours = maxDay.getUTCHours();
 
-        minDay.setUTCHours(0, 0, 0, 0);
+      minDay.setUTCHours(0, 0, 0, 0);
 
-        if (maxHours > 12) {
-          maxDay.setDate(maxDay.getDate() + 1);
-          maxDay.setUTCHours(0, 0, 0, 0);
-        } else {
-          maxDay.setUTCHours(0, 0, 0, 0);
-        }
+      if (maxHours > 12) {
+        maxDay.setDate(maxDay.getDate() + 1);
+        maxDay.setUTCHours(0, 0, 0, 0);
+      } else {
+        maxDay.setUTCHours(0, 0, 0, 0);
+      }
 
-        let minStartOfDay = minDay.getTime();
-        let maxStartOfDay = maxDay.getTime();
+      let minStartOfDay = minDay.getTime();
+      let maxStartOfDay = maxDay.getTime();
 
-        let numMilliseconds = maxStartOfDay - minStartOfDay;
+      let numMilliseconds = maxStartOfDay - minStartOfDay;
 
-        let paddingMilliseconds = 0;
-        if (e.trigger === "zoom" || e.trigger === "pan") {
-          if (minStartOfDay < minUnixAll) minStartOfDay = minUnixAll;
+      if (minStartOfDay < minUnixAll) minStartOfDay = minUnixAll;
+      if (maxStartOfDay > maxUnixAll) maxStartOfDay = maxUnixAll;
 
-          if (maxStartOfDay > maxUnixAll) maxStartOfDay = maxUnixAll;
+      numMilliseconds = maxStartOfDay - minStartOfDay;
 
-          numMilliseconds = maxStartOfDay - minStartOfDay;
+      setZoomed(true);
+      setZoomMin(minStartOfDay);
+      setZoomMax(maxStartOfDay);
 
-          setZoomed(true);
-          setZoomMin(minStartOfDay);
-          setZoomMax(maxStartOfDay);
-          chartComponents.current.forEach((chart) => {
-            if (chart) {
-              const xAxis = chart.xAxis[0];
-              const pixelsPerMillisecond = chart.plotWidth / numMilliseconds;
+      const numDays = numMilliseconds / (24 * 60 * 60 * 1000);
 
-              // 15px padding on left side
-              paddingMilliseconds = 15 / pixelsPerMillisecond;
-
-              xAxis.setExtremes(
-                minStartOfDay - paddingMilliseconds,
-                maxStartOfDay,
-              );
-            }
-          });
-        }
-
-        const numDays = numMilliseconds / (24 * 60 * 60 * 1000);
-
-        setIntervalShown({
-          min: minStartOfDay,
-          max: maxStartOfDay,
-          num: numDays,
-          label: `${Math.round(numDays)} day${numDays > 1 ? "s" : ""}`,
-        });
-      },
-      [maxUnixAll, minUnixAll],
-    );
+      setIntervalShown({
+        min: minStartOfDay,
+        max: maxStartOfDay,
+        num: numDays,
+        label: `${Math.round(numDays)} day${numDays > 1 ? "s" : ""}`,
+      });
+    },
+    [maxUnixAll, minUnixAll],
+  );
 
   const getTickPositions = useCallback(
     (xMin: any, xMax: any): number[] => {
@@ -571,14 +561,13 @@ const ChainComponent = memo(function ChainComponent({
   }, [data.metrics, filteredData, category, showUsd, intervalShown, focusEnabled, master.metrics, metric_index]);
 
   const tooltipFormatter = useCallback(
-    function (this: Highcharts.TooltipFormatterContextObject) {
-      const { x, points } = this;
+    (params: any) => {
+      if (!params || !Array.isArray(params) || params.length === 0) return '';
 
+      const x = params[0].value[0]; // timestamp
+      const points = params;
 
-
-      if (!points || !x) return;
-
-      const series = points[0].series;
+      if (!points || !x) return '';
 
       const date = new Date(x);
       const dateString = `
@@ -598,41 +587,26 @@ const ChainComponent = memo(function ChainComponent({
       let pointsSum = 0;
       if (selectedScale !== "percentage")
         pointsSum = points.reduce((acc: number, point: any) => {
-          acc += point.y;
-          return pointsSum;
+          acc += point.value[1];
+          return acc;
         }, 0);
 
       let tooltipPoints = points
-        .sort((a: any, b: any) => b.y - a.y)
+        .sort((a: any, b: any) => b.value[1] - a.value[1])
         .map((point: any) => {
-          const { series, y, percentage } = point;
-          const { name } = series;
+          const name = point.seriesName;
+          const y = point.value[1];
+          const percentage = pointsSum > 0 ? (y / pointsSum) * 100 : 0;
           
-          const label = name === "ethereum" ? AllChainsByKeys[name].name_short : AllChainsByKeys[name].label;
+          const label = name === "ethereum" ? AllChainsByKeys[name]?.name_short : AllChainsByKeys[name]?.label;
     
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-1 ">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name]?.colors[theme ?? "dark"][0]
               }"></div>
-                <!--
-                <div class="tooltip-point-name">${label
-              }</div>
-                -->
-                <div class="flex-1 text-right numbers-xs">${Highcharts.numberFormat(
-                percentage,
-                2,
-              )}%</div>
-              </div>
-              <!-- <div class="flex ml-6 w-[calc(100% - 24rem)] relative mb-1">
-                <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
-
-                <div class="h-[2px] rounded-full absolute left-0 top-0" style="width: ${Highcharts.numberFormat(
-                percentage,
-                2,
-              )}%; background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-              };"> </div>
-              </div> -->`;
+                <div class="flex-1 text-right numbers-xs">${percentage.toFixed(2)}%</div>
+              </div>`;
 
           const units = Object.keys(master.metrics[category].units);
           const unitKey =
@@ -660,10 +634,10 @@ const ChainComponent = memo(function ChainComponent({
           return `
           <div class="flex w-full space-x-2 items-center justify-between font-medium mb-1">
             <div class="flex items-center gap-x-[5px]">
-              <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+              <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name]?.colors[theme ?? "dark"][0]
               }"></div>
               
-              <div class="tooltip-point-name text-xs">${label
+              <div class="tooltip-point-name text-xs">${label || name
               }</div>
             </div>
             <div class="flex-1 text-right justify-end numbers-xs flex">
@@ -676,23 +650,12 @@ const ChainComponent = memo(function ChainComponent({
                 <div class="ml-0.5 ${!suffix && "hidden"
             }">${suffix}</div>
             </div>
-          </div>
-          <!-- <div class="flex ml-4 w-[calc(100% - 1rem)] relative mb-1">
-            <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
-
-            <div class="h-[2px] rounded-full absolute right-0 top-0" style="width: ${formatNumber(
-              name,
-              (y / pointsSum) * 100,
-              false,
-              false,
-            )}%; background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-            }33;"></div>
-          </div> -->`;
+          </div>`;
         })
         .join("");
 
       if(points.length > 1) {
-        let tooltipTotal = points.reduce((acc: number, point: any) => acc + (point.y || 0), 0);        
+        let tooltipTotal = points.reduce((acc: number, point: any) => acc + (point.value[1] || 0), 0);        
         
         tooltipPoints += `
           <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5">
@@ -722,177 +685,15 @@ const ChainComponent = memo(function ChainComponent({
       showGwei,
       showUsd,
       theme,
+      AllChainsByKeys,
+      master.metrics,
+      category,
+      prefixes,
+      chain,
     ],
   );
 
-  const tooltipPositioner =
-    useCallback<Highcharts.TooltipPositionerCallbackFunction>(
-      function (this, width, height, point) {
-        const chart = this.chart;
-        const { plotLeft, plotTop, plotWidth, plotHeight } = chart;
-        const tooltipWidth = width;
-        const tooltipHeight = height;
-        const distance = 20;
-        const pointX = point.plotX + plotLeft;
-        const pointY = point.plotY + plotTop;
-        let tooltipX =
-          pointX - distance - tooltipWidth < plotLeft - 120
-            ? pointX + distance
-            : pointX - tooltipWidth - distance;
 
-        let tooltipY = pointY - tooltipHeight / 2;
-
-        if (tooltipY > plotTop + plotHeight - tooltipHeight) {
-          tooltipY = plotTop + plotHeight - tooltipHeight;
-        }
-
-        if (isMobile) {
-          if (tooltipX < plotLeft) {
-            tooltipX = pointX + distance;
-          }
-          return {
-            x: tooltipX,
-            y: 49,
-          };
-        }
-
-        return {
-          x: tooltipX,
-          y: tooltipY,
-        };
-      },
-      [isMobile],
-    );
-
-  const seriesHover = useCallback<
-    | Highcharts.SeriesMouseOverCallbackFunction
-    | Highcharts.SeriesMouseOutCallbackFunction
-  >(
-    function (this: Highcharts.Series, event: Event) {
-      const {
-        chart: hoveredChart,
-        name: hoveredSeriesName,
-        index: hoveredSeriesIndex,
-      } = this;
-
-      if (chartComponents.current && chartComponents.current.length > 1) {
-        chartComponents.current.forEach((chart) => {
-          if (!chart || chart.index === hoveredChart.index) return;
-
-          // set series state
-          if (event.type === "mouseOver") {
-            if (chart.series[hoveredSeriesIndex]) {
-              chart.series[hoveredSeriesIndex].setState("hover");
-            }
-          } else {
-            chart.series[hoveredSeriesIndex].setState();
-          }
-        });
-      }
-    },
-
-    [chartComponents],
-  );
-
-  const pointHover = useCallback<
-    | Highcharts.PointMouseOverCallbackFunction
-    | Highcharts.PointMouseOutCallbackFunction
-  >(
-    function (this: Highcharts.Point, event: MouseEvent) {
-      const { series: hoveredSeries, index: hoveredPointIndex } = this;
-      const hoveredChart = hoveredSeries.chart;
-
-      if (chartComponents.current && chartComponents.current.length > 0) {
-        chartComponents.current.forEach((chart) => {
-          if (!chart) return;
-
-          // if (chart.index === hoveredChart.index) {
-          // }
-
-          if (event.type === "mouseOver" || event.type === "mouseMove") {
-            if (chart.series[hoveredSeries.index]) {
-              if (event.target !== null) {
-                const pointerEvent =
-                  event.target as unknown as Highcharts.PointerEventObject;
-
-                const point =
-                  chart.series[hoveredSeries.index].points.find(
-                    (p) =>
-                      p.x ===
-                      (event.target as unknown as Highcharts.PointerEventObject)
-                        .x,
-                  ) || null;
-
-                if (point !== null) {
-                  const simulatedPointerEvent: any = {
-                    chartX: point.plotX ?? 0,
-                    chartY: point.plotY ?? 0,
-                  };
-                  // if this is the chart we are hovering
-                  if (chart.index === hoveredChart.index) {
-                    // // render rectangular hover box for datagrouping
-                    // if (chart.HoverBox) {
-                    //   try {
-                    //     chart.HoverBox.attr("visibility", "hidden");
-                    //   } catch (e) {
-                    //     console.log(e);
-                    //   }
-                    // }
-                    // // calculate width if weekly or monthly
-                    // const boxWidth =
-                    //   chart.plotWidth /
-                    //   (timespans[selectedTimespan].daysDiff / 7);
-                    // if (!chart.HoverBox) {
-                    //   chart.HoverBox = chart.renderer
-                    //     .rect(0, chart.plotTop, boxWidth, chart.plotHeight, 0)
-                    //     .attr({
-                    //       fill:
-                    //         AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0] +
-                    //         "11",
-                    //       zIndex: 100,
-                    //     })
-                    //     .add()
-                    //     .toFront();
-                    // } else {
-                    //   chart.HoverBox.attr("visibility", "visible");
-                    //   chart.HoverBox.attr(
-                    //     "x",
-                    //     simulatedPointerEvent.chartX - boxWidth / 2,
-                    //   );
-                    //   chart.HoverBox.attr("width", boxWidth);
-                    // }
-                  }
-
-                  // else if this is not the chart we are hovering
-                  else {
-                    point.setState("hover");
-                    chart.xAxis[0].drawCrosshair(simulatedPointerEvent);
-                  }
-                }
-
-                return;
-              }
-            }
-          }
-
-          chart.xAxis[0].hideCrosshair();
-          // if (chart.HoverBox) {
-          //   try {
-          //     chart.HoverBox.attr("visibility", "hidden");
-          //   } catch (e) {
-          //     console.log(e);
-          //   }
-          // }
-          if (chart.index !== hoveredChart.index)
-            chart.series[hoveredSeries.index].points.forEach((point) => {
-              point.setState();
-            });
-        });
-      }
-    },
-
-    [chartComponents],
-  );
 
   const [isVisible, setIsVisible] = useState(true);
   const resizeTimeout = useRef<null | ReturnType<typeof setTimeout>>(null);
@@ -947,268 +748,147 @@ const ChainComponent = memo(function ChainComponent({
     };
   }, []);
 
-  const lastPointLines = useMemo<{
-    [key: string]: Highcharts.SVGElement[];
-  }>(() => ({}), []);
+
 
   const resetXAxisExtremes = useCallback(() => {
-    if (chartComponents.current && !zoomed) {
-      chartComponents.current.forEach((chart) => {
-        if (!chart) return;
-
-        const pixelsPerDay =
-          chart.plotWidth / timespans[selectedTimespan].daysDiff;
-
-        // 15px padding on each side
-        const paddingMilliseconds = (15 / pixelsPerDay) * 24 * 60 * 60 * 1000;
-
-        chart.xAxis[0].setExtremes(
-          timespans[selectedTimespan].xMin, //- paddingMilliseconds,
-          timespans[selectedTimespan].xMax,
-          isAnimate,
-        );
-      });
+    if (chartRef.current && !zoomed) {
+      const chartInstance = chartRef.current.getEchartsInstance();
+      if (chartInstance) {
+        chartInstance.setOption({
+          xAxis: {
+            min: timespans[selectedTimespan].xMin,
+            max: timespans[selectedTimespan].xMax,
+          },
+        });
+      }
     }
-  }, [isAnimate, selectedTimespan, timespans, zoomed]);
+  }, [selectedTimespan, timespans, zoomed]);
 
-  const options: Highcharts.Options | any = useMemo(() => {
+  const options: any = useMemo(() => {
     return {
-      accessibility: { enabled: false },
-      exporting: { enabled: false },
-      chart: {
-        // displayErrors: false,
-        type: "area",
-        height: isMobile ? "146px" : "176px",
-        // width: "100%",
-        backgroundColor: undefined,
-        margin: [1, 0, 0, 0],
-        spacingBottom: 0,
-        panning: { enabled: false },
-        panKey: "shift",
-        animation: forceNoAnimation.current ? false : isAnimate,
-        zooming: {
-          type: undefined,
-          mouseWheel: {
-            enabled: false,
-          },
-          resetButton: {
-            theme: {
-              zIndex: -10,
-              fill: "transparent",
-              stroke: "transparent",
-              style: {
-                color: "transparent",
-                height: 0,
-                width: 0,
-              },
-              states: {
-                hover: {
-                  fill: "transparent",
-                  stroke: "transparent",
-                  style: {
-                    color: "transparent",
-                    height: 0,
-                    width: 0,
-                  },
-                },
-              },
-            },
-          },
-        },
-
-        style: {
-          //@ts-ignore
-          borderRadius: "0 0 15px 15px",
-        },
-      },
-
-      title: undefined,
-      yAxis: {
-        title: { text: undefined },
-        opposite: false,
-        showFirstLabel: false,
-
-        showLastLabel: true,
-        gridLineWidth: 1,
-        gridLineColor:
-          theme === "dark"
-            ? "rgba(215, 223, 222, 0.11)"
-            : "rgba(41, 51, 50, 0.11)",
-
-        type: "linear",
-        min: 0,
-        labels: {
-          align: "left",
-          y: 11,
-          x: 2,
-          style: {
-            gridLineColor:
-              theme === "dark"
-                ? "rgba(215, 223, 222, 0.33)"
-                : "rgba(41, 51, 50, 0.33)",
-            fontSize: "10px",
-          },
-        },
-        // gridLineColor:
-        //   theme === "dark"
-        //     ? "rgba(215, 223, 222, 0.33)"
-        //     : "rgba(41, 51, 50, 0.33)",
+      animation: forceNoAnimation.current ? false : isAnimate,
+      grid: {
+        top: isMobile ? 50 : 50,
+        right: 15,
+        bottom: 0,
+        left: 0,
+        containLabel: false,
       },
       xAxis: {
-        events: {
-          afterSetExtremes: onXAxisSetExtremes,
-        },
-        type: "datetime",
-        lineWidth: 0,
-        crosshair: {
-          width: 0.5,
-          color: COLORS.PLOT_LINE,
-          snap: false,
-        },
+        type: 'time',
+        show: false,
         min: zoomed ? zoomMin : timespans[selectedTimespan].xMin,
         max: zoomed ? zoomMax : timespans[selectedTimespan].xMax,
-        tickPositions: getTickPositions(
-          timespans[selectedTimespan].xMin,
-          timespans[selectedTimespan].xMax,
-        ),
-        tickmarkPlacement: "on",
-        tickWidth: 1,
-        tickLength: 20,
-        ordinal: false,
-        minorTicks: false,
-        minorTickLength: 2,
-        minorTickWidth: 2,
-        minorGridLineWidth: 0,
-        minorTickInterval: 1000 * 60 * 60 * 24 * 7,
-        labels: {
-          style: { color: COLORS.LABEL },
-          enabled: false,
-          formatter: (item) => {
-            const date = new Date(item.value);
-            const isMonthStart = date.getDate() === 1;
-            const isYearStart = isMonthStart && date.getMonth() === 0;
-            if (isYearStart) {
-              return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
-            } else {
-              return `<span style="">${date.toLocaleDateString("en-GB", {
-                month: "short",
-              })}</span>`;
-            }
-          },
-        },
-        // minPadding: 0.04,
-        // maxPadding: 0.04,
-        gridLineWidth: 0,
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: { show: false },
+        splitLine: { show: false },
       },
-      legend: {
-        enabled: false,
-        useHTML: false,
-        symbolWidth: 0,
+      yAxis: {
+        type: 'value',
+        show: false,
+        min: 0,
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: { show: false },
+        splitNumber: 3,
+
       },
       tooltip: {
-        hideDelay: 300,
-        stickOnContact: false,
-        useHTML: true,
-        shared: true,
-        outside: isMobile ? false : true,
-        formatter: tooltipFormatter,
-        positioner: tooltipPositioner,
-        split: false,
-        followPointer: true,
-        followTouchMove: true,
-        backgroundColor: (theme === "dark" ? "#2A3433" : "#EAECEB") + "EE",
-        borderRadius: 17,
-        borderWidth: 0,
-        padding: 0,
-        shadow: {
-          color: "black",
-          opacity: 0.015,
-          offsetX: 2,
-          offsetY: 2,
+        trigger: 'axis',
+        axisPointer: {
+          type: 'line',
+          lineStyle: {
+            color: COLORS.PLOT_LINE,
+            width: 0.5,
+          },
         },
-        style: {
+        backgroundColor: (theme === "dark" ? "#2A3433" : "#EAECEB") + "EE",
+        borderWidth: 0,
+        borderRadius: 17,
+        padding: 0,
+        textStyle: {
           color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
         },
-      },
-
-      plotOptions: {
-        line: {
-          lineWidth: 2,
-        },
-        area: {
-          stacked: true,
-          lineWidth: 2,
-          // marker: {
-          //   radius: 12,
-          //   lineWidth: 4,
-          // },
-          fillOpacity: 1,
+        formatter: tooltipFormatter,
+        confine: false, // Allow tooltip to overflow the chart container
+        appendToBody: true, // Append tooltip to document body to prevent clipping
+        position: function (point: any, params: any, dom: any, rect: any, size: any) {
+          const tooltipWidth = size.contentSize[0];
+          const tooltipHeight = size.contentSize[1];
+          const chartRect = rect; // Chart container rect
+          const viewWidth = size.viewSize[0];
+          const viewHeight = size.viewSize[1];
           
-          // shadow: {
-          //   color:
-          //     AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1] + "33",
-          //   width: 10,
-          // },
-          color: {
-            linearGradient: {
-              x1: 0,
-              y1: 0,
-              x2: 1,
-              y2: 0,
-            },
-            stops: [
-              [0, AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][0]],
-              // [0.33, AllChainsByKeys[series.name].colors[1]],
-              [1, AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1]],
-            ],
-          },
-          // borderColor: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
-          // borderWidth: 1,
+          // Distance from cursor (closer than before)
+          const distance = 10;
+          const cursorOffset = 8; // Small offset to avoid overlapping cursor
+          
+          // Default position: to the right and slightly below cursor
+          let tooltipX = point[0] + distance;
+          let tooltipY = point[1] + cursorOffset;
+          
+          // Check if tooltip would overflow on the right
+          if (tooltipX + tooltipWidth > viewWidth) {
+            // Position to the left of cursor
+            tooltipX = point[0] - tooltipWidth - distance;
+          }
+          
+          // Ensure tooltip doesn't go off the left edge
+          if (tooltipX < 0) {
+            tooltipX = distance;
+          }
+          
+          // Check if tooltip would overflow on the bottom
+          if (tooltipY + tooltipHeight > viewHeight) {
+            // Position above cursor
+            tooltipY = point[1] - tooltipHeight - cursorOffset;
+          }
+          
+          // Ensure tooltip doesn't go off the top edge
+          if (tooltipY < 0) {
+            tooltipY = distance;
+          }
+          
+          // Special handling for mobile
+          if (isMobile) {
+            // On mobile, keep it at a fixed Y position near the top
+            tooltipY = 10;
+            // But still handle X overflow
+            if (tooltipX + tooltipWidth > viewWidth) {
+              tooltipX = point[0] - tooltipWidth - distance;
+            }
+            if (tooltipX < 0) {
+              tooltipX = distance;
+            }
+          }
+          
+          return [tooltipX, tooltipY];
         },
-        series: {
-          stacking: "normal",
-          zIndex: 10,
-          animation: false,
-          marker: {
-            lineColor: "white",
-            radius: 0,
-            symbol: "circle",
-          },
+      },
+      dataZoom: [
+        {
+          type: 'inside',
+          disabled: true,
+          start: 0,
+          end: 100,
         },
-      },
-      navigator: {
-        enabled: false,
-      },
-      rangeSelector: {
-        enabled: false,
-      },
-      stockTools: {
-        gui: {
-          enabled: false,
-        },
-      },
-      scrollbar: {
-        enabled: false,
-      },
-      credits: {
-        enabled: false,
-      },
+      ],
+      series: [], // Will be populated by seriesConfig
     };
   }, [
     data.chain_id,
-    getTickPositions,
     isAnimate,
     isMobile,
-    onXAxisSetExtremes,
     selectedTimespan,
     theme,
     timespans,
     tooltipFormatter,
-    tooltipPositioner,
     zoomMax,
     zoomMin,
     zoomed,
     forceNoAnimation.current,
+    COLORS.PLOT_LINE,
   ]);
 
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
@@ -1216,167 +896,100 @@ const ChainComponent = memo(function ChainComponent({
   const delayPromises = [];
  
 
-  const onChartRender = (chart: Highcharts.Chart) => {
-    if (!chart || !chart.series) return;
+  const getGraphicElements = useCallback(() => {
+    if (!chartRef.current || !filteredData.length || !containerWidth || !containerHeight) return [];
 
-    // check if gradient exists
-    if (!document.getElementById("gradient0")) {
-      // add def containing linear gradient with stop colors for the circle
-      chart.renderer.definition({
-        attributes: {
-          id: "gradient0",
-          x1: "0%",
-          y1: "0%",
-          x2: "0%",
-          y2: "100%",
+    const chartInstance = chartRef.current.getEchartsInstance();
+    if (!chartInstance) return [];
+
+    const chartWidth = containerWidth || chartInstance.getWidth();
+    const chartHeight = containerHeight || chartInstance.getHeight();
+    
+    // Get chart area bounds
+    const gridLeft = 0;
+    const gridRight = chartWidth - 15; // Account for right margin
+    const gridTop = isMobile ? 50 : 50;
+    const gridBottom = chartHeight - (isMobile ? 0 : 0);
+    const gridHeightUsable = gridBottom - gridTop;
+    
+    // Get the last data point
+    const lastDataPoint = filteredData[filteredData.length - 1];
+    if (!lastDataPoint) return [];
+
+    // Calculate the actual y-position for the all_l2s series (considering stacking)
+    // For stacked areas, all_l2s appears on top, so we need the cumulative value
+    const all_l2sValue = lastDataPoint[1] || 0;
+    const ethereumValue = (!focusEnabled && category !== "rent_paid") ? (lastDataPoint[2] || 0) : 0;
+    const cumulativeValue = all_l2sValue + ethereumValue;
+
+    // Convert data coordinates to pixel coordinates using the cumulative value
+    const pixelPoint = chartInstance.convertToPixel('grid', [lastDataPoint[0], cumulativeValue]);
+    if (!pixelPoint) return [];
+
+    const fraction = 15 / chartWidth;
+    const lineX = chartWidth * (1 - fraction);
+    const lineStartY = pixelPoint[1];
+    const lineEndY = gridTop / 2;
+
+    const gridLineColor = theme === "dark" ? "rgba(215, 223, 222, 0.8)" : "rgba(41, 51, 50, 0.8)";
+
+    return [
+
+      // Dashed line from last point to top with horizontal gradient
+      {
+        type: 'line',
+        shape: {
+          x1: lineX,
+          y1: lineStartY,
+          x2: lineX,
+          y2: lineEndY,
         },
-        children: [
-          {
-            tagName: "stop",
-            // offset: "0%",
-
-            attributes: {
-              id: "stop1",
-              offset: "0%",
-            },
+        style: {
+          stroke: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 1,
+            y2: 0,
+            colorStops: [
+              {
+                offset: 0,
+                color: '#FFDF27', // Yellow at left
+              },
+              {
+                offset: 1,
+                color: '#FE5468', // Red/pink at right
+              },
+            ],
           },
-          {
-            tagName: "stop",
-            // offset: "100%",
-            attributes: {
-              id: "stop2",
-              offset: "100%",
-            },
-          },
-        ],
-        tagName: "linearGradient",
-        textContent: "",
-      });
-      const stop1 = document.getElementById("stop1");
-      const stop2 = document.getElementById("stop2");
-      stop1?.setAttribute(
-        "stop-color",
-        AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1],
-      );
-      stop1?.setAttribute("stop-opacity", "1");
-      stop2?.setAttribute(
-        "stop-color",
-        AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
-      );
-      stop2?.setAttribute("stop-opacity", "0.33");
-    }
-
-    // only 1 chart so setting const for i to = 0
-    const i = 0;
-    const index = chart.series.findIndex((s) => s.name === "all_l2s");
-
-    // const chart: Highcharts.Chart = this;
-    const lastPoint: Highcharts.Point =
-      chart.series[index].points[chart.series[index].points.length - 1];
-
-    // check if i exists as a key in lastPointLines
-    if (!lastPointLines[i]) {
-      lastPointLines[i] = [];
-    }
-
-    if (lastPointLines[i] && lastPointLines[i].length > 0) {
-      lastPointLines[i].forEach((line) => {
-        line.destroy();
-      });
-      lastPointLines[i] = [];
-    }
-    
-    if (index === -1) {
-      console.warn("Series 'all_l2s' not found in chart");
-      return;
-    }
-    
-    // Add safety check for series
-    if (!chart.series[index] || !chart.series[index].points || chart.series[index].points.length === 0) {
-      console.warn("No points found in series 'all_l2s'");
-      return;
-    }
-    // calculate the fraction that 15px is in relation to the pixel width of the chart
-    const fraction = 15 / chart.chartWidth;
-
-    // create a bordered line from the last point to the top of the chart's container
-    lastPointLines[i][lastPointLines[i].length] = chart.renderer
-      .createElement("line")
-      .attr({
-        x1: chart.chartWidth * (1 - fraction) + 0.00005,
-        y1: lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
-        x2: chart.chartWidth * (1 - fraction) - 0.00005,
-        y2: chart.plotTop / 2,
-        stroke: isSafariBrowser
-          ? AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1]
-          : "url('#gradient0')",
-        "stroke-dasharray": "2",
-        "stroke-width": 1,
-        rendering: "crispEdges",
-      })
-      .add();
-
-    lastPointLines[i][lastPointLines[i].length] = chart.renderer
-      .createElement("line")
-      .attr({
-        x1: chart.chartWidth * (1 - fraction) + 0.5,
-        y1: chart.plotTop / 2 + 0.00005,
-        x2: chart.chartWidth * (1 - fraction),
-        y2: chart.plotTop / 2,
-        stroke: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1],
-        "stroke-dasharray": 2,
-        "stroke-width": 1,
-        rendering: "crispEdges",
-      })
-      .add();
-
-    // create a circle at the end of the line
-    lastPointLines[i][lastPointLines[i].length] = chart.renderer
-      .circle(chart.chartWidth * (1 - fraction), chart.plotTop / 2, 3)
-      .attr({
-        fill: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1],
-        r: 4.5,
-        zIndex: 9999,
-        rendering: "crispEdges",
-      })
-      .add();
-
-    // create a circle at the end of the line
-    // lastPointLines[i][lastPointLines[i].length] = chart.renderer
-    //   .circle(
-    //     lastPoint.plotX,
-    //     lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
-    //     2,
-    //   )
-    //   .attr({
-    //     stroke: "#CDD8D3",
-    //     opacity: 0.44,
-    //     r: 1,
-    //     zIndex: 9999,
-    //     rendering: "crispEdges",
-    //   })
-    //   .add();
-  };
+          lineDash: [2, 2],
+          lineWidth: 1,
+        },
+        z: 10,
+      },
+      // Circle at the end of the line
+      {
+        type: 'circle',
+        shape: {
+          cx: lineX,
+          cy: lineEndY,
+          r: 4.5,
+        },
+        style: {
+          fill: '#FE5468', // Red to match the right side of the gradient
+        },
+        z: 11,
+      },
+    ];
+  }, [filteredData, data.chain_id, theme, AllChainsByKeys, isMobile, containerWidth, containerHeight]);
 
   const resituateChart = debounce(() => {
-    if (chartComponents.current && !zoomed) {
-      chartComponents.current.forEach((chart) => {
-        isMounted() && chart && chart.setSize(null, null, false);
-        isMounted() && chart && chart.reflow();
-        isMounted() && chart && resetXAxisExtremes();
-
-        // delay(0)
-        //   .then(() => {
-        //     isMounted() && chart && chart.setSize(null, null, false);
-        //     // chart.reflow();
-        //   })
-        //   .then(() => {
-        //     isMounted() && chart && chart.reflow();
-        //   })
-        //   .then(() => {
-        //     isMounted() && chart && resetXAxisExtremes();
-        //   });
-      });
+    if (chartRef.current && !zoomed) {
+      const chartInstance = chartRef.current.getEchartsInstance();
+      if (isMounted() && chartInstance) {
+        chartInstance.resize();
+        resetXAxisExtremes();
+      }
     }
   }, 500);
 
@@ -1388,6 +1001,21 @@ const ChainComponent = memo(function ChainComponent({
       resituateChart.cancel();
     };
   }, [width, height, isSidebarOpen, resituateChart]);
+
+  // Handle container size changes and update graphic elements
+  useEffect(() => {
+    if (chartRef.current && containerWidth && containerHeight) {
+      const chartInstance = chartRef.current.getEchartsInstance();
+      if (chartInstance) {
+        // Delay to ensure chart is fully rendered
+        setTimeout(() => {
+          chartInstance.setOption({
+            graphic: getGraphicElements(),
+          });
+        }, 100);
+      }
+    }
+  }, [containerWidth, containerHeight, getGraphicElements]);
 
   const SourcesDisplay = useMemo(() => {
     return data.metrics[category].source &&
@@ -1411,141 +1039,100 @@ const ChainComponent = memo(function ChainComponent({
   }, [category, data.metrics]);
 
   const seriesConfig = useMemo(() => {
-    return [
-      {
-        name: data.chain_id,
-        crisp: true,
-        data: filteredData.map(d => [d[0], d[1]]),
-        showInLegend: false,
-        fillColor: {
-          linearGradient: {
-            x1: 0,
-            y1: 0,
-            x2: 0,
-            y2: 1,
-          },
-          stops: [
-            [
-              0,
-              AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0] +
-              "33",
-            ],
-            [
-              1,
-              AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1] +
-              "33",
-            ],
-          ],
-        },
-        marker: {
-          enabled: false,
-        },
-        dataGrouping: {
-          enabled: false,
-        },
-        point: {
-          events: {
-            mouseOver: pointHover,
-            mouseOut: pointHover,
-          },
-        },
-        states: {
-          hover: {
-            enabled: true,
-            halo: {
-              size: 5,
-              opacity: 1,
-              attributes: {
-                fill:
-                  AllChainsByKeys[data.chain_id]?.colors[
-                  theme ?? "dark"
-                  ][0] + "99",
-                stroke:
-                  AllChainsByKeys[data.chain_id]?.colors[
-                  theme ?? "dark"
-                  ][0] + "66",
-              },
-            },
-            brightness: 0.3,
-          },
-          inactive: {
-            enabled: true,
-            opacity: 0.6,
-          },
-          selection: {
-            enabled: false,
-          },
-        },
-      },
-      ((category !== "rent_paid")) && {
-        visible: focusEnabled ? false : true,
+    const series: any[] = [];
+
+    // Add ethereum series first (bottom layer)
+    if (category !== "rent_paid" && !focusEnabled) {
+      series.push({
         name: ethData.chain_id,
-        crisp: true,
+        type: 'line',
         data: filteredData.map(d => [d[0], d[2]]),
-        showInLegend: false,
-        marker: {
-          enabled: false,
-        },
-        dataGrouping: {
-          enabled: false,
-        },
-        color: AllChainsByKeys[ethData.chain_id]?.colors[theme ?? "dark"][0],
-        fillColor: {
-          linearGradient: {
-            x1: 0,
-            y1: 0,
+        stack: 'total',
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
             x2: 0,
             y2: 1,
+            colorStops: [
+              {
+                offset: 0,
+                color: AllChainsByKeys[ethData.chain_id]?.colors[theme ?? "dark"][0] + "33",
+              },
+              {
+                offset: 1,
+                color: AllChainsByKeys[ethData.chain_id]?.colors[theme ?? "dark"][1] + "33",
+              },
+            ],
           },
-          stops: [
-            [
-              0,
-              AllChainsByKeys[ethData.chain_id].colors[theme ?? "dark"][0] +
-              "33",
-            ],
-            [
-              1,
-              AllChainsByKeys[ethData.chain_id].colors[theme ?? "dark"][1] +
-              "33",
-            ],
+        },
+        lineStyle: {
+          width: 2,
+          color: AllChainsByKeys[ethData.chain_id]?.colors[theme ?? "dark"][0],
+        },
+        symbol: 'none',
+        smooth: false,
+        animation: !forceNoAnimation.current && isAnimate,
+      });
+    }
+
+    // Add all_l2s series last (top layer)
+    series.push({
+      name: 'all_l2s',
+      type: 'line',
+      data: filteredData.map(d => [d[0], d[1]]),
+      stack: 'total',
+      areaStyle: {
+        color: {
+          type: 'linear',
+          x: 0,
+          y: 0,
+          x2: 0,
+          y2: 1,
+          colorStops: [
+            {
+              offset: 0,
+              color: AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][0] + "33",
+            },
+            {
+              offset: 0.4,
+              color: AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][0] + "33",
+            },
+            {
+              offset: 1,
+              color: AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1] + "33",
+            },
           ],
         },
-        point: {
-          events: {
-            mouseOver: pointHover,
-            mouseOut: pointHover,
-          },
-        },
-        states: {
-          hover: {
-            enabled: true,
-            halo: {
-              size: 5,
-              opacity: 1,
-              attributes: {
-                fill:
-                  AllChainsByKeys[ethData.chain_id]?.colors[
-                  theme ?? "dark"
-                  ][0] + "99",
-                stroke:
-                  AllChainsByKeys[ethData.chain_id]?.colors[
-                  theme ?? "dark"
-                  ][0] + "66",
-              },
+      },
+      lineStyle: {
+        width: 2,
+        color: {
+          type: 'linear',
+          x: 0,
+          y: 0,
+          x2: 1,
+          y2: 0,
+          colorStops: [
+            {
+              offset: 0,
+              color: '#FFDF27', // Yellow at left
             },
-            brightness: 0.3,
-          },
-          inactive: {
-            enabled: true,
-            opacity: 0.6,
-          },
-          selection: {
-            enabled: false,
-          },
+            {
+              offset: 1,
+              color: '#FE5468', // Red/pink at right
+            },
+          ],
         },
       },
-    ].filter(Boolean);
-  }, [data.chain_id, filteredData, AllChainsByKeys, theme, pointHover, category, focusEnabled, ethData.chain_id]);
+      symbol: 'none',
+      smooth: false,
+      animation: !forceNoAnimation.current && isAnimate,
+    });
+
+    return series;
+  }, [data.chain_id, filteredData, AllChainsByKeys, theme, category, focusEnabled, ethData.chain_id, forceNoAnimation.current, isAnimate]);
 
   // Add this effect to detect focus changes and temporarily disable animations
   useEffect(() => {
@@ -1566,52 +1153,37 @@ const ChainComponent = memo(function ChainComponent({
       className="w-full h-fit relative z-10"
       suppressHydrationWarning={true}
     >
-      <div className="w-full h-[146px] md:h-[176px] relative">
+      <div className="w-full h-[146px] md:h-[176px] relative" ref={chartContainerRef}>
         <div className="absolute w-full h-full bg-forest-50 dark:bg-[#1F2726] rounded-[15px]"></div>
         <div className="absolute w-full h-[146px] md:h-[176px]">
-          <HighchartsReact
-            containerProps={{
-              className: isVisible ? "" : "hidden",
-            }}
-            highcharts={Highcharts}
-            constructorType={"stockChart"}
-            options={{
+          <ReactECharts
+            ref={chartRef}
+            option={{
               ...options,
-              chart: {
-                ...options.chart,
-                
-                margin: zoomed ? zoomMargin : defaultMargin,
-                events: {
-                  // render: function () {
-                  //   const chart = this;
-                  // },
-                  render: function () {
-                    const chart = this;
-                    onChartRender(chart);
-                  },
-                },
-              },
-              yAxis: {
-                ...options.yAxis,
-
-                labels: {
-                  enabled: false,
-                  ...(options.yAxis as Highcharts.YAxisOptions).labels,
-                  formatter: function (
-                    t: Highcharts.AxisLabelsFormatterContextObject,
-                  ) {
-                    return formatNumber(category, t.value, true);
-                  },
-                },
-              },
-
               series: seriesConfig,
+              graphic: getGraphicElements(),
             }}
-            ref={(chart) => {
-              if (chart) {
-                chartComponents.current[0] = chart.chart;
-              }
+            style={{
+              height: isMobile ? "146px" : "176px",
+              width: "100%",
+              display: isVisible ? "block" : "none",
             }}
+            onEvents={{
+              dataZoom: onDataZoom,
+              finished: () => {
+                // Chart render finished, update graphic elements
+                if (chartRef.current) {
+                  const chartInstance = chartRef.current.getEchartsInstance();
+                  if (chartInstance) {
+                    chartInstance.setOption({
+                      graphic: getGraphicElements(),
+                    });
+                  }
+                }
+              },
+            }}
+            notMerge={false}
+            lazyUpdate={true}
           />
         </div>
         <div className="absolute top-[14px] w-full flex justify-between items-center px-[23px]">
@@ -1644,6 +1216,11 @@ const ChainComponent = memo(function ChainComponent({
             {getNavLabel(category).toUpperCase()}
           </div>
         </div>
+        <div className="absolute  bottom-0 top-0 left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-20">
+            <ChartWatermark className="w-[96px] md:w-[128.67px] text-forest-300 dark:text-[#EAECEB]" />
+        </div>
+        <div className="absolute bottom-[120px] left-0 right-0 h-[1px] bg-[#5A64624F] mr-[15px]"  />
+        <div className="absolute bottom-[62px] left-0 right-0 h-[1px] bg-[#5A64624F] mr-[15px]" />
       </div>
       <div className="absolute -bottom-[2px] right-[6px]">
         {/* <Tooltip placement="left" allowInteract>
