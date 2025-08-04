@@ -1,6 +1,38 @@
+/*
+  ==========================================================================================================
+  Figma Icon Library Generator
+  ==========================================================================================================
+
+  This script automates the creation of the structured icon and logo library used by icons.growthepie.com.
+  It fetches component data from Figma, downloads the 'Small'variant of each item, extracts a color palette, 
+  and generates a comprehensive `index.json` file in `public/icon-library/` for use by the icons page.
+
+  ----------------------------------------------------------------------------------------------------------
+  Workflow to Update the Icon Library
+  ----------------------------------------------------------------------------------------------------------
+
+  1. Setup:
+     - Ensure a `.env.local` file exists with your `FIGMA_ACCESS_TOKEN` and
+       `FIGMA_FILE_KEY`.
+     - Install dependencies with `npm install`.
+
+  2. Run the Generation Script:
+     Execute this script from the project root:
+     $ tsx lib/figma-icons-library.ts
+     This will populate `public/icon-library/` with optimized SVGs within the `icons` and `logos` folders 
+     and the `index.json` manifest.
+
+  3. Upload the Updated Library:
+     a. Upload the contents of the `public/icon-library/` folder to s3://growthepie/v1/icon-library/
+     b. Create a CloudFront invalidation for the path: /v1/icon-library/*
+
+  4. Verify the Library:
+     a. Verify the library is working by visiting the icons page at https://icons.growthepie.com/
+*/
+
 export { };
 
-import { promises as fs } from 'fs';
+import { promises as fs, statSync } from 'fs';
 import { existsSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -39,7 +71,11 @@ interface FigmaNode {
 }
 
 // Keep FigmaFileResponse if you still fetch the whole file initially
-// interface FigmaFileResponse { ... }
+interface FigmaFileResponse {
+  document: {
+    children: FigmaNode[];
+  };
+}
 
 interface VariantInfo {
   color?: string;
@@ -177,10 +213,10 @@ function findNodeById(node: FigmaNode, id: string): FigmaNode | undefined {
 }
 
 // ... (keep Figma IDs) ...
-const ICONS_AND_LOGOS_PAGE_ID = "21411:73871"
-const ICONS_AND_LOGOS_FRAME_ID = "21411:74021"
-const GROWTHEPIE_ICONS_NODE_ID = "21411:74022"
-const LOGOS_NODE_ID = "21411:74172"
+// const ICONS_AND_LOGOS_PAGE_ID = "21411:73871"
+// const ICONS_AND_LOGOS_FRAME_ID = "21411:74021"
+// const GROWTHEPIE_ICONS_NODE_ID = "21411:74022"
+// const LOGOS_NODE_ID = "21411:74172"
 
 
 function extractVariant(node: FigmaNode): VariantInfo | null {
@@ -324,26 +360,61 @@ async function main() {
   try {
     console.log("Loading Figma file data...");
 
-    // --- Option 1: Fetch live data (uncomment when needed) ---
-    const figmaData = await fetchFigmaFile(FIGMA_FILE_KEY, FIGMA_ACCESS_TOKEN);
-    // await fs.writeFile(path.join(__dirname, "../figmaData-cache.json"), JSON.stringify(figmaData, null, 2), 'utf-8');
+    const cacheFilePath = path.join(__dirname, "../figmaData-cache.json");
+    const cacheModifiedTime: number = existsSync(cacheFilePath) ? statSync(cacheFilePath).mtime.getTime() : 0;
+    const currentTime: number = Date.now();
+    const cacheIsFresh: boolean = cacheModifiedTime !== 0 ? (currentTime - cacheModifiedTime < 1000 * 60 * 60 * 24) : false; // 24 hours
 
-    // --- Option 2: Read cached data ---
-    // const cacheFilePath = path.join(__dirname, "../figmaData-stream.json"); // Or your cache file name
-    // if (!existsSync(cacheFilePath)) {
-    //   console.error(`Error: Figma data cache file not found at ${cacheFilePath}`);
-    //   console.log("Please run the script once with live fetching enabled to create the cache, or provide the file.");
-    //   process.exit(1);
-    // }
-    // const rawFigmaData = await fs.readFile(cacheFilePath, "utf-8");
-    // const figmaData = JSON.parse(rawFigmaData);
-    // console.log("Figma data loaded from cache."); // Less verbose log
+    if (!cacheIsFresh) {
+      console.log("Figma data cache is stale. Fetching live data...");
+      const figmaData = await fetchFigmaFile(FIGMA_FILE_KEY, FIGMA_ACCESS_TOKEN);
+      await fs.writeFile(cacheFilePath, JSON.stringify(figmaData, null, 2), 'utf-8');
+    }else{
+      console.log("Figma data cache is fresh. Loading from cache...");
+    }
 
+    const rawFigmaData = await fs.readFile(cacheFilePath, "utf-8");
+    const figmaData = JSON.parse(rawFigmaData);
+    console.log("Figma data loaded from cache."); // Less verbose log
 
     if (!figmaData.document?.children) {
       console.error('Valid Figma document structure not found in cached data.');
       return;
     }
+
+    // print the names of the children of the document
+    console.log("Children of the document:", figmaData.document.children.map(child => child.name));
+
+    let ICONS_AND_LOGOS_PAGE_ID = "21411:73871"
+    let ICONS_AND_LOGOS_FRAME_ID = "21411:74021"
+    let GROWTHEPIE_ICONS_NODE_ID = "21411:74022"
+    let LOGOS_NODE_ID = "21411:74172"
+
+    // --- Find page with the name "Icons & Logos" ---
+    const iconsAndLogosPage = figmaData.document.children.find(child => child.name.includes("Icons & Logos"));
+    if (!iconsAndLogosPage) throw new Error(`Page node "Icons & Logos" not found.`);
+    console.log(`1. Found Page: ${iconsAndLogosPage.name}, ID: ${iconsAndLogosPage.id}, Type: ${iconsAndLogosPage.type}`);
+    ICONS_AND_LOGOS_PAGE_ID = iconsAndLogosPage.id;
+
+    // --- Find the frame with the name "Icons & Logos" within the page ---
+    const iconsAndLogosFrame = iconsAndLogosPage.children?.find(child => child.name.includes("Icons & Logos")); 
+    if (!iconsAndLogosFrame) throw new Error(`Frame node "Icons & Logos" not found.`);
+    console.log(`2. Found Frame: ${iconsAndLogosFrame.name}, ID: ${iconsAndLogosFrame.id}, Type: ${iconsAndLogosFrame.type}`);
+    ICONS_AND_LOGOS_FRAME_ID = iconsAndLogosFrame.id;
+
+    // --- Find the frame with the name "Logos" within the page ---
+    const logosFrame = iconsAndLogosFrame.children?.find(child => child.name === "Logos");
+    if (!logosFrame) throw new Error(`Frame node "Logos" not found.`);
+    console.log(`3. Found Frame: ${logosFrame.name}, ID: ${logosFrame.id}, Type: ${logosFrame.type}`);
+    LOGOS_NODE_ID = logosFrame.id;
+
+    // --- Find the node with the name "growthepie - Icons" within the page ---
+    const growthepieIconsFrame = iconsAndLogosFrame.children?.find(child => child.name.includes("growthepie - Icons"));
+    if (!growthepieIconsFrame) throw new Error(`Frame node "growthepie - Icons" not found.`);
+    console.log(`4. Found Frame: ${growthepieIconsFrame.name}, ID: ${growthepieIconsFrame.id}, Type: ${growthepieIconsFrame.type}`);
+    GROWTHEPIE_ICONS_NODE_ID = growthepieIconsFrame.id;
+
+    console.log(" -------------------------------------------------------------- ")
 
     // --- Find the relevant nodes ---
     const pageNode = findPageNodeById(figmaData.document.children, ICONS_AND_LOGOS_PAGE_ID);
