@@ -198,6 +198,8 @@ export interface DropdownBlock extends BaseBlock {
   disabled?: boolean;
   stateKey?: string; // Key to use for storing the value in the shared state
   multiSelect?: boolean;
+  exclusive?: boolean;
+  inclusive?: boolean;
   // For inline options (when readFromJSON is false or not specified)
   options?: DropdownOption[];
 

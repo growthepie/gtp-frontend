@@ -139,7 +139,7 @@ export default function QuickBitePage({ params }: Props) {
             <div className="lg:pl-[45px] lg:pr-[120px]">
               <div className=" md:mx-auto">
                 {contentBlocks.map((block) => {
-                  console.log("block", block);
+                  
                   return <Block key={block.id} block={block} />
                 })}
               </div>
