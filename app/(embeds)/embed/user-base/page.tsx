@@ -100,20 +100,13 @@ export default function Page() {
   const [selectedChains, setSelectedChains] = useState(
     AllChains.map((chain) => chain.key),
   );
+
+
   return (
     <>
       {data && landing && master ? (
         <LandingChart
-          data={Object.keys(data.chains)
-            .filter((chain) => selectedChains.includes(chain))
-            .map((chain) => {
-              return {
-                name: chain,
-                // type: 'spline',
-                types: data.chains[chain].data.types,
-                data: data.chains[chain].data.data,
-              };
-            })}
+          data={data}
           master={master}
           sources={landing.data.metrics.engagement.source}
           cross_chain_users={data.cross_chain_users}
