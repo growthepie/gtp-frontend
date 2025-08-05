@@ -191,7 +191,7 @@ export default function RootLayout({
   })();
 `;
 
-  return (
+  return 
     <html
       lang="en"
       className={`${raleway.variable} ${inter.variable} ${firaMono.variable} ${firaSans.variable} ${sourceCodePro.variable}`}
