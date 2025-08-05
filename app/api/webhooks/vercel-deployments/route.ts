@@ -21,11 +21,18 @@ export async function POST(req: Request) {
   
   if (type === 'deployment.error') {
     title = "🚨 Deployment Failed";
-    message = `Deployment failed for ${payload.deployment.url}, ${payload.deployment.branch}, ${payload.deployment.commit}`;
+    message = `Deployment failed for **${payload.deployment.name}**
+- URL: ${payload.deployment.url}
+- Target: ${payload.target || 'N/A'}
+- Plan: ${payload.plan}
+- [View Deployment](${payload.links.deployment})
+- [View Project](${payload.links.project})`;
     color = 0xff0000;
   } else {
     title = type;
-    message = `Vercel Event: ${type} for ${payload.deployment.url}, ${payload.deployment.branch}, ${payload.deployment.commit}`;
+    message = `Vercel Event: ${type} for **${payload.deployment.name}**
+- URL: ${payload.deployment.url}
+- Target: ${payload.target || 'N/A'}`;
     color = 0x00ff00;
   }
 
@@ -37,7 +44,24 @@ export async function POST(req: Request) {
         title: title,
         description: message,
         color: color,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        fields: [
+          {
+            name: "Project",
+            value: payload.deployment.name,
+            inline: true
+          },
+          {
+            name: "Target",
+            value: payload.target || 'N/A',
+            inline: true
+          },
+          {
+            name: "Plan",
+            value: payload.plan,
+            inline: true
+          }
+        ]
       }]
     })
   });
@@ -51,7 +75,7 @@ export async function POST(req: Request) {
 function verifySignature(payload: string, signature: string | null): boolean {
   if (!signature) return false;
   
-  const webhookSecret = process.env.VERCEL_DEPLOYMENT_WEBHOOK_SECRET;
+  const webhookSecret = process.env.WEBHOOK_SECRET;
   if (!webhookSecret) {
     console.error('WEBHOOK_SECRET environment variable is not set');
     return false;
