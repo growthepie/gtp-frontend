@@ -75,7 +75,7 @@ export async function POST(req: Request) {
 function verifySignature(payload: string, signature: string | null): boolean {
   if (!signature) return false;
   
-  const webhookSecret = process.env.WEBHOOK_SECRET;
+  const webhookSecret = process.env.VERCEL_DEPLOYMENT_WEBHOOK_SECRET;
   if (!webhookSecret) {
     console.error('WEBHOOK_SECRET environment variable is not set');
     return false;
