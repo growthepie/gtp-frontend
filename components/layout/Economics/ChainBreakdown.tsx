@@ -614,7 +614,7 @@ export default function ChainBreakdown({
                   }}
                 >
                   <div className="text-xs group-hover:text-forest-50/80 font-bold">
-                    Revenue
+                    Chain Revenue
                   </div>
 
                   <div>
