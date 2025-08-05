@@ -765,8 +765,84 @@ const ChainComponent = memo(function ChainComponent({
   }, [selectedTimespan, timespans, zoomed]);
 
   const options: any = useMemo(() => {
+    // Define series configurations similar to AggChart
+    const seriesConfigs = [
+      ...(category !== "rent_paid" && !focusEnabled ? [{
+        key: ethData.chain_id,
+        name: ethData.chain_id,
+        type: 'line',
+        data: filteredData.map(d => [d[0], d[2]]),
+        stacking: 'total'
+      }] : []),
+      {
+        key: data.chain_id,
+        name: 'all_l2s',
+        type: 'line',
+        data: filteredData.map(d => [d[0], d[1]]),
+        stacking: 'total'
+      }
+    ];
+
+    // Map series configurations with enhanced styling - matching AggChart pattern
+    const series = seriesConfigs.map((config, index) => {
+      const colors = AllChainsByKeys[config.key]?.colors[theme ?? "dark"] ?? AllChainsByKeys["all_l2s"]?.colors[theme ?? "dark"];
+
+      const baseConfig: any = {
+        name: config.name,
+        type: config.type,
+        data: config.data,
+        stack: config.stacking,
+        smooth: false,
+        symbol: 'circle',
+        symbolSize: 8, // Very small symbols for hover detection
+        showSymbol: true,
+        lineStyle: { 
+          width: 2,
+          color: config.name === 'all_l2s' ? {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 1,
+            y2: 0,
+            colorStops: [
+              { offset: 0, color: '#FFDF27' }, // Yellow at left
+              { offset: 1, color: '#FE5468' }, // Red/pink at right
+            ],
+          } : colors[0]
+        },
+        itemStyle: {
+          color: 'transparent', // Make normal symbols invisible
+          borderWidth: 0,
+        },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, 
+            config.name === 'all_l2s' ? [
+              { offset: 0, color: colors[0] + "33" },
+              { offset: 0.4, color: colors[0] + "33" },
+              { offset: 1, color: colors[1] + "33" },
+            ] : [
+              { offset: 0, color: colors[0] + "33" },
+              { offset: 1, color: colors[1] + "33" },
+            ]
+          )
+        },
+        emphasis: {
+          symbolSize: 8,
+          symbol: 'circle',
+          itemStyle: {
+            color: colors[1] + "80", // Series color with 50% opacity
+            borderWidth: 0,
+            shadowBlur: 0,
+          }
+        },
+        animation: false, // Temporarily disable animations to test hover effects
+      };
+
+      return baseConfig;
+    });
+
     return {
-      animation: forceNoAnimation.current ? false : isAnimate,
+      animation: false, // Temporarily disable global animations to test hover effects
       grid: {
         top: isMobile ? 50 : 50,
         right: 15,
@@ -795,14 +871,9 @@ const ChainComponent = memo(function ChainComponent({
 
       },
       tooltip: {
+        show: true,
         trigger: 'axis',
-        axisPointer: {
-          type: 'line',
-          lineStyle: {
-            color: COLORS.PLOT_LINE,
-            width: 0.5,
-          },
-        },
+        triggerOn: 'mousemove',
         backgroundColor: (theme === "dark" ? "#2A3433" : "#EAECEB") + "EE",
         borderWidth: 0,
         borderRadius: 17,
@@ -813,6 +884,14 @@ const ChainComponent = memo(function ChainComponent({
         formatter: tooltipFormatter,
         confine: false, // Allow tooltip to overflow the chart container
         appendToBody: true, // Append tooltip to document body to prevent clipping
+        axisPointer: {
+          type: 'line',
+          lineStyle: {
+            color: COLORS.PLOT_LINE,
+            width: 1,
+            type: 'solid'
+          }
+        },
         position: function (point: any, params: any, dom: any, rect: any, size: any) {
           const tooltipWidth = size.contentSize[0];
           const tooltipHeight = size.contentSize[1];
@@ -874,7 +953,7 @@ const ChainComponent = memo(function ChainComponent({
           end: 100,
         },
       ],
-      series: [], // Will be populated by seriesConfig
+      series,
     };
   }, [
     data.chain_id,
@@ -889,6 +968,11 @@ const ChainComponent = memo(function ChainComponent({
     zoomed,
     forceNoAnimation.current,
     COLORS.PLOT_LINE,
+    filteredData,
+    AllChainsByKeys,
+    category,
+    focusEnabled,
+    ethData.chain_id,
   ]);
 
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
@@ -1038,101 +1122,7 @@ const ChainComponent = memo(function ChainComponent({
     );
   }, [category, data.metrics]);
 
-  const seriesConfig = useMemo(() => {
-    const series: any[] = [];
 
-    // Add ethereum series first (bottom layer)
-    if (category !== "rent_paid" && !focusEnabled) {
-      series.push({
-        name: ethData.chain_id,
-        type: 'line',
-        data: filteredData.map(d => [d[0], d[2]]),
-        stack: 'total',
-        areaStyle: {
-          color: {
-            type: 'linear',
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
-            colorStops: [
-              {
-                offset: 0,
-                color: AllChainsByKeys[ethData.chain_id]?.colors[theme ?? "dark"][0] + "33",
-              },
-              {
-                offset: 1,
-                color: AllChainsByKeys[ethData.chain_id]?.colors[theme ?? "dark"][1] + "33",
-              },
-            ],
-          },
-        },
-        lineStyle: {
-          width: 2,
-          color: AllChainsByKeys[ethData.chain_id]?.colors[theme ?? "dark"][0],
-        },
-        symbol: 'none',
-        smooth: false,
-        animation: !forceNoAnimation.current && isAnimate,
-      });
-    }
-
-    // Add all_l2s series last (top layer)
-    series.push({
-      name: 'all_l2s',
-      type: 'line',
-      data: filteredData.map(d => [d[0], d[1]]),
-      stack: 'total',
-      areaStyle: {
-        color: {
-          type: 'linear',
-          x: 0,
-          y: 0,
-          x2: 0,
-          y2: 1,
-          colorStops: [
-            {
-              offset: 0,
-              color: AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][0] + "33",
-            },
-            {
-              offset: 0.4,
-              color: AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][0] + "33",
-            },
-            {
-              offset: 1,
-              color: AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1] + "33",
-            },
-          ],
-        },
-      },
-      lineStyle: {
-        width: 2,
-        color: {
-          type: 'linear',
-          x: 0,
-          y: 0,
-          x2: 1,
-          y2: 0,
-          colorStops: [
-            {
-              offset: 0,
-              color: '#FFDF27', // Yellow at left
-            },
-            {
-              offset: 1,
-              color: '#FE5468', // Red/pink at right
-            },
-          ],
-        },
-      },
-      symbol: 'none',
-      smooth: false,
-      animation: !forceNoAnimation.current && isAnimate,
-    });
-
-    return series;
-  }, [data.chain_id, filteredData, AllChainsByKeys, theme, category, focusEnabled, ethData.chain_id, forceNoAnimation.current, isAnimate]);
 
   // Add this effect to detect focus changes and temporarily disable animations
   useEffect(() => {
@@ -1160,7 +1150,6 @@ const ChainComponent = memo(function ChainComponent({
             ref={chartRef}
             option={{
               ...options,
-              series: seriesConfig,
               graphic: getGraphicElements(),
             }}
             style={{
