@@ -33,6 +33,8 @@ import ChartWatermark from "@/components/layout/ChartWatermark";
 import { ChainsData } from "@/types/api/ChainResponse";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { useMaster } from "@/contexts/MasterContext";
+import { GTPIcon } from '../layout/GTPIcon';
+import { GTPIconName } from '@/icons/gtp-icon-names';
 
 
 const COLORS = {
@@ -779,7 +781,7 @@ const ChainComponent = memo(function ChainComponent({
         name: 'all_l2s',
         type: 'line',
         data: filteredData.map(d => [d[0], d[1]]),
-        stacking: 'total'
+        stacking: 'total',
       }
     ];
 
@@ -868,7 +870,6 @@ const ChainComponent = memo(function ChainComponent({
         axisTick: { show: false },
         axisLabel: { show: false },
         splitNumber: 3,
-
       },
       tooltip: {
         show: true,
@@ -1013,7 +1014,7 @@ const ChainComponent = memo(function ChainComponent({
     const fraction = 15 / chartWidth;
     const lineX = chartWidth * (1 - fraction);
     const lineStartY = pixelPoint[1];
-    const lineEndY = gridTop / 2;
+    const lineEndY = gridTop / 2 - 2;
 
     const gridLineColor = theme === "dark" ? "rgba(215, 223, 222, 0.8)" : "rgba(41, 51, 50, 0.8)";
 
@@ -1038,11 +1039,11 @@ const ChainComponent = memo(function ChainComponent({
             colorStops: [
               {
                 offset: 0,
-                color: '#FFDF27', // Yellow at left
+                color: '#CDD8D3', // Yellow at left
               },
               {
                 offset: 1,
-                color: '#FE5468', // Red/pink at right
+                color: '#CDD8D3', // Red/pink at right
               },
             ],
           },
@@ -1060,7 +1061,7 @@ const ChainComponent = memo(function ChainComponent({
           r: 4.5,
         },
         style: {
-          fill: '#FE5468', // Red to match the right side of the gradient
+          fill: '#CDD8D3', // Red to match the right side of the gradient
         },
         z: 11,
       },
@@ -1137,6 +1138,10 @@ const ChainComponent = memo(function ChainComponent({
     return () => clearTimeout(timer);
   }, [focusEnabled]);
 
+  const urlKey =
+  metricItems[metricItems.findIndex((item) => item.key === category)]
+    ?.urlKey;
+
   return (
     <div
       key={category}
@@ -1156,6 +1161,7 @@ const ChainComponent = memo(function ChainComponent({
               height: isMobile ? "146px" : "176px",
               width: "100%",
               display: isVisible ? "block" : "none",
+ 
             }}
             onEvents={{
               dataZoom: onDataZoom,
@@ -1171,14 +1177,22 @@ const ChainComponent = memo(function ChainComponent({
                 }
               },
             }}
+            className='rounded-b-[15px] overflow-hidden'
             notMerge={false}
             lazyUpdate={true}
           />
         </div>
-        <div className="absolute top-[14px] w-full flex justify-between items-center px-[23px]">
-          <div className="text-[20px] leading-snug font-bold">
-            {metricItems[metric_index]?.page?.title}
-          </div>
+        <div className="absolute top-[14px] w-full flex justify-between items-center pl-[15px] pr-[23px]">
+          <Link href={`/fundamentals/${urlKey}`} className="flex gap-x-[10px] items-center">
+            <div className="heading-large-sm leading-snug">
+              {metricItems[metric_index]?.page?.title}
+            </div>
+            <GTPIcon 
+              icon={"feather:arrow-right" as GTPIconName} 
+              size="sm" className="!size-[10.7px]" 
+              containerClassName='!size-[15px] flex items-center justify-center bg-medium-background  rounded-full' 
+            />
+          </Link>
           <div className="numbers-lg leading-snug font-medium flex items-center">
             <div>{displayValues[category].prefix}</div>
             <div>{displayValues[category].value}</div>
@@ -1196,7 +1210,7 @@ const ChainComponent = memo(function ChainComponent({
             className={`absolute top-[calc(50% - 0.5px)] right-[20px] w-[4px] h-[4px] rounded-full bg-forest-900 dark:bg-forest-50`}
           ></div> */}
         </div>
-        <div className="flex absolute h-[40px] w-[320px] bottom-[7px] md:bottom-[16px] left-[36px] items-center gap-x-[6px] dark:text-[#CDD8D3] opacity-20 pointer-events-none">
+        {/* <div className="flex absolute h-[40px] w-[320px] bottom-[7px] md:bottom-[16px] left-[36px] items-center gap-x-[6px] dark:text-[#CDD8D3] opacity-20 pointer-events-none">
           <Icon
             icon={getNavIcon(category)}
             className="w-[30px] h-[30px] md:w-[40px] md:h-[40px] text-forest-900 dark:text-forest-200"
@@ -1204,7 +1218,7 @@ const ChainComponent = memo(function ChainComponent({
           <div className="text-[20px] md:text-[30px] font-bold text-forest-900 dark:text-forest-200">
             {getNavLabel(category).toUpperCase()}
           </div>
-        </div>
+        </div> */}
         <div className="absolute  bottom-0 top-0 left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-20">
             <ChartWatermark className="w-[96px] md:w-[128.67px] text-forest-300 dark:text-[#EAECEB]" />
         </div>
