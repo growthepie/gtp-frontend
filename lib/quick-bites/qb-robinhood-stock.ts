@@ -171,6 +171,7 @@ const robinhoodStock: QuickBiteData = {
         stateKey: "selectedTicker",
         columnKey: "ticker",
       },
+      disableTooltipSort: true,
       dataAsJson: {
         meta: [
           {

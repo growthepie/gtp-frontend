@@ -313,6 +313,7 @@ function parseChartBlock(jsonString: string): ContentBlock | null {
       width: chartConfig.width || '100%',
       height: chartConfig.height || 400,
       caption: chartConfig.caption,
+      disableTooltipSort: chartConfig.disableTooltipSort || false,
       // stacking: chartConfig.stacking || null,
       showXAsDate: chartConfig.showXAsDate || false,
       dataAsJson: chartConfig.dataAsJson || null,

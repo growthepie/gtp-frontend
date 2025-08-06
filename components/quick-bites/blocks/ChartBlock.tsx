@@ -137,6 +137,7 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
               meta: block.dataAsJson.meta
             } : undefined
           }
+          disableTooltipSort={block.disableTooltipSort}
           seeMetricURL={block.seeMetricURL}
         />
       )}

@@ -12,6 +12,7 @@ export const MetricsURLs = {
   "fully-diluted-valuation": "https://api.growthepie.com/v1/metrics/fdv.json",
   "market-cap": "https://api.growthepie.com/v1/metrics/market_cap.json",
   throughput: "https://api.growthepie.com/v1/metrics/throughput.json",
+  "app-revenue": "https://api.growthepie.com/v1/metrics/app_revenue.json",
 };
 
 export const DAMetricsURLs = {
