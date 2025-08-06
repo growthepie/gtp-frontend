@@ -35,6 +35,7 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { useMaster } from "@/contexts/MasterContext";
 import { GTPIcon } from '../layout/GTPIcon';
 import { GTPIconName } from '@/icons/gtp-icon-names';
+import { formatNumberWithSI } from '../layout/EthAgg/AggChart';
 
 
 const COLORS = {
@@ -702,53 +703,53 @@ const ChainComponent = memo(function ChainComponent({
   const [isAnimate, setIsAnimate] = useState(false);
   const animationTimeout = useRef<null | ReturnType<typeof setTimeout>>(null);
 
-  const handleResize = () => {
-    // Hide the element
-    setIsVisible(false);
+  // const handleResize = () => {
+  //   // Hide the element
+  //   setIsVisible(false);
 
-    // Set animation to false
-    setIsAnimate(false);
+  //   // Set animation to false
+  //   setIsAnimate(false);
 
-    // Clear any existing timeouts
-    if (resizeTimeout.current) {
-      clearTimeout(resizeTimeout.current);
-    }
+  //   // Clear any existing timeouts
+  //   if (resizeTimeout.current) {
+  //     clearTimeout(resizeTimeout.current);
+  //   }
 
-    if (animationTimeout.current) {
-      clearTimeout(animationTimeout.current);
-    }
+  //   if (animationTimeout.current) {
+  //     clearTimeout(animationTimeout.current);
+  //   }
 
-    // Set a timeout to show the element again after 500ms of no resizing
-    resizeTimeout.current = setTimeout(() => {
-      setIsVisible(true);
-    }, 200);
+  //   // Set a timeout to show the element again after 500ms of no resizing
+  //   resizeTimeout.current = setTimeout(() => {
+  //     setIsVisible(true);
+  //   }, 200);
 
-    // Set a timeout to show the element again after 500ms of no resizing
-    animationTimeout.current = setTimeout(() => {
-      setIsAnimate(true);
-    }, 500);
-  };
+  //   // Set a timeout to show the element again after 500ms of no resizing
+  //   animationTimeout.current = setTimeout(() => {
+  //     setIsAnimate(true);
+  //   }, 500);
+  // };
 
-  useEffect(() => {
-    // highchartsDebug(Highcharts);
-    window.addEventListener("resize", handleResize);
+  // useEffect(() => {
+  //   // highchartsDebug(Highcharts);
+  //   window.addEventListener("resize", handleResize);
 
-    animationTimeout.current = setTimeout(() => {
-      setIsAnimate(true);
-    }, 500);
+  //   animationTimeout.current = setTimeout(() => {
+  //     setIsAnimate(true);
+  //   }, 500);
 
-    return () => {
-      // Cleanup
-      window.removeEventListener("resize", handleResize);
-      if (resizeTimeout.current) {
-        clearTimeout(resizeTimeout.current);
-      }
+  //   return () => {
+  //     // Cleanup
+  //     window.removeEventListener("resize", handleResize);
+  //     if (resizeTimeout.current) {
+  //       clearTimeout(resizeTimeout.current);
+  //     }
 
-      if (animationTimeout.current) {
-        clearTimeout(animationTimeout.current);
-      }
-    };
-  }, []);
+  //     if (animationTimeout.current) {
+  //       clearTimeout(animationTimeout.current);
+  //     }
+  //   };
+  // }, []);
 
 
 
@@ -864,12 +865,36 @@ const ChainComponent = memo(function ChainComponent({
       },
       yAxis: {
         type: 'value',
-        show: false,
-        min: 0,
+        splitNumber: 2,
         axisLine: { show: false },
         axisTick: { show: false },
-        axisLabel: { show: false },
-        splitNumber: 3,
+        splitLine: {
+          show: true,
+          lineStyle: { 
+            // color: '#5A64624F',
+            // top, bottom, left, right
+            color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+              { offset: 0, color: '#5A646200' },
+              { offset: 0.2, color: '#5A64624F' },
+              { offset: 1, color: '#5A64624F' }
+            ]),
+            width: 1
+          }
+        },
+        axisLabel: {
+          show: true,
+          margin: -1,
+          padding: [3, 0, 0, 2],
+          color: '#CDD8D3',
+          fontSize: isMobile ? 7 : 8,
+          fontWeight: 500,
+          fontFamily: 'var(--font-fira-sans), sans-serif !important;',
+          align: 'left',
+          verticalAlign: 'top',
+          formatter: (value: number) => {
+            return displayValues[category].prefix + formatNumberWithSI(value);
+          }
+        }
       },
       tooltip: {
         show: true,
@@ -1068,24 +1093,24 @@ const ChainComponent = memo(function ChainComponent({
     ];
   }, [filteredData, data.chain_id, theme, AllChainsByKeys, isMobile, containerWidth, containerHeight]);
 
-  const resituateChart = debounce(() => {
-    if (chartRef.current && !zoomed) {
-      const chartInstance = chartRef.current.getEchartsInstance();
-      if (isMounted() && chartInstance) {
-        chartInstance.resize();
-        resetXAxisExtremes();
-      }
-    }
-  }, 500);
+  // const resituateChart = debounce(() => {
+  //   if (chartRef.current && !zoomed) {
+  //     const chartInstance = chartRef.current.getEchartsInstance();
+  //     if (isMounted() && chartInstance) {
+  //       chartInstance.resize();
+  //       resetXAxisExtremes();
+  //     }
+  //   }
+  // }, 500);
 
-  useEffect(() => {
-    resituateChart();
+  // useEffect(() => {
+  //   resituateChart();
 
-    // cancel the debounced function on component unmount
-    return () => {
-      resituateChart.cancel();
-    };
-  }, [width, height, isSidebarOpen, resituateChart]);
+  //   // cancel the debounced function on component unmount
+  //   return () => {
+  //     resituateChart.cancel();
+  //   };
+  // }, [width, height, isSidebarOpen, resituateChart]);
 
   // Handle container size changes and update graphic elements
   useEffect(() => {
@@ -1222,8 +1247,8 @@ const ChainComponent = memo(function ChainComponent({
         <div className="absolute  bottom-0 top-0 left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-20">
             <ChartWatermark className="w-[96px] md:w-[128.67px] text-forest-300 dark:text-[#EAECEB]" />
         </div>
-        <div className="absolute bottom-[120px] left-0 right-0 h-[1px] bg-[#5A64624F] mr-[15px]"  />
-        <div className="absolute bottom-[62px] left-0 right-0 h-[1px] bg-[#5A64624F] mr-[15px]" />
+        {/* <div className="absolute bottom-[120px] left-0 right-0 h-[1px] bg-[#5A64624F] mr-[15px]"  />
+        <div className="absolute bottom-[62px] left-0 right-0 h-[1px] bg-[#5A64624F] mr-[15px]" /> */}
       </div>
       <div className="absolute -bottom-[2px] right-[6px]">
         {/* <Tooltip placement="left" allowInteract>
