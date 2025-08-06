@@ -1196,7 +1196,7 @@ const ChainComponent = memo(function ChainComponent({
             className={`absolute top-[calc(50% - 0.5px)] right-[20px] w-[4px] h-[4px] rounded-full bg-forest-900 dark:bg-forest-50`}
           ></div> */}
         </div>
-        <div className="flex absolute h-[40px] w-[320px] bottom-[7px] md:bottom-[16px] left-[36px] items-center gap-x-[6px] dark:text-[#CDD8D3] opacity-20 pointer-events-none">
+        {/* <div className="flex absolute h-[40px] w-[320px] bottom-[7px] md:bottom-[16px] left-[36px] items-center gap-x-[6px] dark:text-[#CDD8D3] opacity-20 pointer-events-none">
           <Icon
             icon={getNavIcon(category)}
             className="w-[30px] h-[30px] md:w-[40px] md:h-[40px] text-forest-900 dark:text-forest-200"
@@ -1204,7 +1204,7 @@ const ChainComponent = memo(function ChainComponent({
           <div className="text-[20px] md:text-[30px] font-bold text-forest-900 dark:text-forest-200">
             {getNavLabel(category).toUpperCase()}
           </div>
-        </div>
+        </div> */}
         <div className="absolute  bottom-0 top-0 left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-20">
             <ChartWatermark className="w-[96px] md:w-[128.67px] text-forest-300 dark:text-[#EAECEB]" />
         </div>
