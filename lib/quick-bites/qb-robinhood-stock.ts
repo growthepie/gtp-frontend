@@ -286,6 +286,4 @@ const robinhoodStock: QuickBiteData = {
   showInMenu: false
 };
 
-console.log("robinhoodStock", robinhoodStock);
-
 export default robinhoodStock;
