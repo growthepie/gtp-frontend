@@ -82,17 +82,22 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
     setZoomed,
     chartComponent,
     intervalShown,
+    timespans, // Add this - get timespans from MetricChartControlsContext
   } = useMetricChartControls();
 
-  const {
-    timespans,
-  } = useMetricData();
+  // Remove this - timespans is now in MetricChartControlsContext
+  // const {
+  //   timespans,
+  // } = useMetricData();
 
   const { theme } = useTheme()
 
   const navItem = useMemo(() => {
     return metricItems.find((item) => item.key === metric);
   }, [metric]);
+
+  // Add safety check
+  const safeTimespans = timespans || {};
 
   return (
     <TopRowContainer className="relative">
@@ -137,18 +142,18 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
                     setSelectedTimespan("max");
                   } else {
                     // find closest timespan
-                    const closestTimespan = Object.keys(timespans)
+                    const closestTimespan = Object.keys(safeTimespans)
                       .filter((timespan) =>
                         ["90d", "180d", "365d", "max"].includes(timespan),
                       )
                       .reduce((prev, curr) =>
                         Math.abs(
-                          timespans[curr].xMax -
-                          timespans[selectedTimespan].xMax,
+                          safeTimespans[curr].xMax -
+                          safeTimespans[selectedTimespan].xMax,
                         ) <
                           Math.abs(
-                            timespans[prev].xMax -
-                            timespans[selectedTimespan].xMax,
+                            safeTimespans[prev].xMax -
+                            safeTimespans[selectedTimespan].xMax,
                           )
                           ? curr
                           : prev,
@@ -163,18 +168,18 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
                     setSelectedTimespan("maxM");
                   } else {
                     // find closest timespan
-                    const closestTimespan = Object.keys(timespans)
+                    const closestTimespan = Object.keys(safeTimespans)
                       .filter((timespan) =>
                         ["6m", "12m", "maxM"].includes(timespan),
                       )
                       .reduce((prev, curr) =>
                         Math.abs(
-                          timespans[curr].xMax -
-                          timespans[selectedTimespan].xMax,
+                          safeTimespans[curr].xMax -
+                          safeTimespans[selectedTimespan].xMax,
                         ) <
                           Math.abs(
-                            timespans[prev].xMax -
-                            timespans[selectedTimespan].xMax,
+                            safeTimespans[prev].xMax -
+                            safeTimespans[selectedTimespan].xMax,
                           )
                           ? curr
                           : prev,
@@ -210,7 +215,7 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
       </div>
       <TopRowParent>
         {!zoomed ? (
-          Object.keys(timespans)
+          Object.keys(safeTimespans)
             .filter((timespan) =>
               selectedTimeInterval === "daily"
                 ? ["90d", "180d", "365d", "max"].includes(timespan)
@@ -226,10 +231,10 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
                 }}
               >
                 <span className="hidden md:block">
-                  {timespans[timespan].label}
+                  {safeTimespans[timespan].label}
                 </span>
                 <span className="block md:hidden">
-                  {timespans[timespan].shortLabel}
+                  {safeTimespans[timespan].shortLabel}
                 </span>
               </TopRowChild>
             ))
@@ -239,8 +244,8 @@ export const MetricTopControls = ({ metric, is_embed = false }: { metric: string
               className={`rounded-full flex items-center space-x-3 px-[15px] py-[7px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-[11px] xl:px-6 xl:py-[15px] font-medium border-[0.5px] border-forest-400 leading-snug`}
               onClick={() => {
                 chartComponent?.current?.xAxis[0].setExtremes(
-                  timespans[selectedTimespan].xMin,
-                  timespans[selectedTimespan].xMax,
+                  safeTimespans[selectedTimespan].xMin,
+                  safeTimespans[selectedTimespan].xMax,
                 );
                 setZoomed(false);
               }}

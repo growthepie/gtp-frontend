@@ -237,23 +237,26 @@ function MetricChart({
   const metricsDict = metric_type === "fundamentals" ? metrics : da_metrics;
   const chainsDict = metric_type === "fundamentals" ? chains : da_layers;
 
-  const { timespans, metric_id, minDailyUnix, maxDailyUnix, monthly_agg, avg, log_default } = useMetricData();
-  const {
-    selectedTimespan,
-    selectedTimeInterval,
-    selectedScale,
-    showEthereumMainnet,
-    zoomed,
-    zoomMin,
-    zoomMax,
-    setZoomed,
-    setZoomMin,
-    setZoomMax,
-    timeIntervalKey,
-    intervalShown,
-    setIntervalShown,
-
-  } = useMetricChartControls();
+  const { metric_id, maxDailyUnix, monthly_agg, avg, log_default } = useMetricData();
+  const { 
+  timespans, 
+  minDailyUnix, 
+  selectedScale, 
+  selectedTimeInterval, 
+  selectedTimespan, 
+  showEthereumMainnet, 
+  zoomed,
+  zoomMin,
+  zoomMax,
+  setZoomed,
+  setZoomMin,
+  setZoomMax,
+  timeIntervalKey,
+  intervalShown,
+  setIntervalShown,
+  chartComponent,
+  setChartComponent
+} = useMetricChartControls();
 
 
   const { seriesData } = useMetricSeries();
@@ -550,7 +553,7 @@ function MetricChart({
   }, []);
 
   useEffect(() => {
-    if (chartComponent.current) {
+    if (chartComponent?.current) {
       if (!zoomed)
         chartComponent.current.xAxis[0].setExtremes(
           timespans[selectedTimespan].xMin,
@@ -581,11 +584,20 @@ function MetricChart({
   ]);
 
   const [containerRef, { width, height }] = useElementSizeObserver();
-  const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
+
+  // Create a local ref
+  const localChartComponent = useRef<Highcharts.Chart | null>(null);
 
   const resituateChart = debounce(() => {
-    chartComponent.current && chartComponent.current.reflow();
-  }, 300);
+    localChartComponent.current && localChartComponent.current.reflow();
+  }, 100);
+
+  // Update the context when the local ref changes
+  useEffect(() => {
+    if (localChartComponent.current) {
+      setChartComponent(localChartComponent);
+    }
+  }, [localChartComponent.current, setChartComponent]);
 
   useEffect(() => {
     setTimeout(() => {
@@ -598,7 +610,7 @@ function MetricChart({
   }, [isSidebarOpen, resituateChart]);
 
   useLayoutEffect(() => {
-    if (chartComponent.current) {
+    if (chartComponent?.current) {
       chartComponent.current.setSize(width, height, true);
     }
   }, [width, height, isSidebarOpen]);
@@ -1072,7 +1084,7 @@ function MetricChart({
                 },
               }}
               options={{
-                chartComponent: chartComponent.current,
+                chartComponent: chartComponent?.current,
               }}
             />
             <HighchartsTooltip

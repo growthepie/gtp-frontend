@@ -34,8 +34,7 @@ type MetricDataContextType = {
   chainKeys: string[];
   sources: string[];
   timeIntervals: string[];
-  timespans: Timespans;
-  minDailyUnix: number;
+  // Remove timespans and minDailyUnix from here
   maxDailyUnix: number;
 
   allChains: Chain[] | DALayerWithKey[];
@@ -53,8 +52,9 @@ const MetricDataContext = createContext<MetricDataContextType>({
   chainKeys: [],
   sources: [],
   timeIntervals: [],
-  timespans: {},
-  minDailyUnix: 0,
+  // Remove these two lines:
+  // timespans: {},
+  // minDailyUnix: 0,
   maxDailyUnix: 0,
   allChains: [],
   allChainsByKeys: {}
@@ -119,19 +119,6 @@ export const MetricDataProvider = ({ children, metric, metric_type }: MetricData
   }, [metric_type, AllDALayers, data, AllChains, SupportedChainKeys]);
 
 
-  const minDailyUnix = useMemo<number>(() => {
-    if (!data) return 0;
-    return Object.values(data.data.chains).reduce(
-      (acc: number, chain: ChainData) => {
-        if (!chain["daily"].data[0][0]) return acc;
-        return Math.min(
-          acc,
-          chain["daily"].data[0][0],
-        );
-      }
-      , Infinity) as number
-  }, [data])
-
   const maxDailyUnix = useMemo<number>(() => {
     if (!data) return 0;
     return Object.values(data.data.chains).reduce(
@@ -142,76 +129,7 @@ export const MetricDataProvider = ({ children, metric, metric_type }: MetricData
         );
       }
       , 0) as number
-
   }, [data])
-
-
-  const timespans = useMemo(() => {
-    if (!data) return {};
-    const buffer = 1 * 24 * 60 * 60 * 1000 * 2;
-    const maxMinusBuffer = new Date(maxDailyUnix).valueOf() - buffer;
-    const maxPlusBuffer = new Date(maxDailyUnix).valueOf() + buffer;
-    const minMinusBuffer = new Date(minDailyUnix).valueOf() - buffer;
-
-    // calculate how many days are 6 months ago from the max date
-    const sixMonthsAgo = new Date(maxDailyUnix);
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    const sixMonthsAgoPlusBuffer = sixMonthsAgo.valueOf() - buffer;
-
-    return {
-      "90d": {
-        label: "90 days",
-        shortLabel: "90d",
-        value: 90,
-        xMin: maxMinusBuffer - 90 * 24 * 60 * 60 * 1000,
-        xMax: maxPlusBuffer,
-      },
-      "180d": {
-        label: "180 days",
-        shortLabel: "180d",
-        value: 180,
-        xMin: maxMinusBuffer - 180 * 24 * 60 * 60 * 1000,
-        xMax: maxPlusBuffer,
-      },
-      "365d": {
-        label: "1 year",
-        shortLabel: "365d",
-        value: 365,
-        xMin: maxMinusBuffer - 365 * 24 * 60 * 60 * 1000,
-        xMax: maxPlusBuffer,
-      },
-      "6m": {
-        label: "6 months",
-        shortLabel: "6M",
-        value: 6,
-        xMin: sixMonthsAgoPlusBuffer,
-        xMax: maxPlusBuffer,
-      },
-      "12m": {
-        label: "1 year",
-        shortLabel: "1Y",
-        value: 12,
-        xMin: maxMinusBuffer - 365 * 24 * 60 * 60 * 1000,
-        xMax: maxPlusBuffer,
-      },
-      maxM: {
-        label: "Max",
-        shortLabel: "Max",
-        value: 0,
-        xMin: minMinusBuffer,
-
-        xMax: maxPlusBuffer,
-      },
-      max: {
-        label: "Max",
-        shortLabel: "Max",
-        value: 0,
-        xMin: minMinusBuffer,
-
-        xMax: maxPlusBuffer,
-      },
-    };
-  }, [data, maxDailyUnix, minDailyUnix]);
 
   const metric_id = data?.data.metric_id || "";
 
@@ -237,8 +155,7 @@ export const MetricDataProvider = ({ children, metric, metric_type }: MetricData
           Object.keys(Object.values(data.data.chains)[0]),
           ["daily", "weekly", "monthly"],
         ) : [],
-        timespans: timespans,
-        minDailyUnix,
+        // Remove timespans, minDailyUnix from here
         maxDailyUnix,
         allChains: metric_type === "fundamentals" ? AllChains : AllDALayers,
         allChainsByKeys: metric_type === "fundamentals" ? AllChainsByKeys : AllDALayersByKeys,

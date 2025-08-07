@@ -21,6 +21,16 @@ type TopRowControlData = {
 
 };
 
+type Timespans = {
+  [key: string]: {
+    label: string;
+    shortLabel: string;
+    value: number;
+    xMin: number;
+    xMax: number;
+  };
+} | {};
+
 type MetricChartControlsContextType = {
   selectedTimespan: string;
   setSelectedTimespan: (timespan: string) => void;
@@ -66,6 +76,9 @@ type MetricChartControlsContextType = {
   chartComponent: RefObject<Highcharts.Chart> | undefined;
   setChartComponent: (chart: RefObject<Highcharts.Chart>) => void;
   setIntervalShown: (interval: { min: number; max: number; num: number; label: string } | null) => void;
+
+  minDailyUnix: number;
+  timespans: Timespans;
 };
 
 const MetricChartControlsContext = createContext<MetricChartControlsContextType>({
@@ -104,6 +117,8 @@ const MetricChartControlsContext = createContext<MetricChartControlsContextType>
   setChartComponent: () => { },
   intervalShown: null,
   setIntervalShown: () => { },
+  minDailyUnix: 0,
+  timespans: {},
 });
 
 type MetricChartControlsProviderProps = {
@@ -133,7 +148,7 @@ export const MetricChartControlsProvider = ({
   };
 
   const { SupportedChainKeys, DefaultChainSelection } = useMaster();
-  const { metric_id, allChains, allChainsByKeys, log_default, chainKeys, data } = useMetricData();
+  const { metric_id, allChains, allChainsByKeys, log_default, chainKeys, data, maxDailyUnix } = useMetricData();
 
   const url = UrlsMap[metric_type][metric_id];
   const storageKeys = {
@@ -209,6 +224,84 @@ export const MetricChartControlsProvider = ({
   const [zoomed, setZoomed] = useState(false);
   const [zoomMin, setZoomMin] = useState<number | undefined>(is_embed === true && embed_start_timestamp ? embed_start_timestamp : undefined);
   const [zoomMax, setZoomMax] = useState<number | undefined>(is_embed === true && embed_start_timestamp ? embed_start_timestamp : undefined);
+
+  // Add Xmin calculation based on selected chains
+  const minDailyUnix = useMemo<number>(() => {
+    if (!data || !selectedChains || selectedChains.length === 0) return 0;
+    
+    return selectedChains.reduce((acc: number, chainKey: string) => {
+      const chain = data.chains[chainKey];
+      if (!chain?.["daily"]?.data?.[0]?.[0]) return acc;
+      return Math.min(acc, chain["daily"].data[0][0]);
+    }, Infinity);
+  }, [data, selectedChains]);
+
+  // Add timespans calculation
+  const timespans = useMemo(() => {
+    if (!data || !maxDailyUnix) return {};
+    
+    const buffer = 1 * 24 * 60 * 60 * 1000 * 2;
+    const maxMinusBuffer = new Date(maxDailyUnix).valueOf() - buffer;
+    const maxPlusBuffer = new Date(maxDailyUnix).valueOf() + buffer;
+    const minMinusBuffer = new Date(minDailyUnix).valueOf() - buffer;
+
+    // calculate how many days are 6 months ago from the max date
+    const sixMonthsAgo = new Date(maxDailyUnix);
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    const sixMonthsAgoPlusBuffer = sixMonthsAgo.valueOf() - buffer;
+
+    return {
+      "90d": {
+        label: "90 days",
+        shortLabel: "90d",
+        value: 90,
+        xMin: maxMinusBuffer - 90 * 24 * 60 * 60 * 1000,
+        xMax: maxPlusBuffer,
+      },
+      "180d": {
+        label: "180 days",
+        shortLabel: "180d",
+        value: 180,
+        xMin: maxMinusBuffer - 180 * 24 * 60 * 60 * 1000,
+        xMax: maxPlusBuffer,
+      },
+      "365d": {
+        label: "1 year",
+        shortLabel: "365d",
+        value: 365,
+        xMin: maxMinusBuffer - 365 * 24 * 60 * 60 * 1000,
+        xMax: maxPlusBuffer,
+      },
+      "6m": {
+        label: "6 months",
+        shortLabel: "6M",
+        value: 6,
+        xMin: sixMonthsAgoPlusBuffer,
+        xMax: maxPlusBuffer,
+      },
+      "12m": {
+        label: "1 year",
+        shortLabel: "1Y",
+        value: 12,
+        xMin: maxMinusBuffer - 365 * 24 * 60 * 60 * 1000,
+        xMax: maxPlusBuffer,
+      },
+      maxM: {
+        label: "Max",
+        shortLabel: "Max",
+        value: 0,
+        xMin: minMinusBuffer,
+        xMax: maxPlusBuffer,
+      },
+      max: {
+        label: "Max",
+        shortLabel: "Max",
+        value: 0,
+        xMin: minMinusBuffer,
+        xMax: maxPlusBuffer,
+      },
+    };
+  }, [data, maxDailyUnix, minDailyUnix]);
 
   // const timeIntervalKey = useMemo(() => {
   //   if (
@@ -304,6 +397,8 @@ export const MetricChartControlsProvider = ({
         setChartComponent: setChartComponent,
         intervalShown: intervalShown,
         setIntervalShown: setIntervalShown,
+        minDailyUnix,
+        timespans,
       }}
     >
       {children}
