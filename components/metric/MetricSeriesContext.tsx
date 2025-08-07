@@ -500,7 +500,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
     });
 
     return d;
-  }, [data, selectedTimeInterval, selectedScale, chainKeys, metric_type, selectedChains, SupportedChainKeys, showEthereumMainnet, timeIntervalKey, getSeriesData, getSeriesType, dataGrouping, MetadataByKeys, focusEnabled, theme]);
+  }, [data, selectedTimeInterval, selectedScale, chainKeys, metric_type, selectedChains, SupportedChainKeys, showEthereumMainnet, timeIntervalKey, getSeriesData, getSeriesType, dataGrouping, MetadataByKeys, focusEnabled, theme, metric_id]);
 
   return (
     <MetricSeriesContext.Provider

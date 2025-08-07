@@ -38,7 +38,10 @@ const RelatedQuickBites: React.FC<RelatedQuickBitesProps> = ({ relatedQuickBites
             icon={QuickBite.icon}
             slug={QuickBite.slug}
             author={QuickBite.author}
-            topics={QuickBite.topics}
+            topics={QuickBite.topics?.map(topic => ({
+              ...topic,
+              icon: topic.icon || ""
+            }))}
             isRelatedPage={true}
             mainTopics={mainTopics}
           />
