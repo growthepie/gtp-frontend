@@ -10,6 +10,8 @@ import { formatDate } from '@/lib/utils/formatters';
 import { url } from 'inspector';
 import Image from 'next/image';
 import ChartWatermark from '../layout/ChartWatermark';
+import { useMaster } from '@/contexts/MasterContext';
+import { getChainInfoFromUrl } from '@/lib/chains';
 
 interface QuickBiteCardProps {
   title: string;
@@ -51,6 +53,7 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
   isRelatedPage = false,
   mainTopics
 }) => {
+  const { AllChainsByKeys } = useMaster();
   const handleAuthorClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -125,6 +128,19 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
                 <div className="flex gap-x-[5px]">
                   {topics.map((topic) => {
                     const showColor = compareTopics ? mainTopics.some(mainTopic => topic.name === mainTopic.name) : true;
+                    
+                    // Resolve chain information if this is a chain URL
+                    let resolvedIcon = topic.icon;
+                    let resolvedColor = topic.color;
+                    
+                    if (topic.url.startsWith('/chains/') && !topic.icon) {
+                      const chainInfo = getChainInfoFromUrl(topic.url, AllChainsByKeys);
+                      if (chainInfo) {
+                        resolvedIcon = chainInfo.icon;
+                        resolvedColor = chainInfo.color;
+                      }
+                    }
+                    
                     return (
                       <Link
                         key={topic.name}
@@ -132,10 +148,10 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
                         onClick={(e) => e.stopPropagation()}
                         className="flex items-center rounded-full text-xs"
                         style={{
-                          color: showColor ? topic.color || '#344240' : '#344240'
+                          color: showColor ? resolvedColor || '#344240' : '#344240'
                         }}
                       >
-                        <GTPIcon icon={topic.icon as GTPIconName} size="sm" />
+                        <GTPIcon icon={(resolvedIcon || "chain-dark") as GTPIconName} size="sm" />
                       </Link>
                     );
                   })}

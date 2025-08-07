@@ -8,7 +8,7 @@ export interface Author {
   }
   
   export interface Topic {
-    icon: GTPIconName;
+    icon?: GTPIconName; // Make icon optional
     name: string;
     url: string;
     color?: string;

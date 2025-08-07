@@ -11,7 +11,7 @@ import { IconContextMenu } from "./IconContextMenu";
 
 type GTPIconProps = {
   // should be one of the strings in GTPIconNames
-  icon: GTPIconName;
+  icon?: GTPIconName; // Make icon optional
   className?: string;
   containerClassName?: string;
   size?: "sm" | "md" | "lg" | "xl";
@@ -42,13 +42,14 @@ export const sizeClassMap = {
   * <GTPIcon icon="gtp:donate" size="lg" />
  */
 export const GTPIcon = ({ icon, className, containerClassName, showContextMenu = false, size = "md", style, ...props }: GTPIconProps) => {
-  const iconPrefix = icon.includes(":") ? "" : "gtp:";
-  const fullIconName = `${iconPrefix}${icon}`;
+  const iconPrefix = icon?.includes(":") ? "" : "gtp:";
+  const fullIconName = icon ? `${iconPrefix}${icon}` : "";
   const currentSizeClass = sizeClassMap[size] || sizeClassMap.md;
 
   // Define the getSVG function needed by IconContextMenu
   // Use useCallback to memoize the function if needed, especially if dependencies change often
   const getIconSvgData = useCallback(async (): Promise<{ svgString: string | null; width: number; height: number } | null> => {
+    if (!fullIconName) return null;
     const iconData = getIcon(fullIconName); // Use the imported getIconData
     if (!iconData) {
       console.error("Icon data not found for:", fullIconName);
@@ -95,6 +96,11 @@ export const GTPIcon = ({ icon, className, containerClassName, showContextMenu =
     };
   }, [fullIconName, className, style]); // Dependencies for the callback
 
+
+  // Early return after hooks
+  if (!icon) {
+    return <div className={`${currentSizeClass} ${containerClassName || ""}`} />;
+  }
 
   // The core Icon component
   const IconElement = (
