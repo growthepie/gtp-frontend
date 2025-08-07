@@ -6,9 +6,11 @@ const robinhoodStock: QuickBiteData = {
   subtitle: "Tracking the adoption of Robinhood's tokenized stock on Arbitrum One",
   content: [
     "# Phase 1 (of 3):",
-    "The first step toward self-custodial stocks and the integration of stocks into DeFi (Decentralized Finance) began with Robinhood's announcement on June 30th. Robinhood announced the launch of tokenized stocks within the EU, with plans to expand to more countries soon. This is the first of three phases, initially launching on Arbitrum One. Robinhood also plans to launch its own Layer 2, built on the Arbitrum Orbit Stack. In this first phase, stocks are traded solely within the Robinhood app (offchain), and the stock tokens are custodied by Robinhood. We explore this phase and future phases in further detail at the end of this quick bite.",
+    "Robinhood's first step toward self-custodial stocks and the integration of stocks into DeFi (Decentralized Finance) began with their “To Catch A Token” announcement on June 30th ([1])[https://www.youtube.com/watch?v=FBHmAq5lmZQ]. Phase 1 includes the launch of non-custodial tokenized stocks within the EU, with plans to expand to further countries soon. On launch day, Robinhood began with 200 stocks, each has a unique token which is 1 to 1 backed by the shares held in each stock. When a user buys or sells a share within the Robinhood app the supply of the corresponding token changes to reflect this (buying = token minting and selling = token burning). This is the first of three phases, initially launching on Arbitrum One. Robinhood also plans to launch its own Layer 2, built on the Arbitrum Orbit Stack. We explore this phase and future phases in further detail at the end of this quick bite. ",
+    "> Publicly listed shares are held by a US-licensed broker-dealer, currently the amount of tokenized shares seems to update daily, meaning changes in token supply reflect a net change rather than individual trades.. We have excluded $1.5M of privately listed shares (Space X and OpenAI), which were given away to Robinhood users, these shares are not yet tradable and are awaiting further regulatory clarity. The tokens relating to these private stocks have been burned (destroyed) while the shares are said to be held by a “Special Purpose Vehicle” ([2])[https://www.youtube.com/watch?v=yhFN6LcV6PQ].",
+    
+    "# Robinhood Tokenized Stocks Metrics:",
 
-  
     "```kpi-cards",JSON.stringify(
       [
         {
@@ -19,14 +21,14 @@ const robinhoodStock: QuickBiteData = {
           info: "Total number of stocks Robinhood tokenized on Arbitrum One.",
         },
         {
-          title: "Tokenized Shares Value (Total)",
+          title: "Tokenized Value (Total)",
           value: "${{robinhood_total_market_value_sum_usd}}",
           description: "since launch",
           icon: "gtp-realtime",
           info: "Total outstanding USD value of tokenized stock by Robinhood on Arbitrum One.",
         },
         {
-          title: "Change in Tokenized Shares Value",
+          title: "Change in Tokenized Value",
           value: "{{robinhood_perc_change_market_value_usd_7d}}%",
           description: "change over the last 7 days",
           icon: "gtp-realtime",
@@ -46,7 +48,7 @@ const robinhoodStock: QuickBiteData = {
       dataAsJson: {
         meta: [
           {
-            name: "Tokenized Shares Total Value",
+            name: "Tokenized Value",
             color: "#ccff00",
             xIndex: 1,
             yIndex: 0,
@@ -63,91 +65,12 @@ const robinhoodStock: QuickBiteData = {
     }),
     "```",
 
-    "> Shares are 1 to 1 backed and currently only include publicly listed companies. Publicly listed shares are held by a US-licensed broker-dealer. We have excluded $1.5M of privately listed shares (Space X and OpenAI), which were given away to Robinhood users, these shares are not yet tradable and are awaiting further regulatory clarity. The tokens relating to these stocks have been burned (destroyed) and the shares relating to these stocks are held by a “Special Purpose Vehicle”. In phase 1 the amount of tokenized shares is updated daily so any change reflects a net change rather than individual trades.",
+    "# Individual Stock Chart",
 
-    "# Individual Stocks",
-    "All stocks Robinhood has tokenized on Arbitrum One to date exsluding the privately listed shares mentioned above.",
-    "```table",
+    "```dropdown",
     JSON.stringify({
-      readFromJSON: true,
-      jsonData: {
-        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood/stock_table.json",
-        pathToRowData: "data.stocks.rows",
-        pathToColumnKeys: "data.stocks.columns",
-        pathToTypes: "data.stocks.types",
-      },
-      columnDefinitions: {
-        contract_address: {
-          label: "Contract Address",
-          type: "address",
-          minWidth: 160,
-          isNumeric: false,
-          sortByValue: false
-        },
-        ticker: {
-          label: "Ticker",
-          type: "string",
-          minWidth: 80,
-          isNumeric: false,
-          sortByValue: true
-        },
-        name: {
-          label: "Name",
-          type: "string",
-          minWidth: 120,
-          isNumeric: false,
-          sortByValue: true
-        },
-        usd_outstanding: {
-          label: "USD Outstanding",
-          type: "number",
-          minWidth: 100,
-          isNumeric: true,
-          sortByValue: true,
-          units: {
-            "usd": {
-              decimals: 2,
-              prefix: "$",
-            },
-          }
-        },
-        stocks_tokenized: {
-          label: "Stocks Tokenized",
-          type: "number",
-          minWidth: 100,
-          isNumeric: true,
-          sortByValue: true,
-          units: {
-            "value": {
-              decimals: 0,
-            },
-          }
-        },
-        usd_stock_price: {
-          label: "USD Stock Price",
-          type: "number",
-          minWidth: 100,
-          isNumeric: true,
-          sortByValue: true,
-          units: {
-            "usd": {
-              decimals: 2,
-              prefix: "$",
-            },
-          }
-        }
-      },
-      // filterOnStateKey: {
-      //   stateKey: "selectedTicker",
-      //   columnKey: "ticker",
-      // }
-    }),
-    "```",
-
-  "```dropdown",
-    JSON.stringify({
-      label: "Select a Ticker to filter the table and update the chart - HOOD displayed by default",
-      placeholder: "Choose a token...",
+      label: "Select a Ticker to update the chart - HOOD displayed by default",
+      placeholder: "Choose a Ticker...",
       searchable: true,
       stateKey: "selectedTicker",
       defaultValue: "HOOD",
@@ -164,7 +87,7 @@ const robinhoodStock: QuickBiteData = {
     "```chart",
     JSON.stringify({
       type: "column",
-      title: "Selected Stock: {{selectedTicker}}", // Now using mustache to dynamically set the title within the ChartBlock component
+      title: "Tokenized Stock: {{selectedTicker}}", // Now using mustache to dynamically set the title within the ChartBlock component
       subtitle: "Outstanding shares & stock price.",
       showXAsDate: true,
       filterOnStateKey: {
@@ -175,7 +98,7 @@ const robinhoodStock: QuickBiteData = {
       dataAsJson: {
         meta: [
           {
-            name: "Price",
+            name: "Share Price",
             color: "#ccff00",
             stacking: "normal",
             oppositeYAxis: false,
@@ -189,14 +112,14 @@ const robinhoodStock: QuickBiteData = {
             pathToData: "data.daily.values",
           },
           {
-            name: "Stock Outstanding",
+            name: "Total Tokenized Value",
             color: "#00c805",
             stacking: "normal",
             oppositeYAxis: true,
             xIndex: 0,
             yIndex: 2,
             suffix: null,
-            prefix: null,
+            prefix: '$',
             tooltipDecimals: 0,
             url: "https://api.growthepie.com/v1/quick-bites/robinhood/stocks/{{selectedTicker}}.json",  // here too
             pathToData: "data.daily.values",
@@ -207,12 +130,128 @@ const robinhoodStock: QuickBiteData = {
       caption: "Outstanding shares and stock price over time.",
     }),
     "```",
+
+    "# All Stocks (Table)",
+    "All the stocks Robinhood has tokenized on Arbitrum One to date excluding the privately listed shares (mentioned above) which have been burned.",
+    "```table",
+    JSON.stringify({
+      readFromJSON: true, 
+      jsonData: {
+        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood/stock_table.json",
+        pathToRowData: "data.stocks.rows",
+        pathToColumnKeys: "data.stocks.columns",
+        pathToTypes: "data.stocks.types",
+      },
+      columnDefinitions: {
+        ticker: {
+          label: "Ticker",
+          type: "string",
+          minWidth: 80,
+          isNumeric: false,
+          sortByValue: true,
+          copyable: true
+        },
+        name: {
+          label: "Name",
+          type: "string",
+          minWidth: 120,
+          isNumeric: false,
+          sortByValue: true
+        },
+        contract_address: {
+          label: "Contract Address",
+          type: "address",
+          minWidth: 160,
+          isNumeric: false,
+          sortByValue: false
+        },
+        usd_stock_price: {
+          label: "Stock Price",
+          type: "number",
+          minWidth: 100,
+          isNumeric: true,
+          sortByValue: true,
+          units: {
+            "usd": {
+              decimals: 2,
+              prefix: "$",
+            },
+          }
+        },
+        stocks_tokenized: {
+          label: "Shares Tokenized",
+          type: "number",
+          minWidth: 100,
+          isNumeric: true,
+          sortByValue: true,
+          units: {
+            "value": {
+              decimals: 0,
+            },
+          }
+        },
+        usd_outstanding: {
+          label: "Tokenized Value",
+          type: "number",
+          minWidth: 100,
+          isNumeric: true,
+          sortByValue: true,
+          units: {
+            "usd": {
+              decimals: 2,
+              prefix: "$",
+            },
+          }
+        },
+      },
+      columnOrder: ["ticker", "name", "contract_address", "usd_stock_price", "stocks_tokenized", "usd_outstanding"], // Add this
+      // filterOnStateKey: {
+      //   stateKey: "selectedTicker",
+      //   columnKey: "ticker",
+      // }
+    }),
+    "```",
+
+  
     "# To Catch A Token - Robinhood's presentation",
     "## Phase 1 - Continued",
+    "Vlad Tenev (Robinhood CEO) outlines the first phase of the tokenization process live in Cannes, France ([1])[https://www.youtube.com/watch?v=FBHmAq5lmZQ]. In this example, we can see a user buying an Apple share → Which is received by Robinhood’s backend → Instructions are sent to a US Broker, which buys and custodies the share from a TradFi market → This then gets sent to Robinhood's “Tokenization Engine” → Once the token has been minted Robinhoods backend logs this and the user can see that they have bought a share. This is live and tradable 24 hours and 5 days a week",
+    
+    "```image",
+    JSON.stringify({
+      src: "https://api.growthepie.com/v1/quick-bites/robinhood-stock-p1.png", // should allow link to our API
+      alt: "Phase 1 by Vlad Tenev",
+      width: "1344",
+      height: "644",
+      caption: "Phase 1 - To Catch A Token - Vlad Tenev ([1])[https://www.youtube.com/watch?v=FBHmAq5lmZQ]",
+    }),
+    "```",
+    "> Currently, the amount of tokenized shares seems to update daily, meaning changes in token supply reflect a net change rather than individual trades. When this changes we will explore tracking trade volume",
+
     "## Phase 2",
+    "In the “next few months”, Robinhood hopes to launch its second phase. Robinhood will use Bitstamp to enable trading of the tokenized stocks during weekends, meaning stocks can finally be traded 24/7 within the Robinhood app.",
+
+    "```image",
+    JSON.stringify({
+      src: "https://api.growthepie.com/v1/quick-bites/robinhood-stock-p2.png", // should allow link to our API
+      alt: "Phase 2 by Vlad Tenev",
+      width: "1344",
+      height: "644",
+      caption: "Phase 2 - To Catch A Token - Vlad Tenev ([1])[https://www.youtube.com/watch?v=FBHmAq5lmZQ]",
+    }),
+    "```",
+
     "## Phase 3",
-    '## Private listed stocks - "A special purpose vehicle"',
-    "Saving these links for sources - https://www.youtube.com/watch?v=WNMaXVweaiY - https://www.youtube.com/watch?v=FBHmAq5lmZQ",
+    "Also “a few months away”, Robinhood hopes to release its most ambitious phase. This phase allows users to withdraw their tokenized shares directly into their wallet. From there, users can self-custody these assets and use them to interact with DeFi.",  
+    "```image",
+    JSON.stringify({
+      src: "https://api.growthepie.com/v1/quick-bites/robinhood-stock-p3.PNG", // should allow link to our API
+      alt: "Phase 3 by Vlad Tenev",
+      width: "1344",
+      height: "644",
+      caption: "Phase 3 - To Catch A Token - Vlad Tenev ([1])[https://www.youtube.com/watch?v=FBHmAq5lmZQ]",
+    }),
+    "```",
     
   ],
   image: "https://api.growthepie.com/v1/quick-bites/banners/robinhood.png",

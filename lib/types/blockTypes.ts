@@ -56,6 +56,7 @@ export interface TableBlock extends BaseBlock {
       type?: string;
       isNumeric?: boolean;
       minWidth?: number;
+      copyable?: boolean; // Add this line
       units?: {
         [key: string]: {
           decimals?: number;
