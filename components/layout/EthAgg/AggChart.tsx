@@ -13,7 +13,7 @@ import { GTPIcon } from '../GTPIcon';
 import moment from 'moment';
 
 
-function formatNumberWithSI(num: number): string {
+export function formatNumberWithSI(num: number): string {
   if (num === 0) {
     return "0";
   }

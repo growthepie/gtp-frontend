@@ -244,6 +244,16 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                     );
                   }
 
+                  // if copyable text, add copy button with simple formatting
+                  if (columnDefinitions?.[columnKey]?.copyable) {
+                    // add copy to the right
+                    cellRightContent = (
+                      <div className="pr-[10px]">
+                        <CopyButton value={cellData?.value} />
+                      </div>
+                    );
+                  }
+
                   // add link to cell content if it exists
                   if (cellData?.link) {
                     cellMainContent = (
