@@ -234,3 +234,21 @@ export const GetRankingScale = (
 
   return scale;
 };
+
+export const getChainInfoFromUrl = (chainUrl: string, allChainsByKeys: { [key: string]: Chain }) => {
+  const urlMatch = chainUrl.match(/\/chains\/([^\/]+)/);
+  if (!urlMatch) return null;
+  
+  const urlKey = urlMatch[1];
+  const chain = Object.values(allChainsByKeys).find(c => c.urlKey === urlKey);
+  
+  if (!chain) return null;
+  
+  return {
+    key: chain.key,
+    name: chain.label,
+    icon: `gtp:${chain.urlKey}-logo-monochrome`,
+    color: chain.colors.dark[0],
+    urlKey: chain.urlKey
+  };
+};

@@ -144,9 +144,7 @@ const arbitrumTimeboost: QuickBiteData = {
     xUsername: "web3_data"
   }],
   topics: [{
-    icon: "arbitrum-logo-monochrome",
-    color: "#1DF7EF",
-    name: "Arbitrum",
+    name: "Arbitrum One",
     url: "/chains/arbitrum"
   },
   {

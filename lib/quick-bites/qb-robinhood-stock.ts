@@ -286,9 +286,7 @@ const robinhoodStock: QuickBiteData = {
     url: "",
    },
     {
-    icon: "arbitrum-logo-monochrome",
-    color: "#1DF7EF",
-    name: "Abritrum One",
+    name: "Arbitrum One",
     url: "/chains/arbitrum"
   },
   {
@@ -300,7 +298,5 @@ const robinhoodStock: QuickBiteData = {
   icon: "arbitrum-logo-monochrome",
   showInMenu: false
 };
-
-console.log("robinhoodStock", robinhoodStock);
 
 export default robinhoodStock;
