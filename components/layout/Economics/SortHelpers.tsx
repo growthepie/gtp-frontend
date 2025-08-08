@@ -48,6 +48,14 @@ function dataAvailToObject(x: string): DAvailability {
       };
     }
 
+    if (x.includes("EigenDA")) {
+      retObject = {
+        icon: "da-eigenda-logo-monochrome",
+        label: "EigenDA",
+      };
+    }
+
+
     if (x.includes("memo")) {
       retObject = {
         icon: "memofp",
@@ -64,6 +72,7 @@ export function sortByDataAvailability(
   availType: string,
   sortedKeys: string[], // Pass the already sorted keys as an argument
 ) {
+  console.log(availType);
   // Sort the already sorted keys based on availability
   const sortedKeysWithAvailability = sortedKeys.sort((a, b) => {
     const aContainsAvail =
@@ -78,6 +87,8 @@ export function sortByDataAvailability(
     // If both have the same availability status, maintain the existing sort order
     return 0;
   });
+
+  console.log(sortedKeysWithAvailability);
 
   return sortedKeysWithAvailability;
 }
