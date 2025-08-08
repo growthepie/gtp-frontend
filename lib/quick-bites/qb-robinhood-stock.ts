@@ -6,7 +6,7 @@ const robinhoodStock: QuickBiteData = {
   subtitle: "Tracking the adoption of Robinhood's tokenized stock on Arbitrum One",
   content: [
     "# Phase 1 (of 3):",
-    "Robinhood's first step toward self-custodial stocks and the integration of stocks into DeFi (Decentralized Finance) began with their “To Catch A Token” announcement on June 30th ([1])[https://www.youtube.com/watch?v=FBHmAq5lmZQ]. Phase 1 includes the launch of non-custodial tokenized stocks within the EU, with plans to expand to further countries soon. On launch day, Robinhood began with 200 stocks, each has a unique token which is 1 to 1 backed by the shares held in each stock. When a user buys or sells a share within the Robinhood app the supply of the corresponding token changes to reflect this (buying = token minting and selling = token burning). This is the first of three phases, initially launching on Arbitrum One. Robinhood also plans to launch its own Layer 2, built on the Arbitrum Orbit Stack. We explore this phase and future phases in further detail at the end of this quick bite. ",
+    "Robinhood's first step toward self-custodial stocks and the integration of stocks into DeFi (Decentralized Finance) began with their “To Catch A Token” announcement on June 30th ([1])[https://www.youtube.com/watch?v=FBHmAq5lmZQ]. Phase 1 includes the launch of non-custodial tokenized stocks within the EU, with plans to expand to further countries soon. On launch day, Robinhood began with 204 stocks, each has a unique token which is 1 to 1 backed by the shares held in each stock. When a user buys or sells a share within the Robinhood app the supply of the corresponding token changes to reflect this (buying = token minting and selling = token burning). This is the first of three phases, initially launching on Arbitrum One. Robinhood also plans to launch its own Layer 2, built on the Arbitrum Orbit Stack. We explore this phase and future phases in further detail at the end of this quick bite. ",
     "> Publicly listed shares are held by a US-licensed broker-dealer, currently the amount of tokenized shares seems to update daily, meaning changes in token supply reflect a net change rather than individual trades.. We have excluded $1.5M of privately listed shares (Space X and OpenAI), which were given away to Robinhood users, these shares are not yet tradable and are awaiting further regulatory clarity. The tokens relating to these private stocks have been burned (destroyed) while the shares are said to be held by a “Special Purpose Vehicle” ([2])[https://www.youtube.com/watch?v=yhFN6LcV6PQ].",
     
     "# Robinhood Tokenized Stocks Metrics:",
@@ -108,20 +108,20 @@ const robinhoodStock: QuickBiteData = {
             suffix: null,
             prefix: '$',
             tooltipDecimals: 0,
-            url: "https://api.growthepie.com/v1/quick-bites/robinhood/stocks/{{selectedTicker}}.json", // here too
+            url: "https://api.growthepie.com/v1/quick-bites/robinhood/stocks/{{selectedTicker}}.json",
             pathToData: "data.daily.values",
           },
           {
-            name: "Total Tokenized Value",
+            name: "Shares Tokenized",
             color: "#00c805",
             stacking: "normal",
             oppositeYAxis: true,
             xIndex: 0,
             yIndex: 2,
             suffix: null,
-            prefix: '$',
+            prefix: null,
             tooltipDecimals: 0,
-            url: "https://api.growthepie.com/v1/quick-bites/robinhood/stocks/{{selectedTicker}}.json",  // here too
+            url: "https://api.growthepie.com/v1/quick-bites/robinhood/stocks/{{selectedTicker}}.json", 
             pathToData: "data.daily.values",
           }
         ],
@@ -187,6 +187,19 @@ const robinhoodStock: QuickBiteData = {
           units: {
             "value": {
               decimals: 0,
+            },
+          }
+        },
+        stocks_tokenized_7d_change_pct: {
+          label: "Shares 7d Change",
+          type: "number",
+          minWidth: 100,
+          isNumeric: true,
+          sortByValue: true,
+          units: {
+            "value": {
+              decimals: 1,
+              suffix: "%",
             },
           }
         },
@@ -285,7 +298,5 @@ const robinhoodStock: QuickBiteData = {
   icon: "arbitrum-logo-monochrome",
   showInMenu: false
 };
-
-console.log("robinhoodStock", robinhoodStock);
 
 export default robinhoodStock;
