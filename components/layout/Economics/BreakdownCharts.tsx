@@ -192,14 +192,29 @@ function BreakdownCharts({
       // Retrieve the point using the closestIndex for series2
       const point2 = series2.points[closestIndex2];
 
-      // Show crosshair for mainChart
+      // Also find the closest point on the profit chart itself for its crosshair
+      const profitSeries = profitChart.series[0];
+      let closestProfitIndex = -1;
+      let minProfitDistance = Infinity;
+      profitSeries.points.forEach((p, idx) => {
+        const distance = Math.abs(p.x - xAxisValue);
+        if (distance < minProfitDistance) {
+          minProfitDistance = distance;
+          closestProfitIndex = idx;
+        }
+      });
+      const profitPoint = profitSeries.points[closestProfitIndex];
+
+      // Show crosshair for both charts
       if (mainChart.xAxis[0].crosshair) {
         mainChart.xAxis[0].drawCrosshair(event, point1);
         mainChart.xAxis[0].drawCrosshair(event, point2); // Draw crosshair for both series
-        profitChart.xAxis[0].drawCrosshair(event, point1);
+      }
+      if (profitChart.xAxis[0].crosshair && profitPoint) {
+        profitChart.xAxis[0].drawCrosshair(event, profitPoint);
       }
 
-      // Refresh tooltips for both series
+      // Refresh tooltips for both series on the main chart
       mainChart.tooltip.refresh([point1, point2]);
     };
 
@@ -559,7 +574,7 @@ function BreakdownCharts({
           <div className="w-[5px] h-[5px] bg-[#FE5468] rounded-full" />
           <div className="text-xxxs">Cost</div>
         </div>
-        <div className="absolute w-full h-full flex justify-center items-center bg-opacity-50 z-20 rounded-full opacity-50 gap-x-[2px] px-[3px]">
+        <div className="absolute w-full h-full flex justify-center items-center bg-opacity-50 z-20 rounded-full opacity-50 gap-x-[2px] px-[3px] pointer-events-none">
           <ChartWatermark
               className={`  w-[128px] md:w-[163px] text-forest-300 dark:text-[#EAECEB]`}
           />

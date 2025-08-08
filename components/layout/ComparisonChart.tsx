@@ -222,7 +222,7 @@ export default function ComparisonChart({
   // const [darkMode, setDarkMode] = useLocalStorage("darkMode", true);
   const { theme } = useTheme();
 
-  const { AllChainsByKeys, AllDALayersByKeys } = useMaster();
+  const { AllChainsByKeys, AllDALayersByKeys, metrics } = useMaster();
 
   const MetadataByKeys = useMemo(() => {
     return merge(AllChainsByKeys, AllDALayersByKeys);
@@ -283,6 +283,7 @@ export default function ComparisonChart({
   const [valuePrefix, setValuePrefix] = useState("");
 
   const isMobile = useMediaQuery("(max-width: 767px)");
+
 
   const SourcesDisplay = useMemo(() => {
     return sources && sources.length > 0 ? (
@@ -1803,9 +1804,10 @@ export default function ComparisonChart({
 
   if (is_embed)
     return (
+
       <EmbedContainer
         title={navItem?.label || ""}
-        icon="gtp:gtp-pie"
+        icon={navItem ? `gtp:${navItem?.icon}` : "gtp-pie"}
         url="https://www.growthepie.com"
         time_frame={timespans[selectedTimespan].label}
         chart_type={selectedScale}
