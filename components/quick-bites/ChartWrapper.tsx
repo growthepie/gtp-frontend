@@ -35,6 +35,7 @@ interface ChartWrapperProps {
   options?: any;
   width?: number | string;
   height?: number | string;
+  disableTooltipSort?: boolean;
   title?: string;
   subtitle?: string;
   jsonData?: any;
@@ -69,7 +70,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   jsonData,
   jsonMeta,
   seeMetricURL,
-  showXAsDate = false
+  showXAsDate = false,
+  disableTooltipSort = false
 }) => {
   const chartRef = useRef<any>(null);
   const { theme } = useTheme();
@@ -195,6 +197,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
       const tooltipPoints = points
         // order by value
         .sort((a: any, b: any) => {
+          if(disableTooltipSort) return 0;
           const aValue = parseFloat(a.y);
           const bValue = parseFloat(b.y);
           return bValue - aValue;
@@ -207,9 +210,13 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           
           const color = series.color.stops ? series.color.stops[0][1] : series.color;
 
+          
+
           const currentPrefix = jsonMeta?.meta[index].prefix || '';
           const currentSuffix = jsonMeta?.meta[index].suffix || '';
           const currentDecimals = jsonMeta?.meta[index].tooltipDecimals || 2;
+
+          console.log(jsonMeta?.meta[index]);
 
           let displayValue = parseFloat(y).toLocaleString("en-GB", {
             minimumFractionDigits: currentDecimals,
@@ -273,6 +280,8 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     );
   }
 
+
+
  
   
   return (
@@ -290,10 +299,10 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           <HighchartsChart chart={chartRef.current} options={options}
               plotOptions={{
                 line: {
-                  lineWidth: 1.5,
+                  lineWidth: 3,
                 },
                 area: {
-                  lineWidth: 1.5,
+                  lineWidth: 2,
                 },
                 column: {
                   

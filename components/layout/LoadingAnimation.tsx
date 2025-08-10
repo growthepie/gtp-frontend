@@ -9,7 +9,11 @@ import {
 } from "react";
 import { useSpring, animated } from "@react-spring/web";
 
-export default function LoadingAnimation() {
+interface LoadingAnimationProps {
+  mode?: 'loading' | 'celebration';
+}
+
+export default function LoadingAnimation({ mode = 'loading' }: LoadingAnimationProps) {
   /*
   <svg
       width="161"
@@ -108,8 +112,8 @@ export default function LoadingAnimation() {
         fill-opacity: 0;
         animation-timing-function: ease-in-out;
         animation-fill-mode: forwards;
-        animation-name: FadeInOut;
-        animation-duration: 1.666s;
+        animation-name: ${mode === 'celebration' ? 'FadeInOutCelebration' : 'FadeInOut'};
+        animation-duration: ${mode === 'celebration' ? '2s' : '1.666s'};
         animation-iteration-count: infinite;
       }
       /*
@@ -180,6 +184,21 @@ export default function LoadingAnimation() {
         
         100% {
           fill-opacity: 1;
+        }
+      }
+
+      @keyframes FadeInOutCelebration {
+        0% {
+          fill-opacity: 0;
+          transform: scale(0.8);
+        }
+        50% {
+          fill-opacity: 1;
+          transform: scale(1.1);
+        }
+        100% {
+          fill-opacity: 0;
+          transform: scale(1);
         }
       }
       `}

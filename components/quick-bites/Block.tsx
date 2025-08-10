@@ -17,7 +17,7 @@ interface BlockProps {
 }
 
 const Block: React.FC<BlockProps> = ({ block }) => {
-  console.log('Rendering block:', block.type, block);
+ 
   
   // Check if block should be hidden from menu
   if (block.showInMenu === false) {

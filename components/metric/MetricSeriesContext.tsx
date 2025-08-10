@@ -401,10 +401,23 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
           }
         }
 
+        // if (metric_type === "data-availability" && chainDataKeys.includes("da_ethereum_calldata") && chainDataKeys.includes("da_ethereum_blobs")) {
+        //   if(["da_ethereum_calldata", "da_ethereum_blobs"].includes(a) && ["da_ethereum_calldata", "da_ethereum_blobs"].includes(b)) {
+        //     return 1;
+        //   }
+        // }
+
         // sort by the time of the first data point so that the series are stacked in the correct order
         return bData[0][0] - aData[0][0];
       }
       // else keep the order of the series the same
+      return 0;
+    }).sort((a, b) => {
+      if(metric_type === "data-availability" && metric_id === "data_posted") {
+        const dataKeys =[...chainDataKeys];
+        const order = [...dataKeys.filter((key) => !["da_ethereum_calldata", "da_ethereum_blobs"].includes(key)), "da_ethereum_blobs", "da_ethereum_calldata"];
+        return order.indexOf(a) - order.indexOf(b);
+      }
       return 0;
     }).map((chainKey, i) => {
       const chain = data.chains[chainKey];
@@ -487,7 +500,7 @@ export const MetricSeriesProvider = ({ children, metric_type }: MetricSeriesProv
     });
 
     return d;
-  }, [data, selectedTimeInterval, selectedScale, chainKeys, metric_type, selectedChains, SupportedChainKeys, showEthereumMainnet, timeIntervalKey, getSeriesData, getSeriesType, dataGrouping, MetadataByKeys, focusEnabled, theme]);
+  }, [data, selectedTimeInterval, selectedScale, chainKeys, metric_type, selectedChains, SupportedChainKeys, showEthereumMainnet, timeIntervalKey, getSeriesData, getSeriesType, dataGrouping, MetadataByKeys, focusEnabled, theme, metric_id]);
 
   return (
     <MetricSeriesContext.Provider

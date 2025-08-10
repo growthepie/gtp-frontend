@@ -19,12 +19,15 @@ import { Fragment, useEffect, useState } from 'react';
 import ShowLoading from '@/components/layout/ShowLoading';
 import { processDynamicContent } from '@/lib/utils/dynamicContent'; // Import the new utility
 import { QuickBiteProvider } from '@/contexts/QuickBiteContext';
+import { useMaster } from '@/contexts/MasterContext';
+import { getChainInfoFromUrl } from '@/lib/chains';
 
 type Props = {
   params: { slug: string };
 };
 
 export default function QuickBitePage({ params }: Props) {
+  const { AllChainsByKeys } = useMaster();
   const [QuickBite, setQuickBite] = useState<QuickBiteData | null>(null);
   const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([]);
   const [relatedContent, setRelatedContent] = useState<QuickBiteWithSlug[]>([]);
@@ -139,7 +142,7 @@ export default function QuickBitePage({ params }: Props) {
             <div className="lg:pl-[45px] lg:pr-[120px]">
               <div className=" md:mx-auto">
                 {contentBlocks.map((block) => {
-                  console.log("block", block);
+                  
                   return <Block key={block.id} block={block} />
                 })}
               </div>
@@ -150,22 +153,25 @@ export default function QuickBitePage({ params }: Props) {
           <div className="h-[34px] px-[15px] py-[5px] bg-[#1F2726] rounded-full flex items-center gap-x-[10px]">
             <span className="text-xxs text-[#5A6462]">Topics Discussed</span>
             <div className="flex items-center gap-x-[5px]">
-              {QuickBite && QuickBite.topics && QuickBite.topics.map((topic) => (
-                <Link
-                  key={topic.url}
-                  href={topic.url}
-                  className="flex items-center gap-x-[5px] rounded-full w-fit pl-[5px] pr-[10px] py-[3px] bg-medium-background"
-                >
-                  <GTPIcon 
-                    icon={topic.icon as GTPIconName} 
-                    size="sm" 
-                    style={{ color: topic.color }}
-                  />
-                  <div className="text-xs">
-                    {topic.name}
-                  </div>
-                </Link>
-              ))}
+              {QuickBite && QuickBite.topics && QuickBite.topics.map((topic) => {
+                let resolvedIcon: GTPIconName | undefined = topic.icon;
+                let resolvedColor = topic.color;
+                
+                if (topic.url.startsWith('/chains/') && !topic.icon) {
+                  const chainInfo = getChainInfoFromUrl(topic.url, AllChainsByKeys);
+                  if (chainInfo) {
+                    resolvedIcon = chainInfo.icon as GTPIconName;
+                    resolvedColor = chainInfo.color;
+                  }
+                }
+                
+                return (
+                  <Link key={topic.url} href={topic.url} className="flex items-center gap-x-[5px] rounded-full w-fit pl-[5px] pr-[10px] py-[3px] bg-medium-background">
+                    <GTPIcon icon={resolvedIcon || "chain-dark"} size="sm" style={{ color: resolvedColor }} />
+                    <div className="text-xs">{topic.name}</div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
 
@@ -175,7 +181,10 @@ export default function QuickBitePage({ params }: Props) {
               content={QuickBite.content}
               image={QuickBite.image}
               relatedQuickBites={relatedContent}
-              topics={QuickBite.topics}
+              topics={QuickBite.topics?.map(topic => ({
+                ...topic,
+                icon: topic.icon || ""
+              }))}
             />
           )}
         </Container>

@@ -201,6 +201,8 @@ function parseDropdownBlock(jsonString: string): ContentBlock | null {
         searchable: dropdownConfig.searchable !== false, // Default to true
         disabled: dropdownConfig.disabled || false,
         className: dropdownConfig.className || '',
+        exclusive: dropdownConfig.exclusive || false,
+        inclusive: dropdownConfig.inclusive || false,
         readFromJSON: true,
         jsonData: {
           url,
@@ -244,6 +246,8 @@ function parseDropdownBlock(jsonString: string): ContentBlock | null {
         allowEmpty: dropdownConfig.allowEmpty || false,
         searchable: dropdownConfig.searchable !== false, // Default to true
         disabled: dropdownConfig.disabled || false,
+        exclusive: dropdownConfig.exclusive || false,
+        inclusive: dropdownConfig.inclusive || false,
         className: dropdownConfig.className || '',
         readFromJSON: false,
         showInMenu: parseShowInMenu(dropdownConfig),
@@ -309,6 +313,7 @@ function parseChartBlock(jsonString: string): ContentBlock | null {
       width: chartConfig.width || '100%',
       height: chartConfig.height || 400,
       caption: chartConfig.caption,
+      disableTooltipSort: chartConfig.disableTooltipSort || false,
       // stacking: chartConfig.stacking || null,
       showXAsDate: chartConfig.showXAsDate || false,
       dataAsJson: chartConfig.dataAsJson || null,

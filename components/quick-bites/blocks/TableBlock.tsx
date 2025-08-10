@@ -13,6 +13,7 @@ import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
 import { useMediaQuery } from 'usehooks-ts';
 import { Icon } from '@iconify/react';
 
+
 const getNestedValue = (obj: any, path: string) => {
   if (!path) return undefined;
   return path.split('.').reduce((current, key) => (current && current[key] !== undefined ? current[key] : undefined), obj);
@@ -21,7 +22,7 @@ const getNestedValue = (obj: any, path: string) => {
 const formatLabel = (key: string) => key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
 export const TableBlock = ({ block }: { block: TableBlockType }) => {
-  const { sharedState } = useQuickBite();
+  const { sharedState, exclusiveFilterKeys, inclusiveFilterKeys } = useQuickBite();
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
   const isMobile = useMediaQuery("(max-width: 1023px)");
 
@@ -80,13 +81,19 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
 
     // Filter based on shared state if configured
     if (block.filterOnStateKey) {
+      
       const { stateKey, columnKey } = block.filterOnStateKey;
-      const filterValue = sharedState[stateKey];
-
+      const filterValue = sharedState[stateKey] || exclusiveFilterKeys.valueKey || inclusiveFilterKeys.valueKey;
+      
       const filteredData = (filterValue && filterValue !== 'all')
         ? dataToSort.filter(row => {
           const filterIndex = columnKeyOrder.indexOf(columnKey);
-          return filterIndex !== -1 && row[filterIndex]?.value === filterValue;
+          if (exclusiveFilterKeys.valueKey) {
+            return filterIndex !== -1 && row[filterIndex]?.value === filterValue;
+          } else if (inclusiveFilterKeys.valueKey) {
+            return filterIndex !== -1 && row[filterIndex]?.value.includes(filterValue);
+          }
+          return filterIndex !== -1 && row[filterIndex]?.value.includes(filterValue); // default to inclusive
         })
         : dataToSort;
 
@@ -117,7 +124,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
         : String(aValue).localeCompare(String(bValue));
       return sortConfig.direction === 'asc' ? result : -result;
     });
-  }, [processedRows, sortConfig, columnKeyOrder, sharedState, block.filterOnStateKey]);
+  }, [processedRows, sortConfig, columnKeyOrder, sharedState, block.filterOnStateKey, exclusiveFilterKeys, inclusiveFilterKeys]);
 
   if (block.readFromJSON && isLoading) return <div className="my-8 text-center">Loading table data...</div>;
   if (block.readFromJSON && error) return <div className="my-8 text-center text-red-500">Error: {error.message}</div>;
@@ -146,6 +153,9 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     const minWidth = columnDefinitions[columnKey]?.minWidth || 120;
     return `minmax(${minWidth}px, 1fr)`;
   }).join(' ');
+
+  
+  
 
   return (
     <div className={`my-8 ${block.className || ''}`}>
@@ -226,6 +236,16 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                       </div>
                     );
 
+                    // add copy to the right
+                    cellRightContent = (
+                      <div className="pr-[10px]">
+                        <CopyButton value={cellData?.value} />
+                      </div>
+                    );
+                  }
+
+                  // if copyable text, add copy button with simple formatting
+                  if (columnDefinitions?.[columnKey]?.copyable) {
                     // add copy to the right
                     cellRightContent = (
                       <div className="pr-[10px]">

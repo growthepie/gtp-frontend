@@ -56,6 +56,7 @@ export interface TableBlock extends BaseBlock {
       type?: string;
       isNumeric?: boolean;
       minWidth?: number;
+      copyable?: boolean; // Add this line
       units?: {
         [key: string]: {
           decimals?: number;
@@ -103,6 +104,7 @@ export interface ChartBlock extends BaseBlock {
     name: string;
     color: string;
   }[];
+  disableTooltipSort?: boolean;
   showXAsDate?: boolean;
   dataAsJson?: {
     meta: {
@@ -198,6 +200,8 @@ export interface DropdownBlock extends BaseBlock {
   disabled?: boolean;
   stateKey?: string; // Key to use for storing the value in the shared state
   multiSelect?: boolean;
+  exclusive?: boolean;
+  inclusive?: boolean;
   // For inline options (when readFromJSON is false or not specified)
   options?: DropdownOption[];
 

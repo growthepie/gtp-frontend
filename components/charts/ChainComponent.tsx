@@ -1,9 +1,7 @@
 "use client";
 
-import HighchartsReact from "highcharts-react-official";
-import Highcharts from "highcharts/highstock";
-import highchartsAnnotations from "highcharts/modules/annotations";
-// import highchartsDebug from "highcharts/modules/debugger";
+import ReactECharts from 'echarts-for-react';
+import * as echarts from 'echarts';
 import {
   useState,
   useEffect,
@@ -14,9 +12,7 @@ import {
   ReactNode,
   memo,
 } from "react";
-import { useLocalStorage, useWindowSize, useIsMounted } from "usehooks-ts";
-import fullScreen from "highcharts/modules/full-screen";
-import _merge from "lodash/merge";
+import { useLocalStorage, useWindowSize, useIsMounted, useResizeObserver } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
@@ -37,6 +33,9 @@ import ChartWatermark from "@/components/layout/ChartWatermark";
 import { ChainsData } from "@/types/api/ChainResponse";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { useMaster } from "@/contexts/MasterContext";
+import { GTPIcon } from '../layout/GTPIcon';
+import { GTPIconName } from '@/icons/gtp-icon-names';
+import { formatNumberWithSI } from '../layout/EthAgg/AggChart';
 
 
 const COLORS = {
@@ -78,7 +77,15 @@ const ChainComponent = memo(function ChainComponent({
   const isMobile = useMediaQuery("(max-width: 767px)");
 
   const metric_index = metricItems.findIndex((item) => item.key === category);
-  const chartComponents = useRef<Highcharts.Chart[]>([]);
+  const chartComponents = useRef<echarts.ECharts[]>([]);
+  const chartRef = useRef<ReactECharts>(null);
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Use resize observer to handle chart repositioning
+  const { width: containerWidth = 0, height: containerHeight = 0 } = useResizeObserver({
+    ref: chartContainerRef,
+    box: 'border-box',
+  });
 
   const [zoomMargin, setZoomMargin] = useState([1, 15, 0, 0]);
   const [defaultMargin, setDefaultMargin] = useState([1, 15, 0, 0]);
@@ -246,72 +253,58 @@ const ChainComponent = memo(function ChainComponent({
     return Math.max(...maxUnixtimes);
   }, [data]);
 
-  const onXAxisSetExtremes =
-    useCallback<Highcharts.AxisSetExtremesEventCallbackFunction>(
-      function (e: Highcharts.AxisSetExtremesEventObject) {
-        // if (e.trigger === "pan") return;
+  const onDataZoom = useCallback(
+    (params: any) => {
+      if (!params || !params.batch) return;
+      
+      const batch = params.batch[0];
+      if (!batch) return;
 
-        const { min, max } = e;
+      const { startValue, endValue } = batch;
+      const min = startValue;
+      const max = endValue;
 
-        // set to nearest day at 08:00 UTC
-        let minDay = new Date(min);
-        let maxDay = new Date(max);
+      // set to nearest day at 08:00 UTC
+      let minDay = new Date(min);
+      let maxDay = new Date(max);
 
-        let minHours = minDay.getUTCHours();
-        let maxHours = maxDay.getUTCHours();
+      let minHours = minDay.getUTCHours();
+      let maxHours = maxDay.getUTCHours();
 
-        minDay.setUTCHours(0, 0, 0, 0);
+      minDay.setUTCHours(0, 0, 0, 0);
 
-        if (maxHours > 12) {
-          maxDay.setDate(maxDay.getDate() + 1);
-          maxDay.setUTCHours(0, 0, 0, 0);
-        } else {
-          maxDay.setUTCHours(0, 0, 0, 0);
-        }
+      if (maxHours > 12) {
+        maxDay.setDate(maxDay.getDate() + 1);
+        maxDay.setUTCHours(0, 0, 0, 0);
+      } else {
+        maxDay.setUTCHours(0, 0, 0, 0);
+      }
 
-        let minStartOfDay = minDay.getTime();
-        let maxStartOfDay = maxDay.getTime();
+      let minStartOfDay = minDay.getTime();
+      let maxStartOfDay = maxDay.getTime();
 
-        let numMilliseconds = maxStartOfDay - minStartOfDay;
+      let numMilliseconds = maxStartOfDay - minStartOfDay;
 
-        let paddingMilliseconds = 0;
-        if (e.trigger === "zoom" || e.trigger === "pan") {
-          if (minStartOfDay < minUnixAll) minStartOfDay = minUnixAll;
+      if (minStartOfDay < minUnixAll) minStartOfDay = minUnixAll;
+      if (maxStartOfDay > maxUnixAll) maxStartOfDay = maxUnixAll;
 
-          if (maxStartOfDay > maxUnixAll) maxStartOfDay = maxUnixAll;
+      numMilliseconds = maxStartOfDay - minStartOfDay;
 
-          numMilliseconds = maxStartOfDay - minStartOfDay;
+      setZoomed(true);
+      setZoomMin(minStartOfDay);
+      setZoomMax(maxStartOfDay);
 
-          setZoomed(true);
-          setZoomMin(minStartOfDay);
-          setZoomMax(maxStartOfDay);
-          chartComponents.current.forEach((chart) => {
-            if (chart) {
-              const xAxis = chart.xAxis[0];
-              const pixelsPerMillisecond = chart.plotWidth / numMilliseconds;
+      const numDays = numMilliseconds / (24 * 60 * 60 * 1000);
 
-              // 15px padding on left side
-              paddingMilliseconds = 15 / pixelsPerMillisecond;
-
-              xAxis.setExtremes(
-                minStartOfDay - paddingMilliseconds,
-                maxStartOfDay,
-              );
-            }
-          });
-        }
-
-        const numDays = numMilliseconds / (24 * 60 * 60 * 1000);
-
-        setIntervalShown({
-          min: minStartOfDay,
-          max: maxStartOfDay,
-          num: numDays,
-          label: `${Math.round(numDays)} day${numDays > 1 ? "s" : ""}`,
-        });
-      },
-      [maxUnixAll, minUnixAll],
-    );
+      setIntervalShown({
+        min: minStartOfDay,
+        max: maxStartOfDay,
+        num: numDays,
+        label: `${Math.round(numDays)} day${numDays > 1 ? "s" : ""}`,
+      });
+    },
+    [maxUnixAll, minUnixAll],
+  );
 
   const getTickPositions = useCallback(
     (xMin: any, xMax: any): number[] => {
@@ -571,147 +564,144 @@ const ChainComponent = memo(function ChainComponent({
   }, [data.metrics, filteredData, category, showUsd, intervalShown, focusEnabled, master.metrics, metric_index]);
 
   const tooltipFormatter = useCallback(
-    function (this: Highcharts.TooltipFormatterContextObject) {
-      const { x, points } = this;
-
-
-
-      if (!points || !x) return;
-
-      const series = points[0].series;
-
+    (params: any) => {
+      if (!params || !Array.isArray(params) || params.length === 0) return '';
+  
+      const x = params[0].value[0]; // timestamp
+      const points = params;
+  
+      if (!points || !x) return '';
+  
       const date = new Date(x);
-      const dateString = `
-      <div>
-        ${date.toLocaleDateString("en-GB", {
+      const dateString = date.toLocaleDateString("en-GB", {
         timeZone: "UTC",
         month: "short",
         day: "numeric",
         year: "numeric",
-      })}
-      </div>
-      `;
-
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 text-xs font-raleway"><div class="flex-1 font-bold text-[13px] md:text-[1rem] ml-6 mb-2 flex justify-between">${dateString}</div>`;
-      const tooltipEnd = `</div>`;
-
-      let pointsSum = 0;
-      if (selectedScale !== "percentage")
-        pointsSum = points.reduce((acc: number, point: any) => {
-          acc += point.y;
-          return pointsSum;
-        }, 0);
-
+      });
+  
+      // Sort points by value (descending)
+      points.sort((a: any, b: any) => b.value[1] - a.value[1]);
+  
+      // Calculate totals for percentage and bar calculations
+      const pointsSum = points.reduce((acc: number, point: any) => 
+        acc + point.value[1], 0);
+      
+      const maxPoint = points.reduce((max: number, point: any) => 
+        Math.max(max, point.value[1]), 0);
+      
+      const maxPercentage = 100; // Since percentages go up to 100%
+  
+      // Get units and formatting settings
+      const units = Object.keys(master.metrics[category].units);
+      const unitKey = units.find((unit) => unit !== "usd" && unit !== "eth") ||
+        (showUsd ? "usd" : "eth");
+      
+      const decimals = !showUsd && showGwei(category)
+        ? 2
+        : master.metrics[category].units[unitKey].decimals_tooltip;
+  
+      let prefix = displayValues[category].prefix;
+      let suffix = displayValues[category].suffix;
+  
+      if (!showUsd && data.metrics[category].daily.types.includes("eth")) {
+        if (showGwei(category)) {
+          prefix = "";
+          suffix = " Gwei";
+        }
+      }
+  
+      // Build tooltip points
       let tooltipPoints = points
-        .sort((a: any, b: any) => b.y - a.y)
         .map((point: any) => {
-          const { series, y, percentage } = point;
-          const { name } = series;
+          const name = point.seriesName;
+          const y = point.value[1];
+          const percentage = pointsSum > 0 ? (y / pointsSum) * 100 : 0;
           
-          const label = name === "ethereum" ? AllChainsByKeys[name].name_short : AllChainsByKeys[name].label;
-    
-          if (selectedScale === "percentage")
-            return `
-              <div class="flex w-full space-x-2 items-center font-medium mb-1 ">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-              }"></div>
-                <!--
-                <div class="tooltip-point-name">${label
-              }</div>
-                -->
-                <div class="flex-1 text-right numbers-xs">${Highcharts.numberFormat(
-                percentage,
-                2,
-              )}%</div>
-              </div>
-              <!-- <div class="flex ml-6 w-[calc(100% - 24rem)] relative mb-1">
-                <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
+          const label = name === "ethereum" 
+            ? AllChainsByKeys[name]?.name_short 
+            : AllChainsByKeys[name]?.label;
 
-                <div class="h-[2px] rounded-full absolute left-0 top-0" style="width: ${Highcharts.numberFormat(
-                percentage,
-                2,
-              )}%; background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-              };"> </div>
-              </div> -->`;
+          let colors = AllChainsByKeys[name]?.colors[theme ?? "dark"];
 
-          const units = Object.keys(master.metrics[category].units);
-          const unitKey =
-            units.find((unit) => unit !== "usd" && unit !== "eth") ||
-            (showUsd ? "usd" : "eth");
-          const decimals =
-            !showUsd && showGwei(category)
-              ? 2
-              : master.metrics[category].units[unitKey].decimals_tooltip;
-
-          let prefix = displayValues[category].prefix;
-          let suffix = displayValues[category].suffix;
-          let value = y;
-
-          if (
-            !showUsd &&
-            data.metrics[category].daily.types.includes("eth")
-          ) {
-            if (showGwei(category)) {
-              prefix = "";
-              suffix = " Gwei";
-            }
+          if(name === "all_l2s") {
+            colors = [
+              "#FFDF27",
+              "#FE5468"
+            ];
           }
-
+          if(name === "ethereum") {
+            colors = [
+              "#94ABD3",
+              "#596780",
+            ];
+          }
+  
+          if (selectedScale === "percentage") {
+            return `
+              <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+                <div class="w-4 h-1.5 rounded-r-full" style="background: linear-gradient(180deg, ${colors[0]} 0%, ${colors[1]} 100%);"></div>
+                <div class="tooltip-point-name text-xs">${label || name}</div>
+                <div class="flex-1 text-right numbers-xs">${percentage.toFixed(2)}%</div>
+              </div>
+              <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+                <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+                <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
+                style="width: ${(percentage / maxPercentage) * 100}%; background: linear-gradient(180deg, ${colors[0]} 0%, ${colors[1]} 100%);"></div>
+              </div>`;
+          }
+  
+          const value = y;
+          const formattedValue = value.toLocaleString("en-GB", {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals,
+          });
+  
           return `
-          <div class="flex w-full space-x-2 items-center justify-between font-medium mb-1">
-            <div class="flex items-center gap-x-[5px]">
-              <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-              }"></div>
-              
-              <div class="tooltip-point-name text-xs">${label
-              }</div>
+            <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+              <div class="w-4 h-1.5 rounded-r-full" style="background: linear-gradient(180deg, ${colors[0]} 0%, ${colors[1]} 100%);"></div>
+              <div class="tooltip-point-name text-xs">${label || name}</div>
+              <div class="flex-1 text-right justify-end numbers-xs flex">
+                <div class="${!prefix && "hidden"}">${prefix}</div>
+                ${formattedValue}
+                <div class="ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
+              </div>
             </div>
-            <div class="flex-1 text-right justify-end numbers-xs flex">
-                <div class="${!prefix && "hidden"
-            }">${prefix}</div>
-                ${parseFloat(value).toLocaleString("en-GB", {
-              minimumFractionDigits: decimals,
-              maximumFractionDigits: decimals,
-            })}
-                <div class="ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
-            </div>
-          </div>
-          <!-- <div class="flex ml-4 w-[calc(100% - 1rem)] relative mb-1">
-            <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
-
-            <div class="h-[2px] rounded-full absolute right-0 top-0" style="width: ${formatNumber(
-              name,
-              (y / pointsSum) * 100,
-              false,
-              false,
-            )}%; background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-            }33;"></div>
-          </div> -->`;
+            <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+              <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+              <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
+              style="width: ${(Math.max(0, value) / maxPoint) * 100}%; background: linear-gradient(180deg, ${colors[0]} 0%, ${colors[1]} 100%);"></div>
+            </div>`;
         })
         .join("");
-
-      if(points.length > 1) {
-        let tooltipTotal = points.reduce((acc: number, point: any) => acc + (point.y || 0), 0);        
-        
-        tooltipPoints += `
-          <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5">
+  
+      // Build the tooltip container
+      const tooltip = `<div class="mt-3 mr-3 mb-3 min-w-[240px] md:min-w-[260px] text-xs font-raleway">
+        <div class="flex justify-between items-center font-bold text-[13px] md:text-[1rem] ml-6 mb-2 gap-x-[15px]">
+          <div>${dateString}</div>
+          <div class="text-xs">${master.metrics[category].name}</div>
+        </div>`;
+  
+      // Add total row if there are multiple points and not in percentage scale
+      const sumRow = points.length > 1 && selectedScale !== "percentage"
+        ? `<div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5">
             <div class="w-4 h-1.5 rounded-r-full"></div>
             <div class="tooltip-point-name text-xs">Total</div>
             <div class="flex-1 text-right justify-end numbers-xs flex">
-              <div class="${!prefixes[chain] && "hidden"}">${prefixes[chain]}</div>
-              ${parseFloat(tooltipTotal).toLocaleString("en-GB", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
+              <div class="${!prefix && "hidden"}">${prefix}</div>
+              ${pointsSum.toLocaleString("en-GB", {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals,
               })}
-              <div class="ml-0.5 ${!prefixes[chain] && "hidden"}">${prefixes[chain]}</div>
+              <div class="ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
             </div>
           </div>
           <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
             <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
           </div>`
-      }
-      return tooltip + tooltipPoints + tooltipEnd;
+        : "";
+  
+      return tooltip + tooltipPoints + sumRow + "</div>";
     },
     [
       data.chain_id,
@@ -722,493 +712,309 @@ const ChainComponent = memo(function ChainComponent({
       showGwei,
       showUsd,
       theme,
-    ],
+      AllChainsByKeys,
+      master.metrics,
+      category,
+      prefixes,
+      chain,
+    ]
   );
 
-  const tooltipPositioner =
-    useCallback<Highcharts.TooltipPositionerCallbackFunction>(
-      function (this, width, height, point) {
-        const chart = this.chart;
-        const { plotLeft, plotTop, plotWidth, plotHeight } = chart;
-        const tooltipWidth = width;
-        const tooltipHeight = height;
-        const distance = 20;
-        const pointX = point.plotX + plotLeft;
-        const pointY = point.plotY + plotTop;
-        let tooltipX =
-          pointX - distance - tooltipWidth < plotLeft - 120
-            ? pointX + distance
-            : pointX - tooltipWidth - distance;
 
-        let tooltipY = pointY - tooltipHeight / 2;
-
-        if (tooltipY > plotTop + plotHeight - tooltipHeight) {
-          tooltipY = plotTop + plotHeight - tooltipHeight;
-        }
-
-        if (isMobile) {
-          if (tooltipX < plotLeft) {
-            tooltipX = pointX + distance;
-          }
-          return {
-            x: tooltipX,
-            y: 49,
-          };
-        }
-
-        return {
-          x: tooltipX,
-          y: tooltipY,
-        };
-      },
-      [isMobile],
-    );
-
-  const seriesHover = useCallback<
-    | Highcharts.SeriesMouseOverCallbackFunction
-    | Highcharts.SeriesMouseOutCallbackFunction
-  >(
-    function (this: Highcharts.Series, event: Event) {
-      const {
-        chart: hoveredChart,
-        name: hoveredSeriesName,
-        index: hoveredSeriesIndex,
-      } = this;
-
-      if (chartComponents.current && chartComponents.current.length > 1) {
-        chartComponents.current.forEach((chart) => {
-          if (!chart || chart.index === hoveredChart.index) return;
-
-          // set series state
-          if (event.type === "mouseOver") {
-            if (chart.series[hoveredSeriesIndex]) {
-              chart.series[hoveredSeriesIndex].setState("hover");
-            }
-          } else {
-            chart.series[hoveredSeriesIndex].setState();
-          }
-        });
-      }
-    },
-
-    [chartComponents],
-  );
-
-  const pointHover = useCallback<
-    | Highcharts.PointMouseOverCallbackFunction
-    | Highcharts.PointMouseOutCallbackFunction
-  >(
-    function (this: Highcharts.Point, event: MouseEvent) {
-      const { series: hoveredSeries, index: hoveredPointIndex } = this;
-      const hoveredChart = hoveredSeries.chart;
-
-      if (chartComponents.current && chartComponents.current.length > 0) {
-        chartComponents.current.forEach((chart) => {
-          if (!chart) return;
-
-          // if (chart.index === hoveredChart.index) {
-          // }
-
-          if (event.type === "mouseOver" || event.type === "mouseMove") {
-            if (chart.series[hoveredSeries.index]) {
-              if (event.target !== null) {
-                const pointerEvent =
-                  event.target as unknown as Highcharts.PointerEventObject;
-
-                const point =
-                  chart.series[hoveredSeries.index].points.find(
-                    (p) =>
-                      p.x ===
-                      (event.target as unknown as Highcharts.PointerEventObject)
-                        .x,
-                  ) || null;
-
-                if (point !== null) {
-                  const simulatedPointerEvent: any = {
-                    chartX: point.plotX ?? 0,
-                    chartY: point.plotY ?? 0,
-                  };
-                  // if this is the chart we are hovering
-                  if (chart.index === hoveredChart.index) {
-                    // // render rectangular hover box for datagrouping
-                    // if (chart.HoverBox) {
-                    //   try {
-                    //     chart.HoverBox.attr("visibility", "hidden");
-                    //   } catch (e) {
-                    //     console.log(e);
-                    //   }
-                    // }
-                    // // calculate width if weekly or monthly
-                    // const boxWidth =
-                    //   chart.plotWidth /
-                    //   (timespans[selectedTimespan].daysDiff / 7);
-                    // if (!chart.HoverBox) {
-                    //   chart.HoverBox = chart.renderer
-                    //     .rect(0, chart.plotTop, boxWidth, chart.plotHeight, 0)
-                    //     .attr({
-                    //       fill:
-                    //         AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0] +
-                    //         "11",
-                    //       zIndex: 100,
-                    //     })
-                    //     .add()
-                    //     .toFront();
-                    // } else {
-                    //   chart.HoverBox.attr("visibility", "visible");
-                    //   chart.HoverBox.attr(
-                    //     "x",
-                    //     simulatedPointerEvent.chartX - boxWidth / 2,
-                    //   );
-                    //   chart.HoverBox.attr("width", boxWidth);
-                    // }
-                  }
-
-                  // else if this is not the chart we are hovering
-                  else {
-                    point.setState("hover");
-                    chart.xAxis[0].drawCrosshair(simulatedPointerEvent);
-                  }
-                }
-
-                return;
-              }
-            }
-          }
-
-          chart.xAxis[0].hideCrosshair();
-          // if (chart.HoverBox) {
-          //   try {
-          //     chart.HoverBox.attr("visibility", "hidden");
-          //   } catch (e) {
-          //     console.log(e);
-          //   }
-          // }
-          if (chart.index !== hoveredChart.index)
-            chart.series[hoveredSeries.index].points.forEach((point) => {
-              point.setState();
-            });
-        });
-      }
-    },
-
-    [chartComponents],
-  );
 
   const [isVisible, setIsVisible] = useState(true);
   const resizeTimeout = useRef<null | ReturnType<typeof setTimeout>>(null);
   const [isAnimate, setIsAnimate] = useState(false);
   const animationTimeout = useRef<null | ReturnType<typeof setTimeout>>(null);
 
-  const handleResize = () => {
-    // Hide the element
-    setIsVisible(false);
+  // const handleResize = () => {
+  //   // Hide the element
+  //   setIsVisible(false);
 
-    // Set animation to false
-    setIsAnimate(false);
+  //   // Set animation to false
+  //   setIsAnimate(false);
 
-    // Clear any existing timeouts
-    if (resizeTimeout.current) {
-      clearTimeout(resizeTimeout.current);
-    }
+  //   // Clear any existing timeouts
+  //   if (resizeTimeout.current) {
+  //     clearTimeout(resizeTimeout.current);
+  //   }
 
-    if (animationTimeout.current) {
-      clearTimeout(animationTimeout.current);
-    }
+  //   if (animationTimeout.current) {
+  //     clearTimeout(animationTimeout.current);
+  //   }
 
-    // Set a timeout to show the element again after 500ms of no resizing
-    resizeTimeout.current = setTimeout(() => {
-      setIsVisible(true);
-    }, 200);
+  //   // Set a timeout to show the element again after 500ms of no resizing
+  //   resizeTimeout.current = setTimeout(() => {
+  //     setIsVisible(true);
+  //   }, 200);
 
-    // Set a timeout to show the element again after 500ms of no resizing
-    animationTimeout.current = setTimeout(() => {
-      setIsAnimate(true);
-    }, 500);
-  };
+  //   // Set a timeout to show the element again after 500ms of no resizing
+  //   animationTimeout.current = setTimeout(() => {
+  //     setIsAnimate(true);
+  //   }, 500);
+  // };
 
-  useEffect(() => {
-    // highchartsDebug(Highcharts);
-    window.addEventListener("resize", handleResize);
+  // useEffect(() => {
+  //   // highchartsDebug(Highcharts);
+  //   window.addEventListener("resize", handleResize);
 
-    animationTimeout.current = setTimeout(() => {
-      setIsAnimate(true);
-    }, 500);
+  //   animationTimeout.current = setTimeout(() => {
+  //     setIsAnimate(true);
+  //   }, 500);
 
-    return () => {
-      // Cleanup
-      window.removeEventListener("resize", handleResize);
-      if (resizeTimeout.current) {
-        clearTimeout(resizeTimeout.current);
-      }
+  //   return () => {
+  //     // Cleanup
+  //     window.removeEventListener("resize", handleResize);
+  //     if (resizeTimeout.current) {
+  //       clearTimeout(resizeTimeout.current);
+  //     }
 
-      if (animationTimeout.current) {
-        clearTimeout(animationTimeout.current);
-      }
-    };
-  }, []);
+  //     if (animationTimeout.current) {
+  //       clearTimeout(animationTimeout.current);
+  //     }
+  //   };
+  // }, []);
 
-  const lastPointLines = useMemo<{
-    [key: string]: Highcharts.SVGElement[];
-  }>(() => ({}), []);
+
 
   const resetXAxisExtremes = useCallback(() => {
-    if (chartComponents.current && !zoomed) {
-      chartComponents.current.forEach((chart) => {
-        if (!chart) return;
-
-        const pixelsPerDay =
-          chart.plotWidth / timespans[selectedTimespan].daysDiff;
-
-        // 15px padding on each side
-        const paddingMilliseconds = (15 / pixelsPerDay) * 24 * 60 * 60 * 1000;
-
-        chart.xAxis[0].setExtremes(
-          timespans[selectedTimespan].xMin, //- paddingMilliseconds,
-          timespans[selectedTimespan].xMax,
-          isAnimate,
-        );
-      });
+    if (chartRef.current && !zoomed) {
+      const chartInstance = chartRef.current.getEchartsInstance();
+      if (chartInstance) {
+        chartInstance.setOption({
+          xAxis: {
+            min: timespans[selectedTimespan].xMin,
+            max: timespans[selectedTimespan].xMax,
+          },
+        });
+      }
     }
-  }, [isAnimate, selectedTimespan, timespans, zoomed]);
+  }, [selectedTimespan, timespans, zoomed]);
 
-  const options: Highcharts.Options | any = useMemo(() => {
+  const options: any = useMemo(() => {
+    // Define series configurations similar to AggChart
+    const seriesConfigs = [
+      ...(category !== "rent_paid" && !focusEnabled ? [{
+        key: ethData.chain_id,
+        name: ethData.chain_id,
+        type: 'line',
+        data: filteredData.map(d => [d[0], d[2]]),
+        stacking: 'total'
+      }] : []),
+      {
+        key: data.chain_id,
+        name: 'all_l2s',
+        type: 'line',
+        data: filteredData.map(d => [d[0], d[1]]),
+        stacking: 'total',
+      }
+    ];
+
+    // Map series configurations with enhanced styling - matching AggChart pattern
+    const series = seriesConfigs.map((config, index) => {
+      const colors = AllChainsByKeys[config.key]?.colors[theme ?? "dark"] ?? AllChainsByKeys["all_l2s"]?.colors[theme ?? "dark"];
+
+      const baseConfig: any = {
+        name: config.name,
+        type: config.type,
+        data: config.data,
+        stack: config.stacking,
+        smooth: false,
+        symbol: 'circle',
+        symbolSize: 8, // Very small symbols for hover detection
+        showSymbol: true,
+        lineStyle: { 
+          width: 2,
+          color: config.name === 'all_l2s' ? {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 1,
+            y2: 0,
+            colorStops: [
+              { offset: 0, color: '#FFDF27' }, // Yellow at left
+              { offset: 1, color: '#FE5468' }, // Red/pink at right
+            ],
+          } : colors[0]
+        },
+        itemStyle: {
+          color: 'transparent', // Make normal symbols invisible
+          borderWidth: 0,
+        },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, 
+            config.name === 'all_l2s' ? [
+              { offset: 0, color: colors[0] + "33" },
+              { offset: 0.4, color: colors[0] + "33" },
+              { offset: 1, color: colors[1] + "33" },
+            ] : [
+              { offset: 0, color: colors[0] + "33" },
+              { offset: 1, color: colors[1] + "33" },
+            ]
+          )
+        },
+        emphasis: {
+          symbolSize: 8,
+          symbol: 'circle',
+          itemStyle: {
+            color: colors[1] + "80", // Series color with 50% opacity
+            borderWidth: 0,
+            shadowBlur: 0,
+          }
+        },
+        animation: false, // Temporarily disable animations to test hover effects
+      };
+
+      return baseConfig;
+    });
+
     return {
-      accessibility: { enabled: false },
-      exporting: { enabled: false },
-      chart: {
-        // displayErrors: false,
-        type: "area",
-        height: isMobile ? "146px" : "176px",
-        // width: "100%",
-        backgroundColor: undefined,
-        margin: [1, 0, 0, 0],
-        spacingBottom: 0,
-        panning: { enabled: false },
-        panKey: "shift",
-        animation: forceNoAnimation.current ? false : isAnimate,
-        zooming: {
-          type: undefined,
-          mouseWheel: {
-            enabled: false,
-          },
-          resetButton: {
-            theme: {
-              zIndex: -10,
-              fill: "transparent",
-              stroke: "transparent",
-              style: {
-                color: "transparent",
-                height: 0,
-                width: 0,
-              },
-              states: {
-                hover: {
-                  fill: "transparent",
-                  stroke: "transparent",
-                  style: {
-                    color: "transparent",
-                    height: 0,
-                    width: 0,
-                  },
-                },
-              },
-            },
-          },
-        },
-
-        style: {
-          //@ts-ignore
-          borderRadius: "0 0 15px 15px",
-        },
-      },
-
-      title: undefined,
-      yAxis: {
-        title: { text: undefined },
-        opposite: false,
-        showFirstLabel: false,
-
-        showLastLabel: true,
-        gridLineWidth: 1,
-        gridLineColor:
-          theme === "dark"
-            ? "rgba(215, 223, 222, 0.11)"
-            : "rgba(41, 51, 50, 0.11)",
-
-        type: "linear",
-        min: 0,
-        labels: {
-          align: "left",
-          y: 11,
-          x: 2,
-          style: {
-            gridLineColor:
-              theme === "dark"
-                ? "rgba(215, 223, 222, 0.33)"
-                : "rgba(41, 51, 50, 0.33)",
-            fontSize: "10px",
-          },
-        },
-        // gridLineColor:
-        //   theme === "dark"
-        //     ? "rgba(215, 223, 222, 0.33)"
-        //     : "rgba(41, 51, 50, 0.33)",
+      animation: false, // Temporarily disable global animations to test hover effects
+      grid: {
+        top: isMobile ? 50 : 50,
+        right: 15,
+        bottom: 0,
+        left: 0,
+        containLabel: false,
       },
       xAxis: {
-        events: {
-          afterSetExtremes: onXAxisSetExtremes,
-        },
-        type: "datetime",
-        lineWidth: 0,
-        crosshair: {
-          width: 0.5,
-          color: COLORS.PLOT_LINE,
-          snap: false,
-        },
+        type: 'time',
+        show: false,
         min: zoomed ? zoomMin : timespans[selectedTimespan].xMin,
         max: zoomed ? zoomMax : timespans[selectedTimespan].xMax,
-        tickPositions: getTickPositions(
-          timespans[selectedTimespan].xMin,
-          timespans[selectedTimespan].xMax,
-        ),
-        tickmarkPlacement: "on",
-        tickWidth: 1,
-        tickLength: 20,
-        ordinal: false,
-        minorTicks: false,
-        minorTickLength: 2,
-        minorTickWidth: 2,
-        minorGridLineWidth: 0,
-        minorTickInterval: 1000 * 60 * 60 * 24 * 7,
-        labels: {
-          style: { color: COLORS.LABEL },
-          enabled: false,
-          formatter: (item) => {
-            const date = new Date(item.value);
-            const isMonthStart = date.getDate() === 1;
-            const isYearStart = isMonthStart && date.getMonth() === 0;
-            if (isYearStart) {
-              return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
-            } else {
-              return `<span style="">${date.toLocaleDateString("en-GB", {
-                month: "short",
-              })}</span>`;
-            }
-          },
-        },
-        // minPadding: 0.04,
-        // maxPadding: 0.04,
-        gridLineWidth: 0,
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: { show: false },
+        splitLine: { show: false },
       },
-      legend: {
-        enabled: false,
-        useHTML: false,
-        symbolWidth: 0,
+      yAxis: {
+        type: 'value',
+        splitNumber: 2,
+        axisLine: { show: false },
+        axisTick: { show: false },
+        splitLine: {
+          show: true,
+          lineStyle: { 
+            // color: '#5A64624F',
+            // top, bottom, left, right
+            color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+              { offset: 0, color: '#5A646200' },
+              { offset: 0.2, color: '#5A64624F' },
+              { offset: 1, color: '#5A64624F' }
+            ]),
+            width: 1
+          }
+        },
+        axisLabel: {
+          show: true,
+          margin: -1,
+          padding: [3, 0, 0, 2],
+          color: '#CDD8D3',
+          fontSize: isMobile ? 7 : 8,
+          fontWeight: 500,
+          fontFamily: 'var(--font-fira-sans), sans-serif !important;',
+          align: 'left',
+          verticalAlign: 'top',
+          formatter: (value: number) => {
+            return displayValues[category].prefix + formatNumberWithSI(value);
+          }
+        }
       },
       tooltip: {
-        hideDelay: 300,
-        stickOnContact: false,
-        useHTML: true,
-        shared: true,
-        outside: isMobile ? false : true,
-        formatter: tooltipFormatter,
-        positioner: tooltipPositioner,
-        split: false,
-        followPointer: true,
-        followTouchMove: true,
+        show: true,
+        trigger: 'axis',
+        triggerOn: 'mousemove',
         backgroundColor: (theme === "dark" ? "#2A3433" : "#EAECEB") + "EE",
-        borderRadius: 17,
         borderWidth: 0,
+        borderRadius: 17,
         padding: 0,
-        shadow: {
-          color: "black",
-          opacity: 0.015,
-          offsetX: 2,
-          offsetY: 2,
-        },
-        style: {
+        textStyle: {
           color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
         },
-      },
-
-      plotOptions: {
-        line: {
-          lineWidth: 2,
+        formatter: tooltipFormatter,
+        confine: false, // Allow tooltip to overflow the chart container
+        appendToBody: true, // Append tooltip to document body to prevent clipping
+        axisPointer: {
+          type: 'line',
+          lineStyle: {
+            color: COLORS.PLOT_LINE,
+            width: 1,
+            type: 'solid'
+          }
         },
-        area: {
-          stacked: true,
-          lineWidth: 2,
-          // marker: {
-          //   radius: 12,
-          //   lineWidth: 4,
-          // },
-          fillOpacity: 1,
+        position: function (point: any, params: any, dom: any, rect: any, size: any) {
+          const { contentSize, viewSize } = size;
+          const [contentWidth, contentHeight] = contentSize;
+          const [viewWidth, viewHeight] = viewSize;
           
-          // shadow: {
-          //   color:
-          //     AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1] + "33",
-          //   width: 10,
-          // },
-          color: {
-            linearGradient: {
-              x1: 0,
-              y1: 0,
-              x2: 1,
-              y2: 0,
-            },
-            stops: [
-              [0, AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][0]],
-              // [0.33, AllChainsByKeys[series.name].colors[1]],
-              [1, AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1]],
-            ],
-          },
-          // borderColor: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
-          // borderWidth: 1,
-        },
-        series: {
-          stacking: "normal",
-          zIndex: 10,
-          animation: false,
-          marker: {
-            lineColor: "white",
-            radius: 0,
-            symbol: "circle",
-          },
-        },
-      },
-      navigator: {
-        enabled: false,
-      },
-      rangeSelector: {
-        enabled: false,
-      },
-      stockTools: {
-        gui: {
-          enabled: false,
+          const distance = 20;
+          const pointX = point[0];
+          const pointY = point[1];
+          
+          if (isMobile) {
+            let tooltipX = pointX - contentWidth / 2;
+            if (tooltipX < 0) {
+              tooltipX = 0;
+            }
+            if (tooltipX + contentWidth > viewWidth) {
+              tooltipX = viewWidth - contentWidth;
+            }
+            
+            return [tooltipX, 0];
+          }
+          
+          let tooltipX = pointX - contentWidth - distance;
+          let tooltipY = pointY - contentHeight - distance;
+
+          if (tooltipX < 0) {
+            tooltipX = pointX + distance;
+          }
+          
+          // If still going off the right edge, constrain to viewport
+          if (tooltipX + contentWidth > viewWidth) {
+            tooltipX = viewWidth - contentWidth;
+          }
+          
+          // Vertical adjustments
+          // if (tooltipY < 0) {
+          //   tooltipY = pointY;
+          // }
+          
+          if (tooltipY + contentHeight > viewHeight) {
+            tooltipY = viewHeight - contentHeight;
+          }
+          
+          return [tooltipX, tooltipY];
         },
       },
-      scrollbar: {
-        enabled: false,
-      },
-      credits: {
-        enabled: false,
-      },
+      dataZoom: [
+        {
+          type: 'inside',
+          disabled: true,
+          start: 0,
+          end: 100,
+        },
+      ],
+      series,
     };
   }, [
     data.chain_id,
-    getTickPositions,
     isAnimate,
     isMobile,
-    onXAxisSetExtremes,
     selectedTimespan,
     theme,
     timespans,
     tooltipFormatter,
-    tooltipPositioner,
     zoomMax,
     zoomMin,
     zoomed,
     forceNoAnimation.current,
+    COLORS.PLOT_LINE,
+    filteredData,
+    AllChainsByKeys,
+    category,
+    focusEnabled,
+    ethData.chain_id,
   ]);
 
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
@@ -1216,178 +1022,126 @@ const ChainComponent = memo(function ChainComponent({
   const delayPromises = [];
  
 
-  const onChartRender = (chart: Highcharts.Chart) => {
-    if (!chart || !chart.series) return;
+  const getGraphicElements = useCallback(() => {
+    if (!chartRef.current || !filteredData.length || !containerWidth || !containerHeight) return [];
 
-    // check if gradient exists
-    if (!document.getElementById("gradient0")) {
-      // add def containing linear gradient with stop colors for the circle
-      chart.renderer.definition({
-        attributes: {
-          id: "gradient0",
-          x1: "0%",
-          y1: "0%",
-          x2: "0%",
-          y2: "100%",
+    const chartInstance = chartRef.current.getEchartsInstance();
+    if (!chartInstance) return [];
+
+    const chartWidth = containerWidth || chartInstance.getWidth();
+    const chartHeight = containerHeight || chartInstance.getHeight();
+    
+    // Get chart area bounds
+    const gridLeft = 0;
+    const gridRight = chartWidth - 15; // Account for right margin
+    const gridTop = isMobile ? 50 : 50;
+    const gridBottom = chartHeight - (isMobile ? 0 : 0);
+    const gridHeightUsable = gridBottom - gridTop;
+    
+    // Get the last data point
+    const lastDataPoint = filteredData[filteredData.length - 1];
+    if (!lastDataPoint) return [];
+
+    // Calculate the actual y-position for the all_l2s series (considering stacking)
+    // For stacked areas, all_l2s appears on top, so we need the cumulative value
+    const all_l2sValue = lastDataPoint[1] || 0;
+    const ethereumValue = (!focusEnabled && category !== "rent_paid") ? (lastDataPoint[2] || 0) : 0;
+    const cumulativeValue = all_l2sValue + ethereumValue;
+
+    // Convert data coordinates to pixel coordinates using the cumulative value
+    const pixelPoint = chartInstance.convertToPixel('grid', [lastDataPoint[0], cumulativeValue]);
+    if (!pixelPoint) return [];
+
+    const fraction = 15 / chartWidth;
+    const lineX = chartWidth * (1 - fraction);
+    const lineStartY = pixelPoint[1];
+    const lineEndY = 25;
+
+    const gridLineColor = theme === "dark" ? "rgba(215, 223, 222, 0.8)" : "rgba(41, 51, 50, 0.8)";
+
+    return [
+
+      // Dashed line from last point to top with horizontal gradient
+      {
+        type: 'line',
+        shape: {
+          x1: lineX,
+          y1: lineStartY,
+          x2: lineX,
+          y2: lineEndY,
         },
-        children: [
-          {
-            tagName: "stop",
-            // offset: "0%",
-
-            attributes: {
-              id: "stop1",
-              offset: "0%",
-            },
+        style: {
+          stroke: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              {
+                offset: 0,
+                color: '#CDD8D3FF', // Yellow at left
+              },
+              {
+                offset: 1,
+                color: '#CDD8D311', // Red/pink at right
+              },
+            ],
           },
-          {
-            tagName: "stop",
-            // offset: "100%",
-            attributes: {
-              id: "stop2",
-              offset: "100%",
-            },
-          },
-        ],
-        tagName: "linearGradient",
-        textContent: "",
-      });
-      const stop1 = document.getElementById("stop1");
-      const stop2 = document.getElementById("stop2");
-      stop1?.setAttribute(
-        "stop-color",
-        AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1],
-      );
-      stop1?.setAttribute("stop-opacity", "1");
-      stop2?.setAttribute(
-        "stop-color",
-        AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
-      );
-      stop2?.setAttribute("stop-opacity", "0.33");
-    }
+          lineDash: [2, 2],
+          lineWidth: 1,
+        },
+        z: 10,
+      },
+      // Circle at the end of the line
+      {
+        type: 'circle',
+        shape: {
+          cx: lineX,
+          cy: lineEndY,
+          r: 4.5,
+        },
+        style: {
+          fill: '#CDD8D3', // Red to match the right side of the gradient
+        },
+        z: 11,
+      },
+    ];
+  }, [filteredData, data.chain_id, theme, AllChainsByKeys, isMobile, containerWidth, containerHeight]);
 
-    // only 1 chart so setting const for i to = 0
-    const i = 0;
-    const index = chart.series.findIndex((s) => s.name === "all_l2s");
+  // const resituateChart = debounce(() => {
+  //   if (chartRef.current && !zoomed) {
+  //     const chartInstance = chartRef.current.getEchartsInstance();
+  //     if (isMounted() && chartInstance) {
+  //       chartInstance.resize();
+  //       resetXAxisExtremes();
+  //     }
+  //   }
+  // }, 500);
 
-    // const chart: Highcharts.Chart = this;
-    const lastPoint: Highcharts.Point =
-      chart.series[index].points[chart.series[index].points.length - 1];
+  // useEffect(() => {
+  //   resituateChart();
 
-    // check if i exists as a key in lastPointLines
-    if (!lastPointLines[i]) {
-      lastPointLines[i] = [];
-    }
+  //   // cancel the debounced function on component unmount
+  //   return () => {
+  //     resituateChart.cancel();
+  //   };
+  // }, [width, height, isSidebarOpen, resituateChart]);
 
-    if (lastPointLines[i] && lastPointLines[i].length > 0) {
-      lastPointLines[i].forEach((line) => {
-        line.destroy();
-      });
-      lastPointLines[i] = [];
-    }
-    
-    if (index === -1) {
-      console.warn("Series 'all_l2s' not found in chart");
-      return;
-    }
-    
-    // Add safety check for series
-    if (!chart.series[index] || !chart.series[index].points || chart.series[index].points.length === 0) {
-      console.warn("No points found in series 'all_l2s'");
-      return;
-    }
-    // calculate the fraction that 15px is in relation to the pixel width of the chart
-    const fraction = 15 / chart.chartWidth;
-
-    // create a bordered line from the last point to the top of the chart's container
-    lastPointLines[i][lastPointLines[i].length] = chart.renderer
-      .createElement("line")
-      .attr({
-        x1: chart.chartWidth * (1 - fraction) + 0.00005,
-        y1: lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
-        x2: chart.chartWidth * (1 - fraction) - 0.00005,
-        y2: chart.plotTop / 2,
-        stroke: isSafariBrowser
-          ? AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1]
-          : "url('#gradient0')",
-        "stroke-dasharray": "2",
-        "stroke-width": 1,
-        rendering: "crispEdges",
-      })
-      .add();
-
-    lastPointLines[i][lastPointLines[i].length] = chart.renderer
-      .createElement("line")
-      .attr({
-        x1: chart.chartWidth * (1 - fraction) + 0.5,
-        y1: chart.plotTop / 2 + 0.00005,
-        x2: chart.chartWidth * (1 - fraction),
-        y2: chart.plotTop / 2,
-        stroke: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1],
-        "stroke-dasharray": 2,
-        "stroke-width": 1,
-        rendering: "crispEdges",
-      })
-      .add();
-
-    // create a circle at the end of the line
-    lastPointLines[i][lastPointLines[i].length] = chart.renderer
-      .circle(chart.chartWidth * (1 - fraction), chart.plotTop / 2, 3)
-      .attr({
-        fill: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1],
-        r: 4.5,
-        zIndex: 9999,
-        rendering: "crispEdges",
-      })
-      .add();
-
-    // create a circle at the end of the line
-    // lastPointLines[i][lastPointLines[i].length] = chart.renderer
-    //   .circle(
-    //     lastPoint.plotX,
-    //     lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
-    //     2,
-    //   )
-    //   .attr({
-    //     stroke: "#CDD8D3",
-    //     opacity: 0.44,
-    //     r: 1,
-    //     zIndex: 9999,
-    //     rendering: "crispEdges",
-    //   })
-    //   .add();
-  };
-
-  const resituateChart = debounce(() => {
-    if (chartComponents.current && !zoomed) {
-      chartComponents.current.forEach((chart) => {
-        isMounted() && chart && chart.setSize(null, null, false);
-        isMounted() && chart && chart.reflow();
-        isMounted() && chart && resetXAxisExtremes();
-
-        // delay(0)
-        //   .then(() => {
-        //     isMounted() && chart && chart.setSize(null, null, false);
-        //     // chart.reflow();
-        //   })
-        //   .then(() => {
-        //     isMounted() && chart && chart.reflow();
-        //   })
-        //   .then(() => {
-        //     isMounted() && chart && resetXAxisExtremes();
-        //   });
-      });
-    }
-  }, 500);
-
+  // Handle container size changes and update graphic elements
   useEffect(() => {
-    resituateChart();
-
-    // cancel the debounced function on component unmount
-    return () => {
-      resituateChart.cancel();
-    };
-  }, [width, height, isSidebarOpen, resituateChart]);
+    if (chartRef.current && containerWidth && containerHeight) {
+      const chartInstance = chartRef.current.getEchartsInstance();
+      if (chartInstance) {
+        // Delay to ensure chart is fully rendered
+        setTimeout(() => {
+          chartInstance.setOption({
+            graphic: getGraphicElements(),
+          });
+        }, 100);
+      }
+    }
+  }, [containerWidth, containerHeight, getGraphicElements]);
 
   const SourcesDisplay = useMemo(() => {
     return data.metrics[category].source &&
@@ -1410,142 +1164,7 @@ const ChainComponent = memo(function ChainComponent({
     );
   }, [category, data.metrics]);
 
-  const seriesConfig = useMemo(() => {
-    return [
-      {
-        name: data.chain_id,
-        crisp: true,
-        data: filteredData.map(d => [d[0], d[1]]),
-        showInLegend: false,
-        fillColor: {
-          linearGradient: {
-            x1: 0,
-            y1: 0,
-            x2: 0,
-            y2: 1,
-          },
-          stops: [
-            [
-              0,
-              AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0] +
-              "33",
-            ],
-            [
-              1,
-              AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1] +
-              "33",
-            ],
-          ],
-        },
-        marker: {
-          enabled: false,
-        },
-        dataGrouping: {
-          enabled: false,
-        },
-        point: {
-          events: {
-            mouseOver: pointHover,
-            mouseOut: pointHover,
-          },
-        },
-        states: {
-          hover: {
-            enabled: true,
-            halo: {
-              size: 5,
-              opacity: 1,
-              attributes: {
-                fill:
-                  AllChainsByKeys[data.chain_id]?.colors[
-                  theme ?? "dark"
-                  ][0] + "99",
-                stroke:
-                  AllChainsByKeys[data.chain_id]?.colors[
-                  theme ?? "dark"
-                  ][0] + "66",
-              },
-            },
-            brightness: 0.3,
-          },
-          inactive: {
-            enabled: true,
-            opacity: 0.6,
-          },
-          selection: {
-            enabled: false,
-          },
-        },
-      },
-      ((category !== "rent_paid")) && {
-        visible: focusEnabled ? false : true,
-        name: ethData.chain_id,
-        crisp: true,
-        data: filteredData.map(d => [d[0], d[2]]),
-        showInLegend: false,
-        marker: {
-          enabled: false,
-        },
-        dataGrouping: {
-          enabled: false,
-        },
-        color: AllChainsByKeys[ethData.chain_id]?.colors[theme ?? "dark"][0],
-        fillColor: {
-          linearGradient: {
-            x1: 0,
-            y1: 0,
-            x2: 0,
-            y2: 1,
-          },
-          stops: [
-            [
-              0,
-              AllChainsByKeys[ethData.chain_id].colors[theme ?? "dark"][0] +
-              "33",
-            ],
-            [
-              1,
-              AllChainsByKeys[ethData.chain_id].colors[theme ?? "dark"][1] +
-              "33",
-            ],
-          ],
-        },
-        point: {
-          events: {
-            mouseOver: pointHover,
-            mouseOut: pointHover,
-          },
-        },
-        states: {
-          hover: {
-            enabled: true,
-            halo: {
-              size: 5,
-              opacity: 1,
-              attributes: {
-                fill:
-                  AllChainsByKeys[ethData.chain_id]?.colors[
-                  theme ?? "dark"
-                  ][0] + "99",
-                stroke:
-                  AllChainsByKeys[ethData.chain_id]?.colors[
-                  theme ?? "dark"
-                  ][0] + "66",
-              },
-            },
-            brightness: 0.3,
-          },
-          inactive: {
-            enabled: true,
-            opacity: 0.6,
-          },
-          selection: {
-            enabled: false,
-          },
-        },
-      },
-    ].filter(Boolean);
-  }, [data.chain_id, filteredData, AllChainsByKeys, theme, pointHover, category, focusEnabled, ethData.chain_id]);
+
 
   // Add this effect to detect focus changes and temporarily disable animations
   useEffect(() => {
@@ -1560,65 +1179,67 @@ const ChainComponent = memo(function ChainComponent({
     return () => clearTimeout(timer);
   }, [focusEnabled]);
 
+  const urlKey =
+  metricItems[metricItems.findIndex((item) => item.key === category)]
+    ?.urlKey;
+
   return (
     <div
       key={category}
       className="w-full h-fit relative z-10"
       suppressHydrationWarning={true}
     >
-      <div className="w-full h-[146px] md:h-[176px] relative">
+      <div className="w-full h-[146px] md:h-[176px] relative" ref={chartContainerRef}>
         <div className="absolute w-full h-full bg-forest-50 dark:bg-[#1F2726] rounded-[15px]"></div>
         <div className="absolute w-full h-[146px] md:h-[176px]">
-          <HighchartsReact
-            containerProps={{
-              className: isVisible ? "" : "hidden",
+          <ReactECharts
+            ref={chartRef}
+            opts={{
+              devicePixelRatio: window.devicePixelRatio || 1,
             }}
-            highcharts={Highcharts}
-            constructorType={"stockChart"}
-            options={{
+            option={{
               ...options,
-              chart: {
-                ...options.chart,
-                
-                margin: zoomed ? zoomMargin : defaultMargin,
-                events: {
-                  // render: function () {
-                  //   const chart = this;
-                  // },
-                  render: function () {
-                    const chart = this;
-                    onChartRender(chart);
-                  },
-                },
-              },
-              yAxis: {
-                ...options.yAxis,
-
-                labels: {
-                  enabled: false,
-                  ...(options.yAxis as Highcharts.YAxisOptions).labels,
-                  formatter: function (
-                    t: Highcharts.AxisLabelsFormatterContextObject,
-                  ) {
-                    return formatNumber(category, t.value, true);
-                  },
-                },
-              },
-
-              series: seriesConfig,
+              graphic: getGraphicElements(),
             }}
-            ref={(chart) => {
-              if (chart) {
-                chartComponents.current[0] = chart.chart;
-              }
+            style={{
+              height: isMobile ? "146px" : "176px",
+              width: "100%",
+              display: isVisible ? "block" : "none",
+ 
             }}
+            onEvents={{
+              dataZoom: onDataZoom,
+              render: (params: any) => {
+                // Chart render finished, update graphic elements
+                if (chartRef.current) {
+                  const chartInstance = chartRef.current.getEchartsInstance();
+                  if (chartInstance) {
+                    setTimeout(() => {
+                    chartInstance.setOption({
+                      graphic: getGraphicElements(),
+                    });
+                    }, 100);
+                  }
+                }
+              },
+            }}
+            className='rounded-b-[15px] overflow-hidden'
+            notMerge={false}
+            lazyUpdate={true}
           />
         </div>
-        <div className="absolute top-[14px] w-full flex justify-between items-center px-[23px]">
-          <div className="text-[20px] leading-snug font-bold">
-            {metricItems[metric_index]?.page?.title}
-          </div>
-          <div className="numbers-lg leading-snug font-medium flex items-center">
+        <div className="absolute top-[15px] w-full flex justify-between items-start pl-[15px] pr-[23px]">
+          <Link href={`/fundamentals/${urlKey}`} className="flex gap-x-[10px] items-center">
+            <div className="heading-large-sm leading-snug">
+              {metricItems[metric_index]?.page?.title}
+            </div>
+            <GTPIcon 
+              icon={"feather:arrow-right" as GTPIconName} 
+              size="sm" className="!size-[11px]" 
+              containerClassName='!size-[15px] flex items-center justify-center bg-medium-background rounded-full' 
+            />
+          </Link>
+          <div className="numbers-lg leading-snug h-[20px] font-medium flex items-center">
             <div>{displayValues[category].prefix}</div>
             <div>{displayValues[category].value}</div>
             <div className="text-base pl-0.5">
@@ -1635,7 +1256,7 @@ const ChainComponent = memo(function ChainComponent({
             className={`absolute top-[calc(50% - 0.5px)] right-[20px] w-[4px] h-[4px] rounded-full bg-forest-900 dark:bg-forest-50`}
           ></div> */}
         </div>
-        <div className="flex absolute h-[40px] w-[320px] bottom-[7px] md:bottom-[16px] left-[36px] items-center gap-x-[6px] dark:text-[#CDD8D3] opacity-20 pointer-events-none">
+        {/* <div className="flex absolute h-[40px] w-[320px] bottom-[7px] md:bottom-[16px] left-[36px] items-center gap-x-[6px] dark:text-[#CDD8D3] opacity-20 pointer-events-none">
           <Icon
             icon={getNavIcon(category)}
             className="w-[30px] h-[30px] md:w-[40px] md:h-[40px] text-forest-900 dark:text-forest-200"
@@ -1643,7 +1264,12 @@ const ChainComponent = memo(function ChainComponent({
           <div className="text-[20px] md:text-[30px] font-bold text-forest-900 dark:text-forest-200">
             {getNavLabel(category).toUpperCase()}
           </div>
+        </div> */}
+        <div className="absolute  bottom-0 top-0 left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-20">
+            <ChartWatermark className="w-[96px] md:w-[128.67px] text-forest-300 dark:text-[#EAECEB]" />
         </div>
+        {/* <div className="absolute bottom-[120px] left-0 right-0 h-[1px] bg-[#5A64624F] mr-[15px]"  />
+        <div className="absolute bottom-[62px] left-0 right-0 h-[1px] bg-[#5A64624F] mr-[15px]" /> */}
       </div>
       <div className="absolute -bottom-[2px] right-[6px]">
         {/* <Tooltip placement="left" allowInteract>

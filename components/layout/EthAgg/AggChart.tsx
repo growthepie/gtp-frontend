@@ -13,7 +13,7 @@ import { GTPIcon } from '../GTPIcon';
 import moment from 'moment';
 
 
-function formatNumberWithSI(num: number): string {
+export function formatNumberWithSI(num: number): string {
   if (num === 0) {
     return "0";
   }
@@ -757,13 +757,14 @@ export function AggChart({
       >
         <ReactECharts
           ref={chartRef}
-          option={{...option}}
-          style={{ height: '100%', width: '100%', borderRadius: '0 0 15px 15px', overflow: 'hidden' }}
           opts={{
             renderer: 'canvas',
             width: chartContainerWidth || undefined,
             height: 304,
+            devicePixelRatio: window.devicePixelRatio || 1,
           }}
+          option={{...option}}
+          style={{ height: '100%', width: '100%', borderRadius: '0 0 15px 15px', overflow: 'hidden' }}
           notMerge={true}
           lazyUpdate={false}
         />

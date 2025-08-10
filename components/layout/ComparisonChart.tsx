@@ -171,6 +171,7 @@ export default function ComparisonChart({
   children,
   sources,
   avg,
+  focusEnabled,
   showEthereumMainnet,
   setShowEthereumMainnet,
   selectedTimespan,
@@ -196,6 +197,7 @@ export default function ComparisonChart({
   children?: ReactNode;
   sources: string[];
   avg?: boolean;
+  focusEnabled: boolean;
   showEthereumMainnet: boolean;
   setShowEthereumMainnet: (show: boolean) => void;
   selectedTimespan: string;
@@ -220,7 +222,7 @@ export default function ComparisonChart({
   // const [darkMode, setDarkMode] = useLocalStorage("darkMode", true);
   const { theme } = useTheme();
 
-  const { AllChainsByKeys, AllDALayersByKeys } = useMaster();
+  const { AllChainsByKeys, AllDALayersByKeys, metrics } = useMaster();
 
   const MetadataByKeys = useMemo(() => {
     return merge(AllChainsByKeys, AllDALayersByKeys);
@@ -282,6 +284,7 @@ export default function ComparisonChart({
 
   const isMobile = useMediaQuery("(max-width: 767px)");
 
+
   const SourcesDisplay = useMemo(() => {
     return sources && sources.length > 0 ? (
       sources
@@ -339,7 +342,7 @@ export default function ComparisonChart({
 
   const getSeriesType = useCallback(
     (name: string) => {
-      if (name === "ethereum") {
+      if (name === "ethereum" && focusEnabled) {
         // show column chart for ethereum if monthly and stacked
         if (selectedTimeInterval === "monthly" && selectedScale === "stacked")
           return "column";
@@ -352,7 +355,7 @@ export default function ComparisonChart({
 
       return "line";
     },
-    [selectedScale, selectedTimeInterval],
+    [selectedScale, selectedTimeInterval, focusEnabled],
   );
 
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
@@ -1801,9 +1804,10 @@ export default function ComparisonChart({
 
   if (is_embed)
     return (
+
       <EmbedContainer
         title={navItem?.label || ""}
-        icon="gtp:gtp-pie"
+        icon={navItem ? `gtp:${navItem?.icon}` : "gtp-pie"}
         url="https://www.growthepie.com"
         time_frame={timespans[selectedTimespan].label}
         chart_type={selectedScale}
