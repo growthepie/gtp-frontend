@@ -947,8 +947,7 @@ const ChainComponent = memo(function ChainComponent({
           const [contentWidth, contentHeight] = contentSize;
           const [viewWidth, viewHeight] = viewSize;
           
-          const xDistance = 20;
-          const yDistance = 50;
+          const distance = 20;
           const pointX = point[0];
           const pointY = point[1];
           
@@ -964,11 +963,11 @@ const ChainComponent = memo(function ChainComponent({
             return [tooltipX, 0];
           }
           
-          let tooltipX = pointX - contentWidth - xDistance;
-          let tooltipY = pointY - contentHeight / 2 - yDistance;
+          let tooltipX = pointX - contentWidth - distance;
+          let tooltipY = pointY - contentHeight - distance;
 
           if (tooltipX < 0) {
-            tooltipX = pointX + xDistance;
+            tooltipX = pointX + distance;
           }
           
           // If still going off the right edge, constrain to viewport
