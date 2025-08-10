@@ -1178,6 +1178,9 @@ const ChainComponent = memo(function ChainComponent({
         <div className="absolute w-full h-[146px] md:h-[176px]">
           <ReactECharts
             ref={chartRef}
+            opts={{
+              devicePixelRatio: window.devicePixelRatio || 1,
+            }}
             option={{
               ...options,
               graphic: getGraphicElements(),
