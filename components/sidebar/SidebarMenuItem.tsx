@@ -19,18 +19,18 @@ const SidebarMenuItem = ({ item, isOpen, isTopLevel = false, isChains = false }:
   const { href, icon, label, isNew } = item;
   const pathname = usePathname();
   const isActive = href === "/" ? pathname === href : pathname.startsWith(href);
-  const { isAnimating } = useSidebarContext();
+  // const { isAnimating } = useSidebarContext();
 
-  const { x, y, refs, strategy } = useFloating({
-    open: isOpen && isNew,
-    placement: 'right',
-    strategy: 'fixed',
-    middleware: [offset({ mainAxis: -24, crossAxis: 0 }), shift({ padding: 5 })],
-    whileElementsMounted: autoUpdate,
-  });
+  // const { x, y, refs, strategy } = useFloating({
+  //   open: isOpen && isNew,
+  //   placement: 'right',
+  //   strategy: 'fixed',
+  //   middleware: [offset({ mainAxis: -24, crossAxis: 0 }), shift({ padding: 5 })],
+  //   whileElementsMounted: autoUpdate,
+  // });
 
   // Show badge when sidebar is open, item is new, and not during accordion animations
-  const showBadge = isOpen && isNew && !isAnimating && x !== undefined && y !== undefined;
+  // const showBadge = isOpen && isNew && !isAnimating && x !== undefined && y !== undefined;
 
   const textStyle = isTopLevel ? 'heading-large-md' : 'heading-large-xs';
   const containerHeight = isTopLevel ? 'h-[44px]' : 'h-[36px]';
@@ -48,7 +48,7 @@ const SidebarMenuItem = ({ item, isOpen, isTopLevel = false, isChains = false }:
   return (
     <>
       <Link 
-        ref={refs.setReference}
+        // ref={refs.setReference}
         href={href} 
         className={`${baseClasses} ${chainsItemsClasses} ${isActive ? activeClasses : inactiveClasses} flex ${gap}`}
       >
@@ -59,7 +59,7 @@ const SidebarMenuItem = ({ item, isOpen, isTopLevel = false, isChains = false }:
         </div>
       </Link>
       <AnimatePresence>
-        {showBadge && (
+        {/* {showBadge && (
           <FloatingPortal>
             <NewBadge
               ref={refs.setFloating}
@@ -71,7 +71,7 @@ const SidebarMenuItem = ({ item, isOpen, isTopLevel = false, isChains = false }:
               }}
             />
           </FloatingPortal>
-        )}
+        )} */}
       </AnimatePresence>
     </>
   );
