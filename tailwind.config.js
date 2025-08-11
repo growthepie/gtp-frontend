@@ -159,17 +159,17 @@ module.exports = {
       const baseStyles = {
         'heading-large': {
           fontFamily: theme("fontFamily.raleway"),
-          fontWeight: '700', // bold
+          fontWeight: '600', // bold (adjusted from 700)
           lineHeight: '120%',
         },
         'heading-small': {
           fontFamily: theme('fontFamily.raleway'),
-          fontWeight: '700', // bold
+          fontWeight: '600', // bold (adjusted from 700)
           lineHeight: '120%',
         },
         'heading-caps': {
           fontFamily: theme('fontFamily.raleway'),
-          fontWeight: '700', // bold
+          fontWeight: '600', // bold
           fontVariant: 'all-small-caps',
           fontFeatureSettings: '"pnum" on, "lnum" on',
           lineHeight: '120%',
