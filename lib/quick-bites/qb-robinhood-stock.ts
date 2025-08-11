@@ -3,7 +3,7 @@ import { QuickBiteData } from '@/lib/types/quickBites';
 
 const robinhoodStock: QuickBiteData = {
   title: "Robinhood Tokenized Stock Tracker",
-  subtitle: "Tracking the adoption of Robinhood's tokenized stock on Arbitrum One",
+  subtitle: "Tracking the adoption of Robinhood's tokenized stocks on Arbitrum One",
   content: [
     "# Phase 1 (of 3):",
     "Robinhood's first step toward self-custodial stocks and the integration of stocks into DeFi (Decentralized Finance) began with their “To Catch A Token” announcement on June 30th ([1])[https://www.youtube.com/watch?v=FBHmAq5lmZQ]. Phase 1 includes the launch of non-custodial tokenized stocks within the EU, with plans to expand to further countries soon. On launch day, Robinhood began with 204 stocks, each has a unique token which is 1 to 1 backed by the shares held in each stock. When a user buys or sells a share within the Robinhood app the supply of the corresponding token changes to reflect this (buying = token minting and selling = token burning). This is the first of three phases, initially launching on Arbitrum One. Robinhood also plans to launch its own Layer 2, built on the Arbitrum Orbit Stack. We explore this phase and future phases in further detail at the end of this quick bite. ",
@@ -269,7 +269,7 @@ const robinhoodStock: QuickBiteData = {
   ],
   image: "https://api.growthepie.com/v1/quick-bites/banners/robinhood.png",
   og_image: "",
-  date: "2025-07-25",
+  date: "2025-08-11",
   related: [],
   author: [{
     name: "Lorenz Lehmann",
