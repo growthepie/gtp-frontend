@@ -136,11 +136,12 @@ export const LandingFirstHeaders = () => {
         subheaderValues={textTogglesFirst.subheaderValues}
         selectedSubheaderValue={isFocusEnabled ? "l2" : "total"}
         headingClassName={"heading-large-lg"}
-        subheadingClassName={"text-md px-[5px] md:px-0"}
+        subheadingClassName={"text-md px-[5px] md:px-[45px]"}
       />
     </>
   );
 }
+
 export const LandingSecondHeaders = () => {
   const [isFocusEnabled] = useLocalStorage("focusEnabled", false);
 
