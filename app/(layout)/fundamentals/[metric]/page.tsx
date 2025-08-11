@@ -8,7 +8,7 @@ import { PageContainer } from "@/components/layout/Container";
 import ShowLoading from "@/components/layout/ShowLoading";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { MetricDataProvider, } from "@/components/metric/MetricDataContext";
+import { MetricDataProvider } from "@/components/metric/MetricDataContext";
 import { MetricChartControlsProvider } from "@/components/metric/MetricChartControlsContext";
 import { MetricSeriesProvider } from "@/components/metric/MetricSeriesContext";
 import { useParams } from "next/navigation";

@@ -40,6 +40,8 @@ type MetricDataContextType = {
 
   allChains: Chain[] | DALayerWithKey[];
   allChainsByKeys: { [key: string]: Chain } | { [key: string]: DALayerWithKey };
+  selectedChains: string[];
+  setSelectedChainsInDataContext: (chains: string[]) => void;
 };
 
 const MetricDataContext = createContext<MetricDataContextType>({
@@ -57,7 +59,9 @@ const MetricDataContext = createContext<MetricDataContextType>({
   minDailyUnix: 0,
   maxDailyUnix: 0,
   allChains: [],
-  allChainsByKeys: {}
+  allChainsByKeys: {},
+  selectedChains: [],
+  setSelectedChainsInDataContext: () => {}
 });
 
 type MetricDataProviderProps = {
@@ -67,6 +71,7 @@ type MetricDataProviderProps = {
 };
 
 export const MetricDataProvider = ({ children, metric, metric_type }: MetricDataProviderProps) => {
+  const [selectedChains, setSelectedChainsInDataContext] = useState<string[]>([]);
   const UrlsMap = {
     fundamentals: MetricsURLs,
     "data-availability": DAMetricsURLs,
@@ -87,7 +92,7 @@ export const MetricDataProvider = ({ children, metric, metric_type }: MetricData
   }
 
   const { data: master, SupportedChainKeys, AllChains, AllChainsByKeys, AllDALayers, AllDALayersByKeys, metrics, da_metrics } = useMaster();
-
+  
   const {
     data,
     error,
@@ -119,31 +124,38 @@ export const MetricDataProvider = ({ children, metric, metric_type }: MetricData
   }, [metric_type, AllDALayers, data, AllChains, SupportedChainKeys]);
 
 
+
   const minDailyUnix = useMemo<number>(() => {
     if (!data) return 0;
-    return Object.values(data.data.chains).reduce(
-      (acc: number, chain: ChainData) => {
-        if (!chain["daily"].data[0][0]) return acc;
-        return Math.min(
-          acc,
-          chain["daily"].data[0][0],
-        );
-      }
-      , Infinity) as number
-  }, [data])
+    return Object.keys(data.data.chains)
+      .filter((chainKey) => selectedChains.includes(chainKey))
+      .map((chainKey) => data.data.chains[chainKey])
+      .reduce(
+        (acc: number, chain: ChainData) => {
+          if (!chain["daily"].data[0][0]) return acc;
+          return Math.min(
+            acc,
+            chain["daily"].data[0][0],
+          );
+        }
+        , Infinity) as number
+  }, [data, selectedChains])
 
   const maxDailyUnix = useMemo<number>(() => {
     if (!data) return 0;
-    return Object.values(data.data.chains).reduce(
-      (acc: number, chain: ChainData) => {
-        return Math.max(
-          acc,
-          chain["daily"].data[chain["daily"].data.length - 1][0],
-        );
-      }
-      , 0) as number
+    return Object.keys(data.data.chains)
+      .filter((chainKey) => selectedChains.includes(chainKey))
+      .map((chainKey) => data.data.chains[chainKey])
+      .reduce(
+        (acc: number, chain: ChainData) => {
+          return Math.max(
+            acc,
+            chain["daily"].data[chain["daily"].data.length - 1][0],
+          );
+        }
+        , 0) as number
 
-  }, [data])
+  }, [data, selectedChains])
 
 
   const timespans = useMemo(() => {
@@ -242,6 +254,8 @@ export const MetricDataProvider = ({ children, metric, metric_type }: MetricData
         maxDailyUnix,
         allChains: metric_type === "fundamentals" ? AllChains : AllDALayers,
         allChainsByKeys: metric_type === "fundamentals" ? AllChainsByKeys : AllDALayersByKeys,
+        selectedChains,
+        setSelectedChainsInDataContext,
       }}
     >
       {children}
@@ -250,3 +264,13 @@ export const MetricDataProvider = ({ children, metric, metric_type }: MetricData
 }
 
 export const useMetricData = () => useContext(MetricDataContext);
+
+// Hook to sync selectedChains from MetricChartControls to MetricData
+// This should be called inside a component that has access to both contexts
+export const useSyncSelectedChainsToDataContext = (selectedChains: string[]) => {
+  const { setSelectedChainsInDataContext } = useMetricData();
+  
+  useEffect(() => {
+    setSelectedChainsInDataContext(selectedChains);
+  }, [selectedChains, setSelectedChainsInDataContext]);
+};
