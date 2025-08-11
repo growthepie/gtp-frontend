@@ -15,6 +15,11 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { SplideSlide, SplideTrack } from "@splidejs/react-splide";
 import { useLocalStorage } from "usehooks-ts";
 import useAsyncStorage from "@/hooks/useAsyncStorage";
+import { getQuickBiteBySlug } from "@/lib/quick-bites/quickBites";
+import { QuickBiteData } from "@/lib/types/quickBites";
+import { TitleButtonLink } from "./TextHeadingComponents";
+import { GTPIconName } from "@/icons/gtp-icon-names";
+import { useMaster } from "@/contexts/MasterContext";
 
 // Create a context to manage staggered chart updates
 type FocusContextType = {
@@ -170,6 +175,34 @@ const SwiperItem = memo(({ metric_id, landing, master, chartId }: { metric_id: s
 
 SwiperItem.displayName = "SwiperItem";
 
+const quickBiteIds = ["anniversary-report"];
+
+const QuickBiteCard = ({ quickBite, slug }: { quickBite: QuickBiteData, slug: string }) => {
+ 
+  return (
+    <Link 
+      href={`/quick-bites/${slug}`}
+      className="relative w-full min-w-[100px] h-[145px] md:h-[176px] rounded-[15px] bg-[#1F2726] px-[15px] py-[15px] flex flex-col justify-between border-[3px] border-[#344240]"  
+      style={{
+        background: `url(${quickBite.image}) no-repeat center center / cover`,
+      }}
+    >
+        <div className="heading-large-md z-10">{quickBite.title}</div>
+        <div className="flex justify-end">
+          <TitleButtonLink label="Read our Ecosystem Report" href={`/quick-bites/${slug}`} className="w-fit" containerClassName="!border-none" leftIcon={undefined} rightIcon={"feather:arrow-right" as GTPIconName} gradientClass="bg-[#263130]" />
+        </div>
+        <div style={{
+          opacity: 0.6,
+          background: "linear-gradient(180deg, var(--color-bg-default, #1F2726) 15%, rgba(31, 39, 38, 0.00) 54.17%)",
+        }} 
+        className="absolute top-0 left-0 w-full h-full rounded-[15px] z-0 pointer-events-none"
+        />
+
+    </Link>
+  )
+}
+
+
 const metricIds = ["txcount", "throughput", "stables_mcap", "fees", "rent_paid", "market_cap"];
 
 export default function LandingSwiperItems() {
@@ -180,8 +213,7 @@ export default function LandingSwiperItems() {
     isValidating: landingValidating,
   } = useSWR<any>(LandingURL);
 
-  const { data: master, error: masterError } =
-    useSWR<MasterResponse>(MasterURL);
+  const {data: master} = useMaster();
 
   const filteredMetricIds = useMemo(() => {
     return metricIds.filter((metric_id) => {
@@ -199,9 +231,23 @@ export default function LandingSwiperItems() {
     }
   }, [landing]);
 
+  const [quickBiteItems, setQuickBiteItems] = useState<{slug: string, quickBite: QuickBiteData}[]>([]);
+  useEffect(() => {
+    const quickBites = quickBiteIds.map(quickBiteId => ({slug: quickBiteId, quickBite: getQuickBiteBySlug(quickBiteId)}));
+    setQuickBiteItems(quickBites.filter((quickBite): quickBite is {slug: string, quickBite: QuickBiteData} => quickBite.quickBite !== undefined));
+  }, []);
+
+
   return (
     <FocusProvider>
       <SplideTrack>
+        {quickBiteItems.map(({slug, quickBite}) => (
+          <SplideSlide key={slug}>
+            <div className="group w-full">
+              <QuickBiteCard quickBite={quickBite} slug={slug} />
+            </div>
+          </SplideSlide>
+        ))}
         {filteredMetricIds.map(
           (metric_id, index) => (
             <SplideSlide key={metric_id}>
@@ -216,7 +262,7 @@ export default function LandingSwiperItems() {
                     chartId={index}
                   />
                 ) : (
-                  <div className="w-full h-[145px] md:h-[176px] rounded-[15px]  bg-forest-50 dark:bg-[#1F2726]">
+                  <div className="w-full h-[145px] md:h-[176px] rounded-[15px] bg-[#1F2726]">
                     <div className="flex items-center justify-center h-full w-full">
                       <div className="w-8 h-8 border-[5px] border-forest-500/30 rounded-full border-t-transparent animate-spin"></div>
                     </div>

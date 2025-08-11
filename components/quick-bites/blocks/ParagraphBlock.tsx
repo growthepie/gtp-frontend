@@ -15,13 +15,13 @@ const parseMarkdownLinksToHtml = (text: string): string => {
   // Replace standard format [text](url)
   let result = text.replace(
     standardLinkRegex,
-    '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-500 dark:text-blue-400 hover:underline">$1</a>'
+    '<a href="$2" target="_blank" rel="noopener noreferrer" class="underline">$1</a>'
   );
   
   // Replace reverse format (text)[url]
   result = result.replace(
     reverseLinkRegex,
-    '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-500 dark:text-blue-400 hover:underline">$1</a>'
+    '<a href="$2" target="_blank" rel="noopener noreferrer" class="underline">$1</a>'
   );
   
   return result;

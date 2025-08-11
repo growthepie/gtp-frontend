@@ -32,8 +32,8 @@ const anniversaryReport: QuickBiteData = {
     "(Read More)[https://api.growthepie.com/v1/quick-bites/anniversary-report/Building the World Ledger.pdf]"
     
   ],
-  image: "https://api.growthepie.com/v1/quick-bites/banners/timeboost.png",
-  og_image: "https://api.growthepie.com/v1/og_images/quick-bites/arbitrum-timeboost.png",
+  image: "https://api.growthepie.com/v1/quick-bites/anniversary-report/cover-image.png",
+  og_image: "https://api.growthepie.com/v1/og_images/quick-bites/anniversary-report.png",
   date: "2025-08-12",
   related: [],
   author: [{
