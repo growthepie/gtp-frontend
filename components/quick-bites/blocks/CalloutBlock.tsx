@@ -42,7 +42,7 @@ export const CalloutBlock: React.FC<CalloutBlockProps> = ({ block }) => {
     <div className={`my-6 p-[15px] bg-forest-50 dark:bg-forest-900 rounded-[25px] border-l-4 text-xs md:text-sm md:w-auto w-full ${block.color ? `border-${"[#5A6462]"}` : 'border-[#5A6462]'} ${block.className || ''}`}>
       <div className="flex items-start gap-3">
         {block.icon && (
-          <div className="flex-shrink-0 mt-1">
+          <div className="flex-shrink-0 mt-0.5">
             <GTPIcon icon={block.icon as any} size="sm" />
           </div>
         )}
