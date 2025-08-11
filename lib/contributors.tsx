@@ -169,14 +169,6 @@ const OctantLogo = () => (
 
 export const Supporters = [
   {
-    name: "Ethereum Foundation",
-    image: "/contributors/ef-logo.png",
-    svg: EthereumFoundationLogo,
-    width: 207,
-    height: 66,
-    url: "https://ethereum.org",
-  },
-  {
     name: "Optimism",
     image: "/contributors/optimism-logo.png",
     svg: OptimismLogo,
