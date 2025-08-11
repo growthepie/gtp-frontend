@@ -295,8 +295,7 @@ const robinhoodStock: QuickBiteData = {
     url: "/economics"
   },
 ],
-  icon: "arbitrum-logo-monochrome",
-  showInMenu: false
+  icon: "arbitrum-logo-monochrome"
 };
 
 export default robinhoodStock;
