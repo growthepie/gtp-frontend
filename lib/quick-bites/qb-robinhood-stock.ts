@@ -65,73 +65,7 @@ const robinhoodStock: QuickBiteData = {
     }),
     "```",
 
-    "# Individual Stock Chart",
-
-    "```dropdown",
-    JSON.stringify({
-      label: "Select a Ticker to update the chart - HOOD displayed by default",
-      placeholder: "Choose a Ticker...",
-      searchable: true,
-      stateKey: "selectedTicker",
-      defaultValue: "HOOD",
-      allowEmpty: true,
-      readFromJSON: true,
-      jsonData: {
-        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood/dropdown.json",
-        pathToOptions: "dropdown_values",
-        valueField: "ticker",
-        labelField: "name_extended"
-      }
-    }),
-    "```",
-    "```chart",
-    JSON.stringify({
-      type: "column",
-      title: "Tokenized Stock: {{selectedTicker}}", // Now using mustache to dynamically set the title within the ChartBlock component
-      subtitle: "Outstanding shares & stock price.",
-      showXAsDate: true,
-      filterOnStateKey: {
-        stateKey: "selectedTicker",
-        columnKey: "ticker",
-      },
-      disableTooltipSort: true,
-      dataAsJson: {
-        meta: [
-          {
-            name: "Share Price",
-            color: "#ccff00",
-            stacking: "normal",
-            oppositeYAxis: false,
-            type: "line",
-            xIndex: 0,
-            yIndex: 1,
-            suffix: null,
-            prefix: '$',
-            tooltipDecimals: 0,
-            url: "https://api.growthepie.com/v1/quick-bites/robinhood/stocks/{{selectedTicker}}.json",
-            pathToData: "data.daily.values",
-          },
-          {
-            name: "Shares Tokenized",
-            color: "#00c805",
-            stacking: "normal",
-            oppositeYAxis: true,
-            xIndex: 0,
-            yIndex: 2,
-            suffix: null,
-            prefix: null,
-            tooltipDecimals: 0,
-            url: "https://api.growthepie.com/v1/quick-bites/robinhood/stocks/{{selectedTicker}}.json", 
-            pathToData: "data.daily.values",
-          }
-        ],
-      },
-      height: 400,
-      caption: "Outstanding shares and stock price over time.",
-    }),
-    "```",
-
-    "# All Stocks (Table)",
+    "# Overview of All Tokenized Stocks",
     "All the stocks Robinhood has tokenized on Arbitrum One to date excluding the privately listed shares (mentioned above) which have been burned.",
     "```table",
     JSON.stringify({
@@ -225,6 +159,71 @@ const robinhoodStock: QuickBiteData = {
     }),
     "```",
 
+    "# Individual Stock Chart",
+
+    "```dropdown",
+    JSON.stringify({
+      label: "Select a Ticker to update the chart - HOOD displayed by default",
+      placeholder: "Choose a Ticker...",
+      searchable: true,
+      stateKey: "selectedTicker",
+      defaultValue: "HOOD",
+      allowEmpty: true,
+      readFromJSON: true,
+      jsonData: {
+        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood/dropdown.json",
+        pathToOptions: "dropdown_values",
+        valueField: "ticker",
+        labelField: "name_extended"
+      }
+    }),
+    "```",
+    "```chart",
+    JSON.stringify({
+      type: "column",
+      title: "Tokenized Stock: {{selectedTicker}}", // Now using mustache to dynamically set the title within the ChartBlock component
+      subtitle: "Outstanding shares & stock price.",
+      showXAsDate: true,
+      filterOnStateKey: {
+        stateKey: "selectedTicker",
+        columnKey: "ticker",
+      },
+      disableTooltipSort: true,
+      dataAsJson: {
+        meta: [
+          {
+            name: "Share Price",
+            color: "#ccff00",
+            stacking: "normal",
+            oppositeYAxis: false,
+            type: "line",
+            xIndex: 0,
+            yIndex: 1,
+            suffix: null,
+            prefix: '$',
+            tooltipDecimals: 0,
+            url: "https://api.growthepie.com/v1/quick-bites/robinhood/stocks/{{selectedTicker}}.json",
+            pathToData: "data.daily.values",
+          },
+          {
+            name: "Shares Tokenized",
+            color: "#00c805",
+            stacking: "normal",
+            oppositeYAxis: true,
+            xIndex: 0,
+            yIndex: 2,
+            suffix: null,
+            prefix: null,
+            tooltipDecimals: 0,
+            url: "https://api.growthepie.com/v1/quick-bites/robinhood/stocks/{{selectedTicker}}.json", 
+            pathToData: "data.daily.values",
+          }
+        ],
+      },
+      height: 400,
+      caption: "Outstanding shares and stock price over time.",
+    }),
+    "```",
   
     "# To Catch A Token - Robinhood's presentation",
     "## Phase 1 - Continued",
