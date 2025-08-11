@@ -196,6 +196,9 @@ export const TPSChart = React.memo(({ data }: TPSChartProps) => {
     <div ref={containerRef} className="w-full h-[58px] -mt-[5px]">
       <ReactECharts
         ref={chartRef}
+        opts={{
+          devicePixelRatio: window.devicePixelRatio || 1,
+        }}
         option={option}
         notMerge={false}
         lazyUpdate={true}
