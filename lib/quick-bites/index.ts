@@ -6,13 +6,15 @@ import pectraUpgrade from './qb-pectra-upgrade';
 import arbitrumTimeboost from './qb-arbitrum-timeboost';
 import shopifyUsdc from './qb-shopify-usdc';
 import robinhoodStock from './qb-robinhood-stock';
+import anniversaryReport from './qb-anniversary-report';
 
 const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "test-bite": testBite,
   "pectra-upgrade": pectraUpgrade,
   "arbitrum-timeboost": arbitrumTimeboost,
   "base-commerce": shopifyUsdc,
-  "robinhood-stock": robinhoodStock
+  "robinhood-stock": robinhoodStock,
+  "anniversary-report": anniversaryReport,
 };
 
 export default QUICK_BITES_DATA; 

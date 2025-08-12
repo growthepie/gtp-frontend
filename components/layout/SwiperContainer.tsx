@@ -112,6 +112,11 @@ export default function SwiperContainer({
               };
             });
           }}
+          onMounted={(splide) => {
+            setTimeout(() => {
+              splide.refresh();
+            }, 100);
+          }}
           aria-labelledby={ariaId}
           hasTrack={false}
         >
