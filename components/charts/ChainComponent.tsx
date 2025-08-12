@@ -923,7 +923,7 @@ const ChainComponent = memo(function ChainComponent({
       tooltip: {
         show: true,
         trigger: 'axis',
-        triggerOn: 'mousemove',
+        triggerOn: 'mousemove|click', // Add click for mobile support
         backgroundColor: (theme === "dark" ? "#2A3433" : "#EAECEB") + "EE",
         borderWidth: 0,
         borderRadius: 17,
@@ -932,8 +932,10 @@ const ChainComponent = memo(function ChainComponent({
           color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
         },
         formatter: tooltipFormatter,
-        confine: false, // Allow tooltip to overflow the chart container
-        appendToBody: true, // Append tooltip to document body to prevent clipping
+        confine: true, // IMPORTANT: Keep tooltip within chart bounds
+        appendToBody: false, // IMPORTANT: Keep tooltip within chart container
+        transitionDuration: 0, // Instant hide/show
+        hideDelay: 0, // Hide immediately when conditions are met
         axisPointer: {
           type: 'line',
           lineStyle: {
