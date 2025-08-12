@@ -24,6 +24,8 @@ import { TPSChart } from './TPSChart';
 import { throttle } from 'lodash';
 import { LinkButton } from '../LinkButton';
 import moment from 'moment';
+import Link from 'next/link';
+import { GTPIconName } from '@/icons/gtp-icon-names';
 
 // Define the props type for TopEthAggMetricsComponent
 interface TopEthAggMetricsProps {
@@ -488,7 +490,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
             {tpsTransitions((style, { chainId }) => (
               <animated.div key={chainId} style={style} className='absolute w-full'>
                 {/* Pass the complete `chainData` object */}
-                <ChainTransitionItem chainId={chainId} chainData={chainData} AllChainsByKeys={AllChainsByKeys} globalMetrics={globalMetrics} type="tps" />
+                <ChainTransitionItem chainId={chainId} chainData={chainData} globalMetrics={globalMetrics} type="tps" />
               </animated.div>
             ))}
           </div>
@@ -635,7 +637,7 @@ export const TokenTransferFeeCard = React.memo(({
           <div className="relative">
             {costTransitions((style, { chainId }) => (
               <animated.div key={`cost-${chainId}`} style={style} className='absolute w-full'>
-                <ChainTransitionItem chainId={chainId} chainData={activeChainData} AllChainsByKeys={AllChainsByKeys} globalMetrics={activeGlobalMetrics} type="cost" showUsd={showUsd} />
+                <ChainTransitionItem chainId={chainId} chainData={activeChainData} globalMetrics={activeGlobalMetrics} type="cost" showUsd={showUsd} />
               </animated.div>
             ))}
           </div>
@@ -808,7 +810,6 @@ interface TPSChartProps {
 interface ChainTransitionItemProps {
   chainId: string;
   chainData: Record<string, ChainMetrics>;
-  AllChainsByKeys: any;
   globalMetrics: any;
   type: 'tps' | 'cost';
   showUsd?: boolean;
@@ -817,12 +818,14 @@ interface ChainTransitionItemProps {
 const ChainTransitionItem = React.memo(({
   chainId,
   chainData,
-  AllChainsByKeys,
   globalMetrics,
   type,
   showUsd = false
 }: ChainTransitionItemProps) => {
+  const { AllChainsByKeys } = useMaster();
   const chain = AllChainsByKeys[chainId];
+
+  const isSupportedChain = chain !== undefined;
 
   const chainColor = chain?.colors?.dark?.[0] || "#7D8887";
   const chainName = chain?.label || chainData[chainId].display_name;
@@ -876,13 +879,21 @@ const ChainTransitionItem = React.memo(({
   return (
     <div className='flex flex-col w-full items-center justify-between'>
       <div className='flex w-full items-center justify-between'>
-        <div className='flex w-[125px] gap-x-[5px] items-center'>
-          <div
-            className='w-[15px] h-[10px] rounded-r-full'
-            style={{ backgroundColor: chainColor }}
-          />
-          <div className="text-xs">{chainName}</div>
-        </div>
+        {isSupportedChain ? (
+          <Link href={`/chains/${chain.urlKey}`} className='flex w-[125px] gap-x-[5px] items-center hover:underline'>
+            <div
+              className='w-[15px] h-[10px] rounded-r-full'
+              style={{ backgroundColor: chainColor }}
+            />
+            <div className="text-xs">{chainName}</div>
+          </Link>
+        ) : (
+          <div className='flex w-[125px] gap-x-[5px] items-center'>
+            <div className='w-[15px] h-[10px] rounded-r-full' style={{ backgroundColor: chainColor }} />
+            <div className="text-xs">{chainName}</div>
+            <GTPIcon icon={"feather:lock" as GTPIconName} size="sm" className='!size-[11px] text-hover' containerClassName='!size-[11px]' />
+          </div>
+        )}
         <div className='flex items-center relative justify-end' style={{ width: '140px', height: '18px' }}>
           <div className='numbers-xs flex gap-x-[2px] items-center h-[10px]'>
             {displayValue}
