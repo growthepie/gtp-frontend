@@ -30,6 +30,7 @@ import { Chain } from "@/lib/chains";
 import useSWR from "swr";
 import { ApplicationsURLs } from "@/lib/urls";
 import { ApplicationDetailsResponse } from "../_contexts/ApplicationDetailsDataContext";
+import { SmartBackButton } from "@/components/SmartBackButton";
 
 type ApplicationIconProps = {
   owner_project: string;
@@ -170,7 +171,8 @@ export const PageTitleAndDescriptionAndControls = () => {
       <div className="flex items-end gap-x-[10px]">
         <div className="flex flex-col flex-1 gap-y-[15px]">
           <div className="flex items-center min-h-[43px] gap-x-[8px]">
-            <BackButton />
+            {/* <BackButton /> */}
+            <SmartBackButton />
             <div className="flex-1 flex items-center min-h-[43px] gap-x-[8px]">
               <ApplicationIcon owner_project={urlOwnerProject} size="md" />
               <Heading className="heading-large-lg lg:heading-large-xl min-h-[36px] flex-1" as="h1">

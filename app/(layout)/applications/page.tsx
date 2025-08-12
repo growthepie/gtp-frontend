@@ -139,7 +139,6 @@ export default function Page() {
     <>
       <div>
         <div
-
           className={``}
           style={{
             height: hideTopGainersAndLosers ? 0 : `calc(78px + ${topGainersHeight}px)`, // Use the height from the observer
