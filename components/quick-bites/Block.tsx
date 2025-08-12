@@ -11,6 +11,8 @@ import { ListBlock } from './blocks/ListBlock';
 import KpiBlock from './blocks/KpiBlock';
 import { TableBlock } from './blocks/TableBlock';
 import { DropdownBlock } from './blocks/DropdownBlock';
+import { ContainerBlock } from './blocks/ContainerBlock';
+import { TitleButtonBlock } from './blocks/TitleButtonBlock';
 
 interface BlockProps {
   block: ContentBlock;
@@ -25,6 +27,8 @@ const Block: React.FC<BlockProps> = ({ block }) => {
   }
   
   switch (block.type) {
+    case 'container':
+      return <ContainerBlock block={block} />;
     case 'paragraph':
       return <ParagraphBlock block={block} />;
     case 'heading':
@@ -45,6 +49,8 @@ const Block: React.FC<BlockProps> = ({ block }) => {
       return <TableBlock block={block} />;
     case 'dropdown': // Add this case
       return <DropdownBlock block={block} />;
+    case 'titleButton':
+      return <TitleButtonBlock block={block} />;
     default:
       console.warn(`Unknown block type: ${(block as any).type}`);
       return null;

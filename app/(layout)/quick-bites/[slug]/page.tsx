@@ -21,6 +21,7 @@ import { processDynamicContent } from '@/lib/utils/dynamicContent'; // Import th
 import { QuickBiteProvider } from '@/contexts/QuickBiteContext';
 import { useMaster } from '@/contexts/MasterContext';
 import { getChainInfoFromUrl } from '@/lib/chains';
+import { TitleButtonLink } from '@/components/layout/TextHeadingComponents';
 
 type Props = {
   params: { slug: string };
