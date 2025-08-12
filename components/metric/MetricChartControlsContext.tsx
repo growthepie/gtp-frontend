@@ -112,6 +112,8 @@ type MetricChartControlsProviderProps = {
   is_embed?: boolean;
   embed_start_timestamp?: number;
   embed_end_timestamp?: number;
+  selectedTimeInterval?: string;
+  setSelectedTimeInterval?: (timeInterval: string) => void;
 };
 
 export const MetricChartControlsProvider = ({
@@ -120,7 +122,8 @@ export const MetricChartControlsProvider = ({
   is_embed = false,
   embed_start_timestamp = undefined,
   embed_end_timestamp = undefined,
-
+  selectedTimeInterval: providedSelectedTimeInterval,
+  setSelectedTimeInterval: providedSetSelectedTimeInterval,
 }: MetricChartControlsProviderProps) => {
   const UrlsMap = {
     fundamentals: MetricsURLs,
@@ -153,10 +156,14 @@ export const MetricChartControlsProvider = ({
     "365d",
   );
 
-  const [selectedTimeInterval, setSelectedTimeInterval] = useSessionStorage(
+  // Use provided props if available, otherwise fall back to session storage
+  const [internalSelectedTimeInterval, setInternalSelectedTimeInterval] = useSessionStorage(
     storageKeys["timeInterval"],
     "daily",
   );
+  
+  const selectedTimeInterval = providedSelectedTimeInterval ?? internalSelectedTimeInterval;
+  const setSelectedTimeInterval = providedSetSelectedTimeInterval ?? setInternalSelectedTimeInterval;
 
   const [selectedTimespansByTimeInterval, setSelectedTimespansByTimeInterval] = useSessionStorage(
     storageKeys["timespanByInterval"],

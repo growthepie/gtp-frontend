@@ -37,6 +37,7 @@ type MetricDataContextType = {
   timespans: Timespans;
   minDailyUnix: number;
   maxDailyUnix: number;
+  selectedTimeInterval: string;
 
   allChains: Chain[] | DALayerWithKey[];
   allChainsByKeys: { [key: string]: Chain } | { [key: string]: DALayerWithKey };
@@ -58,6 +59,7 @@ const MetricDataContext = createContext<MetricDataContextType>({
   timespans: {},
   minDailyUnix: 0,
   maxDailyUnix: 0,
+  selectedTimeInterval: "daily",
   allChains: [],
   allChainsByKeys: {},
   selectedChains: [],
@@ -68,9 +70,10 @@ type MetricDataProviderProps = {
   children: React.ReactNode;
   metric: string;
   metric_type: "fundamentals" | "data-availability";
+  selectedTimeInterval?: string;
 };
 
-export const MetricDataProvider = ({ children, metric, metric_type }: MetricDataProviderProps) => {
+export const MetricDataProvider = ({ children, metric, metric_type, selectedTimeInterval = "daily" }: MetricDataProviderProps) => {
   const [selectedChains, setSelectedChainsInDataContext] = useState<string[]>([]);
   const UrlsMap = {
     fundamentals: MetricsURLs,
@@ -81,6 +84,9 @@ export const MetricDataProvider = ({ children, metric, metric_type }: MetricData
     fundamentals: "fundamentals",
     "data-availability": "da",
   };
+
+  
+  
 
   const url = UrlsMap[metric_type][metric];
   const storageKeys = {
@@ -132,14 +138,14 @@ export const MetricDataProvider = ({ children, metric, metric_type }: MetricData
       .map((chainKey) => data.data.chains[chainKey])
       .reduce(
         (acc: number, chain: ChainData) => {
-          if (!chain["daily"].data[0][0]) return acc;
+          if (!chain[selectedTimeInterval].data[0][0]) return acc;
           return Math.min(
             acc,
-            chain["daily"].data[0][0],
+            chain[selectedTimeInterval].data[0][0],
           );
         }
         , Infinity) as number
-  }, [data, selectedChains])
+  }, [data, selectedChains, selectedTimeInterval])
 
   const maxDailyUnix = useMemo<number>(() => {
     if (!data) return 0;
@@ -150,12 +156,14 @@ export const MetricDataProvider = ({ children, metric, metric_type }: MetricData
         (acc: number, chain: ChainData) => {
           return Math.max(
             acc,
-            chain["daily"].data[chain["daily"].data.length - 1][0],
+            chain[selectedTimeInterval].data[chain[selectedTimeInterval].data.length - 1][0],
           );
         }
         , 0) as number
 
-  }, [data, selectedChains])
+  }, [data, selectedChains, selectedTimeInterval])
+
+
 
 
   const timespans = useMemo(() => {
@@ -252,6 +260,7 @@ export const MetricDataProvider = ({ children, metric, metric_type }: MetricData
         timespans: timespans,
         minDailyUnix,
         maxDailyUnix,
+        selectedTimeInterval,
         allChains: metric_type === "fundamentals" ? AllChains : AllDALayers,
         allChainsByKeys: metric_type === "fundamentals" ? AllChainsByKeys : AllDALayersByKeys,
         selectedChains,
