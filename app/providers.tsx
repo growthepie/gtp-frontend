@@ -11,6 +11,7 @@ import { MasterProvider } from "@/contexts/MasterContext";
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { ToastProvider } from "@/components/toast/GTPToast";
 import { ConfettiProvider } from "@/components/animations/ConfettiProvider";
+import { NavigationProvider } from "@/contexts/NavigationContext";
 
 // load icons
 addCollection(GTPIcons);
@@ -74,31 +75,33 @@ export function Providers({ children, forcedTheme }: ProvidersProps) {
   const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
 
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="dark"
-      forcedTheme={"dark"}
-      disableTransitionOnChange
-    >
-      <SWRConfig
-        value={{
-          fetcher: singleOrMultiFetcher,
-          use: apiRoot === "dev" && !IS_PRODUCTION ? [devMiddleware] : [],
-          // refreshInterval: 1000 * 60 * 60, // 1 hour
-        }}
+    <NavigationProvider>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="dark"
+        forcedTheme={"dark"}
+        disableTransitionOnChange
       >
-          <MasterProvider>
-            <ProjectsMetadataProvider>
-              <UIContextProvider>
-              <ToastProvider>
-                <ConfettiProvider>
-                  {children}
-                </ConfettiProvider>
-              </ToastProvider>
-            </UIContextProvider>
-          </ProjectsMetadataProvider>
-          </MasterProvider>
-      </SWRConfig>
-    </ThemeProvider>
+        <SWRConfig
+          value={{
+            fetcher: singleOrMultiFetcher,
+            use: apiRoot === "dev" && !IS_PRODUCTION ? [devMiddleware] : [],
+            // refreshInterval: 1000 * 60 * 60, // 1 hour
+          }}
+        >
+            <MasterProvider>
+              <ProjectsMetadataProvider>
+                <UIContextProvider>
+                <ToastProvider>
+                  <ConfettiProvider>
+                    {children}
+                  </ConfettiProvider>
+                </ToastProvider>
+              </UIContextProvider>
+            </ProjectsMetadataProvider>
+            </MasterProvider>
+        </SWRConfig>
+      </ThemeProvider>
+    </NavigationProvider>
   );
 }
