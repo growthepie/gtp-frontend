@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useContext, useState, useMemo, useEffect, useLayoutEffect, useRef } from "react";
+import { createContext, useContext, useState, useMemo, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { debounce } from 'lodash';
 import Highcharts from "highcharts/highstock";
 
@@ -29,161 +29,103 @@ type UIContextState = {
   setFocusSwitchEnabled: (focusSwitchEnabled: boolean) => void;
 };
 
-const UIContext = createContext<UIContextState>({
+
+const defaultState: UIContextState = {
   isSidebarOpen: false,
   isMobile: false,
   isMobileSidebarOpen: false,
-  toggleSidebar: () => { },
-  toggleMobileSidebar: () => { },
+  toggleSidebar: () => {},
+  toggleMobileSidebar: () => {},
   embedData: { width: 945, height: 638, src: "", title: "", timeframe: "absolute" },
-  setEmbedData: () => { },
+  setEmbedData: () => {},
   isSafariBrowser: false,
   isDragging: false,
-  setIsDragging: () => { },
+  setIsDragging: () => {},
   dragChartId: "",
-  setDragChartId: () => { },
+  setDragChartId: () => {},
   focusSwitchEnabled: true,
-  setFocusSwitchEnabled: () => { },
-});
+  setFocusSwitchEnabled: () => {},
+};
+
+const UIContext = createContext<UIContextState>(defaultState);
 
 export const useUIContext = () => useContext(UIContext);
 
 export const UIContextProvider = ({ children }) => {
-  const [state, setState] = useState<UIContextState>({
-    isSidebarOpen: false,
-    isMobile: false,
-    isMobileSidebarOpen: false,
-    toggleSidebar: () => { },
-    toggleMobileSidebar: () => { },
-    embedData: { width: 945, height: 638, src: "", title: "", timeframe: "absolute" },
-    setEmbedData: () => { },
-    isSafariBrowser: false,
-    isDragging: false,
-    setIsDragging: () => { },
-    dragChartId: "",
-    setDragChartId: () => { },
-    focusSwitchEnabled: true,
-    setFocusSwitchEnabled: () => { },
-  });
+  const [isSidebarOpen, setIsSidebarOpen] = useState(defaultState.isSidebarOpen);
+  const [isMobile, setIsMobile] = useState(defaultState.isMobile);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(defaultState.isMobileSidebarOpen);
+  const [embedData, setEmbedData] = useState<EmbedData>(defaultState.embedData);
+  const [isSafariBrowser, setIsSafariBrowser] = useState(defaultState.isSafariBrowser);
+  const [isDragging, setIsDragging] = useState(defaultState.isDragging);
+  const [dragChartId, setDragChartId] = useState(defaultState.dragChartId);
+  const [focusSwitchEnabled, setFocusSwitchEnabled] = useState(defaultState.focusSwitchEnabled);
 
   const prevWindowWidthRef = useRef(typeof window !== 'undefined' ? window.innerWidth : 0);
 
-  const setEmbedData = (newEmbedData: EmbedData | ((prevEmbedData: EmbedData) => EmbedData)) => {
-    setState((prevState) => ({
-      ...prevState,
-      embedData: typeof newEmbedData === 'function' ? newEmbedData(prevState.embedData) : newEmbedData,
-    }));
-  }
-
-
-
+  const toggleSidebar = useCallback(() => setIsSidebarOpen(prev => !prev), []);
+  const toggleMobileSidebar = useCallback(() => setIsMobileSidebarOpen(prev => !prev), []);
 
   useEffect(() => {
-    // This effect will run only in the browser, where window is defined.
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    const isMobileSize = window.innerWidth < 768;
-
-
-
-    setState(prevState => ({
-      ...prevState,
-      isSafariBrowser: isSafari,
-      isSidebarOpen: window.innerWidth >= 1280,
-      isMobile: isMobileSize,
-      lastWindowWidth: window.innerWidth,
-    }));
-
-    // Handle resize events
-    const updateSize = () => {
-      // const currentWidth = window.innerWidth;
-      // const isExpanding = currentWidth > prevWindowWidthRef.current;
-      // setState(prevState => ({
-      //   ...prevState,
-      //   isSidebarOpen: !state.isSidebarOpen && currentWidth >= 1280 && !isExpanding ? false : currentWidth >= 1280,
-      //   isMobile: window.innerWidth < 768,
-      // }));
-
-      // prevWindowWidthRef.current = currentWidth;
+    const initialWidth = window.innerWidth;
+    
+    setIsSafariBrowser(isSafari);
+    setIsMobile(initialWidth < 768);
+    setIsSidebarOpen(initialWidth >= 1280);
+    prevWindowWidthRef.current = initialWidth;
+    
+    const handleResize = () => {
       const currentWidth = window.innerWidth;
       const isExpanding = currentWidth > prevWindowWidthRef.current;
       
-      setState(prevState => {
-        const newIsMobile = currentWidth < 768;
-        const newIsSidebarOpen = currentWidth >= 1280 
-          ? !isExpanding || prevState.isSidebarOpen 
-          : false;
+      setIsMobile(currentWidth < 768);
+      setIsSidebarOpen(prev => currentWidth >= 1280 ? (isExpanding ? prev : true) : false);
 
-        // Only update if values actually changed
-        if (
-          prevState.isMobile === newIsMobile &&
-          prevState.isSidebarOpen === newIsSidebarOpen
-        ) return prevState;
-
-        return {
-          ...prevState,
-          isSidebarOpen: newIsSidebarOpen,
-          isMobile: newIsMobile,
-        };
-      });
-      
       prevWindowWidthRef.current = currentWidth;
     };
-
     
-    const debouncedUpdateSize = debounce(updateSize, 100);
-    const onWindowResize = () => {
-      prevWindowWidthRef.current = window.innerWidth;
-      debouncedUpdateSize();
-    };
-
-    window.addEventListener('resize', onWindowResize);
+    const debouncedHandleResize = debounce(handleResize, 150);
+    
+    window.addEventListener('resize', debouncedHandleResize);
     return () => {
-      window.removeEventListener('resize', onWindowResize);
-      debouncedUpdateSize.cancel();
+      window.removeEventListener('resize', debouncedHandleResize);
+      debouncedHandleResize.cancel();
     };
   }, []);
 
   useEffect(() => {
-    // find content-panel
     const contentPanel = document.getElementById("content-panel");
-    if (state.isMobileSidebarOpen && state.isMobile) {
-      // Prevent scrolling when mobile sidebar is open
-      if (contentPanel)
-        contentPanel.style.touchAction = "none";
-      document.body.style.touchAction = "none";
-      document.body.style.overflow = "hidden";
-    } else {
-      //document.body.style.overflow = "auto";
-      if (contentPanel)
-        contentPanel.style.touchAction = "auto";
-      document.body.style.touchAction = "auto";
-      document.body.style.overflow = "auto";
+    const shouldLockScroll = isMobileSidebarOpen && isMobile;
+
+    if (contentPanel) {
+      contentPanel.style.touchAction = shouldLockScroll ? "none" : "auto";
     }
-  }, [state.isMobileSidebarOpen, state.isMobile]);
+    document.body.style.touchAction = shouldLockScroll ? "none" : "auto";
+    document.body.style.overflow = shouldLockScroll ? "hidden" : "auto";
 
-  const toggleSidebar = () => setState(prevState => ({ ...prevState, isSidebarOpen: !prevState.isSidebarOpen }));
-  const toggleMobileSidebar = () => setState(prevState => ({ ...prevState, isMobileSidebarOpen: !prevState.isMobileSidebarOpen }));
+  }, [isMobileSidebarOpen, isMobile]);
 
-  const setFocusSwitchEnabled = (focusSwitchEnabled: boolean) => setState(prevState => ({ ...prevState, focusSwitchEnabled }));
-
-  const contextValue = {
-    ...state,
+  const contextValue = useMemo(() => ({
+    isSidebarOpen,
+    isMobile,
+    isMobileSidebarOpen,
     toggleSidebar,
     toggleMobileSidebar,
+    embedData,
     setEmbedData,
-    focusSwitchEnabled: state.focusSwitchEnabled,
+    isSafariBrowser,
+    isDragging,
+    setIsDragging,
+    dragChartId,
+    setDragChartId,
+    focusSwitchEnabled,
     setFocusSwitchEnabled,
-  };
-
-  useEffect(() => {
-    // Checking whether we're in the browser
-    const isSafari = typeof navigator !== 'undefined' ? /^((?!chrome|android).)*safari/i.test(navigator.userAgent) : false;
-
-    setState(prevState => ({
-      ...prevState,
-      isSafariBrowser: isSafari,
-    }));
-  }, []);
+  }), [
+    isSidebarOpen, isMobile, isMobileSidebarOpen, embedData, isSafariBrowser, 
+    isDragging, dragChartId, focusSwitchEnabled,
+    toggleSidebar, toggleMobileSidebar // Add memoized functions here
+  ]);
 
   return <UIContext.Provider value={contextValue}>{children}</UIContext.Provider>;
 };
