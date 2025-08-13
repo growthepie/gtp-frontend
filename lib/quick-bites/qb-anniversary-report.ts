@@ -26,7 +26,7 @@ const imageBlock = ["```image",
 const highlightsAndImageBlock = ["```container",
   JSON.stringify({
     blocks: [highlightsBlock, imageBlock],
-    className: "flex flex-col-reverse lg:gap-[45px] lg:grid lg:grid-cols-2",
+    className: "flex flex-col-reverse lg:gap-[45px] lg:grid lg:grid-cols-2 items-center",
   }),
   "```",
 ];
@@ -34,7 +34,7 @@ const highlightsAndImageBlock = ["```container",
 const downloadButtonBlock = [
   "```titleButton",
   JSON.stringify({
-    text: "Download the Full Report",
+    text: "Download now",
     url: "https://api.growthepie.com/v1/quick-bites/anniversary-report/Building the World Ledger.pdf",
   }),
   "```",
@@ -56,8 +56,7 @@ const anniversaryReport: QuickBiteData = {
     "```",
     "Since its inception in 2015, Ethereum has transitioned from a pioneering blockchain experiment to the dominant smart-contract platform underpinning an expansive digital economy. Over the past decade, Ethereum facilitated the creation of entirely new sectors, including decentralized finance (DeFi), NFTs, decentralized autonomous organizations (DAOs), and tokenized real-world assets (RWA), and established itself as a critical infrastructure layer for global financial activity. This decade of foundational work has now set the stage for the next wave of scaling and mass adoption and for Ethereum to become **“a really valuable part of global infrastructure that helps make the internet and the economy a more free and open place” (Vitalik Buterin)**.",
     ...highlightsAndImageBlock,
-    "> (Download the Full Report)[https://api.growthepie.com/v1/quick-bites/anniversary-report/Building the World Ledger.pdf]",
-    "(Read More)[https://api.growthepie.com/v1/quick-bites/anniversary-report/Building the World Ledger.pdf]"
+    "> (Download Full Report)[https://api.growthepie.com/v1/quick-bites/anniversary-report/Building the World Ledger.pdf]",
   ],
   image: "https://api.growthepie.com/v1/quick-bites/anniversary-report/cover-image.png",
   og_image: "https://api.growthepie.com/v1/og_images/quick-bites/anniversary-report.png",
