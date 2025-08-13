@@ -21,6 +21,8 @@ import { processDynamicContent } from '@/lib/utils/dynamicContent'; // Import th
 import { QuickBiteProvider } from '@/contexts/QuickBiteContext';
 import { useMaster } from '@/contexts/MasterContext';
 import { getChainInfoFromUrl } from '@/lib/chains';
+import { TitleButtonLink } from '@/components/layout/TextHeadingComponents';
+import { SmartBackButton } from '@/components/SmartBackButton';
 
 type Props = {
   params: { slug: string };
@@ -95,9 +97,10 @@ export default function QuickBitePage({ params }: Props) {
           <div className=" flex flex-col-reverse lg:gap-y-0 gap-y-[10px] lg:flex-row w-full justify-between items-center h-fit">
             <div className='flex items-center h-[43px] gap-x-[8px] lg:w-auto w-full'>
               {/* Back button */}
-              <Link className="lg:flex hidden items-center justify-center rounded-full w-[36px] h-[36px] bg-[#344240] hover:bg-[#5A6462]" href={"/"}>
+              {/* <Link className="lg:flex hidden items-center justify-center rounded-full w-[36px] h-[36px] bg-[#344240] hover:bg-[#5A6462]" href={"/"}>
                 <Icon icon="feather:arrow-left" className="size-[26px] text-[#CDD8D3]" />
-              </Link>   
+              </Link>    */}
+              <SmartBackButton />
               {/* Icon */}
               <div className='items-center justify-center w-[36px] h-[36px] md:flex hidden'>   
                 <GTPIcon icon="gtp-quick-bites" size="lg" />

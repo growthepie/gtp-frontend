@@ -37,9 +37,12 @@ type MetricDataContextType = {
   timespans: Timespans;
   minDailyUnix: number;
   maxDailyUnix: number;
+  selectedTimeInterval: string;
 
   allChains: Chain[] | DALayerWithKey[];
   allChainsByKeys: { [key: string]: Chain } | { [key: string]: DALayerWithKey };
+  selectedChains: string[];
+  setSelectedChainsInDataContext: (chains: string[]) => void;
 };
 
 const MetricDataContext = createContext<MetricDataContextType>({
@@ -56,17 +59,22 @@ const MetricDataContext = createContext<MetricDataContextType>({
   timespans: {},
   minDailyUnix: 0,
   maxDailyUnix: 0,
+  selectedTimeInterval: "daily",
   allChains: [],
-  allChainsByKeys: {}
+  allChainsByKeys: {},
+  selectedChains: [],
+  setSelectedChainsInDataContext: () => {}
 });
 
 type MetricDataProviderProps = {
   children: React.ReactNode;
   metric: string;
   metric_type: "fundamentals" | "data-availability";
+  selectedTimeInterval?: string;
 };
 
-export const MetricDataProvider = ({ children, metric, metric_type }: MetricDataProviderProps) => {
+export const MetricDataProvider = ({ children, metric, metric_type, selectedTimeInterval = "daily" }: MetricDataProviderProps) => {
+  const [selectedChains, setSelectedChainsInDataContext] = useState<string[]>([]);
   const UrlsMap = {
     fundamentals: MetricsURLs,
     "data-availability": DAMetricsURLs,
@@ -76,6 +84,9 @@ export const MetricDataProvider = ({ children, metric, metric_type }: MetricData
     fundamentals: "fundamentals",
     "data-availability": "da",
   };
+
+  
+  
 
   const url = UrlsMap[metric_type][metric];
   const storageKeys = {
@@ -87,7 +98,7 @@ export const MetricDataProvider = ({ children, metric, metric_type }: MetricData
   }
 
   const { data: master, SupportedChainKeys, AllChains, AllChainsByKeys, AllDALayers, AllDALayersByKeys, metrics, da_metrics } = useMaster();
-
+  
   const {
     data,
     error,
@@ -119,31 +130,40 @@ export const MetricDataProvider = ({ children, metric, metric_type }: MetricData
   }, [metric_type, AllDALayers, data, AllChains, SupportedChainKeys]);
 
 
+
   const minDailyUnix = useMemo<number>(() => {
     if (!data) return 0;
-    return Object.values(data.data.chains).reduce(
-      (acc: number, chain: ChainData) => {
-        if (!chain["daily"].data[0][0]) return acc;
-        return Math.min(
-          acc,
-          chain["daily"].data[0][0],
-        );
-      }
-      , Infinity) as number
-  }, [data])
+    return Object.keys(data.data.chains)
+      .filter((chainKey) => selectedChains.includes(chainKey))
+      .map((chainKey) => data.data.chains[chainKey])
+      .reduce(
+        (acc: number, chain: ChainData) => {
+          if (!chain[selectedTimeInterval].data[0][0]) return acc;
+          return Math.min(
+            acc,
+            chain[selectedTimeInterval].data[0][0],
+          );
+        }
+        , Infinity) as number
+  }, [data, selectedChains, selectedTimeInterval])
 
   const maxDailyUnix = useMemo<number>(() => {
     if (!data) return 0;
-    return Object.values(data.data.chains).reduce(
-      (acc: number, chain: ChainData) => {
-        return Math.max(
-          acc,
-          chain["daily"].data[chain["daily"].data.length - 1][0],
-        );
-      }
-      , 0) as number
+    return Object.keys(data.data.chains)
+      .filter((chainKey) => selectedChains.includes(chainKey))
+      .map((chainKey) => data.data.chains[chainKey])
+      .reduce(
+        (acc: number, chain: ChainData) => {
+          return Math.max(
+            acc,
+            chain[selectedTimeInterval].data[chain[selectedTimeInterval].data.length - 1][0],
+          );
+        }
+        , 0) as number
 
-  }, [data])
+  }, [data, selectedChains, selectedTimeInterval])
+
+
 
 
   const timespans = useMemo(() => {
@@ -240,8 +260,11 @@ export const MetricDataProvider = ({ children, metric, metric_type }: MetricData
         timespans: timespans,
         minDailyUnix,
         maxDailyUnix,
+        selectedTimeInterval,
         allChains: metric_type === "fundamentals" ? AllChains : AllDALayers,
         allChainsByKeys: metric_type === "fundamentals" ? AllChainsByKeys : AllDALayersByKeys,
+        selectedChains,
+        setSelectedChainsInDataContext,
       }}
     >
       {children}
@@ -250,3 +273,13 @@ export const MetricDataProvider = ({ children, metric, metric_type }: MetricData
 }
 
 export const useMetricData = () => useContext(MetricDataContext);
+
+// Hook to sync selectedChains from MetricChartControls to MetricData
+// This should be called inside a component that has access to both contexts
+export const useSyncSelectedChainsToDataContext = (selectedChains: string[]) => {
+  const { setSelectedChainsInDataContext } = useMetricData();
+  
+  useEffect(() => {
+    setSelectedChainsInDataContext(selectedChains);
+  }, [selectedChains, setSelectedChainsInDataContext]);
+};

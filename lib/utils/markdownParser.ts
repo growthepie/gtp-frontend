@@ -29,6 +29,39 @@ export async function processMarkdownContent(content: string[]): Promise<Content
   for (let i = 0; i < content.length; i++) {
     try {
       const text = content[i];
+
+      // Handle container blocks
+      if (text.startsWith('```container')) {
+        if (i + 1 < content.length) {
+          const jsonString = content[i + 1];
+          const closingMarker = i + 2 < content.length && content[i + 2] === '```';
+          if (closingMarker) {
+            // Await the parsing of the container block
+            const containerBlock = await parseContainerBlock(jsonString);
+            if (containerBlock) {
+              blocks.push(containerBlock);
+              i += 2; // Skip the JSON and closing marker
+              continue;
+            }
+          }
+        }
+      }
+
+      // Handle title button blocks
+      else if (text.startsWith('```titleButton')) {
+        if (i + 1 < content.length) {
+          const jsonString = content[i + 1];
+          const closingMarker = i + 2 < content.length && content[i + 2] === '```';
+          if (closingMarker) {
+            const titleButtonBlock = parseTitleButtonBlock(jsonString);
+            if (titleButtonBlock) {
+              blocks.push(titleButtonBlock);
+              i += 2; // Skip the JSON and closing marker
+              continue;
+            }
+          }
+        }
+      }
       
       // Handle dropdown blocks - ADD THIS SECTION
       if (text.startsWith('```dropdown')) {
@@ -170,6 +203,49 @@ export async function processMarkdownContent(content: string[]): Promise<Content
   }
   
   return blocks;
+}
+
+async function parseContainerBlock(jsonString: string): Promise<ContentBlock | null> {
+  try {
+    const containerConfig = JSON.parse(jsonString);
+    
+    if (!Array.isArray(containerConfig.blocks)) {
+      console.error('Error parsing container: `blocks` property must be an array.');
+      return null;
+    }
+
+    // This part is correct, it processes each group of strings into a group of blocks
+    const processedNestedBlocks = await Promise.all(
+      containerConfig.blocks.map((blockContent: string[]) => processMarkdownContent(blockContent))
+    );
+
+    return {
+      id: generateBlockId(),
+      type: 'container',
+      // Pass the nested array directly to the block
+      blocks: processedNestedBlocks, 
+      className: containerConfig.className || '',
+    };
+  } catch (error) {
+    console.error('Error parsing container data:', error);
+    return null;
+  }
+}
+
+function parseTitleButtonBlock(jsonString: string): ContentBlock | null {
+  try {
+    const titleButtonConfig = JSON.parse(jsonString);
+    return {
+      id: generateBlockId(),
+      type: 'titleButton',
+      text: titleButtonConfig.text || '',
+      url: titleButtonConfig.url || '',
+      className: titleButtonConfig.className || '',
+    };
+  } catch (error) {
+    console.error('Error parsing title button data:', error);
+    return null;
+  }
 }
 
 function parseDropdownBlock(jsonString: string): ContentBlock | null {

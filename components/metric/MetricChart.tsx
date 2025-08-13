@@ -31,7 +31,7 @@ import { useUIContext, useHighchartsWrappers } from "@/contexts/UIContext";
 import { useMaster } from "@/contexts/MasterContext";
 import { debounce, over, times } from "lodash";
 import { useMetricSeries } from "./MetricSeriesContext";
-import { useMetricData } from "./MetricDataContext";
+import { useMetricData, useSyncSelectedChainsToDataContext } from "./MetricDataContext";
 import { useMetricChartControls } from "./MetricChartControlsContext";
 import "@/app/highcharts.axis.css";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
@@ -237,7 +237,8 @@ function MetricChart({
   const metricsDict = metric_type === "fundamentals" ? metrics : da_metrics;
   const chainsDict = metric_type === "fundamentals" ? chains : da_layers;
 
-  const { timespans, metric_id, minDailyUnix, maxDailyUnix, monthly_agg, avg, log_default } = useMetricData();
+  const { timespans, metric_id, minDailyUnix, maxDailyUnix, monthly_agg, avg, log_default, selectedChains } = useMetricData();
+
   const {
     selectedTimespan,
     selectedTimeInterval,
@@ -252,8 +253,12 @@ function MetricChart({
     timeIntervalKey,
     intervalShown,
     setIntervalShown,
+    selectedChains: selectedChainsFromControls,
 
   } = useMetricChartControls();
+
+  // Sync selectedChains to MetricDataContext
+  useSyncSelectedChainsToDataContext(selectedChainsFromControls);
 
 
   const { seriesData } = useMetricSeries();

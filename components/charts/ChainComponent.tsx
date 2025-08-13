@@ -1,6 +1,6 @@
 "use client";
 
-import ReactECharts from 'echarts-for-react';
+import ReactECharts, { EChartsOption } from 'echarts-for-react';
 import * as echarts from 'echarts';
 import {
   useState,
@@ -47,7 +47,7 @@ const COLORS = {
   ANNOTATION_BG: "rgb(215, 223, 222)",
 };
 
-const ChainComponent = memo(function ChainComponent({
+const ChainComponent = function ChainComponent({
   data,
   ethData,
   focusEnabled,
@@ -566,118 +566,142 @@ const ChainComponent = memo(function ChainComponent({
   const tooltipFormatter = useCallback(
     (params: any) => {
       if (!params || !Array.isArray(params) || params.length === 0) return '';
-
+  
       const x = params[0].value[0]; // timestamp
       const points = params;
-
+  
       if (!points || !x) return '';
-
+  
       const date = new Date(x);
-      const dateString = `
-      <div>
-        ${date.toLocaleDateString("en-GB", {
+      const dateString = date.toLocaleDateString("en-GB", {
         timeZone: "UTC",
         month: "short",
         day: "numeric",
         year: "numeric",
-      })}
-      </div>
-      `;
-
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 text-xs font-raleway"><div class="flex-1 font-bold text-[13px] md:text-[1rem] ml-6 mb-2 flex justify-between">${dateString}</div>`;
-      const tooltipEnd = `</div>`;
-
-      let pointsSum = 0;
-      if (selectedScale !== "percentage")
-        pointsSum = points.reduce((acc: number, point: any) => {
-          acc += point.value[1];
-          return acc;
-        }, 0);
-
+      });
+  
+      // Sort points by value (descending)
+      points.sort((a: any, b: any) => b.value[1] - a.value[1]);
+  
+      // Calculate totals for percentage and bar calculations
+      const pointsSum = points.reduce((acc: number, point: any) => 
+        acc + point.value[1], 0);
+      
+      const maxPoint = points.reduce((max: number, point: any) => 
+        Math.max(max, point.value[1]), 0);
+      
+      const maxPercentage = 100; // Since percentages go up to 100%
+  
+      // Get units and formatting settings
+      const units = Object.keys(master.metrics[category].units);
+      const unitKey = units.find((unit) => unit !== "usd" && unit !== "eth") ||
+        (showUsd ? "usd" : "eth");
+      
+      const decimals = !showUsd && showGwei(category)
+        ? 2
+        : master.metrics[category].units[unitKey].decimals_tooltip;
+  
+      let prefix = displayValues[category].prefix;
+      let suffix = displayValues[category].suffix;
+  
+      if (!showUsd && data.metrics[category].daily.types.includes("eth")) {
+        if (showGwei(category)) {
+          prefix = "";
+          suffix = " Gwei";
+        }
+      }
+  
+      // Build tooltip points
       let tooltipPoints = points
-        .sort((a: any, b: any) => b.value[1] - a.value[1])
         .map((point: any) => {
           const name = point.seriesName;
           const y = point.value[1];
           const percentage = pointsSum > 0 ? (y / pointsSum) * 100 : 0;
           
-          const label = name === "ethereum" ? AllChainsByKeys[name]?.name_short : AllChainsByKeys[name]?.label;
-    
-          if (selectedScale === "percentage")
-            return `
-              <div class="flex w-full space-x-2 items-center font-medium mb-1 ">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name]?.colors[theme ?? "dark"][0]
-              }"></div>
-                <div class="flex-1 text-right numbers-xs">${percentage.toFixed(2)}%</div>
-              </div>`;
+          const label = name === "ethereum" 
+            ? AllChainsByKeys[name]?.name_short 
+            : AllChainsByKeys[name]?.label;
 
-          const units = Object.keys(master.metrics[category].units);
-          const unitKey =
-            units.find((unit) => unit !== "usd" && unit !== "eth") ||
-            (showUsd ? "usd" : "eth");
-          const decimals =
-            !showUsd && showGwei(category)
-              ? 2
-              : master.metrics[category].units[unitKey].decimals_tooltip;
+          let colors = AllChainsByKeys[name]?.colors[theme ?? "dark"];
 
-          let prefix = displayValues[category].prefix;
-          let suffix = displayValues[category].suffix;
-          let value = y;
-
-          if (
-            !showUsd &&
-            data.metrics[category].daily.types.includes("eth")
-          ) {
-            if (showGwei(category)) {
-              prefix = "";
-              suffix = " Gwei";
-            }
+          if(name === "all_l2s") {
+            colors = [
+              "#FFDF27",
+              "#FE5468"
+            ];
           }
-
+          if(name === "ethereum") {
+            colors = [
+              "#94ABD3",
+              "#596780",
+            ];
+          }
+  
+          if (selectedScale === "percentage") {
+            return `
+              <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+                <div class="w-4 h-1.5 rounded-r-full" style="background: linear-gradient(180deg, ${colors[0]} 0%, ${colors[1]} 100%);"></div>
+                <div class="tooltip-point-name text-xs">${label || name}</div>
+                <div class="flex-1 text-right numbers-xs">${percentage.toFixed(2)}%</div>
+              </div>
+              <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+                <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+                <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
+                style="width: ${(percentage / maxPercentage) * 100}%; background: linear-gradient(180deg, ${colors[0]} 0%, ${colors[1]} 100%);"></div>
+              </div>`;
+          }
+  
+          const value = y;
+          const formattedValue = value.toLocaleString("en-GB", {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals,
+          });
+  
           return `
-          <div class="flex w-full space-x-2 items-center justify-between font-medium mb-1">
-            <div class="flex items-center gap-x-[5px]">
-              <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name]?.colors[theme ?? "dark"][0]
-              }"></div>
-              
-              <div class="tooltip-point-name text-xs">${label || name
-              }</div>
+            <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+              <div class="w-4 h-1.5 rounded-r-full" style="background: linear-gradient(180deg, ${colors[0]} 0%, ${colors[1]} 100%);"></div>
+              <div class="tooltip-point-name text-xs">${label || name}</div>
+              <div class="flex-1 text-right justify-end numbers-xs flex">
+                <div class="${!prefix && "hidden"}">${prefix}</div>
+                ${formattedValue}
+                <div class="ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
+              </div>
             </div>
-            <div class="flex-1 text-right justify-end numbers-xs flex">
-                <div class="${!prefix && "hidden"
-            }">${prefix}</div>
-                ${parseFloat(value).toLocaleString("en-GB", {
-              minimumFractionDigits: decimals,
-              maximumFractionDigits: decimals,
-            })}
-                <div class="ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
-            </div>
-          </div>`;
+            <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+              <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+              <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
+              style="width: ${(Math.max(0, value) / maxPoint) * 100}%; background: linear-gradient(180deg, ${colors[0]} 0%, ${colors[1]} 100%);"></div>
+            </div>`;
         })
         .join("");
-
-      if(points.length > 1) {
-        let tooltipTotal = points.reduce((acc: number, point: any) => acc + (point.value[1] || 0), 0);        
-        
-        tooltipPoints += `
-          <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5">
+  
+      // Build the tooltip container
+      const tooltip = `<div class="mt-3 mr-3 mb-3 min-w-[240px] md:min-w-[260px] text-xs font-raleway">
+        <div class="flex justify-between items-center font-bold text-[13px] md:text-[1rem] ml-6 mb-2 gap-x-[15px]">
+          <div>${dateString}</div>
+          <div class="text-xs">${master.metrics[category].name}</div>
+        </div>`;
+  
+      // Add total row if there are multiple points and not in percentage scale
+      const sumRow = points.length > 1 && selectedScale !== "percentage"
+        ? `<div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5">
             <div class="w-4 h-1.5 rounded-r-full"></div>
             <div class="tooltip-point-name text-xs">Total</div>
             <div class="flex-1 text-right justify-end numbers-xs flex">
-              <div class="${!prefixes[chain] && "hidden"}">${prefixes[chain]}</div>
-              ${parseFloat(tooltipTotal).toLocaleString("en-GB", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
+              <div class="${!prefix && "hidden"}">${prefix}</div>
+              ${pointsSum.toLocaleString("en-GB", {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals,
               })}
-              <div class="ml-0.5 ${!prefixes[chain] && "hidden"}">${prefixes[chain]}</div>
+              <div class="ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
             </div>
           </div>
           <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
             <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
           </div>`
-      }
-      return tooltip + tooltipPoints + tooltipEnd;
+        : "";
+  
+      return tooltip + tooltipPoints + sumRow + "</div>";
     },
     [
       data.chain_id,
@@ -693,12 +717,12 @@ const ChainComponent = memo(function ChainComponent({
       category,
       prefixes,
       chain,
-    ],
+    ]
   );
 
 
 
-  const [isVisible, setIsVisible] = useState(true);
+  // const [isVisible, setIsVisible] = useState(true);
   const resizeTimeout = useRef<null | ReturnType<typeof setTimeout>>(null);
   const [isAnimate, setIsAnimate] = useState(false);
   const animationTimeout = useRef<null | ReturnType<typeof setTimeout>>(null);
@@ -899,7 +923,7 @@ const ChainComponent = memo(function ChainComponent({
       tooltip: {
         show: true,
         trigger: 'axis',
-        triggerOn: 'mousemove',
+        triggerOn: 'mousemove|click', // Add click for mobile support
         backgroundColor: (theme === "dark" ? "#2A3433" : "#EAECEB") + "EE",
         borderWidth: 0,
         borderRadius: 17,
@@ -908,66 +932,56 @@ const ChainComponent = memo(function ChainComponent({
           color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
         },
         formatter: tooltipFormatter,
-        confine: false, // Allow tooltip to overflow the chart container
-        appendToBody: true, // Append tooltip to document body to prevent clipping
+        confine: isMobile ? true : false,
+        appendToBody: isMobile ? false : true,
+        transitionDuration: 0.3, // Instant hide/show
+        hideDelay: 0.3, // Hide immediately when conditions are met
         axisPointer: {
           type: 'line',
           lineStyle: {
-            color: COLORS.PLOT_LINE,
+            color: "#CDD8D399",
             width: 1,
             type: 'solid'
           }
         },
-        position: function (point: any, params: any, dom: any, rect: any, size: any) {
-          const tooltipWidth = size.contentSize[0];
-          const tooltipHeight = size.contentSize[1];
-          const chartRect = rect; // Chart container rect
-          const viewWidth = size.viewSize[0];
-          const viewHeight = size.viewSize[1];
+        position: function (point: [number, number], params: EChartsOption['tooltip']['position'], dom: HTMLDivElement, rect: EChartsOption['grid']['rect'], size: {contentSize: [number, number], viewSize: [number, number]}) {
+          const { contentSize, viewSize } = size;
+          const [contentWidth, contentHeight] = contentSize;
+          const [viewWidth, viewHeight] = viewSize;
           
-          // Distance from cursor (closer than before)
-          const distance = 10;
-          const cursorOffset = 8; // Small offset to avoid overlapping cursor
           
-          // Default position: to the right and slightly below cursor
-          let tooltipX = point[0] + distance;
-          let tooltipY = point[1] + cursorOffset;
-          
-          // Check if tooltip would overflow on the right
-          if (tooltipX + tooltipWidth > viewWidth) {
-            // Position to the left of cursor
-            tooltipX = point[0] - tooltipWidth - distance;
-          }
-          
-          // Ensure tooltip doesn't go off the left edge
-          if (tooltipX < 0) {
-            tooltipX = distance;
-          }
-          
-          // Check if tooltip would overflow on the bottom
-          if (tooltipY + tooltipHeight > viewHeight) {
-            // Position above cursor
-            tooltipY = point[1] - tooltipHeight - cursorOffset;
-          }
-          
-          // Ensure tooltip doesn't go off the top edge
-          if (tooltipY < 0) {
-            tooltipY = distance;
-          }
-          
-          // Special handling for mobile
+          const distance = 20;
+          const pointX = point[0];
+          const pointY = point[1];
+          const sizeX = size.viewSize[0];
+          const sizeY = size.viewSize[1];
+
           if (isMobile) {
-            // On mobile, keep it at a fixed Y position near the top
-            tooltipY = 10;
-            // But still handle X overflow
-            if (tooltipX + tooltipWidth > viewWidth) {
-              tooltipX = point[0] - tooltipWidth - distance;
+            let tooltipX = pointX - contentWidth / 2;
+            // if on the left side of the chart, move to the right
+            if (pointX < sizeX/2) {
+              tooltipX = pointX + distance;
             }
-            if (tooltipX < 0) {
-              tooltipX = distance;
+
+            if(pointX > sizeX/2) {
+              tooltipX = pointX - contentWidth - distance;
             }
+            
+            return [tooltipX, 0];
           }
           
+          let tooltipX = pointX - distance;
+          let tooltipY = pointY - contentHeight/2;
+
+          // if on the left side of the chart, move to the right
+          if (pointX < sizeX/2) {
+            tooltipX = pointX + distance;
+          }
+
+          if(pointX > sizeX/2) {
+            tooltipX = pointX - contentWidth - distance;
+          }
+
           return [tooltipX, tooltipY];
         },
       },
@@ -982,8 +996,8 @@ const ChainComponent = memo(function ChainComponent({
       series,
     };
   }, [
+    displayValues,
     data.chain_id,
-    isAnimate,
     isMobile,
     selectedTimespan,
     theme,
@@ -992,19 +1006,12 @@ const ChainComponent = memo(function ChainComponent({
     zoomMax,
     zoomMin,
     zoomed,
-    forceNoAnimation.current,
-    COLORS.PLOT_LINE,
     filteredData,
     AllChainsByKeys,
     category,
     focusEnabled,
     ethData.chain_id,
   ]);
-
-  const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-
-  const delayPromises = [];
- 
 
   const getGraphicElements = useCallback(() => {
     if (!chartRef.current || !filteredData.length || !containerWidth || !containerHeight) return [];
@@ -1039,7 +1046,7 @@ const ChainComponent = memo(function ChainComponent({
     const fraction = 15 / chartWidth;
     const lineX = chartWidth * (1 - fraction);
     const lineStartY = pixelPoint[1];
-    const lineEndY = gridTop / 2 - 2;
+    const lineEndY = 25;
 
     const gridLineColor = theme === "dark" ? "rgba(215, 223, 222, 0.8)" : "rgba(41, 51, 50, 0.8)";
 
@@ -1059,16 +1066,16 @@ const ChainComponent = memo(function ChainComponent({
             type: 'linear',
             x: 0,
             y: 0,
-            x2: 1,
-            y2: 0,
+            x2: 0,
+            y2: 1,
             colorStops: [
               {
                 offset: 0,
-                color: '#CDD8D3', // Yellow at left
+                color: '#CDD8D3FF', // Yellow at left
               },
               {
                 offset: 1,
-                color: '#CDD8D3', // Red/pink at right
+                color: '#CDD8D311', // Red/pink at right
               },
             ],
           },
@@ -1178,6 +1185,9 @@ const ChainComponent = memo(function ChainComponent({
         <div className="absolute w-full h-[146px] md:h-[176px]">
           <ReactECharts
             ref={chartRef}
+            opts={{
+              devicePixelRatio: window.devicePixelRatio || 1,
+            }}
             option={{
               ...options,
               graphic: getGraphicElements(),
@@ -1185,40 +1195,42 @@ const ChainComponent = memo(function ChainComponent({
             style={{
               height: isMobile ? "146px" : "176px",
               width: "100%",
-              display: isVisible ? "block" : "none",
+              // display: isVisible ? "block" : "none",
  
             }}
             onEvents={{
               dataZoom: onDataZoom,
-              finished: () => {
+              render: (params: any) => {
                 // Chart render finished, update graphic elements
                 if (chartRef.current) {
                   const chartInstance = chartRef.current.getEchartsInstance();
                   if (chartInstance) {
+                    setTimeout(() => {
                     chartInstance.setOption({
                       graphic: getGraphicElements(),
                     });
+                    }, 100);
                   }
                 }
               },
             }}
             className='rounded-b-[15px] overflow-hidden'
-            notMerge={false}
-            lazyUpdate={true}
+            // notMerge={false} 
+            // lazyUpdate={true}
           />
         </div>
-        <div className="absolute top-[14px] w-full flex justify-between items-center pl-[15px] pr-[23px]">
+        <div className="absolute top-[15px] w-full flex justify-between items-start pl-[15px] pr-[23px]">
           <Link href={`/fundamentals/${urlKey}`} className="flex gap-x-[10px] items-center">
             <div className="heading-large-sm leading-snug">
               {metricItems[metric_index]?.page?.title}
             </div>
             <GTPIcon 
               icon={"feather:arrow-right" as GTPIconName} 
-              size="sm" className="!size-[10.7px]" 
-              containerClassName='!size-[15px] flex items-center justify-center bg-medium-background  rounded-full' 
+              size="sm" className="!size-[11px]" 
+              containerClassName='!size-[15px] flex items-center justify-center bg-medium-background rounded-full' 
             />
           </Link>
-          <div className="numbers-lg leading-snug font-medium flex items-center">
+          <div className="numbers-lg leading-snug h-[20px] font-medium flex items-center">
             <div>{displayValues[category].prefix}</div>
             <div>{displayValues[category].value}</div>
             <div className="text-base pl-0.5">
@@ -1276,8 +1288,7 @@ const ChainComponent = memo(function ChainComponent({
       </div>
     </div>
   );
-});
+};
 
-ChainComponent.displayName = "ChainComponent";
 
 export default ChainComponent;

@@ -45,6 +45,7 @@ const MetricTable = ({
     allChainsByKeys,
     metric_id,
     timeIntervals,
+    selectedTimeInterval,
   } = useMetricData();
   const {
     selectedChains,
@@ -59,6 +60,9 @@ const MetricTable = ({
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [maxVal, setMaxVal] = useState<number | null>(null);
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
+  
+  // Log to verify selectedTimeInterval is accessible from MetricDataContext
+  console.log("MetricTable - selectedTimeInterval from MetricDataContext:", selectedTimeInterval);
 
   const chainSelectToggleState = useMemo(() => {
     if (
