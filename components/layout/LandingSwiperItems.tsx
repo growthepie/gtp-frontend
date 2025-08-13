@@ -21,109 +21,8 @@ import { TitleButtonLink } from "./TextHeadingComponents";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useMaster } from "@/contexts/MasterContext";
 
-// Create a context to manage staggered chart updates
-type FocusContextType = {
-  currentUpdateIndex: number;
-  focusValue: boolean;
-  registerChart: (id: number, callback: () => void) => void;
-  unregisterChart: (id: number) => void;
-};
-
-const FocusContext = createContext<FocusContextType>({
-  currentUpdateIndex: -1,
-  focusValue: false,
-  registerChart: () => {},
-  unregisterChart: () => {}
-});
-
-// Provider component to manage staggered updates
-function FocusProvider({ children }: { children: React.ReactNode }) {
-  const [focusEnabled] = useAsyncStorage("focusEnabled", false);
-  const [currentUpdateIndex, setCurrentUpdateIndex] = useState(-1);
-  const [lastFocusValue, setLastFocusValue] = useState(focusEnabled);
-  const chartCallbacks = React.useRef<Map<number, () => void>>(new Map());
-  
-  // When focusEnabled changes, start the staggered update process
-  useEffect(() => {
-    if (focusEnabled !== lastFocusValue) {
-      setLastFocusValue(focusEnabled);
-      setCurrentUpdateIndex(0);
-    }
-  }, [focusEnabled, lastFocusValue]);
-  
-  // When currentUpdateIndex changes, update the next chart after a short delay
-  useEffect(() => {
-    if (currentUpdateIndex >= 0 && currentUpdateIndex < chartCallbacks.current.size) {
-      // Find the callback for the current index
-      const callback = chartCallbacks.current.get(currentUpdateIndex);
-      if (callback) {
-        callback();
-      }
-      
-      // Schedule the next update
-      const timer = setTimeout(() => {
-        setCurrentUpdateIndex(prev => prev + 1);
-      }, 100); // 50ms between chart updates
-      
-      return () => clearTimeout(timer);
-    }
-  }, [currentUpdateIndex]);
-  
-  const registerChart = (id: number, callback: () => void) => {
-    chartCallbacks.current.set(id, callback);
-  };
-  
-  const unregisterChart = (id: number) => {
-    chartCallbacks.current.delete(id);
-  };
-  
-  return (
-    <FocusContext.Provider 
-      value={{ 
-        currentUpdateIndex, 
-        focusValue: focusEnabled,
-        registerChart,
-        unregisterChart
-      }}
-    >
-      {children}
-    </FocusContext.Provider>
-  );
-}
-
-// Custom hook to use the focus context
-function useFocusUpdate(chartId: number) {
-  const context = useContext(FocusContext);
-  const [shouldUpdate, setShouldUpdate] = useState(true);
+const SwiperItem = function SwiperItem({ metric_id, landing, master, chartId }: { metric_id: string, landing: any, master: MasterResponse, chartId: number }) {
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
-  
-  useEffect(() => {
-    const updateCallback = () => {
-      setShouldUpdate(true);
-    };
-    
-    context.registerChart(chartId, updateCallback);
-    
-    return () => {
-      context.unregisterChart(chartId);
-    };
-  }, [chartId, context]);
-  
-  useEffect(() => {
-    // Reset shouldUpdate when a new cycle begins
-    if (context.currentUpdateIndex === 0) {
-      setShouldUpdate(false);
-    }
-  }, [context.currentUpdateIndex]);
-  
-  return { 
-    focusEnabled,
-    shouldUpdate: shouldUpdate || context.currentUpdateIndex === -1
-  };
-}
-
-const SwiperItem = memo(({ metric_id, landing, master, chartId }: { metric_id: string, landing: any, master: MasterResponse, chartId: number }) => {
-  const { focusEnabled, shouldUpdate } = useFocusUpdate(chartId);
 
   const urlKey =
   metricItems[metricItems.findIndex((item) => item.key === metric_id)]
@@ -171,9 +70,7 @@ const SwiperItem = memo(({ metric_id, landing, master, chartId }: { metric_id: s
       {linkComponent}
     </>
   );
-});
-
-SwiperItem.displayName = "SwiperItem";
+};
 
 const quickBiteIds = ["anniversary-report"];
 
@@ -239,7 +136,7 @@ export default function LandingSwiperItems() {
 
 
   return (
-    <FocusProvider>
+    // <FocusProvider>
       <SplideTrack>
         {quickBiteItems.map(({slug, quickBite}) => (
           <SplideSlide key={slug}>
@@ -273,6 +170,6 @@ export default function LandingSwiperItems() {
           ),
         )}
       </SplideTrack>
-    </FocusProvider>
+    // </FocusProvider>
   );
 }

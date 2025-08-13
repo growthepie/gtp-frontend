@@ -1,6 +1,6 @@
 "use client";
 
-import ReactECharts from 'echarts-for-react';
+import ReactECharts, { EChartsOption } from 'echarts-for-react';
 import * as echarts from 'echarts';
 import {
   useState,
@@ -47,7 +47,7 @@ const COLORS = {
   ANNOTATION_BG: "rgb(215, 223, 222)",
 };
 
-const ChainComponent = memo(function ChainComponent({
+const ChainComponent = function ChainComponent({
   data,
   ethData,
   focusEnabled,
@@ -722,7 +722,7 @@ const ChainComponent = memo(function ChainComponent({
 
 
 
-  const [isVisible, setIsVisible] = useState(true);
+  // const [isVisible, setIsVisible] = useState(true);
   const resizeTimeout = useRef<null | ReturnType<typeof setTimeout>>(null);
   const [isAnimate, setIsAnimate] = useState(false);
   const animationTimeout = useRef<null | ReturnType<typeof setTimeout>>(null);
@@ -932,60 +932,56 @@ const ChainComponent = memo(function ChainComponent({
           color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
         },
         formatter: tooltipFormatter,
-        confine: true, // IMPORTANT: Keep tooltip within chart bounds
-        appendToBody: false, // IMPORTANT: Keep tooltip within chart container
-        transitionDuration: 0, // Instant hide/show
-        hideDelay: 0, // Hide immediately when conditions are met
+        confine: isMobile ? true : false,
+        appendToBody: isMobile ? false : true,
+        transitionDuration: 0.3, // Instant hide/show
+        hideDelay: 0.3, // Hide immediately when conditions are met
         axisPointer: {
           type: 'line',
           lineStyle: {
-            color: COLORS.PLOT_LINE,
+            color: "#CDD8D399",
             width: 1,
             type: 'solid'
           }
         },
-        position: function (point: any, params: any, dom: any, rect: any, size: any) {
+        position: function (point: [number, number], params: EChartsOption['tooltip']['position'], dom: HTMLDivElement, rect: EChartsOption['grid']['rect'], size: {contentSize: [number, number], viewSize: [number, number]}) {
           const { contentSize, viewSize } = size;
           const [contentWidth, contentHeight] = contentSize;
           const [viewWidth, viewHeight] = viewSize;
           
+          
           const distance = 20;
           const pointX = point[0];
           const pointY = point[1];
-          
+          const sizeX = size.viewSize[0];
+          const sizeY = size.viewSize[1];
+
           if (isMobile) {
             let tooltipX = pointX - contentWidth / 2;
-            if (tooltipX < 0) {
-              tooltipX = 0;
+            // if on the left side of the chart, move to the right
+            if (pointX < sizeX/2) {
+              tooltipX = pointX + distance;
             }
-            if (tooltipX + contentWidth > viewWidth) {
-              tooltipX = viewWidth - contentWidth;
+
+            if(pointX > sizeX/2) {
+              tooltipX = pointX - contentWidth - distance;
             }
             
             return [tooltipX, 0];
           }
           
-          let tooltipX = pointX - contentWidth - distance;
-          let tooltipY = pointY - contentHeight - distance;
+          let tooltipX = pointX - distance;
+          let tooltipY = pointY - contentHeight/2;
 
-          if (tooltipX < 0) {
+          // if on the left side of the chart, move to the right
+          if (pointX < sizeX/2) {
             tooltipX = pointX + distance;
           }
-          
-          // If still going off the right edge, constrain to viewport
-          if (tooltipX + contentWidth > viewWidth) {
-            tooltipX = viewWidth - contentWidth;
+
+          if(pointX > sizeX/2) {
+            tooltipX = pointX - contentWidth - distance;
           }
-          
-          // Vertical adjustments
-          // if (tooltipY < 0) {
-          //   tooltipY = pointY;
-          // }
-          
-          if (tooltipY + contentHeight > viewHeight) {
-            tooltipY = viewHeight - contentHeight;
-          }
-          
+
           return [tooltipX, tooltipY];
         },
       },
@@ -1018,11 +1014,6 @@ const ChainComponent = memo(function ChainComponent({
     focusEnabled,
     ethData.chain_id,
   ]);
-
-  const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-
-  const delayPromises = [];
- 
 
   const getGraphicElements = useCallback(() => {
     if (!chartRef.current || !filteredData.length || !containerWidth || !containerHeight) return [];
@@ -1206,7 +1197,7 @@ const ChainComponent = memo(function ChainComponent({
             style={{
               height: isMobile ? "146px" : "176px",
               width: "100%",
-              display: isVisible ? "block" : "none",
+              // display: isVisible ? "block" : "none",
  
             }}
             onEvents={{
@@ -1218,7 +1209,7 @@ const ChainComponent = memo(function ChainComponent({
                   if (chartInstance) {
                     setTimeout(() => {
                     chartInstance.setOption({
-                      graphic: getGraphicElements(),
+                      // graphic: getGraphicElements(),
                     });
                     }, 100);
                   }
@@ -1299,8 +1290,7 @@ const ChainComponent = memo(function ChainComponent({
       </div>
     </div>
   );
-});
+};
 
-ChainComponent.displayName = "ChainComponent";
 
 export default ChainComponent;
