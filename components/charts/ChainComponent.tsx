@@ -996,8 +996,8 @@ const ChainComponent = function ChainComponent({
       series,
     };
   }, [
+    displayValues,
     data.chain_id,
-    isAnimate,
     isMobile,
     selectedTimespan,
     theme,
@@ -1006,8 +1006,6 @@ const ChainComponent = function ChainComponent({
     zoomMax,
     zoomMin,
     zoomed,
-    forceNoAnimation.current,
-    COLORS.PLOT_LINE,
     filteredData,
     AllChainsByKeys,
     category,
@@ -1209,7 +1207,7 @@ const ChainComponent = function ChainComponent({
                   if (chartInstance) {
                     setTimeout(() => {
                     chartInstance.setOption({
-                      // graphic: getGraphicElements(),
+                      graphic: getGraphicElements(),
                     });
                     }, 100);
                   }
@@ -1217,8 +1215,8 @@ const ChainComponent = function ChainComponent({
               },
             }}
             className='rounded-b-[15px] overflow-hidden'
-            notMerge={false}
-            lazyUpdate={true}
+            // notMerge={false} 
+            // lazyUpdate={true}
           />
         </div>
         <div className="absolute top-[15px] w-full flex justify-between items-start pl-[15px] pr-[23px]">
