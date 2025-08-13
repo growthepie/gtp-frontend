@@ -100,22 +100,20 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
               <GTPIcon icon="twitter" size="sm" />
               {author.map((authorItem, index) => (
                 <React.Fragment key={authorItem.name}>
-                    {index > 0 ? (
-                      <div className=" hover:underline text-xxs h-[15px] pt-[1px]">{`+${(author.length - 1)} More`}</div>
-                    ) : (
-                      <div
-                        onClick={(e) => {
-                          handleAuthorClick(e);
-                          window.open(`https://x.com/${authorItem.xUsername}`, '_blank', 'noopener,noreferrer');
-                        }}
-
-                        className="text-xs hover:underline h-[15px]"
-                        aria-label={`Author: ${authorItem.name} (opens in a new tab)`}
-                      >
-                        
-                        {authorItem.name}
-                      </div>
-                    )}
+                  {index === 1 ? (
+                    <div className=" hover:underline text-xxs h-[15px] pt-[1px]">{`+${(author.length - 1)} More`}</div>
+                  ) : index === 0 ? (
+                    <div
+                      onClick={(e) => {
+                        handleAuthorClick(e);
+                        window.open(`https://x.com/${authorItem.xUsername}`, '_blank', 'noopener,noreferrer');
+                      }}
+                      className="text-xs hover:underline h-[15px]"
+                      aria-label={`Author: ${authorItem.name} (opens in a new tab)`}
+                    >
+                      {authorItem.name}
+                    </div>
+                  ) : null}
                 </React.Fragment>
               ))}
             </div>
