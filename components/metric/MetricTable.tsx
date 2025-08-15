@@ -60,9 +60,7 @@ const MetricTable = ({
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [maxVal, setMaxVal] = useState<number | null>(null);
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
-  
-  // Log to verify selectedTimeInterval is accessible from MetricDataContext
-  console.log("MetricTable - selectedTimeInterval from MetricDataContext:", selectedTimeInterval);
+
 
   const chainSelectToggleState = useMemo(() => {
     if (
@@ -154,10 +152,13 @@ const MetricTable = ({
   const { theme } = useTheme();
 
   const [showGwei, reversePerformer] = useMemo(() => {
+    
     const item =
       metric_type === "fundamentals"
         ? metricItems.find((item) => item.key === metric_id)
         : daMetricItems.find((item) => item.key === metric_id);
+
+    console.log(item)
 
     return [item?.page?.showGwei, item?.page?.reversePerformer];
   }, [metric_id, metric_type]);
@@ -287,7 +288,7 @@ const MetricTable = ({
       .sort((a, b) => {
         // always show ethereum at the bottom
 
-
+        
         // sort by last value in daily data array and keep unselected chains at the bottom in descending order
         if (reversePerformer) {
           if (selectedChains.includes(a.chain.key)) {
@@ -334,11 +335,20 @@ const MetricTable = ({
     sortOrder: "desc",
   });
 
+  // Update sort order based on reversePerformer when metric changes
+  useEffect(() => {
+    setSort({
+      metric: "lastVal",
+      sortOrder: "desc",
+    });
+  }, [reversePerformer]);
+
   const lastValueLabels = {
     monthly: "last 30d",
     daily: "Yesterday",
     daily_7d_rolling: "Yesterday",
   };
+
 
   const timespanLabels = {
     "1d": "24h",
@@ -366,7 +376,11 @@ const MetricTable = ({
         if (!aIsSelected && bIsSelected) {
           return 1;
         }
-        return sort.sortOrder === "desc" ? b.lastVal - a.lastVal : a.lastVal - b.lastVal;
+        if (reversePerformer) {
+          return sort.sortOrder === "desc" ? a.lastVal - b.lastVal : b.lastVal - a.lastVal;
+        } else {
+          return sort.sortOrder === "desc" ? b.lastVal - a.lastVal : a.lastVal - b.lastVal;
+        }
       }
       else if (sort.metric === "chain") {
         if (aIsSelected && !bIsSelected) {
