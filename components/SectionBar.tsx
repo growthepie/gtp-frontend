@@ -1,34 +1,30 @@
 "use client"
 import { GTPIcon } from "./layout/GTPIcon"
 import { GTPIconName } from "@/icons/gtp-icon-names"
-import { useState } from "react"
-
-const GRID_CSS_STATES = {
-    "selected": "bg-[#151A19] border-[#1F2726] border-[2px] h-[44px] heading-large-md ",
-    "not-selected": "bg-[#344240] h-[36px] border-[#1F2726] border-[0spx] w-full heading-large-sm",
-    "hover": "bg-[#151A19] border-[#1F2726] border-[2px] h-[42px] heading-large-md"
-}
 
 export function SectionBar({ children }: { children: React.ReactNode }) {
     return(
-        <div className="grid grid-flow-col auto-cols-max gap-[5px] w-full h-[24px] relative items-center ">
-            <div className="bg-[#1F2726] rounded-full h-[24px] w-full absolute mx-[7px]"></div>
+        <div className="grid grid-flow-col auto-cols-fr gap-[5px] w-full h-[44px] relative items-center">
+            <div className="absolute w-full h-full px-[7px]">
+                <div className="bg-[#1F2726] rounded-full h-[24px] absolute w-[99%]"></div>
+            </div>
             {children}
         </div>
     )
 }
 
-export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked }: { isSelected: boolean, header: string, icon: string, comingSoon: boolean, isLocked: boolean }) {
-
-    const [cssState, setCssState] = useState(GRID_CSS_STATES[isSelected ? "selected" : "not-selected"])
+export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked, iconColor }: { isSelected: boolean, header: string, icon: string, comingSoon: boolean, isLocked: boolean, iconColor?: string }) {
 
     return(
-        <div className={`relative bottom-[20px] transition-all duration-300 flex items-center justify-between rounded-full min-w-[265px] max-[300px] ${cssState} ${!comingSoon && !isLocked ? "pl-[10px] pr-[35px]" : "px-[10px]"} `}
-            onMouseEnter={() => !isSelected && setCssState(GRID_CSS_STATES["hover"])}
-            onMouseLeave={() => setCssState(GRID_CSS_STATES[isSelected ? "selected" : "not-selected"])}
-        >
-            <div className={`flex items-center gap-x-[15px] ${isLocked ? "opacity-60" : ""}`}>
-                <GTPIcon size={"md"} icon={`${icon}${isLocked ? "-monochrome" : ""}` as GTPIconName} />
+        <div className={`relative bottom-[22px] transition-all duration-300 flex items-center justify-between rounded-full flex-1 ${isSelected ? "bg-[#151A19] border-[#1F2726] border-[2px] h-[44px] heading-large-md" : "bg-[#344240] h-[36px] border-[#1F2726] border-[0px] w-full heading-large-sm hover:bg-[#151A19] hover:border-[2px] hover:h-[42px] hover:heading-large-md"} ${!comingSoon && !isLocked ? "pl-[10px] pr-[35px]" : "px-[10px]"}`}>
+            <div className={`flex items-center gap-x-[15px] h-full ${isLocked ? "opacity-60" : ""}`}>
+                <GTPIcon 
+                    size={isSelected ? "lg" : "md"} 
+                    icon={`${icon}${isLocked ? "-monochrome" : ""}` as GTPIconName} 
+                    style={{ color: iconColor }} 
+                    className={`transition-all duration-300 ${isSelected ? "!size-[36px]" : "!size-[24px]"}`}
+                    containerClassName={`flex items-center justify-center   `}
+                />
                 <div className="">{header}</div>
             </div>
             {comingSoon && (
@@ -45,7 +41,6 @@ export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked 
                     </div>
                 </div>
             )}
-
         </div>
     )
 }

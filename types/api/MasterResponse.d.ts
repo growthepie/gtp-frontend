@@ -92,6 +92,8 @@ export interface ChainInfo {
   raas: string;
   stack: Stack;
   enable_contracts: boolean;
+  api_tab_status: "locked" | "active" | "soon";
+  active_tabs: string[];
 }
 
 export interface BlockExplorers {
