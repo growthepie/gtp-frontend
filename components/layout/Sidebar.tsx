@@ -19,6 +19,7 @@ import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import FocusSwitch from "./FocusSwitch";
 import { GTPIcon } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import { IS_PRODUCTION } from "@/lib/helpers";
 
 type SidebarProps = {
   className?: string;
@@ -41,6 +42,13 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
     if (ChainsNavigationItems) {
       const newNavigationItems = [...navigationItems];
       newNavigationItems.splice(3, 0, ChainsNavigationItems);
+
+      // if not production, add the chains rework item
+      if(!IS_PRODUCTION) {
+        console.log("ChainsNavigationItems", ChainsNavigationItems);
+        newNavigationItems.splice(3, 0, {...ChainsNavigationItems, name: "Chains", label: "Chains Rework", key: "chains-rework"});
+      }
+
       return newNavigationItems;
     }
     return navigationItems;

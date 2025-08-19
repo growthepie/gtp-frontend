@@ -29,6 +29,7 @@ type MasterContextType = {
       label: string;
       icon: GTPIconName;
       key: string;
+      url: string;
       urlKey: string;
       hide: boolean;
       excludeFromSitemap: boolean;
