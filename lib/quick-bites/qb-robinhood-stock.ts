@@ -71,7 +71,7 @@ const robinhoodStock: QuickBiteData = {
     JSON.stringify({
       readFromJSON: true, 
       jsonData: {
-        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood/stock_table.json",
+        url: "https://api.growthepie.com/v1/quick-bites/robinhood/stock_table.json",
         pathToRowData: "data.stocks.rows",
         pathToColumnKeys: "data.stocks.columns",
         pathToTypes: "data.stocks.types",
@@ -171,7 +171,7 @@ const robinhoodStock: QuickBiteData = {
       allowEmpty: true,
       readFromJSON: true,
       jsonData: {
-        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood/dropdown.json",
+        url: "https://api.growthepie.com/v1/quick-bites/robinhood/dropdown.json",
         pathToOptions: "dropdown_values",
         valueField: "ticker",
         labelField: "name_extended"
@@ -264,6 +264,7 @@ const robinhoodStock: QuickBiteData = {
       caption: "Phase 3 - To Catch A Token - Vlad Tenev ([1])[https://www.youtube.com/watch?v=FBHmAq5lmZQ]",
     }),
     "```",
+    "> This page is a data tracker for informational and educational purposes only. It is not investment advice or a recommendation to buy or sell any security or token. It does not consider your objectives, financial situation, or needs. Data may be incomplete, delayed, or inaccurate. Do your own research.",
     
   ],
   image: "https://api.growthepie.com/v1/quick-bites/banners/robinhood.png",
