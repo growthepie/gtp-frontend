@@ -45,7 +45,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
 
       // if not production, add the chains rework item
       if(!IS_PRODUCTION) {
-        console.log("ChainsNavigationItems", ChainsNavigationItems);
+        // console.log("ChainsNavigationItems", ChainsNavigationItems);
         newNavigationItems.splice(3, 0, {...ChainsNavigationItems, name: "Chains", label: "Chains Rework", key: "chains-rework"});
       }
 
@@ -302,13 +302,13 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                 {navigationItemsWithChains.map((item) => 
                   item.href ? (
                     <SidebarMenuLink
-                      key={item.name + "_link"}
+                      key={item.label + "_link"}
                       item={item}
                       sidebarOpen={isSidebarOpen}
                     />
                   ) : (
                     <SidebarMenuGroup
-                      key={item.name + "_item"}
+                      key={item.label + "_item"}
                       item={item}
                       sidebarOpen={isSidebarOpen}
                     />
@@ -369,13 +369,13 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
           {navigationItemsWithChains.map((item) => 
             item.href ? (
               <SidebarMenuLink
-                key={item.name + "_link"}
+                key={item.label + "_link"}
                 item={item}
                 sidebarOpen={isSidebarOpen}
               />
             ) : (
               <SidebarMenuGroup
-                key={item.name + "_item"}
+                key={item.label + "_item"}
                 item={item}
                 sidebarOpen={isSidebarOpen}
               />
