@@ -30,13 +30,13 @@ const TAB_INFO = {
 export default function ChainTabs({ chainInfo, selectedTab, setSelectedTab }: { chainInfo: ChainInfo, selectedTab: string, setSelectedTab: (tab: string) => void }){
     return(
         <SectionBar>
-        {chainInfo.active_tabs.map((tab) => {
+        {Object.keys(chainInfo.tab_status).map((tab) => {
             return(
                 <div key={tab} onClick={() => setSelectedTab(tab)}>
                     <SectionBarItem
                         isSelected={selectedTab === tab}
-                        isLocked={false}
-                        comingSoon={false}
+                        isLocked={chainInfo.tab_status[tab] === "locked"}
+                        comingSoon={chainInfo.tab_status[tab] === "soon"}
                         icon={tab === "overview" ? `gtp:${chainInfo.url_key}-logo-monochrome` : TAB_INFO[tab].icon}
                         header={TAB_INFO[tab].header}
                         iconColor={tab === "overview" ? chainInfo.colors.dark[0] : undefined}
