@@ -630,7 +630,7 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
             trigger={
               <div className="flex-1 min-w-0 h-[32px] flex items-center">
                 <div className="truncate w-full">
-                  <Category category={ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].main_category : ""} />
+                  <Category category={ownerProjectToProjectData[application.owner_project].main_category || ""} />
                 </div>
               </div>
             }
