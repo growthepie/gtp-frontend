@@ -72,7 +72,7 @@ const robinhoodStock: QuickBiteData = {
     JSON.stringify({
       readFromJSON: true, 
       jsonData: {
-        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood/stock_table.json",
+        url: "https://api.growthepie.com/v1/quick-bites/robinhood/stock_table.json",
         pathToRowData: "data.stocks.rows",
         pathToColumnKeys: "data.stocks.columns",
         pathToTypes: "data.stocks.types",
@@ -172,7 +172,7 @@ const robinhoodStock: QuickBiteData = {
       allowEmpty: true,
       readFromJSON: true,
       jsonData: {
-        url: "https://api.growthepie.xyz/v1/quick-bites/robinhood/dropdown.json",
+        url: "https://api.growthepie.com/v1/quick-bites/robinhood/dropdown.json",
         pathToOptions: "dropdown_values",
         valueField: "ticker",
         labelField: "name_extended"
