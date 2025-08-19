@@ -449,7 +449,7 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
   }, [applicationsTimespan, selectedTimespan, ownerProjectToProjectData, focusEnabled]);
 
   const createApplicationDataSorter = (
-    ownerProjectToProjectData: Record<string, { main_category: string; display_name: string }>,
+    ownerProjectToProjectData: Record<string, { main_category: string | null; display_name: string }>,
     showUsd: boolean
   ) => {
     return (items: AggregatedDataRow[], metric: string, sortOrder: SortOrder): AggregatedDataRow[] => {
