@@ -20,31 +20,31 @@ const KpiBlock: React.FC<KpiBlockProps> = ({ block }) => {
 
   
   return (
-    <div className='flex flex-row gap-x-[10px] flex-wrap w-full justify-center '>
+    <div className='flex flex-row gap-[10px] flex-wrap w-full justify-center'>
       {cards.map((card, index) => (
         <div
           key={index}
           className='flex-1 p-[15px] pt-[10px] flex flex-col items-center rounded-[11px] bg-[#344240] shadow-md'
         >
-          <div className="flex w-full justify-between items-center">
-            <div className="flex-1"></div>
-            <div className="flex flex-row items-center gap-x-[8px] -ml-[32px]">
+          <div className="flex w-full justify-between items-center gap-x-[8px]">
+            <div />
+            <div className="flex flex-row items-center gap-x-[8px]">
               {card.icon && (<GTPIcon icon={card.icon as GTPIconName} size="md"/>)}
-              <div className="heading-small-xxxs">{card.title}</div>
+              <div className="heading-small-xxxs text-center whitespace-nowrap">{card.title}</div>
             </div>
-            <div className="flex-1 flex justify-end">
+            <div className="flex justify-end">
               {card.info && (
                 <GTPTooltipNew
-                  placement="bottom-end"
+                  placement="top-end"
                   allowInteract={true}
                   size="md"
                   trigger={
-                    <div className="flex items-center justify-end w-full">
+                    <div>
                       <GTPIcon icon="gtp-info-monochrome" size="sm"/>
                     </div>
                   }
                   containerClass="flex flex-col gap-y-[10px]"
-                  positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+                  positionOffset={{ mainAxis: 10, crossAxis: 15 }}
                 >
                   <div className="px-[15px]">{card.info}</div>
                 </GTPTooltipNew>
