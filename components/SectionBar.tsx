@@ -16,7 +16,7 @@ export function SectionBar({ children }: { children: React.ReactNode }) {
 export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked, iconColor }: { isSelected: boolean, header: string, icon: string, comingSoon: boolean, isLocked: boolean, iconColor?: string }) {
 
     return(
-        <div className={`relative bottom-[22px] transition-all duration-300 flex items-center justify-between rounded-full flex-1 ${isSelected ? "bg-[#151A19] border-[#1F2726] border-[2px] h-[44px] heading-large-md" : "bg-[#344240] h-[36px] border-[#1F2726] border-[0px] w-full heading-large-sm hover:bg-[#151A19] hover:border-[2px] hover:h-[42px] hover:heading-large-md"} ${!comingSoon && !isLocked ? "pl-[10px] pr-[35px]" : "px-[10px]"}`}>
+        <div className={`relative bottom-[22px] transition-all duration-300 flex items-center justify-between rounded-full flex-1 ${isSelected ? "bg-[#151A19] border-[#1F2726] border-[2px] h-[44px] heading-large-md" : " h-[36px] border-[#1F2726] border-[0px] w-full heading-large-sm hover:bg-[#5A6462] bg-[#344240] hover:border-[2px] hover:h-[42px] hover:heading-large-md"} ${!comingSoon && !isLocked ? "pl-[10px] pr-[35px]" : "px-[10px]"}`}>
             <div className={`flex items-center gap-x-[15px] h-full ${isLocked ? "opacity-60" : ""}`}>
                 <GTPIcon 
                     size={isSelected ? "lg" : "md"} 
