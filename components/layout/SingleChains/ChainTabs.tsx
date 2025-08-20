@@ -30,7 +30,11 @@ const TAB_INFO = {
 export default function ChainTabs({ chainInfo, selectedTab, setSelectedTab }: { chainInfo: ChainInfo, selectedTab: string, setSelectedTab: (tab: string) => void }){
     return(
         <SectionBar>
-        {Object.keys(chainInfo.tab_status).map((tab) => {
+        {Object.keys(chainInfo.tab_status).sort((a, b) => {
+            return chainInfo.tab_status[a] === "soon" ? 1 : -1;
+        }).sort((a, b) => {
+            return chainInfo.tab_status[a] === "locked" ? 1 : -1;
+        }).map((tab) => {
             return(
                 <div key={tab} onClick={() => setSelectedTab(tab)}>
                     <SectionBarItem

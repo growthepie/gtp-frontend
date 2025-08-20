@@ -16,6 +16,7 @@ import { SortProvider } from "@/app/(layout)/applications/_contexts/SortContext"
 import { ApplicationsDataProvider } from "@/app/(layout)/applications/_contexts/ApplicationsDataContext";
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import useSWR from "swr";
+import { PageTitleAndDescriptionAndControls } from "@/app/(layout)/applications/_components/Components";
 import { ChainsBaseURL } from "@/lib/urls";
 
 // Fetcher function for API calls
@@ -123,11 +124,10 @@ const AppsContent = memo(({ chainKey, master }: { chainKey: string, master: any 
     }}>
       <MetricsProvider>
         <SortProvider defaultOrder="desc" defaultKey="txcount">
-          <ProjectsMetadataProvider>
-            <ApplicationsDataProvider>
+          <ApplicationsDataProvider>
+            {/* <Container className="sticky top-0 z-[10] flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] overflow-visible" isPageRoot> */}
               <AppsChain chainInfo={chainInfo} chainKey={chainKey} defaultQuery={chainInfo?.name || ""} />
-            </ApplicationsDataProvider>
-          </ProjectsMetadataProvider>
+          </ApplicationsDataProvider>
         </SortProvider>
       </MetricsProvider>
     </TimespanProvider>

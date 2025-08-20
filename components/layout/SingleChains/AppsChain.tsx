@@ -18,7 +18,7 @@ import { useLocalStorage } from "usehooks-ts";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import VerticalVirtuosoScrollContainer from "@/components/VerticalVirtuosoScrollContainer";
 import { Virtuoso } from "react-virtuoso";
-import { ApplicationCard, ApplicationDisplayName, ApplicationIcon, ApplicationTooltip, Category, CategoryTooltipContent, Chains, formatNumber, Links, MetricTooltip, TopGainersAndLosersTooltip } from "@/app/(layout)/applications/_components/Components";
+import { ApplicationCard, ApplicationDisplayName, ApplicationIcon, ApplicationTooltip, Category, CategoryTooltipContent, formatNumber, Links, MetricTooltip, TopGainersAndLosersTooltip } from "@/app/(layout)/applications/_components/Components";
 import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { useSort } from "@/app/(layout)/applications/_contexts/SortContext";
 import { ApplicationsURLs } from "@/lib/urls";
@@ -118,19 +118,19 @@ export default function AppsChain({ chainInfo, chainKey, defaultQuery = "" }: Ap
           <div ref={topGainersRef}>
             <div className={`hidden md:flex md:flex-wrap pt-[10px] gap-[10px]`}>
               {topGainers.map((application, index) => (
-                <ApplicationCard key={index} application={application} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
+                <ApplicationCard key={index} application={application} chainsPage={true} chainKey={chainKey} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
               ))}
               {topLosers.map((application, index) => (
-                <ApplicationCard key={index} application={application} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
+                <ApplicationCard key={index} application={application} chainsPage={true} chainKey={chainKey} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
               ))}
               {isLoading && new Array(6).fill(0).map((_, index) => (
-                <ApplicationCard key={index} application={undefined} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
+                <ApplicationCard key={index} application={undefined} chainsPage={true} chainKey={chainKey} className="md:w-[calc(50%-5px)] lg:w-[calc(33.33%-7px)]" />
               ))}
             </div>
           
             <div className={`block md:hidden`}>
               <div className="pt-[10px]">
-                <CardSwiper cards={[...topGainers.map((application, index) => <ApplicationCard key={index} application={application} />), ...topLosers.map((application, index) => <ApplicationCard key={3 + index} application={application} />)]} />
+                <CardSwiper cards={[...topGainers.map((application, index) => <ApplicationCard key={index} application={application } chainsPage={true} chainKey={chainKey} />), ...topLosers.map((application, index) => <ApplicationCard key={3 + index} application={application} chainsPage={true}  chainKey={chainKey} />)]} />
               </div>
             </div>
           </div>
@@ -244,7 +244,6 @@ const ApplicationsTable = memo(({ chainFilteredApplications }: { chainFilteredAp
     return [
       "26px",
       applicationColumnWidth,
-      "166px",
       "150px",
       "95px",
       ...selectedMetricKeys.map(() => metricColumnWidth),
@@ -284,14 +283,14 @@ const ApplicationsTable = memo(({ chainFilteredApplications }: { chainFilteredAp
         >
           Application
         </GridTableHeaderCell>
-        <GridTableHeaderCell
+        {/* <GridTableHeaderCell
           metric="origin_keys"
           className="heading-small-xs pl-[3px] pr-[15px] "
           sort={sort}
           setSort={setSort}
         >
           Chains
-        </GridTableHeaderCell>
+        </GridTableHeaderCell> */}
         <GridTableHeaderCell
           metric="category"
           className="heading-small-xs pr-[15px] pl-[2.5px] "
@@ -345,7 +344,7 @@ const ApplicationsTable = memo(({ chainFilteredApplications }: { chainFilteredAp
                             ? "feather:arrow-up"
                             : "feather:arrow-down"
                         }
-                        className="w-[10px] h-[10px]"
+                        className="w-[15px] h-[15px]"
                         style={{
                           opacity: sort.metric === `${selectedMetricKeys[index]}_change_pct` ? 1 : 0.2,
                         }}
@@ -570,7 +569,6 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
     return [
       "26px",
       applicationColumnWidth,
-      "166px",
       "150px",
       "95px",
       ...selectedMetricKeys.map(() => metricColumnWidth),
@@ -618,9 +616,6 @@ const ApplicationTableRow = memo(({ application, maxMetrics, rowIndex }: { appli
           >
             <ApplicationTooltip application={application} />
           </GTPTooltipNew>
-        </div>
-        <div className="flex items-center gap-x-[5px] pr-[15px] ">
-          <Chains origin_keys={application.origin_keys} />
         </div>
         <div className="text-xs pr-[15px]">
           <GTPTooltipNew
