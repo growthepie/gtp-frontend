@@ -18,6 +18,10 @@ import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/
 import useSWR from "swr";
 import { PageTitleAndDescriptionAndControls } from "@/app/(layout)/applications/_components/Components";
 import { ChainsBaseURL } from "@/lib/urls";
+import Image from "next/image";
+import Heading from "@/components/layout/Heading";
+import ShowLoading from "@/components/layout/ShowLoading";
+import { ChainData, Chains } from "@/types/api/ChainOverviewResponse";
 
 // Fetcher function for API calls
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -135,21 +139,74 @@ const AppsContent = memo(({ chainKey, master }: { chainKey: string, master: any 
 });
 
 const BlockspaceContent = memo(({ chainKey, master }: { chainKey: string, master: any }) => {
-  const { data: blockspaceData, error, isLoading } = useSWR(
-    chainKey ? `/api/blockspace/${chainKey}` : null,
-    fetcher
-  );
+  const {
+    data: usageData,
+    error: usageError,
+    isLoading: usageLoading,
+    isValidating: usageValidating,
+  } = useSWR<ChainData>(`https://api.growthepie.com/v1/chains/blockspace/${chainKey}.json`);
 
-  if (isLoading) return <div className="p-8 text-center">Loading blockspace...</div>;
-  if (error) return <div className="p-8 text-center text-red-500">Error loading blockspace data</div>;
+  const overviewData: Chains | null = useMemo(() => {
+    if (!usageData) return null;
+
+    return { [chainKey]: usageData };
+  }, [chainKey, usageData]);
+
+  const [selectedTimespan, setSelectedTimespan] = useState<string>("7d");
+
+  
+
+
+  if (usageLoading || !overviewData) return (
+    <ShowLoading
+      dataLoading={[usageLoading, !overviewData]}
+      dataValidating={[usageValidating]}
+      fullScreen={false}
+    />
+  )
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold">Blockspace</h2>
-      <div className="p-8 text-center text-gray-500">
-        Blockspace content will be implemented here
+    <>
+        <div className="flex items-center justify-between md:text-[36px] mb-[15px] relative">
+          <div
+            className="flex gap-x-[8px] items-center scroll-mt-8"
+            id="blockspace"
+          >
+            <Image
+              src="/GTP-Package.svg"
+              alt="GTP Chain"
+              className="object-contain w-[32px] h-[32px]"
+              height={36}
+              width={36}
+            />
+            <Heading
+              className="text-[20px] leading-snug md:text-[30px] !z-[-1]"
+              as="h2"
+            >
+              {master.chains[chainKey].name} Blockspace
+            </Heading>
+          </div>
+        </div>
+        <div className="flex items-center mb-[30px]">
+          <div className="text-[16px]">
+            An overview of {master.chains[chainKey].name} high-level
+            blockspace usage. All expressed in share of chain usage. You can
+            toggle between share of chain usage or absolute numbers.
+          </div>
+        </div>
+
+      <div>
+        <div className="-mx-[20px] md:-mx-[50px]">
+          <OverviewMetrics
+            selectedTimespan={selectedTimespan}
+            setSelectedTimespan={setSelectedTimespan}
+            data={overviewData}
+            master={master.data}
+            forceSelectedChain={chainKey}
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 });
 
