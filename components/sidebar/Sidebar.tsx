@@ -57,7 +57,7 @@ const Sidebar = ({ isOpen }: SidebarProps) => {
 
   return (
     <SidebarProvider>
-      <div className={`select-none flex flex-col bg-background transition-width duration-300 ease-sidebar overflow-x-visible ${isOpen ? 'w-[237px]' : 'w-[46px]'}`}>
+      <div className={`select-none flex flex-col bg-background transition-width duration-300 ease-sidebar overflow-x-visible ${isOpen ? 'w-full md:w-[237px]' : 'w-[46px]'}`}>
         <nav className="md:pt-[calc(69px+45px)] md:max-h-screen md:pb-[100px] w-full md:space-y-[10px] overflow-y-auto overflow-x-clip scrollbar-none">
           {sidebarNavigation.map((item, index) => {
             if (item.type === 'group') {

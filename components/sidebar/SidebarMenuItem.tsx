@@ -41,7 +41,7 @@ const SidebarMenuItem = ({ item, isOpen, isTopLevel = false, isChains = false }:
 
   const chainsItemsClasses = isChains ? '!h-[26px] !pl-0 !pr-0 !ml-[3px]' : '';
 
-  const baseClasses = `flex items-center w-full rounded-l-full transition-colors duration-200 ${containerHeight} ${containerPadding}`;
+  const baseClasses = `flex items-center w-full rounded-l-full md:rounded-r-none rounded-r-full transition-colors duration-200 ${containerHeight} ${containerPadding}`;
   const inactiveClasses = "text-forest-500 hover:bg-medium-background";
   const activeClasses = "bg-[#151A19] text-white";
 
