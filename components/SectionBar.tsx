@@ -1,31 +1,55 @@
 "use client"
+import { useMediaQuery } from "usehooks-ts";
 import { GTPIcon } from "./layout/GTPIcon"
 import { GTPIconName } from "@/icons/gtp-icon-names"
 
 export function SectionBar({ children }: { children: React.ReactNode }) {
+    const isMobile = useMediaQuery("(max-width: 768px)");
+    
     return(
-        <div className="grid grid-flow-col auto-cols-fr gap-[5px] w-full h-[44px] relative items-center">
+        <div className={`${isMobile ? "flex gap-[5px] justify-start overflow-clip" : "grid grid-flow-col auto-cols-fr gap-[5px]"} w-full h-[44px] relative items-center`}>
             <div className="absolute w-full h-full px-[7px]">
-                <div className="bg-[#1F2726] rounded-full h-[24px] absolute w-[99%]"></div>
+                <div className="bg-[#1F2726] rounded-full h-[24px] absolute w-[99%] overflow-clip"
+                style={{
+                    height: isMobile ? "0px" : "24px",
+                    opacity: isMobile ? 0 : 1,
+                }}
+                ></div>
             </div>
             {children}
         </div>
     )
 }
 
-export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked, iconColor }: { isSelected: boolean, header: string, icon: string, comingSoon: boolean, isLocked: boolean, iconColor?: string }) {
+export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked, iconColor, index, isHovered }: { isSelected: boolean, header: string, icon: string, comingSoon: boolean, isLocked: boolean, iconColor?: string, index: number, isHovered: boolean }) {
+    const isMobile = useMediaQuery("(max-width: 768px)");
+    const mobileWidth = 10 * header.length;
 
     return(
-        <div className={`relative bottom-[22px] transition-all duration-300 flex items-center justify-between rounded-full flex-1 ${isSelected ? "bg-[#151A19] border-[#1F2726] border-[2px] h-[44px] heading-large-md" : " h-[36px] border-[#1F2726] border-[0px] w-full heading-large-sm hover:bg-[#5A6462] bg-[#344240] hover:border-[2px] hover:h-[42px] hover:heading-large-md"} ${!comingSoon && !isLocked ? "pl-[10px] pr-[35px]" : "px-[10px]"}`}>
-            <div className={`flex items-center gap-x-[15px] h-full ${isLocked ? "opacity-60" : ""}`}>
+        <div className={`relative  transition-all  duration-300 flex items-center justify-between rounded-full 
+             ${isSelected ? "bg-[#151A19] border-[#1F2726] border-[2px] h-[44px] heading-large-sm md:heading-large-md" : " h-[36px] border-[#1F2726] border-[0px] w-full hover:bg-[#5A6462] bg-[#344240] hover:border-[2px] hover:h-[42px] hover:heading-large-md"} 
+             ${(!isMobile && (isSelected || isHovered)) ? !comingSoon && !isLocked ? "pl-[10px] pr-[35px]" : "px-[10px]" : "px-[10px]"} 
+             ${!isMobile ? isHovered || isSelected ? "min-w-fit" : "!min-w-[165px]" : "w-auto max-w-fit"}
+             ${!isSelected ? "heading-large-xs lg:heading-large-sm" : ""}
+             ${isMobile ? "flex-shrink flex-grow-0 basis-auto bottom-[0px]" : "flex-1 bottom-[22px] shadow-xl shadow-[#1F2726]"}`}
+             
+            style={{
+                zIndex: !isSelected && !isHovered ? 10 * index : isHovered ? 110 : 100,
+                fontSize: !isSelected ? 'clamp(14px, 2vw, 16px)' : undefined
+            }}
+        >
+            <div className={`flex items-center gap-x-[${isMobile && !(isSelected || isHovered) ? "0px" : "15px"}] justify-center h-full ${isLocked ? "opacity-60" : ""}`}>
                 <GTPIcon 
-                    size={isSelected ? "lg" : "md"} 
                     icon={`${icon}${isLocked ? "-monochrome" : ""}` as GTPIconName} 
                     style={{ color: iconColor }} 
-                    className={`transition-all duration-300 ${isSelected ? "!size-[36px]" : "!size-[24px]"}`}
-                    containerClassName={`flex items-center justify-center   `}
+                    className={`transition-all duration-300 ${isSelected ? "!size-[36px]" : "lg:!size-[24px]"} ${isMobile && (isLocked || comingSoon) ? "!size-[0px] opacity-0" : ""}`}
+                    containerClassName={`flex items-center justify-center w-fit h-fit   `}
                 />
-                <div className="">{header}</div>
+                <div className={`transition-all duration-300 overflow-hidden`}
+                style={{
+                    width: isMobile && !isSelected && !isHovered ? "0px" : `${mobileWidth}px`
+                }}
+                >{header}</div>
             </div>
             {comingSoon && (
                 <div className="flex items-center py-[2px] px-[10px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] rounded-full">

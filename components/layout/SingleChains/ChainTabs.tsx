@@ -28,15 +28,19 @@ const TAB_INFO = {
 
 
 export default function ChainTabs({ chainInfo, selectedTab, setSelectedTab }: { chainInfo: ChainInfo, selectedTab: string, setSelectedTab: (tab: string) => void }){
+    const [hoveredTab, setHoveredTab] = useState<string | null>(null);
     return(
         <SectionBar>
         {Object.keys(chainInfo.tab_status).sort((a, b) => {
             return chainInfo.tab_status[a] === "soon" ? 1 : -1;
         }).sort((a, b) => {
             return chainInfo.tab_status[a] === "locked" ? 1 : -1;
-        }).map((tab) => {
+        }).map((tab, index) => {
             return(
-                <div key={tab} onClick={() => setSelectedTab(tab)}>
+                <div key={tab} onClick={() => setSelectedTab(tab)}
+                    onMouseEnter={() => setHoveredTab(tab)}
+                    onMouseLeave={() => setHoveredTab(null)}
+                >
                     <SectionBarItem
                         isSelected={selectedTab === tab}
                         isLocked={chainInfo.tab_status[tab] === "locked"}
@@ -44,6 +48,8 @@ export default function ChainTabs({ chainInfo, selectedTab, setSelectedTab }: { 
                         icon={tab === "overview" ? `gtp:${chainInfo.url_key}-logo-monochrome` : TAB_INFO[tab].icon}
                         header={TAB_INFO[tab].header}
                         iconColor={tab === "overview" ? chainInfo.colors.dark[0] : undefined}
+                        index={index + 1}
+                        isHovered={hoveredTab === tab}
                     />
                 </div>
             )
