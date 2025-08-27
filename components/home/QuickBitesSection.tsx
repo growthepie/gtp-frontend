@@ -7,15 +7,16 @@ import Heading from '@/components/layout/Heading';
 import { GTPIcon } from '@/components/layout/GTPIcon';
 import { SectionButtonLink } from '@/components/layout/TextHeadingComponents';
 import QuickBitesGrid from '@/components/quick-bites/QuickBitesGrid';
-import { getFeaturedQuickBites } from '@/lib/quick-bites/quickBites';
+import { getFeaturedQuickBites, getRelatedQuickBites } from '@/lib/quick-bites/quickBites';
 
 const QuickBitesSection: React.FC = () => {
   // Get the latest 3 quick bites to feature
   const featuredQuickBites = getFeaturedQuickBites(3);
-  
+  const relatedQuickBites = getRelatedQuickBites("arbitrum-timeboost");
   if (!featuredQuickBites.length) {
     return null;
   }
+
 
   return (
     <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[30px] md:mb-[60px] gap-y-[15px] justify-center">

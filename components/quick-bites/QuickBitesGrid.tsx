@@ -8,9 +8,10 @@ import { QuickBiteWithSlug } from '@/lib/types/quickBites';
 interface QuickBitesGridProps {
   QuickBites: QuickBiteWithSlug[];
   IsLanding?: boolean; // Optional prop to indicate if this is the landing page
+  topicFilter?: string[];
 }
 
-const QuickBitesGrid: React.FC<QuickBitesGridProps> = ({ QuickBites, IsLanding = true }) => {
+const QuickBitesGrid: React.FC<QuickBitesGridProps> = ({ QuickBites, IsLanding = true, topicFilter }) => {
   if (!QuickBites || QuickBites.length === 0) {
     return (
       <div className="w-full py-8 text-center">
@@ -42,7 +43,7 @@ const QuickBitesGrid: React.FC<QuickBitesGridProps> = ({ QuickBites, IsLanding =
                 ...topic,
                 icon: topic.icon || ""
               }))}
-              
+              topicFilter={topicFilter}
             />
           ))}
         </div>

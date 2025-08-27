@@ -144,7 +144,7 @@ const pectraUpgrade: QuickBiteData = {
   topics: [{
     icon: "ethereum-logo-monochrome",
     color: "#94ABD3",
-    name: "Ethereum",
+    name: "Ethereum Mainnet",
     url: "/chains/ethereum"
   },
   {

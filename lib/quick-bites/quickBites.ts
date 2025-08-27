@@ -1,7 +1,13 @@
-import { QuickBiteData, QuickBiteWithSlug } from '@/lib/types/quickBites';
+import { QuickBiteData, QuickBiteWithSlug, RelatedData } from '@/lib/types/quickBites';
 import QUICK_BITES_DATA from '.';
+import { stringToDOM } from 'million';
 
 export default QUICK_BITES_DATA;
+
+// interface RelatedData: [key: string]: {
+//   relatedTopics: string[];
+//   relatedQuickBites: string | null;
+// }
 
 // Helper functions for working with the mock data
 export const getQuickBiteBySlug = (slug: string): QuickBiteData | undefined => {
@@ -15,17 +21,56 @@ export const getAllQuickBites = (): (QuickBiteData & { slug: string })[] => {
   }));
 };
 
-export const getRelatedQuickBites = (slugs: string[]): QuickBiteWithSlug[] => {
-  return slugs
-    .map(slug => {
-      const data = QUICK_BITES_DATA[slug];
-      if (!data) return null;
-      return {
-        ...data,
-        slug
-      };
-    })
-    .filter((item): item is QuickBiteWithSlug => item !== null);
+// export const getRelatedQuickBites = (slugs: string[]): QuickBiteWithSlug[] => {
+//   return slugs
+//     .map(slug => {
+//       const data = QUICK_BITES_DATA[slug];
+//       console.log(data);
+//       if (!data) return null;
+//       return {
+//         ...data,
+//         slug
+//       };
+//     })
+//     .filter((item): item is QuickBiteWithSlug => item !== null);
+// };
+
+
+export const getRelatedQuickBites = (slug: string): RelatedData => {
+  const relatedData: RelatedData = {};
+  const data = QUICK_BITES_DATA[slug];
+  if (!data) return relatedData;
+
+
+  Object.entries(QUICK_BITES_DATA).filter(([currentSlug, currentData]) => currentSlug !== slug).map(([currentSlug, currentData]) => {
+ 
+    currentData.topics?.map(topic => {
+      
+
+      data.topics?.map(t => {
+
+        console.log(t.name + currentSlug + " --- " + topic.name);
+        if(t.name === topic.name) {
+          // Initialize the entry if it doesn't exist
+          if(!relatedData[currentSlug]) {
+            relatedData[currentSlug] = {
+              relatedTopics: [],
+              data: null
+            };
+          }
+          
+          //add the topic to the relatedTopics array
+          relatedData[currentSlug].relatedTopics.push(topic.name);
+          relatedData[currentSlug].data = currentData;
+        }
+      });
+    });
+  });
+
+
+
+  
+  return relatedData;
 };
 
 // Get featured quick bites for homepage

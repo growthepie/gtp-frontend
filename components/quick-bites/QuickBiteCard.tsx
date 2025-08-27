@@ -38,6 +38,7 @@ interface QuickBiteCardProps {
     name: string;
     url: string;
   }[];
+  topicFilter?: string[];
 }
 
 const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
@@ -51,7 +52,8 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
   topics,
   className = '',
   isRelatedPage = false,
-  mainTopics
+  mainTopics,
+  topicFilter
 }) => {
   const { AllChainsByKeys } = useMaster();
   const handleAuthorClick = (e: React.MouseEvent) => {
@@ -124,9 +126,9 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
 
               return (
                 <div className="flex gap-x-[5px]">
-                  {topics.map((topic) => {
+                  {topics.filter(topic => topicFilter ? topicFilter.includes(topic.name) : true).map((topic) => {
                     const showColor = compareTopics ? mainTopics.some(mainTopic => topic.name === mainTopic.name) : true;
-                    
+                  
                     // Resolve chain information if this is a chain URL
                     let resolvedIcon = topic.icon;
                     let resolvedColor = topic.color;
