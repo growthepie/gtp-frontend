@@ -38,7 +38,7 @@ export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked,
                 fontSize: !isSelected ? 'clamp(14px, 2vw, 16px)' : undefined
             }}
         >
-            <div className={`flex items-center gap-x-[${isMobile && !(isSelected || isHovered) ? "0px" : "15px"}] justify-center h-full ${isLocked ? "opacity-60" : ""}`}>
+                         <div className={`flex items-center justify-center h-full ${isLocked ? "opacity-60" : ""} ${isMobile && !(isSelected || isHovered) ? "gap-x-0" : "gap-x-[15px]"}`}>
                 <GTPIcon 
                     icon={`${icon}${isLocked ? "-monochrome" : ""}` as GTPIconName} 
                     style={{ color: iconColor }} 

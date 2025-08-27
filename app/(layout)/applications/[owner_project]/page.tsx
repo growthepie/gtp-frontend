@@ -257,6 +257,8 @@ const ContractsTable = () => {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [showMore, setShowMore] = useState(false);
 
+
+
   const metricKey = useMemo(() => {
     let key = selectedMetrics[0];
     if (selectedMetrics[0] === "gas_fees")
@@ -342,11 +344,29 @@ const ContractsTable = () => {
 
           <Virtuoso
             totalCount={contracts.length}
-            itemContent={(index) => (
-              <div key={index} className={index < contracts.length - 1 ? "pb-[5px]" : ""}>
-                <ContractsTableRow contract={contracts[index]} />
-              </div>
-            )}
+            itemContent={(index) => {
+
+
+              const contractData: ContractDict = {
+                name: data.contracts_table[selectedTimespan].data[index][data.contracts_table[selectedTimespan].types.indexOf("name")] ?? "",
+                address: data.contracts_table[selectedTimespan].data[index][data.contracts_table[selectedTimespan].types.indexOf("address")] ?? "",
+                txcount: data.contracts_table[selectedTimespan].data[index][data.contracts_table[selectedTimespan].types.indexOf("txcount")] ?? 0,
+                daa: data.contracts_table[selectedTimespan].data[index][data.contracts_table[selectedTimespan].types.indexOf("daa")] ?? 0,
+                fees_paid_eth: data.contracts_table[selectedTimespan].data[index][data.contracts_table[selectedTimespan].types.indexOf("fees_paid_eth")] ?? 0,
+                fees_paid_usd: data.contracts_table[selectedTimespan].data[index][data.contracts_table[selectedTimespan].types.indexOf("fees_paid_usd")] ?? 0,
+                main_category_key: data.contracts_table[selectedTimespan].data[index][data.contracts_table[selectedTimespan].types.indexOf("main_category_key")] ?? "",
+                sub_category_key: data.contracts_table[selectedTimespan].data[index][data.contracts_table[selectedTimespan].types.indexOf("sub_category_key")] ?? "",
+                origin_key: data.contracts_table[selectedTimespan].data[index][data.contracts_table[selectedTimespan].types.indexOf("origin_key")] ?? "",
+              }
+
+           
+
+              return (
+                <div key={index} className={index < contracts.length - 1 ? "pb-[5px]" : ""}>
+                  <ContractsTableRow contract={contractData}  />
+                </div>
+              )
+            }}
             useWindowScroll
             increaseViewportBy={{ top: 0, bottom: 400 }}
             overscan={50}
@@ -403,12 +423,17 @@ ContractValue.displayName = 'Value';
 
 
 
-const ContractsTableRow = memo(({ contract }: { contract: ContractDict }) => {
+const ContractsTableRow = memo(({ contract }: { contract: ContractDict   }) => {
+  const { data } = useApplicationDetailsData();
   const { owner_project } = useApplicationDetailsData();
   const { ownerProjectToProjectData } = useProjectsMetadata();
+  const { applicationDataAggregated } = useApplicationsData();
   const { metricsDef, selectedMetrics, selectedMetricKeys, } = useMetrics();
   const { AllChainsByKeys, data: masterData } = useMaster();
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+  const { data: master } = useMaster();
+
+
 
   const handleCopyAddress = (address: string) => {
     navigator.clipboard.writeText(address);
@@ -427,6 +452,9 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict }) => {
   if (!masterData)
     return null;
 
+  
+
+  
   return (
     <GridTableRow
       gridDefinitionColumns={gridColumns}
@@ -488,7 +516,7 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict }) => {
         </div>
       </div>
       <div className="text-xs">
-        <Category category={ownerProjectToProjectData[owner_project].main_category || ""} />
+        <Category category={master?.blockspace_categories.main_categories[contract.main_category_key] || ""} />
       </div>
       <div className="text-xs">
         {contract.sub_category_key ? (masterData.blockspace_categories.sub_categories[contract.sub_category_key] ? masterData.blockspace_categories.sub_categories[contract.sub_category_key] : contract.sub_category_key) : <span className="text-[#5A6462]">Unknown</span>}
