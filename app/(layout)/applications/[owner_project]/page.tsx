@@ -249,7 +249,7 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
 }
 
 const ContractsTable = () => {
-  const { data, owner_project, contracts, sort, setSort } = useApplicationDetailsData();
+  const { data, owner_project, contracts, sort, setSort, setSelectedSeriesName: setSelectedSeriesNameApps } = useApplicationDetailsData();
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { selectedTimespan } = useTimespan();
   const { AllChainsByKeys } = useMaster();
@@ -257,7 +257,12 @@ const ContractsTable = () => {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [showMore, setShowMore] = useState(false);
 
+  const {selectedSeriesName, setSelectedSeriesName} = useChartSync();
 
+
+  useEffect(() => {
+      setSelectedSeriesNameApps(selectedSeriesName);
+  }, [selectedSeriesName]);
 
   const metricKey = useMemo(() => {
     let key = selectedMetrics[0];
@@ -345,25 +350,11 @@ const ContractsTable = () => {
           <Virtuoso
             totalCount={contracts.length}
             itemContent={(index) => {
-
-
-              const contractData: ContractDict = {
-                name: data.contracts_table[selectedTimespan].data[index][data.contracts_table[selectedTimespan].types.indexOf("name")] ?? "",
-                address: data.contracts_table[selectedTimespan].data[index][data.contracts_table[selectedTimespan].types.indexOf("address")] ?? "",
-                txcount: data.contracts_table[selectedTimespan].data[index][data.contracts_table[selectedTimespan].types.indexOf("txcount")] ?? 0,
-                daa: data.contracts_table[selectedTimespan].data[index][data.contracts_table[selectedTimespan].types.indexOf("daa")] ?? 0,
-                fees_paid_eth: data.contracts_table[selectedTimespan].data[index][data.contracts_table[selectedTimespan].types.indexOf("fees_paid_eth")] ?? 0,
-                fees_paid_usd: data.contracts_table[selectedTimespan].data[index][data.contracts_table[selectedTimespan].types.indexOf("fees_paid_usd")] ?? 0,
-                main_category_key: data.contracts_table[selectedTimespan].data[index][data.contracts_table[selectedTimespan].types.indexOf("main_category_key")] ?? "",
-                sub_category_key: data.contracts_table[selectedTimespan].data[index][data.contracts_table[selectedTimespan].types.indexOf("sub_category_key")] ?? "",
-                origin_key: data.contracts_table[selectedTimespan].data[index][data.contracts_table[selectedTimespan].types.indexOf("origin_key")] ?? "",
-              }
-
            
 
               return (
                 <div key={index} className={index < contracts.length - 1 ? "pb-[5px]" : ""}>
-                  <ContractsTableRow contract={contractData}  />
+                  <ContractsTableRow contract={contracts[index]}  />
                 </div>
               )
             }}

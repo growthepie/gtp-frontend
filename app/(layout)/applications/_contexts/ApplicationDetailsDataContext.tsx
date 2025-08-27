@@ -11,6 +11,7 @@ import { useMaster } from "@/contexts/MasterContext";
 import { useLocalStorage } from "usehooks-ts";
 import { notFound } from "next/navigation";
 import { useTimespan } from "./TimespanContext";
+import { useChartSync } from "./GTPChartSyncContext";
 
 export interface ApplicationDetailsResponse {
   metrics:          Metrics;
@@ -103,6 +104,8 @@ export type ApplicationDetailsDataContextType = {
   contracts: ContractDict[];
   sort: { metric: string; sortOrder: string };
   setSort: React.Dispatch<React.SetStateAction<{ metric: string; sortOrder: string; }>>;
+  selectedSeriesName: string | null;
+  setSelectedSeriesName: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 export const ApplicationDetailsDataContext = createContext<ApplicationDetailsDataContextType | undefined>(undefined);
@@ -124,6 +127,11 @@ export const ApplicationDetailsDataProvider = ({
   } = useSWR<ApplicationDetailsResponse>(
     owner_project ? ApplicationsURLs.details.replace("{owner_project}", owner_project) : null,
   );
+
+  const [selectedSeriesName, setSelectedSeriesName] = useState<string | null>(null);
+
+
+
   const {data:master} = useMaster();
   const { selectedTimespan } = useTimespan();
   const { sort: overviewSort } = useSort();
@@ -173,9 +181,10 @@ export const ApplicationDetailsDataProvider = ({
   const contractsSorter = useMemo(() => createContractsSorter(), [createContractsSorter]);
 
   const filteredApplicationDetailsData = useMemo(() => {
+    
     // Return early if no data is available
     if (!applicationDetailsData) return undefined;
-    
+
     // Create a deep clone of the data to avoid mutation issues
     const filteredData = JSON.parse(JSON.stringify(applicationDetailsData)) as ApplicationDetailsResponse;
   
@@ -202,6 +211,7 @@ export const ApplicationDetailsDataProvider = ({
       // Filter out Ethereum from contracts_table for all timespans
       if (filteredData.contracts_table) {
         Object.keys(filteredData.contracts_table).forEach(timespan => {
+          
           const contractsTable = filteredData.contracts_table[timespan];
           if (contractsTable && contractsTable.data) {
             // Find the index of origin_key in the types array
@@ -211,7 +221,7 @@ export const ApplicationDetailsDataProvider = ({
               // Filter out rows where origin_key is 'ethereum'
               contractsTable.data = contractsTable.data.filter(row => {
                 const originKey = String(row[originKeyIndex]).toLowerCase();
-                return originKey !== 'ethereum';
+                return originKey !== 'ethereum' && (selectedSeriesName ? originKey === selectedSeriesName : true);
               });
             }
           }
@@ -220,16 +230,27 @@ export const ApplicationDetailsDataProvider = ({
     }
     
     return filteredData;
-  }, [applicationDetailsData, focusEnabled]);
+  }, [applicationDetailsData, focusEnabled, selectedSeriesName, selectedTimespan]);
+
+
+
+
 
   const contracts = useMemo(() => {
     if (!filteredApplicationDetailsData) return [];
-    return contractsSorter(getContractDictArray(filteredApplicationDetailsData.contracts_table[selectedTimespan]), sort.metric, sort.sortOrder as SortOrder);
+    return contractsSorter(getContractDictArray(filteredApplicationDetailsData.contracts_table[selectedTimespan]).filter(contract => {
+      if(selectedSeriesName) {
+        return contract.origin_key === selectedSeriesName;
+      }
+      return true;
+    }), sort.metric, sort.sortOrder as SortOrder);
   }, [filteredApplicationDetailsData, contractsSorter, selectedTimespan, sort.metric, sort.sortOrder]);
 
   if( applicationDetailsError ) {
     return notFound();
   }
+
+
 
   return (
     <ApplicationDetailsDataContext.Provider value={{
@@ -238,6 +259,8 @@ export const ApplicationDetailsDataProvider = ({
       contracts: contracts,
       sort,
       setSort,
+      selectedSeriesName,
+      setSelectedSeriesName,
     }}>
       <ShowLoading 
         dataLoading={[applicationDetailsLoading]} 
