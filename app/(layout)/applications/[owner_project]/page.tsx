@@ -249,13 +249,20 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
 }
 
 const ContractsTable = () => {
-  const { data, owner_project, contracts, sort, setSort } = useApplicationDetailsData();
+  const { data, owner_project, contracts, sort, setSort, setSelectedSeriesName: setSelectedSeriesNameApps } = useApplicationDetailsData();
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { selectedTimespan } = useTimespan();
   const { AllChainsByKeys } = useMaster();
   const { metricsDef, selectedMetrics, setSelectedMetrics, selectedMetricKeys, } = useMetrics();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [showMore, setShowMore] = useState(false);
+
+  const {selectedSeriesName, setSelectedSeriesName} = useChartSync();
+
+
+  useEffect(() => {
+      setSelectedSeriesNameApps(selectedSeriesName);
+  }, [selectedSeriesName]);
 
   const metricKey = useMemo(() => {
     let key = selectedMetrics[0];
@@ -342,11 +349,15 @@ const ContractsTable = () => {
 
           <Virtuoso
             totalCount={contracts.length}
-            itemContent={(index) => (
-              <div key={index} className={index < contracts.length - 1 ? "pb-[5px]" : ""}>
-                <ContractsTableRow contract={contracts[index]} />
-              </div>
-            )}
+            itemContent={(index) => {
+           
+
+              return (
+                <div key={index} className={index < contracts.length - 1 ? "pb-[5px]" : ""}>
+                  <ContractsTableRow contract={contracts[index]}  />
+                </div>
+              )
+            }}
             useWindowScroll
             increaseViewportBy={{ top: 0, bottom: 400 }}
             overscan={50}
@@ -403,12 +414,17 @@ ContractValue.displayName = 'Value';
 
 
 
-const ContractsTableRow = memo(({ contract }: { contract: ContractDict }) => {
+const ContractsTableRow = memo(({ contract }: { contract: ContractDict   }) => {
+  const { data } = useApplicationDetailsData();
   const { owner_project } = useApplicationDetailsData();
   const { ownerProjectToProjectData } = useProjectsMetadata();
+  const { applicationDataAggregated } = useApplicationsData();
   const { metricsDef, selectedMetrics, selectedMetricKeys, } = useMetrics();
   const { AllChainsByKeys, data: masterData } = useMaster();
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+  const { data: master } = useMaster();
+
+
 
   const handleCopyAddress = (address: string) => {
     navigator.clipboard.writeText(address);
@@ -427,6 +443,9 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict }) => {
   if (!masterData)
     return null;
 
+  
+
+  
   return (
     <GridTableRow
       gridDefinitionColumns={gridColumns}
@@ -488,7 +507,7 @@ const ContractsTableRow = memo(({ contract }: { contract: ContractDict }) => {
         </div>
       </div>
       <div className="text-xs">
-        <Category category={ownerProjectToProjectData[owner_project].main_category || ""} />
+        <Category category={master?.blockspace_categories.main_categories[contract.main_category_key] || ""} />
       </div>
       <div className="text-xs">
         {contract.sub_category_key ? (masterData.blockspace_categories.sub_categories[contract.sub_category_key] ? masterData.blockspace_categories.sub_categories[contract.sub_category_key] : contract.sub_category_key) : <span className="text-[#5A6462]">Unknown</span>}
