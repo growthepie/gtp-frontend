@@ -80,3 +80,46 @@ export const getFeaturedQuickBites = (count: number = 3): (QuickBiteData & { slu
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, count);
 };
+
+// Get quick bites related to a specific metric using URL matching
+export const getQuickBitesByMetric = (metricKey: string, metricType: string = "fundamentals"): RelatedData => {
+  const relatedData: RelatedData = {};
+  
+  // Get the metric's URL pattern based on type
+  const metricUrl = `/${metricType}/${metricKey}`;
+  
+  // Find quick bites that have topics with matching URLs
+  Object.entries(QUICK_BITES_DATA).forEach(([slug, data]) => {
+    const matchingTopics = data.topics?.filter(topic => {
+      // Skip topics with empty URLs - they shouldn't match any metric pages
+      if (!topic.url || topic.url.trim() === '') {
+        return false;
+      }
+      
+      // Direct URL match
+      if (topic.url === metricUrl) {
+        return true;
+      }
+      
+      // Check if topic URL is a parent category that contains the metric
+      const topicPath = topic.url;
+      const metricPath = metricUrl;
+      
+      // If topic is a parent category of the metric
+      if (topicPath !== metricPath && metricPath.startsWith(topicPath.replace(/\/$/, ''))) {
+        return true;
+      }
+      
+      return false;
+    }) || [];
+
+    if (matchingTopics.length > 0) {
+      relatedData[slug] = {
+        relatedTopics: matchingTopics.map(topic => topic.name),
+        data: data
+      };
+    }
+  });
+
+  return relatedData;
+};

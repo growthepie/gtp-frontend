@@ -17,7 +17,6 @@ const RelatedQuickBites: React.FC<RelatedQuickBitesProps> = ({ slug }) => {
     if(Object.keys(relatedQuickBites).length === 0) {
         return null;
     }
- 
 
     console.log(Object.values(relatedQuickBites).flatMap(item => item.relatedTopics));
     return (
@@ -29,8 +28,14 @@ const RelatedQuickBites: React.FC<RelatedQuickBitesProps> = ({ slug }) => {
             as="h1"
         />
         
-        
-        <QuickBitesGrid QuickBites={Object.values(relatedQuickBites).map(item => item.data) as QuickBiteWithSlug[]} IsLanding={false} topicFilter={Object.values(relatedQuickBites).flatMap(item => item.relatedTopics)} />
+        <QuickBitesGrid 
+            QuickBites={Object.entries(relatedQuickBites).map(([slug, item]) => ({
+                ...item.data,
+                slug
+            })) as QuickBiteWithSlug[]} 
+            IsLanding={false} 
+            topicFilter={Object.values(relatedQuickBites).flatMap(item => item.relatedTopics)} 
+        />
 
     </div>
     );
