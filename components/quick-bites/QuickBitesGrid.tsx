@@ -25,11 +25,14 @@ const QuickBitesGrid: React.FC<QuickBitesGridProps> = ({ QuickBites, IsLanding =
     return  QuickBite.showInMenu !== false;
   };
 
+  const filteredQuickBites = QuickBites.filter(filterQuickBites);
+  const hasOnlyOneQuickBite = filteredQuickBites.length === 1;
+
   if(!IsLanding) {
     return (
       <div className='w-full @container'>
         <div className="w-full grid gap-[10px] grid-cols-1 @[560px]:grid-cols-2 @[845px]:grid-cols-3">
-          {QuickBites.filter(filterQuickBites).map((QuickBite, index) => (
+          {filteredQuickBites.map((QuickBite, index) => (
             <QuickBiteCard 
               key={QuickBite.slug || index}
               title={QuickBite.title}
@@ -44,12 +47,13 @@ const QuickBitesGrid: React.FC<QuickBitesGridProps> = ({ QuickBites, IsLanding =
                 icon: topic.icon || ""
               }))}
               topicFilter={topicFilter}
+              className={hasOnlyOneQuickBite ? 'min-w-[570px]' : ''}
             />
           ))}
         </div>
       </div>
     );
-}
+  }
   
   return (
     <div className='w-full h-[275px] overflow-hidden @container'>

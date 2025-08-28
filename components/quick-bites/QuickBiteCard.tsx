@@ -61,11 +61,13 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
     e.preventDefault();
   };
 
+  // Determine the min-width class based on whether a custom className is provided
+  const minWidthClass = className.includes('min-w-') ? '' : 'min-w-[275px]';
 
   return (
     <Link
       href={`/quick-bites/${slug}`}
-      className={`block h-full ${className} min-w-[275px] !h-[275px] select-none group`}
+      className={`block h-full ${minWidthClass} ${className} !h-[275px] select-none group`}
       aria-labelledby={`card-title-${slug}`}
     >
       <div className='flex flex-col w-full h-full p-[15px] gap-y-[10px] border border-[#5A6462] rounded-[15px]'>

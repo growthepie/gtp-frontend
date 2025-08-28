@@ -17,6 +17,15 @@ const MetricRelatedQuickBites: React.FC<MetricRelatedQuickBitesProps> = ({ metri
         return null;
     }
 
+    // Convert to array and sort by date (most recent first)
+    const sortedQuickBites = Object.entries(relatedQuickBites)
+        .map(([slug, item]) => ({
+            ...item.data,
+            slug
+        }))
+        .filter(item => item.date) // Filter out items without dates
+        .sort((a, b) => new Date(b.date!).getTime() - new Date(a.date!).getTime());
+
     return (
     <div className="pt-[45px] md:pt-[30px] flex flex-col gap-y-[15px]">
         <div className="flex justify-between items-center">
@@ -33,10 +42,7 @@ const MetricRelatedQuickBites: React.FC<MetricRelatedQuickBitesProps> = ({ metri
         </div>
         
         <QuickBitesGrid 
-            QuickBites={Object.entries(relatedQuickBites).map(([slug, item]) => ({
-                ...item.data,
-                slug
-            })) as QuickBiteWithSlug[]} 
+            QuickBites={sortedQuickBites as QuickBiteWithSlug[]} 
             IsLanding={false} 
             topicFilter={Object.values(relatedQuickBites).flatMap(item => item.relatedTopics)} 
         />
