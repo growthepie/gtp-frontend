@@ -58,6 +58,7 @@ export interface TableBlock extends BaseBlock {
       isNumeric?: boolean;
       minWidth?: number;
       copyable?: boolean; // Add this line
+      add_url?: string; // URL template with ${cellValue} placeholder
       units?: {
         [key: string]: {
           decimals?: number;
