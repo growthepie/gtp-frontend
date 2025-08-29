@@ -14,6 +14,7 @@ import { useParams } from "next/navigation";
 import MetricChart from "@/components/metric/MetricChart";
 import MetricTable from "@/components/metric/MetricTable";
 import { MetricBottomControls, MetricTopControls } from "@/components/metric/MetricControls";
+import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
 
 const monthly_agg_labels = {
   avg: "Average",
@@ -79,6 +80,11 @@ const FundamentalsContent = ({ metric, type }: FundamentalsContentProps) => {
           </div>
           <PageContainer className="hidden md:block" paddingY="none">
             <MetricBottomControls metric={metric} />
+          </PageContainer>
+
+          {/* Add Related Quick Bites Section */}
+          <PageContainer className="" paddingY="none">
+            <MetricRelatedQuickBites metricKey={metric} metricType={type} />
           </PageContainer>
         </MetricSeriesProvider>
       </MetricContextWrapper>

@@ -56,6 +56,13 @@ export interface Author {
   }
   
   // Type guards
+  export interface RelatedData {
+    [key: string]: {
+      relatedTopics: string[];
+      data: QuickBiteData | null;
+    };
+  }
+  
   export function isQuickBiteWithSlug(dive: QuickBiteData | QuickBiteWithSlug): dive is QuickBiteWithSlug {
     return 'slug' in dive;
   }

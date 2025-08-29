@@ -160,7 +160,12 @@ export const SidebarMenuGroup = memo(({
   useEffect(() => {
     let openState = false;
 
-    const optionURLs = item.options.map((o) => o.url);
+    let optionURLs = item.options.map((o) => o.url);
+
+    // if the item is the chains rework item, replace the urls with the rework urls
+    if(item.key === "chains-rework") {
+      optionURLs = optionURLs.map((o) => o?.replace("/chains/", "/chains-rework/"));
+    }
 
     if (optionURLs.includes(pathname)) {
       openState = true;
@@ -173,7 +178,7 @@ export const SidebarMenuGroup = memo(({
     }
 
     setIsOpen(openState);
-  }, [item.name, item.options, pathname, urlParts]);
+  }, [item.name, item.options, pathname, urlParts, item.key]);
 
   const handleGroupOpen = () => {
     setIsOpen(true);
@@ -222,7 +227,7 @@ export const SidebarMenuGroup = memo(({
         )
       }
     >
-      {item.label === "Chains" ? (
+      {item.name === "Chains" ? (
         <div className="gap-y-[5px] pl-[9px]">
           {Object.keys(ChainGroups).length > 0 &&
             Object.entries(ChainGroups).map(([bucket, chains]: any) => {
@@ -259,11 +264,13 @@ export const SidebarMenuGroup = memo(({
                         }
                         label={option.label}
                         hideLabel={!sidebarOpen && !isMobile}
-                        link={option.url}
+                        // if the item is the chains rework item, replace the urls with the rework urls
+                        link={item.key === "chains-rework" ? option.url.replace("/chains/", "/chains-rework/") : option.url}
                         onClick={handleChainLinkClick}
+                        // if the item is the chains rework item, replace the urls with the rework urls
                         isActive={
                           option.url
-                            ? pathname.localeCompare(option.url) === 0
+                            ? pathname.localeCompare(item.key === "chains-rework" ? option.url.replace("/chains/", "/chains-rework/") : option.url) === 0
                             : false
                         }
                         rightContent={

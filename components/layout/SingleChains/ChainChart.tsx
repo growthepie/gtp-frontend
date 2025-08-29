@@ -384,7 +384,7 @@ export default function ChainChart({
         } else {
           if (showGwei(key) && showUsd) {
             // for small USD amounts, show 2 decimals
-            console.log(val + " " + suffix);
+            // console.log(val + " " + suffix);
             if (val < 1) number = prefix + val.toFixed(2) + " " + suffix;
             else if (val < 10)
               number =

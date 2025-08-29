@@ -161,7 +161,7 @@ export const PageTitleAndDescriptionAndControls = () => {
           </Link>
         </div>
       </div>
-      <Search />
+      <Search />  
       <Controls />
     </>
   );
@@ -452,7 +452,7 @@ export const ProjectDetailsLinks = memo(({ owner_project, mobile }: ProjectDetai
 
 ProjectDetailsLinks.displayName = "ProjectDetailsLinks";
 
-export const ApplicationCard = memo(({ application, className, width }: { application?: AggregatedDataRow, className?: string, width?: number }) => {
+export const ApplicationCard = memo(({ application, className, width, chainsPage, chainKey }: { application?: AggregatedDataRow, className?: string, width?: number, chainsPage?: boolean, chainKey?: string }) => {
   const { medianMetric, medianMetricKey } = useApplicationsData();
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { metricsDef } = useMetrics();
@@ -567,7 +567,7 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
           <Category category={ownerProjectToProjectData[application.owner_project]?.main_category || ""} />
         </div>
         <div className="h-[20px] flex items-center gap-x-[5px]">
-          <Chains origin_keys={application.origin_keys} />
+          {!chainsPage ? <Chains origin_keys={application.origin_keys}/> : <Chains origin_keys={application.origin_keys.filter((key) => key === chainKey)}/>}
         </div>
 
       </div>

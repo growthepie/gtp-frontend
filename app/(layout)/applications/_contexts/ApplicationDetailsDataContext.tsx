@@ -182,8 +182,10 @@ export const ApplicationDetailsDataProvider = ({
 
   const filteredApplicationDetailsData = useMemo(() => {
     
+    
     // Return early if no data is available
     if (!applicationDetailsData) return undefined;
+
 
     // Create a deep clone of the data to avoid mutation issues
     const filteredData = JSON.parse(JSON.stringify(applicationDetailsData)) as ApplicationDetailsResponse;
@@ -212,6 +214,7 @@ export const ApplicationDetailsDataProvider = ({
       if (filteredData.contracts_table) {
         Object.keys(filteredData.contracts_table).forEach(timespan => {
           
+          
           const contractsTable = filteredData.contracts_table[timespan];
           if (contractsTable && contractsTable.data) {
             // Find the index of origin_key in the types array
@@ -221,6 +224,7 @@ export const ApplicationDetailsDataProvider = ({
               // Filter out rows where origin_key is 'ethereum'
               contractsTable.data = contractsTable.data.filter(row => {
                 const originKey = String(row[originKeyIndex]).toLowerCase();
+                return originKey !== 'ethereum' && (selectedSeriesName ? originKey === selectedSeriesName : true);
                 return originKey !== 'ethereum' && (selectedSeriesName ? originKey === selectedSeriesName : true);
               });
             }

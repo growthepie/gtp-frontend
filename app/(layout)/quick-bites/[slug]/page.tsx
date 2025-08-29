@@ -9,7 +9,7 @@ import ClientAuthorLink from '@/components/quick-bites/ClientAuthorLink';
 import Block from '@/components/quick-bites/Block';
 import { formatDate } from '@/lib/utils/formatters';
 import { processMarkdownContent } from '@/lib/utils/markdownParser';
-import RelatedQuickBites from '@/components/quick-bites/RelatedQuickBites';
+import RelatedQuickBites from '@/components/RelatedQuickBites';
 import { Author, QuickBiteData, QuickBiteWithSlug } from '@/lib/types/quickBites';
 import Link from 'next/link';
 import QuickBiteClientContent from '@/components/quick-bites/QuickBiteClientContent';
@@ -47,9 +47,14 @@ export default function QuickBitePage({ params }: Props) {
           return;
         }
 
-        // Get related quick bites
-        const relatedQuickBites = quickBite.related 
-          ? getRelatedQuickBites(quickBite.related)
+        // Get related quick bites from the original related array
+        const relatedQuickBites = quickBite.related
+          ? quickBite.related
+              .map(slug => {
+                const data = getQuickBiteBySlug(slug);
+                return data ? { ...data, slug } : null;
+              })
+              .filter((item): item is QuickBiteWithSlug => item !== null)
           : [];
         setRelatedContent(relatedQuickBites);
 
@@ -168,28 +173,22 @@ export default function QuickBitePage({ params }: Props) {
                   }
                 }
                 
-                return (
+                return topic.url ? (
                   <Link key={topic.url} href={topic.url} className="flex items-center gap-x-[5px] rounded-full w-fit pl-[5px] pr-[10px] py-[3px] bg-medium-background">
                     <GTPIcon icon={resolvedIcon || "chain-dark"} size="sm" style={{ color: resolvedColor }} />
                     <div className="text-xs">{topic.name}</div>
                   </Link>
+                ) : (
+                  <div key={topic.name} className="flex items-center gap-x-[5px] rounded-full w-fit pl-[5px] pr-[10px] py-[3px] bg-medium-background">
+                    <GTPIcon icon={resolvedIcon || "chain-dark"} size="sm" style={{ color: resolvedColor }} />
+                    <div className="text-xs">{topic.name}</div>
+                  </div>
                 );
               })}
             </div>
           </div>
 
-          {/* Related content section */}
-          {relatedContent.length > 0 && QuickBite && (
-            <QuickBiteClientContent 
-              content={QuickBite.content}
-              image={QuickBite.image}
-              relatedQuickBites={relatedContent}
-              topics={QuickBite.topics?.map(topic => ({
-                ...topic,
-                icon: topic.icon || ""
-              }))}
-            />
-          )}
+          <RelatedQuickBites slug={params.slug} />
         </Container>
       </div>
     </>

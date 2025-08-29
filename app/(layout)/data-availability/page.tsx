@@ -13,6 +13,8 @@ import Image from "next/image";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import Link from "next/link";
 import ShowLoading from "@/components/layout/ShowLoading";
+import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
+import { PageContainer } from "@/components/layout/Container";
 
 export default function DAOverviewPage() {
     const [selectedTimespan, setSelectedTimespan] = useState("365d");
@@ -248,6 +250,10 @@ export default function DAOverviewPage() {
             }
             />
         </Container>
+      {/* Add Related Quick Bites Section */}
+      <PageContainer className="" paddingY="none">
+        <MetricRelatedQuickBites metricKey="data-availability" metricType="data-availability" />
+      </PageContainer>
       </>        
     )
 }
