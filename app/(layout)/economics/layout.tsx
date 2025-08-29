@@ -50,7 +50,7 @@ export default async function Layout({
         </div>
       </Container>
       <div>{children}</div>
-      <Container>
+      <Container className="mt-[30px]">
         <QuestionAnswer
           startOpen={true}
           // className="px-[0px]"
