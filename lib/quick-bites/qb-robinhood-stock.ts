@@ -83,7 +83,7 @@ const robinhoodStock: QuickBiteData = {
           minWidth: 80,
           isNumeric: false,
           sortByValue: true,
-          copyable: true,
+          copyable: false,
           add_url: "https://finance.yahoo.com/quote/${cellValue}"
         },
         name: {
@@ -99,6 +99,7 @@ const robinhoodStock: QuickBiteData = {
           minWidth: 160,
           isNumeric: false,
           sortByValue: false,
+          copyable: true,
           add_url: "https://arbiscan.io/address/${cellValue}"
         },
         usd_stock_price: {

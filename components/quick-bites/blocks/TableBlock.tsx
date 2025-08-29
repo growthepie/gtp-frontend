@@ -248,7 +248,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                     );
                   }
 
-                  // if copyable text, add copy button with simple formatting
+                  // if copyable boolean set to true, add copy button
                   if (columnDefinitions?.[columnKey]?.copyable) {
                     // add copy to the right
                     cellRightContent = (
