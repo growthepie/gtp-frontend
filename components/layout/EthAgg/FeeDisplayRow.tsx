@@ -60,10 +60,12 @@ export function FeeDisplayRow({
 
 
       <div className={`flex bg-gradient-to-b ${gradientClass} bg-clip-text text-transparent justify-end text-end items-end w-[100px] numbers-2xl`}>
-        {showUsd
-          ? "$" + Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(costValue || 0)
-          : formatNumber((costValue || 0) * 1_000_000_000, 0)
-        }
+        {(() => {
+          const value = showUsd
+            ? "$" + Intl.NumberFormat('en-US', { maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(costValue || 0)
+            : formatNumber((costValue || 0) * 1_000_000_000, 0);
+          return value.length > 6 ? (value).substring(0, 7) : value;
+        })()}
         <span className={`heading-small-xxs mb-0.5 ${showUsd ? "hidden" : "block"}`}> Gwei</span>
       </div>
     </div>
