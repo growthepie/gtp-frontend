@@ -118,9 +118,8 @@ export default function Header() {
         </div>
         <div>
           <div className="items-center z-10 hidden md:flex md:gap-x-[20px]">
-            <FocusSwitch />
-            <EthUsdSwitch />
             {!showGlobalSearchBar && <HeaderSearchButton />}
+            <div className="h-[40px]"></div>
           </div>
         </div>
       </header>
