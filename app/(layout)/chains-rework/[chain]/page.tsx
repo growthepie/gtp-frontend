@@ -22,28 +22,18 @@ import Image from "next/image";
 import Heading from "@/components/layout/Heading";
 import ShowLoading from "@/components/layout/ShowLoading";
 import { ChainData, Chains } from "@/types/api/ChainOverviewResponse";
+import ChainsOverview from "@/components/layout/SingleChains/ChainsOverview";
 
 // Fetcher function for API calls
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 // Memoized tab content components
 const OverviewContent = memo(({ chainKey, chain, master }: { chainKey: string, chain: string, master: any }) => {
-  const { data: chainData, error, isLoading } = useSWR(
-    chainKey ? `${ChainsBaseURL}/${chainKey}` : null,
-    fetcher
-  );
-
-  if (isLoading) return <div className="p-8 text-center">Loading overview...</div>;
-  if (error) return <div className="p-8 text-center text-red-500">Error loading overview data</div>;
-  if (!chainData) return <div className="p-8 text-center">No data available</div>;
-
+  const chainData = master.chains[chainKey];
+  if(!master || !chainData) return <div className="p-8 text-center">Loading overview...</div>;
+  
   return (
-    <ChainChart 
-      chainData={chainData}
-      master={master}
-      chain={chain}
-      defaultChainKey={chainKey}
-    />
+    <ChainsOverview chainData={chainData} />
   );
 });
 

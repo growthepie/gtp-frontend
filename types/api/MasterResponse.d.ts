@@ -66,6 +66,7 @@ export interface ChainInfo {
   description: string;
   symbol: string;
   bucket: string;
+  company?: string;
   colors: {
     light: [string, string];
     dark: [string, string];

@@ -47,7 +47,7 @@ export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked,
                 />
                 <div className={`transition-all duration-300 overflow-hidden`}
                 style={{
-                    width: isMobile && !isSelected && !isHovered ? "0px" : `${mobileWidth}px`
+                    width: isMobile && !isSelected && !isHovered ? "0px" : isMobile ? `${mobileWidth}px` : "auto"
                 }}
                 >{header}</div>
             </div>
