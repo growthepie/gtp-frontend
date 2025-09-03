@@ -3,8 +3,9 @@ import { SectionBar, SectionBarItem } from "@/components/SectionBar";
 import Container from "@/components/layout/Container";
 import { useLocalStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
+import { useSWRConfig } from "swr";
 import { useMaster } from "@/contexts/MasterContext";
-import { useState, useMemo, memo } from "react";
+import { useState, useMemo, memo, useCallback, useEffect } from "react";
 import { ChainInfo } from "@/types/api/MasterResponse";
 import ChainTabs from "@/components/layout/SingleChains/ChainTabs";
 import ChainChart from "@/components/layout/SingleChains/ChainChart";
@@ -17,12 +18,14 @@ import { ApplicationsDataProvider } from "@/app/(layout)/applications/_contexts/
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import useSWR from "swr";
 import { PageTitleAndDescriptionAndControls } from "@/app/(layout)/applications/_components/Components";
-import { ChainsBaseURL } from "@/lib/urls";
+import { ChainsBaseURL, FeesURLs } from "@/lib/urls";
 import Image from "next/image";
 import Heading from "@/components/layout/Heading";
 import ShowLoading from "@/components/layout/ShowLoading";
 import { ChainData, Chains } from "@/types/api/ChainOverviewResponse";
+import { ChainsData } from "@/types/api/ChainResponse";
 import ChainsOverview from "@/components/layout/SingleChains/ChainsOverview";
+import { Icon } from "@iconify/react";
 
 // Fetcher function for API calls
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -38,25 +41,96 @@ const OverviewContent = memo(({ chainKey, chain, master }: { chainKey: string, c
 });
 
 const FundamentalsContent = memo(({ chainKey, chain, master }: { chainKey: string, chain: string, master: any }) => {
-  const { data: chainData, error, isLoading } = useSWR(
-    chainKey ? `${ChainsBaseURL}/${chainKey}` : null,
-    fetcher
-  );
+  const [chainError, setChainError] = useState(null);
+  const [chainData, setChainData] = useState<ChainsData | null>(null);
+  const [chainValidating, setChainValidating] = useState(false);
+  const [chainLoading, setChainLoading] = useState(false);
 
-  if (isLoading) return <div className="p-8 text-center">Loading fundamentals...</div>;
-  if (error) return <div className="p-8 text-center text-red-500">Error loading fundamentals data</div>;
-  if (!chainData) return <div className="p-8 text-center">No data available</div>;
+  const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
+
+  
+  const {
+    data: usageData,
+    error: usageError,
+    isLoading: usageLoading,
+    isValidating: usageValidating,
+  } = useSWR<ChainData>(`https://api.growthepie.com/v1/chains/blockspace/${chainKey}.json`);
+
+  const {
+    data: feeData,
+    error: feeError,
+    isLoading: feeLoading,
+    isValidating: feeValidating,
+  } = useSWR(FeesURLs.table);
+
+  const { cache, mutate } = useSWRConfig();
+
+  const fetchChainData = useCallback(async () => {
+    setChainLoading(true);
+    setChainValidating(true);
+
+
+    try {
+      // Fetch the data
+      const response = await fetch(
+        `${ChainsBaseURL}${chainKey}.json`.replace("/v1/", `/${apiRoot}/`),
+      );
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const data = await response.json();
+
+      // Ensure responseData has the expected structure
+      const flattenedData = data.data || data;
+
+      // Update state with fetched data
+      setChainData(flattenedData);
+      setChainError(null);
+    } catch (error) {
+      // Handle errors
+      setChainData(null);
+      setChainError(error);
+    } finally {
+      // Ensure loading and validating states are correctly reset
+      setChainLoading(false);
+      setChainValidating(false);
+    }
+  }, [apiRoot, chainKey]);
+
+  useEffect(() => {
+    fetchChainData();
+  }, [chainKey, fetchChainData]);
+ 
+
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold">Fundamentals</h2>
-      <ChainChart 
-        chainData={chainData}
-        master={master}
-        chain={chain}
-        defaultChainKey={chainKey}
-      />
+    <div className="flex flex-col gap-y-[15px]">
+      <div
+        className="flex gap-x-[8px] items-center pb-[15px] scroll-mt-8"
+        id="fundamentals"
+      >
+          <div className="w-9 h-9  ">
+            <Icon icon={`gtp:fundamentals`} className="w-9 h-9" />
+          </div>
+          <Heading
+            className="leading-[120%] text-[20px] md:text-[30px] break-inside-avoid "
+            as="h2"
+          >
+            Fundamental Metrics
+          </Heading>
+        </div>
+
+        {chainData && (
+          <ChainChart
+            chain={chain}
+            master={master}
+            chainData={chainData}
+            defaultChainKey={chainKey}
+          />
+        )}
+
     </div>
+  
   );
 });
 
@@ -154,6 +228,8 @@ const BlockspaceContent = memo(({ chainKey, master }: { chainKey: string, master
       fullScreen={false}
     />
   )
+
+  
 
   return (
     <>
