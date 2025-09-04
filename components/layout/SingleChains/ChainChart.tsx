@@ -108,7 +108,7 @@ export default function ChainChart({
 
   const { theme } = useTheme();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const [selectedTimespan, setSelectedTimespan] = useState("max");
+  const [selectedTimespan, setSelectedTimespan] = useState("180d");
   const [selectedScale, setSelectedScale] = useState("log");
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);

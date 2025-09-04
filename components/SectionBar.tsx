@@ -27,7 +27,7 @@ export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked,
 
     return(
         <div className={`relative  transition-all  duration-300 flex items-center justify-between rounded-full 
-             ${isSelected ? "bg-[#151A19] border-[#1F2726] border-[2px] h-[44px] heading-large-sm md:heading-large-md" : " h-[36px] border-[#1F2726] border-[0px] w-full hover:bg-[#5A6462] bg-[#344240] hover:border-[2px] hover:h-[42px] hover:heading-large-md"} 
+             ${isSelected ? "bg-[#151A19] border-[#344240] border-[2px] h-[44px] heading-large-sm md:heading-large-md" : " h-[36px] border-[#1F2726] border-[0px] w-full hover:bg-[#5A6462] bg-[#344240] hover:border-[2px] hover:h-[42px] hover:heading-large-md"} 
              ${(!isMobile && (isSelected || isHovered)) ? !comingSoon && !isLocked ? "pl-[10px] pr-[35px]" : "px-[10px]" : "px-[10px]"} 
              ${!isMobile ? isHovered || isSelected ? "min-w-fit" : "!min-w-[165px]" : "w-auto max-w-fit"}
              ${!isSelected ? "heading-large-xs lg:heading-large-sm" : ""}
@@ -38,11 +38,11 @@ export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked,
                 fontSize: !isSelected ? 'clamp(14px, 2vw, 16px)' : undefined
             }}
         >
-                         <div className={`flex items-center justify-center h-full ${isLocked ? "opacity-60" : ""} ${isMobile && !(isSelected || isHovered) ? "gap-x-0" : "gap-x-[15px]"}`}>
+            <div className={`flex items-center justify-center h-full ${isLocked ? "opacity-60" : ""} ${isMobile && !(isSelected || isHovered) ? "gap-x-0" : "gap-x-[15px]"}`}>
                 <GTPIcon 
                     icon={`${icon}${isLocked ? "-monochrome" : ""}` as GTPIconName} 
                     style={{ color: iconColor }} 
-                    className={`transition-all duration-300 ${isSelected ? "!size-[36px]" : "lg:!size-[24px]"} ${isMobile && (isLocked || comingSoon) ? "!size-[0px] opacity-0" : ""}`}
+                    className={`transition-all duration-300 ${isSelected ? "!size-[30px]" : "lg:!size-[24px]"} ${isMobile && (isLocked || comingSoon) ? "!size-[0px] opacity-0" : ""}`}
                     containerClassName={`flex items-center justify-center w-fit h-fit   `}
                 />
                 <div className={`transition-all duration-300 overflow-hidden`}

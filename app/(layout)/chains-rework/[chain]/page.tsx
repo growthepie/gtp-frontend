@@ -246,7 +246,7 @@ const BlockspaceContent = memo(({ chainKey, master }: { chainKey: string, master
     return { [chainKey]: usageData };
   }, [chainKey, usageData]);
 
-  const [selectedTimespan, setSelectedTimespan] = useState<string>("7d");
+  const [selectedTimespan, setSelectedTimespan] = useState<string>("180d");
 
   
 
