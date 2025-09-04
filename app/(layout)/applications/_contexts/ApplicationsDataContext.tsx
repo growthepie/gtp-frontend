@@ -267,13 +267,14 @@ export type ApplicationsDataContextType = {
   setSelectedMainCategories: (value: string[]) => void;
   medianMetric: string;
   medianMetricKey: string;
+  getIsLoading: () => boolean;
 }
 
 
 
 export const ApplicationsDataContext = createContext<ApplicationsDataContextType | undefined>(undefined);
 
-export const ApplicationsDataProvider = ({ children }: { children: React.ReactNode }) => {
+export const ApplicationsDataProvider = ({ children, disableShowLoading = false }: { children: React.ReactNode; disableShowLoading?: boolean }) => {
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { timespans, selectedTimespan, setSelectedTimespan, isMonthly, setIsMonthly } = useTimespan();
   const { sort, setSort } = useSort();
@@ -496,6 +497,11 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
     return Array.from(chains);
   }, [applicationDataFiltered]);
 
+  // Function to check if data is loading
+  const getIsLoading = useCallback(() => {
+    return applicationsTimespanLoading || masterLoading;
+  }, [applicationsTimespanLoading, masterLoading]);
+
   return (
     <ApplicationsDataContext.Provider
       value={{
@@ -511,12 +517,15 @@ export const ApplicationsDataProvider = ({ children }: { children: React.ReactNo
         setSelectedMainCategories: (value) => handleFilters(FilterType.MAIN_CATEGORY, value),
         medianMetric,
         medianMetricKey,
+        getIsLoading,
       }}
-    >
-      <ShowLoading
-        dataLoading={[masterLoading, applicationsTimespanLoading]}
-        dataValidating={[masterValidating, applicationsTimespanValidating]}
-      />
+        >
+      {!disableShowLoading && (
+        <ShowLoading
+          dataLoading={[masterLoading, applicationsTimespanLoading]}
+          dataValidating={[masterValidating, applicationsTimespanValidating]}
+        />
+      )}
       {children}
     </ApplicationsDataContext.Provider>
   );

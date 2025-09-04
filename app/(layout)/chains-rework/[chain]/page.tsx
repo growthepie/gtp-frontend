@@ -6,6 +6,7 @@ import { useTheme } from "next-themes";
 import { useSWRConfig } from "swr";
 import { useMaster } from "@/contexts/MasterContext";
 import { useState, useMemo, memo, useCallback, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChainInfo } from "@/types/api/MasterResponse";
 import ChainTabs from "@/components/layout/SingleChains/ChainTabs";
 import ChainChart from "@/components/layout/SingleChains/ChainChart";
@@ -14,7 +15,7 @@ import AppsChain from "@/components/layout/SingleChains/AppsChain";
 import { TimespanProvider } from "@/app/(layout)/applications/_contexts/TimespanContext";
 import { MetricsProvider } from "@/app/(layout)/applications/_contexts/MetricsContext";
 import { SortProvider } from "@/app/(layout)/applications/_contexts/SortContext";
-import { ApplicationsDataProvider } from "@/app/(layout)/applications/_contexts/ApplicationsDataContext";
+import { ApplicationsDataProvider, useApplicationsData } from "@/app/(layout)/applications/_contexts/ApplicationsDataContext";
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import useSWR from "swr";
 import { PageTitleAndDescriptionAndControls } from "@/app/(layout)/applications/_components/Components";
@@ -100,6 +101,17 @@ const FundamentalsContent = memo(({ chainKey, chain, master }: { chainKey: strin
   useEffect(() => {
     fetchChainData();
   }, [chainKey, fetchChainData]);
+
+  if (usageLoading || !chainData) return (
+    <div className="w-full h-[60vh] overflow-hidden">
+      <ShowLoading
+        dataLoading={[usageLoading, !chainData]}
+        dataValidating={[usageValidating]}
+        section={true}
+        
+      />
+    </div>
+  )
  
 
 
@@ -147,8 +159,26 @@ const EconomicsContent = memo(({ chainKey, master }: { chainKey: string, master:
   );
 });
 
+// Inner component that can access the ApplicationsDataContext
+const AppsContentInner = memo(({ chainInfo, chainKey }: { chainInfo: any, chainKey: string }) => {
+  const { getIsLoading } = useApplicationsData();
+  
+  if (getIsLoading()) {
+    return (
+      <div className="w-full h-[60vh] overflow-hidden">
+        <ShowLoading
+          dataLoading={[true]}
+          dataValidating={[]}
+          section={true}
+        />
+      </div>
+    );
+  }
+
+  return <AppsChain chainInfo={chainInfo} chainKey={chainKey} defaultQuery={chainInfo?.name || ""} />;
+});
+
 const AppsContent = memo(({ chainKey, master }: { chainKey: string, master: any }) => {
-  if (!chainKey) return <div className="p-8 text-center">No chain data available</div>;
   const chainInfo = master?.chains?.[chainKey];
   
   return (
@@ -192,9 +222,9 @@ const AppsContent = memo(({ chainKey, master }: { chainKey: string, master: any 
     }}>
       <MetricsProvider>
         <SortProvider defaultOrder="desc" defaultKey="txcount">
-          <ApplicationsDataProvider>
+          <ApplicationsDataProvider disableShowLoading={true}>
             {/* <Container className="sticky top-0 z-[10] flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] overflow-visible" isPageRoot> */}
-              <AppsChain chainInfo={chainInfo} chainKey={chainKey} defaultQuery={chainInfo?.name || ""} />
+            <AppsContentInner chainInfo={chainInfo} chainKey={chainKey} />
           </ApplicationsDataProvider>
         </SortProvider>
       </MetricsProvider>
@@ -222,11 +252,14 @@ const BlockspaceContent = memo(({ chainKey, master }: { chainKey: string, master
 
 
   if (usageLoading || !overviewData) return (
-    <ShowLoading
-      dataLoading={[usageLoading, !overviewData]}
-      dataValidating={[usageValidating]}
-      fullScreen={false}
-    />
+    <div className="w-full h-[60vh] overflow-hidden">
+      <ShowLoading
+        dataLoading={[usageLoading, !overviewData]}
+        dataValidating={[usageValidating]}
+        section={true}
+        
+      />
+    </div>
   )
 
   
@@ -280,6 +313,7 @@ const BlockspaceContent = memo(({ chainKey, master }: { chainKey: string, master
 OverviewContent.displayName = 'OverviewContent';
 FundamentalsContent.displayName = 'FundamentalsContent';
 EconomicsContent.displayName = 'EconomicsContent';
+AppsContentInner.displayName = 'AppsContentInner';
 AppsContent.displayName = 'AppsContent';
 BlockspaceContent.displayName = 'BlockspaceContent';
 
@@ -288,7 +322,14 @@ const Chain = ({ params }: { params: any }) => {
     const master = useMaster();
     const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
     const { theme } = useTheme();
-    const [selectedTab, setSelectedTab] = useState<string>("overview");
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    
+    // Initialize selectedTab based on URL parameter, defaulting to "overview"
+    const [selectedTab, setSelectedTab] = useState<string>(() => {
+      const tabFromUrl = searchParams.get("tab");
+      return tabFromUrl || "overview";
+    });
   
     const { AllChains, AllChainsByKeys } = useMaster();
   
@@ -297,6 +338,23 @@ const Chain = ({ params }: { params: any }) => {
         ? (AllChains.find((c) => c.urlKey === chain)?.key as string)
         : "",
     );
+
+    // Update URL when selectedTab changes
+    useEffect(() => {
+      const currentParams = new URLSearchParams(searchParams.toString());
+      
+      if (selectedTab === "overview") {
+        // Remove tab parameter for overview (default)
+        currentParams.delete("tab");
+      } else {
+        // Set tab parameter for other tabs
+        currentParams.set("tab", selectedTab);
+      }
+      
+      const newUrl = `${window.location.pathname}${currentParams.toString() ? `?${currentParams.toString()}` : ''}`;
+      router.replace(newUrl, { scroll: false });
+    }, [selectedTab, router, searchParams]);
+
 
     // Memoized tab content renderer
     const TabContent = useMemo(() => {
