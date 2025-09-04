@@ -80,6 +80,15 @@ export const formatUptime = (durationMs: number) => {
   const hours = totalHours % 24;
   const minutes = totalMinutes % 60;
   const seconds = totalSeconds % 60;
+  const yearStr = years === 1 ? "year" : "years";
+  const monthStr = months === 1 ? "month" : "months";
+  const dayStr = days === 1 ? "day" : "days";
+  const hourStr = hours === 1 ? "hour" : "hours";
+  const minuteStr = minutes === 1 ? "minute" : "minutes";
+  const secondStr = seconds === 1 ? "second" : "seconds";
 
-  return { heading: `${years} years, ${months} months, ${days} days`, subheading: `${hours} hours, ${minutes} minutes, ${seconds} seconds` };
+  return {
+    heading: `${years} ${yearStr}, ${months} ${monthStr}, ${days} ${dayStr}`,
+    subheading: `${hours} ${hourStr}, ${minutes} ${minuteStr}, ${seconds} ${secondStr}`
+  };
 };
