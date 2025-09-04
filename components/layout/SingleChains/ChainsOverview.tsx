@@ -5,6 +5,8 @@ import { ChainData } from "@/types/api/ChainOverviewResponse";
 import { Icon } from "@iconify/react";
 import { GTPIcon } from "../GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import TPSChartCard from "./OverviewCards/TPSChartCard";
+import LiveCards from "./OverviewCards/LiveCards";
 
 
 function dataAvailToArray(x: string) {
@@ -56,11 +58,13 @@ function dataAvailToArray(x: string) {
     return retObject;
 }
 
-const ChainsOverview = ({ chainData }: { chainData: ChainInfo }) => {
+const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, chainData: ChainInfo, master: any }) => {
     return (
-        <div className="flex flex-col w-full">
+        <div className="flex flex-col w-full gap-y-[10px]">
 
             <AboutChain chainData={chainData} />
+
+            <LiveCards chainKey={chainKey} chainData={chainData} master={master} />
         </div>
     )
 }

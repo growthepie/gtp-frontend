@@ -11,6 +11,7 @@ type HistoryItem = {
 
 interface TPSChartProps {
   // The prop is updated to accept an array of HistoryItem objects
+  overrideColor?: string[];
   data: HistoryItem[];
 }
 
@@ -44,7 +45,7 @@ function formatNumberWithSI(num: number): string {
   return sign + formattedValue + tier.symbol;
 }
 
-export const TPSChart = React.memo(({ data }: TPSChartProps) => {
+export const TPSChart = React.memo(({ data, overrideColor }: TPSChartProps) => {
   const chartRef = React.useRef<ReactECharts>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -181,8 +182,8 @@ export const TPSChart = React.memo(({ data }: TPSChartProps) => {
               type: 'linear',
               x: 0, y: 1, x2: 0, y2: 0,
               colorStops: [
-                { offset: 0, color: '#10808C' },
-                { offset: 1, color: '#1DF7EF' }
+                { offset: 0, color: overrideColor?.[0] ?? '#10808C' },
+                { offset: 1, color: overrideColor?.[1] ?? '#1DF7EF' }
               ],
             },
           },
