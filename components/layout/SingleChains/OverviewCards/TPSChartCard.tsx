@@ -55,13 +55,19 @@ export const TPSChartCard = ({ initialHistory, tpsHistory, chainData, chainKey, 
         </div>
 
         <div className="flex justify-between pl-[30%] tems-center">
-           <div className="flex flex-col gap-y-[2px]">
+           <div className="flex flex-col gap-y-[2px] group">
                 <div className="heading-small-xs numbers-sm">{chainData.ath?.toFixed(1)} TPS</div>
-                <div className="heading-small-xxxs text-[#5A6462]">All-Time High</div>
+                <div className="relative min-w-[80px]">
+                    <div className="heading-small-xxxs text-[#5A6462] group-hover:opacity-0 transition-opacity duration-200">All-Time High</div>
+                    <div className="heading-small-xxxs text-[#5A6462] absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">{moment.utc(chainData["ath_timestamp"]).format("D/M/Y HH:mm UTC")}</div>
+                </div>
            </div>
-           <div className="flex flex-col gap-y-[2px]">
+           <div className="flex flex-col gap-y-[2px] group ">
                 <div className="heading-small-xs numbers-sm">{chainData["24h_high"]?.toFixed(1)} TPS</div>
-                <div className="heading-small-xxxs text-[#5A6462]">24h Peak</div>
+                <div className="relative min-w-[90x]">
+                    <div className="heading-small-xxxs text-[#5A6462] group-hover:opacity-0 transition-opacity duration-200">24h Peak</div>
+                    <div className="heading-small-xxxs text-[#5A6462] absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">{moment.utc(chainData["24h_high_timestamp"]).format("D/M/Y HH:mm UTC")}</div>
+                </div>
            </div>
            <div className="flex flex-col gap-y-[2px] items-end">
                 <div className="flex items-center gap-x-[5px] heading-small-xs numbers-md" >
