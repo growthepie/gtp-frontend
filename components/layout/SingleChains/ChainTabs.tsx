@@ -46,7 +46,7 @@ export default function ChainTabs({ chainInfo, selectedTab, setSelectedTab }: { 
                         isLocked={chainInfo.tab_status[tab] === "locked"}
                         comingSoon={chainInfo.tab_status[tab] === "soon"}
                         icon={tab === "overview" ? `gtp:${chainInfo.url_key}-logo-monochrome` : TAB_INFO[tab].icon}
-                        header={TAB_INFO[tab].header}
+                        header={tab === "overview" ? chainInfo.name : TAB_INFO[tab].header}
                         iconColor={tab === "overview" ? chainInfo.colors.dark[0] : undefined}
                         index={index + 1}
                         isHovered={hoveredTab === tab}
