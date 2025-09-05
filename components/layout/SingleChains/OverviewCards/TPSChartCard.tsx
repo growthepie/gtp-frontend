@@ -65,7 +65,7 @@ export const TPSChartCard = ({ initialHistory, tpsHistory, chainData, chainKey, 
            </div>
            <div className="flex flex-col gap-y-[2px] items-end">
                 <div className="flex items-center gap-x-[5px] heading-small-xs numbers-md" >
-                    <div style={{ color: master.chains[chainKey].colors.dark[0] }}>{chainData.tps} TPS</div>
+                    <div style={{ color: master.chains[chainKey].colors.dark[0] }}>{chainData.tps?.toFixed(2)} TPS</div>
                     <GTPIcon icon={"gtp-realtime"} size="sm" />
                 </div>
                 <div className="heading-small-xxxs text-[#5A6462]">Current TPS</div>

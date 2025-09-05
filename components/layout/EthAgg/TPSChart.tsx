@@ -74,8 +74,12 @@ export const TPSChart = React.memo(({ data, overrideColor }: TPSChartProps) => {
     const dataCount = tpsValues.length;
     const startIndex = Math.max(0, dataCount - 40);
 
-    const maxValue = Math.max(...tpsValues);
-    const yAxisMax = Math.ceil(maxValue / 100) * 100;
+    const windowed = tpsValues.slice(startIndex);
+    const maxInWindow = windowed.length ? Math.max(...windowed) : 0;
+    const yAxisMax = Math.ceil(maxInWindow / 5) * 5;
+
+    // const maxValue = Math.max(...tpsValues);
+    // const yAxisMax = Math.ceil(maxValue / 5) * 5;
 
     return {
       backgroundColor: 'transparent',
