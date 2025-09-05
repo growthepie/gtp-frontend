@@ -56,16 +56,16 @@ export const TPSChartCard = ({ initialHistory, tpsHistory, chainData, chainKey, 
 
         <div className="flex justify-between pl-[30%] tems-center">
            <div className="flex flex-col gap-y-[2px]">
-                <div className="heading-small-xs numbers-sm">{chainData.ath} TPS</div>
+                <div className="heading-small-xs numbers-sm">{chainData.ath?.toFixed(1)} TPS</div>
                 <div className="heading-small-xxxs text-[#5A6462]">All-Time High</div>
            </div>
            <div className="flex flex-col gap-y-[2px]">
-                <div className="heading-small-xs numbers-sm">{chainData["24h_high"]} TPS</div>
+                <div className="heading-small-xs numbers-sm">{chainData["24h_high"]?.toFixed(1)} TPS</div>
                 <div className="heading-small-xxxs text-[#5A6462]">24h Peak</div>
            </div>
            <div className="flex flex-col gap-y-[2px] items-end">
                 <div className="flex items-center gap-x-[5px] heading-small-xs numbers-md" >
-                    <div style={{ color: master.chains[chainKey].colors.dark[0] }}>{chainData.tps?.toFixed(2)} TPS</div>
+                    <div style={{ color: master.chains[chainKey].colors.dark[0] }}>{chainData.tps?.toFixed(1)} TPS</div>
                     <GTPIcon icon={"gtp-realtime"} size="sm" />
                 </div>
                 <div className="heading-small-xxxs text-[#5A6462]">Current TPS</div>
