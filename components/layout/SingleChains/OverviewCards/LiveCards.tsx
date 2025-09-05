@@ -73,7 +73,7 @@ export default function LiveCards({ chainKey, chainData, master }: { chainKey: s
     return (
         <>
             <TPSChartCard initialHistory={initialHistory} tpsHistory={tpsHistory} chainData={chainDataTPS} chainKey={chainKey} master={master} />
-            
+            <TXCostCard chainKey={chainKey} chainData={chainDataTPS} master={master} />
         </>
     )
 }
