@@ -37,7 +37,8 @@ const OverviewContent = memo(({ chainKey, chain, master }: { chainKey: string, c
   if(!master || !chainData) return <div className="p-8 text-center">Loading overview...</div>;
   
   return (
-    <ChainsOverview chainData={chainData} />
+
+    <ChainsOverview chainKey={chainKey} chainData={chainData} master={master} />
   );
 });
 
