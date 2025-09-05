@@ -6,12 +6,20 @@ import { GTPIconName } from "@/icons/gtp-icon-names";
 export default function WorkWithUs() {
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleClick = () => {
-    setIsOpen(!isOpen);
+  const handleMouseEnter = () => {
+    setIsOpen(true);
+  }
+
+  const handleMouseLeave = () => {
+    setIsOpen(false);
   }
 
   return (
-    <div className="relative flex w-full h-full " onClick={handleClick}>
+    <div 
+      className="relative flex w-full h-full cursor-pointer" 
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
         <div className="absolute flex items-center justify-left bg-[#1F2726] shadow-xl -bottom-[22px] px-[15px] z-30 rounded-full w-full gap-x-[10px] h-[44px]"> 
             <GTPIcon icon="gtp-socials" size="md" />
             <div className="heading-small-sm">Work with us</div>
@@ -25,21 +33,21 @@ export default function WorkWithUs() {
         style={{
             height: !isOpen ? "36px" : "186px",
             width: !isOpen ? "130px" : "284px",
-        
+            boxShadow: isOpen ? "0 4px 46.2px 0 #000" : "none",
         }}>
             <div className="flex flex-col gap-y-[10px] px-[16px] pt-[55px] pb-[15px] min-h-[186px] w-full h-full">
 
                 <div className="flex items-center gap-x-[10px] justify-start text-sm font-semibold">
                     <GTPIcon icon={"feather:linkedin" as GTPIconName} size="sm" />
-                    <div className="flex items-center gap-x-[10px] justify-start text-sm">LinkedIn</div>
+                    <div className="flex items-center gap-x-[10px] justify-start text-sm">Connect on LinkedIn</div>
                 </div>
                 <div className="flex items-center gap-x-[10px] justify-start text-sm font-semibold">
-                    <GTPIcon icon={"feather:discord" as GTPIconName} size="sm" />
+                    <GTPIcon icon={"discord-monochrome" as GTPIconName} size="sm" />
                     <div className="flex items-center gap-x-[10px] justify-start text-sm">Join our Discord</div>
                 </div>
                 <div className="flex items-center gap-x-[10px] justify-start text-sm font-semibold">
                     <GTPIcon icon={"gtp-message-monochrome" as GTPIconName} size="sm" />
-                    <div className="flex items-center gap-x-[10px] justify-start text-sm">Send us an email</div>
+                    <div className="flex items-center gap-x-[10px] justify-start text-sm">Send an email</div>
                 </div>
                 <div className="flex items-center gap-x-[10px] justify-start text-sm font-semibold">
                     <GTPIcon icon={"gtp-backgroundinformation-monochrome" as GTPIconName} size="sm" />
@@ -47,11 +55,6 @@ export default function WorkWithUs() {
                 </div>
             </div>
         </div>
-    
-
-        
-
-
     </div>
   );
 }

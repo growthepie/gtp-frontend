@@ -77,13 +77,13 @@ export function ToggleSwitch({
       containerPaddingPx: 4,
     },
     md: {
-      container: "h-[28px] px-[2px]",
-      slider: "h-[24px]",
-      font: "heading-small-xs",
+      container: "h-[36px] px-[2px]",
+      slider: "h-[32px]",
+      font: "heading-small",
       gap: "gap-x-[10px]",
       componentPadding: "px-[8px]",
       minWidth: "min-w-[70px]",
-      labelPadding: "px-[10px]",
+      labelPadding: "px-[8px]",
       containerPaddingPx: 4,
     },
     lg: {
