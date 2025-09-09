@@ -5,10 +5,26 @@ import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useMemo, useEffect, useState } from "react";
 import moment from "moment";
 import { useLocalStorage } from "usehooks-ts";
+import { HistoryDots } from "../../EthAgg/HistoryDots";
+import { getGradientColor } from "../../EthAgg/helpers";
+import { chain } from "lodash";
 
 export default function TXCostCard({ chainKey, chainData, master }: { chainKey: string, chainData: any, master: any }) {
 
     const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+    const [txCostHistory, setTxCostHistory] = useState<number[]>([]);
+    const [txCostSelectedIndex, setTxCostSelectedIndex] = useState<number>(23);
+    const [txCostHoverIndex, setTxCostHoverIndex] = useState<number | null>(null);
+
+    useEffect(() => {
+ 
+        let history = [...txCostHistory, chainData["tx_cost_median"]];
+        history = history.slice(-24);
+        setTxCostHistory(history);
+        
+    }, [chainData]);
+
+    
   
     return (
         <div className="bg-[#1F2726] p-[10px] rounded-[15px] max-w-[483px] flex flex-col gap-y-[10px]">
@@ -20,6 +36,9 @@ export default function TXCostCard({ chainKey, chainData, master }: { chainKey: 
                     </div>
                     
                     <div className="heading-large-xs ">Transaction Cost</div>
+                </div>
+                <div className="w-[150px] flex items-center justify-center gap-x-[2px]">
+                    <HistoryDots data={txCostHistory} selectedIndex={txCostSelectedIndex} hoverIndex={txCostHoverIndex} onSelect={setTxCostSelectedIndex} onHover={setTxCostHoverIndex} getGradientColor={getGradientColor} />
                 </div>
             </div>
             <div className="flex justify-between items-center pl-[30px]">
