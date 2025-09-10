@@ -295,7 +295,8 @@ const hyperliquidUSDC: QuickBiteData = {
     url: "/applications/circlefin"
   },
 ],
-  icon: "arbitrum-logo-monochrome"
+  icon: "arbitrum-logo-monochrome",
+  showInMenu: false
 };
 
 export default hyperliquidUSDC;
