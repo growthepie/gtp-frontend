@@ -1,6 +1,97 @@
 // In your quick bite data file (e.g., lib/quick-bites/arbitrum-timeboost.ts)
 import { QuickBiteData } from '@/lib/types/quickBites';
 
+
+const chartStacked = ["```chart",
+    JSON.stringify({
+      type: "area",
+      title: "Stablecoin Supply on Arbitrum One",
+      subtitle: "Stablecoin supply with and without Hyperliquid",
+      showXAsDate: true,
+      dataAsJson: {
+        meta: [
+          {
+            name: "Hyperliquid USDC",
+            color: "#90f8e0",
+            xIndex: 0,
+            yIndex: 3,
+            suffix: '$',
+            prefix: null,
+            tooltipDecimals: 2,
+            stacking: "normal",
+            url: "https://api.growthepie.com/v1/quick-bites/hyperliquid/usdc.json",
+            pathToData: "data.hyperliquid_usdc.daily.values",
+          },
+          {
+            name: "Other Stablecoins",
+            color: "#1B4ADD",
+            xIndex: 0,
+            yIndex: 2,
+            suffix: '$',
+            prefix: null,
+            tooltipDecimals: 2,
+            stacking: "normal",
+            url: "https://api.growthepie.com/v1/quick-bites/hyperliquid/usdc.json",
+            pathToData: "data.hyperliquid_usdc.daily.values",
+          }
+        ],
+      },
+      height: 400,
+      caption: "Stablecoin Supply on Arbitrum One split by Hyperliquid USDC and all other stablecoins",
+    }),
+    "```",
+];
+
+const chartPercentage = [
+  "```chart",
+    JSON.stringify({
+      type: "area",
+      title: "Hyperliquid USDC Dominance",
+      subtitle: "Share of Hyperliquid USDC within the total stablecoin supply on Arbitrum One",
+      showXAsDate: true,
+      dataAsJson: {
+        meta: [
+          {
+            name: "Hyperliquid USDC",
+            color: "#90f8e0",
+            stacking: "percent",
+            xIndex: 0,
+            yIndex: 3,
+            suffix: null,
+            prefix: '$',
+            tooltipDecimals: 2,
+            url: "https://api.growthepie.com/v1/quick-bites/hyperliquid/usdc.json",
+            pathToData: "data.hyperliquid_usdc.daily.values",
+          },
+          {
+            name: "Other Stablecoins",
+            color: "#1B4ADD",
+            stacking: "percent",
+            xIndex: 0,
+            yIndex: 2,
+            suffix: null,
+            prefix: '$',
+            tooltipDecimals: 2,
+            url: "https://api.growthepie.com/v1/quick-bites/hyperliquid/usdc.json",
+            pathToData: "data.hyperliquid_usdc.daily.values",
+          }
+        ],
+      },
+      height: 400,
+      caption: "The share of Hyperliquid USDC within the total stablecoin supply on Arbitrum One"
+    }),
+    "```",
+
+]
+
+const arbitrumCharts = ["```container",
+  JSON.stringify({
+    blocks: [chartStacked, chartPercentage],
+    className: "flex flex-col-reverse lg:grid lg:grid-cols-2 items-center",
+  }),
+  "```",
+];
+
 const hyperliquidUSDC: QuickBiteData = {
   title: "Hyperliquid USDC on Arbitrum One",
   subtitle: "Tracking Hyperliquid's USDC Bridge on Arbitrum One",
@@ -121,83 +212,7 @@ const hyperliquidUSDC: QuickBiteData = {
     "Hyperliquid main USDC bridge is on Arbitrum One, allowing users to transfer USDC from Arbitrum One to Hyperliquid in a fast and easy way. This quick bite explores the impact of Hyperliquid's USDC bridge on the overall stablecoin supply on Arbitrum One.",
     "The stablecoin supply metric is heavily influenced by Hyperliquid's USDC bridge. As of September 2025, ≈60% of all stablecoins on Arbitrum One are held within Hyperliquid's USDC bridge.",
 
-    "```chart",
-    JSON.stringify({
-      type: "area",
-      title: "Stablecoin Supply on Arbitrum One",
-      subtitle: "Stablecoin supply with and without Hyperliquid",
-      showXAsDate: true,
-      dataAsJson: {
-        meta: [
-          {
-            name: "Hyperliquid USDC",
-            color: "#90f8e0",
-            xIndex: 0,
-            yIndex: 3,
-            suffix: '$',
-            prefix: null,
-            tooltipDecimals: 2,
-            stacking: "normal",
-            url: "https://api.growthepie.com/v1/quick-bites/hyperliquid/usdc.json",
-            pathToData: "data.hyperliquid_usdc.daily.values",
-          },
-          {
-            name: "Other Stablecoins",
-            color: "#1B4ADD",
-            xIndex: 0,
-            yIndex: 2,
-            suffix: '$',
-            prefix: null,
-            tooltipDecimals: 2,
-            stacking: "normal",
-            url: "https://api.growthepie.com/v1/quick-bites/hyperliquid/usdc.json",
-            pathToData: "data.hyperliquid_usdc.daily.values",
-          }
-        ],
-      },
-      height: 400,
-      caption: "Stablecoin Supply on Arbitrum One split by Hyperliquid USDC and all other stablecoins",
-    }),
-    "```",
-
-    "```chart",
-    JSON.stringify({
-      type: "area",
-      title: "Hyperliquid USDC Dominance on Arbitrum One",
-      subtitle: "Share of Hyperliquid USDC within the total stablecoin supply on Arbitrum One",
-      showXAsDate: true,
-      dataAsJson: {
-        meta: [
-          {
-            name: "Hyperliquid USDC",
-            color: "#90f8e0",
-            stacking: "percent",
-            xIndex: 0,
-            yIndex: 3,
-            suffix: null,
-            prefix: '$',
-            tooltipDecimals: 2,
-            url: "https://api.growthepie.com/v1/quick-bites/hyperliquid/usdc.json",
-            pathToData: "data.hyperliquid_usdc.daily.values",
-          },
-          {
-            name: "Other Stablecoins",
-            color: "#1B4ADD",
-            stacking: "percent",
-            xIndex: 0,
-            yIndex: 2,
-            suffix: null,
-            prefix: '$',
-            tooltipDecimals: 2,
-            url: "https://api.growthepie.com/v1/quick-bites/hyperliquid/usdc.json",
-            pathToData: "data.hyperliquid_usdc.daily.values",
-          }
-        ],
-      },
-      height: 400,
-      caption: "The share of Hyperliquid USDC within the total stablecoin supply on Arbitrum One"
-    }),
-    "```",
+    ...arbitrumCharts,
 
   ],
   image: "https://api.growthepie.com/v1/quick-bites/banners/robinhood.png",
