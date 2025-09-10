@@ -12,7 +12,7 @@ const chartStacked = ["```chart",
         meta: [
           {
             name: "Hyperliquid USDC",
-            color: "#90f8e0",
+            color: "#97FBE4",
             xIndex: 0,
             yIndex: 3,
             suffix: '$',
@@ -53,7 +53,7 @@ const chartPercentage = [
         meta: [
           {
             name: "Hyperliquid USDC",
-            color: "#90f8e0",
+            color: "#97FBE4",
             stacking: "percent",
             xIndex: 0,
             yIndex: 3,
@@ -123,7 +123,7 @@ const hyperliquidUSDC: QuickBiteData = {
         meta: [
           {
             name: "USDC on Hyperliquid",
-            color: "#90f8e0",
+            color: "#97FBE4",
             xIndex: 0,
             yIndex: 3,
             suffix: '$',
@@ -179,7 +179,7 @@ const hyperliquidUSDC: QuickBiteData = {
         meta: [
           {
             name: "USDC on Hyperliquid",
-            color: "#90f8e0",
+            color: "#97FBE4",
             xIndex: 0,
             yIndex: 3,
             suffix: '$',
@@ -191,7 +191,7 @@ const hyperliquidUSDC: QuickBiteData = {
           },
           {
             name: "All other USDC",
-            color: "#1F1248",
+            color: "#0C53BF",
             xIndex: 0,
             yIndex: 5,
             suffix: '$',
