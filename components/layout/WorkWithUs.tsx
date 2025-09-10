@@ -37,19 +37,19 @@ export default function WorkWithUs() {
         }}>
             <div className="flex flex-col gap-y-[10px] px-[16px] pt-[55px] pb-[15px] min-h-[186px] w-full h-full">
 
-                <div className="flex items-center gap-x-[10px] justify-start text-sm font-semibold">
+                <div className="flex items-center gap-x-[10px] justify-start text-sm font-semibold cursor-pointer hover:bg-[#5A6462] rounded-full px-[8px] py-[4px] -my-[2px] transition-colors duration-200">
                     <GTPIcon icon={"feather:linkedin" as GTPIconName} size="sm" />
                     <div className="flex items-center gap-x-[10px] justify-start text-sm">Connect on LinkedIn</div>
                 </div>
-                <div className="flex items-center gap-x-[10px] justify-start text-sm font-semibold">
+                <div className="flex items-center gap-x-[10px] justify-start text-sm font-semibold cursor-pointer hover:bg-[#5A6462] rounded-full px-[8px] py-[4px] -my-[2px] transition-colors duration-200">
                     <GTPIcon icon={"discord-monochrome" as GTPIconName} size="sm" />
                     <div className="flex items-center gap-x-[10px] justify-start text-sm">Join our Discord</div>
                 </div>
-                <div className="flex items-center gap-x-[10px] justify-start text-sm font-semibold">
+                <div className="flex items-center gap-x-[10px] justify-start text-sm font-semibold cursor-pointer hover:bg-[#5A6462] rounded-full px-[8px] py-[4px] -my-[2px] transition-colors duration-200">
                     <GTPIcon icon={"gtp-message-monochrome" as GTPIconName} size="sm" />
                     <div className="flex items-center gap-x-[10px] justify-start text-sm">Send an email</div>
                 </div>
-                <div className="flex items-center gap-x-[10px] justify-start text-sm font-semibold">
+                <div className="flex items-center gap-x-[10px] justify-start text-sm font-semibold cursor-pointer hover:bg-[#5A6462] rounded-full px-[8px] py-[4px] -my-[2px] transition-colors duration-200">
                     <GTPIcon icon={"gtp-backgroundinformation-monochrome" as GTPIconName} size="sm" />
                     <div className="flex items-center gap-x-[10px] justify-start text-sm whitespace-nowrap">Want to get listed? Fill in the form.</div>
                 </div>
