@@ -35,21 +35,26 @@ export default function WorkWithUs() {
             width: !isOpen ? "130px" : "284px",
             boxShadow: isOpen ? "0 4px 46.2px 0 #000" : "none",
         }}>
-            <div className="flex flex-col gap-y-[10px] px-[16px] pt-[55px] pb-[15px] min-h-[186px] w-full h-full">
+            <div className="flex flex-col gap-y-[7px] pt-[55px] pb-[15px] min-h-[186px] w-full h-full">
 
-                <div className="flex items-center gap-x-[10px] justify-start text-sm font-semibold cursor-pointer hover:bg-[#5A6462] rounded-full px-[8px] py-[4px] -my-[2px] transition-colors duration-200">
+                <a 
+                    href="https://www.linkedin.com/company/growthepie/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-x-[10px] justify-start text-sm font-semibold cursor-pointer hover:bg-[#5A6462] px-[22px] py-[4px] -my-[2px] transition-colors duration-200"
+                >
                     <GTPIcon icon={"feather:linkedin" as GTPIconName} size="sm" />
                     <div className="flex items-center gap-x-[10px] justify-start text-sm">Connect on LinkedIn</div>
-                </div>
-                <div className="flex items-center gap-x-[10px] justify-start text-sm font-semibold cursor-pointer hover:bg-[#5A6462] rounded-full px-[8px] py-[4px] -my-[2px] transition-colors duration-200">
+                </a>
+                <div className="flex items-center gap-x-[10px] justify-start text-sm font-semibold cursor-pointer hover:bg-[#5A6462] px-[22px] py-[4px] -my-[2px] transition-colors duration-200">
                     <GTPIcon icon={"discord-monochrome" as GTPIconName} size="sm" />
                     <div className="flex items-center gap-x-[10px] justify-start text-sm">Join our Discord</div>
                 </div>
-                <div className="flex items-center gap-x-[10px] justify-start text-sm font-semibold cursor-pointer hover:bg-[#5A6462] rounded-full px-[8px] py-[4px] -my-[2px] transition-colors duration-200">
+                <div className="flex items-center gap-x-[10px] justify-start text-sm font-semibold cursor-pointer hover:bg-[#5A6462] px-[22px] py-[4px] -my-[2px] transition-colors duration-200">
                     <GTPIcon icon={"gtp-message-monochrome" as GTPIconName} size="sm" />
                     <div className="flex items-center gap-x-[10px] justify-start text-sm">Send an email</div>
                 </div>
-                <div className="flex items-center gap-x-[10px] justify-start text-sm font-semibold cursor-pointer hover:bg-[#5A6462] rounded-full px-[8px] py-[4px] -my-[2px] transition-colors duration-200">
+                <div className="flex items-center gap-x-[10px] justify-start text-sm font-semibold cursor-pointer hover:bg-[#5A6462] px-[22px] py-[4px] -my-[2px] transition-colors duration-200">
                     <GTPIcon icon={"gtp-backgroundinformation-monochrome" as GTPIconName} size="sm" />
                     <div className="flex items-center gap-x-[10px] justify-start text-sm whitespace-nowrap">Want to get listed? Fill in the form.</div>
                 </div>
