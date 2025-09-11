@@ -76,7 +76,7 @@ const ArbPercentage = [
         ],
       },
       height: 400,
-      caption: "Market share of Hyperliquid’s USDC within the total stablecoin supply on Arbitrum One."
+      caption: "Market share of Hyperliquid's USDC within the total stablecoin supply on Arbitrum One."
     }),
     "```",
 
@@ -112,7 +112,7 @@ const CircleStacked = [
           },
           {
             name: "All other",
-            color: "#0C53BF",
+            color: "#FFD700",
             xIndex: 0,
             yIndex: 5,
             suffix: '$',
@@ -133,7 +133,7 @@ const CirclePercentage = [
   "```chart",
     JSON.stringify({
       type: "area",
-      title: "Hyperliquid USDC Share",
+      title: "Hyperliquid USDC Market Share",
       showXAsDate: true,
       dataAsJson: {
         meta: [
@@ -151,7 +151,7 @@ const CirclePercentage = [
           },
           {
             name: "All other",
-            color: "#0C53BF",
+            color: "#FFD700",
             xIndex: 0,
             yIndex: 5,
             suffix: '$',
@@ -164,7 +164,7 @@ const CirclePercentage = [
         ],
       },
       height: 400,
-      caption: "Market share of Hyperliquid’s USDC within the total USDC stablecoin supply.",
+      caption: "Market share of Hyperliquid's USDC within the total USDC stablecoin supply.",
     }),
     "```",
 ]
@@ -180,13 +180,12 @@ const CircleCharts = ["```container",
 
 
 
-
-const hyperliquidUSDC: QuickBiteData = {
-  title: "USDC on Hyperliquid",
-  subtitle: "Tracking USDC on Hyperliquid and Its Effects on Different Actors",
+const arbitrumHyperliquidBridge: QuickBiteData = {
+  title: "Arbitrum Hyperliquid Bridge",
+  subtitle: "The Critical Infrastructure Connecting Arbitrum One to Hyperliquid's Trading Ecosystem",
   content: [
 
-    "Hyperliquid is a Layer 1 blockchain and decentralized exchange that specializes in perpetual trading. The platform relies primarily on USDC as its settlement currency, with most of the supply bridged through the Arbitrum One bridge. By September 2025 Hyperliquid had accumulated over five billion dollars in liquidity denominated in USDC, making Circle’s stablecoin the backbone of its trading ecosystem.",
+    "The Arbitrum Hyperliquid bridge serves as the primary infrastructure connecting USDC on Arbitrum One to Hyperliquid's Layer 1 perpetual trading platform. This bridge has become the most significant driver of stablecoin activity on Arbitrum One, with over $5.4B in USDC locked in the bridge contract at time of writing. The bridge enables seamless USDC transfers from Arbitrum One to Hyperliquid, where the stablecoin serves as the primary settlement currency for perpetual trading.",
 
     "```kpi-cards",JSON.stringify(
       [
@@ -201,34 +200,11 @@ const hyperliquidUSDC: QuickBiteData = {
     ),
     "```",
 
-    "```chart",
-    JSON.stringify({
-      type: "line",
-      title: "USDC Bridged to Hyperliquid",
-      subtitle: "Total USDC bridged to Hyperliquid from Arbitrum One over time.",
-      showXAsDate: true,
-      dataAsJson: {
-        meta: [
-          {
-            name: "USDC",
-            color: "#97FBE4",
-            xIndex: 0,
-            yIndex: 3,
-            suffix: '$',
-            prefix: null,
-            tooltipDecimals: 0,
-            stacking: "normal",
-            url: "https://api.growthepie.com/v1/quick-bites/hyperliquid/usdc.json",
-            pathToData: "data.hyperliquid_usdc.daily.values",
-          },
-        ],
-      },
-      height: 400,
-      caption: "Significant growth in USDC bridged to Hyperliquid from Arbitrum One since 2024.",
-    }),
-    "```",
+    ...ArbStacked,
 
-    "# Circle’s Cash Cow",
+    "# Circle's Cash Cow",
+
+    "The Arbitrum Hyperliquid bridge has become a major revenue driver for Circle, the issuer of USDC. As of September 2025, Hyperliquid accounts for more than 7.5% of all USDC in circulation, with most of this supply flowing through the Arbitrum bridge. Circle has earned approximately $106 million in revenue from USDC held on Hyperliquid, with potential annual revenue exceeding $210 million if current trends continue. USDC is backed by US treasuries which generate this revenue.",
 
     "```kpi-cards",JSON.stringify(
       [
@@ -257,15 +233,13 @@ const hyperliquidUSDC: QuickBiteData = {
     ),
     "```",
 
-    "As of September 2025 Hyperliquid accounts for more than 7.5% of all USDC in circulation, making it a major driver of the stablecoin’s growing supply. Circle, the issuer of USDC, benefits significantly from this demand since it invests the fiat reserves backing USDC into short-term U.S. Treasuries that generate yield. From Hyperliquid’s share of USDC alone Circle has earned around $106 million in revenue. If both yields and the USDC supply on Hyperliquid remain stable, Circle’s revenue from this source could exceed $210 million per year. USDC usage on Hyperliquid has become one of Circle’s fastest growing revenue drivers, with its expansion directly translating into substantial earnings for the issuer.",
-
     ...CircleCharts,
 
-    "# Arbitrum's Growth Engine",
+    "# Arbitrum's Bridge Dependency",
 
-    "Since early 2024 the growth of stablecoins on Arbitrum One has been driven largely by users bridging USDC to Hyperliquid. At the time of writing roughly 60 percent of all stablecoins on Arbitrum One are locked in the bridge contract that connects to Hyperliquid, highlighting how dependent Arbitrum’s stablecoin supply has become on this single use case. With the proposed launch of a natively issued stablecoin on Hyperliquid, called USDH, much of this liquidity could shift away from Arbitrum, leading to a sharp reduction in its reported stablecoin supply.",
+    "With the proposed launch of a natively issued stablecoin on Hyperliquid, called USDH, much of Arbitrum One’s stablecoin liquidity, which currently has about 60% of its stablecoin supply locked in the USDC bridge to Hyperliquid, could shift away and potentially cause a decline in its overall stablecoin supply.",
 
-    ...arbitrumCharts,
+    ...ArbPercentage,
 
   ],
   image: "https://api.growthepie.com/v1/quick-bites/banners/hyperliquid.png",
@@ -286,16 +260,13 @@ const hyperliquidUSDC: QuickBiteData = {
     url: "/chains/arbitrum"
   },
   {
-    icon: "gtp-metrics-economics",
-    name: "Economics",
-    url: "/economics"
-  },
-  {
-    name: "Circle",
+    icon: "gtp-metrics-stablecoinmarketcap",
+    name: "Circle LLC",
     url: "/applications/circlefin"
   },
 ],
-  icon: "arbitrum-logo-monochrome"
+  icon: "arbitrum-logo-monochrome",
+  showInMenu: false
 };
 
-export default hyperliquidUSDC;
+export default arbitrumHyperliquidBridge;
