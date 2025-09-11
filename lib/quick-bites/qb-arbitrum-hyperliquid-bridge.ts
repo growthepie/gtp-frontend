@@ -45,7 +45,7 @@ const ArbPercentage = [
   "```chart",
     JSON.stringify({
       type: "area",
-      title: "Hyperliquid USDC Market Share",
+      title: "Stablecoin Dominance on Arbitrum One",
       showXAsDate: true,
       dataAsJson: {
         meta: [
@@ -263,6 +263,11 @@ const arbitrumHyperliquidBridge: QuickBiteData = {
     icon: "gtp-metrics-stablecoinmarketcap",
     name: "Circle LLC",
     url: "/applications/circlefin"
+  },
+  {
+    icon: "gtp-metrics-stablecoinmarketcap",
+    name: "Stablecoin Supply",
+    url: "/fundamentals/stablecoin-market-cap"
   },
 ],
   icon: "arbitrum-logo-monochrome",
