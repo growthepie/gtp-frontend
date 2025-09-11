@@ -266,7 +266,7 @@ const arbitrumHyperliquidBridge: QuickBiteData = {
   },
 ],
   icon: "arbitrum-logo-monochrome",
-  showInMenu: false
+  showInMenu: true
 };
 
 export default arbitrumHyperliquidBridge;
