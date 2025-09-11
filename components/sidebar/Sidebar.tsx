@@ -44,7 +44,7 @@ type SidebarProps = {
 };
 
 const Sidebar = ({ isOpen }: SidebarProps) => {
-  const { ChainsNavigationItems } = useMaster();
+  const { ChainsNavigationItems, data: master } = useMaster();
   const pathname = usePathname();
   const { setActiveGroup } = useSidebarContext();
 
@@ -71,8 +71,8 @@ const Sidebar = ({ isOpen }: SidebarProps) => {
 
   // Transform the navigation data to sidebar format
   const sidebarNavigation = useMemo(() => {
-    return transformNavigationToSidebar(navigationItemsWithChains);
-  }, [navigationItemsWithChains]);
+    return transformNavigationToSidebar(navigationItemsWithChains, master);
+  }, [navigationItemsWithChains, master]);
 
   useEffect(() => {
     const findActiveGroup = (groups: (SidebarMenuGroupType | any)[]): string | null => {

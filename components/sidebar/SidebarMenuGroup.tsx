@@ -18,72 +18,15 @@ const SidebarMenuGroup = memo(({ item, isOpen }: SidebarMenuGroupProps) => {
   const { label, icon, children } = item;
   const { setIsAnimating, setActiveGroup, activeGroup } = useSidebarContext();
   const ref = useRef<HTMLDivElement>(null);
-  const [childrenHeight, setChildrenHeight] = useState(1000);
-
-  // A group is active if one of its children is the current page
-  // const isGroupActive = children.some(child => child.type === 'link' && pathname.startsWith(child.href));
-  // const isGroupActive = useMemo(() => {
-  //   // if we're currently on the landing page, and we're on the fundamentals item, return true
-  //   if(pathname === "/") {
-  //     if(label === "Fundamentals") {
-  //       return true;
-  //     }
-      
-  //     return false;
-  //   }
-    
-  //   return children.some(child => child.type === 'link' && pathname.startsWith(child.href));
-  // }, [children, pathname, label]);
-  
-  // // Expand the group if it's active
-  // const [isExpanded, setIsExpanded] = useState(isGroupActive);
-
-  // // Effect to expand the group when the route changes to one of its children
-  // useEffect(() => {
-  //   if (isGroupActive) {
-  //     setIsExpanded(true);
-  //   }
-  // }, [isGroupActive]);
-
-  // // Measure children height for smooth animation
-  // useEffect(() => {
-  //   if (ref.current) {
-  //     setChildrenHeight(ref.current.clientHeight);
-  //   }
-  // }, [children, isOpen]);
-
-  // const handleToggle = () => {
-  //     // Tell all badges to hide during animation
-  //     setIsAnimating(true);
-  //     setIsExpanded(!isExpanded);
-      
-  //     // Show badges again after animation completes
-  //     setTimeout(() => {
-  //       setIsAnimating(false);
-  //     }, 300); // Match animation duration
-  // };
-
+  const [childrenHeight, setChildrenHeight] = useState(2000);
   // The group is expanded if its label matches the activeGroup in the context
   const isExpanded = activeGroup === label;
 
-  // --- The effect to auto-expand is no longer needed here ---
-  // useEffect(() => { ... });
-
-  // Measure children height for smooth animation
-  // useEffect(() => {
-  //   // We still need to measure the content for the animation
-  //   if (ref.current) {
-  //       // To get the real height, we can't rely on the parent's `maxHeight`.
-  //       // A simple trick is to temporarily un-constrain it for measurement.
-  //       const parent = ref.current.parentElement;
-  //       if (parent) {
-  //           const originalMaxHeight = parent.style.maxHeight;
-  //           parent.style.maxHeight = 'none'; // Un-constrain
-  //           setChildrenHeight(ref.current.clientHeight);
-  //           parent.style.maxHeight = originalMaxHeight; // Re-apply
-  //       }
-  //   }
-  // }, [children, isOpen, isExpanded]); // Re-measure if it expands
+  useEffect(() => {
+    if (ref.current) {
+      setChildrenHeight(ref.current.clientHeight);
+    }
+  }, [children, isOpen, isExpanded]);
 
   const handleToggle = () => {
     // Tell all badges to hide during animation
@@ -99,7 +42,6 @@ const SidebarMenuGroup = memo(({ item, isOpen }: SidebarMenuGroupProps) => {
       setIsAnimating(false);
     }, 300); // Match animation duration
   };
-
 
   return (
     <div>
