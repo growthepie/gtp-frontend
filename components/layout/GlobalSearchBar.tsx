@@ -383,7 +383,12 @@ export default function GlobalFloatingBar() {
       <div className="fixed z-global-search bottom-[60px] md:hidden left-0 right-0 flex justify-center w-full pointer-events-none pb-[30px] md:pb-0 md:pt-[30px]">
         <div className="w-full max-w-[1680px] px-[20px] md:px-[13px] pointer-events-auto">
           <div className="px-[5px] md:px-[15px] md:py-[10px]">
-            <WorkWithUs />   
+            {/* <WorkWithUs />    */}
+            <NotificationButton
+              placement="top"
+              className="flex"
+              hideIfNoNotifications={true}
+            />
           </div>
         </div>
       </div>
@@ -481,6 +486,7 @@ export default function GlobalFloatingBar() {
                   <NotificationButton
                     placement="bottom"
                     className="hidden md:flex"
+                    hideIfNoNotifications={true}
                   />
                   <WorkWithUs/>
                 </div>

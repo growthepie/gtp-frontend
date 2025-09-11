@@ -5,15 +5,16 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { GTPIconName } from '@/icons/gtp-icon-names';
 import NotificationInsideContent from '@/components/notifications/NotificationContent';
 import { GTPIcon } from './GTPIcon';
-
 interface NotificationButtonProps {
   placement?: 'top' | 'bottom';
   className?: string;
+  hideIfNoNotifications?: boolean;
 }
 
 export default function NotificationButton({ 
   placement = 'bottom', 
-  className = '' 
+  className = '',
+  hideIfNoNotifications = false,
 }: NotificationButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const buttonRef = useRef<HTMLDivElement>(null);
@@ -68,6 +69,10 @@ export default function NotificationButton({
     setIsOpen(false);
     markNotificationsAsSeen();
   };
+
+  if (hideIfNoNotifications && filteredData && filteredData.length === 0) {
+    return null;
+  }
 
   return (
     <div className={`relative ${className}`}>
