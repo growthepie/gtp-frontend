@@ -19,11 +19,12 @@ import { LogoContextMenu } from "./SidebarContainer";
 export default function Header() {
   // const [isOpen, setIsOpen] = useState<boolean>(false)
   const isMobile = useMediaQuery("(max-width: 767px)");
-  const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", false);
+  // const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", true);
+  const showGlobalSearchBar = true;
 
   return (
     <>
-      <header className="flex justify-between space-x-0 xl:space-x-6 items-start max-w-[1600px] w-full mx-auto px-[20px] pt-[20px] md:px-[50px] md:pt-[52px]">
+      <header className="flex justify-between space-x-0 xl:space-x-6 items-start max-w-[1600px] w-full mx-auto px-[20px] pt-[20px] md:px-[50px] md:pt-[52px] mb-[10px]">
         <div className="flex justify-between items-center w-full">
           <div className="flex gap-x-0 xl:gap-x-6 w-full">
             {/*Banner/Notification Area */}
@@ -104,21 +105,21 @@ export default function Header() {
                   <>
                     <Notification />
                     <HeaderSearchButton />
-                  </>
-                )}
+                
 
                 <div className="w-auto">
                   <Sidebar isMobile={true} />
                 </div>
+                </>
+                )}
               </div>
             </div>
           </div>
         </div>
         <div>
           <div className="items-center z-10 hidden md:flex md:gap-x-[20px]">
-            <FocusSwitch />
-            <EthUsdSwitch />
             {!showGlobalSearchBar && <HeaderSearchButton />}
+            <div className="h-[40px]"></div>
           </div>
         </div>
       </header>

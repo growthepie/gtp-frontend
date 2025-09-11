@@ -364,9 +364,9 @@ const MetricTable = ({
     "365d": "1 year",
   };
 
-  let height = 0;
-  const transitions = useTransition(
-    rows().sort((a, b) => {
+  // New function to create rows with placeholders
+  const rowsWithPlaceholders = useCallback(() => {
+    const sortedRows = rows().sort((a, b) => {
       const aIsSelected = selectedChains.includes(a.chain.key);
       const bIsSelected = selectedChains.includes(b.chain.key);
       if (sort.metric === "lastVal") {
@@ -416,10 +416,39 @@ const MetricTable = ({
         return sort.sortOrder === "desc" ? bVal - aVal : aVal - bVal;
       }
       return 0;
-    }).map((data) => ({
+    });
+
+    // Insert placeholder items between selected and unselected chains
+    const result: any[] = [];
+
+    for (let i = 0; i < sortedRows.length; i++) {
+      const current = sortedRows[i];
+      const next = sortedRows[i + 1];
+
+      // Push the current item
+      result.push(current);
+
+      // Check if we need to add a placeholder
+      if (selectedChains.includes(current.chain.key) && next && !selectedChains.includes(next.chain.key)) {
+        result.push({
+          isPlaceholder: true,
+          chain: { key: "placeholder" },
+          data: null,
+          lastVal: 0,
+          barWidth: 0,
+        });
+      }
+    }
+
+    return result;
+  }, [rows, selectedChains, sort, timespanLabels, changesKey]);
+
+  let height = 0;
+  const transitions = useTransition(
+    rowsWithPlaceholders().map((data) => ({
       ...data,
-      y: (height += 39) - 39,
-      height: 39,
+      y: (height += data.isPlaceholder ? 20 : 39) - (data.isPlaceholder ? 20 : 39),
+      height: data.isPlaceholder ? 20 : 39,
     })),
     {
       key: (d) => d.chain.key,
@@ -766,7 +795,7 @@ const MetricTable = ({
             </div>
           </div>
         </div>
-        <div style={{ height: `${rows().length * 37}px` }}>
+        <div style={{ height: `${rowsWithPlaceholders().reduce((acc, item) => acc + (item.isPlaceholder ? 20 : 37), 0)}px` }}>
           {transitions((styles, item, t, index) => (
             <animated.div
               className="absolute w-full select-none pr-[16px] lg:pr-[45px]"
@@ -775,207 +804,223 @@ const MetricTable = ({
                 ...styles,
               }}
             >
-              <div className="group relative">
-                <GridTableRow
-                  key={item.chain.key}
-                  gridDefinitionColumns="grid-cols-[26px_minmax(30px,2000px)_61px_61px_61px_61px]"
-                  className={`z-[2] flex h-[34px] cursor-pointer select-none items-center gap-x-[10px] !pb-0 !pl-[5px] !pr-[25px] !pt-0 text-[14px] ${selectedChains.includes(item.chain.key)
-                      ? "border-black/[16%] group-hover:bg-forest-500/10 dark:border-[#5A6462]"
-                      : "border-black/[16%] transition-all duration-100 group-hover:bg-forest-500/5 dark:border-[#5A6462]"
-                    }`}
-                  onClick={() => handleChainClick(item.chain.key)}
-                  bar={{
-                    width: item.barWidth,
-                    color: selectedChains.includes(item.chain.key)
-                      ? item.chain.colors[theme ?? "dark"][1]
-                      : "#5A6462",
-                    containerStyle: {
-                      left: 0,
-                      right: 0,
-                      top: 0,
-                      bottom: 1,
-                      paddingLeft: "8px",
-                      paddingRight: "8px",
-                      borderRadius: "9999px 9999px 9999px 9999px",
-                      zIndex: -1,
-                      overflow: "hidden",
-                    },
-                  }}
-                >
-                  <div className="flex size-[26px] items-center justify-center">
-                    <Icon
-                      icon={`gtp:${item.chain.key.replace("_", "-").replace("_", "-")}-logo-monochrome`}
-                      className="size-[15px]"
-                      style={{
-                        color: selectedChains.includes(item.chain.key)
-                          ? item.chain.colors[theme ?? "dark"][1]
-                          : "#5A6462",
-                      }}
-                    />
+              {item.isPlaceholder ? (
+                <div className="flex items-center justify-center h-[20px] px-[5px] pb-[5px] mr-[-15px] ml-[-5px]">
+                  <div className="flex items-center gap-x-[5px] w-full">
+                    <div className="flex-grow border-t border-[#5A6462]"></div>
+                    <span className="heading-caps-xxs text-[#CDD8D3]">
+                      Not showing in chart
+                    </span>
+                    <div className="flex-grow border-t border-[#5A6462]"></div>
                   </div>
-                  <div className="text-xs">
-                    {metric_type === "fundamentals" &&
-                      ChainsNavigationItemsByKeys[item.chain.key] ? (
-                      <Link
-                        href={`/chains/${ChainsNavigationItemsByKeys[item.chain.key].urlKey}`}
-                        className={`truncate hover:underline`}
-                        prefetch={true}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {item.chain.label}
-                      </Link>
-                    ) : (
-                      <div className="truncate">{item.chain.label}</div>
-                    )}
-                  </div>
-                  <div>
-                    <div className="flex w-full justify-end numbers-xs">
-                      {getDisplayValue(item).prefix && (
-                        <div className="">{getDisplayValue(item).prefix}</div>
-                      )}
-                      {getDisplayValue(item).value}
-                      {getDisplayValue(item).suffix && (
-                        <div className="pl-0.5">
-                          {getDisplayValue(item).suffix}
-                        </div>
+                </div>
+              ) : (
+                <div className="group relative">
+                  <GridTableRow
+                    key={item.chain.key}
+                    gridDefinitionColumns="grid-cols-[26px_minmax(30px,2000px)_61px_61px_61px_61px]"
+                    className={`z-[2] flex h-[34px] cursor-pointer select-none items-center gap-x-[10px] !pb-0 !pl-[5px] !pr-[25px] !pt-0 text-[14px] ${selectedChains.includes(item.chain.key)
+                        ? "border-black/[16%] group-hover:bg-forest-500/10 dark:border-[#5A6462]"
+                        : "border-black/[16%] transition-all duration-100 group-hover:bg-forest-500/5 dark:border-[#5A6462]"
+                      }`}
+                    onClick={() => handleChainClick(item.chain.key)}
+                    bar={{
+                      width: item.barWidth,
+                      color: selectedChains.includes(item.chain.key)
+                        ? item.chain.colors[theme ?? "dark"][1]
+                        : "#5A6462",
+                      containerStyle: {
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        bottom: 1,
+                        paddingLeft: "8px",
+                        paddingRight: "8px",
+                        borderRadius: "9999px 9999px 9999px 9999px",
+                        zIndex: -1,
+                        overflow: "hidden",
+                      },
+                    }}
+                  >
+                    <div className="flex size-[26px] items-center justify-center">
+                      <Icon
+                        icon={`gtp:${item.chain.key.replace("_", "-").replace("_", "-")}-logo-monochrome`}
+                        className="size-[15px]"
+                        style={{
+                          color: selectedChains.includes(item.chain.key)
+                            ? item.chain.colors[theme ?? "dark"][1]
+                            : "#5A6462",
+                        }}
+                      />
+                    </div>
+                    <div className="text-xs">
+                      {metric_type === "fundamentals" &&
+                        ChainsNavigationItemsByKeys[item.chain.key] ? (
+                        <Link
+                          href={`/chains/${ChainsNavigationItemsByKeys[item.chain.key].urlKey}`}
+                          className={`truncate hover:underline`}
+                          prefetch={true}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {item.chain.label}
+                        </Link>
+                      ) : (
+                        <div className="truncate">{item.chain.label}</div>
                       )}
                     </div>
-                  </div>
-                  {Object.keys(
-                    timeIntervalKey === "monthly"
-                      ? timespanLabelsMonthly
-                      : timespanLabels,
-                  ).map((timespan) => (
-                    <div key={timespan} className="w-full text-right">
-                      {item.data[changesKey][timespan][changesValueIndex] ===
-                        null ? (
-                        <span className="inline-block text-center text-gray-500 numbers-xs">
-                          —
-                        </span>
-                      ) : (
-                        <>
-                          {(reversePerformer ? -1.0 : 1.0) *
-                            item.data[changesKey][timespan][
-                            changesValueIndex
-                            ] >=
-                            0 ? (
-                            <div
-                              className={`text-positive numbers-xs`}
-                              style={{
-                                color: selectedChains.includes(item.chain.key)
-                                  ? undefined
-                                  : "#5A6462",
-                              }}
-                            >
-                              {reversePerformer ? "-" : "+"}
-                              {(() => {
-                                const rawPercentage = Math.abs(
+                    <div>
+                      <div className="flex w-full justify-end numbers-xs">
+                        {getDisplayValue(item).prefix && (
+                          <div className="">{getDisplayValue(item).prefix}</div>
+                        )}
+                        {getDisplayValue(item).value}
+                        {getDisplayValue(item).suffix && (
+                          <div className="pl-0.5">
+                            {getDisplayValue(item).suffix}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {Object.keys(
+                      timeIntervalKey === "monthly"
+                        ? timespanLabelsMonthly
+                        : timespanLabels,
+                    ).map((timespan) => (
+                      <div key={timespan} className="w-full text-right">
+                        {changesValueIndex !== undefined && item.data[changesKey][timespan][changesValueIndex] ===
+                          null ? (
+                          <span className="inline-block text-center text-gray-500 numbers-xs">
+                            —
+                          </span>
+                        ) : changesValueIndex !== undefined ? (
+                          <>
+                            {(reversePerformer ? -1.0 : 1.0) *
+                              item.data[changesKey][timespan][
+                              changesValueIndex
+                              ] >=
+                              0 ? (
+                              <div
+                                className={`text-positive numbers-xs`}
+                                style={{
+                                  color: selectedChains.includes(item.chain.key)
+                                    ? undefined
+                                    : "#5A6462",
+                                }}
+                              >
+                                {reversePerformer ? "-" : "+"}
+                                {(() => {
+                                  const rawPercentage = Math.abs(
+                                    Math.round(
+                                      item.data[changesKey][timespan][
+                                      changesValueIndex
+                                      ] * 1000,
+                                    ) / 10,
+                                  ).toFixed(1);
+
+                                  const percentage = parseFloat(rawPercentage);
+
+                                  if (!isNaN(percentage)) {
+                                    // if (Math.abs(percentage) >= 1000)
+                                    //   return formatNumber(percentage);
+
+                                    const formattedPercentage =
+                                      percentage.toFixed(1);
+
+                                    return formattedPercentage.length >= 4
+                                      ? Math.floor(percentage)
+                                      : formattedPercentage;
+                                  } else {
+                                    return "Invalid Percentage";
+                                  }
+                                })()}
+                                %
+                              </div>
+                            ) : (
+                              <div
+                                className={`text-negative numbers-xs`}
+                                style={{
+                                  color: selectedChains.includes(item.chain.key)
+                                    ? undefined
+                                    : "#5A6462",
+                                }}
+                              >
+                                {reversePerformer ? "+" : "-"}
+                                {Math.abs(
                                   Math.round(
                                     item.data[changesKey][timespan][
                                     changesValueIndex
                                     ] * 1000,
                                   ) / 10,
-                                ).toFixed(1);
-
-                                const percentage = parseFloat(rawPercentage);
-
-                                if (!isNaN(percentage)) {
-                                  // if (Math.abs(percentage) >= 1000)
-                                  //   return formatNumber(percentage);
-
-                                  const formattedPercentage =
-                                    percentage.toFixed(1);
-
-                                  return formattedPercentage.length >= 4
-                                    ? Math.floor(percentage)
-                                    : formattedPercentage;
-                                } else {
-                                  return "Invalid Percentage";
-                                }
-                              })()}
-                              %
-                            </div>
-                          ) : (
-                            <div
-                              className={`text-negative numbers-xs`}
-                              style={{
-                                color: selectedChains.includes(item.chain.key)
-                                  ? undefined
-                                  : "#5A6462",
-                              }}
-                            >
-                              {reversePerformer ? "+" : "-"}
-                              {Math.abs(
-                                Math.round(
-                                  item.data[changesKey][timespan][
-                                  changesValueIndex
-                                  ] * 1000,
-                                ) / 10,
-                              ).toFixed(1)}
-                              %
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  ))}
-                </GridTableRow>
-                <div
-                  className={`absolute right-[-15px] top-0 cursor-pointer`}
-                  onClick={() => handleChainClick(item.chain.key)}
-                >
+                                ).toFixed(1)}
+                                %
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <span className="inline-block text-center text-gray-500 numbers-xs">
+                            —
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </GridTableRow>
                   <div
-                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-full"
-                    style={{
-                      color: selectedChains.includes(item.chain.key)
-                        ? undefined
-                        : "#5A6462",
-                    }}
+                    className={`absolute right-[-15px] top-0 cursor-pointer`}
+                    onClick={() => handleChainClick(item.chain.key)}
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className={`h-6 w-6 ${selectedChains.includes(item.chain.key)
-                          ? "opacity-0"
-                          : "opacity-100"
-                        }`}
-                    >
-                      <circle
-                        xmlns="http://www.w3.org/2000/svg"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                      />
-                    </svg>
-                  </div>
-                  <div
-                    className={`rounded-full p-1 ${selectedChains.includes(item.chain.key)
-                        ? "bg-white dark:bg-forest-1000"
-                        : "bg-forest-50 dark:bg-[#1F2726]"
-                      }`}
-                  >
-                    <Icon
-                      icon="feather:check-circle"
-                      className={`h-[24px] w-[24px] ${selectedChains.includes(item.chain.key)
-                          ? "opacity-100"
-                          : "opacity-0"
-                        }`}
+                    <div
+                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-full"
                       style={{
                         color: selectedChains.includes(item.chain.key)
                           ? undefined
                           : "#5A6462",
                       }}
-                    />
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className={`h-6 w-6 ${selectedChains.includes(item.chain.key)
+                            ? "opacity-0"
+                            : "opacity-100"
+                          }`}
+                      >
+                        <circle
+                          xmlns="http://www.w3.org/2000/svg"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                        />
+                      </svg>
+                    </div>
+                    <div
+                      className={`rounded-full p-1 ${selectedChains.includes(item.chain.key)
+                          ? "bg-white dark:bg-forest-1000"
+                          : "bg-forest-50 dark:bg-[#1F2726]"
+                        }`}
+                    >
+                      <Icon
+                        icon="feather:check-circle"
+                        className={`h-[24px] w-[24px] ${selectedChains.includes(item.chain.key)
+                            ? "opacity-100"
+                            : "opacity-0"
+                          }`}
+                        style={{
+                          color: selectedChains.includes(item.chain.key)
+                            ? undefined
+                            : "#5A6462",
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </animated.div>
           ))}
         </div>

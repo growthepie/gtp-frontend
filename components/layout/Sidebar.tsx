@@ -19,6 +19,7 @@ import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import FocusSwitch from "./FocusSwitch";
 import { GTPIcon } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import { useLocalStorage } from "usehooks-ts";
 import { IS_PRODUCTION } from "@/lib/helpers";
 
 type SidebarProps = {
@@ -30,6 +31,9 @@ type SidebarProps = {
 export default function Sidebar({ isMobile = false }: SidebarProps) {
   const { isSidebarOpen, isMobileSidebarOpen, toggleMobileSidebar } =
     useUIContext();
+  // const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", true);
+  const showGlobalSearchBar = true;
+
 
   const { ChainsNavigationItems } = useMaster();
 
@@ -98,7 +102,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
     }
   }, [isMobileSidebarOpen]);
 
-  if (isMobile)
+  if (isMobile && !showGlobalSearchBar)
     return (
       <>
         <button
@@ -352,10 +356,20 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
       </>
     );
 
+  let sidebarWidths = {
+    open: "w-[260px]",
+    closed: "w-[92px]",
+  }
+
+  if (showGlobalSearchBar) {
+    sidebarWidths.open = "w-[260px]";
+    sidebarWidths.closed = "w-[74px]";
+  }
+
   return (
     <div
       ref={ref}
-      className={`flex-1 flex flex-col justify-items-start select-none overflow-y-hidden overflow-x-hidden -ml-[20px] will-change-[width] ${isSidebarOpen ? "w-[260px]" : "w-[92px]"} transition-all duration-300`}
+      className={`flex-1 flex flex-col justify-items-start select-none overflow-y-hidden overflow-x-hidden -ml-[20px] will-change-[width] ${isSidebarOpen ? sidebarWidths.open : sidebarWidths.closed} transition-all duration-300`}
     // animate={{
     //   width: isSidebarOpen ? "229px" : "72px",
     // }}
@@ -365,7 +379,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
     >
       {/* <div className="flex-1 flex flex-col gap-y-[10px] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-forest-800/30 scrollbar-track-forest-800/10"> */}
       <VerticalScrollContainer height={height - 36} scrollbarPosition="left" scrollbarAbsolute={true} scrollbarWidth="6px">
-        <div className="pl-[20px] w-[270px]">
+        <div className="pl-[20px] w-[282px]">
           {navigationItemsWithChains.map((item) => 
             item.href ? (
               <SidebarMenuLink

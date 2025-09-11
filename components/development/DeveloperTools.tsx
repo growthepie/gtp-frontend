@@ -17,7 +17,7 @@ export default function DeveloperTools() {
           <div className="hidden 2xl:block">{"2xl"}</div>
         </div>
         <ApiTool />
-        <GlobalSearchToggleButton />
+        {/* <GlobalSearchToggleButton /> */}
       </div>
     </div>
   )

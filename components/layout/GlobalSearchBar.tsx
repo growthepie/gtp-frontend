@@ -17,26 +17,24 @@ import { useLocalStorage } from 'usehooks-ts';
 import { useSearchParams } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { SearchBar, useSearchBuckets } from '../search/Components';
-import EthUsdSwitch from './EthUsdSwitch';
-import FocusSwitch from './FocusSwitch';
+import EthUsdSwitchSimple from './EthUsdSwitchSimple';
+import FocusSwitchSimple from './FocusSwitchSimple';
 import { IconContextMenu } from './IconContextMenu';
 import { useToast } from '../toast/GTPToast';
-import { useNotifications } from '@/hooks/useNotifications';
-import NotificationInsideContent from '@/components/notifications/NotificationContent';
 import { GTPIconName } from '@/icons/gtp-icon-names';
 import { track } from '@vercel/analytics/react';
 import SharePopoverContent from './FloatingBar/SharePopoverContent';
-import MobileMenuContent from './FloatingBar/MobileMenuContent';
-import NotificationContent from './FloatingBar/NotificationContent';
+import MobileMenuWithSearch from './FloatingBar/MobileMenuWithSearch';
+import NotificationButton from './NotificationButton';
+import WorkWithUs from './WorkWithUs';
 
 
 export default function GlobalFloatingBar() {
-  const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", false);
+  // const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", true);
+  const showGlobalSearchBar = true;
   const { isMobile, isSidebarOpen, toggleSidebar } = useUIContext();
 
-  const { filteredData, hasUnseenNotifications, markNotificationsAsSeen, isLoading, error } = useNotifications();
   // State for controlling popover visibility
-  const [isNotificationPopoverOpen, setIsNotificationPopoverOpen] = useState(false);
   const [isMobileMenuPopoverOpen, setIsMobileMenuPopoverOpen] = useState(false);
   const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false);
 
@@ -47,45 +45,66 @@ export default function GlobalFloatingBar() {
   const isOpen = searchParams.get("search") === "true";
   const [showMore, setShowMore] = useState<{ [key: string]: boolean }>({});
 
+  // Track if user has started typing to auto-open mobile menu
+  const query = searchParams.get("query") || "";
+
+  // Function to clear query following the same pattern as SearchBar
+  const clearQuery = useCallback(() => {
+    const newSearchParams = new URLSearchParams(window.location.search);
+    newSearchParams.delete("query");
+    const url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
+    window.history.replaceState(null, "", url);
+  }, [pathname]);
+
   // Track if the user is interacting with search (not just focused)
   const [isSearchActive, setIsSearchActive] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Handle search activation
-  const activateSearch = useCallback(() => {
+  const activateSearch = useCallback((event?: React.MouseEvent | React.TouchEvent) => {
     if (isMobile) {
+      // Prevent default to avoid any browser interference
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+
       // Clear any pending deactivation
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
       }
+
       setIsSearchActive(true);
-      
-      // Focus the search input after a brief delay to ensure the UI has updated
-      // This is important for mobile UX - users expect to start typing immediately
-      setTimeout(() => {
-        if (searchInputRef.current && !searchInputRef.current.matches(':focus')) {
+
+      // Use multiple strategies to ensure focus works
+      const focusInput = () => {
+        if (searchInputRef.current) {
+          // Method 1: Direct focus
           searchInputRef.current.focus();
+
+          // Method 2: For stubborn mobile browsers
+          searchInputRef.current.click();
+
+          // Method 3: Set selection range to trigger keyboard
+          try {
+            searchInputRef.current.setSelectionRange(
+              searchInputRef.current.value.length,
+              searchInputRef.current.value.length
+            );
+          } catch (e) {
+            // Some input types don't support setSelectionRange
+          }
         }
-      }, 50);
+      };
+
+      // Try immediate focus
+      focusInput();
+
+      // Also try with requestAnimationFrame for browsers that need a paint cycle
+      requestAnimationFrame(focusInput);
     }
   }, [isMobile]);
-
-  // Effect to focus the search input when the search bar becomes active on mobile
-  useEffect(() => {
-    if (isMobile && isSearchActive) {
-      // Delay focusing slightly to allow UI transitions/updates to settle.
-      // The search bar container has a `transition-[margin] duration-200`.
-      // A small delay like 50ms should be enough for the input to be ready and avoid focus issues during animation.
-      const timerId = setTimeout(() => {
-        if (searchInputRef.current && document.activeElement !== searchInputRef.current) {
-          searchInputRef.current.focus();
-        }
-      }, 50); // Adjust delay if necessary (0, 50, 100ms are common)
-      
-      return () => clearTimeout(timerId);
-    }
-  }, [isMobile, isSearchActive]);
 
   // Handle search deactivation with intelligent delay
   const deactivateSearch = useCallback(() => {
@@ -93,13 +112,54 @@ export default function GlobalFloatingBar() {
       // Use a longer delay to allow for interaction
       searchTimeoutRef.current = setTimeout(() => {
         // Check if focus is still within the search container
-        if (searchContainerRef.current && 
-            !searchContainerRef.current.contains(document.activeElement)) {
+        if (searchContainerRef.current &&
+          !searchContainerRef.current.contains(document.activeElement)) {
           setIsSearchActive(false);
         }
       }, 300); // Longer delay for better UX
     }
   }, [isMobile]);
+
+  // Track if the menu was manually closed to prevent auto-reopening
+  const [menuWasManuallyClosed, setMenuWasManuallyClosed] = useState(false);
+
+  // Auto-open mobile menu when user starts typing
+  const handleInputChange = useCallback(() => {
+    // Add a small delay to prevent interference with close actions
+    setTimeout(() => {
+      if (isMobile && !isMobileMenuPopoverOpen && query.trim().length > 0 && !menuWasManuallyClosed) {
+        setIsMobileMenuPopoverOpen(true);
+        setIsSearchActive(true); // Also activate search overlay
+      }
+    }, 10);
+  }, [isMobile, isMobileMenuPopoverOpen, query, menuWasManuallyClosed]);
+
+  // Effect to auto-open mobile menu when user starts typing
+  useEffect(() => {
+    handleInputChange();
+  }, [handleInputChange]);
+
+  // Reset the manual close flag when query changes (user is actively typing)
+  const prevQueryRef = useRef(query);
+  useEffect(() => {
+    // Reset when query is cleared
+    if (query.trim().length === 0) {
+      setMenuWasManuallyClosed(false);
+    }
+    // Reset when user is actively typing (query length is increasing)
+    else if (query.length > prevQueryRef.current.length) {
+      setMenuWasManuallyClosed(false);
+    }
+    prevQueryRef.current = query;
+  }, [query]);
+
+  // Stable onClose handler to prevent race condition
+  const handleMobileMenuClose = useCallback(() => {
+    setIsMobileMenuPopoverOpen(false);
+    setMenuWasManuallyClosed(true);
+    setIsSearchActive(false);
+    clearQuery();
+  }, [clearQuery]);
 
   // Clean up timeout on unmount
   useEffect(() => {
@@ -115,8 +175,8 @@ export default function GlobalFloatingBar() {
     if (!isMobile || !isSearchActive) return;
 
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-      if (searchContainerRef.current && 
-          !searchContainerRef.current.contains(event.target as Node)) {
+      if (searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target as Node)) {
         // Check if the click is on the search input itself or its children.
         // If searchInputRef.current is part of searchContainerRef.current, this is fine.
         // We want to close if the click is truly outside.
@@ -137,25 +197,9 @@ export default function GlobalFloatingBar() {
     };
   }, [isMobile, isSearchActive]);
 
-  const [isSearchInputFocusedMobile, setIsSearchInputFocusedMobile] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Handlers for search input focus/blur
-  const handleSearchInputFocus = useCallback(() => {
-    if (isMobile) {
-      setIsSearchInputFocusedMobile(true);
-    }
-  }, [isMobile]);
-
-  const handleSearchInputBlur = useCallback(() => {
-    // Delay blur handling to allow clicks on search results or other UI elements
-    setTimeout(() => {
-      if (isMobile) {
-        setIsSearchInputFocusedMobile(false);
-      }
-    }, 150); // 150ms delay, adjust if needed
-  }, [isMobile]);
 
   // Effect for '/' and 'Escape' key press
   useEffect(() => {
@@ -172,7 +216,7 @@ export default function GlobalFloatingBar() {
           if (isMobile) {
             activateSearch(); // This will also trigger the focus via useEffect
           } else {
-            searchInputRef.current?.focus(); 
+            searchInputRef.current?.focus();
           }
         }
       } else if (event.key === 'Escape') {
@@ -182,8 +226,8 @@ export default function GlobalFloatingBar() {
             setIsSearchActive(false); // Also close the expanded mobile search on Esc
           }
         } else if (isMobile && isSearchActive) {
-            // If search is active on mobile but input not focused, Esc should still close it
-            setIsSearchActive(false);
+          // If search is active on mobile but input not focused, Esc should still close it
+          setIsSearchActive(false);
         }
       }
     };
@@ -197,18 +241,19 @@ export default function GlobalFloatingBar() {
   const handleSharePopoverOpenChange = (openState: boolean) => {
     const location = isMobile ? 'mobile' : 'desktop';
     if (openState && !isSharePopoverOpen) { // Opening
-      track("opened Share window", { 
+      track("opened Share window", {
         location,
-        page: window.location.pathname 
+        page: window.location.pathname
       });
     } else if (!openState && isSharePopoverOpen) { // Closing via overlay/escape
-      track("closed Share window by overlay/escape", { 
+      track("closed Share window by overlay/escape", {
         location,
-        page: window.location.pathname 
+        page: window.location.pathname
       });
     }
     setIsSharePopoverOpen(openState);
   };
+
 
   // Handle search submission
   const handleSearchSubmit = (query: string) => {
@@ -258,31 +303,31 @@ export default function GlobalFloatingBar() {
 
   const HOVER_ROTATIONS = {
     SIDEBAR_OPEN: {
-      HOVER_ON: 180,
-      HOVER_OFF: 0,
-      DEFAULT: 0
-    },
-    SIDEBAR_CLOSED: {
       HOVER_ON: 0,
       HOVER_OFF: 180,
       DEFAULT: 180
+    },
+    SIDEBAR_CLOSED: {
+      HOVER_ON: 180,
+      HOVER_OFF: 0,
+      DEFAULT: 0
     }
   };
 
   useEffect(() => {
-    if (isChangingSidebar) return; 
+    if (isChangingSidebar) return;
 
     if (isSidebarOpen) {
       if (isHoveringToggle) {
-        setRotation(HOVER_ROTATIONS.SIDEBAR_OPEN.HOVER_ON); 
+        setRotation(HOVER_ROTATIONS.SIDEBAR_OPEN.HOVER_ON);
       } else {
-        setRotation(HOVER_ROTATIONS.SIDEBAR_OPEN.DEFAULT); 
+        setRotation(HOVER_ROTATIONS.SIDEBAR_OPEN.DEFAULT);
       }
-    } else { 
+    } else {
       if (isHoveringToggle) {
-        setRotation(HOVER_ROTATIONS.SIDEBAR_CLOSED.HOVER_ON); 
+        setRotation(HOVER_ROTATIONS.SIDEBAR_CLOSED.HOVER_ON);
       } else {
-        setRotation(HOVER_ROTATIONS.SIDEBAR_CLOSED.DEFAULT); 
+        setRotation(HOVER_ROTATIONS.SIDEBAR_CLOSED.DEFAULT);
       }
     }
   }, [isHoveringToggle, isSidebarOpen, isChangingSidebar]);
@@ -296,7 +341,7 @@ export default function GlobalFloatingBar() {
         // Consider if this is truly desired for all anchor links.
         // If the goal is just to close the search bar:
         if (isMobile && isSearchActive) {
-           setIsSearchActive(false);
+          setIsSearchActive(false);
         }
         // e.preventDefault(); // Removed this to allow default anchor behavior unless specifically needed
       }
@@ -308,13 +353,20 @@ export default function GlobalFloatingBar() {
     }
   }, [isMobile, isSearchActive]);
 
-
+  // Force focus to show total ecosystem when GlobalSearchBar is visible
+  useEffect(() => {
+    // Force focus to false (total ecosystem) when GlobalSearchBar is mounted
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('focusEnabled', 'false');
+    }
+  }, []);
 
   if (!showGlobalSearchBar) return null;
 
   return (
     <>
-      <div className={`fixed z-global-search-backdrop bottom-[-200px] md:bottom-auto md:top-[0px] w-full max-w-[1680px] px-0 md:px-[13px] ${isSidebarOpen ? "md:ml-[253px]" : "md:ml-[94px]"} transition-[margin] duration-sidebar ease-sidebar z-50 flex justify-center w-full`}>
+      <div className={`fixed z-global-search-backdrop bottom-[-200px] md:bottom-auto md:top-[0px] w-full max-w-[1680px] px-0 md:px-[13px] md:-mx-[5px] transition-[margin] duration-sidebar ease-sidebar flex justify-center`}>
+
         <div className="bg-[#151a19] z-[-1] relative bottom-0 top-0 md:bottom-auto md:top-0 left-0 right-0 h-[300px] md:h-[100px] overflow-hidden pointer-events-none sidebar-bg-mask">
           <div className="background-gradient-group">
             <div className="background-gradient-yellow"></div>
@@ -322,7 +374,7 @@ export default function GlobalFloatingBar() {
           </div>
         </div>
       </div>
-      {isMobile && isSearchActive && (
+      {isMobile && isSearchActive && !isMobileMenuPopoverOpen && (
         <div
           className="fixed inset-0 bg-black/20 z-40"
           onClick={() => setIsSearchActive(false)}
@@ -331,137 +383,117 @@ export default function GlobalFloatingBar() {
       <div className="fixed z-global-search bottom-[60px] md:hidden left-0 right-0 flex justify-center w-full pointer-events-none pb-[30px] md:pb-0 md:pt-[30px]">
         <div className="w-full max-w-[1680px] px-[20px] md:px-[13px] pointer-events-auto">
           <div className="px-[5px] md:px-[15px] md:py-[10px]">
-            <Popover
-              placement='top-start'
-              isOpen={isNotificationPopoverOpen}
-              onOpenChange={setIsNotificationPopoverOpen}
-              content={
-                <NotificationContent onClose={() => setIsNotificationPopoverOpen(false)} />
-              }
-              className='flex md:hidden'
-              trigger="click"
-            >
-              <FloatingBarButton
-                icon={(hasUnseenNotifications ? "gtp-notification-new" : "gtp-notification") as GTPIconName}
-                title="Notifications"
-                className='!bg-[#344240]'
-              />
-            </Popover>
+            {/* <WorkWithUs />    */}
+            <NotificationButton
+              placement="top"
+              className="flex"
+              hideIfNoNotifications={true}
+            />
           </div>
         </div>
       </div>
       <div className={`fixed z-global-search bottom-0 md:bottom-auto md:top-[0px] left-0 right-0 flex justify-center w-full pointer-events-none pb-[30px] md:pb-0 md:pt-[30px]`}>
-
-        <div className="w-full max-w-[1680px] px-[20px] md:px-[13px]">
-          <FloatingBarContainer className='p-[5px] md:px-[15px] md:py-[10px]'>
-            {/* Mobile - Share Button */}
-            <Popover
-              placement="top-start"
-              isOpen={isSharePopoverOpen}
-              onOpenChange={handleSharePopoverOpenChange}
-              content={
-                <SharePopoverContent onClose={() => setIsSharePopoverOpen(false)} />
-              }
-              className='block md:hidden'
-              trigger="click"
-            >
-              <FloatingBarButton
-                icon="gtp-share"
-                title="Share"
+        <div className="w-full max-w-[1680px] px-[20px] md:px-[30px]">
+          <FloatingBarContainer className='p-[5px] md:p-[5px] md:pl-[6px] md:py-[5px] !rounded-[27px]'>
+            <div className='w-full flex flex-col md:flex-row'>
+              <MobileMenuWithSearch
+                isOpen={isMobileMenuPopoverOpen}
+                onClose={handleMobileMenuClose}
               />
-            </Popover>
-            {/* Desktop - Home Button */}
-            <div className={`hidden md:flex items-center justify-between w-[50.87px] ${isSidebarOpen ? "md:w-[230px]" : "md:w-[60.87px]"} transition-all duration-sidebar ease-sidebar`}>
-              <GTPLogoOld />
-              <div className="flex items-center justify-end h-full cursor-pointer " onClick={() => {
-                track("clicked Sidebar Close", {
-                  location: "desktop sidebar",
-                  page: window.location.pathname,
-                });
-                toggleSidebar();
-                setIsChangingSidebar(true);
-                setTimeout(() => {
-                  setIsChangingSidebar(false);
-                }, ANIMATION_DURATION);
-              }}>
-                <Icon
-                  icon={isSidebarOpen ? "feather:log-out" : "feather:log-in"}
-                  className={`w-[13.15px] h-[13.15px] transition-transform duration-sidebar ease-sidebar`} // MODIFIED
-                  style={{ transform: `rotate(${rotation}deg)` }}
-                  onMouseEnter={() => {
-                    setIsHoveringToggle(true);
-                  }}
-                  onMouseLeave={() => {
-                    setIsHoveringToggle(false);
-                  }}
-                />
-              </div>
-            </div>
+              <div className={`flex items-center w-full gap-x-[5px] md:gap-x-[5px] z-0 pointer-events-auto`}>
+                {/* Mobile - Share Button */}
+                <Popover
+                  placement="top-start"
+                  isOpen={isSharePopoverOpen}
+                  onOpenChange={handleSharePopoverOpenChange}
+                  content={
+                    <SharePopoverContent onClose={() => setIsSharePopoverOpen(false)} />
+                  }
+                  className='block md:hidden'
+                  trigger="click"
+                >
+                  <FloatingBarButton
+                    icon="gtp-share"
+                    title="Share"
+                  />
+                </Popover>
+                {/* Desktop - Home Button */}
+                <div className={`hidden md:flex items-center h-[44px] w-[58.87px] pl-[8px] pb-[2px] gap-x-[15px] ${isSidebarOpen ? "md:w-[245px] justify-between" : "md:w-[71.15px] justify-start"} transition-all duration-sidebar ease-sidebar`}>
+                  <GTPLogoOld />
+                  <div 
+                    // style={{ transform: `rotate(${rotation}deg)` }}
+                    className={`relative flex w-[20px] h-[20px] top-[1px] cursor-pointer transition-transform duration-sidebar ease-sidebar !size-[13.15px] ${isSidebarOpen ? "hover:rotate-180 rotate-0" : "hover:rotate-0 rotate-180"}`}
+                    onClick={() => {
+                      track("clicked Sidebar Close", {
+                        location: "desktop sidebar",
+                        page: window.location.pathname,
+                      });
+                      toggleSidebar();
+                    }}
+                  >
+                    <GTPIcon
+                      icon={"feather:log-out" as GTPIconName}
+                      size="sm"
+                      containerClassName="size-[13.15px]"
+                      className={`!size-[13.15px]`}
+                    />
+                  </div>
+                </div>
 
-            {/* Search Bar */}
-            <div
-              ref={searchContainerRef}
-              className={`flex-1 min-w-0 relative h-[44px] ${isMobile && isSearchActive ? "-mx-[55px]" : ""
-                } transition-[margin] duration-200`}
-              // onMouseEnter={activateSearch}
-              // onMouseLeave={deactivateSearch}
-              onTouchStart={activateSearch}
-            >
-              <SearchContainer>
-                <SearchBar
-                  ref={searchInputRef}
-                  showMore={showMore}
-                  setShowMore={setShowMore}
-                  showSearchContainer={false}
-                  onFocus={activateSearch}
-                  onBlur={deactivateSearch}
-                />
-              </SearchContainer>
-            </div>
+                {/* Search Bar */}
+                <div
+                  ref={searchContainerRef}
+                  className={`flex-1 min-w-0 relative h-[44px] md:ml-[45px] ${isMobile && isSearchActive ? "-ml-[55px]" : ""
+                    } transition-[margin] duration-200 max-h-[calc(100vh-200px)]`}
+                  // onMouseEnter={activateSearch}
+                  // onMouseLeave={deactivateSearch}
+                  onTouchStart={activateSearch}
+                >
+                  <SearchContainer>
+                    <SearchBar
+                      ref={searchInputRef}
+                      showMore={showMore}
+                      setShowMore={setShowMore}
+                      showSearchContainer={false}
+                      // onFocus={activateSearch}
+                      onBlur={deactivateSearch}
+                    />
 
-            {/* Active Filters Section */}
-            {activeFilters.length > 0 && (
-              <div className="hidden md:block max-w-[300px] lg:max-w-[400px]">
-                <FilterSelectionContainer>
-                  {filterBadges}
-                  {activeFilters.length > 0 && (
-                    <div onClick={clearAllFilters} className="cursor-pointer">
-                      <Badge
-                        rightIcon="heroicons-solid:x"
-                        rightIconColor="#FE5468"
-                        label="Clear All"
-                      />
-                    </div>
-                  )}
-                </FilterSelectionContainer>
-              </div>
-            )}
-            <FocusSwitch showBorder={true} className='hidden md:flex' />
-            <EthUsdSwitch showBorder={true} className='hidden md:flex' />
+                  </SearchContainer>
+                </div>
 
-            {/* Desktop - Notifications */}
-            <Popover
-              placement='bottom-end'
-              isOpen={isNotificationPopoverOpen}
-              onOpenChange={(open: boolean) => {
-                setIsNotificationPopoverOpen(open);
-                if(!open) {
-                  markNotificationsAsSeen();
-                } 
-              }}
-              content={
-                <NotificationContent onClose={() => setIsNotificationPopoverOpen(false)} />
-              }
-              className='hidden md:flex'
-              trigger="click"
-            >
-              <FloatingBarButton
-                icon={(hasUnseenNotifications ? "gtp-notification-new" : "gtp-notification") as GTPIconName}
-                title="Notifications"
-              />
-            </Popover>
-            {/* Mobile - Menu Button */}
-            <Popover
+                {/* Active Filters Section */}
+                {activeFilters.length > 0 && (
+                  <div className="hidden md:block max-w-[300px] lg:max-w-[400px]">
+                    <FilterSelectionContainer>
+                      {filterBadges}
+                      {activeFilters.length > 0 && (
+                        <div onClick={clearAllFilters} className="cursor-pointer">
+                          <Badge
+                            rightIcon="heroicons-solid:x"
+                            rightIconColor="#FE5468"
+                            label="Clear All"
+                          />
+                        </div>
+                      )}
+                    </FilterSelectionContainer>
+                  </div>
+                )}
+                <div className={`hidden md:flex items-center gap-x-[15px]`}>
+                  <EthUsdSwitchSimple showBorder={true} className={'hidden md:flex'} />
+                  {/* <FocusSwitchSimple showBorder={true} className={'hidden md:flex'} /> */}
+                  {/* Desktop - Notifications */}
+                  <NotificationButton
+                    placement="bottom"
+                    className="hidden md:flex"
+                    hideIfNoNotifications={true}
+                  />
+                  <WorkWithUs/>
+                </div>
+
+
+                {/* Mobile - Menu Button */}
+                {/* <Popover
               placement='top-end'
               isOpen={isMobileMenuPopoverOpen}
               onOpenChange={setIsMobileMenuPopoverOpen}
@@ -471,12 +503,42 @@ export default function GlobalFloatingBar() {
               }
               className='flex md:hidden'
               trigger="click"
-            >
-              <FloatingBarButton
-                icon={"gtp-burger-menu" as GTPIconName}
-                title="Menu"
-              />
-            </Popover>
+            > */}
+                {/* <FloatingBarButton
+                  onClick={
+                    () => {
+                      if (isMobileMenuPopoverOpen) {
+                        setIsMobileMenuPopoverOpen(false);
+                      } else {
+                        setIsMobileMenuPopoverOpen(true);
+                      }
+                    }
+                  }
+                  icon={"gtp-burger-menu" as GTPIconName}
+                  title="Menu"
+                /> */}
+
+                <FloatingBarButton
+                  onClick={() => {
+                    // Use functional update for better performance
+                    setIsMobileMenuPopoverOpen(prev => {
+                      const newState = !prev;
+                      // If closing the menu, use the same stable handler
+                      if (!newState) {
+                        handleMobileMenuClose();
+                        return false; // Override the state change since handleMobileMenuClose handles it
+                      }
+                      return newState;
+                    });
+                  }}
+                  icon={<AnimatedMenuIcon isOpen={isMobileMenuPopoverOpen} /> as unknown as GTPIconName}
+                  className='block md:hidden'
+                >
+
+                </FloatingBarButton>
+                {/* </Popover> */}
+              </div>
+            </div>
           </FloatingBarContainer>
         </div>
       </div>
@@ -486,6 +548,7 @@ export default function GlobalFloatingBar() {
 
 const SearchContainer = ({ children }: { children: React.ReactNode }) => {
   const { allFilteredData } = useSearchBuckets();
+  const { isMobile } = useUIContext();
   const searchParams = useSearchParams();
   const query = searchParams.get("query");
   const [hasOverflow, setHasOverflow] = useState(false);
@@ -499,6 +562,9 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
     allFilteredData.length > 0 &&
     isScreenTall &&
     totalResults >= 10;
+
+  // Don't show search results container on mobile - the mobile menu handles search results
+  const showSearchResults = query && allFilteredData.length > 0 && !isMobile;
 
   // Add a ref to check for overflow
   const contentRef = useRef<HTMLDivElement>(null);
@@ -552,8 +618,21 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
     };
   }, []);
 
+  // Only render the search container if we should show search results
+  // if (!showSearchResults) {
+  //   return (
+  //     <div className="absolute bottom-[-5px] md:bottom-auto md:top-[-5px] left-0 w-full p-[5px] md:p-[5px] bg-[#344240] rounded-[32px] flex flex-col justify-start items-center">
+  //       <div ref={contentRef} className="w-full flex-1 overflow-hidden flex flex-col min-h-0">
+  //         <div className={`w-full bg-[#151A19] rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>
+  //           {children}
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
+
   return (
-    <div className="absolute bottom-[-5px] md:bottom-auto md:top-[-10px] left-0 w-full p-[5px] md:p-2.5 bg-[#344240] rounded-[32px] flex flex-col justify-start items-center">
+    <div className="absolute bottom-[-5px] md:bottom-auto md:top-[-5px] left-0 w-full p-[5px] md:p-[5px] bg-[#344240] rounded-[32px] flex flex-col justify-start items-center">
       {/* Add a wrapper div that will handle the overflow */}
       <div ref={contentRef} className="w-full flex-1 overflow-hidden flex flex-col min-h-0">
         <div className={`w-full bg-[#151A19] rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>
@@ -561,7 +640,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
         </div>
       </div>
       {/* Keyboard shortcuts will now stay at the bottom */}
-      <div className={`flex px-[10px] pt-2 pb-[5px] items-start gap-[15px] self-stretch flex-shrink-0 ${!showKeyboardShortcuts ? 'hidden' : ''} max-sm:hidden`}>
+      <div className={`${showSearchResults ? 'flex' : 'hidden'} px-[10px] pt-2 pb-[5px] items-start gap-[15px] self-stretch flex-shrink-0 ${!showKeyboardShortcuts ? 'hidden' : ''} max-sm:hidden`}>
         <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px]">
           <svg xmlns="http://www.w3.org/2000/svg" width="70" height="21" viewBox="0 0 70 21" fill="none">
             {/* Up arrow */}
@@ -707,9 +786,9 @@ const GTPLogoOld = () => {
   return (
     <Link
       href="/"
-      className={`${isSidebarOpen ? "relative h-[45.07px] w-[192.87px] block" : "relative h-[45.07px] w-[62px] overflow-clip"} transition-all duration-sidebar ease-sidebar`}
+      className={`${isSidebarOpen ? "relative h-[45.07px] w-[192.87px] block" : "relative h-[45.07px] w-[40.91px] overflow-clip"} transition-all duration-sidebar ease-sidebar`}
     >
-      <IconContextMenu getSvgData={getLogoSvgData} itemName="gtp-logo-full" wrapperClassName="block h-full w-full">
+      <IconContextMenu getSvgData={getLogoSvgData} itemName="gtp-logo-full" wrapperClassName="block h-full w-full" isLogo={true}>
         <div className={`h-[45.07px] w-[192.87px] relative ${isSidebarOpen ? "translate-x-[1.5px]" : "translate-x-[1.5px]"} transition-all duration-sidebar ease-sidebar`} style={{ transformOrigin: "21px 27px" }}>
           <svg className="absolute" viewBox="0 0 194 46" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M13.1034 14.7805C13.0263 13.704 13.3194 12.7156 13.9484 11.7572C14.3695 11.1201 14.9667 10.4321 15.6257 9.67423C17.3256 7.7165 19.4313 5.29317 19.9468 2.08203C21.0677 4.54348 20.5241 6.93686 19.2833 9.13783C18.7252 10.1271 18.1071 10.8378 17.5171 11.5158C16.8228 12.3136 16.1684 13.066 15.6983 14.1724C15.4396 14.7741 15.2926 15.3504 15.2236 15.9141L13.1034 14.7805Z" fill="url(#paint0_radial_22480_56536)" />
@@ -784,63 +863,142 @@ const GTPLogoNew = () => {
   return (
     <svg width="194" height="46" viewBox="0 0 194 46" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M13.1032 15.2443C13.026 14.1679 13.3192 13.1795 13.9481 12.2211C14.3693 11.5839 14.9665 10.896 15.6254 10.1381C17.3254 8.18037 19.431 5.75704 19.9466 2.5459C21.0675 5.00735 20.5238 7.40073 19.2831 9.60169C18.7249 10.591 18.1068 11.3017 17.5169 11.9796C16.8226 12.7774 16.1682 13.5298 15.698 14.6362C15.4394 15.238 15.2923 15.8143 15.2233 16.3779L13.1032 15.2443Z" fill="url(#paint0_radial_22425_42194)" />
-      <path d="M16.741 17.1918C16.9996 16.2424 17.4471 15.3548 18.0416 14.4934C18.5335 13.7746 18.9946 13.2418 19.4084 12.7635C20.8007 11.1525 21.6648 10.1523 21.4116 4.75293C21.574 5.09964 21.7347 5.43364 21.8908 5.75584L21.8917 5.75766C23.2495 8.57671 24.2025 10.5535 22.6014 13.2682C21.81 14.6096 21.2327 15.2767 20.7227 15.8667C20.1482 16.5301 19.658 17.0974 19.0418 18.4171L16.741 17.1918Z" fill="url(#paint1_radial_22425_42194)" />
-      <path d="M22.7032 16.341C22.0787 17.0807 21.0595 18.1009 21.0132 18.168L26.7811 14.9433C26.6604 13.8687 25.868 12.6025 24.8941 10.8027C25.0911 13.1752 24.1653 14.6084 22.7032 16.341Z" fill="url(#paint2_radial_22425_42194)" />
-      <path d="M26.7384 16.0156C26.5832 16.7036 25.7336 18.1349 25.1092 18.8782C23.136 21.2253 22.1086 22.2264 20.4205 25.758C20.3252 25.3759 20.2253 25.0155 20.13 24.6715C19.659 22.9725 19.3694 21.5575 19.934 20.3377L26.7384 16.0156Z" fill="url(#paint3_radial_22425_42194)" />
-      <path d="M19.1191 23.9723C18.6363 22.5591 18.2896 21.3774 18.5419 19.8826L16.5252 18.5684C16.4135 20.7675 17.3529 23.3352 19.9469 26.6407C19.8089 25.822 19.395 24.7801 19.1191 23.9723Z" fill="url(#paint4_radial_22425_42194)" />
-      <path d="M15.1809 17.6928C15.2154 18.408 15.6574 20.2986 16.0532 21.2988C14.9241 19.8584 13.6897 17.6484 13.3367 16.4902L15.1809 17.6928Z" fill="url(#paint5_radial_22425_42194)" />
-      <path d="M38.9341 28.4409C38.9341 25.1689 32.8494 22.417 24.6264 21.6465C23.8423 22.5269 23.0581 23.6196 22.3084 25.2307L21.1793 27.3753C20.9642 27.7711 20.5676 28.0306 20.1274 28.0651C19.6799 28.0996 19.2488 27.9036 18.982 27.5451L18.2577 26.5721C16.7493 24.6462 15.6456 23.1205 14.7752 21.6928C6.79455 22.5232 0.934082 25.2316 0.934082 28.4409C0.934082 32.31 9.44932 35.4513 19.9386 35.4513C20.4451 35.4513 20.9479 35.444 21.4453 35.4295L22.9846 31.0721L22.9973 31.0412C23.3367 30.1926 24.1536 29.6371 25.0621 29.6244H25.0685L38.6582 29.6607C38.7979 29.3185 38.9341 28.7976 38.9341 28.4409Z" fill="url(#paint6_radial_22425_42194)" />
-      <path d="M25.6228 35.5455H36.27L35.8044 36.7263H25.2135L22.8555 43.4527V36.3097L24.5046 31.6437C24.5981 31.4077 24.8268 31.2507 25.0837 31.2471L37.9899 31.2507L37.5125 32.4143H26.7382L26.4079 33.3963H37.144L36.634 34.5635H25.9958L25.6228 35.5455Z" fill="url(#paint7_radial_22425_42194)" />
-      <path d="M1.58765 31.5332C2.81383 35.0003 5.81441 39.0728 6.45246 39.6682C8.65615 41.7439 15.7564 43.4529 21.3482 43.4529V37.6088C11.6549 37.6088 4.08722 34.4693 1.58765 31.5332Z" fill="url(#paint8_radial_22425_42194)" />
-      <path d="M160.866 27.2218C160.866 23.5419 158.303 20.875 154.621 20.875C150.892 20.875 148.276 23.588 148.276 27.3404C148.276 31.3976 150.933 33.6625 155.64 33.6625C157.18 33.6677 158.699 33.2953 160.067 32.577L159.461 30.1704C158.227 30.7848 156.858 31.1587 155.662 31.1587C153.222 31.1587 151.748 30.0962 151.585 28.281H160.789C160.818 28.024 160.866 27.599 160.866 27.2218ZM151.522 26.2779C151.684 24.6027 152.872 23.4002 154.597 23.4002C156.321 23.4002 157.511 24.6027 157.673 26.2779H151.522Z" fill="#CDD8D3" />
-      <path d="M146.883 16.4639H143.761V19.6019H146.883V16.4639Z" fill="#CDD8D3" />
-      <path d="M146.883 21.0879H143.761V33.4504H146.883V21.0879Z" fill="#CDD8D3" />
-      <path d="M136.654 20.875C134.813 20.875 133.368 21.7727 132.436 23.2108V21.0875H129.71V38.0046H132.833V31.7451C133.646 32.9822 135.101 33.6889 136.794 33.6889C139.894 33.6889 142.364 30.9742 142.364 27.2465C142.364 23.5188 139.964 20.875 136.654 20.875ZM136.004 30.9973C134.162 30.9973 132.811 29.4637 132.811 27.3635C132.811 25.1694 134.162 23.5649 136.004 23.5649C137.845 23.5649 139.173 25.1694 139.173 27.3635C139.171 29.4637 137.842 30.9973 136.002 30.9973H136.004Z" fill="#CDD8D3" />
-      <path d="M122.67 20.875C118.943 20.875 116.333 23.588 116.333 27.3404C116.333 31.3976 118.988 33.6625 123.697 33.6625C125.237 33.6675 126.756 33.2951 128.124 32.577L127.512 30.1704C126.277 30.7848 124.909 31.1587 123.715 31.1587C121.274 31.1587 119.8 30.0962 119.636 28.281H128.846C128.869 28.0207 128.916 27.5957 128.916 27.2185C128.916 23.5468 126.352 20.875 122.67 20.875ZM119.571 26.2779C119.733 24.6027 120.923 23.4002 122.647 23.4002C124.372 23.4002 125.56 24.6027 125.722 26.2779H119.571Z" fill="#CDD8D3" />
-      <path d="M111.88 20.8752C110.996 20.8618 110.124 21.0869 109.354 21.5276C108.585 21.9682 108.107 22.6083 107.663 23.3823V16.4639H104.539V33.4502H107.663V27.8298C107.663 25.3985 108.782 23.6524 110.554 23.6524C111.834 23.6524 112.604 24.5963 112.604 26.5071V33.4436H115.726V25.7362C115.725 23.0528 114.862 20.8752 111.88 20.8752Z" fill="#CDD8D3" />
-      <path d="M101.928 30.7615C101.277 30.7615 100.763 30.4073 100.763 29.5574V23.5169H103.326V21.0873H100.763V17.7812H97.6409V21.0873H93.2138L90.9913 30.8471L89.1366 22.3935H86.5334L84.6786 30.8587L82.4334 21.0955H79.2559L82.4708 33.458H86.1527L87.8122 26.3749L89.5092 33.458H93.0511L95.6543 23.5252H97.6425V30.1471C97.6425 32.5767 98.853 33.6623 101.045 33.6623C102.171 33.668 103.279 33.3756 104.259 32.8139L103.628 30.3118C103.256 30.4782 102.58 30.7615 101.928 30.7615Z" fill="#CDD8D3" />
-      <path d="M73.4292 20.875C69.7002 20.875 67.0205 23.5649 67.0205 27.2992C67.0205 31.0335 69.7002 33.6938 73.4292 33.6938C77.1339 33.6938 79.8135 31.0039 79.8135 27.2992C79.8135 23.5946 77.1339 20.875 73.4292 20.875ZM73.4292 30.9973C71.5875 30.9973 70.2354 29.439 70.2354 27.2926C70.2354 25.1463 71.5875 23.5649 73.4292 23.5649C75.271 23.5649 76.6214 25.1216 76.6214 27.2696C76.6214 29.4176 75.2693 30.9973 73.4292 30.9973Z" fill="#CDD8D3" />
-      <path d="M62.9647 23.7297V21.0942H60.0996V33.4567H63.2218V25.9716C63.8726 24.5797 65.4817 23.8302 66.9037 23.8302V20.9459L66.741 20.9229C65.249 20.9229 63.827 22.0314 62.9647 23.7297Z" fill="#CDD8D3" />
-      <path d="M55.9507 23.2586C55.0184 21.8189 53.5736 20.875 51.6945 20.875C48.377 20.875 46 23.5649 46 27.2696C46 30.6662 48.3998 33.2853 51.7319 33.2853C52.4702 33.2944 53.2004 33.1284 53.8641 32.8006C54.5277 32.4728 55.1063 31.9923 55.5537 31.3976V32.6248C55.5537 34.9605 54.2261 36.2108 51.8962 36.2108C50.1944 36.2108 48.9367 35.8566 47.4448 35.1022L46.5353 37.438C48.2034 38.2778 50.0414 38.7137 51.9043 38.7113C56.2387 38.7113 58.6856 36.5172 58.6856 32.6248V21.0941H55.9507V23.2586ZM52.3843 30.7617C50.5442 30.7617 49.1922 29.2281 49.1922 27.3635C49.1922 25.1694 50.5442 23.5649 52.3843 23.5649C54.2244 23.5649 55.5537 25.1694 55.5537 27.3635C55.5537 29.2281 54.2261 30.7617 52.3843 30.7617Z" fill="#CDD8D3" />
-      <defs>
-        <radialGradient id="paint0_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(19.1535 6.84238) rotate(117.912) scale(11.808 9.11336)">
-          <stop stop-color="#1DF7EF" />
-          <stop offset="1" stop-color="#10808C" />
-        </radialGradient>
-        <radialGradient id="paint1_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(22.1799 8.99725) rotate(115.692) scale(11.4385 8.3377)">
-          <stop stop-color="#1DF7EF" />
-          <stop offset="1" stop-color="#10808C" />
-        </radialGradient>
-        <radialGradient id="paint2_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(25.6971 13.0905) rotate(127.548) scale(7.00774 6.31751)">
-          <stop stop-color="#1DF7EF" />
-          <stop offset="1" stop-color="#10808C" />
-        </radialGradient>
-        <radialGradient id="paint3_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(25.4013 19.0418) rotate(125.634) scale(9.04236 7.98874)">
-          <stop stop-color="#1DF7EF" />
-          <stop offset="1" stop-color="#10808C" />
-        </radialGradient>
-        <radialGradient id="paint4_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(19.3022 21.0758) rotate(112.642) scale(6.59793 4.37388)">
-          <stop stop-color="#1DF7EF" />
-          <stop offset="1" stop-color="#10808C" />
-        </radialGradient>
-        <radialGradient id="paint5_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(15.5427 17.9839) rotate(119.008) scale(4.14768 3.28196)">
-          <stop stop-color="#1DF7EF" />
-          <stop offset="1" stop-color="#10808C" />
-        </radialGradient>
-        <radialGradient id="paint6_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(31.793 25.9345) rotate(159.689) scale(30.0014 18.2218)">
-          <stop stop-color="#FFDF27" />
-          <stop offset="0.9999" stop-color="#FE5468" />
-        </radialGradient>
-        <radialGradient id="paint7_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(35.1458 35.0383) rotate(140.592) scale(14.5034 13.2732)">
-          <stop stop-color="#1DF7EF" />
-          <stop offset="0.9999" stop-color="#10808C" />
-        </radialGradient>
-        <radialGradient id="paint8_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(17.6347 35.2357) rotate(148.427) scale(17.1733 14.2932)">
-          <stop stop-color="#1DF7EF" />
-          <stop offset="0.9999" stop-color="#10808C" />
-        </radialGradient>
-      </defs>
-    </svg>
+    <path d="M16.741 17.1918C16.9996 16.2424 17.4471 15.3548 18.0416 14.4934C18.5335 13.7746 18.9946 13.2418 19.4084 12.7635C20.8007 11.1525 21.6648 10.1523 21.4116 4.75293C21.574 5.09964 21.7347 5.43364 21.8908 5.75584L21.8917 5.75766C23.2495 8.57671 24.2025 10.5535 22.6014 13.2682C21.81 14.6096 21.2327 15.2767 20.7227 15.8667C20.1482 16.5301 19.658 17.0974 19.0418 18.4171L16.741 17.1918Z" fill="url(#paint1_radial_22425_42194)" />
+    <path d="M22.7032 16.341C22.0787 17.0807 21.0595 18.1009 21.0132 18.168L26.7811 14.9433C26.6604 13.8687 25.868 12.6025 24.8941 10.8027C25.0911 13.1752 24.1653 14.6084 22.7032 16.341Z" fill="url(#paint2_radial_22425_42194)" />
+    <path d="M26.7384 16.0156C26.5832 16.7036 25.7336 18.1349 25.1092 18.8782C23.136 21.2253 22.1086 22.2264 20.4205 25.758C20.3252 25.3759 20.2253 25.0155 20.13 24.6715C19.659 22.9725 19.3694 21.5575 19.934 20.3377L26.7384 16.0156Z" fill="url(#paint3_radial_22425_42194)" />
+    <path d="M19.1191 23.9723C18.6363 22.5591 18.2896 21.3774 18.5419 19.8826L16.5252 18.5684C16.4135 20.7675 17.3529 23.3352 19.9469 26.6407C19.8089 25.822 19.395 24.7801 19.1191 23.9723Z" fill="url(#paint4_radial_22425_42194)" />
+    <path d="M15.1809 17.6928C15.2154 18.408 15.6574 20.2986 16.0532 21.2988C14.9241 19.8584 13.6897 17.6484 13.3367 16.4902L15.1809 17.6928Z" fill="url(#paint5_radial_22425_42194)" />
+    <path d="M38.9341 28.4409C38.9341 25.1689 32.8494 22.417 24.6264 21.6465C23.8423 22.5269 23.0581 23.6196 22.3084 25.2307L21.1793 27.3753C20.9642 27.7711 20.5676 28.0306 20.1274 28.0651C19.6799 28.0996 19.2488 27.9036 18.982 27.5451L18.2577 26.5721C16.7493 24.6462 15.6456 23.1205 14.7752 21.6928C6.79455 22.5232 0.934082 25.2316 0.934082 28.4409C0.934082 32.31 9.44932 35.4513 19.9386 35.4513C20.4451 35.4513 20.9479 35.444 21.4453 35.4295L22.9846 31.0721L22.9973 31.0412C23.3367 30.1926 24.1536 29.6371 25.0621 29.6244H25.0685L38.6582 29.6607C38.7979 29.3185 38.9341 28.7976 38.9341 28.4409Z" fill="url(#paint6_radial_22425_42194)" />
+    <path d="M25.6228 35.5455H36.27L35.8044 36.7263H25.2135L22.8555 43.4527V36.3097L24.5046 31.6437C24.5981 31.4077 24.8268 31.2507 25.0837 31.2471L37.9899 31.2507L37.5125 32.4143H26.7382L26.4079 33.3963H37.144L36.634 34.5635H25.9958L25.6228 35.5455Z" fill="url(#paint7_radial_22425_42194)" />
+    <path d="M1.58765 31.5332C2.81383 35.0003 5.81441 39.0728 6.45246 39.6682C8.65615 41.7439 15.7564 43.4529 21.3482 43.4529V37.6088C11.6549 37.6088 4.08722 34.4693 1.58765 31.5332Z" fill="url(#paint8_radial_22425_42194)" />
+    <path d="M160.866 27.2218C160.866 23.5419 158.303 20.875 154.621 20.875C150.892 20.875 148.276 23.588 148.276 27.3404C148.276 31.3976 150.933 33.6625 155.64 33.6625C157.18 33.6677 158.699 33.2953 160.067 32.577L159.461 30.1704C158.227 30.7848 156.858 31.1587 155.662 31.1587C153.222 31.1587 151.748 30.0962 151.585 28.281H160.789C160.818 28.024 160.866 27.599 160.866 27.2218ZM151.522 26.2779C151.684 24.6027 152.872 23.4002 154.597 23.4002C156.321 23.4002 157.511 24.6027 157.673 26.2779H151.522Z" fill="#CDD8D3" />
+    <path d="M146.883 16.4639H143.761V19.6019H146.883V16.4639Z" fill="#CDD8D3" />
+    <path d="M146.883 21.0879H143.761V33.4504H146.883V21.0879Z" fill="#CDD8D3" />
+    <path d="M136.654 20.875C134.813 20.875 133.368 21.7727 132.436 23.2108V21.0875H129.71V38.0046H132.833V31.7451C133.646 32.9822 135.101 33.6889 136.794 33.6889C139.894 33.6889 142.364 30.9742 142.364 27.2465C142.364 23.5188 139.964 20.875 136.654 20.875ZM136.004 30.9973C134.162 30.9973 132.811 29.4637 132.811 27.3635C132.811 25.1694 134.162 23.5649 136.004 23.5649C137.845 23.5649 139.173 25.1694 139.173 27.3635C139.171 29.4637 137.842 30.9973 136.002 30.9973H136.004Z" fill="#CDD8D3" />
+    <path d="M122.67 20.875C118.943 20.875 116.333 23.588 116.333 27.3404C116.333 31.3976 118.988 33.6625 123.697 33.6625C125.237 33.6675 126.756 33.2951 128.124 32.577L127.512 30.1704C126.277 30.7848 124.909 31.1587 123.715 31.1587C121.274 31.1587 119.8 30.0962 119.636 28.281H128.846C128.869 28.0207 128.916 27.5957 128.916 27.2185C128.916 23.5468 126.352 20.875 122.67 20.875ZM119.571 26.2779C119.733 24.6027 120.923 23.4002 122.647 23.4002C124.372 23.4002 125.56 24.6027 125.722 26.2779H119.571Z" fill="#CDD8D3" />
+    <path d="M111.88 20.8752C110.996 20.8618 110.124 21.0869 109.354 21.5276C108.585 21.9682 108.107 22.6083 107.663 23.3823V16.4639H104.539V33.4502H107.663V27.8298C107.663 25.3985 108.782 23.6524 110.554 23.6524C111.834 23.6524 112.604 24.5963 112.604 26.5071V33.4436H115.726V25.7362C115.725 23.0528 114.862 20.8752 111.88 20.8752Z" fill="#CDD8D3" />
+    <path d="M101.928 30.7615C101.277 30.7615 100.763 30.4073 100.763 29.5574V23.5169H103.326V21.0873H100.763V17.7812H97.6409V21.0873H93.2138L90.9913 30.8471L89.1366 22.3935H86.5334L84.6786 30.8587L82.4334 21.0955H79.2559L82.4708 33.458H86.1527L87.8122 26.3749L89.5092 33.458H92.0511L94.6543 23.5252H96.6425V30.1471C96.6425 32.5767 97.853 33.6623 100.045 33.6623C101.171 33.668 102.279 33.3756 103.259 32.8139L102.628 30.3118C102.256 30.4782 101.58 30.7615 100.928 30.7615Z" fill="#CDD8D3" />
+    <path d="M73.4292 20.875C69.7002 20.875 67.0205 23.5649 67.0205 27.2992C67.0205 31.0335 69.7002 33.6938 73.4292 33.6938C77.1339 33.6938 79.8135 31.0039 79.8135 27.2992C79.8135 23.5946 77.1339 20.875 73.4292 20.875ZM73.4292 30.9973C71.5875 30.9973 70.2354 29.439 70.2354 27.2926C70.2354 25.1463 71.5875 23.5649 73.4292 23.5649C75.271 23.5649 76.6214 25.1216 76.6214 27.2696C76.6214 29.4176 75.2693 30.9973 73.4292 30.9973Z" fill="#CDD8D3" />
+    <path d="M62.9647 23.7297V21.0942H60.0996V33.4567H63.2218V25.9716C63.8726 24.5797 65.4817 23.8302 66.9037 23.8302V20.9459L66.741 20.9229C65.249 20.9229 63.827 22.0314 62.9647 23.7297Z" fill="#CDD8D3" />
+    <path d="M55.9507 23.2586C55.0184 21.8189 53.5736 20.875 51.6945 20.875C48.377 20.875 46 23.5649 46 27.2696C46 30.6662 48.3998 33.2853 51.7319 33.2853C52.4702 33.2944 53.2004 33.1284 53.8641 32.8006C54.5277 32.4728 55.1063 31.9923 55.5537 31.3976V32.6248C55.5537 34.9605 54.2261 36.2108 51.8962 36.2108C50.1944 36.2108 48.9367 35.8566 47.4448 35.1022L46.5353 37.438C48.2034 38.2778 50.0414 38.7137 51.9043 38.7113C56.2387 38.7113 58.6856 36.5172 58.6856 32.6248V21.0941H55.9507V23.2586ZM52.3843 30.7617C50.5442 30.7617 49.1922 29.2281 49.1922 27.3635C49.1922 25.1694 50.5442 23.5649 52.3843 23.5649C54.2244 23.5649 55.5537 25.1694 55.5537 27.3635C55.5537 29.2281 54.2261 30.7617 52.3843 30.7617Z" fill="#CDD8D3" />
+    <defs>
+      <radialGradient id="paint0_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(19.1535 6.84238) rotate(117.912) scale(11.808 9.11336)">
+        <stop stop-color="#1DF7EF" />
+        <stop offset="1" stop-color="#10808C" />
+      </radialGradient>
+      <radialGradient id="paint1_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(22.1799 8.99725) rotate(115.692) scale(11.4385 8.3377)">
+        <stop stop-color="#1DF7EF" />
+        <stop offset="1" stop-color="#10808C" />
+      </radialGradient>
+      <radialGradient id="paint2_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(25.6971 13.0905) rotate(127.548) scale(7.00774 6.31751)">
+        <stop stop-color="#1DF7EF" />
+        <stop offset="1" stop-color="#10808C" />
+      </radialGradient>
+      <radialGradient id="paint3_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(25.4013 19.0418) rotate(125.634) scale(9.04236 7.98874)">
+        <stop stop-color="#1DF7EF" />
+        <stop offset="1" stop-color="#10808C" />
+      </radialGradient>
+      <radialGradient id="paint4_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(19.3022 21.0758) rotate(112.642) scale(6.59793 4.37388)">
+        <stop stop-color="#1DF7EF" />
+        <stop offset="1" stop-color="#10808C" />
+      </radialGradient>
+      <radialGradient id="paint5_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(15.5427 17.9839) rotate(119.008) scale(4.14768 3.28196)">
+        <stop stop-color="#1DF7EF" />
+        <stop offset="1" stop-color="#10808C" />
+      </radialGradient>
+      <radialGradient id="paint6_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(31.793 25.9345) rotate(159.689) scale(30.0014 18.2218)">
+        <stop stop-color="#FFDF27" />
+        <stop offset="0.9999" stop-color="#FE5468" />
+      </radialGradient>
+      <radialGradient id="paint7_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(35.1458 35.0383) rotate(140.592) scale(14.5034 13.2732)">
+        <stop stop-color="#1DF7EF" />
+        <stop offset="0.9999" stop-color="#10808C" />
+      </radialGradient>
+      <radialGradient id="paint8_radial_22425_42194" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(17.6347 35.2357) rotate(148.427) scale(17.1733 14.2932)">
+        <stop stop-color="#1DF7EF" />
+        <stop offset="0.9999" stop-color="#10808C" />
+      </radialGradient>
+    </defs>
+  </svg>
 
+  );
+};
+
+
+const AnimatedMenuIcon = ({ isOpen = false, className = "" }) => {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <defs>
+        <linearGradient id="redYellowGradient" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="objectBoundingBox">
+          <stop stopColor="#FE5468" />
+          <stop offset="1" stopColor="#FFDF27" />
+        </linearGradient>
+        <linearGradient id="tealCyanGradient" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="objectBoundingBox">
+          <stop stopColor="#10808C" />
+          <stop offset="1" stopColor="#1DF7EF" />
+        </linearGradient>
+      </defs>
+
+      <g clipPath="url(#clip0)">
+        {/* Top line - becomes part of first diagonal */}
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M0 5.7C0 5.03726 0.53726 4.5 1.2 4.5H22.8001C23.4628 4.5 24.0001 5.03726 24.0001 5.7C24.0001 6.36275 23.4628 6.90001 22.8001 6.90001H1.2C0.53726 6.90001 0 6.36275 0 5.7Z"
+          fill="url(#redYellowGradient)"
+          style={{
+            transformOrigin: '12px 12px',
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            transform: isOpen
+              ? 'rotate(45deg) translateY(6.3px)'
+              : 'rotate(0deg) translateY(0px)'
+          }}
+        />
+
+
+
+        {/* Bottom line - becomes part of first diagonal */}
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M0 18.1C0 17.4373 0.53726 16.9 1.2 16.9H22.8001C23.4628 16.9 24.0001 17.4373 24.0001 18.1C24.0001 18.7628 23.4628 19.3 22.8001 19.3H1.2C0.53726 19.3 0 18.7628 0 18.1Z"
+          fill="url(#redYellowGradient)"
+          style={{
+            transformOrigin: '12px 12px',
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            transform: isOpen
+              ? 'rotate(-45deg) translateY(-6.3px)'
+              : 'rotate(0deg) translateY(0px)'
+          }}
+        />
+
+        {/* Middle line - becomes second diagonal */}
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M0 11.9C0 11.2373 0.53726 10.7 1.2 10.7H22.8001C23.4628 10.7 24.0001 11.2373 24.0001 11.9C24.0001 12.5628 23.4628 13.1 22.8001 13.1H1.2C0.53726 13.1 0 12.5628 0 11.9Z"
+          fill="url(#tealCyanGradient)"
+          style={{
+            transformOrigin: '12px 12px',
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            transform: isOpen
+              ? 'rotate(45deg)'
+              : 'rotate(0deg)',
+            opacity: isOpen ? 1 : 1
+          }}
+        />
+      </g>
+
+      <clipPath id="clip0">
+        <rect width="24" height="24" fill="white" />
+      </clipPath>
+    </svg>
   );
 };
