@@ -1,6 +1,6 @@
 // components/sidebar/SidebarMenuGroup.tsx - Enhanced with accordion animations
 "use client";
-import { useState, useEffect, useRef, memo } from 'react';
+import { useState, useEffect, useRef, memo, useMemo } from 'react';
 import { SidebarMenuGroup as SidebarMenuGroupType } from '@/lib/transform-navigation';
 import SidebarMenuItem from './SidebarMenuItem';
 import { GTPIcon } from '@/components/layout/GTPIcon';
@@ -16,40 +16,90 @@ type SidebarMenuGroupProps = {
 const SidebarMenuGroup = memo(({ item, isOpen }: SidebarMenuGroupProps) => {
   const pathname = usePathname();
   const { label, icon, children } = item;
-  const { setIsAnimating } = useSidebarContext();
+  const { setIsAnimating, setActiveGroup, activeGroup } = useSidebarContext();
   const ref = useRef<HTMLDivElement>(null);
-  const [childrenHeight, setChildrenHeight] = useState(0);
+  const [childrenHeight, setChildrenHeight] = useState(1000);
 
   // A group is active if one of its children is the current page
-  const isGroupActive = children.some(child => child.type === 'link' && pathname.startsWith(child.href));
+  // const isGroupActive = children.some(child => child.type === 'link' && pathname.startsWith(child.href));
+  // const isGroupActive = useMemo(() => {
+  //   // if we're currently on the landing page, and we're on the fundamentals item, return true
+  //   if(pathname === "/") {
+  //     if(label === "Fundamentals") {
+  //       return true;
+  //     }
+      
+  //     return false;
+  //   }
+    
+  //   return children.some(child => child.type === 'link' && pathname.startsWith(child.href));
+  // }, [children, pathname, label]);
   
-  // Expand the group if it's active
-  const [isExpanded, setIsExpanded] = useState(isGroupActive);
+  // // Expand the group if it's active
+  // const [isExpanded, setIsExpanded] = useState(isGroupActive);
 
-  // Effect to expand the group when the route changes to one of its children
-  useEffect(() => {
-    if (isGroupActive) {
-      setIsExpanded(true);
-    }
-  }, [isGroupActive]);
+  // // Effect to expand the group when the route changes to one of its children
+  // useEffect(() => {
+  //   if (isGroupActive) {
+  //     setIsExpanded(true);
+  //   }
+  // }, [isGroupActive]);
+
+  // // Measure children height for smooth animation
+  // useEffect(() => {
+  //   if (ref.current) {
+  //     setChildrenHeight(ref.current.clientHeight);
+  //   }
+  // }, [children, isOpen]);
+
+  // const handleToggle = () => {
+  //     // Tell all badges to hide during animation
+  //     setIsAnimating(true);
+  //     setIsExpanded(!isExpanded);
+      
+  //     // Show badges again after animation completes
+  //     setTimeout(() => {
+  //       setIsAnimating(false);
+  //     }, 300); // Match animation duration
+  // };
+
+  // The group is expanded if its label matches the activeGroup in the context
+  const isExpanded = activeGroup === label;
+
+  // --- The effect to auto-expand is no longer needed here ---
+  // useEffect(() => { ... });
 
   // Measure children height for smooth animation
-  useEffect(() => {
-    if (ref.current) {
-      setChildrenHeight(ref.current.clientHeight);
-    }
-  }, [children, isOpen]);
+  // useEffect(() => {
+  //   // We still need to measure the content for the animation
+  //   if (ref.current) {
+  //       // To get the real height, we can't rely on the parent's `maxHeight`.
+  //       // A simple trick is to temporarily un-constrain it for measurement.
+  //       const parent = ref.current.parentElement;
+  //       if (parent) {
+  //           const originalMaxHeight = parent.style.maxHeight;
+  //           parent.style.maxHeight = 'none'; // Un-constrain
+  //           setChildrenHeight(ref.current.clientHeight);
+  //           parent.style.maxHeight = originalMaxHeight; // Re-apply
+  //       }
+  //   }
+  // }, [children, isOpen, isExpanded]); // Re-measure if it expands
 
   const handleToggle = () => {
-      // Tell all badges to hide during animation
-      setIsAnimating(true);
-      setIsExpanded(!isExpanded);
+    // Tell all badges to hide during animation
+    setIsAnimating(true);
+    
+    // --- Update the central state ---
+    // If it's already expanded, clicking it should close it (set active to null)
+    // Otherwise, set this group as the active one.
+    setActiveGroup(isExpanded ? null : label);
       
-      // Show badges again after animation completes
-      setTimeout(() => {
-        setIsAnimating(false);
-      }, 300); // Match animation duration
+    // Show badges again after animation completes
+    setTimeout(() => {
+      setIsAnimating(false);
+    }, 300); // Match animation duration
   };
+
 
   return (
     <div>
@@ -109,7 +159,7 @@ const SidebarMenuGroup = memo(({ item, isOpen }: SidebarMenuGroupProps) => {
           maxHeight: isExpanded ? childrenHeight : 0,
         }}
       >
-        <div className={`flex flex-col space-y-0 pt-1 pb-1 pl-[3px] ${item.label === "Chains" ? "-space-y-[10px] md:-space-y-[0px]" : ""}`} ref={ref}>
+        <div className={`flex flex-col space-y-0 pt-1 pb-1 pl-[3px] ${item.label === "Chains" || item.label === "Chains Rework" ? "-space-y-[10px] md:-space-y-[0px]" : ""}`} ref={ref}>
           {children.map((child, index) => {
             if (child.type === 'title') {
               return (
@@ -118,7 +168,7 @@ const SidebarMenuGroup = memo(({ item, isOpen }: SidebarMenuGroupProps) => {
                 </div>
               );
             }
-            return <SidebarMenuItem key={index} item={child} isOpen={isOpen} isChains={item.label === "Chains"} isTopLevel={false} />;
+            return <SidebarMenuItem key={index} item={child} isOpen={isOpen} isChains={item.label === "Chains" || item.label === "Chains Rework"} isTopLevel={false} />;
           })}
         </div>
       </div>

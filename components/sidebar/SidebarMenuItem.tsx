@@ -18,7 +18,7 @@ type SidebarMenuItemProps = {
 const SidebarMenuItem = ({ item, isOpen, isTopLevel = false, isChains = false }: SidebarMenuItemProps) => {
   const { href, icon, label, isNew } = item;
   const pathname = usePathname();
-  const isActive = href === "/" ? pathname === href : pathname.startsWith(href);
+  const isActive = pathname === href;
   // const { isAnimating } = useSidebarContext();
 
   // const { x, y, refs, strategy } = useFloating({
