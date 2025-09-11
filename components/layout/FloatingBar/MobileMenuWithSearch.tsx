@@ -760,7 +760,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
           <div className="flex flex-col justify-end pt-3 pb-0 relative">
             <div className="items-end justify-center flex gap-x-[15px] mt-[2px] mb-[0px]">
               <EthUsdSwitchSimple isMobile showBorder={false} className={query ? 'hidden' : ''} />
-              <FocusSwitchSimple isMobile showBorder={false} className={query ? 'hidden' : ''} />
+              {/* <FocusSwitchSimple isMobile showBorder={false} className={query ? 'hidden' : ''} /> */}
             </div>
           </div>
         </div>
