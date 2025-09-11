@@ -1,0 +1,276 @@
+// In your quick bite data file (e.g., lib/quick-bites/arbitrum-timeboost.ts)
+import { QuickBiteData } from '@/lib/types/quickBites';
+
+
+const ArbStacked = ["```chart",
+    JSON.stringify({
+      type: "area",
+      title: "Stablecoin Supply on Arbitrum One",
+      showXAsDate: true,
+      dataAsJson: {
+        meta: [
+          {
+            name: "Hyperliquid USDC",
+            color: "#97FBE4",
+            xIndex: 0,
+            yIndex: 3,
+            suffix: '$',
+            prefix: null,
+            tooltipDecimals: 0,
+            stacking: "normal",
+            url: "https://api.growthepie.com/v1/quick-bites/hyperliquid/usdc.json",
+            pathToData: "data.hyperliquid_usdc.daily.values",
+          },
+          {
+            name: "Other Stablecoins",
+            color: "#1B4ADD",
+            xIndex: 0,
+            yIndex: 2,
+            suffix: '$',
+            prefix: null,
+            tooltipDecimals: 0,
+            stacking: "normal",
+            url: "https://api.growthepie.com/v1/quick-bites/hyperliquid/usdc.json",
+            pathToData: "data.hyperliquid_usdc.daily.values",
+          }
+        ],
+      },
+      height: 400,
+      caption: "Stablecoin Supply on Arbitrum One split by Hyperliquid USDC and all other stablecoins.",
+    }),
+    "```",
+];
+
+const ArbPercentage = [
+  "```chart",
+    JSON.stringify({
+      type: "area",
+      title: "Hyperliquid USDC Market Share",
+      showXAsDate: true,
+      dataAsJson: {
+        meta: [
+          {
+            name: "Hyperliquid USDC",
+            color: "#97FBE4",
+            stacking: "percent",
+            xIndex: 0,
+            yIndex: 3,
+            suffix: null,
+            prefix: '$',
+            tooltipDecimals: 0,
+            url: "https://api.growthepie.com/v1/quick-bites/hyperliquid/usdc.json",
+            pathToData: "data.hyperliquid_usdc.daily.values",
+          },
+          {
+            name: "Other Stablecoins",
+            color: "#1B4ADD",
+            stacking: "percent",
+            xIndex: 0,
+            yIndex: 2,
+            suffix: null,
+            prefix: '$',
+            tooltipDecimals: 0,
+            url: "https://api.growthepie.com/v1/quick-bites/hyperliquid/usdc.json",
+            pathToData: "data.hyperliquid_usdc.daily.values",
+          }
+        ],
+      },
+      height: 400,
+      caption: "Market share of Hyperliquid's USDC within the total stablecoin supply on Arbitrum One."
+    }),
+    "```",
+
+]
+
+const arbitrumCharts = ["```container",
+  JSON.stringify({
+    blocks: [ArbStacked, ArbPercentage],
+    className: "flex flex-col-reverse lg:grid lg:grid-cols-2 items-center",
+  }),
+  "```",
+];
+
+const CircleStacked = [
+  "```chart",
+    JSON.stringify({
+      type: "area",
+      title: "USDC Supply Breakdown",
+      showXAsDate: true,
+      dataAsJson: {
+        meta: [
+          {
+            name: "on Hyperliquid",
+            color: "#97FBE4",
+            xIndex: 0,
+            yIndex: 3,
+            suffix: '$',
+            prefix: null,
+            tooltipDecimals: 0,
+            stacking: "normal",
+            url: "https://api.growthepie.com/v1/quick-bites/hyperliquid/usdc.json",
+            pathToData: "data.hyperliquid_usdc.daily.values",
+          },
+          {
+            name: "All other",
+            color: "#FFD700",
+            xIndex: 0,
+            yIndex: 5,
+            suffix: '$',
+            prefix: null,
+            tooltipDecimals: 0,
+            stacking: "normal",
+            url: "https://api.growthepie.com/v1/quick-bites/hyperliquid/usdc.json",
+            pathToData: "data.hyperliquid_usdc.daily.values",
+          }
+        ],
+      },
+      height: 400,
+      caption: "Circle's USDC supply on Hyperliquid compared to all other chains.",
+    }),
+    "```",
+]
+const CirclePercentage = [
+  "```chart",
+    JSON.stringify({
+      type: "area",
+      title: "Hyperliquid USDC Share",
+      showXAsDate: true,
+      dataAsJson: {
+        meta: [
+          {
+            name: "on Hyperliquid",
+            color: "#97FBE4",
+            xIndex: 0,
+            yIndex: 3,
+            suffix: '$',
+            prefix: null,
+            tooltipDecimals: 0,
+            stacking: "percent",
+            url: "https://api.growthepie.com/v1/quick-bites/hyperliquid/usdc.json",
+            pathToData: "data.hyperliquid_usdc.daily.values",
+          },
+          {
+            name: "All other",
+            color: "#FFD700",
+            xIndex: 0,
+            yIndex: 5,
+            suffix: '$',
+            prefix: null,
+            tooltipDecimals: 0,
+            stacking: "percent",
+            url: "https://api.growthepie.com/v1/quick-bites/hyperliquid/usdc.json",
+            pathToData: "data.hyperliquid_usdc.daily.values",
+          }
+        ],
+      },
+      height: 400,
+      caption: "Market share of Hyperliquid's USDC within the total USDC stablecoin supply.",
+    }),
+    "```",
+]
+
+const CircleCharts = ["```container",
+  JSON.stringify({
+    blocks: [CircleStacked, CirclePercentage],
+    className: "flex flex-col-reverse lg:grid lg:grid-cols-2 items-center",
+  }),
+  "```",
+];
+
+
+
+
+const arbitrumHyperliquidBridge: QuickBiteData = {
+  title: "Arbitrum Hyperliquid Bridge",
+  subtitle: "The Critical Infrastructure Connecting Arbitrum One to Hyperliquid's Trading Ecosystem",
+  content: [
+
+    "The Arbitrum Hyperliquid bridge serves as the primary infrastructure connecting USDC on Arbitrum One to Hyperliquid's Layer 1 perpetual trading platform. This bridge has become the most significant driver of stablecoin activity on Arbitrum One, with over 60% of all stablecoins on the network locked in the bridge contract. The bridge enables seamless USDC transfers from Arbitrum One to Hyperliquid, where the stablecoin serves as the primary settlement currency for perpetual trading.",
+
+    "```kpi-cards",JSON.stringify(
+      [
+        {
+          title: "Total USDC Bridged to Hyperliquid",
+          value: "${{hyperliquidUSDCLast}}B",
+          description: "",
+          icon: "gtp-realtime",
+          info: "Total USDC bridged to Hyperliquid from Arbitrum One.",
+        },
+      ]
+    ),
+    "```",
+
+    ...ArbStacked,
+
+    "# Bridge Impact on Circle - Cash Cow",
+
+    "The Arbitrum Hyperliquid bridge has become a major revenue driver for Circle, the issuer of USDC. As of September 2025, Hyperliquid accounts for more than 7.5% of all USDC in circulation, with most of this supply flowing through the Arbitrum bridge. Circle has earned approximately $106 million in revenue from USDC held on Hyperliquid, with potential annual revenue exceeding $210 million if current trends continue. USDC is backed by US treasuries which generate this revenue.",
+
+    "```kpi-cards",JSON.stringify(
+      [
+        {
+          title: "Revenue from Hyperliquid",
+          value: "${{hyperliquidTotalRevenueForCircle}}M",
+          description: "since launch",
+          icon: "gtp-realtime",
+          info: "Total revenue earned by Circle from USDC held and used on Hyperliquid."
+        },
+        {
+          title: "USDC Share on Hyperliquid",
+          value: "{{percentageHyperliquidOfCircle}}%",
+          description: "of total USDC supply",
+          icon: "gtp-realtime",
+          info: "Percentage of the entire USDC supply currently circulating on Hyperliquid."
+        },
+        {
+          title: "Projected Annual Revenue",
+          value: "${{estimatesYearlyRevenueHyperliquidCircle}}M",
+          description: "based on current yields",
+          icon: "gtp-realtime",
+          info: "Estimated yearly revenue Circle would generate from USDC on Hyperliquid if current supply levels and U.S. Treasury yields remain stable."
+        }
+      ]
+    ),
+    "```",
+
+    ...CircleCharts,
+
+    "# Arbitrum's Bridge Dependency",
+
+    "The Arbitrum Hyperliquid bridge has fundamentally transformed Arbitrum One's stablecoin ecosystem. Since early 2024, the growth of stablecoins on Arbitrum One has been driven largely by users bridging USDC to Hyperliquid. At the time of writing, roughly 60% of all stablecoins on Arbitrum One are locked in the bridge contract, highlighting the network's dependence on Hyperliquid for stablecoin growth. With the proposed launch of a natively issued stablecoin on Hyperliquid, called USDH, much of this liquidity could shift away from Arbitrum, leading to a sharp reduction in its reported stablecoin supply.",
+
+    ...ArbPercentage,
+
+  ],
+  image: "https://api.growthepie.com/v1/quick-bites/banners/hyperliquid.png",
+  og_image: "",
+  date: "2025-09-10",
+  related: [],
+  author: [{
+    name: "Lorenz Lehmann",
+    xUsername: "LehmannLorenz",
+  },
+  {
+    name: "ETH Wave",
+    xUsername: "TrueWaveBreak"
+  }],
+  topics: [
+    {
+    name: "Arbitrum One",
+    url: "/chains/arbitrum"
+  },
+  {
+    icon: "gtp-metrics-economics",
+    name: "Economics",
+    url: "/economics"
+  },
+  {
+    name: "Circle",
+    url: "/applications/circlefin"
+  },
+],
+  icon: "arbitrum-logo-monochrome",
+  showInMenu: false
+};
+
+export default arbitrumHyperliquidBridge;
