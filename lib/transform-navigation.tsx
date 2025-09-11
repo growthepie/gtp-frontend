@@ -10,6 +10,7 @@ export type SidebarLink = {
   icon: GTPIconName;
   href: string;
   isNew?: boolean;
+  key?: string;
 };
 
 // Represents a section title within a menu group
@@ -44,6 +45,7 @@ export const transformNavigationToSidebar = (navItems: NavigationItem[], master?
         icon: item.icon,
         href: item.href,
         isNew: item.newChild || false,
+        key: item.key,
       } as SidebarLink;
     }
 
@@ -100,6 +102,7 @@ export const transformNavigationToSidebar = (navItems: NavigationItem[], master?
             icon: option.icon,
             href: option.url || '#',
             isNew: option.showNew || false,
+            key: option.key,
           });
         });
       });

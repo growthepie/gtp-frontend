@@ -7,6 +7,8 @@ import NewBadge from './NewBadge';
 import { useFloating, FloatingPortal, offset, shift, autoUpdate } from '@floating-ui/react';
 import { AnimatePresence } from 'framer-motion';
 import { useSidebarContext } from './Sidebar';
+import { useMaster } from '@/contexts/MasterContext';
+import { useState } from 'react';
 
 type SidebarMenuItemProps = {
   item: SidebarLink;
@@ -16,9 +18,12 @@ type SidebarMenuItemProps = {
 };
 
 const SidebarMenuItem = ({ item, isOpen, isTopLevel = false, isChains = false }: SidebarMenuItemProps) => {
-  const { href, icon, label, isNew } = item;
+  const { href, icon, label, isNew, key } = item;
   const pathname = usePathname();
+  const { AllChainsByKeys } = useMaster();
+  const chainColors = key && AllChainsByKeys[key] ? AllChainsByKeys[key].colors : null;
   const isActive = pathname === href;
+  const [isHovered, setIsHovered] = useState(false);
   // const { isAnimating } = useSidebarContext();
 
   // const { x, y, refs, strategy } = useFloating({
@@ -45,14 +50,33 @@ const SidebarMenuItem = ({ item, isOpen, isTopLevel = false, isChains = false }:
   const inactiveClasses = "text-forest-500 hover:bg-medium-background";
   const activeClasses = "bg-[#151A19] text-white";
 
+  // Determine icon color based on state and chain colors
+  const getIconColor = () => {
+    if (isActive && chainColors) {
+      return chainColors.dark[1];
+    } else if (isHovered && chainColors) {
+      return chainColors.dark[1];
+    } else {
+      return "#5a6462";
+    }
+  };
+
+
   return (
     <>
       <Link 
         // ref={refs.setReference}
         href={href} 
         className={`${baseClasses} ${chainsItemsClasses} ${isActive ? activeClasses : inactiveClasses} flex ${gap}`}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        <GTPIcon icon={icon} size={iconSize} containerClassName={`${iconContainer} flex items-center justify-center text-[#5a6462]`} />
+        <GTPIcon 
+          icon={icon} 
+          size={iconSize} 
+          containerClassName={`${iconContainer} flex items-center justify-center transition-colors duration-200`} 
+          style={{ color: getIconColor() }}
+        />
         
         <div className={`flex-1 h-[36px] flex items-center justify-between whitespace-nowrap ${textStyle} overflow-hidden transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
             {label}
