@@ -18,7 +18,9 @@ export default function QuickBitesPage() {
   const sortedQuickBites = [...QuickBites].sort((a, b) => 
     new Date(b.date).getTime() - new Date(a.date).getTime()
   );
-  
+
+
+
   return (
     <div className="pt-[45px] md:pt-[30px]">
       <PageContainer>

@@ -108,7 +108,7 @@ export default function ChainChart({
 
   const { theme } = useTheme();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const [selectedTimespan, setSelectedTimespan] = useState("max");
+  const [selectedTimespan, setSelectedTimespan] = useState("180d");
   const [selectedScale, setSelectedScale] = useState("log");
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
@@ -384,7 +384,7 @@ export default function ChainChart({
         } else {
           if (showGwei(key) && showUsd) {
             // for small USD amounts, show 2 decimals
-            console.log(val + " " + suffix);
+            // console.log(val + " " + suffix);
             if (val < 1) number = prefix + val.toFixed(2) + " " + suffix;
             else if (val < 10)
               number =

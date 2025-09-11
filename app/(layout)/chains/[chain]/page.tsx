@@ -162,14 +162,8 @@ const Chain = ({ params }: { params: any }) => {
 
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
     "blockspaceTimespan",
-    "max",
+    "180d",
   );
-
-  useEffect(() => {
-    if (selectedTimespan === "180d") {
-      setSelectedTimespan("1d");
-    }
-  }, []);
 
   const chainFeeData = useMemo(() => {
     if (

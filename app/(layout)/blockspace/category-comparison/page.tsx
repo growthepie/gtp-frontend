@@ -11,6 +11,8 @@ import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import ShowLoading from "@/components/layout/ShowLoading";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { Icon } from "@iconify/react";
+import { PageContainer } from "@/components/layout/Container";
+import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
 
 const CategoryComparison = () => {
   const {
@@ -92,6 +94,11 @@ const CategoryComparison = () => {
           />
         </Container>
       )}
+      
+      {/* Add Related Quick Bites Section */}
+      <PageContainer className="" paddingY="none">
+        <MetricRelatedQuickBites metricKey="category-comparison" metricType="blockspace" />
+      </PageContainer>
     </>
   );
 };

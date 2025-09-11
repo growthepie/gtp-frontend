@@ -1475,8 +1475,8 @@ export default function LandingChart({
                         <div className="flex flex-col items-center">
                             <div className="p-[15px] text-sm bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
                               
-                              <div className="text-xxs text-wrap">
-                                  Compare Ethereum toggle is no long needed as it is included in Total Ethereum Ecosystem.
+                              <div className="text-xs text-wrap">
+                                  We only count unique "sender" addresses. If an address interacts with multiple chains, it is only counted once in the total.
                               </div>
                             </div>
                         </div>

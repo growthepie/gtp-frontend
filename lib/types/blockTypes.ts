@@ -14,6 +14,7 @@ export type BlockType =
   | 'list'      // For list items
   | 'kpi-cards' // For KPI card blocks
   | 'dropdown'   // For dropdown blocks
+  | 'titleButton'   // For title button blocks
   | 'table'; // For table blocks
 
 export interface BaseBlock {
@@ -57,6 +58,7 @@ export interface TableBlock extends BaseBlock {
       isNumeric?: boolean;
       minWidth?: number;
       copyable?: boolean; // Add this line
+      add_url?: string; // URL template with ${cellValue} placeholder
       units?: {
         [key: string]: {
           decimals?: number;
@@ -151,9 +153,7 @@ export interface DividerBlock extends BaseBlock {
 
 export interface ContainerBlock extends BaseBlock {
   type: 'container';
-  blocks: ContentBlock[];
-  spacing?: number;
-  alignment?: 'start' | 'center' | 'end' | 'space-between' | 'space-around';
+  blocks: ContentBlock[][]; 
   className?: string;
 }
 
@@ -189,6 +189,13 @@ export interface KpiCardsBlock extends BaseBlock {
   className?: string;
 }
 
+export interface TitleButtonBlock extends BaseBlock {
+  type: 'titleButton';
+  text: string;
+  url: string;
+  className?: string;
+}
+
 import { DropdownOption } from '@/components/quick-bites/Dropdown';
 export interface DropdownBlock extends BaseBlock {
   type: 'dropdown';
@@ -215,6 +222,7 @@ export interface DropdownBlock extends BaseBlock {
 }
 
 export type ContentBlock = 
+  | ContainerBlock
   | ParagraphBlock
   | HeadingBlock
   | ImageBlock
@@ -224,11 +232,11 @@ export type ContentBlock =
   | CalloutBlock
   | QuoteBlock
   | DividerBlock
-  | ContainerBlock
   | SpacerBlock
   | IframeBlock
   | ListBlock
-  | KpiCardsBlock;
+  | KpiCardsBlock
+  | TitleButtonBlock;
 
 // Helper function to generate a unique ID for blocks
 export const generateBlockId = (): string => {

@@ -65,6 +65,8 @@ export const ImageBlock: React.FC<ImageBlockProps> = ({ block }) => {
 
   // Check if the image source is valid enough to be displayed and opened
   const isImageAvailable = !!src;
+
+  const className = block.className || 'md:w-3/5 mx-auto';
   
   return (
     // Use a Fragment to render the figure and the modal as siblings
@@ -75,15 +77,15 @@ export const ImageBlock: React.FC<ImageBlockProps> = ({ block }) => {
           tabIndex={isImageAvailable ? 0 : -1}
           onClick={() => isImageAvailable && setIsModalOpen(true)}
           onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && isImageAvailable && setIsModalOpen(true)}
-          className={`w-auto 
+          className={`w-auto
             ${isImageAvailable ? '' : 'cursor-default'}
-            ${block.className || ''}`}
+            ${className}`}
           style={{ 
 
           }}
           aria-label={isImageAvailable ? `View full image: ${alt}` : undefined}
         >
-            <div style={{ aspectRatio }} className='relative w-full md:w-3/5 mx-auto overflow-hidden rounded-lg cursor-pointer hover:shadow-lg transition-transform duration-300 ease-in-out'>
+            <div style={{ aspectRatio }} className='relative w-full overflow-hidden rounded-lg cursor-pointer hover:shadow-lg transition-transform duration-300 ease-in-out'>
               {isImageAvailable ? (
                 <Image
                   src={src}

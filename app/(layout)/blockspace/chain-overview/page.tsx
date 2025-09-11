@@ -21,6 +21,8 @@ import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { useMaster } from "@/contexts/MasterContext";
 import { filter } from "lodash";
+import { PageContainer } from "@/components/layout/Container";
+import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
 
 const ChainOverview = () => {
   const { AllChainsByKeys } = useMaster();
@@ -155,6 +157,11 @@ const ChainOverview = () => {
             // data={!chainEcosystemFilter || chainEcosystemFilter=== "all-chains" ? usageData.data.chains : )}
             />
           )}
+          
+          {/* Add Related Quick Bites Section */}
+          <PageContainer className="" paddingY="none">
+            <MetricRelatedQuickBites metricKey="chain-overview" metricType="blockspace" />
+          </PageContainer>
         </>
       )}
     </>

@@ -30,6 +30,7 @@ import { Chain } from "@/lib/chains";
 import useSWR from "swr";
 import { ApplicationsURLs } from "@/lib/urls";
 import { ApplicationDetailsResponse } from "../_contexts/ApplicationDetailsDataContext";
+import { SmartBackButton } from "@/components/SmartBackButton";
 
 type ApplicationIconProps = {
   owner_project: string;
@@ -160,7 +161,7 @@ export const PageTitleAndDescriptionAndControls = () => {
           </Link>
         </div>
       </div>
-      <Search />
+      <Search />  
       <Controls />
     </>
   );
@@ -170,7 +171,8 @@ export const PageTitleAndDescriptionAndControls = () => {
       <div className="flex items-end gap-x-[10px]">
         <div className="flex flex-col flex-1 gap-y-[15px]">
           <div className="flex items-center min-h-[43px] gap-x-[8px]">
-            <BackButton />
+            {/* <BackButton /> */}
+            <SmartBackButton />
             <div className="flex-1 flex items-center min-h-[43px] gap-x-[8px]">
               <ApplicationIcon owner_project={urlOwnerProject} size="md" />
               <Heading className="heading-large-lg lg:heading-large-xl min-h-[36px] flex-1" as="h1">
@@ -450,7 +452,7 @@ export const ProjectDetailsLinks = memo(({ owner_project, mobile }: ProjectDetai
 
 ProjectDetailsLinks.displayName = "ProjectDetailsLinks";
 
-export const ApplicationCard = memo(({ application, className, width }: { application?: AggregatedDataRow, className?: string, width?: number }) => {
+export const ApplicationCard = memo(({ application, className, width, chainsPage, chainKey }: { application?: AggregatedDataRow, className?: string, width?: number, chainsPage?: boolean, chainKey?: string }) => {
   const { medianMetric, medianMetricKey } = useApplicationsData();
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { metricsDef } = useMetrics();
@@ -562,10 +564,10 @@ export const ApplicationCard = memo(({ application, className, width }: { applic
       </div>
       <div className="flex items-center justify-between gap-x-[5px]">
         <div className="text-xs">
-          <Category category={ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].main_category : ""} />
+          <Category category={ownerProjectToProjectData[application.owner_project]?.main_category || ""} />
         </div>
         <div className="h-[20px] flex items-center gap-x-[5px]">
-          <Chains origin_keys={application.origin_keys} />
+          {!chainsPage ? <Chains origin_keys={application.origin_keys}/> : <Chains origin_keys={application.origin_keys.filter((key) => key === chainKey)}/>}
         </div>
 
       </div>
@@ -581,9 +583,13 @@ export const ApplicationTooltip = ({ application }: { application: AggregatedDat
   const searchParams = useSearchParams();
 
   const descriptionPreview = useMemo(() => {
-    if (!application || !ownerProjectToProjectData[application.owner_project] || !ownerProjectToProjectData[application.owner_project].description) return "";
-    const chars = ownerProjectToProjectData[application.owner_project].description.length;
-    const firstPart = ownerProjectToProjectData[application.owner_project].description.slice(0, Math.min(100, chars));
+    if (!application || !ownerProjectToProjectData[application.owner_project]) return "";
+    
+    const description = ownerProjectToProjectData[application.owner_project].description;
+    if(!description) return "";
+
+    const chars = description.length;
+    const firstPart = description.slice(0, Math.min(100, chars));
 
     return firstPart.split(" ").slice(0, -1).join(" ");
 
@@ -1133,21 +1139,23 @@ export const CategoryTooltipContent = ({ application }: { application: Aggregate
   const { ownerProjectToProjectData } = useProjectsMetadata();
   const { data: masterData } = useMaster();
 
+  console.log(ownerProjectToProjectData[application.owner_project], ownerProjectToProjectData[application.owner_project].main_category, ownerProjectToProjectData[application.owner_project].sub_categories);
+
   if(!masterData){
     return null;
   }
 
   return (
     <>
-      <TooltipHeader title={`Category`} icon={<GTPIcon icon={getGTPCategoryIcon(ownerProjectToProjectData[application.owner_project].main_category) as GTPIconName} size="sm" />} />
+      <TooltipHeader title={`Category`} icon={<GTPIcon icon={getGTPCategoryIcon(ownerProjectToProjectData[application.owner_project].main_category || "") as GTPIconName} size="sm" />} />
       <TooltipBody className="pl-[15px] !flex-col gap-[5px]">
         <div className="heading-small-xs">Subcategories</div>
         <div className="flex flex-col gap-[5px] max-h-[400px] transition-all duration-300 overflow-y-auto">
-        <div className="flex flex-col gap-[5px]">
-      {ownerProjectToProjectData[application.owner_project].sub_categories.map((subcategory) => (
-        <div key={subcategory} className="text-xs">{masterData.blockspace_categories.sub_categories[subcategory as keyof typeof masterData.blockspace_categories.sub_categories]}</div>
-      ))}
-    </div>
+          <div className="flex flex-col gap-[5px]">
+            {ownerProjectToProjectData[application.owner_project].sub_categories?.map((subcategory) => (
+              <div key={subcategory} className="text-xs">{masterData.blockspace_categories.sub_categories[subcategory as keyof typeof masterData.blockspace_categories.sub_categories]}</div>
+            ))}
+          </div>
         </div>
       </TooltipBody>
     </>

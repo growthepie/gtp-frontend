@@ -38,6 +38,7 @@ interface QuickBiteCardProps {
     name: string;
     url: string;
   }[];
+  topicFilter?: string[];
 }
 
 const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
@@ -51,7 +52,8 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
   topics,
   className = '',
   isRelatedPage = false,
-  mainTopics
+  mainTopics,
+  topicFilter
 }) => {
   const { AllChainsByKeys } = useMaster();
   const handleAuthorClick = (e: React.MouseEvent) => {
@@ -59,11 +61,13 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
     e.preventDefault();
   };
 
+  // Determine the min-width class based on whether a custom className is provided
+  const minWidthClass = className.includes('min-w-') ? '' : 'min-w-[275px]';
 
   return (
     <Link
       href={`/quick-bites/${slug}`}
-      className={`block h-full ${className} min-w-[275px] !h-[275px] select-none group`}
+      className={`block h-full ${minWidthClass} ${className} !h-[275px] select-none group`}
       aria-labelledby={`card-title-${slug}`}
     >
       <div className='flex flex-col w-full h-full p-[15px] gap-y-[10px] border border-[#5A6462] rounded-[15px]'>
@@ -100,22 +104,20 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
               <GTPIcon icon="twitter" size="sm" />
               {author.map((authorItem, index) => (
                 <React.Fragment key={authorItem.name}>
-                    {index > 0 ? (
-                      <div className=" hover:underline text-xxs h-[15px] pt-[1px]">{`+${(author.length - 1)} More`}</div>
-                    ) : (
-                      <div
-                        onClick={(e) => {
-                          handleAuthorClick(e);
-                          window.open(`https://x.com/${authorItem.xUsername}`, '_blank', 'noopener,noreferrer');
-                        }}
-
-                        className="text-xs hover:underline h-[15px]"
-                        aria-label={`Author: ${authorItem.name} (opens in a new tab)`}
-                      >
-                        
-                        {authorItem.name}
-                      </div>
-                    )}
+                  {index === 1 ? (
+                    <div className=" hover:underline text-xxs h-[15px] pt-[1px]">{`+${(author.length - 1)} More`}</div>
+                  ) : index === 0 ? (
+                    <div
+                      onClick={(e) => {
+                        handleAuthorClick(e);
+                        window.open(`https://x.com/${authorItem.xUsername}`, '_blank', 'noopener,noreferrer');
+                      }}
+                      className="text-xs hover:underline h-[15px]"
+                      aria-label={`Author: ${authorItem.name} (opens in a new tab)`}
+                    >
+                      {authorItem.name}
+                    </div>
+                  ) : null}
                 </React.Fragment>
               ))}
             </div>
@@ -126,9 +128,9 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
 
               return (
                 <div className="flex gap-x-[5px]">
-                  {topics.map((topic) => {
+                  {topics.filter(topic => topicFilter ? topicFilter.includes(topic.name) : true).map((topic) => {
                     const showColor = compareTopics ? mainTopics.some(mainTopic => topic.name === mainTopic.name) : true;
-                    
+                  
                     // Resolve chain information if this is a chain URL
                     let resolvedIcon = topic.icon;
                     let resolvedColor = topic.color;

@@ -15,110 +15,14 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { SplideSlide, SplideTrack } from "@splidejs/react-splide";
 import { useLocalStorage } from "usehooks-ts";
 import useAsyncStorage from "@/hooks/useAsyncStorage";
+import { getQuickBiteBySlug } from "@/lib/quick-bites/quickBites";
+import { QuickBiteData } from "@/lib/types/quickBites";
+import { TitleButtonLink } from "./TextHeadingComponents";
+import { GTPIconName } from "@/icons/gtp-icon-names";
+import { useMaster } from "@/contexts/MasterContext";
 
-// Create a context to manage staggered chart updates
-type FocusContextType = {
-  currentUpdateIndex: number;
-  focusValue: boolean;
-  registerChart: (id: number, callback: () => void) => void;
-  unregisterChart: (id: number) => void;
-};
-
-const FocusContext = createContext<FocusContextType>({
-  currentUpdateIndex: -1,
-  focusValue: false,
-  registerChart: () => {},
-  unregisterChart: () => {}
-});
-
-// Provider component to manage staggered updates
-function FocusProvider({ children }: { children: React.ReactNode }) {
-  const [focusEnabled] = useAsyncStorage("focusEnabled", false);
-  const [currentUpdateIndex, setCurrentUpdateIndex] = useState(-1);
-  const [lastFocusValue, setLastFocusValue] = useState(focusEnabled);
-  const chartCallbacks = React.useRef<Map<number, () => void>>(new Map());
-  
-  // When focusEnabled changes, start the staggered update process
-  useEffect(() => {
-    if (focusEnabled !== lastFocusValue) {
-      setLastFocusValue(focusEnabled);
-      setCurrentUpdateIndex(0);
-    }
-  }, [focusEnabled, lastFocusValue]);
-  
-  // When currentUpdateIndex changes, update the next chart after a short delay
-  useEffect(() => {
-    if (currentUpdateIndex >= 0 && currentUpdateIndex < chartCallbacks.current.size) {
-      // Find the callback for the current index
-      const callback = chartCallbacks.current.get(currentUpdateIndex);
-      if (callback) {
-        callback();
-      }
-      
-      // Schedule the next update
-      const timer = setTimeout(() => {
-        setCurrentUpdateIndex(prev => prev + 1);
-      }, 100); // 50ms between chart updates
-      
-      return () => clearTimeout(timer);
-    }
-  }, [currentUpdateIndex]);
-  
-  const registerChart = (id: number, callback: () => void) => {
-    chartCallbacks.current.set(id, callback);
-  };
-  
-  const unregisterChart = (id: number) => {
-    chartCallbacks.current.delete(id);
-  };
-  
-  return (
-    <FocusContext.Provider 
-      value={{ 
-        currentUpdateIndex, 
-        focusValue: focusEnabled,
-        registerChart,
-        unregisterChart
-      }}
-    >
-      {children}
-    </FocusContext.Provider>
-  );
-}
-
-// Custom hook to use the focus context
-function useFocusUpdate(chartId: number) {
-  const context = useContext(FocusContext);
-  const [shouldUpdate, setShouldUpdate] = useState(true);
+const SwiperItem = function SwiperItem({ metric_id, landing, master, chartId }: { metric_id: string, landing: any, master: MasterResponse, chartId: number }) {
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
-  
-  useEffect(() => {
-    const updateCallback = () => {
-      setShouldUpdate(true);
-    };
-    
-    context.registerChart(chartId, updateCallback);
-    
-    return () => {
-      context.unregisterChart(chartId);
-    };
-  }, [chartId, context]);
-  
-  useEffect(() => {
-    // Reset shouldUpdate when a new cycle begins
-    if (context.currentUpdateIndex === 0) {
-      setShouldUpdate(false);
-    }
-  }, [context.currentUpdateIndex]);
-  
-  return { 
-    focusEnabled,
-    shouldUpdate: shouldUpdate || context.currentUpdateIndex === -1
-  };
-}
-
-const SwiperItem = memo(({ metric_id, landing, master, chartId }: { metric_id: string, landing: any, master: MasterResponse, chartId: number }) => {
-  const { focusEnabled, shouldUpdate } = useFocusUpdate(chartId);
 
   const urlKey =
   metricItems[metricItems.findIndex((item) => item.key === metric_id)]
@@ -166,9 +70,35 @@ const SwiperItem = memo(({ metric_id, landing, master, chartId }: { metric_id: s
       {linkComponent}
     </>
   );
-});
+};
 
-SwiperItem.displayName = "SwiperItem";
+const quickBiteIds = ["anniversary-report"];
+
+const QuickBiteCard = ({ quickBite, slug }: { quickBite: QuickBiteData, slug: string }) => {
+ 
+  return (
+    <Link 
+      href={`/quick-bites/${slug}`}
+      className="relative w-full min-w-[100px] h-[145px] md:h-[176px] rounded-[15px] bg-[#1F2726] px-[15px] py-[15px] flex flex-col justify-between border-[3px] border-[#344240]"  
+      style={{
+        background: `url(${quickBite.image}) no-repeat center center / cover`,
+      }}
+    >
+        <div className="heading-large-md z-10">{quickBite.title}</div>
+        <div className="flex justify-end">
+          <TitleButtonLink label="Read our Ecosystem Report" href={`/quick-bites/${slug}`} className="w-fit" containerClassName="!border-none" leftIcon={undefined} rightIcon={"feather:arrow-right" as GTPIconName} gradientClass="bg-[#263130]" />
+        </div>
+        <div style={{
+          opacity: 0.6,
+          background: "linear-gradient(180deg, var(--color-bg-default, #1F2726) 15%, rgba(31, 39, 38, 0.00) 54.17%)",
+        }} 
+        className="absolute top-0 left-0 w-full h-full rounded-[15px] z-0 pointer-events-none"
+        />
+
+    </Link>
+  )
+}
+
 
 const metricIds = ["txcount", "throughput", "stables_mcap", "fees", "rent_paid", "market_cap"];
 
@@ -180,8 +110,7 @@ export default function LandingSwiperItems() {
     isValidating: landingValidating,
   } = useSWR<any>(LandingURL);
 
-  const { data: master, error: masterError } =
-    useSWR<MasterResponse>(MasterURL);
+  const {data: master} = useMaster();
 
   const filteredMetricIds = useMemo(() => {
     return metricIds.filter((metric_id) => {
@@ -199,9 +128,23 @@ export default function LandingSwiperItems() {
     }
   }, [landing]);
 
+  const [quickBiteItems, setQuickBiteItems] = useState<{slug: string, quickBite: QuickBiteData}[]>([]);
+  useEffect(() => {
+    const quickBites = quickBiteIds.map(quickBiteId => ({slug: quickBiteId, quickBite: getQuickBiteBySlug(quickBiteId)}));
+    setQuickBiteItems(quickBites.filter((quickBite): quickBite is {slug: string, quickBite: QuickBiteData} => quickBite.quickBite !== undefined));
+  }, []);
+
+
   return (
-    <FocusProvider>
+    // <FocusProvider>
       <SplideTrack>
+        {quickBiteItems.map(({slug, quickBite}) => (
+          <SplideSlide key={slug}>
+            <div className="group w-full">
+              <QuickBiteCard quickBite={quickBite} slug={slug} />
+            </div>
+          </SplideSlide>
+        ))}
         {filteredMetricIds.map(
           (metric_id, index) => (
             <SplideSlide key={metric_id}>
@@ -216,7 +159,7 @@ export default function LandingSwiperItems() {
                     chartId={index}
                   />
                 ) : (
-                  <div className="w-full h-[145px] md:h-[176px] rounded-[15px]  bg-forest-50 dark:bg-[#1F2726]">
+                  <div className="w-full h-[145px] md:h-[176px] rounded-[15px] bg-[#1F2726]">
                     <div className="flex items-center justify-center h-full w-full">
                       <div className="w-8 h-8 border-[5px] border-forest-500/30 rounded-full border-t-transparent animate-spin"></div>
                     </div>
@@ -227,6 +170,6 @@ export default function LandingSwiperItems() {
           ),
         )}
       </SplideTrack>
-    </FocusProvider>
+    // </FocusProvider>
   );
 }

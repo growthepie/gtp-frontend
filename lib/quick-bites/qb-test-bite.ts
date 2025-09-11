@@ -122,7 +122,8 @@ const testBite: QuickBiteData = {
           type: "address",
           minWidth: 160,
           isNumeric: false,
-          sortByValue: false
+          sortByValue: false,
+          add_url: "https://arbiscan.io/address/${cellValue}"
         },
         ticker: {
           label: "Ticker",

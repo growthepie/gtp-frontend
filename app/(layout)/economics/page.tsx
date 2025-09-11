@@ -17,6 +17,8 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { MasterURL } from "@/lib/urls";
 import Container from "@/components/layout/Container";
 import { useMaster } from "@/contexts/MasterContext";
+import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
+import { PageContainer } from "@/components/layout/Container";
 
 export default function Economics() {
   const { SupportedChainKeys } = useMaster();
@@ -56,6 +58,11 @@ export default function Economics() {
         </div>
         {econData && master && <ChainBreakdown data={chainBreakdownData} master={master} selectedTimespan={selectedTimespan} setSelectedTimespan={setSelectedTimespan} isMonthly={isMonthly} setIsMonthly={setIsMonthly} totals={econData.data.chain_breakdown["totals"]} />}
       </div>
+      
+      {/* Add Related Quick Bites Section */}
+      <PageContainer className="" paddingY="none">
+        <MetricRelatedQuickBites metricKey="economics" metricType="economics" />
+      </PageContainer>
     </>
   );
 }

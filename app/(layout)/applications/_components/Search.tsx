@@ -15,6 +15,11 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 
+// New props to support chain-scoped usage
+type SearchProps = {
+  hideChainSection?: boolean;
+};
+
 const getGTPCategoryIcon = (category: string): GTPIconName | "" => {
   switch (category) {
     case "Cross-Chain":
@@ -36,7 +41,7 @@ const getGTPCategoryIcon = (category: string): GTPIconName | "" => {
   }
 }
 
-export default function Search() {
+export default function Search({ hideChainSection = false }: SearchProps) {
   const { AllChainsByKeys } = useMaster();
   const { availableMainCategories } = useProjectsMetadata(); // Added
   const { isMobile } = useUIContext();
@@ -146,6 +151,7 @@ export default function Search() {
       value: string
     ) => {
       if (key === "origin_key") {
+        if (hideChainSection) return; // prevent modifying origin_key when hidden/locked
         const newChains = chainsFromParams.includes(value)
           ? chainsFromParams.filter(chain => chain !== value)
           : [...chainsFromParams, value];
@@ -171,19 +177,19 @@ export default function Search() {
       setInternalSearch("");
       setSearch("");
     },
-    [chainsFromParams, stringFiltersFromParams, mainCategoryFromParams, updateURLParams]
+    [chainsFromParams, stringFiltersFromParams, mainCategoryFromParams, updateURLParams, hideChainSection]
   );
 
   // Clear all filters
   const clearAllFilters = useCallback(() => {
     const newSearchParams = new URLSearchParams(searchParams.toString());
-    newSearchParams.delete('origin_key');
+    if (!hideChainSection) newSearchParams.delete('origin_key');
     newSearchParams.delete('owner_project');
     newSearchParams.delete('main_category');
     
     const url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
     window.history.replaceState(null, "", url);
-  }, [pathname, searchParams]);
+  }, [pathname, searchParams, hideChainSection]);
 
   const [applicationsAutocomplete, setApplicationsAutocomplete] = useSessionStorage<{
     address: string[];
@@ -226,7 +232,7 @@ export default function Search() {
   const Filters = useMemo(() => {
     if (!master) return [];
 
-    const chainFilters = chainsFromParams.map((chainKey) => (
+    const chainFilters = hideChainSection ? [] : chainsFromParams.map((chainKey) => (
       <Badge
         key={chainKey}
         onClick={(e) => { 
@@ -292,7 +298,7 @@ export default function Search() {
       ...stringFilters,
       ...mainCategoryFilters,
     ];
-  }, [master, chainsFromParams, stringFiltersFromParams, mainCategoryFromParams, AllChainsByKeys, isOpen, handleFilter, boldSearch]);
+  }, [master, chainsFromParams, stringFiltersFromParams, mainCategoryFromParams, AllChainsByKeys, isOpen, handleFilter, boldSearch, availableMainCategories, hideChainSection]);
 
   // Update autocomplete with debounced search term
   useEffect(() => {
@@ -329,7 +335,7 @@ export default function Search() {
         )
       : [];
 
-    const chainAutocomplete = applicationsChains.filter((chainKey) =>
+    const chainAutocomplete = hideChainSection ? [] : applicationsChains.filter((chainKey) =>
       master.chains[chainKey]?.name.toLowerCase().includes(search.toLowerCase())
     );
     const ownerProjectAutocomplete = applicationsOwnerProjects.filter((row) =>
@@ -344,7 +350,7 @@ export default function Search() {
       subcategory: subcategoryAutocomplete,
       origin_key: chainAutocomplete,
     });
-  }, [applicationsChains, applicationsOwnerProjects, master, search, setApplicationsAutocomplete, availableMainCategories]); // Added availableMainCategories
+  }, [applicationsChains, applicationsOwnerProjects, master, search, setApplicationsAutocomplete, availableMainCategories, hideChainSection]); // Added availableMainCategories
 
   return (
     <div className="relative w-full h-[44px]">
@@ -456,6 +462,7 @@ export default function Search() {
                 </div>
               </div>
               <div className="flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] gap-y-[10px] text-[10px]">
+                {!hideChainSection && (
                 <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start md:items-center">
                   <div className="flex gap-x-[10px] items-center">
                     <div className="w-[15px] h-[15px]">
@@ -509,6 +516,7 @@ export default function Search() {
                     </FilterSelectionContainer>
                   )}
                 </div>
+                )}
               </div>
               {/* Main Category Filter Section */}
               <div className="flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] gap-y-[10px] text-[10px]">

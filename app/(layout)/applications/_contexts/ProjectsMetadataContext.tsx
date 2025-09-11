@@ -19,14 +19,14 @@ export type ProjectsMetadataContextType = {
     [key: string]: {
       owner_project: string;
       display_name: string;
-      description: string;
-      main_github: string;
-      twitter: string;
-      website: string;
-      logo_path: string;
-      main_category: string;
-      sub_category: string;
-      sub_categories: string[];
+      description: string | null;
+      main_github: string | null;
+      twitter: string | null;
+      website: string | null;
+      logo_path: string | null;
+      main_category: string | null;
+      sub_category: string | null;
+      sub_categories: string[] | null;
       on_apps_page: boolean;
     }
   };
@@ -34,14 +34,14 @@ export type ProjectsMetadataContextType = {
     [key: string]: {
       owner_project: string;
       display_name: string;
-      description: string;
-      main_github: string;
-      twitter: string;
-      website: string;
-      logo_path: string;
-      main_category: string;
-      sub_category: string;
-      sub_categories: string[];
+      description: string | null;
+      main_github: string | null;
+      twitter: string | null;
+      website: string | null;
+      logo_path: string | null;
+      main_category: string | null;
+      sub_category: string | null;
+      sub_categories: string[] | null;
       on_apps_page: boolean;
     }
   };

@@ -66,12 +66,16 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     }
     const rowsArray = getNestedValue(jsonData, block.jsonData?.pathToRowData || '');
     if (!Array.isArray(rowsArray)) return [];
-    const contractAddressIndex = columnKeyOrder.indexOf('contract_address');
     return rowsArray.map(row => row.map((cellValue, index) => {
       const cellObject: { value: any; link?: string; icon?: string; color?: string; } = { value: cellValue };
-      if (index === contractAddressIndex && typeof cellValue === 'string') {
-        cellObject.link = `https://arbiscan.io/address/${cellValue}`;
+      const columnKey = columnKeyOrder[index];
+      const columnDef = columnDefinitions[columnKey];
+      
+      // Generate link if add_url is defined in column definition
+      if (columnDef?.add_url && typeof cellValue === 'string') {
+        cellObject.link = columnDef.add_url.replace('${cellValue}', cellValue);
       }
+      
       return cellObject;
     }));
   }, [block.readFromJSON, block.rowData, jsonData, columnKeyOrder]);
@@ -244,7 +248,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                     );
                   }
 
-                  // if copyable text, add copy button with simple formatting
+                  // if copyable boolean set to true, add copy button
                   if (columnDefinitions?.[columnKey]?.copyable) {
                     // add copy to the right
                     cellRightContent = (

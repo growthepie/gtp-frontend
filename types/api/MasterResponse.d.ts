@@ -66,6 +66,7 @@ export interface ChainInfo {
   description: string;
   symbol: string;
   bucket: string;
+  company?: string;
   colors: {
     light: [string, string];
     dark: [string, string];
@@ -92,6 +93,9 @@ export interface ChainInfo {
   raas: string;
   stack: Stack;
   enable_contracts: boolean;
+  tab_status: {
+    [key: string]: "locked" | "active" | "soon";
+  };
 }
 
 export interface BlockExplorers {
