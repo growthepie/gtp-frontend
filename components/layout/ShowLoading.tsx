@@ -31,7 +31,6 @@ export default function ShowLoading({
       }, loadingTimeoutSeconds);
   }, [dataLoading, dataValidating, loadingTimeoutSeconds]);
 
-  return null;
 
   if (section)
     return (
