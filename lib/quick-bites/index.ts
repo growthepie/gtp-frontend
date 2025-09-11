@@ -7,6 +7,7 @@ import arbitrumTimeboost from './qb-arbitrum-timeboost';
 import shopifyUsdc from './qb-shopify-usdc';
 import robinhoodStock from './qb-robinhood-stock';
 import anniversaryReport from './qb-anniversary-report';
+import hyperliquidUSDC from './qb-hyperliquid';
 import arbitrumHyperliquidBridge from './qb-arbitrum-hyperliquid-bridge';
 
 const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
@@ -16,6 +17,7 @@ const QUICK_BITES_DATA: Record<string, QuickBiteData> = {
   "base-commerce": shopifyUsdc,
   "robinhood-stock": robinhoodStock,
   "anniversary-report": anniversaryReport,
+  "hyperliquid-usdc": hyperliquidUSDC,
   "arbitrum-hyperliquid-bridge": arbitrumHyperliquidBridge,
 };
 
