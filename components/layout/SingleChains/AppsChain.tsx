@@ -84,7 +84,8 @@ export default function AppsChain({ chainInfo, chainKey, defaultQuery = "" }: Ap
   }, [selectedTimespan, selectedStringFilters]);
 
   return (
-    <>
+    <div className="pt-[15px]">
+    
       <ChainSearch chainInfo={chainInfo} chainKey={chainKey} />
       <div>
         <div
@@ -147,7 +148,7 @@ export default function AppsChain({ chainInfo, chainKey, defaultQuery = "" }: Ap
       <div>
         <ApplicationsTable chainFilteredApplications={chainFilteredApplications} />
       </div>
-    </>
+    </div>
   )
 }
 

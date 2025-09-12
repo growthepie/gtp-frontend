@@ -19,6 +19,7 @@ import { ApplicationsDataProvider, useApplicationsData } from "@/app/(layout)/ap
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import useSWR from "swr";
 import { PageTitleAndDescriptionAndControls } from "@/app/(layout)/applications/_components/Components";
+import Controls from "@/app/(layout)/applications/_components/Controls";
 import { ChainsBaseURL, FeesURLs } from "@/lib/urls";
 import Image from "next/image";
 import Heading from "@/components/layout/Heading";
@@ -183,53 +184,56 @@ const AppsContent = memo(({ chainKey, master }: { chainKey: string, master: any 
   const chainInfo = master?.chains?.[chainKey];
   
   return (
-    <TimespanProvider timespans={{
-      "1d": {
-        shortLabel: "1d",
-        label: "1 day",
-        value: 1,
-      },
-      "7d": {
-        shortLabel: "7d",
-        label: "7 days",
-        value: 7,
-      },
-      "30d": {
-        shortLabel: "30d",
-        label: "30 days",
-        value: 30,
-      },
-      "90d": {
-        shortLabel: "90d",
-        label: "90 days",
-        value: 90,
-      },
-      "365d": {
-        shortLabel: "1y",
-        label: "1 year",
-        value: 365,
-      },
-      max: {
-        shortLabel: "Max",
-        label: "Max",
-        value: 0,
-      },
-    } as {
-      [key: string]: {
-        label: string;
-        shortLabel: string;
-        value: number;
-      };
-    }}>
-      <MetricsProvider>
-        <SortProvider defaultOrder="desc" defaultKey="txcount">
-          <ApplicationsDataProvider disableShowLoading={true}>
-            {/* <Container className="sticky top-0 z-[10] flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] overflow-visible" isPageRoot> */}
-            <AppsContentInner chainInfo={chainInfo} chainKey={chainKey} />
-          </ApplicationsDataProvider>
-        </SortProvider>
-      </MetricsProvider>
-    </TimespanProvider>
+    <div className="-mt-[15px]">
+      <TimespanProvider timespans={{
+        "1d": {
+          shortLabel: "1d",
+          label: "1 day",
+          value: 1,
+        },
+        "7d": {
+          shortLabel: "7d",
+          label: "7 days",
+          value: 7,
+        },
+        "30d": {
+          shortLabel: "30d",
+          label: "30 days",
+          value: 30,
+        },
+        "90d": {
+          shortLabel: "90d",
+          label: "90 days",
+          value: 90,
+        },
+        "365d": {
+          shortLabel: "1y",
+          label: "1 year",
+          value: 365,
+        },
+        max: {
+          shortLabel: "Max",
+          label: "Max",
+          value: 0,
+        },
+      } as {
+        [key: string]: {
+          label: string;
+          shortLabel: string;
+          value: number;
+        };
+      }}>
+        <MetricsProvider>
+          <SortProvider defaultOrder="desc" defaultKey="txcount">
+            <ApplicationsDataProvider disableShowLoading={true}>
+                <Controls />
+          
+              <AppsContentInner chainInfo={chainInfo} chainKey={chainKey} />
+            </ApplicationsDataProvider>
+          </SortProvider>
+        </MetricsProvider>
+      </TimespanProvider>
+    </div>  
   );
 });
 
