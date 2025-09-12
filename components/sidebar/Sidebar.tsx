@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useState, ReactNode, useMemo, useEffect } from 'react';
+import { createContext, useContext, useState, ReactNode, useMemo, useEffect, useRef } from 'react';
 import { useMaster } from '@/contexts/MasterContext';
 import { IS_PRODUCTION } from '@/lib/helpers';
 
@@ -39,6 +39,27 @@ export const SidebarProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
+type TooltipContextType = {
+  activeTooltipId: string | null;
+  setActiveTooltipId: (id: string | null) => void;
+};
+const TooltipContext = createContext<TooltipContextType | null>(null);
+export const useTooltipContext = () => {
+  const context = useContext(TooltipContext);
+  if (!context) {
+    throw new Error('useTooltipContext must be used within a TooltipProvider');
+  }
+  return context;
+};
+const TooltipProvider = ({ children }: { children: ReactNode }) => {
+  const [activeTooltipId, setActiveTooltipId] = useState<string | null>(null);
+  return (
+    <TooltipContext.Provider value={{ activeTooltipId, setActiveTooltipId }}>
+      {children}
+    </TooltipContext.Provider>
+  );
+};
+
 type SidebarProps = {
   isOpen: boolean;
   onClose?: () => void; // Add this prop
@@ -48,6 +69,8 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const { ChainsNavigationItems, data: master } = useMaster();
   const pathname = usePathname();
   const { setActiveGroup } = useSidebarContext();
+  const navRef = useRef<HTMLElement>(null); 
+  const { setActiveTooltipId } = useTooltipContext();
 
   // Include chains like in the original implementation
   const navigationItemsWithChains = useMemo(() => {
@@ -100,9 +123,24 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
   }, [pathname, sidebarNavigation, setActiveGroup]);
 
+  useEffect(() => {
+    const navElement = navRef.current;
+    if (!navElement) return;
+
+    const handleScroll = () => {
+      // On any scroll event, immediately close the active tooltip.
+      setActiveTooltipId(null);
+    };
+
+    navElement.addEventListener('scroll', handleScroll);
+    return () => {
+      navElement.removeEventListener('scroll', handleScroll);
+    };
+  }, [setActiveTooltipId]);
+
   return (
       <div className={`select-none flex flex-col bg-background transition-width duration-300 ease-sidebar overflow-x-visible ${isOpen ? 'w-full md:w-[237px]' : 'w-[46px]'}`}>
-        <nav className="md:pt-[calc(69px+45px)] md:max-h-screen md:pb-[100px] w-full md:space-y-[10px] overflow-y-auto overflow-x-clip scrollbar-none">
+        <nav ref={navRef} className="md:pt-[calc(69px+45px)] md:max-h-screen md:pb-[100px] w-full md:space-y-[10px] overflow-y-auto overflow-x-clip scrollbar-none">
           {sidebarNavigation.map((item, index) => {
             if (item.type === 'group') {
               return <SidebarMenuGroup key={index} item={item} isOpen={isOpen} onClose={onClose} />;
@@ -117,7 +155,9 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 // The main export now needs to be wrapped in the provider
 const SidebarWithProvider = (props: SidebarProps) => (
   <SidebarProvider>
-    <Sidebar {...props} />
+    <TooltipProvider>
+      <Sidebar {...props} />
+    </TooltipProvider>
   </SidebarProvider>
 );
 
