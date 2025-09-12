@@ -31,6 +31,7 @@ import { useTimespan } from "@/app/(layout)/applications/_contexts/TimespanConte
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import ChainSearch from "./ChainSearch";
+import Controls from "@/app/(layout)/applications/_components/Controls";
 
 interface AppsChainProps {
   chainInfo: ChainInfo;
@@ -84,9 +85,12 @@ export default function AppsChain({ chainInfo, chainKey, defaultQuery = "" }: Ap
   }, [selectedTimespan, selectedStringFilters]);
 
   return (
-    <div className="pt-[15px]">
+    <div className="">
     
       <ChainSearch chainInfo={chainInfo} chainKey={chainKey} />
+      <div className="pt-[15px]">
+         <Controls />
+      </div>
       <div>
         <div
           className={``}
@@ -116,6 +120,7 @@ export default function AppsChain({ chainInfo, chainKey, defaultQuery = "" }: Ap
               </div>
             </div>
           </div>
+          
           <div ref={topGainersRef}>
             <div className={`hidden md:flex md:flex-wrap pt-[10px] gap-[10px]`}>
               {topGainers.map((application, index) => (

@@ -226,7 +226,7 @@ const AppsContent = memo(({ chainKey, master }: { chainKey: string, master: any 
         <MetricsProvider>
           <SortProvider defaultOrder="desc" defaultKey="txcount">
             <ApplicationsDataProvider disableShowLoading={true}>
-                <Controls />
+              
           
               <AppsContentInner chainInfo={chainInfo} chainKey={chainKey} />
             </ApplicationsDataProvider>
