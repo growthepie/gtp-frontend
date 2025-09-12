@@ -11,6 +11,7 @@ import { useSidebarContext } from './Sidebar';
 type SidebarMenuGroupProps = {
   item: SidebarMenuGroupType;
   isOpen: boolean;
+  onClose?: () => void; // Add this line
 };
 
 const SidebarMenuGroup = memo(({ item, isOpen }: SidebarMenuGroupProps) => {

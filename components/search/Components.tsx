@@ -212,6 +212,7 @@ interface SearchBarProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'on
   showMore?: any;
   setShowMore?: any;
   showSearchContainer?: boolean;
+  hideClearButtonOnMobile?: boolean; // Add this prop
   onInputFocus?: () => void;
   onInputBlur?: () => void;
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
@@ -219,7 +220,7 @@ interface SearchBarProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'on
 }
 
 export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
-  ({ showMore, setShowMore, showSearchContainer=true, onInputFocus, onInputBlur, onFocus, onBlur, ...rest }, forwardedRef) => {
+  ({ showMore, setShowMore, showSearchContainer=true, hideClearButtonOnMobile=false, onInputFocus, onInputBlur, onFocus, onBlur, ...rest }, forwardedRef) => {
     // Local ref for internal SearchBar use
     const localInputRef = useRef<HTMLInputElement>(null);
 
@@ -350,7 +351,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                   </div>
                 </div>
                 <div
-                  className="flex flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px]"
+                  className="hidden sm:hidden md:flex flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px]"
                   onClick={(e) => {
                     setLocalQuery("");
                     debouncedUpdateSearch("");
@@ -412,8 +413,9 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                     {totalMatches} {totalMatches === 1 ? "result" : "results"}
                   </div>
                 </div>
+                {/* Conditionally hide X button on mobile based on prop */}
                 <div
-                  className="flex flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px]"
+                  className={`${hideClearButtonOnMobile ? 'hidden md:flex' : 'flex'} flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px]`}
                   onClick={(e) => {
                     setLocalQuery("");
                     debouncedUpdateSearch("");
@@ -1202,6 +1204,8 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
         // If keyboard navigation is active, exit it first
         if (!isCoordsNull) {
           setKeyCoords({ y: null, x: null });
+          // Dispatch event to focus search input
+          window.dispatchEvent(new CustomEvent('focusSearchInput'));
         } else {
           // If no keyboard navigation, dispatch event to handle clear/close
           window.dispatchEvent(new CustomEvent('clearSearchOrClose'));
