@@ -191,7 +191,7 @@ export default function Page() {
         <div className="flex flex-col gap-y-[10px]">
           <div className="heading-large">Top Ranked</div>
           <div className="text-xs">
-            Applications ranked by {metricsDef[medianMetric].name} and any applied chain or string filter(s). You can apply filters by clicking on the chain icons or by using the search bar.
+            Applications ranked by {metricsDef[medianMetric].name} in the last {timespans[selectedTimespan].label}. You can apply filters by clicking on the chain icons or by using the search bar.
           </div>
         </div>
       </Container>

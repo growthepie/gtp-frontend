@@ -141,7 +141,7 @@ export default function AppsChain({ chainInfo, chainKey, defaultQuery = "" }: Ap
         <div className="flex flex-col gap-y-[10px]">
           <div className="heading-large">Top Ranked Apps on {chainInfo?.name}</div>
           <div className="text-xs">
-            Applications on {chainInfo?.name} ranked by {metricsDef[medianMetric].name}. Search is automatically filtered to show only apps deployed on this chain.
+            Applications on {chainInfo?.name} ranked by {metricsDef[medianMetric].name} in the last {timespans[selectedTimespan].label}. You can apply filters by using the search bar.
           </div>
         </div>
       </div>
