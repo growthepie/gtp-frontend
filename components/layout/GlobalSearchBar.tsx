@@ -197,6 +197,18 @@ export default function GlobalFloatingBar() {
     };
   }, [isMobile, isSearchActive]);
 
+  // Listen for clear search or close event from Filters component
+  useEffect(() => {
+    const handleClearSearchOrClose = () => {
+      if (query !== "") {
+        clearQuery();
+      }
+    };
+
+    window.addEventListener('clearSearchOrClose', handleClearSearchOrClose);
+    return () => window.removeEventListener('clearSearchOrClose', handleClearSearchOrClose);
+  }, [query, clearQuery]);
+
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -228,6 +240,16 @@ export default function GlobalFloatingBar() {
         } else if (isMobile && isSearchActive) {
           // If search is active on mobile but input not focused, Esc should still close it
           setIsSearchActive(false);
+        } else if (query && query.trim().length > 0) {
+          // Handle escape when search results are visible and user is not in keyboard navigation
+          const hasSelectedElement = document.querySelector('[data-selected="true"]');
+          
+          if (!hasSelectedElement) {
+            event.preventDefault();
+            event.stopPropagation();
+            clearQuery(); // Clear the search query to close search results
+          }
+          // If keyboard navigation is active, let the Filters component handle it
         }
       }
     };
@@ -236,7 +258,7 @@ export default function GlobalFloatingBar() {
     return () => {
       window.removeEventListener('keydown', handleGlobalKeyDown);
     };
-  }, [isMobile, isSearchActive, activateSearch]);
+  }, [isMobile, isSearchActive, activateSearch, clearQuery, query]);
 
   const handleSharePopoverOpenChange = (openState: boolean) => {
     const location = isMobile ? 'mobile' : 'desktop';
@@ -359,6 +381,18 @@ export default function GlobalFloatingBar() {
     if (typeof window !== 'undefined') {
       localStorage.setItem('focusEnabled', 'false');
     }
+  }, []);
+
+  // Add this useEffect after the existing ones:
+  useEffect(() => {
+    const handleFocusSearchInput = () => {
+      if (searchInputRef.current) {
+        searchInputRef.current.focus();
+      }
+    };
+
+    window.addEventListener('focusSearchInput', handleFocusSearchInput);
+    return () => window.removeEventListener('focusSearchInput', handleFocusSearchInput);
   }, []);
 
   if (!showGlobalSearchBar) return null;

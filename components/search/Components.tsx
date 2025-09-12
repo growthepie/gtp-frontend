@@ -1202,6 +1202,8 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
         // If keyboard navigation is active, exit it first
         if (!isCoordsNull) {
           setKeyCoords({ y: null, x: null });
+          // Dispatch event to focus search input
+          window.dispatchEvent(new CustomEvent('focusSearchInput'));
         } else {
           // If no keyboard navigation, dispatch event to handle clear/close
           window.dispatchEvent(new CustomEvent('clearSearchOrClose'));
