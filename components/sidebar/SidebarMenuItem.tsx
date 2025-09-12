@@ -15,9 +15,10 @@ type SidebarMenuItemProps = {
   isOpen: boolean;
   isTopLevel?: boolean;
   isChains?: boolean;
+  onClose?: () => void; // Add this prop
 };
 
-const SidebarMenuItem = ({ item, isOpen, isTopLevel = false, isChains = false }: SidebarMenuItemProps) => {
+const SidebarMenuItem = ({ item, isOpen, isTopLevel = false, isChains = false, onClose }: SidebarMenuItemProps) => {
   const { href, icon, label, isNew, key } = item;
   const pathname = usePathname();
   const { AllChainsByKeys } = useMaster();
@@ -70,6 +71,7 @@ const SidebarMenuItem = ({ item, isOpen, isTopLevel = false, isChains = false }:
         className={`${baseClasses} ${chainsItemsClasses} ${isActive ? activeClasses : inactiveClasses} flex ${gap}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
+        onClick={onClose} // Add this to close menu on click
       >
         <GTPIcon 
           icon={icon} 

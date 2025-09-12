@@ -568,6 +568,37 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
     return () => window.removeEventListener('exitKeyboardNav', handleExitKeyboardNav);
   }, []);
 
+  const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+    if (mobileMenuRef.current &&
+      !mobileMenuRef.current.contains(event.target as Node)) {
+      
+      // Get the menu's position
+      const menuRect = mobileMenuRef.current.getBoundingClientRect();
+      
+      // Get the click position
+      const clickY = 'touches' in event ? event.touches[0].clientY : (event as MouseEvent).clientY;
+      
+      // Only close if the click is above the menu (clickY < menuRect.top)
+      if (clickY < menuRect.top) {
+        onClose();
+      }
+    }
+  };
+
+  // Add listeners with a slight delay to avoid immediate triggers
+  const timeoutId = setTimeout(() => {
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+  }, 100);
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
+
 
   // Don't render anything if never opened (saves initial memory)
   if (!hasBeenOpened && !isOpen) {
@@ -577,7 +608,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
   const renderContent = () => {
     if (!isSearchActive) {
       // Show default navigation menu
-      return <Sidebar isOpen={true} />
+      return <Sidebar isOpen={true} onClose={onClose} />
     }
 
 

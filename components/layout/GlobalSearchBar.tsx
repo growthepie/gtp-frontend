@@ -123,6 +123,9 @@ export default function GlobalFloatingBar() {
   // Track if the menu was manually closed to prevent auto-reopening
   const [menuWasManuallyClosed, setMenuWasManuallyClosed] = useState(false);
 
+  // Add new state to track if burger menu is manually opened (showing X)
+  const [isBurgerMenuManuallyOpened, setIsBurgerMenuManuallyOpened] = useState(false);
+
   // Auto-open mobile menu when user starts typing
   const handleInputChange = useCallback(() => {
     // Add a small delay to prevent interference with close actions
@@ -130,6 +133,7 @@ export default function GlobalFloatingBar() {
       if (isMobile && !isMobileMenuPopoverOpen && query.trim().length > 0 && !menuWasManuallyClosed) {
         setIsMobileMenuPopoverOpen(true);
         setIsSearchActive(true); // Also activate search overlay
+        // Don't set isBurgerMenuManuallyOpened to true here since this is auto-opening for search
       }
     }, 10);
   }, [isMobile, isMobileMenuPopoverOpen, query, menuWasManuallyClosed]);
@@ -158,6 +162,7 @@ export default function GlobalFloatingBar() {
     setIsMobileMenuPopoverOpen(false);
     setMenuWasManuallyClosed(true);
     setIsSearchActive(false);
+    setIsBurgerMenuManuallyOpened(false); // Add this line
     clearQuery();
   }, [clearQuery]);
 
@@ -172,15 +177,27 @@ export default function GlobalFloatingBar() {
 
   // Handle clicks outside the search area
   useEffect(() => {
-    if (!isMobile || !isSearchActive) return;
+    // For mobile: only when search is active
+    // For desktop: when there are search results visible
+    const shouldHandleClicks = isMobile ? isSearchActive : (query && query.trim().length > 0);
+    
+    if (!shouldHandleClicks) return;
 
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (searchContainerRef.current &&
         !searchContainerRef.current.contains(event.target as Node)) {
-        // Check if the click is on the search input itself or its children.
-        // If searchInputRef.current is part of searchContainerRef.current, this is fine.
-        // We want to close if the click is truly outside.
-        setIsSearchActive(false);
+        
+        if (isMobile) {
+          // On mobile, if we're searching (not manually opened burger menu), just close search
+          if (isSearchActive && !isBurgerMenuManuallyOpened) {
+            clearQuery(); // Close search, don't open burger menu
+          } else {
+            setIsSearchActive(false);
+          }
+        } else {
+          // For desktop, clear the query to close search results
+          clearQuery();
+        }
       }
     };
 
@@ -195,7 +212,7 @@ export default function GlobalFloatingBar() {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleClickOutside);
     };
-  }, [isMobile, isSearchActive]);
+  }, [isMobile, isSearchActive, query, clearQuery, isBurgerMenuManuallyOpened]);
 
   // Listen for clear search or close event from Filters component
   useEffect(() => {
@@ -395,6 +412,17 @@ export default function GlobalFloatingBar() {
     return () => window.removeEventListener('focusSearchInput', handleFocusSearchInput);
   }, []);
 
+  // Add effect to detect when search results are showing on mobile
+  const [isShowingSearchResults, setIsShowingSearchResults] = useState(false);
+  useEffect(() => {
+    const hasSearchResults = Boolean(
+      (query && query.trim().length > 0) || 
+      (isMobileMenuPopoverOpen && isSearchActive)
+    ) && isMobile;
+    
+    setIsShowingSearchResults(hasSearchResults);
+  }, [query, isMobile, isMobileMenuPopoverOpen, isSearchActive]);
+
   if (!showGlobalSearchBar) return null;
 
   return (
@@ -489,7 +517,7 @@ export default function GlobalFloatingBar() {
                       showMore={showMore}
                       setShowMore={setShowMore}
                       showSearchContainer={false}
-                      // onFocus={activateSearch}
+                      hideClearButtonOnMobile={true}
                       onBlur={deactivateSearch}
                     />
 
@@ -554,18 +582,20 @@ export default function GlobalFloatingBar() {
 
                 <FloatingBarButton
                   onClick={() => {
-                    // Use functional update for better performance
-                    setIsMobileMenuPopoverOpen(prev => {
-                      const newState = !prev;
-                      // If closing the menu, use the same stable handler
-                      if (!newState) {
-                        handleMobileMenuClose();
-                        return false; // Override the state change since handleMobileMenuClose handles it
-                      }
-                      return newState;
-                    });
+                    if (isBurgerMenuManuallyOpened) {
+                      // X is clicked - close everything
+                      handleMobileMenuClose();
+                      setIsBurgerMenuManuallyOpened(false);
+                    } else if (isShowingSearchResults) {
+                      // X is clicked - close both search results AND mobile menu
+                      handleMobileMenuClose();
+                    } else {
+                      // Burger is clicked - open menu and show X
+                      setIsMobileMenuPopoverOpen(true);
+                      setIsBurgerMenuManuallyOpened(true);
+                    }
                   }}
-                  icon={<AnimatedMenuIcon isOpen={isMobileMenuPopoverOpen} /> as unknown as GTPIconName}
+                  icon={<AnimatedMenuIcon isOpen={isBurgerMenuManuallyOpened || isShowingSearchResults} isMobile={isMobile} /> as unknown as GTPIconName}
                   className='block md:hidden'
                 >
 
@@ -959,7 +989,7 @@ const GTPLogoNew = () => {
 };
 
 
-const AnimatedMenuIcon = ({ isOpen = false, className = "" }) => {
+const AnimatedMenuIcon = ({ isOpen = false, className = "", isMobile = false }) => {
   return (
     <svg
       width="24"

@@ -41,9 +41,10 @@ export const SidebarProvider = ({ children }: { children: ReactNode }) => {
 
 type SidebarProps = {
   isOpen: boolean;
+  onClose?: () => void; // Add this prop
 };
 
-const Sidebar = ({ isOpen }: SidebarProps) => {
+const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const { ChainsNavigationItems, data: master } = useMaster();
   const pathname = usePathname();
   const { setActiveGroup } = useSidebarContext();
@@ -104,9 +105,9 @@ const Sidebar = ({ isOpen }: SidebarProps) => {
         <nav className="md:pt-[calc(69px+45px)] md:max-h-screen md:pb-[100px] w-full md:space-y-[10px] overflow-y-auto overflow-x-clip scrollbar-none">
           {sidebarNavigation.map((item, index) => {
             if (item.type === 'group') {
-              return <SidebarMenuGroup key={index} item={item} isOpen={isOpen} />;
+              return <SidebarMenuGroup key={index} item={item} isOpen={isOpen} onClose={onClose} />;
             }
-            return <SidebarMenuItem key={index} item={item} isOpen={isOpen} isTopLevel={true} />;
+            return <SidebarMenuItem key={index} item={item} isOpen={isOpen} isTopLevel={true} onClose={onClose} />;
           })}
         </nav>
       </div>
