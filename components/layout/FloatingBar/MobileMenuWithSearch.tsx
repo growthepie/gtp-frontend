@@ -163,7 +163,8 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
       if (containerRef.current && headerRef.current && footerRef.current && contentRef.current) {
         const totalHeight = containerRef.current.clientHeight;
         const headerHeight = headerRef.current.offsetHeight;
-        const footerHeight = footerRef.current.offsetHeight;
+        // const footerHeight = footerRef.current.offsetHeight;
+        const footerHeight = 13;
         const margins = 10; // Account for margins
         const calculatedHeight = totalHeight - headerHeight - footerHeight - margins;
         setScrollableHeight(calculatedHeight > 0 ? calculatedHeight : 0);
@@ -643,15 +644,16 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
       return (
         <div
           key={type}
-          className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start overflow-y-hidden"
+          className="flex flex-col md:flex-row gap-x-[10px] gap-y-[5px] items-start overflow-y-hidden"
         >
           <div className="flex gap-x-[10px] items-center shrink-0">
             <GTPIcon
               icon={icon as GTPIconName}
               size="md"
-              className="max-sm:size-[15px] max-sm:mt-[3px]"
+              className="!size-[15px] mt-[3px]"
             />
-            <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default max-sm:ml-[-10px] max-sm:mt-[-3px]">
+            {/* <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default max-sm:ml-[-10px] max-sm:mt-[-3px]"> */}
+            <div className="text-sm font-raleway font-medium leading-[150%] cursor-default ml-[-10px] mt-[-3px]">
               {isBucketMatch ? (
                 <OpacityUnmatchedText text={type} query={memoizedQuery || ""} />
               ) : (
@@ -666,7 +668,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
             {filteredData.length > 0 && (
               <div className={`overflow-y-hidden ${isShowMore
                   ? "max-h-full"
-                  : "max-h-[118px] md:max-h-[87px]"
+                  : "max-h-[87px]"
                 }`}>
                 <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
                   {filteredData.map((item) => {
@@ -711,7 +713,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
                       {/* Stack results in separate container with height constraints */}
                       <div className={`overflow-y-hidden ${isShowMore
                           ? "max-h-full"
-                          : "max-h-[118px] md:max-h-[87px]"
+                          : "max-h-[87px]"
                         }`}>
                         <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
                           {group.options.map((option) => {
@@ -774,8 +776,8 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
         {/* Content Area */}
         <div className="flex-grow overflow-hidden px-[5px]" style={{ height: `${Math.min(contentHeight + 30, viewportHeight - 120)}px` }}>
           {isOpen ? (
-            <VerticalScrollContainer height={scrollableHeight} scrollbarPosition="right" scrollbarAbsolute={false} scrollbarWidth="6px">
-              <div ref={contentRef} className="transition-all duration-300 ease-in-out pb-[30px]">
+            <VerticalScrollContainer height={scrollableHeight} scrollbarPosition="right" scrollbarAbsolute={true} scrollbarWidth="6px">
+              <div ref={contentRef} className="flex flex-col gap-y-[5px] transition-all duration-300 ease-in-out pb-[30px] pr-[20px] pl-[5px]">
                 {renderContent()}
               </div>
             </VerticalScrollContainer>
