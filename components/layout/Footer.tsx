@@ -18,7 +18,7 @@ import { GTPIcon } from "./GTPIcon";
 
 export default function Footer() {
   return (
-    <div className="relative bottom-0 bg-forest-50  dark:bg-[#1F2726] px-[20px] py-[50px] md:p-[50px] md:pb-[150px]">
+    <div className="relative bottom-0 bg-forest-50  dark:bg-[#1F2726] px-[20px] pt-[50px] pb-[150px] md:p-[50px] md:pb-[150px]">
       <div className="flex flex-col md:flex-row md:justify-between">
         <div className="flex flex-col md:justify-between md:flex-wrap min-[1270px]:h-[350px] md:basis-[361px]">
           <div className="flex flex-col w-[176px]">
@@ -143,7 +143,7 @@ export default function Footer() {
               </div>
             </div>
             <div className="flex justify-between flex-col md:items-end lg:flex-row gap-y-[15px] md:w-full lg:justify-between text-xs leading-[1.5]">
-              <Link href="/privacy-policy" className="block underline" onClick={() => {
+              <Link href="/privacy-policy" className="block underline w-fit" onClick={() => {
                 track("clicked Privacy Policy Footer link", {
                   location: "desktop footer",
                   page: window.location.pathname,
@@ -151,7 +151,7 @@ export default function Footer() {
               }}>
                 Privacy Policy
               </Link>
-              <Link href="/imprint" className="block underline" onClick={() => {
+              <Link href="/imprint" className="block underline w-fit" onClick={() => {
                 track("clicked Imprint Footer link", {
                   location: "desktop footer",
                   page: window.location.pathname,
@@ -159,7 +159,7 @@ export default function Footer() {
               }}>
                 Imprint
               </Link>
-              <div className="block whitespace-nowrap">
+              <div className="block whitespace-nowrap w-fit">
                 © {new Date().getFullYear()} growthepie 🥧📏
               </div>
             </div>
