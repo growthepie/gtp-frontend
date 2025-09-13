@@ -952,7 +952,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
         const rect = measurementsRef.current[key];
         const itemTop = rect?.top;
 
-        // If measurements aren't available yet, use a simple fallback layout
+        // If measurements aren't available yet, use a simple fallback layout for desktop
         if (!rect) {
           // Simple fallback: assume items are in rows of 3
           const itemsPerRow = 3;
@@ -969,8 +969,15 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
           dataMap[rowIndex].push(key);
           
           // Set "See more" for the last item in row 2 if there are more items
+          // Only set it for the last item in the row, not every item
           if (rowIndex === 2 && !isShowMore && itemIndex < filteredData.length - 1) {
-            newLastBucketIndeces[key] = { x: colIndex, y: rowIndex };
+            // Check if this is the last item in row 2
+            const nextItemRowIndex = Math.floor((itemIndex + 1) / itemsPerRow);
+            if (nextItemRowIndex > 2) {
+              // Calculate the actual position in the row (rightmost position)
+              const actualRowLength = dataMap[rowIndex].length;
+              newLastBucketIndeces[key] = { x: actualRowLength - 1, y: rowIndex };
+            }
           }
           return;
         }
@@ -1022,7 +1029,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
             const rect = measurementsRef.current[key];
             const itemTop = rect?.top;
 
-            // Fallback for stack results too
+            // If measurements aren't available yet, use a simple fallback layout for desktop
             if (!rect) {
               const itemsPerRow = 3;
               const rowIndex = Math.floor(optionIndex / itemsPerRow);
@@ -1037,8 +1044,16 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
               }
               dataMap[rowIndex].push(key);
               
+              // Set "See more" for the last item in row 2 if there are more items
+              // Only set it for the last item in the row, not every item
               if (rowIndex === 2 && !isStackShowMore && optionIndex < group.options.length - 1) {
-                newLastBucketIndeces[key] = { x: colIndex, y: rowIndex };
+                // Check if this is the last item in row 2
+                const nextItemRowIndex = Math.floor((optionIndex + 1) / itemsPerRow);
+                if (nextItemRowIndex > 2) {
+                  // Calculate the actual position in the row (rightmost position)
+                  const actualRowLength = dataMap[rowIndex].length;
+                  newLastBucketIndeces[key] = { x: actualRowLength - 1, y: rowIndex };
+                }
               }
               return;
             }
@@ -1435,6 +1450,9 @@ export const BucketItem = ({
       }}
 
       onClick={(e) => {
+        // Stop event propagation to prevent parent click handlers from firing
+        e.stopPropagation();
+        
         if (lastBucketIndeces[itemKey] && !showMore[bucket]) {
           // For Quick Bites and Applications, let the Link navigate naturally
           if (isQuickBites || isApps) {

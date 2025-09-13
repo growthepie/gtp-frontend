@@ -162,9 +162,16 @@ export default function GlobalFloatingBar() {
     setIsMobileMenuPopoverOpen(false);
     setMenuWasManuallyClosed(true);
     setIsSearchActive(false);
-    setIsBurgerMenuManuallyOpened(false); // Add this line
+    setIsBurgerMenuManuallyOpened(false);
     clearQuery();
   }, [clearQuery]);
+
+  // Reset search state when pathname changes (navigation)
+  useEffect(() => {
+    setIsMobileMenuPopoverOpen(false);
+    setIsSearchActive(false);
+    setIsBurgerMenuManuallyOpened(false);
+  }, [pathname]);
 
   // Clean up timeout on unmount
   useEffect(() => {
@@ -184,9 +191,17 @@ export default function GlobalFloatingBar() {
     if (!shouldHandleClicks) return;
 
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-      if (searchContainerRef.current &&
-        !searchContainerRef.current.contains(event.target as Node)) {
-        
+      // Check if click is inside search container
+      const isInsideSearchContainer = searchContainerRef.current &&
+        searchContainerRef.current.contains(event.target as Node);
+      
+      // Check if click is inside mobile menu (for mobile search results)
+      const mobileMenuElement = document.querySelector('[data-mobile-menu]');
+      const isInsideMobileMenu = mobileMenuElement &&
+        mobileMenuElement.contains(event.target as Node);
+      
+      // Only handle click outside if it's not inside either container
+      if (!isInsideSearchContainer && !isInsideMobileMenu) {
         if (isMobile) {
           // On mobile, if we're searching (not manually opened burger menu), just close search
           if (isSearchActive && !isBurgerMenuManuallyOpened) {
@@ -586,8 +601,8 @@ export default function GlobalFloatingBar() {
                       // X is clicked - close everything
                       handleMobileMenuClose();
                       setIsBurgerMenuManuallyOpened(false);
-                    } else if (isShowingSearchResults) {
-                      // X is clicked - close both search results AND mobile menu
+                    } else if (isMobileMenuPopoverOpen) {
+                      // Mobile menu is open - close it
                       handleMobileMenuClose();
                     } else {
                       // Burger is clicked - open menu and show X
@@ -595,7 +610,7 @@ export default function GlobalFloatingBar() {
                       setIsBurgerMenuManuallyOpened(true);
                     }
                   }}
-                  icon={<AnimatedMenuIcon isOpen={isBurgerMenuManuallyOpened || isShowingSearchResults} isMobile={isMobile} /> as unknown as GTPIconName}
+                  icon={<AnimatedMenuIcon isOpen={isBurgerMenuManuallyOpened || isMobileMenuPopoverOpen} isMobile={isMobile} /> as unknown as GTPIconName}
                   className='block md:hidden'
                 >
 

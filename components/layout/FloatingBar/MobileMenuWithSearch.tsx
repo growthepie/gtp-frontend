@@ -78,7 +78,12 @@ const MobileSearchBadge = memo(({
   return (
     <Link
       href={item.url}
-      onClick={onClose}
+      onClick={(e) => {
+        // Stop event propagation to prevent parent click handlers from firing
+        e.stopPropagation();
+        // Don't call onClose here - let the navigation handle closing the menu naturally
+        // The mobile menu will close when the page navigates
+      }}
       ref={(el) => {
         childRefs.current[itemKey] = el;
       }}
@@ -278,26 +283,9 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
         const rect = measurementsRef.current[key];
         const itemTop = rect?.top;
 
-        // If measurements aren't available yet, use a simple fallback layout
+        // If measurements aren't available yet, skip this item for now
+        // The measurement-based logic will handle positioning when measurements are available
         if (!rect) {
-          // Simple fallback: assume items are in rows of 3
-          const itemsPerRow = 3;
-          const rowIndex = Math.floor(itemIndex / itemsPerRow);
-          const colIndex = itemIndex % itemsPerRow;
-
-          if (rowIndex > 2 && !isShowMore) {
-            return;
-          }
-
-          if (rowIndex >= dataMap.length) {
-            dataMap[rowIndex] = [];
-          }
-          dataMap[rowIndex].push(key);
-
-          // Set "See more" for the last item in row 2 if there are more items
-          if (rowIndex === 2 && !isShowMore && itemIndex < filteredData.length - 1) {
-            newLastBucketIndeces[key] = { x: colIndex, y: rowIndex };
-          }
           return;
         }
 
@@ -348,24 +336,9 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
             const rect = measurementsRef.current[key];
             const itemTop = rect?.top;
 
-            // Fallback for stack results too
+            // If measurements aren't available yet, skip this item for now
+            // The measurement-based logic will handle positioning when measurements are available
             if (!rect) {
-              const itemsPerRow = 3;
-              const rowIndex = Math.floor(optionIndex / itemsPerRow);
-              const colIndex = optionIndex % itemsPerRow;
-
-              if (rowIndex > 2 && !isStackShowMore) {
-                return;
-              }
-
-              if (rowIndex >= dataMap.length) {
-                dataMap[rowIndex] = [];
-              }
-              dataMap[rowIndex].push(key);
-
-              if (rowIndex === 2 && !isStackShowMore && optionIndex < group.options.length - 1) {
-                newLastBucketIndeces[key] = { x: colIndex, y: rowIndex };
-              }
               return;
             }
 
@@ -755,6 +728,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
   return (
     <div
       ref={mobileMenuRef}
+      data-mobile-menu
       className={`flex md:hidden w-full h-full items-end transition-all duration-300 overflow-hidden ease-in-out ${isOpen
         ? 'opacity-100 pointer-events-auto'
         : 'opacity-100 pointer-events-none'
@@ -762,6 +736,10 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
       style={{
         visibility: isOpen ? 'visible' : 'hidden',
         maxHeight: isOpen ? `${viewportHeight - 60}px` : '0px',
+      }}
+      onClick={(e) => {
+        // Prevent clicks inside the mobile menu from bubbling up
+        e.stopPropagation();
       }}
     >
       <div
