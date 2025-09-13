@@ -6,10 +6,9 @@ import { IS_PRODUCTION } from '@/lib/helpers';
 // Import from the new transform function and navigation data
 import { transformNavigationToSidebar } from '@/lib/transform-navigation';
 import { navigationItems } from '@/lib/navigation';
-import SidebarMenuItem from './SidebarMenuItem';
-import SidebarMenuGroup from './SidebarMenuGroup';
-import { SidebarMenuGroup as SidebarMenuGroupType } from '@/lib/transform-navigation';
+import { SidebarLink as SidebarLinkType, SidebarMenuGroup as SidebarMenuGroupType } from '@/lib/transform-navigation';
 import { usePathname } from 'next/navigation';
+import SidebarItem from './SidebarItem';
 
 type SidebarContextType = {
   isAnimating: boolean;
@@ -138,17 +137,16 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     };
   }, [setActiveTooltipId]);
 
+  console.log("sidebarNavigation", sidebarNavigation);
+
   return (
-      <div className={`select-none flex flex-col bg-background transition-width duration-300 ease-sidebar overflow-x-visible ${isOpen ? 'w-full md:w-[237px]' : 'w-[46px]'}`}>
-        <nav ref={navRef} className="md:pt-[calc(69px+45px)] md:max-h-screen md:pb-[100px] w-full md:space-y-[10px] overflow-y-auto overflow-x-clip scrollbar-none">
-          {sidebarNavigation.map((item, index) => {
-            if (item.type === 'group') {
-              return <SidebarMenuGroup key={index} item={item} isOpen={isOpen} onClose={onClose} />;
-            }
-            return <SidebarMenuItem key={index} item={item} isOpen={isOpen} isTopLevel={true} onClose={onClose} />;
-          })}
-        </nav>
-      </div>
+    <div className={`select-none flex flex-col bg-background transition-width duration-300 ease-sidebar overflow-x-visible ${isOpen ? 'w-full md:w-[237px]' : 'w-[51px]'}`}>
+      <nav ref={navRef} className="md:pt-[calc(69px+45px)] md:max-h-screen md:pb-[100px] w-full md:space-y-[10px] overflow-y-auto overflow-x-clip scrollbar-none">
+        {sidebarNavigation.map((item, index) => (
+          <SidebarItem key={index} item={item as SidebarMenuGroupType | SidebarLinkType} isOpen={isOpen} onClose={onClose} />
+        ))}
+      </nav>
+    </div>
   );
 };
 

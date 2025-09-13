@@ -22,6 +22,10 @@ interface IconContextMenuProps {
   wrapperClassName?: string;
   // Whether this is the logo (to show "Open in new tab" option)
   isLogo?: boolean;
+  // Optional context menu options
+  contextMenuOptions?: {
+    isLink: boolean;
+  };
 }
 
 export const IconContextMenu = ({
@@ -31,6 +35,7 @@ export const IconContextMenu = ({
   iconPageUrl = "https://icons.growthepie.xyz", // Default URL
   wrapperClassName,
   isLogo = false, // Default to false
+  contextMenuOptions = { isLink: false },
 }: IconContextMenuProps) => {
   const toast = useToast();
   const [isOpen, setIsOpen] = useState(false);
@@ -160,10 +165,10 @@ export const IconContextMenu = ({
   };
 
   const options = [
-    ...(isLogo ? [{ icon: "gtp-plus", label: "Open in new tab", onClick: handleOpenInNewTab }] : []),
-    { icon: "gtp-copy", label: "Copy", onClick: handleCopy },
-    { icon: "gtp-download", label: "Download", onClick: handleDownload },
-    ...(iconPageUrl ? [{ icon: "gtp-growthepie-icons", label: "See more icons", onClick: handleGoToIconsPage }] : [])
+    ...(isLogo || contextMenuOptions.isLink ? [{ icon: "gtp-plus", label: "Open in new tab", onClick: handleOpenInNewTab }] : []),
+     { icon: "gtp-copy", label: "Copy", onClick: handleCopy },
+     { icon: "gtp-download", label: "Download", onClick: handleDownload },
+     { icon: "gtp-growthepie-icons", label: "See more icons", onClick: handleGoToIconsPage },
   ];
 
   // Define the menu content

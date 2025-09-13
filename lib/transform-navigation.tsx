@@ -5,6 +5,7 @@ import { MasterResponse } from '@/types/api/MasterResponse';
 // ----- NEW TYPES -----
 // Normal link (can be top-level or sub-item)
 export type SidebarLink = {
+  level: number;
   type: 'link';
   label: string;
   icon: GTPIconName;
@@ -21,6 +22,7 @@ export type SidebarSectionTitle = {
 
 // Chain link subtype (explicit)
 export type SidebarChainLink = {
+  level: number;
   type: 'chain-link';
   label: string;
   icon: GTPIconName;
@@ -31,6 +33,7 @@ export type SidebarChainLink = {
 
 // Collapsible group of children
 export type SidebarMenuGroup = {
+  level: number;
   type: 'group';
   label: string;
   icon: GTPIconName;
@@ -51,6 +54,7 @@ export const transformNavigationToSidebar = (
     // Top-level direct link
     if (item.href) {
       return {
+        level: 0,                         // top level direct link
         type: 'link',
         label: item.label,
         icon: item.icon,
@@ -89,17 +93,19 @@ export const transformNavigationToSidebar = (
 
         chainsInBucket.forEach(option => {
           children.push({
-            type: 'chain-link',               // <<< key change
+            level: 1,                         // children level (under chains)
+            type: 'chain-link',               // special type for chain links
             label: option.label,
             icon: option.icon,
             href: option.url || '#',
             isNew: option.showNew || false,
-            key: option.key,                  // required
+            key: option.key,
           } as SidebarChainLink);
         });
       });
 
       return {
+        level: 0,                           // top level accordion
         type: 'group',
         label: item.label,
         icon: item.icon,
@@ -126,6 +132,7 @@ export const transformNavigationToSidebar = (
     // Uncategorized first
     uncategorized.forEach(option => {
       children.push({
+        level: 1,                           // children level
         type: 'link',
         label: option.label,
         icon: option.icon,
@@ -144,6 +151,7 @@ export const transformNavigationToSidebar = (
 
       options.forEach(option => {
         children.push({
+          level: 1,                           // children level
           type: 'link',
           label: option.label,
           icon: option.icon,
@@ -155,6 +163,7 @@ export const transformNavigationToSidebar = (
     });
 
     return {
+      level: 0,                           // top level accordion
       type: 'group',
       label: item.label,
       icon: item.icon,

@@ -16,6 +16,9 @@ type GTPIconProps = {
   containerClassName?: string;
   size?: "sm" | "md" | "lg" | "xl";
   showContextMenu?: boolean;
+  contextMenuOptions?: {
+    isLink: boolean;
+  };
 } & React.ComponentProps<typeof Icon>;
 type sizes = "sm" | "md" | "lg" | "xl";
 
@@ -41,7 +44,7 @@ export const sizeClassMap = {
   * @example
   * <GTPIcon icon="gtp:donate" size="lg" />
  */
-export const GTPIcon = ({ icon, className, containerClassName, showContextMenu = false, size = "md", style, ...props }: GTPIconProps) => {
+export const GTPIcon = ({ icon, className, containerClassName, showContextMenu = false, size = "md", style, contextMenuOptions = { isLink: false }, ...props }: GTPIconProps) => {
   const iconPrefix = icon?.includes(":") ? "" : "gtp:";
   const fullIconName = icon ? `${iconPrefix}${icon}` : "";
   const currentSizeClass = sizeClassMap[size] || sizeClassMap.md;
@@ -120,6 +123,7 @@ export const GTPIcon = ({ icon, className, containerClassName, showContextMenu =
         getSvgData={getIconSvgData}
         itemName={fullIconName.replace(/[:\/]/g, "_")} // Sanitize name for download
         wrapperClassName={`${currentSizeClass} ${containerClassName || ""}`} // Apply size/container classes to the wrapper
+        contextMenuOptions={contextMenuOptions}
       >
         {IconElement}
       </IconContextMenu>
