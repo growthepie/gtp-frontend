@@ -697,6 +697,9 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="absolute bottom-[-5px] md:bottom-auto md:top-[-5px] left-0 w-full p-[5px] md:p-[5px] bg-[#344240] rounded-[32px] flex flex-col justify-start items-center">
+      {/* shadow box */}
+      <div className="absolute bottom-0 left-0 right-0 bg-[#344240] rounded-b-[32px] z-[-1] pointer-events-none" style={{height: 'calc(100% - 75px)', boxShadow: '0 10px 50px 0 #000'}}></div>
+      
       {/* Add a wrapper div that will handle the overflow */}
       <div ref={contentRef} className="w-full flex-1 overflow-hidden flex flex-col min-h-0">
         <div className={`w-full bg-[#151A19] rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>
