@@ -162,9 +162,16 @@ export default function GlobalFloatingBar() {
     setIsMobileMenuPopoverOpen(false);
     setMenuWasManuallyClosed(true);
     setIsSearchActive(false);
-    setIsBurgerMenuManuallyOpened(false); // Add this line
+    setIsBurgerMenuManuallyOpened(false);
     clearQuery();
   }, [clearQuery]);
+
+  // Reset search state when pathname changes (navigation)
+  useEffect(() => {
+    setIsMobileMenuPopoverOpen(false);
+    setIsSearchActive(false);
+    setIsBurgerMenuManuallyOpened(false);
+  }, [pathname]);
 
   // Clean up timeout on unmount
   useEffect(() => {
@@ -184,9 +191,17 @@ export default function GlobalFloatingBar() {
     if (!shouldHandleClicks) return;
 
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-      if (searchContainerRef.current &&
-        !searchContainerRef.current.contains(event.target as Node)) {
-        
+      // Check if click is inside search container
+      const isInsideSearchContainer = searchContainerRef.current &&
+        searchContainerRef.current.contains(event.target as Node);
+      
+      // Check if click is inside mobile menu (for mobile search results)
+      const mobileMenuElement = document.querySelector('[data-mobile-menu]');
+      const isInsideMobileMenu = mobileMenuElement &&
+        mobileMenuElement.contains(event.target as Node);
+      
+      // Only handle click outside if it's not inside either container
+      if (!isInsideSearchContainer && !isInsideMobileMenu) {
         if (isMobile) {
           // On mobile, if we're searching (not manually opened burger menu), just close search
           if (isSearchActive && !isBurgerMenuManuallyOpened) {
@@ -586,8 +601,8 @@ export default function GlobalFloatingBar() {
                       // X is clicked - close everything
                       handleMobileMenuClose();
                       setIsBurgerMenuManuallyOpened(false);
-                    } else if (isShowingSearchResults) {
-                      // X is clicked - close both search results AND mobile menu
+                    } else if (isMobileMenuPopoverOpen) {
+                      // Mobile menu is open - close it
                       handleMobileMenuClose();
                     } else {
                       // Burger is clicked - open menu and show X
@@ -595,7 +610,7 @@ export default function GlobalFloatingBar() {
                       setIsBurgerMenuManuallyOpened(true);
                     }
                   }}
-                  icon={<AnimatedMenuIcon isOpen={isBurgerMenuManuallyOpened || isShowingSearchResults} isMobile={isMobile} /> as unknown as GTPIconName}
+                  icon={<AnimatedMenuIcon isOpen={isBurgerMenuManuallyOpened || isMobileMenuPopoverOpen} isMobile={isMobile} /> as unknown as GTPIconName}
                   className='block md:hidden'
                 >
 
@@ -697,6 +712,9 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="absolute bottom-[-5px] md:bottom-auto md:top-[-5px] left-0 w-full p-[5px] md:p-[5px] bg-[#344240] rounded-[32px] flex flex-col justify-start items-center">
+      {/* shadow box */}
+      <div className="absolute bottom-0 left-0 right-0 bg-[#344240] rounded-b-[32px] z-[-1] pointer-events-none" style={{height: 'calc(100% - 75px)', boxShadow: '0 10px 50px 0 #000'}}></div>
+      
       {/* Add a wrapper div that will handle the overflow */}
       <div ref={contentRef} className="w-full flex-1 overflow-hidden flex flex-col min-h-0">
         <div className={`w-full bg-[#151A19] rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>
