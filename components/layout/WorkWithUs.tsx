@@ -1,79 +1,69 @@
-"use client"
-import { useState } from "react"
+// components/layout/WorkWithUs.tsx
+"use client";
+import { useState } from "react";
+import ExpandableMenu, { ExpandableMenuItem, Placement } from "@/components/layout/FloatingBar/ExpandableMenu";
 import { GTPIcon } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
-import Link from "next/link";
 
-export default function WorkWithUs() {
-    const [isOpen, setIsOpen] = useState(false);
+type WorkWithUsProps = {
+  placement: Placement;
+};
 
-    const handleMouseEnter = () => {
-        setIsOpen(true);
-    }
+export default function WorkWithUs({ placement = "bottom-end" }: WorkWithUsProps) {
+  const [open, setOpen] = useState(false);
 
-    const handleMouseLeave = () => {
-        setIsOpen(false);
-    }
+  const items: ExpandableMenuItem[] = [
+    {
+      id: "linkedin",
+      label: "Connect on LinkedIn",
+      href: "https://www.linkedin.com/company/growthepie/",
+      target: "_blank",
+      rel: "noopener noreferrer",
+      icon: <GTPIcon icon={"feather:linkedin" as GTPIconName} size="sm" />
+    },
+    {
+      id: "discord",
+      label: "Join our Discord",
+      href: "https://discord.gg/fxjJFe7QyN",
+      target: "_blank",
+      rel: "noopener noreferrer",
+      icon: <GTPIcon icon={"discord-monochrome" as GTPIconName} size="sm" />
+    },
+    {
+      id: "email",
+      label: "Send an email",
+      href: "mailto:contact@growthepie.com",
+      icon: <GTPIcon icon={"gtp-message-monochrome" as GTPIconName} size="sm" />
+    },
+    {
+      id: "form",
+      label: "Want to get listed? Fill in the form.",
+      href: "https://forms.office.com/e/wWzMs6Zc3A",
+      target: "_blank",
+      rel: "noopener noreferrer",
+      icon: <GTPIcon icon={"gtp-backgroundinformation-monochrome" as GTPIconName} size="sm" />
+    },
+  ];
 
-    return (
-        <div
-            className="relative flex w-full h-full cursor-pointer"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-        >
-            <div className="absolute flex items-center justify-left bg-[#1F2726] shadow-xl -bottom-[22px] px-[15px] z-30 rounded-full w-full gap-x-[10px] h-[44px]">
-                <GTPIcon icon="gtp-socials" size="md" />
-                <div className="heading-small-sm">Work with us</div>
-            </div>
-            <div className="relative ml-auto transition-all duration-300" style={{
-                width: !isOpen ? "170px" : "286px",
-                transformOrigin: "right center",
-            }}></div>
-            <div className={`absolute flex items-center justify-center overflow-hidden transition-all duration-300  bg-[#151A19] w-full rounded-b-2xl rounded-t-[20px] z-20 
-        ${isOpen ? "-top-[20px] right-[1px]" : "-top-[21px] right-[6px]"}`}
-                style={{
-                    height: !isOpen ? "36px" : "186px",
-                    width: !isOpen ? "130px" : "284px",
-                    boxShadow: isOpen ? "0 4px 46.2px 0 #000" : "none",
-                }}>
-                <div className="flex flex-col gap-y-[7px] pt-[55px] pb-[15px] min-h-[186px] w-full h-full">
-
-                    <Link
-                        href="https://www.linkedin.com/company/growthepie/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-x-[10px] justify-start text-sm font-semibold cursor-pointer hover:bg-[#5A6462] px-[22px] py-[4px] -my-[2px] transition-colors duration-200"
-                    >
-                        <GTPIcon icon={"feather:linkedin" as GTPIconName} size="sm" />
-                        <div className="flex items-center gap-x-[10px] justify-start text-sm">Connect on LinkedIn</div>
-                    </Link>
-                    <Link
-                        href="https://discord.gg/fxjJFe7QyN"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-x-[10px] justify-start text-sm font-semibold cursor-pointer hover:bg-[#5A6462] px-[22px] py-[4px] -my-[2px] transition-colors duration-200"
-                    >
-                        <GTPIcon icon={"discord-monochrome" as GTPIconName} size="sm" />
-                        <div className="flex items-center gap-x-[10px] justify-start text-sm">Join our Discord</div>
-                    </Link>
-                    <Link
-                        href="mailto:contact@growthepie.com"
-                        className="flex items-center gap-x-[10px] justify-start text-sm font-semibold cursor-pointer hover:bg-[#5A6462] px-[22px] py-[4px] -my-[2px] transition-colors duration-200"
-                    >
-                        <GTPIcon icon={"gtp-message-monochrome" as GTPIconName} size="sm" />
-                        <div className="flex items-center gap-x-[10px] justify-start text-sm">Send an email</div>
-                    </Link>
-                    <Link
-                        href="https://forms.office.com/e/wWzMs6Zc3A"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-x-[10px] justify-start text-sm font-semibold cursor-pointer hover:bg-[#5A6462] px-[22px] py-[4px] -my-[2px] transition-colors duration-200"
-                    >
-                        <GTPIcon icon={"gtp-backgroundinformation-monochrome" as GTPIconName} size="sm" />
-                        <div className="flex items-center gap-x-[10px] justify-start text-sm whitespace-nowrap">Want to get listed? Fill in the form.</div>
-                    </Link>
-                </div>
-            </div>
-        </div>
-    );
+  return (
+    <div className={`relative pointer-events-auto shrink-0`}>
+      <ExpandableMenu
+        items={items}
+        open={open}
+        onOpenChange={setOpen}
+        openOn="both"
+        placement={placement} // Explicit placement (this is the default)
+        collapsedSize={{ width: 170, height: 44 }}
+        expandedSize={{ width: 286, height: 166 }}
+        className="pointer-events-auto shrink-0"
+        triggerClassName="px-[15px]" // Ensure proper padding
+        renderTrigger={({ props }) => (
+          <>
+            <GTPIcon icon="gtp-socials" size="md" />
+            <div className="heading-small-sm">Work with us</div>
+          </>
+        )}
+      />
+    </div>
+  );
 }

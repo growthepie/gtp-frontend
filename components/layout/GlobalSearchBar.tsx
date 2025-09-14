@@ -27,6 +27,7 @@ import SharePopoverContent from './FloatingBar/SharePopoverContent';
 import MobileMenuWithSearch from './FloatingBar/MobileMenuWithSearch';
 import NotificationButton from './NotificationButton';
 import WorkWithUs from './WorkWithUs';
+import NotificationButtonExpandable from './FloatingBar/NotificationButtonExpandable';
 
 
 export default function GlobalFloatingBar() {
@@ -461,11 +462,19 @@ export default function GlobalFloatingBar() {
         <div className="w-full max-w-[1680px] px-[20px] md:px-[13px] pointer-events-auto">
           <div className="px-[5px] md:px-[15px] md:py-[10px]">
             {/* <WorkWithUs />    */}
-            <NotificationButton
+            {/* <NotificationButton
               placement="top"
               className="flex"
               hideIfNoNotifications={true}
-            />
+            /> */}
+            <div className="w-fit -mt-[22px]">
+              <NotificationButtonExpandable
+                placement="top-start"
+                className="flex"
+                hideIfNoNotifications={true}
+                shadow={true}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -560,12 +569,17 @@ export default function GlobalFloatingBar() {
                   <EthUsdSwitchSimple showBorder={true} className={'hidden md:flex'} />
                   {/* <FocusSwitchSimple showBorder={true} className={'hidden md:flex'} /> */}
                   {/* Desktop - Notifications */}
-                  <NotificationButton
+                  {/* <NotificationButton
                     placement="bottom"
                     className="hidden md:flex"
                     hideIfNoNotifications={true}
+                  /> */}
+                  <NotificationButtonExpandable 
+                    className="hidden md:flex"
+                    hideIfNoNotifications={true}
+                    placement="bottom-start"
                   />
-                  <WorkWithUs/>
+                  <WorkWithUs placement="bottom-start" />
                 </div>
 
 
