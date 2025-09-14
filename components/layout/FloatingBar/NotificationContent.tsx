@@ -1,48 +1,93 @@
-// components/layout/MobileMenuContent.tsx
 "use client";
-import { useRef, useState } from "react";
-import NotificationInsideContent from "@/components/notifications/NotificationContent";
-import { useNotifications } from "@/hooks/useNotifications";
-import { GTPIconName } from "@/icons/gtp-icon-names";
-import { GTPIcon } from "../GTPIcon";
-// import Backgrounds from "./Backgrounds"; // Optional: if you want the visual effect
+import React from "react";
+import { Icon } from "@iconify/react";
+import ReactMarkdown from "react-markdown";
+import Link from "next/link";
+import type { NotificationType } from "@/app/api/notifications/route";
+import { GTPIcon } from '../GTPIcon';
+import { GTPIconName } from '@/icons/gtp-icon-names';
 
-type MobileMenuContentProps = {
-  onClose: () => void;
-};
+interface NotificationContentProps {
+  width: number;
+  notifications: NotificationType[] | null;
+  isLoading: boolean;
+  error: any;
+}
 
+const NotificationContent = ({ notifications, isLoading, error, width }: NotificationContentProps) => {
+  if (isLoading) {
+    return <div className="p-4 text-center text-forest-200">Loading notifications...</div>;
+  }
 
+  if (error) {
+    return <div className="p-4 text-center text-red-500">Failed to load notifications.</div>;
+  }
 
-export default function NotificationContent({ onClose }: MobileMenuContentProps) {
- 
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [scrollableHeight, setScrollableHeight] = useState(0);
-
-  const { filteredData, hasUnseenNotifications, markNotificationsAsSeen, isLoading, error } = useNotifications();
-
-  const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-    if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-      onClose();
-    }
-  };
-
-  return (
-    <div 
-      ref={containerRef} 
-      className="flex flex-col py-[15px] gap-y-[5px] max-w-[532px] w-[calc(100vw-80px)] md:min-w-[480px] ml-auto mr-0 max-h-[70vh] scrollbar-thin scrollbar-thumb-[rgba(136,160,157,0.3)] scrollbar-track-[rgba(0,0,0,0.3)] bg-[#1F2726] border-forest-500 rounded-[12px] overflow-hidden shadow-lg"
-      style={{ overflowY: 'auto' }}
-    >
-      <div className="flex pl-[15px] gap-x-[15px]">
-        <GTPIcon icon={(hasUnseenNotifications ? "gtp-notification-new" : "gtp-notification") as GTPIconName} size="sm" />
-        <div className="heading-small-xs">
-          Notification Center
+  if (!notifications || notifications.length === 0) {
+    return (
+      <div className="flex flex-col w-full p-4 gap-y-[5px] justify-center text-forest-200">
+        <div className="heading-small-sm">
+          There are currently no notifications.
         </div>
       </div>
-      <NotificationInsideContent
-        notifications={filteredData}
-        isLoading={isLoading}
-        error={error}
-      />
+    );
+  }
+
+  return (
+    <div className="flex flex-col w-full" style={{ width: `${width}px` }}>
+      {notifications.map((item, index) => (
+        <div key={item.id + (item.url || index)}> {/* Added index to key for unique fallback */}
+          {item.url ? (
+            <Link
+              className={`group flex items-center gap-x-[15px] border-[#5A6462] border-dashed w-full hover:cursor-pointer p-[10px] pl-[15px] ${
+                index < notifications.length - 1 ? "border-b" : "border-b-0"
+              }`}
+              href={item.url}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <GTPIcon
+                icon={(item.icon ? item.icon : "gtp-notification-monochrome") as GTPIconName}
+                size="sm"
+                className="text-[#5A6462]"
+              />
+              <div className="flex flex-col w-full"> {/* Added ml to align text with icon */}
+                <div className="heading-small-xs group-hover:underline">
+                  {item.desc}
+                </div>
+                <div className="text-xs">
+                  <ReactMarkdown>{item.body}</ReactMarkdown>
+                </div>
+              </div>
+              <div className="w-[24px] h-[24px] min-w-[24px] pr-[20px] self-center">
+                <GTPIcon icon={"feather:chevron-right" as GTPIconName} size="md" />
+              </div>
+            </Link>
+          ) : (
+            <div
+              className={`group flex items-center gap-x-[15px] border-[#5A6462] border-dashed w-full p-[10px] pl-[15px] ${
+                index < notifications.length - 1 ? "border-b" : "border-b-0"
+              }`}
+            >
+              <GTPIcon
+                icon={(item.icon ? item.icon : "gtp-notification-monochrome") as GTPIconName}
+                size="sm"
+                className="text-[#5A6462]"
+              />
+              <div className="flex flex-col w-full"> {/* Added ml */}
+                <div className="heading-small-xs">
+                  {item.desc}
+                </div>
+                <div className="text-xs">
+                  <ReactMarkdown>{item.body}</ReactMarkdown>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   );
-}
+};
+
+export default NotificationContent;

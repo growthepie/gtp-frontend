@@ -70,8 +70,8 @@ export default function SidebarContainer() {
   }, [logoFullSVG]); // Depends on logoFullSVG
 
   return (
-    <div className={`${showGlobalSearchBar ? "md:pl-[10px] md:min-w-[54px] max-w-[255px] overflow-visible" : "md:min-w-[94px] max-w-[253px]"} bg-forest-1000`}>
-      <div className={`${showGlobalSearchBar ? "md:pl-[8px] overflow-visible" : "pt-[43px] pl-[20px] gap-y-[36px] border-r-[2px] border-[#151A19]"} bg-[#1F2726] min-h-screen max-h-screen sticky top-0 left-0 hidden md:flex flex-col z-[3]`}>
+    <div className={`${showGlobalSearchBar ? "md:pl-[10px] md:min-w-[61px] max-w-[255px] overflow-visible" : "md:min-w-[94px] max-w-[253px]"} bg-forest-1000`}>
+      <div className={`${showGlobalSearchBar ? "overflow-visible" : "pt-[43px] pl-[20px] gap-y-[36px] border-r-[2px] border-[#151A19]"} bg-[#1F2726] min-h-screen max-h-screen sticky top-0 left-0 hidden md:flex flex-col z-[3]`}>
         {!showGlobalSearchBar && (
           <div className="select-none h-[45.07px]">
             <div className="flex items-center justify-start h-[45.07px] gap-x-[15px] pr-[10px]">

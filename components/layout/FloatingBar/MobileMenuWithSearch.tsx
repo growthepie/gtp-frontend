@@ -78,7 +78,12 @@ const MobileSearchBadge = memo(({
   return (
     <Link
       href={item.url}
-      onClick={onClose}
+      onClick={(e) => {
+        // Stop event propagation to prevent parent click handlers from firing
+        e.stopPropagation();
+        // Don't call onClose here - let the navigation handle closing the menu naturally
+        // The mobile menu will close when the page navigates
+      }}
       ref={(el) => {
         childRefs.current[itemKey] = el;
       }}
@@ -163,7 +168,8 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
       if (containerRef.current && headerRef.current && footerRef.current && contentRef.current) {
         const totalHeight = containerRef.current.clientHeight;
         const headerHeight = headerRef.current.offsetHeight;
-        const footerHeight = footerRef.current.offsetHeight;
+        // const footerHeight = footerRef.current.offsetHeight;
+        const footerHeight = 13;
         const margins = 10; // Account for margins
         const calculatedHeight = totalHeight - headerHeight - footerHeight - margins;
         setScrollableHeight(calculatedHeight > 0 ? calculatedHeight : 0);
@@ -277,26 +283,9 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
         const rect = measurementsRef.current[key];
         const itemTop = rect?.top;
 
-        // If measurements aren't available yet, use a simple fallback layout
+        // If measurements aren't available yet, skip this item for now
+        // The measurement-based logic will handle positioning when measurements are available
         if (!rect) {
-          // Simple fallback: assume items are in rows of 3
-          const itemsPerRow = 3;
-          const rowIndex = Math.floor(itemIndex / itemsPerRow);
-          const colIndex = itemIndex % itemsPerRow;
-
-          if (rowIndex > 2 && !isShowMore) {
-            return;
-          }
-
-          if (rowIndex >= dataMap.length) {
-            dataMap[rowIndex] = [];
-          }
-          dataMap[rowIndex].push(key);
-
-          // Set "See more" for the last item in row 2 if there are more items
-          if (rowIndex === 2 && !isShowMore && itemIndex < filteredData.length - 1) {
-            newLastBucketIndeces[key] = { x: colIndex, y: rowIndex };
-          }
           return;
         }
 
@@ -347,24 +336,9 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
             const rect = measurementsRef.current[key];
             const itemTop = rect?.top;
 
-            // Fallback for stack results too
+            // If measurements aren't available yet, skip this item for now
+            // The measurement-based logic will handle positioning when measurements are available
             if (!rect) {
-              const itemsPerRow = 3;
-              const rowIndex = Math.floor(optionIndex / itemsPerRow);
-              const colIndex = optionIndex % itemsPerRow;
-
-              if (rowIndex > 2 && !isStackShowMore) {
-                return;
-              }
-
-              if (rowIndex >= dataMap.length) {
-                dataMap[rowIndex] = [];
-              }
-              dataMap[rowIndex].push(key);
-
-              if (rowIndex === 2 && !isStackShowMore && optionIndex < group.options.length - 1) {
-                newLastBucketIndeces[key] = { x: colIndex, y: rowIndex };
-              }
               return;
             }
 
@@ -643,15 +617,16 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
       return (
         <div
           key={type}
-          className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start overflow-y-hidden"
+          className="flex flex-col md:flex-row gap-x-[10px] gap-y-[5px] items-start overflow-y-hidden"
         >
           <div className="flex gap-x-[10px] items-center shrink-0">
             <GTPIcon
               icon={icon as GTPIconName}
               size="md"
-              className="max-sm:size-[15px] max-sm:mt-[3px]"
+              className="!size-[15px] mt-[3px]"
             />
-            <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default max-sm:ml-[-10px] max-sm:mt-[-3px]">
+            {/* <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default max-sm:ml-[-10px] max-sm:mt-[-3px]"> */}
+            <div className="text-sm font-raleway font-medium leading-[150%] cursor-default ml-[-10px] mt-[-3px]">
               {isBucketMatch ? (
                 <OpacityUnmatchedText text={type} query={memoizedQuery || ""} />
               ) : (
@@ -666,7 +641,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
             {filteredData.length > 0 && (
               <div className={`overflow-y-hidden ${isShowMore
                   ? "max-h-full"
-                  : "max-h-[118px] md:max-h-[87px]"
+                  : "max-h-[87px]"
                 }`}>
                 <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
                   {filteredData.map((item) => {
@@ -711,7 +686,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
                       {/* Stack results in separate container with height constraints */}
                       <div className={`overflow-y-hidden ${isShowMore
                           ? "max-h-full"
-                          : "max-h-[118px] md:max-h-[87px]"
+                          : "max-h-[87px]"
                         }`}>
                         <div className="flex flex-wrap gap-[5px] transition-[max-height] duration-300">
                           {group.options.map((option) => {
@@ -753,6 +728,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
   return (
     <div
       ref={mobileMenuRef}
+      data-mobile-menu
       className={`flex md:hidden w-full h-full items-end transition-all duration-300 overflow-hidden ease-in-out ${isOpen
         ? 'opacity-100 pointer-events-auto'
         : 'opacity-100 pointer-events-none'
@@ -760,6 +736,10 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
       style={{
         visibility: isOpen ? 'visible' : 'hidden',
         maxHeight: isOpen ? `${viewportHeight - 60}px` : '0px',
+      }}
+      onClick={(e) => {
+        // Prevent clicks inside the mobile menu from bubbling up
+        e.stopPropagation();
       }}
     >
       <div
@@ -774,8 +754,8 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
         {/* Content Area */}
         <div className="flex-grow overflow-hidden px-[5px]" style={{ height: `${Math.min(contentHeight + 30, viewportHeight - 120)}px` }}>
           {isOpen ? (
-            <VerticalScrollContainer height={scrollableHeight} scrollbarPosition="right" scrollbarAbsolute={false} scrollbarWidth="6px">
-              <div ref={contentRef} className="transition-all duration-300 ease-in-out pb-[30px]">
+            <VerticalScrollContainer height={scrollableHeight} scrollbarPosition="right" scrollbarAbsolute={true} scrollbarWidth="6px">
+              <div ref={contentRef} className="flex flex-col gap-y-[5px] transition-all duration-300 ease-in-out pb-[30px] pr-[20px] pl-[5px]">
                 {renderContent()}
               </div>
             </VerticalScrollContainer>
