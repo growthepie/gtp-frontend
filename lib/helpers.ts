@@ -4,8 +4,11 @@ export const IS_PREVIEW = process.env.NEXT_PUBLIC_VERCEL_ENV === "preview";
 export const IS_PRODUCTION =
   process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
 
+// get current http or https
+export const CURRENT_PROTOCOL = typeof window !== "undefined" ? window.location.protocol : "http:";
+
 export const BASE_URLS = {
-  development: `http://${process.env.NEXT_PUBLIC_VERCEL_URL}`,
+  development: `${CURRENT_PROTOCOL}//${process.env.NEXT_PUBLIC_VERCEL_URL}`,
   preview: "https://dev.growthepie.com",
   production: `https://www.growthepie.com`,
 };

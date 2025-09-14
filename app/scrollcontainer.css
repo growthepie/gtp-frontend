@@ -1,0 +1,92 @@
+
+:root {
+  /* Define the fade height as a variable for easy customization */
+  --fade-height: 40px; 
+}
+
+.scrollable-container-wrapper {
+  position: relative;
+  height: 250px;
+  border-radius: 8px;
+  overflow: hidden;
+
+  /*
+   * By default, the mask allows the entire content area to be visible.
+   * We will add fades on top of this with the classes below.
+  */
+  -webkit-mask-image: linear-gradient(to bottom, black, black);
+  mask-image: linear-gradient(to bottom, black, black);
+  
+  /* 
+   * These properties define HOW multiple masks will be layered.
+   * We define the gradients themselves on the classes.
+  */
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect; /* Use 'intersect' or 'add' depending on desired effect */
+}
+
+/* Define the top fade mask */
+.scrollable-container-wrapper.show-top-fade {
+  --top-fade: linear-gradient(
+    to bottom, 
+    transparent 0%, 
+    black var(--fade-height)
+  );
+  
+  -webkit-mask-image: var(--top-fade);
+  mask-image: var(--top-fade);
+}
+
+/* Define the bottom fade mask */
+.scrollable-container-wrapper.show-bottom-fade {
+  --bottom-fade: linear-gradient(
+    to top, 
+    transparent 0%, 
+    black var(--fade-height)
+  );
+
+  -webkit-mask-image: var(--bottom-fade);
+  mask-image: var(--bottom-fade);
+}
+
+/*
+ * When BOTH classes are present, we combine the two masks.
+ * The 'mask-composite' property handles how they merge.
+*/
+.scrollable-container-wrapper.show-top-fade.show-bottom-fade {
+  -webkit-mask-image: var(--top-fade), var(--bottom-fade);
+  mask-image: var(--top-fade), var(--bottom-fade);
+  -webkit-mask-composite: destination-in; /* A common compositing mode */
+  mask-composite: intersect;
+}
+
+
+/* Content and scrollbar styles remain the same as before */
+.scrollable-content {
+  height: 100%;
+  overflow-y: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollable-content::-webkit-scrollbar {
+  display: none;
+}
+
+.custom-scrollbar-track {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  bottom: 4px;
+  width: 6px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+  z-index: 2; /* Ensure scrollbar is on top of content */
+}
+
+.custom-scrollbar-thumb {
+  position: absolute;
+  width: 100%;
+  background-color: #f1f1f1;
+  border-radius: 3px;
+  opacity: 0.7;
+}
