@@ -6,6 +6,7 @@ import { GTPIconName } from '@/icons/gtp-icon-names';
 import NotificationContent from './NotificationContent';
 import { GTPIcon } from '../GTPIcon';
 import "@/app/scrollcontainer.css";
+import { useUIContext } from '@/contexts/UIContext';
 
 interface NotificationButtonExpandableProps {
   className?: string;
@@ -26,8 +27,33 @@ export default function NotificationButtonExpandable({
 }: NotificationButtonExpandableProps) {
   const [open, setOpen] = useState(false);
   const notificationContentRef = useRef<HTMLDivElement>(null);
-  const [customExpandedSize, setCustomExpandedSize] = useState({ width: 380, height: 0 });
+  // const [customExpandedSize, setCustomExpandedSize] = useState({ width: 380, height: 0 });
+  const [customExpandedWidth, setCustomExpandedWidth] = useState(380);
+  const [customExpandedHeight, setCustomExpandedHeight] = useState(0);
+  
   const MAX_HEIGHT = 300;
+
+  // on mobile, the width of the expanded panel should be the width of the viewport
+  const { isMobile } = useUIContext();
+
+  useEffect(() => {
+    
+    const handleResize = () => {
+      let viewportWidth = window.innerWidth;
+      
+      if (viewportWidth <= 768) {
+        setCustomExpandedWidth(viewportWidth - 60);
+      }else{
+        setCustomExpandedWidth(380);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
 
   const {
     filteredData,
@@ -50,7 +76,7 @@ export default function NotificationButtonExpandable({
     const contentEl = notificationContentRef.current;
     if (!contentEl) return;
     const updateDimensions = () => {
-      setCustomExpandedSize({ width: 380, height: Math.min(contentEl.clientHeight + 50, MAX_HEIGHT)  });
+      setCustomExpandedHeight(Math.min(contentEl.clientHeight + 50, MAX_HEIGHT));
     };
     updateDimensions();
     const resizeObserver = new ResizeObserver(updateDimensions);
@@ -72,7 +98,7 @@ export default function NotificationButtonExpandable({
         placement={placement} // Panel grows downward, aligned to right
         closeOnSelect={false} // Don't auto-close when clicking content
         collapsedSize={size}
-        expandedSize={customExpandedSize}
+        expandedSize={{ width: customExpandedWidth, height: customExpandedHeight }}
         triggerClassName={shadow && !open ? "shadow-[0px_0px_50px_0px_#000000] !px-0 !gap-0" : "!px-0 !gap-0"}
         panelClassName="shadow-[0px_0px_50px_0px_#000000]"
         contentClassName="gap-y-0 pt-0 pb-0" // Remove default spacing for custom content
@@ -99,7 +125,7 @@ export default function NotificationButtonExpandable({
             <ScrollableContainer>
               <div ref={notificationContentRef}>
               <NotificationContent
-                width={380}
+                width={customExpandedWidth}
                 notifications={filteredData}
                 isLoading={isLoading}
                 error={error}
