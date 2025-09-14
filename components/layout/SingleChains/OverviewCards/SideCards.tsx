@@ -113,7 +113,9 @@ export default function LiveCards({ chainKey, chainData, master }: { chainKey: s
             <TXCostCard chainKey={chainKey} chainData={chainDataTPS} master={master} />
             <PartitionLine title="Yesterday" infoContent="The number of transactions processed per second on the chain." />
             {Object.keys(chainDataOverview.data.kpi_cards || {}).map((metric) => (
-                <MetricCards key={metric} chainKey={chainKey} master={master} metricKey={metric} metricData={master.metrics[metric]} overviewData={chainDataOverview} />
+                <div key={metric}>
+                    <MetricCards chainKey={chainKey} master={master} metricKey={metric} metricData={master.metrics[metric]} overviewData={chainDataOverview} />
+                </div>
             ))}
     
         </>
