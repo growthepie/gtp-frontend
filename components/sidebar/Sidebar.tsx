@@ -83,7 +83,6 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         chainsNavigationItemsCopy.options.forEach((option) => {
           option.url = option.url?.replace("/chains/", "/chains-rework/");
         });
-        // console.log("ChainsNavigationItems", ChainsNavigationItems);
         newNavigationItems.splice(3, 0, {...chainsNavigationItemsCopy, name: "Chains", label: "Chains Rework", key: "chains-rework"});
       }
 
@@ -137,7 +136,6 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     };
   }, [setActiveTooltipId]);
 
-  console.log("sidebarNavigation", sidebarNavigation);
 
   return (
     <div className={`select-none flex flex-col bg-background transition-width duration-300 ease-sidebar overflow-x-visible ${isOpen ? 'w-full md:w-[237px]' : 'w-[51px]'}`}>
