@@ -33,16 +33,14 @@ export default function NotificationButtonExpandable({
   
   const MAX_HEIGHT = 300;
 
-  // on mobile, the width of the expanded panel should be the width of the viewport
-  const { isMobile } = useUIContext();
 
   useEffect(() => {
     
     const handleResize = () => {
       let viewportWidth = window.innerWidth;
       
-      if (viewportWidth <= 768) {
-        setCustomExpandedWidth(viewportWidth - 60);
+      if (viewportWidth < 768) {
+        setCustomExpandedWidth(viewportWidth - 50);
       }else{
         setCustomExpandedWidth(380);
       }
@@ -85,7 +83,7 @@ export default function NotificationButtonExpandable({
   }, []);
 
   // Hide component if no notifications and hideIfNoNotifications is true
-  if (hideIfNoNotifications && filteredData && filteredData.length === 0) {
+  if (hideIfNoNotifications && (isLoading || (filteredData && filteredData.length === 0))) {
     return null;
   }
 

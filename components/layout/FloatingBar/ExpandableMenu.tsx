@@ -1,4 +1,5 @@
 "use client";
+import { useOutsideAlerter } from "@/hooks/useOutsideAlerter";
 import Link from "next/link";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
@@ -57,6 +58,12 @@ export type ExpandableMenuProps = {
 // ============= Helper Functions =============
 function formatSize(size: number | string): string {
   return typeof size === 'number' ? `${size}px` : size;
+}
+
+// Detect if device supports touch
+function isTouchDevice() {
+  if (typeof window === 'undefined') return false;
+  return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 }
 
 function getPlacementStyles(placement: Placement, offset: number) {
@@ -187,25 +194,6 @@ function useExpandableState(
   return { open, setOpen };
 }
 
-function useOutsideClick(
-  ref: React.RefObject<HTMLElement>,
-  handler: () => void,
-  enabled: boolean
-) {
-  useEffect(() => {
-    if (!enabled) return;
-    
-    const listener = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        handler();
-      }
-    };
-    
-    document.addEventListener("mousedown", listener);
-    return () => document.removeEventListener("mousedown", listener);
-  }, [ref, handler, enabled]);
-}
-
 function useEscapeKey(handler: () => void) {
   useEffect(() => {
     const listener = (e: KeyboardEvent) => {
@@ -221,31 +209,73 @@ function useEscapeKey(handler: () => void) {
 
 function useHoverBehavior(
   openOn: OpenOn,
-  setOpen: (v: boolean) => void
+  setOpen: (v: boolean) => void,
+  open: boolean
 ) {
   const hoverTimeout = useRef<NodeJS.Timeout | null>(null);
+  const isTouch = useRef(false);
+  const touchTimeout = useRef<NodeJS.Timeout | null>(null);
+  
+  // Detect touch start to disable hover behavior temporarily
+  useEffect(() => {
+    const handleTouchStart = () => {
+      isTouch.current = true;
+      // Clear any pending hover timeout
+      if (hoverTimeout.current) {
+        clearTimeout(hoverTimeout.current);
+        hoverTimeout.current = null;
+      }
+      // Reset touch flag after a delay
+      if (touchTimeout.current) {
+        clearTimeout(touchTimeout.current);
+      }
+      touchTimeout.current = setTimeout(() => {
+        isTouch.current = false;
+      }, 500);
+    };
+    
+    document.addEventListener("touchstart", handleTouchStart);
+    return () => {
+      document.removeEventListener("touchstart", handleTouchStart);
+      if (touchTimeout.current) {
+        clearTimeout(touchTimeout.current);
+      }
+    };
+  }, []);
   
   const handleMouseEnter = useCallback(() => {
+    // Skip hover behavior on touch devices or if touch was recently detected
+    if (isTouch.current || isTouchDevice()) return;
+    
     if (openOn === "hover" || openOn === "both") {
       hoverTimeout.current = setTimeout(() => setOpen(true), 300);
     }
   }, [openOn, setOpen]);
   
   const handleMouseLeave = useCallback(() => {
+    // Skip hover behavior on touch devices or if touch was recently detected
+    if (isTouch.current || isTouchDevice()) return;
+    
     if (openOn === "hover" || openOn === "both") {
       if (hoverTimeout.current) {
         clearTimeout(hoverTimeout.current);
         hoverTimeout.current = null;
       }
-      setOpen(false);
+      // Only close on mouseleave if not in "both" mode or if already open
+      if (openOn === "hover" || (openOn === "both" && open)) {
+        setOpen(false);
+      }
     }
-  }, [openOn, setOpen]);
+  }, [openOn, setOpen, open]);
   
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (hoverTimeout.current) {
         clearTimeout(hoverTimeout.current);
+      }
+      if (touchTimeout.current) {
+        clearTimeout(touchTimeout.current);
       }
     };
   }, []);
@@ -324,24 +354,49 @@ export default function ExpandableMenu({
   contentClassName = "",
 }: ExpandableMenuProps) {
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   
   // State management
   const { open, setOpen } = useExpandableState(controlledOpen, onOpenChange);
+
+  // Track transition state to prevent interaction during animation
+  useEffect(() => {
+    if (open) {
+      setIsTransitioning(true);
+      const timer = setTimeout(() => setIsTransitioning(false), 300);
+      return () => clearTimeout(timer);
+    } else {
+      setIsTransitioning(true);
+      const timer = setTimeout(() => setIsTransitioning(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
   
   // Close handlers
-  const handleClose = useCallback(() => setOpen(false), [setOpen]);
+  const handleClose = useCallback(() => {
+    if (!isTransitioning) {
+      setOpen(false);
+    }
+  }, [setOpen, isTransitioning]);
   
   // Setup behavior hooks
-  useOutsideClick(rootRef, handleClose, open);
+  useOutsideAlerter({ ref: rootRef, callback: handleClose, enabled: open });
   useEscapeKey(handleClose);
-  const { handleMouseEnter, handleMouseLeave } = useHoverBehavior(openOn, setOpen);
+  const { handleMouseEnter, handleMouseLeave } = useHoverBehavior(openOn, setOpen, open);
   
-  // Click behavior
-  const handleTriggerClick = useCallback(() => {
+  // Click behavior with transition guard
+  const handleTriggerClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    // Prevent default to avoid any browser quirks
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Don't toggle if currently transitioning
+    if (isTransitioning) return;
+    
     if (openOn === "click" || openOn === "both") {
       setOpen(!open);
     }
-  }, [openOn, open, setOpen]);
+  }, [openOn, open, setOpen, isTransitioning]);
   
   // Item selection
   const onItemSelect = useCallback((item: ExpandableMenuItem) => {
@@ -368,6 +423,7 @@ export default function ExpandableMenu({
     "aria-haspopup": "menu",
     "aria-expanded": open,
     onClick: handleTriggerClick,
+    onTouchEnd: handleTriggerClick,
   };
   
   // Container event handlers
@@ -409,7 +465,7 @@ export default function ExpandableMenu({
           transformOrigin: placementStyles.transformOrigin,
           boxShadow: open ? "0 4px 46.2px 0 #000" : "none",
           borderRadius: placementStyles.borderRadius,
-          
+          pointerEvents: open && !isTransitioning ? "auto" : "none",
         }}
       >
         {/* Panel Content */}
@@ -418,7 +474,7 @@ export default function ExpandableMenu({
           style={{ 
             minHeight: hExpanded,
             opacity: open ? 1 : 0,
-            pointerEvents: open ? "auto" : "none",
+            pointerEvents: open && !isTransitioning ? "auto" : "none",
             padding: placementStyles.padding,
           }}
         >
