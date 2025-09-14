@@ -7,6 +7,11 @@ import TXCostCard from "./TXCostCard";
 import { GTPIcon } from "../../GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import moment from "moment";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
+import { Icon } from "@iconify/react";
+import HighlightCards from "./HighlightCards";
+import { ChainOverview } from "@/lib/chains";
+import MetricCards from "./MetricCards";
 
 
 export interface ChainTPSHistoryItem {
@@ -33,11 +38,39 @@ interface HistoryArrayItem {
     timestamp: string;
     timestamp_ms: number;
 }
+
+
+const PartitionLine = ({ title, infoContent }: { title: string, infoContent: string }) => {
+    return (
+        <div className="w-full flex items-center gap-x-[5px] h-[14px] max-w-[483px] px-[10px] text-[#5A6462]">
+            <div 
+                className="w-full h-[1px]" 
+                style={{
+                    backgroundImage: `linear-gradient(to right, #344240 50%, transparent 50%)`,
+                    backgroundSize: '4px 1px',
+                    backgroundRepeat: 'repeat-x'
+                }}
+            />
+            <div className="heading-large-xxs  whitespace-nowrap pr-[5px]">{title}</div>
+            <Tooltip placement="bottom">
+                <TooltipTrigger>
+                    <Icon icon="feather:info" className="w-[15px] h-[15px]" />
+                </TooltipTrigger>
+                <TooltipContent className="z-[99]">
+                    <div className="px-[15px]">{infoContent}</div>
+                </TooltipContent>
+            </Tooltip>
+        </div>
+    )
+}
+
 export default function LiveCards({ chainKey, chainData, master }: { chainKey: string, chainData: any, master: any }) {
 
     const [tpsHistory, setTpsHistory] = useState<any[]>([]);
     const { data: initialHistory } = useSWR<any>(`https://sse.growthepie.com/api/chain/${chainKey}/history`);
     const {chainData: chainDataTPS, lastUpdated} = useSSEChains(chainKey);
+    const { data: chainDataOverview } = useSWR<ChainOverview>(`https://api.growthepie.xyz/v1/chains/${chainKey}/overview.json`);
+ 
 
 
     useEffect(() => {
@@ -67,13 +100,22 @@ export default function LiveCards({ chainKey, chainData, master }: { chainKey: s
     }, [chainDataTPS, lastUpdated, initialHistory]); // Note: tpsHistory is intentionally omitted from deps
 
 
+    console.log(chainDataOverview);
  
    
-  if(!chainDataTPS) return null;
+  if(!chainDataTPS || !chainDataOverview) return null;
     return (
         <>
+            <PartitionLine title="Highlight" infoContent="The number of transactions processed per second on the chain." />
+            <HighlightCards metric="Total Value Locked" icon="gtp-metrics-totalvaluelocked" value={"24.41B"} percentage={"20%"} chainKey={chainKey} />
+            <PartitionLine title="Realtime" infoContent="The number of transactions processed per second on the chain." />
             <TPSChartCard initialHistory={initialHistory} tpsHistory={tpsHistory} chainData={chainDataTPS} chainKey={chainKey} master={master} />
             <TXCostCard chainKey={chainKey} chainData={chainDataTPS} master={master} />
+            <PartitionLine title="Yesterday" infoContent="The number of transactions processed per second on the chain." />
+            {Object.keys(chainDataOverview.data.kpi_cards || {}).map((metric) => (
+                <MetricCards chainKey={chainKey} master={master} metricKey={metric} metricData={master.metrics[metric]} overviewData={chainDataOverview} />
+            ))}
+    
         </>
     )
 }

@@ -6,7 +6,8 @@ import { Icon } from "@iconify/react";
 import { GTPIcon } from "../GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import TPSChartCard from "./OverviewCards/TPSChartCard";
-import LiveCards from "./OverviewCards/LiveCards";
+import SideCards from "./OverviewCards/SideCards";
+
 
 
 function dataAvailToArray(x: string) {
@@ -64,7 +65,7 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
 
             <AboutChain chainData={chainData} />
 
-            <LiveCards chainKey={chainKey} chainData={chainData} master={master} />
+            <SideCards chainKey={chainKey} chainData={chainData} master={master} />
         </div>
     )
 }
