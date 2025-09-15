@@ -28,7 +28,7 @@ import { TitleButtonLink } from "@/components/layout/TextHeadingComponents";
 import { GTPTooltipNew, OLIContractTooltip } from "@/components/tooltip/GTPTooltip";
 
 // dynamic import to prevent server-side rendering of the chart component
-const ApplicationDetailsChart = dynamic(() => import("../_components/GTPChart").then((mod) => mod.ApplicationDetailsChart), { ssr: false });
+const ApplicationDetailsChart = dynamic(() => import("../_components/ApplicationDetailsChart").then((mod) => mod.ApplicationDetailsChart), { ssr: false });
 
 type Props = {
   params: { owner_project: string };
@@ -228,7 +228,7 @@ const MetricSection = ({ metric, owner_project }: { metric: string; owner_projec
       </Container>
       <Container>
         <MetricChainBreakdownBar metric={metric} />
-        <div className={`${selectedTimespan === "1d" ? "max-h-0" : "h-[168px]"} transition-all duration-300 overflow-hidden`}>
+        <div className={`${selectedTimespan === "1d" ? "max-h-0 overflow-hidden" : "max-h-[168px]"} transition-all duration-300`}>
           <ApplicationDetailsChart
             metric={metric}
             prefix={prefix}

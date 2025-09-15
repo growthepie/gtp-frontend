@@ -10,6 +10,7 @@ import React, {
 } from "react";
 import Highcharts, {
   AxisLabelsFormatterContextObject,
+  ChartLoadCallbackFunction,
 } from "highcharts/highstock";
 import highchartsAnnotations from "highcharts/modules/annotations";
 import highchartsPatternFill from "highcharts/modules/pattern-fill";
@@ -70,7 +71,25 @@ export const ApplicationDetailsChart = memo(({ seriesData, seriesTypes,  metric,
   const [showUsd] = useLocalStorage("showUsd", true);
   const [showGwei] = useLocalStorage("showGwei", false);
   const { selectedTimespan, timespans } = useTimespan();
-  const { hoveredSeriesName, selectedSeriesName } = useChartSync();
+  const { hoveredSeriesName, selectedSeriesName, registerChart, unregisterChart } = useChartSync();
+
+  const chartRef = useRef<Highcharts.Chart | null>(null);
+  
+  useHighchartsWrappers();
+
+  // Register chart when it's created
+  const handleChartCreated = useCallback((chart: Highcharts.Chart) => {
+    console.log('Chart created and registering:', chart.container.id);
+    chartRef.current = chart;
+    registerChart(chart);
+  }, [registerChart]);
+
+  // Unregister chart on unmount
+  useEffect(() => {
+    return () => {
+      unregisterChart();
+    };
+  }, [unregisterChart]);
   
   useHighchartsWrappers();
 
@@ -396,11 +415,6 @@ export const ApplicationDetailsChart = memo(({ seriesData, seriesTypes,  metric,
       highchartsChartProps={{
         chart: {
           height: 168,
-          events: {
-            // load: function () {
-            //   onChartCreated(this);
-            // },
-          },
         },
         plotOptions: {
           ...plotOptions,
@@ -416,6 +430,7 @@ export const ApplicationDetailsChart = memo(({ seriesData, seriesTypes,  metric,
         type: "area",
         className: "shared-crosshair-app-details shared-hover-app-details",
       }} 
+      onChartCreated={handleChartCreated}
     >
       <GTPChartTooltip metric_id={metric} />
       <GTPXAxis
@@ -1028,14 +1043,14 @@ const GTPChartTooltip = ({props, metric_id} : {props?: TooltipProps, metric_id: 
 // Cache for shared group names
 const chartGroupCache = new Map();
   
-function getCachedGroupName(chart, className) {
-  if (!chart) return null;
-  const chartId = chart.container.id;
-  if (!chartGroupCache.has(chartId)) {
-    chartGroupCache.set(chartId, getSharedChartGroupName(chart, className));
-  }
-  return chartGroupCache.get(chartId);
-}
+// function getCachedGroupName(chart, className) {
+//   if (!chart) return null;
+//   const chartId = chart.container.id;
+//   if (!chartGroupCache.has(chartId)) {
+//     chartGroupCache.set(chartId, getSharedChartGroupName(chart, className));
+//   }
+//   return chartGroupCache.get(chartId);
+// }
 
 // Throttle function to improve performance
 function throttle(func, limit = 16) {
@@ -1049,100 +1064,105 @@ function throttle(func, limit = 16) {
   };
 }
 
-// Use a throttled handler for mousemove
-const handleMouseMove = throttle(function(e) {
-  if (!(e instanceof MouseEvent || e instanceof TouchEvent)) return;
+// // Use a throttled handler for mousemove
+// const handleMouseMove = throttle(function(e) {
+//   if (!(e instanceof MouseEvent || e instanceof TouchEvent)) return;
 
-  const target = e.target as HTMLElement;
-  const chartContainer = target.closest(".highcharts-container");
-  if (!chartContainer) return;
+//   const target = e.target as HTMLElement;
+//   const chartContainer = target.closest(".highcharts-container");
+//   if (!chartContainer) return;
   
-  const thisChartId = chartContainer.id;
+//   const thisChartId = chartContainer.id;
   
-  // Find the current chart
-  const sourceChart = Highcharts.charts.find(chart => 
-    chart && chart.container.id === thisChartId);
+//   // Find the current chart
+//   const sourceChart = Highcharts.charts.find(chart => 
+//     chart && chart.container.id === thisChartId);
   
-  if (!sourceChart) return;
+//   if (!sourceChart) return;
   
-  // Get normalized position in the chart
-  const event = sourceChart.pointer.normalize(e);
-  const sourceX = event.chartX;
-  const sourceGroupName = getCachedGroupName(sourceChart, SHARE_CROSSHAIR_CLASS);
-  const hoveredSourcePoint = sourceChart.pointer.findNearestKDPoint(sourceChart.series, true, event);
-  const hoveredSourcePointX = hoveredSourcePoint ? hoveredSourcePoint.x : null;
+//   // Get normalized position in the chart
+//   const event = sourceChart.pointer.normalize(e);
+//   const sourceX = event.chartX;
+//   const sourceGroupName = getCachedGroupName(sourceChart, SHARE_CROSSHAIR_CLASS);
+//   const hoveredSourcePoint = sourceChart.pointer.findNearestKDPoint(sourceChart.series, true, event);
+//   const hoveredSourcePointX = hoveredSourcePoint ? hoveredSourcePoint.x : null;
   
-  if (!sourceGroupName) return;
+//   if (!sourceGroupName) return;
   
-  // Update all charts in the same group
-  Highcharts.charts.forEach(chart => {
-    if (!chart || chart === sourceChart) return;
+//   // Update all charts in the same group
+//   Highcharts.charts.forEach(chart => {
+//     if (!chart || chart === sourceChart) return;
     
-    const targetGroupName = getCachedGroupName(chart, SHARE_CROSSHAIR_CLASS);
-    if (targetGroupName !== sourceGroupName) return;
+//     const targetGroupName = getCachedGroupName(chart, SHARE_CROSSHAIR_CLASS);
+//     if (targetGroupName !== sourceGroupName) return;
     
-    // Convert to x-axis value in source chart
-    const xValue = sourceChart.xAxis[0].toValue(sourceX);
+//     // Convert to x-axis value in source chart
+//     const xValue = sourceChart.xAxis[0].toValue(sourceX);
     
-    // Find the corresponding x position in target chart
-    const targetX = chart.xAxis[0].toPixels(xValue);
+//     // Find the corresponding x position in target chart
+//     const targetX = chart.xAxis[0].toPixels(xValue);
     
-    // Create a simulated event at this position
-    const fakeEvent = {
-      chartX: targetX,
-      chartY: event.chartY, // Use the same Y position
-      target: chart.container
-    } as any;
+//     // Create a simulated event at this position
+//     const fakeEvent = {
+//       chartX: targetX,
+//       chartY: event.chartY, // Use the same Y position
+//       target: chart.container
+//     } as any;
     
-    // Find points near this position in target chart
-    const points: Highcharts.Point[] = [];
-    chart.series.forEach(series => {
-      if (series.visible && hoveredSourcePointX) {
-        const point = series.points.find(p =>  p.x === hoveredSourcePointX);
-        if (point !== undefined) points.push(point);
-      }
-    });
+//     // Find points near this position in target chart
+//     const points: Highcharts.Point[] = [];
+//     chart.series.forEach(series => {
+//       if (series.visible && hoveredSourcePointX) {
+//         const point = series.points.find(p =>  p.x === hoveredSourcePointX);
+//         if (point !== undefined) points.push(point);
+//       }
+//     });
 
-    // Highlight the points if found
-    if (points.length > 0) {
-      points.forEach(p => p.onMouseOver());
-      chart.tooltip.refresh(points.length > 1 ? points : points[0]);
-      chart.xAxis[0].drawCrosshair(fakeEvent, points[0]);
-    }
-  });
-}, 16); // ~60fps throttle
+//     // Highlight the points if found
+//     if (points.length > 0) {
+//       points.forEach(p => p.onMouseOver());
+//       chart.tooltip.refresh(points.length > 1 ? points : points[0]);
+//       chart.xAxis[0].drawCrosshair(fakeEvent, points[0]);
+//     }
+//   });
+// }, 16); // ~60fps throttle
 
-// Handle mouseout events
-const handleMouseOut = function(e) {
-  if (!(e instanceof MouseEvent || e instanceof TouchEvent)) return;
+// // Handle mouseout events
+// const handleMouseOut = function(e) {
+//   if (!(e instanceof MouseEvent || e instanceof TouchEvent)) return;
   
-  Highcharts.charts.forEach(function(chart) {
-    if (!chart) return;
-    const groupName = getCachedGroupName(chart, SHARE_CROSSHAIR_CLASS);
-    if (!groupName) return;
+//   Highcharts.charts.forEach(function(chart) {
+//     if (!chart) return;
+//     const groupName = getCachedGroupName(chart, SHARE_CROSSHAIR_CLASS);
+//     if (!groupName) return;
     
-    chart.tooltip.hide();
-    chart.xAxis[0].hideCrosshair();
-  });
-};
+//     chart.tooltip.hide();
+//     chart.xAxis[0].hideCrosshair();
+//   });
+// };
 
-// shared crosshair class names are like shared-crosshair-1, shared-crosshair-2, etc. to group charts together for shared interactions
-const SHARE_CROSSHAIR_CLASS = "shared-crosshair";
+// // shared crosshair class names are like shared-crosshair-1, shared-crosshair-2, etc. to group charts together for shared interactions
+// const SHARE_CROSSHAIR_CLASS = "shared-crosshair";
 
-const getSharedChartGroupName = (chart: Highcharts.Chart, SHARE_CROSSHAIR_CLASS: string) => {
-  const classList =  chart.container.className?.split(" ");
-  const sharedGroupName = classList.find((className) => className.startsWith(SHARE_CROSSHAIR_CLASS));
-  if(sharedGroupName) {
-    // get last part of the class name
-    return sharedGroupName.split("-").pop();
-  }
-  return null;
-}
+// const getSharedChartGroupName = (chart: Highcharts.Chart, SHARE_CROSSHAIR_CLASS: string) => {
+//   const classList =  chart.container.className?.split(" ");
+//   const sharedGroupName = classList.find((className) => className.startsWith(SHARE_CROSSHAIR_CLASS));
+//   if(sharedGroupName) {
+//     // get last part of the class name
+//     return sharedGroupName.split("-").pop();
+//   }
+//   return null;
+// }
 
 
-export const GTPChart = ({ children, providerProps, highchartsChartProps, chartProps }: { children?: ReactNode , providerProps?: HighchartsProviderProps, highchartsChartProps?: HighchartsChartProps, chartProps?: ChartProps }) => {
+export const GTPChart = ({ children, providerProps, highchartsChartProps, chartProps, onChartCreated }: { 
+  children?: ReactNode, 
+  providerProps?: HighchartsProviderProps, 
+  highchartsChartProps?: HighchartsChartProps, 
+  chartProps?: ChartProps,
+  onChartCreated?: (chart: Highcharts.Chart) => void
+}) => {
   const [containerRef, { width, height }] = useElementSizeObserver();
-  // const { onChartCreated, onChartDestroyed } = useGTPChartSyncProvider();
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
 
   useEffect(() => {
@@ -1153,75 +1173,75 @@ export const GTPChart = ({ children, providerProps, highchartsChartProps, chartP
     //   return undefined;
     // };
 
-    // Handle mouse/touch events for synchronized charts
-    ['mousemove', 'touchmove', 'touchstart'].forEach(function (eventType) {
-      document.addEventListener(eventType, handleMouseMove);
-    });
+    // // Handle mouse/touch events for synchronized charts
+    // ['mousemove', 'touchmove', 'touchstart'].forEach(function (eventType) {
+    //   document.addEventListener(eventType, handleMouseMove);
+    // });
 
-    ['mouseout', 'touchend'].forEach(function (eventType) {
-      document.addEventListener(eventType, handleMouseOut);
-    });
+    // ['mouseout', 'touchend'].forEach(function (eventType) {
+    //   document.addEventListener(eventType, handleMouseOut);
+    // });
 
     // Synchronize extremes (zooming) within shared groups
-    function syncExtremes(e: Highcharts.AxisSetExtremesEventObject) {
-      const thisChart = this.chart;
-      const sharedGroupName = getSharedChartGroupName(thisChart, SHARE_CROSSHAIR_CLASS);
+    // function syncExtremes(e: Highcharts.AxisSetExtremesEventObject) {
+    //   const thisChart = this.chart;
+    //   const sharedGroupName = getSharedChartGroupName(thisChart, SHARE_CROSSHAIR_CLASS);
       
-      if (!sharedGroupName || e.trigger === 'syncExtremes') return; // Prevent feedback loop
+    //   if (!sharedGroupName || e.trigger === 'syncExtremes') return; // Prevent feedback loop
       
-      Highcharts.charts.forEach(chart => {
-        if (!chart || chart === thisChart) return;
+    //   Highcharts.charts.forEach(chart => {
+    //     if (!chart || chart === thisChart) return;
         
-        const otherGroupName = getSharedChartGroupName(chart, SHARE_CROSSHAIR_CLASS);
-        if (otherGroupName !== sharedGroupName) return;
+    //     const otherGroupName = getSharedChartGroupName(chart, SHARE_CROSSHAIR_CLASS);
+    //     if (otherGroupName !== sharedGroupName) return;
         
-        chart.xAxis[0].setExtremes(
-          e.min,
-          e.max,
-          undefined,
-          false,
-          { trigger: 'syncExtremes' }
-        );
-      });
-    }
+    //     chart.xAxis[0].setExtremes(
+    //       e.min,
+    //       e.max,
+    //       undefined,
+    //       false,
+    //       { trigger: 'syncExtremes' }
+    //     );
+    //   });
+    // }
 
     // Reset zoom across shared group charts
-    function resetZoom(e: Highcharts.SelectEventObject): boolean {
-      if (e.resetSelection) return false; // Prevent feedback loop
+    // function resetZoom(e: Highcharts.SelectEventObject): boolean {
+    //   if (e.resetSelection) return false; // Prevent feedback loop
       
-      // The chart that triggered the selection event is available directly on the event
-      const thisChart = (e as any).detail?.chart || (e as any).target?.chart;
-      if (!thisChart) return false;
+    //   // The chart that triggered the selection event is available directly on the event
+    //   const thisChart = (e as any).detail?.chart || (e as any).target?.chart;
+    //   if (!thisChart) return false;
       
-      const sharedGroupName = getSharedChartGroupName(thisChart, SHARE_CROSSHAIR_CLASS);
-      if (!sharedGroupName) return false;
+    //   const sharedGroupName = getSharedChartGroupName(thisChart, SHARE_CROSSHAIR_CLASS);
+    //   if (!sharedGroupName) return false;
       
-      Highcharts.charts.forEach(chart => {
-        if (!chart || chart === thisChart) return;
+    //   Highcharts.charts.forEach(chart => {
+    //     if (!chart || chart === thisChart) return;
         
-        const otherGroupName = getSharedChartGroupName(chart, SHARE_CROSSHAIR_CLASS);
-        if (otherGroupName === sharedGroupName) {
-          chart.zoomOut();
-        }
-      });
+    //     const otherGroupName = getSharedChartGroupName(chart, SHARE_CROSSHAIR_CLASS);
+    //     if (otherGroupName === sharedGroupName) {
+    //       chart.zoomOut();
+    //     }
+    //   });
 
-      return false;
-    }
+    //   return false;
+    // }
 
     // Add the event handlers to Highcharts options
     const defaultOptions = Highcharts.getOptions() || {};
     const xAxisOptions = defaultOptions.xAxis as Highcharts.XAxisOptions || {};
     const chartOptions = defaultOptions.chart as Highcharts.ChartOptions || {};
     
-    xAxisOptions.events = {
-      ...xAxisOptions.events,
-      setExtremes: syncExtremes
-    };
+    // xAxisOptions.events = {
+    //   ...xAxisOptions.events,
+    //   setExtremes: syncExtremes
+    // };
     
-    chartOptions.events = {
-      ...chartOptions.events,
-      selection: resetZoom
-    };
+    // chartOptions.events = {
+    //   ...chartOptions.events,
+    //   selection: resetZoom
+    // };
     
     Highcharts.setOptions({
       ...defaultOptions,
@@ -1231,17 +1251,24 @@ export const GTPChart = ({ children, providerProps, highchartsChartProps, chartP
 
 
     // Remove the event listeners
-    return () => {
-      ['mousemove', 'touchmove', 'touchstart'].forEach(eventType => {
-        document.removeEventListener(eventType, handleMouseMove);
-      });
-      ['mouseout', 'touchend'].forEach(eventType => {
-        document.removeEventListener(eventType, handleMouseOut);
-      });
-    }
+    // return () => {
+    //   ['mousemove', 'touchmove', 'touchstart'].forEach(eventType => {
+    //     document.removeEventListener(eventType, handleMouseMove);
+    //   });
+    //   ['mouseout', 'touchend'].forEach(eventType => {
+    //     document.removeEventListener(eventType, handleMouseOut);
+    //   });
+    // }
     
   }, []);
 
+  // const handleChartLoaded : ChartLoadCallbackFunction = (_: Highcharts.Chart, event: Event) => {
+  //   console.log(`Chart loaded: ${event.target?.container.id}`);
+  // }
+
+  const handleChartLoaded: Highcharts.ChartLoadCallbackFunction = function (this: Highcharts.Chart, event) {
+    console.log(`Chart loaded: ${this.container.id}`);
+  };
   return (
     <HighchartsProvider 
       
@@ -1250,8 +1277,13 @@ export const GTPChart = ({ children, providerProps, highchartsChartProps, chartP
     >
       <HighchartsChart
         chart={{
-          ...baseOptions.chart, 
+          ...baseOptions.chart,
+          events: {
+            load: handleChartLoaded,
+            ...highchartsChartProps?.chart?.events,
+          }
         }}
+        
 
         containerProps={{
           style: {
@@ -1263,26 +1295,16 @@ export const GTPChart = ({ children, providerProps, highchartsChartProps, chartP
       >
           <Chart
               {...baseOptions.chart}
-              // width={width}
-              // height={height}
-              // className="zoom-chart" zoom not working
               marginTop={chartProps?.marginTop || 5}
               marginBottom={chartProps?.marginBottom || 37}
               marginRight={chartProps?.marginRight || 5}
               marginLeft={chartProps?.marginLeft || 60}
-              
               zooming={{
                 ...chartProps?.zooming,
                 mouseWheel: {
                   enabled: false,
                 },
               }}
-              // events={{
-              //   // load: function (this: Highcharts.Chart) {
-              //   //   chartComponent.current = this;
-              //   //   onChartCreated(this);
-              //   // },
-              // }}
               options={{
                 ...chartProps?.options,
                 chartComponent: chartComponent.current,

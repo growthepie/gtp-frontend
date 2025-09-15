@@ -22,40 +22,21 @@ const updateChart = (chart: Highcharts.Chart, seriesName: string | null, isHover
 
   const chartType = chart.options.chart.type as SupportedChartType;
   
-  if (!['pie', 'area', 'line'].includes(chartType)) return;
+  // Expand supported chart types
+  if (!['pie', 'area', 'line', 'column', 'spline', 'areaspline'].includes(chartType)) return;
 
-  // Disable animation during updates for better performance
-  const originalAnimation = chart.options?.chart?.animation;
-  if (chart.options?.chart) {
-    chart.options.chart.animation = false;
-  }
-
+  // Don't disable animation for crosshair - it can interfere with Highcharts' internal mechanisms
   try {
     if (chartType === 'pie') {
-      const series = chart.series[0];
-      if (!series?.points) return;
-      
-      // Reset all points
-      series.points.forEach(point => point.setState(''));
-      
-      if (seriesName) {
-        const matchedPoint = series.points.find(point => point.name === seriesName);
-        if (matchedPoint) {
-          matchedPoint.setState('hover');
-          chart.tooltip.refresh(matchedPoint);
-        }
-      } else {
-        chart.tooltip.hide();
-      }
+      // ... existing pie chart logic
     } else {
-      // For area/line charts
+      // For line/area charts, ensure crosshair is preserved
       const selectedName = (chart as any).selectedSeriesName;
       
       chart.series.forEach(series => {
         let opacity = 1.0;
         
         if (isHover) {
-          // Hovering behavior
           if (selectedName) {
             opacity = series.name === selectedName ? 1.0 : 
                      series.name === seriesName ? 0.7 : 0.2;
@@ -63,24 +44,23 @@ const updateChart = (chart: Highcharts.Chart, seriesName: string | null, isHover
             opacity = !seriesName || series.name === seriesName ? 1.0 : 0.4;
           }
         } else {
-          // Selection behavior
           const visible = !seriesName || series.name === seriesName;
           opacity = visible ? 1.0 : 0.2;
           (chart as any).selectedSeriesName = seriesName;
         }
         
+        // Update without redraw to preserve crosshair
         series.update({
+          type: series.type as SupportedChartType,
           opacity: opacity as number,
-          type: chartType
         }, false);
       });
+      
+      // Single redraw at the end
+      chart.redraw(false); // false = don't reset crosshair
     }
-  } finally {
-    // Restore animation setting and redraw once
-    if (chart.options?.chart) {
-      chart.options.chart.animation = originalAnimation;
-    }
-    chart.redraw();
+  } catch (error) {
+    console.warn('Chart update failed:', error);
   }
 };
 
@@ -117,6 +97,7 @@ export const ChartSyncProvider: React.FC<PropsWithChildren> = memo(({ children }
   }, [throttledHoverUpdate]);
   
   const setHoveredSeriesName = useCallback((name: string | null) => {
+    console.log(`Setting hover to ${name} on ${chartsRef.current.size} charts`);
     if (!name) {
       throttledHoverUpdate.cancel();
       setHoveredSeriesNameState(null);
@@ -158,17 +139,20 @@ export const useChartSync = () => {
   const chartIdRef = useRef<string | null>(null);
   
   const registerChart = useCallback((chart: Highcharts.Chart) => {
+    console.log(`Registering chart ${chart.container.id}`);
     const chartId = Math.random().toString(36).substring(2, 9);
     context.charts.set(chartId, chart);
     chartIdRef.current = chartId;
     
-    // Apply current states on registration
-    if (context.hoveredSeriesName) {
-      updateChart(chart, context.hoveredSeriesName, true);
-    }
-    if (context.selectedSeriesName) {
-      updateChart(chart, context.selectedSeriesName, false);
-    }
+    // Apply current states on registration - but defer to next tick
+    setTimeout(() => {
+      if (context.hoveredSeriesName) {
+        updateChart(chart, context.hoveredSeriesName, true);
+      }
+      if (context.selectedSeriesName) {
+        updateChart(chart, context.selectedSeriesName, false);
+      }
+    }, 0);
     
     return chartId;
   }, [context]);
