@@ -52,16 +52,16 @@ export default function WorkWithUs({ placement = "bottom-end" }: WorkWithUsProps
         open={open}
         onOpenChange={setOpen}
         openOn="both"
-        placement={placement} // Explicit placement (this is the default)
+        placement={placement}
         collapsedSize={{ width: 170, height: 44 }}
         expandedSize={{ width: 286, height: 166 }}
         className="pointer-events-auto shrink-0"
-        triggerClassName="px-[15px]" // Ensure proper padding
+        triggerClassName="px-[15px]"
         renderTrigger={({ props }) => (
-          <>
+          <div {...props} className="flex items-center gap-x-[10px] w-full">
             <GTPIcon icon="gtp-socials" size="md" />
             <div className="heading-small-sm">Work with us</div>
-          </>
+          </div>
         )}
       />
     </div>

@@ -84,7 +84,6 @@ function getPlacementStyles(placement: Placement, offset: number) {
       styles.transformOrigin = 'center bottom';
       styles.spacerAlign = 'mx-auto';
       styles.borderRadius = '22px 22px 0 0';
-      // bottom 35px, top 15px
       styles.padding = '15px 0 35px 0';
       break;
     case 'top-start':
@@ -234,7 +233,7 @@ function useHoverBehavior(
       }, 500);
     };
     
-    document.addEventListener("touchstart", handleTouchStart);
+    document.addEventListener("touchstart", handleTouchStart, { passive: true });
     return () => {
       document.removeEventListener("touchstart", handleTouchStart);
       if (touchTimeout.current) {
@@ -355,21 +354,28 @@ export default function ExpandableMenu({
 }: ExpandableMenuProps) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // State management
   const { open, setOpen } = useExpandableState(controlledOpen, onOpenChange);
 
   // Track transition state to prevent interaction during animation
   useEffect(() => {
-    if (open) {
-      setIsTransitioning(true);
-      const timer = setTimeout(() => setIsTransitioning(false), 300);
-      return () => clearTimeout(timer);
-    } else {
-      setIsTransitioning(true);
-      const timer = setTimeout(() => setIsTransitioning(false), 300);
-      return () => clearTimeout(timer);
+    // Clear any existing timeout
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current);
     }
+    
+    setIsTransitioning(true);
+    transitionTimeoutRef.current = setTimeout(() => {
+      setIsTransitioning(false);
+    }, 300);
+    
+    return () => {
+      if (transitionTimeoutRef.current) {
+        clearTimeout(transitionTimeoutRef.current);
+      }
+    };
   }, [open]);
   
   // Close handlers
@@ -380,14 +386,24 @@ export default function ExpandableMenu({
   }, [setOpen, isTransitioning]);
   
   // Setup behavior hooks
-  useOutsideAlerter( rootRef, handleClose, open );
+  useOutsideAlerter(rootRef, handleClose, open);
   useEscapeKey(handleClose);
   const { handleMouseEnter, handleMouseLeave } = useHoverBehavior(openOn, setOpen, open);
   
-  // Click behavior with transition guard
-  const handleTriggerClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    // Prevent default to avoid any browser quirks
-    e.preventDefault();
+  // Click behavior with transition guard and proper passive event handling
+  const handleTriggerClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    // Don't toggle if currently transitioning
+    if (isTransitioning) return;
+    
+    if (openOn === "click" || openOn === "both") {
+      setOpen(!open);
+    }
+  }, [openOn, open, setOpen, isTransitioning]);
+
+  // Separate touch handler for mobile
+  const handleTriggerTouch = useCallback((e: React.TouchEvent) => {
     e.stopPropagation();
     
     // Don't toggle if currently transitioning
@@ -418,16 +434,16 @@ export default function ExpandableMenu({
   const panelWidthCollapsed = wCollapsed;
   const panelHeightCollapsed = `calc(${hCollapsed} / 4)`;
   
-  // Trigger props
+  // Trigger props - fix the issue by spreading the handler directly
   const triggerProps = {
-    "aria-haspopup": "menu",
+    "aria-haspopup": "menu" as const,
     "aria-expanded": open,
     onClick: handleTriggerClick,
-    onTouchEnd: handleTriggerClick,
+    onTouchStart: handleTriggerTouch, // Use onTouchStart instead of onTouchEnd for better responsiveness
   };
   
-  // Container event handlers
-  const containerEventHandlers = {
+  // Container event handlers - only for non-touch devices
+  const containerEventHandlers = isTouchDevice() ? {} : {
     onMouseEnter: handleMouseEnter,
     onMouseLeave: handleMouseLeave,
   };
