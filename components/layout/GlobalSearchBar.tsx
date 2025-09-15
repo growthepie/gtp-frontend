@@ -509,7 +509,7 @@ export default function GlobalFloatingBar() {
                   <GTPLogoOld />
                   <div 
                     // style={{ transform: `rotate(${rotation}deg)` }}
-                    className={`relative flex w-[20px] h-[20px] top-[1px] cursor-pointer transition-transform duration-sidebar ease-sidebar !size-[13.15px] ${isSidebarOpen ? "hover:rotate-180 rotate-0" : "hover:rotate-0 rotate-180"}`}
+                    className={`relative flex w-[20px] h-[20px] top-[1px] cursor-pointer transition-transform duration-sidebar ease-sidebar !size-[13.15px] ${isSidebarOpen ? "rotate-180" : "rotate-0"}`}
                     onClick={() => {
                       track("clicked Sidebar Close", {
                         location: "desktop sidebar",
