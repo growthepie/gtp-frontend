@@ -4,7 +4,10 @@ import { GTPIcon } from "../../GTPIcon";
 import { useMaster } from "@/contexts/MasterContext";
 import { ChainOverview } from "@/lib/chains";
 import { MasterResponse, Metrics, MetricInfo } from "@/types/api/MasterResponse";
-import { useLocalStorage } from "usehooks-ts";
+import ReactECharts from "echarts-for-react";
+import { useLocalStorage, useMediaQuery } from "usehooks-ts";
+import { useState, useCallback, useRef } from "react";
+import moment from "moment";
 
 const formatLargeNumber = (value: number, decimals: number) => {
     const absValue = Math.abs(value);
@@ -18,16 +21,82 @@ const formatLargeNumber = (value: number, decimals: number) => {
     return value.toFixed(decimals);
 };
 
+
+
 export default function MetricCards({ chainKey, master, metricKey, metricData, overviewData }: { chainKey: string, master: MasterResponse, metricKey: string, metricData: MetricInfo, overviewData: ChainOverview }) {
     const { AllChainsByKeys } = useMaster();
     const chainData = AllChainsByKeys[chainKey];
     const showUsd = useLocalStorage("showUsd", true);
     const metricUseUSD = Object.keys(metricData.units).includes("usd");
+    const isMobile = useMediaQuery("(max-width: 768px)");
+    
+    // Custom tooltip state
+    const [customTooltip, setCustomTooltip] = useState<{
+        visible: boolean;
+        x: number;
+        y: number;
+        data: any[];
+    }>({ visible: false, x: 0, y: 0, data: [] });
+    
+    // Track if user is interacting (touching/moving) on mobile
+    const [isInteracting, setIsInteracting] = useState(false);
+
+    // Custom Tooltip Component
+    const CustomTooltip = useCallback(({ data, x, y }: { data: any[], x: number, y: number }) => {
+        if (!data.length) return null;
+        const dateStr = moment.utc(data[0].categoryLabel).utc().locale("en-GB").format("DD MMM YYYY");
+
+        const tooltipWidth = 200;
+        const tooltipHeight = 80;
+        const containerW = 100; // chart container width
+        const containerH = 28; // chart container height
+        const margin = 5;
+
+        // Position tooltip
+        let tooltipX = x + 5;
+        let tooltipY = y - tooltipHeight - 5;
+
+        // Adjust if tooltip goes outside bounds
+        if (tooltipX + tooltipWidth > containerW - margin) {
+            tooltipX = x - tooltipWidth - 5;
+        }
+        if (tooltipY < margin) {
+            tooltipY = y + 5;
+        }
+
+        return (
+         <div
+            className={`absolute pointer-events-none z-[999] bg-[#2A3433EE] rounded-[15px] px-3 pt-3 pb-4 min-w-[200px]  text-xs font-raleway shadow-lg`}
+            style={{
+              left: tooltipX,
+              top: tooltipY,
+            }}
+          >
+                <div className="flex items-center gap-x-[5px] justify-between mb-2 pl-[21px] ">
+                    <div className="heading-small-xs text-white">{dateStr}</div>
+                </div>
+                {data.map((item, index) => (
+                    <div key={index} className="flex justify-between items-center gap-x-[10px] h-[12px]">
+                        <div className="flex items-center gap-1">
+                            <div 
+                                className="w-4 h-2 rounded-r-full " 
+                                style={{ backgroundColor: item.color }}
+                            />
+                            <span className="text-xs whitespace-nowrap text-white">{metricData.name}</span>
+                        </div>
+                            <span className="numbers-xs text-white font-medium">
+                                {prefix}{formatLargeNumber(item.value, 2)} {suffix}
+                        </span>
+                    </div>
+                ))}
+            </div>
+        );
+    }, [metricData.name]);
 
     if (!chainData || !overviewData.data.ranking[metricKey] || !metricData) return null;
 
 
-    console.log(metricUseUSD);
+    
     const prefix = metricData.units[metricUseUSD ? showUsd ? "usd" : "eth" : "value"].prefix;
     const suffix = metricData.units[metricUseUSD ? showUsd ? "usd" : "eth" : "value"].suffix;
     const decimals = metricData.units[metricUseUSD ? showUsd ? "usd" : "eth" : "value"].decimals;
@@ -46,7 +115,18 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
                 </div>
                 <div className="heading-large-xs ">{metricData.name}</div>
             </div>
-            <div>Chart Here</div>
+            <div className=""><MetricChart 
+                metricKey={metricKey} 
+                metricData={metricData} 
+                overviewData={overviewData} 
+                chainColor={chainData.colors.dark[0]}
+                customTooltip={customTooltip}
+                setCustomTooltip={setCustomTooltip}
+                isInteracting={isInteracting}
+                setIsInteracting={setIsInteracting}
+                CustomTooltip={CustomTooltip}
+                seriesData={overviewData.data.kpi_cards[metricKey].sparkline.data}
+            /></div>
             <div className="flex flex-col gap-y-[2px] items-end min-w-[120px]">
                 <div className="numbers-md" style={{ color: chainData.colors.dark[0] }}>
                     {prefix}{formatLargeNumber(overviewData.data.kpi_cards[metricKey].current_values.data[0], 2)} {suffix}
@@ -55,6 +135,190 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
 
             </div>
             
+        </div>
+    )
+}
+
+
+
+
+
+//Lets add a basic echart component here
+
+const MetricChart = ({ 
+    metricKey, 
+    metricData, 
+    overviewData, 
+    chainColor, 
+    customTooltip, 
+    setCustomTooltip, 
+    isInteracting, 
+    setIsInteracting, 
+    CustomTooltip,
+    seriesData,
+}: { 
+    metricKey: string, 
+    metricData: MetricInfo, 
+    overviewData: ChainOverview, 
+    chainColor: string,
+    customTooltip: any,
+    setCustomTooltip: any,
+    isInteracting: boolean,
+    setIsInteracting: any,
+    CustomTooltip: any,
+    seriesData: any
+}) => {
+    const chartRef = useRef<ReactECharts>(null);
+    const types = overviewData.data.kpi_cards[metricKey].sparkline.types;
+    
+    // Extract timestamps and values from the sparkline data
+    const timestamps = seriesData.map((item: any) => item[0]);
+    const values = seriesData.map((item: any) => item[1]);
+
+    const option = {
+        
+        xAxis: {
+            type: 'category',
+            data: timestamps,
+            show: false
+        },
+        yAxis: {
+            type: 'value',
+            show: false
+        },
+        series: [{
+            data: values,
+            type: 'line',
+            smooth: true,
+            symbol: 'circle',
+            symbolSize: 0, // Hide symbols by default
+            lineStyle: {
+                color: chainColor,
+                width: 2
+            },
+            itemStyle: {
+                color: chainColor
+            },
+            emphasis: {
+                symbolSize: 6, // Show symbol on hover
+                itemStyle: {
+                    color: chainColor + 'CC', // 80% opacity
+                    borderWidth: 0
+                }
+            }
+        }],
+        grid: {
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0
+        },
+        tooltip: {
+            show: true,
+            trigger: 'axis',
+            formatter: () => '', // Return empty string to hide tooltip content but keep axisPointer
+            backgroundColor: 'transparent',
+            borderWidth: 0,
+            axisPointer: {
+                type: 'line',
+                lineStyle: {
+                    color: '#CDD8D3',
+                    width: 1,
+                    type: 'solid'
+                }
+            }
+        }
+    }
+    return (
+        <div 
+            className="h-[28px] w-[100px] relative"
+            onMouseMove={(e) => {
+                const chartInstance = chartRef.current?.getEchartsInstance();
+                if (chartInstance) {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+
+                    const dataPoint = chartInstance.convertFromPixel('grid', [x, y]);
+
+                    if (dataPoint && dataPoint[0] >= 0 && dataPoint[0] < values.length) {
+                        const categoryIndex = Math.round(dataPoint[0]);
+                        const tooltipData = [{
+                            seriesName: metricData.name,
+                            value: values[categoryIndex] || 0,
+                            color: chainColor,
+                            categoryIndex,
+                            categoryLabel: timestamps[categoryIndex]
+                        }];
+
+                        setCustomTooltip({
+                            visible: tooltipData.length > 0,
+                            x: x,
+                            y: y,
+                            data: tooltipData
+                        });
+                    } else {
+                        setCustomTooltip(prev => ({ ...prev, visible: false }));
+                    }
+                }
+            }}
+            onMouseLeave={() => {
+                setCustomTooltip(prev => ({ ...prev, visible: false }));
+                setIsInteracting(false);
+            }}
+            onTouchStart={() => {
+                setIsInteracting(true);
+            }}
+            onTouchMove={(e) => {
+                setIsInteracting(true);
+                const chartInstance = chartRef.current?.getEchartsInstance();
+                if (chartInstance) {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const x = e.touches[0].clientX - rect.left;
+                    const y = e.touches[0].clientY - rect.top;
+
+                    const dataPoint = chartInstance.convertFromPixel('grid', [x, y]);
+
+                    if (dataPoint && dataPoint[0] >= 0 && dataPoint[0] < values.length) {
+                        const categoryIndex = Math.round(dataPoint[0]);
+                        const tooltipData = [{
+                            seriesName: metricData.name,
+                            value: values[categoryIndex] || 0,
+                            color: chainColor,
+                            categoryIndex,
+                            categoryLabel: timestamps[categoryIndex]
+                        }];
+
+                        setCustomTooltip({
+                            visible: tooltipData.length > 0,
+                            x: x,
+                            y: y,
+                            data: tooltipData
+                        });
+                    } else {
+                        setCustomTooltip(prev => ({ ...prev, visible: false }));
+                    }
+                }
+            }}
+            onTouchEnd={() => {
+                setIsInteracting(false);
+            }}
+        >
+            <ReactECharts 
+                ref={chartRef}
+                option={option} 
+                style={{ height: '100%', width: '100%' }}
+                opts={{ renderer: 'canvas' }}
+            />
+            
+            {/* Custom React Tooltip */}
+            {customTooltip.visible && (
+                <CustomTooltip
+                    data={customTooltip.data}
+                    x={customTooltip.x}
+                    y={customTooltip.y}
+                />
+            )}
         </div>
     )
 }

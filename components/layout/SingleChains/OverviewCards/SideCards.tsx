@@ -100,7 +100,7 @@ export default function LiveCards({ chainKey, chainData, master }: { chainKey: s
     }, [chainDataTPS, lastUpdated, initialHistory]); // Note: tpsHistory is intentionally omitted from deps
 
 
-    console.log(chainDataOverview);
+    
  
    
   if(!chainDataTPS || !chainDataOverview) return null;
