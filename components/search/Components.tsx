@@ -278,14 +278,17 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     // Create a debounced version of the search update function
     const debouncedUpdateSearch = useMemo(
       () => debounce((newValue: string) => {
-        // get existing query params
-        let newSearchParams = new URLSearchParams(window.location.search);
-        newSearchParams.set("query", newValue);
-
-        // create new url
-        let url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
-        window.history.replaceState(null, "", url);
-      }, 50),
+        const sp = new URLSearchParams(window.location.search);
+        const current = sp.get("query") ?? "";
+        if (current === newValue) return;
+    
+        if (newValue) sp.set("query", newValue); else sp.delete("query");
+        const next = `${pathname}?${decodeURIComponent(sp.toString())}`;
+        const now = `${window.location.pathname}${window.location.search}`;
+        if (next !== now) {
+          window.history.replaceState(null, "", next);
+        }
+      }, 100), // you can raise to 100–150ms on mobile to cut churn
       [pathname]
     );
 

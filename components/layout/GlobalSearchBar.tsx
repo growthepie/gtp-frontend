@@ -1,31 +1,23 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import { FloatingBarContainer } from './FloatingBar/FloatingBarContainer';
-import { SearchInput } from './FloatingBar/SearchInput';
 import { Badge } from './FloatingBar/Badge';
 import { FloatingBarButton } from './FloatingBar/FloatingBarButton';
 import { FilterSelectionContainer } from './FloatingBar/FilterSelectionContainer';
 import { Popover } from './FloatingBar/Popover';
-import { ToggleOption } from './FloatingBar/ToggleOption';
-import { NumericInput } from './FloatingBar/NumericInput';
 import { GTPIcon } from './GTPIcon';
 import { useUIContext } from '@/contexts/UIContext';
-import Icon from './Icon';
-import { useLocalStorage } from 'usehooks-ts';
 import { useSearchParams } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { SearchBar, useSearchBuckets } from '../search/Components';
 import EthUsdSwitchSimple from './EthUsdSwitchSimple';
-import FocusSwitchSimple from './FocusSwitchSimple';
 import { IconContextMenu } from './IconContextMenu';
 import { useToast } from '../toast/GTPToast';
 import { GTPIconName } from '@/icons/gtp-icon-names';
 import { track } from '@vercel/analytics/react';
 import SharePopoverContent from './FloatingBar/SharePopoverContent';
 import MobileMenuWithSearch from './FloatingBar/MobileMenuWithSearch';
-import NotificationButton from './NotificationButton';
 import WorkWithUs from './WorkWithUs';
 import NotificationButtonExpandable from './FloatingBar/NotificationButtonExpandable';
 
@@ -51,10 +43,15 @@ export default function GlobalFloatingBar() {
 
   // Function to clear query following the same pattern as SearchBar
   const clearQuery = useCallback(() => {
-    const newSearchParams = new URLSearchParams(window.location.search);
-    newSearchParams.delete("query");
-    const url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
-    window.history.replaceState(null, "", url);
+    const sp = new URLSearchParams(window.location.search);
+    if (!sp.has("query")) return; // nothing to do
+    sp.delete("query");
+  
+    const next = `${pathname}?${decodeURIComponent(sp.toString())}`;
+    const current = `${window.location.pathname}${window.location.search}`;
+    if (next !== current) {
+      window.history.replaceState(null, "", next);
+    }
   }, [pathname]);
 
   // Track if the user is interacting with search (not just focused)

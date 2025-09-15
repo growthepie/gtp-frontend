@@ -542,36 +542,34 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
     return () => window.removeEventListener('exitKeyboardNav', handleExitKeyboardNav);
   }, []);
 
-  const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-    if (mobileMenuRef.current &&
-      !mobileMenuRef.current.contains(event.target as Node)) {
-      
-      // Get the menu's position
-      const menuRect = mobileMenuRef.current.getBoundingClientRect();
-      
-      // Get the click position
-      const clickY = 'touches' in event ? event.touches[0].clientY : (event as MouseEvent).clientY;
-      
-      // Only close if the click is above the menu (clickY < menuRect.top)
-      if (clickY < menuRect.top) {
-        onClose();
-      }
+  const handleClickOutside = useCallback((event: MouseEvent | TouchEvent) => {
+    if (!mobileMenuRef.current) return;
+  
+    const menuRect = mobileMenuRef.current.getBoundingClientRect();
+    const y = 'touches' in event
+      ? event.touches[0].clientY
+      : (event as MouseEvent).clientY;
+  
+    // Only close if tap/click above the drawer
+    if (y < menuRect.top) {
+      onClose();
     }
-  };
-
-  // Add listeners with a slight delay to avoid immediate triggers
-  const timeoutId = setTimeout(() => {
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('touchstart', handleClickOutside);
-  }, 100);
+  }, [onClose]);
 
   useEffect(() => {
+    if (!isOpen) return;
+  
+    const id = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside, true);
+      document.addEventListener('touchstart', handleClickOutside, { passive: true } as any);
+    }, 100);
+  
     return () => {
-      clearTimeout(timeoutId);
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
+      clearTimeout(id);
+      document.removeEventListener('mousedown', handleClickOutside, true);
+      document.removeEventListener('touchstart', handleClickOutside as any);
     };
-  }, []);
+  }, [isOpen, handleClickOutside]);
 
 
   // Don't render anything if never opened (saves initial memory)
@@ -734,7 +732,9 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
         : 'opacity-100 pointer-events-none'
         }`}
       style={{
-        visibility: isOpen ? 'visible' : 'hidden',
+        // visibility: isOpen ? 'visible' : 'hidden',
+        transform: isOpen ? 'translateY(0) scaleY(1)' : 'translateY(50%) scaleY(0)',
+        opacity: isOpen ? 1 : 0,
         maxHeight: isOpen ? `${viewportHeight - 60}px` : '0px',
       }}
       onClick={(e) => {
