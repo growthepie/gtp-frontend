@@ -7,9 +7,10 @@ import { GTPIconName } from "@/icons/gtp-icon-names";
 
 type WorkWithUsProps = {
   placement: Placement;
+  mobile?: boolean;
 };
 
-export default function WorkWithUs({ placement = "bottom-end" }: WorkWithUsProps) {
+export default function WorkWithUs({ placement = "bottom-end", mobile = false }: WorkWithUsProps) {
   const [open, setOpen] = useState(false);
 
   const items: ExpandableMenuItem[] = [
@@ -53,15 +54,26 @@ export default function WorkWithUs({ placement = "bottom-end" }: WorkWithUsProps
         onOpenChange={setOpen}
         openOn="both"
         placement={placement}
-        collapsedSize={{ width: 170, height: 44 }}
+        collapsedSize={{ width: mobile ? 44 : 170, height: 44 }}
         expandedSize={{ width: 286, height: 166 }}
         className="pointer-events-auto shrink-0"
-        triggerClassName="px-[15px]"
-        renderTrigger={({ props }) => (
-          <div {...props} className="flex items-center gap-x-[10px] w-full">
-            <GTPIcon icon="gtp-socials" size="md" />
-            <div className="heading-small-sm">Work with us</div>
-          </div>
+        triggerClassName="!px-0 md:!px-[5px]"
+        renderTrigger={({ open, props }) => (
+          <button
+            {...props}
+            type="button"
+            className={`relative flex items-center w-full h-full rounded-full overflow-hidden ${open ? '' : ''}`}
+            aria-label="Notifications"
+          >
+            <GTPIcon 
+              icon="gtp-socials" size="md"
+              containerClassName={`!size-[44px] min-w-[44px] flex items-center justify-center`}
+             />
+            {/* <div className="heading-small-sm">Work with us</div> */}
+            <div className={`heading-small-sm whitespace-nowrap ${open ? 'opacity-100' : 'opacity-0'} md:opacity-100 transition-opacity duration-500`}>
+              Work with us
+            </div>
+          </button>
         )}
       />
     </div>

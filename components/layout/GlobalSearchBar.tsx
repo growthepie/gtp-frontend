@@ -484,8 +484,12 @@ export default function GlobalFloatingBar() {
                 onClose={handleMobileMenuClose}
               />
               <div className={`flex items-center w-full gap-x-[5px] md:gap-x-[5px] z-0 pointer-events-auto`}>
-                {/* Mobile - Share Button */}
-                <Popover
+                {/* Work with Us Button */}
+                <div>
+                <WorkWithUs placement="top-start" mobile={true} />
+                </div>
+                {/* Mobile - Share Button (disabled for now) */}
+                {/* <Popover
                   placement="top-start"
                   isOpen={isSharePopoverOpen}
                   onOpenChange={handleSharePopoverOpenChange}
@@ -499,7 +503,7 @@ export default function GlobalFloatingBar() {
                     icon="gtp-share"
                     title="Share"
                   />
-                </Popover>
+                </Popover> */}
                 {/* Desktop - Home Button */}
                 <div className={`hidden md:flex items-center h-[44px] w-[58.87px] pl-[8px] pb-[2px] gap-x-[15px] ${isSidebarOpen ? "md:w-[245px] justify-between" : "md:w-[71.15px] justify-start"} transition-all duration-sidebar ease-sidebar`}>
                   <GTPLogoOld />
