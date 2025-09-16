@@ -31,29 +31,30 @@ export default function ChainTabs({ chainInfo, selectedTab, setSelectedTab }: { 
     const [hoveredTab, setHoveredTab] = useState<string | null>(null);
     return(
         <SectionBar>
-        {Object.keys(chainInfo.tab_status).sort((a, b) => {
-            return chainInfo.tab_status[a] === "soon" ? 1 : -1;
-        }).sort((a, b) => {
-            return chainInfo.tab_status[a] === "locked" ? 1 : -1;
-        }).map((tab, index) => {
-            return(
-                <div key={tab} onClick={() => setSelectedTab(tab)}
-                    onMouseEnter={() => setHoveredTab(tab)}
-                    onMouseLeave={() => setHoveredTab(null)}
-                >
-                    <SectionBarItem
-                        isSelected={selectedTab === tab}
-                        isLocked={chainInfo.tab_status[tab] === "locked"}
-                        comingSoon={chainInfo.tab_status[tab] === "soon"}
-                        icon={tab === "overview" ? `gtp:${chainInfo.url_key}-logo-monochrome` : TAB_INFO[tab].icon}
-                        header={tab === "overview" ? chainInfo.name : TAB_INFO[tab].header}
-                        iconColor={tab === "overview" ? chainInfo.colors.dark[0] : undefined}
-                        index={index + 1}
-                        isHovered={hoveredTab === tab}
-                    />
-                </div>
-            )
-        })}
+        {Object.keys(chainInfo.tab_status)
+            .sort((a, b) => {
+            const statusOrder = { active: 0, soon: 1, locked: 2 };
+            return (statusOrder[chainInfo.tab_status[a]] ?? 3) - (statusOrder[chainInfo.tab_status[b]] ?? 3);
+            })
+            .map((tab, index) => (
+            <div
+                key={tab}
+                onClick={() => setSelectedTab(tab)}
+                onMouseEnter={() => setHoveredTab(tab)}
+                onMouseLeave={() => setHoveredTab(null)}
+            >
+                <SectionBarItem
+                isSelected={selectedTab === tab}
+                isLocked={chainInfo.tab_status[tab] === "locked"}
+                comingSoon={chainInfo.tab_status[tab] === "soon"}
+                icon={tab === "overview" ? `gtp:${chainInfo.url_key}-logo-monochrome` : TAB_INFO[tab].icon}
+                header={tab === "overview" ? chainInfo.name : TAB_INFO[tab].header}
+                iconColor={tab === "overview" ? chainInfo.colors.dark[0] : undefined}
+                index={index + 1}
+                isHovered={hoveredTab === tab}
+                />
+            </div>
+            ))}
         </SectionBar>
     )
 }
