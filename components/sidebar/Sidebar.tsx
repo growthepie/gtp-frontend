@@ -106,7 +106,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           }
           // Check if any child link matches the current path
           const isChildActive = item.children.some(
-            (child: any) => child.type === 'link' && pathname.startsWith(child.href)
+            (child: any) => child.type.includes('link') && pathname.startsWith(child.href)
           );
           if (isChildActive) {
             return item.label;
