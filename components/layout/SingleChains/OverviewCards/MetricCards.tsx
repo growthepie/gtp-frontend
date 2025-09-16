@@ -175,8 +175,15 @@ const MetricChart = ({
     const timestamps = seriesData.map((item: any) => item[0]);
     const values = seriesData.map((item: any) => item[1]);
 
+    // Calculate a better yAxis min: slightly below the minimum value, but not negative if all values are positive
+    const minValue = Math.min(...values);
+    const maxValue = Math.max(...values);
+    // Add a small margin below min, but don't go below zero if all values are positive
+    const yAxisMin = minValue > 0
+        ? Math.max(0, minValue - (maxValue - minValue) * 0.15)
+        : minValue - (maxValue - minValue) * 0.15;
+
     const option = {
-        
         xAxis: {
             type: 'category',
             data: timestamps,
@@ -184,7 +191,8 @@ const MetricChart = ({
         },
         yAxis: {
             type: 'value',
-            show: false
+            show: false,
+            min: yAxisMin,
         },
         series: [{
             data: values,
@@ -204,6 +212,25 @@ const MetricChart = ({
                 itemStyle: {
                     color: chainColor + 'CC', // 80% opacity
                     borderWidth: 0
+                }
+            },
+            areaStyle: {
+                color: {
+                    type: 'linear',
+                    x: 0,
+                    y: 0,
+                    x2: 0,
+                    y2: 1,
+                    colorStops: [
+                        {
+                            offset: 0,
+                            color: chainColor + '33' // 20% opacity at top
+                        },
+                        {
+                            offset: 1,
+                            color: chainColor + '00' // 0% opacity at bottom
+                        }
+                    ]
                 }
             }
         }],
