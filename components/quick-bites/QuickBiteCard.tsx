@@ -85,7 +85,6 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
             <Image
               src={bannerImage}
               alt={title}
-              objectFit='cover'
               fill
               className='w-full h-full object-cover rounded-[15px]'
             />

@@ -32,6 +32,7 @@ let highchartsInitialized = false;
 interface ChartWrapperProps {
   chartType: 'line' | 'area' | 'column' | 'pie';
   data: any;
+  margins?: "none" | "normal";
   options?: any;
   width?: number | string;
   height?: number | string;
@@ -61,6 +62,7 @@ interface ChartWrapperProps {
 const ChartWrapper: React.FC<ChartWrapperProps> = ({
   chartType,
   data,
+  margins = "normal",
   options = {},
   width = '100%',
   height = 400,
@@ -285,7 +287,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
  
   
   return (
-    <div className="relative md:px-[35px]">
+    <div className={`relative ${margins === "none" ? "px-0" : "md:px-[35px]"}`}>
       <div style={{ width, height }} className="relative bg-transparent md:bg-active-black rounded-[25px] shadow-none md:shadow-md flex flex-col gap-y-[15px] h-full md:p-[15px] ">
         <div className="w-full h-auto pl-[10px] pr-[5px] py-[5px] bg-[#1F2726] rounded-full">
           <div className="flex items-center justify-center md:justify-between">

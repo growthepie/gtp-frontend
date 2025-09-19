@@ -20,6 +20,7 @@ import { ApplicationIcon, ApplicationTooltipAlt } from '@/app/(layout)/applicati
 import { track } from '@vercel/analytics/react';
 import SwiperContainer from '../SwiperContainer';
 import SwiperComponent from '@/components/SwiperComponent';
+import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 interface MetricsChartsProps {
   selectedBreakdownGroup: string;
 }
@@ -269,33 +270,34 @@ function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) 
 
   return (
     <>
-    <Container className='flex flex-col gap-y-[60px] pt-[60px] w-full'>
-      <div className='flex flex-col gap-y-[15px]'>
-        <div className='flex gap-x-[8px] items-center'>
-          <GTPIcon icon='gtp-metrics-economics' size='lg' className='text-[#5A6462]' />
-          <div className='heading-large-lg select-auto'>Economic Activity is Shifting Onchain</div>
+      <Container className='flex flex-col gap-y-[60px] pt-[60px] w-full'>
+        <div className='flex flex-col gap-y-[15px]'>
+          <div className='flex gap-x-[8px] items-center'>
+            <GTPIcon icon='gtp-metrics-economics' size='lg' className='text-[#5A6462]' />
+            <div className='heading-large-lg select-auto'>Economic Activity is Shifting Onchain</div>
+          </div>
+          <div className='pl-[45px] text-md select-auto'>Revenue generated and value locked are growing across the Ethereum ecosystem, with Ethereum Mainnet remaining the most trusted ledger.</div>
+          <div className='flex flex-col xl:flex-row gap-[15px] w-full'>
+            <AggChart dataSource={chartData.appData} {...chartConfigs.appRevenue} chartKey="appRevenue" onCoordinatesUpdate={handleCoordinatesUpdate} allChartCoordinates={chartCoordinates} />
+            <AggChart dataSource={chartData.stableData} {...chartConfigs.stablecoin} chartKey="stablecoin" onCoordinatesUpdate={handleCoordinatesUpdate} allChartCoordinates={chartCoordinates} />
+          </div>
         </div>
-        <div className='pl-[45px] text-md select-auto'>Revenue generated and value locked are growing across the Ethereum ecosystem, with Ethereum Mainnet remaining the most trusted ledger.</div>
-        <div className='flex flex-col xl:flex-row gap-[15px] w-full'>
-          <AggChart dataSource={chartData.appData} {...chartConfigs.appRevenue} chartKey="appRevenue" onCoordinatesUpdate={handleCoordinatesUpdate} allChartCoordinates={chartCoordinates} />
-          <AggChart dataSource={chartData.stableData} {...chartConfigs.stablecoin} chartKey="stablecoin" onCoordinatesUpdate={handleCoordinatesUpdate} allChartCoordinates={chartCoordinates} />
+        <div className='flex flex-col gap-y-[15px]'>
+          <div className='flex gap-x-[8px] items-center'>
+            <GTPIcon icon='gtp-ecosystem-scaling' size='lg' className='text-[#5A6462]' />
+            <div className='heading-large-lg select-auto'>The Ethereum Ecosystem is Scaling</div>
+          </div>
+          <div className='pl-[45px] text-md select-auto'>Transaction capacity is rising across Ethereum Mainnet and its growing number of Layer 2 scaling solutions.</div>
+          <div className='flex flex-col xl:flex-row gap-[15px] w-full'>
+            <AggChart dataSource={chartData.layer2Data} {...chartConfigs.l2Count} chartKey="l2Count" onCoordinatesUpdate={handleCoordinatesUpdate} allChartCoordinates={chartCoordinates} />
+            <AggChart dataSource={chartData.tpsData} {...chartConfigs.tps} chartKey="tps" onCoordinatesUpdate={handleCoordinatesUpdate} allChartCoordinates={chartCoordinates} />
+          </div>
         </div>
-      </div>
-      <div className='flex flex-col gap-y-[15px]'>
-        <div className='flex gap-x-[8px] items-center'>
-          <GTPIcon icon='gtp-ecosystem-scaling' size='lg' className='text-[#5A6462]' />
-          <div className='heading-large-lg select-auto'>The Ethereum Ecosystem is Scaling</div>
-        </div>
-        <div className='pl-[45px] text-md select-auto'>Transaction capacity is rising across Ethereum Mainnet and its growing number of Layer 2 scaling solutions.</div>
-        <div className='flex flex-col xl:flex-row gap-[15px] w-full'>
-          <AggChart dataSource={chartData.layer2Data} {...chartConfigs.l2Count} chartKey="l2Count" onCoordinatesUpdate={handleCoordinatesUpdate} allChartCoordinates={chartCoordinates} />
-          <AggChart dataSource={chartData.tpsData} {...chartConfigs.tps} chartKey="tps" onCoordinatesUpdate={handleCoordinatesUpdate} allChartCoordinates={chartCoordinates} />
-        </div>
-      </div>
-    </Container>
-      <MeetLayer2s meetL2sData={chartData.meetL2sData} selectedBreakdownGroup={selectedBreakdownGroup} />
-      </>
-
+      </Container>
+      <ProjectsMetadataProvider>
+        <MeetLayer2s meetL2sData={chartData.meetL2sData} selectedBreakdownGroup={selectedBreakdownGroup} />
+      </ProjectsMetadataProvider>
+    </>
   );
 }
 

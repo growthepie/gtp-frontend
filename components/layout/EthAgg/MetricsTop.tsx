@@ -702,11 +702,11 @@ const EventIcon = ({ event, eventHover, index, eventExpanded }: EventIconProps) 
     <div className="relative flex items-end size-[24px]">
       {/* Calendar */}
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={`transition-[opacity,scale] duration-300 ease-in-out ${svgClasses}`}>
-        <g clip-path="url(#clip0_1314_55745)">
-          <path fill-rule="evenodd" clip-rule="evenodd"
+        <g clipPath="url(#clip0_1314_55745)">
+          <path fillRule="evenodd" clip-rule="evenodd"
             d="M0 20V7H1.5V20C1.5 21.3807 2.61929 22.5 4 22.5H16V20C16 17.7909 17.7909 16 20 16H22.5V7H24V16L16 24H4C1.79086 24 0 22.2091 0 20ZM17 20C17 18.3431 18.3431 17 20 17H21.5858L17 21.5858V20Z"
             fill="url(#paint0_linear_1314_55745)" />
-          <path fill-rule="evenodd" clip-rule="evenodd"
+          <path fillRule="evenodd" clip-rule="evenodd"
             d="M20 0C22.2091 0 24 1.79086 24 4V7H0V4C2.57702e-07 1.79086 1.79086 0 4 0H20Z"
             fill="url(#paint1_linear_1314_55745)" />
         </g>
@@ -719,18 +719,18 @@ const EventIcon = ({ event, eventHover, index, eventExpanded }: EventIconProps) 
         <defs>
           <linearGradient id="paint0_linear_1314_55745" x1="12" y1="7" x2="12" y2="24"
             gradientUnits="userSpaceOnUse">
-            <stop stop-color="#10808C" />
-            <stop offset="1" stop-color="#1DF7EF" />
+            <stop stopColor="#10808C" />
+            <stop offset="1" stopColor="#1DF7EF" />
           </linearGradient>
           <linearGradient id="paint1_linear_1314_55745" x1="12" y1="0" x2="12" y2="7"
             gradientUnits="userSpaceOnUse">
-            <stop stop-color="#FE5468" />
-            <stop offset="1" stop-color="#FFDF27" />
+            <stop stopColor="#FE5468" />
+            <stop offset="1" stopColor="#FFDF27" />
           </linearGradient>
           <linearGradient id="orange-day-gradient"
             gradientUnits="objectBoundingBox" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#FE5468" />
-            <stop offset="1" stop-color="#FFDF27" />
+            <stop offset="0" stopColor="#FE5468" />
+            <stop offset="1" stopColor="#FFDF27" />
           </linearGradient>
           <clipPath id="clip0_1314_55745">
             <rect width="24" height="24" fill="white" />

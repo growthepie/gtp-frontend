@@ -49,7 +49,7 @@ export const getRelatedQuickBites = (slug: string): RelatedData => {
 
       data.topics?.map(t => {
 
-        console.log(t.name + currentSlug + " --- " + topic.name);
+        // console.log(t.name + currentSlug + " --- " + topic.name);
         if(t.name === topic.name) {
           // Initialize the entry if it doesn't exist
           if(!relatedData[currentSlug]) {

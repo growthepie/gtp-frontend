@@ -14,7 +14,7 @@ import { ApplicationDisplayName, ApplicationIcon, ApplicationTooltip, Category, 
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import { useMaster } from "@/contexts/MasterContext";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
+import { ProjectsMetadataProvider, useProjectsMetadata } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { AggregatedDataRow } from "@/app/(layout)/applications/_contexts/ApplicationsDataContext";
 import Container from "./Container";
 import { GTPTooltipNew } from "../tooltip/GTPTooltip";
@@ -90,7 +90,7 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
   );
 
   return (
-    <>
+    <ProjectsMetadataProvider>  
       {landing ? (
         <div className={`h-fit md:h-[450px] lg:h-[300px] grid md:grid-rows-3 md:grid-flow-col lg:grid-rows-2 lg:grid-flow-row pt-[10px] lg:grid-cols-3 gap-[10px]`}>
             {landing.data.top_applications.gainers.data.map((application, index) => (
@@ -109,7 +109,7 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
             <></>
           </div>
       )}
-    </>
+    </ProjectsMetadataProvider>
   );
 }
 

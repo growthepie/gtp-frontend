@@ -8,9 +8,8 @@ import { UIContextProvider } from "@/contexts/UIContext";
 import { useLocalStorage } from "usehooks-ts";
 import { IS_PRODUCTION } from "@/lib/helpers";
 import { MasterProvider } from "@/contexts/MasterContext";
-import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { ToastProvider } from "@/components/toast/GTPToast";
-import { ConfettiProvider } from "@/components/animations/ConfettiProvider";
+// import { ConfettiProvider } from "@/components/animations/ConfettiProvider";
 import { NavigationProvider } from "@/contexts/NavigationContext";
 
 // load icons
@@ -90,15 +89,13 @@ export function Providers({ children, forcedTheme }: ProvidersProps) {
           }}
         >
             <MasterProvider>
-              <ProjectsMetadataProvider>
                 <UIContextProvider>
                 <ToastProvider>
-                  <ConfettiProvider>
+                  {/* <ConfettiProvider> */}
                     {children}
-                  </ConfettiProvider>
+                  {/* </ConfettiProvider> */}
                 </ToastProvider>
               </UIContextProvider>
-            </ProjectsMetadataProvider>
             </MasterProvider>
         </SWRConfig>
       </ThemeProvider>
