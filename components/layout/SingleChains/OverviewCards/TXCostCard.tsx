@@ -41,23 +41,23 @@ export default function TXCostCard({ chainKey, chainData, master }: { chainKey: 
                     <HistoryDots data={txCostHistory} selectedIndex={txCostSelectedIndex} hoverIndex={txCostHoverIndex} onSelect={setTxCostSelectedIndex} onHover={setTxCostHoverIndex} getGradientColor={getGradientColor} />
                 </div>
             </div>
-            <div className="flex justify-between items-center pl-[30px]">
+            <div className="flex justify-between items-center pl-[40px]">
                 <div className="flex flex-col gap-y-[2px] group">
-                    <div className="heading-small-xs numbers-sm">{showUsd ? "$" + chainData["tx_cost_erc20_transfer_usd"]?.toFixed(4) : "" + chainData["tx_cost_erc20_transfer"]?.toFixed(4)} </div>
+                    <div className="heading-small-xs numbers-sm">{showUsd ? "$" + chainData["tx_cost_erc20_transfer_usd"]?.toFixed(4) : <><span>{(chainData["tx_cost_erc20_transfer"] * 1000000000)?.toFixed(2)}</span><span className="heading-small-xxxs"> Gwei</span></>} </div>
                     <div className="relative min-w-[80px]">
                         <div className="heading-small-xxxs text-[#5A6462] group-hover:opacity-0 transition-opacity duration-200">ERC-20 Transfer</div>
                         <div className="heading-small-xxxs text-[#5A6462] absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">{moment.utc(chainData["erc20_transfer"]).format("D/M/Y HH:mm UTC")}</div>
                     </div>
                 </div>
                 <div className="flex flex-col gap-y-[2px] group">
-                    <div className="heading-small-xs numbers-sm">{showUsd ? "$" + chainData["tx_cost_swap_usd"]?.toFixed(4) : "" + chainData["tx_cost_swap"]?.toFixed(4)} </div>
+                    <div className="heading-small-xs numbers-sm">{showUsd ? "$" + chainData["tx_cost_swap_usd"]?.toFixed(4) : <><span>{(chainData["tx_cost_swap"] * 1000000000)?.toFixed(2)}</span><span className="heading-small-xxxs"> Gwei</span></>} </div>
                     <div className="relative min-w-[80px]">
                         <div className="heading-small-xxxs text-[#5A6462] group-hover:opacity-0 transition-opacity duration-200">Swap Fee</div>
                         <div className="heading-small-xxxs text-[#5A6462] absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">{moment.utc(chainData["swap_fee"]).format("D/M/Y HH:mm UTC")}</div>
                     </div>
                 </div>
                 <div className="flex flex-col gap-y-[2px] group">
-                    <div className="heading-small-xs numbers-sm">{showUsd ? "$" + chainData["tx_cost_avg_usd"]?.toFixed(4) : "" + chainData["tx_cost_avg"]?.toFixed(4)} </div>
+                    <div className="heading-small-xs numbers-sm">{showUsd ? "$" + chainData["tx_cost_avg_usd"]?.toFixed(4) : <><span>{(chainData["tx_cost_avg"] * 1000000000)?.toFixed(2)}</span><span className="heading-small-xxxs"> Gwei</span></>} </div>
                     <div className="relative min-w-[80px]">
                         <div className="heading-small-xxxs text-[#5A6462] group-hover:opacity-0 transition-opacity duration-200">Average Fee</div>
                         <div className="heading-small-xxxs text-[#5A6462] absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">{moment.utc(chainData["swap_fee"]).format("D/M/Y HH:mm UTC")}</div>
@@ -65,7 +65,7 @@ export default function TXCostCard({ chainKey, chainData, master }: { chainKey: 
                 </div>
                 <div className="flex flex-col gap-y-[2px] items-end group">
                     <div className="flex items-center gap-x-[5px] heading-small-xs numbers-md" >
-                        <div style={{ color: master.chains[chainKey].colors.dark[0] }}>{showUsd ? "$" + chainData["tx_cost_median_usd"]?.toFixed(4) : "" + chainData["tx_cost_median"]?.toFixed(4)}</div>
+                        <div style={{ color: master.chains[chainKey].colors.dark[0] }}>{showUsd ? "$" + chainData["tx_cost_median_usd"]?.toFixed(4) : <><span>{(chainData["tx_cost_median"] * 1000000000)?.toFixed(2)}</span><span className="heading-small-xxxs"> Gwei</span></>}</div>
                         <GTPIcon icon={"gtp-realtime"} size="sm" />
                     </div>
                     <div className="relative min-w-[80px] flex justify-end text-right">

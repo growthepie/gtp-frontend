@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ChainInfo } from "@/types/api/MasterResponse";
 import { ChainData } from "@/types/api/ChainOverviewResponse";
 import { Icon } from "@iconify/react";
@@ -7,8 +7,32 @@ import { GTPIcon } from "../GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import TPSChartCard from "./OverviewCards/TPSChartCard";
 import SideCards from "./OverviewCards/SideCards";
+import Link from "next/link";
 
 
+
+const socials = {
+    Twitter: {
+        icon: "ri:twitter-x-fill",
+        name: "Twitter",
+    },
+    Discord: {
+        icon: "gtp:discord",
+        name: "Discord",
+    },
+    Telegram: {
+        icon: "feather:telegram",
+        name: "Telegram",
+    },
+    Blog: {
+        icon: "feather:globe",
+        name: "Website",
+    },
+    Docs: {
+        icon: "feather:book",
+        name: "Docs",
+    },
+} as const;
 
 function dataAvailToArray(x: string) {
     let retObject: { icon: string; label: string }[] = [];
@@ -63,7 +87,7 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
     return (
         <div className="flex flex-col w-full gap-y-[10px]">
 
-            <AboutChain chainData={chainData} />
+            <AboutChain chainData={chainData} master={master} chainKey={chainKey} />
 
             <SideCards chainKey={chainKey} chainData={chainData} master={master} />
         </div>
@@ -71,15 +95,31 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
 }
 
 
-const AboutChain = ({ chainData }: { chainData: ChainInfo }) => {
+const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, master: any, chainKey: string }) => {
 
     const [open, setOpen] = useState<boolean>(true);
+
+    const twitter = socials.Twitter;
     return (
         <div className={`flex flex-col w-full rounded-[15px] bg-[#1F2726] px-[30px] py-[15px]  ${open ? "gap-y-[10px]" : ""}`}>
+            
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-x-[15px] text-[#5A6462]" onClick={() => setOpen(!open)}>
                     <GTPIcon icon="gtp-chevrondown-monochrome" className={`!w-[24px] !h-[22px] transition-all ${!open ? "-rotate-90" : ""}`} containerClassName="!w-[24px] !h-[24px] pt-[2px]" />
                     <div className="heading-large-md">About {chainData.name}</div>
+                </div>
+                <div className={`flex items-center gap-x-[10px] transition-all duration-300 ${!open ? "opacity-100" : "opacity-0"}`}>
+                
+                
+                    
+                    <LinkButton icon="gtp-bridge" label="Website" href={master.chains[chainKey].links.website} />
+                    <LinkButton icon="gtp-bridge" label="Docs" href={master.chains[chainKey].links.docs} />
+                    <LinkButton icon="gtp-bridge" label="Github" href={master.chains[chainKey].links.github} />
+                    <LinkDropdown icon="gtp-bridge" label="More" href="https://www.google.com" links={Object.keys(master.chains[chainKey].links.socials).map((social) => ({ icon: socials[social].icon, label: socials[social].name, href: master.chains[chainKey].links.socials[social] }))} />
+                    <LinkButton icon="gtp-bridge" label="Governance" href="https://www.google.com" />
+                    <LinkDropdown icon="gtp-bridge" label="RPC" href="https://www.google.com" links={Object.keys(master.chains[chainKey].links.rpcs).map((rpc) => ({ icon: socials[rpc]?.icon, label: rpc, href: master.chains[chainKey].links.rpcs[rpc] }))} />
+                    <LinkDropdown icon="gtp-bridge" label="Block Explorers" href="https://www.google.com" links={Object.keys(master.chains[chainKey].links.block_explorers).map((explorer) => ({ icon: socials[explorer]?.icon, label: explorer, href: master.chains[chainKey].links.block_explorers[explorer] }))} />
+                    <LinkDropdown icon="gtp-bridge" label="Bridges" href="https://www.google.com" links={Object.keys(master.chains[chainKey].links.bridges).map((bridge) => ({ icon: socials[bridge]?.icon, label: bridge, href: master.chains[chainKey].links.bridges[bridge] }))} />
                 </div>
             </div>
             <div className="flex flex-col w-full text-sm transition-all duration-300 overflow-hidden " 
@@ -90,9 +130,10 @@ const AboutChain = ({ chainData }: { chainData: ChainInfo }) => {
 
                 {chainData.description}
             </div>
-            <div className="flex justify-between gap-x-[10px] overflow-hidden transition-all duration-300"
+            <div className="flex justify-between gap-x-[10px] transition-all duration-300"
             style={{
                 height: open ? 150 : 0,
+                overflow: open ? "visible" : "hidden",
             }}
             >
                 <div className="flex justify-between gap-x-[15px] w-full max-w-[850px]">
@@ -138,6 +179,102 @@ const AboutChain = ({ chainData }: { chainData: ChainInfo }) => {
                     </div>
 
                 </div>
+                <div className="w-full h-full flex justify-between gap-x-[10px] max-w-[300px]">
+                     <div className="flex flex-col items-start justify-between h-full">
+                        <LinkButton icon="gtp-bridge" label="Website" href={master.chains[chainKey].links.website} />
+                        <LinkButton icon="gtp-bridge" label="Docs" href={master.chains[chainKey].links.docs} />
+                        <LinkButton icon="gtp-bridge" label="Github" href={master.chains[chainKey].links.github} />
+                        <LinkDropdown icon="gtp-bridge" label="More" href="https://www.google.com" links={Object.keys(master.chains[chainKey].links.socials).map((social) => ({ icon: socials[social].icon, label: socials[social].name, href: master.chains[chainKey].links.socials[social] }))} />
+                     </div>
+                     <div className="flex flex-col items-start justify-between h-full">
+                        <LinkButton icon="gtp-bridge" label="Governance" href="https://www.google.com" />
+                        <LinkDropdown icon="gtp-bridge" label="RPC" href="https://www.google.com" links={Object.keys(master.chains[chainKey].links.rpcs).map((rpc) => ({ icon: socials[rpc]?.icon, label: rpc, href: master.chains[chainKey].links.rpcs[rpc] }))} />
+                        <LinkDropdown icon="gtp-bridge" label="Block Explorers" href="https://www.google.com" links={Object.keys(master.chains[chainKey].links.block_explorers).map((explorer) => ({ icon: socials[explorer]?.icon, label: explorer, href: master.chains[chainKey].links.block_explorers[explorer] }))} />
+                        <LinkDropdown icon="gtp-bridge" label="Bridges" href="https://www.google.com" links={Object.keys(master.chains[chainKey].links.bridges).map((bridge) => ({ icon: socials[bridge]?.icon, label: bridge, href: master.chains[chainKey].links.bridges[bridge] }))} />
+                     </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+
+const LinkButton = ({ icon, label, href }: { icon: string, label: string, href: string }) => {
+    return (
+        <Link href={href} className="flex items-center gap-x-[8px] bg-[#344240] pl-[6px] pr-[15px] rounded-[20px] h-[28px]">
+            <GTPIcon icon={icon as GTPIconName} className="!w-[15px] !h-[15px]" containerClassName="!w-[26px] !h-[26px] flex justify-center items-center" />
+            <div className=" heading-small-xs">{label}</div>
+        </Link>
+    )
+}
+
+
+const LinkDropdown = ({ icon, label, href, links }: { icon: string, label: string, href: string, links: { icon?: string, label: string, href: string }[] }) => {
+    const [linkHeight, setLinkHeight] = useState(28);
+    const [panelWidth, setPanelWidth] = useState<number | null>(null);
+    const [chipBaseWidth, setChipBaseWidth] = useState<number | null>(null);
+    const chipRef = useRef<HTMLDivElement>(null);
+    const measureRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        // Initialize panel width and remember chip's base width on mount
+        if (chipRef.current) {
+            const base = chipRef.current.offsetWidth;
+            setChipBaseWidth(base);
+            setPanelWidth(base);
+        }
+    }, []);
+
+    return (
+        <div
+            className="relative group transition-all duration-300 isolate z-0 hover:z-50 focus-within:z-50"
+            onMouseEnter={() => {
+                setLinkHeight(links.length * 38 + 32);
+                const base = chipBaseWidth ?? chipRef.current?.offsetWidth ?? 0;
+                const contentW = measureRef.current?.offsetWidth ?? 0; // already includes padding
+                const target = Math.max(base, contentW);
+                setPanelWidth(target);
+            }}
+            onMouseLeave={() => {
+                setLinkHeight(28);
+                setPanelWidth(chipBaseWidth);
+            }}
+        >
+            {/* Hidden measurement block to determine natural content width */}
+            <div className="absolute opacity-0 pointer-events-none -z-10">
+                <div ref={measureRef} className="rounded-[20px] p-[10px] w-fit">
+                    <div className="flex flex-col gap-y-[10px] pt-[24px] items-stretch w-fit">
+                        {links.map((link) => (
+                            <div key={`measure-${link.label}`} className="flex items-center gap-x-[8px] h-[28px] whitespace-nowrap">
+                                <GTPIcon icon={!link.icon ? ("feather:globe" as GTPIconName) : (link.icon as GTPIconName)} className="!w-[15px] !h-[15px]" containerClassName="!w-[26px] !h-[26px] flex justify-center items-center" />
+                                <div className=" heading-small-xs">{link.label}</div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+            <div
+                className={`absolute top-0 left-0 overflow-hidden z-10 transition-all duration-300 bg-[#000] rounded-[20px] p-[10px]`}
+                style={{
+                    height: linkHeight,
+                    width: panelWidth ?? undefined,
+                }}
+            >
+                <div className="flex flex-col gap-y-[10px] w-full pt-[24px] items-stretch ">
+                    {links.map((link) => (
+                        <Link href={link.href} key={link.label} className="block w-full group/row -ml-[5px]">
+                            <div className="flex items-center gap-x-[8px] w-full grow-row relative h-[28px]">
+                                <GTPIcon icon={!link.icon ? "feather:globe" as GTPIconName : link.icon as GTPIconName} className="!w-[15px] !h-[15px]" containerClassName="!w-[26px] z-20 !h-[26px] flex justify-center items-center" />
+                                <div className=" heading-small-xs min-w-fit whitespace-nowrap z-20">{link.label}</div>
+                                <div className="absolute w-full left-0 top-0 bottom-0 z-10 group-hover/row:bg-[#5A6462] rounded-[10px]"></div>
+                            </div>
+                        </Link>
+                    ))}
+                </div>
+            </div>
+            <div ref={chipRef} className="flex items-center gap-x-[8px] bg-[#344240] transition-all duration-300 pl-[6px] pr-[15px] rounded-[20px] h-[28px] z-20 relative" style={{ width: panelWidth ?? undefined }}>
+                <GTPIcon icon={"gtp-chevronright"} className="!w-[15px] !h-[15px] group-hover:rotate-90 transition-all duration-300" containerClassName="!w-[26px] !h-[26px] flex justify-center items-center z-20" />
+                <div className=" heading-small-xs min-w-fit whitespace-nowrap z-20">{label}</div>
             </div>
         </div>
     )

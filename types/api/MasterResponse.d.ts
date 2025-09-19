@@ -119,6 +119,7 @@ export interface MetricInfo {
   name: string;
   metric_keys: string[];
   units: { [key: string]: UnitSchema };
+  icon: string;
   avg: boolean;
   all_l2s_aggregate: string;
   fundamental: boolean;

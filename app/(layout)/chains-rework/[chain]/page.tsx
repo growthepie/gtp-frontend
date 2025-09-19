@@ -329,6 +329,7 @@ const Chain = ({ params }: { params: any }) => {
     const { theme } = useTheme();
     const router = useRouter();
     const searchParams = useSearchParams();
+    const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
     
     // Initialize selectedTab based on URL parameter, defaulting to "overview"
     const [selectedTab, setSelectedTab] = useState<string>(() => {
@@ -361,6 +362,7 @@ const Chain = ({ params }: { params: any }) => {
     }, [selectedTab, router, searchParams]);
 
 
+
     // Memoized tab content renderer
     const TabContent = useMemo(() => {
       const props = { chainKey, chain, master };
@@ -379,7 +381,7 @@ const Chain = ({ params }: { params: any }) => {
         default:
           return <div className="p-8 text-center">Tab not found</div>;
       }
-    }, [selectedTab, chainKey, chain, master]);
+    }, [selectedTab, chainKey, chain, master, showUsd]);
 
     return(
         <Container className="flex flex-col gap-y-[15px] pt-[45px] md:pt-[30px]">
