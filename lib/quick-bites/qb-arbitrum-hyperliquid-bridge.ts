@@ -136,7 +136,6 @@ const CirclePercentage = [
       type: "area",
       title: "Hyperliquid USDC Market Share",
       margins: "none",
-      className: "!px-0",
       showXAsDate: true,
       dataAsJson: {
         meta: [
