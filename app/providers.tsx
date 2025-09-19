@@ -2,8 +2,6 @@
 import { ThemeProvider } from "next-themes";
 import { SWRConfig } from "swr";
 import { addCollection } from "@iconify/react";
-import GTPIcons from "@/icons/gtp.json";
-import GTPIconsFigmaExport from "@/icons/gtp-figma-export.json";
 import { UIContextProvider } from "@/contexts/UIContext";
 import { useLocalStorage } from "usehooks-ts";
 import { IS_PRODUCTION } from "@/lib/helpers";
@@ -11,10 +9,11 @@ import { MasterProvider } from "@/contexts/MasterContext";
 import { ToastProvider } from "@/components/toast/GTPToast";
 // import { ConfettiProvider } from "@/components/animations/ConfettiProvider";
 import { NavigationProvider } from "@/contexts/NavigationContext";
+import { useEffect } from "react";
 
 // load icons
-addCollection(GTPIcons);
-addCollection(GTPIconsFigmaExport);
+// addCollection(GTPIcons);
+// addCollection(GTPIconsFigmaExport);
 
 type ProvidersProps = {
   children: React.ReactNode;
@@ -72,6 +71,23 @@ const devMiddleware = (useSWRNext) => {
 
 export function Providers({ children, forcedTheme }: ProvidersProps) {
   const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
+
+  useEffect(() => {
+    const loadIcons = async () => {
+      try {
+        const [gtpIcons, gtpFigmaIcons] = await Promise.all([
+          fetch('/gtp.json').then(res => res.json()),
+          fetch('/gtp-figma-export.json').then(res => res.json())
+        ]);
+        addCollection(gtpIcons);
+        addCollection(gtpFigmaIcons);
+      } catch (error) {
+        console.error("Failed to load icon sets:", error);
+      }
+    };
+
+    loadIcons();
+  }, []);
 
   return (
     <NavigationProvider>
