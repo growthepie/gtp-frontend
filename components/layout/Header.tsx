@@ -15,6 +15,7 @@ import FocusSwitch from "./FocusSwitch";
 import { HeaderSearchButton, SearchComponent } from "../search/Components";
 import { IS_DEVELOPMENT, IS_PRODUCTION } from "@/lib/helpers";
 import { LogoContextMenu } from "./SidebarContainer";
+import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 
 export default function Header() {
   // const [isOpen, setIsOpen] = useState<boolean>(false)
@@ -103,7 +104,9 @@ export default function Header() {
                 {!showGlobalSearchBar && (
                   <>
                     <Notification />
-                    <HeaderSearchButton />
+                    <ProjectsMetadataProvider>
+                      <HeaderSearchButton />
+                    </ProjectsMetadataProvider>
                   </>
                 )}
 
@@ -122,7 +125,9 @@ export default function Header() {
           </div>
         </div>
       </header>
-      <SearchComponent />
+      <ProjectsMetadataProvider>
+        <SearchComponent />
+      </ProjectsMetadataProvider>
     </>
   );
 }
