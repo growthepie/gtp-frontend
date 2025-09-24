@@ -18,13 +18,14 @@
 export interface EthereumEvents {
   date: string;
   description: string;
-  issuance: string;
+  issuance?: string;
   short_title: string;
   show_in_chart: boolean;
   source: string;
   title: string;
   type: string;
 }
+
 
 
 export interface CompositionTypes {

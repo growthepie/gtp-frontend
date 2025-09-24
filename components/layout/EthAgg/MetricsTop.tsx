@@ -673,7 +673,7 @@ interface EventIconProps {
   eventExpanded: string | null;
 }
 
-const EventIcon = ({ event, eventHover, index, eventExpanded }: EventIconProps) => {
+export const EventIcon = ({ event, eventHover, index, eventExpanded }: EventIconProps) => {
   const getMonthDisplay = (dateString: string) => {
     try {
       const date = new Date(dateString);

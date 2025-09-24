@@ -1,6 +1,6 @@
 "use client";
 import useSWR from "swr";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSSEChains } from "../useSSEChains";
 import TPSChartCard from "./TPSChartCard";
 import TXCostCard from "./TXCostCard";
@@ -12,6 +12,10 @@ import { Icon } from "@iconify/react";
 import HighlightCards from "./HighlightCards";
 import { ChainOverview } from "@/lib/chains";
 import MetricCards from "./MetricCards";
+import EventsCard from "./EventsCard";
+import { EventItem } from "./EventsCard";
+import { EthereumEvents } from "@/types/api/MasterResponse";
+
 
 
 export interface ChainTPSHistoryItem {
@@ -70,7 +74,15 @@ export default function LiveCards({ chainKey, chainData, master }: { chainKey: s
     const { data: initialHistory } = useSWR<any>(`https://sse.growthepie.com/api/chain/${chainKey}/history`);
     const {chainData: chainDataTPS, lastUpdated} = useSSEChains(chainKey);
     const { data: chainDataOverview } = useSWR<ChainOverview>(`https://api.growthepie.xyz/v1/chains/${chainKey}/overview.json`);
- 
+    const [height, setHeight] = useState<number[]>([]);
+
+
+    console.log(chainDataOverview)
+
+
+    const totalHeight = useMemo(() => { 
+        return height.reduce((acc, curr) => acc + curr, 0);
+    }, [height]);
 
 
     useEffect(() => {
@@ -117,7 +129,14 @@ export default function LiveCards({ chainKey, chainData, master }: { chainKey: s
                     <MetricCards chainKey={chainKey} master={master} metricKey={metric} metricData={master.metrics[metric]} overviewData={chainDataOverview} />
                 </div>
             ))}
-    
+
+
+            <EventsCard totalHeight={500}>
+                {chainDataOverview.data.events.map((event, index) => (
+                    <EventItem event={event as EthereumEvents} setHeight={setHeight} heightIndex={index} key={event.date} />
+                ))}
+
+            </EventsCard>
         </>
     )
 }
