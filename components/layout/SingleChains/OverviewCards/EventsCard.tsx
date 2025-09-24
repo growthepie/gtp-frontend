@@ -133,8 +133,8 @@ export const EventItem = ({ event, setHeight, eventIndex }: { event: EthereumEve
         >
             <div className="w-[24px] flex flex-col">
                 <EventIcon event={event} eventHover={eventHover} index={eventIndex} eventExpanded={eventExpanded} />
-                <div className={`flex-1 ml-[11.5px]  -mb-[7px] relative ${eventExpanded || eventHover ? "-mt-[0px]" : "-mt-[6px]"} transition-opacity duration-300`}>
-                    <div className="absolute left-0 top-0 bottom-0 w-[2px] text-[#5A6462] bg-[repeating-linear-gradient(to_bottom,currentColor_0,currentColor_3px,transparent_3px,transparent_14px)]" />
+                <div className={`flex-1 -mb-[7px] relative ${eventExpanded || eventHover ? "-mt-[0px]" : "-mt-[6px]"} transition-opacity duration-300`}>
+                    <div className="absolute ml-[calc(50%-1px)] mr-[calc(50%-1px)] left-0 top-0 bottom-0 w-[2px] text-[#5A6462] bg-[repeating-linear-gradient(to_bottom,currentColor_0,currentColor_3px,transparent_3px,transparent_14px)]" />
                 </div>
             </div>
             <div className="w-full flex flex-col gap-y-[5px]">
