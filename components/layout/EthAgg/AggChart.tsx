@@ -521,9 +521,10 @@ export function AggChart({
       const baseConfig: any = {
         name: config.name,
         type: config.type === 'column' ? 'bar' : 'line',
+        silent: true,
+        smooth: false,
         data: seriesData[index] || [],
         stack: config.stacking,
-        smooth: true,
         symbol: 'circle',
         symbolSize: 12,
         lineStyle: { width: 2 },
