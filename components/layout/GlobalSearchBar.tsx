@@ -40,6 +40,14 @@ export default function GlobalFloatingBar() {
 
   // Track if user has started typing to auto-open mobile menu
   const query = searchParams.get("query") || "";
+  const { allFilteredData } = useSearchBuckets();
+  const totalResults = React.useMemo(() => {
+    try {
+      return allFilteredData?.reduce((total, { filteredData }) => total + filteredData.length, 0) || 0;
+    } catch {
+      return 0;
+    }
+  }, [allFilteredData]);
 
   // Function to clear query following the same pattern as SearchBar
   const clearQuery = useCallback(() => {
@@ -543,6 +551,18 @@ export default function GlobalFloatingBar() {
                       setShowMore={setShowMore}
                       showSearchContainer={false}
                       hideClearButtonOnMobile={true}
+                      onFocus={() => {
+                        if (!isMobile) return;
+                        const isQueryEmpty = !query || query.trim().length === 0;
+                        const noResultsShowing = totalResults === 0; // treat zero results as not showing
+                        // If no results are showing, allow opening even if it was manually closed before
+                        if (!isMobileMenuPopoverOpen && (isQueryEmpty || !menuWasManuallyClosed || noResultsShowing)) {
+                          setIsMobileMenuPopoverOpen(true);
+                          setIsBurgerMenuManuallyOpened(false);
+                          if (isQueryEmpty || noResultsShowing) setMenuWasManuallyClosed(false);
+                        }
+                        setIsSearchActive(true);
+                      }}
                       onBlur={deactivateSearch}
                     />
 
