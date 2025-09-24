@@ -390,7 +390,7 @@ const Chain = ({ params }: { params: any }) => {
               selectedTab={selectedTab} 
               setSelectedTab={setSelectedTab} 
             />
-            <div className="mt-6">
+            <div className="-mt-[25px]">
               {TabContent}
             </div>
         </Container>

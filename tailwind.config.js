@@ -52,6 +52,16 @@ module.exports = {
       lineHeight: {
         snug: "1.2",
       },
+      height: {
+        'xs': '15px',
+        'sm': '24px',
+        'md': '28px',
+        'lg': '36px',
+        'xl': '44px',
+        '2xl': '56px',
+        '3xl': '86px',
+        '4xl': '148px',
+      },
       transitionProperty: {
         height: "height",
         width: "width",

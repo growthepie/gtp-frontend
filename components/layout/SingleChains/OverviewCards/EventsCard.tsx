@@ -48,21 +48,32 @@ export default function EventsCard({ children, totalHeight }: { children: React.
 
     console.log(measuredContentHeight)
     return (
+    <>
+      {expanded && (
+        <div
+          onClick={() => {
+            setExpanded(false)
+          }}
+          className='fixed inset-0 bg-[#1F2726]/75'
+        />
+      )}
       <div
-        className={`rounded-[15px] p-[15px] bg-[#1F2726] max-w-[483px]  relative transition-height  duration-300 ${measuredContentHeight < 355 ? `h-[${measuredContentHeight + 50}px]` : "h-[400px]"} `}
+        // className={`rounded-[15px] px-[30px] py-[15px] bg-[#1F2726] w-full relative transition-height  duration-300 ${measuredContentHeight < 355 ? `h-[${measuredContentHeight + 50}px]` : "h-[409px]"} `}
+        className={`w-full relative transition-height duration-300 flex-1`}
        
       >
-            <div className="heading-large-md ">Events</div>
+            {/* <div className="heading-large-md ">Events</div> */}
 
-            <div className={`relative z-10 flex flex-col gap-y-[10px] pt-[30px] bg-[#1F2726] rounded-b-[15px] -mx-[15px] px-[15px] transition-all  duration-300 overflow-hidden`}
+            <div className={`relative z-10 flex flex-col gap-y-[30px] bg-[#1F2726] rounded-[15px] px-[30px] py-[15px] transition-all duration-300 overflow-hidden min-h-full ${expanded ? "shadow-card-dark" : ""}`}
                  style={{
                     height: expanded ? (measuredContentHeight + 50 || totalHeight) : measuredContentHeight < 355 ? measuredContentHeight + 50 : 355
                  }}
             >
+                <div className="heading-large-md">Events</div>
                 <div ref={contentRef}>
                     {children}
                 </div>
-                <div ref={toggleRef} className="absolute bottom-0 left-0 h-[50px] right-0 w-full bg-[#1F2726] flex items-center justify-center pt-[12px] z-40"
+                <div ref={toggleRef} className="absolute bottom-0 left-0 h-[50px] right-0 w-full bg-[#1F2726] flex items-center justify-center pt-[12px] z-40 cursor-pointer"
                     onClick={() => {
                      
                         setExpanded(!expanded)
@@ -79,7 +90,8 @@ export default function EventsCard({ children, totalHeight }: { children: React.
                 </div>
             </div>
 
-        </div>
+      </div>
+    </>
     )
 }
 
@@ -123,7 +135,7 @@ export const EventItem = ({ event, setHeight, eventIndex }: { event: EthereumEve
     }, []);
 
     return (
-        <div className="flex gap-x-[10px] cursor-pointer" 
+        <div className="flex gap-x-[5px] cursor-pointer" 
             onMouseEnter={() => setEventHover(event.date)}
             onMouseLeave={() => setEventHover(null)}
             onClick={() => {
@@ -138,25 +150,25 @@ export const EventItem = ({ event, setHeight, eventIndex }: { event: EthereumEve
                 </div>
             </div>
             <div className="w-full flex flex-col gap-y-[5px]">
-                <div className="flex justify-between items-center w-full h-[24px] pb-[2px]">
+                <div className="flex justify-between items-center w-full h-[24px]">
                     <div className="heading-large-xxs">{event.title}</div>
                     <div className="text-xxs ">{moment(event.date).format('D MMMM YYYY')}</div>
                 </div>
                 <div
-                    className={`w-full flex flex-col gap-y-[5px] transition-[height] duration-300 overflow-hidden`}
+                    className={`w-full flex flex-col transition-[height] duration-300 overflow-hidden`}
                     style={{ height: (eventExpanded === event.date || eventHover === event.date) ? Math.min(measuredInnerHeight, MAX_EXPANDED_HEIGHT) : 0 }}
                 >
                     <div
                         ref={contentInnerRef}
-                        className={`${measuredInnerHeight > MAX_EXPANDED_HEIGHT ? 'overflow-y-auto pr-[5px]' : 'overflow-visible'} `}
+                        className={`${measuredInnerHeight > MAX_EXPANDED_HEIGHT ? 'overflow-y-auto pr-[5px]' : 'overflow-visible flex flex-col gap-y-[5px]'} `}
                         style={{ maxHeight: measuredInnerHeight > MAX_EXPANDED_HEIGHT ? MAX_EXPANDED_HEIGHT : undefined }}
                     >
-                        <div className="text-xxs text-[#5A6462]">{event.description}</div>
+                        <div className="text-xxs">{event.description}</div>
                         <div className="w-full flex justify-end h-[16px]">
 
                             {event.source && <div className="flex-1 flex justify-end"><LinkButton href={event.source}>More about this event</LinkButton></div>}
                         </div>
-                        <div className="w-full flex h-[10px]"></div>
+                        <div className="w-full flex h-[25px]"></div>
                     </div>
                 </div>
             </div>

@@ -67,7 +67,7 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
 
         return (
          <div
-            className={`absolute pointer-events-none z-[999] bg-[#2A3433EE] rounded-[15px] px-3 pt-3 pb-4 min-w-[200px]  text-xs font-raleway shadow-lg`}
+            className={`absolute pointer-events-none z-[999] bg-[#2A3433EE] rounded-[15px] px-3 pt-3 pb-4 min-w-[200px] text-xs font-raleway shadow-lg`}
             style={{
               left: tooltipX,
               top: tooltipY,
@@ -110,7 +110,7 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
 
 
     return (
-        <div className="rounded-[15px] bg-[#1F2726] p-[10px] max-w-[483px] flex justify-between">
+        <div className="rounded-[15px] bg-[#1F2726] p-[10px] w-full flex justify-between h-2xl">
             <div className="flex items-center gap-x-[10px] min-w-[175px]">
                 <div className="w-[24px] h-[24px] p-[2px] border-t-[1px] border-r-[1px] border-b-[1px] border-[#5A6462] rounded-r-full rounded-tl-full rounded-bl-full relative flex items-center justify-center">
                     <GTPIcon icon={`gtp-${metricData.icon.replace(/^(metrics-)(.*)/, (match, prefix, rest) => prefix + rest.replace(/-/g, ''))}-monochrome` as GTPIconName} color={master.chains[chainKey].colors.dark[0]} size="sm" containerClassName="relative left-[0.5px] top-[0.5px] w-[12px] h-[12px]" />

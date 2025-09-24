@@ -85,11 +85,22 @@ function dataAvailToArray(x: string) {
 
 const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, chainData: ChainInfo, master: any }) => {
     return (
-        <div className="flex flex-col w-full gap-y-[10px]">
-
+        <div className="@container flex flex-col w-full gap-[15px]">
             <AboutChain chainData={chainData} master={master} chainKey={chainKey} />
-
-            <SideCards chainKey={chainKey} chainData={chainData} master={master} />
+            <div className="grid grid-flow-row @[995px]:grid-cols-[minmax(480px,505px)_minmax(505px,auto)] gap-[10px]">
+                <SideCards chainKey={chainKey} chainData={chainData} master={master} />
+                <div className="flex flex-col w-full gap-y-[15px]">
+                    <div className={`flex flex-col w-full rounded-[15px] bg-[#1F2726] px-[30px] py-[15px] h-[215px]`}>
+                        <div className="heading-large-md">Achievements</div>
+                    </div>
+                    <div className={`flex flex-col w-full rounded-[15px] bg-[#1F2726] px-[30px] py-[15px] h-[826px]`}>
+                        <div className="heading-large-md">Applications</div>
+                    </div>
+                    <div className={`flex flex-col w-full rounded-[15px] bg-[#1F2726] px-[30px] py-[15px] h-[218px]`}>
+                        <div className="heading-large-md">Usage Breakdown</div>
+                    </div>
+                </div>
+            </div>
         </div>
     )
 }
