@@ -176,6 +176,7 @@ export const TPSChart = React.memo(({ data, overrideColor }: TPSChartProps) => {
           id: 'total-tps',
           name: 'Total Ecosystem',
           type: 'bar',
+          silent: true,
           // Use the extracted TPS values for the series data
           data: tpsValues,
           animation: false,

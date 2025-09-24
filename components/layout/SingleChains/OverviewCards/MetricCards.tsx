@@ -202,7 +202,8 @@ const MetricChart = ({
         series: [{
             data: values,
             type: 'line',
-            smooth: true,
+            silent: true,
+            smooth: false,
             symbol: 'circle',
             symbolSize: 0, // Hide symbols by default
             lineStyle: {
@@ -340,7 +341,10 @@ const MetricChart = ({
                 ref={chartRef}
                 option={option} 
                 style={{ height: '100%', width: '100%' }}
-                opts={{ renderer: 'canvas' }}
+                opts={{ 
+                    renderer: 'canvas',
+                    devicePixelRatio: window.devicePixelRatio || 1,
+                 }}
             />
             
             {/* Custom React Tooltip */}
