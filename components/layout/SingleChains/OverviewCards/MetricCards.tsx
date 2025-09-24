@@ -120,7 +120,7 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
                 </div>
                 <div className="heading-large-xs ">{metricData.name}</div>
             </div>
-            <div className=""><MetricChart 
+            <div className=" flex justify-center items-center"><MetricChart 
                 metricKey={metricKey} 
                 metricData={metricData} 
                 overviewData={overviewData} 
@@ -132,7 +132,7 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
                 CustomTooltip={CustomTooltip}
                 seriesData={overviewData.data.kpi_cards[metricKey].sparkline.data}
             /></div>
-            <div className="flex flex-col gap-y-[2px] items-end min-w-[120px]">
+            <div className="flex flex-col gap-y-[2px] justify-center  items-end min-w-[120px]">
                 <div className="numbers-md" style={{ color: chainData.colors.dark[0] }}>
                     {prefix}{formatLargeNumber(overviewData.data.kpi_cards[metricKey].current_values.data[valueIndex], 2)} {suffix}
                 </div>

@@ -28,6 +28,7 @@ import { ChainData, Chains } from "@/types/api/ChainOverviewResponse";
 import { ChainsData } from "@/types/api/ChainResponse";
 import ChainsOverview from "@/components/layout/SingleChains/ChainsOverview";
 import { Icon } from "@iconify/react";
+import RelatedQuickBites from "@/components/RelatedQuickBites";
 
 // Fetcher function for API calls
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -383,6 +384,8 @@ const Chain = ({ params }: { params: any }) => {
       }
     }, [selectedTab, chainKey, chain, master, showUsd]);
 
+
+
     return(
         <Container className="flex flex-col gap-y-[15px] pt-[45px] md:pt-[30px]">
             <ChainTabs 
@@ -393,6 +396,7 @@ const Chain = ({ params }: { params: any }) => {
             <div className="-mt-[25px]">
               {TabContent}
             </div>
+            <RelatedQuickBites slug={AllChainsByKeys[chainKey].label} isTopic={true} />
         </Container>
     )
 }

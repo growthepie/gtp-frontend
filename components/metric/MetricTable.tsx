@@ -158,7 +158,7 @@ const MetricTable = ({
         ? metricItems.find((item) => item.key === metric_id)
         : daMetricItems.find((item) => item.key === metric_id);
 
-    console.log(item)
+ 
 
     return [item?.page?.showGwei, item?.page?.reversePerformer];
   }, [metric_id, metric_type]);

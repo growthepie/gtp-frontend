@@ -46,7 +46,7 @@ export default function EventsCard({ children, totalHeight }: { children: React.
     }, []);
 
 
-    console.log(measuredContentHeight)
+
     return (
     <>
       {expanded && (
@@ -110,7 +110,7 @@ export const EventItem = ({ event, setHeight, eventIndex }: { event: EthereumEve
 
     //make it so if heightIndex is 0, set eventExpanded to the event.date
     useEffect(() => {
-        if (eventIndex === 0) {
+        if (eventIndex < 3) {
             setEventExpanded(event.date);
         }
     }, []);
