@@ -77,7 +77,7 @@ export default function LiveCards({ chainKey, chainData, master }: { chainKey: s
     const [height, setHeight] = useState<number[]>([]);
 
 
-    console.log(chainDataOverview)
+
 
 
     const totalHeight = useMemo(() => { 
@@ -133,7 +133,7 @@ export default function LiveCards({ chainKey, chainData, master }: { chainKey: s
 
             <EventsCard totalHeight={500}>
                 {chainDataOverview.data.events.map((event, index) => (
-                    <EventItem event={event as EthereumEvents} setHeight={setHeight} heightIndex={index} key={event.date} />
+                    <EventItem event={event as EthereumEvents} setHeight={setHeight} eventIndex={index} key={event.date} />
                 ))}
 
             </EventsCard>

@@ -17,7 +17,7 @@ export default function EventsCard({ children, totalHeight }: { children: React.
     const contentRef = useRef<HTMLDivElement | null>(null);
     const toggleRef = useRef<HTMLDivElement | null>(null);
 
-    console.log(expanded)
+
 
     useEffect(() => {
         const contentElement = contentRef.current;
@@ -44,16 +44,19 @@ export default function EventsCard({ children, totalHeight }: { children: React.
             window.removeEventListener('resize', updateMeasuredHeight);
         };
     }, []);
+
+
+    console.log(measuredContentHeight)
     return (
       <div
-        className={`rounded-[15px] p-[15px] bg-[#1F2726] max-w-[483px] h-[400px] relative transition-height  duration-300 `}
+        className={`rounded-[15px] p-[15px] bg-[#1F2726] max-w-[483px]  relative transition-height  duration-300 ${measuredContentHeight < 355 ? `h-[${measuredContentHeight + 50}px]` : "h-[400px]"} `}
        
       >
             <div className="heading-large-md ">Events</div>
 
             <div className={`relative z-10 flex flex-col gap-y-[10px] pt-[30px] bg-[#1F2726] rounded-b-[15px] -mx-[15px] px-[15px] transition-all  duration-300 overflow-hidden`}
                  style={{
-                    height: expanded ? (measuredContentHeight + 50 || totalHeight) : measuredContentHeight < 355 ? measuredContentHeight : 355
+                    height: expanded ? (measuredContentHeight + 50 || totalHeight) : measuredContentHeight < 355 ? measuredContentHeight + 50 : 355
                  }}
             >
                 <div ref={contentRef}>
@@ -83,21 +86,54 @@ export default function EventsCard({ children, totalHeight }: { children: React.
 
 
 
-export const EventItem = ({ event, setHeight, heightIndex }: { event: EthereumEvents, setHeight: Dispatch<SetStateAction<number[]>>, heightIndex: number}) => {
+export const EventItem = ({ event, setHeight, eventIndex }: { event: EthereumEvents, setHeight: Dispatch<SetStateAction<number[]>>, eventIndex: number}) => {
 
 
     const [eventHover, setEventHover] = useState<string | null>(null);
     const [eventExpanded, setEventExpanded] = useState<string | null>(null);
+    const contentInnerRef = useRef<HTMLDivElement | null>(null);
+    const [measuredInnerHeight, setMeasuredInnerHeight] = useState<number>(0);
+    const MAX_EXPANDED_HEIGHT = 150; // px; adjust as needed
+
+
+    //make it so if heightIndex is 0, set eventExpanded to the event.date
+    useEffect(() => {
+        if (eventIndex === 0) {
+            setEventExpanded(event.date);
+        }
+    }, []);
+
+    useEffect(() => {
+        const el = contentInnerRef.current;
+        if (!el) return;
+
+        const updateHeight = () => {
+            setMeasuredInnerHeight(el.scrollHeight || 0);
+        };
+
+        updateHeight();
+
+        const ro = new ResizeObserver(() => updateHeight());
+        ro.observe(el);
+        window.addEventListener('resize', updateHeight);
+        return () => {
+            ro.disconnect();
+            window.removeEventListener('resize', updateHeight);
+        };
+    }, []);
 
     return (
-        <div className="flex gap-x-[10px]" 
+        <div className="flex gap-x-[10px] cursor-pointer" 
             onMouseEnter={() => setEventHover(event.date)}
             onMouseLeave={() => setEventHover(null)}
-            onClick={() => setEventExpanded(prev => prev === event.date ? null : event.date)}
+            onClick={() => {
+   
+                setEventExpanded(eventExpanded === event.date ? null : event.date);
+            }}
         >
             <div className="w-[24px] flex flex-col">
-                <EventIcon event={event} eventHover={eventHover} index={heightIndex} eventExpanded={eventExpanded} />
-                <div className="flex-1 ml-[11.5px] -mt-[6px] -mb-[7px] relative">
+                <EventIcon event={event} eventHover={eventHover} index={eventIndex} eventExpanded={eventExpanded} />
+                <div className={`flex-1 ml-[11.5px]  -mb-[7px] relative ${eventExpanded || eventHover ? "-mt-[0px]" : "-mt-[6px]"} transition-opacity duration-300`}>
                     <div className="absolute left-0 top-0 bottom-0 w-[2px] text-[#5A6462] bg-[repeating-linear-gradient(to_bottom,currentColor_0,currentColor_3px,transparent_3px,transparent_14px)]" />
                 </div>
             </div>
@@ -106,12 +142,23 @@ export const EventItem = ({ event, setHeight, heightIndex }: { event: EthereumEv
                     <div className="heading-large-xxs">{event.title}</div>
                     <div className="text-xxs ">{moment(event.date).format('D MMMM YYYY')}</div>
                 </div>
-                <div className="text-xxs text-[#5A6462]">{event.description}</div>
-                <div className="w-full flex justify-end h-[16px]">
+                <div
+                    className={`w-full flex flex-col gap-y-[5px] transition-[height] duration-300 overflow-hidden`}
+                    style={{ height: (eventExpanded === event.date || eventHover === event.date) ? Math.min(measuredInnerHeight, MAX_EXPANDED_HEIGHT) : 0 }}
+                >
+                    <div
+                        ref={contentInnerRef}
+                        className={`${measuredInnerHeight > MAX_EXPANDED_HEIGHT ? 'overflow-y-auto pr-[5px]' : 'overflow-visible'} `}
+                        style={{ maxHeight: measuredInnerHeight > MAX_EXPANDED_HEIGHT ? MAX_EXPANDED_HEIGHT : undefined }}
+                    >
+                        <div className="text-xxs text-[#5A6462]">{event.description}</div>
+                        <div className="w-full flex justify-end h-[16px]">
 
-                    {event.source && <div className="flex-1 flex justify-end"><LinkButton href={event.source}>More about this event</LinkButton></div>}
+                            {event.source && <div className="flex-1 flex justify-end"><LinkButton href={event.source}>More about this event</LinkButton></div>}
+                        </div>
+                        <div className="w-full flex h-[10px]"></div>
+                    </div>
                 </div>
-                <div className="w-full flex h-[10px]"></div>
             </div>
             
             
