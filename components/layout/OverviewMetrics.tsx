@@ -27,6 +27,7 @@ import HorizontalScrollContainer from "../HorizontalScrollContainer";
 import { useMaster } from "@/contexts/MasterContext";
 import { TitleButtonLink } from "./TextHeadingComponents";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 
 export default function OverviewMetrics({
   data,
@@ -521,33 +522,35 @@ export default function OverviewMetrics({
           </Container>
           {/*Contracts Label and Rows */}
           <HorizontalScrollContainer>
-            <ContractProvider
-              value={{
-                data: data,
-                master: master,
-                selectedMode: selectedMode,
-                selectedCategory: selectedCategory,
-                selectedTimespan: selectedTimespan,
-                timespans: timespans,
-                categories: categories,
-                formatSubcategories: formatSubcategories,
-                showUsd: showUsd,
-                selectedValue: selectedValue,
-                forceSelectedChain: forceSelectedChain,
-                selectedChain: selectedChain,
-                allCats: allCats,
-                standardChainKey: standardChainKey,
-                setAllCats: setAllCats,
-                setSelectedChain: setSelectedChain,
-                setSelectedCategory: setSelectedCategory,
-                selectedChains: undefined,
-                selectedSubcategories: undefined,
-                chainEcosystemFilter: chainEcosystemFilter,
-                focusEnabled: false,
-              }}
-            >
-              <ContractContainer />
-            </ContractProvider>
+            <ProjectsMetadataProvider>
+              <ContractProvider
+                value={{
+                  data: data,
+                  master: master,
+                  selectedMode: selectedMode,
+                  selectedCategory: selectedCategory,
+                  selectedTimespan: selectedTimespan,
+                  timespans: timespans,
+                  categories: categories,
+                  formatSubcategories: formatSubcategories,
+                  showUsd: showUsd,
+                  selectedValue: selectedValue,
+                  forceSelectedChain: forceSelectedChain,
+                  selectedChain: selectedChain,
+                  allCats: allCats,
+                  standardChainKey: standardChainKey,
+                  setAllCats: setAllCats,
+                  setSelectedChain: setSelectedChain,
+                  setSelectedCategory: setSelectedCategory,
+                  selectedChains: undefined,
+                  selectedSubcategories: undefined,
+                  chainEcosystemFilter: chainEcosystemFilter,
+                  focusEnabled: false,
+                }}
+              >
+                <ContractContainer />
+              </ContractProvider>
+            </ProjectsMetadataProvider>
           </HorizontalScrollContainer>
         </div>
       )}

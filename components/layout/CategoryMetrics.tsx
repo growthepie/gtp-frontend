@@ -41,7 +41,7 @@ import { TitleButtonLink } from "./TextHeadingComponents";
 import { ContractProvider } from "./BlockspaceOverview/Contracts/ContractContext";
 import ContractContainer from "./BlockspaceOverview/Contracts/ContractContainer";
 import { GridTableHeader, GridTableHeaderCell } from "./GridTable";
-import { intersection } from 'lodash';
+import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 
 export default function CategoryMetrics({
   data,
@@ -1331,43 +1331,45 @@ export default function CategoryMetrics({
           </Container>
           {/* Contract Table Replacement */}
           <HorizontalScrollContainer paddingBottom={16}>
-                <ContractProvider
-                    // --- Pass props similar to OverviewMetrics, adapted for CategoryMetrics ---
-                    value={{
-                        // Data Source: Pass the main data prop for CategoryMetrics
-                        data: data, // Type: CategoryComparisonResponseData
-                        master: master,
-                        // Mode/Value: Combine base mode, absolute/share, and usd/eth
-                        selectedMode: contractSelectedMode, // e.g., "gas_fees_absolute_usd"
-                        selectedValue: selectedValue, // "absolute" or "share"
-                        showUsd: showUsd, // Pass showUsd state
-                        // Selection Context
-                        selectedCategory: selectedCategory,
-                        selectedSubcategories: selectedSubcategories[selectedCategory] || [], // Pass the array of selected subcats for the current category
-                        selectedChains: Object.keys(selectedChains).filter(k => selectedChains[k]), // Pass array of selected chain keys
-                        selectedChain: null, // No single selected chain in this view
-                        selectedTimespan: selectedTimespan,
-                        timespans: timespans,
-                        categories: categories,
-                        // Flags/Defaults
-                        forceSelectedChain: undefined, // Not applicable
-                        allCats: false, // Not applicable in Category view like this
-                        standardChainKey: null, // Or a reasonable default like "all_l2s" if needed
-                        // Callbacks (Provide stubs or actual setters if interaction is needed *from* contracts)
-                        setSelectedChain: () => {},
-                        setSelectedCategory: () => {}, // Maybe link to main setter? No, usually Contracts don't change main category.
-                        setAllCats: () => {},
-                        // Utilities
-                        formatSubcategories: formatSubcategories,
-                         // Include focusEnabled if ContractContainer needs it
-                        focusEnabled: focusEnabled,
-                        // Include chainEcosystemFilter if ContractContainer needs it
-                        chainEcosystemFilter: chainEcosystemFilter,
-                    }}
-                >
-                    <ContractContainer />
-                </ContractProvider>
-            </HorizontalScrollContainer>
+          <ProjectsMetadataProvider>
+              <ContractProvider
+                  // --- Pass props similar to OverviewMetrics, adapted for CategoryMetrics ---
+                  value={{
+                      // Data Source: Pass the main data prop for CategoryMetrics
+                      data: data, // Type: CategoryComparisonResponseData
+                      master: master,
+                      // Mode/Value: Combine base mode, absolute/share, and usd/eth
+                      selectedMode: contractSelectedMode, // e.g., "gas_fees_absolute_usd"
+                      selectedValue: selectedValue, // "absolute" or "share"
+                      showUsd: showUsd, // Pass showUsd state
+                      // Selection Context
+                      selectedCategory: selectedCategory,
+                      selectedSubcategories: selectedSubcategories[selectedCategory] || [], // Pass the array of selected subcats for the current category
+                      selectedChains: Object.keys(selectedChains).filter(k => selectedChains[k]), // Pass array of selected chain keys
+                      selectedChain: null, // No single selected chain in this view
+                      selectedTimespan: selectedTimespan,
+                      timespans: timespans,
+                      categories: categories,
+                      // Flags/Defaults
+                      forceSelectedChain: undefined, // Not applicable
+                      allCats: false, // Not applicable in Category view like this
+                      standardChainKey: null, // Or a reasonable default like "all_l2s" if needed
+                      // Callbacks (Provide stubs or actual setters if interaction is needed *from* contracts)
+                      setSelectedChain: () => {},
+                      setSelectedCategory: () => {}, // Maybe link to main setter? No, usually Contracts don't change main category.
+                      setAllCats: () => {},
+                      // Utilities
+                      formatSubcategories: formatSubcategories,
+                        // Include focusEnabled if ContractContainer needs it
+                      focusEnabled: focusEnabled,
+                      // Include chainEcosystemFilter if ContractContainer needs it
+                      chainEcosystemFilter: chainEcosystemFilter,
+                  }}
+              >
+                <ContractContainer />
+              </ContractProvider>
+            </ProjectsMetadataProvider>
+          </HorizontalScrollContainer>
         </div>
       )}
     </>

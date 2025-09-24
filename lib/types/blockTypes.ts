@@ -95,6 +95,7 @@ export interface ChartBlock extends BaseBlock {
   type: 'chart';
   chartType: 'line' | 'area' | 'column' | 'pie';
   data: any; // This would be the chart data structure
+  margins?: "none" | "normal";
   options?: any; // Chart configuration options
   width?: number | string;
   height?: number | string;

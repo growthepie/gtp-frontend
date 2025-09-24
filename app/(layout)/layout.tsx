@@ -14,6 +14,7 @@ import DeveloperTools from "@/components/development/DeveloperTools";
 import Footer from "@/components/layout/Footer";
 import GlobalSearchBar from "@/components/layout/GlobalSearchBar";
 import { IS_PRODUCTION } from "@/lib/helpers";
+import { ProjectsMetadataProvider } from "./applications/_contexts/ProjectsMetadataContext";
 const jsonLd: Graph = {
   "@context": "https://schema.org",
   "@graph": [
@@ -224,7 +225,9 @@ export default function RootLayout({
           <div className="flex h-fit w-full justify-center">
             <div className="flex min-h-screen w-full max-w-[1700px] md:pl-[30px]">
               {!IS_PRODUCTION && (
-                <GlobalSearchBar />
+                <ProjectsMetadataProvider>
+                  <GlobalSearchBar />
+                </ProjectsMetadataProvider>
               )}
               <SidebarContainer />
               <div

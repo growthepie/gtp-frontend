@@ -123,7 +123,7 @@ export default function LandingSwiperItems() {
     if (landing?.data?.all_l2s?.metrics) {
       const missingMetrics = metricIds.filter((metric_id) => !landing?.data?.all_l2s?.metrics[metric_id]);
       if (missingMetrics.length > 0) {
-        console.warn(`[LandingSwiperItems] Missing metrics: ${missingMetrics.join(", ")}`);  
+        console.log(`[LandingSwiperItems] Missing metrics: ${missingMetrics.join(", ")}`);  
       }
     }
   }, [landing]);

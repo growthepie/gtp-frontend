@@ -381,6 +381,7 @@ function parseChartBlock(jsonString: string): ContentBlock | null {
     return {
       id: generateBlockId(),
       type: 'chart',
+      margins: chartConfig.margins || 'normal',
       chartType: chartConfig.type || 'line',
       data: chartConfig.data || [],
       options: chartConfig.options || {},
