@@ -201,6 +201,8 @@ export const GTPIcon = memo(GTPIconBase, (prevProps, nextProps) => {
   );
 });
 
+GTPIcon.displayName = "GTPIcon";
+
 type GTPMaturityIconProps = {
   maturityKey: string;
   className?: string;
@@ -319,6 +321,7 @@ const GTPMetricIconBase = ({ icon, showLoadingPlaceholder = false, ...props }: G
 };
 
 export const GTPMetricIcon = memo(GTPMetricIconBase);
+GTPMetricIcon.displayName = "GTPMetricIcon";
 
 type RankIconProps = {
   colorScale: number;
@@ -392,3 +395,5 @@ export const RankIcon = memo(({ colorScale, size = "md", children, isIcon = true
     </div>
   );
 });
+
+RankIcon.displayName = "RankIcon";
