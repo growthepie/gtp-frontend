@@ -10,6 +10,7 @@ import { ToastProvider } from "@/components/toast/GTPToast";
 // import { ConfettiProvider } from "@/components/animations/ConfettiProvider";
 import { NavigationProvider } from "@/contexts/NavigationContext";
 import { useEffect } from "react";
+import { gtpIconsLoader } from "@/utils/gtp-icons-loader";
 
 // load icons
 // addCollection(GTPIcons);
@@ -73,20 +74,8 @@ export function Providers({ children, forcedTheme }: ProvidersProps) {
   const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
 
   useEffect(() => {
-    const loadIcons = async () => {
-      try {
-        const [gtpIcons, gtpFigmaIcons] = await Promise.all([
-          fetch('/gtp.json').then(res => res.json()),
-          fetch('/gtp-figma-export.json').then(res => res.json())
-        ]);
-        addCollection(gtpIcons);
-        addCollection(gtpFigmaIcons);
-      } catch (error) {
-        console.error("Failed to load icon sets:", error);
-      }
-    };
-
-    loadIcons();
+    // Start loading icons immediately
+    gtpIconsLoader.loadIcons();
   }, []);
 
   return (
