@@ -30,6 +30,7 @@ export default function GlobalFloatingBar() {
   // State for controlling popover visibility
   const [isMobileMenuPopoverOpen, setIsMobileMenuPopoverOpen] = useState(false);
   const [isSharePopoverOpen, setIsSharePopoverOpen] = useState(false);
+  const [isWorkWithUsMenuOpen, setIsWorkWithUsMenuOpen] = useState(false);
 
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
@@ -169,6 +170,7 @@ export default function GlobalFloatingBar() {
     setMenuWasManuallyClosed(true);
     setIsSearchActive(false);
     setIsBurgerMenuManuallyOpened(false);
+    setIsWorkWithUsMenuOpen(false);
     clearQuery();
   }, [clearQuery]);
 
@@ -177,6 +179,7 @@ export default function GlobalFloatingBar() {
     setIsMobileMenuPopoverOpen(false);
     setIsSearchActive(false);
     setIsBurgerMenuManuallyOpened(false);
+    setIsWorkWithUsMenuOpen(false);
   }, [pathname]);
 
   // Clean up timeout on unmount
@@ -313,6 +316,21 @@ export default function GlobalFloatingBar() {
     }
     setIsSharePopoverOpen(openState);
   };
+
+  // Handle WorkWithUs menu toggle on mobile
+  const handleWorkWithUsMenuToggle = useCallback(() => {
+    if (isMobile) {
+      if (isWorkWithUsMenuOpen) {
+        // If WorkWithUs menu is open, close it
+        handleMobileMenuClose();
+      } else {
+        // If closed, open it
+        setIsWorkWithUsMenuOpen(true);
+        setIsMobileMenuPopoverOpen(true);
+        setIsBurgerMenuManuallyOpened(true);
+      }
+    }
+  }, [isMobile, isWorkWithUsMenuOpen, handleMobileMenuClose]);
 
 
   // Handle search submission
@@ -490,11 +508,27 @@ export default function GlobalFloatingBar() {
               <MobileMenuWithSearch
                 isOpen={isMobileMenuPopoverOpen}
                 onClose={handleMobileMenuClose}
+                isWorkWithUsMenuOpen={isWorkWithUsMenuOpen}
+                setIsWorkWithUsMenuOpen={setIsWorkWithUsMenuOpen}
               />
               <div className={`flex items-center w-full gap-x-[5px] md:gap-x-[5px] z-0 pointer-events-auto`}>
                 {/* Work with Us Button */}
                 <div className="md:hidden">
-                  <WorkWithUs placement="top-start" mobile={true} />
+                  <div onClick={handleWorkWithUsMenuToggle} className="relative pointer-events-auto shrink-0">
+                    <button
+                      type="button"
+                      className={`relative flex items-center w-full h-[44px] rounded-full overflow-hidden bg-[#1F2726] transition-colors duration-200 ${
+                        isWorkWithUsMenuOpen ? 'bg-[#5A6462]' : ''
+                      }`}
+                      aria-label="Work with us"
+                    >
+                      <GTPIcon 
+                        icon="gtp-socials" 
+                        size="md"
+                        containerClassName="!size-[44px] min-w-[44px] flex items-center justify-center"
+                      />
+                    </button>
+                  </div>
                 </div>
                 {/* Mobile - Share Button (disabled for now) */}
                 {/* <Popover

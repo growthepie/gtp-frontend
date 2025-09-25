@@ -104,11 +104,15 @@ MobileSearchBadge.displayName = 'MobileSearchBadge';
 type MobileMenuWithSearchProps = {
   onClose: () => void;
   isOpen: boolean;
+  isWorkWithUsMenuOpen?: boolean;
+  setIsWorkWithUsMenuOpen?: (open: boolean) => void;
 };
 
 const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
   onClose,
-  isOpen
+  isOpen,
+  isWorkWithUsMenuOpen = false,
+  setIsWorkWithUsMenuOpen
 }: MobileMenuWithSearchProps) {
   const { ChainsNavigationItems } = useMaster();
   const pathname = usePathname();
@@ -129,6 +133,40 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
 
   // Derived state - no separate mode state needed
   const isSearchActive = query.trim().length > 0;
+
+  // WorkWithUs menu items (same as in WorkWithUs.tsx)
+  const workWithUsItems = [
+    {
+      id: "linkedin",
+      label: "Connect on LinkedIn",
+      href: "https://www.linkedin.com/company/growthepie/",
+      target: "_blank",
+      rel: "noopener noreferrer",
+      icon: "feather:linkedin" as GTPIconName
+    },
+    {
+      id: "discord",
+      label: "Join our Discord",
+      href: "https://discord.gg/fxjJFe7QyN",
+      target: "_blank",
+      rel: "noopener noreferrer",
+      icon: "discord-monochrome" as GTPIconName
+    },
+    {
+      id: "email",
+      label: "Send an email",
+      href: "mailto:contact@growthepie.com",
+      icon: "gtp-message-monochrome" as GTPIconName
+    },
+    {
+      id: "form",
+      label: "Want to get listed?",
+      href: "https://forms.office.com/e/wWzMs6Zc3A",
+      target: "_blank",
+      rel: "noopener noreferrer",
+      icon: "gtp-backgroundinformation-monochrome" as GTPIconName
+    },
+  ];
 
   // Get search results using existing hook
   const { allFilteredData } = useSearchBuckets();
@@ -168,8 +206,8 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
       if (containerRef.current && headerRef.current && footerRef.current && contentRef.current) {
         const totalHeight = containerRef.current.clientHeight;
         const headerHeight = headerRef.current.offsetHeight;
-        // const footerHeight = footerRef.current.offsetHeight;
-        const footerHeight = 13;
+        // Use actual footer height - it will be smaller when WorkWithUs menu is open (EthUsd toggle hidden)
+        const footerHeight = footerRef.current.offsetHeight;
         const margins = 10; // Account for margins
         const calculatedHeight = totalHeight - headerHeight - footerHeight - margins;
         setScrollableHeight(calculatedHeight > 0 ? calculatedHeight : 0);
@@ -178,7 +216,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
 
     const timeoutId = setTimeout(() => {
       requestAnimationFrame(calculateHeight);
-    }, 50);
+    }, 100); // Slightly longer delay to ensure DOM updates are complete
 
     const handleResize = () => {
       requestAnimationFrame(calculateHeight);
@@ -189,7 +227,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
       window.removeEventListener("resize", handleResize);
       clearTimeout(timeoutId);
     };
-  }, [isOpen, hasBeenOpened]);
+  }, [isOpen, hasBeenOpened, isWorkWithUsMenuOpen, isSearchActive, query]); // Dependencies trigger recalculation when states change
 
   const [viewportHeight, setViewportHeight] = useState(0);
 
@@ -578,10 +616,66 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
   }
 
   const renderContent = () => {
-    if (!isSearchActive) {
-      // Show default navigation menu
+    // Priority: Search results take precedence over WorkWithUs menu when user is typing
+    if (isSearchActive) {
+      // If user is typing, show search results regardless of WorkWithUs menu state
+      // The search logic will be handled below
+    } else if (isWorkWithUsMenuOpen) {
+      // Show WorkWithUs menu items styled like mobile hamburger menu
+      return (
+        <div className="flex flex-col gap-y-[10px] w-full px-[2px]">
+          {workWithUsItems.map((item) => (
+            <Link
+              key={item.id}
+              href={item.href}
+              target={item.target}
+              rel={item.rel}
+              onClick={(e) => {
+                // Track analytics if needed
+                track("clicked WorkWithUs link", { 
+                  location: "mobile menu", 
+                  item: item.id,
+                  page: pathname 
+                });
+                // Close the menu after navigation
+                onClose();
+              }}
+              className="flex w-full items-center justify-between rounded-full hover:!bg-[#5A6462] transition-colors duration-200"
+              style={{
+                padding: "3px 13px 3px 2px",
+                gap: "0 5px",
+                height: "44px",
+              }}
+            >
+              {/* Icon container - matching mobile menu style */}
+              <div 
+                className="flex items-center justify-center rounded-full bg-[#151A19]"
+                style={{
+                  width: "38px",
+                  height: "38px",
+                }}
+              >
+                <GTPIcon 
+                  icon={item.icon} 
+                  size="md"
+                  style={{ color: "#5A6462" }}
+                />
+              </div>
+              
+              {/* Label - matching mobile menu typography */}
+              <div className="flex flex-1 items-start justify-start truncate heading-large-md">
+                {item.label}
+              </div>
+            </Link>
+          ))}
+        </div>
+      );
+    } else {
+      // Show default navigation menu when not searching and WorkWithUs is not open
       return <Sidebar isOpen={true} onClose={onClose} />
     }
+
+    // Handle search results (when isSearchActive is true)
 
 
 
@@ -755,7 +849,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
         <div className="flex-grow overflow-hidden px-[5px]" style={{ height: `${Math.min(contentHeight + 30, viewportHeight - 120)}px` }}>
           {isOpen ? (
             <VerticalScrollContainer height={scrollableHeight} scrollbarPosition="right" scrollbarAbsolute={true} scrollbarWidth="6px">
-              <div ref={contentRef} className="flex flex-col gap-y-[5px] transition-all duration-300 ease-in-out pb-[30px] pr-[20px] pl-[5px]">
+              <div ref={contentRef} className="flex flex-col gap-y-[5px] transition-all duration-300 ease-in-out pr-[20px] pl-[5px] pb-[30px]">
                 {renderContent()}
               </div>
             </VerticalScrollContainer>
@@ -767,11 +861,11 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
         </div>
 
         {/* Footer */}
-        <div ref={footerRef} className="p-[10px] pt-0 mt-auto">
-          <div className="flex flex-col justify-end pt-3 pb-0 relative">
+        <div ref={footerRef} className={`mt-auto transition-all duration-200 ${query || isWorkWithUsMenuOpen ? 'p-[5px]' : 'p-[10px] pt-0'}`}>
+          <div className={`flex flex-col justify-end relative transition-all duration-200 ${query || isWorkWithUsMenuOpen ? 'pt-0 pb-0' : 'pt-3 pb-0'}`}>
             <div className="items-end justify-center flex gap-x-[15px] mt-[2px] mb-[0px]">
-              <EthUsdSwitchSimple isMobile showBorder={false} className={query ? 'hidden' : ''} />
-              {/* <FocusSwitchSimple isMobile showBorder={false} className={query ? 'hidden' : ''} /> */}
+              <EthUsdSwitchSimple isMobile showBorder={false} className={query || isWorkWithUsMenuOpen ? 'hidden' : ''} />
+              {/* <FocusSwitchSimple isMobile showBorder={false} className={query || isWorkWithUsMenuOpen ? 'hidden' : ''} /> */}
             </div>
           </div>
         </div>
