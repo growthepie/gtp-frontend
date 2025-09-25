@@ -570,7 +570,7 @@ export default function GlobalFloatingBar() {
                 {/* Search Bar */}
                 <div
                   ref={searchContainerRef}
-                  className={`flex-1 min-w-0 relative h-[44px] ${isSidebarOpen ? "md:ml-[20px]" : "md:ml-[10px]"} ${isMobile && isSearchActive ? "-ml-[55px]" : ""
+                  className={`flex-1 min-w-0 relative h-[44px] ${isSidebarOpen ? "md:ml-[25px]" : "md:ml-[15px]"} ${isMobile && isSearchActive ? "-ml-[55px]" : ""
                     } transition-[margin] duration-200 max-h-[calc(100vh-200px)]`}
                   // onMouseEnter={activateSearch}
                   // onMouseLeave={deactivateSearch}
