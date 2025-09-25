@@ -210,7 +210,8 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
         const footerHeight = footerRef.current.offsetHeight;
         const margins = 10; // Account for margins
         const calculatedHeight = totalHeight - headerHeight - footerHeight - margins;
-        setScrollableHeight(calculatedHeight > 0 ? calculatedHeight : 0);
+        const height = calculatedHeight > 0 ? calculatedHeight : 0;
+        setScrollableHeight(height);
       }
     };
 
@@ -640,7 +641,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
                 // Close the menu after navigation
                 onClose();
               }}
-              className="flex w-full items-center justify-between rounded-full hover:!bg-[#5A6462] transition-colors duration-200"
+              className="flex w-full items-center justify-between rounded-full hover:!bg-[#5A6462]"
               style={{
                 padding: "3px 13px 3px 2px",
                 gap: "0 5px",
@@ -649,7 +650,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
             >
               {/* Icon container - matching mobile menu style */}
               <div 
-                className="flex items-center justify-center rounded-full bg-[#151A19]"
+                className="flex items-center justify-center rounded-full sbg-[#151A19]"
                 style={{
                   width: "38px",
                   height: "38px",
@@ -658,12 +659,12 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
                 <GTPIcon 
                   icon={item.icon} 
                   size="md"
-                  style={{ color: "#5A6462" }}
+                  // style={{ color: "#5A6462" }}
                 />
               </div>
               
               {/* Label - matching mobile menu typography */}
-              <div className="flex flex-1 items-start justify-start truncate heading-large-md">
+              <div className="flex flex-1 items-start justify-start truncate heading-large-sm">
                 {item.label}
               </div>
             </Link>

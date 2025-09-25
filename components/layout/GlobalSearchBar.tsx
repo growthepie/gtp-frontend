@@ -517,9 +517,7 @@ export default function GlobalFloatingBar() {
                   <div onClick={handleWorkWithUsMenuToggle} className="relative pointer-events-auto shrink-0">
                     <button
                       type="button"
-                      className={`relative flex items-center w-full h-[44px] rounded-full overflow-hidden bg-[#1F2726] transition-colors duration-200 ${
-                        isWorkWithUsMenuOpen ? 'bg-[#5A6462]' : ''
-                      }`}
+                      className={`relative flex items-center w-full h-[44px] rounded-full overflow-hidden bg-[#1F2726] transition-colors duration-200`}
                       aria-label="Work with us"
                     >
                       <GTPIcon 
