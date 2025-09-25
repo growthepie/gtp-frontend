@@ -218,7 +218,6 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           const currentSuffix = jsonMeta?.meta[index].suffix || '';
           const currentDecimals = jsonMeta?.meta[index].tooltipDecimals || 2;
 
-          console.log(jsonMeta?.meta[index]);
 
           let displayValue = parseFloat(y).toLocaleString("en-GB", {
             minimumFractionDigits: currentDecimals,

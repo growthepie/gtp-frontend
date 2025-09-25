@@ -17,7 +17,8 @@ import {
 import { GTPIcon, GTPIconSize } from "./GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { useMaster } from "@/contexts/MasterContext";
-import { useUIContext } from "@/contexts/UIContext";
+import { MOBILE_BREAKPOINT, useUIContext } from "@/contexts/UIContext";
+import { useMediaQuery } from "usehooks-ts";
 
 type SidebarProps = {
   item: NavigationItem;
@@ -26,14 +27,16 @@ type SidebarProps = {
   onClose?: () => void;
   children?: ReactNode;
   sidebarOpen: boolean;
+  disableAnimation?: boolean;
 };
 
 export const SidebarMenuLink = memo(({
   item,
   sidebarOpen,
   onClose, // for mobile menu
+  disableAnimation = false,
 }: SidebarProps) => {
-  const { isMobile } = useUIContext();
+  const isMobile = useMediaQuery(`(max-width: ${MOBILE_BREAKPOINT}px)`);
   const pathname = usePathname();
 
   const isActive = useMemo(() => {
@@ -60,9 +63,10 @@ export const SidebarMenuLink = memo(({
       hideLabel={!sidebarOpen && !isMobile}
       isActive={isActive}
       onToggle={() => {}}
+      disableAnimation={disableAnimation}
       rightContent={
         item.newChild && (
-          <div className="pointer-events-none absolute bottom-[8px] right-[0px] top-[8px] flex items-center justify-center overflow-hidden text-xs font-bold transition-all duration-300 md:right-[20px]">
+          <div className="pointer-events-none absolute bottom-[8px] right-[5px] top-[8px] flex items-center justify-center overflow-hidden text-xs font-bold transition-all duration-300 md:right-[20px]">
             <div
               className={`h-full w-[50px] rounded-full bg-gradient-to-t from-[#FFDF27] to-[#FE5468] transition-all duration-300 md:rounded-br-none md:rounded-tr-none ${
                 (!sidebarOpen && !isMobile) || isActive
@@ -70,8 +74,8 @@ export const SidebarMenuLink = memo(({
                   : "translate-x-0 opacity-100 delay-300 ease-in-out"
               }`}
             >
-              <div className="hard-shine-2 absolute inset-0 flex items-center justify-end rounded-full pr-[8px] text-xs font-bold text-forest-900 transition-all duration-300 md:rounded-br-none md:rounded-tr-none">
-                NEW!
+              <div className="hard-shine-2 absolute inset-0 flex items-center justify-end rounded-full pr-[8px] heading-small-xs text-forest-900 transition-all duration-300 md:rounded-br-none md:rounded-tr-none">
+                NEW
               </div>
             </div>
           </div>
@@ -90,6 +94,7 @@ export const SidebarMenuGroup = memo(({
   onOpen,
   onClose,
   sidebarOpen,
+  disableAnimation = false,
 }: SidebarProps) => {
   const { isMobile } = useUIContext();
   const { data: master } = useSWR<MasterResponse>(MasterURL);
@@ -209,6 +214,7 @@ export const SidebarMenuGroup = memo(({
       hideLabel={!sidebarOpen && !isMobile}
       className=""
       accordionClassName="mb-[10px]"
+      disableAnimation={disableAnimation}
       rightContent={
         item.newChild && (
           <div className="pointer-events-none absolute bottom-[8px] right-[0px] top-[8px] flex items-center justify-center overflow-hidden text-xs font-bold transition-all duration-300 md:right-[20px]">
@@ -219,8 +225,8 @@ export const SidebarMenuGroup = memo(({
                   : "translate-x-0 opacity-100 delay-300 ease-in-out"
               }`}
             >
-              <div className="hard-shine-2 absolute inset-0 flex items-center justify-end rounded-full pr-[8px] text-xs font-bold text-forest-900 transition-all duration-300 md:rounded-br-none md:rounded-tr-none">
-                NEW!
+              <div className="hard-shine-2 absolute inset-0 flex items-center justify-end rounded-full pr-[8px] heading-small-xs text-forest-900 transition-all duration-300 md:rounded-br-none md:rounded-tr-none">
+                NEW
               </div>
             </div>
           </div>
@@ -236,8 +242,7 @@ export const SidebarMenuGroup = memo(({
               return (
                 <div key={bucket} className="flex w-full flex-col">
                   <div
-                    className="px-[5px] py-[5px] text-[14px] font-bold text-[#5A6462]"
-                    style={{ fontVariant: "all-small-caps" }}
+                    className="px-[5px] py-[5px] heading-caps-xs text-[#5A6462]"
                   >
                     {sidebarOpen ? bucket.toUpperCase() : <span>&nbsp;</span>}
                   </div>
@@ -273,9 +278,10 @@ export const SidebarMenuGroup = memo(({
                             ? pathname.localeCompare(item.key === "chains-rework" ? option.url.replace("/chains/", "/chains-rework/") : option.url) === 0
                             : false
                         }
+                        disableAnimation={disableAnimation}
                         rightContent={
                           option.showNew && (
-                            <div className="absolute bottom-1 right-[2px] top-1 flex items-center justify-center overflow-hidden text-xs font-bold transition-all duration-300 md:right-[16px]">
+                            <div className="absolute bottom-1 right-[5px] top-1 flex items-center justify-center overflow-hidden text-xs font-bold transition-all duration-300 md:right-[16px]">
                               <div
                                 className={`h-full w-[50px] rounded-full bg-gradient-to-t from-[#FFDF27] to-[#FE5468] transition-all duration-300 md:rounded-br-none md:rounded-tr-none ${
                                   sidebarOpen && isOpen
@@ -283,8 +289,8 @@ export const SidebarMenuGroup = memo(({
                                     : "translate-x-[60px] opacity-0 ease-in-out"
                                 }`}
                               >
-                                <div className="hard-shine-2 absolute inset-0 flex items-center justify-end rounded-full pr-[8px] text-xs font-bold text-forest-900 transition-all duration-300 md:rounded-br-none md:rounded-tr-none">
-                                  NEW!
+                                <div className="hard-shine-2 absolute inset-0 flex items-center justify-end rounded-full pr-[8px] heading-small-xs text-forest-900 transition-all duration-300 md:rounded-br-none md:rounded-tr-none">
+                                  NEW
                                 </div>
                               </div>
                             </div>
@@ -298,7 +304,7 @@ export const SidebarMenuGroup = memo(({
             })}
         </div>
       ) : (
-        <div className="w-full gap-y-[-5px] px-[3px]">
+        <div className="w-full space-y-[-5px] md:space-y-[0px] px-[3px]">
           {item.options
             .filter((o) => o.hide !== true)
             .map((option, i) => {
@@ -313,8 +319,7 @@ export const SidebarMenuGroup = memo(({
                 ) {
                   label = (
                     <div
-                      className="p-[5px] text-[14px] font-bold text-[#5A6462]"
-                      style={{ fontVariant: "all-small-caps" }}
+                      className="p-[5px] heading-caps-xs text-[#5A6462]"
                     >
                       {!sidebarOpen && !isMobile ? (
                         <span>&nbsp;</span>
@@ -355,9 +360,10 @@ export const SidebarMenuGroup = memo(({
                         ? pathname.localeCompare(option.url) === 0
                         : false
                     }
+                    disableAnimation={disableAnimation}
                     rightContent={
                       option.showNew && (
-                        <div className="absolute bottom-1 right-[2px] top-1 flex items-center justify-center overflow-hidden text-xs font-bold transition-all duration-300 md:right-[16px]">
+                        <div className="absolute bottom-1 right-[5px] top-1 flex items-center justify-center overflow-hidden text-xs font-bold transition-all duration-300 md:right-[16px]">
                           <div
                             className={`h-full w-[50px] rounded-full bg-gradient-to-t from-[#FFDF27] to-[#FE5468] transition-all duration-300 md:rounded-br-none md:rounded-tr-none ${
                               sidebarOpen && isOpen
@@ -365,8 +371,8 @@ export const SidebarMenuGroup = memo(({
                                 : "translate-x-[60px] opacity-0 ease-in-out"
                             }`}
                           >
-                            <div className="hard-shine-2 absolute inset-0 flex items-center justify-end rounded-full pr-[8px] text-xs font-bold text-forest-900 transition-all duration-300 md:rounded-br-none md:rounded-tr-none">
-                              NEW!
+                            <div className="hard-shine-2 absolute inset-0 flex items-center justify-end rounded-full pr-[8px] heading-small-xs text-forest-900 transition-all duration-300 md:rounded-br-none md:rounded-tr-none">
+                              NEW
                             </div>
                           </div>
                         </div>
@@ -404,6 +410,7 @@ type AccordionProps = {
   onClick?: () => void;
   width?: string | undefined;
   rightContent?: ReactNode;
+  disableAnimation?: boolean;
 };
 
 export const Accordion = memo(({
@@ -426,6 +433,7 @@ export const Accordion = memo(({
   onClick = () => {},
   width = undefined,
   rightContent,
+  disableAnimation = false,
 }: AccordionProps) => {
   // const [isOpen, setIsOpen] = useState(open);
 
@@ -471,11 +479,17 @@ export const Accordion = memo(({
     "dark-border": "2px solid #151A19",
   };
 
-  const fontSize = {
-    sm: "14px",
-    md: "14px",
-    lg: "20px",
-  };
+  // const fontSize = {
+  //   sm: "14px",
+  //   md: "14px",
+  //   lg: "20px",
+  // };
+
+  const fontClass = {
+    sm: "heading-large-xs",
+    md: "heading-large-xs",
+    lg: "heading-large-md",
+  }
 
   // Click handler for the main clickable element (Link or div)
   const handleElementClick = (event: React.MouseEvent) => {
@@ -553,11 +567,11 @@ export const Accordion = memo(({
                 iconColor={
                   isHovered && iconHoverColor ? iconHoverColor : iconColor
                 }
+                disableAnimation={disableAnimation}
               />
               <div
-                className="flex flex-1 items-start justify-start truncate font-semibold transition-all duration-300"
+                className={`flex flex-1 items-start justify-start truncate transition-all duration-300 ${fontClass[size]}`}
                 style={{
-                  fontSize: fontSize[size],
                   opacity: hideLabel ? 0 : 1,
                 }}
               >
@@ -597,13 +611,10 @@ export const Accordion = memo(({
                   iconColor={
                     isHovered && iconHoverColor ? iconHoverColor : iconColor
                   }
+                  disableAnimation={disableAnimation}
                 />
                 <div
-                  className="flex flex-1 items-start justify-start truncate font-semibold transition-all duration-300"
-                  style={{
-                    fontSize: fontSize[size],
-                    // opacity: hideLabel ? 0 : 1,
-                  }}
+                  className={`flex flex-1 items-start justify-start truncate transition-all duration-300 ${fontClass[size]}`}
                 >
                   {label}
                 </div>
@@ -614,7 +625,7 @@ export const Accordion = memo(({
       </Tooltip>
       {children && (
         <div
-          className={`overflow-hidden transition-[max-height] duration-300 ${accordionClassName}`}
+          className={`overflow-hidden ${!disableAnimation ? 'transition-[max-height] duration-300' : ''} ${accordionClassName}`}
           style={{
             maxHeight: isOpen ? childrenHeight : "0",
           }}
@@ -637,6 +648,7 @@ type DropdownIconProps = {
   iconBackground: "none" | "dark";
   showArrow: boolean;
   isOpen?: boolean;
+  disableAnimation?: boolean;
 };
 
 export const DropdownIcon = memo(({
@@ -646,6 +658,7 @@ export const DropdownIcon = memo(({
   iconBackground,
   showArrow = false,
   isOpen = false,
+  disableAnimation = false,
 }: DropdownIconProps) => {
   const iconBgSize = {
     sm: "26px",
@@ -693,7 +706,7 @@ export const DropdownIcon = memo(({
         />
 
         {showArrow && (
-          <DropdownArrow isOpen={isOpen} size={size} />
+          <DropdownArrow isOpen={isOpen} size={size} disableAnimation={disableAnimation} />
         )}
       </div>
     </div>
@@ -701,7 +714,7 @@ export const DropdownIcon = memo(({
 });
 
 
-export const DropdownArrow = ({isOpen, size}: {isOpen: boolean; size: "sm" | "md" | "lg"}) => {
+export const DropdownArrow = ({isOpen, size, disableAnimation = false}: {isOpen: boolean; size: "sm" | "md" | "lg"; disableAnimation?: boolean}) => {
   const iconSizeMap: { [key: string]: "sm" | "md" | "lg" } = {
     sm: "sm",
     md: "sm",
@@ -710,7 +723,7 @@ export const DropdownArrow = ({isOpen, size}: {isOpen: boolean; size: "sm" | "md
 
   return (
     <div
-      className={`absolute right-0 h-[10px] w-[5px] transition-all duration-300`}
+      className={`absolute right-0 h-[10px] w-[5px] ${!disableAnimation ? 'transition-all duration-300' : ''}`}
       style={{
         transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
         transformOrigin: `calc(-${GTPIconSize[iconSizeMap[size]]}/2) 50%`,

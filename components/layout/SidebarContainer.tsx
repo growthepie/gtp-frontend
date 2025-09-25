@@ -1,10 +1,10 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import Sidebar from "./Sidebar";
+import Sidebar from "../sidebar/Sidebar";
 import { getIcon, Icon } from "@iconify/react";
 import { useUIContext } from "@/contexts/UIContext";
-import { useMediaQuery } from "usehooks-ts";
+import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { track } from "@vercel/analytics";
 import { GTPIcon } from "./GTPIcon";
@@ -18,6 +18,8 @@ import { IconContextMenu } from "./IconContextMenu";
 
 export default function SidebarContainer() {
   const { isSidebarOpen, toggleSidebar } = useUIContext();
+  // const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", true);
+  const showGlobalSearchBar = true;
 
   const toast = useToast(); // Keep toast for fetch error
   const [logoFullSVG, setLogoFullSVG] = useState<string | null>(null);
@@ -47,7 +49,7 @@ export default function SidebarContainer() {
   const getLogoSvgData = useCallback(async (): Promise<{ svgString: string | null; width: number; height: number } | null> => {
     if (!logoFullSVG) {
       // Maybe try fetching again or return null
-      await fetch("/logo-full.svg").then(res => res.text()).then(setLogoFullSVG).catch(() => {}); // Simple retry/refetch example
+      await fetch("/logo-full.svg").then(res => res.text()).then(setLogoFullSVG).catch(() => { }); // Simple retry/refetch example
       if (!logoFullSVG) return null; // Return null if still not available
     }
 
@@ -68,10 +70,11 @@ export default function SidebarContainer() {
   }, [logoFullSVG]); // Depends on logoFullSVG
 
   return (
-    <div className="bg-forest-1000 md:min-w-[94px] max-w-[253px]">
-      <div className="pt-[43px] pl-[20px] bg-[#1F2726] min-h-screen max-h-screen sticky top-0 left-0 hidden md:flex flex-col gap-y-[36px] border-r-[2px] border-[#151A19] z-[3]">
-        <div className="select-none h-[45.07px]">
-          <div className="flex items-center justify-start h-[45.07px] gap-x-[15px] pr-[10px]">
+    <div className={`${showGlobalSearchBar ? "md:pl-[10px] md:min-w-[61px] max-w-[255px] overflow-visible" : "md:min-w-[94px] max-w-[253px]"} bg-forest-1000`}>
+      <div className={`${showGlobalSearchBar ? "overflow-visible" : "pt-[43px] pl-[20px] gap-y-[36px] border-r-[2px] border-[#151A19]"} bg-[#1F2726] min-h-screen max-h-screen sticky top-0 left-0 hidden md:flex flex-col z-[3]`}>
+        {!showGlobalSearchBar && (
+          <div className="select-none h-[45.07px]">
+            <div className="flex items-center justify-start h-[45.07px] gap-x-[15px] pr-[10px]">
             
             <Link
               href="/"
@@ -160,12 +163,12 @@ export default function SidebarContainer() {
                 icon={isSidebarOpen ? "feather:log-out" : "feather:log-in"}
                 className={`w-[13px] h-[13px] transition-transform ${isSidebarOpen ? "rotate-180" : ""
                   }`}
-
-              />
+                />
+              </div>
             </div>
           </div>
-        </div>
-        <Sidebar />
+        )}
+        <Sidebar isOpen={isSidebarOpen} />
       </div>
     </div>
   );
@@ -216,7 +219,7 @@ export const LogoContextMenu = ({ children }: { children: React.ReactNode }) => 
   }
 
   const handleCopy = () => {
-    if(!logoFullSVG){
+    if (!logoFullSVG) {
       toast.addToast({
         title: "Error",
         message: "Logo not found",
@@ -234,7 +237,7 @@ export const LogoContextMenu = ({ children }: { children: React.ReactNode }) => 
   };
 
   const handleDownload = async () => {
-    if(!logoFullSVG){
+    if (!logoFullSVG) {
       toast.addToast({
         title: "Error",
         message: "Logo not found",
@@ -245,7 +248,7 @@ export const LogoContextMenu = ({ children }: { children: React.ReactNode }) => 
     }
     const width = logoFullSVG.match(/width="(\d+)"/)?.[1];
     const height = logoFullSVG.match(/height="(\d+)"/)?.[1];
-    if(!width || !height){
+    if (!width || !height) {
       toast.addToast({
         title: "Error",
         message: "Logo dimensions not found",
@@ -255,7 +258,7 @@ export const LogoContextMenu = ({ children }: { children: React.ReactNode }) => 
       return;
     }
     const blob = await convertSvgToPngBlob(logoFullSVG, parseInt(width), parseInt(height));
-    if(!blob){
+    if (!blob) {
       toast.addToast({
         title: "Error",
         message: "Failed to convert logo to PNG",
@@ -270,7 +273,7 @@ export const LogoContextMenu = ({ children }: { children: React.ReactNode }) => 
 
   const handleGoToIconsPage = () => {
     window.open("https://icons.growthepie.xyz", "_blank");
-  };  
+  };
 
   // CMD icon: material-symbols:keyboard-command-key
   const CMDIcon = <Icon icon="lucide:command" />;
@@ -314,7 +317,7 @@ export const LogoContextMenu = ({ children }: { children: React.ReactNode }) => 
   );
 
   return (
-    <div className="relative w-fit"  onContextMenu={handleContextMenu}>
+    <div className="relative w-fit" onContextMenu={handleContextMenu}>
       {children}
       {isOpen && createPortal(menuContent, document.body)}
     </div>

@@ -212,6 +212,7 @@ interface SearchBarProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'on
   showMore?: any;
   setShowMore?: any;
   showSearchContainer?: boolean;
+  hideClearButtonOnMobile?: boolean; // Add this prop
   onInputFocus?: () => void;
   onInputBlur?: () => void;
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
@@ -219,7 +220,7 @@ interface SearchBarProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'on
 }
 
 export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
-  ({ showMore, setShowMore, showSearchContainer=true, onInputFocus, onInputBlur, onFocus, onBlur, ...rest }, forwardedRef) => {
+  ({ showMore, setShowMore, showSearchContainer=true, hideClearButtonOnMobile=false, onInputFocus, onInputBlur, onFocus, onBlur, ...rest }, forwardedRef) => {
     // Local ref for internal SearchBar use
     const localInputRef = useRef<HTMLInputElement>(null);
 
@@ -248,8 +249,10 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     const query = searchParams.get("query") || "";
     const [localQuery, setLocalQuery] = useState(query);
     const { totalMatches } = useSearchBuckets();
+    const [isFocused, setIsFocused] = useState(false);
 
     const handleInternalFocus = (event: React.FocusEvent<HTMLInputElement>) => {
+      setIsFocused(true);
       // Call original onFocus if provided for SearchBar's internal logic
       if (onFocus) {
         onFocus(event);
@@ -261,6 +264,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     };
 
     const handleInternalBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+      setIsFocused(false);
       // Call original onBlur if provided for SearchBar's internal logic
       if (onBlur) {
         onBlur(event);
@@ -274,14 +278,17 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     // Create a debounced version of the search update function
     const debouncedUpdateSearch = useMemo(
       () => debounce((newValue: string) => {
-        // get existing query params
-        let newSearchParams = new URLSearchParams(window.location.search);
-        newSearchParams.set("query", newValue);
-
-        // create new url
-        let url = `${pathname}?${decodeURIComponent(newSearchParams.toString())}`;
-        window.history.replaceState(null, "", url);
-      }, 50),
+        const sp = new URLSearchParams(window.location.search);
+        const current = sp.get("query") ?? "";
+        if (current === newValue) return;
+    
+        if (newValue) sp.set("query", newValue); else sp.delete("query");
+        const next = `${pathname}?${decodeURIComponent(sp.toString())}`;
+        const now = `${window.location.pathname}${window.location.search}`;
+        if (next !== now) {
+          window.history.replaceState(null, "", next);
+        }
+      }, 100), // you can raise to 100–150ms on mobile to cut churn
       [pathname]
     );
 
@@ -321,7 +328,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       return (
         <div className={`flex w-full flex-col-reverse md:flex-col`}>
             {/* first child: the search bar w/ Icon and input */}
-            <div className="flex w-full gap-x-[10px] items-center bg-[#1F2726] rounded-[22px] h-[44px] p-2.5">
+            <div className="flex w-full gap-x-[10px] items-center bg-[#1F2726] rounded-[22px] h-[44px] p-[10px]">
               {localQuery.length > 0 ? (
                 <div className="flex items-center justify-center w-[24px] h-[24px]">
                   <Icon icon="feather:chevron-down" className="w-[24px] h-[24px]" />
@@ -340,14 +347,14 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                 onFocus={handleInternalFocus}
                 onBlur={handleInternalBlur}
               />
-              <div className={`absolute flex items-center gap-x-[10px] right-[20px] text-[8px] text-[#CDD8D3] font-medium ${localQuery.length > 0 ? "opacity-100" : "opacity-0 pointer-events-none"} transition-opacity duration-200`}>
+              <div className={`absolute flex items-center gap-x-[10px] right-[15px] text-[8px] text-[#CDD8D3] font-medium ${localQuery.length > 0 ? "opacity-100" : "opacity-0 pointer-events-none"} transition-opacity duration-200`}>
                 <div className="flex items-center px-[15px] h-[24px] border border-[#CDD8D3] rounded-full select-none">
                   <div className="text-xxxs text-[#CDD8D3] font-medium font-raleway -mb-[1px]">
                     {totalMatches} {totalMatches === 1 ? "result" : "results"}
                   </div>
                 </div>
                 <div
-                  className="flex flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px]"
+                  className="hidden sm:hidden md:flex flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px]"
                   onClick={(e) => {
                     setLocalQuery("");
                     debouncedUpdateSearch("");
@@ -366,9 +373,14 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                   </svg>
                 </div>
               </div>
+              <div className={`flex items-center justify-center size-[18px] rounded-[5px] bg-[#344240] pointer-events-none transition-opacity duration-200 ${isFocused || localQuery.length > 0 ? "opacity-0" : "opacity-100"}`}>
+                <div className="heading-small-sm text-[#CDD8D3]">/</div>
+              </div>
             </div>
             {/* second child: the filter selection container */}
-            <Filters showMore={showMore} setShowMore={setShowMore} />
+            <div className="hidden md:block">
+              <Filters showMore={showMore} setShowMore={setShowMore} />
+            </div>
           </div>
       );
     }
@@ -404,8 +416,9 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                     {totalMatches} {totalMatches === 1 ? "result" : "results"}
                   </div>
                 </div>
+                {/* Conditionally hide X button on mobile based on prop */}
                 <div
-                  className="flex flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px]"
+                  className={`${hideClearButtonOnMobile ? 'hidden md:flex' : 'flex'} flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px]`}
                   onClick={(e) => {
                     setLocalQuery("");
                     debouncedUpdateSearch("");
@@ -942,7 +955,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
         const rect = measurementsRef.current[key];
         const itemTop = rect?.top;
 
-        // If measurements aren't available yet, use a simple fallback layout
+        // If measurements aren't available yet, use a simple fallback layout for desktop
         if (!rect) {
           // Simple fallback: assume items are in rows of 3
           const itemsPerRow = 3;
@@ -959,8 +972,15 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
           dataMap[rowIndex].push(key);
           
           // Set "See more" for the last item in row 2 if there are more items
+          // Only set it for the last item in the row, not every item
           if (rowIndex === 2 && !isShowMore && itemIndex < filteredData.length - 1) {
-            newLastBucketIndeces[key] = { x: colIndex, y: rowIndex };
+            // Check if this is the last item in row 2
+            const nextItemRowIndex = Math.floor((itemIndex + 1) / itemsPerRow);
+            if (nextItemRowIndex > 2) {
+              // Calculate the actual position in the row (rightmost position)
+              const actualRowLength = dataMap[rowIndex].length;
+              newLastBucketIndeces[key] = { x: actualRowLength - 1, y: rowIndex };
+            }
           }
           return;
         }
@@ -1012,7 +1032,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
             const rect = measurementsRef.current[key];
             const itemTop = rect?.top;
 
-            // Fallback for stack results too
+            // If measurements aren't available yet, use a simple fallback layout for desktop
             if (!rect) {
               const itemsPerRow = 3;
               const rowIndex = Math.floor(optionIndex / itemsPerRow);
@@ -1027,8 +1047,16 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
               }
               dataMap[rowIndex].push(key);
               
+              // Set "See more" for the last item in row 2 if there are more items
+              // Only set it for the last item in the row, not every item
               if (rowIndex === 2 && !isStackShowMore && optionIndex < group.options.length - 1) {
-                newLastBucketIndeces[key] = { x: colIndex, y: rowIndex };
+                // Check if this is the last item in row 2
+                const nextItemRowIndex = Math.floor((optionIndex + 1) / itemsPerRow);
+                if (nextItemRowIndex > 2) {
+                  // Calculate the actual position in the row (rightmost position)
+                  const actualRowLength = dataMap[rowIndex].length;
+                  newLastBucketIndeces[key] = { x: actualRowLength - 1, y: rowIndex };
+                }
               }
               return;
             }
@@ -1194,6 +1222,8 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
         // If keyboard navigation is active, exit it first
         if (!isCoordsNull) {
           setKeyCoords({ y: null, x: null });
+          // Dispatch event to focus search input
+          window.dispatchEvent(new CustomEvent('focusSearchInput'));
         } else {
           // If no keyboard navigation, dispatch event to handle clear/close
           window.dispatchEvent(new CustomEvent('clearSearchOrClose'));
@@ -1368,7 +1398,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
 }
 
 
-const BucketItem = ({
+export const BucketItem = ({
   item,
   itemKey,
   isSelected,
@@ -1423,6 +1453,9 @@ const BucketItem = ({
       }}
 
       onClick={(e) => {
+        // Stop event propagation to prevent parent click handlers from firing
+        e.stopPropagation();
+        
         if (lastBucketIndeces[itemKey] && !showMore[bucket]) {
           // For Quick Bites and Applications, let the Link navigate naturally
           if (isQuickBites || isApps) {

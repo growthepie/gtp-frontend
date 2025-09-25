@@ -49,7 +49,7 @@ export const getRelatedQuickBites = (slug: string): RelatedData => {
 
       data.topics?.map(t => {
 
-        // console.log(t.name + currentSlug + " --- " + topic.name);
+     
         if(t.name === topic.name) {
           // Initialize the entry if it doesn't exist
           if(!relatedData[currentSlug]) {
@@ -70,6 +70,26 @@ export const getRelatedQuickBites = (slug: string): RelatedData => {
 
 
   
+  return relatedData;
+};
+
+
+export const getRelatedQuickBitesByTopic = (slug: string): RelatedData => {
+  const relatedData: RelatedData = {};
+  const quickBites = getAllQuickBites();
+
+  // Find all quick bites that have a topic with the matching name
+  quickBites.forEach(currentQuickBite => {
+    const matchingTopics = currentQuickBite.topics?.filter(topic => topic.name === slug) || [];
+
+    if (matchingTopics.length > 0) {
+      relatedData[currentQuickBite.slug] = {
+        relatedTopics: matchingTopics.map(topic => topic.name),
+        data: currentQuickBite
+      };
+    }
+  });
+
   return relatedData;
 };
 

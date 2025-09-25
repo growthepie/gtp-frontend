@@ -22,8 +22,11 @@ export default function EthUsdSwitch({ isMobile, showBorder=false, className }: 
 
   useEffect(() => {
     const handleResize = () => {
-      setIsResizing(true);
-      setTimeout(() => setIsResizing(false), 200);
+      // Only apply resize opacity on desktop where this component is visible
+      if (window.innerWidth >= 768) { // md breakpoint
+        setIsResizing(true);
+        setTimeout(() => setIsResizing(false), 200);
+      }
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -68,7 +71,7 @@ export default function EthUsdSwitch({ isMobile, showBorder=false, className }: 
       value={showUsd ? "usd" : "eth"}
       onChange={handleToggle}
       size={isMobile ? "sm" : "xl"}
-      className={`${showBorder ? "rounded-full border border-[#5A6462]" : ""} ${className || ""} ${isResizing ? "opacity-0" : ""}`}
+      className={`${showBorder ? "rounded-full border border-[#5A6462]" : ""} ${className || ""} ${isResizing ? "opacity-0" : "opacity-100"} transition-opacity duration-200`}
     />
   );
 }

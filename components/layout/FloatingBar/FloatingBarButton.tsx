@@ -6,7 +6,7 @@ import { Icon } from '@iconify/react';
 interface FloatingBarButtonProps {
   onClick?: () => void;
   label?: string;
-  icon?: GTPIconName;
+  icon?: GTPIconName | React.ReactNode;
   iconPosition?: 'left' | 'right';
   size?: 'sm' | 'md' | 'lg';
   className?: string;
@@ -40,16 +40,18 @@ export const FloatingBarButton: React.FC<FloatingBarButtonProps> = ({
 
   const iconComponent = useMemo(() => {
     if (!icon) return null;
-    if(icon.includes(":")) {
-      return <Icon icon={icon} className={sizeClassMap[size]} />;
+    if(typeof icon === 'string') {
+      if(icon.includes(":")) {
+        return <Icon icon={icon} className={sizeClassMap[size]} />;
+      }
+      return <GTPIcon icon={icon as GTPIconName} size={size === 'sm' ? 'sm' : 'md'} />;
     }
-
-    return <GTPIcon icon={icon} size={size === 'sm' ? 'sm' : 'md'} />;
+    return icon;
   }, [icon, size]);
 
   return (
     <button
-      className={`${getBaseClasses()} ${className}`}
+      className={`${getBaseClasses()} ${className} active:scale-[0.98]`}
       onClick={onClick}
       title={title}
     >
@@ -75,5 +77,13 @@ export const FloatingBarButton: React.FC<FloatingBarButtonProps> = ({
         </div>
       )}
     </button>
+  );
+};
+
+export const FloatingBarButtonContainer = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <div className="flex items-center justify-center">
+      {children}
+    </div>
   );
 };

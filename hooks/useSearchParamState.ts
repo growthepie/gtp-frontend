@@ -1,4 +1,4 @@
-import { useSearchParams, useRouter, usePathname } from 'next/navigation'; // 1. Import usePathname
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 type ParserFunction<T> = (value: string | null) => T;
@@ -58,17 +58,18 @@ export function useSearchParamState<T>(
     serializer,
     updateMode = 'replace',
     skipUrlUpdate = false,
-    debounceMs = 100,
+    debounceMs = 300, // Increased default debounce
   } = options;
 
   const searchParams = useSearchParams();
   const router = useRouter();
-  const pathname = usePathname(); // 2. Get the current pathname
+  const pathname = usePathname();
 
   // Use refs to track values and avoid stale closures
   const lastUrlValueRef = useRef<T | null>(null);
   const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const isUpdatingUrlRef = useRef(false);
+  const pendingValueRef = useRef<T | null>(null);
+  const lastSerializedRef = useRef<string | null>(null);
   
   // Parse initial value from URL
   const parseUrlValue = useCallback(() => {
@@ -78,23 +79,36 @@ export function useSearchParamState<T>(
       : safeParser(parser, paramValue, defaultValue);
   }, [searchParams, paramName, parser, defaultValue]);
   
-  const [state, setState] = useState<T>(() => parseUrlValue());
+  const [state, setState] = useState<T>(() => {
+    const initial = parseUrlValue();
+    lastUrlValueRef.current = initial;
+    return initial;
+  });
 
   // Debounced URL update function
   const updateUrl = useCallback((newValue: T) => {
-    const scrollY = window.scrollY; // Save before update
+    // Clear any pending update
     if (updateTimeoutRef.current) {
       clearTimeout(updateTimeoutRef.current);
     }
     
+    // Store the pending value
+    pendingValueRef.current = newValue;
+    
     updateTimeoutRef.current = setTimeout(() => {
+      // Check if this value is still the most recent
+      if (!shallowEqual(pendingValueRef.current, newValue)) {
+        return;
+      }
+      
       const shouldSkipUrlUpdate = typeof skipUrlUpdate === 'function'
         ? skipUrlUpdate(newValue)
         : skipUrlUpdate;
       
-      if (shouldSkipUrlUpdate) return;
-      
-      isUpdatingUrlRef.current = true;
+      if (shouldSkipUrlUpdate) {
+        pendingValueRef.current = null;
+        return;
+      }
       
       const newParams = new URLSearchParams(searchParams.toString());
       
@@ -108,39 +122,50 @@ export function useSearchParamState<T>(
           const serializedValue = serializer 
             ? serializer(newValue) 
             : String(newValue);
+          
+          // Check if the serialized value has actually changed
+          const currentSerialized = searchParams.get(paramName);
+          if (currentSerialized === serializedValue) {
+            pendingValueRef.current = null;
+            return;
+          }
+          
           newParams.set(paramName, serializedValue);
+          lastSerializedRef.current = serializedValue;
         } catch (error) {
           console.warn(`Failed to serialize search param value:`, error);
+          pendingValueRef.current = null;
           return;
         }
       }
       
-      // 3. Construct the full URL with the pathname
+      // Construct the full URL with the pathname
       const newQueryString = newParams.toString();
       const newUrl = newQueryString ? `${pathname}?${newQueryString}` : pathname;
-
+      
+      // Store scroll position
+      const scrollY = window.scrollY;
+      
+      // Update lastUrlValueRef BEFORE navigation
+      lastUrlValueRef.current = newValue;
+      
+      // Perform navigation
       if (updateMode === 'replace') {
-        console.log('replace', newUrl);
         router.replace(newUrl, { scroll: false });
       } else {
-        console.log('push', newUrl);
-        router.push(newUrl);
+        router.push(newUrl, { scroll: false });
       }
       
-      // Reset flag after a brief delay
-      setTimeout(() => {
-        isUpdatingUrlRef.current = false;
-      }, 50);
+      // Clear pending value
+      pendingValueRef.current = null;
       
-      // Restore after update
+      // Restore scroll position
       requestAnimationFrame(() => {
-        window.scrollTo({ top: scrollY, behavior: 'instant' });
+        window.scrollTo(0, scrollY);
       });
     }, debounceMs);
-
-
   }, [
-    pathname, // 4. Add pathname to dependency array
+    pathname,
     searchParams, 
     paramName, 
     defaultValue, 
@@ -153,12 +178,14 @@ export function useSearchParamState<T>(
 
   // Sync state with URL changes (only from external navigation)
   useEffect(() => {
-    // Skip if we're currently updating the URL ourselves
-    if (isUpdatingUrlRef.current) return;
-    
     const newUrlValue = parseUrlValue();
     
-    // Only update state if URL value actually changed
+    // Check if we have a pending update for this value
+    if (pendingValueRef.current !== null && shallowEqual(pendingValueRef.current, newUrlValue)) {
+      return;
+    }
+    
+    // Only update if the URL value actually changed from what we last knew
     if (!shallowEqual(lastUrlValueRef.current, newUrlValue)) {
       lastUrlValueRef.current = newUrlValue;
       
@@ -167,7 +194,7 @@ export function useSearchParamState<T>(
         setState(newUrlValue);
       }
     }
-  }, [searchParams, parseUrlValue]); // Removed 'state' dependency to prevent loops
+  }, [searchParams, parseUrlValue]); // Removed 'state' dependency
 
   // Memoized setter function
   const setStateAndUrl = useCallback((valueOrUpdater: T | ((prev: T) => T)) => {
@@ -200,8 +227,7 @@ export function useSearchParamState<T>(
   return [state, setStateAndUrl];
 }
 
-// --- The rest of the file remains the same ---
-// ... (parsers, serializers, and specific hooks)
+// Parsers and serializers
 export const parsers = {
   number: (value: string | null): number => {
     if (value === null) return 0;

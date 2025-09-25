@@ -70,7 +70,7 @@ export default function ApiTool() {
 
 
 export const GlobalSearchToggleButton = () => {
-  const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", false);
+  const [showGlobalSearchBar, setShowGlobalSearchBar] = useLocalStorage("showGlobalSearchBar", true);
 
   return (
     <div className="flex items-center justify-end h-full cursor-pointer " onClick={() => {

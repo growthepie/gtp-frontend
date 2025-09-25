@@ -19,6 +19,7 @@ import { ApplicationsDataProvider, useApplicationsData } from "@/app/(layout)/ap
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import useSWR from "swr";
 import { PageTitleAndDescriptionAndControls } from "@/app/(layout)/applications/_components/Components";
+import Controls from "@/app/(layout)/applications/_components/Controls";
 import { ChainsBaseURL, FeesURLs } from "@/lib/urls";
 import Image from "next/image";
 import Heading from "@/components/layout/Heading";
@@ -27,6 +28,7 @@ import { ChainData, Chains } from "@/types/api/ChainOverviewResponse";
 import { ChainsData } from "@/types/api/ChainResponse";
 import ChainsOverview from "@/components/layout/SingleChains/ChainsOverview";
 import { Icon } from "@iconify/react";
+import RelatedQuickBites from "@/components/RelatedQuickBites";
 
 // Fetcher function for API calls
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -183,55 +185,57 @@ const AppsContent = memo(({ chainKey, master }: { chainKey: string, master: any 
   const chainInfo = master?.chains?.[chainKey];
   
   return (
-    <TimespanProvider timespans={{
-      "1d": {
-        shortLabel: "1d",
-        label: "1 day",
-        value: 1,
-      },
-      "7d": {
-        shortLabel: "7d",
-        label: "7 days",
-        value: 7,
-      },
-      "30d": {
-        shortLabel: "30d",
-        label: "30 days",
-        value: 30,
-      },
-      "90d": {
-        shortLabel: "90d",
-        label: "90 days",
-        value: 90,
-      },
-      "365d": {
-        shortLabel: "1y",
-        label: "1 year",
-        value: 365,
-      },
-      max: {
-        shortLabel: "Max",
-        label: "Max",
-        value: 0,
-      },
-    } as {
-      [key: string]: {
-        label: string;
-        shortLabel: string;
-        value: number;
-      };
-    }}>
-      <MetricsProvider>
-        <SortProvider defaultOrder="desc" defaultKey="txcount">
-          <ProjectsMetadataProvider>
-            <ApplicationsDataProvider disableShowLoading={true}>
-              {/* <Container className="sticky top-0 z-[10] flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] overflow-visible" isPageRoot> */}
-              <AppsContentInner chainInfo={chainInfo} chainKey={chainKey} />
-            </ApplicationsDataProvider>
-          </ProjectsMetadataProvider>
-        </SortProvider>
-      </MetricsProvider>
-    </TimespanProvider>
+    <div className="-mt-[15px]">
+      <TimespanProvider timespans={{
+        "1d": {
+          shortLabel: "1d",
+          label: "1 day",
+          value: 1,
+        },
+        "7d": {
+          shortLabel: "7d",
+          label: "7 days",
+          value: 7,
+        },
+        "30d": {
+          shortLabel: "30d",
+          label: "30 days",
+          value: 30,
+        },
+        "90d": {
+          shortLabel: "90d",
+          label: "90 days",
+          value: 90,
+        },
+        "365d": {
+          shortLabel: "1y",
+          label: "1 year",
+          value: 365,
+        },
+        max: {
+          shortLabel: "Max",
+          label: "Max",
+          value: 0,
+        },
+      } as {
+        [key: string]: {
+          label: string;
+          shortLabel: string;
+          value: number;
+        };
+      }}>
+        <MetricsProvider>
+          <SortProvider defaultOrder="desc" defaultKey="txcount">
+            <ProjectsMetadataProvider>
+              <ApplicationsDataProvider disableShowLoading={true}>
+                {/* <Container className="sticky top-0 z-[10] flex flex-col w-full pt-[45px] md:pt-[30px] gap-y-[15px] overflow-visible" isPageRoot> */}
+                <AppsContentInner chainInfo={chainInfo} chainKey={chainKey} />
+              </ApplicationsDataProvider>
+            </ProjectsMetadataProvider>
+          </SortProvider>
+        </MetricsProvider>
+      </TimespanProvider>
+    </div>  
   );
 });
 
@@ -327,6 +331,7 @@ const Chain = ({ params }: { params: any }) => {
     const { theme } = useTheme();
     const router = useRouter();
     const searchParams = useSearchParams();
+    const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
     
     // Initialize selectedTab based on URL parameter, defaulting to "overview"
     const [selectedTab, setSelectedTab] = useState<string>(() => {
@@ -359,6 +364,7 @@ const Chain = ({ params }: { params: any }) => {
     }, [selectedTab, router, searchParams]);
 
 
+
     // Memoized tab content renderer
     const TabContent = useMemo(() => {
       const props = { chainKey, chain, master };
@@ -377,7 +383,9 @@ const Chain = ({ params }: { params: any }) => {
         default:
           return <div className="p-8 text-center">Tab not found</div>;
       }
-    }, [selectedTab, chainKey, chain, master]);
+    }, [selectedTab, chainKey, chain, master, showUsd]);
+
+
 
     return(
         <Container className="flex flex-col gap-y-[15px] pt-[45px] md:pt-[30px]">
@@ -386,9 +394,10 @@ const Chain = ({ params }: { params: any }) => {
               selectedTab={selectedTab} 
               setSelectedTab={setSelectedTab} 
             />
-            <div className="mt-6">
+            <div className="-mt-[25px]">
               {TabContent}
             </div>
+            <RelatedQuickBites slug={AllChainsByKeys[chainKey].label} isTopic={true} />
         </Container>
     )
 }

@@ -17,6 +17,59 @@ export type Chain = {
   darkTextOnBackground: boolean;
 };
 
+export type ChainOverview = {
+  data: {
+    chain_id: string;
+    chain_name: string;
+    events: ChainEvent[];
+    ranking: ChainRanking;
+    kpi_cards: ChainKpiCard;
+  }
+}
+
+
+export type ChainEvent = {
+  date: string;
+  type: string; 
+  title: string; 
+  short_title: string; 
+  description: string;
+  source: string;
+}
+
+export type ChainKpiCard = {
+  [key: string]: ChainKpiCardItem;
+}
+export type ChainKpiCardItem = {
+  sparkline: {
+    types: string[];
+    data: [number, number][];
+    change: number;
+  };
+  current_values: {
+    types: string[];
+    data: number[];
+  
+  }
+  wow_change: {
+    types: string[];
+    data: number[];
+  }
+  
+};
+
+
+export type ChainRanking = {
+  [key: string]: ChainRankingItem;
+}
+
+export type ChainRankingItem = {
+  rank: number;
+  out_of: number;
+  color_scale: number;
+  value: number;
+}
+
 // used by the MasterProvider to create the AllChains objects/arrays
 export const Get_AllChainsByKeys = (master: MasterResponse) => {
   let chains: { [key: string]: any } = {};

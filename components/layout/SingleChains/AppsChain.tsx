@@ -31,6 +31,7 @@ import { useTimespan } from "@/app/(layout)/applications/_contexts/TimespanConte
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import ChainSearch from "./ChainSearch";
+import Controls from "@/app/(layout)/applications/_components/Controls";
 
 interface AppsChainProps {
   chainInfo: ChainInfo;
@@ -84,8 +85,12 @@ export default function AppsChain({ chainInfo, chainKey, defaultQuery = "" }: Ap
   }, [selectedTimespan, selectedStringFilters]);
 
   return (
-    <>
+    <div className="">
+    
       <ChainSearch chainInfo={chainInfo} chainKey={chainKey} />
+      <div className="pt-[15px]">
+         <Controls />
+      </div>
       <div>
         <div
           className={``}
@@ -115,6 +120,7 @@ export default function AppsChain({ chainInfo, chainKey, defaultQuery = "" }: Ap
               </div>
             </div>
           </div>
+          
           <div ref={topGainersRef}>
             <div className={`hidden md:flex md:flex-wrap pt-[10px] gap-[10px]`}>
               {topGainers.map((application, index) => (
@@ -140,14 +146,14 @@ export default function AppsChain({ chainInfo, chainKey, defaultQuery = "" }: Ap
         <div className="flex flex-col gap-y-[10px]">
           <div className="heading-large">Top Ranked Apps on {chainInfo?.name}</div>
           <div className="text-xs">
-            Applications on {chainInfo?.name} ranked by {metricsDef[medianMetric].name}. Search is automatically filtered to show only apps deployed on this chain.
+            Applications on {chainInfo?.name} ranked by {metricsDef[medianMetric].name} in the last {timespans[selectedTimespan].label}. You can apply filters by using the search bar.
           </div>
         </div>
       </div>
       <div>
         <ApplicationsTable chainFilteredApplications={chainFilteredApplications} />
       </div>
-    </>
+    </div>
   )
 }
 

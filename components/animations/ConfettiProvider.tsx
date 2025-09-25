@@ -85,7 +85,7 @@ export const ConfettiProvider: React.FC<ConfettiProviderProps> = ({ children }) 
     <ConfettiContext.Provider value={{ triggerConfetti, defaultFullScreen: false }}>
       {children}
       {/* Render global confetti for fullscreen scenarios and keep mounted during animation */}
-      {shouldRenderConfetti && (
+      {/* {shouldRenderConfetti && (
         <ConfettiAnimation 
           isActive={isActive}
           duration={duration}
@@ -94,7 +94,7 @@ export const ConfettiProvider: React.FC<ConfettiProviderProps> = ({ children }) 
           showFullAnimation={showFullAnimation}
           isLoading={isLoading}
         />
-      )}
+      )} */}
     </ConfettiContext.Provider>
   );
 }; 

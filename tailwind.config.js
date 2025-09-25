@@ -52,6 +52,16 @@ module.exports = {
       lineHeight: {
         snug: "1.2",
       },
+      height: {
+        'xs': '15px',
+        'sm': '24px',
+        'md': '28px',
+        'lg': '36px',
+        'xl': '44px',
+        '2xl': '56px',
+        '3xl': '86px',
+        '4xl': '148px',
+      },
       transitionProperty: {
         height: "height",
         width: "width",
@@ -108,6 +118,7 @@ module.exports = {
       },
       zIndex: { 
         ...defaultTheme.zIndex,
+        'loading-screen': '9999',
         'context-menu': '9000',
         'global-search-tooltip': '8500',
         'global-search': '8000',

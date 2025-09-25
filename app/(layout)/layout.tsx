@@ -14,6 +14,7 @@ import DeveloperTools from "@/components/development/DeveloperTools";
 import Footer from "@/components/layout/Footer";
 import GlobalSearchBar from "@/components/layout/GlobalSearchBar";
 import { IS_PRODUCTION } from "@/lib/helpers";
+import { ProjectsMetadataProvider } from "./applications/_contexts/ProjectsMetadataContext";
 const jsonLd: Graph = {
   "@context": "https://schema.org",
   "@graph": [
@@ -212,24 +213,28 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <Providers>
+          <div
+            id="background-container"
+            className="background-container !fixed"
+          >
+            <div className="background-gradient-group">
+              <div className="background-gradient-yellow"></div>
+              <div className="background-gradient-green"></div>
+            </div>
+          </div>
           <div className="flex h-fit w-full justify-center">
-            <div className="flex min-h-screen w-full max-w-[1680px]">
-              {!IS_PRODUCTION && <GlobalSearchBar />}
+            <div className="flex min-h-screen w-full max-w-[1700px] md:pl-[30px]">
+              {!IS_PRODUCTION && (
+                <ProjectsMetadataProvider>
+                  <GlobalSearchBar />
+                </ProjectsMetadataProvider>
+              )}
               <SidebarContainer />
               <div
                 id="content-panel"
                 className="relative z-10 flex min-h-full flex-1 flex-col overflow-y-auto overflow-x-hidden bg-white dark:bg-inherit"
               >
                 <div className="relative min-h-full w-full">
-                  <div
-                    id="background-container"
-                    className="background-container !fixed"
-                  >
-                    <div className="background-gradient-group">
-                      <div className="background-gradient-yellow"></div>
-                      <div className="background-gradient-green"></div>
-                    </div>
-                  </div>
                   <Header />
                   <main className="z-10 mx-auto min-h-[calc(100vh-218px-56px)] w-full flex-1 pb-[165px] md:min-h-[calc(100vh-207px-80px)]">
                     {children}
@@ -238,7 +243,7 @@ export default function RootLayout({
                   <Footer />
                 </div>
               </div>
-              <div className="pointer-events-none fixed bottom-[20px] z-50 flex w-full max-w-[1680px] justify-end">
+              <div className="pointer-events-none fixed bottom-[20px] z-50 flex w-full max-w-[1700px] justify-end">
                 <div className="pointer-events-auto pr-[20px] md:pr-[50px]">
                     {/* <Details /> */}
                     <Share />

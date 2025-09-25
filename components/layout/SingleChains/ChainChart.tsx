@@ -880,7 +880,7 @@ export default function ChainChart({
     chart: {
       type: "area",
       animation: isAnimate,
-      height: 176,
+      height: 224,
       backgroundColor: undefined,
       margin: [1, 0, 40, 0],
       spacingBottom: 0,
@@ -1719,7 +1719,7 @@ export default function ChainChart({
                   enabledFundamentalsKeys.filter((key) => {
                     return getFundamentalsByKey[key].category === categoryKey;
                   }).length / (isMobile ? 1 : 2),
-                ) * 195
+                ) * 235
               }
               rowEnd={
                 categoriesMissingData[categoryKey].length > 0 && (
@@ -1768,7 +1768,7 @@ export default function ChainChart({
 
                       return (
                         <div key={key}>
-                          <div className="group/chart w-full h-[176px] rounded-2xl bg-[#1F2726] relative">
+                          <div className="group/chart w-full h-[224px] rounded-2xl bg-[#1F2726] relative">
                             {!Object.keys(data[0].metrics).includes(key) ? (
                               <div key={key} className="w-full relative">
                                 <div className="w-full h-[60px] lg:h-[176px] relative  pointer-events-none">
