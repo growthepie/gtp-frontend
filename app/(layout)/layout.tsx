@@ -224,7 +224,9 @@ export default function RootLayout({
           </div>
           <div className="flex h-fit w-full justify-center">
             <div className="flex min-h-screen w-full max-w-[1700px] md:pl-[30px]">
-              <GlobalSearchBar />
+              <ProjectsMetadataProvider>
+                <GlobalSearchBar />
+              </ProjectsMetadataProvider>
               <SidebarContainer />
               <div
                 id="content-panel"
