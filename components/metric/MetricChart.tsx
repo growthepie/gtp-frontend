@@ -716,7 +716,7 @@ function MetricChart({
         return b.y - a.y;
       });
   
-      const showOthers = points.length > 10 && metric_id !== "txcosts";
+      const showOthers = points.length > 10;
   
       const dateString = moment.utc(x).utc().locale("en-GB").format("DD MMM YYYY");
   
@@ -804,6 +804,11 @@ function MetricChart({
         if (showOthers && afterTenPoints.length > 0) {
           const restSum = afterTenPoints.reduce((acc: number, point: any) => acc + point.y, 0);
           const restPercentage = afterTenPoints.reduce((acc: number, point: any) => acc + point.percentage, 0);
+
+          const restRange = `${afterTenPoints[afterTenPoints.length - 1].y.toLocaleString("en-GB", {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals,
+          })}`;
   
           if (selectedScale === "percentage") {
             tooltipPoints += `
@@ -818,26 +823,36 @@ function MetricChart({
                 style="width: ${(restPercentage / maxPercentage) * 100}%; background-color: #E0E7E699;"></div>
               </div>`;
           } else {
+            const formattedSum = metric_id === "fdv" || metric_id === "market_cap"
+              ? shortenNumber(restSum)
+              : restSum.toLocaleString("en-GB", {
+                  minimumFractionDigits: decimals,
+                  maximumFractionDigits: decimals,
+                });
+            
+            const formattedRange = restRange;
+
+            const restText = reversePerformer === true ? formattedRange : formattedSum;
+            const showBar = reversePerformer === true ? false : true;
+            
             tooltipPoints += `
               <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
                 <div class="w-4 h-1.5 rounded-r-full" style="background-color: #E0E7E6"></div>
                 <div class="tooltip-point-name text-xs">${afterTenPoints.length > 1 ? `${afterTenPoints.length} Others` : "1 Other"}</div>
                 <div class="flex-1 text-right justify-end numbers-xs flex">
+                  ${reversePerformer === true ? "<div class='opacity-70 pr-1'>up to</div>" : ""}
                   <div class="${!prefix && "hidden"}">${prefix}</div>
-                  ${metric_id === "fdv" || metric_id === "market_cap"
-                    ? shortenNumber(restSum)
-                    : restSum.toLocaleString("en-GB", {
-                        minimumFractionDigits: decimals,
-                        maximumFractionDigits: decimals,
-                      })}
+                  ${restText}
                   <div class="ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
                 </div>
               </div>
+              ${showBar ? `
               <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
                 <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
                 <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
                 style="width: ${(restSum / maxPoint) * 100}%; background-color: #E0E7E699;"></div>
-              </div>`;
+              </div>` : ""}
+            `;
           }
         }
   
@@ -846,7 +861,7 @@ function MetricChart({
   
       const tooltipPoints = processPointsInMainThread();
       
-      const tooltip = `<div class="mt-3 mr-3 mb-3 min-w-52 md:min-w-60 text-xs font-raleway">
+      const tooltip = `<div class="mt-3 mr-3 mb-3 min-w-[220px] md:min-w-60 text-xs font-raleway">
         <div class="flex justify-between items-center font-bold text-[13px] md:text-[1rem] ml-6 mb-2 gap-x-[15px]"><div>${dateString}</div><div class="text-xs">${metricsDict[metric_id].name}</div></div>`;
       
       const sumRow = selectedScale === "stacked"
