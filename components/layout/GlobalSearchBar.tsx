@@ -935,7 +935,7 @@ const GTPLogoOld = () => {
   return (
     <Link
       href="/"
-      className={`${isSidebarOpen ? "relative h-[45.07px] w-[192.87px] block" : "relative h-[45.07px] w-[40.91px] overflow-clip"} transition-all duration-sidebar ease-sidebar`}
+      className={`${isSidebarOpen ? "relative h-[45.07px] w-[192.87px] block" : "relative h-[45.07px] w-[40.91px] min-w-[40.91px] overflow-clip"} transition-all duration-sidebar ease-sidebar`}
     >
       <IconContextMenu getSvgData={getLogoSvgData} itemName="gtp-logo-full" wrapperClassName="block h-full w-full" isLogo={true}>
         <div className={`h-[45.07px] w-[192.87px] relative ${isSidebarOpen ? "translate-x-[1.5px]" : "translate-x-[1.5px]"} transition-all duration-sidebar ease-sidebar`} style={{ transformOrigin: "21px 27px" }}>
