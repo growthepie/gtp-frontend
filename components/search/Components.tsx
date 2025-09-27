@@ -25,6 +25,7 @@ import { IS_DEVELOPMENT, IS_PREVIEW } from "@/lib/helpers";
 import useSWR from "swr";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import { track } from "@vercel/analytics/react";
 
 function normalizeString(str: string) {
   return str.toLowerCase().replace(/\s+/g, '');
@@ -1435,18 +1436,20 @@ export const BucketItem = ({
   // For stack results, check if the item matches the query
   const shouldGreyOut = isStackResult && query && !normalizeString(item.label).includes(normalizeString(query));
 
+  const targetUrl = lastBucketIndeces[itemKey] && !showMore[bucket] 
+  ? isApps 
+    ? isBucketMatch 
+      ? `/applications` // No search params for Applications bucket match
+      : `/applications?q=${query}&timespan=max` // Search params for normal Applications results
+    : isQuickBites 
+      ? `/quick-bites` 
+      : ``
+  : item.url;
+
   return (
     <Link
       data-selected={isSelected ? "true" : "false"}
-      href={lastBucketIndeces[itemKey] && !showMore[bucket] 
-        ? isApps 
-          ? isBucketMatch 
-            ? `/applications` // No search params for Applications bucket match
-            : `/applications?q=${query}&timespan=max` // Search params for normal Applications results
-          : isQuickBites 
-            ? `/quick-bites` 
-            : ``
-        : item.url}
+      href={targetUrl}
       key={item.label}
       ref={(el) => {
         childRefs.current[itemKey] = el;
@@ -1455,14 +1458,19 @@ export const BucketItem = ({
       onClick={(e) => {
         // Stop event propagation to prevent parent click handlers from firing
         e.stopPropagation();
-        
+        console.log("Search Badge Clicked", { location: "Search", page: `${query}::${targetUrl}` });
         if (lastBucketIndeces[itemKey] && !showMore[bucket]) {
+          console.log("lastBucketIndeces[itemKey] && !showMore[bucket]");
           // For Quick Bites and Applications, let the Link navigate naturally
           if (isQuickBites || isApps) {
+            track("clicked Search Result", { location: "Search", page: `${query}::${targetUrl}` })
             return; // Don't prevent default, let Link handle navigation
           }
           // For other buckets, expand the results
           setShowMore(prev => ({ ...prev, [bucket]: true }));
+          // Track the show more event
+          track("clicked Search Show More", { location: "Search", page: `${query}::${bucket}` })
+
           // Blur to remove focus rectangle on mouse click
           if (e.currentTarget instanceof HTMLElement) {
             e.currentTarget.blur();
@@ -1470,6 +1478,8 @@ export const BucketItem = ({
           e.preventDefault(); // Prevent navigation for expansion
           return;
         }
+        // Track the result click for other buckets
+        track("clicked Search Result", { location: "Search", page: `${query}::${targetUrl}` })
       }}
 
       onKeyDown={(e) => {
@@ -1477,10 +1487,14 @@ export const BucketItem = ({
           if (lastBucketIndeces[itemKey] && !showMore[bucket]) {
             // For Quick Bites and Applications, let the Link navigate naturally
             if (isQuickBites || isApps) {
+              track("clicked Search Result", { location: "Search", page: `${query}::${targetUrl}` })
               return; // Don't prevent default, let Link handle navigation
             }
             // For other buckets, expand the results
             setShowMore(prev => ({ ...prev, [bucket]: true }));
+            // Track the show more event
+            track("clicked Search Show More", { location: "Search", page: `${query}::${bucket}` })
+
             setKeyboardExpandedStacks(prev => {
               const newSet = new Set(prev);
               newSet.add(itemKey);
@@ -1489,6 +1503,8 @@ export const BucketItem = ({
             e.preventDefault(); // Prevent navigation for expansion
           }
         }
+        // Track the result click for other buckets
+        track("clicked Search Result", { location: "Search", page: `${query}::${targetUrl}` })
       }}
       className="relative"
     >

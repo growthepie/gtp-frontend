@@ -140,7 +140,7 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
   );
 
   return (
-    <div className="relative h-full min-h-[306px] w-full">
+    <div className="relative h-full min-h-[306px] w-full z-0">
       <div
         className={`@container expandable-card-container w-full bg-[#1F2726] rounded-[15px] transition-all duration-300 flex flex-col py-[15px] px-[30px]
           ${isExpanded && !isCompact
@@ -1213,7 +1213,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
     <>
       {(showChainsCost || showChainsTPS || showEvents) && (
         <div
-          className='fixed inset-0 bg-[#1F2726]/75 z-[1000] pointer-events-none'
+          className='fixed inset-0 bg-[#1F2726]/75 isolate pointer-events-none'
         />
       )}
 
@@ -1269,7 +1269,7 @@ const RealTimeMetrics = ({ selectedBreakdownGroup }: RealTimeMetricsProps) => {
 
 function TopEthAggMetricsComponent({ selectedBreakdownGroup }: TopEthAggMetricsProps) {
   return (
-    <Container className="">
+    <Container className="z-[1]">
       <RealTimeMetrics selectedBreakdownGroup={selectedBreakdownGroup} />
     </Container>
   );

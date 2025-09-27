@@ -270,7 +270,7 @@ function MetricsChartsComponent({ selectedBreakdownGroup }: MetricsChartsProps) 
 
   return (
     <>
-      <Container className='flex flex-col gap-y-[60px] pt-[60px] w-full'>
+      <Container className='flex flex-col gap-y-[60px] pt-[60px] w-full z-0'>
         <div className='flex flex-col gap-y-[15px]'>
           <div className='flex gap-x-[8px] items-center'>
             <GTPIcon icon='gtp-metrics-economics' size='lg' className='text-[#5A6462]' />

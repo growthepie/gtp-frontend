@@ -13,7 +13,7 @@
 <stop stop-color="#10808C"/>
 <stop offset="1" stop-color="#1DF7EF"/>
 </linearGradient>
-<radialGradient id="paint2_radial_177_30928" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(10.4362 9.62124) rotate(145.815) scale(2.68519 2.32859)">
+<radialGradient id="paint2_radial_177_30928" cx="0" cy="0" r="1" gradientTransform="matrix(-2.22127 1.50871 -2.26307 -1.27782 10.4362 9.62124)" gradientUnits="userSpaceOnUse">
 <stop stop-color="#1DF7EF"/>
 <stop offset="0.9999" stop-color="#10808C"/>
 </radialGradient>

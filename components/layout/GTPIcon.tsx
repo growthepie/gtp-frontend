@@ -1,25 +1,23 @@
 "use client";
-import { Icon, getIcon } from "@iconify/react";
-import { GTPIconName } from "@/icons/gtp-icon-names"; // array of strings that are the names of the icons
+import { Icon, getIcon, iconExists } from "@iconify/react";
+import { GTPIconName } from "@/icons/gtp-icon-names";
 import { GetRankingColor } from "@/lib/chains";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
-import Tooltip from "../tooltip/GTPTooltip";
-import { useToast } from "../toast/GTPToast";
-import { triggerDownload, convertSvgToPngBlob, triggerBlobDownload } from "@/lib/icon-library/clientSvgUtils";
-import { useOutsideAlerter } from "@/hooks/useOutsideAlerter";
+import { memo, useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { IconContextMenu } from "./IconContextMenu";
+import { useGTPIconsLoader } from "@/utils/gtp-icons-loader";
 
 type GTPIconProps = {
-  // should be one of the strings in GTPIconNames
-  icon?: GTPIconName; // Make icon optional
+  icon?: GTPIconName;
   className?: string;
   containerClassName?: string;
   size?: "sm" | "md" | "lg" | "xl";
   showContextMenu?: boolean;
+  showLoadingPlaceholder?: boolean; // New prop to control loading placeholder
   contextMenuOptions?: {
     isLink: boolean;
   };
 } & React.ComponentProps<typeof Icon>;
+
 type sizes = "sm" | "md" | "lg" | "xl";
 
 export const GTPIconSize: { [key in sizes]: string } = {
@@ -37,23 +35,58 @@ export const sizeClassMap = {
 };
 
 /**
-  * GTPIcon
-  * @param icon - the name of the icon
-  * @param size - the size of the icon (sm, md, lg)
-  * @returns the icon with the specified size (with a container div that has the same size)
-  * @example
-  * <GTPIcon icon="gtp:donate" size="lg" />
+ * GTPIcon
+ * @param icon - the name of the icon
+ * @param size - the size of the icon (sm, md, lg, xl)
+ * @param showLoadingPlaceholder - whether to show a loading placeholder while icons load
+ * @returns the icon with the specified size (with a container div that has the same size)
+ * @example
+ * <GTPIcon icon="donate" size="lg" showLoadingPlaceholder />
  */
-export const GTPIcon = ({ icon, className, containerClassName, showContextMenu = false, size = "md", style, contextMenuOptions = { isLink: false }, ...props }: GTPIconProps) => {
-  const iconPrefix = icon?.includes(":") ? "" : "gtp:";
-  const fullIconName = icon ? `${iconPrefix}${icon}` : "";
-  const currentSizeClass = sizeClassMap[size] || sizeClassMap.md;
+const GTPIconBase = ({ 
+  icon, 
+  className, 
+  containerClassName, 
+  showContextMenu = false, 
+  size = "md", 
+  style, 
+  contextMenuOptions = { isLink: false }, 
+  showLoadingPlaceholder = false,
+  ...props 
+}: GTPIconProps) => {
+  const isIconsLoaded = useGTPIconsLoader();
+  const [renderKey, setRenderKey] = useState(0);
 
-  // Define the getSVG function needed by IconContextMenu
-  // Use useCallback to memoize the function if needed, especially if dependencies change often
+  // Memoize expensive calculations
+  const { iconPrefix, fullIconName, currentSizeClass, isGTPIcon } = useMemo(() => {
+    const iconPrefix = icon?.includes(":") ? "" : "gtp:";
+    const fullIconName = icon ? `${iconPrefix}${icon}` : "";
+    const isGTPIcon = fullIconName.startsWith("gtp:");
+    return {
+      iconPrefix,
+      fullIconName,
+      currentSizeClass: sizeClassMap[size] || sizeClassMap.md,
+      isGTPIcon,
+    };
+  }, [icon, size]);
+
+  // Force re-render when icons are loaded
+  useEffect(() => {
+    if (isIconsLoaded) {
+      setRenderKey(prev => prev + 1);
+    }
+  }, [isIconsLoaded]);
+
+  // Check if the specific icon exists (only after icons are loaded)
+  const isIconAvailable = useMemo(() => {
+    return fullIconName && isIconsLoaded ? iconExists(fullIconName) : false;
+  }, [fullIconName, isIconsLoaded]);
+
+  // Memoize the SVG data function
   const getIconSvgData = useCallback(async (): Promise<{ svgString: string | null; width: number; height: number } | null> => {
-    if (!fullIconName) return null;
-    const iconData = getIcon(fullIconName); // Use the imported getIconData
+    if (!fullIconName || !isIconAvailable) return null;
+    
+    const iconData = getIcon(fullIconName);
     if (!iconData) {
       console.error("Icon data not found for:", fullIconName);
       return null;
@@ -66,30 +99,21 @@ export const GTPIcon = ({ icon, className, containerClassName, showContextMenu =
     if (className?.includes("text-")) {
       const match = className.match(/text-(\S+)/);
       if (match) {
-        // Handle hex like text-[#1F2726] or named colors like text-red-500
         const colorValue = match[1];
         if (colorValue.startsWith("[#") && colorValue.endsWith("]")) {
           color = colorValue.substring(2, colorValue.length - 1);
-        } else {
-          // This part is tricky without Tailwind's config. For simplicity,
-          // we might only support hex or direct style colors.
-          // Or you could pass the resolved color via `style` prop.
-          // console.warn("Cannot reliably resolve Tailwind named colors for SVG export:", colorValue);
         }
       }
     }
     if (!color && style?.color) {
-      color = style.color;
+      color = style.color as string;
     }
 
     let bodyString = body;
     if (color) {
-      // Replace instances of currentColor with the determined color
-      // Make sure to handle potential fill/stroke attributes set to currentColor too
       bodyString = bodyString.replace(/currentColor/g, color);
     }
 
-    // Construct the SVG string
     const svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${left} ${top} ${width} ${height}" width="${width}" height="${height}" ${color ? `style="color: ${color};"` : ''}>${bodyString}</svg>`;
 
     return {
@@ -97,56 +121,99 @@ export const GTPIcon = ({ icon, className, containerClassName, showContextMenu =
       width: width,
       height: height,
     };
-  }, [fullIconName, className, style]); // Dependencies for the callback
+  }, [fullIconName, className, style, isIconAvailable]);
 
-
-  // Early return after hooks
+  // Early return after all hooks
   if (!icon) {
     return <div className={`${currentSizeClass} ${containerClassName || ""}`} />;
   }
 
-  // The core Icon component
-  const IconElement = (
-    <Icon
-      icon={fullIconName}
-      className={`${currentSizeClass} ${className || ""}`}
-      style={style}
-      {...props} // Pass remaining props like onClick etc.
-    />
+    // For GTP icons that aren't loaded yet, show loading placeholder or empty div
+    if (isGTPIcon && !isIconsLoaded) {
+      if (showLoadingPlaceholder) {
+        return (
+          <div className={`${currentSizeClass} ${containerClassName || ""} flex items-center justify-center`}>
+            <div className={`${currentSizeClass} bg-gray-200 dark:bg-gray-700 rounded animate-pulse`} />
+          </div>
+        );
+      } else {
+        return <div className={`${currentSizeClass} ${containerClassName || ""}`} />;
+      }
+    }
+  
+    // For GTP icons that are loaded but don't exist, show warning and empty div
+    if (isGTPIcon && isIconsLoaded && !isIconAvailable) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`GTP Icon "${fullIconName}" not found in loaded collections`);
+      }
+      return <div className={`${currentSizeClass} ${containerClassName || ""}`} />;
+    }
+  
+    // For GTP icons, only render if available locally (prevents API calls)
+    // For non-GTP icons, render normally (allows Iconify's API fallback)
+    const shouldRender = isGTPIcon ? isIconAvailable : true;
+  
+    if (!shouldRender) {
+      return <div className={`${currentSizeClass} ${containerClassName || ""}`} />;
+    }
+  
+    // The core Icon component with render key for forced updates
+    const IconElement = (
+      <Icon
+        key={renderKey}
+        icon={fullIconName}
+        className={`${currentSizeClass} ${className || ""}`}
+        style={style}
+        {...props}
+      />
+    );
+  
+    if (showContextMenu) {
+      return (
+        <IconContextMenu
+          getSvgData={getIconSvgData}
+          itemName={fullIconName.replace(/[:\/]/g, "_")}
+          wrapperClassName={`${currentSizeClass} ${containerClassName || ""}`}
+          contextMenuOptions={contextMenuOptions}
+        >
+          {IconElement}
+        </IconContextMenu>
+      );
+    } else {
+      return (
+        <div className={`${currentSizeClass} ${containerClassName || ""}`}>
+          {IconElement}
+        </div>
+      );
+    }
+  };
+
+// Memoize the component to prevent unnecessary re-renders
+export const GTPIcon = memo(GTPIconBase, (prevProps, nextProps) => {
+  // Custom comparison - only re-render if these props change
+  return (
+    prevProps.icon === nextProps.icon &&
+    prevProps.size === nextProps.size &&
+    prevProps.className === nextProps.className &&
+    prevProps.containerClassName === nextProps.containerClassName &&
+    prevProps.showContextMenu === nextProps.showContextMenu &&
+    prevProps.showLoadingPlaceholder === nextProps.showLoadingPlaceholder
   );
+});
 
-
-  if (showContextMenu) {
-    // Wrap with the IconContextMenu component
-    return (
-      <IconContextMenu
-        getSvgData={getIconSvgData}
-        itemName={fullIconName.replace(/[:\/]/g, "_")} // Sanitize name for download
-        wrapperClassName={`${currentSizeClass} ${containerClassName || ""}`} // Apply size/container classes to the wrapper
-        contextMenuOptions={contextMenuOptions}
-      >
-        {IconElement}
-      </IconContextMenu>
-    );
-  } else {
-    // Render directly within a container div if no context menu
-    return (
-      <div className={`${currentSizeClass} ${containerClassName || ""}`}>
-        {IconElement}
-      </div>
-    );
-  }
-};
+GTPIcon.displayName = "GTPIcon";
 
 type GTPMaturityIconProps = {
   maturityKey: string;
   className?: string;
   containerClassName?: string;
   size?: "sm" | "md" | "lg";
+  showLoadingPlaceholder?: boolean;
 };
 
 const ethIcon = "gtp:gtp-ethereumlogo";
-export const GTPMaturityIcon = memo(({ maturityKey, className, containerClassName, ...props }: GTPMaturityIconProps) => {
+const GTPMaturityIconBase = ({ maturityKey, className, containerClassName, showLoadingPlaceholder = false, ...props }: GTPMaturityIconProps) => {
+  const isIconsLoaded = useGTPIconsLoader();
 
   let icon = `gtp:gtp-layer2-maturity-${maturityKey}`;
   let opacityClass = "";
@@ -165,7 +232,6 @@ export const GTPMaturityIcon = memo(({ maturityKey, className, containerClassNam
   }
 
   if (maturityKey === "10_foundational" || maturityKey === "0_early_phase" || maturityKey === "NA") {
-    // return N/A text
     return (
       <div className={`${sizeClassMap[props.size || "md"]} ${containerClassName || ""} flex items-center justify-center`}>
         <div className="text-xs text-[#5A6462]">N/A</div>
@@ -173,13 +239,27 @@ export const GTPMaturityIcon = memo(({ maturityKey, className, containerClassNam
     )
   }
 
+  // Show loading placeholder if requested and icons aren't loaded
+  if (!isIconsLoaded && showLoadingPlaceholder) {
+    return (
+      <div className={`${sizeClassMap[props.size || "md"]} ${containerClassName || ""} flex items-center justify-center`}>
+        <div className={`${sizeClass} bg-gray-200 dark:bg-gray-700 rounded animate-pulse`} />
+      </div>
+    );
+  }
+
   return (
     <div className={`${sizeClassMap[props.size || "md"]} ${containerClassName || ""} flex items-center justify-center`}>
-      <Icon icon={icon} className={`${sizeClass} ${className || ""} ${opacityClass}`} {...props} />
+      <Icon 
+        icon={icon} 
+        className={`${sizeClass} ${className || ""} ${opacityClass}`} 
+        {...props} 
+      />
     </div>
   );
-});
+};
 
+export const GTPMaturityIcon = memo(GTPMaturityIconBase);
 GTPMaturityIcon.displayName = "GTPMaturityIcon";
 
 // map metric keys to icon names
@@ -197,11 +277,10 @@ const MetricIconMap = {
   market_cap: "gtp-metrics-marketcap",
 };
 
-
 type GTPMetricIconProps = {
-  // should be one of the keys in MetricIconMap
   icon: keyof typeof MetricIconMap | string;
   size?: sizes;
+  showLoadingPlaceholder?: boolean;
 } & React.ComponentProps<typeof Icon>;
 
 /**
@@ -210,20 +289,39 @@ type GTPMetricIconProps = {
  * @param size - the size of the icon (sm, md, lg)
  * @returns the icon with the specified size
  * @example
- * <GTPMetricIcon icon="stables_mcap" size="lg" />
+ * <GTPMetricIcon icon="stables_mcap" size="lg" showLoadingPlaceholder />
  */
+const GTPMetricIconBase = ({ icon, showLoadingPlaceholder = false, ...props }: GTPMetricIconProps) => {
+  const isIconsLoaded = useGTPIconsLoader();
+  const iconName = `gtp:${MetricIconMap[icon]}`;
+  const fontSize = GTPIconSize[props.size || "md"];
 
-export const GTPMetricIcon = ({ icon, ...props }: GTPMetricIconProps) => {
+  // Show loading placeholder if requested and icons aren't loaded
+  if (!isIconsLoaded && showLoadingPlaceholder) {
+    return (
+      <div 
+        className="bg-gray-200 dark:bg-gray-700 rounded animate-pulse"
+        style={{ 
+          fontSize, 
+          display: "block",
+          width: fontSize,
+          height: fontSize 
+        }}
+      />
+    );
+  }
 
   return (
     <Icon
-      icon={`gtp:${MetricIconMap[icon]}`}
-      style={{ fontSize: GTPIconSize[props.size || "md"], display: "block" }}
+      icon={iconName}
+      style={{ fontSize, display: "block" }}
       {...props}
     />
   );
 };
 
+export const GTPMetricIcon = memo(GTPMetricIconBase);
+GTPMetricIcon.displayName = "GTPMetricIcon";
 
 type RankIconProps = {
   colorScale: number;
@@ -231,10 +329,10 @@ type RankIconProps = {
   children?: React.ReactNode;
   isIcon?: boolean;
 }
-export const RankIcon = ({ colorScale, size = "md", children, isIcon = true }: RankIconProps) => {
+
+export const RankIcon = memo(({ colorScale, size = "md", children, isIcon = true }: RankIconProps) => {
   const color = colorScale == -1 ? "#CDD8D322" : GetRankingColor(colorScale * 100);
   const borderColor = colorScale == -1 ? "#CDD8D333" : color + "AA";
-  // const borderColor = "#CDD8D322";
 
   const borderSizeClassMap = {
     sm: "size-[18px]",
@@ -248,27 +346,18 @@ export const RankIcon = ({ colorScale, size = "md", children, isIcon = true }: R
     lg: "size-[32px]",
   };
 
-  // Font size mapping for rank numbers to ensure readability
   const fontSizeClassMap = {
-    sm: "text-[9px]",  // Small numbers look nice with slight adjustment
+    sm: "text-[9px]",
     md: "text-[10px]",
     lg: "text-[14px]",
   };
 
-  // SVG size matches background size
   const svgSizeMap = {
     sm: 12,
     md: 20,
     lg: 32,
   };
 
-  const svgFontSizeMap = {
-    sm: 9,
-    md: 10,
-    lg: 14,
-  };
-
-  // Convert children to a string (e.g., rank number)
   const rankNumber = children?.toString() || "";
 
   return (
@@ -292,7 +381,6 @@ export const RankIcon = ({ colorScale, size = "md", children, isIcon = true }: R
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
             shapeRendering="geometricPrecision"
-
           >
             <foreignObject x="0" y="0" width={svgSizeMap[size]} height={svgSizeMap[size]}>
               <div
@@ -306,4 +394,6 @@ export const RankIcon = ({ colorScale, size = "md", children, isIcon = true }: R
       </div>
     </div>
   );
-};
+});
+
+RankIcon.displayName = "RankIcon";
