@@ -496,8 +496,8 @@ const MetricsTable = ({
               </div>
               <div
                 className={`p-1 rounded-full ${chainSelectToggleState === "none"
-                    ? "bg-forest-50 dark:bg-[#1F2726]"
-                    : "bg-white dark:bg-forest-1000"
+                    ? "bg-forest-50 dark:bg-color-bg-default"
+                    : "bg-white dark:bg-color-ui-active"
                   }`}
               >
                 <Icon
@@ -668,7 +668,7 @@ const MetricsTable = ({
                               ] >=
                               0 ? (
                               <div
-                                className={`text-[#45AA6F] dark:text-[#4CFF7E] ${Math.abs(
+                                className={`text-[#45AA6F] dark:text-color-positive ${Math.abs(
                                   item.data[changesKey][timespan][
                                   changesValueIndex
                                   ],
@@ -712,7 +712,7 @@ const MetricsTable = ({
                               </div>
                             ) : (
                               <div
-                                className={`text-[#DD3408] dark:text-[#FF3838] ${Math.abs(
+                                className={`text-[#DD3408] dark:text-color-negative ${Math.abs(
                                   item.data[changesKey][timespan][
                                   changesValueIndex
                                   ],
@@ -799,8 +799,8 @@ const MetricsTable = ({
                     </div>
                     <div
                       className={`p-1 rounded-full ${selectedChains.includes(item.chain.key)
-                          ? "bg-white dark:bg-forest-1000"
-                          : "bg-forest-50 dark:bg-[#1F2726]"
+                          ? "bg-white dark:bg-color-ui-active"
+                          : "bg-forest-50 dark:bg-color-bg-default"
                         }`}
                     >
                       <Icon

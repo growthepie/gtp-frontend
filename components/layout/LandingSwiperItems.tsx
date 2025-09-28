@@ -79,7 +79,7 @@ const QuickBiteCard = ({ quickBite, slug }: { quickBite: QuickBiteData, slug: st
   return (
     <Link 
       href={`/quick-bites/${slug}`}
-      className="relative w-full min-w-[100px] h-[145px] md:h-[176px] rounded-[15px] bg-[#1F2726] px-[15px] py-[15px] flex flex-col justify-between border-[3px] border-[#344240]"  
+      className="relative w-full min-w-[100px] h-[145px] md:h-[176px] rounded-[15px] bg-color-bg-default px-[15px] py-[15px] flex flex-col justify-between border-[3px] border-color-border"  
       style={{
         background: `url(${quickBite.image}) no-repeat center center / cover`,
       }}
@@ -159,7 +159,7 @@ export default function LandingSwiperItems() {
                     chartId={index}
                   />
                 ) : (
-                  <div className="w-full h-[145px] md:h-[176px] rounded-[15px] bg-[#1F2726]">
+                  <div className="w-full h-[145px] md:h-[176px] rounded-[15px] bg-color-bg-default">
                     <div className="flex items-center justify-center h-full w-full">
                       <div className="w-8 h-8 border-[5px] border-forest-500/30 rounded-full border-t-transparent animate-spin"></div>
                     </div>

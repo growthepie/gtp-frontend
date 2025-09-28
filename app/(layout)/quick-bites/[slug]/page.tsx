@@ -102,8 +102,8 @@ export default function QuickBitePage({ params }: Props) {
           <div className=" flex flex-col-reverse lg:gap-y-0 gap-y-[10px] lg:flex-row w-full justify-between items-center h-fit">
             <div className='flex items-center h-[43px] gap-x-[8px] lg:w-auto w-full'>
               {/* Back button */}
-              {/* <Link className="lg:flex hidden items-center justify-center rounded-full w-[36px] h-[36px] bg-[#344240] hover:bg-[#5A6462]" href={"/"}>
-                <Icon icon="feather:arrow-left" className="size-[26px] text-[#CDD8D3]" />
+              {/* <Link className="lg:flex hidden items-center justify-center rounded-full w-[36px] h-[36px] bg-color-bg-medium hover:bg-color-ui-hover" href={"/"}>
+                <Icon icon="feather:arrow-left" className="size-[26px] text-color-text-primary" />
               </Link>    */}
               <SmartBackButton />
               {/* Icon */}
@@ -119,7 +119,7 @@ export default function QuickBitePage({ params }: Props) {
             </div>
             {/* Author section */}
             <div className="flex lg:justify-normal justify-between lg:w-auto w-full  items-center h-full gap-x-2 text-sm">
-              <Link className="lg:hidden flex items-center justify-center rounded-full w-[36px] h-[36px] bg-[#344240]" href={"/"}>
+              <Link className="lg:hidden flex items-center justify-center rounded-full w-[36px] h-[36px] bg-color-bg-medium" href={"/"}>
                 <Icon icon={'fluent:arrow-left-32-filled'} className={`w-[20px] h-[25px]`}  />
               </Link>  
               <div className='flex items-center gap-x-[5px] md:flex-row flex-row-reverse whitespace-nowrap'>
@@ -158,7 +158,7 @@ export default function QuickBitePage({ params }: Props) {
           </QuickBiteProvider>
 
           {/* Content metadata and tags */}
-          <div className="h-[34px] px-[15px] py-[5px] bg-[#1F2726] rounded-full flex items-center gap-x-[10px]">
+          <div className="h-[34px] px-[15px] py-[5px] bg-color-bg-default rounded-full flex items-center gap-x-[10px]">
             <span className="text-xxs text-[#5A6462]">Topics Discussed</span>
             <div className="flex items-center gap-x-[5px]">
               {QuickBite && QuickBite.topics && QuickBite.topics.map((topic) => {
@@ -174,12 +174,12 @@ export default function QuickBitePage({ params }: Props) {
                 }
                 
                 return topic.url ? (
-                  <Link key={topic.url} href={topic.url} className="flex items-center gap-x-[5px] rounded-full w-fit pl-[5px] pr-[10px] py-[3px] bg-medium-background">
+                  <Link key={topic.url} href={topic.url} className="flex items-center gap-x-[5px] rounded-full w-fit pl-[5px] pr-[10px] py-[3px] bg-color-bg-medium">
                     <GTPIcon icon={resolvedIcon || "chain-dark"} size="sm" style={{ color: resolvedColor }} />
                     <div className="text-xs">{topic.name}</div>
                   </Link>
                 ) : (
-                  <div key={topic.name} className="flex items-center gap-x-[5px] rounded-full w-fit pl-[5px] pr-[10px] py-[3px] bg-medium-background">
+                  <div key={topic.name} className="flex items-center gap-x-[5px] rounded-full w-fit pl-[5px] pr-[10px] py-[3px] bg-color-bg-medium">
                     <GTPIcon icon={resolvedIcon || "chain-dark"} size="sm" style={{ color: resolvedColor }} />
                     <div className="text-xs">{topic.name}</div>
                   </div>

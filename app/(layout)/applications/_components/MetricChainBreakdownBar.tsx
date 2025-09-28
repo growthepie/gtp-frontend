@@ -409,7 +409,7 @@ export const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
     }
 
     return (
-      <div className="flex flex-col gap-y-[5px] min-w-[240px] h-full pr-[15px] py-[15px] text-[#CDD8D3]">
+      <div className="flex flex-col gap-y-[5px] min-w-[240px] h-full pr-[15px] py-[15px] text-color-text-primary">
         <div className="pl-[20px] h-[24px] flex items-center gap-x-[5px] whitespace-nowrap">
           <ApplicationIcon owner_project={owner_project} size="sm" />
           <div className='heading-small-xs !font-normal'>
@@ -471,7 +471,7 @@ export const MetricChainBreakdownBar = ({ metric }: { metric: string }) => {
   return (
     <TooltipProvider>
       <div className="pb-[15px]">
-        <div className="flex items-center h-[34px] rounded-full bg-[#344240] p-[2px]">
+        <div className="flex items-center h-[34px] rounded-full bg-color-bg-medium p-[2px]">
           <div className="flex items-center h-[30px] w-full rounded-full overflow-hidden bg-black/60 relative" ref={containerRef}>
             <BarHeaderSection 
               owner_project={owner_project} 
@@ -532,7 +532,7 @@ const BarHeaderSection = ({
   
   return (
     <div 
-      className="absolute left-0 flex gap-x-[10px] items-center h-full w-[160px] bg-[#1F2726] p-[2px] rounded-full pr-[10px]" 
+      className="absolute left-0 flex gap-x-[10px] items-center h-full w-[160px] bg-color-bg-default p-[2px] rounded-full pr-[10px]" 
       style={{ zIndex: zIndex }}
       onMouseEnter={(e) => showTooltip(e, tooltipContent)}
       onMouseLeave={hideTooltip}
@@ -620,7 +620,7 @@ const ChainBar = memo(({
   }
 
   const tooltipContent = useMemo(() => (
-    <div className="min-w-[245px] flex flex-col gap-y-[5px] w-fit h-full pr-[15px] py-[15px] text-[#CDD8D3]">
+    <div className="min-w-[245px] flex flex-col gap-y-[5px] w-fit h-full pr-[15px] py-[15px] text-color-text-primary">
       <div className="pl-[20px] h-[24px] flex items-center gap-x-[5px] whitespace-nowrap">
         <ApplicationIcon owner_project={owner_project} size="sm" />
         <div className='heading-small-xs !font-normal'>
@@ -730,7 +730,7 @@ const ChainBar = memo(({
       }}
     >
       <div
-        className="@container absolute inset-0 left-[135px] right-[15px] flex items-center justify-end text-[#1F2726] select-none"
+        className="@container absolute inset-0 left-[135px] right-[15px] flex items-center justify-end text-color-text-primary select-none"
         style={{ zIndex: computedZIndex + 1 }}
       >
         <div

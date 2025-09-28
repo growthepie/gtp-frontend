@@ -51,7 +51,7 @@ const OpacityUnmatchedText = ({ text, query }: { text: string; query: string }) 
   const after = text.slice(origEnd);
 
   return (
-    <span className="text-[#CDD8D3]">
+    <span className="text-color-text-primary">
       {before && <span className="opacity-50">{before}</span>}
       <span className="opacity-100">{match}</span>
       {after && <span className="opacity-50">{after}</span>}
@@ -90,7 +90,7 @@ const MobileSearchBadge = memo(({
       className="hover:scale-[1.02] transition-transform duration-150"
     >
       <SearchBadge
-        className={`!cursor-pointer ${isSelected ? "!bg-[#5A6462]" : ""}`}
+        className={`!cursor-pointer ${isSelected ? "!bg-color-ui-hover" : ""}`}
         label={<OpacityUnmatchedText text={item.label} query={searchQuery} />}
         leftIcon={item.icon}
         leftIconColor={item.color}
@@ -641,7 +641,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
                 // Close the menu after navigation
                 onClose();
               }}
-              className="flex w-full items-center justify-between rounded-full hover:!bg-[#5A6462]"
+              className="flex w-full items-center justify-between rounded-full hover:!bg-color-ui-hover"
               style={{
                 padding: "3px 13px 3px 2px",
                 gap: "0 5px",
@@ -650,7 +650,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
             >
               {/* Icon container - matching mobile menu style */}
               <div 
-                className="flex items-center justify-center rounded-full sbg-[#151A19]"
+                className="flex items-center justify-center rounded-full sbg-color-ui-active"
                 style={{
                   width: "38px",
                   height: "38px",
@@ -659,7 +659,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
                 <GTPIcon 
                   icon={item.icon} 
                   size="md"
-                  // style={{ color: "#5A6462" }}
+                  // style={{ color: "rgb(var(--ui-hover))" }}
                 />
               </div>
               
@@ -685,7 +685,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
       return (
         <div className="flex flex-col items-center justify-center py-[40px] text-center h-full">
           <GTPIcon icon="gtp-search" size="lg" className="text-[#5A6462] mb-[10px]" />
-          <div className="text-[#CDD8D3] text-sm mb-[5px]">No results found</div>
+          <div className="text-color-text-primary text-sm mb-[5px]">No results found</div>
           <div className="text-[#5A6462] text-xs">Try searching for chains, features, or applications</div>
         </div>
       );
@@ -726,7 +726,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
                 <span className="text-white">{type}</span>
               )}
             </div>
-            <div className="w-[6px] h-[6px] bg-[#344240] rounded-full max-sm:mt-[-3px]" />
+            <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full max-sm:mt-[-3px]" />
           </div>
 
           <div className="flex flex-col gap-[5px]">
@@ -771,7 +771,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
 
                   return (
                     <div key={group.label} className="flex flex-col gap-[5px]">
-                      <div className="text-xxs" style={{ color: '#5A6462' }}>
+                      <div className="text-xxs" style={{ color: 'rgb(var(--ui-hover))' }}>
                         <span>Chains that are part of the &quot;</span>
                         <OpacityUnmatchedText text={group.label} query={memoizedQuery || ""} />
                         <span>&quot;:</span>
@@ -839,7 +839,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
     >
       <div
         ref={containerRef}
-        className="flex flex-col w-[calc(100vw-40px)] bg-[#1F2726] rounded-[22px] max-w-full will-change-transform mb-[5px]"
+        className="flex flex-col w-[calc(100vw-40px)] bg-color-bg-default rounded-[22px] max-w-full will-change-transform mb-[5px]"
         style={{ transform: 'translateZ(0)', maxHeight: `${viewportHeight - 120}px` }}
       >
         {/* Header - minimal spacing only */}

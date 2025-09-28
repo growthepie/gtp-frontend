@@ -16,7 +16,7 @@ export default function Footer() {
     <div className="pointer-events-none fixed bottom-0 left-0 right-0 top-0 z-50 flex flex-col justify-end overflow-hidden">
       <div className="relative">
         <div
-          className="pointer-events-none fixed inset-0 -z-10 bg-[#151a19]"
+          className="pointer-events-none fixed inset-0 -z-10 bg-color-ui-active"
           style={{
             backgroundPosition: "bottom",
             maskImage: isMobile
@@ -43,8 +43,8 @@ export default function Footer() {
         <Container className="z-10 flex w-full items-center justify-between !px-0 pb-5 md:pb-9">
           {/* Left Side Links */}
           <div className="flex justify-center md:justify-start px-[15px] w-full">
-            <div className="flex flex-col md:flex-row gap-x-[15px] gap-y-[10px] items-center text-[10px] text-[#CDD8D3] dark:text-[#CDD8D3]">
-              <div className="flex gap-x-[15px] items-center text-[10px] text-[#CDD8D3] dark:text-[#CDD8D3]">
+            <div className="flex flex-col md:flex-row gap-x-[15px] gap-y-[10px] items-center text-[10px] text-color-text-primary dark:text-color-text-primary">
+              <div className="flex gap-x-[15px] items-center text-[10px] text-color-text-primary dark:text-color-text-primary">
                 <Link href="/privacy-policy" className="underline" passHref target="_blank" rel="noopener" aria-label="Privacy Policy" onClick={() => track("click", { location: "footer", link: "privacy-policy" })}>
                   Privacy Policy
                 </Link>

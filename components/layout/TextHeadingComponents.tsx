@@ -46,7 +46,7 @@ export const Title = ({
         className={`flex items-center h-[43px] gap-x-[8px]  ${containerClassName}`}
       >
         {backArrow && (
-          <Link className="flex items-center justify-center rounded-full w-[36px] h-[36px] bg-[#344240]" href={backArrowLink}>
+          <Link className="flex items-center justify-center rounded-full w-[36px] h-[36px] bg-color-bg-medium" href={backArrowLink}>
             <Icon icon={'fluent:arrow-left-32-filled'} className={`w-[20px] h-[25px]`}  />
           </Link>
         )}
@@ -103,7 +103,7 @@ export const Title = ({
     newTab,
     icon,
     iconSize="sm",
-    iconBackground="bg-[#151A19]",
+    iconBackground="bg-color-ui-active",
     leftIcon,
     rightIcon,
     label,
@@ -137,7 +137,7 @@ export const Title = ({
               <div className="transition-all duration-300 whitespace-nowrap overflow-hidden heading-small-xs">
                 {label}
               </div>
-              {rightIcon && (<div className="size-[24px] bg-[#344240] rounded-full flex items-center justify-center">
+              {rightIcon && (<div className="size-[24px] bg-color-bg-medium rounded-full flex items-center justify-center">
                 <div className="size-[24px] flex items-center justify-center">
                   <GTPIcon icon={rightIcon} size="sm" />
                 </div>
@@ -181,7 +181,7 @@ export const SectionButtonLink = ({
             </>) : <div className="heading-small-xs whitespace-nowrap overflow-hidden">
             {label}
           </div>}
-          <div className="w-[24px] h-[24px] bg-[#344240] rounded-full flex items-center justify-center">
+          <div className="w-[24px] h-[24px] bg-color-bg-medium rounded-full flex items-center justify-center">
             <Icon icon="feather:arrow-right" className="w-[16px] h-[16px]" />
           </div>
         </div>

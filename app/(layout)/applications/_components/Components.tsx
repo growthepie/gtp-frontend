@@ -71,7 +71,7 @@ export const ApplicationIcon = ({ owner_project, size }: ApplicationIconProps) =
   };
 
   return (
-    <div className={`flex items-center justify-center select-none bg-[#151A19] rounded-full ${sizeClassMap[size]}`}>
+    <div className={`flex items-center justify-center select-none bg-color-ui-active rounded-full ${sizeClassMap[size]}`}>
       {ownerProjectToProjectData[owner_project] && ownerProjectToProjectData[owner_project].logo_path ? (
         <Image
           src={`https://api.growthepie.com/v1/apps/logos/${ownerProjectToProjectData[owner_project].logo_path}`}
@@ -83,7 +83,7 @@ export const ApplicationIcon = ({ owner_project, size }: ApplicationIconProps) =
           priority={true}
         />
       ) : (
-        <div className={`flex items-center justify-center ${sizeClassMap[size]} bg-[#151A19] !bg-transparent rounded-full`}>
+        <div className={`flex items-center justify-center ${sizeClassMap[size]} bg-color-ui-active !bg-transparent rounded-full`}>
           <GTPIcon icon="gtp-project-monochrome" size={size} className="text-[#5A6462]" />
         </div>
       )}
@@ -155,7 +155,7 @@ export const PageTitleAndDescriptionAndControls = () => {
             rel="noopener noreferrer"
             className="flex !size-[36px] bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)] rounded-full justify-center items-center"
           >
-            <div className="size-[34px] bg-[#1F2726] rounded-full flex justify-center items-center">
+            <div className="size-[34px] bg-color-bg-default rounded-full flex justify-center items-center">
               <GTPIcon icon="gtp-oli-logo" size="md" />
             </div>
           </Link>
@@ -231,11 +231,11 @@ export const BackButton = () => {
 
   return (
     <div
-      className="size-[36px] rounded-full flex justify-center items-center cursor-pointer bg-[#344240] hover:bg-[#5A6462]"
+      className="size-[36px] rounded-full flex justify-center items-center cursor-pointer bg-color-bg-medium hover:bg-color-ui-hover"
       onClick={handleBack}
 
     >
-      <Icon icon="feather:arrow-left" className="size-[26px] text-[#CDD8D3]" />
+      <Icon icon="feather:arrow-left" className="size-[26px] text-color-text-primary" />
     </div>
   );
 };
@@ -284,7 +284,7 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
           }}
         >
           <div
-            className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[12] hover:cursor-pointer"
+            className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-color-bg-default flex items-center justify-center z-[12] hover:cursor-pointer"
             onClick={handlePrev}
           >
             <Icon icon="feather:arrow-left" className="w-6 h-6" />
@@ -302,7 +302,7 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
             </div>
           </div>
           <div
-            className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[12] hover:cursor-pointer"
+            className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-color-bg-default flex items-center justify-center z-[12] hover:cursor-pointer"
             onClick={handleNext}
 
           >
@@ -310,7 +310,7 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
           </div>
         </div>
         <div
-          className={`flex flex-col relative lg:absolute lg:top-1/2 bottom-auto lg:left-0 lg:right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300 ${isOpen
+          className={`flex flex-col relative lg:absolute lg:top-1/2 bottom-auto lg:left-0 lg:right-0 bg-forest-50 dark:bg-color-bg-default rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300 ${isOpen
             ? `lg:z-[14] overflow-hidden border-transparent rounded-b-[30px] lg:border-forest-200 lg:dark:border-forest-500 lg:rounded-b-[22px] lg:shadow-[0px_4px_46.2px_#00000066] lg:dark:shadow-[0px_4px_46.2px_#000000]`
             : "max-h-0 z-[13] overflow-hidden border-transparent rounded-b-[22px]"
             } `}
@@ -414,7 +414,7 @@ export const ProjectDetailsLinks = memo(({ owner_project, mobile }: ProjectDetai
             href={`${prefix}${projectData[key]}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex !size-[36px] bg-[#1F2726] rounded-full justify-center items-center"
+            className="flex !size-[36px] bg-color-bg-default rounded-full justify-center items-center"
           >
             <Icon icon={icon} className="size-[15px] select-none" />
           </Link>
@@ -431,14 +431,14 @@ export const ProjectDetailsLinks = memo(({ owner_project, mobile }: ProjectDetai
           href={`${prefix}${projectData[key]}`}
           target="_blank"
           rel="noopener noreferrer"
-          className={`${key === "website" ? "gap-x-[6px] px-[5px] w-fit h-[54px]" : "size-[54px]"} bg-[#1F2726] rounded-full flex justify-center items-center`}
+          className={`${key === "website" ? "gap-x-[6px] px-[5px] w-fit h-[54px]" : "size-[54px]"} bg-color-bg-default rounded-full flex justify-center items-center`}
         >
           {key === "website" ? (
             <>
               <ApplicationIcon owner_project={owner_project} size="md" />
               <div className="text-xxxs">Website</div>
-              <div className="size-[24px] rounded-full bg-[#344240] flex justify-center items-center">
-                <Icon icon="feather:arrow-right" className="size-[17px] text-[#CDD8D3]" />
+              <div className="size-[24px] rounded-full bg-color-bg-medium flex justify-center items-center">
+                <Icon icon="feather:arrow-right" className="size-[17px] text-color-text-primary" />
               </div>
             </>
           ) : (
@@ -519,21 +519,21 @@ export const ApplicationCard = memo(({ application, className, width, chainsPage
         <div className="flex flex-col">
           <div className="w-full flex justify-between items-end h-[20px]">
             <div className="h-[20px] flex items-center gap-x-[3px]">
-              <div className="numbers-xs text-[#CDD8D3]">{application.num_contracts.toLocaleString("en-GB")}</div>
+              <div className="numbers-xs text-color-text-primary">{application.num_contracts.toLocaleString("en-GB")}</div>
               <div className="text-xs text-[#5A6462]">{application.num_contracts === 1 ? 'contract' : 'contracts'}</div>
             </div>
             <div className="h-[20px] flex items-center gap-x-[3px]">
               <div className="numbers-xs text-[#5A6462]">Rank</div>
-              <div className="numbers-xs text-[#CDD8D3]">{rank}</div>
+              <div className="numbers-xs text-color-text-primary">{rank}</div>
               {application[`${medianMetricKey}_change_pct`] !== Infinity ? (
-                <div className={`flex justify-end w-[60px] numbers-xs ${application[`${medianMetricKey}_change_pct`] < 0 ? 'text-[#FF3838]' : 'text-[#4CFF7E]'}`}>
+                <div className={`flex justify-end w-[60px] numbers-xs ${application[`${medianMetricKey}_change_pct`] < 0 ? 'text-color-negative' : 'text-color-positive'}`}>
                   {application[`${medianMetricKey}_change_pct`] < 0 ? '-' : '+'}{formatNumber(Math.abs(application[`${medianMetricKey}_change_pct`]), { defaultDecimals: 1, thresholdDecimals: { base: 1 } })}%
                 </div>
               ) : <div className="w-[49px]">&nbsp;</div>}
             </div>
           </div>
           <div className="h-[20px] w-full flex items-center justify-end gap-x-[3px]">
-            <div className="numbers-sm text-[#CDD8D3]">
+            <div className="numbers-sm text-color-text-primary">
               {prefix}
               {value?.toLocaleString("en-GB", { maximumFractionDigits: decimals })}
             </div>
@@ -558,8 +558,8 @@ export const ApplicationCard = memo(({ application, className, width, chainsPage
           >
             <ApplicationTooltip application={application} />
           </GTPTooltipNew>
-        <div className="cursor-pointer size-[24px] bg-[#344240] rounded-full flex justify-center items-center">
-          <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-[#CDD8D3]" />
+        <div className="cursor-pointer size-[24px] bg-color-bg-medium rounded-full flex justify-center items-center">
+          <Icon icon="feather:arrow-right" className="w-[17.14px] h-[17.14px] text-color-text-primary" />
         </div>
       </div>
       <div className="flex items-center justify-between gap-x-[5px]">
@@ -599,7 +599,7 @@ export const ApplicationTooltip = ({ application }: { application: AggregatedDat
 
   return (
     // <div
-    //   className="cursor-default z-[99] p-[15px] left-[20px] w-[300px] md:w-[345px] top-[32px] bg-[#1F2726] rounded-[15px] transition-opacity duration-300"
+    //   className="cursor-default z-[99] p-[15px] left-[20px] w-[300px] md:w-[345px] top-[32px] bg-color-bg-default rounded-[15px] transition-opacity duration-300"
     //   style={{
     //     boxShadow: "0px 0px 30px #000000",
     //     // left: `${mouseOffsetX}px`,
@@ -623,14 +623,14 @@ export const ApplicationTooltip = ({ application }: { application: AggregatedDat
                 priority={true}
               />
             ) : (
-              <div className={`flex items-center justify-center size-[15px] bg-[#151A19] rounded-full`}>
+              <div className={`flex items-center justify-center size-[15px] bg-color-ui-active rounded-full`}>
                 <GTPIcon icon="gtp-project-monochrome" size="sm" className="!size-[12px] text-[#5A6462]" containerClassName="flex items-center justify-center" />
               </div>
             )}
             <div className="heading-small-xs">{ownerProjectToProjectData[application.owner_project] ? ownerProjectToProjectData[application.owner_project].display_name : application.owner_project}</div>
           </div>
-          <div className="cursor-pointer size-[20px] bg-[#344240] rounded-full flex justify-center items-center">
-            <Icon icon="feather:arrow-right" className="w-[13px] h-[13px] text-[#CDD8D3]" />
+          <div className="cursor-pointer size-[20px] bg-color-bg-medium rounded-full flex justify-center items-center">
+            <Icon icon="feather:arrow-right" className="w-[13px] h-[13px] text-color-text-primary" />
           </div>
         </Link>
         <div className="text-xs">
@@ -662,7 +662,7 @@ export const ApplicationTooltipAlt = ({ owner_project }: { owner_project: string
 
   return (
     // <div
-    //   className="cursor-default z-[99] p-[15px] left-[20px] w-[300px] md:w-[345px] top-[32px] bg-[#1F2726] rounded-[15px] transition-opacity duration-300"
+    //   className="cursor-default z-[99] p-[15px] left-[20px] w-[300px] md:w-[345px] top-[32px] bg-color-bg-default rounded-[15px] transition-opacity duration-300"
     //   style={{
     //     boxShadow: "0px 0px 30px #000000",
     //     // left: `${mouseOffsetX}px`,
@@ -686,14 +686,14 @@ export const ApplicationTooltipAlt = ({ owner_project }: { owner_project: string
                 priority={true}
               />
             ) : (
-              <div className={`flex items-center justify-center size-[15px] bg-[#151A19] rounded-full`}>
+              <div className={`flex items-center justify-center size-[15px] bg-color-ui-active rounded-full`}>
                 <GTPIcon icon="gtp-project-monochrome" size="sm" className="!size-[12px] text-[#5A6462]" containerClassName="flex items-center justify-center" />
               </div>
             )}
             <div className="heading-small-xs">{ownerProjectToProjectData[owner_project] ? ownerProjectToProjectData[owner_project].display_name : owner_project}</div>
           </div>
-          <div className="cursor-pointer size-[20px] bg-[#344240] rounded-full flex justify-center items-center">
-            <Icon icon="feather:arrow-right" className="w-[13px] h-[13px] text-[#CDD8D3]" />
+          <div className="cursor-pointer size-[20px] bg-color-bg-medium rounded-full flex justify-center items-center">
+            <Icon icon="feather:arrow-right" className="w-[13px] h-[13px] text-color-text-primary" />
           </div>
         </Link>
         <div className="text-xs">
@@ -713,7 +713,7 @@ export const TopGainersAndLosersTooltip = ({ metric }: { metric: string }) => {
   const { timespans, selectedTimespan } = useTimespan();
   return (
     <div
-      className="w-[400px] bg-[#1F2726] rounded-[15px] flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300"
+      className="w-[400px] bg-color-bg-default rounded-[15px] flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300"
       style={{
         boxShadow: "0px 0px 30px #000000",
       }}
@@ -765,7 +765,7 @@ export const MetricTooltip = ({ metric }: { metric: string }) => {
 
   return (
     <div
-      className="w-[238px] bg-[#1F2726] rounded-[15px] flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300"
+      className="w-[238px] bg-color-bg-default rounded-[15px] flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300"
       style={{
         boxShadow: "0px 0px 30px #000000",
       }}
@@ -1060,9 +1060,9 @@ export const ChainsTooltip = ({
             className="flex flex-row flex-wrap gap-[5px]"
           >
             {[...visibleChains, ...hiddenChains].filter((chain) => AllChainsByKeys[chain]).map((chain, index) => {
-              const baseBgClass = "bg-[#344240]";
-              const baseBorderClass = "border border-[#344240]";
-              const hoverBgClass = "hover:bg-[#5A6462]";
+              const baseBgClass = "bg-color-bg-medium";
+              const baseBorderClass = "border border-color-border";
+              const hoverBgClass = "hover:bg-color-ui-hover";
               const hoverBorderClass = "hover:border hover:border-[#5A6462]";
 
               const baseClass = `${baseBgClass} ${baseBorderClass}`;
@@ -1176,7 +1176,7 @@ export const Category = ({ category }: { category: string }) => {
       ) : (
         <div className="flex items-center gap-x-[5px] whitespace-nowrap">
           {/* <Icon icon="carbon:unknown-filled" className="size-[15px] text-[#5A6462]/50" /> */}
-          <div className="size-[15px] text-black/90 rounded-sm bg-[#5A6462]/50 flex justify-center items-center font-bold text-xs pt-[2px]">?</div>
+          <div className="size-[15px] text-black/90 rounded-sm bg-color-ui-hover/50 flex justify-center items-center font-bold text-xs pt-[2px]">?</div>
           <div className="text-xs text-[#5A6462]">Unknown</div>
         </div>
       )}

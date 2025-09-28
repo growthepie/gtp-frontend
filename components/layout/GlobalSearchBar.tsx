@@ -468,7 +468,7 @@ export default function GlobalFloatingBar() {
     <>
       <div className={`fixed z-global-search-backdrop bottom-[-200px] md:bottom-auto md:top-[0px] w-full max-w-[1700px] px-0 md:px-[13px] md:-mx-[5px] transition-[margin] duration-sidebar ease-sidebar flex justify-center`}>
 
-        <div className="bg-[#151a19] z-[-1] relative bottom-0 top-0 md:bottom-auto md:top-0 left-0 right-0 h-[300px] md:h-[100px] overflow-hidden pointer-events-none sidebar-bg-mask">
+        <div className="bg-color-ui-active z-[-1] relative bottom-0 top-0 md:bottom-auto md:top-0 left-0 right-0 h-[300px] md:h-[100px] overflow-hidden pointer-events-none sidebar-bg-mask">
           <div className="background-gradient-group">
             <div className="background-gradient-yellow"></div>
             <div className="background-gradient-green"></div>
@@ -517,7 +517,7 @@ export default function GlobalFloatingBar() {
                   <div onClick={handleWorkWithUsMenuToggle} className="relative pointer-events-auto shrink-0">
                     <button
                       type="button"
-                      className={`relative flex items-center w-full h-[44px] rounded-full overflow-hidden bg-[#1F2726] transition-colors duration-200`}
+                      className={`relative flex items-center w-full h-[44px] rounded-full overflow-hidden bg-color-bg-default transition-colors duration-200`}
                       aria-label="Work with us"
                     >
                       <GTPIcon 
@@ -767,9 +767,9 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
   // Only render the search container if we should show search results
   // if (!showSearchResults) {
   //   return (
-  //     <div className="absolute bottom-[-5px] md:bottom-auto md:top-[-5px] left-0 w-full p-[5px] md:p-[5px] bg-[#344240] rounded-[32px] flex flex-col justify-start items-center">
+  //     <div className="absolute bottom-[-5px] md:bottom-auto md:top-[-5px] left-0 w-full p-[5px] md:p-[5px] bg-color-bg-medium rounded-[32px] flex flex-col justify-start items-center">
   //       <div ref={contentRef} className="w-full flex-1 overflow-hidden flex flex-col min-h-0">
-  //         <div className={`w-full bg-[#151A19] rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>
+  //         <div className={`w-full bg-color-ui-active rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>
   //           {children}
   //         </div>
   //       </div>
@@ -778,13 +778,13 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
   // }
 
   return (
-    <div className="absolute bottom-[-5px] md:bottom-auto md:top-[-5px] left-0 w-full p-[5px] md:p-[5px] bg-[#344240] rounded-[32px] flex flex-col justify-start items-center">
+    <div className="absolute bottom-[-5px] md:bottom-auto md:top-[-5px] left-0 w-full p-[5px] md:p-[5px] bg-color-bg-medium rounded-[32px] flex flex-col justify-start items-center">
       {/* shadow box */}
-      <div className="absolute bottom-0 left-0 right-0 bg-[#344240] rounded-b-[32px] z-[-1] pointer-events-none" style={{height: 'calc(100% - 75px)', boxShadow: '0 10px 50px 0 #000'}}></div>
+      <div className="absolute bottom-0 left-0 right-0 bg-color-bg-medium rounded-b-[32px] z-[-1] pointer-events-none" style={{height: 'calc(100% - 75px)', boxShadow: '0 10px 50px 0 #000'}}></div>
       
       {/* Add a wrapper div that will handle the overflow */}
       <div ref={contentRef} className="w-full flex-1 overflow-hidden flex flex-col min-h-0">
-        <div className={`w-full bg-[#151A19] rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>
+        <div className={`w-full bg-color-ui-active rounded-t-[22px] ${hasOverflow ? 'rounded-bl-[22px]' : 'rounded-b-[22px]'} flex flex-col justify-start items-center gap-2.5 flex-shrink-0`}>
           {children}
         </div>
       </div>
@@ -850,7 +850,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
               stroke="#CDD8D3"
             />
           </svg>
-          <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Move</div>
+          <div className="text-color-text-primary font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Move</div>
         </div>
         <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px] flex-[1_0_0]">
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="21" viewBox="0 0 22 21" fill="none">
@@ -864,16 +864,16 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
             <path d="M16 5.5V12.5C16 13.0523 15.5523 13.5 15 13.5H9" stroke="#CDD8D3" stroke-width="2" />
             <path d="M10.3336 15.5581L5.83821 13.9715C5.39343 13.8145 5.39343 13.1855 5.83822 13.0285L10.3336 11.4419C10.6589 11.3271 11 11.5684 11 11.9134L11 15.0866C11 15.4316 10.6589 15.6729 10.3336 15.5581Z" fill="#CDD8D3" stroke="#CDD8D3" />
           </svg>
-          <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Select</div>
+          <div className="text-color-text-primary font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Select</div>
         </div>
         <div className="w-[7px] h-[8px]"></div>
         <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px]">
-          <div className={`w-[22px] h-[20px] shrink-0 rounded-[2px] flex items-center justify-center ${pressedKey === 'Escape' ? "bg-[#5A6462]" : "bg-[#151A19]"}`}>
-            <div className={`w-[22px] h-[20px] shrink-0 rounded-[2px] flex items-center justify-center mt-[1px] text-[#CDD8D3] numbers-xxxs cursor-default ${pressedKey === 'Escape' ? "bg-[#5A6462]" : "bg-[#151A19]"}`}>
+          <div className={`w-[22px] h-[20px] shrink-0 rounded-[2px] flex items-center justify-center ${pressedKey === 'Escape' ? "bg-color-ui-hover" : "bg-color-ui-active"}`}>
+            <div className={`w-[22px] h-[20px] shrink-0 rounded-[2px] flex items-center justify-center mt-[1px] text-color-text-primary numbers-xxxs cursor-default ${pressedKey === 'Escape' ? "bg-color-ui-hover" : "bg-color-ui-active"}`}>
               ESC
             </div>
           </div>
-          <div className="text-[#CDD8D3] font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Close</div>
+          <div className="text-color-text-primary font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Close</div>
         </div>
       </div>
     </div>

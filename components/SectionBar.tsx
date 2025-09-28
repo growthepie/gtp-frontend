@@ -9,7 +9,7 @@ export function SectionBar({ children }: { children: React.ReactNode }) {
     return(
         <div className={`${isMobile ? "flex gap-[5px] justify-start overflow-clip" : "grid grid-flow-col auto-cols-fr gap-[5px]"} w-full h-[44px] relative items-center`}>
             <div className="absolute w-full h-full px-[7px]">
-                <div className="bg-[#1F2726] rounded-full h-[24px] absolute w-[99%] overflow-clip"
+                <div className="bg-color-bg-default rounded-full h-[24px] absolute w-[99%] overflow-clip"
                 style={{
                     height: isMobile ? "0px" : "24px",
                     opacity: isMobile ? 0 : 1,
@@ -27,7 +27,7 @@ export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked,
 
     return(
         <div className={`relative  transition-all  duration-300 flex items-center justify-between rounded-full 
-             ${isSelected ? "bg-[#151A19] outline outline-2 outline-[#344240] h-[44px] heading-large-sm md:heading-large-md" : " h-[36px] outline-0 outline-[#1F2726] w-full hover:bg-[#5A6462] bg-[#344240] hover:outline-2 hover:h-[42px] hover:heading-large-md"} 
+             ${isSelected ? "bg-color-ui-active outline outline-2 outline-[#344240] h-[44px] heading-large-sm md:heading-large-md" : " h-[36px] outline-0 outline-[#1F2726] w-full hover:bg-color-ui-hover bg-color-bg-medium hover:outline-2 hover:h-[42px] hover:heading-large-md"} 
              ${(!isMobile && (isSelected || isHovered)) ? !comingSoon && !isLocked ? "pl-[10px] pr-[35px]" : "px-[10px]" : "px-[10px]"} 
              ${!isMobile ? isHovered || isSelected ? "min-w-fit" : "!min-w-[165px]" : "w-auto max-w-fit"}
              ${!isSelected ? "heading-large-xs lg:heading-large-sm" : ""}
@@ -59,7 +59,7 @@ export function SectionBarItem({ isSelected, header, icon, comingSoon, isLocked,
                 </div>
             )}
             {isLocked && (
-                <div className="flex items-center py-[2px] px-[10px] bg-[#1F2726] rounded-full">
+                <div className="flex items-center py-[2px] px-[10px] bg-color-bg-default rounded-full">
                     <div className="heading-small-xxxs transition-all text-nowrap text-inherit ">
                         <GTPIcon icon={"feather:lock" as GTPIconName} size="sm" className="!size-[15px]" containerClassName="!size-[15px]" />
                     </div>

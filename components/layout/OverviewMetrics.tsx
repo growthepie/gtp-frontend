@@ -430,14 +430,14 @@ export default function OverviewMetrics({
           {/*Selected Mode Absolute/Share of chain usage*/}
           <Container>
             {" "}
-            <div className="flex flex-row w-[100%] mx-auto justify-center md:items-center items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-[8px] gap-x-1 text-md py-[4px]">
+            <div className="flex flex-row w-[100%] mx-auto justify-center md:items-center items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-color-bg-default p-0.5 px-0.5 md:px-1 mt-[8px] gap-x-1 text-md py-[4px]">
               {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
               {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
               {/* toggle ETH */}
               <button
                 className={`px-[16px] py-[4px]  rounded-full ${
                   selectedValue === "absolute"
-                    ? "bg-forest-500 dark:bg-forest-1000"
+                    ? "bg-forest-500 dark:bg-color-ui-active"
                     : "hover:bg-forest-500/10"
                 }`}
                 onClick={() => {
@@ -460,7 +460,7 @@ export default function OverviewMetrics({
               <button
                 className={`px-[16px] py-[4px]  rounded-full ${
                   selectedValue === "share"
-                    ? "bg-forest-500 dark:bg-forest-1000"
+                    ? "bg-forest-500 dark:bg-color-ui-active"
                     : "hover:bg-forest-500/10"
                 }`}
                 onClick={() => {

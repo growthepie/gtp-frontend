@@ -597,7 +597,7 @@ const DATableChartsComponent = ({
                 </div>
                 <div class="tooltip-point-name numbers-xs flex flex-col items-end">
                     <div class="text-right whitespace-pre">${absolute}</div>
-                    <div class="text-forest-500 text-right whitespace-pre" style="padding-left: ${absolute.length - percentage.length}ch">${percentage}  %</div>
+                    <div class="text-color-text-primary text-right whitespace-pre" style="padding-left: ${absolute.length - percentage.length}ch">${percentage}  %</div>
                 </div>
             </div>`;
         },
@@ -1537,10 +1537,10 @@ const ChartLegend = (
           color="#b5c4c3";
         }
 
-        let bgBorderClass = "border-[1px] border-[#344240] bg-[#344240] hover:border-[#5A6462] hover:bg-[#5A6462] h-[18px] !py-[2px] !px-[2px]";
+        let bgBorderClass = "border-[1px] border-color-border bg-color-bg-medium hover:border-[#5A6462] hover:bg-color-ui-hover h-[18px] !py-[2px] !px-[2px]";
 
         if(selectedChain !== "all" && selectedChain !== key)
-            bgBorderClass = "border-[1px] border-[#344240] bg-transparent hover:border-[#5A6462] hover:bg-[#5A6462] h-[18px] !py-[2px] !px-[2px]";
+            bgBorderClass = "border-[1px] border-color-border bg-transparent hover:border-[#5A6462] hover:bg-color-ui-hover h-[18px] !py-[2px] !px-[2px]";
         
 
         return (
@@ -1576,7 +1576,7 @@ const ChartLegend = (
 
 
         // return (
-        //   <div key={key + "da_consumers_info"} className={`flex group/chain  relative gap-x-[5px] px-[5px] text-xxs rounded-full py-[0.5px] items-center transition-all cursor-pointer bg-[#344240] ${(selectedChain === "all" || selectedChain === key) ? "bg-[#344240] border-[1px] border-transparent hover:bg-[#5A6462] " : "bg-transparent border-[1px] border-[#344240] hover:bg-[#5A6462] "}
+        //   <div key={key + "da_consumers_info"} className={`flex group/chain  relative gap-x-[5px] px-[5px] text-xxs rounded-full py-[0.5px] items-center transition-all cursor-pointer bg-color-bg-medium ${(selectedChain === "all" || selectedChain === key) ? "bg-color-bg-medium border-[1px] border-transparent hover:bg-color-ui-hover " : "bg-transparent border-[1px] border-color-border hover:bg-color-ui-hover "}
         //     ${selectedChain === "all" || selectedChain !== key ? "px-[5px]" : "pl-[5px] pr-[20px]"}
 
         //     }`}
@@ -1619,7 +1619,7 @@ const ChartLegend = (
         //             }}
         //             />)}</div>
         //     <div className="text-xxs ">{data[selectedTimespan].da_consumers[key][isMonthly ? "monthly" : "daily"].values[0][1]}</div>
-        //     <div className={`absolute right-[2px] top-[2.5px] w-[12px] h-[12px] text-[#FE5468] ${selectedChain === "all" ? "invisible" : "visible"}`}><Icon icon={selectedChain === key ? "gtp:x-circle" : ""} className="w-[12px] h-[12px] "></Icon></div>
+        //     <div className={`absolute right-[2px] top-[2.5px] w-[12px] h-[12px] text-color-accent-red ${selectedChain === "all" ? "invisible" : "visible"}`}><Icon icon={selectedChain === key ? "gtp:x-circle" : ""} className="w-[12px] h-[12px] "></Icon></div>
         //   </div>
         // )
       }
@@ -1661,19 +1661,19 @@ const YAxisScaleControls = ({selectedScale, setSelectedScale}: {selectedScale: s
             }}
           >
             <div
-              className={`w-[176px] h-[28px] heading-small flex gap-x-[20px]  items-center pl-[10px] md:pr-[24px] rounded-full transition duration-200 ease-in-out text-forest-900 bg-[#344240]`}
+              className={`w-[176px] h-[28px] heading-small flex gap-x-[20px]  items-center pl-[10px] md:pr-[24px] rounded-full transition duration-200 ease-in-out text-forest-900 bg-color-bg-medium`}
             >
               
-              <div className="heading-small-xxs text-forest-500 ">Stacked</div>
-              <div className="heading-small-xxs text-forest-500">Percentage</div>
+              <div className="heading-small-xxs text-color-text-primary ">Stacked</div>
+              <div className="heading-small-xxs text-color-text-primary">Percentage</div>
               <div className="absolute top-[6px] z-20 right-[5px]">
                 <Tooltip placement="bottom">
                     <TooltipTrigger>
-                      <Icon icon="feather:info" className="text-forest-500 w-[15px] h-[15px]" />
+                      <Icon icon="feather:info" className="text-color-text-primary w-[15px] h-[15px]" />
                     </TooltipTrigger>
                     <TooltipContent>
                     <div className="flex flex-col items-center">
-                        <div className="p-[15px] text-sm bg-forest-100 dark:bg-[#1F2726] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
+                        <div className="p-[15px] text-sm bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[300px] flex-col z-50">
                           <div className="heading-small-xs">Stacked/Percentage</div>
                           <div className="text-xxs text-wrap">
                             Toggle between "Stacked" view, which shows the total values by all DA consumers or "Percentage" view which shows relative values.
@@ -1687,11 +1687,11 @@ const YAxisScaleControls = ({selectedScale, setSelectedScale}: {selectedScale: s
           
             <div
               className={`absolute flex justify-center items-center  left-[2px] top-[2px] md:-left-[54px] md:top-0.5
-               w-full h-[24px] heading-small-xxs leading-[20px] rounded-full transition-transform duration-200 ease-in-out text-forest-500  px-1.5 text-center ${selectedScale === "percentage" ? "transform translate-x-[42%]" : "translate-x-0"
+               w-full h-[24px] heading-small-xxs leading-[20px] rounded-full transition-transform duration-200 ease-in-out text-color-text-primary  px-1.5 text-center ${selectedScale === "percentage" ? "transform translate-x-[42%]" : "translate-x-0"
              }`}
             >
               
-              <div className="bg-[#1F2726] px-[8px] rounded-full h-[24px] flex items-center">
+              <div className="bg-color-bg-default px-[8px] rounded-full h-[24px] flex items-center">
                 {selectedScale === "percentage" ? <>Percentage</> : <>Stacked</>}
               </div>
             </div>

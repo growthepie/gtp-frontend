@@ -21,7 +21,7 @@ export default function Footer({
     <div className="fixed z-50 flex flex-col justify-end top-0 left-0 right-0 bottom-0 overflow-hidden pointer-events-none">
       <div className="relative">
         <div
-          className="bg-[#151a19] -z-10 fixed inset-0 pointer-events-none"
+          className="bg-color-ui-active -z-10 fixed inset-0 pointer-events-none"
           style={{
             backgroundPosition: "bottom",
             maskImage: isMobile ? `linear-gradient(to top, white 0, white 150px, transparent 215px` : `linear-gradient(to top, white 0, white 80px, transparent 120px`,
@@ -39,8 +39,8 @@ export default function Footer({
       <Container className={"w-full mx-auto bottom-0 pointer-events-auto"}>
         <Container className={`!px-0 flex items-center justify-start w-full pb-[20px] md:pb-[37px] z-[10]`}>
           <div className="flex justify-center md:justify-start px-[15px] w-full">
-            <div className="flex flex-col md:flex-row gap-x-[15px] gap-y-[10px] items-center text-[10px] text-[#CDD8D3] dark:text-[#CDD8D3]">
-              <div className="flex gap-x-[15px] items-center text-[10px] text-[#CDD8D3] dark:text-[#CDD8D3]">
+            <div className="flex flex-col md:flex-row gap-x-[15px] gap-y-[10px] items-center text-[10px] text-color-text-primary dark:text-color-text-primary">
+              <div className="flex gap-x-[15px] items-center text-[10px] text-color-text-primary dark:text-color-text-primary">
                 <Link href="/privacy-policy" className="underline" passHref target="_blank" rel="noopener" aria-label="Privacy Policy" onClick={() => track("click", { location: "footer", link: "privacy-policy" })}>
                   Privacy Policy
                 </Link>

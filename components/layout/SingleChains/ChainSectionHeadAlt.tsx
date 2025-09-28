@@ -58,7 +58,7 @@ const ChainSectionHead = ({
       style={style}
     >
       <div
-        className={`relative flex items-center gap-x-[12px] pl-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-[#344240] select-none overflow-clip border-0 outline-0 ${enableDropdown && "cursor-pointer"
+        className={`relative flex items-center gap-x-[12px] pl-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-color-bg-medium select-none overflow-clip border-0 outline-0 ${enableDropdown && "cursor-pointer"
           }`}
         onClick={() => {
           handleClick();
@@ -91,7 +91,7 @@ const ChainSectionHead = ({
             boxShadow: "-62.5px 0px 10px rgba(22, 28, 27, 0.35) inset",
           }}
         ></div> */}
-        <div className="bg-white dark:bg-forest-1000 rounded-full w-[24px] h-[24px] p-1 flex items-center justify-center relative">
+        <div className="bg-white dark:bg-color-ui-active rounded-full w-[24px] h-[24px] p-1 flex items-center justify-center relative">
           <Icon
             icon={icon ? icon : "gtp:gtp-clock"}
             className="w-[16px] h-[16px]"

@@ -90,13 +90,13 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
             <div className="grid grid-flow-row @[995px]:grid-cols-[minmax(480px,505px)_minmax(505px,auto)] gap-[10px]">
                 <SideCards chainKey={chainKey} chainData={chainData} master={master} />
                 <div className="flex flex-col w-full gap-y-[15px]">
-                    <div className={`flex flex-col w-full rounded-[15px] bg-[#1F2726] px-[30px] py-[15px] h-[215px]`}>
+                    <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px] h-[215px]`}>
                         <div className="heading-large-md">Achievements</div>
                     </div>
-                    <div className={`flex flex-col w-full rounded-[15px] bg-[#1F2726] px-[30px] py-[15px] h-[826px]`}>
+                    <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px] h-[826px]`}>
                         <div className="heading-large-md">Applications</div>
                     </div>
-                    <div className={`flex flex-col w-full rounded-[15px] bg-[#1F2726] px-[30px] py-[15px] h-[218px]`}>
+                    <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px] h-[218px]`}>
                         <div className="heading-large-md">Usage Breakdown</div>
                     </div>
                 </div>
@@ -112,7 +112,7 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
 
     const twitter = socials.Twitter;
     return (
-        <div className={`flex flex-col w-full rounded-[15px] bg-[#1F2726] px-[30px] py-[15px]  ${open ? "gap-y-[10px]" : ""}`}>
+        <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px]  ${open ? "gap-y-[10px]" : ""}`}>
             
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-x-[15px] text-[#5A6462]" onClick={() => setOpen(!open)}>
@@ -212,7 +212,7 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
 
 const LinkButton = ({ icon, label, href }: { icon: string, label: string, href: string }) => {
     return (
-        <Link href={href} className="flex items-center gap-x-[8px] bg-[#344240] pl-[6px] pr-[15px] rounded-[20px] h-[28px]">
+        <Link href={href} className="flex items-center gap-x-[8px] bg-color-bg-medium pl-[6px] pr-[15px] rounded-[20px] h-[28px]">
             <GTPIcon icon={icon as GTPIconName} className="!w-[15px] !h-[15px]" containerClassName="!w-[26px] !h-[26px] flex justify-center items-center" />
             <div className=" heading-small-xs">{label}</div>
         </Link>
@@ -277,13 +277,13 @@ const LinkDropdown = ({ icon, label, href, links }: { icon: string, label: strin
                             <div className="flex items-center gap-x-[8px] w-full grow-row relative h-[28px]">
                                 <GTPIcon icon={!link.icon ? "feather:globe" as GTPIconName : link.icon as GTPIconName} className="!w-[15px] !h-[15px]" containerClassName="!w-[26px] z-20 !h-[26px] flex justify-center items-center" />
                                 <div className=" heading-small-xs min-w-fit whitespace-nowrap z-20">{link.label}</div>
-                                <div className="absolute w-full left-0 top-0 bottom-0 z-10 group-hover/row:bg-[#5A6462] rounded-[10px]"></div>
+                                <div className="absolute w-full left-0 top-0 bottom-0 z-10 group-hover/row:bg-color-ui-hover rounded-[10px]"></div>
                             </div>
                         </Link>
                     ))}
                 </div>
             </div>
-            <div ref={chipRef} className="flex items-center gap-x-[8px] bg-[#344240] transition-all duration-300 pl-[6px] pr-[15px] rounded-[20px] h-[28px] z-20 relative" style={{ width: panelWidth ?? undefined }}>
+            <div ref={chipRef} className="flex items-center gap-x-[8px] bg-color-bg-medium transition-all duration-300 pl-[6px] pr-[15px] rounded-[20px] h-[28px] z-20 relative" style={{ width: panelWidth ?? undefined }}>
                 <GTPIcon icon={"gtp-chevronright"} className="!w-[15px] !h-[15px] group-hover:rotate-90 transition-all duration-300" containerClassName="!w-[26px] !h-[26px] flex justify-center items-center z-20" />
                 <div className=" heading-small-xs min-w-fit whitespace-nowrap z-20">{label}</div>
             </div>

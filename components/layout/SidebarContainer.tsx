@@ -70,8 +70,8 @@ export default function SidebarContainer() {
   }, [logoFullSVG]); // Depends on logoFullSVG
 
   return (
-    <div className={`${showGlobalSearchBar ? "md:pl-[10px] md:min-w-[61px] max-w-[255px] overflow-visible" : "md:min-w-[94px] max-w-[253px]"} bg-forest-1000`}>
-      <div className={`${showGlobalSearchBar ? "overflow-visible" : "pt-[43px] pl-[20px] gap-y-[36px] border-r-[2px] border-[#151A19]"} bg-[#1F2726] min-h-screen max-h-screen sticky top-0 left-0 hidden md:flex flex-col z-[3]`}>
+    <div className={`${showGlobalSearchBar ? "md:pl-[10px] md:min-w-[61px] max-w-[255px] overflow-visible" : "md:min-w-[94px] max-w-[253px]"} bg-color-ui-active`}>
+      <div className={`${showGlobalSearchBar ? "overflow-visible" : "pt-[43px] pl-[20px] gap-y-[36px] border-r-[2px] border-[#151A19]"} bg-color-bg-default min-h-screen max-h-screen sticky top-0 left-0 hidden md:flex flex-col z-[3]`}>
         {!showGlobalSearchBar && (
           <div className="select-none h-[45.07px]">
             <div className="flex items-center justify-start h-[45.07px] gap-x-[15px] pr-[10px]">
@@ -292,7 +292,7 @@ export const LogoContextMenu = ({ children }: { children: React.ReactNode }) => 
   const menuContent = (
     <div
       ref={menuRef}
-      className="fixed z-[999] flex flex-col w-fit gap-y-[5px] rounded-[15px] overflow-hidden bg-[#1F2726] text-[#CDD8D3] text-xs shadow-[0px_0px_8px_0px_rgba(0,_0,_0,_0.66)]"
+      className="fixed z-[999] flex flex-col w-fit gap-y-[5px] rounded-[15px] overflow-hidden bg-color-bg-default text-color-text-primary text-xs shadow-[0px_0px_8px_0px_rgba(0,_0,_0,_0.66)]"
       // Add units (px) to position values
       style={{ left: `${position.x}px`, top: `${position.y}px` }}
       // Prevent context menu on the menu itself
@@ -303,7 +303,7 @@ export const LogoContextMenu = ({ children }: { children: React.ReactNode }) => 
           <button
             key={option.label}
             onClick={option.onClick}
-            className="flex w-full items-center justify-between gap-x-[30px] pl-[20px] pr-[25px] py-[5px] cursor-pointer hover:bg-[#5A6462]/50"
+            className="flex w-full items-center justify-between gap-x-[30px] pl-[20px] pr-[25px] py-[5px] cursor-pointer hover:bg-color-ui-hover/50"
           >
             <div className="flex justify-start items-center gap-x-[10px] text-[12px]">
               <GTPIcon icon={option.icon as GTPIconName} size="sm" className="!size-[12px]" />

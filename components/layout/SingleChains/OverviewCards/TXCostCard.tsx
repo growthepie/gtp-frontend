@@ -27,7 +27,7 @@ export default function TXCostCard({ chainKey, chainData, master }: { chainKey: 
     
   
     return (
-        <div className="bg-[#1F2726] p-[10px] rounded-[15px] w-full flex flex-col gap-y-[10px] h-3xl">
+        <div className="bg-color-bg-default p-[10px] rounded-[15px] w-full flex flex-col gap-y-[10px] h-3xl">
             <div className="flex justify-between items-center">
                 <div className="flex gap-x-[10px] h-[28px] items-center ">
                     <div className="w-[24px] h-[24px] p-[2px] border-t-[1px] border-r-[1px] border-b-[1px] border-[#5A6462] rounded-r-full rounded-tl-full rounded-bl-full relative flex items-center justify-center">

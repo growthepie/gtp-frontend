@@ -90,7 +90,7 @@ const Error = ({
     <>
       <div className="flex flex-col items-center justify-center w-full mt-[85px] md:mt-[125px] -mb-[100px] gap-y-[15px]">
         <div
-          className={`flex flex-col bg-[#1F2726] border-forest-400 rounded-[40px] p-[30px] gap-y-[15px] 
+          className={`flex flex-col bg-color-bg-default border-forest-400 rounded-[40px] p-[30px] gap-y-[15px] 
           ${navIndex === 1 || navIndex === 3 ? "h-[579px]" : "h-[519px]"} ${
             isMobile ? "w-[95%]" : "w-[587px]"
           }`}
@@ -108,7 +108,7 @@ const Error = ({
           <div className="text-[15px] leading-[150%]">{subheader}</div>
           <div className="flex flex-col gap-y-[5px]">
             <Link
-              className={`flex self-center items-center p-[15px] w-[299px]  bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px]
+              className={`flex self-center items-center p-[15px] w-[299px]  bg-color-bg-default hover:bg-color-ui-hover border-[3px] border-[#5A6462] rounded-full gap-x-[10px]
               ${isMobile ? "h-[50px]" : "h-[54px]"}`}
               href={`/`}
             >
@@ -117,7 +117,7 @@ const Error = ({
             </Link>
             {randIndices && navIndex && (
               <Link
-                className={`flex self-center items-center p-[15px] w-[299px]  bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px] hover:cursor-pointer ${
+                className={`flex self-center items-center p-[15px] w-[299px]  bg-color-bg-default hover:bg-color-ui-hover border-[3px] border-[#5A6462] rounded-full gap-x-[10px] hover:cursor-pointer ${
                   isMobile ? "h-[50px]" : "h-[54px]"
                 }`}
                 href={`/${pageGroup}/${
@@ -139,7 +139,7 @@ const Error = ({
               randIndices.map((index) => (
                 <Link
                   key={index}
-                  className={`flex self-center items-center p-[15px] w-[250px]  bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${
+                  className={`flex self-center items-center p-[15px] w-[250px]  bg-color-bg-default hover:bg-color-ui-hover border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${
                     isMobile ? "h-[50px]" : "h-[54px]"
                   }`}
                   href={`/${pageGroup}/${navigationItems[navIndex]["options"][index]["urlKey"]}`}
@@ -152,7 +152,7 @@ const Error = ({
                 </Link>
               ))}
             <a
-              className={`flex self-center items-center p-[15px] w-[299px] bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${
+              className={`flex self-center items-center p-[15px] w-[299px] bg-color-bg-default hover:bg-color-ui-hover border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${
                 isMobile ? "h-[50px]" : "h-[54px]"
               }`}
               href={`https://docs.growthepie.xyz/`}
@@ -162,7 +162,7 @@ const Error = ({
             </a>
             {!navIndex && (
               <a
-                className={`flex self-center items-center p-[15px] w-[299px]  bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${
+                className={`flex self-center items-center p-[15px] w-[299px]  bg-color-bg-default hover:bg-color-ui-hover border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${
                   isMobile ? "h-[50px]" : "h-[54px]"
                 }`}
                 href={`https://mirror.xyz/blog.growthepie.eth`}
@@ -172,7 +172,7 @@ const Error = ({
               </a>
             )}
             <Link
-              className={`flex self-center items-center p-[15px] w-[299px]  bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${
+              className={`flex self-center items-center p-[15px] w-[299px]  bg-color-bg-default hover:bg-color-ui-hover border-[3px] border-[#5A6462] rounded-full gap-x-[10px] ${
                 isMobile ? "h-[50px]" : "h-[54px]"
               }`}
               href={`/trackers/optimism-retropgf-3`}

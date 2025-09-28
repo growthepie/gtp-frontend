@@ -30,7 +30,7 @@ export function SmartBackButton({
     }
   };
 
-  const baseClasses = "flex items-center justify-center rounded-full w-[36px] h-[36px] bg-[#344240] hover:bg-[#5A6462] transition-colors cursor-pointer";
+  const baseClasses = "flex items-center justify-center rounded-full w-[36px] h-[36px] bg-color-bg-medium hover:bg-color-ui-hover transition-colors cursor-pointer";
   const desktopClasses = "lg:flex hidden";
   const mobileClasses = "lg:hidden flex";
   
@@ -38,7 +38,7 @@ export function SmartBackButton({
 
   const iconName = variant === 'desktop' ? "feather:arrow-left" : 'fluent:arrow-left-32-filled';
   const iconSize = variant === 'desktop' ? "size-[26px]" : "w-[20px] h-[25px]";
-  const iconColor = "text-[#CDD8D3]";
+  const iconColor = "text-color-text-primary";
 
   return (
     <button 

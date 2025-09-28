@@ -124,7 +124,7 @@ const MobileMenuContent = memo(function MobileMenuContent({ onClose, isOpen }: M
     >
       <div
         ref={containerRef}
-        className="flex flex-col h-[calc(100dvh-120px)] w-[calc(100vw-40px)] bg-[#1F2726] rounded-[22px] max-w-full max-h-[625px] will-change-transform mb-[5px]"
+        className="flex flex-col h-[calc(100dvh-120px)] w-[calc(100vw-40px)] bg-color-bg-default rounded-[22px] max-w-full max-h-[625px] will-change-transform mb-[5px]"
         style={{ transform: 'translateZ(0)' }} // Hardware acceleration for smoother rendering
       >
         {/* <Backgrounds isMobileMenu /> */} {/* Optional fancy background */}
@@ -221,7 +221,7 @@ const MobileMenuContent = memo(function MobileMenuContent({ onClose, isOpen }: M
         {/* Footer */}
         <div ref={footerRef} className="p-[10px] pt-0 mt-auto">
           <div className="flex flex-col justify-end pt-3 pb-0 relative">
-            {/* <div className="text-[0.7rem] flex justify-evenly w-full gap-x-6 text-forest-500/80 hover:text-forest-500/100 leading-[1] px-2 mb-[17px]">
+            {/* <div className="text-[0.7rem] flex justify-evenly w-full gap-x-6 text-color-text-primary/80 hover:text-color-text-primary/100 leading-[1] px-2 mb-[17px]">
               <Link href="/privacy-policy" onClick={onClose} className="hover:text-forest-200/80">Privacy Policy</Link>
               <Link href="/imprint" onClick={onClose} className="hover:text-forest-200/80">Imprint</Link>
               <Link

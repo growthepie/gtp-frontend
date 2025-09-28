@@ -81,7 +81,7 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
           <div className='text-xs h-[30px]'>{subtitle}</div>
         </div>
         <div className='flex flex-1 justify-between items-center gap-x-[15px]'>
-          <div className='relative bg-[#5A6462] rounded-[15px] w-full h-full'>
+          <div className='relative bg-color-ui-hover rounded-[15px] w-full h-full'>
             <Image
               src={bannerImage}
               alt={title}
@@ -92,7 +92,7 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
               <ChartWatermark className="w-[78px] text-[#EAECEB]" />
             </div>
           </div>
-          <div className='min-w-[24px] min-h-[24px] bg-[#344240] rounded-full flex items-center justify-center'>
+          <div className='min-w-[24px] min-h-[24px] bg-color-bg-medium rounded-full flex items-center justify-center'>
             <Icon icon={'fluent:arrow-right-32-filled'} className={`w-[15px] h-[15px]`} />
           </div>
         </div>

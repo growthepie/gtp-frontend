@@ -215,7 +215,7 @@ const ConfettiAnimation: React.FC<ConfettiAnimationProps> = ({
             icon={"ethereum-logo-monochrome"} 
             size="xl"
           />
-          <span className="heading-large-lg drop-shadow-lg ml-4 text-[#CDD8D3]" style={{ color: '#CDD8D3' }}>
+          <span className="heading-large-lg drop-shadow-lg ml-4 text-color-text-primary" style={{ color: 'rgb(var(--text-primary))' }}>
             Happy Birthday Ethereum!
           </span>
         </div>

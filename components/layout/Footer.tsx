@@ -18,7 +18,7 @@ import { GTPIcon } from "./GTPIcon";
 
 export default function Footer() {
   return (
-    <div className="relative bottom-0 bg-forest-50  dark:bg-[#1F2726] px-[20px] pt-[50px] pb-[150px] md:p-[50px] md:pb-[100px]">
+    <div className="relative bottom-0 bg-forest-50  dark:bg-color-bg-default px-[20px] pt-[50px] pb-[150px] md:p-[50px] md:pb-[100px]">
       <div className="flex flex-col md:flex-row md:justify-between">
         <div className="flex flex-col md:justify-between md:flex-wrap min-[1270px]:h-[350px] md:basis-[361px]">
           <div className="flex flex-col w-[176px]">
@@ -66,7 +66,7 @@ export default function Footer() {
               href="https://docs.growthepie.xyz/api"
             />
             <FooterLink
-              leftIcon={<Image src={GithubIcon} alt="Github" width={24} height={24} />}
+              leftIcon={<GTPIcon icon="github-monochrome" size="md" className="text-color-text-primary" />}
               label="Github"
               href="https://www.github.com/growthepie"
             />
@@ -76,22 +76,22 @@ export default function Footer() {
               COMMUNITY
             </FooterSectionHeader>
             <FooterLink
-              leftIcon={<Image src={XIcon} alt="XIcon" width={24} height={24} />}
+              leftIcon={<GTPIcon icon="x-monochrome" size="md" className="text-color-text-primary" />}
               label="X"
               href="https://x.com/growthepie_eth"
             />
             <FooterLink
-              leftIcon={<Image src={FarcasterIcon} alt="Farcaster" width={24} height={24} />}
+              leftIcon={<GTPIcon icon="farcaster-monochrome" size="md" className="!text-color-text-primary" />}
               label="Farcaster"
               href="https://warpcast.com/growthepie"
             />
             <FooterLink
-              leftIcon={<Image src={LensIcon} alt="Lens" width={24} height={24} />}
+              leftIcon={<GTPIcon icon="lens-monochrome" size="md" className="text-color-text-primary" />}
               label="Lens"
               href="https://share.lens.xyz/u/growthepie.lens"
             />
             <FooterLink
-              leftIcon={<Image src={DiscordIcon} alt="Discord" width={24} height={24} />}
+              leftIcon={<GTPIcon icon="discord-monochrome" size="md" className="text-color-text-primary" />}
               label="Discord"
               href="https://discord.gg/fxjJFe7QyN"
             />

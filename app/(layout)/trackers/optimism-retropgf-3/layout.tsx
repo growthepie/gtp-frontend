@@ -57,7 +57,7 @@ export default async function Layout({
               href={"https://app.powerbi.com/view?r=eyJrIjoiNGM0YjEyYjEtMzc2ZS00NDBiLTgxNjItOTgzZDY0MGQxNmNmIiwidCI6IjRjYThhMzQ5LThiMmEtNDY1Yy05MTdlLWM1ZThhMjdjMzhjNCIsImMiOjN9"}
               rel="noreferrer"
               target="_blank"
-              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-forest-100 hover:dark:bg-black/10"
+              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-color-bg-default hover:dark:bg-black/10"
             >
               <div>RPGF3 Analytics <span className="hidden md:inline-block">Dashboard</span></div>
               <Icon icon="feather:external-link" className="w-4 h-4" />
@@ -66,7 +66,7 @@ export default async function Layout({
               href={"https://vote.optimism.io/retropgf/3/"}
               rel="noreferrer"
               target="_blank"
-              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-forest-100 hover:dark:bg-black/10"
+              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-color-bg-default hover:dark:bg-black/10"
             >
               <div>Optimism Agora</div>
               <Icon icon="feather:external-link" className="w-4 h-4" />
@@ -75,7 +75,7 @@ export default async function Layout({
               href={"https://retropgfhub.com/retropgf3/"}
               rel="noreferrer"
               target="_blank"
-              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-forest-100 hover:dark:bg-black/10"
+              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-color-bg-default hover:dark:bg-black/10"
             >
               <div>RetroPGF Hub</div>
               <Icon icon="feather:external-link" className="w-4 h-4" />
@@ -84,7 +84,7 @@ export default async function Layout({
               href={"https://retrolist.app/"}
               rel="noreferrer"
               target="_blank"
-              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-forest-100 hover:dark:bg-black/10"
+              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-color-bg-default hover:dark:bg-black/10"
             >
               <div>Retrolist</div>
               <Icon icon="feather:external-link" className="w-4 h-4" />
@@ -93,7 +93,7 @@ export default async function Layout({
               href={"https://www.pairwise.vote/"}
               rel="noreferrer"
               target="_blank"
-              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-forest-100 hover:dark:bg-black/10"
+              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-color-bg-default hover:dark:bg-black/10"
             >
               <div>Pairwise</div>
               <Icon icon="feather:external-link" className="w-4 h-4" />
@@ -102,7 +102,7 @@ export default async function Layout({
               href={"https://www.opensource.observer/explore/"}
               rel="noreferrer"
               target="_blank"
-              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-forest-100 hover:dark:bg-black/10"
+              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-color-bg-default hover:dark:bg-black/10"
             >
               <div>Open Source Observer</div>
               <Icon icon="feather:external-link" className="w-4 h-4" />
@@ -111,7 +111,7 @@ export default async function Layout({
               href="https://www.notion.so/Impact-Evaluation-Framework-1bda7c3908c54d52ac4ef364251ef651"
               rel="noreferrer"
               target="_blank"
-              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-forest-100 hover:dark:bg-black/10"
+              className="flex items-center justify-between w-full pl-[40px] lg:pl-[50px] pr-2 py-1.5 hover:bg-color-bg-default hover:dark:bg-black/10"
             >
               <div>Impact Evaluation Framework</div>
               <Icon icon="feather:external-link" className="w-4 h-4" />

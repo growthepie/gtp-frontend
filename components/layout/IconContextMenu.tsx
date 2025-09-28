@@ -175,7 +175,7 @@ export const IconContextMenu = ({
   const menuContent = (
     <div
       ref={menuRef}
-      className="fixed z-context-menu flex flex-col w-fit gap-y-[5px] rounded-[15px] overflow-hidden bg-[#1F2726] text-[#CDD8D3] text-xs shadow-[0px_0px_8px_0px_rgba(0,_0,_0,_0.66)]"
+      className="fixed z-context-menu flex flex-col w-fit gap-y-[5px] rounded-[15px] overflow-hidden bg-color-bg-default text-color-text-primary text-xs shadow-[0px_0px_8px_0px_rgba(0,_0,_0,_0.66)]"
       style={{ left: position.left, top: position.top, bottom: position.bottom, right: position.right }}
       // Prevent context menu on the menu itself
       onContextMenu={(e) => e.preventDefault()}
@@ -185,7 +185,7 @@ export const IconContextMenu = ({
           <button
             key={option.label}
             onClick={option.onClick}
-            className="flex w-full items-center justify-between gap-x-[30px] pl-[20px] pr-[25px] py-[5px] cursor-pointer hover:bg-[#5A6462]/50"
+            className="flex w-full items-center justify-between gap-x-[30px] pl-[20px] pr-[25px] py-[5px] cursor-pointer hover:bg-color-ui-hover/50"
           >
             <div className="flex justify-start items-center gap-x-[10px] text-[12px]">
               {/* Ensure GTPIcon is imported correctly */}

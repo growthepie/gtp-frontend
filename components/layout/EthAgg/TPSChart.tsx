@@ -114,11 +114,15 @@ export const TPSChart = React.memo(({ data, overrideColor }: TPSChartProps) => {
         appendToBody: true,
         confine: false,
         axisPointer: { type: 'line', lineStyle: { color: 'rgb(215, 223, 222)', width: 1, type: 'solid' } },
-        backgroundColor: '#2A3433EE',
+        backgroundColor: 'rgb(var(--bg-default) / 0.95)',
+        shadowColor: 'rgb(var(--ui-shadow))',
+        shadowBlur: 27,
+        shadowOffsetX: 0,
+        shadowOffsetY: 0,
         borderRadius: 15,
         borderWidth: 0,
         padding: [15, 15, 15, 0], // Adjusted padding
-        textStyle: { color: 'rgb(215, 223, 222)' },
+        textStyle: { color: 'rgb(var(--text-primary))' },
         // Updated formatter to include the timestamp
         formatter: (params) => {
           if (!Array.isArray(params) || params.length === 0) return '';

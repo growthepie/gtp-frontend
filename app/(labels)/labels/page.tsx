@@ -721,7 +721,7 @@ export default function LabelsPage() {
       </LabelsContainer>
       <div className={`sticky pl-[60px] pr-[60px] top-[70px] md:top-[144px] z-[1]`}>
         <div
-          className="bg-[#151a19] z-50 fixed inset-0 pointer-events-none"
+          className="bg-color-ui-active z-50 fixed inset-0 pointer-events-none"
           style={{
             backgroundPosition: "top",
             maskImage: isMobile ? `linear-gradient(to bottom, white 0, white 120px, transparent 150px` : `linear-gradient(to bottom, white 0, white 200px, transparent 230px`,
@@ -733,7 +733,7 @@ export default function LabelsPage() {
           </div>
         </div>
       </div>
-      {/* <LabelsContainer className="fixed 2xl:hidden inset-0 flex flex-col items-center justify-center bg-[#151a19] z-[999]">
+      {/* <LabelsContainer className="fixed 2xl:hidden inset-0 flex flex-col items-center justify-center bg-color-ui-active z-[999]">
         <div className="text-forest-400 text-center font-semibold text-[20px]">
           This page is not currently supported on small screens
         </div>
@@ -1034,7 +1034,7 @@ export default function LabelsPage() {
                       />
                     </div>
                     <div
-                      className="absolute left-[15px] cursor-pointer text-[#CDD8D3] bg-[#5A6462] rounded-full pl-[1px] pr-[2px] py-[1px]"
+                      className="absolute left-[15px] cursor-pointer text-color-text-primary bg-color-ui-hover rounded-full pl-[1px] pr-[2px] py-[1px]"
                       onClick={handlePreviousMetric}
                     >
                       <Icon
@@ -1043,7 +1043,7 @@ export default function LabelsPage() {
                       />
                     </div>
                     <div
-                      className="absolute -right-[20px] cursor-pointer text-[#CDD8D3] bg-[#5A6462] rounded-full pr-[1px] pl-[2px] py-[1px]"
+                      className="absolute -right-[20px] cursor-pointer text-color-text-primary bg-color-ui-hover rounded-full pr-[1px] pl-[2px] py-[1px]"
                       onClick={handleNextMetric}
                     >
                       <Icon
@@ -1662,7 +1662,7 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
           )}
           {(change !== null && parseFloat((change * 100).toFixed(1)) > 0) && (
             <div
-              className={`text-[9px] text-right leading-[1] text-[#1DF7EF] font-normal`}
+              className={`text-[9px] text-right leading-[1] text-color-accent-turquoise font-normal`}
             >
               {change > 0 && "+"}
               {(change * 100).toLocaleString("en-GB", {
@@ -1673,7 +1673,7 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
           )}
           {(change !== null && parseFloat((change * 100).toFixed(1)) < 0) && (
             <div
-              className={`text-[9px] text-right leading-[1] text-[#FE5468] font-semibold`}
+              className={`text-[9px] text-right leading-[1] text-color-accent-red font-semibold`}
             >
               {change > 0 && "+"}
               {(change * 100).toLocaleString("en-GB", {
@@ -1684,8 +1684,8 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
           )}
           {/* <div
             className={`text-[9px] text-right leading-[1] ${change > 0
-              ? "text-[#1DF7EF] font-normal"
-              : "text-[#FE5468] font-semibold "
+              ? "text-color-accent-turquoise font-normal"
+              : "text-color-accent-red font-semibold "
               }`}
           >
             {change > 0 && "+"}
@@ -1742,7 +1742,7 @@ const LabelsSVGSparkline = ({ chainKey }: { chainKey: string }) => {
           )}
           {(change !== null && parseFloat((change * 100).toFixed(1)) > 0) && (
             <div
-              className={`text-[9px] text-right leading-[1] text-[#1DF7EF] font-normal`}
+              className={`text-[9px] text-right leading-[1] text-color-accent-turquoise font-normal`}
             >
               {change > 0 && "+"}
               {(change * 100).toLocaleString("en-GB", {
@@ -1753,7 +1753,7 @@ const LabelsSVGSparkline = ({ chainKey }: { chainKey: string }) => {
           )}
           {(change !== null && parseFloat((change * 100).toFixed(1)) < 0) && (
             <div
-              className={`text-[9px] text-right leading-[1] text-[#FE5468] font-semibold`}
+              className={`text-[9px] text-right leading-[1] text-color-accent-red font-semibold`}
             >
               {change > 0 && "+"}
               {(change * 100).toLocaleString("en-GB", {
@@ -1764,8 +1764,8 @@ const LabelsSVGSparkline = ({ chainKey }: { chainKey: string }) => {
           )}
           {/* <div
             className={`text-[9px] text-right leading-[1] ${change > 0
-              ? "text-[#1DF7EF] font-normal"
-              : "text-[#FE5468] font-semibold "
+              ? "text-color-accent-turquoise font-normal"
+              : "text-color-accent-red font-semibold "
               }`}
           >
             {change > 0 && "+"}

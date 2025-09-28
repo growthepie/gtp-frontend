@@ -110,7 +110,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
             } p-[5px] ${
             // if scroll position is 20px or more from top, add bg and shadow
             scrollHeight > 0
-              ? "fixed bg-white dark:bg-forest-1000 shadow-md rounded-full border-2 border-forest-900 dark:border-forest-200 right-[17px] top-[26px]"
+              ? "fixed bg-white dark:bg-color-ui-active shadow-md rounded-full border-2 border-forest-900 dark:border-forest-200 right-[17px] top-[26px]"
               : `fixed rounded-full border-2 border-transparent right-[17px] top-[26px]`
             }`}
           // style={{

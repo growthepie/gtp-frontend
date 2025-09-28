@@ -944,7 +944,7 @@ export default function CategoryMetrics({
                         : "-translate-y-[calc(40%+3px)]"
                   }`}
                 >
-                  <div className="z-0 w-full rounded-b-2xl rounded-t-none border border-forest-700 bg-forest-100 py-1 text-center font-medium dark:border-forest-400 dark:bg-forest-1000 lg:rounded-b-none lg:rounded-t-2xl">
+                  <div className="z-0 w-full rounded-b-2xl rounded-t-none border border-color-border bg-color-bg-default py-1 text-center font-medium dark:border-forest-400 dark:bg-color-ui-active lg:rounded-b-none lg:rounded-t-2xl">
                     7-day rolling average
                   </div>
                 </div>
@@ -1028,8 +1028,8 @@ export default function CategoryMetrics({
                         <div 
                           className={`rounded-full p-1 ${
                             chainSelectToggleState === "none"
-                              ? "bg-forest-50 dark:bg-[#1F2726]"
-                              : "bg-white dark:bg-forest-1000"
+                              ? "bg-forest-50 dark:bg-color-bg-default"
+                              : "bg-white dark:bg-color-ui-active"
                           }`}
                         >
                           <Icon
@@ -1097,8 +1097,8 @@ export default function CategoryMetrics({
                           <div 
                             className={`rounded-full p-1 ${
                               chainSelectToggleState === "none"
-                                ? "bg-forest-50 dark:bg-[#1F2726]"
-                                : "bg-white dark:bg-forest-1000"
+                                ? "bg-forest-50 dark:bg-color-bg-default"
+                                : "bg-white dark:bg-color-ui-active"
                             }`}
                           >
                             <Icon
@@ -1169,7 +1169,7 @@ export default function CategoryMetrics({
                                 }`}
                               >
                                 <div className="-mb-[3px] flex-grow border-t border-[#5A6462]"></div>
-                                <span className=" heading-caps-xxs text-[#CDD8D3]">
+                                <span className=" heading-caps-xxs text-color-text-primary">
                                   Not showing in chart
                                 </span>
                                 <div className="-mb-[3px] flex-grow border-t border-[#5A6462]"></div>
@@ -1249,14 +1249,14 @@ export default function CategoryMetrics({
           </div>
           <Container>
             {" "}
-            <div className="mx-auto mt-8 flex w-[100%] flex-row items-end justify-center gap-x-1 rounded-full bg-forest-50 p-0.5 px-0.5 py-[4px] text-md text-sm dark:bg-[#1F2726] md:items-center md:justify-end md:rounded-full md:px-1 md:text-base">
+            <div className="mx-auto mt-8 flex w-[100%] flex-row items-end justify-center gap-x-1 rounded-full bg-forest-50 p-0.5 px-0.5 py-[4px] text-md text-sm dark:bg-color-bg-default md:items-center md:justify-end md:rounded-full md:px-1 md:text-base">
               {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
               {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
               {/* toggle ETH */}
               <button
                 className={`rounded-full px-[16px] py-[4px] ${
                   selectedChartType === "absolute"
-                    ? "bg-forest-500 dark:bg-forest-1000"
+                    ? "bg-forest-500 dark:bg-color-ui-active"
                     : "hover:bg-forest-500/10"
                 }`}
                 onClick={() => {
@@ -1268,7 +1268,7 @@ export default function CategoryMetrics({
               <button
                 className={`rounded-full px-[16px] py-[4px] ${
                   selectedChartType === "stacked"
-                    ? "bg-forest-500 dark:bg-forest-1000"
+                    ? "bg-forest-500 dark:bg-color-ui-active"
                     : "hover:bg-forest-500/10"
                 }`}
                 onClick={() => {
@@ -1280,7 +1280,7 @@ export default function CategoryMetrics({
               <button
                 className={`rounded-full px-[16px] py-[4px] ${
                   selectedChartType === "percentage"
-                    ? "bg-forest-500 dark:bg-forest-1000"
+                    ? "bg-forest-500 dark:bg-color-ui-active"
                     : "hover:bg-forest-500/10"
                 }`}
                 onClick={() => {

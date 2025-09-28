@@ -306,7 +306,7 @@ export const BlogPost = ({
             <div className="absolute bottom-0 right-0 left-0 top-2/3 from-forest-900 via-forest-900/50 to-transparent bg-gradient-to-t "></div>
           </div> */}
             <div className="flex justify-start w-full sm:justify-between text-xs md:text-base">
-              {/* <div className="hidden sm:flex text-forest-500 bg-forest-100 dark:bg-forest-800 dark:text-forest-300 font-semibold rounded-full px-2 py-0 leading-tight items-center">
+              {/* <div className="hidden sm:flex text-color-text-primary bg-color-bg-default dark:bg-color-ui-hover dark:text-forest-300 font-semibold rounded-full px-2 py-0 leading-tight items-center">
                 {(data.authorship.contributor as string).slice(0, 6)}
               </div> */}
               <div>{moment.unix(data.content.timestamp).fromNow()}</div>
@@ -340,7 +340,7 @@ export const BlogPost = ({
                       return (
                         <figure className="flex flex-col justify-center py-3">
                           <img {...props} />
-                          <figcaption className="text-center text-base text-forest-500 dark:text-forest-300 py-2">
+                          <figcaption className="text-center text-base text-color-text-primary dark:text-forest-300 py-2">
                             {props.alt}
                           </figcaption>
                         </figure>
@@ -354,7 +354,7 @@ export const BlogPost = ({
               <div className="absolute bottom-0 right-0 left-0 top-2/3 dark:from-forest-900 dark:via-forest-900/50 dark:to-transparent bg-gradient-to-t from-forest-50 via-forest-50/50 to-transparent"></div>
             </div>
             <div className="flex justify-start sm:justify-between text-xs md:text-base mt-[15px]">
-              {/* <div className="hidden sm:flex text-forest-500 bg-forest-100 dark:bg-forest-800 dark:text-forest-300 font-semibold rounded-full px-2 py-0 leading-tight items-center">
+              {/* <div className="hidden sm:flex text-color-text-primary bg-color-bg-default dark:bg-color-ui-hover dark:text-forest-300 font-semibold rounded-full px-2 py-0 leading-tight items-center">
                 {(data.authorship.contributor as string).slice(0, 6)}
               </div> */}
               <div>{moment.unix(data.content.timestamp).fromNow()}</div>
@@ -372,7 +372,7 @@ export const BlogPost = ({
           {data.content.title}
         </h2>
         <div className="flex justify-between mb-[15px]">
-          <div className="text-base text-forest-500 bg-forest-100 dark:bg-forest-900 dark:text-forest-300 font-semibold rounded-full px-2 py-0 leading-tight flex items-center">
+          <div className="text-base text-color-text-primary bg-color-bg-default dark:bg-forest-900 dark:text-forest-300 font-semibold rounded-full px-2 py-0 leading-tight flex items-center">
             {(data.authorship.contributor as string).slice(0, 6)}
           </div>
           <div>{moment.unix(data.content.timestamp).fromNow()}</div>
@@ -385,7 +385,7 @@ export const BlogPost = ({
                 return (
                   <figure className="flex flex-col justify-center py-3">
                     <img {...props} />
-                    <figcaption className="text-center text-base text-forest-500 dark:text-forest-300 py-2">
+                    <figcaption className="text-center text-base text-color-text-primary dark:text-forest-300 py-2">
                       {props.alt}
                     </figcaption>
                   </figure>

@@ -41,7 +41,7 @@ export const TPSChartCard = ({ initialHistory, tpsHistory, chainData, chainKey, 
   }, [tpsHistory]);
 
   return (
-    <div className="bg-[#1F2726] p-[10px] rounded-[15px] w-full flex flex-col gap-y-[10px] h-4xl">
+    <div className="bg-color-bg-default p-[10px] rounded-[15px] w-full flex flex-col gap-y-[10px] h-4xl">
       <div className="flex gap-x-[10px] h-[28px] items-center ">
         <GTPIcon icon={"gtp-metrics-totalvaluelocked"} size="sm" />
         <div className="heading-large-xs ">Transactions Per Second</div>

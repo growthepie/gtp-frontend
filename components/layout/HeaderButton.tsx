@@ -41,7 +41,7 @@ export function HeaderButton({ children, size = "md", className, onClick, ariaLa
 
   return (
     <div 
-      className={`flex items-center rounded-full bg-[#344240] active:opacity-75 select-none cursor-pointer ${sizeMap[size]} ${fontSizeMap[size]} ${componentPaddingMap[size]} ${componentGapMap[size]} ${className || ""}`} onClick={onClick} aria-label={ariaLabel}
+      className={`flex items-center rounded-full bg-color-bg-medium active:opacity-75 select-none cursor-pointer ${sizeMap[size]} ${fontSizeMap[size]} ${componentPaddingMap[size]} ${componentGapMap[size]} ${className || ""}`} onClick={onClick} aria-label={ariaLabel}
       role="button"
       
     >

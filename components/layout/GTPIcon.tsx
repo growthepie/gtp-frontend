@@ -362,7 +362,7 @@ export const RankIcon = memo(({ colorScale, size = "md", children, isIcon = true
 
   return (
     <div
-      className={`rounded-full flex items-center justify-center border-[1px] transition-all duration-100 text-forest-500 ${borderSizeClassMap[size]}`}
+      className={`rounded-full flex items-center justify-center border-[1px] transition-all duration-100 text-color-bg-default ${borderSizeClassMap[size]}`}
       style={{ borderColor }}
     >
       <div
@@ -384,7 +384,7 @@ export const RankIcon = memo(({ colorScale, size = "md", children, isIcon = true
           >
             <foreignObject x="0" y="0" width={svgSizeMap[size]} height={svgSizeMap[size]}>
               <div
-                className={`flex items-center justify-center h-full w-full font-extrabold text-[#1F2726] font-source-code-pro ${fontSizeClassMap[size]}`}
+                className={`flex items-center justify-center h-full w-full font-extrabold text-color-bg-default font-source-code-pro ${fontSizeClassMap[size]}`}
               >
                 {rankNumber}
               </div>

@@ -45,13 +45,13 @@ export const NumericInput: React.FC<NumericInputProps> = ({
 
   return (
     <div
-      className={`relative flex items-center bg-[#1F2726] rounded-full h-[34px] px-1 gap-x-0.5 overflow-hidden ${className}`}
+      className={`relative flex items-center bg-color-bg-default rounded-full h-[34px] px-1 gap-x-0.5 overflow-hidden ${className}`}
     >
       {/* Decrement Button */}
       <button
         onClick={handleDecrement}
         disabled={value <= min}
-        className="flex items-center justify-center p-0.5 rounded-full text-[#CDD8D3] bg-transparent hover:bg-[#344240]/60"
+        className="flex items-center justify-center p-0.5 rounded-full text-color-text-primary bg-transparent hover:bg-color-bg-medium/60"
         aria-label={`Decrease value by ${step}`}
         title="Decrease size"
       >
@@ -80,7 +80,7 @@ export const NumericInput: React.FC<NumericInputProps> = ({
 
       {/* Unit Display */}
       {unit && (
-        <span className="text-[10px] text-[#CDD8D3]/80 select-none pointer-events-none -ml-0.5 pr-1">
+        <span className="text-[10px] text-color-text-primary/80 select-none pointer-events-none -ml-0.5 pr-1">
           {unit}
         </span>
       )}
@@ -89,7 +89,7 @@ export const NumericInput: React.FC<NumericInputProps> = ({
       <button
         onClick={handleIncrement}
         disabled={value >= max}
-        className="flex items-center justify-center p-0.5 rounded-full text-[#CDD8D3] bg-transparent hover:bg-[#344240]/60 -ml-0.5"
+        className="flex items-center justify-center p-0.5 rounded-full text-color-text-primary bg-transparent hover:bg-color-bg-medium/60 -ml-0.5"
         aria-label={`Increase value by ${step}`}
         title="Increase size"
       >

@@ -27,7 +27,7 @@ export const FloatingBarButton: React.FC<FloatingBarButtonProps> = ({
   title,
 }) => {
   const getBaseClasses = () => {
-    const baseClasses = "flex items-center rounded-full bg-[#1F2726]";
+    const baseClasses = "flex items-center rounded-full bg-color-bg-default";
     
     if (!label) {
       // Icon-only buttons are circular

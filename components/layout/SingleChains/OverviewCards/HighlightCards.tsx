@@ -13,7 +13,7 @@ export default function HighlightCards({ metric, icon, value, percentage, chainK
     if (!chainData) return null;
     return ( 
 
-        <div className="rounded-[15px] bg-[#344240] p-[10px] h-2xl w-full flex justify-between">
+        <div className="rounded-[15px] bg-color-bg-medium p-[10px] h-2xl w-full flex justify-between">
             <div className="flex items-center gap-x-[10px]">
                 <GTPIcon icon={"gtp-megaphone"} size="sm" />
           
