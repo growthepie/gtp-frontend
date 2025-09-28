@@ -263,8 +263,9 @@ export default memo(function LandingMetricsTable({
         >
           Maturity
         </GridTableHeaderCell>
-        <GridTableHeaderCell justify="center" className="relative " extraRight={
-          <Tooltip placement="right" allowInteract={false}>
+        <GridTableHeaderCell justify="center" className="relative ">
+          <ChainRankHeader setCenterMetric={setCenterMetric} centerMetric={centerMetric} setSort={setSort} sort={sort} />
+          {/* <Tooltip placement="right" allowInteract={false}>
               <TooltipTrigger className="absolute right-[25px]">
                 <Icon icon="feather:info" className="size-[15px]" />
               </TooltipTrigger>
@@ -276,9 +277,7 @@ export default memo(function LandingMetricsTable({
                   </div>
                 </div>
               </TooltipContent>
-          </Tooltip>
-        }>
-          <ChainRankHeader setCenterMetric={setCenterMetric} centerMetric={centerMetric} setSort={setSort} sort={sort} />
+          </Tooltip> */}
         </GridTableHeaderCell>
         <GridTableHeaderCell
           justify="end"
@@ -519,6 +518,21 @@ const ChainRankHeader = memo(function ChainRankHeader({
             </div>
           );
         })}
+        <div className="absolute -right-[20px] h-[36px] flex items-center justify-center">
+        <Tooltip placement="right" allowInteract={false}>
+              <TooltipTrigger className="">
+                <Icon icon="feather:info" className="size-[15px]" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="flex flex-col gap-y-[5px] items-center relative ">
+                  <div className="p-[15px] text-xs bg-color-bg-default dark:bg-color-bg-default text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex gap-y-[5px] max-w-[460px] flex-col z-50">
+                    Chain ranking based on values of the last complete day of data. 
+                    The number in the medals represents the ranking (i.e. 1 means that this chain is currently the leader for the selected metric).
+                  </div>
+                </div>
+              </TooltipContent>
+          </Tooltip>
+        </div>
       </div>
     )
   }
