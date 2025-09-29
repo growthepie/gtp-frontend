@@ -100,7 +100,7 @@ export default function SingleAltRowParent({ chainKey, index }) {
   };
 
   return (
-    <div key={index} className="w-full h-full relative">
+    <div key={index} className="w-full h-full relative px-[10px]">
       {DisabledStates[selectedMode] &&
         DisabledStates[selectedMode][chainKey] ? (
         <>
@@ -117,7 +117,7 @@ export default function SingleAltRowParent({ chainKey, index }) {
               // boxSizing: "border-box",
             }}
           >
-            <div className="flex items-center h-[31px] w-[140px] gap-x-[10px] min-w-[140px] z-10 rounded-full bg-color-bg-default">
+            <div className="flex items-center h-[31px] w-[140px] gap-x-[10px]  z-10 rounded-full bg-color-bg-default">
               <div
                 className="flex justify-center items-center w-[30px] h-full z-20 "
                 style={{

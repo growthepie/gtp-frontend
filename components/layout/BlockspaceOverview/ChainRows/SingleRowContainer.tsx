@@ -22,9 +22,9 @@ export default function RowContainer() {
   } = useRowContext() as RowContainerInterface;
 
   return (
-    <HorizontalScrollContainer includeMargin={false} forcedMinWidth={880}>
+    <HorizontalScrollContainer className="!px-0 "  includeMargin={false}>
       <div
-        className={" overflow-hidden px-[16px]"}
+        className={" overflow-hidden px-[21px]"}
       >
         <div
           className={
@@ -123,7 +123,7 @@ export default function RowContainer() {
       {/* <colorful rows> */}
       {/* {selectedScale === "gasfees" ? ( */}
 
-      <div className="flex flex-col space-y-[5px] min-w-[880px] md:min-w-[910px] mb-8 pb-2.5">
+      <div className="flex flex-col space-y-[5px]  mb-8 pb-2.5">
         {
           //chain name is key
           Object.keys(data)
@@ -136,7 +136,7 @@ export default function RowContainer() {
             .concat(
               <div
                 key="legend"
-                className="relative pl-[140px] w-full flex justify-between h-[15px] -top-[10px] text-[10px]"
+                className="relative w-full flex justify-between px-[10px] h-[15px] -top-[10px] text-[10px]"
               >
                 {[0, 20, 40, 60, 80, 100].map((x, i) => (
                   <div key={x} className="relative">

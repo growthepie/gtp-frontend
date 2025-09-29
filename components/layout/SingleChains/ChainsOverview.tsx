@@ -12,6 +12,7 @@ import { RowProvider } from "../BlockspaceOverview/ChainRows/RowContext";
 import SingleRowContainer from "../BlockspaceOverview/ChainRows/SingleRowContainer";
 import useSWR from "swr";
 import { BlockspaceURLs, MasterURL } from "@/lib/urls";
+import ApplicationsGrid from "./OverviewCards/ApplicationsGrid";
 
 
 
@@ -176,7 +177,7 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
     
 
 
-      console.log(oldMaster);
+ 
     return (
         <>
         {usageData && oldMaster && (
@@ -189,10 +190,10 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
                         <div className="heading-large-md">Achievements</div>
                     </div>
                     <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px] h-[826px]`}>
-                        <div className="heading-large-md">Applications</div>
+                        <div className="heading-large-md"><ApplicationsGrid chainKey={chainKey} chainData={chainData} master={master} /></div>
                     </div>
-                    <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px] h-[218px]`}>
-                        <div className="heading-large-md">Usage Breakdown</div>
+                    <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default  py-[15px] h-[218px]`}>
+                        <div className="px-[30px] heading-large-md">Usage Breakdown</div>
                         <RowProvider
                             value={{
                                 master: oldMaster,
