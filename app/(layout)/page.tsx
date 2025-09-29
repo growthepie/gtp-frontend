@@ -208,9 +208,26 @@ export default async function Page() {
           <QuestionAnswer
             question="Interested in collaborating with us?"
             answer={
-              <>
-                We are always looking for new collaborators. If you are
-                interested in working with us, please send us a message in our{" "}
+                <>
+                If you are interested in working with us, please send us a message via{" "}
+                <Link
+                  href="https://x.com/growthepie_eth"
+                  className="underline"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  X
+                </Link>
+                ,{" "}
+                <Link
+                  href="mailto:contact@growthepie.com"
+                  className="underline"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  email
+                </Link>
+                , or join our{" "}
                 <Link
                   href="https://discord.gg/fxjJFe7QyN"
                   className="underline"
@@ -220,7 +237,7 @@ export default async function Page() {
                   Discord
                 </Link>
                 .
-              </>
+                </>
             }
           />
         </div>
