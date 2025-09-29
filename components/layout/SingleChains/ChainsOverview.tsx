@@ -1,13 +1,17 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
-import { ChainInfo } from "@/types/api/MasterResponse";
-import { ChainData } from "@/types/api/ChainOverviewResponse";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { ChainInfo, MasterResponse } from "@/types/api/MasterResponse";
+import { ChainData, ChainOverviewResponse } from "@/types/api/ChainOverviewResponse";
 import { Icon } from "@iconify/react";
 import { GTPIcon } from "../GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import TPSChartCard from "./OverviewCards/TPSChartCard";
 import SideCards from "./OverviewCards/SideCards";
 import Link from "next/link";
+import { RowProvider } from "../BlockspaceOverview/ChainRows/RowContext";
+import SingleRowContainer from "../BlockspaceOverview/ChainRows/SingleRowContainer";
+import useSWR from "swr";
+import { BlockspaceURLs, MasterURL } from "@/lib/urls";
 
 
 
@@ -84,7 +88,98 @@ function dataAvailToArray(x: string) {
 }
 
 const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, chainData: ChainInfo, master: any }) => {
+    
+    const {
+        data: oldMaster,
+        error: masterError,
+        isLoading: masterLoading,
+        isValidating: masterValidating,
+      } = useSWR<MasterResponse>(MasterURL);
+
+    const {
+        data: usageData,
+        error: usageError,
+        isLoading: usageLoading,
+        isValidating: usageValidating,
+    } = useSWR<ChainOverviewResponse>(BlockspaceURLs["chain-overview"]);
+        
+
+   
+
+    const [hoveredCategories, setHoveredCategories] = useState<string[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState(
+        oldMaster ? Object.keys(oldMaster.blockspace_categories.main_categories)[0] : "",
+    );
+
+        
+    const hoverCategory = (category: string) => {
+        if (!hoveredCategories.includes(category)) {
+        setHoveredCategories([category]);
+        }
+    };
+
+    const unhoverCategory = (category: string) => {
+        if (hoveredCategories.includes(category)) {
+        setHoveredCategories(hoveredCategories.filter((c) => c !== category));
+        }
+    };
+
+    const isCategoryHovered = (category: string) => {
+        return hoveredCategories.includes(category);
+    };
+
+    const categories: { [key: string]: string } = useMemo(() => {
+        if (oldMaster) {
+          const result: { [key: string]: string } = {};
+    
+          const categoryKeys = Object.keys(
+            oldMaster.blockspace_categories.main_categories,
+          );
+    
+          // Remove "unlabeled" if present and store it for later
+          const unlabeledIndex = categoryKeys.indexOf("unlabeled");
+          let unlabeledCategory = "";
+          if (unlabeledIndex !== -1) {
+            unlabeledCategory = categoryKeys.splice(unlabeledIndex, 1)[0];
+          }
+    
+          categoryKeys.forEach((key) => {
+            const words =
+              oldMaster.blockspace_categories.main_categories[key].split(" ");
+            const formatted = words
+              .map((word) => {
+                return word.charAt(0).toUpperCase() + word.slice(1);
+              })
+              .join(" ");
+            result[key] = formatted;
+          });
+    
+          // Add "unlabeled" to the end if it was present
+          if (unlabeledCategory) {
+            const words =
+              oldMaster.blockspace_categories.main_categories[unlabeledCategory].split(
+                " ",
+              );
+            const formatted = words
+              .map((word) => {
+                return word.charAt(0).toUpperCase() + word.slice(1);
+              })
+              .join(" ");
+            result[unlabeledCategory] = formatted;
+          }
+    
+          return result;
+        }
+    
+        return {};
+      }, [master]);
+    
+
+
+      console.log(oldMaster);
     return (
+        <>
+        {usageData && oldMaster && (
         <div className="@container flex flex-col w-full gap-[15px]">
             <AboutChain chainData={chainData} master={master} chainKey={chainKey} />
             <div className="grid grid-flow-row @[995px]:grid-cols-[minmax(480px,505px)_minmax(505px,auto)] gap-[10px]">
@@ -98,10 +193,35 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
                     </div>
                     <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px] h-[218px]`}>
                         <div className="heading-large-md">Usage Breakdown</div>
+                        <RowProvider
+                            value={{
+                                master: oldMaster,
+                                data: usageData.data.chains,
+                                selectedMode: "txcount_share",
+                                forceSelectedChain: "",
+                                isCategoryHovered: isCategoryHovered, 
+                                selectedCategory: selectedCategory,
+                                selectedChain: chainKey,
+                                selectedTimespan: "max",
+                                selectedValue: "share",
+                                categories: categories,
+                                allCats: false              ,
+                                setSelectedChain: () => {},
+                                setSelectedCategory: setSelectedCategory,
+                                setAllCats: () => {},
+                                hoverCategory: hoverCategory,
+                                unhoverCategory: unhoverCategory,
+                                
+                            }}
+                            >
+                            <SingleRowContainer />
+                        </RowProvider>
                     </div>
                 </div>
             </div>
         </div>
+        )}
+        </>
     )
 }
 
