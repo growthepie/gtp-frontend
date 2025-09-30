@@ -111,7 +111,7 @@ export default async function Page() {
             }
           />
           <QuestionAnswer
-            question="What's up with the name?"
+            question="What's up with the name 'growthepie'?"
             answer={
               <>
                 We view the different scaling solutions for the Ethereum
@@ -119,10 +119,19 @@ export default async function Page() {
                 cases, rather than competitors vying for market share. We
                 believe that the space is a positive-sum game, where each unique
                 flavor of layer 2 technology brings its own benefits to the
-                table. Through collaboration and innovation, the Ethereum
-                community can unlock the full potential and
-                continue to expand it&apos;s user-base and evolve in exciting
-                ways.
+                table, and together {" "}
+                <Link
+                  href="https://en.wikipedia.org/wiki/Growing_the_pie"
+                  className="underline"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  &quot;growing the pie&quot;
+                </Link>{" "}
+                for everyone. Hence the name
+                &quot;growthepie&quot; - we&apos;re all in this together, and the pie
+                is getting bigger in many different ways. Btw, our brand name is always
+                one word and lowercase: growthepie.
               </>
             }
           />
