@@ -69,6 +69,7 @@ export default function AppsChain({ chainInfo, chainKey, defaultQuery = "" }: Ap
     const filteredApplications = chainFilteredApplications
       .filter((application) => application[medianMetricKey] > medianValue && application["prev_" + (convertToETH ? "gas_fees_eth" : medianMetricKey)] > 0);
 
+    
     // top 3 applications with highest change_pct
     return {
       topGainers: [...filteredApplications]

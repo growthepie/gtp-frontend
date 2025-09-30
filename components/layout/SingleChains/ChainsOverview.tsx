@@ -386,7 +386,7 @@ const LinkDropdown = ({ icon, label, href, links }: { icon: string, label: strin
                 </div>
             </div>
             <div
-                className={`absolute top-0 left-0 overflow-hidden z-10 transition-all duration-300 bg-[#000] rounded-[20px] p-[10px]`}
+                className={`absolute top-0 left-0 overflow-hidden z-10 transition-all duration-300 bg-[#000] rounded-[20px] py-[10px]`}
                 style={{
                     height: linkHeight,
                     width: panelWidth ?? undefined,
@@ -394,11 +394,11 @@ const LinkDropdown = ({ icon, label, href, links }: { icon: string, label: strin
             >
                 <div className="flex flex-col gap-y-[10px] w-full pt-[24px] items-stretch ">
                     {links.map((link) => (
-                        <Link href={link.href} key={link.label} className="block w-full group/row -ml-[5px]">
+                        <Link href={link.href} key={link.label} className="block w-full group/row ">
                             <div className="flex items-center gap-x-[8px] w-full grow-row relative h-[28px]">
-                                <GTPIcon icon={!link.icon ? "feather:globe" as GTPIconName : link.icon as GTPIconName} className="!w-[15px] !h-[15px]" containerClassName="!w-[26px] z-20 !h-[26px] flex justify-center items-center" />
+                                <GTPIcon icon={!link.icon ? "feather:globe" as GTPIconName : link.icon as GTPIconName} className="!w-[15px] !h-[15px]" containerClassName="!w-[26px] pl-[5px] z-20 !h-[26px] flex justify-center items-center" />
                                 <div className=" heading-small-xs min-w-fit whitespace-nowrap z-20">{link.label}</div>
-                                <div className="absolute w-full left-0 top-0 bottom-0 z-10 group-hover/row:bg-color-ui-hover rounded-[10px]"></div>
+                                <div className="absolute w-[98%] left-[1px] top-0 bottom-0 z-10 group-hover/row:bg-color-ui-hover  rounded-[10px]"></div>
                             </div>
                         </Link>
                     ))}

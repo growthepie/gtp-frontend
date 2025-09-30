@@ -179,22 +179,7 @@ const DynamicGrid = ({ chainKey, chainData, master }: { chainKey: string; chainD
                 {item.icons.map((iconIndex, idx) => {
                   const iconName = gtpIconNames[iconIndex];
                   return (
-                    <div 
-                      key={idx}
-                      className="flex flex-col relative group/icon w-fit justify-center items-center"
-                    >
-                      <div className="w-[36px] h-[36px] bg-[#344240] rounded-[10px] flex items-center justify-center hover:bg-white/30 transition-colors backdrop-blur-sm">
-                        <GTPIcon 
-                          icon={iconName} 
-                          size="sm" 
-                          className="text-white rounded-full w-[24px] h-[24px]" 
-                          containerClassName="w-[30px] rounded-full bg-[#1F2927] flex items-center justify-center h-[30px]"
-                          showLoadingPlaceholder
-                        />
-                      </div>
-                      <div className="text-[10px] w-[48px] truncate text-white leading-tight">{iconName}</div>
-
-                    </div>
+                    <ApplicationCard key={idx} application={item} idx={idx} iconName={iconName} />
                   );
                 })}
               </div>
@@ -207,5 +192,29 @@ const DynamicGrid = ({ chainKey, chainData, master }: { chainKey: string; chainD
     </div>
   );
 };
+
+
+
+const ApplicationCard = ({ application, idx, iconName }: { application: any, idx: number, iconName: string }) => {
+  return (
+    <div 
+
+      className="flex flex-col relative group/icon w-fit justify-center items-center"
+    >
+      <div className="w-[41.57px] h-[41.57px] bg-[#344240] rounded-[10px] flex items-center justify-center hover:bg-white/30 transition-colors backdrop-blur-sm">
+        <GTPIcon 
+          icon={iconName as GTPIconName} 
+          size="sm" 
+          className="text-white rounded-full w-[31px] h-[31px]" 
+          containerClassName="w-[31.57px] rounded-full bg-[#1F2927] flex items-center justify-center h-[31.57px]"
+          showLoadingPlaceholder
+        />
+      </div>
+      <div className="text-[10px] w-[48px] truncate text-white leading-tight">{iconName}</div>
+
+    </div>
+  );
+};
+
 
 export default DynamicGrid;
