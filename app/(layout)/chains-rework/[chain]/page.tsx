@@ -388,7 +388,7 @@ const Chain = ({ params }: { params: any }) => {
 
 
     return(
-        <Container className="flex flex-col gap-y-[15px] pt-[45px] md:pt-[30px]">
+        <Container className="flex flex-col gap-y-[15px] pt-[45px] md:pt-[30px] select-none">
             <ChainTabs 
               chainInfo={master.chains[chainKey]} 
               selectedTab={selectedTab} 

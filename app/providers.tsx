@@ -90,7 +90,7 @@ export function Providers({ children, forcedTheme }: ProvidersProps) {
           value={{
             fetcher: singleOrMultiFetcher,
             use: apiRoot === "dev" && !IS_PRODUCTION ? [devMiddleware] : [],
-            // refreshInterval: 1000 * 60 * 60, // 1 hour
+            dedupingInterval: 10000, // 10 seconds
           }}
         >
             <MasterProvider>

@@ -103,9 +103,7 @@ export default function Page() {
     data: projectsResponse,
     isLoading: projectsLoading,
     isValidating: projectsValidating,
-  } = useSWR<ProjectsResponse>(BASE_URL + "/api/optimism-retropgf-3/projects", {
-    refreshInterval: 1 * 1000 * 60, // 1 minutes,
-  });
+  } = useSWR<ProjectsResponse>(BASE_URL + "/api/optimism-retropgf-3/projects");
 
   const {
     data: listAmountsByProjectId,
@@ -113,9 +111,7 @@ export default function Page() {
     isValidating: listAmountsByProjectIdValidating,
   } = useSWR<ListAmountsByProjectIdResponse>(
     BASE_URL + "/api/optimism-retropgf-3/listAmountsByProjectId",
-    {
-      refreshInterval: 1 * 1000 * 60, // 2 minutes,
-    },
+
   );
 
   const [projects, setProjects] = useState<Project[]>([]);
