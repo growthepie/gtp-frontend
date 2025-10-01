@@ -1,10 +1,37 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { GTPIcon } from '@/components/layout/GTPIcon';
 import { GTPIconName } from '@/icons/gtp-icon-names';
+import { useProjectsMetadata } from '@/app/(layout)/applications/_contexts/ProjectsMetadataContext';
+import { ChainOverview } from '@/lib/chains';
+import useSWR from 'swr';
+import { size } from 'lodash';
+import Image from 'next/image';
 
 const DynamicGrid = ({ chainKey, chainData, master }: { chainKey: string; chainData: any; master: any }) => {
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const { ownerProjectToProjectData } = useProjectsMetadata();
+  const { data: chainDataOverview } = useSWR<ChainOverview>(`https://api.growthepie.xyz/v1/chains/${chainKey}/overview.json`);
+
+
+
+
+  //Add project data to object filtered by main category
+  const categoryFilter = useMemo(() => {
+    if(!chainDataOverview) return {};
+    let returnObject: {[key: string]: string[]} = {};
+    const types = chainDataOverview.data.ecosystem.apps.types;
+     chainDataOverview?.data.ecosystem.apps.data.forEach((app) => {
+      const projectData = ownerProjectToProjectData[app[types.indexOf("owner_project")]];
+      if(projectData.main_category){
+        returnObject[projectData.main_category] = [...(returnObject[projectData.main_category] || []), app[types.indexOf("owner_project")]];
+      }
+     });
+   return returnObject;
+
+  }, [chainDataOverview, chainKey]);
+
+
 
 
   const gtpIconNames: GTPIconName[] = [
@@ -160,26 +187,30 @@ const DynamicGrid = ({ chainKey, chainData, master }: { chainKey: string; chainD
             gridAutoFlow: 'dense'
           }}
         >
-          {gridItems.map(item => (
+          {Object.keys(categoryFilter).map(item => (
             <fieldset
-              key={item.id}
+              key={item}
               className={`
                 border-[#344240] border-[1px] bg-transparent
-                ${getGridSpan(item.icons.length)}
+                ${getGridSpan(categoryFilter[item].length)}
                 rounded-2xl transition-all duration-300
                 relative group overflow-hidden
                 p-2
               `}
             >
               <legend className="px-2 text-xs text-[#8B9A99] font-medium bg-[#1F2927]">
-                {item.icons.length === 1 ? 'Single App' : `${item.icons.length} Apps`}
+                {item}
               </legend>
 
               <div className="relative z-10 h-full flex flex-wrap gap-x-[15px] gap-y-[15px] content-start items-start p-1">
-                {item.icons.map((iconIndex, idx) => {
-                  const iconName = gtpIconNames[iconIndex];
+                {categoryFilter[item].map((projectName, index) => {
+                  const projectData = ownerProjectToProjectData[projectName];
+                  console.log(projectData);
+                  const iconName = gtpIconNames[index];
                   return (
-                    <ApplicationCard key={idx} application={item} idx={idx} iconName={iconName} />
+                    <div key={projectName}>
+                      <ApplicationCard application={projectData} idx={index} iconName={iconName} />
+                    </div>
                   );
                 })}
               </div>
@@ -202,15 +233,17 @@ const ApplicationCard = ({ application, idx, iconName }: { application: any, idx
       className="flex flex-col relative group/icon w-fit justify-center items-center"
     >
       <div className="w-[41.57px] h-[41.57px] bg-[#344240] rounded-[10px] flex items-center justify-center hover:bg-white/30 transition-colors backdrop-blur-sm">
-        <GTPIcon 
-          icon={iconName as GTPIconName} 
-          size="sm" 
-          className="text-white rounded-full w-[31px] h-[31px]" 
-          containerClassName="w-[31.57px] rounded-full bg-[#1F2927] flex items-center justify-center h-[31.57px]"
-          showLoadingPlaceholder
+        <Image
+            src={`https://api.growthepie.com/v1/apps/logos/${application.logo_path}`}
+            width={32} height={32}
+            className="select-none rounded-full "
+            alt={"."}
+            onDragStart={(e) => e.preventDefault()}
+            loading="eager"
+            priority={true}
         />
       </div>
-      <div className="text-[10px] w-[48px] truncate text-white leading-tight">{iconName}</div>
+      <div className="text-[10px] w-[48px] truncate text-white leading-tight flex justify-center items-center">{application.display_name}</div>
 
     </div>
   );

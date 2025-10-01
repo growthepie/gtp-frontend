@@ -24,9 +24,20 @@ export type ChainOverview = {
     events: ChainEvent[];
     ranking: ChainRanking;
     kpi_cards: ChainKpiCard;
+    ecosystem: Ecosystem;
   }
 }
 
+export type Ecosystem = {
+  active_apps: {
+    count: number;
+  }
+  apps: {
+    types: string[];
+    data: [][];
+  }
+ 
+}
 
 export type ChainEvent = {
   date: string;
