@@ -264,7 +264,7 @@ const MetricChart = ({
     }
     return (
         <div 
-            className="h-[28px] w-[100px] relative"
+            className="h-[28px] w-[140px] relative"
             onMouseMove={(e) => {
                 const chartInstance = chartRef.current?.getEchartsInstance();
                 if (chartInstance) {

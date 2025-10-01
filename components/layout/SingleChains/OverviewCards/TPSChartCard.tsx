@@ -58,9 +58,9 @@ export const TPSChartCard = ({ initialHistory, tpsHistory, chainData, chainKey, 
 
         <div className="flex justify-between pl-[7.5%] tems-center">
           <div className="flex flex-col gap-y-[2px] group">
-                <div className="heading-small-xs numbers-sm">{chainData.block_time ? chainData.block_time > 1 ? chainData.block_time + "s" : chainData.block_time * 1000 + "ms" : "N/A"}</div>
+                <div className="heading-small-xs numbers-sm">{chainData.block_time ? chainData.block_time > 1 ? chainData.block_time + " s" : chainData.block_time * 1000 + " ms" : "N/A"}</div>
                 <div className="relative min-w-[80px]">
-                    <div className="heading-small-xxxs text-[#5A6462]  duration-200">Block times</div>
+                    <div className="heading-small-xxxs text-[#5A6462]  duration-200">Block Time</div>
                 </div>
            </div>
            <div className="flex flex-col gap-y-[2px] group">
