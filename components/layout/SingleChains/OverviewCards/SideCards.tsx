@@ -136,9 +136,11 @@ export default function LiveCards({ chainKey, chainData, master }: { chainKey: s
             ))}
             <PartitionLine />
             <EventsCard totalHeight={500}>
-                {chainDataOverview.data.events.map((event, index) => (
-                    <EventItem event={event as EthereumEvents} setHeight={setHeight} eventIndex={index} key={event.date + index} />
-                ))}
+                {[...chainDataOverview.data.events]
+                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                    .map((event, index) => (
+                        <EventItem event={event as EthereumEvents} setHeight={setHeight} eventIndex={index} key={event.date + index} />
+                    ))}
 
             </EventsCard>
         </div>
