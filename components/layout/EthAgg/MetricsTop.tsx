@@ -362,7 +362,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
   showChainsTPS,
   handleToggleTPS,
 }: EthereumEcosystemTPSCardProps) => {
-  const { AllChainsByKeys } = useMaster();
+  const { AllChainsByKeys, SupportedChainKeys } = useMaster();
   // const [showChainsTPS, setShowChainsTPS] = useSearchParamBoolean("showChainsTPS", false);
 
   // --- DATA FETCHING ---
@@ -410,14 +410,14 @@ export const EthereumEcosystemTPSCard = React.memo(({
   const filteredTPSChains = useMemo(() => {
     return Object.entries(chainData)
       .map(([chainId, metrics]) => ({ ...metrics, chainId })) // Add chainId to the object
-      .filter((data) => data.tps && data.tps > 0 )
+      .filter((data) => data.tps && data.tps > 0 && SupportedChainKeys.includes(data.chainId))
       .sort((a, b) => (b.tps || 0) - (a.tps || 0))
       .map((data, index) => ({
         chainId: data.chainId,
         y: index * 21,
         height: 18,
       }));
-  }, [chainData]);
+  }, [chainData, SupportedChainKeys]);
 
   const tpsTransitions = useTransition(filteredTPSChains, {
     key: (item) => item.chainId,
@@ -543,6 +543,7 @@ export const TokenTransferFeeCard = React.memo(({
   AllChainsByKeys,
   showUsd,
 }: TokenTransferFeeCardProps) => {
+  const { SupportedChainKeys } = useMaster();
   const [ethCostHoverIndex, setEthCostHoverIndex] = useState<number | null>(null);
   const [ethCostSelectedIndex, setEthCostSelectedIndex] = useState<number>(17);
   const [l2CostHoverIndex, setL2CostHoverIndex] = useState<number | null>(null);
@@ -568,7 +569,8 @@ export const TokenTransferFeeCard = React.memo(({
       .filter((chain) => {
         const cost = activeChainData?.[chain]?.[costKey];
         const isEthereum = AllChainsByKeys[chain]?.key === 'ethereum';
-        return cost > 0 && !isEthereum;
+        const isSupported = SupportedChainKeys.includes(chain);
+        return cost > 0 && !isEthereum && isSupported;
       })
       .sort((a, b) =>
         chainsCostHistory[b][chainsCostHistory[b].length - 1] -
@@ -579,7 +581,7 @@ export const TokenTransferFeeCard = React.memo(({
         y: index * 21,
         height: 18,
       }));
-  }, [chainsCostHistory, activeChainData, showUsd, AllChainsByKeys]);
+  }, [chainsCostHistory, activeChainData, showUsd, AllChainsByKeys, SupportedChainKeys]);
 
   const costTransitions = useTransition(filteredCostChains, {
     key: (item) => `cost-${item.chainId}`,
