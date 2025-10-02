@@ -22,7 +22,7 @@ export default function QuickBitesPage() {
 
 
   return (
-    <div className="pt-[45px] md:pt-[30px]">
+    <div className="pt-[15px]">
       <PageContainer>
         <Title
           title="Quick Bites"
@@ -30,7 +30,7 @@ export default function QuickBitesPage() {
           as="h1"
         />
         
-        <p className="text-md md:text-lg mb-12">
+        <p className="text-md md:text-sm mb-4">
           Short and focused analyses of specific topics or trends in the Ethereum ecosystem.
         </p>
         
