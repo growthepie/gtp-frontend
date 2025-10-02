@@ -14,6 +14,7 @@ import useSWR from "swr";
 import { BlockspaceURLs, MasterURL } from "@/lib/urls";
 import ApplicationsGrid from "./OverviewCards/ApplicationsGrid";
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
+import { ApplicationsDataProvider } from "@/app/(layout)/applications/_contexts/ApplicationsDataContext";
 
 
 
@@ -190,12 +191,10 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
                     <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px] h-[215px]`}>
                         <div className="heading-large-md">Achievements</div>
                     </div>
-                    <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px] h-[826px]`}>
-                        <div className="heading-large-md">
-                            <ProjectsMetadataProvider>
-                                <ApplicationsGrid chainKey={chainKey} chainData={chainData} master={master} />
-                            </ProjectsMetadataProvider>
-                        </div>
+                    <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px] h-[890px]`}>
+                        <ProjectsMetadataProvider>
+                            <ApplicationsGrid chainKey={chainKey} chainData={chainData} master={master} />
+                        </ProjectsMetadataProvider>
                     </div>
                     <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default  py-[15px] h-[218px]`}>
                         <div className="px-[30px] heading-large-md">Usage Breakdown</div>

@@ -19,12 +19,20 @@ export type Chain = {
 
 export type ChainOverview = {
   data: {
+    blockspace: Blockspace;
     chain_id: string;
     chain_name: string;
     events: ChainEvent[];
     ranking: ChainRanking;
     kpi_cards: ChainKpiCard;
     ecosystem: Ecosystem;
+  }
+}
+
+export type Blockspace = {
+  blockspace: {
+    types: string[];
+    data: any[];
   }
 }
 
