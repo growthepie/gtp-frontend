@@ -25,8 +25,16 @@ export type ChainOverview = {
     ranking: ChainRanking;
     kpi_cards: ChainKpiCard;
     ecosystem: Ecosystem;
+    blockspace: {
+      blockspace: BlockspaceCO;
+    };
   }
-}
+};
+
+export type BlockspaceCO = {
+  types: string[];
+  data: [][];
+};
 
 export type Ecosystem = {
   active_apps: {

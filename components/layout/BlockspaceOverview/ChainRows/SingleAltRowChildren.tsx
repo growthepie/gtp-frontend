@@ -3,7 +3,7 @@ import { useMemo, useCallback, CSSProperties } from "react";
 import { Icon } from "@iconify/react";
 import { useLocalStorage } from "usehooks-ts";
 import { useRowContext } from "./RowContext";
-import { RowChildrenInterface } from "./ContextInterface";
+import { AltRowChildrenInterface } from "./ContextInterface";
 import { useMaster } from "@/contexts/MasterContext";
 import { indexOf } from "lodash";
 
@@ -37,39 +37,30 @@ export default function SingleAltRowChildren({
     setAllCats,
     unhoverCategory,
     hoverCategory,
-  } = useRowContext() as RowChildrenInterface;
+  } = useRowContext() as AltRowChildrenInterface;
 
   const sumChainValue = useMemo(() => {
-    const chainValues = {};
+    let retValue = 0;
 
-    Object.keys(data).forEach((chainKey) => {
-      let sumValue = 0;
+    // For BlockspaceCO structure, data is a flat array structure
+    if (data && data.data && data.types) {
+      // Calculate sum for each chain by iterating through data rows
+      data.data.forEach((row) => {
+     
+       
+          const currentChainKey = row[categoryIndex] as string;
+          const value = (row[data.types.indexOf("txcount")] as number) || 0;
+          
+          retValue += value;
+        
+      });
+    }
 
-      // Iterate over each category for the current chain
-      Object.keys(data[chainKey].overview[selectedTimespan]).forEach(
-        (category) => {
-          const categoryData =
-            data[chainKey].overview[selectedTimespan][category].data;
+    return retValue;
+  }, [data, selectedMode]);
 
-          // Check if category data exists and index is valid
-          if (
-            categoryData &&
-            data[chainKey].overview["types"].indexOf(selectedMode) !== -1
-          ) {
-            const dataIndex =
-              data[chainKey].overview["types"].indexOf(selectedMode);
-            const categoryValue = categoryData[dataIndex];
-            sumValue += categoryValue; // Add to the sum
-          }
-        },
-      );
 
-      // Store the sum of values for the chain
-      chainValues[chainKey] = sumValue;
-    });
-
-    return chainValues;
-  }, [data, selectedTimespan, selectedMode]);
+ console.log(sumChainValue);
 
   const isPrevCategoryHovered = useMemo(() => {
     if (categoryIndex === 0) return false;
@@ -82,16 +73,34 @@ export default function SingleAltRowChildren({
   }, [master, isCategoryHovered, categoryIndex, selectedCategory]);
 
   const relativePercentageByChain = useMemo(() => {
-    return Object.keys(data).reduce((acc, chainKey) => {
-      return {
-        ...acc,
-        [chainKey]:
-          100 -
-          (Object.keys(data[chainKey].overview[selectedTimespan]).length - 1) *
-            2,
-      };
-    }, {});
-  }, [data, selectedTimespan]);
+    const chainPercentages: { [key: string]: number } = {};
+    
+    if (data && data.data && data.types) {
+      // Get unique chains from data
+      const chainIndex = data.types.indexOf("chain_id");
+      const categoryIndex = data.types.indexOf("main_category_id");
+      
+      if (chainIndex !== -1 && categoryIndex !== -1) {
+        const chainCategories: { [key: string]: Set<string> } = {};
+        
+        data.data.forEach((row) => {
+          const chainKey = row[chainIndex] as string;
+          const category = row[categoryIndex] as string;
+          
+          if (!chainCategories[chainKey]) {
+            chainCategories[chainKey] = new Set<string>();
+          }
+          chainCategories[chainKey].add(category);
+        });
+        
+        Object.keys(chainCategories).forEach((chainKey) => {
+          chainPercentages[chainKey] = 100 - (chainCategories[chainKey].size - 1) * 2;
+        });
+      }
+    }
+    
+    return chainPercentages;
+  }, [data]);
 
   function formatNumber(number: number): string {
     if (number === 0) {
@@ -130,14 +139,23 @@ export default function SingleAltRowChildren({
 
       const categoriesKey = Object.keys(categories).indexOf(categoryKey);
 
-      const dataKeys = Object.keys(data[chainKey].overview[selectedTimespan]);
-      const dataKeysIntersectCategoriesKeys = Object.keys(categories).filter(
-        (key) => dataKeys.includes(key),
-      );
-      const dataIndex = dataKeysIntersectCategoriesKeys.indexOf(categoryKey);
-      const dataTypes = data[chainKey].overview.types;
-      const categoryData =
-        data[chainKey].overview[selectedTimespan][categoryKey]["data"];
+      // For BlockspaceCO structure, find the specific data row for this chain and category
+      let categoryData: number[] | null = null;
+      let dataTypes = data?.types || [];
+      
+      if (data && data.data && data.types) {
+        const categoryIndex = data.types.indexOf("main_category_id");
+     
+        if (categoryIndex !== -1) {
+          const matchingRow = data.data.find(row => 
+            row[categoryIndex] === categoryKey
+          );
+          
+          if (matchingRow) {
+            categoryData = [matchingRow[data.types.indexOf("txcount")] as number]; // Wrap in array to match expected format
+          }
+        }
+      }
 
       const allCategoryKeys = Object.keys(
         master.blockspace_categories.main_categories,
@@ -153,6 +171,7 @@ export default function SingleAltRowChildren({
         allCategoryKeys[allCategoryKeys.indexOf(categoryKey) - 1],
       );
 
+      const dataIndex = categoriesKey;
       style.backgroundColor = `rgba(0, 0, 0, ${
         1 - (1 - 0.1 * (dataIndex + 1))
       })`;
@@ -160,10 +179,8 @@ export default function SingleAltRowChildren({
       if (isLastCategory)
         style.borderRadius = "10000px 99999px 99999px 10000px";
 
-      if (categoryData) {
-        const widthPercentage =
-          categoryData[dataTypes.indexOf(selectedMode)] /
-          sumChainValue[chainKey];
+      if (categoryData && categoryData.length > 0) {
+        const widthPercentage = categoryData[0] / sumChainValue;
 
         if (isLastCategory && selectedCategory !== categoryKey) {
           style.background =
@@ -206,15 +223,24 @@ export default function SingleAltRowChildren({
   );
 
   const shareValue = useMemo(() => {
-    const dataTypes = data[chainKey].overview.types;
-    const categoryData =
-      data[chainKey].overview[selectedTimespan][categoryKey]["data"];
-    if (!categoryData) return 0;
-    else
-      return (
-        categoryData[dataTypes.indexOf(selectedMode)] / sumChainValue[chainKey]
-      );
+    if (!data || !data.data || !data.types) return 0;
+    
+    const categoryIndex = data.types.indexOf("main_category_id");
+
+    if (categoryIndex === -1) return 0;
+    
+    const matchingRow = data.data.find(row => {
+      return row[categoryIndex] === categoryKey;
+    } 
+    );
+    
+    if (!matchingRow) return 0;
+
+    
+    return matchingRow[data.types.indexOf("pct_share")] / 100;
   }, [data, chainKey, categoryKey, selectedMode, sumChainValue]);
+
+
 
   const subChildStyle = useCallback(
     (
@@ -230,16 +256,29 @@ export default function SingleAltRowChildren({
       const allCategoryKeys = Object.keys(
         master.blockspace_categories.main_categories,
       );
-      const dataTypes = data[chainKey].overview.types;
 
       const isLastCategory = categoryKey === "unlabeled";
       const isFirstCategory = categoryKey === allCategoryKeys[0];
 
-      const categoryData =
-        data[chainKey].overview[selectedTimespan][categoryKey]["data"];
+      // Find category data for BlockspaceCO structure
+      let categoryData: number[] | null = null;
+      if (data && data.data && data.types) {
+        const categoryIndex = data.types.indexOf("main_category_id");
+
+        if (categoryIndex !== -1) {
+          const matchingRow = data.data.find(row => 
+            row[categoryIndex] === categoryKey
+          );
+          
+          if (matchingRow) {
+            categoryData = [matchingRow[data.types.indexOf("txcount")] as number];
+          }
+        }
+      }
+
 
       if (
-        !data[chainKey].overview[selectedTimespan][categoryKey]["data"] &&
+        !categoryData &&
         !(
           selectedCategory === categoryKey ||
           isCategoryHovered(categoryKey) ||
@@ -306,12 +345,24 @@ export default function SingleAltRowChildren({
             }
           }
 
+          // Check if first category has data for BlockspaceCO structure
+          let firstCategoryHasData = false;
+          if (data && data.data && data.types) {
+            const chainIndex = data.types.indexOf("chain_id");
+            const categoryIndex = data.types.indexOf("main_category_id");
+            
+            if (chainIndex !== -1 && categoryIndex !== -1) {
+              const firstCategoryRow = data.data.find(row => 
+                row[chainIndex] === chainKey && row[categoryIndex] === allCategoryKeys[0]
+              );
+              firstCategoryHasData = !!firstCategoryRow;
+            }
+          }
+
           if (
             categoryKey === allCategoryKeys[1] &&
             !categoryData &&
-            !data[chainKey].overview[selectedTimespan][allCategoryKeys[0]][
-              "data"
-            ]
+            !firstCategoryHasData
           ) {
             style.left = "3px";
           }
@@ -322,11 +373,12 @@ export default function SingleAltRowChildren({
             AllChainsByKeys[chainKey].colors["dark"][0] +
             (isCategoryHovered(categoryKey) ? "EE" : "FF")
           } `;
-          if (!data[chainKey].overview[selectedTimespan][categoryKey]["data"]) {
+          if (!categoryData) {
             style.minWidth = "55px";
           }
         }
       }
+    
 
       return style;
     },
@@ -397,10 +449,22 @@ export default function SingleAltRowChildren({
               : 20, // Higher z-index for the child div of the selected element
         }}
         onClick={() => {
+          // Check if category has data for BlockspaceCO structure
+          let hasData = false;
+          if (data && data.data && data.types) {
+            const chainIndex = data.types.indexOf("chain_id");
+            const categoryIndex = data.types.indexOf("main_category_id");
+            
+            if (chainIndex !== -1 && categoryIndex !== -1) {
+              const matchingRow = data.data.find(row => 
+                row[chainIndex] === chainKey && row[categoryIndex] === categoryKey
+              );
+              hasData = !!matchingRow;
+            }
+          }
+
           if (selectedCategory === categoryKey) {
-            if (
-              !data[chainKey].overview[selectedTimespan][categoryKey]["data"]
-            ) {
+            if (!hasData) {
               return;
             }
             if (selectedChain === chainKey && !forceSelectedChain) {
@@ -426,61 +490,57 @@ export default function SingleAltRowChildren({
           unhoverCategory(categoryKey);
         }}
       >
-        {data[chainKey].overview[selectedTimespan][categoryKey]["data"] ? (
-          <>
-            {selectedValue === "absolute"
-              ? selectedMode.includes("txcount")
-                ? ""
-                : showUsd
-                ? "$"
-                : "Ξ"
-              : ""}
-            {selectedValue === "share"
-              ? shareValue > 0.05 ||
-                selectedCategory === categoryKey ||
-                isCategoryHovered(categoryKey)
-                ? (
-                    data[chainKey].overview[selectedTimespan][categoryKey][
-                      "data"
-                    ][data[chainKey].overview.types.indexOf(selectedMode)] *
-                    100.0
-                  ).toFixed(2)
-                : ""
-              : shareValue > 0.05 ||
-                selectedCategory === categoryKey ||
-                isCategoryHovered(categoryKey)
-              ? formatNumber(
-                  data[chainKey].overview[selectedTimespan][categoryKey][
-                    "data"
-                  ][data[chainKey].overview.types.indexOf(selectedMode)],
-                )
-              : ""}
-            {selectedValue === "share" ? "%" : ""}{" "}
-          </>
-        ) : (
-          <div
-            className={`text-white/80 
-                          ${
-                            isCategoryHovered(categoryKey) ||
-                            selectedCategory === categoryKey
-                              ? !selectedChain ||
-                                selectedChain === chainKey ||
-                                isCategoryHovered(categoryKey)
-                                ? "opacity-100 py-8"
+        {(() => {
+          // Get category data for BlockspaceCO structure
+          
+
+          return shareValue !== null ? (
+            <>
+              {selectedValue === "absolute"
+                ? selectedMode.includes("txcount")
+                  ? ""
+                  : showUsd
+                  ? "$"
+                  : "Ξ"
+                : ""}
+              {selectedValue === "share"
+                ? shareValue > 0.05 ||
+                  selectedCategory === categoryKey ||
+                  isCategoryHovered(categoryKey)
+                  ? (shareValue * 100.0).toFixed(2)
+                  : ""
+                : shareValue > 0.05 ||
+                  selectedCategory === categoryKey ||
+                  isCategoryHovered(categoryKey)
+                ? formatNumber(shareValue)
+                : ""}
+              {selectedValue === "share" ? "%" : ""}{" "}
+            </>
+          ) : (
+            <div
+              className={`text-white/80 
+                            ${
+                              isCategoryHovered(categoryKey) ||
+                              selectedCategory === categoryKey
+                                ? !selectedChain ||
+                                  selectedChain === chainKey ||
+                                  isCategoryHovered(categoryKey)
+                                  ? "opacity-100 py-8"
+                                  : "opacity-0"
                                 : "opacity-0"
-                              : "opacity-0"
-                          } transition-opacity duration-300 ease-in-out`}
-          >
-            {selectedValue === "absolute"
-              ? selectedMode.includes("txcount")
-                ? ""
-                : showUsd
-                ? "$ "
-                : "Ξ "
-              : ""}
-            0 {selectedValue === "share" ? "%" : ""}{" "}
-          </div>
-        )}
+                            } transition-opacity duration-300 ease-in-out`}
+            >
+              {selectedValue === "absolute"
+                ? selectedMode.includes("txcount")
+                  ? ""
+                  : showUsd
+                  ? "$ "
+                  : "Ξ "
+                : ""}
+              0 {selectedValue === "share" ? "%" : ""}{" "}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

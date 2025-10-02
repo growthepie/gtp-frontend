@@ -3,7 +3,7 @@ import { useMemo, useCallback, useRef } from "react";
 import { Icon } from "@iconify/react";
 import { useRowContext } from "./RowContext";
 import SingleAltRowChildren from "./SingleAltRowChildren";
-import { RowParentInterface } from "./ContextInterface";
+import { AltRowParentInterface } from "./ContextInterface";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../../Tooltip";
 import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
@@ -29,7 +29,7 @@ export default function SingleAltRowParent({ chainKey, index }) {
     setAllCats,
     unhoverCategory,
     hoverCategory,
-  } = useRowContext() as RowParentInterface;
+  } = useRowContext() as AltRowParentInterface;
 
   const displayMode = useMemo(() => {
     let retVal = "";
@@ -179,8 +179,8 @@ export default function SingleAltRowParent({ chainKey, index }) {
             {/*Children */}
             {Object.keys(categories).map((categoryKey, i) => {
               const rawChainCategories = Object.keys(
-                data[chainKey].overview[selectedTimespan],
-              );
+                data.data
+              ).map((d) => d[data.types.indexOf("main_category_id")]);
 
               const chainCategories = Object.keys(categories).filter((x) =>
                 rawChainCategories.includes(x),

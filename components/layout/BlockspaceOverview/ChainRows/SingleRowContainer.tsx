@@ -21,6 +21,8 @@ export default function RowContainer() {
     unhoverCategory,
   } = useRowContext() as RowContainerInterface;
 
+  console.log(data);
+
   return (
     <HorizontalScrollContainer className="!px-0 "  includeMargin={false}>
       <div
@@ -124,16 +126,12 @@ export default function RowContainer() {
       {/* {selectedScale === "gasfees" ? ( */}
 
       <div className="flex flex-col space-y-[5px]  mb-8 pb-2.5">
-        {
-          //chain name is key
-          Object.keys(data)
-            .filter((c) => c !== "all_l2s" && c === selectedChain)
-            .map((chainKey, index) => {
-              return (
-                <SingleAltRowParent key={chainKey} chainKey={chainKey} index={index} />
-              );
-            })
-            .concat(
+        
+       
+          
+            
+                <SingleAltRowParent key={selectedChain} chainKey={selectedChain} index={0} />
+             
               <div
                 key="legend"
                 className="relative w-full flex justify-between px-[10px] h-[15px] -top-[10px] text-[10px]"
@@ -158,9 +156,9 @@ export default function RowContainer() {
                     )}
                   </div>
                 ))}
-              </div>,
-            )
-        }
+              </div>
+              
+        
       </div>
     </HorizontalScrollContainer>
   );

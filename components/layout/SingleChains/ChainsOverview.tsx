@@ -14,6 +14,7 @@ import useSWR from "swr";
 import { BlockspaceURLs, MasterURL } from "@/lib/urls";
 import ApplicationsGrid from "./OverviewCards/ApplicationsGrid";
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
+import { ChainOverview } from "@/lib/chains";
 
 
 
@@ -104,7 +105,12 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
         isLoading: usageLoading,
         isValidating: usageValidating,
     } = useSWR<ChainOverviewResponse>(BlockspaceURLs["chain-overview"]);
-        
+
+    const { data: chainDataOverview } = useSWR<ChainOverview>(`https://api.growthepie.xyz/v1/chains/${chainKey}/overview.json`);
+
+
+
+   
 
    
 
@@ -181,11 +187,11 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
  
     return (
         <>
-        {usageData && oldMaster && (
+        {usageData && oldMaster && chainDataOverview && (
         <div className="@container flex flex-col w-full gap-[15px]">
             <AboutChain chainData={chainData} master={master} chainKey={chainKey} />
             <div className="grid grid-flow-row @[995px]:grid-cols-[minmax(480px,505px)_minmax(505px,auto)] gap-[10px]">
-                <SideCards chainKey={chainKey} chainData={chainData} master={master} />
+                <SideCards chainKey={chainKey} chainData={chainData} master={master} chainDataOverview={chainDataOverview} />
                 <div className="flex flex-col w-full gap-y-[15px]">
                     <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px] h-[215px]`}>
                         <div className="heading-large-md">Achievements</div>
@@ -193,7 +199,7 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
                     <div className={`flex flex-col w-full rounded-[15px] bg-color-bg-default px-[30px] py-[15px] h-[826px]`}>
                         <div className="heading-large-md">
                             <ProjectsMetadataProvider>
-                                <ApplicationsGrid chainKey={chainKey} chainData={chainData} master={master} />
+                                <ApplicationsGrid chainKey={chainKey} chainData={chainData} master={master} chainDataOverview={chainDataOverview} />
                             </ProjectsMetadataProvider>
                         </div>
                     </div>
@@ -202,7 +208,7 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
                         <RowProvider
                             value={{
                                 master: oldMaster,
-                                data: usageData.data.chains,
+                                data: chainDataOverview.data.blockspace.blockspace,
                                 selectedMode: "txcount_share",
                                 forceSelectedChain: "",
                                 isCategoryHovered: isCategoryHovered, 

@@ -1,5 +1,6 @@
 import { Chains } from "@/types/api/ChainOverviewResponse";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import { BlockspaceCO } from "@/lib/chains";
 
 export interface RowContainerInterface {
   master: MasterResponse;
@@ -32,6 +33,40 @@ export interface RowChildrenInterface {
   allCats: boolean;
   setSelectedChain: (chain: string | null) => void;
   setSelectedCategory: (category: string) => void;
+  setAllCats: (cats: boolean) => void;
+  hoverCategory: (category: string) => void; // Function to hover category
+  unhoverCategory: (category: string) => void; // Function to unhover category
+}
+
+export interface AltRowChildrenInterface {
+  data: BlockspaceCO;
+  master: MasterResponse;
+  selectedMode: string;
+  forceSelectedChain?: string;
+  isCategoryHovered: (category: string) => boolean; // Function to check if category is hovered
+  selectedCategory: string;
+  selectedChain: string | null;
+  selectedTimespan: string;
+  selectedValue: string;
+  categories: Object;
+  allCats: boolean;
+  setSelectedChain: (chain: string | null) => void;
+  setSelectedCategory: (category: string) => void;
+  setAllCats: (cats: boolean) => void;
+  hoverCategory: (category: string) => void; // Function to hover category
+  unhoverCategory: (category: string) => void; // Function to unhover category
+}
+
+
+export interface AltRowParentInterface {
+  data: BlockspaceCO;
+  selectedMode: string;
+  forceSelectedChain?: string;
+  isCategoryHovered: (category: string) => boolean; // Function to check if category is hovered
+  selectedChain: string | null;
+  selectedTimespan: string;
+  categories: Object;
+  allCats: boolean;
   setAllCats: (cats: boolean) => void;
   hoverCategory: (category: string) => void; // Function to hover category
   unhoverCategory: (category: string) => void; // Function to unhover category

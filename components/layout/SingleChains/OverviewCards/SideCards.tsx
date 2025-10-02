@@ -72,12 +72,11 @@ const PartitionLine = ({ title, infoContent }: { title?: string, infoContent?: s
     )
 }
 
-export default function LiveCards({ chainKey, chainData, master }: { chainKey: string, chainData: any, master: any }) {
+export default function LiveCards({ chainKey, chainData, master, chainDataOverview }: { chainKey: string, chainData: any, master: any, chainDataOverview: any }) {
 
     const [tpsHistory, setTpsHistory] = useState<any[]>([]);
     const { data: initialHistory } = useSWR<any>(`https://sse.growthepie.com/api/chain/${chainKey}/history`);
     const {chainData: chainDataTPS, lastUpdated} = useSSEChains(chainKey);
-    const { data: chainDataOverview } = useSWR<ChainOverview>(`https://api.growthepie.xyz/v1/chains/${chainKey}/overview.json`);
     const [height, setHeight] = useState<number[]>([]);
 
 

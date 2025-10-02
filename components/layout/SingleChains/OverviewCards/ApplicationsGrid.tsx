@@ -8,10 +8,9 @@ import useSWR from 'swr';
 import { size } from 'lodash';
 import Image from 'next/image';
 
-const DynamicGrid = ({ chainKey, chainData, master }: { chainKey: string; chainData: any; master: any }) => {
+const DynamicGrid = ({ chainKey, chainData, master, chainDataOverview }: { chainKey: string; chainData: any; master: any; chainDataOverview: any }) => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const { ownerProjectToProjectData } = useProjectsMetadata();
-  const { data: chainDataOverview } = useSWR<ChainOverview>(`https://api.growthepie.xyz/v1/chains/${chainKey}/overview.json`);
 
 
 
@@ -205,7 +204,7 @@ const DynamicGrid = ({ chainKey, chainData, master }: { chainKey: string; chainD
               <div className="relative z-10 h-full flex flex-wrap gap-x-[15px] gap-y-[15px] content-start items-start p-1">
                 {categoryFilter[item].map((projectName, index) => {
                   const projectData = ownerProjectToProjectData[projectName];
-                  console.log(projectData);
+               
                   const iconName = gtpIconNames[index];
                   return (
                     <div key={projectName}>
