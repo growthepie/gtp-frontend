@@ -18,7 +18,7 @@ const DynamicGrid = ({ chainKey, chainData, master }: { chainKey: string; chainD
 
   //Add project data to object filtered by main category
   const categoryFilter = useMemo(() => {
-    if(!chainDataOverview) return {};
+    if(!chainDataOverview || !chainDataOverview.data.ecosystem.apps) return {};
     let returnObject: {[key: string]: string[]} = {};
     const types = chainDataOverview.data.ecosystem.apps.types;
      chainDataOverview?.data.ecosystem.apps.data.forEach((app) => {

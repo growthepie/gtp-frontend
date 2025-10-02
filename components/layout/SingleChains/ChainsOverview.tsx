@@ -177,7 +177,7 @@ const ChainsOverview = ({ chainKey, chainData, master }: { chainKey: string, cha
       }, [master]);
     
 
-
+   
  
     return (
         <>
@@ -249,14 +249,14 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
                 
                 
                     
-                    <LinkButton icon="gtp-bridge" label="Website" href={master.chains[chainKey].links.website} />
-                    <LinkButton icon="gtp-bridge" label="Docs" href={master.chains[chainKey].links.docs} />
-                    <LinkButton icon="gtp-bridge" label="Github" href={master.chains[chainKey].links.github} />
-                    <LinkDropdown icon="gtp-bridge" label="More" href="https://www.google.com" links={Object.keys(master.chains[chainKey].links.socials).map((social) => ({ icon: socials[social].icon, label: socials[social].name, href: master.chains[chainKey].links.socials[social] }))} />
-                    <LinkButton icon="gtp-bridge" label="Governance" href="https://www.google.com" />
-                    <LinkDropdown icon="gtp-bridge" label="RPC" href="https://www.google.com" links={Object.keys(master.chains[chainKey].links.rpcs).map((rpc) => ({ icon: socials[rpc]?.icon, label: rpc, href: master.chains[chainKey].links.rpcs[rpc] }))} />
-                    <LinkDropdown icon="gtp-bridge" label="Block Explorers" href="https://www.google.com" links={Object.keys(master.chains[chainKey].links.block_explorers).map((explorer) => ({ icon: socials[explorer]?.icon, label: explorer, href: master.chains[chainKey].links.block_explorers[explorer] }))} />
-                    <LinkDropdown icon="gtp-bridge" label="Bridges" href="https://www.google.com" links={Object.keys(master.chains[chainKey].links.bridges).map((bridge) => ({ icon: socials[bridge]?.icon, label: bridge, href: master.chains[chainKey].links.bridges[bridge] }))} />
+                    {master.chains[chainKey].links.website && <LinkButton icon="gtp-bridge" label="Website" href={master.chains[chainKey].links.website} />}
+                    {master.chains[chainKey].links.docs && <LinkButton icon="gtp-bridge" label="Docs" href={master.chains[chainKey].links.docs} />}
+                    {master.chains[chainKey].links.github && <LinkButton icon="gtp-bridge" label="Github" href={master.chains[chainKey].links.github} />}
+                    <LinkDropdown icon="gtp-bridge" label="More" links={Object.keys(master.chains[chainKey].links.socials).map((social) => ({ icon: socials[social].icon, label: socials[social].name, href: master.chains[chainKey].links.socials[social] }))} />
+                    {master.chains[chainKey].links.governance && <LinkButton icon="gtp-bridge" label="Governance" href={master.chains[chainKey].links.governance} />}
+                    <LinkDropdown icon="gtp-bridge" label="RPC" links={Object.keys(master.chains[chainKey].links.rpcs).map((rpc) => ({ icon: socials[rpc]?.icon, label: rpc, href: master.chains[chainKey].links.rpcs[rpc] }))} />
+                    <LinkDropdown icon="gtp-bridge" label="Block Explorers" links={Object.keys(master.chains[chainKey].links.block_explorers).map((explorer) => ({ icon: socials[explorer]?.icon, label: explorer, href: master.chains[chainKey].links.block_explorers[explorer] }))} />
+                    <LinkDropdown icon="gtp-bridge" label="Bridges" links={Object.keys(master.chains[chainKey].links.bridges).map((bridge) => ({ icon: socials[bridge]?.icon, label: bridge, href: master.chains[chainKey].links.bridges[bridge] }))} />
                 </div>
             </div>
             <div className="flex flex-col w-full text-sm transition-all duration-300 overflow-hidden " 
@@ -318,16 +318,16 @@ const AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, mas
                 </div>
                 <div className="w-full h-full flex justify-between gap-x-[10px] max-w-[300px]">
                      <div className="flex flex-col items-start justify-between h-full">
-                        <LinkButton icon="gtp-bridge" label="Website" href={master.chains[chainKey].links.website} />
-                        <LinkButton icon="gtp-bridge" label="Docs" href={master.chains[chainKey].links.docs} />
-                        <LinkButton icon="gtp-bridge" label="Github" href={master.chains[chainKey].links.github} />
-                        <LinkDropdown icon="gtp-bridge" label="More" href="https://www.google.com" links={Object.keys(master.chains[chainKey].links.socials).map((social) => ({ icon: socials[social].icon, label: socials[social].name, href: master.chains[chainKey].links.socials[social] }))} />
+                        {master.chains[chainKey].links.website && <LinkButton icon="gtp-bridge" label="Website" href={master.chains[chainKey].links.website} />}
+                        {master.chains[chainKey].links.docs && <LinkButton icon="gtp-bridge" label="Docs" href={master.chains[chainKey].links.docs} />}
+                        {master.chains[chainKey].links.github && <LinkButton icon="gtp-bridge" label="Github" href={master.chains[chainKey].links.github} />}
+                        <LinkDropdown icon="gtp-bridge" label="More"  links={Object.keys(master.chains[chainKey].links.socials).map((social) => ({ icon: socials[social].icon, label: socials[social].name, href: master.chains[chainKey].links.socials[social] }))} />
                      </div>
                      <div className="flex flex-col items-start justify-between h-full">
                         <LinkButton icon="gtp-bridge" label="Governance" href="https://www.google.com" />
-                        <LinkDropdown icon="gtp-bridge" label="RPC" href="https://www.google.com" links={Object.keys(master.chains[chainKey].links.rpcs).map((rpc) => ({ icon: socials[rpc]?.icon, label: rpc, href: master.chains[chainKey].links.rpcs[rpc] }))} />
-                        <LinkDropdown icon="gtp-bridge" label="Block Explorers" href="https://www.google.com" links={Object.keys(master.chains[chainKey].links.block_explorers).map((explorer) => ({ icon: socials[explorer]?.icon, label: explorer, href: master.chains[chainKey].links.block_explorers[explorer] }))} />
-                        <LinkDropdown icon="gtp-bridge" label="Bridges" href="https://www.google.com" links={Object.keys(master.chains[chainKey].links.bridges).map((bridge) => ({ icon: socials[bridge]?.icon, label: bridge, href: master.chains[chainKey].links.bridges[bridge] }))} />
+                        <LinkDropdown icon="gtp-bridge" label="RPC" links={Object.keys(master.chains[chainKey].links.rpcs).map((rpc) => ({ icon: socials[rpc]?.icon, label: rpc, href: master.chains[chainKey].links.rpcs[rpc] }))} />
+                        <LinkDropdown icon="gtp-bridge" label="Block Explorers" links={Object.keys(master.chains[chainKey].links.block_explorers).map((explorer) => ({ icon: socials[explorer]?.icon, label: explorer, href: master.chains[chainKey].links.block_explorers[explorer] }))} />
+                        <LinkDropdown icon="gtp-bridge" label="Bridges" links={Object.keys(master.chains[chainKey].links.bridges).map((bridge) => ({ icon: socials[bridge]?.icon, label: bridge, href: master.chains[chainKey].links.bridges[bridge] }))} />
                      </div>
                 </div>
             </div>
@@ -346,7 +346,7 @@ const LinkButton = ({ icon, label, href }: { icon: string, label: string, href: 
 }
 
 
-const LinkDropdown = ({ icon, label, href, links }: { icon: string, label: string, href: string, links: { icon?: string, label: string, href: string }[] }) => {
+const LinkDropdown = ({ icon, label, links }: { icon: string, label: string, links: { icon?: string, label: string, href: string }[] }) => {
     const [linkHeight, setLinkHeight] = useState(28);
     const [panelWidth, setPanelWidth] = useState<number | null>(null);
     const [chipBaseWidth, setChipBaseWidth] = useState<number | null>(null);

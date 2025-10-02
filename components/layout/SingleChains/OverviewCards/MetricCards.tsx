@@ -94,7 +94,7 @@ export default function MetricCards({ chainKey, master, metricKey, metricData, o
         );
     }, [metricData.name]);
 
-    if (!chainData || !overviewData.data.ranking[metricKey] || !metricData) return null;
+    if (!chainData || !overviewData.data.ranking[metricKey] || !metricData || !overviewData.data.kpi_cards[metricKey]) return null;
 
 
     
