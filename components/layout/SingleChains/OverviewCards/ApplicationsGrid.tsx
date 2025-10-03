@@ -291,8 +291,8 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
 
   // Calculate height based on content density
   const dimensions = useMemo(() => {
-    const MIN_HEIGHT = 100;
-    const MAX_HEIGHT = 900;
+    const MIN_HEIGHT = 350;
+    const MAX_HEIGHT = window.innerHeight - 300;
     
     if (categoryNodes.length === 0) {
       return { width: containerWidth, height: MIN_HEIGHT };
@@ -342,48 +342,88 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
   // ============================================================================
   // Layout Calculation
   // ============================================================================
+
+  /**
+   * Iteratively calculates a treemap layout, adjusting node values to ensure
+   * all leaf nodes have a minimum width.
+   *
+   * @param {Array} nodes The initial array of category nodes.
+   * @param {Object} dimensions The dimensions of the treemap (width and height).
+   * @param {number} minWidth The minimum width for each leaf node.
+   * @returns {Array} The final layout where all leaf nodes meet the minWidth.
+   */
+  const enforceMinWidth = (nodes, dimensions, minWidth, minHeight) => {
+    let layout = [];
+    let currentNodes = JSON.parse(JSON.stringify(nodes)); // Deep copy to avoid mutating original data
+    let allNodesAreWideEnough = false;
+    let iterations = 0;
+    const maxIterations = 20; // A safeguard against infinite loops
+
+    while (!allNodesAreWideEnough && iterations < maxIterations) {
+      const { width, height } = dimensions;
+
+      const hierarchyData = {
+        name: 'root',
+        children: currentNodes.map(node => ({
+          ...node,
+          name: node.id,
+          value: node.apps.length * 1000 + Math.sqrt(node.txcount),
+        })),
+      };
+
+      const root = d3.hierarchy(hierarchyData)
+        .sum(d => d.value)
+        .sort((a, b) => b.value - a.value);
+
+      const treemap = d3.treemap()
+        .size([width, height])
+        .paddingInner(10)
+        .paddingOuter(0)
+        .tile(d3.treemapSquarify.ratio(1 / 2));
+
+      treemap(root);
+
+      layout = root.leaves().map(leaf => {
+        const originalData = nodes.find(n => n.id === leaf.data.name);
+        return {
+          ...originalData,
+          x: Math.floor(leaf.x0),
+          y: Math.floor(leaf.y0),
+          width: Math.floor(leaf.x1 - leaf.x0),
+          height: Math.floor(leaf.y1 - leaf.y0),
+        };
+      });
+
+      const offendingNodes = layout.filter(leaf => leaf.width < minWidth || leaf.height < minHeight);
+
+      if (offendingNodes.length === 0) {
+        allNodesAreWideEnough = true;
+      } else {
+        offendingNodes.forEach(offendingNode => {
+          const nodeToUpdate = currentNodes.find(n => n.id === offendingNode.id);
+          if (nodeToUpdate) {
+            // Bump up the value of the offending node.
+            // The bump factor (1.1 here) can be adjusted.
+            const currentValue = nodeToUpdate.apps.length * 1000 + Math.sqrt(nodeToUpdate.txcount);
+            const newTxCount = Math.pow(Math.sqrt(nodeToUpdate.txcount) * 2, 2);
+            nodeToUpdate.txcount = newTxCount;
+          }
+        });
+      }
+      iterations++;
+    }
+
+    if (iterations === maxIterations) {
+      console.warn('LAYOUT: Reached max iterations while trying to enforce minimum width.');
+    }
+
+    return layout;
+  };
   
   const layout = useMemo(() => {
     if (categoryNodes.length === 0) return [];
-    
-    const { width, height } = dimensions;
-
-    // Create hierarchy data with proportional values
-    const hierarchyData = {
-      name: 'root',
-      children: categoryNodes.map(node => ({
-        ...node,
-        name: node.id,
-        // Value based on app count + transaction volume
-        value: node.apps.length * 1000 + Math.sqrt(node.txcount)
-      }))
-    };
-
-    // Create treemap layout
-    const root = d3.hierarchy(hierarchyData)
-      .sum(d => d.value)
-      .sort((a, b) => b.value - a.value);
-
-    const treemap = d3.treemap()
-      .size([width, height])
-      .paddingInner(10)
-      .paddingOuter(0)
-      .tile(d3.treemapSquarify.ratio(1/2));
-
-    treemap(root);
-
-    // Extract leaf nodes with positions
-    return root.leaves().map(leaf => {
-      const originalData = categoryNodes.find(n => n.id === leaf.data.name)!;
-      
-      return {
-        ...originalData,
-        x: Math.floor(leaf.x0),
-        y: Math.floor(leaf.y0),
-        width: Math.floor(leaf.x1 - leaf.x0),
-        height: Math.floor(leaf.y1 - leaf.y0),
-      } as LayoutNode;
-    });
+  
+    return enforceMinWidth(categoryNodes, dimensions, 85, 120);
   }, [categoryNodes, dimensions]);
 
   // ============================================================================
@@ -559,6 +599,21 @@ const DensePackedTreeMap = ({ chainKey, chainData }: DensePackedTreeMapProps) =>
   );
 };
 
+const ShortMainCategoryNames = {
+}
+
+const ShortSubCategoryNames = {
+  'Cross-Chain Communication': 'Cross Chain Comms',
+  'Non-Fungible Tokens': 'NFTs',
+  'Centralized Exchange': 'CEX',
+  'Decentralized Exchange': 'DEX',
+  'Real World Assets': 'RWA',
+  'Account Abstraction (ERC4337)': 'Account Abstraction',
+  'Decentralized Physical Infrastructure': 'DePIN',
+  'Contract Deployments By EOAs': 'EOA Contracts'
+}
+
+
 // ============================================================================
 // Category Section Component
 // ============================================================================
@@ -614,12 +669,12 @@ const CategorySection = ({
     >
       {/* Animated category label */}
       <motion.div 
-        className="absolute -top-[9px] left-[10px] h-[17px] heading-large-xs bg-color-bg-default px-[10px]"
+        className="absolute -top-[9px] left-[10px] heading-large-xs bg-color-bg-default px-[10px] min-w-[30px] max-w-[calc(100%-20px)]"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
-        {node.label}
+        <div className="max-w-full">{viewMode === 'main' ? ShortMainCategoryNames[node.label] ? ShortMainCategoryNames[node.label] : node.label : ShortSubCategoryNames[node.label] ? ShortSubCategoryNames[node.label] : node.label}</div>
       </motion.div>
 
       {/* Animated app tiles */}
