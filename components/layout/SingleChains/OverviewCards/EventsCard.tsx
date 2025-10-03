@@ -10,6 +10,8 @@ import { GTPIconName } from "@/icons/gtp-icon-names";
 import { EventIcon } from "@/components/layout/EthAgg/MetricsTop";
 import moment from "moment";
 import { LinkButton } from '@/components/layout/LinkButton';
+import { GTPTooltipNew, TooltipBody } from "@/components/tooltip/GTPTooltip";
+import { isMobile } from "react-device-detect";
 
 export default function EventsCard({ children, totalHeight }: { children: React.ReactNode, totalHeight: number }) {
     const [expanded, setExpanded] = useState(false);
@@ -83,7 +85,30 @@ export default function EventsCard({ children, totalHeight }: { children: React.
                  
               
                     <div className="absolute right-[15px] top-[60%] -translate-y-1/2 w-[15px] h-[15px] flex items-center justify-center">
-                        <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-[#5A6462]" />
+                        <div className='w-[15px] h-fit z-30'>
+                            <GTPTooltipNew
+                                placement="top-end"
+                                size="md"
+                                allowInteract={true}
+                                trigger={
+                                <div
+                                    className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'}`}
+                                    data-tooltip-trigger
+                                >
+                                    <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
+                                </div>
+                                }
+                                containerClass="flex flex-col gap-y-[10px]"
+                                positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+
+                            >
+                                <div>
+                                <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
+                                    {"Tooltip content"}
+                                </TooltipBody>
+                                </div>
+                            </GTPTooltipNew>
+                        </div>
                     </div>
 
 

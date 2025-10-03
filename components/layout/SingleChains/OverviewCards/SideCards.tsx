@@ -15,6 +15,8 @@ import MetricCards from "./MetricCards";
 import EventsCard from "./EventsCard";
 import { EventItem } from "./EventsCard";
 import { EthereumEvents } from "@/types/api/MasterResponse";
+import { GTPTooltipNew, TooltipBody } from "@/components/tooltip/GTPTooltip";
+import { isMobile } from "react-device-detect";
 
 
 
@@ -59,14 +61,30 @@ const PartitionLine = ({ title, infoContent }: { title?: string, infoContent?: s
                 <div className="heading-large-xxs h-[17px] flex items-center whitespace-nowrap pr-[5px]">{title}</div>
             )}
             {infoContent && (
-                <Tooltip placement="bottom">
-                    <TooltipTrigger>
-                        <Icon icon="feather:info" className="w-[15px] h-[15px]" />
-                    </TooltipTrigger>
-                    <TooltipContent className="z-[99]">
-                        <div className="px-[15px]">{infoContent}</div>
-                    </TooltipContent>
-                </Tooltip>
+            <div className='w-[15px] h-fit z-30'>
+                <GTPTooltipNew
+                    placement="top-start"
+                    size="md"
+                    allowInteract={true}
+                    trigger={
+                        <div
+                        className={`flex items-center justify-center ${isMobile ? 'w-[24px] h-[24px] -m-[4.5px]' : 'w-[15px] h-fit'}`}
+                        data-tooltip-trigger
+                        >
+                        <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
+                        </div>
+                    }
+                    containerClass="flex flex-col gap-y-[10px]"
+                    positionOffset={{ mainAxis: 0, crossAxis: 20 }}
+
+                >
+                    <div>
+                        <TooltipBody className='flex flex-col gap-y-[10px] pl-[20px]'>
+                        {infoContent}
+                        </TooltipBody>
+                    </div>
+                </GTPTooltipNew>
+            </div>
             )}
         </div>
     )
